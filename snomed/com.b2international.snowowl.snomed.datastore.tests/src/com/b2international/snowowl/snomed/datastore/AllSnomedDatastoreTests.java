@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import com.b2international.snowowl.snomed.core.tree.TerminologyTreeTest;
 import com.b2international.snowowl.snomed.datastore.id.memory.DefaultSnomedIdentifierServiceRegressionTest;
 import com.b2international.snowowl.snomed.datastore.id.memory.DefaultSnomedIdentifierServiceTest;
 import com.b2international.snowowl.snomed.datastore.index.change.ConceptChangeProcessorAxiomTest;
-import com.b2international.snowowl.snomed.datastore.index.change.ConceptChangeProcessorTest;
 import com.b2international.snowowl.snomed.datastore.index.change.DescriptionChangeProcessorTest;
 import com.b2international.snowowl.snomed.datastore.index.change.PreferredDescriptionPreCommitHookTest;
 import com.b2international.snowowl.snomed.datastore.index.change.RelationshipChangeProcessorTest;

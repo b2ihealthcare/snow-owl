@@ -24,21 +24,24 @@ import org.slf4j.Logger;
 
 import com.b2international.commons.extension.Component;
 import com.b2international.index.revision.Hooks.PreCommitHook;
+import com.b2international.snowowl.core.codesystem.version.VersioningRequestBuilder;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.IComponent;
+import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.core.merge.ComponentRevisionConflictProcessor;
 import com.b2international.snowowl.core.repository.ComponentDeletionPolicy;
 import com.b2international.snowowl.core.repository.CompositeComponentDeletionPolicy;
+import com.b2international.snowowl.core.repository.ContentAvailabilityInfoProvider;
 import com.b2international.snowowl.core.repository.TerminologyRepositoryInitializer;
 import com.b2international.snowowl.core.repository.TerminologyRepositoryPlugin;
+import com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator;
+import com.b2international.snowowl.core.request.TransactionalRequest;
 import com.b2international.snowowl.core.setup.ConfigurationRegistry;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
-import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
-import com.b2international.snowowl.datastore.request.TransactionalRequest;
-import com.b2international.snowowl.datastore.version.VersioningRequestBuilder;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.rpc.RpcUtil;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
@@ -59,12 +62,14 @@ import com.b2international.snowowl.snomed.core.ql.DefaultSnomedQueryParser;
 import com.b2international.snowowl.snomed.core.ql.DefaultSnomedQuerySerializer;
 import com.b2international.snowowl.snomed.core.ql.SnomedQueryParser;
 import com.b2international.snowowl.snomed.core.ql.SnomedQuerySerializer;
+import com.b2international.snowowl.snomed.core.request.SnomedConceptSearchRequestEvaluator;
 import com.b2international.snowowl.snomed.core.version.SnomedVersioningRequest;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.index.change.SnomedRepositoryPreCommitHook;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.internal.SnomedRepositoryInitializer;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.ecl.EclStandaloneSetup;
 import com.b2international.snowowl.snomed.ql.QLStandaloneSetup;
 import com.b2international.snowowl.snomed.validation.SnomedQueryValidationRuleEvaluator;
@@ -112,6 +117,23 @@ public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 			env.services().registerService(MrcmImporter.class, RpcUtil.createProxy(env.container(), MrcmImporter.class));
 			env.services().registerService(MrcmExporter.class, RpcUtil.createProxy(env.container(), MrcmExporter.class));
 		}
+	}
+	
+	@Override
+	protected ContentAvailabilityInfoProvider getContentAvailabilityInfoProvider() {
+		return context -> {
+			return SnomedRequests.prepareSearchConcept()
+				.setLimit(0)
+				.filterById(Concepts.ROOT_CONCEPT)
+				.build()
+				.execute(context)
+				.getTotal() > 0;
+		};
+	}
+	
+	@Override
+	protected ConceptSearchRequestEvaluator getConceptSearchRequestEvaluator() {
+		return new SnomedConceptSearchRequestEvaluator();
 	}
 	
 	@Override

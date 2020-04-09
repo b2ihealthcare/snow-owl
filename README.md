@@ -3,7 +3,7 @@
 Snow Owl<sup>&reg;</sup> is a highly scalable, open source terminology server with revision-control capabilities and collaborative authoring platform features. It allows you to store, search and author high volumes of terminology artifacts quickly and efficiently.
 
 [![build status](https://img.shields.io/github/workflow/status/b2ihealthcare/snow-owl/Java%20CI/7.x?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/actions)
-[![latest release](https://img.shields.io/github/tag/b2ihealthcare/snow-owl.svg?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/releases/tag/v7.4.0)
+[![latest release](https://img.shields.io/github/tag/b2ihealthcare/snow-owl.svg?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/releases/tag/v7.5.0)
 [![downloads](https://img.shields.io/github/downloads/b2ihealthcare/snow-owl/total.svg?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/releases/)
 [![Docker](https://img.shields.io/docker/pulls/b2ihealthcare/snow-owl-oss?style=flat-square)](https://hub.docker.com/r/b2ihealthcare/snow-owl-oss)
 [![GitHub](https://img.shields.io/github/license/b2ihealthcare/snow-owl.svg?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/blob/7.x/LICENSE)
@@ -18,7 +18,7 @@ Features include:
     * Maintains multiple versions (including unpublished and published) for each terminology artifact and provides APIs to access them all
     * Independent work branches offer work-in-process isolation, external business workflow integration and team collaboration
 * SNOMED CT and others
-    * Full SNOMED CT terminology support (full RF2 support, ECL v1.3, SCG 2.3.1, ETL 1.0, Reference Sets, OWL Axioms, OWL 2 EL/DL support, experimental Query Language)
+    * Full SNOMED CT terminology support (full RF2 support, ECL v1.3, SCG 2.3.1, ETL 1.0, Reference Sets, OWL Axioms, OWL 2 EL/DL support, SNOMED Query Language draft specification)
     * With its modular design, the server can maintain multiple terminologies (including local codes, mapping sets, value sets)
 * Various set of APIs
     * SNOMED CT API (RESTful and native Java API)
@@ -32,16 +32,16 @@ Features include:
 
 # Download
 
-* [WINDOWS](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.4.0/snow-owl-oss-7.4.0.zip) - [sha](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.4.0/snow-owl-oss-7.4.0.zip.sha512)
-* [MACOS/LINUX](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.4.0/snow-owl-oss-7.4.0.tar.gz) - [sha](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.4.0/snow-owl-oss-7.4.0.tar.gz.sha512) 
-* [RPM](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.4.0/snow-owl-oss-7.4.0.rpm) - [sha](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.4.0/snow-owl-oss-7.4.0.rpm.sha512)
-* [DEB](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.4.0/snow-owl-oss-7.4.0.deb) - [sha](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.4.0/snow-owl-oss-7.4.0.deb.sha512)
+* [WINDOWS](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.5.0/snow-owl-oss-7.5.0.zip) - [sha](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.5.0/snow-owl-oss-7.5.0.zip.sha512)
+* [MACOS/LINUX](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.5.0/snow-owl-oss-7.5.0.tar.gz) - [sha](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.5.0/snow-owl-oss-7.5.0.tar.gz.sha512) 
+* [RPM](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.5.0/snow-owl-oss-7.5.0.rpm) - [sha](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.5.0/snow-owl-oss-7.5.0.rpm.sha512)
+* [DEB](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.5.0/snow-owl-oss-7.5.0.deb) - [sha](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.5.0/snow-owl-oss-7.5.0.deb.sha512)
 
 {% hint style="info" %}
 This distribution only includes features licensed under the Apache 2.0 license. To get access to the full set of features, please contact [B2i Healthcare](mailto:info@b2i.sg).
 {% endhint %}
 
-View the detailed release notes [here](https://github.com/b2ihealthcare/snow-owl/releases/tag/v7.4.0).
+View the detailed release notes [here](https://github.com/b2ihealthcare/snow-owl/releases/tag/v7.5.0).
 
 Not the version you're looking for? View [past releases](https://github.com/b2ihealthcare/snow-owl/releases).
 
@@ -132,7 +132,7 @@ This project is licensed under the Apache 2.0 License. See [LICENSE](LICENSE) fo
 
 # Acknowledgements
 
-In March 2015, [SNOMED International](http://snomed.org) generously licensed the Snow Owl Terminology Server components supporting SNOMED CT. They subsequently made the licensed code available to their [members](http://www.snomed.org/members) and the global community under an open-source license.
+In March 2015, [SNOMED International](http://snomed.org) generously licensed the Snow Owl Terminology Server components supporting SNOMED CT. They subsequently made the licensed code available to their [members](https://www.snomed.org/our-stakeholders/members) and the global community under an open-source license.
 
 In March 2017, [NHS Digital](https://digital.nhs.uk) licensed the Snow Owl Terminology Server to support the mandatory adoption of SNOMED CT throughout all care settings in the United Kingdom by April 2020. In addition to driving the UK’s clinical terminology efforts by providing a platform to author national clinical codes, Snow Owl will support the maintenance and improvement of the dm+d drug extension which alone is used in over 156 million electronic prescriptions per month. Improvements to the terminology server made under this agreement will be made available to the global community. 
 

@@ -31,8 +31,8 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.console.Command;
 import com.b2international.snowowl.core.console.CommandLineStream;
 import com.b2international.snowowl.core.date.Dates;
-import com.b2international.snowowl.identity.domain.Permission;
-import com.b2international.snowowl.identity.domain.User;
+import com.b2international.snowowl.core.identity.Permission;
+import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 
 import picocli.CommandLine;
@@ -75,7 +75,7 @@ public final class MrcmCommand extends Command {
 		public void run(CommandLineStream out) {
 			final User user = out.authenticate(getBus());
 			
-			if (user == null || !user.hasPermission(new Permission(Permission.IMPORT, SnomedDatastoreActivator.REPOSITORY_UUID, ""))) {
+			if (user == null || !user.hasPermission(Permission.toImport(SnomedDatastoreActivator.REPOSITORY_UUID))) { // TODO add branch permission
 				out.println("User is unauthorized to import MRCM rules.");
 				return;
 			}
@@ -107,7 +107,7 @@ public final class MrcmCommand extends Command {
 		public void run(CommandLineStream out) {
 			final User user = out.authenticate(getBus());
 			
-			if (user == null || !user.hasPermission(new Permission(Permission.EXPORT, SnomedDatastoreActivator.REPOSITORY_UUID, ""))) {
+			if (user == null || !user.hasPermission(Permission.toExport(SnomedDatastoreActivator.REPOSITORY_UUID))) { // TODO add branch permission
 				out.println("User is unauthorized to export MRCM rules.");
 				return;
 			}

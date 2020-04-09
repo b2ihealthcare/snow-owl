@@ -32,8 +32,8 @@ import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.repository.RevisionDocument;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.datastore.index.RevisionDocument;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
@@ -50,12 +50,12 @@ import com.google.common.collect.ImmutableMap;
 /**
  * @since 4.5
  */
-final class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<SnomedConcepts, SnomedConceptDocument> {
+public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<SnomedConcepts, SnomedConceptDocument> {
 
 	private static final float MIN_DOI_VALUE = 1.05f;
 	private static final float MAX_DOI_VALUE = 10288.383f;
 	
-	enum OptionKey {
+	public enum OptionKey {
 
 		/**
 		 * Description term to (smart) match
@@ -129,7 +129,7 @@ final class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Snom
 
 	}
 	
-	SnomedConceptSearchRequest() {}
+	protected SnomedConceptSearchRequest() {}
 
 	@Override
 	protected Expression prepareQuery(BranchContext context) {

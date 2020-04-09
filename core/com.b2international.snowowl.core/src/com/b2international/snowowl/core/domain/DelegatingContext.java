@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.b2international.snowowl.core.IDisposableService;
@@ -29,6 +30,7 @@ import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.MapMaker;
+import com.google.common.collect.Maps;
 import com.google.inject.Provider;
 
 /**
@@ -92,12 +94,11 @@ public class DelegatingContext implements ServiceProvider, Bindable, IDisposable
 	
 	@Override
 	public final Map<Class<?>, Object> getBindings() {
-		ImmutableMap.Builder<Class<?>, Object> aggregatedBindings = ImmutableMap.<Class<?>, Object>builder()
-			.putAll(bindings);
+		Map<Class<?>, Object> aggregatedBindings = Maps.newHashMap(bindings);
 		if (delegate instanceof Bindable) {
 			aggregatedBindings.putAll(((Bindable) delegate).getBindings());
 		}
-		return aggregatedBindings.build();
+		return ImmutableMap.copyOf(aggregatedBindings);
 	}
 
 	@Override
@@ -107,6 +108,11 @@ public class DelegatingContext implements ServiceProvider, Bindable, IDisposable
 		} else {
 			return delegate.service(type);
 		}
+	}
+	
+	@Override
+	public <T> Optional<T> optionalService(Class<T> type) {
+		return Optional.ofNullable(type.cast(bindings.get(type)));
 	}
 
 	@Override

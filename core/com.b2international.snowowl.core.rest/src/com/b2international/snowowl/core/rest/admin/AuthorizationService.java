@@ -22,10 +22,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.b2international.snowowl.core.events.util.Promise;
+import com.b2international.snowowl.core.identity.Credentials;
+import com.b2international.snowowl.core.identity.Token;
+import com.b2international.snowowl.core.identity.request.UserRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
-import com.b2international.snowowl.identity.Credentials;
-import com.b2international.snowowl.identity.Token;
-import com.b2international.snowowl.identity.request.UserRequests;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiParam;

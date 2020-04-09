@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import java.util.zip.ZipFile;
 
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.validator.constraints.NotEmpty;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
 import org.mapdb.DBMaker.Maker;
@@ -35,6 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.exceptions.ApiException;
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.attachments.InternalAttachmentRegistry;
@@ -42,13 +42,13 @@ import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.ft.FeatureToggles;
-import com.b2international.snowowl.core.ft.Features;
-import com.b2international.snowowl.identity.domain.Permission;
-import com.b2international.snowowl.identity.domain.User;
+import com.b2international.snowowl.core.identity.Permission;
+import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
+import com.b2international.snowowl.core.locks.Locks;
+import com.b2international.snowowl.core.repository.ContentAvailabilityInfoProvider;
+import com.b2international.snowowl.core.repository.RepositoryCodeSystemProvider;
 import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration.ImportStatus;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2ContentType;
 import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2EffectiveTimeSlice;
 import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2EffectiveTimeSlices;
@@ -56,6 +56,7 @@ import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2Form
 import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2ImportConfiguration;
 import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2GlobalValidator;
 import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationIssueReporter;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectReader;
@@ -70,21 +71,21 @@ import com.google.common.base.Strings;
  */
 final class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportResponse>, BranchAccessControl {
 
+	private static final long serialVersionUID = 1L;
+
 	private static final Logger LOG = LoggerFactory.getLogger("import");
 	
 	private static final String TXT_EXT = ".txt";
 	
 	@NotNull
+	@JsonProperty
 	private final UUID rf2ArchiveId;
 	
 	@NotNull
+	@JsonProperty
 	private Rf2ReleaseType type;
 	
-	@NotEmpty
-	private String codeSystemShortName;
-
-	private String userId;
-	
+	@JsonProperty
 	private boolean createVersions = true;
 
 	SnomedRf2ImportRequest(UUID rf2ArchiveId) {
@@ -95,41 +96,54 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportRe
 		this.type = type;
 	}
 	
-	void setCodeSystemShortName(String codeSystemShortName) {
-		this.codeSystemShortName = codeSystemShortName;
-	}
-	
 	void setCreateVersions(boolean createVersions) {
 		this.createVersions = createVersions;
 	}
 	
-	void setUserId(String userId) {
-		this.userId = userId;
-	}
-	
 	@Override
 	public Rf2ImportResponse execute(BranchContext context) {
-		final FeatureToggles features = context.service(FeatureToggles.class);
-		final String feature = Features.getImportFeatureToggle(SnomedDatastoreActivator.REPOSITORY_UUID, context.branchPath());
-
+		validate(context);
 		final InternalAttachmentRegistry fileReg = (InternalAttachmentRegistry) context.service(AttachmentRegistry.class);
 		final File rf2Archive = fileReg.getAttachment(rf2ArchiveId);
 		
-		try {
-			features.enable(feature);
-			final String user = !Strings.isNullOrEmpty(userId) ? userId : context.service(User.class).getUsername();
-			return doImport(rf2Archive, new Rf2ImportConfiguration(user, createVersions, codeSystemShortName, type), context);
+		try (Locks locks = Locks.on(context).lock(DatastoreLockContextDescriptions.IMPORT)) {
+			return doImport(context, rf2Archive, new Rf2ImportConfiguration(type, createVersions));
 		} catch (Exception e) {
 			if (e instanceof ApiException) {
 				throw (ApiException) e;
 			}
-			throw new SnowowlRuntimeException(e);
-		} finally {
-			features.disable(feature);
+			throw SnowowlRuntimeException.wrap(e);
 		}
 	}
 
-	Rf2ImportResponse doImport(File rf2Archive, final Rf2ImportConfiguration importconfig, final BranchContext context) throws Exception {
+	private void validate(BranchContext context) {
+		final boolean contentAvailable = context.service(ContentAvailabilityInfoProvider.class).isAvailable(context);
+		final boolean isMain = context.isMain();
+		
+		if (contentAvailable && Rf2ReleaseType.FULL.equals(type) && isMain) {
+			throw new BadRequestException("Importing a full release of SNOMED CT "
+					+ "from an archive to MAIN branch is prohibited when SNOMED CT "
+					+ "ontology is already available on the terminology server. "
+					+ "Please perform either a delta or a snapshot import instead.");
+		}
+		
+		if (!contentAvailable && Rf2ReleaseType.DELTA.equals(type) && isMain) {
+			throw new BadRequestException("Importing a delta release of SNOMED CT "
+					+ "from an archive to MAIN branch is prohibited when SNOMED CT "
+					+ "ontology is not available on the terminology server. "
+					+ "Please perform either a full or a snapshot import instead.");
+		}
+		
+		if (!contentAvailable && !isMain) {
+			throw new BadRequestException("Importing a release of SNOMED CT from an "
+					+ "archive to other than MAIN branch is prohibited when SNOMED CT "
+					+ "ontology is not available on the terminology server. "
+					+ "Please perform a full import to MAIN branch first.");
+		}
+	}
+
+	Rf2ImportResponse doImport(final BranchContext context, final File rf2Archive, final Rf2ImportConfiguration importconfig) throws Exception {
+		final String codeSystem = context.service(RepositoryCodeSystemProvider.class).get(context.branchPath()).getShortName();
 		final Rf2ValidationIssueReporter reporter = new Rf2ValidationIssueReporter();
 		final Rf2ImportResponse response = new Rf2ImportResponse();
 		
@@ -139,7 +153,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportRe
 			final Rf2EffectiveTimeSlices effectiveTimeSlices = new Rf2EffectiveTimeSlices(db, isLoadOnDemandEnabled());
 			Stopwatch w = Stopwatch.createStarted();
 			read(rf2Archive, effectiveTimeSlices, reporter);
-			LOG.info("Preparing RF2 import took: " + w);
+			LOG.info("Preparing RF2 import took: {}", w);
 			w.reset().start();
 			
 			// log issues with rows
@@ -161,7 +175,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportRe
 			}
 			
 			for (Rf2EffectiveTimeSlice slice : orderedEffectiveTimeSlices) {
-				slice.doImport(importconfig, context);
+				slice.doImport(context, codeSystem, importconfig);
 			}
 		}
 		return response;
@@ -199,7 +213,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportRe
 						try (final InputStream in = zip.getInputStream(entry)) {
 							readFile(entry, in, oReader, slices, reporter);
 						}
-						LOG.info(entry.getName() + " - " + w);
+						LOG.info("{} - {}", entry.getName(), w);
 					}
 				}
 			}
@@ -228,7 +242,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportRe
 				}
 
 				if (resolver == null) {
-					LOG.warn("Unrecognized RF2 file: " + entry.getName());
+					LOG.warn("Unrecognized RF2 file: {}", entry.getName());
 					break;
 				}
 				

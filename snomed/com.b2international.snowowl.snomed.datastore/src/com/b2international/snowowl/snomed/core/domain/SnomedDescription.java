@@ -21,7 +21,7 @@ import java.util.Set;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.request.ResourceRequestBuilder;
+import com.b2international.snowowl.core.request.IndexResourceRequestBuilder;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.core.terminology.MapTargetTypes;
 import com.b2international.snowowl.core.terminology.TerminologyComponent;
@@ -38,7 +38,7 @@ import com.google.common.collect.ImmutableSet;
 /**
  * Represents a SNOMED&nbsp;CT description.
  * <br>
- * Descriptions returned by search requests are populated based on the expand parameters passed into the {@link ResourceRequestBuilder#setExpand(String)}
+ * Descriptions returned by search requests are populated based on the expand parameters passed into the {@link IndexResourceRequestBuilder#setExpand(String)}
  * methods.   
  * 
  * The supported expand parameters are:

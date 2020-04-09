@@ -297,13 +297,16 @@ public final class StagingArea {
 					
 					if (shouldSetRevisedOnMergeBranch()) {
 						revisionsToReviseOnMergeSource.put(rev.getClass(), rev.getId());
+						writer.put(key.id(), rev);
 					}
 					
 					if (!revisionDiff.hasChanges()) {
 						return;
 					}
-					
-					writer.put(key.id(), rev);
+
+					if (!shouldSetRevisedOnMergeBranch()) {
+						writer.put(key.id(), rev);
+					}
 					
 					ObjectId containerId = checkNotNull(rev.getContainerId(), "Missing containerId for revision: %s", rev);
 					ObjectId objectId = rev.getObjectId();
@@ -460,6 +463,14 @@ public final class StagingArea {
 		return mergeFromBranchRef != null;
 	}
 
+	/**
+	 * Dirty staging area if at least one object has been staged.
+	 * @return <code>true</code> if the staging area is dirty and can be committed via {@link #commit(String, long, String, String)}
+	 */
+	public boolean isDirty() {
+		return !stagedObjects.isEmpty();
+	}
+	
 	/**
 	 * Reset staging area to empty.
 	 */
@@ -789,7 +800,14 @@ public final class StagingArea {
 				while (elements.hasNext()) {
 					JsonNode node = elements.next();
 					final ObjectNode change = ClassUtils.checkAndCast(node, ObjectNode.class);
-					final String property = change.get("path").asText().substring(1);
+					
+					// Remove trailing segments in nested property paths (we are only interested in the top property)
+					String property = change.get("path").asText().substring(1);
+					final int nextSegmentIdx = property.indexOf("/");
+					if (nextSegmentIdx >= 0) {
+						property = property.substring(0, nextSegmentIdx);
+					}
+
 					// Keep hashed fields only
 					if (diffFields.contains(property)) {
 						diff.add(change);

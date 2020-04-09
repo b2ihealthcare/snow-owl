@@ -119,7 +119,6 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 		boolean changed = false;
 		changed |= updateModule(context, concept, updatedConcept);
 		changed |= updateDefinitionStatus(context, concept, updatedConcept);
-		changed |= updateSubclassDefinitionStatus(context, concept, updatedConcept);
 		
 		if (descriptions != null) {
 			updateComponents(
@@ -156,8 +155,15 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 			updatedConcept.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME);
 		}
 	
-		// XXX the following updates won't and shouldn't trigger effective time unset or restoration logic
+		/* 
+		 * XXX: the updates below won't (and shouldn't) trigger the "unset effective time"
+		 * logic seen above:
+		 * 
+		 * - (force) deletion of reference set and members via the identifier concept
+		 * - subclass definition status (doesn't exist as an actual RF2 property)
+		 */
 		changed |= updateRefSet(context, concept, updatedConcept);
+		changed |= updateSubclassDefinitionStatus(context, concept, updatedConcept);
 		
 		if (changed) {
 			context.update(concept, updatedConcept.build());

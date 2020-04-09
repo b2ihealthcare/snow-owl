@@ -2,14 +2,14 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	
+
 	<artifactId>dist</artifactId>
 	<packaging>pom</packaging>
 
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>snowowl-parent</artifactId>
-		<version>7.5.0-SNAPSHOT</version>
+		<version>7.5.1-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -56,18 +56,6 @@
 		</dependency>
 		<dependency>
 			<groupId>com.b2international.snowowl</groupId>
-			<artifactId>com.b2international.scripting.api</artifactId>
-			<version>${project.version}</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.b2international.snowowl</groupId>
-			<artifactId>com.b2international.scripting.groovy</artifactId>
-			<version>${project.version}</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.b2international.snowowl</groupId>
 			<artifactId>com.b2international.snowowl.core.rest</artifactId>
 			<version>${project.version}</version>
 			<scope>compile</scope>
@@ -75,12 +63,6 @@
 		<dependency>
 			<groupId>com.b2international.snowowl</groupId>
 			<artifactId>com.b2international.snowowl.core</artifactId>
-			<version>${project.version}</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.b2international.snowowl</groupId>
-			<artifactId>com.b2international.snowowl.datastore</artifactId>
 			<version>${project.version}</version>
 			<scope>compile</scope>
 		</dependency>
@@ -105,18 +87,6 @@
 		<dependency>
 			<groupId>com.b2international.snowowl</groupId>
 			<artifactId>com.babylonhealth.snowowl.rest</artifactId>
-			<version>${project.version}</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.b2international.snowowl</groupId>
-			<artifactId>com.b2international.snowowl.identity</artifactId>
-			<version>${project.version}</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.b2international.snowowl</groupId>
-			<artifactId>com.b2international.snowowl.identity.file</artifactId>
 			<version>${project.version}</version>
 			<scope>compile</scope>
 		</dependency>
@@ -226,12 +196,6 @@
 		<dependency>
 			<groupId>com.b2international.snowowl</groupId>
 			<artifactId>com.b2international.snowowl.core.tests</artifactId>
-			<version>${project.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.b2international.snowowl</groupId>
-			<artifactId>com.b2international.snowowl.datastore.server.tests</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
@@ -374,11 +338,15 @@
 									<additionalArgument>-windowtitle "Snow Owl Scripting API"</additionalArgument>
 								</additionalArguments>
 								<includes>
-									<include>com.b2international.snowowl.datastore.request</include>
-									<include>com.b2international.snowowl.datastore.request.compare</include>
-									<include>com.b2international.snowowl.datastore.request.job</include>
-									<include>com.b2international.snowowl.datastore.request.repository</include>
-									<include>com.b2international.snowowl.datastore.request.version</include>
+									<include>com.b2international.snowowl.core.branch</include>
+									<include>com.b2international.snowowl.core.branch.compare</include>
+									<include>com.b2international.snowowl.core.codesystem</include>
+									<include>com.b2international.snowowl.core.codesystem.version</include>
+									<include>com.b2international.snowowl.core.commit</include>
+									<include>com.b2international.snowowl.core.request</include>
+									<include>com.b2international.snowowl.core.jobs</include>
+									<include>com.b2international.snowowl.core.repository</include>
+									<include>com.b2international.snowowl.core.version</include>
 									<include>com.b2international.snowowl.snomed.datastore.request</include>
 									<include>com.b2international.snowowl.snomed.datastore.request.dsv</include>
 									<include>com.b2international.snowowl.snomed.datastore.request.rf2</include>

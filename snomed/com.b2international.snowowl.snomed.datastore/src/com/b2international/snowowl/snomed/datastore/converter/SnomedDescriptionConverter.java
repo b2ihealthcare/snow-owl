@@ -25,7 +25,7 @@ import com.b2international.commons.CompareUtils;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.datastore.request.BaseRevisionResourceConverter;
+import com.b2international.snowowl.core.request.BaseRevisionResourceConverter;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.AcceptabilityMembership;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;

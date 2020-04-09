@@ -4,7 +4,7 @@
 		<unit id="org.eclipse.equinox.sdk.feature.group" version="3.18.0.v20190528-1257"/>
 		<unit id="org.eclipse.pde.feature.group" version="3.14.0.v20190605-1800"/>
 		<unit id="org.eclipse.platform.feature.group" version="4.12.0.v20190605-1801"/>
-		<repository location="http://download.eclipse.org/eclipse/updates/4.12/R-4.12-201906051800/"/>
+		<repository location="https://download.eclipse.org/eclipse/updates/4.12/R-4.12-201906051800/"/>
 	</location>
 	<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
 		<repository location="https://dist.springsource.org/release/GRECLIPSE/3.5.0/e4.12"/>
@@ -15,7 +15,7 @@
 	<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
 		<unit id="org.eclipse.net4j.feature.group" version="4.7.0.v20180530-1201"/>
 		<unit id="org.eclipse.net4j.util.feature.group" version="4.7.0.v20180530-0909"/>
-		<repository location="http://download.eclipse.org/modeling/emf/cdo/drops/R20180613-0111/"/>
+		<repository location="https://download.eclipse.org/modeling/emf/cdo/drops/R20180613-0111/"/>
 	</location>
 	<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
 		<unit id="javax.el" version="2.2.0.v201303151357"/>
@@ -43,7 +43,7 @@
 		<unit id="osgi.enterprise.source" version="4.2.0.v201108120515"/>
 		<unit id="org.ccil.cowan.tagsoup" version="1.2.0.v201202211000"/>
 		<unit id="org.mockito" version="2.13.0.v20180426-1843"/>
-		<repository location="http://download.eclipse.org/tools/orbit/downloads/drops/R20180905201904/repository"/>
+		<repository location="https://download.eclipse.org/tools/orbit/downloads/drops/R20180905201904/repository"/>
 	</location>
 	<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
 		<unit id="org.eclipse.xtext.redist.feature.group" version="2.18.0.v20190603-1516"/>
@@ -53,22 +53,22 @@
 		<unit id="org.eclipse.xtext.testing" version="2.18.0.v20190603-1042"/>
 		<unit id="org.objectweb.asm" version="7.1.0.v20190412-2143"/>
 		<unit id="org.objectweb.asm.tree" version="7.1.0.v20190412-2143"/>
-		<repository location="http://download.eclipse.org/modeling/tmf/xtext/updates/releases/2.18.0/"/>
+		<repository location="https://download.eclipse.org/modeling/tmf/xtext/updates/releases/2.18.0/"/>
 	</location>
 	<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
 		<unit id="org.eclipse.emf.base.feature.group" version="2.17.0.v20190116-0940"/>
 		<unit id="org.eclipse.emf.ecore.feature.group" version="2.17.0.v20190116-0940"/>
-		<repository location="http://download.eclipse.org/modeling/emf/emf/builds/release/2.17"/>
+		<repository location="https://download.eclipse.org/modeling/emf/emf/builds/release/2.17"/>
 	</location>
 	<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
 		<unit id="org.eclipse.xpand.feature.group" version="2.2.0.v201605260315"/>
 		<unit id="org.eclipse.xtend.feature.group" version="2.2.0.v201605260315"/>
-		<repository location="http://download.eclipse.org/modeling/m2t/xpand/updates/releases/R201605260315"/>
+		<repository location="https://download.eclipse.org/modeling/m2t/xpand/updates/releases/R201605260315"/>
 	</location>
 	<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
 		<unit id="org.eclipse.emf.mwe.sdk.feature.group" version="1.4.0"/>
 		<unit id="org.eclipse.emf.mwe2.language.sdk.feature.group" version="2.10.0"/>
-		<repository location="http://download.eclipse.org/modeling/emft/mwe/updates/releases/2.10.0/"/>
+		<repository location="https://download.eclipse.org/modeling/emft/mwe/updates/releases/2.10.0/"/>
 	</location>
 </locations>
 </target>

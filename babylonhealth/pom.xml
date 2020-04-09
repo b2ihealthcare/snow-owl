@@ -9,12 +9,12 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>snowowl-parent</artifactId>
-		<version>7.5.0-SNAPSHOT</version>
+		<version>7.5.1-SNAPSHOT</version>
 	</parent>
 	
 	<modules>
 		
-		<!-- FHIR modules -->
+		<!-- Babylon modules -->
 		<module>com.babylonhealth.snowowl.rest</module>
 		<module>com.babylonhealth.snowowl.rest.feature</module>
 

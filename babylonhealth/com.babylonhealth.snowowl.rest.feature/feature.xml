@@ -2,7 +2,7 @@
 <feature
       id="com.babylonhealth.snowowl.rest.feature"
       label="Feature"
-      version="1.0.0.qualifier"
+      version="7.5.1.qualifier"
       provider-name="BABYLONHEALTH">
 
    <description url="http://www.example.com/description">

@@ -33,6 +33,7 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.core.annotation.AnnotatedElementUtils;
+import org.springframework.format.FormatterRegistry;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -41,6 +42,7 @@ import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.lang.Nullable;
 import org.springframework.util.StringValueResolver;
+import org.springframework.validation.beanvalidation.MethodValidationPostProcessor;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.method.HandlerTypePredicate;
@@ -63,14 +65,14 @@ import com.b2international.commons.options.MetadataMixin;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.authorization.AuthorizedEventBus;
+import com.b2international.snowowl.core.branch.review.Review;
+import com.b2international.snowowl.core.branch.review.ReviewMixin;
+import com.b2international.snowowl.core.identity.IdentityProvider;
 import com.b2international.snowowl.core.rest.util.AntPathWildcardMatcher;
 import com.b2international.snowowl.core.rest.util.CsvMessageConverter;
 import com.b2international.snowowl.core.rest.util.ModelAttributeParameterExpanderExt;
 import com.b2international.snowowl.core.rest.util.PromiseMethodReturnValueHandler;
-import com.b2international.snowowl.datastore.review.Review;
-import com.b2international.snowowl.datastore.review.ReviewMixin;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.identity.IdentityProvider;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -119,6 +121,16 @@ public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 	@Override
 	protected void addReturnValueHandlers(List<HandlerMethodReturnValueHandler> returnValueHandlers) {
 		returnValueHandlers.add(new PromiseMethodReturnValueHandler());
+	}
+	
+	@Override
+	protected void addFormatters(FormatterRegistry registry) {
+		registry.addConverterFactory(new StringToEnumConverterFactory());
+	}
+	
+	@Bean
+	public MethodValidationPostProcessor methodValidationPostProcessor() {
+		return new MethodValidationPostProcessor();
 	}
 	
 	@Bean

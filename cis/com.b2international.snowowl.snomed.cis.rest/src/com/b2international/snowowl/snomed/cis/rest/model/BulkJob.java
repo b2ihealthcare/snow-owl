@@ -17,8 +17,8 @@ package com.b2international.snowowl.snomed.cis.rest.model;
 
 import java.util.Date;
 
-import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
-import com.b2international.snowowl.datastore.remotejobs.RemoteJobState;
+import com.b2international.snowowl.core.jobs.RemoteJobEntry;
+import com.b2international.snowowl.core.jobs.RemoteJobState;
 import com.b2international.snowowl.snomed.cis.client.JobStatus;
 
 /**

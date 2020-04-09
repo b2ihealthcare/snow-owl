@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,8 +53,9 @@ import io.swagger.annotations.ApiResponses;
 
 /**
  * @since 1.0
+ * @deprecated - refactored and redesigned - see {@link SnomedRf2ImportRestService} - to eliminate the necessity of a memory stored object {@link ISnomedImportConfiguration}
  */
-@Api(value = "Imports", description="Imports", tags = "imports")
+@Api(value = "Imports (deprecated)", description="Imports (deprecated)", tags = "imports (deprecated)")
 @RestController
 @RequestMapping(value = "/imports")
 public class SnomedImportRestService extends AbstractSnomedRestService {

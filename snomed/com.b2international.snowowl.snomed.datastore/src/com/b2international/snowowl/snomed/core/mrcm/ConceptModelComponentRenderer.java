@@ -18,18 +18,7 @@ package com.b2international.snowowl.snomed.core.mrcm;
 import java.util.Iterator;
 import java.util.Map;
 
-import com.b2international.snowowl.snomed.core.domain.constraint.SnomedCardinalityPredicate;
-import com.b2international.snowowl.snomed.core.domain.constraint.SnomedCompositeDefinition;
-import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConceptSetDefinition;
-import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConcreteDomainPredicate;
-import com.b2international.snowowl.snomed.core.domain.constraint.SnomedDependencyPredicate;
-import com.b2international.snowowl.snomed.core.domain.constraint.SnomedDescriptionPredicate;
-import com.b2international.snowowl.snomed.core.domain.constraint.SnomedEnumeratedDefinition;
-import com.b2international.snowowl.snomed.core.domain.constraint.SnomedHierarchyDefinition;
-import com.b2international.snowowl.snomed.core.domain.constraint.SnomedPredicate;
-import com.b2international.snowowl.snomed.core.domain.constraint.SnomedReferenceSetDefinition;
-import com.b2international.snowowl.snomed.core.domain.constraint.SnomedRelationshipDefinition;
-import com.b2international.snowowl.snomed.core.domain.constraint.SnomedRelationshipPredicate;
+import com.b2international.snowowl.snomed.core.domain.constraint.*;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 

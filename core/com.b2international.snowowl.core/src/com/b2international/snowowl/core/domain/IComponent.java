@@ -63,4 +63,5 @@ public interface IComponent extends Serializable {
 	 */
 	@JsonIgnore
 	short getTerminologyComponentId();
+	
 }
