@@ -100,7 +100,7 @@ public interface ServiceProvider {
 		// check first if this context is running inside a job with the given jobKey
 		Optional<RemoteJob> job = optionalService(RemoteJob.class);
 		if (job.isPresent()) {
-			return Objects.equals(jobKey, job.get().getKey()) && parametersPredice.test(job.get().getParameters(service(ObjectMapper.class)));
+			return Objects.equals(jobKey, job.get().getKey()) && parametersPredicate.test(job.get().getParameters(service(ObjectMapper.class)));
 		}
 
 		// if not inside a job context or running in non-job context check the jobs index
