@@ -15,17 +15,21 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.codesystem.CodeSystemEntry.Builder;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.UpdateRequest;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 
 /**
@@ -41,6 +45,7 @@ final class CodeSystemUpdateRequest extends UpdateRequest<TransactionContext> im
 	private String citation;
 	private String branchPath;
 	private String iconPath;
+	private List<ExtendedLocale> locales;
 	private Map<String, Object> additionalProperties;
 
 	CodeSystemUpdateRequest(final String uniqueId) {
@@ -71,12 +76,20 @@ final class CodeSystemUpdateRequest extends UpdateRequest<TransactionContext> im
 		this.iconPath = iconPath;
 	}
 	
+	void setLocales(final List<ExtendedLocale> locales) {
+		this.locales = locales;
+	}
+	
 	void setAdditionalProperties(final Map<String, Object> additionalProperties) {
 		this.additionalProperties = additionalProperties;
 	}
 
 	@Override
 	public Boolean execute(final TransactionContext context) {
+		if (locales != null && locales.contains(null)) {
+			throw new BadRequestException("Locale list can not contain null.");
+		}
+
 		CodeSystemEntry codeSystem = context.lookup(componentId(), CodeSystemEntry.class);
 		final CodeSystemEntry.Builder updated = CodeSystemEntry.builder(codeSystem);
 
@@ -86,6 +99,7 @@ final class CodeSystemUpdateRequest extends UpdateRequest<TransactionContext> im
 		changed |= updateProperty(language, codeSystem::getLanguage, updated::language);
 		changed |= updateProperty(citation, codeSystem::getCitation, updated::citation);
 		changed |= updateProperty(iconPath, codeSystem::getIconPath, updated::iconPath);
+		changed |= updateLocales(codeSystem, updated);
 		changed |= updateAdditionalProperties(codeSystem, updated);
 		changed |= updateBranchPath(context, updated, codeSystem.getBranchPath());
 		
@@ -94,6 +108,24 @@ final class CodeSystemUpdateRequest extends UpdateRequest<TransactionContext> im
 		}
 
 		return changed;
+	}
+
+	private boolean updateLocales(final CodeSystemEntry codeSystem, final Builder updated) {
+		// Don't update if no list was given
+		if (locales == null) {
+			return false;
+		}
+		
+		final List<ExtendedLocale> currentLocales = Optional.ofNullable(codeSystem.getLocales())
+				.orElse(ImmutableList.of());
+
+		// Also don't update if the lists contain the same elements in the same order
+		if (currentLocales.equals(locales)) {
+			return false;
+		}
+		
+		updated.locales(ImmutableList.copyOf(locales));
+		return true;
 	}
 
 	private boolean updateAdditionalProperties(final CodeSystemEntry codeSystem, final CodeSystemEntry.Builder updated) {
@@ -144,6 +176,7 @@ final class CodeSystemUpdateRequest extends UpdateRequest<TransactionContext> im
 			codeSystem.branchPath(branchPath);
 			return true;
 		}
+		
 		return false;
 	}
 

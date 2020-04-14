@@ -15,12 +15,14 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.NotFoundException;
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
@@ -45,6 +47,7 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 	private String shortName;
 	private String terminologyId;
 	private CodeSystemURI extensionOf;
+	private List<ExtendedLocale> locales;
 	private Map<String, Object> additionalProperties;
 
 	CodeSystemCreateRequest() {}
@@ -93,6 +96,10 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 		this.extensionOf = extensionOf;
 	}
 	
+	void setLocales(final List<ExtendedLocale> locales) {
+		this.locales = locales;
+	}
+	
 	void setAdditionalProperties(final Map<String, Object> additionalProperties) {
 		this.additionalProperties = additionalProperties;
 	}
@@ -100,6 +107,7 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 	@Override
 	public String execute(final TransactionContext context) {
 		checkCodeSystem(context);
+		checkLocales();
 		checkAdditionalProperties();
 		return context.add(createCodeSystem(context));
 	}
@@ -123,6 +131,12 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 				throw new BadRequestException("Base code system version was not expicitly given (can not be empty, "
 						+ "LATEST or HEAD) in extensionOf URI %s.", extensionOf);
 			}
+		}
+	}
+
+	private void checkLocales() {
+		if (locales != null && locales.contains(null)) {
+			throw new BadRequestException("Locale list can not contain null.");
 		}
 	}
 
@@ -161,6 +175,7 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 				.terminologyComponentId(terminologyId)
 				.repositoryUuid(repositoryUuid)
 				.extensionOf(extensionOf)
+				.locales(locales)
 				.additionalProperties(additionalProperties)
 				.build();
 	}

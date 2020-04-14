@@ -20,11 +20,13 @@ import static com.b2international.index.query.Expressions.matchAny;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.SortedSet;
 
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.index.Doc;
 import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.branch.Branch;
@@ -34,6 +36,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
 
@@ -98,6 +101,7 @@ public final class CodeSystemEntry implements Serializable {
 				.repositoryUuid(codeSystem.getRepositoryUuid())
 				.branchPath(codeSystem.getBranchPath())
 				.extensionOf(codeSystem.getExtensionOf())
+				.locales(codeSystem.getLocales())
 				.additionalProperties(codeSystem.getAdditionalProperties());
 	}
 	
@@ -115,6 +119,7 @@ public final class CodeSystemEntry implements Serializable {
 		private String repositoryUuid;
 		private String branchPath;
 		private CodeSystemURI extensionOf;
+		private List<ExtendedLocale> locales;
 		private Map<String, Object> additionalProperties;
 		
 		private Builder() {}
@@ -173,7 +178,15 @@ public final class CodeSystemEntry implements Serializable {
 			this.extensionOf = extensionOf;
 			return this;
 		}
-		
+
+		public Builder locales(final List<ExtendedLocale> locales) {
+			this.locales = Optional.ofNullable(locales)
+					.map(ImmutableList::copyOf)
+					.orElse(null);
+
+			return this;
+		}
+
 		public Builder additionalProperties(final Map<String, Object> additionalProperties) {
 			this.additionalProperties = Optional.ofNullable(additionalProperties)
 					.map(ImmutableMap::copyOf)
@@ -194,6 +207,7 @@ public final class CodeSystemEntry implements Serializable {
 					repositoryUuid, 
 					branchPath, 
 					extensionOf,
+					locales,
 					additionalProperties);
 		}
 	}
@@ -209,6 +223,7 @@ public final class CodeSystemEntry implements Serializable {
 	private final String repositoryUuid;
 	private final String branchPath;
 	private final CodeSystemURI extensionOf;
+	private final List<ExtendedLocale> locales;
 	private final Map<String, Object> additionalProperties;
 	
 	private CodeSystemEntry(final String oid, 
@@ -221,7 +236,8 @@ public final class CodeSystemEntry implements Serializable {
 			final String terminologyComponentId, 
 			final String repositoryUuid, 
 			final String branchPath, 
-			final CodeSystemURI extensionOf, 
+			final CodeSystemURI extensionOf,
+			final List<ExtendedLocale> locales,
 			final Map<String, Object> additionalProperties) {
 
 		this.oid = Strings.nullToEmpty(oid);
@@ -235,6 +251,7 @@ public final class CodeSystemEntry implements Serializable {
 		this.repositoryUuid = repositoryUuid;
 		this.branchPath = branchPath;
 		this.extensionOf = extensionOf;
+		this.locales = locales;
 		this.additionalProperties = additionalProperties;
 	}
 
@@ -271,7 +288,10 @@ public final class CodeSystemEntry implements Serializable {
 
 	/**
 	 * @return the primary language tag, eg. "en_US"
+	 * 
+	 * @deprecated Clients should access language information via {@link #getLocales()} instead. 
 	 */
+	@Deprecated
 	public String getLanguage() {
 		return language;
 	}
@@ -320,6 +340,14 @@ public final class CodeSystemEntry implements Serializable {
 	 */
 	public CodeSystemURI getExtensionOf() {
 		return extensionOf;
+	}
+	
+	/**
+	 * @return the list of {@link ExtendedLocale} instances representing the language
+	 *         content this code system carries (can be {@code null})
+	 */
+	public List<ExtendedLocale> getLocales() {
+		return locales;
 	}
 
 	/**

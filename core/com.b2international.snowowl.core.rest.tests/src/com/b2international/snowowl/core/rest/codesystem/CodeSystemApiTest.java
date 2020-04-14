@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import java.util.Map;
 
 import org.junit.Test;
 
+import com.b2international.commons.http.ExtendedLocale;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -88,12 +89,23 @@ public class CodeSystemApiTest {
 		final Map<String, Object> requestBody = newHashMap(newCodeSystemRequestBody(shortName));
 		requestBody.put("additionalProperties", Map.of(
 				"namespace", "1000198",
-				"moduleIds", List.of("1234567891000198103", "9876543211000198107")));
+				"moduleIds", List.of("123456781000198103", "876543211000198107")));
 		
 		assertCodeSystemCreated(requestBody);
 		assertCodeSystemExists(shortName);
 		assertCodeSystemHasAttributeValue(shortName, "additionalProperties.namespace", "1000198");
-		assertCodeSystemHasAttributeValue(shortName, "additionalProperties.moduleIds", List.of("1234567891000198103", "9876543211000198107"));
+		assertCodeSystemHasAttributeValue(shortName, "additionalProperties.moduleIds", List.of("123456781000198103", "876543211000198107"));
+	}
+	
+	@Test
+	public void createCodeSystemWithLocales() {
+		final String shortName = "cs7";
+		final Map<String, Object> requestBody = newHashMap(newCodeSystemRequestBody(shortName));
+		requestBody.put("locales", ExtendedLocale.parseLocales("en-x-123456781000198103,en-x-876543211000198107"));
+		
+		assertCodeSystemCreated(requestBody);
+		assertCodeSystemExists(shortName);
+		assertCodeSystemHasAttributeValue(shortName, "locales", List.of("en-x-123456781000198103", "en-x-876543211000198107"));
 	}
 	
 	@Test
@@ -134,6 +146,22 @@ public class CodeSystemApiTest {
 		assertCodeSystemHasAttributeValue(shortName, "additionalProperties.namespace", "1000197");
 		assertCodeSystemHasAttributeValue(shortName, "additionalProperties.moduleIds", List.of("1234567891000198103", "9876543211000198107"));
 		assertCodeSystemExists(shortName).and().body("additionalProperties", not(hasKey("locked")));
+	}
+	
+	@Test
+	public void updateCodeSystemWithLocales() {
+		final String shortName = "cs9";
+		final Map<String, Object> requestBody = newHashMap(newCodeSystemRequestBody(shortName));
+		requestBody.put("locales", ExtendedLocale.parseLocales("en-x-123456781000198103,en-x-876543211000198107"));
+		
+		assertCodeSystemCreated(requestBody);
+		
+		final Map<String, Object> updateRequestBody = Map.of(
+			"repositoryUuid", "snomedStore",
+			"locales", List.of("en-us", "en-gb"));
+		
+		assertCodeSystemUpdated(shortName, updateRequestBody);
+		assertCodeSystemHasAttributeValue(shortName, "locales", List.of("en-us", "en-gb"));
 	}
 	
 	@Test

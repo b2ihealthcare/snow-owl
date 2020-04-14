@@ -15,8 +15,10 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
+import java.util.List;
 import java.util.Map;
 
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
@@ -39,6 +41,7 @@ public final class CodeSystemCreateRequestBuilder extends BaseRequestBuilder<Cod
 	private String shortName;
 	private String terminologyId;
 	private CodeSystemURI extensionOf;
+	private List<ExtendedLocale> locales;
 	private Map<String, Object> additionalProperties;
 
 	CodeSystemCreateRequestBuilder() {}
@@ -98,6 +101,11 @@ public final class CodeSystemCreateRequestBuilder extends BaseRequestBuilder<Cod
 		return getSelf();
 	}
 	
+	public CodeSystemCreateRequestBuilder setLocales(final List<ExtendedLocale> locales) {
+		this.locales = locales;
+		return getSelf();
+	}
+	
 	public CodeSystemCreateRequestBuilder setAdditionalProperties(final Map<String, Object> additionalProperties) {
 		this.additionalProperties = additionalProperties;
 		return getSelf();
@@ -117,6 +125,7 @@ public final class CodeSystemCreateRequestBuilder extends BaseRequestBuilder<Cod
 		req.setShortName(shortName);
 		req.setTerminologyId(terminologyId);
 		req.setExtensionOf(extensionOf);
+		req.setLocales(locales);
 		req.setAdditionalProperties(additionalProperties);
 		return req;
 	}

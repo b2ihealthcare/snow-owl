@@ -15,15 +15,18 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 /**
@@ -52,6 +55,7 @@ public class CodeSystem {
 				.terminologyId(input.getTerminologyComponentId())
 				.repositoryUuid(input.getRepositoryUuid())
 				.extensionOf(input.getExtensionOf())
+				.locales(input.getLocales())
 				.additionalProperties(input.getAdditionalProperties());
 	}
 	
@@ -69,6 +73,7 @@ public class CodeSystem {
 		private String terminologyId;
 		private String repositoryUuid;
 		private CodeSystemURI extensionOf;
+		private List<ExtendedLocale> locales;
 		private Map<String, Object> additionalProperties;
 		
 		@JsonCreator
@@ -129,6 +134,14 @@ public class CodeSystem {
 			return getSelf();
 		}
 		
+		public Builder locales(final List<ExtendedLocale> locales) {
+			this.locales = Optional.ofNullable(locales)
+					.map(Lists::newArrayList)
+					.orElse(null);
+			
+			return getSelf();
+		}
+		
 		public Builder additionalProperties(final Map<String, Object> additionalProperties) {
 			this.additionalProperties = Optional.ofNullable(additionalProperties)
 					.map(Maps::newHashMap)
@@ -150,6 +163,7 @@ public class CodeSystem {
 					terminologyId, 
 					repositoryUuid,
 					extensionOf,
+					locales,
 					additionalProperties);
 		}
 		
@@ -169,6 +183,7 @@ public class CodeSystem {
 			final String terminologyId, 
 			final String repositoryId,
 			final CodeSystemURI extensionOf, 
+			final List<ExtendedLocale> locales,
 			final Map<String, Object> additionalProperties) {
 
 		this.oid = oid;
@@ -182,6 +197,7 @@ public class CodeSystem {
 		this.terminologyId = terminologyId;
 		this.repositoryUuid = repositoryId;
 		this.extensionOf = extensionOf;
+		this.locales = locales;
 		this.additionalProperties = additionalProperties;
 	}
 
@@ -196,6 +212,7 @@ public class CodeSystem {
 	private @NotEmpty String terminologyId;
 	private @NotEmpty String repositoryUuid;
 	private CodeSystemURI extensionOf;
+	private List<ExtendedLocale> locales;
 	private Map<String, Object> additionalProperties;
 
 	/**
@@ -231,7 +248,10 @@ public class CodeSystem {
 
 	/**
 	 * @return the primary language tag, eg. "en_US"
+	 * 
+	 * @deprecated Clients should access language information via {@link #getLocales()} instead. 
 	 */
+	@Deprecated
 	public String getPrimaryLanguage() {
 		return primaryLanguage;
 	}
@@ -283,6 +303,14 @@ public class CodeSystem {
 	}
 	
 	/**
+	 * @return the list of {@link ExtendedLocale} instances representing the language
+	 *         content this code system carries (can be {@code null})
+	 */
+	public List<ExtendedLocale> getLocales() {
+		return locales;
+	}
+	
+	/**
 	 * @return a map storing metadata key-value pairs specific to this code system
 	 *         (can be {@code null}). Interpretation of values is
 	 *         implementation-dependent.
@@ -307,6 +335,7 @@ public class CodeSystem {
 		this.organizationLink = organizationLink;
 	}
 
+	@Deprecated
 	public void setPrimaryLanguage(final String primaryLanguage) {
 		this.primaryLanguage = primaryLanguage;
 	}
@@ -333,6 +362,10 @@ public class CodeSystem {
 	
 	public void setExtensionOf(final CodeSystemURI extensionOf) {
 		this.extensionOf = extensionOf;
+	}
+	
+	public void setLocales(final List<ExtendedLocale> locales) {
+		this.locales = locales;
 	}
 	
 	public void setAdditionalProperties(final Map<String, Object> additionalProperties) {
@@ -362,6 +395,8 @@ public class CodeSystem {
 		builder.append(repositoryUuid);
 		builder.append(", extensionOf=");
 		builder.append(extensionOf);
+		builder.append(", locales=");
+		builder.append(locales);
 		builder.append(", additionalProperties=");
 		builder.append(additionalProperties);
 		builder.append("]");

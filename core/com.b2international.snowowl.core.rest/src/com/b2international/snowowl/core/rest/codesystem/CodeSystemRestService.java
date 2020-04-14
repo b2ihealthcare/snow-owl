@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -114,6 +114,7 @@ public class CodeSystemRestService extends AbstractRestService {
 				.setShortName(codeSystem.getShortName())
 				.setTerminologyId(codeSystem.getTerminologyId())
 				.setExtensionOf(codeSystem.getExtensionOf())
+				.setLocales(codeSystem.getLocales())
 				.setAdditionalProperties(codeSystem.getAdditionalProperties())
 				.commit()
 				.setAuthor(author)
@@ -156,6 +157,7 @@ public class CodeSystemRestService extends AbstractRestService {
 				.setIconPath(codeSystem.getIconPath())
 				.setLanguage(codeSystem.getPrimaryLanguage())
 				.setLink(codeSystem.getOrganizationLink())
+				.setLocales(codeSystem.getLocales())
 				.setAdditionalProperties(codeSystem.getAdditionalProperties())
 				.build(codeSystem.getRepositoryUuid(), IBranchPath.MAIN_BRANCH, author, commitComment)
 				.execute(getBus())
