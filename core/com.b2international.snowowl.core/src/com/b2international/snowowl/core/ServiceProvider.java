@@ -111,7 +111,7 @@ public interface ServiceProvider {
 				.first()
 				.filter(RemoteJobEntry::isRunning)
 				.map(j -> j.getParameters(service(ObjectMapper.class)))
-				.filter(parametersPredice)
+				.filter(parametersPredicate)
 				.isPresent();
 	}
 
