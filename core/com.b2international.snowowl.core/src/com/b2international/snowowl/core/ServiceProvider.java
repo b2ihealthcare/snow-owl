@@ -92,11 +92,11 @@ public interface ServiceProvider {
 	 * Returns <code>true</code> if any job present with the given jobKey in {@link RemoteJobEntry#isRunning()} state and matches the given parameters predicate, <code>false</code> otherwise.
 	 * 
 	 * @param jobKey - the logical key assigned to the job
-	 * @param parametersPredice - the predicate to filter the job by its parameters
+	 * @param parametersPredicate - the predicate to filter the job by its parameters
 	 * @return
 	 */
-	default boolean isJobRunning(String jobKey, Predicate<Map<String, Object>> parametersPredice) {
-		checkNotNull(parametersPredice, "Parameters Predicate should not be null");
+	default boolean isJobRunning(String jobKey, Predicate<Map<String, Object>> parametersPredicate) {
+		checkNotNull(parametersPredicate, "Parameters predicate should not be null");
 		// check first if this context is running inside a job with the given jobKey
 		Optional<RemoteJob> job = optionalService(RemoteJob.class);
 		if (job.isPresent()) {
