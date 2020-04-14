@@ -15,8 +15,11 @@
  */
 package com.b2international.snowowl.core;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 import com.b2international.snowowl.core.domain.DelegatingContext;
 import com.b2international.snowowl.core.events.Request;
@@ -80,6 +83,18 @@ public interface ServiceProvider {
 	 * @return
 	 */
 	default boolean isJobRunning(String jobKey) {
+		return isJobRunning(jobKey, (job) -> true); 
+	}
+	
+	/**
+	 * Returns <code>true</code> if any job present with the given jobKey in {@link RemoteJobEntry#isRunning()} state and matches the given predicate, <code>false</code> otherwise.
+	 * 
+	 * @param jobKey - the logical key assigned to the job
+	 * @param predicate - the predicate filter to further customize the search process
+	 * @return
+	 */
+	default boolean isJobRunning(String jobKey, Predicate<RemoteJobEntry> predicate) {
+		checkNotNull(predicate, "Predicate should not be null");
 		// check first if this context is running inside a job with the given jobKey
 		Optional<RemoteJob> job = optionalService(RemoteJob.class);
 		if (job.isPresent() && Objects.equals(jobKey, job.get().getKey())) {
@@ -87,7 +102,14 @@ public interface ServiceProvider {
 		}
 
 		// if not inside a job context or running in non-job context check the jobs index
-		return JobRequests.prepareSearch().one().filterByKey(jobKey).build().execute(this).first().map(RemoteJobEntry::isRunning).orElse(false);
+		return JobRequests.prepareSearch().one()
+				.filterByKey(jobKey)
+				.build()
+				.execute(this)
+				.first()
+				.filter(RemoteJobEntry::isRunning)
+				.filter(predicate)
+				.isPresent();
 	}
 
 	/**
