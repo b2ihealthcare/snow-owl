@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.datastore.index.change;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -37,6 +38,7 @@ import com.b2international.snowowl.core.repository.BaseRepositoryPreCommitHook;
 import com.b2international.snowowl.core.repository.ChangeSetProcessor;
 import com.b2international.snowowl.core.request.BranchRequest;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
@@ -218,11 +220,15 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 	protected void postUpdateDocuments(StagingArea staging, RevisionSearcher index) throws IOException {
 		final RepositoryContext context = ClassUtils.checkAndCast(staging.getContext(), RepositoryContext.class);
 		
-		if (!context.isJobRunning(SnomedRf2Requests.importJobKey(index.branch()))) {
+		if (!context.isJobRunning(SnomedRf2Requests.importJobKey(index.branch()), job -> !isDeltaImportJob(job))) {
 			final long branchBaseTimestamp = index.get(RevisionBranch.class, staging.getBranchPath()).getBaseTimestamp();
 			// XXX effective time restore should be the last processing unit before we send the changes to commit
 			doProcess(Collections.singleton(new ComponentEffectiveTimeRestoreChangeProcessor(log, branchBaseTimestamp)), staging, index);
 		}
+	}
+	
+	private boolean isDeltaImportJob(Map<String, Object> importJobParameters) {
+		return Rf2ReleaseType.DELTA == Rf2ReleaseType.getByNameIgnoreCase((String) importJobParameters.get("releaseType"));
 	}
 	
 	private void collectIds(final Set<String> sourceIds, final Set<String> destinationIds, Stream<SnomedRelationshipIndexEntry> newRelationships, String characteristicTypeId) {
