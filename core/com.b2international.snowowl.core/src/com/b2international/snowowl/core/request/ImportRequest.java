@@ -28,13 +28,17 @@ import com.b2international.snowowl.core.locks.Locks;
 public abstract class ImportRequest<C extends RepositoryContext, R> implements Request<C, R> {
 
 	private static final long serialVersionUID = 1L;
-	public static final String PARENT_CONTEXT = DatastoreLockContextDescriptions.ROOT;
+	private String parentContext = DatastoreLockContextDescriptions.ROOT;
 		
 	protected abstract R doImport(C context);
 	
+	protected void setParentContext(String parentContext) {
+		this.parentContext = parentContext;
+	}
+	
 	@Override
 	public R execute(C context) {
-		try (Locks locks = Locks.on(context).lock(DatastoreLockContextDescriptions.IMPORT, PARENT_CONTEXT)) {
+		try (Locks locks = Locks.on(context).lock(DatastoreLockContextDescriptions.IMPORT, parentContext)) {
 			return doImport(context);
 		} catch (Exception e) {
 			if (e instanceof ApiException) {
