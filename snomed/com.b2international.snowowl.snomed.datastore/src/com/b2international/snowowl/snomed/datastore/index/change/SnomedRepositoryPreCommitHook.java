@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.datastore.index.change;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -33,10 +34,12 @@ import com.b2international.index.revision.RevisionBranch;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.StagingArea;
 import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.jobs.RemoteJobEntry;
 import com.b2international.snowowl.core.repository.BaseRepositoryPreCommitHook;
 import com.b2international.snowowl.core.repository.ChangeSetProcessor;
 import com.b2international.snowowl.core.request.BranchRequest;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
@@ -49,6 +52,7 @@ import com.b2international.snowowl.snomed.datastore.request.rf2.SnomedRf2Request
 import com.b2international.snowowl.snomed.datastore.taxonomy.Taxonomies;
 import com.b2international.snowowl.snomed.datastore.taxonomy.Taxonomy;
 import com.b2international.snowowl.snomed.icons.SnomedIconProvider;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
 
@@ -218,11 +222,16 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 	protected void postUpdateDocuments(StagingArea staging, RevisionSearcher index) throws IOException {
 		final RepositoryContext context = ClassUtils.checkAndCast(staging.getContext(), RepositoryContext.class);
 		
-		if (!context.isJobRunning(SnomedRf2Requests.importJobKey(index.branch()))) {
+		if (!context.isJobRunning(SnomedRf2Requests.importJobKey(index.branch()), job -> !isDeltaImportJob(context, job))) {
 			final long branchBaseTimestamp = index.get(RevisionBranch.class, staging.getBranchPath()).getBaseTimestamp();
 			// XXX effective time restore should be the last processing unit before we send the changes to commit
 			doProcess(Collections.singleton(new ComponentEffectiveTimeRestoreChangeProcessor(log, branchBaseTimestamp)), staging, index);
 		}
+	}
+	
+	private boolean isDeltaImportJob(RepositoryContext context, RemoteJobEntry job) {
+		Map<String, Object> parameters = job.getParameters(context.service(ObjectMapper.class));
+		return Rf2ReleaseType.DELTA == Rf2ReleaseType.getByNameIgnoreCase((String) parameters.get("releaseType"));
 	}
 	
 	private void collectIds(final Set<String> sourceIds, final Set<String> destinationIds, Stream<SnomedRelationshipIndexEntry> newRelationships, String characteristicTypeId) {
