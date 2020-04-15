@@ -127,6 +127,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 	}
 	
 	private static void assertArchiveContainsFiles(File exportArchive, Map<String, Boolean> filePrefixes) throws Exception {
+		assertTrue("Exported RF2 ZIP should be present in the local fs: " + exportArchive.toPath(), Files.exists(exportArchive.toPath()));
 		
 		Set<String> existingFiles = newHashSet();
 		
@@ -160,7 +161,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 
 	private static Multimap<String, Pair<Boolean, String>> collectLines(File exportArchive, Multimap<String, Pair<Boolean, String>> fileToLinesMap)
 			throws Exception {
-	
+		assertTrue("Exported RF2 ZIP should be present in the local fs: " + exportArchive.toPath(), Files.exists(exportArchive.toPath()));
 		Multimap<String, Pair<Boolean, String>> resultMap = ArrayListMultimap.create();
 
 		try (FileSystem fs = FileSystems.newFileSystem(exportArchive.toPath(), (ClassLoader) null)) {
@@ -190,9 +191,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 
 	private static void collectLines(Multimap<String, Pair<Boolean, String>> resultMap, Path file, String filePrefix,
 			Collection<Pair<Boolean, String>> expectedLines) throws IOException {
-	
 		List<String> lines = Files.readAllLines(file);
-
 		for (Pair<Boolean, String> line : expectedLines) {
 			resultMap.put(filePrefix, Pair.of(lines.contains(line.getB()), line.getB()));
 		}
