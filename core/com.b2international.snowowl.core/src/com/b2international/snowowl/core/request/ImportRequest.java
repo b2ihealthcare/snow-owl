@@ -32,12 +32,12 @@ public abstract class ImportRequest<C extends RepositoryContext, R> implements R
 	protected abstract R doImport(C context);
 	
 	protected String parentLockContext() {
-		return DatastoreLockContextDescriptions.ROOT;
+		return DatastoreLockContextDescriptions.IMPORT;
 	}
 	
 	@Override
 	public R execute(C context) {
-		try (Locks locks = Locks.on(context).lock(DatastoreLockContextDescriptions.IMPORT, parentLockContext())) {
+		try (Locks locks = Locks.on(context).lock(parentLockContext())) {
 			return doImport(context);
 		} catch (Exception e) {
 			if (e instanceof ApiException) {
