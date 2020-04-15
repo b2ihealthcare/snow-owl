@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -120,7 +120,7 @@ public final class EclExpression {
 			conceptPromise = SnomedRequests.prepareSearchConcept()
 					.all()
 					.filterByEcl(ecl)
-					.build(context.id(), context.branchPath())
+					.build(context.id(), context.path())
 					.execute(context.service(IEventBus.class));
 		}
 		return conceptPromise;
@@ -174,7 +174,7 @@ public final class EclExpression {
 				.filterByGroup(1, Integer.MAX_VALUE)
 				.setEclExpressionForm(expressionForm)
 				.setFields(SnomedRelationshipIndexEntry.Fields.ID, SnomedRelationshipIndexEntry.Fields.SOURCE_ID, SnomedRelationshipIndexEntry.Fields.GROUP)
-				.build(context.id(), context.branchPath())
+				.build(context.id(), context.path())
 				.execute(context.service(IEventBus.class))
 				.then(new Function<SnomedRelationships, Multimap<String, Integer>>() {
 					@Override
@@ -202,7 +202,7 @@ public final class EclExpression {
 					.filterByRefSetType(SnomedRefSetType.CONCRETE_DATA_TYPE)
 					.filterByProps(propFilter)
 					.setEclExpressionForm(expressionForm)
-					.build(context.id(), context.branchPath())
+					.build(context.id(), context.path())
 					.execute(context.service(IEventBus.class))
 					.then(members -> {
 						final Multimap<String, SnomedReferenceSetMember> relationshipsBySource = Multimaps.index(members, m -> m.getReferencedComponent().getId());

@@ -19,6 +19,7 @@ import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRe
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewConcept;
 import static com.google.common.collect.Sets.newHashSet;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Set;
 
@@ -26,6 +27,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.Branch;
@@ -143,6 +145,24 @@ public class BranchCompareRequestTest {
 		assertThat(compare.getNewComponents()).isEmpty();
 		assertThat(compare.getChangedComponents()).isEmpty();
 		assertThat(compare.getDeletedComponents()).containsAll(componentIdsToDelete);
+		
+		assertTrue("branchPath^ expression search should return the original concept state", SnomedRequests.prepareSearchConcept()
+			.one()
+			.filterById(concept.getComponentId())
+			.build(REPOSITORY_ID, taskBranchPath + RevisionIndex.BASE_REF_CHAR)
+			.execute(bus)
+			.getSync()
+			.first()
+			.isPresent());
+		
+		assertTrue("branchPath expression search should return nothing", SnomedRequests.prepareSearchConcept()
+			.one()
+			.filterById(concept.getComponentId())
+			.build(REPOSITORY_ID, taskBranchPath)
+			.execute(bus)
+			.getSync()
+			.first()
+			.isEmpty());
 	}
 	
 	@Test

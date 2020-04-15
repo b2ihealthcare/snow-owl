@@ -143,7 +143,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportRe
 	}
 
 	Rf2ImportResponse doImport(final BranchContext context, final File rf2Archive, final Rf2ImportConfiguration importconfig) throws Exception {
-		final String codeSystem = context.service(RepositoryCodeSystemProvider.class).get(context.branchPath()).getShortName();
+		final String codeSystem = context.service(RepositoryCodeSystemProvider.class).get(context.branch().path()).getShortName();
 		final Rf2ValidationIssueReporter reporter = new Rf2ValidationIssueReporter();
 		final Rf2ImportResponse response = new Rf2ImportResponse();
 		

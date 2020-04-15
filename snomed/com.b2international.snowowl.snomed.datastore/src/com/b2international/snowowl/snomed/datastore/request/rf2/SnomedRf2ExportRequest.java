@@ -227,7 +227,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Export
 	
 	@Override
 	public ExportResult execute(final BranchContext context) {
-		final String referenceBranch = context.branchPath();
+		final String referenceBranch = context.path();
 		
 		// register export start time for later use
 		final long exportStartTime = Instant.now().toEpochMilli();
@@ -308,7 +308,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Export
 	}
 
 	private Multimap<String, String> getLanguageCodes(BranchContext context, List<String> branchesToExport) {
-		final String referenceBranch = context.branchPath();
+		final String referenceBranch = context.path();
 		
 		List<String> branchesOrRanges = newArrayList(branchesToExport);
 		
@@ -522,7 +522,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Export
 	}
 
 	private TreeSet<CodeSystemVersionEntry> getAllExportableCodeSystemVersions(final BranchContext context, final CodeSystemEntry codeSystemEntry) {
-		final String referenceBranch = context.branchPath();
+		final String referenceBranch = context.path();
 		final TreeSet<CodeSystemVersionEntry> visibleVersions = newTreeSet(EFFECTIVE_DATE_ORDERING);
 		collectExportableCodeSystemVersions(context, visibleVersions, codeSystemEntry, referenceBranch);
 		return visibleVersions;
