@@ -23,6 +23,7 @@ import static org.junit.Assert.assertNotNull;
 
 import java.util.Map;
 
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.google.common.collect.ImmutableMap;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
@@ -33,6 +34,10 @@ import io.restassured.response.ValidatableResponse;
  */
 public abstract class CodeSystemApiAssert {
 	
+	public static final String REPOSITORY_ID = "snomedStore";
+	
+	private static final String TERMINOLOGY_ID = SnomedTerminologyComponentConstants.TERMINOLOGY_ID;
+
 	public static ValidatableResponse assertCodeSystemExists(final String uniqueId) {
 		return assertCodeSystemReadWithStatus(uniqueId, 200);
 	}
@@ -112,12 +117,27 @@ public abstract class CodeSystemApiAssert {
 				.put("shortName", shortName)
 				.put("citation", "citation")
 				.put("iconPath", "icons/snomed.png")
-				.put("repositoryUuid", "snomedStore")
-				.put("terminologyId", "concept")
+				.put("repositoryUuid", REPOSITORY_ID)
+				.put("terminologyId", TERMINOLOGY_ID)
 				.put("oid", shortName)
 				.put("primaryLanguage", "ENG")
 				.put("organizationLink", "link")
 				.build();
 	}
+	
+	public static Map<String, String> newCodeSystemVersionRequestBody(final String versionId, final String effectiveDate) {
+		return ImmutableMap.<String, String>builder()
+				.put("version", versionId)
+				.put("description", versionId + " description")
+				.put("effectiveDate", effectiveDate)
+				.build();
+	}
 
+	public static ValidatableResponse assertCodeSystemVersionCreated(final String shortName, final Map<?, ?> requestBody) {
+		return givenAuthenticatedRequest("/admin")
+			.with().contentType(ContentType.JSON)
+			.and().body(requestBody)
+			.when().post("/codesystems/{id}/versions", shortName)
+			.then().assertThat().statusCode(201);
+	}
 }

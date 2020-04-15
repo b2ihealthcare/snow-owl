@@ -19,14 +19,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.b2international.commons.StringUtils;
 import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.commons.exceptions.BadRequestException;
-import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.Permission;
+import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
 
 /**
@@ -50,10 +53,15 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 	private List<ExtendedLocale> locales;
 	private Map<String, Object> additionalProperties;
 
+	private String parentPath;
+	private boolean createBranch = true;
+	
 	CodeSystemCreateRequest() {}
 
 	void setBranchPath(final String branchPath) {
 		this.branchPath = branchPath;
+		// Branch should not be created if a path was specified from the outside
+		createBranch = StringUtils.isEmpty(branchPath);
 	}
 
 	void setCitation(final String citation) {
@@ -106,32 +114,91 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 
 	@Override
 	public String execute(final TransactionContext context) {
-		checkCodeSystem(context);
+		final Optional<CodeSystemVersionEntry> extensionOfVersion = checkCodeSystem(context);
+		
+		// Set the parent path if a branch needs to be created
+		if (createBranch) {
+			parentPath = extensionOfVersion
+				.map(CodeSystemVersionEntry::getPath)
+				.orElse(Branch.MAIN_PATH);
+		}
+
+		checkBranchPath(context);
 		checkLocales();
 		checkAdditionalProperties();
-		return context.add(createCodeSystem(context));
+		
+		// Set branchPath to the path of the created branch 
+		if (createBranch) {
+			branchPath = RepositoryRequests.branching()
+				.prepareCreate()
+				.setParent(parentPath)
+				.setName(shortName)
+				.build()
+				.execute(context);
+		}
+		
+		final CodeSystemEntry codeSystem = createCodeSystem(context);
+		return context.add(codeSystem);
 	}
 
-	private void checkCodeSystem(final TransactionContext context) {
-		if (getCodeSystem(oid, context) != null) {
+	private void checkBranchPath(final TransactionContext context) {
+		// If no branch is created, the branch should already exist
+		if (!createBranch && !branchExists(branchPath, context)) {
+			throw new BadRequestException("Branch path '%s' should point to an existing branch if given.", branchPath);
+		}
+		
+		// If the branch should be created, it branch should not exist, however 
+		if (createBranch) {
+			final String newBranchPath = Branch.get(parentPath, name);
+			if (branchExists(newBranchPath, context)) {
+				throw new AlreadyExistsException("Code system branch", newBranchPath);
+			}
+		}
+	}
+
+	private Optional<CodeSystemVersionEntry> checkCodeSystem(final TransactionContext context) {
+		if (codeSystemExists(oid, context)) {
 			throw new AlreadyExistsException("Code system", oid);
 		}
 		
-		if (getCodeSystem(shortName, context) != null) {
+		if (codeSystemExists(shortName, context)) {
 			throw new AlreadyExistsException("Code system", shortName);
 		}
 		
 		if (extensionOf != null) {
-			final String extensionOfShortName = extensionOf.getCodeSystem(); 
-			if (getCodeSystem(extensionOfShortName, context) == null) {
-				throw new BadRequestException("Couldn't find base code system for extensionOf URI %s.", extensionOf);
-			}
 			
 			if (extensionOf.isHead() || extensionOf.isLatest()) {
 				throw new BadRequestException("Base code system version was not expicitly given (can not be empty, "
 						+ "LATEST or HEAD) in extensionOf URI %s.", extensionOf);
 			}
+			
+			final String extensionOfShortName = extensionOf.getCodeSystem(); 
+			final String versionId = extensionOf.getPath();
+			
+			final Optional<CodeSystemVersionEntry> extensionOfVersion = CodeSystemRequests.prepareSearchCodeSystemVersion()
+					.one()
+					.filterByCodeSystemShortName(extensionOfShortName)
+					.filterByVersionId(versionId)
+					.build()
+					.execute(context)
+					.first();
+			
+			if (!extensionOfVersion.isPresent()) {
+				throw new BadRequestException("Couldn't find base code system version for extensionOf URI %s.", extensionOf);
+			}
+			
+			// The working branch prefix is determined by the extensionOf code system version's path
+			final String newCodeSystemPath = extensionOfVersion.get().getPath() + IBranchPath.SEPARATOR + shortName;
+			
+			if (!createBranch && !branchPath.equals(newCodeSystemPath)) {
+				throw new BadRequestException("Branch path is inconsistent with extensionOf URI ('%s' given, should be '%s').",
+						branchPath, newCodeSystemPath);
+			}
+
+			return extensionOfVersion;
 		}
+		
+		return Optional.empty();
 	}
 
 	private void checkLocales() {
@@ -154,12 +221,23 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 		}
 	}
 	
-	private CodeSystemEntry getCodeSystem(final String uniqeId, final TransactionContext context) {
-		try {
-			return CodeSystemRequests.prepareGetCodeSystem(uniqeId).build().execute(context);
-		} catch (NotFoundException e) {
-			 return null;
-		}
+	private boolean codeSystemExists(final String uniqeId, final TransactionContext context) {
+		return CodeSystemRequests.prepareSearchCodeSystem()
+				.setLimit(0)
+				.filterById(uniqeId)
+				.build()
+				.execute(context)
+				.getTotal() > 0;
+	}
+	
+	private boolean branchExists(final String path, final TransactionContext context) {
+		return RepositoryRequests.branching()
+				.prepareSearch()
+				.setLimit(0)
+				.filterById(path)
+				.build()
+				.execute(context)
+				.getTotal() > 0;
 	}
 
 	private CodeSystemEntry createCodeSystem(final TransactionContext context) {

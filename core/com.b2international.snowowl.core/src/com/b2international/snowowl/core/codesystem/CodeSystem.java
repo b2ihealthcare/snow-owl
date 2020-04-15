@@ -207,7 +207,7 @@ public class CodeSystem {
 	private String organizationLink;
 	private @NotEmpty String primaryLanguage;
 	private @NotEmpty String citation;
-	private @NotEmpty String branchPath;
+	private String branchPath;
 	private @NotEmpty String iconPath;
 	private @NotEmpty String terminologyId;
 	private @NotEmpty String repositoryUuid;

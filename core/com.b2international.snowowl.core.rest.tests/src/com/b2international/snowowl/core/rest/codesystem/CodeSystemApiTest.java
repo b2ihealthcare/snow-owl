@@ -15,27 +15,24 @@
  */
 package com.b2international.snowowl.core.rest.codesystem;
 
-import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertCodeSystemCreated;
-import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertCodeSystemExists;
-import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertCodeSystemHasAttributeValue;
-import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertCodeSystemNotCreated;
-import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertCodeSystemNotExists;
-import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertCodeSystemNotUpdated;
-import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertCodeSystemUpdated;
-import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertCodeSystemUpdatedWithStatus;
-import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.newCodeSystemRequestBody;
+import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.*;
 import static com.google.common.collect.Maps.newHashMap;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.Matchers.hasKey;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
 
+import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.repository.RepositoryRequests;
+import com.b2international.snowowl.test.commons.Services;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -106,6 +103,78 @@ public class CodeSystemApiTest {
 		assertCodeSystemCreated(requestBody);
 		assertCodeSystemExists(shortName);
 		assertCodeSystemHasAttributeValue(shortName, "locales", List.of("en-x-123456781000198103", "en-x-876543211000198107"));
+	}
+	
+	@Test
+	public void createCodeSystemWithoutPath() {
+		final String shortName = "cs10";
+		final String expectedBranchPath = Branch.get(Branch.MAIN_PATH, shortName);
+
+		try {
+			
+			RepositoryRequests.branching()
+				.prepareGet(expectedBranchPath)
+				.build(REPOSITORY_ID)
+				.execute(Services.bus())
+				.getSync();
+			
+			fail("Branch " + expectedBranchPath + " already exists");
+			
+		} catch (NotFoundException expected) {
+			// Branch does not exist, continue
+		}
+		
+		final Map<String, Object> requestBody = newHashMap(newCodeSystemRequestBody(shortName));
+		requestBody.remove("branchPath");
+		
+		assertCodeSystemCreated(requestBody);
+		assertCodeSystemExists(shortName);
+		
+		try {
+			
+			// Check if the branch has been created
+			RepositoryRequests.branching()
+				.prepareGet(expectedBranchPath)
+				.build(REPOSITORY_ID)
+				.execute(Services.bus())
+				.getSync();
+			
+		} catch (NotFoundException e) {
+			fail("Branch " + expectedBranchPath + " did not get created as part of code system creation");
+		}
+	}
+	
+	@Test
+	public void createCodeSystemWithoutPathWithExtensionOf() {
+		final String parentName = "cs11";
+		final Map<String, String> parentRequestBody = newCodeSystemRequestBody(parentName);
+		assertCodeSystemCreated(parentRequestBody);
+		assertCodeSystemExists(parentName);
+		
+		final Map<String, String> versionRequestBody = newCodeSystemVersionRequestBody("v1", "2020-04-15");
+		assertCodeSystemVersionCreated(parentName, versionRequestBody);
+
+		final String shortName = "cs12";
+		final Map<String, String> requestBody = newHashMap(newCodeSystemRequestBody(shortName));
+		requestBody.remove("branchPath");
+		requestBody.put("extensionOf", "cs11/v1");
+		
+		assertCodeSystemCreated(requestBody);
+		
+		final String expectedBranchPath = Branch.get(Branch.MAIN_PATH, "v1", shortName);
+		
+		try {
+			
+			// Check if the branch has been created
+			RepositoryRequests.branching()
+				.prepareGet(expectedBranchPath)
+				.build(REPOSITORY_ID)
+				.execute(Services.bus())
+				.getSync();
+			
+		} catch (NotFoundException e) {
+			fail("Branch " + expectedBranchPath + " did not get created as part of code system creation");
+		}
 	}
 	
 	@Test
