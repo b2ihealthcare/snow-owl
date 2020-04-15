@@ -801,7 +801,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		// rebase child branch with deletion over new relationship, this should succeed, but should also implicitly delete the relationship
 		merge(branchPath, a, "Rebased concept deletion over new inbound relationship").body("status", equalTo(Merge.Status.CONFLICTS.name()));
 		
-		// TODO when new conflict 
+		// TODO when new conflict??? 
 //		// relationships should be deleted along with the already deleted destination concept
 //		getComponent(a, SnomedComponentType.RELATIONSHIP, newInboundRelationshipToDeletedConcept).statusCode(404);
 	}
@@ -825,7 +825,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		// rebase child branch with deletion over new relationship, this should succeed, but should also implicitly delete the relationship
 		merge(branchPath, a, "Rebased concept deletion over new outbound and inbound relationships").body("status", equalTo(Merge.Status.CONFLICTS.name()));
 		
-		// when new conflict processing rules are in place enable
+		// when new conflict processing rules are in place enable???
 //		// relationships should be deleted along with the already deleted destination concept
 //		getComponent(a, SnomedComponentType.RELATIONSHIP, newOutboundRelationshipFromDeletedConcept).statusCode(404);
 //		getComponent(a, SnomedComponentType.RELATIONSHIP, newInboundRelationshipToDeletedConcept).statusCode(404);

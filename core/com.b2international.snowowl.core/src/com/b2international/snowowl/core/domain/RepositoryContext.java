@@ -57,23 +57,23 @@ public interface RepositoryContext extends ServiceProvider, RepositoryInfo {
 		return new DelegatingContext.Builder<>(RepositoryContext.class, this);
 	}
 	
-	default BranchContext openBranch(RepositoryContext context, String branch) {
-		return context.service(ContextConfigurer.class).configure(new RepositoryBranchContext(context, ensureAvailability(context, branch)));
+	default BranchContext openBranch(RepositoryContext context, String path) {
+		return context.service(ContextConfigurer.class).configure(new RepositoryBranchContext(context, path, ensureAvailability(context, path)));
 	}
 
-	private Branch ensureAvailability(RepositoryContext context, String branchPath) {
+	private Branch ensureAvailability(RepositoryContext context, String path) {
 		final List<String> branchesToCheck = newArrayList();
-		if (RevisionIndex.isBranchAtPath(branchPath)) {
-			branchesToCheck.add(branchPath.split(RevisionIndex.AT_CHAR)[0]);
-		} else if (RevisionIndex.isBaseRefPath(branchPath)) {
-			branchesToCheck.add(branchPath.substring(0, branchPath.length() - 1));
-		} else if (RevisionIndex.isRevRangePath(branchPath)) {
-			branchesToCheck.addAll(ImmutableList.copyOf(RevisionIndex.getRevisionRangePaths(branchPath)));
+		if (RevisionIndex.isBranchAtPath(path)) {
+			branchesToCheck.add(path.split(RevisionIndex.AT_CHAR)[0]);
+		} else if (RevisionIndex.isBaseRefPath(path)) {
+			branchesToCheck.add(path.substring(0, path.length() - 1));
+		} else if (RevisionIndex.isRevRangePath(path)) {
+			branchesToCheck.addAll(ImmutableList.copyOf(RevisionIndex.getRevisionRangePaths(path)));
 		} else {
-			branchesToCheck.add(branchPath);
+			branchesToCheck.add(path);
 		}
 		
-		Branch branch = null; 
+		Branch branch = null;
 		for (String branchToCheck : branchesToCheck) {
 			branch = RepositoryRequests.branching().prepareGet(branchToCheck).build().execute(context);
 			

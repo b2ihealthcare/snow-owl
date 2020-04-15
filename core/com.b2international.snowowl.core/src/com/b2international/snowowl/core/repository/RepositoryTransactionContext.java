@@ -59,7 +59,6 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.DelegatingBranchContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
-import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContext;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
@@ -94,7 +93,7 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 		this.author = author;
 		this.commitComment = commitComment;
 		this.parentLockContext = parentLockContext;
-		this.staging = context.service(RevisionIndex.class).prepareCommit(branchPath()).withContext(this);
+		this.staging = context.service(RevisionIndex.class).prepareCommit(path()).withContext(this);
 		bind(StagingArea.class, this.staging);
 	}
 	
@@ -258,15 +257,15 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 			return -1L;
 		}
 		final DatastoreLockContext lockContext = createLockContext(userId, parentContextDescription);
-		final DatastoreLockTarget lockTarget = createLockTarget(id(), branchPath());
+		final DatastoreLockTarget lockTarget = createLockTarget(id(), path());
 		IOperationLockManager locks = service(IOperationLockManager.class);
 		Commit commit = null;
 		try {
 			acquireLock(locks, lockContext, lockTarget);
 			final long timestamp = service(TimestampProvider.class).getTimestamp();
-			log().info("Persisting changes to {}@{}", branchPath(), timestamp);
+			log().info("Persisting changes to {}@{}", path(), timestamp);
 			commit = staging.commit(null, timestamp, userId, commitComment);
-			log().info("Changes have been successfully persisted to {}@{}.", branchPath(), timestamp);
+			log().info("Changes have been successfully persisted to {}@{}.", path(), timestamp);
 			return commit.getTimestamp();
 		} catch (final IndexException e) {
 			Throwable rootCause = Throwables.getRootCause(e);

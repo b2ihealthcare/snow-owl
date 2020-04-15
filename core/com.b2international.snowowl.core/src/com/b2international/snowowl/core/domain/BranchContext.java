@@ -37,9 +37,8 @@ public interface BranchContext extends RepositoryContext {
 	 * returned by this method to other requests, so they execute on the same requested path.
 	 * 
 	 * @return
-	 * @since 5.9
 	 */
-	String branchPath();
+	String path();
 
 	@Override
 	default Builder<? extends BranchContext> inject() {
@@ -50,9 +49,9 @@ public interface BranchContext extends RepositoryContext {
 	 * @return <code>true</code> if this context is opened on the {@link Branch#MAIN_PATH}, <code>false</code> otherwise.
 	 */
 	default boolean isMain() {
-		return Branch.MAIN_PATH.equals(branchPath());
+		return Branch.MAIN_PATH.equals(branch().path());
 	}
-	
+
 	default TransactionContext openTransaction(BranchContext context) {
 		return openTransaction(context, DatastoreLockContextDescriptions.ROOT);
 	}
@@ -64,5 +63,5 @@ public interface BranchContext extends RepositoryContext {
 	default TransactionContext openTransaction(BranchContext context, String author, String commitComment, String parentLockContext) {
 		return new RepositoryTransactionContext(context, author, commitComment, parentLockContext);
 	}
-	
+
 }
