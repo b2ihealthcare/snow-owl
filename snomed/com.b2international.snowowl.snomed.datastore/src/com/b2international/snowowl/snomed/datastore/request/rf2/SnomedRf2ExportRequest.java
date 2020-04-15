@@ -1002,6 +1002,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 	}
 
 	private static Branches getBranches(final RepositoryContext context, final String parent, final Collection<String> paths) {
+		System.err.println("SnomedRf2ExportRequest.getBranches(): " + parent + ", paths: " + paths + "");
 		return RepositoryRequests.branching()
 				.prepareSearch()
 				.all()
