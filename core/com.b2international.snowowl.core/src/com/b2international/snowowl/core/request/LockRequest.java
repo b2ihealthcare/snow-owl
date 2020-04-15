@@ -28,23 +28,21 @@ import com.b2international.snowowl.core.locks.Locks;
 public abstract class LockRequest<C extends RepositoryContext, R> implements Request<C, R> {
 
 	private static final long serialVersionUID = 1L;
-		
-	protected abstract R doExecute(C context);
 	
 	private final String lockContext;
 	private final String parentLockContext;
 	
-	protected String lockContext() {
-		return lockContext;
-	}
-	
 	protected LockRequest(final String lockContext) {
-	  this(lockContext, DatastoreLockContextDescriptions.ROOT);
+	    this(lockContext, DatastoreLockContextDescriptions.ROOT);
 	}
 	
 	protected LockRequest(final String lockContext, final String parentLockContext) {
-	  this.lockContext = lockContext;
-	  this.parentLockContext = parentLockContext;
+	    this.lockContext = lockContext;
+	    this.parentLockContext = parentLockContext;
+	}
+	
+	protected final String lockContext() {
+	    return lockContext;
 	}
 	
 	@Override
@@ -58,5 +56,7 @@ public abstract class LockRequest<C extends RepositoryContext, R> implements Req
 			throw SnowowlRuntimeException.wrap(e);
 		}
 	}
+	
+	protected abstract R doExecute(C context);
 
 }
