@@ -25,20 +25,32 @@ import com.b2international.snowowl.core.locks.Locks;
 /**
  * @since 7.6
  */
-public abstract class ImportRequest<C extends RepositoryContext, R> implements Request<C, R> {
+public abstract class LockRequest<C extends RepositoryContext, R> implements Request<C, R> {
 
 	private static final long serialVersionUID = 1L;
 		
-	protected abstract R doImport(C context);
+	protected abstract R doExecute(C context);
 	
-	protected String parentLockContext() {
-		return DatastoreLockContextDescriptions.IMPORT;
+	private final String lockContext;
+	private final String parentLockContext;
+	
+	protected String lockContext() {
+		return lockContext;
+	}
+	
+	LockRequest(final String lockContext) {
+	  this(lockContext, DatastoreLockContextDescriptions.ROOT);
+	}
+	
+	LockRequest(final String lockContext, final String parentLockContext) {
+	  this.lockContext = lockContext;
+	  this.parentLockContext = parentLockContext;
 	}
 	
 	@Override
 	public R execute(C context) {
-		try (Locks locks = Locks.on(context).lock(parentLockContext())) {
-			return doImport(context);
+		try (Locks locks = Locks.on(context).lock(lockContext(), parentLockContext)) {
+			return doExecute(context);
 		} catch (Exception e) {
 			if (e instanceof ApiException) {
 				throw (ApiException) e;
