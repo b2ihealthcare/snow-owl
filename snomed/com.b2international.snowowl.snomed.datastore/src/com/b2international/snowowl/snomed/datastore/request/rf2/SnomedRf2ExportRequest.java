@@ -40,6 +40,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 import com.b2international.commons.FileUtils;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.attachments.Attachment;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.branch.Branch;
@@ -51,7 +52,6 @@ import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.domain.ExportResult;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
@@ -99,7 +99,7 @@ import com.google.common.collect.Ordering;
 /**
  * @since 5.7
  */
-final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, ExportResult> implements BranchAccessControl {
+final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attachment> implements BranchAccessControl {
 
 	private static final String DESCRIPTION_TYPES_EXCEPT_TEXT_DEFINITION = "<<" + Concepts.DESCRIPTION_TYPE_ROOT_CONCEPT + " MINUS " + Concepts.TEXT_DEFINITION;
 	private static final String NON_STATED_CHARACTERISTIC_TYPES = "<<" + Concepts.CHARACTERISTIC_TYPE + " MINUS " + Concepts.STATED_RELATIONSHIP;
@@ -226,7 +226,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Export
 	}
 	
 	@Override
-	public ExportResult execute(final BranchContext context) {
+	public Attachment execute(final BranchContext context) {
 		final String referenceBranch = context.path();
 		
 		// register export start time for later use
@@ -296,7 +296,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Export
 			final AttachmentRegistry fileRegistry = context.service(AttachmentRegistry.class);
 			registerResult(fileRegistry, exportId, exportDirectory);
 			final String fileName = releaseDirectory.getFileName() + ".zip";
-			return new ExportResult(fileName, exportId);
+			return new Attachment(exportId, fileName);
 			
 		} catch (final Exception e) {
 			throw new SnowowlRuntimeException("Failed to export terminology content to RF2.", e);

@@ -66,12 +66,12 @@ import com.b2international.commons.Pair;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.attachments.Attachment;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.attachments.InternalAttachmentRegistry;
 import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.core.domain.ExportResult;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -268,7 +268,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void executeMultipleExportsAtTheSameTime() throws Exception {
 		
-		Promise<ExportResult> first = SnomedRequests.rf2().prepareExport()
+		Promise<Attachment> first = SnomedRequests.rf2().prepareExport()
 			.setReleaseType(Rf2ReleaseType.FULL)
 			.setCountryNamespaceElement("INT")
 			.setRefSetExportLayout(Rf2RefSetExportLayout.COMBINED)
@@ -276,7 +276,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 			.execute(getBus());
 		
-		Promise<ExportResult> second = SnomedRequests.rf2().prepareExport()
+		Promise<Attachment> second = SnomedRequests.rf2().prepareExport()
 			.setCountryNamespaceElement("INT")
 			.setRefSetExportLayout(Rf2RefSetExportLayout.COMBINED)
 			.setReleaseType(Rf2ReleaseType.SNAPSHOT)
@@ -286,13 +286,13 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		
 		String message = Promise.all(first, second)
 			.then(input -> {
-				ExportResult firstResult = (ExportResult) input.get(0);
-				ExportResult secondResult = (ExportResult) input.get(1);
+				Attachment firstResult = (Attachment) input.get(0);
+				Attachment secondResult = (Attachment) input.get(1);
 				
 				InternalAttachmentRegistry fileRegistry = (InternalAttachmentRegistry) ApplicationContext.getServiceForClass(AttachmentRegistry.class);
 				
-				File firstArchive = fileRegistry.getAttachment(firstResult.getRegistryId());
-				File secondArchive = fileRegistry.getAttachment(secondResult.getRegistryId());
+				File firstArchive = fileRegistry.getAttachment(firstResult.getAttachmentId());
+				File secondArchive = fileRegistry.getAttachment(secondResult.getAttachmentId());
 				
 				final Map<String, Boolean> firstArchiveMap = ImmutableMap.<String, Boolean>builder()
 						.put("sct2_Concept_Full", true)
@@ -309,8 +309,8 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 					return e.getMessage();
 				}
 				
-				fileRegistry.delete(firstResult.getRegistryId());
-				fileRegistry.delete(secondResult.getRegistryId());
+				fileRegistry.delete(firstResult.getAttachmentId());
+				fileRegistry.delete(secondResult.getAttachmentId());
 				
 				return null;
 			})

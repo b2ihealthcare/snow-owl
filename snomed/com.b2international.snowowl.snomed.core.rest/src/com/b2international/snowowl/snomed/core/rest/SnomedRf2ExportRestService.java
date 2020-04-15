@@ -32,9 +32,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.attachments.Attachment;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.attachments.InternalAttachmentRegistry;
-import com.b2international.snowowl.core.domain.ExportResult;
 import com.b2international.snowowl.snomed.core.domain.Rf2RefSetExportLayout;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedRf2ExportConfiguration;
@@ -79,7 +79,7 @@ public class SnomedRf2ExportRestService extends AbstractSnomedRestService {
 		
 		final Rf2RefSetExportLayout globalExportLayout = ApplicationContext.getServiceForClass(SnomedCoreConfiguration.class).getExport().getRefSetExportLayout();
 		
-		final ExportResult exportedFile = SnomedRequests.rf2().prepareExport()
+		final Attachment exportedFile = SnomedRequests.rf2().prepareExport()
 			.setReleaseType(params.getType() == null ? null : Rf2ReleaseType.getByNameIgnoreCase(params.getType()))
 			.setExtensionOnly(params.isExtensionOnly())
 			.setLocales(acceptLanguage)
@@ -96,13 +96,13 @@ public class SnomedRf2ExportRestService extends AbstractSnomedRestService {
 			.execute(getBus())
 			.getSync();
 		
-		final File file = ((InternalAttachmentRegistry) attachments).getAttachment(exportedFile.getRegistryId());
+		final File file = ((InternalAttachmentRegistry) attachments).getAttachment(exportedFile.getAttachmentId());
 		final Resource exportZipResource = new FileSystemResource(file);
 		
 		final HttpHeaders httpHeaders = new HttpHeaders();
 		
 		httpHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-		httpHeaders.setContentDispositionFormData("attachment", exportedFile.getName());
+		httpHeaders.setContentDispositionFormData("attachment", exportedFile.getFileName());
 
 		// TODO figure out a smart way to cache export results, probably it could be tied to commitTimestamps/versions/etc. 
 		file.deleteOnExit();
