@@ -23,7 +23,7 @@ import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescr
 import com.b2international.snowowl.core.locks.Locks;
 
 /**
- * @since 7.6
+ * @since 7.5.1
  */
 public abstract class LockRequest<C extends RepositoryContext, R> implements Request<C, R> {
 
@@ -38,11 +38,11 @@ public abstract class LockRequest<C extends RepositoryContext, R> implements Req
 		return lockContext;
 	}
 	
-	LockRequest(final String lockContext) {
+	protected LockRequest(final String lockContext) {
 	  this(lockContext, DatastoreLockContextDescriptions.ROOT);
 	}
 	
-	LockRequest(final String lockContext, final String parentLockContext) {
+	protected LockRequest(final String lockContext, final String parentLockContext) {
 	  this.lockContext = lockContext;
 	  this.parentLockContext = parentLockContext;
 	}
