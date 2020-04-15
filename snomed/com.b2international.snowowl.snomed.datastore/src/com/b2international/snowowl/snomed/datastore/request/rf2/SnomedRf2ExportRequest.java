@@ -93,6 +93,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Ordering;
 
@@ -547,8 +548,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 				.collect(Collectors.toSet());
 
 		final Branches versionBranches = getBranches(context, versionParentPath, versionNames);
-		final Map<String, Branch> versionBranchesByName = FluentIterable.from(versionBranches)
-				.uniqueIndex(b -> b.name());
+		final Map<String, Branch> versionBranchesByName = Maps.uniqueIndex(versionBranches, Branch::name);
 
 		final Branch cutoffBranch = getBranch(context, referenceBranch);
 		final long cutoffBaseTimestamp = getCutoffBaseTimestamp(context, cutoffBranch, versionParentPath);
@@ -971,6 +971,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 	}
 
 	private static long getCutoffBaseTimestamp(final RepositoryContext context, final Branch cutoffBranch, final String versionParentPath) {
+		System.err.println("SnomedRf2ExportRequest.getCutoffBaseTimestamp(): branch[" + cutoffBranch.path() + "], branchParentPath: [" + cutoffBranch.parentPath() +  "], versionParentPath: [" + versionParentPath + "]");
 		if (cutoffBranch.path().equals(versionParentPath)) {
 			// We are on the working branch of the code system, all versions are visible for export
 			return Long.MAX_VALUE;	
@@ -993,6 +994,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 	}
 
 	private static Branch getBranch(final RepositoryContext context, final String path) {
+		System.err.println("SnomedRf2ExportRequest.getBranch(): " + path);
 		return RepositoryRequests.branching()
 				.prepareGet(path)
 				.build()
