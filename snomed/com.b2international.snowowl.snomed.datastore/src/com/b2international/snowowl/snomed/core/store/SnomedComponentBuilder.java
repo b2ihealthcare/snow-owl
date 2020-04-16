@@ -102,7 +102,7 @@ public abstract class SnomedComponentBuilder<B extends SnomedComponentBuilder<B,
 		
 		if (effectiveTime == null) {
 			component.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME);
-			component.released(false);
+			// XXX using the already set value for the released flag
 		} else {
 			component.effectiveTime(effectiveTime.getTime());
 			component.released(true);
