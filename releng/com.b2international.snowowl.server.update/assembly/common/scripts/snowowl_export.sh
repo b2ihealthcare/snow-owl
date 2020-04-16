@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+# Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -36,8 +36,8 @@ TARGET_FOLDER=""
 # Global variables / constants, advanced parameters
 #
 
-# Branch to export defaults to MAIN
-BRANCH_TO_EXPORT="MAIN"
+# Code system URI branch path to export defaults to SNOMEDCT/LATEST
+BRANCH_TO_EXPORT="SNOMEDCT/LATEST"
 
 # Specified moduleIds to export
 MODULES_TO_EXPORT=()
@@ -57,14 +57,8 @@ SNOW_OWL_API_URL="/snowowl/snomed-ct/v3"
 # Media type to use for REST requests
 MEDIA_TYPE="application/vnd.com.b2international.snowowl+json"
 
-# Accept header for archive download
-ACCEPT_HEADER="application/octet-stream"
-
-# The UUID of the export request given by Snow Owl
-EXPORT_UUID=""
-
 # The input data for the export config
-EXPORT_CONFIG_POST_INPUT=""
+EXPORT_CONFIG=""
 
 usage() {
 
@@ -91,7 +85,7 @@ NAME:
     -m
         Snomed CT module IDs to filter components of the resulting RF2 by a set of module IDs.
     -s
-        Branch from Snow Owl to initiate the export on
+        Codesystem branch path URI from Snow Owl to initiate the export on
     -r
         Snomed CT reference set IDs to include in the export RF2
     -a
@@ -144,9 +138,9 @@ validate_variables() {
 initiate_export() {
 
 	# The address where the export config endpoint can be found
-	EXPORTS_POST_ENDPOINT="${SNOW_OWL_API_URL}/exports"
+	EXPORTS_POST_ENDPOINT="${SNOW_OWL_API_URL}/${BRANCH_TO_EXPORT}/export"
 
-	EXPORT_CONFIG_POST_INPUT='{"branchPath": "'"${BRANCH_TO_EXPORT}"'", "type": "'"${EXPORT_TYPE}"'", "codeSystemShortName": "SNOMEDCT"'
+	EXPORT_CONFIG='{"type": "'"${EXPORT_TYPE}"'"'
 
 	if ((${#REFSETS_TO_EXPORT[@]})); then
 		# Append refsets to config
@@ -155,7 +149,7 @@ initiate_export() {
 			REFSETS_JSON_ARRAY+='"'"${refset}"'", '
 		done
 		REFSETS_JSON_ARRAY+='"'"${REFSETS_TO_EXPORT[@]: -1:1}"'"]'
-		EXPORT_CONFIG_POST_INPUT+=', "'"refsets"'": '${REFSETS_JSON_ARRAY}''
+		EXPORT_CONFIG+=', "'"refSetIds"'": '${REFSETS_JSON_ARRAY}''
 	fi
 
 	if ((${#MODULES_TO_EXPORT[@]})); then
@@ -165,54 +159,19 @@ initiate_export() {
 			MODULES_JSON_ARRAY+='"'"${module}"'", '
 		done
 		MODULES_JSON_ARRAY+='"'"${MODULES_TO_EXPORT[@]: -1:1}"'"]'
-		EXPORT_CONFIG_POST_INPUT+=', "moduleIds": '${MODULES_JSON_ARRAY}''
+		EXPORT_CONFIG+=', "moduleIds": '${MODULES_JSON_ARRAY}''
 	fi
 
-	EXPORT_CONFIG_POST_INPUT+="}"
+	EXPORT_CONFIG+="}"
 
 	EXPORTS_ENDPOINT="${SNOW_OWL_BASE_URL}${EXPORTS_POST_ENDPOINT}"
 
-	echo_date "Initating "${EXPORT_TYPE}" export with config: "${EXPORT_CONFIG_POST_INPUT}" on target: "${EXPORTS_ENDPOINT}""
-
-	RESPONSE="$(curl --user "${SNOW_OWL_USER}:${SNOW_OWL_USER_PASSWORD}" \
-		--request POST \
-		--header "Content-type: ${MEDIA_TYPE}" \
-		--data "${EXPORT_CONFIG_POST_INPUT}" \
-		--include --silent --show-error \
-		"${EXPORTS_ENDPOINT}" | grep -Fi Location)"
-
-	ID=${RESPONSE##*/}
-	EXPORT_UUID=${ID%$'\r'}
-
-	download_export_archive
-
-}
-
-download_export_archive() {
-
-	check_if_empty "${EXPORT_UUID}" "Unique export identifier is missing"
-
-	EXPORT_DOWNLOAD_GET_ENDPOINT="${SNOW_OWL_BASE_URL}${EXPORTS_POST_ENDPOINT}/${EXPORT_UUID}/archive"
-
-	echo_date "Downloading ${EXPORT_TYPE} export with UUID: ${EXPORT_UUID}"
+	echo_date "Initating "${EXPORT_TYPE}" export with config: "${EXPORT_CONFIG}" on target: "${EXPORTS_ENDPOINT}""
 
 	DATE=$(date +"%Y%m%d_%H%M%S")
-
 	RENAMED_EXPORT_FILE="${EXPORT_FILE_NAME}_${DATE}.zip"
 
-	HTTP_STATUS=$(curl --user "${SNOW_OWL_USER}:${SNOW_OWL_USER_PASSWORD}" \
-		--request GET \
-		--header "Accept: ${ACCEPT_HEADER}" \
-		--output "${TARGET_FOLDER}/${RENAMED_EXPORT_FILE}" \
-		--silent --show-error \
-		--write-out %{http_code} \
-		"${EXPORT_DOWNLOAD_GET_ENDPOINT}")
-
-	if [ "${HTTP_STATUS}" != "200" ]; then
-		echo_date "Download of export archive returned with code ${HTTP_STATUS}"
-	else
-		echo_date "Export archive is available @ ${TARGET_FOLDER}/${RENAMED_EXPORT_FILE}"
-	fi
+	RESPONSE=`$(curl --user "${SNOW_OWL_USER}:${SNOW_OWL_USER_PASSWORD}" --request GET --header "Content-type: ${MEDIA_TYPE}" --data "${EXPORT_CONFIG}" --include --output "${TARGET_FOLDER}/${RENAMED_EXPORT_FILE}" --write-out %{http_code} --silent --show-error "${EXPORTS_ENDPOINT}" )`
 
 }
 
