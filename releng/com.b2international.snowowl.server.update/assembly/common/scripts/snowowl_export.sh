@@ -171,7 +171,7 @@ initiate_export() {
 	DATE=$(date +"%Y%m%d_%H%M%S")
 	RENAMED_EXPORT_FILE="${EXPORT_FILE_NAME}_${DATE}.zip"
 
-	RESPONSE=`$(curl --user "${SNOW_OWL_USER}:${SNOW_OWL_USER_PASSWORD}" --request GET --header "Content-type: ${MEDIA_TYPE}" --data "${EXPORT_CONFIG}" --include --output "${TARGET_FOLDER}/${RENAMED_EXPORT_FILE}" --write-out %{http_code} --silent --show-error "${EXPORTS_ENDPOINT}" )`
+	RESPONSE='$(curl --user "${SNOW_OWL_USER}:${SNOW_OWL_USER_PASSWORD}" --request GET --header "Content-type: ${MEDIA_TYPE}" --data "${EXPORT_CONFIG}" --include --output "${TARGET_FOLDER}/${RENAMED_EXPORT_FILE}" --write-out %{http_code} --silent --show-error "${EXPORTS_ENDPOINT}" )'
 
 }
 
