@@ -69,7 +69,7 @@ public abstract class SnomedComponentDocument extends SnomedDocument {
 		public static final String ACTIVE_MEMBER_OF = "activeMemberOf";
 	}
 	
-		public static abstract class Builder<B extends Builder<B, T>, T extends SnomedComponentDocument> extends SnomedDocument.Builder<B, T> {
+	public static abstract class Builder<B extends Builder<B, T>, T extends SnomedComponentDocument> extends SnomedDocument.Builder<B, T> {
 		
 		protected List<String> memberOf = Collections.emptyList();
 		protected List<String> activeMemberOf = Collections.emptyList();
@@ -103,9 +103,9 @@ public abstract class SnomedComponentDocument extends SnomedDocument {
 			String label, 
 			String iconId, 
 			String moduleId,
-			boolean released, 
-			boolean active,
-			long effectiveTime,
+			Boolean released, 
+			Boolean active,
+			Long effectiveTime,
 			List<String> memberOf,
 			List<String> activeMemberOf) {
 		super(id, label, iconId, moduleId, released, active, effectiveTime);

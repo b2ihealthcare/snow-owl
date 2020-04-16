@@ -231,14 +231,14 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	
 	public static final Builder builder(final SnomedReferenceSetMember input) {
 		final Builder builder = builder()
+				.id(input.getId())
 				.active(input.isActive())
 				.effectiveTime(EffectiveTimes.getEffectiveTime(input.getEffectiveTime()))
-				.id(input.getId())
+				.released(input.isReleased())
 				.moduleId(input.getModuleId())
 				.referencedComponentId(input.getReferencedComponent().getId())
 				.referenceSetId(input.getReferenceSetId())
-				.referenceSetType(input.type())
-				.released(input.isReleased());
+				.referenceSetType(input.type());
 		
 		if (input.getReferencedComponent() instanceof SnomedConcept) {
 			builder.referencedComponentType(CONCEPT_NUMBER);
@@ -1061,9 +1061,9 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	private SnomedRefSetMemberIndexEntry(final String id,
 			final String label,
 			final String moduleId, 
-			final boolean released,
-			final boolean active, 
-			final long effectiveTimeLong, 
+			final Boolean released,
+			final Boolean active, 
+			final Long effectiveTimeLong, 
 			final String referencedComponentId, 
 			final String referenceSetId,
 			final SnomedRefSetType referenceSetType,

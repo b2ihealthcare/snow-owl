@@ -555,11 +555,13 @@ final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedC
 		}
 	}
 
-	private String toDefinitionStatus(final boolean primitive) {
+	private String toDefinitionStatus(final Boolean primitive) {
+		if (primitive == null) return null;
 		return primitive ? Concepts.PRIMITIVE : Concepts.FULLY_DEFINED;
 	}
 
-	private SubclassDefinitionStatus toSubclassDefinitionStatus(final boolean exhaustive) {
+	private SubclassDefinitionStatus toSubclassDefinitionStatus(final Boolean exhaustive) {
+		if (exhaustive == null) return null;
 		return exhaustive ? SubclassDefinitionStatus.DISJOINT_SUBCLASSES : SubclassDefinitionStatus.NON_DISJOINT_SUBCLASSES;
 	}
 	
