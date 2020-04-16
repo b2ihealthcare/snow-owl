@@ -621,6 +621,7 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 		SnomedRefSetMemberIndexEntry member = SnomedRefSetMemberIndexEntry.builder()
 				.id(memberIdToUpdate)
 				.active(false)
+				.released(false)
 				.moduleId(Concepts.MODULE_SCT_CORE)
 				.referenceSetId(Concepts.REFSET_LANGUAGE_TYPE_UK)
 				.referencedComponentId(descriptionId)
