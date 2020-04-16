@@ -247,16 +247,16 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 	}
 	
 	@Override
-	public long commit(String commitComment, String parentContextDescription) {
-		return commit(author(), commitComment, parentContextDescription);
+	public long commit(String commitComment, String parentLockContext) {
+		return commit(author(), commitComment, parentLockContext);
 	}
 	
 	@Override
-	public long commit(String userId, String commitComment, String parentContextDescription) {
+	public long commit(String author, String commitComment, String parentLockContext) {
 		if (!isDirty()) {
 			return -1L;
 		}
-		final DatastoreLockContext lockContext = createLockContext(userId, parentContextDescription);
+		final DatastoreLockContext lockContext = createLockContext(service(User.class).getUsername(), parentLockContext);
 		final DatastoreLockTarget lockTarget = createLockTarget(id(), path());
 		IOperationLockManager locks = service(IOperationLockManager.class);
 		Commit commit = null;
@@ -264,7 +264,7 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 			acquireLock(locks, lockContext, lockTarget);
 			final long timestamp = service(TimestampProvider.class).getTimestamp();
 			log().info("Persisting changes to {}@{}", path(), timestamp);
-			commit = staging.commit(null, timestamp, userId, commitComment);
+			commit = staging.commit(null, timestamp, author, commitComment);
 			log().info("Changes have been successfully persisted to {}@{}.", path(), timestamp);
 			return commit.getTimestamp();
 		} catch (final IndexException e) {

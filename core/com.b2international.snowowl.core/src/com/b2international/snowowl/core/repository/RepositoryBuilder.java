@@ -38,6 +38,7 @@ import com.b2international.snowowl.core.branch.review.Review;
 import com.b2international.snowowl.core.codesystem.CodeSystemEntry;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
 import com.b2international.snowowl.core.domain.IComponent;
+import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.request.RepositoryRequest;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.terminology.Terminology;
@@ -149,7 +150,9 @@ public final class RepositoryBuilder {
 		
 		// execute initialization steps
 		repository.waitForHealth(Health.GREEN, 3 * 60L /*wait 3 minutes for GREEN repository status*/);
-		new RepositoryRequest<>(repositoryId, initializer).execute(env);
+		new RepositoryRequest<>(repositoryId, initializer).execute(env.inject()
+				.bind(User.class, User.SYSTEM)
+				.build());
 		
 		return repository;
 	}
