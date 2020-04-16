@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,18 +61,18 @@ public final class BranchCompareResult implements Serializable {
 			return this;
 		}
 		
-		public Builder addTotalNew(int delta) {
-			this.totalNew += delta;
+		public Builder totalNew(int totalNew) {
+			this.totalNew = totalNew;
 			return this;
 		}
 		
-		public Builder addTotalChanged(int delta) {
-			this.totalChanged += delta;
+		public Builder totalChanged(int totalChanged) {
+			this.totalChanged = totalChanged;
 			return this;
 		}
 		
-		public Builder addTotalDeleted(int delta) {
-			this.totalDeleted += delta;
+		public Builder totalDeleted(int totalDeleted) {
+			this.totalDeleted = totalDeleted;
 			return this;
 		}
 		
