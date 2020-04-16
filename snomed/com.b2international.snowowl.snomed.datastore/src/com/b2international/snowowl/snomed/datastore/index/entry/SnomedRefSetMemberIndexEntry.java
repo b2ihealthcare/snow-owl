@@ -214,9 +214,10 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	
 	public static Builder builder(final SnomedRefSetMemberIndexEntry source) {
 		return builder()
+				.id(source.getId())
 				.active(source.isActive())
 				.effectiveTime(source.getEffectiveTime())
-				.id(source.getId())
+				.released(source.isReleased())
 				.moduleId(source.getModuleId())
 				.referencedComponentId(source.getReferencedComponentId())
 				.referencedComponentType(source.getReferencedComponentType())
