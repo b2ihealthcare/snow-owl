@@ -155,7 +155,7 @@ initiate_export() {
 
 	EXPORTS_ENDPOINT="${SNOW_OWL_BASE_URL}${EXPORTS_POST_ENDPOINT}"
 
-	echo_date "Initating "${EXPORT_TYPE}" export with query parameters: "${EXPORT_CONFIG}" on target: "${EXPORTS_ENDPOINT}""
+	echo_date "Initiating "${EXPORT_TYPE}" export with query parameters: "${EXPORT_CONFIG}" on target: "${EXPORTS_ENDPOINT}""
 
 	DATE=$(date +"%Y%m%d_%H%M%S")
 	RENAMED_EXPORT_FILE="${EXPORT_FILE_NAME}_${DATE}.zip"
