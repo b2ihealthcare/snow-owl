@@ -141,14 +141,14 @@ initiate_export() {
 
 	if ((${#REFSETS_TO_EXPORT[@]})); then
 		# Append refsets to config
-		for refset in "${REFSETS_TO_EXPORT[@]::${#REFSETS_TO_EXPORT[@]}-1}"; do
+		for refset in "${REFSETS_TO_EXPORT[@]}"; do
 			EXPORT_CONFIG+="&refSetIds=${refset}"
 		done
 	fi
 
 	if ((${#MODULES_TO_EXPORT[@]})); then
 		# Append modules to config
-		for module in "${MODULES_TO_EXPORT[@]::${#MODULES_TO_EXPORT[@]}-1}"; do
+		for module in "${MODULES_TO_EXPORT[@]}"; do
 			EXPORT_CONFIG+="&moduleIds=${module}"
 		done
 	fi
