@@ -23,20 +23,30 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiFunction;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.options.Options;
+import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
 
 /**
  * @since 5.2
  */
 public abstract class SearchResourceRequest<C extends ServiceProvider, B> extends IndexResourceRequest<C, B> {
+	
+	/**
+	 * Special option character that can be used for special search expressions in filters where usually a user enters a text, like a term filter.
+	 * @see #getSpecialOptionKey
+	 */
+	public static final Pattern SPECIAL_OPTION_EXPRESSION = Pattern.compile("\\@(.+)\\((.+)\\)");
 	
 	/**
 	 * Exception that indicates that the search request will not have any matching items therefore can immediately respond back with an empty result.
@@ -209,6 +219,16 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 	
 	protected SearchResourceRequest() {}
 	
+	/**
+	 * Subclasses may override this to provide the OptionKey where special search expressions can be supported and processed. By default this returns
+	 * <code>null</code> which disables the feature.
+	 * 
+	 * @return
+	 */
+	protected Enum<?> getSpecialOptionKey() {
+		return null;
+	}
+	
 	void setSearchAfter(String searchAfter) {
 		this.searchAfter = searchAfter;
 	}
@@ -302,6 +322,8 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 	@Override
 	public final B execute(C context) {
 		try {
+			// process the options for special option expressions and map them as options on their own
+			setOptions(processSpecialOptionKey(options, getSpecialOptionKey()));
 			return doExecute(context);
 		} catch (NoResultException e) {
 			return createEmptyResult(limit);
@@ -310,7 +332,29 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 		}
 	}
 	
-	
+	@VisibleForTesting
+	static Options processSpecialOptionKey(Options options, Enum<?> specialOptionKey) {
+		if (specialOptionKey != null && options.containsKey(specialOptionKey)) {
+			// this will throw a classcast if non-String value is encountered in the option key and that is okay
+			String specialOption = options.getString(specialOptionKey);
+			Matcher matcher = SPECIAL_OPTION_EXPRESSION.matcher(specialOption);
+			if (matcher.matches()) {
+				String optionKey = matcher.group(1);
+				String value = matcher.group(2);
+				OptionsBuilder newOptions = Options.builder().put(optionKey.toUpperCase(), value);
+				
+				for (String key : options.keySet()) {
+					if (!specialOptionKey.name().equals(key)) {
+						newOptions.put(key, options.get(key));
+					}
+				}
+				
+				return newOptions.build();
+			}
+		}
+		return options;
+	}
+
 	protected final List<Sort> sortBy() {
 		return containsKey(SearchResourceRequest.OptionKey.SORT_BY) ? getList(SearchResourceRequest.OptionKey.SORT_BY, Sort.class) : null;
 	}

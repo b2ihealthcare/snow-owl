@@ -135,6 +135,11 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 	protected SnomedConceptSearchRequest() {}
 
 	@Override
+	protected Enum<?> getSpecialOptionKey() {
+		return OptionKey.TERM;
+	}
+	
+	@Override
 	protected Expression prepareQuery(BranchContext context) {
 		ExpressionBuilder queryBuilder = Expressions.builder();
 		
