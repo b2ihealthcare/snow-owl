@@ -1,6 +1,30 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 7.5.1
+
+### Core
+- Bump Elasticsearch to the latest 7.6.2 release [`#530`](https://github.com/b2ihealthcare/snow-owl/pull/530)
+
+### SNOMED CT
+- New special search expression syntax in selected filters (d04df18)
+  * `GET /:path/concepts` endpoint's term filter now accepts special filter expressions `@field(value)`
+  * Examples:
+    * `@ecl(<!138875005)`
+    * `@module(900000000000207008)`
+    * `@namespace(1000000)`
+    * Any other filter expression can be used as special `field` in the syntax
+- Add degree-of-interest scoring to the Concept REST API search endpoints (ef52ee7)
+- Restore effectiveTime during RF2 Delta imports [`#532`](https://github.com/b2ihealthcare/snow-owl/pull/532)
+
+### Docs
+- Initial version of SNOMED CT Extension Guide, see [docs](https://docs.b2i.sg/snow-owl)
+
+### Bugs/Improvements
+- [api] path expressions not working [`#534`](https://github.com/b2ihealthcare/snow-owl/pull/534)
+- [core] fix registration of additional TerminologyComponent types in registry [`#533`](https://github.com/b2ihealthcare/snow-owl/pull/533)
+- [scripts] update SNOMED CT auto RF2 export script [`#536`](https://github.com/b2ihealthcare/snow-owl/pull/536)
+
 ## 7.5.0
 
 ### Core
