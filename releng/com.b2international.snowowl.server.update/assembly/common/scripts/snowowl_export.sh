@@ -45,17 +45,14 @@ MODULES_TO_EXPORT=()
 # Specified refsets to export
 REFSETS_TO_EXPORT=()
 
-# The export type to use for the export config
-EXPORT_TYPE="DELTA"
+# The export type to use for the export config (lower-case "delta", "snapshot" or "full")
+EXPORT_TYPE="delta"
 
 # Base URL of the Snow Owl server
 SNOW_OWL_BASE_URL="http://localhost:8080"
 
 # URL for Snow Owl's REST API
 SNOW_OWL_API_URL="/snowowl/snomed-ct/v3"
-
-# Media type to use for REST requests
-MEDIA_TYPE="application/vnd.com.b2international.snowowl+json"
 
 # The input data for the export config
 EXPORT_CONFIG=""
@@ -81,7 +78,7 @@ NAME:
     -t
         Target folder where the exported content should be saved
     -e
-        Release format (possible values are SNAPSHOT, DELTA, FULL), defaults to DELTA
+        Release format (possible values are snapshot, delta, full), defaults to delta
     -m
         Snomed CT module IDs to filter components of the resulting RF2 by a set of module IDs.
     -s
@@ -121,7 +118,7 @@ validate_variables() {
 	check_if_empty "${SNOW_OWL_USER_PASSWORD}" "User password must be specified"
 	check_if_empty "${TARGET_FOLDER}" "Target folder must be specified"
 
-	if [[ "${EXPORT_TYPE}" != "DELTA" && "${EXPORT_TYPE}" != "SNAPSHOT" && "${EXPORT_TYPE}" != "FULL" ]]; then
+	if [[ "${EXPORT_TYPE}" != "delta" && "${EXPORT_TYPE}" != "snapshot" && "${EXPORT_TYPE}" != "full" ]]; then
 		echo_date "ERROR: Unrecognized export type was given as parameter: ${EXPORT_TYPE}"
 		exit 1
 	fi
@@ -140,39 +137,42 @@ initiate_export() {
 	# The address where the export config endpoint can be found
 	EXPORTS_POST_ENDPOINT="${SNOW_OWL_API_URL}/${BRANCH_TO_EXPORT}/export"
 
-	EXPORT_CONFIG='{"type": "'"${EXPORT_TYPE}"'"'
+	EXPORT_CONFIG="?type=${EXPORT_TYPE}"
 
 	if ((${#REFSETS_TO_EXPORT[@]})); then
 		# Append refsets to config
-		REFSETS_JSON_ARRAY="["
 		for refset in "${REFSETS_TO_EXPORT[@]::${#REFSETS_TO_EXPORT[@]}-1}"; do
-			REFSETS_JSON_ARRAY+='"'"${refset}"'", '
+			EXPORT_CONFIG+="&refSetIds=${refset}"
 		done
-		REFSETS_JSON_ARRAY+='"'"${REFSETS_TO_EXPORT[@]: -1:1}"'"]'
-		EXPORT_CONFIG+=', "'"refSetIds"'": '${REFSETS_JSON_ARRAY}''
 	fi
 
 	if ((${#MODULES_TO_EXPORT[@]})); then
 		# Append modules to config
-		MODULES_JSON_ARRAY="["
 		for module in "${MODULES_TO_EXPORT[@]::${#MODULES_TO_EXPORT[@]}-1}"; do
-			MODULES_JSON_ARRAY+='"'"${module}"'", '
+			EXPORT_CONFIG+="&moduleIds=${module}"
 		done
-		MODULES_JSON_ARRAY+='"'"${MODULES_TO_EXPORT[@]: -1:1}"'"]'
-		EXPORT_CONFIG+=', "moduleIds": '${MODULES_JSON_ARRAY}''
 	fi
-
-	EXPORT_CONFIG+="}"
 
 	EXPORTS_ENDPOINT="${SNOW_OWL_BASE_URL}${EXPORTS_POST_ENDPOINT}"
 
-	echo_date "Initating "${EXPORT_TYPE}" export with config: "${EXPORT_CONFIG}" on target: "${EXPORTS_ENDPOINT}""
+	echo_date "Initating "${EXPORT_TYPE}" export with query parameters: "${EXPORT_CONFIG}" on target: "${EXPORTS_ENDPOINT}""
 
 	DATE=$(date +"%Y%m%d_%H%M%S")
 	RENAMED_EXPORT_FILE="${EXPORT_FILE_NAME}_${DATE}.zip"
 
-	RESPONSE='$(curl --user "${SNOW_OWL_USER}:${SNOW_OWL_USER_PASSWORD}" --request GET --header "Content-type: ${MEDIA_TYPE}" --data "${EXPORT_CONFIG}" --include --output "${TARGET_FOLDER}/${RENAMED_EXPORT_FILE}" --write-out %{http_code} --silent --show-error "${EXPORTS_ENDPOINT}" )'
-
+	HTTP_STATUS=$(curl --user "${SNOW_OWL_USER}:${SNOW_OWL_USER_PASSWORD}" \
+		--request GET \
+		--output "${TARGET_FOLDER}/${RENAMED_EXPORT_FILE}" \
+		--write-out %{http_code} \
+		--silent \
+		--show-error \
+		"${EXPORTS_ENDPOINT}${EXPORT_CONFIG}")
+		
+	if [ "${HTTP_STATUS}" != "200" ]; then
+		echo_date "Download of export archive returned with code ${HTTP_STATUS}"
+	else
+		echo_date "Export archive is available @ ${TARGET_FOLDER}/${RENAMED_EXPORT_FILE}"
+	fi
 }
 
 execute() {
