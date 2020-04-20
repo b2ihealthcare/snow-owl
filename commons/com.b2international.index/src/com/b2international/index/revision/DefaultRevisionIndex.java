@@ -161,17 +161,17 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex, Hooks 
 			final RevisionBranchRef baseOfCompareRef = base.intersection(compare);
 			final RevisionBranchRef compareRef = compare.difference(base);
 
-			final Builder result = RevisionCompare.builder(baseOfCompareRef, compareRef);
+			final Builder result = RevisionCompare.builder(baseOfCompareRef, compareRef, limit);
 			
 			if (base.branchId() != compare.branchId()) {
-				doRevisionCompare(searcher, compareRef, result, limit);
+				doRevisionCompare(searcher, compareRef, result);
 			}
 
 			return result.build();
 		});
 	}
 	
-	private void doRevisionCompare(Searcher searcher, RevisionBranchRef compareRef, RevisionCompare.Builder result, int limit) throws IOException {
+	private void doRevisionCompare(Searcher searcher, RevisionBranchRef compareRef, RevisionCompare.Builder result) throws IOException {
 		if (compareRef.segments().isEmpty()) {
 			return;
 		}

@@ -23,15 +23,14 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.collections.Collections3;
-import com.google.common.collect.ImmutableList;
 
 /**
  * @since 5.0
  */
 public final class RevisionCompare {
 
-	static Builder builder(RevisionBranchRef base, RevisionBranchRef compare) {
-		return new Builder(base, compare);
+	static Builder builder(RevisionBranchRef base, RevisionBranchRef compare, int limit) {
+		return new Builder(base, compare, limit);
 	}
 	
 	static class Builder {
@@ -41,12 +40,14 @@ public final class RevisionCompare {
 		private int added;
 		private int changed;
 		private int removed;
+		private final int limit;
 	
 		private final Map<String, RevisionCompareDetail> detailsByComponent = newHashMap();
 		
-		Builder(RevisionBranchRef base, RevisionBranchRef compare) {
+		Builder(RevisionBranchRef base, RevisionBranchRef compare, int limit) {
 			this.base = base;
 			this.compare = compare;
+			this.limit = limit;
 		}
 		
 		public Builder apply(Commit commit) {
@@ -90,20 +91,23 @@ public final class RevisionCompare {
 		}
 		
 		public RevisionCompare build() {
-			final List<RevisionCompareDetail> details = ImmutableList.copyOf(detailsByComponent.values());
-			details.forEach(compareDetail -> {
-				switch (compareDetail.getOp()) {
-				case ADD:
-					added++;
-					break;
-				case CHANGE:
-					changed++;
-					break;
-				case REMOVE:
-					removed++;
-					break;
-				}
-			});
+			final List<RevisionCompareDetail> details = detailsByComponent.values().stream()
+					.map(compareDetail -> {
+						switch (compareDetail.getOp()) {
+						case ADD:
+							added++;
+							break;
+						case CHANGE:
+							changed++;
+							break;
+						case REMOVE:
+							removed++;
+							break;
+						}
+						return compareDetail;
+					})
+					.limit(limit)
+					.collect(Collectors.toUnmodifiableList());
 			return new RevisionCompare(
 					base, 
 					compare,
