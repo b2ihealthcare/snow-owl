@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,7 +56,7 @@ public final class RevisionIndexReadRequest<B> extends DelegatingRequest<BranchC
 	
 	@Override
 	public B execute(final BranchContext context) {
-		final String branchPath = context.branchPath();
+		final String branchPath = context.path();
 		RevisionIndex index = context.service(RevisionIndex.class);
 		if (snapshot) {
 			return index.read(branchPath, searcher -> {

@@ -11,10 +11,13 @@ snomed:
   languages:
     -
       code: en
-      refSetIds: ["900000000000509007", "900000000000508004"]
+      refSetIds: ["900000000000509007", "900000000000508004", "999001261000000100", "999000671000001103"]
     -
       code: en-us
       refSetIds: ["900000000000509007"]
     -
       code: en-gb
       refSetIds: ["900000000000508004"]
+
+monitoring:
+  enabled: true

@@ -127,12 +127,7 @@ public abstract class BaseApiConfig {
 				)
 				.groupName(apiGroup)
 	            .select()
-	            	.paths(input -> {
-	            		if(apiBaseUrl != null && apiBaseUrl.equals("/")) {
-	            			return input != null && input.startsWith("//");
-	            		}
-	            		return paths.apply(input);
-	            	})
+	            	.paths(paths)
 	            	.build()
 	            .apiInfo(new ApiInfo(apiTitle, apiDescription, apiVersion, apiTermsOfServiceUrl, new Contact("B2i Healthcare", apiLicenseUrl, apiContact), apiLicense, apiLicenseUrl, Collections.emptyList()));
 	}

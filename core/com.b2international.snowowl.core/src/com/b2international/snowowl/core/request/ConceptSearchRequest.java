@@ -45,6 +45,7 @@ public final class ConceptSearchRequest extends SearchResourceRequest<BranchCont
 				.put(ConceptSearchRequestEvaluator.OptionKey.AFTER, searchAfter())
 				.put(ConceptSearchRequestEvaluator.OptionKey.LIMIT, limit())
 				.put(ConceptSearchRequestEvaluator.OptionKey.LOCALES, locales())
+				.put(SearchResourceRequest.OptionKey.SORT_BY, sortBy())
 				.build();
 		return context.service(ConceptSearchRequestEvaluator.class).evaluate(context.service(CodeSystemURI.class), context, options);
 	}

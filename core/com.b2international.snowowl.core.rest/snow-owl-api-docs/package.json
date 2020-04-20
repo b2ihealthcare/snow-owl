@@ -4,9 +4,9 @@
   "private": true,
   "homepage": "./site",
   "dependencies": {
-    "antd": "^4.0.0",
-    "react": "^16.13.0",
-    "react-dom": "^16.13.0",
+    "antd": "^3.26.9",
+    "react": "^16.12.0",
+    "react-dom": "^16.12.0",
     "react-scripts": "^3.4.0",
     "swagger-ui-react": "^3.25.0"
   },

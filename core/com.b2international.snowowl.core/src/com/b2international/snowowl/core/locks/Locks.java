@@ -49,7 +49,7 @@ public final class Locks implements AutoCloseable {
 			this.context = checkNotNull(context, "Context is missing");
 			this.user = context.service(User.class).getUsername();
 			if (context instanceof BranchContext) {
-				this.branches = List.of(((BranchContext) context).branchPath()); 
+				this.branches = List.of(((BranchContext) context).branch().path()); 
 			}
 		}
 		

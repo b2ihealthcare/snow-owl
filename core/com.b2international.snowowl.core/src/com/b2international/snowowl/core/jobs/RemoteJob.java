@@ -16,6 +16,7 @@
 package com.b2international.snowowl.core.jobs;
 
 import java.util.Collections;
+import java.util.Map;
 import java.util.UUID;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -160,8 +161,8 @@ public final class RemoteJob extends Job {
 		return response;
 	}
 
-	Request<ServiceProvider, ?> getRequest() {
-		return request;
+	public Map<String, Object> getParameters(ObjectMapper mapper) {
+		return mapper.convertValue(request, Map.class);
 	}
 	
 }
