@@ -20,6 +20,7 @@ server. Those can be grouped in the following categories to look out for when do
     * the main `pom.xml` file (added babylonhealth module and distributionManagement adjustments)
     * the `Dockerfile`
     * the `BaseApiConfig.java` (edited paths filter)
+    * the `core/com.b2international.snowowl.core.rest` (plugin replacement)
 * Files that might need recreation 
     * the `package.json` - we are on a later version of some of the dependencies - keep that, if others are updated recreate the `package-lock.json` file
     * the `snow-owl-oss.launch` - might need to accept all new changes and in Eclipse add the the babylon plugin the launch config to avoid messing it up by manually changing it
