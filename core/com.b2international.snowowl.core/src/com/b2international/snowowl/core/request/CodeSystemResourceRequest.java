@@ -17,7 +17,7 @@ package com.b2international.snowowl.core.request;
 
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.codesystem.CodeSystemEntry;
+import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
 import com.b2international.snowowl.core.codesystem.version.CodeSystemVersionSearchRequestBuilder;
@@ -37,7 +37,7 @@ public final class CodeSystemResourceRequest<R> extends DelegatingRequest<Servic
 	@JsonProperty
 	private final CodeSystemURI uri;
 	
-	private transient CodeSystemEntry codeSystem;
+	private transient CodeSystem codeSystem;
 	
 	private transient String branchPath;
 	
@@ -57,7 +57,7 @@ public final class CodeSystemResourceRequest<R> extends DelegatingRequest<Servic
 				.build());
 	}
 
-	public CodeSystemEntry getCodeSystem(ServiceProvider context) {
+	public CodeSystem getCodeSystem(ServiceProvider context) {
 		if (codeSystem == null) {
 			codeSystem = CodeSystemRequests.getCodeSystem(context, uri.getCodeSystem());
 		}

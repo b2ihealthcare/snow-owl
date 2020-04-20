@@ -43,7 +43,7 @@ import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.codesystem.CodeSystemEntry;
+import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
@@ -91,7 +91,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 	
 	// local execution variables
 	private transient Multimap<DatastoreLockContext, DatastoreLockTarget> lockTargetsByContext;
-	private transient Map<String, CodeSystemEntry> codeSystemsByShortName;
+	private transient Map<String, CodeSystem> codeSystemsByShortName;
 	
 	@Override
 	public Boolean execute(ServiceProvider context) {
@@ -102,7 +102,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 			codeSystemsByShortName = fetchAllCodeSystems(context);
 		}
 		
-		final CodeSystemEntry codeSystem = codeSystemsByShortName.get(codeSystemShortName);
+		final CodeSystem codeSystem = codeSystemsByShortName.get(codeSystemShortName);
 		if (codeSystem == null) {
 			throw new CodeSystemNotFoundException(codeSystemShortName);
 		}
@@ -128,7 +128,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 			// ignore
 		}
 		
-		final List<CodeSystemEntry> codeSystemsToVersion = codeSystem.getDependenciesAndSelf()
+		final List<CodeSystem> codeSystemsToVersion = codeSystem.getDependenciesAndSelf()
 			.stream()
 			.map(codeSystemsByShortName::get)
 			.collect(Collectors.toList());
@@ -164,16 +164,16 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 		}
 	}
 	
-	private Map<String, CodeSystemEntry> fetchAllCodeSystems(ServiceProvider context) {
+	private Map<String, CodeSystem> fetchAllCodeSystems(ServiceProvider context) {
 		final RepositoryManager repositoryManager = context.service(RepositoryManager.class);
 		final Collection<Repository> repositories = repositoryManager.repositories();
 		return repositories.stream()
 			.map(repository -> fetchCodeSystem(context, repository.id()))
 			.flatMap(Collection::stream)
-			.collect(Collectors.toMap(CodeSystemEntry::getShortName, Function.identity()));
+			.collect(Collectors.toMap(CodeSystem::getShortName, Function.identity()));
 	}
 	
-	private List<CodeSystemEntry> fetchCodeSystem(ServiceProvider context, String repositoryId) {
+	private List<CodeSystem> fetchCodeSystem(ServiceProvider context, String repositoryId) {
 		return CodeSystemRequests.prepareSearchCodeSystem()
 			.all()
 			.build(repositoryId)
@@ -182,8 +182,8 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 			.getItems();
 	}
 	
-	private void validateEffectiveTime(ServiceProvider context, CodeSystemEntry codeSystem) {
-		if (!context.service(TerminologyRegistry.class).getTerminology(codeSystem.getTerminologyComponentId()).isEffectiveTimeSupported()) {
+	private void validateEffectiveTime(ServiceProvider context, CodeSystem codeSystem) {
+		if (!context.service(TerminologyRegistry.class).getTerminology(codeSystem.getTerminologyId()).isEffectiveTimeSupported()) {
 			return;
 		}
 
@@ -195,7 +195,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 		}
 	}
 	
-	private Instant getMostRecentVersionEffectiveDateTime(ServiceProvider context, CodeSystemEntry codeSystem) {
+	private Instant getMostRecentVersionEffectiveDateTime(ServiceProvider context, CodeSystem codeSystem) {
 		return CodeSystemRequests.prepareSearchCodeSystemVersion()
 			.all()
 			.filterByCodeSystemShortName(codeSystem.getShortName())
@@ -209,12 +209,12 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 			.orElse(Instant.EPOCH);
 	}
 	
-	private void acquireLocks(ServiceProvider context, String user, Collection<CodeSystemEntry> codeSystems) {
+	private void acquireLocks(ServiceProvider context, String user, Collection<CodeSystem> codeSystems) {
 		try {
 			this.lockTargetsByContext = HashMultimap.create();
 			
 			final DatastoreLockContext lockContext = new DatastoreLockContext(user, CREATE_VERSION);
-			for (CodeSystemEntry codeSystem : codeSystems) {
+			for (CodeSystem codeSystem : codeSystems) {
 				final DatastoreLockTarget lockTarget = new DatastoreLockTarget(codeSystem.getRepositoryUuid(), codeSystem.getBranchPath());
 				
 				context.service(IOperationLockManager.class).lock(lockContext, IOperationLockManager.IMMEDIATE, lockTarget);
@@ -239,7 +239,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 		}
 	}
 	
-	private void doTag(ServiceProvider context, CodeSystemEntry codeSystem, IProgressMonitor monitor) {
+	private void doTag(ServiceProvider context, CodeSystem codeSystem, IProgressMonitor monitor) {
 		RepositoryRequests
 			.branching()
 			.prepareCreate()

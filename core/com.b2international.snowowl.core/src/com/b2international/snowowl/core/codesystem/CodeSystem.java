@@ -18,14 +18,19 @@ package com.b2international.snowowl.core.codesystem;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.SortedSet;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -370,6 +375,33 @@ public class CodeSystem {
 	
 	public void setAdditionalProperties(final Map<String, Object> additionalProperties) {
 		this.additionalProperties = additionalProperties;
+	}
+	
+	/**
+	 * Returns all code system short name dependencies and itself.
+	 */
+	@JsonIgnore
+	public SortedSet<String> getDependenciesAndSelf() {
+		ImmutableSortedSet.Builder<String> affectedCodeSystems = ImmutableSortedSet.naturalOrder();
+		affectedCodeSystems.addAll(getDependencies());
+		affectedCodeSystems.add(shortName);
+		return affectedCodeSystems.build();
+	}
+	
+	/**
+	 * Returns the short names of all affected code systems
+	 */
+	@JsonIgnore
+	public SortedSet<String> getDependencies() {
+		return TerminologyRegistry.INSTANCE.getTerminology(terminologyId).getDependencies();
+	}
+	
+	/**
+	 * Returns a new branch path that originates from the code system's branch path
+	 */
+	@JsonIgnore
+	public String getRelativeBranchPath(String relativeTo) {
+		return String.format("%s%s%s", branchPath, Branch.SEPARATOR, relativeTo);
 	}
 
 	@Override

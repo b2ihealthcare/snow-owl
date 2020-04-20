@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.internal;
 
-import com.b2international.snowowl.core.codesystem.CodeSystemEntry;
+import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.repository.TerminologyRepositoryInitializer;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 
@@ -25,16 +25,16 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 public final class SnomedRepositoryInitializer extends TerminologyRepositoryInitializer {
 
 	@Override
-	protected CodeSystemEntry createPrimaryCodeSystem() {
-		return CodeSystemEntry.builder()
+	protected CodeSystem createPrimaryCodeSystem() {
+		return CodeSystem.builder()
 				.name(SnomedTerminologyComponentConstants.SNOMED_NAME)
 				.shortName(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME)
 				.citation(SnomedTerminologyComponentConstants.SNOMED_INT_CITATION)
 				.iconPath(SnomedTerminologyComponentConstants.SNOMED_INT_ICON_PATH)
-				.language(SnomedTerminologyComponentConstants.SNOMED_INT_LANGUAGE)
-				.orgLink(SnomedTerminologyComponentConstants.SNOMED_INT_LINK)
+				.primaryLanguage(SnomedTerminologyComponentConstants.SNOMED_INT_LANGUAGE)
+				.organizationLink(SnomedTerminologyComponentConstants.SNOMED_INT_LINK)
 				.oid(SnomedTerminologyComponentConstants.SNOMED_INT_OID)
-				.terminologyComponentId(SnomedTerminologyComponentConstants.TERMINOLOGY_ID)
+				.terminologyId(SnomedTerminologyComponentConstants.TERMINOLOGY_ID)
 				.build();
 	}
 

@@ -44,7 +44,7 @@ import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.Branches;
-import com.b2international.snowowl.core.codesystem.CodeSystemEntry;
+import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
 import com.b2international.snowowl.core.date.DateFormats;
@@ -234,7 +234,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Export
 		final long exportStartTime = Instant.now().toEpochMilli();
 
 		// Step 1: check if the export reference branch is a working branch path descendant
-		final CodeSystemEntry referenceCodeSystem = context.service(RepositoryCodeSystemProvider.class).get(referenceBranch);
+		final CodeSystem referenceCodeSystem = context.service(RepositoryCodeSystemProvider.class).get(referenceBranch);
 
 		// Step 2: retrieve code system versions that are visible from the reference branch
 		final TreeSet<CodeSystemVersionEntry> versionsToExport = getAllExportableCodeSystemVersions(context, referenceCodeSystem);
@@ -522,14 +522,14 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Export
 		return calendar.getTime();
 	}
 
-	private TreeSet<CodeSystemVersionEntry> getAllExportableCodeSystemVersions(final BranchContext context, final CodeSystemEntry codeSystemEntry) {
+	private TreeSet<CodeSystemVersionEntry> getAllExportableCodeSystemVersions(final BranchContext context, final CodeSystem codeSystemEntry) {
 		final String referenceBranch = context.branchPath();
 		final TreeSet<CodeSystemVersionEntry> visibleVersions = newTreeSet(EFFECTIVE_DATE_ORDERING);
 		collectExportableCodeSystemVersions(context, visibleVersions, codeSystemEntry, referenceBranch);
 		return visibleVersions;
 	}
 
-	private void collectExportableCodeSystemVersions(final RepositoryContext context, final Set<CodeSystemVersionEntry> versionsToExport, final CodeSystemEntry codeSystemEntry,
+	private void collectExportableCodeSystemVersions(final RepositoryContext context, final Set<CodeSystemVersionEntry> versionsToExport, final CodeSystem codeSystemEntry,
 			final String referenceBranch) {
 		
 		final Collection<CodeSystemVersionEntry> candidateVersions = newArrayList(getCodeSystemVersions(context, codeSystemEntry.getShortName()));
@@ -562,15 +562,15 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Export
 		versionsToExport.addAll(candidateVersions);
 
 		// Exit early if only an extension code system should be exported, or we are already at the "base" code system
-		final CodeSystemURI extensionOf = codeSystemEntry.getExtensionOf();
-		if (extensionOnly || extensionOf == null) {
+		final CodeSystemURI extensionOfUri = codeSystemEntry.getExtensionOf();
+		if (extensionOnly || extensionOfUri == null) {
 			return;
 		}
 
 		// Otherwise, collect applicable versions using this code system's working path
-		final String extensionOfShortName = extensionOf.getCodeSystem();
-		final CodeSystemEntry extensionEnty = CodeSystemRequests.getCodeSystem(context, extensionOfShortName);
-		collectExportableCodeSystemVersions(context, versionsToExport, extensionEnty, codeSystemEntry.getBranchPath());
+		final String extensionOfShortName = extensionOfUri.getCodeSystem();
+		final CodeSystem extensionOfCodeSystem = CodeSystemRequests.getCodeSystem(context, extensionOfShortName);
+		collectExportableCodeSystemVersions(context, versionsToExport, extensionOfCodeSystem, codeSystemEntry.getBranchPath());
 	}
 
 	private Path createExportDirectory(final UUID exportId) {

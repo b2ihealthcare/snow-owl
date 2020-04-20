@@ -24,21 +24,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.SortedSet;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.index.Doc;
 import com.b2international.index.query.Expression;
-import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSortedSet;
 
 /**
  * @since 5.0
@@ -396,32 +391,5 @@ public final class CodeSystemEntry implements Serializable {
 		 * Consider removing "oid" from the equality check.
 		 */
 		return Objects.equals(oid, other.oid) && Objects.equals(shortName, other.shortName);
-	}
-	
-	/**
-	 * Returns all code system short name dependencies and itself.
-	 */
-	@JsonIgnore
-	public SortedSet<String> getDependenciesAndSelf() {
-		ImmutableSortedSet.Builder<String> affectedCodeSystems = ImmutableSortedSet.naturalOrder();
-		affectedCodeSystems.addAll(getDependencies());
-		affectedCodeSystems.add(shortName);
-		return affectedCodeSystems.build();
-	}
-	
-	/**
-	 * Returns the short names of all affected code systems
-	 */
-	@JsonIgnore
-	public SortedSet<String> getDependencies() {
-		return TerminologyRegistry.INSTANCE.getTerminology(terminologyComponentId).getDependencies();
-	}
-	
-	/**
-	 * Returns a new branch path that originates from the code system's branch path
-	 */
-	@JsonIgnore
-	public String getRelativeBranchPath(String relativeTo) {
-		return String.format("%s%s%s", branchPath, Branch.SEPARATOR, relativeTo);
 	}
 }

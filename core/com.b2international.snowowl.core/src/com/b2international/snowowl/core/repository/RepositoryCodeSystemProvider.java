@@ -17,7 +17,7 @@ package com.b2international.snowowl.core.repository;
 
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
-import com.b2international.snowowl.core.codesystem.CodeSystemEntry;
+import com.b2international.snowowl.core.codesystem.CodeSystem;
 
 /**
  * @since 7.5
@@ -32,6 +32,6 @@ public interface RepositoryCodeSystemProvider {
 	 * @return the closest relative {@link CodeSystem}
 	 * @throws BadRequestException - if there is no relative CodeSystem can be found for the given reference branch
 	 */
-	CodeSystemEntry get(String referenceBranch);
+	CodeSystem get(String referenceBranch);
 	
 }

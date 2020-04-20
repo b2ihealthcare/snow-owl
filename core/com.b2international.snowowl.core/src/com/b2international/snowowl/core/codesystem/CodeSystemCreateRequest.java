@@ -137,8 +137,7 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 				.execute(context);
 		}
 		
-		final CodeSystemEntry codeSystem = createCodeSystem(context);
-		return context.add(codeSystem);
+		return context.add(createCodeSystemEntry(context));
 	}
 
 	private void checkBranchPath(final TransactionContext context) {
@@ -240,7 +239,7 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 				.getTotal() > 0;
 	}
 
-	private CodeSystemEntry createCodeSystem(final TransactionContext context) {
+	private CodeSystemEntry createCodeSystemEntry(final TransactionContext context) {
 		return CodeSystemEntry.builder()
 				.oid(oid)
 				.branchPath(branchPath)

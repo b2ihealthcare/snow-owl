@@ -35,7 +35,6 @@ import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
 import com.google.inject.Provider;
 
@@ -64,7 +63,7 @@ public final class CodeSystemService {
 				.then(results -> {
 					final List<CodeSystem> codeSystems = newArrayList();
 					for (CodeSystems result : Iterables.filter(results, CodeSystems.class)) {
-						codeSystems.addAll(Lists.transform(result.getItems(), input -> CodeSystem.builder(input).build()));
+						codeSystems.addAll(result.getItems());
 					}
 					return SHORT_NAME_ORDERING.immutableSortedCopy(codeSystems);
 				})
@@ -94,7 +93,7 @@ public final class CodeSystemService {
 				.then(results -> {
 					for (CodeSystems result : Iterables.filter(results, CodeSystems.class)) {
 						if (!result.getItems().isEmpty()) {
-							return CodeSystem.builder(Iterables.getOnlyElement(result.getItems())).build();
+							return Iterables.getOnlyElement(result.getItems());
 						}
 					}
 					throw new NotFoundException("CodeSystem", shortNameOrOid);

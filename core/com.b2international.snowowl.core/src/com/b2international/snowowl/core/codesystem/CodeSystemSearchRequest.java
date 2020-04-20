@@ -33,8 +33,7 @@ final class CodeSystemSearchRequest extends SearchIndexResourceRequest<Repositor
 
 	private static final long serialVersionUID = 1L;
 
-	CodeSystemSearchRequest() {
-	}
+	CodeSystemSearchRequest() { }
 
 	@Override
 	protected Class<CodeSystemEntry> getDocumentType() {
@@ -53,7 +52,8 @@ final class CodeSystemSearchRequest extends SearchIndexResourceRequest<Repositor
 
 	@Override
 	protected CodeSystems toCollectionResource(RepositoryContext context, Hits<CodeSystemEntry> hits) {
-		return new CodeSystems(hits.getHits(), hits.getSearchAfter(), limit(), hits.getTotal());
+		final CodeSystemConverter converter = new CodeSystemConverter(context, null, null);
+		return converter.convert(hits.getHits(), hits.getSearchAfter(), hits.getLimit(), hits.getTotal());
 	}
 	
 	@Override
@@ -65,5 +65,4 @@ final class CodeSystemSearchRequest extends SearchIndexResourceRequest<Repositor
 	public String getOperation() {
 		return Permission.BROWSE;
 	}
-
 }

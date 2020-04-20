@@ -23,8 +23,8 @@ import com.b2international.snowowl.core.request.RepositoryRequestBuilder;
  * @since 4.7
  */
 public final class CodeSystemGetRequestBuilder 
-		extends GetResourceRequestBuilder<CodeSystemGetRequestBuilder, CodeSystemSearchRequestBuilder, RepositoryContext, CodeSystemEntry>
-		implements RepositoryRequestBuilder<CodeSystemEntry> {
+		extends GetResourceRequestBuilder<CodeSystemGetRequestBuilder, CodeSystemSearchRequestBuilder, RepositoryContext, CodeSystem>
+		implements RepositoryRequestBuilder<CodeSystem> {
 
 	CodeSystemGetRequestBuilder(String uniqueId) {
 		super(new CodeSystemGetRequest(uniqueId));
