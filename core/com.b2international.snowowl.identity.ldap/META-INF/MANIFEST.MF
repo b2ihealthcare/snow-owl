@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Snow Owl LDAP Identity Module
 Bundle-SymbolicName: com.b2international.snowowl.identity.ldap
-Bundle-Version: 7.5.1
+Bundle-Version: 7.6.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Import-Package: javax.naming,
  javax.naming.directory,
