@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,12 @@
  */
 package com.b2international.snowowl.core.request;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import com.b2international.commons.CompareUtils;
 import com.google.common.base.Splitter;
 
 public final class SortParser {
@@ -33,7 +35,10 @@ public final class SortParser {
 			.trimResults();
 
 	public static List<SearchResourceRequest.Sort> parse(final String sortBy) {
-
+		if (CompareUtils.isEmpty(sortBy)) {
+			return Collections.emptyList();
+		}
+		
 		return PART_SPLITTER.splitToList(sortBy)
 				.stream()
 				.map(part -> {

@@ -62,7 +62,7 @@ public final class TransactionalRequest implements Request<BranchContext, Commit
 		} catch (ApiException e) {
 			throw e;
 		} catch (Exception e) {
-			throw new SnowowlRuntimeException(e);
+			throw SnowowlRuntimeException.wrap(e);
 		}
 	}
 

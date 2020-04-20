@@ -26,6 +26,7 @@ import com.b2international.snowowl.core.events.util.PromiseTest;
 import com.b2international.snowowl.core.events.util.RequestTest;
 import com.b2international.snowowl.core.jobs.JobRequestsTest;
 import com.b2international.snowowl.core.merge.MergeConflictSerializationTest;
+import com.b2international.snowowl.core.request.SearchResourceRequestTest;
 import com.b2international.snowowl.core.request.SortParserTest;
 import com.b2international.snowowl.core.validation.ValidationIssueApiTest;
 import com.b2international.snowowl.core.validation.ValidationRuleApiTest;
@@ -46,6 +47,7 @@ import com.b2international.snowowl.core.validation.ValidationWhiteListApiTest;
 	ValidationWhiteListApiTest.class,
 	AttachmentRegistryTest.class,
 	SortParserTest.class,
+	SearchResourceRequestTest.class,
 	JobRequestsTest.class,
 	MergeConflictSerializationTest.class,
 	ReviewSerializationTest.class

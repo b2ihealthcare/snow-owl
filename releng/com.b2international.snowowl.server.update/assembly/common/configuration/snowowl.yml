@@ -37,7 +37,6 @@ snomed:
       code: en-gb
       refSetIds: ["900000000000508004"]
 
-# Request execution metrics (response-time, jvm, gc, etc.)
 monitoring:
   enabled: true
 

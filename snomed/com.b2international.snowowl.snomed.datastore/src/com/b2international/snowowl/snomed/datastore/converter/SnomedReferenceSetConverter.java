@@ -78,19 +78,19 @@ final class SnomedReferenceSetConverter extends BaseRevisionResourceConverter<Sn
 		refset.setModuleId(entry.getModuleId());
 		refset.setIconId(entry.getIconId());
 		refset.setScore(entry.getScore());
-		final short referencedComponentType = entry.getReferencedComponentType();
-		if (referencedComponentType > 0) {
+		final Short referencedComponentType = entry.getReferencedComponentType();
+		if (referencedComponentType != null && referencedComponentType > 0) {
 			refset.setReferencedComponentType(getReferencedComponentType(referencedComponentType));
 		}
-		final short mapTargetComponentType = entry.getMapTargetComponentType();
-		if (mapTargetComponentType > 0) {
+		final Short mapTargetComponentType = entry.getMapTargetComponentType();
+		if (mapTargetComponentType != null && mapTargetComponentType > 0) {
 			refset.setMapTargetComponentType(getReferencedComponentType(mapTargetComponentType));
 		}
 		refset.setType(entry.getRefSetType());
 		return refset;
 	}
 
-	private String getReferencedComponentType(final short referencedComponentType) {
-		return context().service(TerminologyRegistry.class).getTerminologyComponentByShortId((short) referencedComponentType).id();
+	private String getReferencedComponentType(final Short referencedComponentType) {
+		return context().service(TerminologyRegistry.class).getTerminologyComponentByShortId(referencedComponentType).id();
 	}
 }

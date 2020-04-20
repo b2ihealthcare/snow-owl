@@ -83,11 +83,10 @@ final class BranchCompareRequest implements Request<RepositoryContext, BranchCom
 			baseBranchPath = branchToCompare.parentPath();
 		}
 		
-		final BranchCompareResult.Builder result = BranchCompareResult.builder(baseBranchPath, compare, compareHeadTimestamp);
-		
-		int totalNew = 0;
-		int totalChanged = 0;
-		int totalDeleted = 0;
+		final BranchCompareResult.Builder result = BranchCompareResult.builder(baseBranchPath, compare, compareHeadTimestamp)
+				.totalNew(compareResult.getTotalAdded())
+				.totalChanged(compareResult.getTotalChanged())
+				.totalDeleted(compareResult.getTotalRemoved());
 		
 		for (RevisionCompareDetail detail : compareResult.getDetails()) {
 			final ObjectId affectedId;
@@ -106,23 +105,17 @@ final class BranchCompareRequest implements Request<RepositoryContext, BranchCom
 			switch (detail.getOp()) {
 			case ADD:
 				result.putNewComponent(identifier);
-				totalNew++;
 				break;
 			case CHANGE:
 				result.putChangedComponent(identifier);
-				totalChanged++;
 				break;
 			case REMOVE:
 				result.putDeletedComponent(identifier);
-				totalDeleted++;
 				break;
 			}
 		}
 		
-		return result.addTotalNew(totalNew)
-				.addTotalChanged(totalChanged)
-				.addTotalDeleted(totalDeleted)
-				.build();
+		return result.build();
 	}
 	
 	@Override

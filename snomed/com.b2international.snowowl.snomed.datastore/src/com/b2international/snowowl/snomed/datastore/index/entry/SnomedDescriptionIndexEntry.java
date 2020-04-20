@@ -101,27 +101,17 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 	}
 	
 	public static Builder builder(final SnomedDescription input) {
-		String id = input.getId();
 		final Builder builder = builder()
-				.id(id)
-				.term(input.getTerm()) 
-				.moduleId(input.getModuleId())
-				.languageCode(input.getLanguageCode())
-				.released(input.isReleased())
+				.id(input.getId())
 				.active(input.isActive())
-				.typeId(input.getTypeId())
+				.effectiveTime(EffectiveTimes.getEffectiveTime(input.getEffectiveTime()))
+				.released(input.isReleased())
+				.moduleId(input.getModuleId())
 				.conceptId(input.getConceptId())
-				.caseSignificanceId(input.getCaseSignificanceId())
-				.effectiveTime(EffectiveTimes.getEffectiveTime(input.getEffectiveTime()));
-		
-		// TODO add back scoring
-//		if (input.getScore() != null) {
-//			builder.score(input.getScore());
-//		}
-		
-		if (input.getType() != null && input.getType().getPt() != null) {
-			builder.typeLabel(input.getType().getPt().getTerm());
-		}
+				.languageCode(input.getLanguageCode())
+				.term(input.getTerm()) 
+				.typeId(input.getTypeId())
+				.caseSignificanceId(input.getCaseSignificanceId());
 		
 		for (final String refSetId : input.getAcceptabilityMap().keySet()) {
 			builder.acceptability(refSetId, input.getAcceptabilityMap().get(refSetId));
@@ -138,18 +128,17 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 	 * @return
 	 */
 	public static Builder builder(SnomedDescriptionIndexEntry doc) {
-		String id = doc.getId();
 		return builder()
-				.id(id)
-				.term(doc.getTerm())
-				.moduleId(doc.getModuleId())
-				.released(doc.isReleased())
+				.id(doc.getId())
 				.active(doc.isActive())
-				.typeId(doc.getTypeId())
-				.caseSignificanceId(doc.getCaseSignificanceId())
+				.effectiveTime(doc.getEffectiveTime())
+				.released(doc.isReleased())
+				.moduleId(doc.getModuleId())
 				.conceptId(doc.getConceptId())
 				.languageCode(doc.getLanguageCode())
-				.effectiveTime(doc.getEffectiveTime())
+				.term(doc.getTerm())
+				.typeId(doc.getTypeId())
+				.caseSignificanceId(doc.getCaseSignificanceId())
 				.acceptabilityMap(doc.getAcceptabilityMap());
 	}
 	
@@ -281,7 +270,6 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		private String conceptId;
 		private String languageCode;
 		private String typeId;
-		private String typeLabel;
 		private String caseSignificanceId;
 		private Set<String> acceptableIn = newHashSetWithExpectedSize(2);
 		private Set<String> preferredIn = newHashSetWithExpectedSize(2);
@@ -322,11 +310,6 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 			return getSelf();
 		}
 		
-		public Builder typeLabel(final String typeLabel) {
-			this.typeLabel = typeLabel;
-			return getSelf();
-		}
-
 		public Builder caseSignificanceId(final String caseSignificanceId) {
 			this.caseSignificanceId = caseSignificanceId;
 			return getSelf();
@@ -384,7 +367,6 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 					term,
 					semanticTag,
 					typeId,
-					typeLabel == null ? typeId : typeLabel,
 					caseSignificanceId,
 					preferredIn, 
 					acceptableIn,
@@ -413,17 +395,17 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 	private SnomedDescriptionIndexEntry(final String id,
 			final String label,
 			final String moduleId, 
-			final boolean released, 
-			final boolean active, 
-			final long effectiveTime, 
+			final Boolean released, 
+			final Boolean active, 
+			final Long effectiveTime, 
 			final String conceptId,
 			final String languageCode,
 			final String term,
 			final String semanticTag,
 			final String typeId,
-			final String typeLabel,
 			final String caseSignificanceId,
-			final Set<String> preferredIn, final Set<String> acceptableIn,
+			final Set<String> preferredIn, 
+			final Set<String> acceptableIn,
 			final List<String> referringRefSets,
 			final List<String> referringMappingRefSets) {
 		

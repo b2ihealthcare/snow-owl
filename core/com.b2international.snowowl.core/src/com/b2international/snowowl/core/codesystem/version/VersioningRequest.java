@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -101,7 +101,7 @@ public class VersioningRequest implements Request<TransactionContext, Boolean>, 
 				.description(config.getDescription())
 				.effectiveDate(config.getEffectiveTime().getTime())
 				.importDate(new Date().getTime())
-				.parentBranchPath(context.branchPath())
+				.parentBranchPath(context.path())
 				.versionId(config.getVersionId())
 				.codeSystemShortName(config.getCodeSystemShortName())
 				.repositoryUuid(context.id())

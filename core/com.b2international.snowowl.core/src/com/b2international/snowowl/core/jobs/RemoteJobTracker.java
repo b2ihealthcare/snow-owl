@@ -259,7 +259,7 @@ public final class RemoteJobTracker implements IDisposableService {
 				// try to convert the request to a param object
 				String parameters;
 				try {
-					parameters = mapper.writeValueAsString(job.getRequest());
+					parameters = mapper.writeValueAsString(job.getParameters(mapper));
 				} catch (Throwable e) {
 					parameters = "";
 				}

@@ -25,12 +25,15 @@ import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
+import com.b2international.index.query.SortBy.Builder;
+import com.b2international.index.query.SortBy.Order;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.repository.RevisionDocument;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
@@ -132,6 +135,11 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 	protected SnomedConceptSearchRequest() {}
 
 	@Override
+	protected Enum<?> getSpecialOptionKey() {
+		return OptionKey.TERM;
+	}
+	
+	@Override
 	protected Expression prepareQuery(BranchContext context) {
 		ExpressionBuilder queryBuilder = Expressions.builder();
 		
@@ -229,6 +237,20 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 		}
 		
 		return queryExpression;
+	}
+
+	@Override
+	protected void toQuerySortBy(BranchContext context, Builder sortBuilder, Sort sort) {
+		if (sort instanceof SortField) {
+			SortField sortField = (SortField) sort;
+			if (SnomedConceptSearchRequestBuilder.TERM_SORT.equals(sortField.getField())) {
+				final Set<String> synonymIds = context.service(Synonyms.class).get();
+				final Map<String, Object> args = ImmutableMap.of("locales", SnomedDescriptionSearchRequestBuilder.getLanguageRefSetIds(locales()), "synonymIds", synonymIds);
+				sortBuilder.sortByScript("termSort", args, sort.isAscending() ? Order.ASC : Order.DESC);
+				return;
+			}
+		}
+		super.toQuerySortBy(context, sortBuilder, sort);
 	}
 	
 	@Override
