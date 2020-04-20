@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>babylonhealth-parent</artifactId>
-		<version>7.5.0-SNAPSHOT</version>
+		<version>7.6.0</version>
 	</parent>
 
 	<artifactId>com.babylonhealth.snowowl.rest</artifactId>
