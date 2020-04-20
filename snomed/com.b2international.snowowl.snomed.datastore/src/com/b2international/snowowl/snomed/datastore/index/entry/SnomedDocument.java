@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import static com.b2international.index.query.Expressions.exactMatch;
 import static com.b2international.index.query.Expressions.match;
 import static com.b2international.index.query.Expressions.matchAny;
 import static com.b2international.index.query.Expressions.matchRange;
-import static com.google.common.base.Preconditions.checkArgument;
 
 import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.date.EffectiveTimes;
@@ -104,26 +103,26 @@ public abstract class SnomedDocument extends RevisionDocument {
 	public static abstract class Builder<B extends Builder<B, T>, T extends SnomedDocument> extends RevisionDocumentBuilder<B, T> {
 
 		protected String moduleId;
-		protected boolean active;
-		protected boolean released;
-		protected long effectiveTime = EffectiveTimes.UNSET_EFFECTIVE_TIME;
+		protected Boolean active;
+		protected Boolean released;
+		protected Long effectiveTime = EffectiveTimes.UNSET_EFFECTIVE_TIME;
 
 		public B moduleId(final String moduleId) {
 			this.moduleId = moduleId;
 			return getSelf();
 		}
 
-		public B active(final boolean active) {
+		public B active(final Boolean active) {
 			this.active = active;
 			return getSelf();
 		}
 
-		public B released(final boolean released) {
+		public B released(final Boolean released) {
 			this.released = released;
 			return getSelf();
 		}
 
-		public B effectiveTime(final long effectiveTime) {
+		public B effectiveTime(final Long effectiveTime) {
 			this.effectiveTime = effectiveTime;
 			return getSelf();
 		}
@@ -137,20 +136,19 @@ public abstract class SnomedDocument extends RevisionDocument {
 		public static final String RELEASED = "released";
 	}
 
-	private final boolean released;
+	private final Boolean released;
 	private final String moduleId;
-	private final boolean active;
-	private final long effectiveTime;
+	private final Boolean active;
+	private final Long effectiveTime;
 
 	protected SnomedDocument(final String id,
 			final String label,
 			final String iconId,
 			final String moduleId, 
-			final boolean released, 
-			final boolean active, 
-			final long effectiveTime) {
+			final Boolean released, 
+			final Boolean active, 
+			final Long effectiveTime) {
 		super(id, label, iconId);
-		checkArgument(effectiveTime >= EffectiveTimes.UNSET_EFFECTIVE_TIME, "Effective time argument '%s' is invalid.", effectiveTime);
 		this.moduleId = moduleId;
 		this.released = released;
 		this.active = active;
@@ -160,14 +158,14 @@ public abstract class SnomedDocument extends RevisionDocument {
 	/**
 	 * @return {@code true} if the component has already appeared in an RF2 release, {@code false} otherwise
 	 */
-	public boolean isReleased() {
+	public Boolean isReleased() {
 		return released;
 	}
 
 	/**
 	 * @return {@code true} if the component is active, {@code false} otherwise
 	 */
-	public boolean isActive() {
+	public Boolean isActive() {
 		return active;
 	}
 
@@ -182,7 +180,7 @@ public abstract class SnomedDocument extends RevisionDocument {
 	 * @return the effective time of the component, or {@link EffectiveTimes#UNSET_EFFECTIVE_TIME} if the component currently has
 	 *         no effective time set
 	 */
-	public long getEffectiveTime() {
+	public Long getEffectiveTime() {
 		return effectiveTime;
 	}
 

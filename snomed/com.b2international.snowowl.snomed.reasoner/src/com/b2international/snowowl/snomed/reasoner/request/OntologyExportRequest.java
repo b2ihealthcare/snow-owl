@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -149,7 +149,7 @@ final class OntologyExportRequest implements Request<BranchContext, String>, Bra
 	}
 
 	private OntologyException createExportFailedException(final BranchContext context, final Throwable e) {
-		return new OntologyException("Couldn't save ontology with module ID '" + ontologyModuleId + "' on branch '" + context.branchPath() + "'.", e);
+		return new OntologyException("Couldn't save ontology with module ID '" + ontologyModuleId + "' on branch '" + context.path() + "'.", e);
 	}
 
 	private OWLDocumentFormat getOWLDocumentFormat() {

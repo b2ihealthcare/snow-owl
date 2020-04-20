@@ -40,6 +40,7 @@ import com.b2international.index.mapping.Mappings;
 import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.ComponentIdentifier;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
 import com.b2international.snowowl.core.internal.validation.ValidationThreadPool;
@@ -252,7 +253,7 @@ public class SnomedValidationIssueDetailTest extends BaseRevisionIndexTest {
 	public void conceptAttributeChange() throws Exception {
 		final String conceptId = RandomSnomedIdentiferGenerator.generateConceptId();
 		
-		indexRevision(MAIN, concept(conceptId).effectiveTime(-1).build());
+		indexRevision(MAIN, concept(conceptId).effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME).build());
 		
 		createSnomedQueryRule(
 			ImmutableMap.<String, Object>builder()
@@ -269,7 +270,7 @@ public class SnomedValidationIssueDetailTest extends BaseRevisionIndexTest {
 		
 		assertThat(firstValidation).hasSize(1);
 		assertThat(firstValidation.first().get().getDetails().get(SnomedDocument.Fields.EFFECTIVE_TIME))
-			.isEqualTo(-1);
+			.isEqualTo(EffectiveTimes.UNSET_EFFECTIVE_TIME);
 		
 		assertThat(afterConceptEffectiveTimeChangeValidation).hasSize(1);
 		assertThat(afterConceptEffectiveTimeChangeValidation.first().get().getDetails().get(SnomedDocument.Fields.EFFECTIVE_TIME))

@@ -71,45 +71,37 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 	}
 
 	public static Builder builder(final SnomedRelationship input) {
-		String id = input.getId();
-		final Builder builder = builder()
-				.id(id)
+		return builder()
+				.id(input.getId())
+				.active(input.isActive())
+				.effectiveTime(EffectiveTimes.getEffectiveTime(input.getEffectiveTime()))
+				.released(input.isReleased())
+				.moduleId(input.getModuleId())
 				.sourceId(input.getSourceId())
 				.typeId(input.getTypeId())
 				.destinationId(input.getDestinationId())
 				.characteristicTypeId(input.getCharacteristicTypeId())
 				.group(input.getGroup())
 				.unionGroup(input.getUnionGroup())
-				.active(input.isActive())
-				.released(input.isReleased())
 				.modifierId(input.getModifierId())
-				.destinationNegated(input.isDestinationNegated())
-				.moduleId(input.getModuleId())
-				.effectiveTime(EffectiveTimes.getEffectiveTime(input.getEffectiveTime()));
-		
-//		if (input.getScore() != null) {
-//			builder.score(input.getScore());
-//		}
-		
-		return builder;
+				.destinationNegated(input.isDestinationNegated());
 	}
 	
 	public static Builder builder(SnomedRelationshipIndexEntry input) {
-		String id = input.getId();
 		return builder()
-				.id(id)
+				.id(input.getId())
 				.active(input.isActive())
+				.effectiveTime(input.getEffectiveTime())
+				.released(input.isReleased())
+				.moduleId(input.getModuleId())
 				.sourceId(input.getSourceId())
 				.typeId(input.getTypeId())
 				.destinationId(input.getDestinationId())
 				.characteristicTypeId(input.getCharacteristicTypeId())
 				.group(input.getGroup())
 				.unionGroup(input.getUnionGroup())
-				.released(input.isReleased())
 				.modifierId(input.getModifierId())
-				.destinationNegated(input.isDestinationNegated())
-				.moduleId(input.getModuleId())
-				.effectiveTime(input.getEffectiveTime());
+				.destinationNegated(input.isDestinationNegated());
 	}
 	
 	public static final class Expressions extends SnomedComponentDocument.Expressions {
@@ -306,9 +298,9 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 	private SnomedRelationshipIndexEntry(final String id, 
 			final String label,
 			final String moduleId, 
-			final boolean released,
-			final boolean active, 
-			final long effectiveTimeLong,
+			final Boolean released,
+			final Boolean active, 
+			final Long effectiveTimeLong,
 			final String sourceId,
 			final String typeId,
 			final String destinationId,

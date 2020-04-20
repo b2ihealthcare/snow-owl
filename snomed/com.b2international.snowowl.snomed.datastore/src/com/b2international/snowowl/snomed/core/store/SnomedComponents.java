@@ -16,7 +16,7 @@
 package com.b2international.snowowl.snomed.core.store;
 
 /**
- * Main entry point of SNOMED CT Component based APIs.
+ * Builders to build completely new SNOMED CT Documents from scratch. If needed existing revision can be applied to them to override their default values.
  * 
  * @since 4.5
  */

@@ -81,7 +81,6 @@ public final class SnomedBulkRequest<R> extends DelegatingRequest<TransactionCon
 		
 		// bind additional caches to the context
 		TransactionContext newContext = context.inject()
-			.bind(Synonyms.class, new Synonyms(context))
 			.bind(SnomedOWLExpressionConverter.class, new SnomedOWLExpressionConverter(context))
 			.build();
 		

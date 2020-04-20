@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -500,7 +500,7 @@ final class SnomedEclRefinementEvaluator {
 		
 		// TODO: does this request need to support filtering by group?
 		return requestBuilder
-			.build(context.id(), context.branchPath())
+			.build(context.id(), context.path())
 			.execute(context.service(IEventBus.class));
 	}
 
@@ -599,7 +599,7 @@ final class SnomedEclRefinementEvaluator {
 			searchRelationships.filterByGroup(1, Integer.MAX_VALUE);
 		}
 		
-		Promise<Collection<Property>> relationshipSearch = searchRelationships.build(context.id(), context.branchPath())
+		Promise<Collection<Property>> relationshipSearch = searchRelationships.build(context.id(), context.path())
 			.execute(context.service(IEventBus.class))
 			.then(input -> input.stream().map(r -> new Property(r.getSourceId(), r.getTypeId(), r.getDestinationId(), r.getGroup())).collect(Collectors.toSet()));
 		
