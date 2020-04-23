@@ -4,7 +4,7 @@ node('docker') {
 	def currentVersion
 	def revision
 	def tag
-	
+
 	def startDate = new Date()
 
 	try {
@@ -25,11 +25,11 @@ node('docker') {
 			}
 
 			revision = sh(returnStdout: true, script: "git rev-parse --short HEAD").trim()
-			
+
 		}
 
 		stage('Build') {
-			
+
 			if (!custom_maven_settings.isEmpty()) {
 				withMaven(jdk: 'OpenJDK 11', maven: 'Maven 3.6.0', mavenSettingsConfig: custom_maven_settings, options: [artifactsPublisher(disabled: true)],  publisherStrategy: 'EXPLICIT') {
 					sh "mvn clean deploy -Dmaven.test.skip=${skipTests} -Dmaven.install.skip=true -Dtycho.localArtifacts=ignore"
@@ -39,27 +39,27 @@ node('docker') {
 					sh "mvn clean deploy -Dmaven.test.skip=${skipTests} -Dmaven.install.skip=true -Dtycho.localArtifacts=ignore"
 				}
 			}
-			
+
 		}
 
 		if (currentBuild.resultIsBetterOrEqualTo('SUCCESS')) {
 
 			stage('Find artifact') {
-				
-				def rpmArtifact = findFiles(glob: "releng/com.b2international.snowowl.server.update/target/snow-owl-oss*.rpm")[0]
-				sh '\\cp -f -t ${WORKSPACE}/docker '+rpmArtifact.path+''
-				serverArtifact = rpmArtifact.name
-				
+
+				def artifact = findFiles(glob: "releng/com.b2international.snowowl.server.update/target/snow-owl-oss*.tar.gz")[0]
+				sh '\\cp -f -t ${WORKSPACE}/docker '+artifact.path+''
+				serverArtifact = artifact.name
+
 			}
+
+			def buildArgs = "--build-arg SNOWOWL_INSTALL_PACKAGE=${serverArtifact}\
+					--build-arg BUILD_TIMESTAMP=\"${BUILD_TIMESTAMP}\"\
+					--build-arg VERSION=${tag}\
+					--build-arg GIT_REVISION=${revision} ./docker"
 
 			if (!custom_docker_registry.isEmpty()) {
 
 				stage('Build docker image for local registry') {
-
-					def buildArgs = "--build-arg SNOWOWL_RPM_PACKAGE=${serverArtifact}\
-							--build-arg BUILD_TIMESTAMP=\"${BUILD_TIMESTAMP}\"\
-							--build-arg VERSION=${tag}\
-							--build-arg GIT_REVISION=${revision} ./docker"
 
 					docker.withRegistry(custom_docker_registry, '2eba2892-1e11-4f17-af63-11d8ab3a55e9') {
 
@@ -69,19 +69,14 @@ node('docker') {
 						if (!currentVersion.contains("SNAPSHOT")) {
 							image.push("latest")
 						}
-						
+
 					}
-					
+
 				}
-				
+
 			}
 
 			stage('Build docker image for docker-hub') {
-
-				def buildArgs = "--build-arg SNOWOWL_RPM_PACKAGE=${serverArtifact}\
-				  --build-arg BUILD_TIMESTAMP=\"${BUILD_TIMESTAMP}\"\
-				  --build-arg VERSION=${tag}\
-				  --build-arg GIT_REVISION=${revision} ./docker"
 
 				docker.withRegistry('', '0f4c3f31-b252-4104-928a-286eeeb075dc') {
 
@@ -91,18 +86,18 @@ node('docker') {
 					if (!currentVersion.contains("SNAPSHOT")) {
 						image.push("latest")
 					}
-					
+
 				}
-				
+
 			}
 
 			stage('Clean up') {
-				sh 'rm -fv docker/*.rpm'
+				sh 'rm -fv docker/*.tar.gz'
 				sh 'docker system prune --force --all --volumes'
 			}
-			
+
 		}
-		
+
 	} catch (e) {
 		currentBuild.result = "FAILURE"
 		throw e
@@ -119,14 +114,14 @@ def notifyBuild(String buildStatus = 'STARTED', Date startDate) {
 	// Default values
 	def colorCode = '#A30200'
 	def summary
-	
+
 	if (buildStatus == 'SUCCESS') {
 		def duration = groovy.time.TimeCategory.minus(new Date(), startDate).toString()
 		summary = "${env.JOB_NAME} - ${env.BUILD_DISPLAY_NAME} - ${buildStatus} after ${duration} (<${env.BUILD_URL}|Open>)"
 	} else {
 		summary = "${env.JOB_NAME} - ${env.BUILD_DISPLAY_NAME} - ${buildStatus} (<${env.BUILD_URL}|Open>)"
 	}
-	
+
 	// Override default values based on build status
 	if (buildStatus == 'STARTED' || buildStatus == 'SUCCESS') {
 		colorCode = '#2EB886'
