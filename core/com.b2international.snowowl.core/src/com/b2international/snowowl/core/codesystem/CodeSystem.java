@@ -43,6 +43,13 @@ import com.google.common.collect.Maps;
 @JsonDeserialize(builder=CodeSystem.Builder.class)
 public class CodeSystem {
 	
+	/**
+	 * @since 7.6.0
+	 */
+	public static final class Expand {
+		public static final String AVAILABLE_UPGRADES = "availableUpgrades";
+	}
+	
 	public static Builder builder() {
 		return new Builder();
 	}
@@ -219,6 +226,7 @@ public class CodeSystem {
 	private CodeSystemURI extensionOf;
 	private List<ExtendedLocale> locales;
 	private Map<String, Object> additionalProperties;
+	private List<CodeSystemURI> availableUpgrades;
 
 	/**
 	 * @return the assigned object identifier (OID) of this code system, eg.
@@ -323,6 +331,15 @@ public class CodeSystem {
 	public Map<String, Object> getAdditionalProperties() {
 		return additionalProperties;
 	}
+	
+	/**
+	 * @return a list of {@link CodeSystemURI}s pointing to code system versions that have 
+	 *         been created after the current {@code extensionOf} version on the parent
+	 *         code system (can be {@code null} if not requested as part of an expand() option) 
+	 */
+	public List<CodeSystemURI> getAvailableUpgrades() {
+		return availableUpgrades;
+	}
 
 	public void setOid(final String oid) {
 		this.oid = oid;
@@ -375,6 +392,10 @@ public class CodeSystem {
 	
 	public void setAdditionalProperties(final Map<String, Object> additionalProperties) {
 		this.additionalProperties = additionalProperties;
+	}
+	
+	public void setAvailableUpgrades(final List<CodeSystemURI> availableUpgrades) {
+		this.availableUpgrades = availableUpgrades;
 	}
 	
 	/**
