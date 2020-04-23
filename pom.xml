@@ -164,18 +164,6 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.thoughtworks.xstream</groupId>
-			<artifactId>xstream</artifactId>
-			<version>1.4.7</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.persistence</groupId>
-			<artifactId>javax.persistence</artifactId>
-			<version>2.0.5</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
 			<groupId>org.assertj</groupId>
 			<artifactId>assertj-core</artifactId>
 			<version>1.7.1</version>
@@ -430,6 +418,10 @@
       			<exclusion>
         			<groupId>org.ow2.asm</groupId>
       				<artifactId>asm-commons</artifactId>
+        		</exclusion>
+        		<exclusion>
+        			<groupId>org.eclipse.jetty</groupId>
+        			<artifactId>jetty-annotations</artifactId>
         		</exclusion>
       		</exclusions>
     	</dependency>
