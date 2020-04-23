@@ -97,7 +97,7 @@ public class SnomedQueryLabelerRequestTest extends BaseRevisionIndexTest {
 	}
 	
 	private String label(String expression, List<ExtendedLocale> locales) {
-		return label(expression, SnomedConcept.Expand.FULLY_SPECIFIED_NAME, Collections.emptyList());
+		return label(expression, SnomedConcept.Expand.FULLY_SPECIFIED_NAME, locales);
 	}
 
 	private String label(String expression, String descriptionType, List<ExtendedLocale> locales) {
@@ -148,7 +148,7 @@ public class SnomedQueryLabelerRequestTest extends BaseRevisionIndexTest {
 						new SnomedDescriptionFragment(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, fsn, Concepts.REFSET_LANGUAGE_TYPE_UK)))
 						.build());
 		String result = label(Concepts.ROOT_CONCEPT);
-		assertEquals(Concepts.ROOT_CONCEPT + "|" + fsn + "|", result);
+		assertEquals(Concepts.ROOT_CONCEPT + " |" + fsn + "|", result);
 	}
 	
 	@Test
@@ -161,7 +161,7 @@ public class SnomedQueryLabelerRequestTest extends BaseRevisionIndexTest {
 						new SnomedDescriptionFragment(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, fsnUs, Concepts.REFSET_LANGUAGE_TYPE_US)))
 						.build());
 		String result = label(Concepts.ROOT_CONCEPT, ImmutableList.of(ExtendedLocale.valueOf("en-x-" + Concepts.REFSET_LANGUAGE_TYPE_US)));
-		assertEquals(Concepts.ROOT_CONCEPT + "|" + fsnUs + "|", result);
+		assertEquals(Concepts.ROOT_CONCEPT + " |" + fsnUs + "|", result);
 	}
 	
 	@Test
@@ -174,7 +174,7 @@ public class SnomedQueryLabelerRequestTest extends BaseRevisionIndexTest {
 						new SnomedDescriptionFragment(generateDescriptionId(), Concepts.SYNONYM, ptUs, Concepts.REFSET_LANGUAGE_TYPE_US)))
 						.build());
 		String result = label(Concepts.ROOT_CONCEPT, SnomedConcept.Expand.PREFERRED_TERM, ImmutableList.of(ExtendedLocale.valueOf("en-x-" + Concepts.REFSET_LANGUAGE_TYPE_US)));
-		assertEquals(Concepts.ROOT_CONCEPT + "|" + ptUs + "|", result);
+		assertEquals(Concepts.ROOT_CONCEPT + " |" + ptUs + "|", result);
 	}
 
 }
