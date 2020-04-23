@@ -24,17 +24,25 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 /**
  * @since 7.6
  */
-public final class SnomedQueryLabelerRequestBuilder 
-		extends ResourceRequestBuilder<SnomedQueryLabelerRequestBuilder, BranchContext, String>
+public final class SnomedQueryLabelerRequestBuilder extends ResourceRequestBuilder<SnomedQueryLabelerRequestBuilder, BranchContext, String>
 		implements RevisionIndexRequestBuilder<String> {
 
 	private final String expression;
-	private String descriptionType = SnomedConcept.Expand.FULLY_SPECIFIED_NAME; 
+	private String descriptionType = SnomedConcept.Expand.FULLY_SPECIFIED_NAME;
 
 	public SnomedQueryLabelerRequestBuilder(String expression) {
 		this.expression = expression;
 	}
-	
+
+	/**
+	 * Select a description type to use when expanding labels for all concept IDs in the given expression. Supported values are: <code>fsn</code> and
+	 * <code>pt</code>. Other values are simply omitted and no label expansion will happen.
+	 * 
+	 * @param descriptionType
+	 * @return
+	 * @see SnomedConcept.Expand#FULLY_SPECIFIED_NAME
+	 * @see SnomedConcept.Expand#PREFERRED_TERM
+	 */
 	public SnomedQueryLabelerRequestBuilder setDescriptionType(String descriptionType) {
 		this.descriptionType = descriptionType;
 		return getSelf();
@@ -47,10 +55,10 @@ public final class SnomedQueryLabelerRequestBuilder
 		req.setExpression(expression);
 		req.setDescriptionType(descriptionType);
 	}
-	
+
 	@Override
 	protected ResourceRequest<BranchContext, String> create() {
 		return new SnomedQueryLabelerRequest();
 	}
-	
+
 }
