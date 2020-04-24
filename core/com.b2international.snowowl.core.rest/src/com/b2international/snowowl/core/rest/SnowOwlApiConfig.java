@@ -48,7 +48,7 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.method.HandlerTypePredicate;
 import org.springframework.web.method.support.HandlerMethodReturnValueHandler;
 import org.springframework.web.multipart.MultipartResolver;
-import org.springframework.web.multipart.support.StandardServletMultipartResolver;
+import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.springframework.web.servlet.config.annotation.DefaultServletHandlerConfigurer;
 import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
@@ -68,6 +68,7 @@ import com.b2international.snowowl.core.authorization.AuthorizedEventBus;
 import com.b2international.snowowl.core.branch.review.Review;
 import com.b2international.snowowl.core.branch.review.ReviewMixin;
 import com.b2international.snowowl.core.identity.IdentityProvider;
+import com.b2international.snowowl.core.rate.ApiFileUploadConfig;
 import com.b2international.snowowl.core.rest.util.AntPathWildcardMatcher;
 import com.b2international.snowowl.core.rest.util.CsvMessageConverter;
 import com.b2international.snowowl.core.rest.util.ModelAttributeParameterExpanderExt;
@@ -135,9 +136,14 @@ public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 	
 	@Bean
 	public MultipartResolver multipartResolver() {
-		return new StandardServletMultipartResolver();
+		final ApiFileUploadConfig fileUploadConfig = ApplicationContext.getInstance().getService(ApiFileUploadConfig.class);
+	    final CommonsMultipartResolver multipartResolver = new CommonsMultipartResolver();
+	    multipartResolver.setMaxUploadSizePerFile(fileUploadConfig.getMaxFileSize());
+	    multipartResolver.setMaxUploadSize(fileUploadConfig.getMaxRequestSize());
+	    multipartResolver.setMaxInMemorySize(fileUploadConfig.getMaxInMemorySize());
+	    return multipartResolver;
 	}
-
+	
 	@Bean
 	public ModelAttributeParameterExpander modelAttributeParameterExpander(
 			@Autowired FieldProvider fieldProvider, 
