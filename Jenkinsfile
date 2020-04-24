@@ -57,26 +57,7 @@ node('docker') {
 					--build-arg VERSION=${tag}\
 					--build-arg GIT_REVISION=${revision} ./docker"
 
-			if (!custom_docker_registry.isEmpty()) {
-
-				stage('Build docker image for local registry') {
-
-					docker.withRegistry(custom_docker_registry, '2eba2892-1e11-4f17-af63-11d8ab3a55e9') {
-
-						def image = docker.build("b2ihealthcare/snow-owl-oss:${tag}", "${buildArgs}")
-						image.push()
-
-						if (!currentVersion.contains("SNAPSHOT")) {
-							image.push("latest")
-						}
-
-					}
-
-				}
-
-			}
-
-			stage('Build docker image for docker-hub') {
+			stage('Build docker image') {
 
 				docker.withRegistry('', '0f4c3f31-b252-4104-928a-286eeeb075dc') {
 
