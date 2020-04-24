@@ -42,6 +42,9 @@ public class ApiPlugin extends Plugin {
 			limiter = RateLimiter.NOOP;
 		}
 		env.services().registerService(RateLimiter.class, limiter);
+		
+		final ApiFileUploadConfig apiFileUploadConfig = new ApiFileUploadConfig(apiConfig.getMaxFileSize(), apiConfig.getMaxRequestSize(), apiConfig.getMaxInMemorySize());
+		env.services().registerService(ApiFileUploadConfig.class, apiFileUploadConfig);
 	}
 	
 }

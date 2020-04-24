@@ -27,6 +27,12 @@ public class ApiConfiguration {
 	
 	@Min(1)
 	private long refillRate = 1L;
+	
+	private long maxFileSize;
+	
+	private long maxRequestSize;
+	
+	private int maxInMemorySize;
 
 	public long getOverdraft() {
 		return overdraft;
@@ -44,4 +50,27 @@ public class ApiConfiguration {
 		this.refillRate = refillRate;
 	}
 	
+	public long getMaxFileSize() {
+		return maxFileSize;
+	}
+	
+	public void setMaxFileSize(long maxFileSize) {
+		this.maxFileSize = maxFileSize;
+	}
+	
+	public int getMaxInMemorySize() {
+		return maxInMemorySize;
+	}
+	
+	public void setMaxInMemorySize(int maxInMemorySize) {
+		this.maxInMemorySize = maxInMemorySize;
+	}
+	
+	public long getMaxRequestSize() {
+		return maxRequestSize;
+	}
+	
+	public void setMaxRequestSize(long maxRequestSize) {
+		this.maxRequestSize = maxRequestSize;
+	}
 }
