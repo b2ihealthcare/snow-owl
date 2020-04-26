@@ -190,7 +190,7 @@ public final class Rf2EffectiveTimeSlice {
 		final boolean doCreateVersion = !isUnpublishedSlice() && !isSnapshotSlice() && importConfig.isCreateVersions();
 		
 		LOG.info(importingMessage);
-		try (Rf2TransactionContext tx = new Rf2TransactionContext(context.openTransaction(context, DatastoreLockContextDescriptions.IMPORT), loadOnDemand)) {
+		try (Rf2TransactionContext tx = new Rf2TransactionContext(context.openTransaction(context, DatastoreLockContextDescriptions.IMPORT), loadOnDemand, importConfig)) {
 			final Iterator<LongSet> importPlan = getImportPlan().iterator();
 			while (importPlan.hasNext()) {
 				LongSet componentsToImportInBatch = importPlan.next();
