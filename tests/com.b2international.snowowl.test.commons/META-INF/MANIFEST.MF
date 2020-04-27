@@ -14,12 +14,10 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  com.b2international.snowowl.test.dependencies;visibility:=reexport,
  com.b2international.snowowl.snomed.common;visibility:=reexport,
  com.b2international.snowowl.snomed.datastore,
- org.eclipse.xtext.xbase.lib;bundle-version="2.18.0"
+ org.eclipse.xtext.xbase.lib;bundle-version="[2.21.0,2.22.0)"
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ActivationPolicy: lazy
-Import-Package: ch.qos.logback.classic;version="1.2.3",
- ch.qos.logback.core.spi;version="1.2.3",
- org.slf4j;version="1.7.25"
+Import-Package: org.slf4j;version="1.7.25"
 Export-Package: com.b2international.snowowl.test.commons,
  com.b2international.snowowl.test.commons.inject,
  com.b2international.snowowl.test.commons.json,
