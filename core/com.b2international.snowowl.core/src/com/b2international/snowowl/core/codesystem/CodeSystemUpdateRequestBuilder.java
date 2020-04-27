@@ -23,6 +23,7 @@ import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.TransactionalRequestBuilder;
+import com.b2international.snowowl.core.uri.CodeSystemURI;
 
 /**
  * @since 4.7
@@ -37,6 +38,7 @@ public final class CodeSystemUpdateRequestBuilder extends BaseRequestBuilder<Cod
 	private String citation;
 	private String branchPath;
 	private String iconPath;
+	private CodeSystemURI extensionOf;
 	private List<ExtendedLocale> locales;
 	private Map<String, Object> additionalProperties;
 
@@ -79,6 +81,11 @@ public final class CodeSystemUpdateRequestBuilder extends BaseRequestBuilder<Cod
 		this.locales = locales;
 		return getSelf();
 	}
+
+	public CodeSystemUpdateRequestBuilder setExtensionOf(CodeSystemURI extensionOf) {
+		this.extensionOf = extensionOf;
+		return getSelf();
+	}
 	
 	public CodeSystemUpdateRequestBuilder setAdditionalProperties(Map<String, Object> additionalProperties) {
 		this.additionalProperties = additionalProperties;
@@ -94,9 +101,9 @@ public final class CodeSystemUpdateRequestBuilder extends BaseRequestBuilder<Cod
 		req.setCitation(citation);
 		req.setBranchPath(branchPath);
 		req.setIconPath(iconPath);
+		req.setExtensionOf(extensionOf);
 		req.setLocales(locales);
 		req.setAdditionalProperties(additionalProperties);
 		return req;
 	}
-
 }
