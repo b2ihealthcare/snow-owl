@@ -12,7 +12,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		
+
 		<!-- Maven Dependency Versions -->
 		<jackson.version>2.9.10</jackson.version>
 		<jackson.databind.version>2.9.10.3</jackson.databind.version>
@@ -22,14 +22,14 @@
 		<logback.versionRange>[1.2.3,1.2.4)</logback.versionRange>
 		<guava.versionRange>[27.1.0,28.0.0)</guava.versionRange>
 		<net.bytebuddy.version>1.9.3</net.bytebuddy.version>
-		<groovy.version>2.4.17</groovy.version>
+		<groovy.version>2.4.19</groovy.version>
 		<commons.collections.version>3.2.2</commons.collections.version>
 		<commons.collections.versionRange>[3.2.2,3.3.0)</commons.collections.versionRange>
 		<kotlin.version>1.2.71</kotlin.version>
-		<protege.version>5.0.4-b2i</protege.version>
-		<owlapi.version>4.5.10</owlapi.version>
+		<protege.version>5.0.5-b2i</protege.version>
+		<owlapi.version>4.5.16</owlapi.version>
 		<elk.version>0.4.3</elk.version>
-		<jetty.version>9.4.18.v20190429</jetty.version>
+		<jetty.version>9.4.27.v20200227</jetty.version>
 		<classgraph.version>4.8.43</classgraph.version>
 		<jbcrypt.version>0.4.1</jbcrypt.version>
 		<typetools.version>0.6.1</typetools.version>
