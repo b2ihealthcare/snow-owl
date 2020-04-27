@@ -37,6 +37,7 @@ import com.b2international.snowowl.core.repository.BaseRepositoryPreCommitHook;
 import com.b2international.snowowl.core.repository.ChangeSetProcessor;
 import com.b2international.snowowl.core.request.BranchRequest;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
@@ -46,6 +47,8 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationsh
 import com.b2international.snowowl.snomed.datastore.request.SnomedOWLExpressionConverter;
 import com.b2international.snowowl.snomed.datastore.request.SnomedOWLExpressionConverterResult;
 import com.b2international.snowowl.snomed.datastore.request.rf2.SnomedRf2Requests;
+import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2ImportConfiguration;
+import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2TransactionContext;
 import com.b2international.snowowl.snomed.datastore.taxonomy.Taxonomies;
 import com.b2international.snowowl.snomed.datastore.taxonomy.Taxonomy;
 import com.b2international.snowowl.snomed.icons.SnomedIconProvider;
@@ -199,7 +202,7 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 
 		log.trace("Retrieving taxonomic information from store...");
 
-		final boolean checkCycles = !context.isJobRunning(SnomedRf2Requests.importJobKey(index.branch()));
+		final boolean checkCycles = !(context instanceof Rf2TransactionContext);
 		
 		final Taxonomy inferredTaxonomy = Taxonomies.inferred(index, expressionConverter, staging, inferredConceptIds, checkCycles);
 		final Taxonomy statedTaxonomy = Taxonomies.stated(index, expressionConverter, staging, statedConceptIds, checkCycles);
@@ -218,13 +221,24 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 	protected void postUpdateDocuments(StagingArea staging, RevisionSearcher index) throws IOException {
 		final RepositoryContext context = ClassUtils.checkAndCast(staging.getContext(), RepositoryContext.class);
 		
-		if (!context.isJobRunning(SnomedRf2Requests.importJobKey(index.branch()))) {
+		if (canRestoreEffectiveTime(context)) {
 			final long branchBaseTimestamp = index.get(RevisionBranch.class, staging.getBranchPath()).getBaseTimestamp();
 			// XXX effective time restore should be the last processing unit before we send the changes to commit
 			doProcess(Collections.singleton(new ComponentEffectiveTimeRestoreChangeProcessor(log, branchBaseTimestamp)), staging, index);
 		}
 	}
 	
+	/*
+	 * Restore effective time should run during normal commits and delta RF2 imports
+	 */
+	private boolean canRestoreEffectiveTime(RepositoryContext context) {
+		if (context instanceof Rf2TransactionContext) {
+			return context.service(Rf2ImportConfiguration.class).getReleaseType() == Rf2ReleaseType.DELTA;
+		} else {
+			return true;
+		}
+	}
+
 	private void collectIds(final Set<String> sourceIds, final Set<String> destinationIds, Stream<SnomedRelationshipIndexEntry> newRelationships, String characteristicTypeId) {
 		newRelationships
 			.filter(newRelationship -> Concepts.IS_A.equals(newRelationship.getTypeId()))

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,9 +35,9 @@ public abstract class SnomedComponentBuilder<B extends SnomedComponentBuilder<B,
 	}
 
 	private String id;
+	private boolean active = true;
 	private Date effectiveTime;
 	private String moduleId;
-	private boolean active = true;
 
 	/**
 	 * Specifies the SNOMED CT Identifier.
@@ -94,7 +94,7 @@ public abstract class SnomedComponentBuilder<B extends SnomedComponentBuilder<B,
 			.id(id)
 			.active(active)
 			.moduleId(moduleId);
-		
+	
 		// check that the module does exist in the system
 		if (!id.equals(moduleId)) {
 			context.lookup(moduleId, SnomedConceptDocument.class);

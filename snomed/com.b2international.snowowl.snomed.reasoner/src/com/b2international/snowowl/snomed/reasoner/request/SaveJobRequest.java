@@ -164,7 +164,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 		} catch (final Exception e) {
 			LOG.error("Unexpected error while persisting classification changes.", e);
 			tracker.classificationSaveFailed(classificationId);
-			throw new ReasonerApiException("Error while persisting classification changes on '%s'.", context.branchPath(), e);
+			throw new ReasonerApiException("Error while persisting classification changes on '%s'.", context.path(), e);
 		} finally {
 			monitor.done();
 		}

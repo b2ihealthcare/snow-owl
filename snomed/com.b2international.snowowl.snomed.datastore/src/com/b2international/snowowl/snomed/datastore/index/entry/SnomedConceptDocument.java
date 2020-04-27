@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -283,17 +283,17 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 	@JsonPOJOBuilder(withPrefix="")
 	public static class Builder extends SnomedComponentDocument.Builder<Builder, SnomedConceptDocument> {
 
-		private boolean primitive;
-		private boolean exhaustive;
+		private Boolean primitive;
+		private Boolean exhaustive;
 		private LongSet parents;
 		private LongSet ancestors;
 		private LongSet statedParents;
 		private LongSet statedAncestors;
 		private SnomedRefSetType refSetType;
-		private short referencedComponentType = TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT;
-		private short mapTargetComponentType;
-		private float doi = DEFAULT_DOI;
+		private Short referencedComponentType = TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT;
+		private Short mapTargetComponentType;
 		private List<SnomedDescriptionFragment> preferredDescriptions = Collections.emptyList();
+		private float doi = DEFAULT_DOI;
 
 		@JsonCreator
 		private Builder() {
@@ -305,12 +305,12 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 			return this;
 		}
 		
-		public Builder primitive(final boolean primitive) {
+		public Builder primitive(final Boolean primitive) {
 			this.primitive = primitive;
 			return getSelf();
 		}
 
-		public Builder exhaustive(final boolean exhaustive) {
+		public Builder exhaustive(final Boolean exhaustive) {
 			this.exhaustive = exhaustive;
 			return getSelf();
 		}
@@ -368,12 +368,12 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 			return refSetType(refSet.getType());
 		}
 		
-		public Builder mapTargetComponentType(short mapTargetComponentType) {
+		public Builder mapTargetComponentType(Short mapTargetComponentType) {
 			this.mapTargetComponentType = mapTargetComponentType;
 			return getSelf();
 		}
 		
-		public Builder referencedComponentType(short referencedComponentType) {
+		public Builder referencedComponentType(Short referencedComponentType) {
 			this.referencedComponentType = referencedComponentType;
 			return getSelf();
 		}
@@ -437,11 +437,11 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 
 	}
 
-	private final boolean primitive;
-	private final boolean exhaustive;
+	private final Boolean primitive;
+	private final Boolean exhaustive;
 	private final SnomedRefSetType refSetType;
-	private final short referencedComponentType;
-	private final short mapTargetComponentType;
+	private final Short referencedComponentType;
+	private final Short mapTargetComponentType;
 	private final List<SnomedDescriptionFragment> preferredDescriptions;
 	
 	private LongSet parents;
@@ -454,14 +454,14 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 			final String label,
 			final String iconId,
 			final String moduleId,
-			final boolean released,
-			final boolean active,
-			final long effectiveTime,
-			final boolean primitive,
-			final boolean exhaustive, 
+			final Boolean released,
+			final Boolean active,
+			final Long effectiveTime,
+			final Boolean primitive,
+			final Boolean exhaustive, 
 			final SnomedRefSetType refSetType, 
-			final short referencedComponentType,
-			final short mapTargetComponentType,
+			final Short referencedComponentType,
+			final Short mapTargetComponentType,
 			final List<String> referringRefSets,
 			final List<String> referringMappingRefSets,
 			final List<SnomedDescriptionFragment> preferredDescriptions) {
@@ -487,14 +487,14 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 	/**
 	 * @return {@code true} if the concept definition status is 900000000000074008 (primitive), {@code false} otherwise
 	 */
-	public boolean isPrimitive() {
+	public Boolean isPrimitive() {
 		return primitive;
 	}
 
 	/**
 	 * @return {@code true} if the concept subclass definition status is exhaustive, {@code false} otherwise
 	 */
-	public boolean isExhaustive() {
+	public Boolean isExhaustive() {
 		return exhaustive;
 	}
 	
@@ -518,11 +518,11 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 		return refSetType;
 	}
 	
-	public short getReferencedComponentType() {
+	public Short getReferencedComponentType() {
 		return referencedComponentType;
 	}
 	
-	public short getMapTargetComponentType() {
+	public Short getMapTargetComponentType() {
 		return mapTargetComponentType;
 	}
 	

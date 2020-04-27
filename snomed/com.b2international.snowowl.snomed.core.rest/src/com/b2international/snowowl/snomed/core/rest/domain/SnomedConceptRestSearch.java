@@ -62,6 +62,8 @@ public final class SnomedConceptRestSearch extends ResourceRestSearch {
 	private String[] statedParent;
 	@ApiParam(value = "The stated ancestor(s) to match")
 	private String[] statedAncestor;
+	@ApiParam(value = "doi (degree-of-interest-based scoring)")
+	private Boolean doi = null;
 
 	public Boolean getActive() {
 		return active;
@@ -181,6 +183,14 @@ public final class SnomedConceptRestSearch extends ResourceRestSearch {
 
 	public void setDescriptionType(String descriptionType) {
 		this.descriptionType = descriptionType;
+	}
+	
+	public Boolean getDoi() {
+		return doi;
+	}
+	
+	public void setDoi(Boolean doi) {
+		this.doi = doi;
 	}
 
 }

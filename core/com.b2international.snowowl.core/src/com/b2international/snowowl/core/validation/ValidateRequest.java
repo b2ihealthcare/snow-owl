@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,7 +81,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult>,
 	}
 	
 	private ValidationResult doValidate(BranchContext context, Writer index) throws IOException {
-		final String branchPath = context.branchPath();
+		final String branchPath = context.path();
 		ValidationRuleSearchRequestBuilder req = ValidationRequests.rules().prepareSearch();
 
 		if (!CompareUtils.isEmpty(ruleIds)) {
@@ -225,7 +225,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult>,
 		}
 		
 		// TODO return ValidationResult object with status and new issue IDs as set
-		return new ValidationResult(context.id(), context.branchPath());
+		return new ValidationResult(context.id(), context.path());
 	}
 
 	private Multimap<String, ComponentIdentifier> fetchWhiteListEntries(BranchContext context, final Set<String> ruleIds) {

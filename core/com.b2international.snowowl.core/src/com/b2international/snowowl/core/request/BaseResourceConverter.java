@@ -92,8 +92,8 @@ public abstract class BaseResourceConverter<T, R, CR extends CollectionResource<
 
 	protected abstract R toResource(T entry);
 
-	protected final Date toEffectiveTime(final long effectiveTimeAsLong) {
-		return EffectiveTimes.toDate(effectiveTimeAsLong);
+	protected final Date toEffectiveTime(final Long effectiveTimeAsLong) {
+		return effectiveTimeAsLong == null ? null : EffectiveTimes.toDate(effectiveTimeAsLong);
 	}
 	
 	protected final int getLimit(final Options expandOptions) {

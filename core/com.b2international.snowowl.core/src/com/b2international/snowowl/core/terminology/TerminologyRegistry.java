@@ -68,7 +68,7 @@ public enum TerminologyRegistry {
 				return UNSPECIFIED;
 			}
 		});
-		register(createUnspecifiedTerminologyComponent());
+		register(UNSPECIFIED, createUnspecifiedTerminologyComponent());
 	}
 	
 	public Set<String> getTerminologies() {
@@ -82,20 +82,22 @@ public enum TerminologyRegistry {
 		}
 		for (Class<? extends IComponent> terminologyComponentType : terminology.getTerminologyComponents()) {
 			TerminologyComponent terminologyComponent = Terminology.getAnnotation(terminologyComponentType);
-			register(terminologyComponent);
-			terminologyIdByTerminologyComponentId.put(terminologyComponent.id(), terminology.getId());
-			terminologyComponentIdsByTerminology.put(terminology.getId(), terminologyComponent.id());
-			// XXX This will inject the necessary values in the underlying document mapping caches 
-			DocumentMapping.getType(terminologyComponent.docType());
+			register(terminology.getId(), terminologyComponent);
 		}
 	}
 
-	public void register(TerminologyComponent tcAnnotation) {
-		TerminologyComponent prevAnnotation = terminologyComponentsById.put(tcAnnotation.id(), tcAnnotation);
+	public void register(String terminologyId, TerminologyComponent terminologyComponent) {
+		TerminologyComponent prevAnnotation = terminologyComponentsById.put(terminologyComponent.id(), terminologyComponent);
 		if (prevAnnotation != null) {
-			throw new IllegalArgumentException(String.format("A terminology component is already registered with id '%s'", tcAnnotation.id()));	
+			throw new IllegalArgumentException(String.format("A terminology component is already registered with id '%s'", terminologyComponent.id()));	
 		}
-		terminologyComponentsByShortId.put(tcAnnotation.shortId(), tcAnnotation);
+		terminologyComponentsByShortId.put(terminologyComponent.shortId(), terminologyComponent);
+		terminologyIdByTerminologyComponentId.put(terminologyComponent.id(), terminologyId);
+		terminologyComponentIdsByTerminology.put(terminologyId, terminologyComponent.id());
+		if (!UNSPECIFIED.equals(terminologyId)) {
+			// XXX This will inject the necessary values in the underlying document mapping caches
+			DocumentMapping.getType(terminologyComponent.docType());
+		}
 	}
 	
 	public Terminology getTerminology(String terminologyId) {
@@ -118,7 +120,7 @@ public enum TerminologyRegistry {
 	}
 
 	public Terminology getTerminologyByTerminologyComponentId(String terminologyComponentId) {
-		checkArgument(terminologyIdByTerminologyComponentId.containsKey(terminologyComponentId), "Missing terminology component for ID '%s'.", terminologyComponentId);
+		checkArgument(terminologyIdByTerminologyComponentId.containsKey(terminologyComponentId), "No terminology has been registered for terminology component '%s'.", terminologyComponentId);
 		return getTerminology(terminologyIdByTerminologyComponentId.get(terminologyComponentId));
 	}
 	

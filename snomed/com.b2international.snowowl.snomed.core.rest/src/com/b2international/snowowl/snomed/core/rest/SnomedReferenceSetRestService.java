@@ -92,7 +92,7 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 		
-		List<Sort> sorts = extractSortFields(params.getSort(), branch, acceptLanguage);
+		List<Sort> sorts = extractSortFields(params.getSort());
 		
 		return SnomedRequests.prepareSearchRefSet()
 				.filterByIds(params.getId())

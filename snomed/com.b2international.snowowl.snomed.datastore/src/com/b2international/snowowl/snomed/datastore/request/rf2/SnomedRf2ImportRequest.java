@@ -92,7 +92,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportRe
 	
 	@NotNull
 	@JsonProperty
-	private Rf2ReleaseType type;
+	private Rf2ReleaseType releaseType;
 	
 	@JsonProperty
 	private boolean createVersions = true;
@@ -101,8 +101,8 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportRe
 		this.rf2ArchiveId = rf2ArchiveId;
 	}
 	
-	void setReleaseType(Rf2ReleaseType type) {
-		this.type = type;
+	void setReleaseType(Rf2ReleaseType rf2ReleaseType) {
+		this.releaseType = rf2ReleaseType;
 	}
 	
 	void setCreateVersions(boolean createVersions) {
@@ -116,7 +116,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportRe
 		final File rf2Archive = fileReg.getAttachment(rf2ArchiveId);
 		
 		try (Locks locks = Locks.on(context).lock(DatastoreLockContextDescriptions.IMPORT)) {
-			return doImport(context, rf2Archive, new Rf2ImportConfiguration(type, createVersions));
+			return doImport(context, rf2Archive, new Rf2ImportConfiguration(releaseType, createVersions));
 		} catch (Exception e) {
 			if (e instanceof ApiException) {
 				throw (ApiException) e;
@@ -129,14 +129,14 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportRe
 		final boolean contentAvailable = context.service(ContentAvailabilityInfoProvider.class).isAvailable(context);
 		final boolean isMain = context.isMain();
 		
-		if (contentAvailable && Rf2ReleaseType.FULL.equals(type) && isMain) {
+		if (contentAvailable && Rf2ReleaseType.FULL.equals(releaseType) && isMain) {
 			throw new BadRequestException("Importing a full release of SNOMED CT "
 					+ "from an archive to MAIN branch is prohibited when SNOMED CT "
 					+ "ontology is already available on the terminology server. "
 					+ "Please perform either a delta or a snapshot import instead.");
 		}
 		
-		if (!contentAvailable && Rf2ReleaseType.DELTA.equals(type) && isMain) {
+		if (!contentAvailable && Rf2ReleaseType.DELTA.equals(releaseType) && isMain) {
 			throw new BadRequestException("Importing a delta release of SNOMED CT "
 					+ "from an archive to MAIN branch is prohibited when SNOMED CT "
 					+ "ontology is not available on the terminology server. "
@@ -152,7 +152,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportRe
 	}
 
 	Rf2ImportResponse doImport(final BranchContext context, final File rf2Archive, final Rf2ImportConfiguration importconfig) throws Exception {
-		final String codeSystem = context.service(RepositoryCodeSystemProvider.class).get(context.branchPath()).getShortName();
+		final String codeSystem = context.service(RepositoryCodeSystemProvider.class).get(context.branch().path()).getShortName();
 		final Rf2ValidationIssueReporter reporter = new Rf2ValidationIssueReporter();
 		final Rf2ImportResponse response = new Rf2ImportResponse();
 		
@@ -205,7 +205,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportRe
 	}
 	
 	private boolean isLoadOnDemandEnabled() {
-		return Rf2ReleaseType.DELTA == type;
+		return Rf2ReleaseType.DELTA == releaseType;
 	}
 	
 	private void read(File rf2Archive, Rf2EffectiveTimeSlices slices, Rf2ValidationIssueReporter reporter) {
@@ -222,7 +222,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportRe
 			for (ZipEntry entry : Collections.list(zip.entries())) {
 				final String fileName = Paths.get(entry.getName()).getFileName().toString().toLowerCase();
 				if (fileName.endsWith(TXT_EXT)) {
-					if (fileName.contains(type.toString().toLowerCase())) {
+					if (fileName.contains(releaseType.toString().toLowerCase())) {
 						w.reset().start();
 						try (final InputStream in = zip.getInputStream(entry)) {
 							readFile(entry, in, oReader, slices, reporter);
@@ -262,7 +262,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportRe
 				
 				header = false;
 			} else {
-				if (Rf2ReleaseType.SNAPSHOT == type) {
+				if (Rf2ReleaseType.SNAPSHOT == releaseType) {
 					final String effectiveTime = Strings.isNullOrEmpty(line[1]) ? EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL : Rf2EffectiveTimeSlice.SNAPSHOT_SLICE;
 					resolver.register(line, effectiveTimeSlices.getOrCreate(effectiveTime), reporter);
 				} else {
@@ -284,7 +284,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportRe
 					.fileMmapPreclearDisable();
 			
 			// for non-delta releases increase the allocation size
-			if (type != Rf2ReleaseType.DELTA) {
+			if (releaseType != Rf2ReleaseType.DELTA) {
 				dbMaker = dbMaker
 					.allocateStartSize(256 * 1024*1024)  // 256MB
 				    .allocateIncrement(128 * 1024*1024);  // 128MB

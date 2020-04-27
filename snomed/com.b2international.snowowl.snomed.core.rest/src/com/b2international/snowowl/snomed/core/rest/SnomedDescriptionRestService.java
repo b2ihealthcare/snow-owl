@@ -79,7 +79,7 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 		
-		List<Sort> sorts = extractSortFields(params.getSort(), branch, acceptLanguage);
+		List<Sort> sorts = extractSortFields(params.getSort());
 		
 		if (sorts.isEmpty()) {
 			final SortField sortField = StringUtils.isEmpty(params.getTerm()) 

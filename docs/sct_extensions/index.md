@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Snow Owl Terminology Server is capable of managing multiple SNOMED CT extensions for both distribution and authoring purposes in a single deployment. 
+The Snow Owl Terminology Server is capable of managing multiple SNOMED CT extensions for both distribution and authoring purposes in a single deployment. 
 This guide describes the typical scenarios, like creating, managing, releasing and upgrading SNOMED CT Extensions in great detail with images. 
 If you are unfamiliar with SNOMED CT Extensions, the next section walks you through their logical model and basic characteristics, while the following pages describe distribution and authoring scenarios as well as how to use the Snow Owl Terminology Server for SNOMED CT Extensions.
 
@@ -30,7 +30,7 @@ Therefore, a SNOMED CT Extension uses the same Release Format version 2 as the I
 
 > A national or local extension uses a namespace identifier issued by SNOMED International to ensure that all extension components can be uniquely identified (across all extensions).
 
-Therefore, a SNOMED CT Extension uses a single namespace identifier to identify all core components in a SNOMED CT Extension (see [Namespace identifier](https://confluence.ihtsdotools.org/display/DOCEXTPG/4.1+Namespaces)).
+Therefore, a SNOMED CT Extension uses a single namespace identifier to identify all core components in the SNOMED CT Extension (see [Namespace identifier](https://confluence.ihtsdotools.org/display/DOCEXTPG/4.1+Namespaces)).
 
 ### Modules
 
@@ -64,16 +64,16 @@ Therefore, a SNOMED CT Extension depends on the SNOMED CT International Edition 
 
 > There are many use cases that require a date specific version of an edition, including specifying the substrate of a SNOMED CT query, and specifying the version of SNOMED CT used to code a specific data element in a health record. A versioned edition includes the contents of the specified version of the focus module, plus the contents of all versioned modules on which the versioned focus module depends (as specified in the |Module dependency reference set|). The version of an edition is based on the date on which the edition was released. Many extension providers release their extensions as a versioned edition, using regular and predictable release cycles.
 
-Therefore, a SNOMED CT Extension can be versioned and have different release cycle than the SNOMED CT International Edition (see [Versions](https://confluence.ihtsdotools.org/display/DOCEXTPG/4.4+Editions)).
+Therefore, a SNOMED CT Extension can be versioned and have a different release cycle than the SNOMED CT International Edition (see [Versions](https://confluence.ihtsdotools.org/display/DOCEXTPG/4.4+Editions)).
 
 ## Characteristics
 
 To summarize, a SNOMED CT Extension has the following characteristics:
-* Uses the same RF2 structure as SNOMED CT International Edition
+* Uses the same RF2 structure as the SNOMED CT International Edition
 * Uses a single namespace identifer to globally identify its content
 * Uses one or more modules to categorize the content into groups
 * Uses one or more languages to support specific user groups and patient-friendly terms
 * Depends on the SNOMED CT International Edition
 * Uses versions (effective times) to identity its content across multiple releases
 
-Now that we have a clear understanding of what a SNOMED CT Extension is, let's take a look at how can we use them in Snow Owl.
+Now that we have a clear understanding of what SNOMED CT Extensions are, let's take a look at how can we use them in Snow Owl.

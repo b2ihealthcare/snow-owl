@@ -11,17 +11,4 @@ if [[ "$1" != "sowrapper" ]]; then
 	exec "$@"
 fi
 
-if [[ "$(id -u)" == "0" ]]; then
-
-	# If running as root, mutate the ownership of bind-mounts
-	chown -HR 1000:0 /var/log/snowowl
-	chown -HR 1000:0 /var/lib/snowowl
-	chown -HR 1000:0 /etc/snowowl
-
-	exec chroot --userspec=1000 / /usr/share/snowowl/bin/snowowl.sh
-
-else
-
-	exec /usr/share/snowowl/bin/snowowl.sh
-
-fi
+exec /usr/share/snowowl/bin/snowowl.sh

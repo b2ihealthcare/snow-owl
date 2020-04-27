@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,15 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
+import com.b2international.snowowl.core.request.RevisionIndexReadRequest;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 
 /**
@@ -34,14 +37,14 @@ public final class Synonyms {
 	private Set<String> synonyms;
 
 	public Synonyms(BranchContext context) {
-		this.context = context;
+		this.context = checkNotNull(context, "context");
 	}
 	
 	public Set<String> get() {
 		if (synonyms == null) {
-			synonyms = SnomedRequests.prepareGetSynonyms()
+			synonyms = new RevisionIndexReadRequest<>(SnomedRequests.prepareGetSynonyms()
 					.setFields(SnomedConceptDocument.Fields.ID)
-					.build()
+					.build())
 					.execute(context)
 					.stream()
 					.map(IComponent::getId)

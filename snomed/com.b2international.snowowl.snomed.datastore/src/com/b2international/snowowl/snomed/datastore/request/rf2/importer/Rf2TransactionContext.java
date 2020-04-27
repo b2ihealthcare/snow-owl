@@ -69,7 +69,7 @@ import com.google.common.collect.Multimaps;
 /**
  * @since 6.0
  */
-final class Rf2TransactionContext extends DelegatingBranchContext implements TransactionContext {
+public final class Rf2TransactionContext extends DelegatingBranchContext implements TransactionContext {
 	
 	private static final Logger LOG = LoggerFactory.getLogger("import");
 
@@ -78,10 +78,13 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 	private Map<String, SnomedDocument> newComponents = newHashMap();
 	private boolean loadOnDemand;
 	
-	Rf2TransactionContext(TransactionContext context, boolean loadOnDemand) {
+	Rf2TransactionContext(TransactionContext context, boolean loadOnDemand, Rf2ImportConfiguration importConfig) {
 		super(context);
 		this.loadOnDemand = loadOnDemand;
 		bind(SnomedOWLExpressionConverter.class, new SnomedOWLExpressionConverter(context));
+		bind(Rf2ImportConfiguration.class, importConfig);
+		// override the default tx context with the rf2 tx context
+		service(StagingArea.class).withContext(this);
 	}
 	
 	@Override
@@ -307,9 +310,13 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 				// apply row changes
 				builder.init(newRevision, this);
 				if (existingRevision == null) {
+					// in this case the component is new, and the default values are okay to use
 					add(newRevision.build());
 				} else {
-					update(existingRevision, newRevision.build());
+					// in this case, recalculate the released flag based on the currently available revision
+					update(existingRevision, newRevision
+							.released(existingRevision.isReleased())
+							.build());
 				}
 			}
 			
@@ -331,15 +338,25 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 		}
 	}
 
+	/* Creates a minimal object to represent an item from the RF2 archive, ID and unreleased only */
 	private SnomedDocument createIdOnlyDoc(String id, Class<? extends SnomedDocument> type) {
 		if (type.isAssignableFrom(SnomedRefSetMemberIndexEntry.class)) {
-			return SnomedRefSetMemberIndexEntry.builder().id(id).build();
+			return SnomedRefSetMemberIndexEntry.builder().id(id)
+					.released(false)
+					.build();
 		} else if (type.isAssignableFrom(SnomedConceptDocument.class)) {
-			return SnomedConceptDocument.builder().id(id).build();
+			return SnomedConceptDocument.builder().id(id)
+					.released(false)
+					.exhaustive(false)
+					.build();
 		} else if (type.isAssignableFrom(SnomedDescriptionIndexEntry.class)) {
-			return SnomedDescriptionIndexEntry.builder().id(id).build();
+			return SnomedDescriptionIndexEntry.builder().id(id)
+					.released(false)
+					.build();
 		} else if (type.isAssignableFrom(SnomedRelationshipIndexEntry.class)) {
-			return SnomedRelationshipIndexEntry.builder().id(id).build();
+			return SnomedRelationshipIndexEntry.builder().id(id)
+					.released(false)
+					.build();
 		} else {
 			throw new UnsupportedOperationException("Unknown core component type: " + type);
 		}

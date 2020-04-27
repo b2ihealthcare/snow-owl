@@ -1920,12 +1920,12 @@ class EtlParsingTest {
 		
 	def private void assertConceptReference(ConceptReference reference, String id, String term) {
 		assertEquals(id, reference.id)
-		assertEquals('|' + term + '|', reference.term)
+		assertEquals(term, reference.term)
 	}
 	
 	def private void assertEclConceptReference(EclConceptReference reference, String id, String term) {
 		assertEquals(id, reference.id)
-		assertEquals('|' + term + '|', reference.term)
+		assertEquals(term, reference.term)
 	}
 	
 	def private void assertSimpleAttribute(Attribute attribute, String nameId, String nameTerm, String valueId, String valueTerm) {
@@ -1940,7 +1940,7 @@ class EtlParsingTest {
 		assertTrue(descendantOf.constraint instanceof EclConceptReference)
 		val reference = descendantOf.constraint as EclConceptReference
 		assertEquals(id, reference.id)
-		assertEquals('|' + term + '|', reference.term)
+		assertEquals(term, reference.term)
 	}
 	
 	def private void assertDescendantOrSelfOfExpression(ExpressionConstraint constraint, String id, String term) {
@@ -1949,7 +1949,7 @@ class EtlParsingTest {
 		assertTrue(descendantOrSelfOf.constraint instanceof EclConceptReference)
 		val reference = descendantOrSelfOf.constraint as EclConceptReference
 		assertEquals(id, reference.id)
-		assertEquals('|' + term + '|', reference.term)
+		assertEquals(term, reference.term)
 	}
 	
 	private def ExpressionTemplate assertNoErrors(CharSequence it) throws Exception {

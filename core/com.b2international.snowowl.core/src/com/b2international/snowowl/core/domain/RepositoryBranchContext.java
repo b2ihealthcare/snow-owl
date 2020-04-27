@@ -24,10 +24,12 @@ import com.b2international.snowowl.core.branch.Branch;
  */
 public final class RepositoryBranchContext extends DelegatingRepositoryContext implements BranchContext {
 
+	private final String path;
 	private final Branch branch;
 
-	public RepositoryBranchContext(RepositoryContext context, Branch branch) {
+	public RepositoryBranchContext(RepositoryContext context, String path, Branch branch) {
 		super(context);
+		this.path = path;
 		this.branch = checkNotNull(branch, "branch");
 	}
 	
@@ -37,8 +39,9 @@ public final class RepositoryBranchContext extends DelegatingRepositoryContext i
 	}
 	
 	@Override
-	public String branchPath() {
-		return branch.path();
+	public String path() {
+		// XXX make sure we return the original path expression requested by the client 
+		return path;
 	}
 
 }

@@ -27,8 +27,18 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.Set;
+import java.util.TimeZone;
+import java.util.TreeSet;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -228,7 +238,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Export
 	
 	@Override
 	public ExportResult execute(final BranchContext context) {
-		final String referenceBranch = context.branchPath();
+		final String referenceBranch = context.path();
 		
 		// register export start time for later use
 		final long exportStartTime = Instant.now().toEpochMilli();
@@ -309,7 +319,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Export
 	}
 
 	private Multimap<String, String> getLanguageCodes(BranchContext context, List<String> branchesToExport) {
-		final String referenceBranch = context.branchPath();
+		final String referenceBranch = context.path();
 		
 		List<String> branchesOrRanges = newArrayList(branchesToExport);
 		
@@ -523,7 +533,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Export
 	}
 
 	private TreeSet<CodeSystemVersionEntry> getAllExportableCodeSystemVersions(final BranchContext context, final CodeSystem codeSystemEntry) {
-		final String referenceBranch = context.branchPath();
+		final String referenceBranch = context.path();
 		final TreeSet<CodeSystemVersionEntry> visibleVersions = newTreeSet(EFFECTIVE_DATE_ORDERING);
 		collectExportableCodeSystemVersions(context, visibleVersions, codeSystemEntry, referenceBranch);
 		return visibleVersions;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,10 +28,18 @@ public class EclValueConverterService extends DefaultTerminalConverters {
 
 	@Inject
 	private CardinalityMaxValueConverter maxValueConverter;
+	
+	@Inject
+	private TermStringConverter termStringConverter;
 
 	@ValueConverter(rule = "MaxValue")
 	public IValueConverter<Integer> MaxValue() {
 		return maxValueConverter;
+	}
+	
+	@ValueConverter(rule = "TERM_STRING")
+	public IValueConverter<String> TermString() {
+		return termStringConverter;
 	}
 
 }

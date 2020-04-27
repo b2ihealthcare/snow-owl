@@ -99,14 +99,26 @@ public class HashMapOptions extends HashMap<String, Object> implements Options {
 	@Nullable
 	public final <T> T get(@Nullable final String key, @Nullable final Class<T> expectedType) throws IllegalArgumentException {
 		if (key != null && expectedType != null) {
-			final Object value = get(key);
+			Object value = get(key);
 			if (value != null) {
+				if (value instanceof String && expectedType != String.class) {
+					if (Boolean.class == expectedType) {
+						value = Boolean.parseBoolean((String) value);
+					} else if (Short.class == expectedType) {
+						value = Short.parseShort((String) value);
+					} else if (Integer.class == expectedType) {
+						value = Integer.parseInt((String) value);
+					} else if (Long.class == expectedType) {
+						value = Long.parseLong((String) value);
+					}
+				}
 				if (expectedType.isInstance(value)) {
 					return expectedType.cast(value);
+				} else {
+					throw new IllegalArgumentException(String.format(
+							"Expected type '%s' is not valid for the value '%s(%s)' returned for the key '%s'",
+							expectedType.getSimpleName(), value, value.getClass().getSimpleName(), key));
 				}
-				throw new IllegalArgumentException(String.format(
-						"Expected type '%s' is not valid for the value '%s(%s)' returned for the key '%s'",
-						expectedType.getSimpleName(), value, value.getClass().getSimpleName(), key));
 			}
 		}
 		return null;
@@ -148,11 +160,11 @@ public class HashMapOptions extends HashMap<String, Object> implements Options {
 		if (type.isInstance(value)) {
 			return Collections.singletonList(type.cast(value));
 		} else {
-			final List<Object> List = get(key, List.class);
-			final Object first = List != null ? Iterables.getFirst(List, null) : null;
+			final List<Object> list = get(key, List.class);
+			final Object first = list != null ? Iterables.getFirst(list, null) : null;
 			if (first != null) {
 				if (type.isInstance(first)) {
-					return (List<T>) List;
+					return (List<T>) list;
 				}
 				throw new IllegalArgumentException(String.format("The elements (%s) in the List are not the instance of the given type (%s)", first.getClass(), type));
 			}
