@@ -27,7 +27,7 @@
 		<commons.collections.versionRange>[3.2.2,3.3.0)</commons.collections.versionRange>
 		<kotlin.version>1.2.71</kotlin.version>
 		<protege.version>5.0.5-b2i</protege.version>
-		<owlapi.version>4.5.16</owlapi.version>
+		<owlapi.version>4.5.20</owlapi.version>
 		<elk.version>0.4.3</elk.version>
 		<jetty.version>9.4.27.v20200227</jetty.version>
 		<classgraph.version>4.8.77</classgraph.version>
@@ -82,22 +82,36 @@
 				<updatePolicy>never</updatePolicy>
 			</releases>
 			<snapshots>
-        		<enabled>false</enabled>
-        		<updatePolicy>never</updatePolicy>
-    		</snapshots>
+				<enabled>false</enabled>
+				<updatePolicy>never</updatePolicy>
+			</snapshots>
 		</repository>
 		<repository>
-        	<id>snomed-international-releases</id>
-        	<url>https://maven.ihtsdotools.org/content/repositories/releases/</url>
-        	<releases>
-           		<enabled>true</enabled>
-           		<updatePolicy>never</updatePolicy>
-        	</releases>
-        	<snapshots>
-          		<enabled>false</enabled>
-          		<updatePolicy>never</updatePolicy>
-        	</snapshots>
-     	</repository>
+			<id>github</id>
+			<name>B2i Healthcare OWLAPI Packages</name>
+			<url>https://maven.pkg.github.com/b2ihealthcare/owlapi</url>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>never</updatePolicy>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+				<updatePolicy>never</updatePolicy>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>snomed-international-releases</id>
+			<url>https://maven.ihtsdotools.org/content/repositories/releases/
+			</url>
+			<releases>
+				<enabled>true</enabled>
+				<updatePolicy>never</updatePolicy>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+				<updatePolicy>never</updatePolicy>
+			</snapshots>
+		</repository>
 	</repositories>
 
 	<dependencies>
@@ -338,7 +352,7 @@
 			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>net.sourceforge.owlapi</groupId>
+			<groupId>com.b2international</groupId>
 			<artifactId>owlapi-osgidistribution</artifactId>
 			<version>${owlapi.version}</version>
 			<scope>provided</scope>
