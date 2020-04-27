@@ -151,7 +151,7 @@ public class CodeSystemApiTest {
 		assertCodeSystemCreated(parentRequestBody);
 		assertCodeSystemExists(parentName);
 		
-		final Map<String, String> versionRequestBody = newCodeSystemVersionRequestBody("v1", "2020-04-15");
+		final Map<String, String> versionRequestBody = newCodeSystemVersionRequestBody("v1", "20200415");
 		assertCodeSystemVersionCreated(parentName, versionRequestBody);
 
 		final String shortName = "cs12";
@@ -246,6 +246,36 @@ public class CodeSystemApiTest {
 				.build();
 		
 		assertCodeSystemUpdatedWithStatus(shortName, updateRequestBody, 404);
+	}
+	
+	@Test
+	public void updateCodeSystemWithExtensionOf() {
+		final String parentName = "cs13";
+		final Map<String, String> parentRequestBody = newCodeSystemRequestBody(parentName);
+		assertCodeSystemCreated(parentRequestBody);
+		assertCodeSystemExists(parentName);
+		
+		final Map<String, String> v3RequestBody = newCodeSystemVersionRequestBody("v3", "20200416");
+		assertCodeSystemVersionCreated(parentName, v3RequestBody);
+		final Map<String, String> v4RequestBody = newCodeSystemVersionRequestBody("v4", "20200417");
+		assertCodeSystemVersionCreated(parentName, v4RequestBody);
+
+		final String shortName = "cs14";
+		final Map<String, String> requestBody = newHashMap(newCodeSystemRequestBody(shortName));
+		requestBody.remove("branchPath");
+		requestBody.put("extensionOf", "cs13/v3");
+		
+		assertCodeSystemCreated(requestBody);
+		
+		final Map<String, Object> updateRequestBody = Map.of(
+				"repositoryUuid", "snomedStore",
+				"extensionOf", "cs13/v4");
+			
+		assertCodeSystemUpdated(shortName, updateRequestBody);
+		
+		final String expectedBranchPath = Branch.get(Branch.MAIN_PATH, "v4", shortName);
+		assertCodeSystemHasAttributeValue(shortName, "extensionOf", "cs13/v4");
+		assertCodeSystemHasAttributeValue(shortName, "branchPath", expectedBranchPath);
 	}
 	
 	@Test
