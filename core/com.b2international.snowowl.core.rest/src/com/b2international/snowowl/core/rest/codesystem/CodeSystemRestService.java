@@ -15,7 +15,10 @@
  */
 package com.b2international.snowowl.core.rest.codesystem;
 
+import java.util.Comparator;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -27,18 +30,27 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.validation.ApiValidation;
+import com.b2international.snowowl.core.Repositories;
+import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
+import com.b2international.snowowl.core.codesystem.CodeSystemEntry;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
-import com.b2international.snowowl.core.domain.CollectionResource;
+import com.b2international.snowowl.core.codesystem.CodeSystems;
+import com.b2international.snowowl.core.events.util.Promise;
+import com.b2international.snowowl.core.repository.RepositoryRequests;
+import com.b2international.snowowl.core.request.SearchResourceRequest.Sort;
+import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
+import com.b2international.snowowl.eventbus.IEventBus;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -58,14 +70,88 @@ public class CodeSystemRestService extends AbstractRestService {
 	private CodeSystemService codeSystemService;
 	
 	@ApiOperation(
-			value="Retrieve all code systems",
-			notes="Returns a list containing generic information about registered code systems.")
+		value="Retrieve Code Systems", 
+		notes="Returns a collection resource containing all/filtered registered Code Systems."
+			+ "<p>Results are always sorted by repositoryUuid first, sort keys only apply per repository."
+			+ "<p>The following properties can be expanded:"
+			+ "<p>"
+			+ "&bull; availableUpgrades() &ndash; a list of possible code system URIs that can be used as an 'extensionOf' property"
+	)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK")
+		@ApiResponse(code = 200, message = "OK", response = CodeSystems.class),
+		@ApiResponse(code = 400, message = "Invalid search config", response = RestApiError.class),
+		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
 	})
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public CollectionResource<CodeSystem> getCodeSystems() {
-		return CollectionResource.of(codeSystemService.getCodeSystems());
+	public @ResponseBody Promise<CodeSystems> searchByGet(final CodeSystemRestSearch params) {
+		final IEventBus bus = getBus();
+		
+		return RepositoryRequests.prepareSearch()
+			.all()
+			.buildAsync()
+			.execute(bus)
+			.thenWith(repos -> searchByGet(params, repos, bus));
+	}
+	
+	private Promise<CodeSystems> searchByGet(CodeSystemRestSearch params, Repositories repos, IEventBus bus) {
+		final List<Promise<CodeSystems>> codeSystemsByRepository = repos.stream()
+			.map(RepositoryInfo::id)
+			.map(id -> searchByGet(params, id, bus))
+			.collect(Collectors.toList());
+		
+		if (codeSystemsByRepository.isEmpty()) {
+			return Promise.immediate(new CodeSystems(List.of(), null, params.getLimit(), 0));
+		}
+		
+		return Promise.all(codeSystemsByRepository)
+			.then(results -> {
+				final List<CodeSystem> allCodeSystems = results.stream()
+					.flatMap(r -> ((CodeSystems) r).stream())
+					// XXX: search-time sort order within a repository should be preserved by the sorter below
+					.sorted(Comparator.comparing(CodeSystem::getRepositoryUuid))
+					.limit(params.getLimit())
+					.collect(Collectors.toList());
+				
+				final int total = results.stream()
+					.mapToInt(r -> ((CodeSystems) r).getTotal())
+					.sum();
+				
+				return new CodeSystems(allCodeSystems, null, params.getLimit(), total);
+			});
+	}
+	
+	private Promise<CodeSystems> searchByGet(CodeSystemRestSearch params, String repositoryId, IEventBus bus) {
+		List<Sort> sortBy = extractSortFields(params.getSort());
+		if (sortBy.isEmpty()) {
+			sortBy = List.of(SortField.ascending(CodeSystemEntry.Fields.SHORT_NAME));
+		}
+
+		return CodeSystemRequests.prepareSearchCodeSystem()
+				.filterByIds(params.getId())
+				.setLimit(params.getLimit())
+				.setExpand(params.getExpand())
+				.sortBy(sortBy)
+				// .setSearchAfter(...) is not applied; we are searching in multiple repositories
+				.build(repositoryId)
+				.execute(bus);
+	}
+
+	@ApiOperation(
+		value="Retrieve Code Systems", 
+		notes="Returns a collection resource containing all/filtered registered Code Systems."
+		    + "<p>Results are always sorted by repositoryUuid first, sort keys only apply per repository."
+			+ "<p>The following properties can be expanded:"
+			+ "<p>"
+			+ "&bull; availableUpgrades() &ndash; a list of possible code system URIs that can be used as an 'extensionOf' property"
+	)
+	@ApiResponses({
+		@ApiResponse(code = 200, message = "OK", response = CodeSystems.class),
+		@ApiResponse(code = 400, message = "Invalid search config", response = RestApiError.class),
+		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
+	})
+	@PostMapping(value="/search", produces = { AbstractRestService.JSON_MEDIA_TYPE })
+	public @ResponseBody Promise<CodeSystems> searchByPost(final CodeSystemRestSearch params) {
+		return searchByGet(params);
 	}
 
 	@ApiOperation(
@@ -76,7 +162,7 @@ public class CodeSystemRestService extends AbstractRestService {
 		@ApiResponse(code = 404, message = "Code system not found", response = RestApiError.class)
 	})
 	@GetMapping(value = "/{shortNameOrOid}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public CodeSystem getCodeSystemByShortNameOrOid(
+	public CodeSystem read(
 			@ApiParam(value="The code system identifier (short name or OID)")
 			@PathVariable(value="shortNameOrOid") final String shortNameOrOId) {
 		return codeSystemService.getCodeSystemById(shortNameOrOId);
@@ -91,7 +177,7 @@ public class CodeSystemRestService extends AbstractRestService {
 	})
 	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.CREATED)
-	public ResponseEntity<Void> createCodeSystem(
+	public ResponseEntity<Void> create(
 			@RequestBody
 			final CodeSystem codeSystem,
 			@RequestHeader(value = X_AUTHOR, required = false)
@@ -136,7 +222,7 @@ public class CodeSystemRestService extends AbstractRestService {
 	})
 	@PutMapping(value = "/{shortNameOrOid}", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.NO_CONTENT)
-	public void updateCodeSystem(
+	public void update(
 			@ApiParam(value="The code system identifier (short name or OID)")
 			@PathVariable(value="shortNameOrOid") 
 			final String shortNameOrOId,
@@ -159,6 +245,7 @@ public class CodeSystemRestService extends AbstractRestService {
 				.setLink(codeSystem.getOrganizationLink())
 				.setLocales(codeSystem.getLocales())
 				.setAdditionalProperties(codeSystem.getAdditionalProperties())
+				.setExtensionOf(codeSystem.getExtensionOf())
 				.build(codeSystem.getRepositoryUuid(), IBranchPath.MAIN_BRANCH, author, commitComment)
 				.execute(getBus())
 				.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);

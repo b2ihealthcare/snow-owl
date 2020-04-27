@@ -52,7 +52,7 @@ final class CodeSystemSearchRequest extends SearchIndexResourceRequest<Repositor
 
 	@Override
 	protected CodeSystems toCollectionResource(RepositoryContext context, Hits<CodeSystemEntry> hits) {
-		final CodeSystemConverter converter = new CodeSystemConverter(context, null, null);
+		final CodeSystemConverter converter = new CodeSystemConverter(context, expand(), null);
 		return converter.convert(hits.getHits(), hits.getSearchAfter(), hits.getLimit(), hits.getTotal());
 	}
 	
