@@ -67,7 +67,6 @@ public final class CodeSystemEntry implements Serializable {
 	}
 	
 	public static class Fields {
-		public static final String STORAGE_KEY = "storageKey";
 		public static final String OID = "oid";
 		public static final String NAME = "name"; 
 		public static final String SHORT_NAME = "shortName"; 
