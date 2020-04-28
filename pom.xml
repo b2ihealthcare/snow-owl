@@ -27,7 +27,7 @@
 		<commons.collections.versionRange>[3.2.2,3.3.0)</commons.collections.versionRange>
 		<kotlin.version>1.2.71</kotlin.version>
 		<protege.version>5.0.5-b2i</protege.version>
-		<owlapi.version>4.5.23</owlapi.version>
+		<owlapi.version>4.5.24</owlapi.version>
 		<elk.version>0.4.3</elk.version>
 		<jetty.version>9.4.27.v20200227</jetty.version>
 		<classgraph.version>4.8.77</classgraph.version>
@@ -79,24 +79,19 @@
 			<url>https://b2ihealthcare.github.io/protege/</url>
 			<releases>
 				<enabled>true</enabled>
-				<updatePolicy>never</updatePolicy>
 			</releases>
 			<snapshots>
 				<enabled>false</enabled>
-				<updatePolicy>never</updatePolicy>
 			</snapshots>
 		</repository>
 		<repository>
-			<id>github</id>
-			<name>B2i Healthcare OWLAPI Packages</name>
-			<url>https://maven.pkg.github.com/b2ihealthcare/owlapi</url>
+			<id>owlapi-mvn-repo</id>
+			<url>https://b2ihealthcare.github.io/owlapi/</url>
 			<releases>
 				<enabled>true</enabled>
-				<updatePolicy>never</updatePolicy>
 			</releases>
 			<snapshots>
 				<enabled>false</enabled>
-				<updatePolicy>never</updatePolicy>
 			</snapshots>
 		</repository>
 		<repository>
@@ -105,11 +100,9 @@
 			</url>
 			<releases>
 				<enabled>true</enabled>
-				<updatePolicy>never</updatePolicy>
 			</releases>
 			<snapshots>
 				<enabled>false</enabled>
-				<updatePolicy>never</updatePolicy>
 			</snapshots>
 		</repository>
 	</repositories>
