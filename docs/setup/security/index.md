@@ -20,7 +20,7 @@ The value should be a user/pass pair in case of using `Basic` authentication or 
 NOTE: It is recommended in production environments that all communication between a client and Snow Owl is performed through a secure connection. 
 {% endhint %}
 
-Snow Owl responds back with an `HTTP 401 Unauthorized` response if the request needs to be authenticated.
+Snow Owl sends an `HTTP 401 Unauthorized` response if a request needs to be authenticated.
 
 ## Authorization
 
