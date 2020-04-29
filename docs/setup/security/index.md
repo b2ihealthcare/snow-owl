@@ -41,7 +41,7 @@ P = Permissions = An approval of a mode of access to a resource
 
 ### Permissions
 
-In Snow Owl a permission is a single value that represents both the operation of the user would like to perform and the resource that is being accessed.
+In Snow Owl a permission is a single value that represents both the operation the user would like to perform and the resource that is being accessed.
 The format is the following: `<operation>:<resource>`
 
 Currently there are `7` operations supported by Snow Owl:
