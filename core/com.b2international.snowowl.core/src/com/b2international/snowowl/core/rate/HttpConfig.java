@@ -16,6 +16,7 @@
 package com.b2international.snowowl.core.rate;
 
 import org.elasticsearch.common.unit.ByteSizeValue;
+import org.hibernate.validator.constraints.NotEmpty;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -24,8 +25,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  */
 public class HttpConfig {
 	
+	@NotEmpty
 	private String maxFileSize = "1gb";
+	@NotEmpty
 	private String maxRequestSize = "1gb";
+	@NotEmpty
 	private String maxInMemorySize = "1mb";
 	
 	public String getMaxFileSize() {
