@@ -54,6 +54,12 @@ SNOW_OWL_BASE_URL="http://localhost:8080"
 # URL for Snow Owl's REST API
 SNOW_OWL_API_URL="/snowowl/snomed-ct/v3"
 
+# Effective time lower bound
+EFFECTIVE_TIME_START=""
+
+# Effective time upper bound
+EFFECTIVE_TIME_END=""
+
 # The input data for the export config
 EXPORT_CONFIG=""
 
@@ -87,6 +93,10 @@ NAME:
         Snomed CT reference set IDs to include in the export RF2
     -a
         REST API URL of the Snow Owl server, defaults to '/snowowl/snomed-ct/v3'
+    -f
+        Effective time range lower bound, in yyyyMMdd format
+    -g
+        Effective time range upper bound, in yyyyMMdd format
 
 NOTES:
 
@@ -139,6 +149,14 @@ initiate_export() {
 
 	EXPORT_CONFIG="?type=${EXPORT_TYPE}"
 
+	if [ -n "$EFFECTIVE_TIME_END" ]; then
+		EXPORT_CONFIG+="&endEffectiveTime=${EFFECTIVE_TIME_END}"
+	fi
+
+	if [ -n "$EFFECTIVE_TIME_START" ]; then
+		EXPORT_CONFIG+="&startEffectiveTime=${EFFECTIVE_TIME_START}"
+	fi
+
 	if ((${#REFSETS_TO_EXPORT[@]})); then
 		# Append refsets to config
 		for refset in "${REFSETS_TO_EXPORT[@]}"; do
@@ -176,7 +194,6 @@ initiate_export() {
 }
 
 execute() {
-
 	validate_variables
 
 	initiate_export
@@ -184,7 +201,7 @@ execute() {
 	exit 0
 }
 
-while getopts ":hu:p:t:e:b:a:s:m:r:" option; do
+while getopts ":hu:p:t:e:b:a:s:m:r:f:g:" option; do
 	case "${option}" in
 	h)
 		usage
@@ -210,6 +227,12 @@ while getopts ":hu:p:t:e:b:a:s:m:r:" option; do
 		;;
 	s)
 		BRANCH_TO_EXPORT=${OPTARG}
+		;;
+	f)
+		EFFECTIVE_TIME_START=${OPTARG}
+		;;
+	g)
+		EFFECTIVE_TIME_END=${OPTARG}
 		;;
 	m)
 		MODULES_TO_EXPORT+=("${OPTARG}")
