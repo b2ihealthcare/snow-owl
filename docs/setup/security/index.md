@@ -24,7 +24,7 @@ Snow Owl sends an `HTTP 401 Unauthorized` response if a request needs to be auth
 
 ## Authorization
 
-After successful authentication and if supported by the selected security realm, Snow Owl will check whether the user can access the resource based on the roles and permissions set in the current security realms.
+If supported by the security realm, Snow Owl will also check whether an authenticated user is permitted to perform the requested action on a given resource.
 
 Within an organization, roles are created for various job functions. The permissions to perform certain operations are assigned to specific roles. Members or staff (or other system users) are assigned particular roles, and through those role assignments acquire the permissions needed to perform particular system functions. Since users are not assigned permissions directly, but only acquire them through their role (or roles), management of individual user rights becomes a matter of simply assigning appropriate roles to the user's account; this simplifies common operations, such as adding a user, or changing a user's department.
 
