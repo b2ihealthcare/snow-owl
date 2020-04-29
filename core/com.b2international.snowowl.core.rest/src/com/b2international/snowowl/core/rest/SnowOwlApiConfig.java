@@ -67,8 +67,10 @@ import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.authorization.AuthorizedEventBus;
 import com.b2international.snowowl.core.branch.review.Review;
 import com.b2international.snowowl.core.branch.review.ReviewMixin;
+import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.identity.IdentityProvider;
-import com.b2international.snowowl.core.rate.ApiFileUploadConfig;
+import com.b2international.snowowl.core.rate.ApiConfiguration;
+import com.b2international.snowowl.core.rate.HttpConfig;
 import com.b2international.snowowl.core.rest.util.AntPathWildcardMatcher;
 import com.b2international.snowowl.core.rest.util.CsvMessageConverter;
 import com.b2international.snowowl.core.rest.util.ModelAttributeParameterExpanderExt;
@@ -136,11 +138,11 @@ public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 	
 	@Bean
 	public MultipartResolver multipartResolver() {
-		final ApiFileUploadConfig fileUploadConfig = ApplicationContext.getInstance().getService(ApiFileUploadConfig.class);
+		final HttpConfig httpConfig = ApplicationContext.getInstance().getService(SnowOwlConfiguration.class).getModuleConfig(ApiConfiguration.class).getHttp();
 	    final CommonsMultipartResolver multipartResolver = new CommonsMultipartResolver();
-	    multipartResolver.setMaxUploadSizePerFile(fileUploadConfig.getMaxFileSize());
-	    multipartResolver.setMaxUploadSize(fileUploadConfig.getMaxRequestSize());
-	    multipartResolver.setMaxInMemorySize(fileUploadConfig.getMaxInMemorySize());
+	    multipartResolver.setMaxUploadSizePerFile(httpConfig.getMaxFileSizeBytes());
+	    multipartResolver.setMaxUploadSize(httpConfig.getMaxRequestSizeBytes());
+	    multipartResolver.setMaxInMemorySize(httpConfig.getMaxInMemorySizeBytes());
 	    return multipartResolver;
 	}
 	

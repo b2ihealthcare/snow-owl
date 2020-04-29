@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartException;
 
 import com.b2international.commons.exceptions.*;
@@ -71,9 +72,15 @@ public class ControllerExceptionMapper {
 	
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	public RestApiError handle(final MaxUploadSizeExceededException e) {
+		return RestApiError.of(ApiError.Builder.of(e.getMessage()).build()).build(HttpStatus.BAD_REQUEST.value());
+	}
+	
+	@ExceptionHandler
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	public RestApiError handle(final MultipartException e) {
 		return RestApiError.of(ApiError.Builder.of("Couldn't process multipart request: " + e.getMostSpecificCause().getMessage()).build()).build(HttpStatus.BAD_REQUEST.value());
-	} 
+	}
 	
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.UNSUPPORTED_MEDIA_TYPE)

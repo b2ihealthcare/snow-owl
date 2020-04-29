@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.rate;
 
+import javax.validation.Valid;
 import javax.validation.constraints.Min;
 
 /**
@@ -28,12 +29,9 @@ public class ApiConfiguration {
 	@Min(1)
 	private long refillRate = 1L;
 	
-	private long maxFileSize;
+	@Valid
+	private HttpConfig http = new HttpConfig();
 	
-	private long maxRequestSize;
-	
-	private int maxInMemorySize;
-
 	public long getOverdraft() {
 		return overdraft;
 	}
@@ -50,27 +48,12 @@ public class ApiConfiguration {
 		this.refillRate = refillRate;
 	}
 	
-	public long getMaxFileSize() {
-		return maxFileSize;
+	public HttpConfig getHttp() {
+		return http;
 	}
 	
-	public void setMaxFileSize(long maxFileSize) {
-		this.maxFileSize = maxFileSize;
+	public void setHttp(HttpConfig http) {
+		this.http = http;
 	}
 	
-	public int getMaxInMemorySize() {
-		return maxInMemorySize;
-	}
-	
-	public void setMaxInMemorySize(int maxInMemorySize) {
-		this.maxInMemorySize = maxInMemorySize;
-	}
-	
-	public long getMaxRequestSize() {
-		return maxRequestSize;
-	}
-	
-	public void setMaxRequestSize(long maxRequestSize) {
-		this.maxRequestSize = maxRequestSize;
-	}
 }
