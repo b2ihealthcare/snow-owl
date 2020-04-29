@@ -41,7 +41,7 @@ The default configuration values are selected to support both OpenLDAP and Activ
 ## Configure Authentication
 
 When users send their username and password with their request in the Authorization header, the LDAP security realm uses the provided username and password to first search for the user in the configured LDAP instance to get the user's `DN` and then user the received `DN` and the provided password to authenticate with the LDAP instance. 
-If either the search for the user or the authentication fail for any reason, the user is not allowed to access the terminology server's content and the server will respond with an `HTTP 401 Unauthorized` response.
+If either the search for the user or the authentication fail for any reason, the user is not allowed to access the terminology server's content and the server will respond with `HTTP 401 Unauthorized`.
 
 To configure authentication, you need to configure the `uri`, `baseDn`, `rootDn`, `rootDnPassword`, `userObjectClass` and `userIdProperty` configuration settings.
 
