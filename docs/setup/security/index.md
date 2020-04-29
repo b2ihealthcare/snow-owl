@@ -30,8 +30,10 @@ Within an organization, roles are created for various job functions. The permiss
 
 ### Rules
 
-Role assignment: A subject can exercise a permission only if the subject has selected or been assigned a role.
-Permission authorization: A subject can exercise a permission only if the permission is authorized for the subject's active role. With rules 1 and 2, this rule ensures that users can exercise only permissions for which they are authorized.
+1. Role assignment: A subject can exercise a permission only if the subject has selected or been assigned a role.
+2. Permission authorization: A subject can exercise a permission only if the permission is authorized for the subject's active role.
+
+With rules 1 and 2, it is ensured that users can exercise only permissions for which they are authorized.
 
 S = Subject = A person or automated agent
 R = Role = Job function or title which defines an authority level
