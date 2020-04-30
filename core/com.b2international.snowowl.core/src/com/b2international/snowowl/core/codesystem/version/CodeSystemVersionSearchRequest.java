@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.codesystem.version;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 
@@ -37,18 +38,21 @@ final class CodeSystemVersionSearchRequest
 	extends SearchIndexResourceRequest<RepositoryContext, CodeSystemVersions, CodeSystemVersionEntry> 
 	implements RepositoryAccessControl {
 
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 
-	private String codeSystemShortName;
 	private String versionId;
 	private Date effectiveDate;
 	private String parentBranchPath;
-
 	
 	/**
 	 * @since 6.15
 	 */
 	public static enum OptionKey {
+		
+		/**
+		 * Filter versions by code system short name.
+		 */
+		SHORT_NAME,
 		
 		/**
 		 * Filter versions by effective date starting from this value, inclusive.
@@ -59,16 +63,10 @@ final class CodeSystemVersionSearchRequest
 		 * Filter versions by effective date ending with this value, inclusive.
 		 */
 		CREATED_AT_END
-		
 	}
 	
-	CodeSystemVersionSearchRequest() {
-	}
+	CodeSystemVersionSearchRequest() { }
 
-	void setCodeSystemShortName(String codeSystemShortName) {
-		this.codeSystemShortName = codeSystemShortName;
-	}
-	
 	void setVersionId(String versionId) {
 		this.versionId = versionId;
 	}
@@ -85,8 +83,9 @@ final class CodeSystemVersionSearchRequest
 	protected Expression prepareQuery(RepositoryContext context) {
 		final ExpressionBuilder query = Expressions.builder();
 
-		if (!StringUtils.isEmpty(codeSystemShortName)) {
-			query.filter(CodeSystemVersionEntry.Expressions.shortName(codeSystemShortName));
+		if (containsKey(OptionKey.SHORT_NAME)) {
+			final Collection<String> codeSystemShortNames = getCollection(OptionKey.SHORT_NAME, String.class);
+			query.filter(CodeSystemVersionEntry.Expressions.shortNames(codeSystemShortNames));
 		}
 		
 		if (!StringUtils.isEmpty(versionId)) {

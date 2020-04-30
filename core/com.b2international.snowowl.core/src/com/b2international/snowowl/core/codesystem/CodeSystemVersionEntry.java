@@ -16,10 +16,12 @@
 package com.b2international.snowowl.core.codesystem;
 
 import static com.b2international.index.query.Expressions.exactMatch;
+import static com.b2international.index.query.Expressions.matchAny;
 import static com.b2international.index.query.Expressions.matchRange;
 import static com.b2international.snowowl.core.api.IBranchPath.MAIN_BRANCH;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Objects;
@@ -110,6 +112,10 @@ public final class CodeSystemVersionEntry implements Serializable {
 		public static Expression shortName(String shortName) {
 			return exactMatch(Fields.CODE_SYSTEM_SHORT_NAME, shortName);
 		}
+		
+		public static Expression shortNames(Collection<String> shortNames) {
+			return matchAny(Fields.CODE_SYSTEM_SHORT_NAME, shortNames);
+		}
 
 		public static Expression createdAt(long from, long to) {
 			return matchRange(Fields.IMPORT_DATE, from, to);
@@ -122,7 +128,6 @@ public final class CodeSystemVersionEntry implements Serializable {
 		public static Expression parentBranchPath(String parentBranchPath) {
 			return exactMatch(Fields.PARENT_BRANCH_PATH, parentBranchPath);
 		}
-		
 	}
 	
 	public static Builder builder() {

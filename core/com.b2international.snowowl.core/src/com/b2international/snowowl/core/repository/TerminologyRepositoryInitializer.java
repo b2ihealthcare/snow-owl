@@ -16,7 +16,7 @@
 package com.b2international.snowowl.core.repository;
 
 import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.codesystem.CodeSystemEntry;
+import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.codesystem.CodeSystems;
 import com.b2international.snowowl.core.domain.RepositoryContext;
@@ -43,7 +43,7 @@ public abstract class TerminologyRepositoryInitializer implements Request<Reposi
 	 */
 	@Override
 	public final Void execute(RepositoryContext context) {
-		CodeSystemEntry primaryCodeSystem = createPrimaryCodeSystem();
+		CodeSystem primaryCodeSystem = createPrimaryCodeSystem();
 	
 		if (primaryCodeSystem != null) {
 			CodeSystems codeSystems = CodeSystemRequests.prepareSearchCodeSystem()
@@ -56,13 +56,13 @@ public abstract class TerminologyRepositoryInitializer implements Request<Reposi
 				CodeSystemRequests.prepareNewCodeSystem()
 					.setName(primaryCodeSystem.getName())
 					.setOid(primaryCodeSystem.getOid())
-					.setLanguage(primaryCodeSystem.getLanguage())
-					.setLink(primaryCodeSystem.getOrgLink())
+					.setLanguage(primaryCodeSystem.getPrimaryLanguage())
+					.setLink(primaryCodeSystem.getOrganizationLink())
 					.setCitation(primaryCodeSystem.getCitation())
 					.setIconPath(primaryCodeSystem.getIconPath())
-					.setTerminologyId(primaryCodeSystem.getTerminologyComponentId())
+					.setTerminologyId(primaryCodeSystem.getTerminologyId())
 					.setShortName(primaryCodeSystem.getShortName())
-					.setRepositoryUuid(context.id())
+					.setRepositoryId(context.id())
 					.setBranchPath(Branch.MAIN_PATH)
 					.build(context.id(), Branch.MAIN_PATH, User.SYSTEM.getUsername(), "Create primary code system for repository")
 					.getRequest()
@@ -73,10 +73,10 @@ public abstract class TerminologyRepositoryInitializer implements Request<Reposi
 	}
 
 	/**
-	 * Prepare and return {@link CodeSystemEntry} that represents the primary codesystem for a given terminology.
+	 * Prepare and return {@link CodeSystem} that represents the primary codesystem for a given terminology.
 	 * @return
 	 */
-	protected CodeSystemEntry createPrimaryCodeSystem() {
+	protected CodeSystem createPrimaryCodeSystem() {
 		return null;
 	}
 }

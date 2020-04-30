@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -180,7 +180,7 @@ public class CommitInfoRequestTest {
 			.setBranchPath(IBranchPath.MAIN_BRANCH)
 			.setCitation("citation")
 			.setIconPath("snomed.png")
-			.setRepositoryUuid("snomedStore")
+			.setRepositoryId("snomedStore")
 			.setTerminologyId("concept")
 			.setLink("www.ihtsdo.org")
 			.build("snomedStore", IBranchPath.MAIN_BRANCH, userId, comment)

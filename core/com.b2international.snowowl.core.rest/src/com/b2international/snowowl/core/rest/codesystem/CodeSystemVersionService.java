@@ -90,7 +90,7 @@ public class CodeSystemVersionService {
 	public List<CodeSystemVersion> getCodeSystemVersions(final String shortName) {
 		checkNotNull(shortName, "Short name may not be null.");
 		final CodeSystem codeSystem = codeSystems.getCodeSystemById(shortName);
-		final Collection<CodeSystemVersionEntry> versions = getCodeSystemVersions(shortName, codeSystem.getRepositoryUuid()); 
+		final Collection<CodeSystemVersionEntry> versions = getCodeSystemVersions(shortName, codeSystem.getRepositoryId()); 
 		return toSortedCodeSystemVersionList(versions);
 	}
 
@@ -115,7 +115,7 @@ public class CodeSystemVersionService {
 				.all()
 				.filterByCodeSystemShortName(shortName)
 				.filterByVersionId(versionId)
-				.build(codeSystem.getRepositoryUuid())
+				.build(codeSystem.getRepositoryId())
 				.execute(bus.get())
 				.getSync(1, TimeUnit.MINUTES);
 		

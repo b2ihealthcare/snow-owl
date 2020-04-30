@@ -37,7 +37,7 @@ import com.b2international.index.revision.StagingArea;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.BranchPathUtils;
-import com.b2international.snowowl.core.codesystem.CodeSystemEntry;
+import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
 import com.b2international.snowowl.core.codesystem.CodeSystems;
@@ -208,9 +208,9 @@ public final class ComponentEffectiveTimeRestoreChangeProcessor extends ChangeSe
 				.execute(bus)
 				.getSync(1, TimeUnit.MINUTES);
 
-		final Map<String, CodeSystemEntry> codeSystemsByMainBranch = Maps.uniqueIndex(codeSystems, CodeSystemEntry::getBranchPath);
+		final Map<String, CodeSystem> codeSystemsByMainBranch = Maps.uniqueIndex(codeSystems, CodeSystem::getBranchPath);
 
-		final List<CodeSystemEntry> relativeCodeSystems = Lists.newArrayList();
+		final List<CodeSystem> relativeCodeSystems = Lists.newArrayList();
 
 		final Iterator<IBranchPath> bottomToTop = BranchPathUtils.bottomToTopIterator(BranchPathUtils.createPath(branchPath));
 
@@ -225,7 +225,7 @@ public final class ComponentEffectiveTimeRestoreChangeProcessor extends ChangeSe
 		}
 
 		// the first code system in the list is the working codesystem
-		final CodeSystemEntry workingCodeSystem = relativeCodeSystems.stream().findFirst().get();
+		final CodeSystem workingCodeSystem = relativeCodeSystems.stream().findFirst().get();
 
 		CodeSystemVersionSearchRequestBuilder versionSearch = CodeSystemRequests.prepareSearchCodeSystemVersion()
 				.one()
