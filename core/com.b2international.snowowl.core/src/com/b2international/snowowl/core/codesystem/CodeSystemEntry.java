@@ -158,6 +158,15 @@ public final class CodeSystemEntry implements Serializable {
 			return this;
 		}
 		
+		/**
+		 * @param repositoryId
+		 * @return
+		 * @deprecated - use the {@link #repositoryId(String)} method instead
+		 */
+		Builder repositoryUuid(String repositoryId) {
+			return repositoryId(repositoryId);
+		}
+		
 		public Builder repositoryId(String repositoryId) {
 			this.repositoryId = repositoryId;
 			return this;
@@ -214,6 +223,8 @@ public final class CodeSystemEntry implements Serializable {
 	private final String citation; 
 	private final String iconPath; 
 	private final String terminologyComponentId;
+	// XXX keeping the field for compatibility purposes with pre-7.6 indexes
+	private final String repositoryUuid;
 	private final String repositoryId;
 	private final String branchPath;
 	private final CodeSystemURI extensionOf;
@@ -243,6 +254,7 @@ public final class CodeSystemEntry implements Serializable {
 		this.iconPath = Strings.nullToEmpty(iconPath);
 		this.terminologyComponentId = terminologyComponentId;
 		this.repositoryId = repositoryId;
+		this.repositoryUuid = repositoryId;
 		this.branchPath = branchPath;
 		this.extensionOf = extensionOf;
 		this.locales = locales;
