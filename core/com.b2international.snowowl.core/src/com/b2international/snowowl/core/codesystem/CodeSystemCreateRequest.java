@@ -46,7 +46,7 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 	private String language;
 	private String link;
 	private String name;
-	private String repositoryUuid;
+	private String repositoryId;
 	private String shortName;
 	private String terminologyId;
 	private CodeSystemURI extensionOf;
@@ -88,8 +88,8 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 		this.name = name;
 	}
 
-	void setRepositoryUuid(final String repositoryUuid) {
-		this.repositoryUuid = repositoryUuid;
+	void setRepositoryId(final String repositoryId) {
+		this.repositoryId = repositoryId;
 	}
 
 	void setShortName(final String shortName) {
@@ -250,7 +250,7 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 				.citation(citation)
 				.iconPath(iconPath)
 				.terminologyComponentId(terminologyId)
-				.repositoryUuid(repositoryUuid)
+				.repositoryId(repositoryId)
 				.extensionOf(extensionOf)
 				.locales(locales)
 				.additionalProperties(additionalProperties)

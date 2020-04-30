@@ -62,7 +62,7 @@ public abstract class TerminologyRepositoryInitializer implements Request<Reposi
 					.setIconPath(primaryCodeSystem.getIconPath())
 					.setTerminologyId(primaryCodeSystem.getTerminologyId())
 					.setShortName(primaryCodeSystem.getShortName())
-					.setRepositoryUuid(context.id())
+					.setRepositoryId(context.id())
 					.setBranchPath(Branch.MAIN_PATH)
 					.build(context.id(), Branch.MAIN_PATH, User.SYSTEM.getUsername(), "Create primary code system for repository")
 					.getRequest()

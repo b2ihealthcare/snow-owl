@@ -195,7 +195,7 @@ public class CodeSystemRestService extends AbstractRestService {
 				.setLink(codeSystem.getOrganizationLink())
 				.setName(codeSystem.getName())
 				.setOid(codeSystem.getOid())
-				.setRepositoryUuid(codeSystem.getRepositoryId())
+				.setRepositoryId(codeSystem.getRepositoryId())
 				.setShortName(codeSystem.getShortName())
 				.setTerminologyId(codeSystem.getTerminologyId())
 				.setExtensionOf(codeSystem.getExtensionOf())

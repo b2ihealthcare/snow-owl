@@ -136,7 +136,7 @@ public class SnomedContentRule extends ExternalResource {
 				.setLink("organizationLink")
 				.setName("Extension " + codeSystemShortName)
 				.setOid("oid:" + codeSystemShortName)
-				.setRepositoryUuid(SnomedDatastoreActivator.REPOSITORY_UUID)
+				.setRepositoryId(SnomedDatastoreActivator.REPOSITORY_UUID)
 				.setShortName(codeSystemShortName)
 				.setTerminologyId(SnomedTerminologyComponentConstants.TERMINOLOGY_ID)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, Branch.MAIN_PATH, "info@b2international.com", String.format("Create code system %s", codeSystemShortName))

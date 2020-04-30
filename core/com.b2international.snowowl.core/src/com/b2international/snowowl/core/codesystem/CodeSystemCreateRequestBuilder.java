@@ -37,7 +37,7 @@ public final class CodeSystemCreateRequestBuilder extends BaseRequestBuilder<Cod
 	private String language;
 	private String link;
 	private String name;
-	private String repositoryUuid;
+	private String repositoryId;
 	private String shortName;
 	private String terminologyId;
 	private CodeSystemURI extensionOf;
@@ -81,8 +81,8 @@ public final class CodeSystemCreateRequestBuilder extends BaseRequestBuilder<Cod
 		return getSelf();
 	}
 
-	public CodeSystemCreateRequestBuilder setRepositoryUuid(final String repositoryUuid) {
-		this.repositoryUuid = repositoryUuid;
+	public CodeSystemCreateRequestBuilder setRepositoryId(final String repositoryId) {
+		this.repositoryId = repositoryId;
 		return getSelf();
 	}
 
@@ -121,7 +121,7 @@ public final class CodeSystemCreateRequestBuilder extends BaseRequestBuilder<Cod
 		req.setLink(link);
 		req.setName(name);
 		req.setOid(oid);
-		req.setRepositoryUuid(repositoryUuid);
+		req.setRepositoryId(repositoryId);
 		req.setShortName(shortName);
 		req.setTerminologyId(terminologyId);
 		req.setExtensionOf(extensionOf);

@@ -65,7 +65,7 @@ public class CodeSystem {
 				.branchPath(input.getBranchPath())
 				.iconPath(input.getIconPath())
 				.terminologyId(input.getTerminologyComponentId())
-				.repositoryId(input.getRepositoryUuid())
+				.repositoryId(input.getRepositoryId())
 				.extensionOf(input.getExtensionOf())
 				.locales(input.getLocales())
 				.additionalProperties(input.getAdditionalProperties());

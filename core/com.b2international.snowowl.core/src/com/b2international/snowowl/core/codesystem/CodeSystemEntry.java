@@ -75,7 +75,7 @@ public final class CodeSystemEntry implements Serializable {
 		public static final String CITATION = "citation"; 
 		public static final String ICON_PATH = "iconPath"; 
 		public static final String TERMINOLOGY_COMPONENT_ID = "terminologyComponentId";
-		public static final String REPOSITORY_UUID = "repositoryUuid";
+		public static final String REPOSITORY_ID = "repositoryId";
 	}
 
 	public static Builder builder() {
@@ -92,7 +92,7 @@ public final class CodeSystemEntry implements Serializable {
 				.citation(codeSystem.getCitation())
 				.iconPath(codeSystem.getIconPath())
 				.terminologyComponentId(codeSystem.getTerminologyComponentId())
-				.repositoryUuid(codeSystem.getRepositoryUuid())
+				.repositoryId(codeSystem.getRepositoryId())
 				.branchPath(codeSystem.getBranchPath())
 				.extensionOf(codeSystem.getExtensionOf())
 				.locales(codeSystem.getLocales())
@@ -110,7 +110,7 @@ public final class CodeSystemEntry implements Serializable {
 		private String citation; 
 		private String iconPath; 
 		private String terminologyComponentId;
-		private String repositoryUuid;
+		private String repositoryId;
 		private String branchPath;
 		private CodeSystemURI extensionOf;
 		private List<ExtendedLocale> locales;
@@ -158,8 +158,8 @@ public final class CodeSystemEntry implements Serializable {
 			return this;
 		}
 		
-		public Builder repositoryUuid(String repositoryUuid) {
-			this.repositoryUuid = repositoryUuid;
+		public Builder repositoryId(String repositoryId) {
+			this.repositoryId = repositoryId;
 			return this;
 		}
 		
@@ -198,7 +198,7 @@ public final class CodeSystemEntry implements Serializable {
 					citation, 
 					iconPath, 
 					terminologyComponentId, 
-					repositoryUuid, 
+					repositoryId, 
 					branchPath, 
 					extensionOf,
 					locales,
@@ -214,7 +214,7 @@ public final class CodeSystemEntry implements Serializable {
 	private final String citation; 
 	private final String iconPath; 
 	private final String terminologyComponentId;
-	private final String repositoryUuid;
+	private final String repositoryId;
 	private final String branchPath;
 	private final CodeSystemURI extensionOf;
 	private final List<ExtendedLocale> locales;
@@ -228,7 +228,7 @@ public final class CodeSystemEntry implements Serializable {
 			final String citation, 
 			final String iconPath, 
 			final String terminologyComponentId, 
-			final String repositoryUuid, 
+			final String repositoryId, 
 			final String branchPath, 
 			final CodeSystemURI extensionOf,
 			final List<ExtendedLocale> locales,
@@ -242,7 +242,7 @@ public final class CodeSystemEntry implements Serializable {
 		this.citation = Strings.nullToEmpty(citation);
 		this.iconPath = Strings.nullToEmpty(iconPath);
 		this.terminologyComponentId = terminologyComponentId;
-		this.repositoryUuid = repositoryUuid;
+		this.repositoryId = repositoryId;
 		this.branchPath = branchPath;
 		this.extensionOf = extensionOf;
 		this.locales = locales;
@@ -316,8 +316,8 @@ public final class CodeSystemEntry implements Serializable {
 	/**
 	 * @return the unique ID of the repository where code system content is stored
 	 */
-	public String getRepositoryUuid() {
-		return repositoryUuid;
+	public String getRepositoryId() {
+		return repositoryId;
 	}
 	
 	/**
