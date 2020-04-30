@@ -30,7 +30,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -83,7 +82,7 @@ public class CodeSystemRestService extends AbstractRestService {
 		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
 	})
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public @ResponseBody Promise<CodeSystems> searchByGet(final CodeSystemRestSearch params) {
+	public Promise<CodeSystems> searchByGet(final CodeSystemRestSearch params) {
 		final IEventBus bus = getBus();
 		
 		return RepositoryRequests.prepareSearch()
@@ -150,7 +149,7 @@ public class CodeSystemRestService extends AbstractRestService {
 		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
 	})
 	@PostMapping(value="/search", produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public @ResponseBody Promise<CodeSystems> searchByPost(final CodeSystemRestSearch params) {
+	public Promise<CodeSystems> searchByPost(final CodeSystemRestSearch params) {
 		return searchByGet(params);
 	}
 
