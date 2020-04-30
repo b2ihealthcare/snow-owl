@@ -33,6 +33,9 @@ import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.TreeMultimap;
 
+/**
+ * @since 7.6
+ */
 public final class CodeSystemConverter extends BaseResourceConverter<CodeSystemEntry, CodeSystem, CodeSystems> {
 
 	public CodeSystemConverter(RepositoryContext context, Options expand, List<ExtendedLocale> locales) {
