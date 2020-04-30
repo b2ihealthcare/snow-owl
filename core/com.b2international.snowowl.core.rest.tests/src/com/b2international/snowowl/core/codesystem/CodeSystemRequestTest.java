@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ public class CodeSystemRequestTest {
 	
 	@Test
 	public void getCodeSystem() {
-		final CodeSystemEntry codeSystem = getCodeSystem(SNOMEDCT);
+		final CodeSystem codeSystem = getCodeSystem(SNOMEDCT);
 		assertNotNull(codeSystem);
 	}
 	
@@ -61,7 +61,7 @@ public class CodeSystemRequestTest {
 
 		assertCodeSystemCreated(shortName, oid);
 		
-		final CodeSystemEntry codeSystem = getCodeSystem(shortName);
+		final CodeSystem codeSystem = getCodeSystem(shortName);
 		assertEquals(shortName, codeSystem.getShortName());
 	}
 	
@@ -71,7 +71,7 @@ public class CodeSystemRequestTest {
 		final String oid = "oid2";
 		
 		createCodeSystem(shortName, oid);
-		final CodeSystemEntry oldCodeSystem = getCodeSystem(shortName);
+		final CodeSystem oldCodeSystem = getCodeSystem(shortName);
 		assertNotNull(oldCodeSystem);
 		
 		CodeSystemRequests.prepareUpdateCodeSystem(shortName)
@@ -80,7 +80,7 @@ public class CodeSystemRequestTest {
 			.execute(bus)
 			.getSync();
 		
-		final CodeSystemEntry updatedCodeSystem = getCodeSystem(shortName);
+		final CodeSystem updatedCodeSystem = getCodeSystem(shortName);
 		assertNotNull(updatedCodeSystem);
 		assertEquals("updated name", updatedCodeSystem.getName());
 	}
@@ -91,7 +91,7 @@ public class CodeSystemRequestTest {
 		final String oid = "oid3";
 		
 		createCodeSystem(shortName, oid);
-		final CodeSystemEntry oldCodeSystem = getCodeSystem(shortName);
+		final CodeSystem oldCodeSystem = getCodeSystem(shortName);
 		assertNotNull(oldCodeSystem);
 		
 		CodeSystemRequests.prepareUpdateCodeSystem(shortName)
@@ -122,7 +122,7 @@ public class CodeSystemRequestTest {
 			.setBranchPath(BRANCH)
 			.setCitation("citation")
 			.setIconPath("snomed.png")
-			.setRepositoryUuid(REPOSITORY_ID)
+			.setRepositoryId(REPOSITORY_ID)
 			.setTerminologyId("concept")
 			.setLink("www.ihtsdo.org")
 			.build(REPOSITORY_ID, BRANCH, "system", String.format("New code system %s", shortName))
@@ -130,7 +130,7 @@ public class CodeSystemRequestTest {
 			.getSync();
 	}
 	
-	private CodeSystemEntry getCodeSystem(final String shortName) {
+	private CodeSystem getCodeSystem(final String shortName) {
 		return CodeSystemRequests.prepareGetCodeSystem(shortName)
 				.build(REPOSITORY_ID)
 				.execute(bus)
@@ -139,7 +139,7 @@ public class CodeSystemRequestTest {
 	
 	private void assertCodeSystemCreated(final String shortName, final String oid) {
 		createCodeSystem(shortName, oid);
-		final CodeSystemEntry codeSystem = getCodeSystem(shortName);
+		final CodeSystem codeSystem = getCodeSystem(shortName);
 		assertNotNull(codeSystem);
 	}
 

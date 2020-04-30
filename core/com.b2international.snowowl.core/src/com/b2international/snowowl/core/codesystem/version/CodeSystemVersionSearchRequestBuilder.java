@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.codesystem.version;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collection;
 import java.util.Date;
 
 import com.b2international.snowowl.core.codesystem.CodeSystemVersions;
@@ -33,7 +34,6 @@ public final class CodeSystemVersionSearchRequestBuilder
 		extends SearchResourceRequestBuilder<CodeSystemVersionSearchRequestBuilder, RepositoryContext, CodeSystemVersions>
  		implements RepositoryRequestBuilder<CodeSystemVersions> {
 
-	private String codeSystemShortName;
 	private String versionId;
 	private Date effectiveDate;
 	private String parentBranchPath;
@@ -43,8 +43,11 @@ public final class CodeSystemVersionSearchRequestBuilder
 	}
 
 	public CodeSystemVersionSearchRequestBuilder filterByCodeSystemShortName(String codeSystemShortName) {
-		this.codeSystemShortName = codeSystemShortName;
-		return getSelf();
+		return addOption(OptionKey.SHORT_NAME, codeSystemShortName);
+	}
+	
+	public CodeSystemVersionSearchRequestBuilder filterByCodeSystemShortNames(Collection<String> codeSystemShortNames) {
+		return addOption(OptionKey.SHORT_NAME, codeSystemShortNames);
 	}
 	
 	/**
@@ -110,11 +113,9 @@ public final class CodeSystemVersionSearchRequestBuilder
 	@Override
 	protected SearchResourceRequest<RepositoryContext, CodeSystemVersions> createSearch() {
 		final CodeSystemVersionSearchRequest req = new CodeSystemVersionSearchRequest();
-		req.setCodeSystemShortName(codeSystemShortName);
 		req.setVersionId(versionId);
 		req.setEffectiveDate(effectiveDate);
 		req.setParentBranchPath(parentBranchPath);
 		return req;
 	}
-
 }

@@ -1,35 +1,27 @@
-node('docker') {
 
-	def serverArtifact
+def startDate = new Date()
+
+try {
+
 	def currentVersion
 	def revision
-	def tag
+	
+	notifyBuild('STARTED', startDate)
 
-	def startDate = new Date()
-
-	try {
-
-		notifyBuild('STARTED', startDate)
-
+	node('build') {
+		
 		stage('Checkout repository') {
-
+			
 			checkout scm
-
+			
 			pom = readMavenPom file: 'pom.xml'
 			currentVersion = pom.version
-
-			if (currentVersion.contains("SNAPSHOT")) {
-				tag = "7.x"
-			} else {
-				tag = "${pom.version}"
-			}
-
 			revision = sh(returnStdout: true, script: "git rev-parse --short HEAD").trim()
-
+				
 		}
-
+		
 		stage('Build') {
-
+			
 			if (!custom_maven_settings.isEmpty()) {
 				withMaven(jdk: 'OpenJDK 11', maven: 'Maven 3.6.0', mavenSettingsConfig: custom_maven_settings, options: [artifactsPublisher(disabled: true)],  publisherStrategy: 'EXPLICIT') {
 					sh "mvn clean deploy -Dmaven.test.skip=${skipTests} -Dmaven.install.skip=true -Dtycho.localArtifacts=ignore"
@@ -39,52 +31,30 @@ node('docker') {
 					sh "mvn clean deploy -Dmaven.test.skip=${skipTests} -Dmaven.install.skip=true -Dtycho.localArtifacts=ignore"
 				}
 			}
-
+			
 		}
-
-		if (currentBuild.resultIsBetterOrEqualTo('SUCCESS')) {
-
-			stage('Find artifact') {
-
-				def artifact = findFiles(glob: "releng/com.b2international.snowowl.server.update/target/snow-owl-oss*.tar.gz")[0]
-				sh '\\cp -f -t ${WORKSPACE}/docker '+artifact.path+''
-				serverArtifact = artifact.name
-
-			}
-
-			def buildArgs = "--build-arg SNOWOWL_INSTALL_PACKAGE=${serverArtifact}\
-					--build-arg BUILD_TIMESTAMP=\"${BUILD_TIMESTAMP}\"\
-					--build-arg VERSION=${tag}\
-					--build-arg GIT_REVISION=${revision} ./docker"
-
-			stage('Build docker image') {
-
-				docker.withRegistry('', '0f4c3f31-b252-4104-928a-286eeeb075dc') {
-
-					def image = docker.build("b2ihealthcare/snow-owl-oss:${tag}", "${buildArgs}")
-					image.push()
-
-					if (!currentVersion.contains("SNAPSHOT")) {
-						image.push("latest")
-					}
-
-				}
-
-			}
-
-			stage('Clean up') {
-				sh 'rm -fv docker/*.tar.gz'
-				sh 'docker system prune --force --all --volumes'
-			}
-
-		}
-
-	} catch (e) {
-		currentBuild.result = "FAILURE"
-		throw e
-	} finally {
-		notifyBuild(currentBuild.result, startDate)
+		
 	}
+
+	if (currentBuild.resultIsBetterOrEqualTo('SUCCESS')) {
+		
+		build job: 'snow-owl-docker-build', parameters: [
+			string(name: 'groupId', value: 'com.b2international.snowowl'),
+			string(name: 'artifactId', value: 'com.b2international.snowowl.server.update'),
+			string(name: 'artifactVersion', value: currentVersion),
+			string(name: 'classifier', value: 'oss'),
+			string(name: 'extension', value: 'tar.gz'),
+			string(name: 'imageClassifier', value: 'oss'),
+			string(name: 'gitRevision', value: revision),
+		], quietPeriod: 1, wait: false
+
+	}
+
+} catch (e) {
+	currentBuild.result = "FAILURE"
+	throw e
+} finally {
+	notifyBuild(currentBuild.result, startDate)
 }
 
 def notifyBuild(String buildStatus = 'STARTED', Date startDate) {

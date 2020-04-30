@@ -65,7 +65,7 @@ public class SnomedExtensionDowngradeTest extends AbstractSnomedApiTest {
 		merge(branchPath, targetPath, "Downgraded B2i extension to 2016-01-31.").body("status", equalTo(Merge.Status.COMPLETED.name()));
 
 		Map<?, ?> updateRequest = ImmutableMap.builder()
-				.put("repositoryUuid", SnomedDatastoreActivator.REPOSITORY_UUID)
+				.put("repositoryId", SnomedDatastoreActivator.REPOSITORY_UUID)
 				.put("branchPath", targetPath.getPath())
 				.build();
 
@@ -93,7 +93,7 @@ public class SnomedExtensionDowngradeTest extends AbstractSnomedApiTest {
 		merge(branchPath, targetPath, "Downgraded B2i extension to 2015-07-31.").body("status", equalTo(Merge.Status.COMPLETED.name()));
 
 		Map<?, ?> updateRequest = ImmutableMap.builder()
-				.put("repositoryUuid", SnomedDatastoreActivator.REPOSITORY_UUID)
+				.put("repositoryId", SnomedDatastoreActivator.REPOSITORY_UUID)
 				.put("branchPath", targetPath.getPath())
 				.build();
 
@@ -137,7 +137,7 @@ public class SnomedExtensionDowngradeTest extends AbstractSnomedApiTest {
 	@AfterClass
 	public static void restoreB2iCodeSystem() {
 		Map<?, ?> updateRequest = ImmutableMap.builder()
-				.put("repositoryUuid", SnomedDatastoreActivator.REPOSITORY_UUID)
+				.put("repositoryId", SnomedDatastoreActivator.REPOSITORY_UUID)
 				.put("branchPath", SnomedApiTestConstants.EXTENSION_PATH)
 				.build();
 

@@ -29,7 +29,6 @@ import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.commons.extension.Component;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
-import com.b2international.snowowl.core.codesystem.CodeSystemEntry;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
 import com.b2international.snowowl.core.codesystem.CodeSystems;
@@ -523,7 +522,7 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 	
 	private String getMapTargetComponentType(String codeSystemShortName) {
 		
-		CodeSystemEntry codeSystemEntry = CodeSystemRequests.prepareSearchCodeSystem()
+		com.b2international.snowowl.core.codesystem.CodeSystem codeSystem = CodeSystemRequests.prepareSearchCodeSystem()
 			.all()
 			.filterById(codeSystemShortName)
 			.build(repositoryId)
@@ -532,7 +531,7 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 			.first()
 			.orElseThrow(() -> new NotFoundException("Code system", codeSystemShortName));
 		
-		String toolingId = codeSystemEntry.getTerminologyComponentId();
+		String toolingId = codeSystem.getTerminologyId();
 		
 		//mighty hack
 		if (toolingId.contains("snomed")) {
@@ -563,7 +562,7 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 			.getSync();
 		
 		return codeSystems.getItems().stream()
-			.filter(cs -> cs.getTerminologyComponentId().equals(terminologyId))
+			.filter(cs -> cs.getTerminologyId().equals(terminologyId))
 			.map(cs -> {
 				
 				//hack for SNOMED CT until URIs are added to the code system registry

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 
 import com.b2international.commons.extension.Component;
 import com.b2international.snowowl.core.RepositoryInfo;
-import com.b2international.snowowl.core.codesystem.CodeSystemEntry;
+import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersions;
@@ -53,7 +53,7 @@ import picocli.CommandLine.Option;
 )
 public final class CodeSystemsCommand extends Command {
 
-	private static final Ordering<CodeSystemEntry> SHORT_NAME_ORDERING = Ordering.natural().onResultOf(CodeSystemEntry::getShortName);
+	private static final Ordering<CodeSystem> SHORT_NAME_ORDERING = Ordering.natural().onResultOf(CodeSystem::getShortName);
 
 	@Option(names = { "-c", "--codesystem" }, description = { "A short name of the codeSystem to return" })
 	String codeSystem;
@@ -66,7 +66,7 @@ public final class CodeSystemsCommand extends Command {
 		if (Strings.isNullOrEmpty(codeSystem)) {
 			out.println(Joiner.on("\n").join(FluentIterable.from(getCodeSystems()).transform(input -> getCodeSystemInfo(input))));
 		} else {
-			CodeSystemEntry cs = getCodeSystemById(codeSystem);
+			CodeSystem cs = getCodeSystemById(codeSystem);
 			
 			if (cs == null) {
 				out.println(String.format("Unknown or invalid code system with identifier '%s'", codeSystem));
@@ -77,26 +77,26 @@ public final class CodeSystemsCommand extends Command {
 		}
 	}
 
-	private String getCodeSystemInfo(CodeSystemEntry codeSystem) {
+	private String getCodeSystemInfo(CodeSystem codeSystem) {
 		return new StringBuilder()
 			.append("Name: ").append(codeSystem.getName()).append("\n")
 			.append("Short name: ").append(codeSystem.getShortName()).append("\n")
 			.append("OID: ").append(codeSystem.getOid()).append("\n")
-			.append("Maintaining organization link: ").append(codeSystem.getOrgLink()).append("\n")
-			.append("Language: ").append(codeSystem.getLanguage()).append("\n")
+			.append("Maintaining organization link: ").append(codeSystem.getOrganizationLink()).append("\n")
+			.append("Language: ").append(codeSystem.getPrimaryLanguage()).append("\n")
 			.append("Working branch: ").append(codeSystem.getBranchPath())
 			.append(showVersions ? getCodeSystemVersionsInfo(codeSystem) : "")
 			.toString();
 	}
 	
-	private String getCodeSystemVersionsInfo(CodeSystemEntry cs) {
+	private String getCodeSystemVersionsInfo(CodeSystem cs) {
 		final StringBuilder info = new StringBuilder("\nVersions:\n");
 		final CodeSystemVersions versions = CodeSystemRequests
 			.prepareSearchCodeSystemVersion()
 			.all()
 			.filterByCodeSystemShortName(cs.getShortName())
 			.sortBy(SortField.ascending(CodeSystemVersionEntry.Fields.EFFECTIVE_DATE))
-			.build(cs.getRepositoryUuid())
+			.build(cs.getRepositoryId())
 			.execute(getBus())
 			.getSync(1, TimeUnit.MINUTES);
 		if (versions.isEmpty()) {
@@ -119,14 +119,14 @@ public final class CodeSystemsCommand extends Command {
 				.getSync(1, TimeUnit.MINUTES);
 	}
 	
-	private List<CodeSystemEntry> getCodeSystems() {
+	private List<CodeSystem> getCodeSystems() {
 		final List<Promise<CodeSystems>> getAllCodeSystems = newArrayList();
 		for (String repositoryId : getRepositoryIds()) {
 			getAllCodeSystems.add(CodeSystemRequests.prepareSearchCodeSystem().all().build(repositoryId).execute(getBus()));
 		}
 		return Promise.all(getAllCodeSystems)
 				.then(results -> {
-					final List<CodeSystemEntry> codeSystems = newArrayList();
+					final List<CodeSystem> codeSystems = newArrayList();
 					for (CodeSystems result : Iterables.filter(results, CodeSystems.class)) {
 						codeSystems.addAll(result.getItems());
 					}
@@ -135,7 +135,7 @@ public final class CodeSystemsCommand extends Command {
 				.getSync(1, TimeUnit.MINUTES);
 	}
 	
-	private CodeSystemEntry getCodeSystemById(String shortNameOrOid) {
+	private CodeSystem getCodeSystemById(String shortNameOrOid) {
 		final List<Promise<CodeSystems>> getAllCodeSystems = newArrayList();
 		for (String repositoryId : getRepositoryIds()) {
 			getAllCodeSystems.add(CodeSystemRequests.prepareSearchCodeSystem()

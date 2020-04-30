@@ -17,10 +17,10 @@ package com.b2international.snowowl.snomed.datastore.request.rf2;
 
 import java.util.Collection;
 
+import com.b2international.snowowl.core.attachments.Attachment;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.domain.ExportResult;
 import com.b2international.snowowl.core.request.ResourceRequest;
 import com.b2international.snowowl.core.request.ResourceRequestBuilder;
 import com.b2international.snowowl.core.request.RevisionIndexRequestBuilder;
@@ -31,8 +31,8 @@ import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
  * @since 5.7
  */
 public final class SnomedRf2ExportRequestBuilder 
-		extends ResourceRequestBuilder<SnomedRf2ExportRequestBuilder, BranchContext, ExportResult> 
-		implements RevisionIndexRequestBuilder<ExportResult> {
+		extends ResourceRequestBuilder<SnomedRf2ExportRequestBuilder, BranchContext, Attachment> 
+		implements RevisionIndexRequestBuilder<Attachment> {
 
 	private Rf2ReleaseType releaseType;
 	private Rf2RefSetExportLayout refSetExportLayout;
@@ -118,7 +118,7 @@ public final class SnomedRf2ExportRequestBuilder
 	}
 
 	@Override
-	protected ResourceRequest<BranchContext, ExportResult> create() {
+	protected ResourceRequest<BranchContext, Attachment> create() {
 		final SnomedRf2ExportRequest req = new SnomedRf2ExportRequest();
 		req.setReleaseType(releaseType);
 		req.setRefSetExportLayout(refSetExportLayout);

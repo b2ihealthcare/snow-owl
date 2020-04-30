@@ -22,6 +22,11 @@
 	<!-- NOTE: in case of dependency changes, please update the includeArtifactIds section in the maven-dependency-plugin configuration as well, listing all (exact and transitive) dependency artifactIds -->
 	<dependencies>
 		<dependency>
+		   <groupId>commons-fileupload</groupId>
+		   <artifactId>commons-fileupload</artifactId>
+		   <version>1.4</version>
+		</dependency>
+		<dependency>
 			<groupId>io.springfox</groupId>
 			<artifactId>springfox-swagger2</artifactId>
 			<version>${springfox.version}</version>
@@ -120,7 +125,8 @@
 								springfox-spring-web,
 								springfox-swagger-common,
 								springfox-swagger2,
-								commons-logging
+								commons-logging,
+								commons-fileupload
 							</includeArtifactIds>
 							<outputDirectory>WEB-INF/lib</outputDirectory>
 						</configuration>

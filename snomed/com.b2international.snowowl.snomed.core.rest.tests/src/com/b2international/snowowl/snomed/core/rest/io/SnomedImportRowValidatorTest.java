@@ -151,7 +151,7 @@ public class SnomedImportRowValidatorTest extends AbstractSnomedApiTest {
 				.setBranchPath(branchPath.getPath())
 				.setCitation("citation")
 				.setIconPath("snomed.png")
-				.setRepositoryUuid(REPOSITORY_ID)
+				.setRepositoryId(REPOSITORY_ID)
 				.setTerminologyId("concept")
 				.setLink("www.ihtsdo.org")
 				.build(REPOSITORY_ID, branchPath.getPath(), "system", String.format("New code system %s", codeSystemShortName))
