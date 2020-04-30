@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -39,10 +40,14 @@ import com.google.common.collect.Maps;
  * medical significance (optionally with other, supporting components that
  * together make up the definition of concepts) and their corresponding unique
  * code.
+ * 
+ * @since 
  */
 @JsonDeserialize(builder=CodeSystem.Builder.class)
-public class CodeSystem {
+public class CodeSystem implements Serializable {
 	
+	private static final long serialVersionUID = 760L;
+
 	/**
 	 * @since 7.6.0
 	 */
