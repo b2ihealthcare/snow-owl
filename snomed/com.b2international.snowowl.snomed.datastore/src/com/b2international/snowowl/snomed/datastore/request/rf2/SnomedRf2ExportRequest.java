@@ -40,6 +40,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 import com.b2international.commons.FileUtils;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.attachments.Attachment;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.branch.Branch;
@@ -51,7 +52,6 @@ import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.domain.ExportResult;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
@@ -93,13 +93,14 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Ordering;
 
 /**
  * @since 5.7
  */
-final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, ExportResult> implements BranchAccessControl {
+final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attachment> implements BranchAccessControl {
 
 	private static final String DESCRIPTION_TYPES_EXCEPT_TEXT_DEFINITION = "<<" + Concepts.DESCRIPTION_TYPE_ROOT_CONCEPT + " MINUS " + Concepts.TEXT_DEFINITION;
 	private static final String NON_STATED_CHARACTERISTIC_TYPES = "<<" + Concepts.CHARACTERISTIC_TYPE + " MINUS " + Concepts.STATED_RELATIONSHIP;
@@ -226,7 +227,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Export
 	}
 	
 	@Override
-	public ExportResult execute(final BranchContext context) {
+	public Attachment execute(final BranchContext context) {
 		final String referenceBranch = context.path();
 		
 		// register export start time for later use
@@ -296,7 +297,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Export
 			final AttachmentRegistry fileRegistry = context.service(AttachmentRegistry.class);
 			registerResult(fileRegistry, exportId, exportDirectory);
 			final String fileName = releaseDirectory.getFileName() + ".zip";
-			return new ExportResult(fileName, exportId);
+			return new Attachment(exportId, fileName);
 			
 		} catch (final Exception e) {
 			throw new SnowowlRuntimeException("Failed to export terminology content to RF2.", e);
@@ -547,8 +548,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Export
 				.collect(Collectors.toSet());
 
 		final Branches versionBranches = getBranches(context, versionParentPath, versionNames);
-		final Map<String, Branch> versionBranchesByName = FluentIterable.from(versionBranches)
-				.uniqueIndex(b -> b.name());
+		final Map<String, Branch> versionBranchesByName = Maps.uniqueIndex(versionBranches, Branch::name);
 
 		final Branch cutoffBranch = getBranch(context, referenceBranch);
 		final long cutoffBaseTimestamp = getCutoffBaseTimestamp(context, cutoffBranch, versionParentPath);
@@ -971,6 +971,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Export
 	}
 
 	private static long getCutoffBaseTimestamp(final RepositoryContext context, final Branch cutoffBranch, final String versionParentPath) {
+		System.err.println("SnomedRf2ExportRequest.getCutoffBaseTimestamp(): branch[" + cutoffBranch.path() + "], branchParentPath: [" + cutoffBranch.parentPath() +  "], versionParentPath: [" + versionParentPath + "]");
 		if (cutoffBranch.path().equals(versionParentPath)) {
 			// We are on the working branch of the code system, all versions are visible for export
 			return Long.MAX_VALUE;	
@@ -993,6 +994,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Export
 	}
 
 	private static Branch getBranch(final RepositoryContext context, final String path) {
+		System.err.println("SnomedRf2ExportRequest.getBranch(): " + path);
 		return RepositoryRequests.branching()
 				.prepareGet(path)
 				.build()
@@ -1000,6 +1002,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Export
 	}
 
 	private static Branches getBranches(final RepositoryContext context, final String parent, final Collection<String> paths) {
+		System.err.println("SnomedRf2ExportRequest.getBranches(): " + parent + ", paths: " + paths + "");
 		return RepositoryRequests.branching()
 				.prepareSearch()
 				.all()
