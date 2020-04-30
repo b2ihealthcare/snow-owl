@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.rest.codesystem;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -83,6 +85,8 @@ public class CodeSystemRestService extends AbstractRestService {
 	})
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public Promise<CodeSystems> searchByGet(final CodeSystemRestSearch params) {
+		checkArgument(params.getSearchAfter() == null, "Parameter 'searchAfter' is not supported for code system search.");
+		
 		final IEventBus bus = getBus();
 		
 		return RepositoryRequests.prepareSearch()
