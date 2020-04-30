@@ -185,7 +185,7 @@ public class CodeSystemApiTest {
 		
 		final ImmutableMap<String, String> updateRequestBody = ImmutableMap.<String, String>builder()
 				.put("name", "updated name")
-				.put("repositoryUuid", "snomedStore")
+				.put("repositoryId", "snomedStore")
 				.build();
 		
 		assertCodeSystemUpdated(shortName, updateRequestBody);
@@ -208,7 +208,7 @@ public class CodeSystemApiTest {
 		updatedProperties.put("locked", null);
 		
 		final Map<String, Object> updateRequestBody = Map.of(
-			"repositoryUuid", "snomedStore",
+			"repositoryId", "snomedStore",
 			"additionalProperties", updatedProperties);
 		
 		assertCodeSystemUpdated(shortName, updateRequestBody);
@@ -226,7 +226,7 @@ public class CodeSystemApiTest {
 		assertCodeSystemCreated(requestBody);
 		
 		final Map<String, Object> updateRequestBody = Map.of(
-			"repositoryUuid", "snomedStore",
+			"repositoryId", "snomedStore",
 			"locales", List.of("en-us", "en-gb"));
 		
 		assertCodeSystemUpdated(shortName, updateRequestBody);
@@ -242,7 +242,7 @@ public class CodeSystemApiTest {
 		
 		final ImmutableMap<String, String> updateRequestBody = ImmutableMap.<String, String>builder()
 				.put("branchPath", "non-existent-branch-path")
-				.put("repositoryUuid", "snomedStore")
+				.put("repositoryId", "snomedStore")
 				.build();
 		
 		assertCodeSystemUpdatedWithStatus(shortName, updateRequestBody, 404);
@@ -268,7 +268,7 @@ public class CodeSystemApiTest {
 		assertCodeSystemCreated(requestBody);
 		
 		final Map<String, Object> updateRequestBody = Map.of(
-				"repositoryUuid", "snomedStore",
+				"repositoryId", "snomedStore",
 				"extensionOf", "cs13/v4");
 			
 		assertCodeSystemUpdated(shortName, updateRequestBody);
