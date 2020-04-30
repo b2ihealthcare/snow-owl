@@ -64,8 +64,8 @@ public final class Attachment implements Serializable {
 	 *            - the file name of the attachment
 	 */
 	@JsonCreator
-	public Attachment(@JsonProperty("attachmentId") String attachmentId, @JsonProperty("fileName") String name) {
-		this(UUID.fromString(attachmentId), name);
+	public Attachment(@JsonProperty("attachmentId") String attachmentId, @JsonProperty("fileName") String fileName) {
+		this(UUID.fromString(attachmentId), fileName);
 	}
 
 	/**
