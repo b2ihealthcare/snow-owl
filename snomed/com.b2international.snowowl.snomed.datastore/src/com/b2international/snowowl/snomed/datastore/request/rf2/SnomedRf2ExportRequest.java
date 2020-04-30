@@ -61,6 +61,7 @@ import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.BranchRequest;
 import com.b2international.snowowl.core.request.ResourceRequest;
 import com.b2international.snowowl.core.request.RevisionIndexReadRequest;
+import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
@@ -972,7 +973,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 
 	private static long getCutoffBaseTimestamp(final RepositoryContext context, final Branch cutoffBranch, final String versionParentPath) {
 		System.err.println("SnomedRf2ExportRequest.getCutoffBaseTimestamp(): branch[" + cutoffBranch.path() + "], branchParentPath: [" + cutoffBranch.parentPath() +  "], versionParentPath: [" + versionParentPath + "]");
-		if (cutoffBranch.path().equals(versionParentPath)) {
+		if (cutoffBranch.path().equals(versionParentPath) || Branch.MAIN_PATH.equals(cutoffBranch.path())) {
 			// We are on the working branch of the code system, all versions are visible for export
 			return Long.MAX_VALUE;	
 		} else if (cutoffBranch.parentPath().equals(versionParentPath)) {
@@ -988,6 +989,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 		return CodeSystemRequests.prepareSearchCodeSystemVersion()
 				.all()
 				.filterByCodeSystemShortName(shortName)
+				.sortBy(SearchResourceRequest.SortField.descending(CodeSystemVersionEntry.Fields.EFFECTIVE_DATE))
 				.build()
 				.execute(context)
 				.getItems();
