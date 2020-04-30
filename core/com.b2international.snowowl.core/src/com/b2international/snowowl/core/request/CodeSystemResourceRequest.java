@@ -65,7 +65,7 @@ public final class CodeSystemResourceRequest<R> extends DelegatingRequest<Servic
 	}
 	
 	public String getRepositoryId(ServiceProvider context) {
-		return getCodeSystem(context).getRepositoryUuid();
+		return getCodeSystem(context).getRepositoryId();
 	}
 	
 	public String getBranchPath(ServiceProvider context) {
@@ -88,7 +88,7 @@ public final class CodeSystemResourceRequest<R> extends DelegatingRequest<Servic
 				}
 				// determine the final branch path, if based on the version search we find a version, then use that, otherwise use the defined path as relative branch of the code system working branch
 				branchPath = versionSearch
-						.build(codeSystem.getRepositoryUuid())
+						.build(codeSystem.getRepositoryId())
 						.getRequest()
 						.execute(context)
 						.stream()

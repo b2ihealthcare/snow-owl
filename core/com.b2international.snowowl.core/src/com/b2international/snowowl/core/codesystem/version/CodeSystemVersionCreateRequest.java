@@ -109,7 +109,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 		
 		// check that the new versionId does not conflict with any other currently available branch
 		final String newVersionPath = String.format("%s%s%s", codeSystem.getBranchPath(), Branch.SEPARATOR, versionId);
-		final String repositoryId = codeSystem.getRepositoryUuid();
+		final String repositoryId = codeSystem.getRepositoryId();
 		
 		// validate new path
 		RevisionBranch.BranchNameValidator.DEFAULT.checkName(versionId);
@@ -144,7 +144,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 				new RepositoryRequest<>(repositoryId,
 					new BranchRequest<>(codeSystem.getBranchPath(),
 						new RevisionIndexReadRequest<CommitResult>(
-							context.service(RepositoryManager.class).get(codeSystemToVersion.getRepositoryUuid())
+							context.service(RepositoryManager.class).get(codeSystemToVersion.getRepositoryId())
 								.service(VersioningRequestBuilder.class)
 								.build(new VersioningConfiguration(user, codeSystemToVersion.getShortName(), versionId, description, effectiveTime))
 						)
@@ -199,7 +199,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 		return CodeSystemRequests.prepareSearchCodeSystemVersion()
 			.all()
 			.filterByCodeSystemShortName(codeSystem.getShortName())
-			.build(codeSystem.getRepositoryUuid())
+			.build(codeSystem.getRepositoryId())
 			.execute(context.service(IEventBus.class))
 			.getSync(1, TimeUnit.MINUTES)
 			.stream()
@@ -215,7 +215,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 			
 			final DatastoreLockContext lockContext = new DatastoreLockContext(user, CREATE_VERSION);
 			for (CodeSystem codeSystem : codeSystems) {
-				final DatastoreLockTarget lockTarget = new DatastoreLockTarget(codeSystem.getRepositoryUuid(), codeSystem.getBranchPath());
+				final DatastoreLockTarget lockTarget = new DatastoreLockTarget(codeSystem.getRepositoryId(), codeSystem.getBranchPath());
 				
 				context.service(IOperationLockManager.class).lock(lockContext, IOperationLockManager.IMMEDIATE, lockTarget);
 
@@ -245,7 +245,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 			.prepareCreate()
 			.setParent(codeSystem.getBranchPath())
 			.setName(versionId)
-			.build(codeSystem.getRepositoryUuid())
+			.build(codeSystem.getRepositoryId())
 			.execute(context.service(IEventBus.class))
 			.getSync(1, TimeUnit.MINUTES);
 		monitor.worked(1);
@@ -257,7 +257,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 			codeSystemsByShortName = fetchAllCodeSystems(context);
 		}
 		// TODO support multi repository version authorization
-		return codeSystemsByShortName.get(codeSystemShortName).getRepositoryUuid();
+		return codeSystemsByShortName.get(codeSystemShortName).getRepositoryId();
 	}
 	
 	@Override

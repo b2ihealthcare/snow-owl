@@ -107,7 +107,7 @@ public class CodeSystemRestService extends AbstractRestService {
 				final List<CodeSystem> allCodeSystems = results.stream()
 					.flatMap(r -> ((CodeSystems) r).stream())
 					// XXX: search-time sort order within a repository should be preserved by the sorter below
-					.sorted(Comparator.comparing(CodeSystem::getRepositoryUuid))
+					.sorted(Comparator.comparing(CodeSystem::getRepositoryId))
 					.limit(params.getLimit())
 					.collect(Collectors.toList());
 				
@@ -195,7 +195,7 @@ public class CodeSystemRestService extends AbstractRestService {
 				.setLink(codeSystem.getOrganizationLink())
 				.setName(codeSystem.getName())
 				.setOid(codeSystem.getOid())
-				.setRepositoryUuid(codeSystem.getRepositoryUuid())
+				.setRepositoryUuid(codeSystem.getRepositoryId())
 				.setShortName(codeSystem.getShortName())
 				.setTerminologyId(codeSystem.getTerminologyId())
 				.setExtensionOf(codeSystem.getExtensionOf())
@@ -204,7 +204,7 @@ public class CodeSystemRestService extends AbstractRestService {
 				.commit()
 				.setAuthor(author)
 				.setCommitComment(commitComment)
-				.build(codeSystem.getRepositoryUuid(), IBranchPath.MAIN_BRANCH)
+				.build(codeSystem.getRepositoryId(), IBranchPath.MAIN_BRANCH)
 				.execute(getBus())
 				.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES)
 				.getResultAs(String.class);
@@ -231,7 +231,7 @@ public class CodeSystemRestService extends AbstractRestService {
 			
 			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
-		validateUpdateInput(shortNameOrOId, codeSystem.getRepositoryUuid());
+		validateUpdateInput(shortNameOrOId, codeSystem.getRepositoryId());
 		final String commitComment = String.format("Updated Code System %s", shortNameOrOId);
 		
 		CodeSystemRequests
@@ -245,7 +245,7 @@ public class CodeSystemRestService extends AbstractRestService {
 				.setLocales(codeSystem.getLocales())
 				.setAdditionalProperties(codeSystem.getAdditionalProperties())
 				.setExtensionOf(codeSystem.getExtensionOf())
-				.build(codeSystem.getRepositoryUuid(), IBranchPath.MAIN_BRANCH, author, commitComment)
+				.build(codeSystem.getRepositoryId(), IBranchPath.MAIN_BRANCH, author, commitComment)
 				.execute(getBus())
 				.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);
 	}

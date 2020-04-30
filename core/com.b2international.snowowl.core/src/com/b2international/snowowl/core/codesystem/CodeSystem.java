@@ -65,7 +65,7 @@ public class CodeSystem {
 				.branchPath(input.getBranchPath())
 				.iconPath(input.getIconPath())
 				.terminologyId(input.getTerminologyComponentId())
-				.repositoryUuid(input.getRepositoryUuid())
+				.repositoryId(input.getRepositoryUuid())
 				.extensionOf(input.getExtensionOf())
 				.locales(input.getLocales())
 				.additionalProperties(input.getAdditionalProperties());
@@ -83,7 +83,7 @@ public class CodeSystem {
 		private String branchPath;
 		private String iconPath;
 		private String terminologyId;
-		private String repositoryUuid;
+		private String repositoryId;
 		private CodeSystemURI extensionOf;
 		private List<ExtendedLocale> locales;
 		private Map<String, Object> additionalProperties;
@@ -136,8 +136,8 @@ public class CodeSystem {
 			return getSelf();
 		}
 		
-		public Builder repositoryUuid(final String repositoryUuid) {
-			this.repositoryUuid = repositoryUuid;
+		public Builder repositoryId(final String repositoryId) {
+			this.repositoryId = repositoryId;
 			return getSelf();
 		}
 		
@@ -173,7 +173,7 @@ public class CodeSystem {
 					branchPath, 
 					iconPath, 
 					terminologyId, 
-					repositoryUuid,
+					repositoryId,
 					extensionOf,
 					locales,
 					additionalProperties);
@@ -207,7 +207,7 @@ public class CodeSystem {
 		this.branchPath = branchPath;
 		this.iconPath = iconPath;
 		this.terminologyId = terminologyId;
-		this.repositoryUuid = repositoryId;
+		this.repositoryId = repositoryId;
 		this.extensionOf = extensionOf;
 		this.locales = locales;
 		this.additionalProperties = additionalProperties;
@@ -222,7 +222,7 @@ public class CodeSystem {
 	private String branchPath;
 	private @NotEmpty String iconPath;
 	private @NotEmpty String terminologyId;
-	private @NotEmpty String repositoryUuid;
+	private @NotEmpty String repositoryId;
 	private CodeSystemURI extensionOf;
 	private List<ExtendedLocale> locales;
 	private Map<String, Object> additionalProperties;
@@ -303,8 +303,8 @@ public class CodeSystem {
 	/**
 	 * @return the unique ID of the repository where code system content is stored
 	 */
-	public String getRepositoryUuid() {
-		return repositoryUuid;
+	public String getRepositoryId() {
+		return repositoryId;
 	}
 
 	/**
@@ -378,8 +378,8 @@ public class CodeSystem {
 		this.terminologyId = terminologyId;
 	}
 	
-	public void setRepositoryUuid(final String repositoryUuid) {
-		this.repositoryUuid = repositoryUuid;
+	public void setRepositoryId(final String repositoryId) {
+		this.repositoryId = repositoryId;
 	}
 	
 	public void setExtensionOf(final CodeSystemURI extensionOf) {
@@ -444,8 +444,8 @@ public class CodeSystem {
 		builder.append(branchPath);
 		builder.append(", iconPath=");
 		builder.append(iconPath);
-		builder.append(", repositoryUuid=");
-		builder.append(repositoryUuid);
+		builder.append(", repositoryId=");
+		builder.append(repositoryId);
 		builder.append(", extensionOf=");
 		builder.append(extensionOf);
 		builder.append(", locales=");
