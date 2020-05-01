@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.core.ql;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -35,24 +36,27 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.ecl.ecl.EclConceptReference;
 import com.b2international.snowowl.snomed.ql.ql.Query;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 /**
  * @since 7.6.0
  */
-final class SnomedQueryLabelerRequest extends ResourceRequest<BranchContext, String> implements BranchAccessControl {
+final class SnomedQueryLabelerRequest extends ResourceRequest<BranchContext, Expressions> implements BranchAccessControl {
 
 	private static final long serialVersionUID = 1L;
 
 	@NotNull
-	private String expression;
-	
+	private List<String> expressions;
+
+	@JsonProperty
 	@NotEmpty
 	private String descriptionType;
 	
-	void setExpression(String expression) {
-		this.expression = expression;
+	void setExpressions(List<String> expression) {
+		this.expressions = expression;
 	}
 	
 	void setDescriptionType(String descriptionType) {
@@ -65,16 +69,21 @@ final class SnomedQueryLabelerRequest extends ResourceRequest<BranchContext, Str
 	}
 
 	@Override
-	public String execute(BranchContext context) {
-		if (Strings.isNullOrEmpty(expression)) {
-			return expression;
-		}
-
-		final Query query = context.service(SnomedQueryParser.class).parse(expression);
-		final Set<String> conceptIdsToLabel = collect(query);
+	public Expressions execute(BranchContext context) {
+		SnomedQuerySerializer querySerializer = context.service(SnomedQuerySerializer.class);
+		final Set<String> conceptIdsToLabel = Sets.newHashSetWithExpectedSize(expressions.size());
+		final Map<String, Query> queries = Maps.newHashMapWithExpectedSize(expressions.size());
 		
-		if (!conceptIdsToLabel.isEmpty()) {
-			final Map<String, String> labels = SnomedRequests.prepareSearchConcept()
+		for (String expression : expressions) {
+			if (Strings.isNullOrEmpty(expression)) {
+				continue;
+			}
+			Query query = queries.computeIfAbsent(expression, (key) -> context.service(SnomedQueryParser.class).parse(key));
+			conceptIdsToLabel.addAll(collect(query));
+		}
+		
+		// fetch all concept labels
+		final Map<String, String> labels = SnomedRequests.prepareSearchConcept()
 				.filterByIds(conceptIdsToLabel)
 				.setLimit(conceptIdsToLabel.size())
 				.setExpand(descriptionType.toLowerCase() + "()")
@@ -83,11 +92,22 @@ final class SnomedQueryLabelerRequest extends ResourceRequest<BranchContext, Str
 				.execute(context)
 				.stream()
 				.collect(Collectors.toMap(SnomedConcept::getId, this::extractLabel));
-			expand(query, labels);
-			return context.service(SnomedQuerySerializer.class).serialize(query);
-		}
 		
-		return expression;
+		// expand all queries with labels
+		List<String> results = expressions.stream()
+			.map(expression -> {
+				if (Strings.isNullOrEmpty(expression)) {
+					return expression;
+				} else {
+					Query query = queries.get(expression);
+					expand(query, labels);
+					return querySerializer.serialize(query);
+				}
+			})
+			.collect(Collectors.toList());
+		
+		
+		return new Expressions(results);
 	}
 	
 	private String extractLabel(SnomedConcept concept) {
