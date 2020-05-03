@@ -693,7 +693,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Export
 				archiveEffectiveTime,
 				modules);
 		
-		exporter.exportBranch(releaseDirectory, context, branch, effectiveTimeFilterStart, effectiveTimeFilterEnd, visitedComponentEffectiveTimes);
+		exporter.exportBranch(releaseDirectory, context, branch, includePreReleaseContent, effectiveTimeFilterStart, effectiveTimeFilterEnd, visitedComponentEffectiveTimes);
 	}
 
 	private void exportConcepts(final Path releaseDirectory, 
@@ -712,7 +712,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Export
 				includePreReleaseContent,
 				modules);
 
-		conceptExporter.exportBranch(releaseDirectory, context, branch, effectiveTimeFilterStart, effectiveTimeFilterEnd, visitedComponentEffectiveTimes);
+		conceptExporter.exportBranch(releaseDirectory, context, branch, includePreReleaseContent, effectiveTimeFilterStart, effectiveTimeFilterEnd, visitedComponentEffectiveTimes);
 	}
 
 	private void exportDescriptions(final Path releaseDirectory, 
@@ -751,8 +751,8 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Export
 				ImmutableSet.of(Concepts.TEXT_DEFINITION),
 				languageCode);
 
-		descriptionExporter.exportBranch(releaseDirectory, context, branch, effectiveTimeFilterStart, effectiveTimeFilterEnd, visitedComponentEffectiveTimes);
-		textDefinitionExporter.exportBranch(releaseDirectory, context, branch, effectiveTimeFilterStart, effectiveTimeFilterEnd, visitedComponentEffectiveTimes);
+		descriptionExporter.exportBranch(releaseDirectory, context, branch, includePreReleaseContent, effectiveTimeFilterStart, effectiveTimeFilterEnd, visitedComponentEffectiveTimes);
+		textDefinitionExporter.exportBranch(releaseDirectory, context, branch, includePreReleaseContent, effectiveTimeFilterStart, effectiveTimeFilterEnd, visitedComponentEffectiveTimes);
 	}
 
 	private String getBranchOrRangeTarget(final String branch) {
@@ -796,8 +796,8 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Export
 				modules, 
 				characteristicTypes);
 
-		statedRelationshipExporter.exportBranch(releaseDirectory, context, branch, effectiveTimeFilterStart, effectiveTimeFilterEnd, visitedComponentEffectiveTimes);
-		relationshipExporter.exportBranch(releaseDirectory, context, branch, effectiveTimeFilterStart, effectiveTimeFilterEnd, visitedComponentEffectiveTimes);
+		statedRelationshipExporter.exportBranch(releaseDirectory, context, branch, includePreReleaseContent, effectiveTimeFilterStart, effectiveTimeFilterEnd, visitedComponentEffectiveTimes);
+		relationshipExporter.exportBranch(releaseDirectory, context, branch, includePreReleaseContent, effectiveTimeFilterStart, effectiveTimeFilterEnd, visitedComponentEffectiveTimes);
 	}
 
 	private void exportCombinedRefSets(final Path releaseDirectory, 
@@ -830,7 +830,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Export
 					refSetType,
 					referenceSetsByType.get(refSetType));
 
-			refSetExporter.exportBranch(releaseDirectory, context, branch, effectiveTimeFilterStart, effectiveTimeFilterEnd, visitedComponentEffectiveTimes);
+			refSetExporter.exportBranch(releaseDirectory, context, branch, includePreReleaseContent, effectiveTimeFilterStart, effectiveTimeFilterEnd, visitedComponentEffectiveTimes);
 		}
 
 		exportLanguageRefSets(releaseDirectory, 
@@ -877,7 +877,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Export
 					entry.getKey(),
 					ImmutableSet.of(entry.getValue()));
 
-			refSetExporter.exportBranch(releaseDirectory, context, revisionRange, effectiveTimeFilterStart, effectiveTimeFilterEnd, visitedComponentEffectiveTimes);
+			refSetExporter.exportBranch(releaseDirectory, context, revisionRange, includePreReleaseContent, effectiveTimeFilterStart, effectiveTimeFilterEnd, visitedComponentEffectiveTimes);
 		}
 
 		exportLanguageRefSets(releaseDirectory, 
@@ -917,7 +917,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Export
 					languageRefSets,
 					languageCode);
 
-			languageExporter.exportBranch(releaseDirectory, context, branch, effectiveTimeFilterStart, effectiveTimeFilterEnd, visitedComponentEffectiveTimes);
+			languageExporter.exportBranch(releaseDirectory, context, branch, includePreReleaseContent, effectiveTimeFilterStart, effectiveTimeFilterEnd, visitedComponentEffectiveTimes);
 		}
 	}
 
