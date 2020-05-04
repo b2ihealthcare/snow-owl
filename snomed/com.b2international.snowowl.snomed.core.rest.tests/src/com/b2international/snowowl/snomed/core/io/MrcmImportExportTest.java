@@ -40,6 +40,7 @@ import com.b2international.snowowl.snomed.core.mrcm.io.MrcmImporter;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.test.commons.Services;
+import com.b2international.snowowl.test.commons.rest.RestExtensions;
 
 /**
  * @since 4.4
@@ -54,7 +55,7 @@ public class MrcmImportExportTest {
 		final Path path = PlatformUtil.toAbsolutePath(MrcmImportExportTest.class, "mrcm_import_test.json");
 		
 		try (final InputStream stream = Files.newInputStream(path, StandardOpenOption.READ)) {
-			Services.service(MrcmImporter.class).doImport(Services.getAuthorizationToken(), stream);
+			Services.service(MrcmImporter.class).doImport(Services.getAuthorizationToken(), RestExtensions.USER, stream);
 		} 
 		
 		// verify content

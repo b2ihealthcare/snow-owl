@@ -81,7 +81,7 @@ public final class MrcmCommand extends Command {
 			}
 			
 			try (final InputStream content = Files.newInputStream(Paths.get(file), StandardOpenOption.READ)) {
-				ApplicationContext.getServiceForClass(MrcmImporter.class).doImport(user.getUsername(), content);
+				ApplicationContext.getServiceForClass(MrcmImporter.class).doImport(user, content);
 			} catch (IOException e) {
 				out.println("Failed to import MRCM JSON file: " + file);
 			}			
@@ -119,7 +119,7 @@ public final class MrcmCommand extends Command {
 			final Path exportPath = outputFolder.resolve("mrcm_" + Dates.now() + "." + format.name().toLowerCase());
 			
 			try (final OutputStream stream = Files.newOutputStream(exportPath, StandardOpenOption.CREATE)) {
-				ApplicationContext.getServiceForClass(MrcmExporter.class).doExport(user.getUsername(), stream, format);
+				ApplicationContext.getServiceForClass(MrcmExporter.class).doExport(user, stream, format);
 				out.println("Exported MRCM rules to " + exportPath + " in " + format.name() + " format.");
 			} catch (IOException e) {
 				e.printStackTrace();
