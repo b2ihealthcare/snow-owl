@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,26 @@ import java.util.Date;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
 import com.b2international.snowowl.snomed.mrcm.ConceptSetDefinition;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.base.Strings;
 
 /**
  * @since 6.5
  */
+@JsonTypeInfo(
+	use = JsonTypeInfo.Id.NAME,
+	include = JsonTypeInfo.As.PROPERTY,
+	property = "type"
+)
+@JsonSubTypes({
+	@JsonSubTypes.Type(value = SnomedCompositeDefinition.class, name = "composite"),
+	@JsonSubTypes.Type(value = SnomedEnumeratedDefinition.class, name = "enumerated"),
+	@JsonSubTypes.Type(value = SnomedHierarchyDefinition.class, name = "hierarchy"),
+	@JsonSubTypes.Type(value = SnomedReferenceSetDefinition.class, name = "refSet"),
+	@JsonSubTypes.Type(value = SnomedRelationshipDefinition.class, name = "relationship"),
+	@JsonSubTypes.Type(value = SnomedSingletonDefinition.class, name = "singleton")
+})
 public abstract class SnomedConceptSetDefinition extends SnomedConceptModelComponent {
 
 	/**
