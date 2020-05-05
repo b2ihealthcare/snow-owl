@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,25 @@ import java.util.Date;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.mrcm.ConceptModelComponent;
 import com.b2international.snowowl.snomed.mrcm.ConceptModelPredicate;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.base.Strings;
 
 /**
  * @since 6.5
  */
+@JsonTypeInfo(
+	use = JsonTypeInfo.Id.NAME,
+	include = JsonTypeInfo.As.PROPERTY,
+	property = "predicateType"
+)
+@JsonSubTypes({
+	@JsonSubTypes.Type(value = SnomedCardinalityPredicate.class, name = "cardinality"),
+	@JsonSubTypes.Type(value = SnomedConcreteDomainPredicate.class, name = "concreteDomain"),
+	@JsonSubTypes.Type(value = SnomedDependencyPredicate.class, name = "dependency"),
+	@JsonSubTypes.Type(value = SnomedDescriptionPredicate.class, name = "description"),
+	@JsonSubTypes.Type(value = SnomedRelationshipPredicate.class, name = "relationship")
+})
 public abstract class SnomedPredicate extends SnomedConceptModelComponent {
 
 	@Override
