@@ -32,6 +32,7 @@ import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.test.commons.Services;
 import com.google.common.collect.ImmutableMap;
 
@@ -85,13 +86,13 @@ public class CodeSystemApiTest {
 		final String shortName = "cs6";
 		final Map<String, Object> requestBody = newHashMap(newCodeSystemRequestBody(shortName));
 		requestBody.put("additionalProperties", Map.of(
-				"namespace", "1000198",
-				"moduleIds", List.of("123456781000198103", "876543211000198107")));
+				SnomedTerminologyComponentConstants.CODESYSTEM_NAMESPACE_CONFIG_KEY, "1000198",
+				SnomedTerminologyComponentConstants.CODESYSTEM_MODULES_CONFIG_KEY, List.of("123456781000198103", "876543211000198107")));
 		
 		assertCodeSystemCreated(requestBody);
 		assertCodeSystemExists(shortName);
-		assertCodeSystemHasAttributeValue(shortName, "additionalProperties.namespace", "1000198");
-		assertCodeSystemHasAttributeValue(shortName, "additionalProperties.moduleIds", List.of("123456781000198103", "876543211000198107"));
+		assertCodeSystemHasAttributeValue(shortName, "additionalProperties." + SnomedTerminologyComponentConstants.CODESYSTEM_NAMESPACE_CONFIG_KEY, "1000198");
+		assertCodeSystemHasAttributeValue(shortName, "additionalProperties." + SnomedTerminologyComponentConstants.CODESYSTEM_MODULES_CONFIG_KEY, List.of("123456781000198103", "876543211000198107"));
 	}
 	
 	@Test
@@ -197,14 +198,14 @@ public class CodeSystemApiTest {
 		final String shortName = "cs5";
 		final Map<String, Object> requestBody = newHashMap(newCodeSystemRequestBody(shortName));
 		requestBody.put("additionalProperties", Map.of(
-			"namespace", "1000198",
-			"moduleIds", List.of("1234567891000198103", "9876543211000198107"),
+			SnomedTerminologyComponentConstants.CODESYSTEM_NAMESPACE_CONFIG_KEY, "1000198",
+			SnomedTerminologyComponentConstants.CODESYSTEM_MODULES_CONFIG_KEY, List.of("1234567891000198103", "9876543211000198107"),
 			"locked", true));
 		
 		assertCodeSystemCreated(requestBody);
 		
 		final Map<String, Object> updatedProperties = newHashMap();
-		updatedProperties.put("namespace", "1000197");
+		updatedProperties.put(SnomedTerminologyComponentConstants.CODESYSTEM_NAMESPACE_CONFIG_KEY, "1000197");
 		updatedProperties.put("locked", null);
 		
 		final Map<String, Object> updateRequestBody = Map.of(
@@ -212,8 +213,8 @@ public class CodeSystemApiTest {
 			"additionalProperties", updatedProperties);
 		
 		assertCodeSystemUpdated(shortName, updateRequestBody);
-		assertCodeSystemHasAttributeValue(shortName, "additionalProperties.namespace", "1000197");
-		assertCodeSystemHasAttributeValue(shortName, "additionalProperties.moduleIds", List.of("1234567891000198103", "9876543211000198107"));
+		assertCodeSystemHasAttributeValue(shortName, "additionalProperties." + SnomedTerminologyComponentConstants.CODESYSTEM_NAMESPACE_CONFIG_KEY, "1000197");
+		assertCodeSystemHasAttributeValue(shortName, "additionalProperties." + SnomedTerminologyComponentConstants.CODESYSTEM_MODULES_CONFIG_KEY, List.of("1234567891000198103", "9876543211000198107"));
 		assertCodeSystemExists(shortName).and().body("additionalProperties", not(hasKey("locked")));
 	}
 	
