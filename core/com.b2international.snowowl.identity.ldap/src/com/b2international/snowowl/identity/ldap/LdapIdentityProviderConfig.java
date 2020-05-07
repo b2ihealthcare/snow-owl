@@ -31,6 +31,8 @@ public class LdapIdentityProviderConfig implements IdentityProviderConfig {
 	@NotEmpty private String baseDn = "dc=snowowl,dc=b2international,dc=com";
 	@NotEmpty private String rootDn = "cn=admin,dc=snowowl,dc=b2international,dc=com";
 	@NotEmpty private String rootDnPassword;
+	@NotEmpty private String memberOf;
+	
 	// Customizable objectClasses
 	@NotEmpty private String userObjectClass = "inetOrgPerson";
 	@NotEmpty private String roleObjectClass = "groupOfUniqueNames";
@@ -74,6 +76,14 @@ public class LdapIdentityProviderConfig implements IdentityProviderConfig {
 		this.rootDnPassword = rootDnPassword;
 	}
 
+	public String getMemberOf() {
+		return memberOf;
+	}
+	
+	public void setMemberOf(String memberOf) {
+		this.memberOf = memberOf;
+	}
+	
 	public String getUserIdProperty() {
 		return userIdProperty;
 	}

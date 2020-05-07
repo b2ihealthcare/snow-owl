@@ -96,6 +96,7 @@ final class LdapIdentityProvider implements IdentityProvider {
 	// Attributes
 	private static final String ATTRIBUTE_DN = "dn";
 	private static final String ATTR_CN = "cn";
+	private static final Object ATTRIBUTE_MEMBER_OF = "memberOf";
 	
 	private final LdapIdentityProviderConfig conf;
 	
@@ -177,7 +178,7 @@ final class LdapIdentityProvider implements IdentityProvider {
 			context = createLdapContext();
 			Collection<LdapRole> ldapRoles = getAllLdapRoles(context, baseDn);
 			
-			final String usersQuery = String.format(OBJECT_QUERY, conf.getUserObjectClass());
+			final String usersQuery = String.format(USER_FILTER, conf.getUserObjectClass(), ATTRIBUTE_MEMBER_OF, conf.getMemberOf());
 			searchResultEnumeration = context.search(baseDn, usersQuery, createSearchControls(ATTRIBUTE_DN, uidProp));
 			for (final SearchResult searchResult : ImmutableList.copyOf(Iterators.forEnumeration(searchResultEnumeration))) {
 				final Attributes attributes = searchResult.getAttributes();
