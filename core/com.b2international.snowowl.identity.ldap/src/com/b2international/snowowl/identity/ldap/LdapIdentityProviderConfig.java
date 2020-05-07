@@ -17,6 +17,7 @@ package com.b2international.snowowl.identity.ldap;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.commons.TokenReplacer;
 import com.b2international.snowowl.core.identity.IdentityProviderConfig;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
@@ -29,9 +30,11 @@ public class LdapIdentityProviderConfig implements IdentityProviderConfig {
 
 	@NotEmpty private String uri;
 	@NotEmpty private String baseDn = "dc=snowowl,dc=b2international,dc=com";
-	@NotEmpty private String rootDn = "cn=admin,dc=snowowl,dc=b2international,dc=com";
-	@NotEmpty private String rootDnPassword;
-	@NotEmpty private String memberOf;
+	@NotEmpty private String roleBaseDn = "dc=snowowl,dc=b2international,dc=com";
+	@NotEmpty private String bindDn = "cn=admin,dc=snowowl,dc=b2international,dc=com";
+	@NotEmpty private String bindDnPassword;
+	@NotEmpty private String userFilter = "(objectClass={userObjectClass})";
+	@NotEmpty private String roleFilter = "(objectClass={roleObjectClass})";
 	
 	// Customizable objectClasses
 	@NotEmpty private String userObjectClass = "inetOrgPerson";
@@ -60,30 +63,38 @@ public class LdapIdentityProviderConfig implements IdentityProviderConfig {
 		this.uri = uri;
 	}
 	
-	public String getRootDn() {
-		return rootDn;
+	public String getBindDn() {
+		return bindDn;
 	}
 	
+	/**
+	 * @param rootDn
+	 * @deprecated - replaced by {@link #setBindDn(String)}, will be removed in 8.0
+	 */
 	public void setRootDn(String rootDn) {
-		this.rootDn = rootDn;
+		setBindDn(rootDn);
 	}
 	
-	public String getRootDnPassword() {
-		return rootDnPassword;
+	public void setBindDn(String bindDn) {
+		this.bindDn = bindDn;
 	}
 	
+	public String getBindDnPassword() {
+		return bindDnPassword;
+	}
+	
+	/**
+	 * @param rootDnPassword
+	 * @deprecated - replaced by {@link #setBindDnPassword(String)}, will be removed in 8.0
+	 */
 	public void setRootDnPassword(String rootDnPassword) {
-		this.rootDnPassword = rootDnPassword;
+		setBindDnPassword(rootDnPassword);
+	}
+	
+	public void setBindDnPassword(String bindDnPassword) {
+		this.bindDnPassword = bindDnPassword;
 	}
 
-	public String getMemberOf() {
-		return memberOf;
-	}
-	
-	public void setMemberOf(String memberOf) {
-		this.memberOf = memberOf;
-	}
-	
 	public String getUserIdProperty() {
 		return userIdProperty;
 	}
@@ -133,5 +144,31 @@ public class LdapIdentityProviderConfig implements IdentityProviderConfig {
 	public void setPermissionProperty(String permissionProperty) {
 		this.permissionProperty = permissionProperty;
 	}
+
+	public String getRoleBaseDn() {
+		return roleBaseDn;
+	}
+
+	public void setRoleBaseDn(String roleBaseDn) {
+		this.roleBaseDn = roleBaseDn;
+	}
+
+	public String getUserFilter() {
+		return new TokenReplacer().register("userObjectClass", userObjectClass).substitute(userFilter);
+	}
+
+	public void setUserFilter(String userFilter) {
+		this.userFilter = userFilter;
+	}
+
+	public String getRoleFilter() {
+		return new TokenReplacer().register("roleObjectClass", roleObjectClass).substitute(roleFilter);
+	}
+
+	public void setRoleFilter(String roleFilter) {
+		this.roleFilter = roleFilter;
+	}
+	
+	
 	
 }
