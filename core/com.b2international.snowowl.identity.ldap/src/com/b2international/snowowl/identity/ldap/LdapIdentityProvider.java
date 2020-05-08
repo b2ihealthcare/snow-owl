@@ -33,6 +33,9 @@ import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 import javax.naming.ldap.InitialLdapContext;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.identity.IdentityProvider;
@@ -88,6 +91,7 @@ final class LdapIdentityProvider implements IdentityProvider {
 	static final String TYPE = "ldap";
 	private static final String LDAP_CTX_FACTORY = "com.sun.jndi.ldap.LdapCtxFactory";
 	private static final String LDAP_CONNECTION_POOL = "com.sun.jndi.ldap.connect.pool";
+	private static final Logger LOG = LoggerFactory.getLogger("ldap");
 	
 	// Attributes
 	private static final String ATTRIBUTE_DN = "dn";
@@ -138,9 +142,9 @@ final class LdapIdentityProvider implements IdentityProvider {
 				return null;
 			}
 
-			final SearchResult searchResult = Iterables.getOnlyElement(searchResults);
-			return searchResult.getNameInNamespace();
+			return Iterables.getOnlyElement(searchResults).getNameInNamespace();
 		} catch (final NamingException e) {
+			LOG.error("Couldn't find user due to LDAP communication error: {}", e.getMessage(), e);
 			return null;
 		} finally {
 			closeNamingEnumeration(searchResultEnumeration);
@@ -195,6 +199,7 @@ final class LdapIdentityProvider implements IdentityProvider {
 			return Promise.immediate(new Users(users, limit, users.size()));
 
 		} catch (final NamingException e) {
+			LOG.error("Couldn't search users/roles due to LDAP communication error: {}", e.getMessage(), e);
 			throw new SnowowlRuntimeException(e);
 		} finally {
 			closeNamingEnumeration(searchResultEnumeration);
@@ -243,7 +248,7 @@ final class LdapIdentityProvider implements IdentityProvider {
 				results.add(new LdapRole(name, permissions.build(), uniqueMembers.build()));
 			}
 			return results.build();
-		} finally {
+ 		} finally {
 			closeNamingEnumeration(enumeration);
 		}
 	}
