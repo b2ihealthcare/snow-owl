@@ -89,10 +89,6 @@ final class LdapIdentityProvider implements IdentityProvider {
 	private static final String LDAP_CTX_FACTORY = "com.sun.jndi.ldap.LdapCtxFactory";
 	private static final String LDAP_CONNECTION_POOL = "com.sun.jndi.ldap.connect.pool";
 	
-	// Queries
-	private static final String OBJECT_QUERY = "(objectClass=%s)";
-	private static final String USER_FILTER = "(&(objectClass=%s)(%s=%s))";
-	
 	// Attributes
 	private static final String ATTRIBUTE_DN = "dn";
 	private static final String ATTR_CN = "cn";
@@ -130,7 +126,7 @@ final class LdapIdentityProvider implements IdentityProvider {
 		Preconditions.checkNotNull(context, "Directory context is null.");
 		Preconditions.checkNotNull(username, "Username is null.");
 
-		final String userFilterWithUsername = String.format(USER_FILTER, conf.getUserObjectClass(), conf.getUserIdProperty(), username);
+		final String userFilterWithUsername = String.format("(&%s(%s=%s))", conf.getUserFilter(), conf.getUserIdProperty(), username);
 
 		NamingEnumeration<SearchResult> searchResultEnumeration = null;
 
@@ -167,7 +163,6 @@ final class LdapIdentityProvider implements IdentityProvider {
 	public Promise<Users> searchUsers(Collection<String> usernames, int limit) {
 		final ImmutableList.Builder<User> resultBuilder = ImmutableList.builder();
 
-		final String baseDn = conf.getBaseDn();
 		final String uidProp = conf.getUserIdProperty();
 		
 		InitialLdapContext context = null;
@@ -175,10 +170,9 @@ final class LdapIdentityProvider implements IdentityProvider {
 
 		try {
 			context = createLdapContext();
-			Collection<LdapRole> ldapRoles = getAllLdapRoles(context, baseDn);
+			Collection<LdapRole> ldapRoles = getAllLdapRoles(context);
 			
-			final String usersQuery = String.format(OBJECT_QUERY, conf.getUserObjectClass());
-			searchResultEnumeration = context.search(baseDn, usersQuery, createSearchControls(ATTRIBUTE_DN, uidProp));
+			searchResultEnumeration = context.search(conf.getBaseDn(), conf.getUserFilter(), createSearchControls(ATTRIBUTE_DN, uidProp));
 			for (final SearchResult searchResult : ImmutableList.copyOf(Iterators.forEnumeration(searchResultEnumeration))) {
 				final Attributes attributes = searchResult.getAttributes();
 
@@ -208,12 +202,11 @@ final class LdapIdentityProvider implements IdentityProvider {
 		}
 	}
 	
-	private Collection<LdapRole> getAllLdapRoles(InitialLdapContext context, String baseDn) throws NamingException {
+	private Collection<LdapRole> getAllLdapRoles(InitialLdapContext context) throws NamingException {
 		NamingEnumeration<SearchResult> enumeration = null;
 		try {
 			final ImmutableList.Builder<LdapRole> results = ImmutableList.builder();
-			final String roleQuery = String.format(OBJECT_QUERY, conf.getRoleObjectClass());
-			enumeration = context.search(baseDn, roleQuery, createSearchControls(ATTR_CN, conf.getPermissionProperty(), conf.getMemberProperty()));
+			enumeration = context.search(conf.getRoleBaseDn(), conf.getRoleFilter(), createSearchControls(ATTR_CN, conf.getPermissionProperty(), conf.getMemberProperty()));
 			
 			NamingEnumeration<?> permissionEnumeration = null;
 			NamingEnumeration<?> uniqueMemberEnumeration = null;
@@ -272,8 +265,8 @@ final class LdapIdentityProvider implements IdentityProvider {
 
 		env.put(LDAP_CONNECTION_POOL, Boolean.toString(conf.isConnectionPoolEnabled()));
 		env.put(Context.SECURITY_AUTHENTICATION, "simple");
-		env.put(Context.SECURITY_PRINCIPAL, conf.getRootDn());
-		env.put(Context.SECURITY_CREDENTIALS, conf.getRootDnPassword());
+		env.put(Context.SECURITY_PRINCIPAL, conf.getBindDn());
+		env.put(Context.SECURITY_CREDENTIALS, conf.getBindDnPassword());
 
 		return env;
 	}
