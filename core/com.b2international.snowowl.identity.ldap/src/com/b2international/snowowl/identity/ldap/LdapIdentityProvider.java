@@ -21,6 +21,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -64,27 +66,10 @@ import com.google.common.collect.Iterators;
  * href="http://nodsw.com/blog/leeland/2006/12/06-no-more-unable-find-valid-certification-path-requested-target">
  * http://nodsw.com/blog/leeland/2006/12/06-no-more-unable-find-valid-certification-path-requested-target </a>
  * </p>
- * <h3>Sample configuration node in snowowl_config.yml</h3>
- * <pre>
- * identity:
- *   providers:
- *     - ldap:
- *         uri: ldap://localhost:10389
- *         usePool: false
- *         baseDn: dc=snowowl,dc=b2international,dc=com
- *         rootDn: cn=admin,dc=snowowl,dc=b2international,dc=com
- *         rootDnPassword: adminpwd
- *         userObjectClass: inetOrgPerson
- *         roleObjectClass: groupOfUniqueNames
- *         userIdProperty: uid
- *         memberProperty: uniqueMember
- *         permissionProperty: description
- *
  * </pre>
  * 
  * @since 5.11
  * @see LdapIdentityProviderConfig
- * @see LdapIdentityProviderFactory
  */
 final class LdapIdentityProvider implements IdentityProvider {
 
@@ -101,6 +86,16 @@ final class LdapIdentityProvider implements IdentityProvider {
 	
 	public LdapIdentityProvider(LdapIdentityProviderConfig conf) {
 		this.conf = conf;
+		final Map<String, String> options = new TreeMap<>();
+		options.put("bindDn", conf.getBindDn());
+		options.put("baseDn", conf.getBaseDn());
+		options.put("roleBaseDn", conf.getRoleBaseDn());
+		options.put("userFilter", conf.getUserFilter());
+		options.put("roleFilter", conf.getRoleFilter());
+		options.put("userIdProperty", conf.getUserIdProperty());
+		options.put("memberProperty", conf.getMemberProperty());
+		options.put("permissionProperty", conf.getPermissionProperty());
+		LOG.info("Configured LDAP identity provider with the following options: {}", options);
 	}
 	
 	@Override
