@@ -9,9 +9,12 @@ identity:
   providers:
     - ldap:
         uri: <ldap_uri>
+        bindDn: cn=admin,dc=snowowl,dc=b2international,dc=com
+        bindDnPassword: <adminpwd>
         baseDn: dc=snowowl,dc=b2international,dc=com
-        rootDn: cn=admin,dc=snowowl,dc=b2international,dc=com
-        rootDnPassword: <adminpwd>
+        roleBaseDn: {baseDn}
+        userFilter: (objectClass={userObjectClass})
+        roleFilter: (objectClass={roleObjectClass})
         userObjectClass: inetOrgPerson
         roleObjectClass: groupOfUniqueNames
         userIdProperty: uid
@@ -26,10 +29,13 @@ The following configuration settings are supported:
 
 | Configuration |      Description      |
 |---------------|-----------------------|
-| uri |  The LDAP URI that points to the LDAP/AD server to connect to |
-| baseDn | The base directory where all entries in the entire subtree will be considered as potential matches for all searches |
-| rootDn | The user's DN who has access to the entire `baseDn` and read content from it |
-| rootDnPassword | The password of the `rootDn` user |
+| uri |  The LDAP URI that points to the LDAP/AD server to connect to. |
+| bindDn | The user's DN who has access to the entire `baseDn` and `roleBaseDn` and can read content from it. |
+| bindDnPassword | The password of the `bindDn` user. |
+| baseDn | The base directory where all entries in the entire subtree will be considered as potential matches for all searches. |
+| roleBaseDn | Alternative base directory where all role entries in the entire subtree will be considered. Defaults to the `baseDn` value. |
+| userFilter | The search filter to search for user entries under the configured `baseDn`. Defaults to `(objectClass={userObjectClass})`. |
+| roleFilter | The search filter to search for role entries under the configured `roleBaseDn`. Defaults to `(objectClass={roleObjectClass})`. |
 | userObjectClass | The user object's class to look for when searching for user entries. Defaults to `inetOrgPerson` class. |
 | roleObjectClass | The role object's class to look for when searching for role entries. Defaults to `groupOfUniqueNames` class. |
 | userIdProperty | The userId property to access and read for the user's unique identifier. Usually their username or email address. Defaults to `uid` property. |
@@ -46,7 +52,7 @@ When users send their username and password with their request in the Authorizat
  
 If any of the above-mentioned steps fails for any reason, the user is not allowed to access the terminology server's content and the server will respond with `HTTP 401 Unauthorized`.
 
-To configure authentication, you need to configure the `uri`, `baseDn`, `rootDn`, `rootDnPassword`, `userObjectClass` and `userIdProperty` configuration settings.
+To configure authentication, you need to configure the `uri`, `baseDn`, `bindDn`, `bindDnPassword`, `userObjectClass` and `userIdProperty` configuration settings.
 
 ### Adding a user
 

@@ -21,6 +21,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -32,6 +34,9 @@ import javax.naming.directory.DirContext;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 import javax.naming.ldap.InitialLdapContext;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.events.util.Promise;
@@ -61,33 +66,17 @@ import com.google.common.collect.Iterators;
  * href="http://nodsw.com/blog/leeland/2006/12/06-no-more-unable-find-valid-certification-path-requested-target">
  * http://nodsw.com/blog/leeland/2006/12/06-no-more-unable-find-valid-certification-path-requested-target </a>
  * </p>
- * <h3>Sample configuration node in snowowl_config.yml</h3>
- * <pre>
- * identity:
- *   providers:
- *     - ldap:
- *         uri: ldap://localhost:10389
- *         usePool: false
- *         baseDn: dc=snowowl,dc=b2international,dc=com
- *         rootDn: cn=admin,dc=snowowl,dc=b2international,dc=com
- *         rootDnPassword: adminpwd
- *         userObjectClass: inetOrgPerson
- *         roleObjectClass: groupOfUniqueNames
- *         userIdProperty: uid
- *         memberProperty: uniqueMember
- *         permissionProperty: description
- *
  * </pre>
  * 
  * @since 5.11
  * @see LdapIdentityProviderConfig
- * @see LdapIdentityProviderFactory
  */
 final class LdapIdentityProvider implements IdentityProvider {
 
 	static final String TYPE = "ldap";
 	private static final String LDAP_CTX_FACTORY = "com.sun.jndi.ldap.LdapCtxFactory";
 	private static final String LDAP_CONNECTION_POOL = "com.sun.jndi.ldap.connect.pool";
+	private static final Logger LOG = LoggerFactory.getLogger("ldap");
 	
 	// Attributes
 	private static final String ATTRIBUTE_DN = "dn";
@@ -97,6 +86,16 @@ final class LdapIdentityProvider implements IdentityProvider {
 	
 	public LdapIdentityProvider(LdapIdentityProviderConfig conf) {
 		this.conf = conf;
+		final Map<String, String> options = new TreeMap<>();
+		options.put("bindDn", conf.getBindDn());
+		options.put("baseDn", conf.getBaseDn());
+		options.put("roleBaseDn", conf.getRoleBaseDn());
+		options.put("userFilter", conf.getUserFilter());
+		options.put("roleFilter", conf.getRoleFilter());
+		options.put("userIdProperty", conf.getUserIdProperty());
+		options.put("memberProperty", conf.getMemberProperty());
+		options.put("permissionProperty", conf.getPermissionProperty());
+		LOG.info("Configured LDAP identity provider with the following options: {}", options);
 	}
 	
 	@Override
@@ -138,9 +137,9 @@ final class LdapIdentityProvider implements IdentityProvider {
 				return null;
 			}
 
-			final SearchResult searchResult = Iterables.getOnlyElement(searchResults);
-			return searchResult.getNameInNamespace();
+			return Iterables.getOnlyElement(searchResults).getNameInNamespace();
 		} catch (final NamingException e) {
+			LOG.error("Couldn't find user due to LDAP communication error: {}", e.getMessage(), e);
 			return null;
 		} finally {
 			closeNamingEnumeration(searchResultEnumeration);
@@ -195,6 +194,7 @@ final class LdapIdentityProvider implements IdentityProvider {
 			return Promise.immediate(new Users(users, limit, users.size()));
 
 		} catch (final NamingException e) {
+			LOG.error("Couldn't search users/roles due to LDAP communication error: {}", e.getMessage(), e);
 			throw new SnowowlRuntimeException(e);
 		} finally {
 			closeNamingEnumeration(searchResultEnumeration);
@@ -243,7 +243,7 @@ final class LdapIdentityProvider implements IdentityProvider {
 				results.add(new LdapRole(name, permissions.build(), uniqueMembers.build()));
 			}
 			return results.build();
-		} finally {
+ 		} finally {
 			closeNamingEnumeration(enumeration);
 		}
 	}
