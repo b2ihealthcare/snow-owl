@@ -30,7 +30,7 @@ public class LdapIdentityProviderConfig implements IdentityProviderConfig {
 
 	@NotEmpty private String uri;
 	@NotEmpty private String baseDn = "dc=snowowl,dc=b2international,dc=com";
-	@NotEmpty private String roleBaseDn = "dc=snowowl,dc=b2international,dc=com";
+	@NotEmpty private String roleBaseDn = "{baseDn}";
 	@NotEmpty private String bindDn = "cn=admin,dc=snowowl,dc=b2international,dc=com";
 	@NotEmpty private String bindDnPassword;
 	@NotEmpty private String userFilter = "(objectClass={userObjectClass})";
@@ -146,7 +146,7 @@ public class LdapIdentityProviderConfig implements IdentityProviderConfig {
 	}
 
 	public String getRoleBaseDn() {
-		return roleBaseDn;
+		return new TokenReplacer().register("baseDn", baseDn).substitute(roleBaseDn);
 	}
 
 	public void setRoleBaseDn(String roleBaseDn) {
