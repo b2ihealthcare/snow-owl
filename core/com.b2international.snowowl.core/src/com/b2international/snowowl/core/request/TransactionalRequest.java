@@ -26,6 +26,7 @@ import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 
@@ -82,6 +83,7 @@ public final class TransactionalRequest implements Request<BranchContext, Commit
 		return next.execute(context);
 	}
 
+	@JsonIgnore
 	@Override
 	public Collection<Request<?, ?>> getNestedRequests() {
 		return ImmutableList.of(this, getNext());
