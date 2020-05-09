@@ -6,7 +6,6 @@ Bundle-Version: 7.7.0.qualifier
 Bundle-Vendor: B2i Healthcare
 Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  org.junit;bundle-version="4.12.0";visibility:=reexport,
- org.assertj.core;bundle-version="1.7.1";visibility:=reexport,
  org.mockito;bundle-version="2.13.0";visibility:=reexport,
  org.apache.commons.lang;bundle-version="2.6.0",
  com.b2international.restassured-all;bundle-version="[3.2.0,3.3.0)";visibility:=reexport,
