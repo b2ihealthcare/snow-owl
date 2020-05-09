@@ -24,6 +24,8 @@ import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -69,6 +71,7 @@ import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.util.NumericClassUtils;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -294,6 +297,11 @@ public final class EsIndexAdmin implements IndexAdmin {
 	private Map<String, Object> toProperties(DocumentMapping mapping) {
 		Map<String, Object> properties = newHashMap();
 		for (Field field : mapping.getFields()) {
+			// skip transient fields
+			if (Modifier.isTransient(field.getModifiers())) {
+				continue;
+			}
+			
 			final String property = field.getName();
 			if (DocumentMapping._ID.equals(property)) continue;
 			final Class<?> fieldType = NumericClassUtils.unwrapCollectionType(field);
@@ -427,11 +435,23 @@ public final class EsIndexAdmin implements IndexAdmin {
 			fieldProperties.put("type", "boolean");
 		} else if (fieldType.isAnnotationPresent(IP.class)) {
 			fieldProperties.put("type", "ip");
+		} else if (hasJsonValue(fieldType)) {
+			fieldProperties.put("type", "keyword"); // FIXME for now consider only String based @JsonValue annotations
 		} else {
 			// Any other type will result in a sub-object that only appears in _source
 			fieldProperties.put("type", "object");
 			fieldProperties.put("enabled", false);
 		}
+	}
+
+	// returns true if one of the methods of the type has the @JsonValue annotation
+	private boolean hasJsonValue(Class<?> fieldType) {
+		for (Method method : fieldType.getMethods()) {
+			if (method.isAnnotationPresent(JsonValue.class) && String.class == method.getReturnType()) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override

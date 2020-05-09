@@ -17,8 +17,11 @@ package com.b2international.snowowl.snomed.core.mrcm.io;
 
 import java.io.OutputStream;
 
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.authorization.AuthorizedEventBus;
 import com.b2international.snowowl.core.authorization.AuthorizedRequest;
+import com.b2international.snowowl.core.identity.JWTGenerator;
+import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Provider;
@@ -35,6 +38,12 @@ public class MrcmExporterImpl implements MrcmExporter {
 
 	public MrcmExporterImpl(Provider<IEventBus> bus) {
 		this.bus = bus;
+	}
+	
+	@Override
+	public void doExport(User user, OutputStream content, MrcmExportFormat exportFormat) {
+		String authorizationToken = ApplicationContext.getServiceForClass(JWTGenerator.class).generate(user);
+		doExport(authorizationToken, content, exportFormat);
 	}
 	
 	@Override

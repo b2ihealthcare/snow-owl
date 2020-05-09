@@ -28,6 +28,8 @@ import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
+import com.b2international.snowowl.core.identity.JWTGenerator;
+import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraint;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
@@ -50,19 +52,21 @@ public class MrcmJsonImporter implements MrcmImporter {
 	}
 	
 	@Override
-	public void doImport(String authorizationToken, InputStream source) {
+	public void doImport(String authorizationToken, String username, InputStream source) {
+		
 		final String branch = Branch.MAIN_PATH;
 		ObjectMapper mapper = ApplicationContext.getServiceForClass(ObjectMapper.class);
 		
 		final IEventBus bus = new AuthorizedEventBus(this.bus.get(), ImmutableMap.of(AuthorizedRequest.AUTHORIZATION_HEADER, authorizationToken));
+		
 		Set<String> existingConstraints = SnomedRequests.prepareSearchConstraint()
-			.all()
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
-			.execute(bus)
-			.getSync()
-			.stream()
-			.map(SnomedConstraint::getId)
-			.collect(Collectors.toSet());
+				.all()
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
+				.execute(bus)
+				.getSync()
+				.stream()
+				.map(SnomedConstraint::getId)
+				.collect(Collectors.toSet());
 		
 		try (MappingIterator<SnomedConstraint> it = mapper.readerFor(SnomedConstraint.class).withoutFeatures(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES).readValues(source)) {
 			final BulkRequestBuilder<TransactionContext> bulk = BulkRequest.create();
@@ -77,15 +81,23 @@ public class MrcmJsonImporter implements MrcmImporter {
 			}
 			
 			SnomedRequests.prepareCommit()
-				.setAuthor(authorizationToken)
-				.setCommitComment("Imported MRCM from JSON file.")
-				.setBody(bulk)
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
-				.execute(bus)
-				.getSync();
+			.setAuthor(username)
+			.setCommitComment("Imported MRCM from JSON file.")
+			.setBody(bulk)
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
+			.execute(bus)
+			.getSync();
+			
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException("Failed to import MRCM from JSON file.", e);
 		}
+		
+	}
+	
+	@Override
+	public void doImport(User user, InputStream source) {
+		String authorizationToken = ApplicationContext.getServiceForClass(JWTGenerator.class).generate(user);
+		doImport(authorizationToken, user.getUsername(), source);
 	}
 
 }

@@ -21,6 +21,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -32,6 +34,9 @@ import javax.naming.directory.DirContext;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 import javax.naming.ldap.InitialLdapContext;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.events.util.Promise;
@@ -61,37 +66,17 @@ import com.google.common.collect.Iterators;
  * href="http://nodsw.com/blog/leeland/2006/12/06-no-more-unable-find-valid-certification-path-requested-target">
  * http://nodsw.com/blog/leeland/2006/12/06-no-more-unable-find-valid-certification-path-requested-target </a>
  * </p>
- * <h3>Sample configuration node in snowowl_config.yml</h3>
- * <pre>
- * identity:
- *   providers:
- *     - ldap:
- *         uri: ldap://localhost:10389
- *         usePool: false
- *         baseDn: dc=snowowl,dc=b2international,dc=com
- *         rootDn: cn=admin,dc=snowowl,dc=b2international,dc=com
- *         rootDnPassword: adminpwd
- *         userObjectClass: inetOrgPerson
- *         roleObjectClass: groupOfUniqueNames
- *         userIdProperty: uid
- *         memberProperty: uniqueMember
- *         permissionProperty: description
- *
  * </pre>
  * 
  * @since 5.11
  * @see LdapIdentityProviderConfig
- * @see LdapIdentityProviderFactory
  */
 final class LdapIdentityProvider implements IdentityProvider {
 
 	static final String TYPE = "ldap";
 	private static final String LDAP_CTX_FACTORY = "com.sun.jndi.ldap.LdapCtxFactory";
 	private static final String LDAP_CONNECTION_POOL = "com.sun.jndi.ldap.connect.pool";
-	
-	// Queries
-	private static final String OBJECT_QUERY = "(objectClass=%s)";
-	private static final String USER_FILTER = "(&(objectClass=%s)(%s=%s))";
+	private static final Logger LOG = LoggerFactory.getLogger("ldap");
 	
 	// Attributes
 	private static final String ATTRIBUTE_DN = "dn";
@@ -101,6 +86,16 @@ final class LdapIdentityProvider implements IdentityProvider {
 	
 	public LdapIdentityProvider(LdapIdentityProviderConfig conf) {
 		this.conf = conf;
+		final Map<String, String> options = new TreeMap<>();
+		options.put("bindDn", conf.getBindDn());
+		options.put("baseDn", conf.getBaseDn());
+		options.put("roleBaseDn", conf.getRoleBaseDn());
+		options.put("userFilter", conf.getUserFilter());
+		options.put("roleFilter", conf.getRoleFilter());
+		options.put("userIdProperty", conf.getUserIdProperty());
+		options.put("memberProperty", conf.getMemberProperty());
+		options.put("permissionProperty", conf.getPermissionProperty());
+		LOG.info("Configured LDAP identity provider with the following options: {}", options);
 	}
 	
 	@Override
@@ -130,7 +125,7 @@ final class LdapIdentityProvider implements IdentityProvider {
 		Preconditions.checkNotNull(context, "Directory context is null.");
 		Preconditions.checkNotNull(username, "Username is null.");
 
-		final String userFilterWithUsername = String.format(USER_FILTER, conf.getUserObjectClass(), conf.getUserIdProperty(), username);
+		final String userFilterWithUsername = String.format("(&%s(%s=%s))", conf.getUserFilter(), conf.getUserIdProperty(), username);
 
 		NamingEnumeration<SearchResult> searchResultEnumeration = null;
 
@@ -142,9 +137,9 @@ final class LdapIdentityProvider implements IdentityProvider {
 				return null;
 			}
 
-			final SearchResult searchResult = Iterables.getOnlyElement(searchResults);
-			return searchResult.getNameInNamespace();
+			return Iterables.getOnlyElement(searchResults).getNameInNamespace();
 		} catch (final NamingException e) {
+			LOG.error("Couldn't find user due to LDAP communication error: {}", e.getMessage(), e);
 			return null;
 		} finally {
 			closeNamingEnumeration(searchResultEnumeration);
@@ -167,7 +162,6 @@ final class LdapIdentityProvider implements IdentityProvider {
 	public Promise<Users> searchUsers(Collection<String> usernames, int limit) {
 		final ImmutableList.Builder<User> resultBuilder = ImmutableList.builder();
 
-		final String baseDn = conf.getBaseDn();
 		final String uidProp = conf.getUserIdProperty();
 		
 		InitialLdapContext context = null;
@@ -175,10 +169,9 @@ final class LdapIdentityProvider implements IdentityProvider {
 
 		try {
 			context = createLdapContext();
-			Collection<LdapRole> ldapRoles = getAllLdapRoles(context, baseDn);
+			Collection<LdapRole> ldapRoles = getAllLdapRoles(context);
 			
-			final String usersQuery = String.format(OBJECT_QUERY, conf.getUserObjectClass());
-			searchResultEnumeration = context.search(baseDn, usersQuery, createSearchControls(ATTRIBUTE_DN, uidProp));
+			searchResultEnumeration = context.search(conf.getBaseDn(), conf.getUserFilter(), createSearchControls(ATTRIBUTE_DN, uidProp));
 			for (final SearchResult searchResult : ImmutableList.copyOf(Iterators.forEnumeration(searchResultEnumeration))) {
 				final Attributes attributes = searchResult.getAttributes();
 
@@ -201,6 +194,7 @@ final class LdapIdentityProvider implements IdentityProvider {
 			return Promise.immediate(new Users(users, limit, users.size()));
 
 		} catch (final NamingException e) {
+			LOG.error("Couldn't search users/roles due to LDAP communication error: {}", e.getMessage(), e);
 			throw new SnowowlRuntimeException(e);
 		} finally {
 			closeNamingEnumeration(searchResultEnumeration);
@@ -208,12 +202,11 @@ final class LdapIdentityProvider implements IdentityProvider {
 		}
 	}
 	
-	private Collection<LdapRole> getAllLdapRoles(InitialLdapContext context, String baseDn) throws NamingException {
+	private Collection<LdapRole> getAllLdapRoles(InitialLdapContext context) throws NamingException {
 		NamingEnumeration<SearchResult> enumeration = null;
 		try {
 			final ImmutableList.Builder<LdapRole> results = ImmutableList.builder();
-			final String roleQuery = String.format(OBJECT_QUERY, conf.getRoleObjectClass());
-			enumeration = context.search(baseDn, roleQuery, createSearchControls(ATTR_CN, conf.getPermissionProperty(), conf.getMemberProperty()));
+			enumeration = context.search(conf.getRoleBaseDn(), conf.getRoleFilter(), createSearchControls(ATTR_CN, conf.getPermissionProperty(), conf.getMemberProperty()));
 			
 			NamingEnumeration<?> permissionEnumeration = null;
 			NamingEnumeration<?> uniqueMemberEnumeration = null;
@@ -250,7 +243,7 @@ final class LdapIdentityProvider implements IdentityProvider {
 				results.add(new LdapRole(name, permissions.build(), uniqueMembers.build()));
 			}
 			return results.build();
-		} finally {
+ 		} finally {
 			closeNamingEnumeration(enumeration);
 		}
 	}
@@ -272,8 +265,8 @@ final class LdapIdentityProvider implements IdentityProvider {
 
 		env.put(LDAP_CONNECTION_POOL, Boolean.toString(conf.isConnectionPoolEnabled()));
 		env.put(Context.SECURITY_AUTHENTICATION, "simple");
-		env.put(Context.SECURITY_PRINCIPAL, conf.getRootDn());
-		env.put(Context.SECURITY_CREDENTIALS, conf.getRootDnPassword());
+		env.put(Context.SECURITY_PRINCIPAL, conf.getBindDn());
+		env.put(Context.SECURITY_CREDENTIALS, conf.getBindDnPassword());
 
 		return env;
 	}

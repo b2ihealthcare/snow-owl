@@ -24,6 +24,7 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.Strings;
 
@@ -36,6 +37,7 @@ public final class ExtendedLocale implements Serializable {
 	
 	private static final Pattern EXTENDED_LOCALE_PATTERN = Pattern.compile("([a-zA-Z]{2})(-([a-zA-Z]{2}))?(-x-([1-9][0-9]{5,17}))?");
 
+	@JsonCreator
 	public static ExtendedLocale valueOf(String input) {
 		final Matcher matcher = EXTENDED_LOCALE_PATTERN.matcher(input);
 		if (matcher.matches()) {

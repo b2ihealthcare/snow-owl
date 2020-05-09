@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.datastore.request;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 import com.b2international.commons.CompareUtils;
@@ -337,6 +338,15 @@ public abstract class SnomedRequests {
 	 */
 	public static SnomedQueryLabelerRequestBuilder prepareQueryLabeler(String expression) {
 		return new SnomedQueryLabelerRequestBuilder(expression);
+	}
+	
+	/**
+	 * Returns a SNOMED CT request builder to prepare the labeling of a list of SNOMED CT Query Language (QL) expressions (also works for ECL expressions).
+	 * @param expression - the QL/ECL expression to extend with labels
+	 * @return SNOMED CT Query labeler request builder
+	 */
+	public static SnomedQueryLabelerRequestBuilder prepareQueryLabeler(List<String> expressions) {
+		return new SnomedQueryLabelerRequestBuilder(expressions);
 	}
 	
 	/**

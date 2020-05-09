@@ -1,6 +1,44 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 7.6.0
+
+### Core
+- CodeSystem API improvements (#546)
+  * Support `additionalProperties` to associated custom values with your Code System
+  * Support `locales` - which in case of SNOMED CT auto-populates itself during RF2 import
+  * Support `availableUpgrades()` expansion on Code Systems to show when an upgrade to a newer dependency is available
+  * Support Code System URIs in `extensionOf` property to explicitly depend on a versioned release of another Code System
+  * Support `extensionOf` property updates via Code System Update endpoint
+
+### Configuration
+- Support configuration of max allowed upload file sizes and limits (#544)
+  * New configuration keys are `api.http.maxFileSize`, `api.http.maxRequestSize`, `api.http.maxInMemorySize`
+  * Increase the default allowed upload file size to `1gb`
+- Support advanced configuration of the LDAP identity provider (efdb7e4)
+  * Support different `roleBaseDn` than `baseDn`. Defaults to `baseDn` value.
+  * Support customization of `userFilter` and `roleFilter` search queries for advanced users
+  * Replace `rootDn` and `rootDnPassword` with `bindDn` and `bindDnPassword` configuration keys (the old settings are deprecated and will be removed in Snow Owl 8.0).
+
+### SNOMED CT
+- New ECL/QL labeler Java API to label up IDs in an expression (#541)
+- Support setting start/end effective times in automated RF2 export script (#549)
+
+### Packaging
+- Reduce the size of the OSS Docker image (#542)
+
+### Docs
+- Improve LDAP documentation (#548)
+- Add backup and restore documentation (a2faa3b)
+
+### Bugs/Improvements
+- [index] skip transient fields when creating index mapping (9f9f948)
+- [snomed] fix incorrect state when importing RF2 file without the the Job API (5b0e4af)
+- [snomed] fix occasional error in RF2 export when exporting deep branches, extensions (#550)
+- [mrcm] fix authorization issue with MRCM import/export (#554)
+- [api] prevent duplicate language refset IDs when converting a list of extended locales to list of language refset ids (6eebee1)
+- [api] fix incorrect swagger representation of some String values (#552)
+
 ## 7.5.1
 
 ### Core
@@ -137,7 +175,6 @@ This new documentation will gather and render all available groups from all avai
 - [snomed] fix incorrect conversion of `null` values to empty filter values in refset API (refSetType, referencedComponentType and mapTargetComponentType filters) (f737c14, #482)
 - [snomed] unset effective time of inactivated members properly during save (inactivated by another component inactivation) (307879a, b60acf1, eb988de)
 - [lgtm] fix errors/warnings reported by LGTM (eacca94, 61f79f5, 4659b04, 0d00a34, c63c1a2, c4d3995, 37b4685, 8f331c2, 5497d95, e018278, a438fe1, e3fdf56, c6368dc, 72faec7, 5456f5a, 204632c, cb17a33, b808eed, 7d8fb27, 325ce93, e02857b, 64623ef, a7226e1, fc2e4b1, 0b769ac)
-
 
 ## 7.3.0
 
