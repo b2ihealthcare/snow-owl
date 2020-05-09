@@ -20,6 +20,7 @@
 		<slf4j.version>1.7.25</slf4j.version>
 		<logback.version>1.2.3</logback.version>
 		<logback.versionRange>[1.2.3,1.2.4)</logback.versionRange>
+		<guava.version>27.1-jre</guava.version>
 		<guava.versionRange>[27.1.0,28.0.0)</guava.versionRange>
 		<net.bytebuddy.version>1.9.3</net.bytebuddy.version>
 		<groovy.version>2.4.19</groovy.version>
@@ -167,6 +168,12 @@
 			<groupId>com.fasterxml.jackson.module</groupId>
 			<artifactId>jackson-module-jaxb-annotations</artifactId>
 			<version>${jackson.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>${guava.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
