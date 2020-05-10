@@ -14,8 +14,8 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
 		<!-- Maven Dependency Versions -->
-		<jackson.version>2.9.10</jackson.version>
-		<jackson.databind.version>2.9.10.4</jackson.databind.version>
+		<jackson.version>2.10.4</jackson.version>
+		<jackson.databind.version>2.10.4</jackson.databind.version>
 		<netty.version>4.1.45.Final</netty.version>
 		<slf4j.version>1.7.25</slf4j.version>
 		<logback.version>1.2.3</logback.version>
@@ -181,7 +181,7 @@
 		<dependency>
 			<groupId>org.yaml</groupId>
 			<artifactId>snakeyaml</artifactId>
-			<version>1.25</version>
+			<version>1.26</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
