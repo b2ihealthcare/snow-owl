@@ -80,21 +80,19 @@
         <setEntry value="jul.to.slf4j@default:default"/>
         <setEntry value="log4j.over.slf4j@default:default"/>
         <setEntry value="net.bytebuddy.byte-buddy*1.9.0.v20181107-1410@default:default"/>
-        <setEntry value="net.bytebuddy.byte-buddy*1.9.3@default:default"/>
         <setEntry value="net.bytebuddy.byte-buddy-agent@default:default"/>
         <setEntry value="net.jodah.failsafe@default:default"/>
         <setEntry value="net.jodah.typetools@default:default"/>
         <setEntry value="org.antlr.runtime@default:default"/>
-        <setEntry value="org.aopalliance@default:default"/>
         <setEntry value="org.apache.ant@default:default"/>
         <setEntry value="org.apache.commons.cli@default:default"/>
-        <setEntry value="org.apache.commons.codec*1.10.0@default:default"/>
+        <setEntry value="org.apache.commons.codec@default:default"/>
+        <setEntry value="org.apache.commons.io@default:default"/>
         <setEntry value="org.apache.commons.lang@default:default"/>
-        <setEntry value="org.apache.commons.logging*1.2.0@default:default"/>
+        <setEntry value="org.apache.commons.logging@default:default"/>
         <setEntry value="org.apache.httpcomponents.httpasyncclient@default:default"/>
         <setEntry value="org.apache.httpcomponents.httpclient*4.5.3@default:default"/>
         <setEntry value="org.apache.httpcomponents.httpcore*4.4.10@default:default"/>
-        <setEntry value="org.assertj.core@default:default"/>
         <setEntry value="org.codehaus.groovy@default:default"/>
         <setEntry value="org.eclipse.core.commands@default:default"/>
         <setEntry value="org.eclipse.core.contenttype@default:default"/>
@@ -125,6 +123,9 @@
         <setEntry value="org.eclipse.net4j.tcp@default:default"/>
         <setEntry value="org.eclipse.net4j.util@default:default"/>
         <setEntry value="org.eclipse.net4j@default:default"/>
+        <setEntry value="org.eclipse.osgi.compatibility.state@default:default"/>
+        <setEntry value="org.eclipse.osgi.services@default:default"/>
+        <setEntry value="org.eclipse.osgi.util@default:default"/>
         <setEntry value="org.eclipse.osgi@-1:true"/>
         <setEntry value="org.eclipse.pde.junit.runtime@default:default"/>
         <setEntry value="org.eclipse.xtend.lib.macro@default:default"/>
@@ -137,8 +138,7 @@
         <setEntry value="org.hamcrest.core@default:default"/>
         <setEntry value="org.hdrhistogram.HdrHistogram@default:default"/>
         <setEntry value="org.jetbrains.kotlin.osgi-bundle@default:default"/>
-        <setEntry value="org.junit*4.12.0.v201504281640@default:default"/>
-        <setEntry value="org.junit*4.13.0.v20200204-1500@default:default"/>
+        <setEntry value="org.junit@default:default"/>
         <setEntry value="org.mockito@default:default"/>
         <setEntry value="org.objectweb.asm.tree@default:default"/>
         <setEntry value="org.objectweb.asm@default:default"/>
@@ -150,7 +150,6 @@
         <setEntry value="org.semanticweb.owl.owlapi@default:default"/>
         <setEntry value="org.snomed.otf.snomed-owl-toolkit@default:default"/>
         <setEntry value="org.yaml.snakeyaml@default:default"/>
-        <setEntry value="osgi.enterprise@default:default"/>
         <setEntry value="slf4j.api@default:default"/>
     </setAttribute>
     <setAttribute key="selected_workspace_bundles">
@@ -164,6 +163,7 @@
         <setEntry value="com.b2international.mapdb@default:default"/>
         <setEntry value="com.b2international.snowowl.core@default:default"/>
         <setEntry value="com.b2international.snowowl.eventbus@default:default"/>
+        <setEntry value="com.b2international.snowowl.logback.config@default:default"/>
         <setEntry value="com.b2international.snowowl.rpc@default:default"/>
         <setEntry value="com.b2international.snowowl.snomed.cis@default:default"/>
         <setEntry value="com.b2international.snowowl.snomed.common@default:default"/>

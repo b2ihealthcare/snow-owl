@@ -87,11 +87,11 @@
         <setEntry value="org.antlr.runtime@default:default"/>
         <setEntry value="org.apache.ant@default:default"/>
         <setEntry value="org.apache.commons.cli@default:default"/>
-        <setEntry value="org.apache.commons.codec*1.10.0@default:default"/>
+        <setEntry value="org.apache.commons.codec@default:default"/>
+        <setEntry value="org.apache.commons.io@default:default"/>
         <setEntry value="org.apache.commons.lang3@default:default"/>
         <setEntry value="org.apache.commons.lang@default:default"/>
-        <setEntry value="org.apache.commons.logging*1.2.0.v20180409-1502@default:default"/>
-        <setEntry value="org.apache.commons.logging*1.2.0@default:default"/>
+        <setEntry value="org.apache.commons.logging@default:default"/>
         <setEntry value="org.apache.felix.gogo.command@default:default"/>
         <setEntry value="org.apache.felix.gogo.runtime@default:default"/>
         <setEntry value="org.apache.felix.gogo.shell@default:default"/>
@@ -99,7 +99,6 @@
         <setEntry value="org.apache.httpcomponents.httpasyncclient@default:default"/>
         <setEntry value="org.apache.httpcomponents.httpclient*4.5.3@default:default"/>
         <setEntry value="org.apache.httpcomponents.httpcore*4.4.10@default:default"/>
-        <setEntry value="org.assertj.core@default:default"/>
         <setEntry value="org.ccil.cowan.tagsoup@default:default"/>
         <setEntry value="org.codehaus.groovy@default:default"/>
         <setEntry value="org.eclipse.ant.core@default:default"/>
@@ -180,8 +179,7 @@
         <setEntry value="org.hamcrest.library@default:default"/>
         <setEntry value="org.hdrhistogram.HdrHistogram@default:default"/>
         <setEntry value="org.jetbrains.kotlin.osgi-bundle@default:default"/>
-        <setEntry value="org.junit*4.12.0.v201504281640@default:default"/>
-        <setEntry value="org.junit*4.13.0.v20200204-1500@default:default"/>
+        <setEntry value="org.junit@default:default"/>
         <setEntry value="org.mapstruct@default:default"/>
         <setEntry value="org.mockito@default:default"/>
         <setEntry value="org.objectweb.asm.tree@default:default"/>
@@ -195,7 +193,6 @@
         <setEntry value="org.snomed.otf.snomed-owl-toolkit@default:default"/>
         <setEntry value="org.w3c.dom.events@default:default"/>
         <setEntry value="org.yaml.snakeyaml@default:default"/>
-        <setEntry value="osgi.enterprise@default:default"/>
         <setEntry value="slf4j.api@default:default"/>
         <setEntry value="stax2-api@default:default"/>
     </setAttribute>

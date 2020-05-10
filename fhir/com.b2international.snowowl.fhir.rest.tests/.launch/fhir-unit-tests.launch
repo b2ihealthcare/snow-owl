@@ -35,6 +35,7 @@
     <stringAttribute key="product" value="org.eclipse.platform.ide"/>
     <booleanAttribute key="run_in_ui_thread" value="true"/>
     <setAttribute key="selected_target_bundles">
+        <setEntry value="assertj-core@default:default"/>
         <setEntry value="ch.qos.logback.classic@default:default"/>
         <setEntry value="ch.qos.logback.core@default:default"/>
         <setEntry value="com.diffplug.osgi.extension.sun.misc@default:false"/>
@@ -78,7 +79,7 @@
         <setEntry value="javax.servlet@default:default"/>
         <setEntry value="jaxb-api@default:default"/>
         <setEntry value="log4j.over.slf4j@default:default"/>
-        <setEntry value="net.bytebuddy.byte-buddy*1.9.3@default:default"/>
+        <setEntry value="net.bytebuddy.byte-buddy*1.9.0.v20181107-1410@default:default"/>
         <setEntry value="net.bytebuddy.byte-buddy-agent@default:default"/>
         <setEntry value="net.jodah.failsafe@default:default"/>
         <setEntry value="net.jodah.typetools@default:default"/>
@@ -87,17 +88,16 @@
         <setEntry value="org.apache.batik.css@default:default"/>
         <setEntry value="org.apache.batik.i18n@default:default"/>
         <setEntry value="org.apache.batik.util@default:default"/>
-        <setEntry value="org.apache.commons.codec*1.10.0@default:default"/>
-        <setEntry value="org.apache.commons.io*2.6.0.v20190123-2029@default:default"/>
+        <setEntry value="org.apache.commons.codec@default:default"/>
+        <setEntry value="org.apache.commons.io@default:default"/>
         <setEntry value="org.apache.commons.jxpath@default:default"/>
         <setEntry value="org.apache.commons.lang3@default:default"/>
         <setEntry value="org.apache.commons.lang@default:default"/>
-        <setEntry value="org.apache.commons.logging*1.2.0.v20180409-1502@default:default"/>
+        <setEntry value="org.apache.commons.logging@default:default"/>
         <setEntry value="org.apache.httpcomponents.httpasyncclient@default:default"/>
         <setEntry value="org.apache.httpcomponents.httpclient*4.5.3@default:default"/>
         <setEntry value="org.apache.httpcomponents.httpcore*4.4.10@default:default"/>
         <setEntry value="org.apache.xmlgraphics@default:default"/>
-        <setEntry value="org.assertj.core@default:default"/>
         <setEntry value="org.ccil.cowan.tagsoup@default:default"/>
         <setEntry value="org.codehaus.groovy@default:default"/>
         <setEntry value="org.eclipse.ant.core@default:default"/>
@@ -158,8 +158,7 @@
         <setEntry value="org.hamcrest.library@default:default"/>
         <setEntry value="org.hdrhistogram.HdrHistogram@default:default"/>
         <setEntry value="org.jetbrains.kotlin.osgi-bundle@default:default"/>
-        <setEntry value="org.junit*4.12.0.v201504281640@default:default"/>
-        <setEntry value="org.junit*4.13.0.v20200204-1500@default:default"/>
+        <setEntry value="org.junit@default:default"/>
         <setEntry value="org.mapstruct@default:default"/>
         <setEntry value="org.mockito@default:default"/>
         <setEntry value="org.objectweb.asm@default:default"/>
@@ -175,7 +174,6 @@
         <setEntry value="org.w3c.dom.smil@default:default"/>
         <setEntry value="org.w3c.dom.svg@default:default"/>
         <setEntry value="org.yaml.snakeyaml@default:default"/>
-        <setEntry value="osgi.enterprise@default:default"/>
         <setEntry value="slf4j.api@default:default"/>
         <setEntry value="stax2-api@default:default"/>
     </setAttribute>
@@ -187,14 +185,11 @@
         <setEntry value="com.b2international.commons.test@default:false"/>
         <setEntry value="com.b2international.commons@default:default"/>
         <setEntry value="com.b2international.index.tests.tools@default:default"/>
-        <setEntry value="com.b2international.index.tests@default:false"/>
         <setEntry value="com.b2international.index@default:default"/>
         <setEntry value="com.b2international.mapdb@default:default"/>
         <setEntry value="com.b2international.restassured-all@default:default"/>
         <setEntry value="com.b2international.snowowl.core.rest@default:default"/>
-        <setEntry value="com.b2international.snowowl.core.tests@default:false"/>
         <setEntry value="com.b2international.snowowl.core@default:default"/>
-        <setEntry value="com.b2international.snowowl.eventbus.tests@default:false"/>
         <setEntry value="com.b2international.snowowl.eventbus@default:default"/>
         <setEntry value="com.b2international.snowowl.fhir.core@default:default"/>
         <setEntry value="com.b2international.snowowl.fhir.rest.tests@default:default"/>
@@ -205,13 +200,11 @@
         <setEntry value="com.b2international.snowowl.snomed.cis@default:default"/>
         <setEntry value="com.b2international.snowowl.snomed.common@default:default"/>
         <setEntry value="com.b2international.snowowl.snomed.core.rest@default:false"/>
-        <setEntry value="com.b2international.snowowl.snomed.datastore.tests@default:false"/>
         <setEntry value="com.b2international.snowowl.snomed.datastore@default:default"/>
         <setEntry value="com.b2international.snowowl.snomed.ecl@default:default"/>
         <setEntry value="com.b2international.snowowl.snomed.fhir@default:default"/>
         <setEntry value="com.b2international.snowowl.snomed.icons@default:default"/>
         <setEntry value="com.b2international.snowowl.snomed.ql@default:default"/>
-        <setEntry value="com.b2international.snowowl.snomed.reasoner.tests@default:false"/>
         <setEntry value="com.b2international.snowowl.snomed.reasoner@default:default"/>
         <setEntry value="com.b2international.snowowl.test.commons@default:default"/>
         <setEntry value="com.b2international.snowowl.test.dependencies@default:default"/>
