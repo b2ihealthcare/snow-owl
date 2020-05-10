@@ -24,8 +24,6 @@
 		<guava.versionRange>[27.1.0,28.0.0)</guava.versionRange>
 		<net.bytebuddy.version>1.9.3</net.bytebuddy.version>
 		<groovy.version>2.4.19</groovy.version>
-		<commons.collections.version>3.2.2</commons.collections.version>
-		<commons.collections.versionRange>[3.2.2,3.3.0)</commons.collections.versionRange>
 		<kotlin.version>1.2.71</kotlin.version>
 		<protege.version>5.0.5-b2i</protege.version>
 		<owlapi.version>4.5.24</owlapi.version>
@@ -35,9 +33,7 @@
 		<jbcrypt.version>0.4.1</jbcrypt.version>
 		<typetools.version>0.6.1</typetools.version>
 		<hdrhistogram.version>2.1.10</hdrhistogram.version>
-		<commons.logging.version>1.2</commons.logging.version>
-		<commons.codec.version>1.10</commons.codec.version>
-		<fastutil.version>8.2.2</fastutil.version>
+		<fastutil.version>8.3.1</fastutil.version>
 		<jaxb.api.version>2.3.0</jaxb.api.version>
 		<javax.activation.version>1.2.0</javax.activation.version>
 		<snomed.owl.toolkit.version>2.6.0</snomed.owl.toolkit.version>
@@ -201,12 +197,6 @@
 		    <scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>commons-collections</groupId>
-			<artifactId>commons-collections</artifactId>
-			<version>3.2.2</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
 			<groupId>io.netty</groupId>
 			<artifactId>netty-buffer</artifactId>
 			<version>${netty.version}</version>
@@ -348,6 +338,11 @@
         		<exclusion>
 		          	<groupId>log4j</groupId>
   					<artifactId>log4j</artifactId>
+		        </exclusion>
+		        <!-- We use our own custom owlapi osgi distribution, see next dependency -->
+		        <exclusion>
+		          	<groupId>net.sourceforge.owlapi</groupId>
+  					<artifactId>owlapi-osgidistribution</artifactId>
 		        </exclusion>
 			</exclusions>
 		</dependency>
@@ -527,18 +522,6 @@
 		    <artifactId>HdrHistogram</artifactId>
 		    <version>${hdrhistogram.version}</version>
 			<scope>provided</scope>
-		</dependency>
-		<dependency>
-    		<groupId>commons-codec</groupId>
-    		<artifactId>commons-codec</artifactId>
-    		<version>${commons.codec.version}</version>
-    		<scope>provided</scope>
-		</dependency>
-		<dependency>
-    		<groupId>commons-logging</groupId>
-    		<artifactId>commons-logging</artifactId>
-    		<version>${commons.logging.version}</version>
-    		<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>it.unimi.dsi</groupId>
@@ -756,15 +739,6 @@
 							<id>com.fasterxml.jackson.dataformat.jackson-dataformat-afterburner</id>
 							<restrictTo>
 								<version>${jackson.version}</version>
-							</restrictTo>
-						</filter>
-						<!-- Restrict Apache Commons Collections to versions above and including 
-							3.2.2 -->
-						<filter>
-							<type>p2-installable-unit</type>
-							<id>org.apache.commons.collections</id>
-							<restrictTo>
-								<versionRange>${commons.collections.versionRange}</versionRange>
 							</restrictTo>
 						</filter>
 						<filter>
