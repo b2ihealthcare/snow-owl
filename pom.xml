@@ -22,7 +22,6 @@
 		<logback.versionRange>[1.2.3,1.2.4)</logback.versionRange>
 		<guava.version>27.1-jre</guava.version>
 		<guava.versionRange>[27.1.0,28.0.0)</guava.versionRange>
-		<net.bytebuddy.version>1.9.3</net.bytebuddy.version>
 		<groovy.version>2.4.19</groovy.version>
 		<kotlin.version>1.2.71</kotlin.version>
 		<protege.version>5.0.5-b2i</protege.version>
@@ -456,12 +455,6 @@
       		<artifactId>jetty-xml</artifactId>
       		<version>${jetty.version}</version>
       		<scope>provided</scope>
-    	</dependency>
-    	<dependency>
-    		<groupId>net.bytebuddy</groupId>
-    		<artifactId>byte-buddy</artifactId>
-    		<version>${net.bytebuddy.version}</version>
-    		<scope>provided</scope>
     	</dependency>
     	<dependency>
     		<groupId>com.fasterxml</groupId>
