@@ -242,7 +242,7 @@ Visit us at http://b2i.sg
          id="org.apache.commons.codec"
          download-size="0"
          install-size="0"
-         version="1.10.0"
+         version="1.13.0.v20200108-0001"
          unpack="false"/>
 
    <plugin
@@ -261,13 +261,6 @@ Visit us at http://b2i.sg
 
    <plugin
          id="org.eclipse.equinox.cm"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.apache.commons.exec"
          download-size="0"
          install-size="0"
          version="0.0.0"
@@ -296,13 +289,6 @@ Visit us at http://b2i.sg
 
    <plugin
          id="org.eclipse.xtext.common.types"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="osgi.enterprise"
          download-size="0"
          install-size="0"
          version="0.0.0"
