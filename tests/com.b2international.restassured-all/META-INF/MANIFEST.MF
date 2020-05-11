@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Restassured-all Wrapper Bundle
 Bundle-SymbolicName: com.b2international.restassured-all;singleton:=true
-Bundle-Version: 3.2.1.b2i
+Bundle-Version: 3.2.2.b2i
 Bundle-Vendor: B2i Healthcare
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Export-Package: io.restassured,
