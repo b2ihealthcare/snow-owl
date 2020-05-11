@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -123,7 +123,7 @@ public final class Promise<T> extends Observable<T> {
 				}
 			}
 
-		});
+		}, MoreExecutors.directExecutor());
 		return promise;
 	}
 	
@@ -150,7 +150,7 @@ public final class Promise<T> extends Observable<T> {
 				}
 			}
 
-		});
+		}, MoreExecutors.directExecutor());
 		return promise;
 	}
 
@@ -179,7 +179,7 @@ public final class Promise<T> extends Observable<T> {
 			public void onFailure(final Throwable t) {
 				transformed.reject(t);
 			}
-		});
+		}, MoreExecutors.directExecutor());
 		return transformed;
 	}
 	
@@ -208,7 +208,7 @@ public final class Promise<T> extends Observable<T> {
 			public void onFailure(final Throwable t) {
 				transformed.reject(t);
 			}
-		});
+		}, MoreExecutors.directExecutor());
 		return transformed;
 	}
 
@@ -315,7 +315,7 @@ public final class Promise<T> extends Observable<T> {
 			public void onFailure(final Throwable t) {
 				promise.reject(t);
 			}
-		});
+		}, MoreExecutors.directExecutor());
 		return promise;
 	}
 	

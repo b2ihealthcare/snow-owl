@@ -26,6 +26,9 @@
 						<configuration>
 							<baseDefinition>${project.artifactId}.target</baseDefinition>
 							<outputFile>${project.artifactId}-local.target</outputFile>
+							<excludeGroupIds>
+								net.sourceforge.owlapi
+							</excludeGroupIds>
 							<excludeArtifactIds>
 								org.apache.felix.framework,
 								org.apache.felix.main,
@@ -49,7 +52,11 @@
 								org.eclipse.jdt.debug,
 								org.eclipse.jdt.launching,
 								icu4j,
-								log4j
+								log4j,
+								guava,
+								commons-io,
+								commons-logging,
+								commons-codec
 							</excludeArtifactIds>
 						</configuration>
 					</execution>
