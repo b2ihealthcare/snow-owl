@@ -17,6 +17,8 @@ package com.b2international.snowowl.snomed.core.mrcm.io;
 
 import java.io.InputStream;
 
+import com.b2international.snowowl.core.identity.User;
+
 /**
  * @since 4.4
  */
@@ -29,6 +31,8 @@ public interface MrcmImporter {
 	 * @param authorizationToken - the authorization token to authenticate the user
 	 * @param source - the MRCM file to process and import.
 	 */
-	void doImport(String authorizationToken, InputStream source);
+	void doImport(User user, InputStream source);
+	
+	void doImport(String authorizationToken, String username, InputStream source);
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.rate;
 
+import javax.validation.Valid;
 import javax.validation.constraints.Min;
 
 /**
@@ -27,7 +28,10 @@ public class ApiConfiguration {
 	
 	@Min(1)
 	private long refillRate = 1L;
-
+	
+	@Valid
+	private HttpConfig http = new HttpConfig();
+	
 	public long getOverdraft() {
 		return overdraft;
 	}
@@ -42,6 +46,14 @@ public class ApiConfiguration {
 	
 	public void setRefillRate(long refillRate) {
 		this.refillRate = refillRate;
+	}
+	
+	public HttpConfig getHttp() {
+		return http;
+	}
+	
+	public void setHttp(HttpConfig http) {
+		this.http = http;
 	}
 	
 }

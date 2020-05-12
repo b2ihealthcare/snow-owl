@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -333,14 +333,14 @@ public class StringUtils {
 	
 	public static Iterable<String> getWords(final String s) {
 		if (!isEmpty(s)) {
-			return Splitter.on(CharMatcher.BREAKING_WHITESPACE).split(s);
+			return Splitter.on(CharMatcher.breakingWhitespace()).split(s);
 		}
 		return Collections.emptyList();
 	}
 	
 	public static boolean isSingleWord(final String s) {
 		if (!isEmpty(s)) {
-			return CharMatcher.BREAKING_WHITESPACE.matchesNoneOf(s);
+			return CharMatcher.breakingWhitespace().matchesNoneOf(s);
 		}
 		return false;
 	}

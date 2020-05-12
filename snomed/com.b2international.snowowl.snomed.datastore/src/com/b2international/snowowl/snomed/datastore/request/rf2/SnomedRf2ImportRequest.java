@@ -21,7 +21,9 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -35,20 +37,27 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.exceptions.ApiException;
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.attachments.InternalAttachmentRegistry;
 import com.b2international.snowowl.core.authorization.BranchAccessControl;
+import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.core.locks.Locks;
 import com.b2international.snowowl.core.repository.ContentAvailabilityInfoProvider;
 import com.b2international.snowowl.core.repository.RepositoryCodeSystemProvider;
+import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
 import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration.ImportStatus;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2ContentType;
 import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2EffectiveTimeSlice;
 import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2EffectiveTimeSlices;
@@ -148,36 +157,41 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportRe
 		final Rf2ImportResponse response = new Rf2ImportResponse();
 		
 		try (final DB db = createDb()) {
-			// create executor service to parallel update the underlying index store
 
+			// Read effective time slices from import files
 			final Rf2EffectiveTimeSlices effectiveTimeSlices = new Rf2EffectiveTimeSlices(db, isLoadOnDemandEnabled());
 			Stopwatch w = Stopwatch.createStarted();
 			read(rf2Archive, effectiveTimeSlices, reporter);
 			LOG.info("Preparing RF2 import took: {}", w);
 			w.reset().start();
 			
-			// log issues with rows
+			// Log issues with rows from the import files
 			logValidationIssues(reporter, response);
 			if (response.getStatus().equals(ImportStatus.FAILED)) {
 				return response;
 			}
 			
-			// run global validation
+			// Run validation that takes current terminology content into account
 			final Iterable<Rf2EffectiveTimeSlice> orderedEffectiveTimeSlices = effectiveTimeSlices.consumeInOrder();
 			final Rf2GlobalValidator globalValidator = new Rf2GlobalValidator(LOG);
 			globalValidator.validateTerminologyComponents(orderedEffectiveTimeSlices, reporter, context);
 //			globalValidator.validateMembers(orderedEffectiveTimeSlices, reporter, context);
 			
-			// log global validation issues
+			// Log validation issues
 			logValidationIssues(reporter, response);
 			if (response.getStatus().equals(ImportStatus.FAILED)) {
 				return response;
 			}
 			
+			// Import effective time slices in chronological order
 			for (Rf2EffectiveTimeSlice slice : orderedEffectiveTimeSlices) {
 				slice.doImport(context, codeSystem, importconfig);
 			}
+			
+			// Update locales registered on the code system
+			updateLocales(context, codeSystem);
 		}
+		
 		return response;
 	}
 
@@ -286,6 +300,36 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportRe
 		}
 	}
 	
+	private void updateLocales(final BranchContext context, final String codeSystem) throws Exception {
+		try (final TransactionContext tx = context.openTransaction(context, DatastoreLockContextDescriptions.IMPORT)) {
+			/*
+			 * XXX: The default language in locales is always "en", as there is no
+			 * machine-readable information about what language code each language type
+			 * reference set is associated with.
+			 */
+			final List<ExtendedLocale> locales = SnomedRequests.prepareSearchRefSet()
+				.all()
+				.filterByType(SnomedRefSetType.LANGUAGE)
+				.filterByActive(true)
+				.setFields(SnomedConceptDocument.Fields.ID)
+				.sortBy(SortField.ascending(SnomedConceptDocument.Fields.ID))
+				.build()
+				.execute(tx)
+				.stream()
+				.map(refSet -> new ExtendedLocale("en", "", refSet.getId()))
+				.collect(Collectors.toList());
+			
+			final boolean changed = CodeSystemRequests.prepareUpdateCodeSystem(codeSystem)
+				.setLocales(locales)
+				.build()
+				.execute(tx);
+			
+			if (changed) {
+				tx.commit("Update available list of locales on code system");
+			}
+		}
+	}
+
 	@Override
 	public String getOperation() {
 		return Permission.IMPORT;

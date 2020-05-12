@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>core-parent</artifactId>
-		<version>7.6.0-SNAPSHOT</version>
+		<version>7.7.0-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>com.b2international.snowowl.core.rest</artifactId>
@@ -21,6 +21,11 @@
 
 	<!-- NOTE: in case of dependency changes, please update the includeArtifactIds section in the maven-dependency-plugin configuration as well, listing all (exact and transitive) dependency artifactIds -->
 	<dependencies>
+		<dependency>
+		   <groupId>commons-fileupload</groupId>
+		   <artifactId>commons-fileupload</artifactId>
+		   <version>1.4</version>
+		</dependency>
 		<dependency>
 			<groupId>io.springfox</groupId>
 			<artifactId>springfox-swagger2</artifactId>
@@ -120,7 +125,8 @@
 								springfox-spring-web,
 								springfox-swagger-common,
 								springfox-swagger2,
-								commons-logging
+								commons-logging,
+								commons-fileupload
 							</includeArtifactIds>
 							<outputDirectory>WEB-INF/lib</outputDirectory>
 						</configuration>

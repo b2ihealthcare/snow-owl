@@ -25,7 +25,7 @@ import com.b2international.snowowl.core.setup.Plugin;
  * @since 7.5
  */
 @Component
-public class LdapIdentityPlugin extends Plugin implements IdentityProviderFactory<LdapIdentityProviderConfig> {
+public final class LdapIdentityPlugin extends Plugin implements IdentityProviderFactory<LdapIdentityProviderConfig> {
 
 	@Override
 	public IdentityProvider create(Environment env, LdapIdentityProviderConfig configuration) throws Exception {

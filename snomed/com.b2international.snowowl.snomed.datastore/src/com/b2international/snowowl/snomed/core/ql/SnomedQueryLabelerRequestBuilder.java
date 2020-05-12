@@ -15,23 +15,30 @@
  */
 package com.b2international.snowowl.snomed.core.ql;
 
+import java.util.List;
+
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.ResourceRequest;
 import com.b2international.snowowl.core.request.ResourceRequestBuilder;
 import com.b2international.snowowl.core.request.RevisionIndexRequestBuilder;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.google.common.collect.ImmutableList;
 
 /**
  * @since 7.6
  */
-public final class SnomedQueryLabelerRequestBuilder extends ResourceRequestBuilder<SnomedQueryLabelerRequestBuilder, BranchContext, String>
-		implements RevisionIndexRequestBuilder<String> {
+public final class SnomedQueryLabelerRequestBuilder extends ResourceRequestBuilder<SnomedQueryLabelerRequestBuilder, BranchContext, Expressions>
+		implements RevisionIndexRequestBuilder<Expressions> {
 
-	private final String expression;
+	private final List<String> expressions;
 	private String descriptionType = SnomedConcept.Expand.FULLY_SPECIFIED_NAME;
 
 	public SnomedQueryLabelerRequestBuilder(String expression) {
-		this.expression = expression;
+		this(ImmutableList.of(expression));
+	}
+	
+	public SnomedQueryLabelerRequestBuilder(List<String> expressions) {
+		this.expressions = ImmutableList.copyOf(expressions);
 	}
 
 	/**
@@ -49,15 +56,15 @@ public final class SnomedQueryLabelerRequestBuilder extends ResourceRequestBuild
 	}
 
 	@Override
-	protected void init(ResourceRequest<BranchContext, String> request) {
+	protected void init(ResourceRequest<BranchContext, Expressions> request) {
 		super.init(request);
 		SnomedQueryLabelerRequest req = (SnomedQueryLabelerRequest) request;
-		req.setExpression(expression);
+		req.setExpressions(expressions);
 		req.setDescriptionType(descriptionType);
 	}
 
 	@Override
-	protected ResourceRequest<BranchContext, String> create() {
+	protected ResourceRequest<BranchContext, Expressions> create() {
 		return new SnomedQueryLabelerRequest();
 	}
 

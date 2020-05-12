@@ -19,6 +19,7 @@ import static springfox.documentation.schema.AlternateTypeRules.newRule;
 
 import java.security.Principal;
 import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.context.annotation.Bean;
@@ -28,7 +29,9 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.events.util.Promise;
+import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.fasterxml.classmate.TypeResolver;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
@@ -116,6 +119,16 @@ public abstract class BaseApiConfig {
 				.ignoredParameterTypes(Principal.class)
 				.alternateTypeRules(
 					newRule(resolver.resolve(UUID.class), resolver.resolve(String.class)),
+					newRule(resolver.resolve(CodeSystemURI.class), resolver.resolve(String.class)),
+					newRule(resolver.resolve(ExtendedLocale.class), resolver.resolve(String.class)),
+					newRule(
+						resolver.resolve(List.class, resolver.resolve(CodeSystemURI.class)),
+						resolver.resolve(List.class, resolver.resolve(String.class))
+			        ),
+					newRule(
+						resolver.resolve(List.class, resolver.resolve(ExtendedLocale.class)),
+						resolver.resolve(List.class, resolver.resolve(String.class))
+			        ),
 					newRule(
 						resolver.resolve(Promise.class, WildcardType.class),
 			            resolver.resolve(WildcardType.class)

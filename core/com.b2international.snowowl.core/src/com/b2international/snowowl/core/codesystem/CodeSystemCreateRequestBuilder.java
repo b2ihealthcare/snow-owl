@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,15 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
+import java.util.List;
+import java.util.Map;
+
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.TransactionalRequestBuilder;
+import com.b2international.snowowl.core.uri.CodeSystemURI;
 
 /**
  * @since 4.7
@@ -32,10 +37,12 @@ public final class CodeSystemCreateRequestBuilder extends BaseRequestBuilder<Cod
 	private String language;
 	private String link;
 	private String name;
-	private String repositoryUuid;
+	private String repositoryId;
 	private String shortName;
 	private String terminologyId;
-	private String extensionOf;
+	private CodeSystemURI extensionOf;
+	private List<ExtendedLocale> locales;
+	private Map<String, Object> additionalProperties;
 
 	CodeSystemCreateRequestBuilder() {}
 
@@ -74,8 +81,8 @@ public final class CodeSystemCreateRequestBuilder extends BaseRequestBuilder<Cod
 		return getSelf();
 	}
 
-	public CodeSystemCreateRequestBuilder setRepositoryUuid(final String repositoryUuid) {
-		this.repositoryUuid = repositoryUuid;
+	public CodeSystemCreateRequestBuilder setRepositoryId(final String repositoryId) {
+		this.repositoryId = repositoryId;
 		return getSelf();
 	}
 
@@ -89,8 +96,18 @@ public final class CodeSystemCreateRequestBuilder extends BaseRequestBuilder<Cod
 		return getSelf();
 	}
 
-	public CodeSystemCreateRequestBuilder setExtensionOf(final String extensionOf) {
+	public CodeSystemCreateRequestBuilder setExtensionOf(final CodeSystemURI extensionOf) {
 		this.extensionOf = extensionOf;
+		return getSelf();
+	}
+	
+	public CodeSystemCreateRequestBuilder setLocales(final List<ExtendedLocale> locales) {
+		this.locales = locales;
+		return getSelf();
+	}
+	
+	public CodeSystemCreateRequestBuilder setAdditionalProperties(final Map<String, Object> additionalProperties) {
+		this.additionalProperties = additionalProperties;
 		return getSelf();
 	}
 
@@ -104,11 +121,12 @@ public final class CodeSystemCreateRequestBuilder extends BaseRequestBuilder<Cod
 		req.setLink(link);
 		req.setName(name);
 		req.setOid(oid);
-		req.setRepositoryUuid(repositoryUuid);
+		req.setRepositoryId(repositoryId);
 		req.setShortName(shortName);
 		req.setTerminologyId(terminologyId);
 		req.setExtensionOf(extensionOf);
+		req.setLocales(locales);
+		req.setAdditionalProperties(additionalProperties);
 		return req;
 	}
-
 }

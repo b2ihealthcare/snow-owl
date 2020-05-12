@@ -16,8 +16,10 @@ RUN chmod 0660 configuration/snowowl.yml
 FROM b2ihealthcare/centos:7
 
 ARG BUILD_TIMESTAMP
-ARG VERSION
+ARG TAG
 ARG GIT_REVISION
+ARG PRODUCT_NAME="Snow Owl OSS"
+ARG REPOSITORY_URL="https://github.com/b2ihealthcare/snow-owl"
 
 RUN groupadd -g 1000 snowowl && \
     adduser -u 1000 -g 1000 -G 0 -d /usr/share/snowowl snowowl && \
@@ -40,22 +42,22 @@ EXPOSE 2036 8080
 
 LABEL org.label-schema.build-date="${BUILD_TIMESTAMP}" \
   org.label-schema.vcs-ref="${GIT_REVISION}" \
-  org.label-schema.version="${VERSION}" \
+  org.label-schema.version="${TAG}" \
   org.label-schema.license="Apache-2.0" \
-  org.label-schema.name="Snow Owl OSS" \
+  org.label-schema.name="${PRODUCT_NAME}" \
   org.label-schema.schema-version="1.0" \
-  org.label-schema.url="https://github.com/b2ihealthcare/snow-owl" \
+  org.label-schema.url="${REPOSITORY_URL}" \
   org.label-schema.usage="https://docs.b2i.sg/snow-owl" \
-  org.label-schema.vcs-url="https://github.com/b2ihealthcare/snow-owl" \
+  org.label-schema.vcs-url="${REPOSITORY_URL}" \
   org.label-schema.vendor="B2i Healthcare" \
   org.opencontainers.image.created="${BUILD_TIMESTAMP}" \
   org.opencontainers.image.revision="${GIT_REVISION}" \
-  org.opencontainers.image.version="${VERSION}" \
+  org.opencontainers.image.version="${TAG}" \
   org.opencontainers.image.licenses="Apache-2.0" \
-  org.opencontainers.image.title="Snow Owl OSS" \
-  org.opencontainers.image.url="https://github.com/b2ihealthcare/snow-owl" \
+  org.opencontainers.image.title="${PRODUCT_NAME}" \
+  org.opencontainers.image.url="${REPOSITORY_URL}" \
   org.opencontainers.image.documentation="https://docs.b2i.sg/snow-owl" \
-  org.opencontainers.image.source="https://github.com/b2ihealthcare/snow-owl" \
+  org.opencontainers.image.source="${REPOSITORY_URL}" \
   org.opencontainers.image.vendor="B2i Healthcare"
 
 USER snowowl:root

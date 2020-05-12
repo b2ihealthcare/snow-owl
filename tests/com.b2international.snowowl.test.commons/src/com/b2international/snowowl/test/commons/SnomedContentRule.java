@@ -31,9 +31,13 @@ import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
+import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
+import com.b2international.snowowl.core.codesystem.CodeSystemVersions;
 import com.b2international.snowowl.core.codesystem.CodeSystems;
 import com.b2international.snowowl.core.jobs.JobRequests;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
+import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
+import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
@@ -100,32 +104,44 @@ public class SnomedContentRule extends ExternalResource {
 	private void createCodeSystemIfNotExist() {
 		if (!SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME.equals(codeSystemShortName)) {
 			final IEventBus eventBus = Services.bus();
-			
-			CodeSystems codeSystems = CodeSystemRequests.prepareSearchCodeSystem()
+			final CodeSystems codeSystems = CodeSystemRequests.prepareSearchCodeSystem()
 					.setLimit(0)
 					.filterById(codeSystemShortName)
 					.build(SnomedDatastoreActivator.REPOSITORY_UUID)
 					.execute(eventBus)
 					.getSync();
 			
-			if (codeSystems.getTotal() < 1) {
-				CodeSystemRequests.prepareNewCodeSystem()
-					.setBranchPath(codeSystemBranchPath)
-					.setCitation("citation")
-					.setExtensionOf(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME)
-					.setIconPath("iconPath")
-					.setLanguage("language")
-					.setLink("organizationLink")
-					.setName("Extension " + codeSystemShortName)
-					.setOid("oid:"+codeSystemShortName)
-					.setRepositoryUuid(SnomedDatastoreActivator.REPOSITORY_UUID)
-					.setShortName(codeSystemShortName)
-					.setTerminologyId(SnomedTerminologyComponentConstants.TERMINOLOGY_ID)
-					.build(SnomedDatastoreActivator.REPOSITORY_UUID, Branch.MAIN_PATH, "info@b2international.com", String.format("Create code system %s", codeSystemShortName))
-					.execute(eventBus)
-					.getSync();
+			if (codeSystems.getTotal() > 0) {
+				return;
 			}
+			
+			final CodeSystemVersions snomedVersions = CodeSystemRequests.prepareSearchCodeSystemVersion()
+				.filterByCodeSystemShortName(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME)
+				.sortBy(SortField.descending(CodeSystemVersionEntry.Fields.EFFECTIVE_DATE))
+				.setLimit(1)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
+				.execute(eventBus)
+				.getSync();
+				
+			final CodeSystemURI extensionOf = snomedVersions.first()
+				.map(v -> new CodeSystemURI(String.format("%s/%s", v.getCodeSystemShortName(), v.getVersionId())))
+				.orElse(null);
+				
+			CodeSystemRequests.prepareNewCodeSystem()
+				.setBranchPath(codeSystemBranchPath)
+				.setCitation("citation")
+				.setExtensionOf(extensionOf)
+				.setIconPath("iconPath")
+				.setLanguage("language")
+				.setLink("organizationLink")
+				.setName("Extension " + codeSystemShortName)
+				.setOid("oid:" + codeSystemShortName)
+				.setRepositoryId(SnomedDatastoreActivator.REPOSITORY_UUID)
+				.setShortName(codeSystemShortName)
+				.setTerminologyId(SnomedTerminologyComponentConstants.TERMINOLOGY_ID)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, Branch.MAIN_PATH, "info@b2international.com", String.format("Create code system %s", codeSystemShortName))
+				.execute(eventBus)
+				.getSync();
 		}
 	}
-	
 }

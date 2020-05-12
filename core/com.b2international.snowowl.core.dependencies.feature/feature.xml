@@ -2,7 +2,7 @@
 <feature
       id="com.b2international.snowowl.core.dependencies.feature"
       label="Snow Owl Core Dependencies"
-      version="7.6.0.qualifier"
+      version="7.7.0.qualifier"
       provider-name="B2i Healthcare">
 
    <description url="http://b2i.sg">
@@ -100,13 +100,6 @@ Visit us at http://b2i.sg
 
    <plugin
          id="org.eclipse.equinox.registry"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.eclipse.equinox.util"
          download-size="0"
          install-size="0"
          version="0.0.0"
@@ -249,7 +242,7 @@ Visit us at http://b2i.sg
          id="org.apache.commons.codec"
          download-size="0"
          install-size="0"
-         version="1.10.0"
+         version="1.13.0.v20200108-0001"
          unpack="false"/>
 
    <plugin
@@ -268,13 +261,6 @@ Visit us at http://b2i.sg
 
    <plugin
          id="org.eclipse.equinox.cm"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.apache.commons.exec"
          download-size="0"
          install-size="0"
          version="0.0.0"
@@ -309,13 +295,6 @@ Visit us at http://b2i.sg
          unpack="false"/>
 
    <plugin
-         id="osgi.enterprise"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
          id="org.eclipse.core.net"
          download-size="0"
          install-size="0"
@@ -326,7 +305,7 @@ Visit us at http://b2i.sg
          id="org.objectweb.asm"
          download-size="0"
          install-size="0"
-         version="7.1.0.v20190412-2143"
+         version="7.2.0.v20191010-1910"
          unpack="false"/>
 
    <plugin
@@ -578,7 +557,7 @@ Visit us at http://b2i.sg
          id="org.objectweb.asm.tree"
          download-size="0"
          install-size="0"
-         version="7.1.0.v20190412-2143"
+         version="7.2.0.v20191010-1910"
          unpack="false"/>
 
    <plugin
@@ -793,6 +772,27 @@ Visit us at http://b2i.sg
 
    <plugin
          id="net.jodah.failsafe"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="com.sun.activation.javax.activation"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="javax.activation-api"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="com.fasterxml.woodstox.woodstox-core"
          download-size="0"
          install-size="0"
          version="0.0.0"
