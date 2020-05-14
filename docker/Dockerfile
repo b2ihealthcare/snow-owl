@@ -30,7 +30,7 @@ ENV JAVA_HOME /etc/alternatives/jre
 
 RUN groupadd -g 1000 snowowl && \
     adduser -u 1000 -g 1000 -G 0 -d /usr/share/snowowl snowowl && \
-    chmod 0775 /usr/share/snowowl && \
+    chmod 0777 /usr/share/snowowl && \
     chgrp 0 /usr/share/snowowl
 
 # Install Snow Owl rpm package
