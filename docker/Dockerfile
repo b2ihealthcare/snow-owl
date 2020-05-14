@@ -72,6 +72,7 @@ LABEL org.label-schema.build-date="${BUILD_TIMESTAMP}" \
 
 #babylon: allow write for kubernetes to replace users password file at startup
 RUN chmod 0777 /usr/share/snowowl
+RUN chmod 0777 /etc/snowowl
 
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 # Dummy overridable parameter parsed by entrypoint
