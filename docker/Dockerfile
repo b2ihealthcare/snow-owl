@@ -70,6 +70,9 @@ LABEL org.label-schema.build-date="${BUILD_TIMESTAMP}" \
   org.opencontainers.image.source="https://github.com/b2ihealthcare/snow-owl" \
   org.opencontainers.image.vendor="B2i Healthcare"
 
+#babylon: allow write for kubernetes to replace users password file at startup
+RUN chmod 0777 /usr/share/snowowl
+
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 # Dummy overridable parameter parsed by entrypoint
 CMD ["sowrapper"]
