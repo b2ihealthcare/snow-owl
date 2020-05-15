@@ -72,9 +72,9 @@ LABEL org.label-schema.build-date="${BUILD_TIMESTAMP}" \
 
 #babylon: create the password file in a separate folder for kubernetes permission
 # allow kubernetes to mount & write the 'users' password file at container startup
-RUN mkdir -p /opt/snowowl && chmod 0777 /opt/snowowl
-RUN rm -f /usr/share/snowowl/configuration/users
-RUN ln -s /opt/snowowl/users /etc/snowowl/users
+#RUN mkdir -p /opt/snowowl && chmod 0777 /opt/snowowl
+#RUN rm -f /usr/share/snowowl/configuration/users
+#RUN ln -s /opt/snowowl/users /etc/snowowl/users
 # snowowl will still look for /etc/snowowl/users file, 
 # but it will follow a link to the real, mounted, file here: /opt/snowol/users  (which hopefully is writable by Kubernetes)
 
