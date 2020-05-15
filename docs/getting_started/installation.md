@@ -1,3 +1,4 @@
+
 # Installation
 
 Snow Owl requires Java 11 or newer version. Specifically as of this writing, it is recommended that you use JDK (Oracle of OpenJDK is preferred) version 11.0.2. Java installation varies from platform to platform so we won’t go into those details here. Oracle’s recommended installation documentation can be found on Oracle’s website. Suffice to say, before you install Snow Owl, please check your Java version first by running (and then install/upgrade accordingly if needed):
