@@ -70,9 +70,13 @@ LABEL org.label-schema.build-date="${BUILD_TIMESTAMP}" \
   org.opencontainers.image.source="https://github.com/b2ihealthcare/snow-owl" \
   org.opencontainers.image.vendor="B2i Healthcare"
 
-#babylon: allow write for kubernetes to replace users password file at startup
-RUN chmod 0777 /usr/share/snowowl
-RUN chmod 0777 /etc/snowowl
+#babylon: create the password file in a separate folder for kubernetes permission
+# allow kubernetes to mount & write the 'users' password file at container startup
+RUN mkdir -p /opt/snowowl && chmod 0777 /opt/snowowl
+RUN rm -f /usr/share/snowowl/configuration/users
+RUN ln -s /opt/snowowl/users /etc/snowowl/users
+# snowowl will still look for /etc/snowowl/users file, 
+# but it will follow a link to the real, mounted, file here: /opt/snowol/users  (which hopefully is writable by Kubernetes)
 
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 # Dummy overridable parameter parsed by entrypoint
