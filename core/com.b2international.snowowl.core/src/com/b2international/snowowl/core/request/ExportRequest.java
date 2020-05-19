@@ -35,11 +35,16 @@ public abstract class ExportRequest<C extends ServiceProvider> extends ResourceR
 
 	@Override
 	public final Attachment execute(C context) {
+		File result = null;
 		try {
-			final File result = doExport(context);
+			result = doExport(context);
 			return context.service(AttachmentRegistry.class).upload(result);
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException(String.format("Failed to perform '%s'", getClass().getSimpleName()), e);
+		} finally {
+			if (result != null) {
+				result.delete();
+			}
 		}
 	}
 
