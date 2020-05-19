@@ -20,6 +20,7 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -120,6 +121,24 @@ public final class Attachment implements Serializable {
 		return MoreObjects.toStringHelper(getClass()).add("attachmentId", attachmentId).add("fileName", fileName).toString();
 	}
 
+	/**
+	 * Downloads the file to the specified exportPath. The exportPath argument accepts both directory and file paths. Passing a file path replaces the
+	 * default file name with the desired one. If the target path is a file path and there is an existing file, it will automatically overrides the
+	 * target file.
+	 * 
+	 * @param context
+	 *            - the context to use for downloading the file
+	 * @param exportPath
+	 *            - either target directory where the file needs to be downloaded or an abolute path to a file which will replace the default file
+	 *            name included in this attachment
+	 * @return the absolute file path to the downloaded file
+	 * @since 7.7
+	 * @see #download(ServiceProvider, Path)
+	 */
+	public Path download(ServiceProvider context, String exportPath) {
+		return download(context, Paths.get(exportPath));
+	}
+	
 	/**
 	 * Downloads the file to the specified exportPath. The exportPath argument accepts both directory and file paths. Passing a file path replaces the
 	 * default file name with the desired one. If the target path is a file path and there is an existing file, it will automatically overrides the
