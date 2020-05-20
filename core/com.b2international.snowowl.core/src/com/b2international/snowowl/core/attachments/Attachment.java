@@ -123,7 +123,7 @@ public final class Attachment implements Serializable {
 
 	/**
 	 * Downloads the file to the specified exportPath. The exportPath argument accepts both directory and file paths. Passing a file path replaces the
-	 * default file name with the desired one. If the target path is a file path and there is an existing file, it will automatically overrides the
+	 * default file name with the desired one. If the target path is a file path and there is an existing file, it will automatically overwrite the
 	 * target file.
 	 * 
 	 * @param context
