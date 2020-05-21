@@ -15,6 +15,8 @@
  */
 package com.b2international.index.revision;
 
+import java.util.Set;
+
 /**
  * @since 7.2
  */
@@ -24,6 +26,7 @@ public final class BranchMergeOperation {
 	
 	final String fromPath;
 	final String toPath;
+	Set<String> exclusions;
 	String author;
 	String commitMessage;
 	RevisionConflictProcessor conflictProcessor = new RevisionConflictProcessor.Default();
@@ -63,6 +66,15 @@ public final class BranchMergeOperation {
 	
 	public Commit merge() {
 		return branching.doMerge(this);
+	}
+
+	public BranchMergeOperation setExclusions(Set<String> exclusions) {
+		this.exclusions = exclusions;
+		return this;
+	}
+	
+	public Set<String> getExclusions() {
+		return exclusions;
 	}
 	
 }

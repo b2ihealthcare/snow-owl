@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.branch;
 
+import java.util.Set;
+
 import com.b2international.commons.exceptions.ConflictException;
 import com.b2international.index.revision.BaseRevisionBranching;
 import com.b2international.index.revision.BranchMergeException;
@@ -34,14 +36,17 @@ public final class BranchMergeRequest extends AbstractBranchChangeRequest {
 
 	private static final long serialVersionUID = 1L;
 
+	private final Set<String> exclusions;
+	
 	private static String commitMessageOrDefault(final String sourcePath, final String targetPath, final String commitMessage) {
 		return !Strings.isNullOrEmpty(commitMessage) 
 				? commitMessage
 				: String.format("Merge branch '%s' into '%s'", sourcePath, targetPath);
 	}
 
-	BranchMergeRequest(final String sourcePath, final String targetPath, final String userId, final String commitMessage, String reviewId, String parentLockContext) {
+	BranchMergeRequest(final String sourcePath, final String targetPath, Set<String> exclusions, final String userId, final String commitMessage, String reviewId, String parentLockContext) {
 		super(sourcePath, targetPath, userId, commitMessageOrDefault(sourcePath, targetPath, commitMessage), reviewId, parentLockContext);
+		this.exclusions = exclusions;
 	}
 	
 	@Override
@@ -54,6 +59,7 @@ public final class BranchMergeRequest extends AbstractBranchChangeRequest {
 				.lock(DatastoreLockContextDescriptions.SYNCHRONIZE, parentLockContext)) {
 			context.service(BaseRevisionBranching.class)
 				.prepareMerge(source.path(), target.path())
+				.setExclusions(exclusions)
 				.author(author)
 				.commitMessage(commitMessage)
 				.conflictProcessor(context.service(ComponentRevisionConflictProcessor.class))

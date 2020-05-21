@@ -937,4 +937,12 @@ public final class StagingArea {
 		return new StagedObject(StageKind.REMOVED, object, diff, commit);
 	}
 
+	public void removeExclusions(Set<String> exclusions) {
+		Set<String> exclusionIds = Sets.newHashSet();
+		stagedObjects.keySet()
+			.stream()
+			.filter(objectId -> exclusionIds.contains(objectId.id()))
+			.forEach(objectId -> stagedObjects.remove(objectId));
+	}
+
 }

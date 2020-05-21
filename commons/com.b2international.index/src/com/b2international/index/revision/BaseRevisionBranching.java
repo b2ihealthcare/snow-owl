@@ -301,6 +301,7 @@ public abstract class BaseRevisionBranching {
 		}
 		final boolean isFastForwardMerge = fastForwardCommitTimestamp != -1L && !operation.squash;
 		final String commitMessage = !Strings.isNullOrEmpty(operation.commitMessage) ? operation.commitMessage : String.format("Merge %s into %s", source, target);
+		staging.removeExclusions(operation.getExclusions());
 		return staging.commit(isFastForwardMerge ? fastForwardCommitTimestamp : currentTime(), operation.author, commitMessage);
 	}
 	
