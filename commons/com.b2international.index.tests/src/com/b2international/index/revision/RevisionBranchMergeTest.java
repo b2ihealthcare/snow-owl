@@ -28,6 +28,7 @@ import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.index.revision.RevisionBranch.BranchState;
 import com.b2international.index.revision.RevisionFixtures.RevisionData;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 7.0
@@ -97,6 +98,33 @@ public class RevisionBranchMergeTest extends BaseRevisionIndexTest {
 		assertState(child, MAIN, BranchState.UP_TO_DATE);
 		// 3. revision should be visible from MAIN branch
 		assertNotNull(getRevision(MAIN, RevisionData.class, STORAGE_KEY1));
+	}
+	
+	@Test
+	public void forwardMergeBranchWithExclusions() throws Exception {
+		String child = createBranch(MAIN, "a");
+		// create a revisions on child branch
+		indexRevision(child, NEW_DATA);
+		indexRevision(child, NEW_DATA2);
+		// after commit child branch becomes FORWARD
+		assertState(child, MAIN, BranchState.FORWARD);
+		// do the merge with an exclusion
+		branching()
+			.prepareMerge(child, MAIN)
+			.setExclusions(ImmutableSet.of(STORAGE_KEY1))
+			.squash(true)
+			.merge();
+		
+		// after fast-forward merge
+		// 1. MAIN falls behind compared to the child
+		assertState(MAIN, child, BranchState.FORWARD);
+		
+		// 2. Child should be UP_TO_DATE state compared to the MAIN
+		assertState(child, MAIN, BranchState.BEHIND);
+		
+		// 3. one revision should be visible from MAIN branch, excluded one should not
+		assertNotNull(getRevision(MAIN, RevisionData.class, STORAGE_KEY2));
+		assertNull(getRevision(MAIN, RevisionData.class, STORAGE_KEY1));
 	}
 	
 	@Test
