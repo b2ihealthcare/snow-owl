@@ -938,11 +938,12 @@ public final class StagingArea {
 	}
 
 	public void removeExclusions(Set<String> exclusions) {
-		Set<String> exclusionIds = Sets.newHashSet();
-		stagedObjects.keySet()
-			.stream()
-			.filter(objectId -> exclusionIds.contains(objectId.id()))
-			.forEach(objectId -> stagedObjects.remove(objectId));
+		if (exclusions != null) {
+			stagedObjects.keySet()
+				.stream()
+				.filter(objectId -> exclusions.contains(objectId.id()))
+				.forEach(objectId -> stagedObjects.remove(objectId));
+		}
 	}
 
 }
