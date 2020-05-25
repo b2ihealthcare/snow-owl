@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.core.request;
 
 import java.util.Comparator;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
@@ -56,6 +57,13 @@ public final class SnomedConceptSearchRequestEvaluator implements ConceptSearchR
 		
 		if (search.containsKey(OptionKey.TERM)) {
 			req.filterByTerm(search.getString(OptionKey.TERM));
+		}
+		
+		if (search.containsKey(OptionKey.TERM_PARTIAL)) {
+			final Integer minTermMatch = search.get(OptionKey.MIN_TERM_MATCH, Integer.class);
+			
+			req.filterByTerm(search.getString(OptionKey.TERM_PARTIAL));
+			req.withAnyTerm(Optional.ofNullable(minTermMatch).orElse(1));
 		}
 		
 		if (search.containsKey(OptionKey.QUERY) || search.containsKey(OptionKey.MUST_NOT_QUERY)) {

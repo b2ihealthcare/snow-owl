@@ -80,6 +80,10 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 	public final SnomedConceptSearchRequestBuilder withParsedTerm() {
 		return addOption(SnomedConceptSearchRequest.OptionKey.PARSED_TERM, true);
 	}
+	
+	public final SnomedConceptSearchRequestBuilder withAnyTerm(int minShouldMatch) {
+		return addOption(SnomedConceptSearchRequest.OptionKey.ANY_TERM, minShouldMatch);
+	}
 
 	/**
 	 * Filters results by matching description terms on each concept, using different methods for comparison.
@@ -296,5 +300,9 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 	@Override
 	protected SearchResourceRequest<BranchContext, SnomedConcepts> createSearch() {
 		return new SnomedConceptSearchRequest();
+	}
+
+	public void setMinTermMatch(int minTermMatch) {
+		// TODO Auto-generated method stub
 	}
 }

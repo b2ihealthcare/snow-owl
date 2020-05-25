@@ -57,7 +57,8 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 		SEMANTIC_TAG_REGEX,
 		LANGUAGE_REFSET,
 		ACCEPTABLE_IN,
-		PREFERRED_IN;
+		PREFERRED_IN, 
+		ANY_TERM,
 	}
 	
 	SnomedDescriptionSearchRequest() {}
@@ -151,6 +152,8 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 		
 		if (containsKey(OptionKey.PARSED_TERM)) {
 			qb.should(parsedTerm(searchTerm));
+		} else if (containsKey(OptionKey.ANY_TERM)) {
+			qb.should(anyTerm(searchTerm));
 		} else {
 			qb.should(termDisjunctionQuery(searchTerm));
 		}
@@ -162,6 +165,11 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 		return qb.build();
 	}
 	
+	private Expression anyTerm(String searchTerm) {
+		final Integer minShouldMatch = get(OptionKey.ANY_TERM, Integer.class);
+		return SnomedDescriptionIndexEntry.Expressions.anyTermPrefixesPresent(searchTerm, minShouldMatch);
+	}
+
 	private boolean isComponentId(String value, ComponentCategory type) {
 		try {
 			return SnomedIdentifiers.getComponentCategory(value) == type;
