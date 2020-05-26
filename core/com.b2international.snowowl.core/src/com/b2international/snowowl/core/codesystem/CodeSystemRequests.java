@@ -70,7 +70,7 @@ public class CodeSystemRequests {
 		return new ConceptSearchRequestBuilder();
 	}
 	
-	public static ConceptSuggestionRequestBuilder prepareSuggesetConcepts() {
+	public static ConceptSuggestionRequestBuilder prepareSuggestConcepts() {
 		return new ConceptSuggestionRequestBuilder();
 	}
 

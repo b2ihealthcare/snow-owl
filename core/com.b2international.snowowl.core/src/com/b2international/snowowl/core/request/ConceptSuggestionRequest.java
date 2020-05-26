@@ -15,9 +15,12 @@
  */
 package com.b2international.snowowl.core.request;
 
+import static com.google.common.collect.Sets.newHashSet;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.Min;
@@ -78,10 +81,16 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Branch
 	protected Concepts doExecute(BranchContext context) throws IOException {
 		// Get the suggestion base set of concepts
 		final ConceptSearchRequestBuilder baseRequestBuilder = new ConceptSearchRequestBuilder()
-			.filterByInclusions(getCollection(QUERY, String.class))
-			.filterByExclusions(getCollection(MUST_NOT_QUERY, String.class))
 			.setLimit(SCROLL_LIMIT)
 			.setLocales(locales());
+		
+		if (containsKey(QUERY)) {
+			baseRequestBuilder.filterByInclusions(getCollection(QUERY, String.class));
+		}
+
+		if (containsKey(MUST_NOT_QUERY)) {
+			baseRequestBuilder.filterByExclusions(getCollection(MUST_NOT_QUERY, String.class));
+		}
 		
 		final SearchResourceRequestIterator<ConceptSearchRequestBuilder, Concepts> itr = new SearchResourceRequestIterator<>(
 				baseRequestBuilder, 
@@ -106,23 +115,30 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Branch
 		final String topTokens = Multisets.copyHighestCountFirst(tokenOccurrences)
 				.elementSet()
 				.stream()
+				.filter(token -> token.length() > 2) // skip short tokens
 				.limit(topTokenCount)
 				.collect(Collectors.joining(" "));
 		
 		/* 
 		 * Run a search with the top tokens and minimum number of matches, excluding everything
-		 * that was included previously (you don't need to add previous exclusions as they only
-		 * had an effect on included concepts).
+		 * that was included previously.
 		 */
-		return new ConceptSearchRequestBuilder()
+		final Set<String> exclusions = newHashSet();
+		exclusions.addAll(getCollection(QUERY, String.class));
+		exclusions.addAll(getCollection(MUST_NOT_QUERY, String.class));
+
+		final ConceptSearchRequestBuilder resultRequestBuilder = new ConceptSearchRequestBuilder()
 			.filterByAnyTerm(topTokens)
-			.filterByExclusions(getCollection(QUERY, String.class))
 			.setMinTermMatch(minOccurrenceCount)
 			.setLimit(limit())
 			.setSearchAfter(searchAfter())
-			.setLocales(locales())
-			.build()
-			.execute(context);
+			.setLocales(locales());
+		
+		if (!exclusions.isEmpty()) {
+			resultRequestBuilder.filterByExclusions(exclusions);
+		}
+		
+		return resultRequestBuilder.build().execute(context);
 	}
 
 	private List<String> getAllTerms(Concept concept) {
