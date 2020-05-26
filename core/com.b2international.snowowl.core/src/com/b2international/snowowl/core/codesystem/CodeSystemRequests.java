@@ -26,6 +26,7 @@ import com.b2international.snowowl.core.codesystem.version.CodeSystemVersionSear
 import com.b2international.snowowl.core.jobs.RemoteJobEntry;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.ConceptSearchRequestBuilder;
+import com.b2international.snowowl.core.request.ConceptSuggestionRequestBuilder;
 
 /**
  * @since 4.7
@@ -67,6 +68,10 @@ public class CodeSystemRequests {
 	 */
 	public static ConceptSearchRequestBuilder prepareSearchConcepts() {
 		return new ConceptSearchRequestBuilder();
+	}
+	
+	public static ConceptSuggestionRequestBuilder prepareSuggesetConcepts() {
+		return new ConceptSuggestionRequestBuilder();
 	}
 
 	/**

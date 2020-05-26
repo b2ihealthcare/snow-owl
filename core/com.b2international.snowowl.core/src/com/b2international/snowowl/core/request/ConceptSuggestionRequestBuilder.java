@@ -28,29 +28,7 @@ public final class ConceptSuggestionRequestBuilder
 		implements RevisionIndexRequestBuilder<Concepts> {
 
 	private int topTokenCount = 9;
-	
 	private int minOccurrenceCount = 3;
-	
-	/**
-	 * Filters matches by their lexical terms. The exact semantics of how a term match works depends on the given code system, but usually it supports
-	 * exact, partial word and prefix matches.
-	 * 
-	 * @param term
-	 * @return
-	 */
-	public ConceptSuggestionRequestBuilder filterByTerm(String term) {
-		return addOption(OptionKey.TERM, term);
-	}
-
-	/**
-	 * Filters matches by their lexical terms. Returns matches with exact case insensitive term matches.
-	 * 
-	 * @param exactTerm
-	 * @return
-	 */
-	public ConceptSuggestionRequestBuilder filterByExactTerm(String exactTerm) {
-		return addOption(OptionKey.TERM_EXACT, exactTerm);
-	}
 	
 	/**
 	 * Filters matches by a query expression defined in the target code system's query language.

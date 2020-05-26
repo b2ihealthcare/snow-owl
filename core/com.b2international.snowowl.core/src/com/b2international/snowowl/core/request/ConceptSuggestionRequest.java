@@ -15,12 +15,9 @@
  */
 package com.b2international.snowowl.core.request;
 
-import static com.google.common.collect.Sets.newHashSet;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.Min;
@@ -48,17 +45,15 @@ import com.google.common.collect.Multisets;
  */
 public final class ConceptSuggestionRequest extends SearchResourceRequest<BranchContext, Concepts> {
 
-	private static final Enum<?> TERM = com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator.OptionKey.TERM;
-	private static final Enum<?> TERM_EXACT = com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator.OptionKey.TERM_EXACT;
 	private static final Enum<?> QUERY = com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator.OptionKey.QUERY;
 	private static final Enum<?> MUST_NOT_QUERY = com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator.OptionKey.MUST_NOT_QUERY;
 	
-	private static final int SUGGESTION_LIMIT = 100;
-
 	// Split terms at delimiter or whitespace separators
 	private static final Splitter TOKEN_SPLITTER = Splitter.on(TextConstants.WHITESPACE_OR_DELIMITER_MATCHER)
 			.trimResults()
 			.omitEmptyStrings();
+	
+	private static final int SCROLL_LIMIT = 1000;
 
 	@Min(1)
 	private int topTokenCount;
@@ -82,29 +77,31 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Branch
 	@Override
 	protected Concepts doExecute(BranchContext context) throws IOException {
 		// Get the suggestion base set of concepts
-		final Concepts suggestionBase = new ConceptSearchRequestBuilder()
-			.filterByTerm(getString(TERM))
-			.filterByExactTerm(getString(TERM_EXACT))
+		final ConceptSearchRequestBuilder baseRequestBuilder = new ConceptSearchRequestBuilder()
 			.filterByInclusions(getCollection(QUERY, String.class))
 			.filterByExclusions(getCollection(MUST_NOT_QUERY, String.class))
-			.filterByIds(componentIds())
-			.setSearchAfter(searchAfter())
-			.setLimit(limit())
-			.setLocales(locales())
-			.build()
-			.execute(context);
+			.setLimit(SCROLL_LIMIT)
+			.setLocales(locales());
+		
+		final SearchResourceRequestIterator<ConceptSearchRequestBuilder, Concepts> itr = new SearchResourceRequestIterator<>(
+				baseRequestBuilder, 
+				builder -> builder.build().execute(context));
 		
 		// Gather tokens
 		final Multiset<String> tokenOccurrences = HashMultiset.create(); 
 		final EnglishStemmer stemmer = new EnglishStemmer();
-		
-		FluentIterable.from(suggestionBase)
-			.transformAndConcat(concept -> getAllTerms(concept))
-			.transform(term -> term.toLowerCase(Locale.US))
-			.transformAndConcat(lowerCaseTerm -> TOKEN_SPLITTER.splitToList(lowerCaseTerm))
-			// TODO: US-UK spelling variant replacements?
-			.transform(token -> stemToken(stemmer, token))
-			.copyInto(tokenOccurrences);
+
+		while (itr.hasNext()) {
+			final Concepts suggestionBase = itr.next();
+
+			FluentIterable.from(suggestionBase)
+				.transformAndConcat(concept -> getAllTerms(concept))
+				.transform(term -> term.toLowerCase(Locale.US))
+				.transformAndConcat(lowerCaseTerm -> TOKEN_SPLITTER.splitToList(lowerCaseTerm))
+				// TODO: US-UK spelling variant replacements?
+				.transform(token -> stemToken(stemmer, token))
+				.copyInto(tokenOccurrences);
+		}
 		
 		final String topTokens = Multisets.copyHighestCountFirst(tokenOccurrences)
 				.elementSet()
@@ -112,16 +109,17 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Branch
 				.limit(topTokenCount)
 				.collect(Collectors.joining(" "));
 		
-		// Run a search with the top tokens and minimum number of matches
-		final Set<String> exclusions = newHashSet();
-		exclusions.addAll(getCollection(QUERY, String.class));
-		exclusions.addAll(getCollection(MUST_NOT_QUERY, String.class));
-		
+		/* 
+		 * Run a search with the top tokens and minimum number of matches, excluding everything
+		 * that was included previously (you don't need to add previous exclusions as they only
+		 * had an effect on included concepts).
+		 */
 		return new ConceptSearchRequestBuilder()
 			.filterByAnyTerm(topTokens)
-			.filterByExclusions(exclusions)
+			.filterByExclusions(getCollection(QUERY, String.class))
 			.setMinTermMatch(minOccurrenceCount)
-			.setLimit(SUGGESTION_LIMIT)
+			.setLimit(limit())
+			.setSearchAfter(searchAfter())
 			.setLocales(locales())
 			.build()
 			.execute(context);
