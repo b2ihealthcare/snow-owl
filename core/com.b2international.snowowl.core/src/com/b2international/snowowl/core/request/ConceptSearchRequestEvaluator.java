@@ -33,6 +33,11 @@ public interface ConceptSearchRequestEvaluator {
 		 * Explicit ID filter to return all concepts that have any of the given IDs.
 		 */
 		ID,
+		
+		/**
+		 * Match concepts that have the specified active status. Accepts a boolean <code>true</code> or <code>false</code> value.
+		 */
+		ACTIVE,
 
 		/**
 		 * A term filter that matches concepts having a term match. The exact semantics of how a term match works depends on the given code system,

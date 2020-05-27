@@ -27,6 +27,16 @@ public final class ConceptSearchRequestBuilder extends SearchResourceRequestBuil
 		implements RevisionIndexRequestBuilder<Concepts> {
 
 	/**
+	 * Filters matches by their active/inactive status. 
+	 * 
+	 * @param active
+	 * @return
+	 */
+	public ConceptSearchRequestBuilder filterByActive(Boolean active) {
+		return addOption(OptionKey.ACTIVE, active);
+	}
+	
+	/**
 	 * Filters matches by their lexical terms. The exact semantics of how a term match works depends on the given code system, but usually it supports
 	 * exact, partial word and prefix matches.
 	 * 
