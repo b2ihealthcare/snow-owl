@@ -27,7 +27,7 @@ public final class Ecl {
 	public static final String ANY = "*";
 	public static final int MAX_CARDINALITY = -1;
 	public static final Joiner OR_JOINER = Joiner.on(" OR ");
-	public static final Joiner AND_JOINER = Joiner.on(",");
+	public static final Joiner AND_JOINER = Joiner.on(" AND ");
 	
 	private Ecl() {}
 
