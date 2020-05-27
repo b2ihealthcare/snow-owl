@@ -78,7 +78,7 @@ public final class ConceptSuggestionRequestBuilder
 	 * Suggested concepts are based on term queries that use the top "n" tokens most frequently occurring in 
 	 * the suggestion base set, defined by the method above. The cut-off value of "n" is set by this method.
 	 * 
-	 * @param termCount the number of tokens to consider for suggestions (default is 9)
+	 * @param topTokenCount the number of tokens to consider for suggestions (default is 9)
 	 * @return
 	 */
 	public ConceptSuggestionRequestBuilder setTopTokenCount(int topTokenCount) {
