@@ -81,8 +81,8 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 		return addOption(SnomedConceptSearchRequest.OptionKey.PARSED_TERM, true);
 	}
 	
-	public final SnomedConceptSearchRequestBuilder withAnyTerm(int minShouldMatch) {
-		return addOption(SnomedConceptSearchRequest.OptionKey.ANY_TERM, minShouldMatch);
+	public final SnomedConceptSearchRequestBuilder withMinTermMatch(int minTermMatch) {
+		return addOption(SnomedConceptSearchRequest.OptionKey.MIN_TERM_MATCH, minTermMatch);
 	}
 
 	/**

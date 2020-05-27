@@ -48,18 +48,8 @@ public final class ConceptSearchRequestBuilder extends SearchResourceRequestBuil
 	}
 
 	/**
-	 * Filters matches by their lexical terms. Returns concepts with at least one case insensitive and/or partial match 
-	 * (controllable by {@link #setMinTermMatch(int)}).
-	 * 
-	 * @param partialTerm
-	 * @return
-	 */
-	public ConceptSearchRequestBuilder filterByAnyTerm(String partialTerm) {
-		return addOption(OptionKey.TERM_PARTIAL, partialTerm);
-	}
-
-	/**
-	 * Sets the minimum number of terms that should be matched in a {@link #filterByAnyTerm(String)} clause.
+	 * Sets the minimum number of terms that should be matched in a {@link #filterByTerm(String)} clause.
+	 * The default is "all terms", when not given.
 	 * 
 	 * @param minTermMatch
 	 * @return

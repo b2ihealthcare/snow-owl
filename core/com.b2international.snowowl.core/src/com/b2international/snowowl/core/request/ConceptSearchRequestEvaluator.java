@@ -46,11 +46,6 @@ public interface ConceptSearchRequestEvaluator {
 		TERM_EXACT,
 
 		/**
-		 * A term filter that matches concepts having a partial match.
-		 */
-		TERM_PARTIAL,
-
-		/**
 		 * The minimum number of terms to match.
 		 */
 		MIN_TERM_MATCH,

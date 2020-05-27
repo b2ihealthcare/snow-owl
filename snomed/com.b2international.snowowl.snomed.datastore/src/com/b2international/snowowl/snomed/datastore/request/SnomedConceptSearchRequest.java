@@ -133,7 +133,7 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 		/**
 		 * Match any of the given terms (with minimum threshold given as an Integer)
 		 */
-		ANY_TERM,
+		MIN_TERM_MATCH,
 	}
 	
 	protected SnomedConceptSearchRequest() {}
@@ -339,8 +339,8 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 			requestBuilder.withParsedTerm();
 		}
 		
-		if (containsKey(OptionKey.ANY_TERM)) {
-			requestBuilder.withAnyTerm(get(OptionKey.ANY_TERM, Integer.class));
+		if (containsKey(OptionKey.MIN_TERM_MATCH)) {
+			requestBuilder.withMinTermMatch(get(OptionKey.MIN_TERM_MATCH, Integer.class));
 		}
 		
 		final Collection<SnomedDescription> items = requestBuilder

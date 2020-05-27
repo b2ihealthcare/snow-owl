@@ -107,7 +107,6 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Branch
 				.transformAndConcat(concept -> getAllTerms(concept))
 				.transform(term -> term.toLowerCase(Locale.US))
 				.transformAndConcat(lowerCaseTerm -> TOKEN_SPLITTER.splitToList(lowerCaseTerm))
-				// TODO: US-UK spelling variant replacements?
 				.transform(token -> stemToken(stemmer, token))
 				.copyInto(tokenOccurrences);
 		}
@@ -128,7 +127,7 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Branch
 		exclusions.addAll(getCollection(MUST_NOT_QUERY, String.class));
 
 		final ConceptSearchRequestBuilder resultRequestBuilder = new ConceptSearchRequestBuilder()
-			.filterByAnyTerm(topTokens)
+			.filterByTerm(topTokens)
 			.setMinTermMatch(minOccurrenceCount)
 			.setLimit(limit())
 			.setSearchAfter(searchAfter())
