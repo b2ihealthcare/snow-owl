@@ -127,11 +127,12 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Branch
 		exclusions.addAll(getCollection(MUST_NOT_QUERY, String.class));
 
 		final ConceptSearchRequestBuilder resultRequestBuilder = new ConceptSearchRequestBuilder()
-			.filterByTerm(topTokens)
-			.setMinTermMatch(minOccurrenceCount)
-			.setLimit(limit())
-			.setSearchAfter(searchAfter())
-			.setLocales(locales());
+				.filterByActive(true)
+				.filterByTerm(topTokens)
+				.setMinTermMatch(minOccurrenceCount)
+				.setLimit(limit())
+				.setSearchAfter(searchAfter())
+				.setLocales(locales());
 		
 		if (!exclusions.isEmpty()) {
 			resultRequestBuilder.filterByExclusions(exclusions);
