@@ -66,4 +66,5 @@
         * [ValueSet](docs/api/fhir/valuesets.md)
         * [ConceptMap](docs/api/fhir/conceptmaps.md)
 * [Backup and Restore](docs/backup/index.md)
+    * [Curator](docs/backup/curator.md)
 * [Migrate from 6.x](docs/migration/from-6x.md)

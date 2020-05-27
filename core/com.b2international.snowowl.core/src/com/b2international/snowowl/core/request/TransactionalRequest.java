@@ -17,6 +17,8 @@ package com.b2international.snowowl.core.request;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.Collection;
+
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.exceptions.ApiException;
@@ -24,7 +26,9 @@ import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableList;
 
 /**
  * @since 4.5
@@ -79,6 +83,12 @@ public final class TransactionalRequest implements Request<BranchContext, Commit
 		return next.execute(context);
 	}
 
+	@JsonIgnore
+	@Override
+	public Collection<Request<?, ?>> getNestedRequests() {
+		return ImmutableList.of(this, getNext());
+	}
+	
 	/**
 	 * @return the next request in the chain, which will be executed
 	 */

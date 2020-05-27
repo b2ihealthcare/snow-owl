@@ -84,7 +84,7 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 						final IBranchPath referencePath = BranchPathUtils.createPath(referenceBranch);
 						return CodeSystemRequests.getAllCodeSystems(env)
 							.stream()
-							.filter(cs -> getId().equals(cs.getTerminologyComponentId()))
+							.filter(cs -> getId().equals(cs.getTerminologyId()))
 							// sort by longest working branch path
 							.sorted((cs1, cs2) -> -1 * Ints.compare(cs1.getBranchPath().length(), cs2.getBranchPath().length()))
 							// check whether the working branch path is either the parent of the reference branch or is the reference branch

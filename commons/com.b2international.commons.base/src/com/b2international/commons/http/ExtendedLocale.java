@@ -20,9 +20,11 @@ import java.io.Serializable;
 import java.io.StringReader;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.Strings;
 
@@ -35,6 +37,7 @@ public final class ExtendedLocale implements Serializable {
 	
 	private static final Pattern EXTENDED_LOCALE_PATTERN = Pattern.compile("([a-zA-Z]{2})(-([a-zA-Z]{2}))?(-x-([1-9][0-9]{5,17}))?");
 
+	@JsonCreator
 	public static ExtendedLocale valueOf(String input) {
 		final Matcher matcher = EXTENDED_LOCALE_PATTERN.matcher(input);
 		if (matcher.matches()) {
@@ -45,8 +48,8 @@ public final class ExtendedLocale implements Serializable {
 	}
 	
 	private final String language;
-	private String country;
-	private String languageRefSetId;
+	private final String country;
+	private final String languageRefSetId;
 
 	public ExtendedLocale(String language, String country, String languageRefSetId) {
 		this.language = Strings.nullToEmpty(language).toLowerCase(Locale.ENGLISH);
@@ -74,6 +77,23 @@ public final class ExtendedLocale implements Serializable {
 		}
 	}
 	
+	@Override
+	public int hashCode() {
+		return Objects.hash(language, country, languageRefSetId);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) { return true;}
+		if (obj == null) { return false; }
+		if (getClass() != obj.getClass()) { return false; }
+		
+		ExtendedLocale other = (ExtendedLocale) obj;
+		return Objects.equals(language, other.language)
+				&& Objects.equals(country, other.country) 
+				&& Objects.equals(languageRefSetId, other.languageRefSetId);
+	}
+
 	@Override
 	@JsonValue
 	public String toString() {

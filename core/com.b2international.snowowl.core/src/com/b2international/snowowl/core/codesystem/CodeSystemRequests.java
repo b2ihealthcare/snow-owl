@@ -70,11 +70,11 @@ public class CodeSystemRequests {
 	}
 
 	/**
-	 * Returns all {@link CodeSystemEntry}s from all repositories.
+	 * Returns all {@link CodeSystem}s from all repositories.
 	 * @param context
 	 * @return
 	 */
-	public static List<CodeSystemEntry> getAllCodeSystems(ServiceProvider context) {
+	public static List<CodeSystem> getAllCodeSystems(ServiceProvider context) {
 		final Repositories repositories = RepositoryRequests.prepareSearch()
 			.all()
 			.build()
@@ -93,7 +93,7 @@ public class CodeSystemRequests {
 			.collect(Collectors.toList());
 	}
 
-	public static CodeSystemEntry getCodeSystem(ServiceProvider context, String codeSystem) throws NotFoundException {
+	public static CodeSystem getCodeSystem(ServiceProvider context, String codeSystem) throws NotFoundException {
 		final Repositories repositories = RepositoryRequests.prepareSearch()
 				.all()
 				.build()

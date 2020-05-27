@@ -357,7 +357,11 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponent
 			if (mappedRefSetIds.isEmpty()) {
 				unconvertableLocales.add(extendedLocale);
 			} else {
-				languageRefSetIds.addAll(mappedRefSetIds);
+				mappedRefSetIds.forEach(mappedRefSetId -> {
+					if (!languageRefSetIds.contains(mappedRefSetId)) {
+						languageRefSetIds.add(mappedRefSetId);
+					}
+				});
 			}
 		}
 	

@@ -6,7 +6,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.b2international.snowowl</groupId>
 	<artifactId>snowowl-parent</artifactId>
-	<version>7.5.1</version>
+	<version>7.6.0</version>
 	<packaging>pom</packaging>
 
 	<properties>
@@ -47,11 +47,11 @@
 		<tycho-extras.version>1.5.0</tycho-extras.version>
 		<xtend.compiler.version>2.18.0</xtend.compiler.version>
 		<jacoco.version>0.8.4</jacoco.version>
-		
+
 		<!-- Versioning -->
 		<maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
 		<forceContextQualifier>${maven.build.timestamp}</forceContextQualifier>
-		
+
 		<!-- Testing -->
 		<testHeapSize>1g</testHeapSize>
 		<testArgLine>${tycho.testArgLine} -Xms${testHeapSize} -Xmx${testHeapSize} -XX:+AlwaysLockClassLoader -Dosgi.classloader.type=nonparallel -Djetty.home.bundle=org.eclipse.jetty.osgi.boot -Djetty.port=9090 -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75 -XX:+UseCMSInitiatingOccupancyOnly -XX:+AlwaysPreTouch -Dlogback.configurationFile=${basedir}/src/configuration/logback-maven.xml</testArgLine>
@@ -63,9 +63,9 @@
 	</properties>
 
 	<modules>
-		<module>babylonhealth</module>
 		<module>commons</module>
 		<module>core</module>
+		<module>babylonhealth</module>
 		<module>fhir</module>
 		<module>net4j</module>
 		<module>snomed</module>
@@ -162,18 +162,6 @@
 			<groupId>com.fasterxml.jackson.module</groupId>
 			<artifactId>jackson-module-jaxb-annotations</artifactId>
 			<version>${jackson.version}</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.thoughtworks.xstream</groupId>
-			<artifactId>xstream</artifactId>
-			<version>1.4.7</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.persistence</groupId>
-			<artifactId>javax.persistence</artifactId>
-			<version>2.0.5</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
@@ -431,6 +419,10 @@
       			<exclusion>
         			<groupId>org.ow2.asm</groupId>
       				<artifactId>asm-commons</artifactId>
+        		</exclusion>
+        		<exclusion>
+        			<groupId>org.eclipse.jetty</groupId>
+        			<artifactId>jetty-annotations</artifactId>
         		</exclusion>
       		</exclusions>
     	</dependency>
@@ -912,20 +904,20 @@
 		</pluginManagement>
 	</build>
 
-	<profiles>
-		<profile>
-			<id>docs</id>
-			<activation>
-				<property>
-					<name>docs</name>
-					<value>true</value>
-				</property>
-			</activation>
-			<modules>
-				<module>documentation</module>
-			</modules>
-		</profile>
-	</profiles>
+    <profiles>
+        <profile>
+            <id>docs</id>
+            <activation>
+                <property>
+                    <name>docs</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <modules>
+                <module>documentation</module>
+            </modules>
+        </profile>
+    </profiles>
 
 	<distributionManagement>
 		<repository>

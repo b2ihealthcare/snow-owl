@@ -5,12 +5,12 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>core-parent</artifactId>
-		<version>7.5.1</version>
+		<version>7.6.0</version>
 	</parent>
 
 	<artifactId>com.b2international.snowowl.core.rest</artifactId>
 	<packaging>eclipse-plugin</packaging>
-	
+
 	<properties>
 		<spring.version>5.1.9.RELEASE</spring.version>
 		<spring.security.version>5.1.6.RELEASE</spring.security.version>
@@ -21,6 +21,11 @@
 
 	<!-- NOTE: in case of dependency changes, please update the includeArtifactIds section in the maven-dependency-plugin configuration as well, listing all (exact and transitive) dependency artifactIds -->
 	<dependencies>
+		<dependency>
+		   <groupId>commons-fileupload</groupId>
+		   <artifactId>commons-fileupload</artifactId>
+		   <version>1.4</version>
+		</dependency>
 		<dependency>
 			<groupId>io.springfox</groupId>
 			<artifactId>springfox-swagger2</artifactId>
@@ -52,7 +57,7 @@
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>
-	
+
 	<build>
 		<plugins>
 			<plugin>
@@ -120,7 +125,8 @@
 								springfox-spring-web,
 								springfox-swagger-common,
 								springfox-swagger2,
-								commons-logging
+								commons-logging,
+								commons-fileupload
 							</includeArtifactIds>
 							<outputDirectory>WEB-INF/lib</outputDirectory>
 						</configuration>
@@ -185,7 +191,7 @@
 				</executions>
 			</plugin>
 		</plugins>
-		
+
 		<pluginManagement>
 			<plugins>
 				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->

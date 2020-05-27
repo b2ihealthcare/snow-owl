@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,8 +35,6 @@ import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Ordering;
 import com.google.inject.Provider;
 
 /**
@@ -45,32 +43,9 @@ import com.google.inject.Provider;
 @Component
 public final class CodeSystemService {
 
-	private static final Ordering<CodeSystem> SHORT_NAME_ORDERING = Ordering.natural().onResultOf(CodeSystem::getShortName);
-
 	@Autowired
 	private Provider<IEventBus> bus;
 	
-	/**
-	 * Lists all registered code systems.
-	 * 
-	 * @return a list containing all registered code systems, ordered by short name (never {@code null})
-	 */
-	public List<CodeSystem> getCodeSystems() {
-		final List<Promise<CodeSystems>> getAllCodeSystems = newArrayList();
-		for (String repositoryId : getRepositoryIds()) {
-			getAllCodeSystems.add(CodeSystemRequests.prepareSearchCodeSystem().all().build(repositoryId).execute(bus.get()));
-		}
-		return Promise.all(getAllCodeSystems)
-				.then(results -> {
-					final List<CodeSystem> codeSystems = newArrayList();
-					for (CodeSystems result : Iterables.filter(results, CodeSystems.class)) {
-						codeSystems.addAll(Lists.transform(result.getItems(), input -> CodeSystem.builder(input).build()));
-					}
-					return SHORT_NAME_ORDERING.immutableSortedCopy(codeSystems);
-				})
-				.getSync(1, TimeUnit.MINUTES);
-	}
-
 	/**
 	 * Retrieves a single code system matches the given shortName or object identifier (OID) parameter, if it exists.
 	 * 
@@ -94,7 +69,7 @@ public final class CodeSystemService {
 				.then(results -> {
 					for (CodeSystems result : Iterables.filter(results, CodeSystems.class)) {
 						if (!result.getItems().isEmpty()) {
-							return CodeSystem.builder(Iterables.getOnlyElement(result.getItems())).build();
+							return Iterables.getOnlyElement(result.getItems());
 						}
 					}
 					throw new NotFoundException("CodeSystem", shortNameOrOid);

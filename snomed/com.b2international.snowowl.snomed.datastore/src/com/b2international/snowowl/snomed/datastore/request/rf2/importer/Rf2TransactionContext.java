@@ -69,7 +69,7 @@ import com.google.common.collect.Multimaps;
 /**
  * @since 6.0
  */
-final class Rf2TransactionContext extends DelegatingBranchContext implements TransactionContext {
+public final class Rf2TransactionContext extends DelegatingBranchContext implements TransactionContext {
 	
 	private static final Logger LOG = LoggerFactory.getLogger("import");
 
@@ -78,10 +78,13 @@ final class Rf2TransactionContext extends DelegatingBranchContext implements Tra
 	private Map<String, SnomedDocument> newComponents = newHashMap();
 	private boolean loadOnDemand;
 	
-	Rf2TransactionContext(TransactionContext context, boolean loadOnDemand) {
+	Rf2TransactionContext(TransactionContext context, boolean loadOnDemand, Rf2ImportConfiguration importConfig) {
 		super(context);
 		this.loadOnDemand = loadOnDemand;
 		bind(SnomedOWLExpressionConverter.class, new SnomedOWLExpressionConverter(context));
+		bind(Rf2ImportConfiguration.class, importConfig);
+		// override the default tx context with the rf2 tx context
+		service(StagingArea.class).withContext(this);
 	}
 	
 	@Override

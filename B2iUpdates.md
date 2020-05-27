@@ -11,7 +11,8 @@ server. Those can be grouped in the following categories to look out for when do
     * the `Makefile`
 * Files that make sense for B2i's setup but should be removed from our repo
     * the `travis.yml` file from the root directory
-    * everything under the `.github/workflows` directory
+    * everything under the `.github` directory
+    * the `Jenkinsfile` file from the root directory
 * Files we changed that need to be updated carefully keeping our editions in place
     * all `snowowl.yml` files (lang codes, monitoring and ES configs)
     * the `snow-owl-oss.product` (the babylonhealth feature addition)

@@ -30,7 +30,6 @@ import com.b2international.commons.StringUtils;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.extension.Component;
 import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.snowowl.core.codesystem.CodeSystemEntry;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.fhir.core.FhirCoreActivator;
@@ -283,7 +282,7 @@ public final class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 	}
 
 	@Override
-	protected Uri getFhirUri(CodeSystemEntry codeSystemEntry, CodeSystemVersionEntry codeSystemVersion) {
+	protected Uri getFhirUri(com.b2international.snowowl.core.codesystem.CodeSystem codeSystem, CodeSystemVersionEntry codeSystemVersion) {
 		//handled on the per Core terminology basis (like LCS) 
 		return null;
 	}

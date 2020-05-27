@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Search Indexing
 Bundle-SymbolicName: com.b2international.index;singleton:=true
-Bundle-Version: 7.5.1
+Bundle-Version: 7.6.0
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
@@ -47,6 +47,7 @@ Export-Package: com.b2international.index,
  org.apache.solr.common.util,
  org.elasticsearch.cluster.health,
  org.elasticsearch.common,
+ org.elasticsearch.common.unit,
  org.tartarus.snowball,
  org.tartarus.snowball.ext
 Import-Package: javax.management,

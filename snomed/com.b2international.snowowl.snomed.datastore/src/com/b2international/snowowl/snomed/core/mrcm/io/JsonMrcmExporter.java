@@ -34,6 +34,7 @@ import com.fasterxml.jackson.databind.SequenceWriter;
 final class JsonMrcmExporter {
 
 	public void doExport(IEventBus bus, OutputStream stream) {
+		
 		SnomedConstraints constraints = SnomedRequests.prepareSearchConstraint()
 			.all()
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID, Branch.MAIN_PATH)

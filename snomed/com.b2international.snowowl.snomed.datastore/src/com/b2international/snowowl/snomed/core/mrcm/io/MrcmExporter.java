@@ -17,6 +17,8 @@ package com.b2international.snowowl.snomed.core.mrcm.io;
 
 import java.io.OutputStream;
 
+import com.b2international.snowowl.core.identity.User;
+
 /**
  * @since 4.4
  */
@@ -34,5 +36,7 @@ public interface MrcmExporter {
 	 * @return - the exported file path
 	 */
 	void doExport(String authorizationToken, OutputStream content, final MrcmExportFormat exportFormat);
+	
+	void doExport(User user, OutputStream content, MrcmExportFormat exportFormat);
 
 }

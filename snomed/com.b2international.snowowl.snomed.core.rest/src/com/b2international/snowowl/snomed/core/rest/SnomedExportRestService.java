@@ -47,12 +47,12 @@ import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.commons.validation.ApiValidation;
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.attachments.Attachment;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.attachments.InternalAttachmentRegistry;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
-import com.b2international.snowowl.core.domain.ExportResult;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
@@ -221,7 +221,7 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 		
 		final Rf2RefSetExportLayout refSetExportLayout = ApplicationContext.getServiceForClass(SnomedCoreConfiguration.class).getExport().getRefSetExportLayout();
 		
-		final ExportResult exportedFile = SnomedRequests.rf2().prepareExport()
+		final Attachment exportedFile = SnomedRequests.rf2().prepareExport()
 			.setReleaseType(export.getType())
 			.setExtensionOnly(export.isExtensionOnly())
 			.setLocales(export.getLocales())
@@ -238,7 +238,7 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 			.execute(getBus())
 			.getSync();
 		
-		final File file = ((InternalAttachmentRegistry) fileRegistry).getAttachment(exportedFile.getRegistryId());
+		final File file = ((InternalAttachmentRegistry) fileRegistry).getAttachment(exportedFile.getAttachmentId());
 		final Resource exportZipResource = new FileSystemResource(file);
 		
 		final HttpHeaders httpHeaders = new HttpHeaders();

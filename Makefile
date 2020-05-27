@@ -4,17 +4,18 @@ SEMVER_VERSION=$(shell git describe --abbrev=0 --tags)
 REPO=quay.io/babylonhealth
 DEPLOY_DEV_URL=http://dev-ai-deploy.babylontech.co.uk:5199/job/kube-deploy-dev/buildWithParameters
 DEPLOY_STAGING_URL=http://dev-ai-deploy.babylontech.co.uk:5199/job/kube-deploy-staging/buildWithParameters
-SNOWOWL_RPM_PACKAGE=$(shell find ./releng/com.b2international.snowowl.server.update/target -name "snow-owl-oss*.rpm")
+SNOWOWL_INSTALL_PACKAGE=$(shell find ./releng/com.b2international.snowowl.server.update/target -name "snow-owl-oss*.tar.gz")
 
 
 build-project:
 	./mvnw clean verify -DskipTests
 
 build-docker:
+	cp "${SNOWOWL_INSTALL_PACKAGE}" "./docker/${`basename "${SNOWOWL_INSTALL_PACKAGE}"`}"
 	docker build ./docker \
-	--build-arg SNOWOWL_RPM_PACKAGE=`basename "${SNOWOWL_RPM_PACKAGE}"` \
+	--build-arg SNOWOWL_INSTALL_PACKAGE=`basename "${SNOWOWL_INSTALL_PACKAGE}"` \
 	--build-arg BUILD_TIMESTAMP=`date +%s` \
-	--build-arg VERSION="${RELEASE_VERSION}" \
+	--build-arg TAG="${RELEASE_VERSION}" \
 	--build-arg GIT_REVISION="${RELEASE_VERSION}" \
 	-t $(REPO)/$(NAME):$(RELEASE_VERSION)
 

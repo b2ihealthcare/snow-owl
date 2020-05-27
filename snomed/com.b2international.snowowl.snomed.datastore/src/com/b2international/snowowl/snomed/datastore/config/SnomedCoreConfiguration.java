@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.config;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -30,8 +29,8 @@ import org.hibernate.validator.constraints.NotEmpty;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ListMultimap;
 
 /**
  * SNOMED CT related application level configuration parameters.
@@ -100,7 +99,7 @@ public class SnomedCoreConfiguration {
 	private String namespaceModuleAssigner = "default";
 	
 	private List<SnomedLanguageConfig> languages = Collections.emptyList();
-	private Multimap<String, String> languageMap;
+	private ListMultimap<String, String> languageMap;
 	
 	/**
 	 * @return the number of reasoners that are permitted to run simultaneously.
@@ -365,14 +364,14 @@ public class SnomedCoreConfiguration {
 		this.languages = languages;
 	}
 
-	public Collection<String> getMappedLanguageRefSetIds(String languageCode) {
+	public List<String> getMappedLanguageRefSetIds(String languageCode) {
 		return getLanguageMap().get(languageCode);
 	}
 
 	@JsonIgnore
-	private Multimap<String, String> getLanguageMap() {
+	private ListMultimap<String, String> getLanguageMap() {
 		if (languageMap == null) {
-			languageMap = HashMultimap.create();
+			languageMap = ArrayListMultimap.create();
 			for (SnomedLanguageConfig languageConfig : getLanguages()) {
 				languageMap.putAll(languageConfig.getCode(), languageConfig.getRefSetIds());
 			}
