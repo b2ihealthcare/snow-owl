@@ -72,7 +72,7 @@ EFFECTIVE_TIME_START=""
 # Effective time upper bound
 EFFECTIVE_TIME_END=""
 
-# Iclude pre-release content
+# Include pre-release content
 INCLUDE_UNPUBLISHED=true
 
 usage() {
