@@ -301,8 +301,4 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 	protected SearchResourceRequest<BranchContext, SnomedConcepts> createSearch() {
 		return new SnomedConceptSearchRequest();
 	}
-
-	public void setMinTermMatch(int minTermMatch) {
-		// TODO Auto-generated method stub
-	}
 }
