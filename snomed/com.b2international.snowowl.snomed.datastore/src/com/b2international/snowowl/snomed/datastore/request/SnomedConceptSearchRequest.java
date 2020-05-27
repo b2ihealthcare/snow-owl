@@ -190,17 +190,32 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 
 		if (containsKey(OptionKey.ECL)) {
 			final String ecl = getString(OptionKey.ECL);
-			queryBuilder.filter(EclExpression.of(ecl, Trees.INFERRED_FORM).resolveToExpression(context).getSync(3, TimeUnit.MINUTES));
+			Expression eclExpression = EclExpression.of(ecl, Trees.INFERRED_FORM).resolveToExpression(context).getSync(3, TimeUnit.MINUTES);
+			if (eclExpression.isMatchNone()) {
+				throw new NoResultException();
+			} else if (!eclExpression.isMatchAll()) {
+				queryBuilder.filter(eclExpression);
+			}
 		}
 		
 		if (containsKey(OptionKey.STATED_ECL)) {
 			final String ecl = getString(OptionKey.STATED_ECL);
-			queryBuilder.filter(EclExpression.of(ecl, Trees.STATED_FORM).resolveToExpression(context).getSync(3, TimeUnit.MINUTES));
+			Expression statedEclExpression = EclExpression.of(ecl, Trees.STATED_FORM).resolveToExpression(context).getSync(3, TimeUnit.MINUTES);
+			if (statedEclExpression.isMatchNone()) {
+				throw new NoResultException();
+			} else if (!statedEclExpression.isMatchAll()) {
+				queryBuilder.filter(statedEclExpression);
+			}
 		}
 		
 		if (containsKey(OptionKey.QUERY)) {
 			final String ql = getString(OptionKey.QUERY);
-			queryBuilder.filter(SnomedQueryExpression.of(ql).resolveToExpression(context).getSync(3, TimeUnit.MINUTES));
+			Expression queryExpression = SnomedQueryExpression.of(ql).resolveToExpression(context).getSync(3, TimeUnit.MINUTES);
+			if (queryExpression.isMatchNone()) {
+				throw new NoResultException();
+			} else if (!queryExpression.isMatchAll()) {
+				queryBuilder.filter(queryExpression);
+			}
 		}
 		
 		Expression searchProfileQuery = null;
