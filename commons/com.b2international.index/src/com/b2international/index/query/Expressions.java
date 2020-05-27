@@ -158,6 +158,10 @@ public class Expressions {
 		return new TextPredicate(field, term, MatchType.ANY);
 	}
 	
+	public static Expression matchTextAny(String field, String term, int minShouldMatch) {
+		return new TextPredicate(field, term, MatchType.ANY, minShouldMatch);
+	}
+	
 	public static Expression matchTextPhrase(String field, String term) {
 		return new TextPredicate(field, term, MatchType.PHRASE);
 	}

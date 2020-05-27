@@ -21,42 +21,14 @@ import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator.OptionKey;
 
 /**
- * @since 7.5
+ * @since 7.7
  */
-public final class ConceptSearchRequestBuilder extends SearchResourceRequestBuilder<ConceptSearchRequestBuilder, BranchContext, Concepts>
+public final class ConceptSuggestionRequestBuilder 
+		extends SearchResourceRequestBuilder<ConceptSuggestionRequestBuilder, BranchContext, Concepts>
 		implements RevisionIndexRequestBuilder<Concepts> {
 
-	/**
-	 * Filters matches by their lexical terms. The exact semantics of how a term match works depends on the given code system, but usually it supports
-	 * exact, partial word and prefix matches.
-	 * 
-	 * @param term
-	 * @return
-	 */
-	public ConceptSearchRequestBuilder filterByTerm(String term) {
-		return addOption(OptionKey.TERM, term);
-	}
-
-	/**
-	 * Filters matches by their lexical terms. Returns matches with exact case insensitive term matches.
-	 * 
-	 * @param exactTerm
-	 * @return
-	 */
-	public ConceptSearchRequestBuilder filterByExactTerm(String exactTerm) {
-		return addOption(OptionKey.TERM_EXACT, exactTerm);
-	}
-
-	/**
-	 * Sets the minimum number of terms that should be matched in a {@link #filterByTerm(String)} clause.
-	 * The default is "all terms", when not given.
-	 * 
-	 * @param minTermMatch
-	 * @return
-	 */
-	public ConceptSearchRequestBuilder setMinTermMatch(int minTermMatch) {
-		return addOption(OptionKey.MIN_TERM_MATCH, minTermMatch);
-	}
+	private int topTokenCount = 9;
+	private int minOccurrenceCount = 3;
 	
 	/**
 	 * Filters matches by a query expression defined in the target code system's query language.
@@ -65,7 +37,7 @@ public final class ConceptSearchRequestBuilder extends SearchResourceRequestBuil
 	 *            - the query expression
 	 * @return
 	 */
-	public ConceptSearchRequestBuilder filterByQuery(String query) {
+	public ConceptSuggestionRequestBuilder filterByQuery(String query) {
 		return addOption(OptionKey.QUERY, query);
 	}
 
@@ -76,7 +48,7 @@ public final class ConceptSearchRequestBuilder extends SearchResourceRequestBuil
 	 *            - query expressions that include matches
 	 * @return
 	 */
-	public ConceptSearchRequestBuilder filterByInclusions(Iterable<String> inclusions) {
+	public ConceptSuggestionRequestBuilder filterByInclusions(Iterable<String> inclusions) {
 		return addOption(OptionKey.QUERY, inclusions);
 	}
 
@@ -87,7 +59,7 @@ public final class ConceptSearchRequestBuilder extends SearchResourceRequestBuil
 	 *            - query expression that exclude matches
 	 * @return
 	 */
-	public ConceptSearchRequestBuilder filterByExclusion(String exclusion) {
+	public ConceptSuggestionRequestBuilder filterByExclusion(String exclusion) {
 		return addOption(OptionKey.MUST_NOT_QUERY, exclusion);
 	}
 	
@@ -98,13 +70,40 @@ public final class ConceptSearchRequestBuilder extends SearchResourceRequestBuil
 	 *            - query expression that exclude matches
 	 * @return
 	 */
-	public ConceptSearchRequestBuilder filterByExclusions(Iterable<String> exclusions) {
+	public ConceptSuggestionRequestBuilder filterByExclusions(Iterable<String> exclusions) {
 		return addOption(OptionKey.MUST_NOT_QUERY, exclusions);
 	}
-
+	
+	/**
+	 * Suggested concepts are based on term queries that use the top "n" tokens most frequently occurring in 
+	 * the suggestion base set, defined by the method above. The cut-off value of "n" is set by this method.
+	 * 
+	 * @param topTokenCount the number of tokens to consider for suggestions (default is 9)
+	 * @return
+	 */
+	public ConceptSuggestionRequestBuilder setTopTokenCount(int topTokenCount) {
+		this.topTokenCount = topTokenCount;
+		return getSelf();
+	}
+	
+	/**
+	 * Sets the minimum number of occurrences of the top "n" token list that a concept must have in order
+	 * to consider it for inclusion in the suggestions list.  
+	 * 
+	 * @param minOccurrenceCount the minimum number of occurrences to use (default is 3)
+	 * @return
+	 */
+	public ConceptSuggestionRequestBuilder setMinOccurrenceCount(int minOccurrenceCount) {
+		this.minOccurrenceCount = minOccurrenceCount;
+		return getSelf();
+	}
+	
 	@Override
 	protected SearchResourceRequest<BranchContext, Concepts> createSearch() {
-		return new ConceptSearchRequest();
+		final ConceptSuggestionRequest request = new ConceptSuggestionRequest();
+		request.setTopTokenCount(topTokenCount);
+		request.setMinOccurrenceCount(minOccurrenceCount);
+		return request;
 	}
 
 	/**
@@ -114,5 +113,4 @@ public final class ConceptSearchRequestBuilder extends SearchResourceRequestBuil
 	public AsyncRequest<Concepts> build(String repositoryId, String branch) {
 		throw new UnsupportedOperationException("This build() method is unsupported for generic requests");
 	}
-
 }

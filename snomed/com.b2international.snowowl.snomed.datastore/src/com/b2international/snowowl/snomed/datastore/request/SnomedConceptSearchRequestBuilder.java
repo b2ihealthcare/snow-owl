@@ -80,6 +80,10 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 	public final SnomedConceptSearchRequestBuilder withParsedTerm() {
 		return addOption(SnomedConceptSearchRequest.OptionKey.PARSED_TERM, true);
 	}
+	
+	public final SnomedConceptSearchRequestBuilder withMinTermMatch(int minTermMatch) {
+		return addOption(SnomedConceptSearchRequest.OptionKey.MIN_TERM_MATCH, minTermMatch);
+	}
 
 	/**
 	 * Filters results by matching description terms on each concept, using different methods for comparison.

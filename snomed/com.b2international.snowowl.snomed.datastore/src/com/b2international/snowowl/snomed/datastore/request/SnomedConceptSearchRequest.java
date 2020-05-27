@@ -128,8 +128,12 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 		/**
 		 * Use fuzzy query in the search
 		 */
-		USE_FUZZY
-
+		USE_FUZZY, 
+		
+		/**
+		 * Match any of the given terms (with minimum threshold given as an Integer)
+		 */
+		MIN_TERM_MATCH,
 	}
 	
 	protected SnomedConceptSearchRequest() {}
@@ -333,6 +337,10 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 		
 		if (containsKey(OptionKey.PARSED_TERM)) {
 			requestBuilder.withParsedTerm();
+		}
+		
+		if (containsKey(OptionKey.MIN_TERM_MATCH)) {
+			requestBuilder.withMinTermMatch(get(OptionKey.MIN_TERM_MATCH, Integer.class));
 		}
 		
 		final Collection<SnomedDescription> items = requestBuilder

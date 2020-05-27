@@ -19,6 +19,7 @@ import static com.b2international.index.query.Expressions.dismax;
 import static com.b2international.index.query.Expressions.exactMatch;
 import static com.b2international.index.query.Expressions.matchAny;
 import static com.b2international.index.query.Expressions.matchTextAll;
+import static com.b2international.index.query.Expressions.matchTextAny;
 import static com.b2international.index.query.Expressions.matchTextFuzzy;
 import static com.b2international.index.query.Expressions.matchTextParsed;
 import static com.b2international.index.query.Expressions.matchTextRegexp;
@@ -191,6 +192,10 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		
 		public static Expression matchTermRegex(String regex) {
 			return matchTextRegexp(Fields.TERM + ".original", regex);
+		}
+		
+		public static Expression anyTermPrefixesPresent(String term, int minShouldMatch) {
+			return matchTextAny(Fields.TERM + ".prefix", term, minShouldMatch);
 		}
 		
 		public static Expression allTermPrefixesPresent(String term) {
