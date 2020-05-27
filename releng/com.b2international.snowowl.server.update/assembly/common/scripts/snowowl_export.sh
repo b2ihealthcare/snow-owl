@@ -72,6 +72,9 @@ EFFECTIVE_TIME_START=""
 # Effective time upper bound
 EFFECTIVE_TIME_END=""
 
+# Iclude pre-release content
+INCLUDE_UNPUBLISHED=true
+
 usage() {
 
 	cat <<EOF
@@ -104,6 +107,8 @@ NAME:
         Effective time range lower bound, in yyyyMMdd format
     -g
         Effective time range upper bound, in yyyyMMdd format
+    -i
+    	Include pre-release content
     -a
         REST API URL of the Snow Owl server, defaults to '/snowowl/snomed-ct/v3'
 
@@ -156,7 +161,7 @@ initiate_export() {
 	# The address where the export config endpoint can be found
 	EXPORTS_POST_ENDPOINT="${SNOW_OWL_API_URL}/exports"
 
-	EXPORT_CONFIG_POST_INPUT='{"branchPath": "'"${BRANCH_TO_EXPORT}"'", "type": "'"${EXPORT_TYPE}"'", "codeSystemShortName": "SNOMEDCT"'
+	EXPORT_CONFIG_POST_INPUT='{"branchPath": "'"${BRANCH_TO_EXPORT}"'", "type": "'"${EXPORT_TYPE}"'", "codeSystemShortName": "SNOMEDCT", "includeUnpublished": ${INCLUDE_UNPUBLISHED}'
 
 	if [ -n "$EFFECTIVE_TIME_START" ]; then
 		EXPORT_CONFIG_POST_INPUT+=', "startEffectiveTime": "'"${EFFECTIVE_TIME_START}"'"'
@@ -243,7 +248,7 @@ execute() {
 	exit 0
 }
 
-while getopts ":hu:p:t:e:b:a:s:m:r:f:g:" option; do
+while getopts ":hu:p:t:e:b:a:s:m:r:f:g:i:" option; do
 	case "${option}" in
 	h)
 		usage
@@ -275,6 +280,9 @@ while getopts ":hu:p:t:e:b:a:s:m:r:f:g:" option; do
 		;;
 	g)
 		EFFECTIVE_TIME_END=${OPTARG}
+		;;
+	i)
+		INCLUDE_UNPUBLISHED=${OPTARG}
 		;;
 	m)
 		MODULES_TO_EXPORT+=("${OPTARG}")
