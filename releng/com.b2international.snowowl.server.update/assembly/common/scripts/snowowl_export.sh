@@ -161,7 +161,7 @@ initiate_export() {
 	# The address where the export config endpoint can be found
 	EXPORTS_POST_ENDPOINT="${SNOW_OWL_API_URL}/exports"
 
-	EXPORT_CONFIG_POST_INPUT='{"branchPath": "'"${BRANCH_TO_EXPORT}"'", "type": "'"${EXPORT_TYPE}"'", "codeSystemShortName": "SNOMEDCT", "includeUnpublished": ${INCLUDE_UNPUBLISHED}'
+	EXPORT_CONFIG_POST_INPUT='{"branchPath": "'"${BRANCH_TO_EXPORT}"'", "type": "'"${EXPORT_TYPE}"'", "codeSystemShortName": "SNOMEDCT", "includeUnpublished": "'"${INCLUDE_UNPUBLISHED}"'"'
 
 	if [ -n "$EFFECTIVE_TIME_START" ]; then
 		EXPORT_CONFIG_POST_INPUT+=', "startEffectiveTime": "'"${EFFECTIVE_TIME_START}"'"'
