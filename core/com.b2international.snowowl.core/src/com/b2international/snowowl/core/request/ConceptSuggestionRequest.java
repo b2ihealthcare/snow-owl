@@ -31,6 +31,7 @@ import com.b2international.index.compat.TextConstants;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.Concept;
 import com.b2international.snowowl.core.domain.Concepts;
+import com.b2international.snowowl.core.domain.Suggestions;
 import com.google.common.base.Splitter;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.HashMultiset;
@@ -46,7 +47,7 @@ import com.google.common.collect.Multisets;
  * @see ConceptSearchRequest
  * @see ConceptSuggestionRequestBuilder
  */
-public final class ConceptSuggestionRequest extends SearchResourceRequest<BranchContext, Concepts> {
+public final class ConceptSuggestionRequest extends SearchResourceRequest<BranchContext, Suggestions> {
 
 	private static final Enum<?> QUERY = com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator.OptionKey.QUERY;
 	private static final Enum<?> MUST_NOT_QUERY = com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator.OptionKey.MUST_NOT_QUERY;
@@ -64,6 +65,8 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Branch
 	@Min(1)
 	private int minOccurrenceCount;
 	
+	private transient List<String> topTokens;
+	
 	void setTopTokenCount(int topTokenCount) {
 		this.topTokenCount = topTokenCount;
 	}
@@ -73,12 +76,12 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Branch
 	}
 
 	@Override
-	protected Concepts createEmptyResult(int limit) {
-		return new Concepts(limit, 0);
+	protected Suggestions createEmptyResult(int limit) {
+		return new Suggestions(topTokens, limit, 0);
 	}
 
 	@Override
-	protected Concepts doExecute(BranchContext context) throws IOException {
+	protected Suggestions doExecute(BranchContext context) throws IOException {
 		// Get the suggestion base set of concepts
 		final ConceptSearchRequestBuilder baseRequestBuilder = new ConceptSearchRequestBuilder()
 			.setLimit(SCROLL_LIMIT)
@@ -111,12 +114,12 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Branch
 				.copyInto(tokenOccurrences);
 		}
 		
-		final String topTokens = Multisets.copyHighestCountFirst(tokenOccurrences)
+		topTokens = Multisets.copyHighestCountFirst(tokenOccurrences)
 				.elementSet()
 				.stream()
 				.filter(token -> token.length() > 2) // skip short tokens
 				.limit(topTokenCount)
-				.collect(Collectors.joining(" "));
+				.collect(Collectors.toList());
 		
 		/* 
 		 * Run a search with the top tokens and minimum number of matches, excluding everything
@@ -128,7 +131,7 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Branch
 
 		final ConceptSearchRequestBuilder resultRequestBuilder = new ConceptSearchRequestBuilder()
 				.filterByActive(true)
-				.filterByTerm(topTokens)
+				.filterByTerm(topTokens.stream().collect(Collectors.joining(" ")))
 				.setMinTermMatch(minOccurrenceCount)
 				.setLimit(limit())
 				.setSearchAfter(searchAfter())
@@ -138,7 +141,9 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Branch
 			resultRequestBuilder.filterByExclusions(exclusions);
 		}
 		
-		return resultRequestBuilder.build().execute(context);
+		final Concepts conceptSuggestions = resultRequestBuilder.build().execute(context);
+		
+		return new Suggestions(topTokens, conceptSuggestions.getItems(), conceptSuggestions.getSearchAfter(), limit(), conceptSuggestions.getTotal());
 	}
 
 	private List<String> getAllTerms(Concept concept) {

@@ -16,7 +16,7 @@
 package com.b2international.snowowl.core.request;
 
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.domain.Concepts;
+import com.b2international.snowowl.core.domain.Suggestions;
 import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator.OptionKey;
 
@@ -24,8 +24,8 @@ import com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator.Op
  * @since 7.7
  */
 public final class ConceptSuggestionRequestBuilder 
-		extends SearchResourceRequestBuilder<ConceptSuggestionRequestBuilder, BranchContext, Concepts>
-		implements RevisionIndexRequestBuilder<Concepts> {
+		extends SearchResourceRequestBuilder<ConceptSuggestionRequestBuilder, BranchContext, Suggestions>
+		implements RevisionIndexRequestBuilder<Suggestions> {
 
 	private int topTokenCount = 9;
 	private int minOccurrenceCount = 3;
@@ -99,7 +99,7 @@ public final class ConceptSuggestionRequestBuilder
 	}
 	
 	@Override
-	protected SearchResourceRequest<BranchContext, Concepts> createSearch() {
+	protected SearchResourceRequest<BranchContext, Suggestions> createSearch() {
 		final ConceptSuggestionRequest request = new ConceptSuggestionRequest();
 		request.setTopTokenCount(topTokenCount);
 		request.setMinOccurrenceCount(minOccurrenceCount);
@@ -110,7 +110,7 @@ public final class ConceptSuggestionRequestBuilder
 	 * @deprecated - use the {@link #build(String)} method instead
 	 */
 	@Override
-	public AsyncRequest<Concepts> build(String repositoryId, String branch) {
+	public AsyncRequest<Suggestions> build(String repositoryId, String branch) {
 		throw new UnsupportedOperationException("This build() method is unsupported for generic requests");
 	}
 }
