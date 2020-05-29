@@ -81,7 +81,7 @@ public final class SnowOwl {
 	private Plugins plugins;
 	private Environment environment;
 	private SnowOwlConfiguration configuration;
-	private Logger log;
+	private static Logger log;
 
 	private SnowOwl(Plugin...additionalPlugins) throws Exception {
 		final Path homePath = getHomePath();
