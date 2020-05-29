@@ -81,7 +81,7 @@ public final class SnowOwl {
 	private Plugins plugins;
 	private Environment environment;
 	private SnowOwlConfiguration configuration;
-	private static Logger log;
+	private static Logger log = LoggerFactory.getLogger("snowowl");
 
 	private SnowOwl(Plugin...additionalPlugins) throws Exception {
 		final Path homePath = getHomePath();
@@ -94,7 +94,7 @@ public final class SnowOwl {
 		if (Files.exists(logConfigFile)) {
 			System.setProperty("logback.configurationFile", logConfigFile.toAbsolutePath().toString());
 		}
-		// initialize Logback and the first logger instance 
+		// re-initialize Logback from real conf and the first logger instance
 		log = LoggerFactory.getLogger("snowowl");
 		
 		// configure Jetty sysprops if not configured via jetty.home nor via jetty.home.bundle
