@@ -28,7 +28,13 @@ RUN groupadd -g 1000 snowowl && \
 
 WORKDIR /usr/share/snowowl
 COPY --from=builder --chown=1000:0 /usr/share/snowowl /usr/share/snowowl
-RUN ln -s /usr/share/snowowl/configuration /etc/snowowl && \
+
+ENV SO_PATH_CONF="/opt/snowowl/bbl/config"
+RUN mkdir -p /opt/snowowl/bbl/config
+#TODO restrict linux files permission
+RUN mv configuration/* $SO_PATH_CONF/
+
+RUN ln -s $SO_PATH_CONF /etc/snowowl && \
     ln -s /usr/share/snowowl/resources /var/lib/snowowl && \
     ln -s /usr/share/snowowl/serviceability /var/log/snowowl
 
