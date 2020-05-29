@@ -34,6 +34,10 @@ RUN mkdir -p /opt/snowowl/bbl/config
 #TODO restrict linux files permission
 RUN mv configuration/* $SO_PATH_CONF/
 
+#babylon hack since SO_PATH_CONF doesn't seem to be taken into account
+RUN rm -rf /usr/share/snowowl/configuration  && \
+ln -s $SO_PATH_CONF /usr/share/snowowl/configuration
+
 RUN ln -s $SO_PATH_CONF /etc/snowowl && \
     ln -s /usr/share/snowowl/resources /var/lib/snowowl && \
     ln -s /usr/share/snowowl/serviceability /var/log/snowowl

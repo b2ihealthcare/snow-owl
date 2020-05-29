@@ -147,16 +147,19 @@ public final class SnowOwl {
 		// check ENV variable
 		String confPath = System.getenv(SO_PATH_CONF_ENV);
 		if (!Strings.isNullOrEmpty(confPath)) {
+			log.info("conf path found via system env var: " + confPath);
 			return createPath(SO_PATH_CONF_ENV, confPath);
 		}
 		
 		// check System property
 		confPath = System.getProperty(SO_PATH_CONF);
 		if (!Strings.isNullOrEmpty(confPath)) {
+			log.info("conf path found via system property: " + confPath);
 			return createPath(SO_PATH_CONF, confPath);
 		}
 		
 		// as last resort, fall back to the default configuration folder SO_HOME/configuration
+		log.info("conf path not found, use default: " + DEFAULT_CONF_PATH);
 		return homePath.resolve(DEFAULT_CONF_PATH);
 	}
 
