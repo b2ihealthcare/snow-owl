@@ -70,7 +70,7 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 	protected void preUpdateDocuments(StagingArea staging, RevisionSearcher index) throws IOException {
 		final RepositoryContext context = ClassUtils.checkAndCast(staging.getContext(), RepositoryContext.class);
 		
-		if (!context.isJobRunning(SnomedRf2Requests.importJobKey(index.branch()))) {
+		if (!(context instanceof Rf2TransactionContext)) {
 			doProcess(ImmutableList.of(new ComponentInactivationChangeProcessor(), new DetachedContainerChangeProcessor()), staging, index);
 		}
 	}
