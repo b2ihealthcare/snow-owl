@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.console;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.eventbus.IEventBus;
 
 /**
@@ -24,7 +25,12 @@ import com.b2international.snowowl.eventbus.IEventBus;
  */
 public abstract class BaseCommand {
 	
+	private ServiceProvider context;
 	private IEventBus bus;
+	
+	void setContext(ServiceProvider context) {
+		this.context = context;
+	}
 	
 	void setBus(IEventBus bus) {
 		this.bus = bus;
@@ -32,6 +38,10 @@ public abstract class BaseCommand {
 
 	protected final IEventBus getBus() {
 		return bus;
+	}
+	
+	protected final ServiceProvider getContext() {
+		return context;
 	}
 	
 	public abstract void run(CommandLineStream out);

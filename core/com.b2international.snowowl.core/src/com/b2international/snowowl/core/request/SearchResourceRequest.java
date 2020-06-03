@@ -23,12 +23,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiFunction;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.options.Options;
 import com.b2international.commons.options.OptionsBuilder;
@@ -46,7 +45,7 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 	 * Special option character that can be used for special search expressions in filters where usually a user enters a text, like a term filter.
 	 * @see #getSpecialOptionKey
 	 */
-	public static final Pattern SPECIAL_OPTION_EXPRESSION = Pattern.compile("\\@(.+)\\((.+)\\)");
+	public static final String SPECIAL_OPTION_CHARACTER = "@";
 	
 	/**
 	 * Exception that indicates that the search request will not have any matching items therefore can immediately respond back with an empty result.
@@ -335,21 +334,29 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 	@VisibleForTesting
 	static Options processSpecialOptionKey(Options options, Enum<?> specialOptionKey) {
 		if (specialOptionKey != null && options.containsKey(specialOptionKey)) {
-			// this will throw a classcast if non-String value is encountered in the option key and that is okay
+			// this will throw a CCE if non-String value is encountered in the option key and that is okay
 			String specialOption = options.getString(specialOptionKey);
-			Matcher matcher = SPECIAL_OPTION_EXPRESSION.matcher(specialOption);
-			if (matcher.matches()) {
-				String optionKey = matcher.group(1);
-				String value = matcher.group(2);
-				OptionsBuilder newOptions = Options.builder().put(optionKey.toUpperCase(), value);
-				
-				for (String key : options.keySet()) {
-					if (!specialOptionKey.name().equals(key)) {
-						newOptions.put(key, options.get(key));
+			if (specialOption.startsWith(SPECIAL_OPTION_CHARACTER) && specialOption.endsWith(")")) {
+				// strip of the leading and trailing characters so we end up with a field(value expression that can be split on the first occurence of
+				// the ( character
+				String fieldAndValueWithParenSeparator = specialOption.substring(1, specialOption.length() - 1);
+				int separatorIdx = fieldAndValueWithParenSeparator.indexOf("(");
+				if (separatorIdx != -1) {
+					String field = fieldAndValueWithParenSeparator.substring(0, separatorIdx).toUpperCase();
+					String value = fieldAndValueWithParenSeparator.substring(separatorIdx + 1);
+					
+					if (!CompareUtils.isEmpty(field) && !CompareUtils.isEmpty(value)) {
+						OptionsBuilder newOptions = Options.builder().put(field, value);
+						
+						for (String key : options.keySet()) {
+							if (!specialOptionKey.name().equals(key)) {
+								newOptions.put(key, options.get(key));
+							}
+						}
+						
+						return newOptions.build();
 					}
 				}
-				
-				return newOptions.build();
 			}
 		}
 		return options;

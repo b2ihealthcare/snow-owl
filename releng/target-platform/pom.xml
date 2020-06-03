@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>releng-parent</artifactId>
-		<version>7.6.0</version>
+		<version>7.7.0-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>target-platform</artifactId>
@@ -26,6 +26,9 @@
 						<configuration>
 							<baseDefinition>${project.artifactId}.target</baseDefinition>
 							<outputFile>${project.artifactId}-local.target</outputFile>
+							<excludeGroupIds>
+								net.sourceforge.owlapi
+							</excludeGroupIds>
 							<excludeArtifactIds>
 								org.apache.felix.framework,
 								org.apache.felix.main,
@@ -49,7 +52,11 @@
 								org.eclipse.jdt.debug,
 								org.eclipse.jdt.launching,
 								icu4j,
-								log4j
+								log4j,
+								guava,
+								commons-io,
+								commons-logging,
+								commons-codec
 							</excludeArtifactIds>
 						</configuration>
 					</execution>

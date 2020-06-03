@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.domain;
 
+import java.util.SortedSet;
+
 /**
  * @since 7.5
  */
@@ -24,10 +26,11 @@ public final class Concept extends BaseComponent {
 
 	private final String codeSystem;
 	private final short terminologyComponentId;
-
+	
 	private String term;
 	private String iconId;
-
+	private SortedSet<String> alternativeTerms;
+	
 	public Concept(String codeSystem, short terminologyComponentId) {
 		this.codeSystem = codeSystem;
 		this.terminologyComponentId = terminologyComponentId;
@@ -53,9 +56,16 @@ public final class Concept extends BaseComponent {
 		this.iconId = iconId;
 	}
 	
+	public void setAlternativeTerms(SortedSet<String> alternativeTerms) {
+		this.alternativeTerms = alternativeTerms;
+	}
+	
+	public SortedSet<String> getAlternativeTerms() {
+		return alternativeTerms;
+	}
+	
 	@Override
 	public short getTerminologyComponentId() {
 		return terminologyComponentId;
 	}
-
 }

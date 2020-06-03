@@ -48,5 +48,5 @@ set SO_JAVA_OPTS=%SO_JAVA_OPTS% -Dlogback.configurationFile="%KERNEL_HOME%/confi
 
 REM Run Snow Owl
 PUSHD %KERNEL_HOME%
-"%JAVA_HOME%\bin\java" %SO_JAVA_OPTS% -jar plugins\org.eclipse.equinox.launcher_1.5.400.v20190515-0925.jar  -console 2501 
+"%JAVA_HOME%\bin\java" %SO_JAVA_OPTS% -jar plugins\org.eclipse.equinox.launcher_1.5.700.v20200207-2156.jar  -console 2501 
 POPD

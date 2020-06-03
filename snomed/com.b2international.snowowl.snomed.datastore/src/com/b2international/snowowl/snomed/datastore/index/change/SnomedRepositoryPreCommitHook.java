@@ -40,6 +40,7 @@ import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedOWLRelationshipDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
@@ -69,7 +70,7 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 	protected void preUpdateDocuments(StagingArea staging, RevisionSearcher index) throws IOException {
 		final RepositoryContext context = ClassUtils.checkAndCast(staging.getContext(), RepositoryContext.class);
 		
-		if (!context.isJobRunning(SnomedRf2Requests.importJobKey(index.branch()))) {
+		if (!(context instanceof Rf2TransactionContext)) {
 			doProcess(ImmutableList.of(new ComponentInactivationChangeProcessor(), new DetachedContainerChangeProcessor()), staging, index);
 		}
 	}
@@ -152,6 +153,32 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 			}
 		}
 		
+		staging.getRemovedObjects(SnomedDescriptionIndexEntry.class).forEach(removedDescription -> {
+			if (removedDescription.isFsn() && removedDescription.isActive()) {
+				statedSourceIds.add(removedDescription.getConceptId());
+				inferredSourceIds.add(removedDescription.getConceptId());
+			}
+		});
+		
+		staging.getChangedRevisions(SnomedDescriptionIndexEntry.class, Set.of(
+				SnomedDescriptionIndexEntry.Fields.ACTIVE,
+				SnomedDescriptionIndexEntry.Fields.TERM)).forEach(diff -> {
+
+			SnomedDescriptionIndexEntry newRevision = (SnomedDescriptionIndexEntry) diff.newRevision;
+			
+			if (newRevision.isFsn()) {
+				statedSourceIds.add(newRevision.getConceptId());
+				inferredSourceIds.add(newRevision.getConceptId());
+			}
+		});
+
+		staging.getNewObjects(SnomedDescriptionIndexEntry.class).forEach(newDescription -> {
+			if (newDescription.isFsn() && newDescription.isActive()) {
+				statedSourceIds.add(newDescription.getConceptId());
+				inferredSourceIds.add(newDescription.getConceptId());
+			}
+		});
+
 		if (!statedSourceIds.isEmpty()) {
 			final Query<SnomedConceptDocument> statedSourceConceptsQuery = Query.select(SnomedConceptDocument.class)
 					.where(Expressions.builder()

@@ -226,6 +226,7 @@ public final class EsQueryBuilder {
 		final String field = toFieldPath(predicate);
 		final String term = predicate.term();
 		final MatchType type = predicate.type();
+		final int minShouldMatch = predicate.minShouldMatch();
 		QueryBuilder query;
 		switch (type) {
 		case PHRASE:
@@ -235,7 +236,9 @@ public final class EsQueryBuilder {
 			query = QueryBuilders.matchQuery(field, term).operator(Operator.AND);
 			break;
 		case ANY:
-			query = QueryBuilders.matchQuery(field, term).operator(Operator.OR);
+			query = QueryBuilders.matchQuery(field, term)
+				.operator(Operator.OR)
+				.minimumShouldMatch(Integer.toString(minShouldMatch));
 			break;
 		case FUZZY:
 			query = QueryBuilders.matchQuery(field, term)

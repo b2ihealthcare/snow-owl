@@ -5,8 +5,14 @@
   <parent>
     <groupId>com.b2international.snowowl</groupId>
     <artifactId>core-parent</artifactId>
+<<<<<<< HEAD:core/com.b2international.snowowl.core.feature/pom.xml
     <version>7.6.0</version>
   </parent>
+  <artifactId>com.b2international.snowowl.core.feature</artifactId>
+=======
+    <version>7.7.0-SNAPSHOT</version>
+  </parent>
   <artifactId>com.b2international.snowowl.core.dependencies.feature</artifactId>
+>>>>>>> 76400941b980b12131450c9618005f48e2eee4d3:core/com.b2international.snowowl.core.dependencies.feature/pom.xml
   <packaging>eclipse-feature</packaging>
 </project>

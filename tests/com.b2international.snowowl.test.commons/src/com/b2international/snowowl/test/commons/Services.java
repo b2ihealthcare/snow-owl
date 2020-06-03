@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,10 @@ package com.b2international.snowowl.test.commons;
 import java.util.Base64;
 
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.authorization.AuthorizedEventBus;
 import com.b2international.snowowl.core.authorization.AuthorizedRequest;
+import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.test.commons.rest.RestExtensions;
 import com.google.common.base.Charsets;
@@ -40,6 +42,10 @@ public class Services {
 	 */
 	public static <T> T service(Class<T> type) {
 		return ApplicationContext.getInstance().getServiceChecked(type);
+	}
+	
+	public static ServiceProvider context() {
+		return ApplicationContext.getServiceForClass(Environment.class);
 	}
 	
 	public static IEventBus bus() {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ public class AlphaNumericComparator implements Comparator<String> {
 
 	/*returns true if the char argument is a number*/
 	private static final boolean isDigit(final char c) {
-		return CharMatcher.DIGIT.matches(c);
+		return CharMatcher.digit().matches(c);
 	}
 	
 	/* (non-Javadoc)
