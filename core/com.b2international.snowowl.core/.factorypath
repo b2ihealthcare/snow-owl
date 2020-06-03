@@ -1,0 +1,4 @@
+<factorypath>
+    <factorypathentry kind="WKSPJAR" id="/com.b2international.org.immutables/lib/value-2.8.1.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="WKSPJAR" id="/com.b2international.org.immutables/lib/func-2.8.1.jar" enabled="true" runInBatchMode="false"/>
+</factorypath>
