@@ -28,6 +28,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.google.common.base.Strings;
 
 /**
  * @since 4.5
@@ -82,9 +83,9 @@ final class SnomedReferenceSetConverter extends BaseRevisionResourceConverter<Sn
 		if (referencedComponentType != null && referencedComponentType > 0) {
 			refset.setReferencedComponentType(getReferencedComponentType(referencedComponentType));
 		}
-		final Short mapTargetComponentType = entry.getMapTargetComponentType();
-		if (mapTargetComponentType != null && mapTargetComponentType > 0) {
-			refset.setMapTargetComponentType(getReferencedComponentType(mapTargetComponentType));
+		final String mapTargetComponentType = entry.getMapTargetComponentType();
+		if (!Strings.isNullOrEmpty(mapTargetComponentType)) {
+			refset.setMapTargetComponentType(mapTargetComponentType);
 		}
 		refset.setType(entry.getRefSetType());
 		return refset;

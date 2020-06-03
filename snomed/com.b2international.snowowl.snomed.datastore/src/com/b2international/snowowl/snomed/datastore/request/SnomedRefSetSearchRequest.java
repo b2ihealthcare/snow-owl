@@ -36,6 +36,9 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
  */
 final class SnomedRefSetSearchRequest extends SnomedSearchRequest<SnomedReferenceSets, SnomedConceptDocument> {
 
+	
+	private static final long serialVersionUID = 1L;
+
 	enum OptionKey {
 		/**
 		 * A collection of {@link SnomedRefSetType reference set types} to use
@@ -80,7 +83,7 @@ final class SnomedRefSetSearchRequest extends SnomedSearchRequest<SnomedReferenc
 		}
 		
 		if (containsKey(OptionKey.MAP_TARGET_COMPONENT_TYPE)) {
-			queryBuilder.filter(mapTargetComponentTypes(getCollection(OptionKey.MAP_TARGET_COMPONENT_TYPE, Integer.class)));
+			queryBuilder.filter(mapTargetComponentTypes(getCollection(OptionKey.MAP_TARGET_COMPONENT_TYPE, String.class)));
 		}
 		
 		return queryBuilder.build();

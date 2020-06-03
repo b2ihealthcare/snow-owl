@@ -192,12 +192,12 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 			return matchAnyInt(Fields.REFERENCED_COMPONENT_TYPE, referencedComponentTypes);
 		}
 		
-		public static Expression mapTargetComponentType(int mapTargetComponentType) {
-			return match(Fields.MAP_TARGET_COMPONENT_TYPE, mapTargetComponentType);
+		public static Expression mapTargetComponentType(String mapTargetComponentType) {
+			return mapTargetComponentTypes(Collections.singleton(mapTargetComponentType));
 		}
 		
-		public static Expression mapTargetComponentTypes(Collection<Integer> mapTargetComponentTypes) {
-			return matchAnyInt(Fields.MAP_TARGET_COMPONENT_TYPE, mapTargetComponentTypes);
+		public static Expression mapTargetComponentTypes(Collection<String> mapTargetComponentTypes) {
+			return matchAny(Fields.MAP_TARGET_COMPONENT_TYPE, mapTargetComponentTypes);
 		}
 		
 		public static Expression referringPredicate(String referringPredicate) {
@@ -291,7 +291,7 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 		private LongSet statedAncestors;
 		private SnomedRefSetType refSetType;
 		private Short referencedComponentType = TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT;
-		private Short mapTargetComponentType;
+		private String mapTargetComponentType;
 		private List<SnomedDescriptionFragment> preferredDescriptions = Collections.emptyList();
 		private float doi = DEFAULT_DOI;
 
@@ -350,7 +350,7 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 		@JsonIgnore
 		public Builder clearRefSet() {
 			referencedComponentType = 0;
-			mapTargetComponentType = 0;
+			mapTargetComponentType = null;
 			refSetType = null;
 			return getSelf();
 		}
@@ -358,7 +358,7 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 		@JsonIgnore
 		public Builder refSet(final SnomedReferenceSet refSet) {
 			if (!StringUtils.isEmpty(refSet.getMapTargetComponentType())) {
-				mapTargetComponentType(TerminologyRegistry.INSTANCE.getTerminologyComponentById(refSet.getMapTargetComponentType()).shortId());
+				mapTargetComponentType(refSet.getMapTargetComponentType());
 			}
 			
 			if (!Strings.isNullOrEmpty(refSet.getReferencedComponentType())) {
@@ -368,7 +368,7 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 			return refSetType(refSet.getType());
 		}
 		
-		public Builder mapTargetComponentType(Short mapTargetComponentType) {
+		public Builder mapTargetComponentType(String mapTargetComponentType) {
 			this.mapTargetComponentType = mapTargetComponentType;
 			return getSelf();
 		}
@@ -441,7 +441,7 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 	private final Boolean exhaustive;
 	private final SnomedRefSetType refSetType;
 	private final Short referencedComponentType;
-	private final Short mapTargetComponentType;
+	private final String mapTargetComponentType;
 	private final List<SnomedDescriptionFragment> preferredDescriptions;
 	
 	private LongSet parents;
@@ -461,7 +461,7 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 			final Boolean exhaustive, 
 			final SnomedRefSetType refSetType, 
 			final Short referencedComponentType,
-			final Short mapTargetComponentType,
+			final String mapTargetComponentType,
 			final List<String> referringRefSets,
 			final List<String> referringMappingRefSets,
 			final List<SnomedDescriptionFragment> preferredDescriptions) {
@@ -522,7 +522,7 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 		return referencedComponentType;
 	}
 	
-	public Short getMapTargetComponentType() {
+	public String getMapTargetComponentType() {
 		return mapTargetComponentType;
 	}
 	
