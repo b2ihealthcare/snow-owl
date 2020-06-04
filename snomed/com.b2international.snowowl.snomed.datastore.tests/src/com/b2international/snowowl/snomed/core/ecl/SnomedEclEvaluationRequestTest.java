@@ -355,30 +355,21 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	@Test
 	public void selfAndOther() throws Exception {
 		final Expression actual = eval(ROOT_ID + " AND " + OTHER_ID);
-		final Expression expected = Expressions.builder()
-				.filter(id(ROOT_ID))
-				.filter(id(OTHER_ID))
-				.build();
+		final Expression expected = Expressions.matchNone();
 		assertEquals(expected, actual);
 	}
 	
 	@Test
 	public void selfAndOtherWithCommaAsOperator() throws Exception {
 		final Expression actual = eval(ROOT_ID + " , " + OTHER_ID);
-		final Expression expected = Expressions.builder()
-				.filter(id(ROOT_ID))
-				.filter(id(OTHER_ID))
-				.build();
+		final Expression expected = Expressions.matchNone();
 		assertEquals(expected, actual);
 	}
 	
 	@Test
 	public void selfOrOther() throws Exception {
 		final Expression actual = eval(ROOT_ID + " OR " + OTHER_ID);
-		final Expression expected = Expressions.builder()
-				.should(id(ROOT_ID))
-				.should(id(OTHER_ID))
-				.build();
+		final Expression expected = ids(ImmutableSet.of(ROOT_ID, OTHER_ID));
 		assertEquals(expected, actual);
 	}
 	

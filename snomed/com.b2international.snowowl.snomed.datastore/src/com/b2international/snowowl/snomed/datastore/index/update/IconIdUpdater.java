@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,20 +15,33 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.update;
 
+import java.util.ArrayDeque;
 import java.util.Collection;
+import java.util.Deque;
+import java.util.Locale;
+import java.util.Optional;
 import java.util.Set;
 
 import com.b2international.collections.longs.LongSet;
+import com.b2international.commons.collect.LongSets;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.taxonomy.TaxonomyGraph;
+import com.google.common.base.CharMatcher;
 import com.google.common.collect.Sets;
-import com.google.common.primitives.Longs;
 
 /**
  * @since 4.3
  */
 public class IconIdUpdater {
+	
+	private static final char WORD_SEPARATOR = '_';
+	
+	private static final CharMatcher DIGIT_OR_LETTER = CharMatcher.inRange('0', '9')
+			.or(CharMatcher.inRange('a', 'z'))
+			.or(CharMatcher.is(WORD_SEPARATOR));
+	
+	private static final int MAX_SUFFIX = 64;
 	
 	private final TaxonomyGraph inferredTaxonomy;
 	private final TaxonomyGraph statedTaxonomy;
@@ -40,47 +53,62 @@ public class IconIdUpdater {
 		this.availableImages = availableImages;
 	}
 	
-	public void update(String id, boolean active, SnomedConceptDocument.Builder doc) {
-		doc.iconId(getIconId(id, active));
+	public void update(String id, String semanticTag, boolean active, SnomedConceptDocument.Builder doc) {
+		doc.iconId(getIconId(id, semanticTag, active));
 	}
 	
-	protected String getIconId(String conceptId, boolean active) {
-		String iconId = null;
-		if (active) {
-			// TODO do not set the iconId to the one in the taxonomyBuilder if the concept is inactive
-			// we may have to need a ref to the concept itself or at least know the active flag
-			iconId = getParentIcon(conceptId, inferredTaxonomy);
-			// try to use the stated form to get the ID
-			if (iconId == null) {
-				iconId = getParentIcon(conceptId, statedTaxonomy);
-			}
+	protected String getIconId(String id, String semanticTag, boolean active) {
+		if (!active) {
+			return Concepts.ROOT_CONCEPT;
 		}
-		// default icon is the ROOT if neither the inferred nor the stated tree provided an ICON, usually this means that the concept is inactive
-		return iconId == null ? Concepts.ROOT_CONCEPT : iconId;
+		
+		final String imageSuffix = getImageSuffix(semanticTag);
+		if (availableImages.contains(imageSuffix)) {
+			return imageSuffix;
+		}
+		
+		return getParentIcon(id, inferredTaxonomy)
+				.or(() -> getParentIcon(id, statedTaxonomy))
+				.orElse(Concepts.ROOT_CONCEPT);
 	}
-	
-	private String getParentIcon(String componentId, TaxonomyGraph taxonomyBuilder) {
-		if (componentId == null || !taxonomyBuilder.containsNode(Long.parseLong(componentId))) {
-			return null;
+
+	/**
+	 * @param semanticTag the semantic tag included on the concept's FSN
+	 * @return an underscore_separated version of the semantic tag, 
+	 *         restricted to at most 64 characters, 
+	 *         including only letters and digits
+	 */
+	private String getImageSuffix(String semanticTag) {
+		final String lowerCase = semanticTag.toLowerCase(Locale.ENGLISH);
+		final String convertWhitespace = CharMatcher.whitespace().replaceFrom(lowerCase, WORD_SEPARATOR);
+		final String restrictChars = DIGIT_OR_LETTER.retainFrom(convertWhitespace);
+		final String imageSuffix = restrictChars.substring(0, Math.min(MAX_SUFFIX, restrictChars.length()));
+		return imageSuffix;
+	}
+	private Optional<String> getParentIcon(String id, TaxonomyGraph taxonomyGraph) {
+		if (id == null || !taxonomyGraph.containsNode(Long.parseLong(id))) {
+			return Optional.empty();
 		}
 		final Set<String> visitedNodes = Sets.newHashSet();
-		return getParentFrom(componentId, taxonomyBuilder, visitedNodes);
-	}
-	
-	private String getParentFrom(final String conceptId, TaxonomyGraph taxonomyBuilder, final Set<String> visitedNodes) {
-		if (visitedNodes.add(conceptId)) {
-			if (this.availableImages.contains(conceptId)) {
-				return conceptId;
+		final Set<String> candidates = Sets.newTreeSet();
+		final Deque<String> toVisit = new ArrayDeque<>();
+		toVisit.add(id);
+		
+		while (!toVisit.isEmpty()) {
+			final String currentId = toVisit.removeFirst();
+			if (!visitedNodes.add(currentId)) {
+				continue;
 			}
-			final LongSet ancestorNodeIds = taxonomyBuilder.getAncestorNodeIds(Long.parseLong(conceptId));
-			if (ancestorNodeIds.size() == 0) {
-				return null;
+			
+			if (availableImages.contains(currentId)) {
+				candidates.add(currentId);
+			} else {
+				// XXX: we stop looking further "up" this hierarchy if there is any image present for the visited concept 
+				final LongSet ancestorNodeIds = taxonomyGraph.getAncestorNodeIds(Long.parseLong(currentId));
+				toVisit.addAll(LongSets.toStringList(ancestorNodeIds));
 			}
-			final long minConceptId = Longs.min(ancestorNodeIds.toArray());
-			return getParentFrom(Long.toString(minConceptId), taxonomyBuilder, visitedNodes);
-		} else {
-			// if we reached an already visited node, then skip and return null
-			return null;
 		}
+		
+		return candidates.stream().findFirst();
 	}
 }

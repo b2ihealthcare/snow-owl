@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,11 +26,17 @@ public final class TextPredicate extends Predicate {
 	
 	private final String term;
 	private final MatchType type;
-
+	private final int minShouldMatch;
+	
 	TextPredicate(String field, String term, MatchType type) {
+		this(field, term, type, 1);
+	}
+	
+	TextPredicate(String field, String term, MatchType type, int minShouldMatch) {
 		super(field);
 		this.term = term;
 		this.type = type;
+		this.minShouldMatch = minShouldMatch;
 	}
 	
 	public String term() {
@@ -39,6 +45,10 @@ public final class TextPredicate extends Predicate {
 	
 	public MatchType type() {
 		return type;
+	}
+	
+	public int minShouldMatch() {
+		return minShouldMatch;
 	}
 	
 	@Override

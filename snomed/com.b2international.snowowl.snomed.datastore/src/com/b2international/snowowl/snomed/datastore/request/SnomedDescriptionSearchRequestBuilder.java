@@ -54,6 +54,10 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponent
 		return addOption(OptionKey.PARSED_TERM, true);
 	}
 	
+	public SnomedDescriptionSearchRequestBuilder withMinTermMatch(int minTermMatch) {
+		return addOption(OptionKey.MIN_TERM_MATCH, minTermMatch);
+	}
+	
 	/**
 	 * Filters results by matching description terms, using different methods for comparison.
 	 * <p>

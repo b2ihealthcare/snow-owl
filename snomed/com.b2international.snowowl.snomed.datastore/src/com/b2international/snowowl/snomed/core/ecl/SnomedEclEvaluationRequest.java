@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,9 +29,11 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
+import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.util.PolymorphicDispatcher;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.NotImplementedException;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
@@ -126,7 +128,7 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 		if (inner instanceof EclConceptReference) {
 			final EclConceptReference concept = (EclConceptReference) inner;
 			return Promise.immediate(activeMemberOf(concept.getId()));
-		} else if (inner instanceof Any) {
+		} else if (isAnyExpression(inner)) {
 			return Promise.immediate(Expressions.exists(ACTIVE_MEMBER_OF));
 		} else if (inner instanceof NestedExpression) {
 			final String focusConceptExpression = context.service(EclSerializer.class).serializeWithoutTerms(inner);
@@ -145,7 +147,7 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 	protected Promise<Expression> eval(BranchContext context, final DescendantOf descendantOf) {
 		final ExpressionConstraint inner = descendantOf.getConstraint();
 		// <* should eval to * MINUS parents IN (ROOT_ID)
-		if (inner instanceof Any) {
+		if (isAnyExpression(inner)) {
 			return Promise.immediate(Expressions.builder()
 					.mustNot(parentsExpression(Collections.singleton(IComponent.ROOT_ID)))
 					.build());
@@ -166,7 +168,7 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 	protected Promise<Expression> eval(BranchContext context, final DescendantOrSelfOf descendantOrSelfOf) {
 		final ExpressionConstraint inner = descendantOrSelfOf.getConstraint();
 		// <<* should eval to *
-		if (inner instanceof Any) {
+		if (isAnyExpression(inner)) {
 			return evaluate(context, inner);
 		} else {
 			return evaluate(context, inner)
@@ -186,7 +188,7 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 	protected Promise<Expression> eval(BranchContext context, final ChildOf childOf) {
 		final ExpressionConstraint innerConstraint = childOf.getConstraint();
 		// <!* should eval to * MINUS parents in (ROOT_ID)
-		if (innerConstraint instanceof Any) {
+		if (isAnyExpression(innerConstraint)) {
 			return Promise.immediate(Expressions.builder()
 					.mustNot(parentsExpression(Collections.singleton(IComponent.ROOT_ID)))
 					.build());
@@ -241,7 +243,7 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 	protected Promise<Expression> eval(BranchContext context, final AncestorOrSelfOf ancestorOrSelfOf) {
 		final ExpressionConstraint innerConstraint = ancestorOrSelfOf.getConstraint();
 		// >>* should eval to *
-		if (innerConstraint instanceof Any) {
+		if (isAnyExpression(innerConstraint)) {
 			return evaluate(context, innerConstraint);
 		} else {
 			final String inner = context.service(EclSerializer.class).serializeWithoutTerms(innerConstraint);
@@ -265,6 +267,31 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.4+Conjunction+and+Disjunction
 	 */
 	protected Promise<Expression> eval(BranchContext context, final AndExpressionConstraint and) {
+		if (isAnyExpression(and.getLeft())) {
+			return evaluate(context, and.getRight());
+		} else if (isAnyExpression(and.getRight())) {
+			return evaluate(context, and.getLeft());
+		} else if (isEclConceptReference(and.getRight())) {
+			// if the right hand is an ID, then iterate and check if the entire tree is ID1 AND ID2 AND IDN
+			final Set<String> ids = newHashSet();
+			TreeIterator<EObject> it = and.eAllContents();
+			while (it.hasNext()) {
+				EObject content = it.next();
+				// accept only EclConceptReference/Nested and AND expressions, anything else will break the loop
+				if (content instanceof EclConceptReference) {
+					ids.add(((EclConceptReference) content).getId());
+				} else if (content instanceof NestedExpression || content instanceof AndExpressionConstraint) {
+					// continue
+				} else {
+					// remove any IDs collected
+					ids.clear();
+					break;
+				}
+			}
+			if (!CompareUtils.isEmpty(ids)) {
+				return Promise.immediate(Expressions.matchNone());
+			}
+		}
 		return Promise.all(evaluate(context, and.getLeft()), evaluate(context, and.getRight()))
 				.then(innerExpressions -> {
 					final Expression left = (Expression) innerExpressions.get(0);
@@ -281,6 +308,31 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.4+Conjunction+and+Disjunction
 	 */
 	protected Promise<Expression> eval(BranchContext context, final OrExpressionConstraint or) {
+		if (isAnyExpression(or.getLeft())) {
+			return evaluate(context, or.getLeft());
+		} else if (isAnyExpression(or.getRight())) {
+			return evaluate(context, or.getRight());
+		} else if (isEclConceptReference(or.getRight())) {
+			// if the right hand is an ID, then iterate and check if the entire tree is ID1 OR ID2 OR IDN
+			final Set<String> ids = newHashSet();
+			TreeIterator<EObject> it = or.eAllContents();
+			while (it.hasNext()) {
+				EObject content = it.next();
+				// accept only EclConceptReference/Nested and OR expressions, anything else will break the loop
+				if (content instanceof EclConceptReference) {
+					ids.add(((EclConceptReference) content).getId());
+				} else if (content instanceof NestedExpression || content instanceof OrExpressionConstraint) {
+					// continue
+				} else {
+					// remove any IDs collected
+					ids.clear();
+					break;
+				}
+			}
+			if (!CompareUtils.isEmpty(ids)) {
+				return Promise.immediate(ids(ids));
+			}
+		}
 		return Promise.all(evaluate(context, or.getLeft()), evaluate(context, or.getRight()))
 				.then(innerExpressions -> {
 					final Expression left = (Expression) innerExpressions.get(0);
@@ -291,21 +343,27 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 							.build();
 				});
 	}
-	
+
 	/**
 	 * Handles exclusion binary operator expressions
+	 * 
 	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.5+Exclusion+and+Not+Equals
 	 */
 	protected Promise<Expression> eval(BranchContext context, final ExclusionExpressionConstraint exclusion) {
-		return Promise.all(evaluate(context, exclusion.getLeft()), evaluate(context, exclusion.getRight()))
-				.then(innerExpressions -> {
-					final Expression left = (Expression) innerExpressions.get(0);
-					final Expression right = (Expression) innerExpressions.get(1);
-					return Expressions.builder()
-							.filter(left)
-							.mustNot(right)
-							.build();
+		return evaluate(context, exclusion.getRight()).thenWith(right -> {
+			if (right.isMatchAll()) {
+				// excluding everything should result in no matches
+				return Promise.immediate(Expressions.matchNone());
+			} else if (right.isMatchNone()) {
+				// excluding nothing is just the left query
+				return evaluate(context, exclusion.getLeft());
+			} else {
+				return evaluate(context, exclusion.getLeft()).then(left -> {
+					// match left hand side query and not the right hand side query
+					return Expressions.builder().filter(left).mustNot(right).build();
 				});
+			}
+		});
 	}
 	
 	/**
@@ -431,6 +489,14 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 				}
 			}
 		}		
+	}
+	
+	private boolean isAnyExpression(ExpressionConstraint expression) {
+		return expression instanceof Any || expression instanceof NestedExpression && ((NestedExpression) expression).getNested() instanceof Any;
+	}
+	
+	private boolean isEclConceptReference(ExpressionConstraint expression) {
+		return expression instanceof EclConceptReference || expression instanceof NestedExpression && ((NestedExpression) expression).getNested() instanceof EclConceptReference;
 	}
 	
 	/*package*/ static Function<Set<String>, Expression> matchIdsOrNone() {

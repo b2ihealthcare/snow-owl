@@ -26,6 +26,7 @@ import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.branch.Branches;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.Permission;
@@ -230,13 +231,19 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 	}
 	
 	private boolean branchExists(final String path, final TransactionContext context) {
-		return RepositoryRequests.branching()
+		Branches branches = RepositoryRequests.branching()
 				.prepareSearch()
-				.setLimit(0)
+				.setLimit(1)
 				.filterById(path)
 				.build()
-				.execute(context)
-				.getTotal() > 0;
+				.execute(context);
+		
+		if (branches.isEmpty()) {
+			return false;
+		}
+		
+		return branches.stream().filter(b -> !b.isDeleted()).findFirst().isPresent();
+		
 	}
 
 	private CodeSystemEntry createCodeSystemEntry(final TransactionContext context) {

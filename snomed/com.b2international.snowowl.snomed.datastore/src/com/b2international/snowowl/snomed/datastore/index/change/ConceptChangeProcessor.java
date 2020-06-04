@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ import static com.google.common.collect.Sets.newHashSet;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -122,12 +124,14 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		staging.getNewObjects(SnomedConceptDocument.class).forEach(concept -> {
 			final String id = concept.getId();
 			final Builder doc = SnomedConceptDocument.builder().id(id);
-			update(doc, concept, null);
+			
 			// in case of a new concept, all of its descriptions should be part of the staging area as well
-			doc.preferredDescriptions(newDescriptionFragmentsByConcept.removeAll(id)
+			final List<SnomedDescriptionFragment> preferredDescriptions = newDescriptionFragmentsByConcept.removeAll(id)
 					.stream()
 					.sorted(DESCRIPTION_FRAGMENT_ORDER)
-					.collect(Collectors.toList()));
+					.collect(Collectors.toList());
+			
+			update(doc, preferredDescriptions, concept, null);
 			stageNew(doc.build());
 		});
 		
@@ -172,7 +176,6 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 				}
 				
 				final Builder doc = SnomedConceptDocument.builder(currentDoc);
-				update(doc, concept, currentDoc);
 				
 				final Collection<SnomedDescriptionIndexEntry> affectedDescriptions = affectedDescriptionsByConcept.get(id);
 				if (!affectedDescriptions.isEmpty()) {
@@ -195,11 +198,16 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 						}
 					}
 					
-					doc.preferredDescriptions(updatedPreferredDescriptions.values().stream().sorted(DESCRIPTION_FRAGMENT_ORDER).collect(Collectors.toList()));
+					final List<SnomedDescriptionFragment> preferredDescriptions = updatedPreferredDescriptions.values()
+							.stream()
+							.sorted(DESCRIPTION_FRAGMENT_ORDER)
+							.collect(Collectors.toList());
+					
+					update(doc, preferredDescriptions, concept, currentDoc);
 				} else {
-					doc.preferredDescriptions(currentDoc.getPreferredDescriptions());
+					update(doc, currentDoc.getPreferredDescriptions(), concept, currentDoc);
 				}
-				
+
 				stageChange(currentDoc, doc.build());
 			}
 		}
@@ -272,7 +280,11 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 	 * but there can be a dirty concept if a property changed on it.
 	 * We will use whatever we actually have locally to compute the new revision.
 	 */
-	private void update(SnomedConceptDocument.Builder doc, @Nullable SnomedConceptDocument newOrDirtyRevision, SnomedConceptDocument cleanRevision) {
+	private void update(SnomedConceptDocument.Builder doc, 
+			List<SnomedDescriptionFragment> preferredDescriptions, 
+			@Nullable SnomedConceptDocument newOrDirtyRevision, 
+			SnomedConceptDocument cleanRevision) {
+		
 		checkArgument(newOrDirtyRevision != null || cleanRevision != null, "Either the newOrDirtyRevision is null or the cleanRevision but not both");
 
 		final String id = newOrDirtyRevision != null ? newOrDirtyRevision.getId() : cleanRevision.getId();
@@ -294,7 +306,15 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		final boolean inInferred = inferredTaxonomy.getNewTaxonomy().containsNode(idLong);
 		
 		if (inStated || inInferred) {
-			iconId.update(id, active, doc);
+			final String semanticTag = preferredDescriptions.stream()
+					.filter(f -> Concepts.FULLY_SPECIFIED_NAME.equals(f.getTypeId()))
+					.sorted(Comparator.comparing(SnomedDescriptionFragment::getId))
+					.findFirst()
+					.map(SnomedDescriptionFragment::getTerm)
+					.map(SnomedDescriptionIndexEntry::extractSemanticTag)
+					.orElse("");
+			
+			iconId.update(id, semanticTag, active, doc);
 		}
 	
 		if (inStated) {
@@ -309,6 +329,8 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		final Collection<String> currentActiveMemberOf = cleanRevision == null ? Collections.emptySet() : cleanRevision.getActiveMemberOf();
 		new ReferenceSetMembershipUpdater(referringRefSets.removeAll(id), currentMemberOf, currentActiveMemberOf)
 				.update(doc);
+		
+		doc.preferredDescriptions(preferredDescriptions);
 	}
 
 	private Set<String> getPreferredLanguageMembers(SnomedDescriptionIndexEntry description) {

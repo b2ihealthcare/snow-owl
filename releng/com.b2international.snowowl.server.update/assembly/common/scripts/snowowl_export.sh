@@ -60,6 +60,9 @@ EFFECTIVE_TIME_START=""
 # Effective time upper bound
 EFFECTIVE_TIME_END=""
 
+# Include pre-release content
+INCLUDE_UNPUBLISHED=true
+
 # The input data for the export config
 EXPORT_CONFIG=""
 
@@ -97,6 +100,8 @@ NAME:
         Effective time range lower bound, in yyyyMMdd format
     -g
         Effective time range upper bound, in yyyyMMdd format
+	-i
+		Include pre-release content
 
 NOTES:
 
@@ -170,6 +175,8 @@ initiate_export() {
 			EXPORT_CONFIG+="&moduleIds=${module}"
 		done
 	fi
+	
+	EXPORT_CONFIG+="&includeUnpublished=${INCLUDE_UNPUBLISHED}"
 
 	EXPORTS_ENDPOINT="${SNOW_OWL_BASE_URL}${EXPORTS_POST_ENDPOINT}"
 
@@ -201,7 +208,7 @@ execute() {
 	exit 0
 }
 
-while getopts ":hu:p:t:e:b:a:s:m:r:f:g:" option; do
+while getopts ":hu:p:t:e:b:a:s:m:r:f:g:i:" option; do
 	case "${option}" in
 	h)
 		usage
@@ -233,6 +240,9 @@ while getopts ":hu:p:t:e:b:a:s:m:r:f:g:" option; do
 		;;
 	g)
 		EFFECTIVE_TIME_END=${OPTARG}
+		;;
+	i)
+		INCLUDE_UNPUBLISHED=${OPTARG}
 		;;
 	m)
 		MODULES_TO_EXPORT+=("${OPTARG}")

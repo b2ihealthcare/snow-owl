@@ -10,7 +10,7 @@
 	<packaging>eclipse-plugin</packaging>
 	
 	<properties>
-		<elasticsearch.version>7.6.2</elasticsearch.version>
+		<elasticsearch.version>7.7.0</elasticsearch.version>
 		<log4j2.version>2.11.1</log4j2.version>
     </properties>
     
@@ -126,7 +126,6 @@
 								lucene-queries,
 								lucene-queryparser,
 								lucene-sandbox,
-								lucene-spatial,
 								lucene-spatial-extras,
 								lucene-spatial3d,
 								lucene-suggest,
