@@ -119,6 +119,7 @@ public final class TerminologyRepository extends DelegatingContext implements Re
 		final Map<String, Object> indexSettings = newHashMap(getDelegate().service(IndexSettings.class));
 		final IndexConfiguration repositoryIndexConfiguration = getDelegate().service(SnowOwlConfiguration.class).getModuleConfig(RepositoryConfiguration.class).getIndexConfiguration();
 		indexSettings.put(IndexClientFactory.NUMBER_OF_SHARDS, repositoryIndexConfiguration.getNumberOfShards());
+		indexSettings.put(IndexClientFactory.NUMBER_OF_REPLICAS, repositoryIndexConfiguration.getNumberOfReplicas());
 		final IndexClient indexClient = Indexes.createIndexClient(repositoryId, mapper, mappings, indexSettings);
 		final Index index = new DefaultIndex(indexClient);
 		final RevisionIndex revisionIndex = new DefaultRevisionIndex(index, service(TimestampProvider.class), mapper);
