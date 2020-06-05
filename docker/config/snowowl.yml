@@ -37,5 +37,5 @@ repository:
     clusterUrl: "${ELASTICSEARCH_CLUSTER_URL}"
     connectTimeout: "${ELASTICSEARCH_CONNECT_TIMEOUT}"
     socketTimeout: "${ELASTICSEARCH_SOCKET_TIMEOUT}"
-    numberOfReplicas: "${ELASTICSEARCH_NUMBER_OF_REPLICAS}"
+    numberOfReplicas: ${ELASTICSEARCH_NUMBER_OF_REPLICAS}
 
