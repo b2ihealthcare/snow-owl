@@ -236,7 +236,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 		return ImmutableMap.<String, Object>builder()
 				.put("analysis", analysisMap)
 				.put("number_of_shards", String.valueOf(settings().getOrDefault(IndexClientFactory.NUMBER_OF_SHARDS, "1")))
-				.put("number_of_replicas", "0")
+				.put("number_of_replicas", String.valueOf(settings().getOrDefault(IndexClientFactory.NUMBER_OF_REPLICAS, "0")))
 				// disable es refresh, we will do it manually on each commit
 				.put("refresh_interval", "-1")
 				// use async durability for the translog
