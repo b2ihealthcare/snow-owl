@@ -2,9 +2,9 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Snow Owl Core Tests
 Bundle-SymbolicName: com.b2international.snowowl.core.tests
-Bundle-Version: 7.6.0
+Bundle-Version: 7.7.0.qualifier
 Bundle-Vendor: B2i Healthcare
 Fragment-Host: com.b2international.snowowl.core;bundle-version="7.5.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-11
-Require-Bundle: org.junit;bundle-version="4.12.0",
- org.assertj.core;bundle-version="1.7.1"
+Require-Bundle: org.junit;bundle-version="4.12.0"
+Import-Package: org.assertj.core.api;version="3.16.1"

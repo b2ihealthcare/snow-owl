@@ -63,7 +63,7 @@ import springfox.documentation.spring.web.plugins.Docket;
  * annotated with {@link Bean} that returns an instance of {@link Docket}. The
  * {@link #docs(String, String, String, String, String, String, String, String, String)}
  * method can be used for instantiation.
- * 
+ *
  * @since 7.2
  */
 public abstract class BaseApiConfig {
@@ -100,7 +100,7 @@ public abstract class BaseApiConfig {
 			final String apiLicenseUrl,
 			final String apiDescription) {
 		final TypeResolver resolver = new TypeResolver();
-		final Predicate<String> paths = PathSelectors.regex(apiBaseUrl + ".*");
+		final Predicate<String> paths = PathSelectors.regex(apiBaseUrl + "/.*");
 		return new Docket(DocumentationType.SWAGGER_2)
 				.securitySchemes(ImmutableList.of(
 					new BasicAuth("basic"),
@@ -113,22 +113,12 @@ public abstract class BaseApiConfig {
 							new SecurityReference("basic", new AuthorizationScope[0]),
 							new SecurityReference("bearer", new AuthorizationScope[0])
 						))
-					.build()
+						.build()
 				))
 				.useDefaultResponseMessages(false)
 				.ignoredParameterTypes(Principal.class)
 				.alternateTypeRules(
 					newRule(resolver.resolve(UUID.class), resolver.resolve(String.class)),
-					newRule(resolver.resolve(CodeSystemURI.class), resolver.resolve(String.class)),
-					newRule(resolver.resolve(ExtendedLocale.class), resolver.resolve(String.class)),
-					newRule(
-						resolver.resolve(List.class, resolver.resolve(CodeSystemURI.class)),
-						resolver.resolve(List.class, resolver.resolve(String.class))
-			        ),
-					newRule(
-						resolver.resolve(List.class, resolver.resolve(ExtendedLocale.class)),
-						resolver.resolve(List.class, resolver.resolve(String.class))
-			        ),
 					newRule(
 						resolver.resolve(Promise.class, WildcardType.class),
 			            resolver.resolve(WildcardType.class)
@@ -146,6 +136,9 @@ public abstract class BaseApiConfig {
 									}
 									return paths.apply(input);
 	            	})
+	            	.build()
+	            .select()
+	            	.paths(paths)
 	            	.build()
 	            .apiInfo(new ApiInfo(apiTitle, apiDescription, apiVersion, apiTermsOfServiceUrl, new Contact("B2i Healthcare", apiLicenseUrl, apiContact), apiLicense, apiLicenseUrl, Collections.emptyList()));
 	}

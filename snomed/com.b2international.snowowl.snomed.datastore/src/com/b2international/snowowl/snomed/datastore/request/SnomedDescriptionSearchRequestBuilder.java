@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -51,6 +52,10 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponent
 
 	public SnomedDescriptionSearchRequestBuilder withParsedTerm() {
 		return addOption(OptionKey.PARSED_TERM, true);
+	}
+	
+	public SnomedDescriptionSearchRequestBuilder withMinTermMatch(int minTermMatch) {
+		return addOption(OptionKey.MIN_TERM_MATCH, minTermMatch);
 	}
 	
 	/**
@@ -339,9 +344,12 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponent
 	 * if only some of the {@code ExtendedLocale}s could not be transformed into a language reference set identifier, however. 
 	 *  
 	 * @param locales  the extended locale list to process (may not be {@code null})
-	 * @return the converted language reference set identifiers
+	 * @return the converted language reference set identifiers or an empty {@link List}, never <code>null</code>
 	 */
 	public static List<String> getLanguageRefSetIds(List<ExtendedLocale> locales) {
+		if (CompareUtils.isEmpty(locales)) {
+			return Collections.emptyList();
+		}
 		List<String> languageRefSetIds = newArrayList();
 		List<ExtendedLocale> unconvertableLocales = new ArrayList<ExtendedLocale>();
 	

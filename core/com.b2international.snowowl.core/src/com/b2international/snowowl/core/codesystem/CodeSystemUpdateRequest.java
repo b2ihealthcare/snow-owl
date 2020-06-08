@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.codesystem;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -124,11 +125,10 @@ final class CodeSystemUpdateRequest extends UpdateRequest<TransactionContext> im
 			return false;
 		}
 		
-		final List<ExtendedLocale> currentLocales = Optional.ofNullable(codeSystem.getLocales())
-				.orElse(ImmutableList.of());
+		final List<ExtendedLocale> currentLocales = codeSystem.getLocales();
 
 		// Also don't update if the lists contain the same elements in the same order
-		if (currentLocales.equals(locales)) {
+		if (Objects.equals(currentLocales, locales)) {
 			return false;
 		}
 		

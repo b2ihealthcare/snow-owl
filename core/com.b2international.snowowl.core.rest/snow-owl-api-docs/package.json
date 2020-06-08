@@ -1,10 +1,11 @@
 {
   "name": "snow-owl-api-docs",
-  "version": "7.6.0",
+  "version": "7.7.0",
   "private": true,
   "homepage": "./site",
   "dependencies": {
     "antd": "^3.26.9",
+    "nan": "^2.14.1",
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
     "react-scripts": "^3.4.0",

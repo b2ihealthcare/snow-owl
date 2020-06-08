@@ -11,5 +11,4 @@ if [[ "$1" != "sowrapper" ]]; then
 	exec "$@"
 fi
 
-echo "SO_PATH_CONF is $SO_PATH_CONF"
 exec /usr/share/snowowl/bin/snowowl.sh

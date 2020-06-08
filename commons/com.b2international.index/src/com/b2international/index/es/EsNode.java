@@ -130,9 +130,9 @@ public final class EsNode extends Node {
 		putSettingIfAbsent(esSettings, "rest.action.multi.allow_explicit_index", false);
 		putSettingIfAbsent(esSettings, "discovery.type", "single-node");
 		putSettingIfAbsent(esSettings, "search.max_buckets", 1_500_000); // TODO hardcoded max buckets value to allow large aggregations to complete, fix and remove the config in 7.5
-//		putSettingIfAbsent(esSettings, "cluster.routing.allocation.disk.watermark.low", "20gb");
-//		putSettingIfAbsent(esSettings, "cluster.routing.allocation.disk.watermark.high", "10gb");
-//		putSettingIfAbsent(esSettings, "cluster.routing.allocation.disk.watermark.flood_stage", "5gb");
+		putSettingIfAbsent(esSettings, "cluster.routing.allocation.disk.watermark.low", "20gb");
+		putSettingIfAbsent(esSettings, "cluster.routing.allocation.disk.watermark.high", "10gb");
+		putSettingIfAbsent(esSettings, "cluster.routing.allocation.disk.watermark.flood_stage", "5gb");
 //		putSettingIfAbsent(esSettings, "cluster.info.update.interval", "1m");
 		
 		return esSettings.build();

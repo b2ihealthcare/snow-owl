@@ -27,6 +27,16 @@ public final class ConceptSearchRequestBuilder extends SearchResourceRequestBuil
 		implements RevisionIndexRequestBuilder<Concepts> {
 
 	/**
+	 * Filters matches by their active/inactive status. 
+	 * 
+	 * @param active
+	 * @return
+	 */
+	public ConceptSearchRequestBuilder filterByActive(Boolean active) {
+		return addOption(OptionKey.ACTIVE, active);
+	}
+	
+	/**
 	 * Filters matches by their lexical terms. The exact semantics of how a term match works depends on the given code system, but usually it supports
 	 * exact, partial word and prefix matches.
 	 * 
@@ -45,6 +55,17 @@ public final class ConceptSearchRequestBuilder extends SearchResourceRequestBuil
 	 */
 	public ConceptSearchRequestBuilder filterByExactTerm(String exactTerm) {
 		return addOption(OptionKey.TERM_EXACT, exactTerm);
+	}
+
+	/**
+	 * Sets the minimum number of terms that should be matched in a {@link #filterByTerm(String)} clause.
+	 * The default is "all terms", when not given.
+	 * 
+	 * @param minTermMatch
+	 * @return
+	 */
+	public ConceptSearchRequestBuilder setMinTermMatch(int minTermMatch) {
+		return addOption(OptionKey.MIN_TERM_MATCH, minTermMatch);
 	}
 	
 	/**

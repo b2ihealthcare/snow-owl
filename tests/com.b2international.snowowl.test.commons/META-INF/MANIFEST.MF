@@ -2,24 +2,21 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Snow Owl Test Commons
 Bundle-SymbolicName: com.b2international.snowowl.test.commons
-Bundle-Version: 7.6.0
+Bundle-Version: 7.7.0.qualifier
 Bundle-Vendor: B2i Healthcare
 Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  org.junit;bundle-version="4.12.0";visibility:=reexport,
- org.assertj.core;bundle-version="1.7.1";visibility:=reexport,
  org.mockito;bundle-version="2.13.0";visibility:=reexport,
  org.apache.commons.lang;bundle-version="2.6.0",
- com.b2international.restassured-all;bundle-version="[3.2.0,3.3.0)";visibility:=reexport,
+ com.b2international.restassured-all;bundle-version="[3.2.2,3.2.3)";visibility:=reexport,
  com.b2international.snowowl.core.rest,
  com.b2international.snowowl.test.dependencies;visibility:=reexport,
  com.b2international.snowowl.snomed.common;visibility:=reexport,
  com.b2international.snowowl.snomed.datastore,
- org.eclipse.xtext.xbase.lib;bundle-version="2.18.0"
+ org.eclipse.xtext.xbase.lib;bundle-version="[2.21.0,2.22.0)"
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ActivationPolicy: lazy
-Import-Package: ch.qos.logback.classic;version="1.2.3",
- ch.qos.logback.core.spi;version="1.2.3",
- org.slf4j;version="1.7.25"
+Import-Package: org.slf4j;version="1.7.25"
 Export-Package: com.b2international.snowowl.test.commons,
  com.b2international.snowowl.test.commons.inject,
  com.b2international.snowowl.test.commons.json,

@@ -106,4 +106,15 @@ public class SearchResourceRequestTest {
 				.build(), actual);
 	}
 	
+	@Test
+	public void specialOptionKeyWithExtraParenthesis() throws Exception {
+		final Options options = Options.builder()
+				.put(OptionKey.SPECIAL, "@field(value (extra))")
+				.build();
+		final Options actual = SearchResourceRequest.processSpecialOptionKey(options, OptionKey.SPECIAL);
+		assertEquals(Options.builder()
+				.put("FIELD", "value (extra)")
+				.build(), actual);
+	}
+	
 }
