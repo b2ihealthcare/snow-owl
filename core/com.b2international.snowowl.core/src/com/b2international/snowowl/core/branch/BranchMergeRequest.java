@@ -59,7 +59,7 @@ public final class BranchMergeRequest extends AbstractBranchChangeRequest {
 				.lock(DatastoreLockContextDescriptions.SYNCHRONIZE, parentLockContext)) {
 			context.service(BaseRevisionBranching.class)
 				.prepareMerge(source.path(), target.path())
-				.setExclusions(exclusions)
+				.exclude(exclusions)
 				.author(author)
 				.commitMessage(commitMessage)
 				.conflictProcessor(context.service(ComponentRevisionConflictProcessor.class))

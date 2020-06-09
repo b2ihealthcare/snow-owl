@@ -111,7 +111,7 @@ public class RevisionBranchMergeTest extends BaseRevisionIndexTest {
 		// do the merge with an exclusion
 		branching()
 			.prepareMerge(child, MAIN)
-			.setExclusions(ImmutableSet.of(STORAGE_KEY1))
+			.exclude(STORAGE_KEY1)
 			.squash(true)
 			.merge();
 		

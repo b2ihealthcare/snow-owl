@@ -15,6 +15,7 @@
  */
 package com.b2international.index.revision;
 
+import java.util.Collections;
 import java.util.Set;
 
 /**
@@ -68,8 +69,12 @@ public final class BranchMergeOperation {
 		return branching.doMerge(this);
 	}
 
-	public BranchMergeOperation setExclusions(Set<String> exclusions) {
-		this.exclusions = exclusions;
+	public BranchMergeOperation exclude(String id) {
+		return exclude(Collections.singleton(id));
+	}
+	
+	public BranchMergeOperation exclude(Set<String> ids) {
+		this.exclusions = ids;
 		return this;
 	}
 	
