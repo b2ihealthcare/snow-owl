@@ -24,6 +24,9 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.QueryExpression;
 import com.b2international.snowowl.core.domain.QueryExpressionDiffs;
 
+/**
+ * @since 7.7
+ */
 public class QueryOptimizeRequest extends ResourceRequest<BranchContext, QueryExpressionDiffs> {
 
 	@NotNull
