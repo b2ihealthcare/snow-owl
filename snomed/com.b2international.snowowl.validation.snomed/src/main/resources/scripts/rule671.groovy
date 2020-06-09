@@ -45,7 +45,6 @@ Query<String> queryConcepts = Query.select(SnomedConceptDocument.class)
 
 searcher.search(queryConcepts).forEach({SnomedConceptDocument concept ->
 	String inactivationIndicatorId = (String) members.get(concept.getId()).getProperties().get(SnomedRf2Headers.FIELD_VALUE_ID);
-	println(inactivationIndicatorId)
 	if (!(inactivationIndicatorId.equals(Concepts.PENDING_MOVE)|| inactivationIndicatorId.equals(Concepts.LIMITED) ||
 	inactivationIndicatorId.equals(Concepts.CONCEPT_NON_CURRENT))) {
 		issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, concept.getId()))
