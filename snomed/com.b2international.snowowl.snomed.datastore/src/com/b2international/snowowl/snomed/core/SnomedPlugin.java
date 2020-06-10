@@ -39,6 +39,7 @@ import com.b2international.snowowl.core.repository.TerminologyRepositoryInitiali
 import com.b2international.snowowl.core.repository.TerminologyRepositoryPlugin;
 import com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator;
 import com.b2international.snowowl.core.request.SetMemberSearchRequestEvaluator;
+import com.b2international.snowowl.core.request.QueryOptimizer;
 import com.b2international.snowowl.core.request.TransactionalRequest;
 import com.b2international.snowowl.core.setup.ConfigurationRegistry;
 import com.b2international.snowowl.core.setup.Environment;
@@ -67,6 +68,7 @@ import com.b2international.snowowl.snomed.core.ql.DefaultSnomedQuerySerializer;
 import com.b2international.snowowl.snomed.core.ql.SnomedQueryParser;
 import com.b2international.snowowl.snomed.core.ql.SnomedQuerySerializer;
 import com.b2international.snowowl.snomed.core.request.SnomedConceptSearchRequestEvaluator;
+import com.b2international.snowowl.snomed.core.request.SnomedQueryOptimizer;
 import com.b2international.snowowl.snomed.core.version.SnomedVersioningRequest;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
@@ -157,6 +159,11 @@ public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 	@Override
 	protected ConceptSearchRequestEvaluator getConceptSearchRequestEvaluator() {
 		return new SnomedConceptSearchRequestEvaluator();
+	}
+	
+	@Override
+	protected QueryOptimizer getQueryOptimizer() {
+		return new SnomedQueryOptimizer();
 	}
 	
 	@Override

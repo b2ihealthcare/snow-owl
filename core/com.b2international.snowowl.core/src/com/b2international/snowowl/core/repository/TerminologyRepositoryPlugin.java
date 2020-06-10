@@ -43,6 +43,7 @@ import com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator;
 import com.b2international.snowowl.core.request.MemberSearchRequest;
 import com.b2international.snowowl.core.request.MemberSearchRequestBuilder;
 import com.b2international.snowowl.core.request.SetMemberSearchRequestEvaluator;
+import com.b2international.snowowl.core.request.QueryOptimizer;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.Plugin;
 import com.b2international.snowowl.core.terminology.Terminology;
@@ -82,6 +83,7 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 					.bind(ComponentRevisionConflictProcessor.class, getComponentRevisionConflictProcessor())
 					.bind(ConceptSearchRequestEvaluator.class, getConceptSearchRequestEvaluator())
 					.bind(SetMemberSearchRequestEvaluator.class, getMemberSearchRequestEvaluator())
+					.bind(QueryOptimizer.class, getQueryOptimizer())
 					.bind(ContentAvailabilityInfoProvider.class, getContentAvailabilityInfoProvider())
 					.bind(ContextConfigurer.class, getRequestConfigurer())
 					.bind(RepositoryCodeSystemProvider.class, (referenceBranch) -> {
@@ -128,6 +130,16 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 	 * @see ConceptSearchRequest
 	 */
 	protected abstract ConceptSearchRequestEvaluator getConceptSearchRequestEvaluator();
+
+	/**
+	 * Subclasses may override to provide a customized {@link QueryOptimizer} for the underlying terminology tooling and query language.
+	 * <p>
+	 * The default implementation does not suggest changes for any incoming queries.
+	 * @return
+	 */
+	protected QueryOptimizer getQueryOptimizer() {
+		return QueryOptimizer.NOOP;
+	}
 	
 	/**
 	 * An evaluator that can evaluate generic {@link MemberSearchRequest member search requests}. 
