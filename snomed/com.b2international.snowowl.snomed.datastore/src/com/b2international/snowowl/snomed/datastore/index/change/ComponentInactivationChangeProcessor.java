@@ -40,6 +40,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptio
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 
 /**
@@ -83,6 +84,14 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 				changedMembersByReferencedComponentId.put(((SnomedRefSetMemberIndexEntry) diff.newRevision).getReferencedComponentId(), diff);
 			});
 			
+			Map<String, SnomedRefSetMemberIndexEntry> refSetMembers = Maps.newHashMap();
+			for (Hits<SnomedRefSetMemberIndexEntry> hits : searcher.scroll(Query.select(SnomedRefSetMemberIndexEntry.class) 
+						.from(SnomedRefSetMemberIndexEntry.class)
+						.where(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR))
+						.build())) {
+				hits.forEach(refSetMember -> refSetMembers.put(refSetMember.getReferencedComponentId(), refSetMember));
+			}
+			
 			for (Hits<String[]> hits : searcher.scroll(Query.select(String[].class)
 					.from(SnomedDescriptionIndexEntry.class)
 					.fields(SnomedDescriptionIndexEntry.Fields.ID, SnomedDescriptionIndexEntry.Fields.MODULE_ID)
@@ -92,13 +101,18 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 				// TODO exclude descriptions that are already present in the tx or apply 
 				hits.forEach(description -> {
 					final String descriptionId = description[0];
+					SnomedRefSetMemberIndexEntry existingInactivationMember;
 					
-					SnomedRefSetMemberIndexEntry existingInactivationMember = changedMembersByReferencedComponentId.get(descriptionId).stream()
-							.map(diff -> diff.newRevision)
-							.map(SnomedRefSetMemberIndexEntry.class::cast)
-							.filter(member -> Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR.equals(member.getReferenceSetId()))
-							.findFirst()
-							.orElse(null);
+					if (changedMembersByReferencedComponentId.isEmpty()) {
+						existingInactivationMember = refSetMembers.get(descriptionId);
+					} else {
+						existingInactivationMember = changedMembersByReferencedComponentId.get(descriptionId).stream()
+								.map(diff -> diff.newRevision)
+								.map(SnomedRefSetMemberIndexEntry.class::cast)
+								.filter(member -> Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR.equals(member.getReferenceSetId()))
+								.findFirst()
+								.orElse(null);
+					}
 					
 					SnomedRefSetMemberIndexEntry.Builder inactivationMember;
 					if (existingInactivationMember == null) {
