@@ -25,7 +25,7 @@ import com.b2international.snowowl.core.uri.CodeSystemURI;
 /**
 * @since 7.7
 */
-public class MemberSearchRequest extends SearchResourceRequest<BranchContext, SetMembers> {
+public final class MemberSearchRequest extends SearchResourceRequest<BranchContext, SetMembers> {
 
 	
 	private static final long serialVersionUID = 1L;
