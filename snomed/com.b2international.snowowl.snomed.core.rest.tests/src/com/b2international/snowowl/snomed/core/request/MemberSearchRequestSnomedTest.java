@@ -35,7 +35,7 @@ import com.google.common.collect.FluentIterable;
  */
 public class MemberSearchRequestSnomedTest {
 
-	private static final String CODESYSTEM = SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME + "/2018-01-31";
+	private static final String CODESYSTEM = "SNOMEDCT/LATEST";
 	
 	private static final String SYNONYM = "Synonym (core metadata concept)";
 	private static final String FSN = "Fully specified name (core metadata concept)";

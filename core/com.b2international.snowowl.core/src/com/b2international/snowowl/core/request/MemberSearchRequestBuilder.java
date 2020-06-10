@@ -22,7 +22,7 @@ import com.b2international.snowowl.core.request.SetMemberSearchRequestEvaluator.
 /**
 * @since 7.7
 */
-public class MemberSearchRequestBuilder extends SearchResourceRequestBuilder<MemberSearchRequestBuilder, BranchContext, SetMembers> 
+public final class MemberSearchRequestBuilder extends SearchResourceRequestBuilder<MemberSearchRequestBuilder, BranchContext, SetMembers> 
 		implements RevisionIndexRequestBuilder<SetMembers> {
 	
 	public MemberSearchRequestBuilder setContainer(String setId) {
