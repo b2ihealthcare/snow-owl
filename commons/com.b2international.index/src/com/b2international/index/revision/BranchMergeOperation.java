@@ -15,10 +15,9 @@
  */
 package com.b2international.index.revision;
 
-import java.util.Arrays;
 import java.util.Set;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 7.2
@@ -72,11 +71,11 @@ public final class BranchMergeOperation {
 	}
 
 	public BranchMergeOperation exclude(String ... ids) {
-		return exclude(Arrays.copyOf(ids, ids.length));
+		return exclude(ImmutableSet.copyOf(ids));
 	}
 	
 	public BranchMergeOperation exclude(Iterable<String> ids) {
-		this.exclusions = Sets.newHashSet(ids);
+		this.exclusions = ImmutableSet.copyOf(ids);
 		return this;
 	}
 	
