@@ -108,8 +108,9 @@ public final class ComponentURI implements Serializable {
 
 	@JsonCreator
 	public ComponentURI(String codeSystem, short terminologyComponentId, String identifier) {
-		checkArgument(Strings.isNullOrEmpty(codeSystem), "Missing codesystem in component uri.");
-		checkArgument(terminologyComponentId > 0 || terminologyComponentId != TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT, "Invliad terminology component id %d", terminologyComponentId);
+		checkArgument(!Strings.isNullOrEmpty(codeSystem), "Codesystem argument should not be null.");
+		checkArgument(terminologyComponentId > 0 || terminologyComponentId != TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT,
+				"Terminology component id should be either unspecified (-1) or greater than zero. Got: '%d'.", terminologyComponentId);
 		this.codeSystem = codeSystem;
 		this.terminologyComponentId = terminologyComponentId;
 		this.identifier = identifier;
