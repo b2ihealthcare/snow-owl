@@ -17,8 +17,10 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.SetMember;
@@ -43,9 +45,11 @@ public class SnomedRefSetMemberSearchRequestEvaluator implements SetMemberSearch
 		final String refsetId = search.get(OptionKey.SET, String.class);
 		final Integer limit = search.get(OptionKey.LIMIT, Integer.class);
 		final String searchAfter = search.get(OptionKey.AFTER, String.class);
+		final List<ExtendedLocale> locales= search.getList(OptionKey.AFTER, ExtendedLocale.class);
 		
 		SnomedConcepts concepts = SnomedRequests.prepareSearchConcept()
 			.isActiveMemberOf(refsetId)
+			.setLocales(locales)
 			.setExpand("preferredDescriptions()")
 			.setLimit(limit)
 			.setSearchAfter(searchAfter)

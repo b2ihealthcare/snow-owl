@@ -34,6 +34,11 @@ public interface SetMemberSearchRequestEvaluator {
 		SET,
 		
 		/**
+		 * Language locales (tag, Accept-Language header, etc.) to use in order of preference when determining the display label or term for a match.
+		 */
+		LOCALES,
+		
+		/**
 		 * Search matches after the specified sort key.
 		 */
 		AFTER,
