@@ -151,7 +151,6 @@ public class RevisionBranchMergeTest extends BaseRevisionIndexTest {
 		
 		// 3. one revision should be visible from MAIN branch, excluded one should not
 		assertNotNull(getRevision(MAIN, RevisionData.class, STORAGE_KEY2));
-		assertNotNull(getRevision(MAIN, RevisionData.class, STORAGE_KEY1));
 		assertEquals(getRevision(MAIN, RevisionData.class, STORAGE_KEY1), NEW_DATA);
 	}
 	
