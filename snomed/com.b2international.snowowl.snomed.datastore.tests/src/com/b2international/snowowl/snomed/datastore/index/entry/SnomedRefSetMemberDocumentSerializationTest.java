@@ -31,6 +31,7 @@ import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.index.revision.RevisionBranch;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
@@ -99,6 +100,26 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, member.getId());
 		assertEquals(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, actual.getReferencedComponentType());
 		assertDocEquals(member, actual);
+	}
+	
+	@Test
+	public void indexSimpleMapMemberWithComponentURITarget() throws Exception {
+		final String mapTergetId = "targetId01";
+		final ComponentURI componentURI = new ComponentURI(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME,
+				SnomedTerminologyComponentConstants.CONCEPT_NUMBER,
+				mapTergetId);
+		
+		final SnomedRefSetMemberIndexEntry member = createBaseMember()
+				.referenceSetId(Concepts.REFSET_B2I_EXAMPLE)
+				.referenceSetType(SnomedRefSetType.SIMPLE_MAP)
+				.field(Fields.MAP_TARGET, componentURI.toString())
+				.build();
+		
+		indexRevision(RevisionBranch.MAIN_PATH, member);
+		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, member.getId());
+		assertEquals(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, actual.getReferencedComponentType());
+		assertDocEquals(member, actual);
+		assertEquals(new ComponentURI(actual.getMapTarget()), componentURI);
 	}
 	
 	@Test
