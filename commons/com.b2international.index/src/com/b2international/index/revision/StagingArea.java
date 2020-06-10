@@ -71,7 +71,7 @@ public final class StagingArea {
 		this.index = index;
 		this.branchPath = branchPath;
 		this.mapper = mapper;
-		this.exclusions = Sets.newHashSet();
+		this.exclusions = Collections.emptySet();
 		reset();
 	}
 	
@@ -249,7 +249,7 @@ public final class StagingArea {
 		final Multimap<ObjectId, ObjectId> removedComponentsByContainer = HashMultimap.create();
 		final Multimap<Class<?>, String> deletedIdsByType = HashMultimap.create();
 
-		stagedObjects.entrySet().stream().filter(entry -> !exclusions.contains(entry.getKey().id())).forEach( entry -> {
+		getFilteredStagedObjects().entrySet().forEach( entry -> {
 			ObjectId key = entry.getKey();
 			StagedObject value = entry.getValue();
 			
@@ -275,7 +275,7 @@ public final class StagingArea {
 		}
 		
 		// then new documents and revisions
-		stagedObjects.entrySet().stream().filter(entry -> !exclusions.contains(entry.getKey().id())).forEach( entry -> {
+		getFilteredStagedObjects().entrySet().forEach( entry -> {
 			ObjectId key = entry.getKey();
 			StagedObject value = entry.getValue();
 			if (value.isAdded() && value.isCommit()) {
@@ -295,7 +295,7 @@ public final class StagingArea {
 		
 		// and changed documents/revisions
 		final Multimap<ObjectNode, ObjectId> revisionsByChange = HashMultimap.create();
-		stagedObjects.entrySet().stream().filter(entry -> !exclusions.contains(entry.getKey().id())).forEach( entry -> {
+		getFilteredStagedObjects().entrySet().forEach( entry -> {
 			ObjectId key = entry.getKey();
 			StagedObject value = entry.getValue();
 			if (value.isChanged() && value.isCommit()) {
@@ -392,7 +392,7 @@ public final class StagingArea {
 		}
 		
 		// add non-revision components as new/changed/removed as well
-		stagedObjects.entrySet().stream().filter(entry -> !exclusions.contains(entry.getKey().id())).forEach( entry -> {
+		getFilteredStagedObjects().entrySet().forEach( entry -> {
 			ObjectId key = entry.getKey();
 			StagedObject value = entry.getValue();
 			if (!(value.getObject() instanceof Revision)) {
@@ -950,6 +950,10 @@ public final class StagingArea {
 
 	public StagedObject removed(Object object, RevisionDiff diff, boolean commit) {
 		return new StagedObject(StageKind.REMOVED, object, diff, commit);
+	}
+	
+	private Map<ObjectId, StagedObject> getFilteredStagedObjects() {
+		return Maps.filterEntries(stagedObjects, entry -> !exclusions.contains(entry.getKey().id()));
 	}
 
 }
