@@ -78,15 +78,15 @@ public final class ComponentURI implements Serializable {
 	
 	public String codeSystem() {
 		return codeSystem;
-	};
+	}
 	
 	public short terminologyComponentId() {
 		return terminologyComponentId;
-	};
+	}
 	
 	public String identifier() {
 		return identifier;
-	};
+	}
 
 	@JsonIgnore
 	public final boolean isUnknown() {
