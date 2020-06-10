@@ -49,7 +49,7 @@ public final class ComponentURI implements Serializable {
 	public static final class ComponentURIDeserializer extends JsonDeserializer<ComponentURI> {
 		@Override
 		public ComponentURI deserialize(JsonParser parser, DeserializationContext ctx) throws IOException, JsonProcessingException {
-			return new ComponentURI(parser.getValueAsString());
+			return of(parser.getValueAsString());
 		}
 	}
 	
@@ -57,7 +57,7 @@ public final class ComponentURI implements Serializable {
 		
 		@Override
 		public Object deserializeKey(String key, DeserializationContext context) throws IOException, JsonProcessingException {
-			return new ComponentURI(key);
+			return of(key);
 		}
 		
 	}
@@ -108,23 +108,24 @@ public final class ComponentURI implements Serializable {
 
 	@JsonCreator
 	public ComponentURI(String codeSystem, short terminologyComponentId, String identifier) {
+		checkArgument(Strings.isNullOrEmpty(codeSystem), "Missing codesystem in component uri.");
+		checkArgument(terminologyComponentId > 0 || terminologyComponentId != TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT, "Invliad terminology component id %d", terminologyComponentId);
 		this.codeSystem = codeSystem;
 		this.terminologyComponentId = terminologyComponentId;
 		this.identifier = identifier;
 	}
 	
-	public ComponentURI(String uri) {
+	public static ComponentURI of(String codeSystem, short terminologyComponentId, String identifier) {
+		return new ComponentURI(codeSystem, terminologyComponentId, Strings.nullToEmpty(identifier));
+	}
+	
+	public static ComponentURI of(String uri) {
 		if (Strings.isNullOrEmpty(uri)) {
-			this.codeSystem = UNKNOWN.codeSystem;
-			this.terminologyComponentId = UNKNOWN.terminologyComponentId;
-			this.identifier = UNKNOWN.identifier;
-		} else {
-			final List<String> parts = SLASH_SPLITTER.splitToList(uri);
-			checkArgument(parts.size() == 3, "A component uri consists of three parts (codeSystem/componentType/componentId). Arg was: %s", uri);
-			this.codeSystem = parts.get(0);
-			this.terminologyComponentId = Short.valueOf(parts.get(1));
-			this.identifier = parts.get(2);			
+			return ComponentURI.UNKNOWN;
 		}
+		final List<String> parts = SLASH_SPLITTER.splitToList(uri);
+		checkArgument(parts.size() == 3, "A component uri consists of three parts (codeSystem/componentType/componentId). Arg was: %s", uri);
+		return of(parts.get(0), Short.valueOf(parts.get(1)), parts.get(2));
 	}
 
 	@JsonValue
