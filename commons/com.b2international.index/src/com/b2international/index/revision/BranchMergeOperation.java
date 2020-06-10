@@ -15,8 +15,10 @@
  */
 package com.b2international.index.revision;
 
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.Set;
+
+import com.google.common.collect.Sets;
 
 /**
  * @since 7.2
@@ -69,12 +71,12 @@ public final class BranchMergeOperation {
 		return branching.doMerge(this);
 	}
 
-	public BranchMergeOperation exclude(String id) {
-		return exclude(Collections.singleton(id));
+	public BranchMergeOperation exclude(String ... ids) {
+		return exclude(Arrays.copyOf(ids, ids.length));
 	}
 	
-	public BranchMergeOperation exclude(Set<String> ids) {
-		this.exclusions = ids;
+	public BranchMergeOperation exclude(Iterable<String> ids) {
+		this.exclusions = Sets.newHashSet(ids);
 		return this;
 	}
 	
