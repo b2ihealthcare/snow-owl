@@ -118,7 +118,7 @@ final class ClassificationCreateRequest implements Request<BranchContext, String
 	
 	@Override
 	public String getOperation() {
-		return Permission.CLASSIFY;
+		return Permission.OPERATION_CLASSIFY;
 	}
 
 }

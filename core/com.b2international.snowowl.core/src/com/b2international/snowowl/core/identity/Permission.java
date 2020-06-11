@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.Objects;
 
 import com.b2international.commons.CompareUtils;
+import com.b2international.commons.StringUtils;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -39,49 +40,50 @@ public final class Permission implements Serializable {
 	
 	private final String operation;
 	private final String resource;
+	
 	private final String permission;
 	private final boolean wildcard;
 	private final String rawResource;
 	
-	public static final String ALL = "*";
-	public static final String BROWSE = "browse";
-	public static final String EDIT = "edit";
-	public static final String IMPORT = "import";
-	public static final String EXPORT = "export";
-	public static final String VERSION = "version";
-	public static final String PROMOTE = "promote";
-	public static final String CLASSIFY = "classify";
+	public static final String OPERATION_ALL = "*"; //$NON-NLS-N$
+	public static final String OPERATION_BROWSE = "browse";  //$NON-NLS-N$
+	public static final String OPERATION_EDIT = "edit";  //$NON-NLS-N$
+	public static final String OPERATION_IMPORT = "import";  //$NON-NLS-N$
+	public static final String OPERATION_EXPORT = "export";  //$NON-NLS-N$
+	public static final String OPERATION_VERSION = "version";  //$NON-NLS-N$
+	public static final String OPERATION_PROMOTE = "promote";  //$NON-NLS-N$
+	public static final String OPERATION_CLASSIFY = "classify";  //$NON-NLS-N$
 	
 	public static Permission toAll(String...resources) {
-		return new Permission(ALL, asResource(resources));
+		return new Permission(OPERATION_ALL, asResource(resources));
 	}
 
 	public static Permission toImport(String...resources) {
-		return new Permission(IMPORT, asResource(resources));
+		return new Permission(OPERATION_IMPORT, asResource(resources));
 	}
 	
 	public static Permission toExport(String...resources) {
-		return new Permission(EXPORT, asResource(resources));
+		return new Permission(OPERATION_EXPORT, asResource(resources));
 	}
 	
 	public static Permission toBrowse(String...resources) {
-		return new Permission(BROWSE, asResource(resources));
+		return new Permission(OPERATION_BROWSE, asResource(resources));
 	}
 	
 	public static Permission toEdit(String...resources) {
-		return new Permission(EDIT, asResource(resources));
+		return new Permission(OPERATION_EDIT, asResource(resources));
 	}
 	
 	public static Permission toVersion(String...resources) {
-		return new Permission(VERSION, asResource(resources));
+		return new Permission(OPERATION_VERSION, asResource(resources));
 	}
 	
 	public static Permission toPromote(String...resources) {
-		return new Permission(PROMOTE, asResource(resources));
+		return new Permission(OPERATION_PROMOTE, asResource(resources));
 	}
 	
 	public static Permission toClassify(String...resources) {
-		return new Permission(CLASSIFY, asResource(resources));
+		return new Permission(OPERATION_CLASSIFY, asResource(resources));
 	}
 	
 	public static Permission of(String operation, String...resources) {
@@ -106,10 +108,13 @@ public final class Permission implements Serializable {
 	}
 
 	private Permission(final String operation, final String resource) {
-		this.operation = checkNotNull(operation, "Operation must be specified");
-		this.resource = checkNotNull(resource, "Resource must be specified");
+		this.operation = checkNotNull(operation, "Operation must be specified.");
 		
-		final int wildcardPosition = this.resource.indexOf(ALL);
+		if (StringUtils.isEmpty(resource)) {
+			throw new IllegalArgumentException("Resource must be specified.");
+		}
+		this.resource = resource;
+		final int wildcardPosition = this.resource.indexOf(OPERATION_ALL);
 		checkArgument(wildcardPosition == -1 /*no wildcard*/ || wildcardPosition == resource.length() - 1 /*at the end*/, "Wildcard character must be at the end of the resource. Got: %s", resource);
 		this.wildcard = wildcardPosition != -1;
 		this.rawResource = wildcard ? resource.substring(0, wildcardPosition) : resource;
@@ -148,13 +153,13 @@ public final class Permission implements Serializable {
 	 */
 	public boolean implies(Permission permissionRequirement) {
 		
-		checkArgument(!ALL.equals(permissionRequirement.getOperation()), "Explicit operation is required to check whether this permission '%s' implies '%s'.", this, permissionRequirement);
+		checkArgument(!OPERATION_ALL.equals(permissionRequirement.getOperation()), "Explicit operation is required to check whether this permission '%s' implies '%s'.", this, permissionRequirement);
 		
 		// operation
 		
 		// * allows all incoming permission requirements (both operation and resource)
 		// if not *, then the operation in this permission should match the same operation from the requirement (equals)
-		final boolean allowedOperation = ALL.equals(operation) || operation.equals(permissionRequirement.getOperation());
+		final boolean allowedOperation = OPERATION_ALL.equals(operation) || operation.equals(permissionRequirement.getOperation());
 		if (!allowedOperation) {
 			return false;
 		}

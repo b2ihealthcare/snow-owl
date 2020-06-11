@@ -332,7 +332,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportRe
 
 	@Override
 	public String getOperation() {
-		return Permission.IMPORT;
+		return Permission.OPERATION_IMPORT;
 	}
 
 }

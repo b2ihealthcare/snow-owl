@@ -120,7 +120,7 @@ final class BranchCompareRequest implements Request<RepositoryContext, BranchCom
 	
 	@Override
 	public String getOperation() {
-		return Permission.BROWSE;
+		return Permission.OPERATION_BROWSE;
 	}
 	
 }

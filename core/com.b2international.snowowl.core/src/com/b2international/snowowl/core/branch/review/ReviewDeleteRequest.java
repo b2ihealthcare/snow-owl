@@ -38,7 +38,7 @@ public final class ReviewDeleteRequest extends ReviewRequest<Boolean> implements
 	
 	@Override
 	public String getOperation() {
-		return Permission.EDIT;
+		return Permission.OPERATION_EDIT;
 	}
 	
 }

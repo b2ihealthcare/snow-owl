@@ -56,7 +56,7 @@ public final class ReviewCreateRequest implements Request<RepositoryContext, Rev
 	
 	@Override
 	public String getOperation() {
-		return Permission.BROWSE;
+		return Permission.OPERATION_BROWSE;
 	}
 	
 }
