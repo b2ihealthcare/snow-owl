@@ -24,12 +24,14 @@ import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.QueryExpression;
 import com.b2international.snowowl.core.domain.QueryExpressionDiff;
 import com.b2international.snowowl.core.domain.QueryExpressionDiffs;
 import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.request.QueryOptimizer;
 import com.b2international.snowowl.core.request.SearchResourceRequestIterator;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.ecl.EclParser;
@@ -37,6 +39,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedConceptSearchR
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.ecl.ecl.EclConceptReference;
 import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
+import com.google.common.base.Stopwatch;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -69,9 +72,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 		
 		final SnomedConceptSearchRequestBuilder req = SnomedRequests.prepareSearchConcept()
 				.filterByIds(singleConceptInclusions.keySet())
-				.setLocales(locales)
-				.setLimit(10_000)
-				.setExpand("pt()");
+				.setLimit(10_000);
 
 		final SearchResourceRequestIterator<SnomedConceptSearchRequestBuilder, SnomedConcepts> itr = new SearchResourceRequestIterator<>(
 				req, builder -> builder.build().execute(context));
@@ -86,11 +87,15 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 				final List<String> ancestorIds = child.getAncestorIdsAsString();
 				
 				parentIds.forEach(parentId -> {
-					membersByAncestor.putAll(parentId, childExpressions);
+					if (!IComponent.ROOT_ID.equals(parentId) && !Concepts.ROOT_CONCEPT.equals(parentId)) {
+						membersByAncestor.putAll(parentId, childExpressions);
+					}
 				});
 				
 				ancestorIds.forEach(ancestorId -> {
-					membersByAncestor.putAll(ancestorId, childExpressions);
+					if (!IComponent.ROOT_ID.equals(ancestorId) && !Concepts.ROOT_CONCEPT.equals(ancestorId)) {
+						membersByAncestor.putAll(ancestorId, childExpressions);
+					}
 				});
 			});
 		});
@@ -113,7 +118,7 @@ public final class SnomedQueryOptimizer implements QueryOptimizer {
 
 		final SearchResourceRequestIterator<SnomedConceptSearchRequestBuilder, SnomedConcepts> parentItr = new SearchResourceRequestIterator<>(
 				descendantReq, builder -> builder.build().execute(context));
-
+		
 		final ImmutableList.Builder<QueryExpressionDiff> diffs = ImmutableList.builder();
 
 		parentItr.forEachRemaining(batch -> {
