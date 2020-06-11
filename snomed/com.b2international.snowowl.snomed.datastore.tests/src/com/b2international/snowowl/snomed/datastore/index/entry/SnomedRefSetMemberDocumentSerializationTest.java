@@ -119,7 +119,7 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, member.getId());
 		assertEquals(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, actual.getReferencedComponentType());
 		assertDocEquals(member, actual);
-		assertEquals(new ComponentURI(actual.getMapTarget()), componentURI);
+		assertEquals(ComponentURI.of(actual.getMapTarget()), componentURI);
 	}
 	
 	@Test
