@@ -77,7 +77,7 @@ public class CodeSystemRequests {
 	 * 
 	 * @return the builder to configure for generic set member search
 	 */
-	public static MemberSearchRequestBuilder prepareSearcMembers() {
+	public static MemberSearchRequestBuilder prepareSearchMembers() {
 		return new MemberSearchRequestBuilder();
 	}
 	

@@ -25,9 +25,8 @@ import com.b2international.snowowl.core.request.SetMemberSearchRequestEvaluator.
 public final class MemberSearchRequestBuilder extends SearchResourceRequestBuilder<MemberSearchRequestBuilder, BranchContext, SetMembers> 
 		implements RevisionIndexRequestBuilder<SetMembers> {
 	
-	public MemberSearchRequestBuilder setContainer(String setId) {
-		addOption(OptionKey.SET, setId);
-		return this;
+	public MemberSearchRequestBuilder filterBySet(String setId) {
+		return addOption(OptionKey.SET, setId);
 	}
 	
 	@Override

@@ -15,6 +15,10 @@
  */
 package com.b2international.snowowl.core.domain;
 
+import com.b2international.snowowl.core.uri.ComponentURI;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * @since 7.7
  */
@@ -22,19 +26,22 @@ public final class SetMember extends BaseComponent {
 
 	private static final long serialVersionUID = 1L;
 
-	private final String sourceCodeSystem;
-	private final String sourceCode;
-	private final String sourceTerm;
+	private ComponentURI referencedComponentURI;
 	
+	private final String sourceTerm;
 	private final String iconId;
 	private final short terminologyComponentId;
 	
-	public SetMember(short memberTermionlogyComponentId, String codeSystem, String referencedComponentId, String term, String iconId) {
-		this.sourceCodeSystem = codeSystem;
-		this.sourceCode = referencedComponentId;
+    @JsonCreator
+	public SetMember(
+			@JsonProperty("referencedComponentURI") ComponentURI referencedComponentURI,
+			@JsonProperty("terminologyComponentId") short terminologyComponentId,
+			@JsonProperty("term") String term,
+			@JsonProperty("iconId") String iconId) {
+		this.referencedComponentURI = referencedComponentURI;
+		this.terminologyComponentId = terminologyComponentId;
 		this.sourceTerm = term;
 		this.iconId = iconId;
-		this.terminologyComponentId = memberTermionlogyComponentId;
 	}
 	
 	@Override
@@ -46,16 +53,12 @@ public final class SetMember extends BaseComponent {
 		return iconId;
 	}
 
-	public String getSourceCodeSystem() {
-		return sourceCodeSystem;
-	}
-
-	public String getSourceCode() {
-		return sourceCode;
-	}
-
 	public String getSourceTerm() {
 		return sourceTerm;
 	}
-	
+
+	public ComponentURI getReferencedComponentURI() {
+		return referencedComponentURI;
+	}
+
 }

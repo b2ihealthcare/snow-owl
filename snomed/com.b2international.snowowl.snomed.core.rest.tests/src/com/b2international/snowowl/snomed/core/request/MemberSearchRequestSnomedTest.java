@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.core.request;
 
+import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Set;
@@ -24,7 +25,6 @@ import org.junit.Test;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.domain.SetMembers;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.test.commons.Services;
@@ -51,18 +51,18 @@ public class MemberSearchRequestSnomedTest {
 			.execute(Services.bus())
 			.getSync();
 		
-		SetMembers setMembers = CodeSystemRequests.prepareSearcMembers()
+		SetMembers setMembers = CodeSystemRequests.prepareSearchMembers()
 			.all()
-			.setContainer(Concepts.REFSET_DESCRIPTION_TYPE)		
+			.filterBySet(Concepts.REFSET_DESCRIPTION_TYPE)		
 			.build(CODESYSTEM)
 			.execute(Services.bus())
 			.getSync();
 				
 		assertThat(setMembers.getTotal()).isEqualTo(members.getTotal());
-		assertThat(setMembers.stream().allMatch(m -> m.getSourceCodeSystem().equals(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME)));
+		assertThat(setMembers.stream().allMatch(m -> SNOMED_SHORT_NAME.equals(m.getReferencedComponentURI().codeSystem())));
 		
-		Set<String> setMemberSourceCodes = FluentIterable.from(setMembers).transform(m -> m.getSourceCode()).toSet();
-		Set<String> setMemberSourceTerms = FluentIterable.from(setMembers).transform(m -> m.getSourceTerm()).toSet();
+		Set<String> setMemberSourceCodes = FluentIterable.from(setMembers).transform(m -> m.getReferencedComponentURI().identifier()).toSet();
+		Set<String> setMemberSourceTerms = FluentIterable.from(setMembers).transform(m -> m.getReferencedComponentURI().identifier()).toSet();
 		
 		assertThat(setMemberSourceCodes.contains(Concepts.TEXT_DEFINITION));
 		assertThat(setMemberSourceCodes.contains(Concepts.FULLY_SPECIFIED_NAME));

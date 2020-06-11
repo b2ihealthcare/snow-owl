@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,8 +25,12 @@ import com.b2international.snowowl.core.domain.SetMember;
 import com.b2international.snowowl.core.domain.SetMembers;
 import com.b2international.snowowl.core.request.SetMemberSearchRequestEvaluator;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
+import com.b2international.snowowl.core.uri.ComponentURI;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 
 /**
  * @since 7.7
@@ -37,39 +39,54 @@ public class SnomedRefSetMemberSearchRequestEvaluator implements SetMemberSearch
 
 	@Override
 	public SetMembers evaluate(CodeSystemURI uri, BranchContext context, Options search) {
-		
-		if (!search.containsKey(OptionKey.SET)) {
-			return SetMemberSearchRequestEvaluator.NOOP.evaluate(uri, context, search);
-		}
-		
-		final String refsetId = search.get(OptionKey.SET, String.class);
 		final Integer limit = search.get(OptionKey.LIMIT, Integer.class);
 		final String searchAfter = search.get(OptionKey.AFTER, String.class);
-		final List<ExtendedLocale> locales= search.getList(OptionKey.AFTER, ExtendedLocale.class);
+		final List<ExtendedLocale> locales = search.getList(OptionKey.AFTER, ExtendedLocale.class);
 		
-		SnomedConcepts concepts = SnomedRequests.prepareSearchConcept()
-			.isActiveMemberOf(refsetId)
+		SnomedRefSetMemberSearchRequestBuilder requestBuilder = SnomedRequests.prepareSearchMember();
+		
+		if (search.containsKey(OptionKey.SET)) {
+			final String refsetId = search.get(OptionKey.SET, String.class);
+			requestBuilder.filterByRefSet(refsetId);
+		}
+		
+		SnomedReferenceSetMembers referenceSetMembers = requestBuilder
+			.filterByActive(true)
 			.setLocales(locales)
-			.setExpand("preferredDescriptions()")
+			.setExpand("referencedComponent(expand(pt()))")
 			.setLimit(limit)
 			.setSearchAfter(searchAfter)
 			.build()
 			.execute(context);
 		
-		return new SetMembers(concepts.stream().map(c -> toMember(c, uri)).collect(Collectors.toList()),
-				concepts.getSearchAfter(),
-				concepts.getLimit(),
-				concepts.getTotal()
+		return new SetMembers(referenceSetMembers.stream().map(m -> toMember(m, uri)).collect(Collectors.toList()),
+				referenceSetMembers.getSearchAfter(),
+				referenceSetMembers.getLimit(),
+				referenceSetMembers.getTotal()
 		);
 		
 	}
 
-	private SetMember toMember(SnomedConcept concept, CodeSystemURI uri) {
-		return new SetMember(REFSET_MEMBER_NUMBER, 
-				uri.getCodeSystem(),
-				concept.getId(),
-				concept.getPreferredDescriptions().first().get().getTerm(),
-				concept.getIconId());
+	private SetMember toMember(SnomedReferenceSetMember member, CodeSystemURI codeSystemURI) {	 		
+		final String term;		
+		final String iconId = member.getReferencedComponent().getIconId();
+		short terminologyComponentId = member.getReferencedComponent().getTerminologyComponentId();
+		switch (terminologyComponentId) {
+			case SnomedTerminologyComponentConstants.CONCEPT_NUMBER: 
+				SnomedConcept concept = (SnomedConcept) member.getReferencedComponent();
+				term = concept.getPt().getTerm();
+				break;
+			case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER:
+				SnomedDescription description = (SnomedDescription) member.getReferencedComponent();
+				term = description.getTerm();
+				break;
+			default: term = member.getReferencedComponentId();
+		}
+		
+		return new SetMember(ComponentURI.of(codeSystemURI.getCodeSystem(), terminologyComponentId, member.getReferencedComponentId()),
+				SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER,
+				term, 
+				iconId);
 	}
 	
 }

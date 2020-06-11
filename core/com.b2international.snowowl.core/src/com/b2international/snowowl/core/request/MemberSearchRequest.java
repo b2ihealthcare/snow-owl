@@ -42,6 +42,7 @@ public final class MemberSearchRequest extends SearchResourceRequest<BranchConte
 				.put(SetMemberSearchRequestEvaluator.OptionKey.AFTER, searchAfter())
 				.put(SetMemberSearchRequestEvaluator.OptionKey.LIMIT, limit())
 				.put(SetMemberSearchRequestEvaluator.OptionKey.LOCALES, locales())
+				.put(SearchResourceRequest.OptionKey.SORT_BY, sortBy())
 				.build();
 		
 		return context.service(SetMemberSearchRequestEvaluator.class)
