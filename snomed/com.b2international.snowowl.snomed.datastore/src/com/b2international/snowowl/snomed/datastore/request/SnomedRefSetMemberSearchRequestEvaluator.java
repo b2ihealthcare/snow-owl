@@ -53,7 +53,7 @@ public class SnomedRefSetMemberSearchRequestEvaluator implements SetMemberSearch
 		SnomedReferenceSetMembers referenceSetMembers = requestBuilder
 			.filterByActive(true)
 			.setLocales(locales)
-			.setExpand("referencedComponent(expand(pt()))")
+			.setExpand("referencedComponent(expand(fsn()))")
 			.setLimit(limit)
 			.setSearchAfter(searchAfter)
 			.build()
@@ -74,7 +74,7 @@ public class SnomedRefSetMemberSearchRequestEvaluator implements SetMemberSearch
 		switch (terminologyComponentId) {
 			case SnomedTerminologyComponentConstants.CONCEPT_NUMBER: 
 				SnomedConcept concept = (SnomedConcept) member.getReferencedComponent();
-				term = concept.getPt().getTerm();
+				term = concept.getFsn().getTerm();
 				break;
 			case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER:
 				SnomedDescription description = (SnomedDescription) member.getReferencedComponent();
