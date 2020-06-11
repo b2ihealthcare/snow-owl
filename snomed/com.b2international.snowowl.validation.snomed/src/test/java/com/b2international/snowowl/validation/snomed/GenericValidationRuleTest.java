@@ -499,5 +499,36 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		assertAffectedComponents(issues, 
 				ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.IS_A));
 	}
+
+	@Test
+	public void rule671() throws Exception {
+		final String ruleId = "671";
+		indexRule(ruleId);
+		
+		String conceptId = generateConceptId();
+		SnomedDescriptionIndexEntry fsn = description(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, "Fully specified name 3 (tag)")
+				.conceptId(conceptId)
+				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_ES, Acceptability.PREFERRED)
+				.build();
+		SnomedDescriptionIndexEntry pt = description(generateDescriptionId(), Concepts.SYNONYM, "Preferred term 3")
+				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_ES, Acceptability.PREFERRED)
+				.conceptId(conceptId)
+				.build();
+		SnomedRefSetMemberIndexEntry ptMember = member(pt.getId(), SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR).valueId(Concepts.CONCEPT_NON_CURRENT).build();
+		SnomedConceptDocument concept = concept(conceptId)
+				.preferredDescriptions(ImmutableList.of(
+						new SnomedDescriptionFragment(fsn.getId(), fsn.getTypeId(), fsn.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_ES),
+						new SnomedDescriptionFragment(pt.getId(), pt.getTypeId(), pt.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_ES)
+						))
+				.active(false)
+				.build();
+		
+		indexRevision(MAIN, concept, fsn, pt, ptMember);
+		
+		final ValidationIssues issues = validate(ruleId);
+		
+		assertAffectedComponents(issues, 
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, fsn.getId()));
+	}
 	
 }
