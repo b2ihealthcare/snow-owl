@@ -17,6 +17,9 @@ package com.b2international.snowowl.core.domain;
 
 import java.util.SortedSet;
 
+import com.b2international.snowowl.core.uri.ComponentURI;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  * @since 7.5
  */
@@ -68,4 +71,10 @@ public final class Concept extends BaseComponent {
 	public short getTerminologyComponentId() {
 		return terminologyComponentId;
 	}
+
+	@JsonIgnore
+	public ComponentURI getCode() {
+		return new ComponentURI(codeSystem, terminologyComponentId, getId());
+	}
+	
 }
