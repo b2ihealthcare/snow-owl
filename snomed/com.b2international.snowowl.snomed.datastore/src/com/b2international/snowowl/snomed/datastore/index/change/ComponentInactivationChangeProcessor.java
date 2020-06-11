@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import com.b2international.index.Hits;
+import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.ObjectId;
@@ -40,7 +41,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptio
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Maps;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 
 /**
@@ -84,7 +85,7 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 				changedMembersByReferencedComponentId.put(((SnomedRefSetMemberIndexEntry) diff.newRevision).getReferencedComponentId(), diff);
 			});
 			
-			Map<String, SnomedRefSetMemberIndexEntry> refSetMembers = Maps.newHashMap();
+			Multimap<String, SnomedRefSetMemberIndexEntry> refSetMembers = HashMultimap.create();
 			for (Hits<SnomedRefSetMemberIndexEntry> hits : searcher.scroll(Query.select(SnomedRefSetMemberIndexEntry.class) 
 						.from(SnomedRefSetMemberIndexEntry.class)
 						.where(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR))
@@ -104,7 +105,9 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 					SnomedRefSetMemberIndexEntry existingInactivationMember;
 					
 					if (changedMembersByReferencedComponentId.isEmpty()) {
-						existingInactivationMember = refSetMembers.get(descriptionId);
+						existingInactivationMember = refSetMembers.get(descriptionId).stream()
+								.findFirst()
+								.orElse(null);
 					} else {
 						existingInactivationMember = changedMembersByReferencedComponentId.get(descriptionId).stream()
 								.map(diff -> diff.newRevision)
