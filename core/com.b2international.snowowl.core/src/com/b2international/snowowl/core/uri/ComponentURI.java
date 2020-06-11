@@ -67,10 +67,10 @@ public final class ComponentURI implements Serializable {
 		
 	
 	@JsonIgnore
-	public static final ComponentURI UNKNOWN = new ComponentURI("unknown", (short) 0, "unknown");
+	public static final ComponentURI UNKNOWN = ComponentURI.of("unknown", (short) 0, "unknown");
 	
 	@JsonIgnore
-	public static final ComponentURI UNSPECIFIED = new ComponentURI(TerminologyRegistry.UNSPECIFIED, TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT, "");
+	public static final ComponentURI UNSPECIFIED = ComponentURI.of(TerminologyRegistry.UNSPECIFIED, TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT, "");
 	
 	private final String codeSystem;
 	private final short terminologyComponentId;
@@ -90,7 +90,7 @@ public final class ComponentURI implements Serializable {
 
 	@JsonIgnore
 	public final boolean isUnknown() {
-		return UNKNOWN == this;
+		return UNKNOWN.equals(this);
 	}
 	
 	@JsonIgnore
@@ -109,8 +109,8 @@ public final class ComponentURI implements Serializable {
 	@JsonCreator
 	public ComponentURI(String codeSystem, short terminologyComponentId, String identifier) {
 		checkArgument(!Strings.isNullOrEmpty(codeSystem), "Codesystem argument should not be null.");
-		checkArgument(terminologyComponentId > 0 || terminologyComponentId != TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT,
-				"Terminology component id should be either unspecified (-1) or greater than zero. Got: '%d'.", terminologyComponentId);
+		checkArgument(terminologyComponentId >= TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT,
+				"Terminology component id should be either unspecified (-1) or greater than zero. Got: '%s'.", terminologyComponentId);
 		this.codeSystem = codeSystem;
 		this.terminologyComponentId = terminologyComponentId;
 		this.identifier = identifier;
