@@ -85,10 +85,17 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 				changedMembersByReferencedComponentId.put(((SnomedRefSetMemberIndexEntry) diff.newRevision).getReferencedComponentId(), diff);
 			});
 			
+			final ImmutableSet<String> valueIds = ImmutableSet.of(Concepts.CONCEPT_NON_CURRENT);
+			final Expression expression = Expressions.builder()
+					.filter(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR))
+					.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
+					.filter(SnomedRefSetMemberIndexEntry.Expressions.valueIds(valueIds))
+					.build();
+			
 			Multimap<String, SnomedRefSetMemberIndexEntry> refSetMembers = HashMultimap.create();
 			for (Hits<SnomedRefSetMemberIndexEntry> hits : searcher.scroll(Query.select(SnomedRefSetMemberIndexEntry.class) 
 						.from(SnomedRefSetMemberIndexEntry.class)
-						.where(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR))
+						.where(expression)
 						.build())) {
 				hits.forEach(refSetMember -> refSetMembers.put(refSetMember.getReferencedComponentId(), refSetMember));
 			}
