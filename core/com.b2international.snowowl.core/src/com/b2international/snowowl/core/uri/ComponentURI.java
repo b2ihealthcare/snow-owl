@@ -65,10 +65,6 @@ public final class ComponentURI implements Serializable {
 	protected static final Splitter SLASH_SPLITTER = Splitter.on('/');
 	protected static final Joiner SLASH_JOINER = Joiner.on('/');
 		
-	
-	@JsonIgnore
-	public static final ComponentURI UNKNOWN = new ComponentURI("unknown", (short) 0, "unknown");
-	
 	@JsonIgnore
 	public static final ComponentURI UNSPECIFIED = new ComponentURI(TerminologyRegistry.UNSPECIFIED, TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT, "");
 	
@@ -89,11 +85,6 @@ public final class ComponentURI implements Serializable {
 	}
 
 	@JsonIgnore
-	public final boolean isUnknown() {
-		return UNKNOWN == this;
-	}
-	
-	@JsonIgnore
 	public final boolean isUnspecified() {
 		return TerminologyRegistry.UNSPECIFIED.equals(codeSystem());
 	}
@@ -109,8 +100,8 @@ public final class ComponentURI implements Serializable {
 	@JsonCreator
 	public ComponentURI(String codeSystem, short terminologyComponentId, String identifier) {
 		checkArgument(!Strings.isNullOrEmpty(codeSystem), "Codesystem argument should not be null.");
-		checkArgument(terminologyComponentId > 0 || terminologyComponentId != TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT,
-				"Terminology component id should be either unspecified (-1) or greater than zero. Got: '%d'.", terminologyComponentId);
+		checkArgument(terminologyComponentId > 0 || terminologyComponentId == TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT,
+				String.format("Terminology component id should be either unspecified (-1) or greater than zero. Got: '%d'.", terminologyComponentId));
 		this.codeSystem = codeSystem;
 		this.terminologyComponentId = terminologyComponentId;
 		this.identifier = identifier;
@@ -122,7 +113,7 @@ public final class ComponentURI implements Serializable {
 	
 	public static ComponentURI of(String uri) {
 		if (Strings.isNullOrEmpty(uri)) {
-			return ComponentURI.UNKNOWN;
+			return ComponentURI.UNSPECIFIED;
 		}
 		final List<String> parts = SLASH_SPLITTER.splitToList(uri);
 		checkArgument(parts.size() == 3, "A component uri consists of three parts (codeSystem/componentType/componentId). Arg was: %s", uri);
