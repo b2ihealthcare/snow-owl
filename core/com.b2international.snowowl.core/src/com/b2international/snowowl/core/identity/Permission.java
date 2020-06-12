@@ -21,6 +21,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.io.Serializable;
 import java.util.Objects;
 
+import org.apache.commons.io.FilenameUtils;
+
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.StringUtils;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -30,6 +32,8 @@ import com.google.common.base.MoreObjects;
 
 /**
  * Represents an application specific permission.
+ * Permissions have two parts: operation and resource
+ * Resources can be expressed using file-style wildcards such as '*' and '?'
  */
 public final class Permission implements Serializable {
 
@@ -42,8 +46,6 @@ public final class Permission implements Serializable {
 	private final String resource;
 	
 	private final String permission;
-	private final boolean wildcard;
-	private final String rawResource;
 	
 	public static final String OPERATION_ALL = "*"; //$NON-NLS-N$
 	public static final String OPERATION_BROWSE = "browse";  //$NON-NLS-N$
@@ -114,11 +116,6 @@ public final class Permission implements Serializable {
 			throw new IllegalArgumentException("Resource must be specified.");
 		}
 		this.resource = resource;
-		final int wildcardPosition = this.resource.indexOf(OPERATION_ALL);
-		checkArgument(wildcardPosition == -1 /*no wildcard*/ || wildcardPosition == resource.length() - 1 /*at the end*/, "Wildcard character must be at the end of the resource. Got: %s", resource);
-		this.wildcard = wildcardPosition != -1;
-		this.rawResource = wildcard ? resource.substring(0, wildcardPosition) : resource;
-		
 		this.permission = String.join(SEPARATOR, operation, resource);
 	}
 
@@ -145,37 +142,19 @@ public final class Permission implements Serializable {
 		return permission;
 	}
 	
-	/**
-	 * Returns <code>true</code> if this {@link Permission} implies the incoming permission requirement and <code>false</code> if it does not.  
-	 * 
-	 * @param permissionRequirement
-	 * @return
-	 */
-	public boolean implies(Permission permissionRequirement) {
-		
-		checkArgument(!OPERATION_ALL.equals(permissionRequirement.getOperation()), "Explicit operation is required to check whether this permission '%s' implies '%s'.", this, permissionRequirement);
+	public boolean implies(final Permission permissionToAuthenticate) {
 		
 		// operation
 		
 		// * allows all incoming permission requirements (both operation and resource)
 		// if not *, then the operation in this permission should match the same operation from the requirement (equals)
-		final boolean allowedOperation = OPERATION_ALL.equals(operation) || operation.equals(permissionRequirement.getOperation());
+		final boolean allowedOperation = OPERATION_ALL.equals(operation) || operation.equals(permissionToAuthenticate.getOperation());
 		if (!allowedOperation) {
 			return false;
 		}
-		
-		// resource
-		
-		// if operation matches, then proceed based on whether the resource part has a wildcard or not
-		if (wildcard) {
-			// in case of a wildcard, this permission's resource part should match the beginning of the requirement's resource part
-			return permissionRequirement.getResource().startsWith(rawResource);
-		} else {
-			// otherwise permission resource parts should match
-			return permissionRequirement.getResource().equals(resource);
-		}
+		return FilenameUtils.wildcardMatch(permissionToAuthenticate.getResource(), resource);
 	}
-
+	
 	@Override
 	public int hashCode() {
 		return Objects.hash(getPermission());

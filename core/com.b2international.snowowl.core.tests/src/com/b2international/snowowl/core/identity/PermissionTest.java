@@ -15,21 +15,27 @@
  */
 package com.b2international.snowowl.core.identity;
 
+import static com.b2international.snowowl.core.identity.Permission.OPERATION_BROWSE;
+import static com.b2international.snowowl.core.identity.Permission.OPERATION_IMPORT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
+/**
+ * 
+ * @since 7.7.0
+ *
+ */
 public class PermissionTest {
 	
 	@Test
 	public void missingResourceTest() {
 		
 		 Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-		       Permission.of(Permission.OPERATION_BROWSE, "");
+		       Permission.of(OPERATION_BROWSE, "");
 		 });
 		 
 	    String expectedMessage = "Resource must be specified.";
@@ -37,22 +43,63 @@ public class PermissionTest {
 	}
 	
 	@Test
-	public void operationWithoutResourceTest() {
-		Permission permission = Permission.of(Permission.OPERATION_BROWSE, "*");
-		assertNotNull(permission);
+	public void pathUriResourceTest() {
 		
-		assertEquals(Permission.OPERATION_BROWSE, permission.getOperation());
-		assertEquals("*", permission.getResource());
+		String extensionUri = "SNOMEDCT-EXT/2020-01-31";
+		Permission resourceToAuthorize = Permission.of(OPERATION_BROWSE, extensionUri);
 		
-		//No resource allows permissions with no resource
-		assertTrue(permission.implies(permission));
+		Permission userPermission = Permission.of(OPERATION_BROWSE, "SNOMEDCT-EXT/2020-01-31");
+		assertTrue(userPermission.implies(resourceToAuthorize));
 		
-		//No resource does not mean 'everything'
-		Permission permissionWithResource = Permission.of(Permission.OPERATION_BROWSE, "icdStore");
-		assertTrue(permission.implies(permissionWithResource));
+		userPermission = Permission.of(OPERATION_BROWSE, "SNOMEDCT-EXT/2020-01-3?");
+		assertTrue(userPermission.implies(resourceToAuthorize));
 		
-		Permission differentPermission = Permission.of(Permission.OPERATION_EDIT, "*");
-		assertFalse(permission.implies(differentPermission));
-	}
+		userPermission = Permission.of(OPERATION_BROWSE, "SNOMEDCT-EXT/*");
+		assertTrue(userPermission.implies(resourceToAuthorize));
+		
+		userPermission = Permission.of(OPERATION_BROWSE, "*SNOMEDCT-EXT/*");
+		assertTrue(userPermission.implies(resourceToAuthorize));
+		
+		userPermission = Permission.of(OPERATION_BROWSE, "*/SNOMEDCT-EXT/*");
+		assertFalse(userPermission.implies(resourceToAuthorize));
 
+		userPermission = Permission.of(OPERATION_BROWSE, "SNOMEDCT-EXT2/2020-01-31");
+		assertFalse(userPermission.implies(resourceToAuthorize));
+		
+		userPermission = Permission.of(OPERATION_BROWSE, "SNOMEDCT-EXT/2020-01-*");
+		assertTrue(userPermission.implies(resourceToAuthorize));
+		
+		userPermission = Permission.of(OPERATION_BROWSE, "SNOMEDCT-???/2020-01-31");
+		assertTrue(userPermission.implies(resourceToAuthorize));
+		
+		userPermission = Permission.of(OPERATION_BROWSE, "*/2020-01-31/*");
+		assertFalse(userPermission.implies(resourceToAuthorize));
+	}
+	
+	@Test
+	public void noPathUriResourceTest() {
+		
+		String extensionUri = "SNOMEDCT-EXT";
+		Permission resourceToAuthorize = Permission.of(OPERATION_BROWSE, extensionUri);
+		
+		Permission userPermission = Permission.of(OPERATION_IMPORT, extensionUri);
+		assertFalse(userPermission.implies(resourceToAuthorize));
+		
+		userPermission = Permission.of(OPERATION_BROWSE, extensionUri);
+		assertTrue(userPermission.implies(resourceToAuthorize));
+		
+		userPermission = Permission.of(OPERATION_BROWSE, "*");
+		assertTrue(userPermission.implies(resourceToAuthorize));
+		
+		userPermission = Permission.of(OPERATION_BROWSE, "*EXT");
+		assertTrue(userPermission.implies(resourceToAuthorize));
+		
+		userPermission = Permission.of(OPERATION_BROWSE, "*/*");
+		assertFalse(userPermission.implies(resourceToAuthorize));
+		
+		userPermission = Permission.of(OPERATION_BROWSE, "?NOMEDCT-EX?");
+		assertTrue(userPermission.implies(resourceToAuthorize));
+		
+	}
+	
 }
