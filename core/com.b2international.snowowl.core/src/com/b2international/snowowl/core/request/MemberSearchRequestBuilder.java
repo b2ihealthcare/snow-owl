@@ -18,6 +18,7 @@ package com.b2international.snowowl.core.request;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.SetMembers;
 import com.b2international.snowowl.core.request.SetMemberSearchRequestEvaluator.OptionKey;
+import com.google.common.collect.ImmutableSet;
 
 /**
 * @since 7.7
@@ -26,7 +27,11 @@ public final class MemberSearchRequestBuilder extends SearchResourceRequestBuild
 		implements RevisionIndexRequestBuilder<SetMembers> {
 	
 	public MemberSearchRequestBuilder filterBySet(String setId) {
-		return addOption(OptionKey.SET, setId);
+		return filterBySets(ImmutableSet.of(setId));
+	}
+	
+	public MemberSearchRequestBuilder filterBySets(Iterable<String> setIds) {
+		return addOption(OptionKey.SET, setIds);
 	}
 	
 	@Override

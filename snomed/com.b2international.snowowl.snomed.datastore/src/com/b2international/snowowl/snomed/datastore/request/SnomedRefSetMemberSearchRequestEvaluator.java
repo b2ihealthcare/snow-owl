@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -46,7 +47,7 @@ public class SnomedRefSetMemberSearchRequestEvaluator implements SetMemberSearch
 		SnomedRefSetMemberSearchRequestBuilder requestBuilder = SnomedRequests.prepareSearchMember();
 		
 		if (search.containsKey(OptionKey.SET)) {
-			final String refsetId = search.get(OptionKey.SET, String.class);
+			final Collection<String> refsetId = search.getCollection(OptionKey.SET, String.class);
 			requestBuilder.filterByRefSet(refsetId);
 		}
 		
