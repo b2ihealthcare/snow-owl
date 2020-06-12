@@ -15,50 +15,74 @@
  */
 package com.b2international.snowowl.core.domain;
 
+import java.io.Serializable;
+import java.util.Objects;
+
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
  * @since 7.7
  */
-public final class SetMember extends BaseComponent {
+public final class SetMember implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	private ComponentURI referencedComponentURI;
+	private final ComponentURI referencedComponentURI;
 	
-	private final String sourceTerm;
+	private final String term;
 	private final String iconId;
-	private final short terminologyComponentId;
 	
-    @JsonCreator
+	@JsonCreator
 	public SetMember(
 			@JsonProperty("referencedComponentURI") ComponentURI referencedComponentURI,
-			@JsonProperty("terminologyComponentId") short terminologyComponentId,
 			@JsonProperty("term") String term,
 			@JsonProperty("iconId") String iconId) {
 		this.referencedComponentURI = referencedComponentURI;
-		this.terminologyComponentId = terminologyComponentId;
-		this.sourceTerm = term;
+		this.term = term;
 		this.iconId = iconId;
-	}
-	
-	@Override
-	public short getTerminologyComponentId() {
-		return terminologyComponentId;
 	}
 
 	public String getIconId() {
 		return iconId;
 	}
 
-	public String getSourceTerm() {
-		return sourceTerm;
+	public String getTerm() {
+		return term;
 	}
 
 	public ComponentURI getReferencedComponentURI() {
 		return referencedComponentURI;
 	}
 
+	@JsonValue
+	@Override
+	public String toString() {
+		return new StringBuilder()
+				.append("referencedComponentURI: ")
+				.append(referencedComponentURI)
+				.append(", term: ")
+				.append(term)
+				.append(", iconId: ")
+				.append(iconId)
+				.toString();
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(referencedComponentURI, term, iconId);
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) return true;
+		if (obj == null) return false;
+		if (getClass() != obj.getClass()) return false;
+		SetMember other = (SetMember) obj;
+		return Objects.equals(referencedComponentURI, other.referencedComponentURI)
+				&& term == other.term
+				&& Objects.equals(iconId, other.iconId);
+	}
 }

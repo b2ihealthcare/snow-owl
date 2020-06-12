@@ -84,7 +84,6 @@ public class SnomedRefSetMemberSearchRequestEvaluator implements SetMemberSearch
 		}
 		
 		return new SetMember(ComponentURI.of(codeSystemURI.getCodeSystem(), terminologyComponentId, member.getReferencedComponentId()),
-				SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER,
 				term, 
 				iconId);
 	}
