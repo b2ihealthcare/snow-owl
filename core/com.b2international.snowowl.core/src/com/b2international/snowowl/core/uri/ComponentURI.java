@@ -97,7 +97,7 @@ public final class ComponentURI implements Serializable {
 
 	@JsonIgnore
 	public final boolean isUnknown() {
-		return UNKNOWN.equals(this);
+		return UNKNOWN == this;
 	}
 	
 	@JsonIgnore
@@ -113,7 +113,6 @@ public final class ComponentURI implements Serializable {
 		return ComponentIdentifier.of(terminologyComponentId(), identifier());
 	}
 
-	@JsonCreator
 	private ComponentURI(String codeSystem, short terminologyComponentId, String identifier) {
 		checkArgument(!Strings.isNullOrEmpty(codeSystem), "Codesystem argument should not be null.");
 		checkArgument(terminologyComponentId >= TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT,
@@ -123,6 +122,7 @@ public final class ComponentURI implements Serializable {
 		this.identifier = identifier;
 	}
 	
+	@JsonCreator
 	public static ComponentURI of(String codeSystem, short terminologyComponentId, String identifier) {
 		return getOrCache(new ComponentURI(codeSystem, terminologyComponentId, Strings.nullToEmpty(identifier)));
 	}
