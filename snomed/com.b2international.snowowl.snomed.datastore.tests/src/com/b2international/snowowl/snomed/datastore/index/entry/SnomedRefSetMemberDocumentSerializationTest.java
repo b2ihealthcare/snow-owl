@@ -105,7 +105,7 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 	@Test
 	public void indexSimpleMapMemberWithComponentURITarget() throws Exception {
 		final String mapTergetId = "targetId01";
-		final ComponentURI componentURI = new ComponentURI(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME,
+		final ComponentURI componentURI = ComponentURI.of(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME,
 				SnomedTerminologyComponentConstants.CONCEPT_NUMBER,
 				mapTergetId);
 		

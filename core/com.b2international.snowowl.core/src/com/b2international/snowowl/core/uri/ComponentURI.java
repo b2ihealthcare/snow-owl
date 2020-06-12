@@ -37,6 +37,8 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Interner;
+import com.google.common.collect.Interners;
 
 /**
  * @since 7.7
@@ -61,6 +63,11 @@ public final class ComponentURI implements Serializable {
 		}
 		
 	}
+	
+	/**
+	 * Keeps weak references to every created {@link ComponentURI} in this JVM.
+	 */
+	private static final Interner<ComponentURI> COMPONENT_URI_INTERNER = Interners.newWeakInterner();
 	
 	protected static final Splitter SLASH_SPLITTER = Splitter.on('/');
 	protected static final Joiner SLASH_JOINER = Joiner.on('/');
@@ -107,7 +114,7 @@ public final class ComponentURI implements Serializable {
 	}
 
 	@JsonCreator
-	public ComponentURI(String codeSystem, short terminologyComponentId, String identifier) {
+	private ComponentURI(String codeSystem, short terminologyComponentId, String identifier) {
 		checkArgument(!Strings.isNullOrEmpty(codeSystem), "Codesystem argument should not be null.");
 		checkArgument(terminologyComponentId >= TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT,
 				"Terminology component id should be either unspecified (-1) or greater than zero. Got: '%s'.", terminologyComponentId);
@@ -117,7 +124,11 @@ public final class ComponentURI implements Serializable {
 	}
 	
 	public static ComponentURI of(String codeSystem, short terminologyComponentId, String identifier) {
-		return new ComponentURI(codeSystem, terminologyComponentId, Strings.nullToEmpty(identifier));
+		return getOrCache(new ComponentURI(codeSystem, terminologyComponentId, Strings.nullToEmpty(identifier)));
+	}
+	
+	private static ComponentURI getOrCache(final ComponentURI componentURI) {
+		return COMPONENT_URI_INTERNER.intern(componentURI);
 	}
 	
 	public static ComponentURI of(String uri) {
