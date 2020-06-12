@@ -22,6 +22,7 @@ import com.b2international.snowowl.core.uri.ComponentURI;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.base.MoreObjects;
 
 /**
  * @since 7.7
@@ -60,14 +61,12 @@ public final class SetMember implements Serializable {
 	@JsonValue
 	@Override
 	public String toString() {
-		return new StringBuilder()
-				.append("referencedComponentURI: ")
-				.append(referencedComponentURI)
-				.append(", term: ")
-				.append(term)
-				.append(", iconId: ")
-				.append(iconId)
-				.toString();
+		return MoreObjects.toStringHelper("AtcConceptEditorState")
+		        .omitNullValues()
+				.add("referencedComponentURI", referencedComponentURI)
+				.add("term", term)
+				.add("iconId", iconId)
+		        .toString();
 	}
 	
 	@Override
