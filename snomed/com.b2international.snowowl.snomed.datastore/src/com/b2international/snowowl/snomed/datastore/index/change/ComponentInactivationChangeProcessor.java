@@ -34,6 +34,7 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.repository.ChangeSetProcessorBase;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
@@ -86,10 +87,12 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 			});
 			
 			final ImmutableSet<String> valueIds = ImmutableSet.of(Concepts.CONCEPT_NON_CURRENT);
+			final ImmutableSet<Short> descriptionTypeReferencedComponent = ImmutableSet.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER);
 			final Expression expression = Expressions.builder()
 					.filter(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR))
 					.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
 					.filter(SnomedRefSetMemberIndexEntry.Expressions.valueIds(valueIds))
+					.filter(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentTypes(descriptionTypeReferencedComponent))
 					.build();
 			
 			Multimap<String, SnomedRefSetMemberIndexEntry> refSetMembers = HashMultimap.create();
