@@ -74,7 +74,7 @@ public final class Concept extends BaseComponent {
 
 	@JsonIgnore
 	public ComponentURI getCode() {
-		return new ComponentURI(codeSystem, terminologyComponentId, getId());
+		return ComponentURI.of(codeSystem, terminologyComponentId, getId());
 	}
 	
 }

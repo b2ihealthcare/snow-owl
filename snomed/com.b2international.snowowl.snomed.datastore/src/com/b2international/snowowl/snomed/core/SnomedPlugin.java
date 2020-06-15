@@ -38,6 +38,7 @@ import com.b2international.snowowl.core.repository.ContentAvailabilityInfoProvid
 import com.b2international.snowowl.core.repository.TerminologyRepositoryInitializer;
 import com.b2international.snowowl.core.repository.TerminologyRepositoryPlugin;
 import com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator;
+import com.b2international.snowowl.core.request.SetMemberSearchRequestEvaluator;
 import com.b2international.snowowl.core.request.QueryOptimizer;
 import com.b2international.snowowl.core.request.TransactionalRequest;
 import com.b2international.snowowl.core.setup.ConfigurationRegistry;
@@ -74,6 +75,7 @@ import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfigurati
 import com.b2international.snowowl.snomed.datastore.index.change.SnomedRepositoryPreCommitHook;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.internal.SnomedRepositoryInitializer;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberSearchRequestEvaluator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.request.Synonyms;
 import com.b2international.snowowl.snomed.ecl.EclStandaloneSetup;
@@ -108,7 +110,6 @@ public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 		
 		// register SNOMED CT Query based validation rule evaluator
 		ValidationRuleEvaluator.Registry.register(new SnomedQueryValidationRuleEvaluator());
-
 	}
 	
 	@Override
@@ -226,6 +227,11 @@ public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 	@Override
 	protected ComponentRevisionConflictProcessor getComponentRevisionConflictProcessor() {
 		return new SnomedComponentRevisionConflictProcessor();
+	}
+	
+	@Override
+	protected SetMemberSearchRequestEvaluator getMemberSearchRequestEvaluator() {
+		return new SnomedRefSetMemberSearchRequestEvaluator();
 	}
 	
 }

@@ -37,6 +37,8 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Interner;
+import com.google.common.collect.Interners;
 
 /**
  * @since 7.7
@@ -62,11 +64,16 @@ public final class ComponentURI implements Serializable {
 		
 	}
 	
+	/**
+	 * Keeps weak references to every created {@link ComponentURI} in this JVM.
+	 */
+	private static final Interner<ComponentURI> COMPONENT_URI_INTERNER = Interners.newWeakInterner();
+	
 	protected static final Splitter SLASH_SPLITTER = Splitter.on('/');
 	protected static final Joiner SLASH_JOINER = Joiner.on('/');
 		
 	@JsonIgnore
-	public static final ComponentURI UNSPECIFIED = new ComponentURI(TerminologyRegistry.UNSPECIFIED, TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT, "");
+	public static final ComponentURI UNSPECIFIED = ComponentURI.of(TerminologyRegistry.UNSPECIFIED, TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT, "");
 	
 	private final String codeSystem;
 	private final short terminologyComponentId;
@@ -97,18 +104,22 @@ public final class ComponentURI implements Serializable {
 		return ComponentIdentifier.of(terminologyComponentId(), identifier());
 	}
 
-	@JsonCreator
-	public ComponentURI(String codeSystem, short terminologyComponentId, String identifier) {
+	private ComponentURI(String codeSystem, short terminologyComponentId, String identifier) {
 		checkArgument(!Strings.isNullOrEmpty(codeSystem), "Codesystem argument should not be null.");
-		checkArgument(terminologyComponentId > 0 || terminologyComponentId == TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT,
-				String.format("Terminology component id should be either unspecified (-1) or greater than zero. Got: '%d'.", terminologyComponentId));
+		checkArgument(terminologyComponentId >= TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT,
+				"Terminology component id should be either unspecified (-1) or greater than zero. Got: '%s'.", terminologyComponentId);
 		this.codeSystem = codeSystem;
 		this.terminologyComponentId = terminologyComponentId;
 		this.identifier = identifier;
 	}
 	
+	@JsonCreator
 	public static ComponentURI of(String codeSystem, short terminologyComponentId, String identifier) {
-		return new ComponentURI(codeSystem, terminologyComponentId, Strings.nullToEmpty(identifier));
+		return getOrCache(new ComponentURI(codeSystem, terminologyComponentId, Strings.nullToEmpty(identifier)));
+	}
+	
+	private static ComponentURI getOrCache(final ComponentURI componentURI) {
+		return COMPONENT_URI_INTERNER.intern(componentURI);
 	}
 	
 	public static ComponentURI of(String uri) {
