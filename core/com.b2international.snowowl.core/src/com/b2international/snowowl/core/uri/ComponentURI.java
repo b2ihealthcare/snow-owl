@@ -72,10 +72,6 @@ public final class ComponentURI implements Serializable {
 	protected static final Splitter SLASH_SPLITTER = Splitter.on('/');
 	protected static final Joiner SLASH_JOINER = Joiner.on('/');
 		
-	
-	@JsonIgnore
-	public static final ComponentURI UNKNOWN = ComponentURI.of("unknown", (short) 0, "unknown");
-	
 	@JsonIgnore
 	public static final ComponentURI UNSPECIFIED = ComponentURI.of(TerminologyRegistry.UNSPECIFIED, TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT, "");
 	
@@ -95,11 +91,6 @@ public final class ComponentURI implements Serializable {
 		return identifier;
 	}
 
-	@JsonIgnore
-	public final boolean isUnknown() {
-		return UNKNOWN == this;
-	}
-	
 	@JsonIgnore
 	public final boolean isUnspecified() {
 		return TerminologyRegistry.UNSPECIFIED.equals(codeSystem());
@@ -133,7 +124,7 @@ public final class ComponentURI implements Serializable {
 	
 	public static ComponentURI of(String uri) {
 		if (Strings.isNullOrEmpty(uri)) {
-			return ComponentURI.UNKNOWN;
+			return ComponentURI.UNSPECIFIED;
 		}
 		final List<String> parts = SLASH_SPLITTER.splitToList(uri);
 		checkArgument(parts.size() == 3, "A component uri consists of three parts (codeSystem/componentType/componentId). Arg was: %s", uri);
