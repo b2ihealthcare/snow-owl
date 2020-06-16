@@ -21,11 +21,59 @@ import com.google.common.collect.Sets
 
 final Set<ComponentIdentifier> issues = Sets.newHashSet()
 final RevisionSearcher searcher = ctx.service(RevisionSearcher.class)
+final List<String> filterIndicatorIds = ImmutableList.of(Concepts.PENDING_MOVE, Concepts.LIMITED, Concepts.CONCEPT_NON_CURRENT)
+
+def checkDescriptions = { boolean active , Set<String> inactiveConceptIds ->
+	ExpressionBuilder filterSnomedDescriptions = Expressions.builder()
+			.filter(SnomedDescriptionIndexEntry.Expressions.concepts(inactiveConceptIds))
+			.filter(SnomedDescriptionIndexEntry.Expressions.active(active))
+
+	final Set<String> descriptionIds = Sets.newHashSet()
+
+	searcher.scroll(Query.select(String.class)
+			.from(SnomedDescriptionIndexEntry.class)
+			.fields(SnomedDescriptionIndexEntry.Fields.ID)
+			.where(filterSnomedDescriptions.build())
+			.limit(10_000)
+			.build())
+			.each({hits ->
+				hits.each({ id ->
+					descriptionIds.add(id)
+				})
+			})
+
+	ExpressionBuilder filterDescriptionsExpressionBuilder = Expressions.builder()
+			.filter(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR))
+			.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
+			.filter(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(descriptionIds))
+			
+	if (params.isUnpublishedOnly) {
+		filterDescriptionsExpressionBuilder.filter(SnomedRefSetMemberIndexEntry.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
+	}
+
+	if(active) {
+		filterDescriptionsExpressionBuilder
+				.mustNot(SnomedRefSetMemberIndexEntry.Expressions.valueIds(filterIndicatorIds))
+	} else {
+		filterDescriptionsExpressionBuilder
+				.filter(SnomedRefSetMemberIndexEntry.Expressions.valueIds(filterIndicatorIds))
+	}
+	searcher.scroll(Query.select(SnomedRefSetMemberIndexEntry.class)
+		.from(SnomedRefSetMemberIndexEntry.class)
+		.where(filterDescriptionsExpressionBuilder.build())
+		.limit(10_000)
+		.build())
+		.each({hits ->
+			hits.each({ hit ->
+				issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, hit.getReferencedComponentId()))
+			})
+		})
+}
 
 ExpressionBuilder filterInactiveConceptsExpressionBuilder = Expressions.builder()
 		.filter(SnomedConceptDocument.Expressions.inactive())
 
-Set<String> inactiveIds = Sets.newHashSet()
+Set<String> inactiveConceptIds = Sets.newHashSet()
 
 searcher.scroll(Query.select(String.class)
 		.from(SnomedConceptDocument.class)
@@ -35,85 +83,11 @@ searcher.scroll(Query.select(String.class)
 		.build())
 		.each({hits ->
 			hits.each({ id ->
-				inactiveIds.add(id)
+				inactiveConceptIds.add(id)
 			})
 		})
 		
-ExpressionBuilder filterActiveSnomedDescriptions = Expressions.builder()
-		.filter(SnomedDescriptionIndexEntry.Expressions.concepts(inactiveIds))
-		.must(SnomedDescriptionIndexEntry.Expressions.active())
-		
-ExpressionBuilder filterInactiveSnomedDescriptions = Expressions.builder()
-		.filter(SnomedDescriptionIndexEntry.Expressions.concepts(inactiveIds))
-		.must(SnomedDescriptionIndexEntry.Expressions.inactive())
-
-		
-final Set<String> activeDescriptionIds = Sets.newHashSet()
-
-searcher.scroll(Query.select(String.class)
-		.from(SnomedDescriptionIndexEntry.class)
-		.fields(SnomedDescriptionIndexEntry.Fields.ID)
-		.where(filterActiveSnomedDescriptions.build())
-		.limit(10_000)
-		.build())
-		.each({hits ->
-			hits.each({ id ->
-				activeDescriptionIds.add(id)
-			})
-		})
-		
-final Set<String> inactiveDescriptionIds = Sets.newHashSet()
-
-searcher.scroll(Query.select(String.class)
-		.from(SnomedDescriptionIndexEntry.class)
-		.fields(SnomedDescriptionIndexEntry.Fields.ID)
-		.where(filterActiveSnomedDescriptions.build())
-		.limit(10_000)
-		.build())
-		.each({hits ->
-			hits.each({ id ->
-				inactiveDescriptionIds.add(id)
-			})
-		})
-
-ExpressionBuilder filterActiveDescriptionsExpressionBuilder = Expressions.builder()
-		.filter(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR))
-        .filter(SnomedRefSetMemberIndexEntry.Expressions.active())
-        .filter(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(activeDescriptionIds))
-		.mustNot(SnomedRefSetMemberIndexEntry.Expressions.valueIds(ImmutableList.of(Concepts.PENDING_MOVE, Concepts.LIMITED, Concepts.CONCEPT_NON_CURRENT)))
-
-
-ExpressionBuilder filterInactiveDescriptionsExpressionBuilder = Expressions.builder()
-		.filter(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR))
-        .filter(SnomedRefSetMemberIndexEntry.Expressions.active())
-        .filter(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(inactiveDescriptionIds))
-		.filter(SnomedRefSetMemberIndexEntry.Expressions.valueIds(ImmutableList.of(Concepts.PENDING_MOVE, Concepts.LIMITED, Concepts.CONCEPT_NON_CURRENT)))
-
-if (params.isUnpublishedOnly) {
-	filterActiveDescriptionsExpressionBuilder.filter(SnomedRefSetMemberIndexEntry.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
-	filterInactiveDescriptionsExpressionBuilder.filter(SnomedRefSetMemberIndexEntry.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
-}
-
-searcher.scroll(Query.select(SnomedRefSetMemberIndexEntry.class)
-		.from(SnomedRefSetMemberIndexEntry.class)
-		.where(filterActiveDescriptionsExpressionBuilder.build())
-		.limit(10_000)
-		.build())
-		.each({hits ->
-			hits.each({ hit ->
-				issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, hit.getReferencedComponentId()))
-			})
-		})
-
-searcher.scroll(Query.select(SnomedRefSetMemberIndexEntry.class)
-		.from(SnomedRefSetMemberIndexEntry.class)
-		.where(filterInactiveDescriptionsExpressionBuilder.build())
-		.limit(10_000)
-		.build())
-		.each({hits ->
-			hits.each({ hit ->
-				issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, hit.getReferencedComponentId()))
-			})
-		})
+checkDescriptions(true, inactiveConceptIds)
+checkDescriptions(false, inactiveConceptIds)
 
 return issues.toList()
