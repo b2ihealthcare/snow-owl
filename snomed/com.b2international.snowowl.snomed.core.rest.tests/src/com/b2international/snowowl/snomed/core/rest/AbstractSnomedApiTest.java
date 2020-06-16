@@ -15,7 +15,14 @@
  */
 package com.b2international.snowowl.snomed.core.rest;
 
+import java.util.Map;
+
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.test.commons.rest.AbstractApiTest;
+
+import io.restassured.response.ValidatableResponse;
 
 /**
  * @since 7.3
@@ -25,6 +32,63 @@ public abstract class AbstractSnomedApiTest extends AbstractApiTest {
 	@Override
 	protected String getApiBaseUrl() {
 		return SnomedApiTestConstants.SCT_API;
+	}
+	
+	protected final ValidatableResponse assertGetConcept(String conceptId, String...expand) {
+		return SnomedComponentRestRequests.getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, expand);
+	}
+	
+	protected final SnomedConcept getConcept(String conceptId, String...expand) {
+		return assertGetConcept(conceptId, expand)
+				.statusCode(200)
+				.extract()
+				.as(SnomedConcept.class);
+	}
+	
+	protected final ValidatableResponse assertGetDescription(String descriptionId, String...expand) {
+		return SnomedComponentRestRequests.getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, expand);
+	}
+	
+	protected final SnomedDescription getDescription(String descriptionId, String...expand) {
+		return assertGetDescription(descriptionId, expand)
+				.statusCode(200)
+				.extract()
+				.as(SnomedDescription.class);
+	}
+	
+	protected final ValidatableResponse assertGetRelationship(String relationshipId, String...expand) {
+		return SnomedComponentRestRequests.getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, expand);
+	}
+	
+	protected final SnomedRelationship getRelationship(String relationshipId, String...expand) {
+		return assertGetRelationship(relationshipId, expand)
+				.statusCode(200)
+				.extract()
+				.as(SnomedRelationship.class);
+	}
+	
+	protected final ValidatableResponse assertUpdateConcept(final String conceptId, Map<String, Object> update) {
+		return SnomedComponentRestRequests.updateComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, update);
+	}
+	
+	protected final void updateConcept(final String conceptId, Map<String, Object> update) {
+		assertUpdateConcept(conceptId, update).statusCode(204);
+	}
+	
+	protected final ValidatableResponse assertUpdateDescription(final String descriptionId, Map<String, Object> update) {
+		return SnomedComponentRestRequests.updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, update);
+	}
+	
+	protected final void updateDescription(final String descriptionId, Map<String, Object> update) {
+		assertUpdateDescription(descriptionId, update).statusCode(204);
+	}
+	
+	protected final ValidatableResponse assertUpdateRelationship(final String relationshipId, Map<String, Object> update) {
+		return SnomedComponentRestRequests.updateComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, update);
+	}
+	
+	protected final void updateRelationship(final String relationshipId, Map<String, Object> update) {
+		assertUpdateRelationship(relationshipId, update).statusCode(204);
 	}
 	
 }

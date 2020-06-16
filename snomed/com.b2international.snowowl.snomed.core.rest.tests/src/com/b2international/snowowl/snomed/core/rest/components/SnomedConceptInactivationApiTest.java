@@ -16,15 +16,18 @@
 package com.b2international.snowowl.snomed.core.rest.components;
 
 import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.ROOT_CONCEPT;
-import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.getComponent;
-import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.updateComponent;
+import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.createComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createConceptRequestBody;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewConcept;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewRelationship;
+import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createRefSetMemberRequestBody;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.inactivateConcept;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.reactivateConcept;
 import static com.google.common.collect.Maps.newHashMap;
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.everyItem;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.nullValue;
 
 import java.util.List;
 import java.util.Map;
@@ -32,6 +35,7 @@ import java.util.Map;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.domain.IComponent;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.AssociationTarget;
 import com.b2international.snowowl.snomed.core.domain.InactivationProperties;
@@ -48,7 +52,7 @@ import com.google.common.collect.Maps;
 public class SnomedConceptInactivationApiTest extends AbstractSnomedApiTest {
 
 	private void assertConceptInactive(String conceptId) {
-		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, "descriptions(expand(inactivationProperties()))")
+		assertGetConcept(conceptId, "descriptions(expand(inactivationProperties()))")
 			.log().ifValidationFails()
 			.statusCode(200)
 			.body("active", equalTo(false))
@@ -98,16 +102,15 @@ public class SnomedConceptInactivationApiTest extends AbstractSnomedApiTest {
 				new AssociationTarget(Concepts.REFSET_POSSIBLY_EQUIVALENT_TO_ASSOCIATION, conceptWithReferenceToInactivatedConcept)
 			)
 		);
-		Map<?, ?> inactivationBody = ImmutableMap.<String, Object>builder()
+		Map<String, Object> inactivationBody = ImmutableMap.<String, Object>builder()
 				.put("active", false)
 				.put("inactivationProperties", inactivationProperties)
 				.put("commitComment", "Inactivated concept")
 				.build();
 
-		updateComponent(branchPath, SnomedComponentType.CONCEPT, conceptToInactivate, inactivationBody)
-			.statusCode(204);
+		updateConcept(conceptToInactivate, inactivationBody);
 		
-		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptToInactivate, "inactivationProperties()")
+		assertGetConcept(conceptToInactivate, "inactivationProperties()")
 			.statusCode(200)
 			.body("active", equalTo(false))
 			.body("inactivationProperties.inactivationIndicatorId", equalTo(Concepts.DUPLICATE))
@@ -115,7 +118,7 @@ public class SnomedConceptInactivationApiTest extends AbstractSnomedApiTest {
 			.body("inactivationProperties.associationTargets.targetComponentId", hasItem(conceptWithReferenceToInactivatedConcept));
 
 		// Verify that the inbound relationship is inactive
-		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, inboundStatedRelationshipId)
+		assertGetRelationship(inboundStatedRelationshipId)
 			.statusCode(200)
 			.body("active", equalTo(false));
 
@@ -123,22 +126,24 @@ public class SnomedConceptInactivationApiTest extends AbstractSnomedApiTest {
 		reactivateConcept(branchPath, conceptToInactivate);
 
 		// verify that the inferred outbound relationship is active again
-		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, outboundInferredRelationshipId)
+		assertGetRelationship(outboundInferredRelationshipId)
 			.statusCode(200)
 			.body("active", equalTo(true));
 		
 		// Verify that the concept is active again, it has two active descriptions, no association targets, no indicator
-		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptToInactivate, "inactivationProperties()").statusCode(200)
+		assertGetConcept(conceptToInactivate, "inactivationProperties()")
+			.statusCode(200)
 			.body("active", equalTo(true))
-			.body("inactivationIndicator", nullValue())
-			.body("associationTargets", nullValue())
 			.body("parentIds", equalTo(ImmutableList.of(Concepts.ROOT_CONCEPT))) // verify the the inferred and stated hierarchy is back and valid
 			.body("statedParentIds", equalTo(ImmutableList.of(Concepts.ROOT_CONCEPT)))
 			.body("ancestorIds", equalTo(ImmutableList.of(IComponent.ROOT_ID)))
-			.body("statedAncestorIds", equalTo(ImmutableList.of(IComponent.ROOT_ID)));
+			.body("statedAncestorIds", equalTo(ImmutableList.of(IComponent.ROOT_ID)))
+			.body("inactivationProperties.inactivationIndicator", nullValue())
+			.body("inactivationProperties.associationTargets", equalTo(ImmutableList.of()));
 		
 		// Verify that the inbound relationship is still inactive, meaning that manual reactivation is required
-		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, inboundStatedRelationshipId).statusCode(200)
+		assertGetRelationship(inboundStatedRelationshipId)
+			.statusCode(200)
 			.body("active", equalTo(false));
 	}
 	
@@ -156,35 +161,38 @@ public class SnomedConceptInactivationApiTest extends AbstractSnomedApiTest {
 		reactivateConcept(branchPath, inactiveChildConcept);
 
 		// Verify that the concept is active again, no association targets, no indicator
-		getComponent(branchPath, SnomedComponentType.CONCEPT, inactiveChildConcept, "inactivationProperties()").statusCode(200)
+		assertGetConcept(inactiveChildConcept, "inactivationProperties()")
+			.statusCode(200)
 			.body("active", equalTo(true))
-			.body("inactivationIndicator", nullValue())
-			.body("associationTargets", nullValue())
 			.body("parentIds", equalTo(ImmutableList.of(IComponent.ROOT_ID)))
 			.body("statedParentIds", equalTo(ImmutableList.of(inactiveParentConcept)))
 			.body("ancestorIds", equalTo(ImmutableList.of()))
-			.body("statedAncestorIds", equalTo(ImmutableList.of(IComponent.ROOT_ID)));
+			.body("statedAncestorIds", equalTo(ImmutableList.of(IComponent.ROOT_ID)))
+			.body("inactivationProperties.inactivationIndicator", nullValue())
+			.body("inactivationProperties.associationTargets", equalTo(ImmutableList.of()));
 		
 		// after reactivating the parent the child should have the proper parentage set
 		reactivateConcept(branchPath, inactiveParentConcept);
 		
-		getComponent(branchPath, SnomedComponentType.CONCEPT, inactiveParentConcept, "inactivationProperties()").statusCode(200)
+		assertGetConcept(inactiveParentConcept, "inactivationProperties()")
+			.statusCode(200)
 			.body("active", equalTo(true))
-			.body("inactivationIndicator", nullValue())
-			.body("associationTargets", nullValue())
 			.body("parentIds", equalTo(ImmutableList.of(IComponent.ROOT_ID)))
 			.body("statedParentIds", equalTo(ImmutableList.of(Concepts.ROOT_CONCEPT)))
 			.body("ancestorIds", equalTo(ImmutableList.of()))
-			.body("statedAncestorIds", equalTo(ImmutableList.of(IComponent.ROOT_ID)));
+			.body("statedAncestorIds", equalTo(ImmutableList.of(IComponent.ROOT_ID)))
+			.body("inactivationProperties.inactivationIndicator", nullValue())
+			.body("inactivationProperties.associationTargets", equalTo(ImmutableList.of()));
 		
-		getComponent(branchPath, SnomedComponentType.CONCEPT, inactiveChildConcept, "inactivationProperties()").statusCode(200)
+		assertGetConcept(inactiveChildConcept, "inactivationProperties()")
+			.statusCode(200)
 			.body("active", equalTo(true))
-			.body("inactivationIndicator", nullValue())
-			.body("associationTargets", nullValue())
 			.body("parentIds", equalTo(ImmutableList.of(IComponent.ROOT_ID)))
 			.body("statedParentIds", equalTo(ImmutableList.of(inactiveParentConcept)))
 			.body("ancestorIds", equalTo(ImmutableList.of()))
-			.body("statedAncestorIds", equalTo(ImmutableList.of(Concepts.ROOT_CONCEPT, IComponent.ROOT_ID)));
+			.body("statedAncestorIds", equalTo(ImmutableList.of(Concepts.ROOT_CONCEPT, IComponent.ROOT_ID)))
+			.body("inactivationProperties.inactivationIndicator", nullValue())
+			.body("inactivationProperties.associationTargets", equalTo(ImmutableList.of()));
 	}
 
 	@Test
@@ -197,7 +205,7 @@ public class SnomedConceptInactivationApiTest extends AbstractSnomedApiTest {
 				.put("commitComment", "Created new concept")
 				.build());
 
-		final Map<String, Object> concept = getComponent(branchPath, SnomedComponentType.CONCEPT, inactiveChildConcept, "relationships()")
+		final Map<String, Object> concept = assertGetConcept(inactiveChildConcept, "relationships()")
 				.statusCode(200)
 				.extract().as(Map.class);
 		// Reactivate relationships first
@@ -206,49 +214,82 @@ public class SnomedConceptInactivationApiTest extends AbstractSnomedApiTest {
 			final Map<String, Object> updatedRelationship = newHashMap(relationship);
 			updatedRelationship.put("active", true);
 			updatedRelationship.put("commitComment", "Reactivate Relationship");
-			updateComponent(branchPath, SnomedComponentType.RELATIONSHIP, (String) relationship.get("id"), updatedRelationship).statusCode(204);
+			updateRelationship((String) relationship.get("id"), updatedRelationship);
 		});
 		
 		// Reactivate the child concept
 		final Map<String, Object> reactivationRequest = Maps.newHashMap(concept);
 		reactivationRequest.put("active", true);
-		reactivationRequest.remove("inactivationIndicator");
-		reactivationRequest.remove("associationTargets");
 		reactivationRequest.remove("relationships"); //remove relationships from concept update call
 		reactivationRequest.put("commitComment", "Reactivated concept");
 
-		updateComponent(branchPath, SnomedComponentType.CONCEPT, inactiveChildConcept, reactivationRequest).statusCode(204);
+		updateConcept(inactiveChildConcept, reactivationRequest);
 
 		// Verify that the concept is active again, no association targets, no indicator
-		getComponent(branchPath, SnomedComponentType.CONCEPT, inactiveChildConcept, "inactivationProperties()").statusCode(200)
+		assertGetConcept(inactiveChildConcept, "inactivationProperties()")
+			.statusCode(200)
 			.body("active", equalTo(true))
-			.body("inactivationIndicator", nullValue())
-			.body("associationTargets", nullValue())
 			.body("parentIds", equalTo(ImmutableList.of(IComponent.ROOT_ID)))
 			.body("statedParentIds", equalTo(ImmutableList.of(inactiveParentConcept)))
 			.body("ancestorIds", equalTo(ImmutableList.of()))
-			.body("statedAncestorIds", equalTo(ImmutableList.of(IComponent.ROOT_ID)));
+			.body("statedAncestorIds", equalTo(ImmutableList.of(IComponent.ROOT_ID)))
+			.body("inactivationProperties.inactivationIndicator", nullValue())
+			.body("inactivationProperties.associationTargets", equalTo(ImmutableList.of()));
 		
 		// after reactivating the parent the child should have the proper parentage set
 		reactivateConcept(branchPath, inactiveParentConcept);
 		
-		getComponent(branchPath, SnomedComponentType.CONCEPT, inactiveParentConcept, "inactivationProperties()").statusCode(200)
+		assertGetConcept(inactiveParentConcept, "inactivationProperties()")
+			.statusCode(200)
 			.body("active", equalTo(true))
-			.body("inactivationIndicator", nullValue())
-			.body("associationTargets", nullValue())
 			.body("parentIds", equalTo(ImmutableList.of(IComponent.ROOT_ID)))
 			.body("statedParentIds", equalTo(ImmutableList.of(Concepts.ROOT_CONCEPT)))
 			.body("ancestorIds", equalTo(ImmutableList.of()))
-			.body("statedAncestorIds", equalTo(ImmutableList.of(IComponent.ROOT_ID)));
+			.body("statedAncestorIds", equalTo(ImmutableList.of(IComponent.ROOT_ID)))
+			.body("inactivationProperties.inactivationIndicator", nullValue())
+			.body("inactivationProperties.associationTargets", equalTo(ImmutableList.of()));
 		
-		getComponent(branchPath, SnomedComponentType.CONCEPT, inactiveChildConcept, "inactivationProperties()").statusCode(200)
+		assertGetConcept(inactiveChildConcept, "inactivationProperties()")
+			.statusCode(200)
 			.body("active", equalTo(true))
-			.body("inactivationIndicator", nullValue())
-			.body("associationTargets", nullValue())
 			.body("parentIds", equalTo(ImmutableList.of(IComponent.ROOT_ID)))
 			.body("statedParentIds", equalTo(ImmutableList.of(inactiveParentConcept)))
 			.body("ancestorIds", equalTo(ImmutableList.of()))
-			.body("statedAncestorIds", equalTo(ImmutableList.of(Concepts.ROOT_CONCEPT, IComponent.ROOT_ID)));
+			.body("statedAncestorIds", equalTo(ImmutableList.of(Concepts.ROOT_CONCEPT, IComponent.ROOT_ID)))
+			.body("inactivationProperties.inactivationIndicator", nullValue())
+			.body("inactivationProperties.associationTargets", equalTo(ImmutableList.of()));
+	}
+	
+	@Test
+	public void reactivateConceptShouldRemoveConceptNonCurrentIndicatorsFromDescriptions() throws Exception {
+		final String inactiveConceptId = createNewConcept(branchPath, createConceptRequestBody(ROOT_CONCEPT, Concepts.MODULE_SCT_CORE, SnomedApiTestConstants.UK_PREFERRED_MAP, false)
+				.put("commitComment", "Created inactive concept")
+				.build());
+		
+		// create non-current indicators for the pre-inactivated concept's descriptions 
+		getConcept(inactiveConceptId, "descriptions()").getDescriptions().forEach(description -> {
+			Map<?, ?> requestBody = createRefSetMemberRequestBody(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR, description.getId())
+					.put(SnomedRf2Headers.FIELD_VALUE_ID, Concepts.CONCEPT_NON_CURRENT)
+					.put("commitComment", "Created new indicator member for description: " + description.getId())
+					.build();
+
+			createComponent(branchPath, SnomedComponentType.MEMBER, requestBody).statusCode(201);
+		});
+		
+		reactivateConcept(branchPath, inactiveConceptId);
+		
+		assertGetConcept(inactiveConceptId, "inactivationProperties(),descriptions(expand(inactivationProperties()))")
+			.statusCode(200)
+			.body("active", equalTo(true))
+			.body("parentIds", equalTo(ImmutableList.of(IComponent.ROOT_ID)))
+			.body("statedParentIds", equalTo(ImmutableList.of(Concepts.ROOT_CONCEPT)))
+			.body("ancestorIds", equalTo(ImmutableList.of()))
+			.body("statedAncestorIds", equalTo(ImmutableList.of(IComponent.ROOT_ID)))
+			.body("inactivationProperties.inactivationIndicator", nullValue())
+			.body("inactivationProperties.associationTargets", equalTo(ImmutableList.of()))
+			.body("descriptions.items.active", everyItem(equalTo(true)))
+			.body("descriptions.items.inactivationProperties.inactivationIndicator[0].id", nullValue())
+			.body("descriptions.items.inactivationProperties.inactivationIndicator[1].id", nullValue());
 	}
 	
 }

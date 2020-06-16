@@ -106,6 +106,14 @@ public final class StagingArea {
 		return index.read(branchPath, read);
 	}
 	
+	/**
+	 * @param revision
+	 * @return <code>true</code> if the given revision is staged in this {@link StagingArea}
+	 */
+	public boolean isStaged(Revision revision) {
+		return stagedObjects.containsKey(revision.getObjectId());
+	}
+	
 	public boolean isNew(Revision revision) {
 		StagedObject so = stagedObjects.get(revision.getObjectId());
 		return so != null && so.isAdded();
