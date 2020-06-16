@@ -24,9 +24,7 @@ import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.cr
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.inactivateConcept;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.reactivateConcept;
 import static com.google.common.collect.Maps.newHashMap;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.*;
 
 import java.util.List;
 import java.util.Map;
@@ -49,20 +47,28 @@ import com.google.common.collect.Maps;
  */
 public class SnomedConceptInactivationApiTest extends AbstractSnomedApiTest {
 
-	@Test
-	public void inactivatePrimitiveConcept() throws Exception {
-		String conceptId = createNewConcept(branchPath);
-
-		inactivateConcept(branchPath, conceptId);
-		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId).statusCode(200)
+	private void assertConceptInactive(String conceptId) {
+		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, "descriptions(expand(inactivationProperties()))")
+			.log().ifValidationFails()
+			.statusCode(200)
 			.body("active", equalTo(false))
 			.body("definitionStatusId", equalTo(Concepts.PRIMITIVE))
 			.body("parentIds", equalTo(ImmutableList.of(IComponent.ROOT_ID)))
 			.body("ancestorIds", equalTo(ImmutableList.of()))
 			.body("statedParentIds", equalTo(ImmutableList.of(IComponent.ROOT_ID)))
-			.body("statedAncestorIds", equalTo(ImmutableList.of()));
+			.body("statedAncestorIds", equalTo(ImmutableList.of()))
+			.body("descriptions.items.active", everyItem(equalTo(true)))
+			.body("descriptions.items.inactivationProperties.inactivationIndicator.id", everyItem(equalTo(Concepts.CONCEPT_NON_CURRENT)));
 	}
 	
+	@Test
+	public void inactivatePrimitiveConcept() throws Exception {
+		String conceptId = createNewConcept(branchPath);
+
+		inactivateConcept(branchPath, conceptId);
+		assertConceptInactive(conceptId);
+	}
+
 	@Test
 	public void inactivateFullyDefinedConcept() throws Exception {
 		Map<String, ?> conceptRequestBody = createConceptRequestBody(Concepts.ROOT_CONCEPT)
@@ -72,13 +78,7 @@ public class SnomedConceptInactivationApiTest extends AbstractSnomedApiTest {
 		String conceptId = createNewConcept(branchPath, conceptRequestBody);
 
 		inactivateConcept(branchPath, conceptId);
-		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId).statusCode(200)
-			.body("active", equalTo(false))
-			.body("definitionStatusId", equalTo(Concepts.PRIMITIVE))
-			.body("parentIds", equalTo(ImmutableList.of(IComponent.ROOT_ID)))
-			.body("ancestorIds", equalTo(ImmutableList.of()))
-			.body("statedParentIds", equalTo(ImmutableList.of(IComponent.ROOT_ID)))
-			.body("statedAncestorIds", equalTo(ImmutableList.of()));
+		assertConceptInactive(conceptId);
 	}
 
 	@Test
