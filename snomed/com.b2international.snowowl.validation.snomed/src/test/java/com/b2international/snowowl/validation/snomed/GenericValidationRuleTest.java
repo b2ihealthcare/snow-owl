@@ -505,30 +505,65 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		final String ruleId = "671";
 		indexRule(ruleId);
 		
-		String conceptId = generateConceptId();
-		SnomedDescriptionIndexEntry fsn = description(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, "Fully specified name 3 (tag)")
-				.conceptId(conceptId)
+		String conceptId1 = generateConceptId();
+		SnomedDescriptionIndexEntry fsn1 = description(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, "Fully specified name 1 (tag)")
+				.conceptId(conceptId1)
 				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_ES, Acceptability.PREFERRED)
 				.build();
-		SnomedDescriptionIndexEntry pt = description(generateDescriptionId(), Concepts.SYNONYM, "Preferred term 3")
+		
+		SnomedDescriptionIndexEntry pt1 = description(generateDescriptionId(), Concepts.SYNONYM, "Preferred term 1")
 				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_ES, Acceptability.PREFERRED)
-				.conceptId(conceptId)
+				.conceptId(conceptId1)
 				.build();
-		SnomedRefSetMemberIndexEntry ptMember = member(pt.getId(), SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR).valueId(Concepts.CONCEPT_NON_CURRENT).build();
-		SnomedConceptDocument concept = concept(conceptId)
+		
+		SnomedDescriptionIndexEntry pt2 = description(generateDescriptionId(), Concepts.SYNONYM, "Preferred term 2")
+				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_ES, Acceptability.PREFERRED)
+				.conceptId(conceptId1)
+				.build();
+		
+		SnomedRefSetMemberIndexEntry ptMember1 = member(pt1.getId(), SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR).valueId(Concepts.CONCEPT_NON_CURRENT).build();
+		SnomedRefSetMemberIndexEntry ptMember2 = member(pt2.getId(), SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR).valueId(Concepts.ERRONEOUS).build();
+		
+		SnomedConceptDocument conceptWithActiveDescription = concept(conceptId1)
 				.preferredDescriptions(ImmutableList.of(
-						new SnomedDescriptionFragment(fsn.getId(), fsn.getTypeId(), fsn.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_ES),
-						new SnomedDescriptionFragment(pt.getId(), pt.getTypeId(), pt.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_ES)
+						new SnomedDescriptionFragment(fsn1.getId(), fsn1.getTypeId(), fsn1.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_ES),
+						new SnomedDescriptionFragment(pt1.getId(), pt1.getTypeId(), pt1.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_ES),
+						new SnomedDescriptionFragment(pt2.getId(), pt2.getTypeId(), pt2.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_ES)
 						))
 				.active(false)
 				.build();
 		
-		indexRevision(MAIN, concept, fsn, pt, ptMember);
+		String conceptId2 = generateConceptId();
+		SnomedDescriptionIndexEntry fsn2 = description(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, "Fully specified name 2 (tag)")
+				.conceptId(conceptId2)
+				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_ES, Acceptability.PREFERRED)
+				.build();
+		
+		SnomedDescriptionIndexEntry pt3 = description(generateDescriptionId(), Concepts.SYNONYM, "Preferred term 3")
+				.acceptability(Concepts.REFSET_LANGUAGE_TYPE_ES, Acceptability.PREFERRED)
+				.active(false)
+				.conceptId(conceptId2)
+				.build();
+		
+		
+		SnomedRefSetMemberIndexEntry fsnMember2 = member(fsn2.getId(), SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR).valueId(Concepts.CONCEPT_NON_CURRENT).build();
+		
+		SnomedConceptDocument conceptWithInactiveDescription = concept(conceptId2)
+				.preferredDescriptions(ImmutableList.of(
+						new SnomedDescriptionFragment(fsn2.getId(), fsn2.getTypeId(), fsn2.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_ES),
+						new SnomedDescriptionFragment(pt3.getId(), pt3.getTypeId(), pt3.getTerm(), Concepts.REFSET_LANGUAGE_TYPE_ES)
+						))
+				.active(false)
+				.build();
+		
+		indexRevision(MAIN, conceptWithActiveDescription, fsn1, pt1, ptMember1, conceptWithInactiveDescription, fsn2, pt2, ptMember2, fsnMember2);
 		
 		final ValidationIssues issues = validate(ruleId);
 		
 		assertAffectedComponents(issues, 
-				ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, fsn.getId()));
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, fsn1.getId()),
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, pt2.getId()),
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, pt3.getId()));
 	}
 	
 }
