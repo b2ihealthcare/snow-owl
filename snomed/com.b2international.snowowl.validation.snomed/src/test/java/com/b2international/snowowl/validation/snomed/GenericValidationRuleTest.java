@@ -546,7 +546,7 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 				.build();
 		
 		
-		SnomedRefSetMemberIndexEntry fsnMember2 = member(fsn2.getId(), SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR).valueId(Concepts.CONCEPT_NON_CURRENT).build();
+		SnomedRefSetMemberIndexEntry ptMember3 = member(pt3.getId(), SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR).valueId(Concepts.CONCEPT_NON_CURRENT).build();
 		
 		SnomedConceptDocument conceptWithInactiveDescription = concept(conceptId2)
 				.preferredDescriptions(ImmutableList.of(
@@ -556,12 +556,11 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 				.active(false)
 				.build();
 		
-		indexRevision(MAIN, conceptWithActiveDescription, fsn1, pt1, ptMember1, conceptWithInactiveDescription, fsn2, pt2, ptMember2, fsnMember2);
+		indexRevision(MAIN, conceptWithActiveDescription, fsn1, pt1, ptMember1, conceptWithInactiveDescription, fsn2, pt2, pt3, ptMember2, ptMember3);
 		
 		final ValidationIssues issues = validate(ruleId);
 		
 		assertAffectedComponents(issues, 
-				ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, fsn1.getId()),
 				ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, pt2.getId()),
 				ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, pt3.getId()));
 	}
