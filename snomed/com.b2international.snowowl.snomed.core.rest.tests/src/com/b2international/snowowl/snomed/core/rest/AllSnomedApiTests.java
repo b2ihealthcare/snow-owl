@@ -36,15 +36,7 @@ import com.b2international.snowowl.snomed.core.rest.branches.SnomedMergeApiTest;
 import com.b2international.snowowl.snomed.core.rest.branches.SnomedMergeConflictTest;
 import com.b2international.snowowl.snomed.core.rest.branches.SnomedReviewApiTest;
 import com.b2international.snowowl.snomed.core.rest.classification.SnomedClassificationApiTest;
-import com.b2international.snowowl.snomed.core.rest.components.SnomedConceptApiTest;
-import com.b2international.snowowl.snomed.core.rest.components.SnomedDescriptionApiTest;
-import com.b2international.snowowl.snomed.core.rest.components.SnomedModuleDependencyRefsetTest;
-import com.b2international.snowowl.snomed.core.rest.components.SnomedRefSetApiTest;
-import com.b2international.snowowl.snomed.core.rest.components.SnomedRefSetBulkApiTest;
-import com.b2international.snowowl.snomed.core.rest.components.SnomedRefSetMemberApiTest;
-import com.b2international.snowowl.snomed.core.rest.components.SnomedRefSetMemberParameterizedTest;
-import com.b2international.snowowl.snomed.core.rest.components.SnomedRefSetParameterizedTest;
-import com.b2international.snowowl.snomed.core.rest.components.SnomedRelationshipApiTest;
+import com.b2international.snowowl.snomed.core.rest.components.*;
 import com.b2international.snowowl.snomed.core.rest.io.SnomedExportApiTest;
 import com.b2international.snowowl.snomed.core.rest.io.SnomedImportApiTest;
 import com.b2international.snowowl.snomed.core.rest.io.SnomedImportRowValidatorTest;
@@ -73,6 +65,7 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	SnomedBranchingApiTest.class,
 	// Component API test cases
 	SnomedConceptApiTest.class,
+	SnomedConceptInactivationApiTest.class,
 	SnomedDescriptionApiTest.class,
 	SnomedRelationshipApiTest.class,
 	SnomedRefSetApiTest.class,
