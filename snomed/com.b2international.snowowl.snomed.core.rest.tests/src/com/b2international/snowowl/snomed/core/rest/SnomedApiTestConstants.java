@@ -68,7 +68,7 @@ public abstract class SnomedApiTestConstants {
 
 	public static final long POLL_TIMEOUT = TimeUnit.SECONDS.toMillis(60L);
 
-	public static final String EXTENSION_PATH = "MAIN/2018-01-31/SNOMEDCT-B2I";
+	public static final String EXTENSION_PATH = "MAIN/2020-01-31/SNOMEDCT-B2I";
 
 	public static final String OWL_AXIOM_1 = 
 			"SubClassOf(ObjectIntersectionOf(:73211009 ObjectSomeValuesFrom(:246075003 :410942007)) :8801005)";
