@@ -76,6 +76,14 @@ public abstract class SnomedApiTestConstants {
 	public static final String OWL_AXIOM_2 =
 			"SubClassOf(ObjectIntersectionOf(:73211009 ObjectSomeValuesFrom(:42752001 :64572001)) :8801005)";
 	
+	public static final String OWL_AXIOM_3 = 
+			"SubClassOf(:373873005 ObjectIntersectionOf(:410680006 ObjectSomeValuesFrom(:609096000 ObjectSomeValuesFrom(:734136001 :900000000000470007))))";
+	
+	public static final String OWL_AXIOM_4 = 
+			"SubClassOf(:373873005 ObjectIntersectionOf(:410680006 ObjectSomeValuesFrom(:609096000 ObjectIntersectionOf("
+			+ "ObjectSomeValuesFrom(:371881003 :900000000000450001)"
+			+ "ObjectSomeValuesFrom(:734136001 :900000000000470007)))))";
+	
 	public static final String OWL_ONTOLOGY_1 = "Ontology(<http://snomed.info/sct/900000000000207008>)";
 	public static final String OWL_ONTOLOGY_2 = "Prefix(:=<http://snomed.info/id/>)";
 	
