@@ -42,6 +42,7 @@ import java.util.UUID;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
+import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
@@ -70,18 +71,18 @@ import com.google.common.collect.ImmutableMap;
  */
 public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 
-	//@Test
+	@Test
 	public void getMemberNonExistingBranch() throws Exception {
 		// UUID is the language reference set member for the SNOMED CT root concept's FSN
 		getComponent(BranchPathUtils.createPath("MAIN/x/y/z"), SnomedComponentType.MEMBER, "e606c375-501d-5db6-821f-f03d8a12ad1c").statusCode(404);
 	}
 
-	//@Test
+	@Test
 	public void getMemberNonExistingIdentifier() throws Exception {
 		getComponent(branchPath, SnomedComponentType.MEMBER, "00001111-0000-0000-0000-000000000000").statusCode(404);
 	}
 
-	//@Test
+	@Test
 	public void createConcreteDomainMemberInvalidValue() {
 		createConcreteDomainParentConcept(branchPath);
 
@@ -97,7 +98,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		createComponent(branchPath, SnomedComponentType.MEMBER, requestBody).statusCode(400);
 	}
 
-	//@Test
+	@Test
 	public void createConcreteDomainMember() {
 		createConcreteDomainParentConcept(branchPath);
 
@@ -121,7 +122,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		.body(SnomedRf2Headers.FIELD_VALUE, equalTo("3.1415927"));
 	}
 
-	//@Test
+	@Test
 	public void updateConcreteDomainMember() {
 		createConcreteDomainParentConcept(branchPath);
 
@@ -160,7 +161,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		.body(SnomedRf2Headers.FIELD_VALUE, equalTo("2.7182818"));
 	}
 
-	//@Test
+	@Test
 	public void createMRCMDomainMemberWithMandatoryAndOptionalFields() {
 		
 		String newIdentifierConceptId = createNewConcept(branchPath, SnomedRefSetUtil.getParentConceptId(SnomedRefSetType.MRCM_DOMAIN));
@@ -191,7 +192,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 			.body(SnomedRf2Headers.FIELD_MRCM_EDITORIAL_GUIDE_REFERENCE, equalTo("editorialGuideReference"));
 	}
 	
-	//@Test
+	@Test
 	public void createMRCMDomainMemberWithOnlyMandatoryFields() {
 		
 		String newIdentifierConceptId = createNewConcept(branchPath, SnomedRefSetUtil.getParentConceptId(SnomedRefSetType.MRCM_DOMAIN));
@@ -219,7 +220,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 			.body(SnomedRf2Headers.FIELD_MRCM_EDITORIAL_GUIDE_REFERENCE, nullValue());
 	}
 	
-	//@Test
+	@Test
 	public void createMRCMAttributeDomainMember() {
 		
 		String newIdentifierConceptId = createNewConcept(branchPath, SnomedRefSetUtil.getParentConceptId(SnomedRefSetType.MRCM_ATTRIBUTE_DOMAIN));
@@ -284,7 +285,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		createComponent(branchPath, SnomedComponentType.MEMBER, requestBody4).statusCode(400);
 	}
 	
-	//@Test
+	@Test
 	public void createMRMCAttributeRangeMember() {
 		
 		String newIdentifierConceptId = createNewConcept(branchPath, SnomedRefSetUtil.getParentConceptId(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE));
@@ -329,7 +330,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		createComponent(branchPath, SnomedComponentType.MEMBER, requestBody3).statusCode(400);
 	}
 	
-	//@Test
+	@Test
 	public void createMRCMModuleScopeMember() {
 		
 		String newIdentifierConceptId = createNewConcept(branchPath, SnomedRefSetUtil.getParentConceptId(SnomedRefSetType.MRCM_MODULE_SCOPE));
@@ -355,7 +356,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		createComponent(branchPath, SnomedComponentType.MEMBER, requestBody2).statusCode(400);
 	}
 	
-	//@Test
+	@Test
 	public void searchOWLAxiomRefsetMemberBySourceTypeDestination() {
 		
 		String conceptId = createNewConcept(branchPath);
@@ -385,7 +386,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		
 	}
 	
-	//@Test
+	@Test
 	public void deleteReferringOwlAxiomRefsetMember() {
 		
 		String newIdentifierConceptId = createNewConcept(branchPath, SnomedRefSetUtil.getParentConceptId(SnomedRefSetType.OWL_AXIOM));
@@ -452,7 +453,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		assertTrue(classOWLRelationships.size() < newClassOWLRelationships.size());
 	}
 	
-	//@Test
+	@Test
 	public void deleteReferringOwlOntologyRefsetMember() {
 		
 		String newIdentifierConceptId = createNewConcept(branchPath, SnomedRefSetUtil.getParentConceptId(SnomedRefSetType.OWL_ONTOLOGY));
@@ -478,7 +479,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		
 	}
 	
-	//@Test
+	@Test
 	public void deleteReferringMRCMDomainRefsetMember() {
 		
 		String newIdentifierConceptId = createNewConcept(branchPath, SnomedRefSetUtil.getParentConceptId(SnomedRefSetType.MRCM_DOMAIN));
@@ -507,7 +508,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		
 	}
 	
-	//@Test
+	@Test
 	public void deleteReferringMRCMAttributeDomainRefsetMember() {
 		
 		String newIdentifierConceptId = createNewConcept(branchPath, SnomedRefSetUtil.getParentConceptId(SnomedRefSetType.MRCM_ATTRIBUTE_DOMAIN));
@@ -593,7 +594,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		
 	}
 	
-	//@Test
+	@Test
 	public void deleteReferringMRCMAttributeRangeRefsetMember() {
 		
 		String newIdentifierConceptId = createNewConcept(branchPath, SnomedRefSetUtil.getParentConceptId(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE));
@@ -655,7 +656,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		
 	}
 	
-	//@Test
+	@Test
 	public void deleteReferringMRCMModuleScopeRefsetMember() {
 		
 		String newIdentifierConceptId = createNewConcept(branchPath, SnomedRefSetUtil.getParentConceptId(SnomedRefSetType.MRCM_MODULE_SCOPE));
@@ -695,7 +696,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		
 	}
 	
-	//@Test
+	@Test
 	public void createAndUpdateModuleDependencyMemberWithEffectiveTime() {
 		
 		Map<?, ?> requestBody = createRefSetMemberRequestBody(Concepts.REFSET_MODULE_DEPENDENCY_TYPE, Concepts.MODULE_SCT_MODEL_COMPONENT)
@@ -732,7 +733,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		
 	}
 	
-	//@Test
+	@Test
 	public void createAndUpdateUnpublishedModuleDependencyMembers() {
 		
 		Map<?, ?> requestBody = createRefSetMemberRequestBody(Concepts.REFSET_MODULE_DEPENDENCY_TYPE, Concepts.MODULE_SCT_MODEL_COMPONENT)
@@ -769,7 +770,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		
 	}
 	
-	//@Test
+	@Test
 	public void createAndUpdateNewModuleDependencyMembers() {
 		
 		Map<?, ?> requestBody = createRefSetMemberRequestBody(Concepts.REFSET_MODULE_DEPENDENCY_TYPE, Concepts.MODULE_SCT_MODEL_COMPONENT)
@@ -804,7 +805,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		
 	}
 	
-	//@Test
+	@Test
 	public void executeInvalidAction() throws Exception {
 		String queryRefSetId = createNewRefSet(branchPath, SnomedRefSetType.QUERY);
 		String simpleRefSetId = createNewRefSet(branchPath);
@@ -832,7 +833,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		.body("message", CoreMatchers.equalTo("Invalid action type 'invalid'."));
 	}
 
-	//@Test
+	@Test
 	public void executeSyncAction() throws Exception {
 		String queryRefSetId = createNewRefSet(branchPath, SnomedRefSetType.QUERY);
 		String simpleRefSetId = createNewRefSet(branchPath);
@@ -878,7 +879,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 	 * a server-side query to determine the list index for each member, and the list index reported by the database become misaligned with the actual
 	 * contents if the members were not removed in decreasing index order. This test verifies that order of delete requests inside a bulk request does not matter.
 	 */
-	//@Test
+	@Test
 	public void issue_SO_2501_ioobe_during_member_deletion() throws Exception {
 		String simpleRefSetId = createNewRefSet(branchPath);
 		
@@ -918,7 +919,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		getComponent(branchPath, SnomedComponentType.MEMBER, member2Id).statusCode(200);
 	}
 	
-	//@Test(expected = AlreadyExistsException.class)
+	@Test(expected = AlreadyExistsException.class)
 	public void testDuplicateIdCreationShouldFail() {
 		final String simpleRefSetId = createNewRefSet(branchPath);
 		
@@ -945,7 +946,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 			.getSync();	
 	}
 	
-	//@Test
+	@Test
 	public void testCreateMemberWithSpecificId() {
 		final String simpleRefSetId = createNewRefSet(branchPath);
 		final String specificId = UUID.randomUUID().toString();
