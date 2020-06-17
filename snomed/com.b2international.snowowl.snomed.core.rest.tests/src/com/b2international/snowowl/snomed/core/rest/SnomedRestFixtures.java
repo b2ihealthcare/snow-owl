@@ -541,7 +541,7 @@ public abstract class SnomedRestFixtures {
 		return refSetId;
 	}
 	
-	public static Map<String, Object> getValidProperties(SnomedRefSetType refSetType) {
+	public static Map<String, Object> getValidProperties(SnomedRefSetType refSetType, String referencedComponentId) {
 		switch (refSetType) {
 		case ASSOCIATION:
 			return ImmutableMap.<String, Object>builder()
@@ -607,7 +607,7 @@ public abstract class SnomedRestFixtures {
 					.build();
 		case OWL_AXIOM:
 			return ImmutableMap.<String, Object>builder()
-					.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, OWL_AXIOM_1)
+					.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, SnomedApiTestConstants.owlAxiom1(referencedComponentId))
 					.build();
 		case OWL_ONTOLOGY:
 			return ImmutableMap.<String, Object>builder()

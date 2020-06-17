@@ -72,7 +72,7 @@ public final class BranchCreateRequest extends BranchBaseRequest<String> impleme
 	
 	@Override
 	public String getOperation() {
-		return Permission.EDIT;
+		return Permission.OPERATION_EDIT;
 	}
 	
 }

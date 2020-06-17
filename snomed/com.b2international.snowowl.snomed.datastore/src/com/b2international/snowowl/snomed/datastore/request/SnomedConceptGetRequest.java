@@ -41,7 +41,7 @@ final class SnomedConceptGetRequest
 	
 	@Override
 	public String getOperation() {
-		return Permission.BROWSE;
+		return Permission.OPERATION_BROWSE;
 	}
 
 }

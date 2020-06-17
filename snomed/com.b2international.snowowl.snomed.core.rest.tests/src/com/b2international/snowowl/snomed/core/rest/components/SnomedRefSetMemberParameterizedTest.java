@@ -55,6 +55,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+import com.b2international.commons.Pair;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
@@ -64,6 +65,7 @@ import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
+import com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
 import com.b2international.snowowl.test.commons.rest.BranchBase;
 import com.google.common.collect.ImmutableList;
@@ -120,10 +122,10 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 	@Test
 	public void rejectNonExistentRefSetId() throws Exception {
 		String refSetId = reserveComponentId(null, ComponentCategory.CONCEPT);
-		String componentId = createReferencedComponent(branchPath, refSetType);
+		String referencedComponentId = createReferencedComponent(branchPath, refSetType);
 
-		Map<?, ?> requestBody = createRefSetMemberRequestBody(refSetId, componentId)
-				.putAll(getValidProperties(refSetType))
+		Map<?, ?> requestBody = createRefSetMemberRequestBody(refSetId, referencedComponentId)
+				.putAll(getValidProperties(refSetType, referencedComponentId))
 				.put("commitComment", "Created new reference set member with non-existent refSetId")
 				.build();
 
@@ -133,10 +135,10 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 	@Test
 	public void rejectNonExistentComponentId() throws Exception {
 		String refSetId = createNewRefSet(branchPath, refSetType);
-		String componentId = reserveComponentId(null, getFirstAllowedReferencedComponentCategory(refSetType));
+		String referencedComponentId = reserveComponentId(null, getFirstAllowedReferencedComponentCategory(refSetType));
 
-		Map<?, ?> requestBody = createRefSetMemberRequestBody(refSetId, componentId)
-				.putAll(getValidProperties(refSetType))
+		Map<?, ?> requestBody = createRefSetMemberRequestBody(refSetId, referencedComponentId)
+				.putAll(getValidProperties(refSetType, referencedComponentId))
 				.put("commitComment", "Created new reference set member with non-existent referencedComponentId")
 				.build();
 
@@ -150,16 +152,16 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 
 		for (String disallowedComponentType : REFERENCED_COMPONENT_TYPES) {
 			if (!referencedComponentType.equals(disallowedComponentType)) {
-				String componentId = getFirstMatchingReferencedComponent(branchPath, disallowedComponentType);
+				String referencedComponentId = getFirstMatchingReferencedComponent(branchPath, disallowedComponentType);
 
-				Map<?, ?> requestBody = createRefSetMemberRequestBody(refSetId, componentId)
-						.putAll(getValidProperties(refSetType))
+				Map<?, ?> requestBody = createRefSetMemberRequestBody(refSetId, referencedComponentId)
+						.putAll(getValidProperties(refSetType, referencedComponentId))
 						.put("commitComment", "Created new reference set member with mismatched referencedComponentId")
 						.build();
 
 				String expectedMessage = String.format("'%s' reference set can't reference '%s | %s' component. Only '%s' components are allowed.",
 						refSetId, 
-						componentId, 
+						referencedComponentId, 
 						disallowedComponentType, 
 						referencedComponentType);
 
@@ -188,10 +190,12 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void acceptValidRequest() throws Exception {
-		String memberId = createRefSetMember();		
+		final Pair<String, String> member = createRefSetMember();
+		final String memberId = member.getA();
+		final String referencedComponentId = member.getB();
 
 		ValidatableResponse response = getComponent(branchPath, SnomedComponentType.MEMBER, memberId).statusCode(200);
-		for (Entry<String, Object> validProperty : getValidProperties(refSetType).entrySet()) {
+		for (Entry<String, Object> validProperty : getValidProperties(refSetType, referencedComponentId).entrySet()) {
 			response.body(validProperty.getKey(), equalTo(validProperty.getValue()));
 		}
 	}
@@ -201,24 +205,27 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 		// Simple type reference sets can't be tested with this method
 		Assume.assumeFalse(SnomedRefSetType.SIMPLE.equals(refSetType));
 
-		String memberId = createRefSetMember();		
+		final Pair<String, String> member = createRefSetMember();
+		final String memberId = member.getA();
+		final String referencedComponentId = member.getB();		
 
 		Map<?, ?> updateRequest = ImmutableMap.builder()
-				.putAll(getUpdateProperties())
+				.putAll(getUpdateProperties(referencedComponentId))
 				.put("commitComment", "Updated reference set member")
 				.build();
 
 		updateRefSetComponent(branchPath, SnomedComponentType.MEMBER, memberId, updateRequest, false).statusCode(204);
 
 		ValidatableResponse response = getComponent(branchPath, SnomedComponentType.MEMBER, memberId).statusCode(200);
-		for (Entry<String, Object> validProperty : getUpdateProperties().entrySet()) {
+		for (Entry<String, Object> validProperty : getUpdateProperties(referencedComponentId).entrySet()) {
 			response.body(validProperty.getKey(), equalTo(validProperty.getValue()));
 		}
 	}
 
 	@Test
 	public void inactivateMember() throws Exception {
-		String memberId = createRefSetMember();
+		final Pair<String, String> member = createRefSetMember();
+		final String memberId = member.getA();
 
 		Map<?, ?> updateRequest = ImmutableMap.builder()
 				.put("active", false)
@@ -234,7 +241,8 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void updateMemberEffectiveTime() throws Exception {
-		String memberId = createRefSetMember();
+		final Pair<String, String> member = createRefSetMember();
+		final String memberId = member.getA();
 		String effectiveTime = getNextAvailableEffectiveDateAsString(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME);
 
 		Map<?, ?> updateRequest = ImmutableMap.builder()
@@ -251,25 +259,28 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void forceUpdateMemberEffectiveTime() throws Exception {
-		String memberId = createRefSetMember();
+		final Pair<String, String> member = createRefSetMember();
+		final String memberId = member.getA();
 		Date effectiveTime = getNextAvailableEffectiveDate(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME);
 
 		updateRefSetMemberEffectiveTime(branchPath, memberId, effectiveTime);
 		getComponent(branchPath, SnomedComponentType.MEMBER, memberId).statusCode(200)
-		.body("effectiveTime", equalTo(EffectiveTimes.format(effectiveTime, DateFormats.SHORT)))
-		.body("released", equalTo(true));
+			.body("effectiveTime", equalTo(EffectiveTimes.format(effectiveTime, DateFormats.SHORT)))
+			.body("released", equalTo(true));
 	}
 
 	@Test
 	public void deleteMember() throws Exception {
-		String memberId = createRefSetMember();
+		final Pair<String, String> member = createRefSetMember();
+		final String memberId = member.getA();
 		deleteComponent(branchPath, SnomedComponentType.MEMBER, memberId, false).statusCode(204);
 		getComponent(branchPath, SnomedComponentType.MEMBER, memberId).statusCode(404);
 	}
 
 	@Test
 	public void deleteReleasedMember() throws Exception {
-		String memberId = createRefSetMember();
+		final Pair<String, String> member = createRefSetMember();
+		final String memberId = member.getA();
 		Date effectiveTime = getNextAvailableEffectiveDate(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME);
 		updateRefSetMemberEffectiveTime(branchPath, memberId, effectiveTime);
 
@@ -280,7 +291,8 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void forceDeleteReleasedMember() throws Exception {
-		String memberId = createRefSetMember();
+		final Pair<String, String> member = createRefSetMember();
+		final String memberId = member.getA();
 		Date effectiveTime = getNextAvailableEffectiveDate(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME);
 		updateRefSetMemberEffectiveTime(branchPath, memberId, effectiveTime);
 
@@ -296,14 +308,16 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 		final String shortName = getOrCreateCodeSystem();
 
 		// create the previous revision of the member
-		final String memberId = createRefSetMember();
+		final Pair<String, String> member = createRefSetMember();
+		final String memberId = member.getA();
+		final String referencedComponentId = member.getB();
 
 		final String effectiveTime = getNextAvailableEffectiveDateAsString(shortName);
 		createVersion(shortName, effectiveTime, effectiveTime).statusCode(201);
 
 		// update properties
 		final Map<?, ?> updateRequest = ImmutableMap.builder()
-				.putAll(ImmutableMap.<String, Object>builder().putAll(getUpdateProperties()).build())
+				.putAll(ImmutableMap.<String, Object>builder().putAll(getUpdateProperties(referencedComponentId)).build())
 				.put("commitComment", "Updated reference set member")
 				.build();
 
@@ -316,13 +330,13 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 				.body("effectiveTime", equalTo(null));
 
 		// check updated properties
-		for (Entry<String, Object> updateProperty : getUpdateProperties().entrySet()) {
+		for (Entry<String, Object> updateProperty : getUpdateProperties(referencedComponentId).entrySet()) {
 			updateResponse.body(updateProperty.getKey(), equalTo(updateProperty.getValue()));
 		}
 
 		// revert back to original values
 		final Map<?, ?> revertUpdateRequest = ImmutableMap.builder()
-				.putAll(ImmutableMap.<String, Object>builder().putAll(getValidProperties(refSetType)).build())
+				.putAll(ImmutableMap.<String, Object>builder().putAll(getValidProperties(refSetType, referencedComponentId)).build())
 				.put("commitComment", "Reverted previous update of reference set member")
 				.build();
 
@@ -333,7 +347,7 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 			.body("released", equalTo(true))
 			.body("effectiveTime", equalTo(effectiveTime));
 
-		for (Entry<String, Object> validProperty : getValidProperties(refSetType).entrySet()) {
+		for (Entry<String, Object> validProperty : getValidProperties(refSetType, referencedComponentId).entrySet()) {
 			revertResponse.body(validProperty.getKey(), equalTo(validProperty.getValue()));
 		}
 
@@ -349,18 +363,21 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 		return CODESYSTEM_SHORTNAME;
 	}
 
-	private String createRefSetMember() {
-		String componentId = getFirstMatchingComponent(branchPath, getFirstAllowedReferencedComponentType(refSetType));
+	/** 
+	 * Creates a member for the first applicable matching referenced component and returns the memberId and the referencedComponentId in a Pair.
+	 */
+	private Pair<String, String> createRefSetMember() {
+		String referencedComponentId = getFirstMatchingComponent(branchPath, getFirstAllowedReferencedComponentType(refSetType));
 
 		String refSetId = getOrCreateRefSet(branchPath, refSetType);
-		Map<?, ?> requestBody = createRefSetMemberRequestBody(refSetId, componentId)
-				.putAll(getValidProperties(refSetType))
+		Map<?, ?> requestBody = createRefSetMemberRequestBody(refSetId, referencedComponentId)
+				.putAll(getValidProperties(refSetType, referencedComponentId))
 				.put("commitComment", "Created new reference set member")
 				.build();
 		
 		ValidatableResponse response = createComponent(branchPath, SnomedComponentType.MEMBER, requestBody).statusCode(201);
 		
-		return lastPathSegment(response.extract().header("Location"));
+		return Pair.of(lastPathSegment(response.extract().header("Location")), referencedComponentId);
 	}
 
 	private String getFirstMatchingReferencedComponent(IBranchPath branchPath, String referencedComponentType) {
@@ -384,7 +401,7 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 		return REFSET_CACHE.computeIfAbsent(refSetType, type -> createNewRefSet(branchPath, type));
 	}
 
-	private Map<String, Object> getUpdateProperties() {
+	private Map<String, Object> getUpdateProperties(String referencedComponentId) {
 		switch (refSetType) {
 		case ASSOCIATION:
 			return ImmutableMap.<String, Object>builder()
@@ -450,7 +467,7 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 					.build();
 		case OWL_AXIOM:
 			return ImmutableMap.<String, Object>builder()
-					.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, OWL_AXIOM_2)
+					.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, SnomedApiTestConstants.owlAxiom2(referencedComponentId))
 					.build();
 		case OWL_ONTOLOGY:
 			return ImmutableMap.<String, Object>builder()

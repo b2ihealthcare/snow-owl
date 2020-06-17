@@ -47,7 +47,7 @@ final class ClassificationDeleteRequest implements Request<RepositoryContext, Bo
 	
 	@Override
 	public String getOperation() {
-		return Permission.CLASSIFY;
+		return Permission.OPERATION_CLASSIFY;
 	}
 	
 }

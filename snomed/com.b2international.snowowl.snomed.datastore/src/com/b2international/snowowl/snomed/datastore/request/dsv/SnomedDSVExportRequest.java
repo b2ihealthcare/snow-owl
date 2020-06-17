@@ -162,7 +162,7 @@ final class SnomedDSVExportRequest implements Request<BranchContext, UUID>, Bran
 	
 	@Override
 	public String getOperation() {
-		return Permission.EXPORT;
+		return Permission.OPERATION_EXPORT;
 	}
 	
 }

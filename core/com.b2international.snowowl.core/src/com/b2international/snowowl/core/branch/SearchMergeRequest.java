@@ -87,7 +87,7 @@ public final class SearchMergeRequest extends SearchResourceRequest<RepositoryCo
 	
 	@Override
 	public String getOperation() {
-		return Permission.BROWSE;
+		return Permission.OPERATION_BROWSE;
 	}
 
 	public static Merge createMergefromJobEntry(RemoteJobEntry job, ObjectMapper mapper) {

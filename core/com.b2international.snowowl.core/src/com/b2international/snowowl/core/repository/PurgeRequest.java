@@ -52,7 +52,7 @@ public final class PurgeRequest implements Request<RepositoryContext, Boolean>, 
 
 	@Override
 	public String getOperation() {
-		return Permission.EDIT;
+		return Permission.OPERATION_EDIT;
 	}
 
 }

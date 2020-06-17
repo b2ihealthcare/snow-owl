@@ -24,6 +24,7 @@ import com.b2international.snowowl.core.branch.review.ReviewSerializationTest;
 import com.b2international.snowowl.core.events.NotificationsTest;
 import com.b2international.snowowl.core.events.util.PromiseTest;
 import com.b2international.snowowl.core.events.util.RequestTest;
+import com.b2international.snowowl.core.identity.PermissionTest;
 import com.b2international.snowowl.core.jobs.JobRequestsTest;
 import com.b2international.snowowl.core.merge.MergeConflictSerializationTest;
 import com.b2international.snowowl.core.request.SearchResourceRequestTest;
@@ -50,7 +51,8 @@ import com.b2international.snowowl.core.validation.ValidationWhiteListApiTest;
 	SearchResourceRequestTest.class,
 	JobRequestsTest.class,
 	MergeConflictSerializationTest.class,
-	ReviewSerializationTest.class
+	ReviewSerializationTest.class,
+	PermissionTest.class
 })
 public class AllCoreTests {
 

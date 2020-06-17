@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,17 +25,18 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemb
 /**
  * @since 6.5
  */
-abstract class AbstractSnomedOWLExpressionMemberCreateDelegate extends SnomedRefSetMemberCreateDelegate {
+final class SnomedOWLExpressionMemberCreateDelegate extends SnomedRefSetMemberCreateDelegate {
 
-	AbstractSnomedOWLExpressionMemberCreateDelegate(final SnomedRefSetMemberCreateRequest request) {
+	private final SnomedRefSetType refSetType;
+
+	SnomedOWLExpressionMemberCreateDelegate(final SnomedRefSetMemberCreateRequest request, SnomedRefSetType refSetType) {
 		super(request);
+		this.refSetType = refSetType;
 	}
-
-	abstract protected SnomedRefSetType getRefsetType();
 
 	@Override
 	public String execute(final SnomedReferenceSet refSet, final TransactionContext context) {
-		checkRefSetType(refSet, getRefsetType());
+		checkRefSetType(refSet, refSetType);
 		checkReferencedComponent(refSet);
 		checkNonEmptyProperty(SnomedRf2Headers.FIELD_OWL_EXPRESSION);
 

@@ -147,7 +147,7 @@ public abstract class SnomedSearchRequest<R, D extends SnomedDocument>
 	
 	@Override
 	public final String getOperation() {
-		return Permission.BROWSE;
+		return Permission.OPERATION_BROWSE;
 	}
 	
 }

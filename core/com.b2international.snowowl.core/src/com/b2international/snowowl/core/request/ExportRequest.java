@@ -59,7 +59,7 @@ public abstract class ExportRequest<C extends ServiceProvider> extends ResourceR
 
 	@Override
 	public String getOperation() {
-		return Permission.EXPORT;
+		return Permission.OPERATION_EXPORT;
 	}
 	
 }

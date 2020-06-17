@@ -262,7 +262,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 	
 	@Override
 	public String getOperation() {
-		return Permission.VERSION;
+		return Permission.OPERATION_VERSION;
 	}
 	
 }

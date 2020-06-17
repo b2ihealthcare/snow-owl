@@ -126,7 +126,7 @@ final class CodeSystemVersionSearchRequest
 
 	@Override
 	public String getOperation() {
-		return Permission.BROWSE;
+		return Permission.OPERATION_BROWSE;
 	}
 
 }

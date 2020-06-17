@@ -12,4 +12,5 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  com.b2international.snowowl.core.rest,
  org.semanticweb.elk;bundle-version="0.4.3",
  org.junit;bundle-version="4.12.0"
-Import-Package: org.assertj.core.api;version="3.16.1"
+Import-Package: org.assertj.core.api;version="3.16.1",
+ org.assertj.core.api.iterable;version="3.16.1"

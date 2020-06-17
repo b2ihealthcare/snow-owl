@@ -96,7 +96,7 @@ class RelationshipChangeSearchRequest
 
 	@Override
 	public String getOperation() {
-		return Permission.CLASSIFY;
+		return Permission.OPERATION_CLASSIFY;
 	}
 
 }

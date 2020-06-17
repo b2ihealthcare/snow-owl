@@ -11,3 +11,5 @@ Require-Bundle: org.junit;bundle-version="4.12.0",
  com.b2international.snowowl.fhir.core,
  com.b2international.snowowl.snomed.fhir,
  com.b2international.snowowl.core.rest
+Import-Package: org.assertj.core.api;version="3.16.1",
+ org.assertj.core.api.iterable;version="3.16.1"

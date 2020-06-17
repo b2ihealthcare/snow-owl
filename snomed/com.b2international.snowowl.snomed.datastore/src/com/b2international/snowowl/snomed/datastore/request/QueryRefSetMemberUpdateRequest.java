@@ -106,7 +106,7 @@ public final class QueryRefSetMemberUpdateRequest implements Request<Transaction
 	
 	@Override
 	public String getOperation() {
-		return Permission.EDIT;
+		return Permission.OPERATION_EDIT;
 	}
 
 }

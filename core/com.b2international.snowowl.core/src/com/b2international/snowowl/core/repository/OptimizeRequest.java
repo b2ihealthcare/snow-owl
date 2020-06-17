@@ -46,7 +46,7 @@ public final class OptimizeRequest implements Request<RepositoryContext, Boolean
 
 	@Override
 	public String getOperation() {
-		return Permission.BROWSE;
+		return Permission.OPERATION_BROWSE;
 	}
 
 }
