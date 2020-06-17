@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expressions;
@@ -29,6 +30,7 @@ import com.b2international.index.revision.ObjectId;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.StagingArea;
 import com.b2international.index.revision.StagingArea.RevisionDiff;
+import com.b2international.index.revision.StagingArea.RevisionPropertyDiff;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.repository.ChangeSetProcessorBase;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
@@ -40,6 +42,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptio
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 
 /**
@@ -54,27 +57,39 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 	@Override
 	public void process(StagingArea staging, RevisionSearcher searcher) throws IOException {
 		// inactivating a concept should inactivate all of its descriptions, relationships, inbound relationships, and members
-		final Set<String> inactivatedComponentIds = newHashSet(); 
+		final Set<String> inactivatedComponentIds = newHashSet();
 		final Set<String> inactivatedConceptIds = newHashSet();
+		final Set<String> reactivatedComponentIds = newHashSet();
+		final Set<String> reactivatedConceptIds = newHashSet();
 		
 		staging.getChangedRevisions(SnomedComponentDocument.class)
-			.filter(diff -> {
-				if (diff.hasRevisionPropertyDiff(SnomedRf2Headers.FIELD_ACTIVE)) {
-					Boolean newValue = Boolean.valueOf(diff.getRevisionPropertyDiff(SnomedRf2Headers.FIELD_ACTIVE).getNewValue());
-					return !newValue;
-				} else {
-					return false;
-				}
-			})
+			.filter(diff -> diff.hasRevisionPropertyDiff(SnomedRf2Headers.FIELD_ACTIVE))
+			.filter(diff -> diff.newRevision instanceof SnomedComponentDocument)
 			.forEach(diff -> {
-				if (diff.newRevision instanceof SnomedComponentDocument) {
+				RevisionPropertyDiff propDiff = diff.getRevisionPropertyDiff(SnomedRf2Headers.FIELD_ACTIVE);
+				boolean oldValue = Boolean.parseBoolean(propDiff.getOldValue());
+				boolean newValue = Boolean.parseBoolean(propDiff.getNewValue());
+				
+				// inactivation
+				if (oldValue && !newValue) {
 					inactivatedComponentIds.add(diff.newRevision.getId());
 					if (diff.newRevision instanceof SnomedConceptDocument) {
 						inactivatedConceptIds.add(diff.newRevision.getId());						
 					}
+				} else if (!oldValue && newValue) {
+					reactivatedComponentIds.add(diff.newRevision.getId());
+					if (diff.newRevision instanceof SnomedConceptDocument) {
+						reactivatedConceptIds.add(diff.newRevision.getId());						
+					}
 				}
+				
 			});
 		
+		processInactivations(staging, searcher, inactivatedConceptIds, inactivatedComponentIds);
+		processReactivations(staging, searcher, reactivatedConceptIds, reactivatedComponentIds);
+	}
+
+	private void processInactivations(StagingArea staging, RevisionSearcher searcher, Set<String> inactivatedConceptIds, Set<String> inactivatedComponentIds) {
 		// inactivate descriptions of inactivated concepts, take current description changes into account
 		if (!inactivatedConceptIds.isEmpty()) {
 			
@@ -86,19 +101,21 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 			for (Hits<String[]> hits : searcher.scroll(Query.select(String[].class)
 					.from(SnomedDescriptionIndexEntry.class)
 					.fields(SnomedDescriptionIndexEntry.Fields.ID, SnomedDescriptionIndexEntry.Fields.MODULE_ID)
-					.where(SnomedDescriptionIndexEntry.Expressions.concepts(inactivatedConceptIds))
+					.where(Expressions.builder()
+							.filter(SnomedDescriptionIndexEntry.Expressions.active())
+							.filter(SnomedDescriptionIndexEntry.Expressions.concepts(inactivatedConceptIds))
+							.build())
 					.limit(PAGE_SIZE)
 					.build())) {
 				// TODO exclude descriptions that are already present in the tx or apply 
 				hits.forEach(description -> {
 					final String descriptionId = description[0];
-					
 					SnomedRefSetMemberIndexEntry existingInactivationMember = changedMembersByReferencedComponentId.get(descriptionId).stream()
-							.map(diff -> diff.newRevision)
-							.map(SnomedRefSetMemberIndexEntry.class::cast)
-							.filter(member -> Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR.equals(member.getReferenceSetId()))
-							.findFirst()
-							.orElse(null);
+								.map(diff -> diff.newRevision)
+								.map(SnomedRefSetMemberIndexEntry.class::cast)
+								.filter(member -> Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR.equals(member.getReferenceSetId()))
+								.findFirst()
+								.orElse(null);
 					
 					SnomedRefSetMemberIndexEntry.Builder inactivationMember;
 					if (existingInactivationMember == null) {
@@ -171,6 +188,51 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 							.build());
 				}
 			});
+		}		
+	}
+	
+	private void processReactivations(StagingArea staging, RevisionSearcher searcher, Set<String> reactivatedConceptIds, Set<String> reactivatedComponentIds) throws IOException {
+		for (Hits<String> hits : searcher.scroll(Query.select(String.class)
+				.from(SnomedDescriptionIndexEntry.class)
+				.fields(SnomedDescriptionIndexEntry.Fields.ID)
+				// active descriptions, with active membership in the indicator refset on reactivated concepts
+				.where(Expressions.builder()
+						.filter(SnomedDescriptionIndexEntry.Expressions.active())
+						.filter(SnomedDescriptionIndexEntry.Expressions.concepts(reactivatedConceptIds))
+						.filter(SnomedDescriptionIndexEntry.Expressions.activeMemberOf(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR))
+						.build())
+				.limit(PAGE_SIZE)
+				.build())) {
+			
+			final Set<String> descriptionIds = ImmutableSet.copyOf(hits.getHits());
+			
+			final Set<String> stagedDescriptionIndicators = staging.getChangedObjects(SnomedRefSetMemberIndexEntry.class)
+				.filter(member -> Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR.equals(member.getReferenceSetId()))
+				.filter(member -> descriptionIds.contains(member.getReferencedComponentId()))
+				.map(SnomedRefSetMemberIndexEntry::getId)
+				.collect(Collectors.toSet());
+			
+			// search for all active indicator refset members with concept non-current
+			Hits<SnomedRefSetMemberIndexEntry> members = searcher.search(Query.select(SnomedRefSetMemberIndexEntry.class)
+					.where(Expressions.builder()
+							.mustNot(SnomedRefSetMemberIndexEntry.Expressions.ids(stagedDescriptionIndicators))
+							.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
+							.filter(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR))
+							.filter(SnomedRefSetMemberIndexEntry.Expressions.valueIds(ImmutableSet.of(Concepts.CONCEPT_NON_CURRENT)))
+							.filter(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(descriptionIds))
+							.build())
+					.limit(Integer.MAX_VALUE) // we limit the number of possible members with the above query, even with duplicates we should not get more than 20k
+					.build());
+			
+			for (SnomedRefSetMemberIndexEntry indicatorMember : members) {
+				// check if this member is present in the transaction, if yes, do not auto-update/delete it
+				if (indicatorMember.isReleased() != null && indicatorMember.isReleased()) {
+					stageChange(indicatorMember, SnomedRefSetMemberIndexEntry.builder(indicatorMember).active(false).build());
+				} else {
+					stageRemove(indicatorMember);
+				}
+			}
+			
 		}
 	}
 
