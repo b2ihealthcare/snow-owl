@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,17 +32,14 @@ final class SnomedOWLExpressionMemberUpdateDelegate extends SnomedRefSetMemberUp
 	@Override
 	boolean execute(final SnomedRefSetMemberIndexEntry original, final SnomedRefSetMemberIndexEntry.Builder member, final TransactionContext context) {
 		final String owlExpression = getProperty(SnomedRf2Headers.FIELD_OWL_EXPRESSION);
-		Boolean activeProperty = getProperty(SnomedRf2Headers.FIELD_ACTIVE, Boolean.class);
-		boolean isActive = activeProperty == null ? original.isActive() : activeProperty;
 
 		if (!Strings.isNullOrEmpty(owlExpression) && !owlExpression.equals(original.getOwlExpression())) {
-			member.field(SnomedRf2Headers.FIELD_OWL_EXPRESSION, owlExpression);
-			if (isActive) {
-				SnomedOWLExpressionConverterResult result = context.service(SnomedOWLExpressionConverter.class).toSnomedOWLRelationships(original.getReferencedComponentId(), owlExpression);
+			SnomedOWLExpressionConverterResult result = context.service(SnomedOWLExpressionConverter.class).toSnomedOWLRelationships(original.getReferencedComponentId(), owlExpression);
 				
-				member.classAxiomRelationships(result.getClassAxiomRelationships())
-					.gciAxiomRelationships(result.getGciAxiomRelationships());				
-			}
+			member
+				.field(SnomedRf2Headers.FIELD_OWL_EXPRESSION, owlExpression)
+				.classAxiomRelationships(result.getClassAxiomRelationships())
+				.gciAxiomRelationships(result.getGciAxiomRelationships());				
 			
 			return true;
 		}
