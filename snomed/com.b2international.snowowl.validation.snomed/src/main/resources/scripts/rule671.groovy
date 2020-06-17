@@ -21,7 +21,7 @@ import com.google.common.collect.Sets
 
 final Set<ComponentIdentifier> issues = Sets.newHashSet()
 final RevisionSearcher searcher = ctx.service(RevisionSearcher.class)
-final List<String> filterIndicatorIds = ImmutableList.of(Concepts.PENDING_MOVE, Concepts.LIMITED, Concepts.CONCEPT_NON_CURRENT)
+final List<String> activeDescriptionIndicatorIds = ImmutableList.of(Concepts.PENDING_MOVE, Concepts.LIMITED, Concepts.CONCEPT_NON_CURRENT)
 
 def checkDescriptions = { boolean active , Set<String> inactiveConceptIds ->
 	ExpressionBuilder filterSnomedDescriptions = Expressions.builder()
@@ -53,10 +53,10 @@ def checkDescriptions = { boolean active , Set<String> inactiveConceptIds ->
 
 	if(active) {
 		filterDescriptionsExpressionBuilder
-				.mustNot(SnomedRefSetMemberIndexEntry.Expressions.valueIds(filterIndicatorIds))
+				.mustNot(SnomedRefSetMemberIndexEntry.Expressions.valueIds(activeDescriptionIndicatorIds))
 	} else {
 		filterDescriptionsExpressionBuilder
-				.filter(SnomedRefSetMemberIndexEntry.Expressions.valueIds(filterIndicatorIds))
+				.filter(SnomedRefSetMemberIndexEntry.Expressions.valueIds(activeDescriptionIndicatorIds))
 	}
 	searcher.scroll(Query.select(SnomedRefSetMemberIndexEntry.class)
 		.from(SnomedRefSetMemberIndexEntry.class)
