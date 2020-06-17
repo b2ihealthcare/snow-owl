@@ -36,10 +36,12 @@ import com.google.common.collect.Sets;
 public class IconIdUpdater {
 	
 	private static final char WORD_SEPARATOR = '_';
+
+	private static final CharMatcher WORD_SEPARATOR_MATCHER = CharMatcher.is(WORD_SEPARATOR);
 	
-	private static final CharMatcher DIGIT_OR_LETTER = CharMatcher.inRange('0', '9')
+	private static final CharMatcher DISALLOWED_CHARACTERS = CharMatcher.inRange('0', '9')
 			.or(CharMatcher.inRange('a', 'z'))
-			.or(CharMatcher.is(WORD_SEPARATOR));
+			.negate();
 	
 	private static final int MAX_SUFFIX = 64;
 	
@@ -80,11 +82,12 @@ public class IconIdUpdater {
 	 */
 	private String getImageSuffix(String semanticTag) {
 		final String lowerCase = semanticTag.toLowerCase(Locale.ENGLISH);
-		final String convertWhitespace = CharMatcher.whitespace().replaceFrom(lowerCase, WORD_SEPARATOR);
-		final String restrictChars = DIGIT_OR_LETTER.retainFrom(convertWhitespace);
-		final String imageSuffix = restrictChars.substring(0, Math.min(MAX_SUFFIX, restrictChars.length()));
+		final String restrictChars = DISALLOWED_CHARACTERS.replaceFrom(lowerCase, WORD_SEPARATOR);
+		final String collapseSeparators = WORD_SEPARATOR_MATCHER.collapseFrom(restrictChars, WORD_SEPARATOR);
+		final String imageSuffix = collapseSeparators.substring(0, Math.min(MAX_SUFFIX, collapseSeparators.length()));
 		return imageSuffix;
 	}
+	
 	private Optional<String> getParentIcon(String id, TaxonomyGraph taxonomyGraph) {
 		if (id == null || !taxonomyGraph.containsNode(Long.parseLong(id))) {
 			return Optional.empty();

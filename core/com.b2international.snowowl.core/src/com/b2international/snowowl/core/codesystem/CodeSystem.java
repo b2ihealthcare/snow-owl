@@ -429,6 +429,16 @@ public class CodeSystem implements Serializable {
 	public String getRelativeBranchPath(String relativeTo) {
 		return String.format("%s%s%s", branchPath, Branch.SEPARATOR, relativeTo);
 	}
+	
+	/**
+	 * Returns the CodeSystemURI of this code system at the given active branch
+	 */
+	@JsonIgnore
+	public CodeSystemURI getCodeSystemURI(String activeBranch) {
+		final String relativePath = activeBranch.replaceFirst(branchPath, "");
+		final String codeSystemPath = relativePath.isEmpty() ? CodeSystemURI.HEAD : relativePath;
+		return new CodeSystemURI(String.format("%s%s%s", shortName, Branch.SEPARATOR, codeSystemPath));			
+	}
 
 	@Override
 	public String toString() {
