@@ -70,20 +70,6 @@ public abstract class SnomedApiTestConstants {
 
 	public static final String EXTENSION_PATH = "MAIN/2020-01-31/SNOMEDCT-B2I";
 
-	public static final String OWL_AXIOM_1 = 
-			"SubClassOf(ObjectIntersectionOf(:73211009 ObjectSomeValuesFrom(:246075003 :410942007)) :8801005)";
-	
-	public static final String OWL_AXIOM_2 =
-			"SubClassOf(ObjectIntersectionOf(:73211009 ObjectSomeValuesFrom(:42752001 :64572001)) :8801005)";
-	
-	public static final String OWL_AXIOM_3 = 
-			"SubClassOf(:373873005 ObjectIntersectionOf(:410680006 ObjectSomeValuesFrom(:609096000 ObjectSomeValuesFrom(:734136001 :900000000000470007))))";
-	
-	public static final String OWL_AXIOM_4 = 
-			"SubClassOf(:373873005 ObjectIntersectionOf(:410680006 ObjectSomeValuesFrom(:609096000 ObjectIntersectionOf("
-			+ "ObjectSomeValuesFrom(:371881003 :900000000000450001)"
-			+ "ObjectSomeValuesFrom(:734136001 :900000000000470007)))))";
-	
 	public static final String OWL_ONTOLOGY_1 = "Ontology(<http://snomed.info/sct/900000000000207008>)";
 	public static final String OWL_ONTOLOGY_2 = "Prefix(:=<http://snomed.info/id/>)";
 	
@@ -228,4 +214,62 @@ public abstract class SnomedApiTestConstants {
 	private SnomedApiTestConstants() {
 		throw new UnsupportedOperationException("This class is not supposed to be instantiated.");
 	}
+
+	/**
+	 * Creates a GCI axiom expression with the following relationship groups:
+	 * Ungrouped: 
+	 *  Is a => 73211009|Diabetes mellitus|
+	 *  246075003|Causative Agent| => 410942007|Drug or medicament|
+	 * 
+	 * @param referencedComponentId
+	 * @return
+	 */
+	public static String owlAxiom1(String referencedComponentId) {
+		return String.format("SubClassOf(ObjectIntersectionOf(:73211009 ObjectSomeValuesFrom(:246075003 :410942007)) :%s)", referencedComponentId);
+	}
+	
+	/**
+	 * Creates a GCI axiom expression with the following relationship groups:
+	 * Ungrouped: 
+	 *  Is a => 73211009|Diabetes mellitus|
+	 *  42752001|Due to| => 64572001|Disease|
+	 * 
+	 * @param referencedComponentId
+	 * @return
+	 */
+	public static String owlAxiom2(String referencedComponentId) {
+		return String.format("SubClassOf(ObjectIntersectionOf(:73211009 ObjectSomeValuesFrom(:42752001 :64572001)) :%s)", referencedComponentId);
+	}
+	
+	/**
+	 * Creates a Class axiom expression with the following relationship groups:
+	 * Ungrouped: 
+	 *  Is a => 410680006|Number|
+	 * Group 1:
+	 *  734136001|Contained in| => 900000000000470007|HTML Reference|
+	 * 
+	 * @param referencedComponentId
+	 * @return
+	 */
+	public static String owlAxiom3(String referencedComponentId) {
+		return String.format("SubClassOf(:%s ObjectIntersectionOf(:410680006 ObjectSomeValuesFrom(:609096000 ObjectSomeValuesFrom(:734136001 :900000000000470007))))", referencedComponentId);
+	}
+	
+	/**
+	 * Creates a Class axiom expression with the following relationship groups:
+	 * Ungrouped: 
+	 *  Is a => 410680006|Number|
+	 * Group 1:
+	 *  371881003|During| => 900000000000450001|Modifier|
+	 *  734136001|Contained in| => 900000000000470007|HTML Reference|
+	 * 
+	 * @param referencedComponentId
+	 * @return
+	 */
+	public static String owlAxiom4(String referencedComponentId) {
+		return String.format("SubClassOf(:%s ObjectIntersectionOf(:410680006 ObjectSomeValuesFrom(:609096000 ObjectIntersectionOf("
+				+ "ObjectSomeValuesFrom(:371881003 :900000000000450001)"
+				+ "ObjectSomeValuesFrom(:734136001 :900000000000470007)))))", referencedComponentId);
+	}
+	
 }

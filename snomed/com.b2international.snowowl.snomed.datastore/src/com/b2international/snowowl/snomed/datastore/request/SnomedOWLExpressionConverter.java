@@ -29,6 +29,8 @@ import org.snomed.otf.owltoolkit.conversion.AxiomRelationshipConversionService;
 import org.snomed.otf.owltoolkit.domain.AxiomRepresentation;
 import org.snomed.otf.owltoolkit.domain.Relationship;
 
+import com.b2international.commons.exceptions.ApiException;
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.options.Options;
 import com.b2international.commons.time.TimeUtil;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -83,6 +85,8 @@ public final class SnomedOWLExpressionConverter {
 				} else if (referencedComponentIdLong.equals(axiomRepresentation.getRightHandSideNamedConcept())) {
 					gci = true;
 					relationships = axiomRepresentation.getLeftHandSideRelationships();
+				} else if (axiomRepresentation.getLeftHandSideNamedConcept() != null || axiomRepresentation.getRightHandSideNamedConcept() != null) {
+					throw new BadRequestException("ReferencedComponentId '%s' does not match focus concept ID '%s' in expression.", referencedComponentId, axiomRepresentation.getLeftHandSideNamedConcept() != null ? axiomRepresentation.getLeftHandSideNamedConcept() : axiomRepresentation.getRightHandSideNamedConcept());
 				}
 			}
 			
@@ -100,6 +104,8 @@ public final class SnomedOWLExpressionConverter {
 				.collect(Collectors.toList());
 			
 			return new SnomedOWLExpressionConverterResult(gci ? null : axiomRelationships, gci ? axiomRelationships : null);
+		} catch (ApiException e) {
+			throw e;
 		} catch (Exception e) {
 			LOG.error("Failed to convert OWL axiom '{}' to relationship representations for concept '{}'", owlExpression, referencedComponentId, e);
 			return SnomedOWLExpressionConverterResult.EMPTY;
