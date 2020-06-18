@@ -16,6 +16,7 @@
 package com.b2international.snowowl.core.uri;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -36,7 +37,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
 
@@ -75,12 +75,16 @@ public final class ComponentURI implements Serializable {
 	@JsonIgnore
 	public static final ComponentURI UNSPECIFIED = ComponentURI.of(TerminologyRegistry.UNSPECIFIED, TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT, "");
 	
-	private final String codeSystem;
+	private final CodeSystemURI codeSystemUri;
 	private final short terminologyComponentId;
 	private final String identifier;
 	
+	public CodeSystemURI codeSystemUri() {
+		return codeSystemUri;
+	}
+	
 	public String codeSystem() {
-		return codeSystem;
+		return codeSystemUri.getCodeSystem();
 	}
 	
 	public short terminologyComponentId() {
@@ -96,26 +100,22 @@ public final class ComponentURI implements Serializable {
 		return TerminologyRegistry.UNSPECIFIED.equals(codeSystem());
 	}
 	
-	public List<String> parts() {
-		return ImmutableList.of(codeSystem(), Short.toString(terminologyComponentId()), identifier());
-	}
-		
 	public final ComponentIdentifier toComponentIdentifier() {
 		return ComponentIdentifier.of(terminologyComponentId(), identifier());
 	}
 
-	private ComponentURI(String codeSystem, short terminologyComponentId, String identifier) {
-		checkArgument(!Strings.isNullOrEmpty(codeSystem), "Codesystem argument should not be null.");
+	private ComponentURI(CodeSystemURI codeSystem, short terminologyComponentId, String identifier) {
+		checkNotNull(codeSystem, "Codesystem argument should not be null.");
 		checkArgument(terminologyComponentId >= TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT,
 				"Terminology component id should be either unspecified (-1) or greater than zero. Got: '%s'.", terminologyComponentId);
-		this.codeSystem = codeSystem;
+		this.codeSystemUri = codeSystem;
 		this.terminologyComponentId = terminologyComponentId;
 		this.identifier = identifier;
 	}
 	
 	@JsonCreator
 	public static ComponentURI of(String codeSystem, short terminologyComponentId, String identifier) {
-		return getOrCache(new ComponentURI(codeSystem, terminologyComponentId, Strings.nullToEmpty(identifier)));
+		return getOrCache(new ComponentURI(new CodeSystemURI(codeSystem), terminologyComponentId, Strings.nullToEmpty(identifier)));
 	}
 	
 	private static ComponentURI getOrCache(final ComponentURI componentURI) {
@@ -134,12 +134,12 @@ public final class ComponentURI implements Serializable {
 	@JsonValue
 	@Override
 	public String toString() {
-		return SLASH_JOINER.join(parts());
+		return SLASH_JOINER.join(codeSystem(), terminologyComponentId(), identifier());
 	}
 	
 	@Override
 	public int hashCode() {
-		return Objects.hash(codeSystem, terminologyComponentId, identifier);
+		return Objects.hash(codeSystemUri, terminologyComponentId, identifier);
 	}
 	
 	@Override
@@ -148,7 +148,7 @@ public final class ComponentURI implements Serializable {
 		if (obj == null) return false;
 		if (getClass() != obj.getClass()) return false;
 		ComponentURI other = (ComponentURI) obj;
-		return Objects.equals(codeSystem, other.codeSystem)
+		return Objects.equals(codeSystemUri, other.codeSystemUri)
 				&& terminologyComponentId == other.terminologyComponentId
 				&& Objects.equals(identifier, other.identifier);
 	}
