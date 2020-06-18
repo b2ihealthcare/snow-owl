@@ -31,7 +31,6 @@ import java.util.stream.Stream;
 import org.eclipse.xtext.util.Pair;
 import org.eclipse.xtext.util.Tuples;
 
-import com.b2international.commons.ClassUtils;
 import com.b2international.commons.exceptions.ConflictException;
 import com.b2international.commons.exceptions.CycleDetectedException;
 import com.b2international.commons.exceptions.LockedException;
@@ -199,7 +198,7 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 			resolvedObjectsById.put(createComponentKey(rev.getId(), rev.getClass()), rev);
 			return rev.getId();
 		} else {
-			throw new UnsupportedOperationException("Cannot add object to this repository: " + o);
+			throw new UnsupportedOperationException("Unrecognized objects cannot be removed from this repository: " + o);
 		}
 	}
 	
@@ -221,13 +220,24 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 	
 	@Override
 	public void delete(Object o, boolean force) {
-		RevisionDocument doc = ClassUtils.checkAndCast(o, RevisionDocument.class);
-		
-		if (force || service(ComponentDeletionPolicy.class).canDelete(doc)) {
-			staging.stageRemove(doc);
+		if (o instanceof CodeSystemEntry) {
+			final CodeSystemEntry cs = (CodeSystemEntry) o;
+			staging.stageRemove(cs.getShortName(), cs);
+		} else if (o instanceof CodeSystemVersionEntry) { 
+			final CodeSystemVersionEntry cs = (CodeSystemVersionEntry) o;
+			staging.stageRemove(cs.getId(), cs);
+		} else if (o instanceof RevisionDocument) {
+			RevisionDocument doc = (RevisionDocument) o;
+			
+			if (force || service(ComponentDeletionPolicy.class).canDelete(doc)) {
+				staging.stageRemove(doc);
+			} else {
+				throw new ConflictException("'%s' '%s' cannot be deleted.", DocumentMapping.getType(doc.getClass()), doc.getId());
+			}
 		} else {
-			throw new ConflictException("'%s' '%s' cannot be deleted.", DocumentMapping.getType(doc.getClass()), doc.getId());
+			throw new UnsupportedOperationException("Cannot add object to this repository: " + o);
 		}
+		
 	}
 	
 	@Override
