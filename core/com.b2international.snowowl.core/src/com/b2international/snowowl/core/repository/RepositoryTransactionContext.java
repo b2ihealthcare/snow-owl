@@ -198,7 +198,7 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 			resolvedObjectsById.put(createComponentKey(rev.getId(), rev.getClass()), rev);
 			return rev.getId();
 		} else {
-			throw new UnsupportedOperationException("Unrecognized objects cannot be removed from this repository: " + o);
+			throw new UnsupportedOperationException("Unrecognized objects cannot be added to this repository: " + o);
 		}
 	}
 	
@@ -235,7 +235,7 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 				throw new ConflictException("'%s' '%s' cannot be deleted.", DocumentMapping.getType(doc.getClass()), doc.getId());
 			}
 		} else {
-			throw new UnsupportedOperationException("Cannot add object to this repository: " + o);
+			throw new UnsupportedOperationException("Unrecognized objects cannot be removed from this repository: " + o);
 		}
 		
 	}
