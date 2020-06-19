@@ -19,6 +19,7 @@ import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.AsyncRequest;
+import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.google.common.base.Strings;
 
 /**
@@ -52,6 +53,10 @@ public interface RevisionIndexRequestBuilder<R> extends BranchRequestBuilder<R> 
 	}
 	
 	default AsyncRequest<R> build(String codeSystemUri) {
+		return build(new CodeSystemURI(codeSystemUri));
+	}
+	
+	default AsyncRequest<R> build(CodeSystemURI codeSystemUri) {
 		return new AsyncRequest<>(
 			new CodeSystemResourceRequest<>(
 				codeSystemUri,
