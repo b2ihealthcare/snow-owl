@@ -88,5 +88,14 @@
     "checkType": "FAST",
     "type": "script-groovy",
     "implementation": "scripts/rule670.groovy"
+  },
+  {
+  	"id": "671",
+    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "messageTemplate": "All active SNOMED CT Descriptions on inactive SNOMED CT Concepts should have a single inactivation indicator with either Concept non-current, Pending Move, or Limited value in the Description Inactivation Indicator Reference Set.",
+    "severity": "WARNING",
+    "checkType": "FAST",
+    "type": "script-groovy",
+    "implementation": "scripts/rule671.groovy"
   }
 ]
