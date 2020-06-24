@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.request;
 
+import java.util.Collection;
+
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.Concept;
@@ -112,5 +114,13 @@ public interface ConceptSearchRequestEvaluator {
 			return new Concepts(search.get(OptionKey.LIMIT, Integer.class), 0);
 		}
 	};
+	
+	/**
+	 * Support value set clause evaluation
+	 * @since 7.7
+	 */
+	public static String getId(Collection <String> query) {
+		return query.toString().replaceAll("\\[|\\]|\\|", "").split(" ", 1).toString();
+	}
 	
 }
