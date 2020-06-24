@@ -2,7 +2,9 @@ actions:
   1:
     action: restore
     description: >-
-      Restore all indices in the most recent curator-* snapshot with state SUCCESS.
+      Restore all indices in the most recent curator-* snapshot with state SUCCESS. Wait
+      for the restore to complete before continuing. Do not skip the repository
+      filesystem access check.
     options:
       repository: snowowl-snapshots
       # If name is blank, the most recent snapshot by age will be selected
@@ -17,7 +19,7 @@ actions:
       rename_replacement:
       extra_settings:
       wait_for_completion: True
-      skip_repo_fs_check: True
+      skip_repo_fs_check: False
       disable_action: False
     filters:
     - filtertype: pattern
