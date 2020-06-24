@@ -23,6 +23,7 @@ import com.b2international.snowowl.core.domain.Concept;
 import com.b2international.snowowl.core.domain.Concepts;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
+import com.google.common.collect.Lists;
 
 /**
  * @since 7.5
@@ -119,8 +120,13 @@ public interface ConceptSearchRequestEvaluator {
 	 * Support value set clause evaluation
 	 * @since 7.7
 	 */
-	public static String getId(Collection <String> query) {
-		return query.toString().replaceAll("\\[|\\]|\\|", "").split(" ", 1).toString();
+	public static Collection<String> getIds(Collection<String> querys) {
+		Collection<String> ids = Lists.newArrayList();
+		querys.forEach(query -> {
+			String[] id = query.replaceAll("\\|", "").split(" ", 2);
+			ids.add(id[0]);
+		});
+		return ids;
 	}
 	
 }
