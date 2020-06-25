@@ -1,0 +1,36 @@
+actions:
+  1:
+    action: snapshot
+    description: >-
+      Snapshot all indices. Wait for the snapshot to complete. Do not skip
+      the repository filesystem access check.
+    options:
+      repository: snowowl-snapshots
+      name:
+      ignore_unavailable: False
+      include_global_state: True
+      partial: False
+      wait_for_completion: True
+      skip_repo_fs_check: False
+      disable_action: False
+    filters:
+    - filtertype: none
+  2:
+    action: delete_snapshots
+    description: >-
+      Keep 10 most recent snapshots in the selected repository
+      (based on creation_date), for 'curator-' prefixed snapshots. Ordering
+      is age-based and reversed by default for the 'count' filter.
+    options:
+      repository: snowowl-snapshots
+      disable_action: False
+      ignore_empty_list: True
+    filters:
+    - filtertype: pattern
+      kind: prefix
+      value: curator-
+      exclude:
+    - filtertype: count
+      count: 10
+      use_age: True
+      source: creation_date
