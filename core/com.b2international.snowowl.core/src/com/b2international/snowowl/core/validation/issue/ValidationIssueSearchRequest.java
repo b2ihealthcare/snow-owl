@@ -175,10 +175,11 @@ final class ValidationIssueSearchRequest
 		}
 		
 		if (containsKey(OptionKey.DETAILS)) {
-			final Collection<ValidationIssueDetailExtension> validationDetailExtensions = ValidationIssueDetailExtensionProvider.INSTANCE.getExtensions();
-			for (ValidationIssueDetailExtension extension : validationDetailExtensions) {
+			final Collection<String> toolingIds = getCollection(OptionKey.TOOLING_ID, String.class);
+			for (String toolingId : toolingIds) {
+				final ValidationIssueDetailExtension validationDetailExtension = ValidationIssueDetailExtensionProvider.INSTANCE.getExtensions(toolingId);
 				Options options = getOptions(OptionKey.DETAILS);
-				extension.prepareQuery(queryBuilder, options);
+				validationDetailExtension.prepareQuery(queryBuilder, options);
 			}
 		}
 		
