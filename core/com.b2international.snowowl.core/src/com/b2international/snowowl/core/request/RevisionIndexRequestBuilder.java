@@ -16,11 +16,9 @@
 package com.b2international.snowowl.core.request;
 
 import com.b2international.index.revision.RevisionSearcher;
-import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.AsyncRequest;
-import com.b2international.snowowl.core.uri.CodeSystemURI;
-import com.google.common.base.Strings;
+import com.b2international.snowowl.core.events.Request;
 
 /**
  * Provides a default method for wrapping {@link BranchContext}-based requests
@@ -34,35 +32,8 @@ import com.google.common.base.Strings;
 public interface RevisionIndexRequestBuilder<R> extends BranchRequestBuilder<R> {
 
 	@Override
-	default AsyncRequest<R> build(String repositoryId, String branch) {
-		// if the branch starts with MAIN, then it is an explicit branch path with a repositoryId
-		if (Strings.nullToEmpty(branch).startsWith(Branch.MAIN_PATH)) {
-			return new AsyncRequest<>(
-				new RepositoryRequest<>(repositoryId,
-					new HealthCheckingRequest<>(
-						new BranchRequest<>(branch, 
-							new RevisionIndexReadRequest<>(build(), snapshot())
-						),
-						allowedHealthstates()
-					)
-				)
-			);
-		} else {
-			return build(branch);
-		}
-	}
-	
-	default AsyncRequest<R> build(String codeSystemUri) {
-		return build(new CodeSystemURI(codeSystemUri));
-	}
-	
-	default AsyncRequest<R> build(CodeSystemURI codeSystemUri) {
-		return new AsyncRequest<>(
-			new CodeSystemResourceRequest<>(
-				codeSystemUri,
-				new RevisionIndexReadRequest<>(build(), snapshot())
-			)
-		);
+	default Request<BranchContext, R> wrap(Request<BranchContext, R> req) {
+		return new RevisionIndexReadRequest<>(req, snapshot());
 	}
 	
 	default boolean snapshot() {
