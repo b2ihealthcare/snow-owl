@@ -19,6 +19,7 @@ import java.util.SortedSet;
 
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Strings;
 
 /**
  * @since 7.5
@@ -75,6 +76,25 @@ public final class Concept extends BaseComponent {
 	@JsonIgnore
 	public ComponentURI getCode() {
 		return ComponentURI.of(codeSystem, terminologyComponentId, getId());
+	}
+	
+	@Override
+	public String toString() {
+		return toConceptString(getId(), getTerm());
+	}
+	
+	public static final String toConceptString(String id, String term) {
+		return String.format("%s |%s|", id, term);
+	}
+	
+	public static final String[] fromConceptString(String conceptString) {
+		if (Strings.isNullOrEmpty(conceptString)) return new String[] {"", ""};
+		final int firstPipeIdx = conceptString.indexOf("|");
+		final int lastPipeIdx = conceptString.lastIndexOf("|");
+		return new String[] {
+			conceptString.substring(0, firstPipeIdx == -1 ? conceptString.length() : firstPipeIdx).trim(),
+			conceptString.substring(firstPipeIdx + 1, lastPipeIdx == -1 ? conceptString.length() : lastPipeIdx).trim(),
+		};
 	}
 	
 }
