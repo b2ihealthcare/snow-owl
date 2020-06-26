@@ -176,11 +176,20 @@ final class ValidationIssueSearchRequest
 		
 		if (containsKey(OptionKey.DETAILS)) {
 			final Collection<String> toolingIds = getCollection(OptionKey.TOOLING_ID, String.class);
+			final Options options = getOptions(OptionKey.DETAILS);
 			for (String toolingId : toolingIds) {
-				final ValidationIssueDetailExtension validationDetailExtension = ValidationIssueDetailExtensionProvider.INSTANCE.getExtensions(toolingId);
-				Options options = getOptions(OptionKey.DETAILS);
-				validationDetailExtension.prepareQuery(queryBuilder, options);
+				ValidationIssueDetailExtensionProvider.INSTANCE.getExtensions()
+						.stream()
+						.filter(ext -> toolingId.equals(ext.getToolingId()))
+						.findFirst()
+						.ifPresent(extension -> {
+							final ExpressionBuilder toolingQuery = Expressions.builder(); 
+							extension.prepareQuery(toolingQuery, options);
+							queryBuilder.should(toolingQuery.build());
+						});
 			}
+			// at least one should clause should match
+			queryBuilder.setMinimumNumberShouldMatch(1);
 		}
 		
 		return queryBuilder.build();
