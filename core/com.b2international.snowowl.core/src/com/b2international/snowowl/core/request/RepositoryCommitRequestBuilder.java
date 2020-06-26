@@ -83,10 +83,12 @@ public class RepositoryCommitRequestBuilder extends BaseRequestBuilder<Repositor
 
 	@Override
 	protected final Request<BranchContext, CommitResult> doBuild() {
-		return new RevisionIndexReadRequest<CommitResult>(
-			new TransactionalRequest(author, commitComment, getBody(), preparationTime, parentContextDescription),
-			false /*disable snapshot behaviour to allow the proper reuse of transaction context instances after a commit*/
-		);
+		return new TransactionalRequest(author, commitComment, getBody(), preparationTime, parentContextDescription);
+	}
+	
+	@Override
+	public boolean snapshot() {
+		return false;
 	}
 
 }
