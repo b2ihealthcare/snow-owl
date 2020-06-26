@@ -21,7 +21,6 @@ import java.io.IOException;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.attachments.Attachment;
-import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.identity.Permission;
 
@@ -38,7 +37,7 @@ public abstract class ExportRequest<C extends ServiceProvider> extends ResourceR
 		File result = null;
 		try {
 			result = doExport(context);
-			return context.service(AttachmentRegistry.class).upload(result);
+			return Attachment.upload(context, result.toPath()); 
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException(String.format("Failed to perform '%s'", getClass().getSimpleName()), e);
 		} finally {

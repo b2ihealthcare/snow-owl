@@ -85,5 +85,10 @@ public class RepositoryCommitRequestBuilder extends BaseRequestBuilder<Repositor
 	protected final Request<BranchContext, CommitResult> doBuild() {
 		return new TransactionalRequest(author, commitComment, getBody(), preparationTime, parentContextDescription);
 	}
+	
+	@Override
+	public boolean snapshot() {
+		return false;
+	}
 
 }

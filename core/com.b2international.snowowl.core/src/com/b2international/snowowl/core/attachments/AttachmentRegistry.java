@@ -15,9 +15,6 @@
  */
 package com.b2international.snowowl.core.attachments;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.UUID;
@@ -25,7 +22,6 @@ import java.util.UUID;
 import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.NotFoundException;
-import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 
 /**
  * Registry that can manage file attachments uploaded by clients using this interface.
@@ -33,32 +29,6 @@ import com.b2international.snowowl.core.api.SnowowlRuntimeException;
  * @since 5.7
  */
 public interface AttachmentRegistry {
-
-	/**
-	 * @param file - the file to upload
-	 * @return an {@link Attachment} descriptor
-	 * @since 7.7
-	 */
-	default Attachment upload(File file) {
-		return upload(file, UUID.randomUUID());
-	}
-
-	/**
-	 * Uploads an attachment using the specified file as source and the specified attachmentId as the identifier of the attachment.
-	 * 
-	 * @param file - the file to upload
-	 * @param attachmentId - the identifier of the attachment to retrieve it later
-	 * @return an {@link Attachment} descriptor
-	 * @since 7.7
-	 */
-	default Attachment upload(File file, UUID attachmentId) {
-		try (final FileInputStream in = new FileInputStream(file)) {
-			upload(attachmentId, in);
-		} catch (IOException e) {
-			throw new SnowowlRuntimeException(e);
-		}
-		return new Attachment(attachmentId, file.getName());
-	}
 
 	/**
 	 * Uploads an attachment and saves it in the server's current data directory.

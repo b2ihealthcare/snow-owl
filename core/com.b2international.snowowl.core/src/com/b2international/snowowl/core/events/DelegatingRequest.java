@@ -19,6 +19,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Collection;
 
+import javax.validation.Valid;
+
 import com.b2international.snowowl.core.ServiceProvider;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -43,6 +45,7 @@ public abstract class DelegatingRequest<C extends ServiceProvider, T extends Ser
 
 	private static final long serialVersionUID = 1L;
 	
+	@Valid
 	private final Request<T, R> next;
 
 	protected DelegatingRequest(Request<T, R> next) {
