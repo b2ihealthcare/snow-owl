@@ -29,9 +29,6 @@ import java.util.stream.Stream;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
-import org.eclipse.xtext.util.Pair;
-import org.eclipse.xtext.util.Tuples;
-
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.domain.TransactionContext;
@@ -48,7 +45,6 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
-import com.google.common.base.Joiner;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -193,10 +189,7 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 	}
 	
 	private void convertRelationships(final TransactionContext context, String conceptId) {
-		if (!relationships.isEmpty()) {
-			final Set<Pair<String, String>> requiredRelationships = newHashSet();
-			requiredRelationships.add(Tuples.pair(Concepts.IS_A, Concepts.STATED_RELATIONSHIP));
-			
+		if (relationships != null) {
 			for (final SnomedRelationshipCreateRequest relationshipRequest : relationships) {
 				relationshipRequest.setSourceId(conceptId);
 				
@@ -205,13 +198,6 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 				}
 				
 				relationshipRequest.execute(context);
-				
-				requiredRelationships.remove(Tuples.pair(relationshipRequest.getTypeId(), relationshipRequest.getCharacteristicTypeId()));
-			}
-			
-			int relationshipCount = requiredRelationships.size() + getOwlAxiomExpressions().size();
-			if (relationshipCount <= 0) {
-				throw new BadRequestException("The following relationships must be supplied with the concept [%s].", Joiner.on(",").join(requiredRelationships));
 			}
 		}
 	}
