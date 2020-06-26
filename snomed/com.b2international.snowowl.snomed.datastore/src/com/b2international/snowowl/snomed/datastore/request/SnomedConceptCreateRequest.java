@@ -209,7 +209,8 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 				requiredRelationships.remove(Tuples.pair(relationshipRequest.getTypeId(), relationshipRequest.getCharacteristicTypeId()));
 			}
 			
-			if (!requiredRelationships.isEmpty()) {
+			int relationshipCount = requiredRelationships.size() + getOwlAxiomExpressions().size();
+			if (relationshipCount <= 0) {
 				throw new BadRequestException("The following relationships must be supplied with the concept [%s].", Joiner.on(",").join(requiredRelationships));
 			}
 		}

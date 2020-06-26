@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,6 +45,8 @@ import com.b2international.snowowl.core.validation.issue.ValidationIssue;
 import com.b2international.snowowl.core.validation.issue.ValidationIssueDetailExtension;
 import com.b2international.snowowl.core.validation.issue.ValidationIssueDetailExtensionProvider;
 import com.b2international.snowowl.core.validation.issue.ValidationIssues;
+import com.b2international.snowowl.core.validation.rule.ValidationRule;
+import com.b2international.snowowl.core.validation.rule.ValidationRule.Severity;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -53,6 +55,8 @@ import com.google.common.collect.ImmutableMap;
  * @since 6.4
  */
 public class ValidationIssueApiTest {
+
+	private static final String TEST_TOOLING_ID = "TerminologyToolingId";
 
 	/**
 	 * Usage of this class intended for testing purposes only
@@ -73,7 +77,9 @@ public class ValidationIssueApiTest {
 		public void extendIssues(BranchContext context, Collection<ValidationIssue> issue) {}
 
 		@Override
-		public String getToolingId() { return null; }
+		public String getToolingId() { 
+			return TEST_TOOLING_ID; 
+		}
 		
 	}
 	
@@ -82,7 +88,7 @@ public class ValidationIssueApiTest {
 	@Before
 	public void setup() {
 		final ObjectMapper mapper = JsonSupport.getDefaultObjectMapper();
-		final Index index = Indexes.createIndex(UUID.randomUUID().toString(), mapper, new Mappings(ValidationIssue.class));
+		final Index index = Indexes.createIndex(UUID.randomUUID().toString(), mapper, new Mappings(ValidationIssue.class, ValidationRule.class));
 		index.admin().create();
 		final ValidationRepository repository = new ValidationRepository(index);
 		context = ServiceProvider.EMPTY.inject()
@@ -106,14 +112,25 @@ public class ValidationIssueApiTest {
 	
 	@Test
 	public void filterIssueByDetails() {
-
 		final Map<String, Object> details = ImmutableMap.of("testkey", "testvalue");
 		
-		final String issueWithDetail = createIssue(details);
-		final String issueWithoutDetail = createIssue(Collections.emptyMap()); 
+		final String ruleId = ValidationRequests.rules().prepareCreate()
+				.setId(UUID.randomUUID().toString())
+				.setToolingId(TEST_TOOLING_ID)
+				.setMessageTemplate("Error message")
+				.setSeverity(Severity.ERROR)
+				.setType("snomed-query")
+				.setImplementation("*")
+				.buildAsync()
+				.getRequest()
+				.execute(context);
+		
+		final String issueWithDetail = createIssue(ruleId, details);
+		final String issueWithoutDetail = createIssue(ruleId, Collections.emptyMap()); 
 		
 		final ValidationIssues issues = ValidationRequests.issues().prepareSearch()
 			.all()
+			.filterByTooling(TEST_TOOLING_ID)
 			.filterByDetails(details)
 			.buildAsync()
 			.getRequest()
@@ -190,9 +207,12 @@ public class ValidationIssueApiTest {
 	}
 
 	private String createIssue(Map<String, Object> details, String...labels) {
+		return createIssue("testRuleId", details, labels);
+	}
+	
+	private String createIssue(String ruleId, Map<String, Object> details, String...labels) {
 		final String branchPath = "testBranch";
 		final String issueId = UUID.randomUUID().toString();
-		final String ruleId = "testRuleId";
 		final short terminologyShort = 0;
 		final String componentId = UUID.randomUUID().toString();
 		

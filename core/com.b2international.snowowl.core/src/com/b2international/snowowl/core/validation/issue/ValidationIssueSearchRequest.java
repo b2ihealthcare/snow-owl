@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.options.Options;
 import com.b2international.index.Hits;
 import com.b2international.index.Searcher;
@@ -35,6 +36,9 @@ import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
 import com.b2international.snowowl.core.validation.ValidationRequests;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
+import com.google.common.collect.Sets.SetView;
 
 /**
  * @since 6.0
@@ -130,9 +134,12 @@ final class ValidationIssueSearchRequest
 		}
 		
 		if (containsKey(OptionKey.RULE_ID)) {
-			Collection<String> ruleFilter = getCollection(OptionKey.RULE_ID, String.class);
+			Set<String> ruleFilter = ImmutableSet.copyOf(getCollection(OptionKey.RULE_ID, String.class));
 			if (filterByRuleIds != null) {
-				filterByRuleIds.addAll(ruleFilter);
+				SetView<String> diff = Sets.difference(ruleFilter, filterByRuleIds);
+				if (!diff.isEmpty()) {
+					throw new BadRequestException("Some of the ruleId filter values '%s' belong to a non-specified toolingId.", diff);
+				}
 			} else {
 				filterByRuleIds = newHashSet(ruleFilter);
 			}
@@ -175,11 +182,26 @@ final class ValidationIssueSearchRequest
 		}
 		
 		if (containsKey(OptionKey.DETAILS)) {
-			final Collection<ValidationIssueDetailExtension> validationDetailExtensions = ValidationIssueDetailExtensionProvider.INSTANCE.getExtensions();
-			for (ValidationIssueDetailExtension extension : validationDetailExtensions) {
-				Options options = getOptions(OptionKey.DETAILS);
-				extension.prepareQuery(queryBuilder, options);
+			if (!containsKey(OptionKey.TOOLING_ID)) {
+				throw new BadRequestException("At least one toolingId is required to be able to filter issues by details.");
 			}
+			final Collection<String> toolingIds = getCollection(OptionKey.TOOLING_ID, String.class);
+			final Options options = getOptions(OptionKey.DETAILS);
+			final ExpressionBuilder toolingQuery = Expressions.builder();
+			for (String toolingId : toolingIds) {
+				ValidationIssueDetailExtensionProvider.INSTANCE.getExtensions()
+						.stream()
+						.filter(ext -> toolingId.equals(ext.getToolingId()))
+						.findFirst()
+						.ifPresent(extension -> {
+							final ExpressionBuilder extensionQuery = Expressions.builder(); 
+							extension.prepareQuery(extensionQuery, options);
+							toolingQuery.should(extensionQuery.build());
+						});
+			}
+			// at least one tooling should match
+			toolingQuery.setMinimumNumberShouldMatch(1);
+			queryBuilder.filter(toolingQuery.build());
 		}
 		
 		return queryBuilder.build();
