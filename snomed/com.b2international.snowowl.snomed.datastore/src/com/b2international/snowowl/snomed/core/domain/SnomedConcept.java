@@ -95,10 +95,6 @@ import com.google.common.collect.ImmutableSet;
 		// XXX: Not really SNOMED CT reference set types
 		MapTargetTypes.VALUE_SET,
 		MapTargetTypes.MAPPING_SET
-	},
-	supportedMapTargetTypes = {
-		MapTargetTypes.SIMPLE_MAP,
-		MapTargetTypes.SIMPLE_MAP_WITH_DESCRIPTION
 	}
 )
 public final class SnomedConcept extends SnomedCoreComponent {
