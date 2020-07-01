@@ -181,6 +181,11 @@ public enum TerminologyRegistry {
 			}
 			
 			@Override
+			public boolean allowedAsMapTarget() {
+				return false;
+			}
+			
+			@Override
 			public short shortId() {
 				return UNSPECIFIED_NUMBER_SHORT;
 			}

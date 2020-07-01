@@ -41,5 +41,7 @@ public @interface TerminologyComponent {
 	Class<? extends Revision> docType();
 	
 	String[] supportedRefSetTypes() default {};
-
+	
+	boolean allowedAsMapTarget() default true;
+	
 }

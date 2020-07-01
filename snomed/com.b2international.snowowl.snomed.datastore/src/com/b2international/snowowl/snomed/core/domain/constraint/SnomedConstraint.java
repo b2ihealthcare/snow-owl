@@ -50,7 +50,8 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 	shortId = SnomedTerminologyComponentConstants.CONSTRAINT_NUMBER,
 	componentCategory = ComponentCategory.UNKNOWN,
 	name = "SNOMED CT MRCM Constraint",
-	docType = SnomedConstraintDocument.class
+	docType = SnomedConstraintDocument.class,
+	allowedAsMapTarget = false
 )
 public final class SnomedConstraint extends SnomedConceptModelComponent implements IComponent {
 
