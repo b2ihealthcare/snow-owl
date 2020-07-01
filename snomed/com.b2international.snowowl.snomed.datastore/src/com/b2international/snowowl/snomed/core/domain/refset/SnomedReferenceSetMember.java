@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,7 +74,8 @@ import com.google.common.collect.ImmutableSet;
 	shortId = SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER,
 	name = "SNOMED CT Reference Set Member",
 	componentCategory = ComponentCategory.SET_MEMBER,
-	docType = SnomedRefSetMemberIndexEntry.class
+	docType = SnomedRefSetMemberIndexEntry.class,
+	allowedAsMapTarget = false
 )
 public final class SnomedReferenceSetMember extends SnomedComponent {
 
