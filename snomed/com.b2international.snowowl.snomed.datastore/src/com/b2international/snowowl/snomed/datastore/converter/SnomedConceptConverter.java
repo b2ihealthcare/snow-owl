@@ -478,11 +478,11 @@ final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedC
 		}
 	}
 
-	private boolean checkDirect(final Options expandOptions) {
-		if (!expandOptions.containsKey("direct")) {
+	protected boolean checkDirect(final Options expandOptions) {
+		if (!expandOptions.containsKey(OPTION_DIRECT_EXPAND)) {
 			throw new BadRequestException("Direct parameter required for descendants expansion");
 		}
-		return expandOptions.getBoolean("direct");
+		return expandOptions.getBoolean(OPTION_DIRECT_EXPAND);
 	}
 
 	private void expandAncestors(List<SnomedConcept> results, Set<String> conceptIds, String key, boolean stated) {
