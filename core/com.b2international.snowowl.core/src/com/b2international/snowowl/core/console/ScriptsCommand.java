@@ -22,6 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.b2international.commons.extension.Component;
 import com.b2international.snowowl.core.ApplicationContext;
@@ -67,9 +68,9 @@ public class ScriptsCommand extends Command {
 		
 		@Override
 		public void run(CommandLineStream out) {
-			try {
+			try (final Stream<String> lines = Files.lines(Paths.get(path))) {
 				
-				final String script = Files.lines(Paths.get(path)).collect(Collectors.joining(System.getProperty("line.separator")));
+				final String script = lines.collect(Collectors.joining(System.getProperty("line.separator")));
 				final ClassLoader classLoader = ApplicationContext.getServiceForClass(Plugins.class).getCompositeClassLoader();
 				
 				// Include the CLI-authorized IEventBus when running scripts
