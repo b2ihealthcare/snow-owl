@@ -19,6 +19,7 @@ import java.util.SortedSet;
 
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 
 /**
@@ -83,10 +84,29 @@ public final class Concept extends BaseComponent {
 		return toConceptString(getId(), getTerm());
 	}
 	
+	/**
+	 * Creates an "ID |TERM|" String representation from the given id and term values. Returns just the ID if the given term is <code>null</code> or empty.
+	 * 
+	 * @param id - may not be <code>null</code> or empty
+	 * @param term - may be <code>null</code>
+	 * @return either the given id or a String value in the format of ID |TERM| if the term is not <code>null</code> or empty. 
+	 */
 	public static final String toConceptString(String id, String term) {
-		return String.format("%s |%s|", id, term);
+		Preconditions.checkArgument(!Strings.isNullOrEmpty(id), "ID may not be null or empty");
+		if (Strings.isNullOrEmpty(term)) {
+			return id;
+		} else {
+			return String.format("%s |%s|", id, term);
+		}
 	}
 	
+	/**
+	 * Extracts an ID TERM pair from a String formatted like ID|TERM|. If there is no TERM specified then sets the ID for both the ID and TERM positions.
+	 * ID is placed on index 0, while TERM is placed on index 1 in the resulting array.
+	 *  
+	 * @param conceptString
+	 * @return never <code>null</code> String array with length of two, 0:ID, 1:TERM array.
+	 */
 	public static final String[] fromConceptString(String conceptString) {
 		if (Strings.isNullOrEmpty(conceptString)) return new String[] {"", ""};
 		final int firstPipeIdx = conceptString.indexOf("|");

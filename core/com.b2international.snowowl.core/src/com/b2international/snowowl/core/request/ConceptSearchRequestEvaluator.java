@@ -126,12 +126,10 @@ public interface ConceptSearchRequestEvaluator {
 	 * 
 	 * @since 7.7
 	 * @return a collection of extracted IDs
+	 * @see Concept#fromConceptString(String)
 	 */
 	default Collection<String> extractIds(Collection<String> queries) {
-		return queries.stream().map(query -> {
-			final int pipeIdx = query.indexOf("|");
-			return query.substring(0, pipeIdx == -1 ? query.length() : pipeIdx).trim();
-		}).collect(Collectors.toList());
+		return queries.stream().map(query -> Concept.fromConceptString(query)[0]).collect(Collectors.toList());
 	}
 
 }
