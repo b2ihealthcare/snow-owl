@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,22 +30,14 @@ import com.b2international.snowowl.core.repository.RevisionDocument;
 public abstract class BaseRevisionResourceConverter<T extends RevisionDocument, R extends IComponent, CR extends CollectionResource<R>>
 		extends BaseResourceConverter<T, R, CR> {
 
-	protected static final String DESCENDANTS_EXPAND_KEY = "descendants"; //$NON-NLS-N$
-	protected static final String OPTION_DIRECT_EXPAND = "direct";
-	
 	protected BaseRevisionResourceConverter(final BranchContext context, final Options expand, final List<ExtendedLocale> locales) {
 		super(context, expand, locales);
 	}
 	
+	@Override
 	protected final BranchContext context() {
 		return (BranchContext) super.context();
 	}
-	
-	protected boolean checkDirect(final Options expandOptions) {
-		if (!expandOptions.containsKey(OPTION_DIRECT_EXPAND)) {
-			return true;
-		}
-		return expandOptions.getBoolean(OPTION_DIRECT_EXPAND);
-	}
 
+	
 }
