@@ -140,6 +140,7 @@ final class ValidationIssueSearchRequest
 				if (!diff.isEmpty()) {
 					throw new BadRequestException("Some of the ruleId filter values '%s' belong to a non-specified toolingId.", diff);
 				}
+				filterByRuleIds = ruleFilter;
 			} else {
 				filterByRuleIds = newHashSet(ruleFilter);
 			}
