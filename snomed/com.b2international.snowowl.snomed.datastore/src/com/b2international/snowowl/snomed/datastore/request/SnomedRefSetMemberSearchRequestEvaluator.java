@@ -42,7 +42,7 @@ public class SnomedRefSetMemberSearchRequestEvaluator implements SetMemberSearch
 	public SetMembers evaluate(CodeSystemURI uri, BranchContext context, Options search) {
 		final Integer limit = search.get(OptionKey.LIMIT, Integer.class);
 		final String searchAfter = search.get(OptionKey.AFTER, String.class);
-		final List<ExtendedLocale> locales = search.getList(OptionKey.AFTER, ExtendedLocale.class);
+		final List<ExtendedLocale> locales = search.getList(OptionKey.LOCALES, ExtendedLocale.class);
 		
 		SnomedRefSetMemberSearchRequestBuilder requestBuilder = SnomedRequests.prepareSearchMember();
 		
