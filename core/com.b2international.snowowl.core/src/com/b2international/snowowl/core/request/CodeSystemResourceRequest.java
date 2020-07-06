@@ -41,9 +41,9 @@ public final class CodeSystemResourceRequest<R> extends DelegatingRequest<Servic
 	
 	private transient String branchPath;
 	
-	CodeSystemResourceRequest(String codeSystemUri, Request<BranchContext, R> next) {
+	CodeSystemResourceRequest(CodeSystemURI codeSystemUri, Request<BranchContext, R> next) {
 		super(next);
-		this.uri = new CodeSystemURI(codeSystemUri);
+		this.uri = codeSystemUri;
 	}
 
 	@Override

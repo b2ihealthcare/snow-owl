@@ -211,7 +211,7 @@ public abstract class AbstractBranchChangeRequest implements Request<RepositoryC
 	
 	@Override
 	public final String getOperation() {
-		return Permission.EDIT;
+		return Permission.OPERATION_EDIT;
 	}
 	
 }

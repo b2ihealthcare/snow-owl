@@ -102,7 +102,7 @@ final class SnomedRefSetCreateRequest implements Request<TransactionContext, Str
 	
 	@Override
 	public String getOperation() {
-		return Permission.EDIT;
+		return Permission.OPERATION_EDIT;
 	}
 
 }

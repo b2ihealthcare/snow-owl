@@ -170,6 +170,6 @@ final class ClassificationSaveRequest implements Request<RepositoryContext, Stri
 	
 	@Override
 	public String getOperation() {
-		return Permission.CLASSIFY;
+		return Permission.OPERATION_CLASSIFY;
 	}
 }

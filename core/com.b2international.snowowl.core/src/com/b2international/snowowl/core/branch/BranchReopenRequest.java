@@ -48,7 +48,7 @@ public final class BranchReopenRequest extends BranchBaseRequest<Boolean> implem
 	
 	@Override
 	public String getOperation() {
-		return Permission.EDIT;
+		return Permission.OPERATION_EDIT;
 	}
 	
 }

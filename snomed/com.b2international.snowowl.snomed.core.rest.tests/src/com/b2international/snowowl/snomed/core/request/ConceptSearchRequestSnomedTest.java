@@ -39,7 +39,7 @@ public class ConceptSearchRequestSnomedTest {
 			.build(CODESYSTEM)
 			.execute(Services.bus())
 			.getSync();
-		assertThat(matches.getTotal()).isEqualTo(1871);
+		assertThat(matches.getTotal()).isEqualTo(1873);
 	}
 	
 	@Test
@@ -62,7 +62,7 @@ public class ConceptSearchRequestSnomedTest {
 			.build(CODESYSTEM)
 			.execute(Services.bus())
 			.getSync();
-		assertThat(matches.getTotal()).isEqualTo(1870);
+		assertThat(matches.getTotal()).isEqualTo(1872);
 	}
 	
 }

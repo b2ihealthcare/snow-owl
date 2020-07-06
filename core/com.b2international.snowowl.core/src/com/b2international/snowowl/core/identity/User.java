@@ -73,7 +73,7 @@ public final class User implements Serializable {
 	public boolean isAdministrator() {
 		return getPermissions().stream()
 				.filter(p -> {
-					return Permission.ALL.equals(p.getOperation()) && Permission.ALL.equals(p.getResource());
+					return Permission.OPERATION_ALL.equals(p.getOperation()) && Permission.OPERATION_ALL.equals(p.getResource());
 				})
 				.findFirst()
 				.isPresent();

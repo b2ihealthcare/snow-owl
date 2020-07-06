@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Rest
 Bundle-SymbolicName: com.babylonhealth.snowowl.rest
-Bundle-Version: 7.7.0.qualifier
+Bundle-Version: 7.7.0
 Bundle-Vendor: BABYLONHEALTH
 Fragment-Host: com.b2international.snowowl.core.rest
 Automatic-Module-Name: com.babylonhealth.snowowl.rest

@@ -27,6 +27,8 @@ import com.b2international.snowowl.core.jobs.RemoteJobEntry;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.ConceptSearchRequestBuilder;
 import com.b2international.snowowl.core.request.ConceptSuggestionRequestBuilder;
+import com.b2international.snowowl.core.request.MemberSearchRequestBuilder;
+import com.b2international.snowowl.core.request.QueryOptimizeRequestBuilder;
 
 /**
  * @since 4.7
@@ -70,8 +72,21 @@ public class CodeSystemRequests {
 		return new ConceptSearchRequestBuilder();
 	}
 	
+	/**
+	 * Creates a new generic set member search request builder.
+	 * 
+	 * @return the builder to configure for generic set member search
+	 */
+	public static MemberSearchRequestBuilder prepareSearchMembers() {
+		return new MemberSearchRequestBuilder();
+	}
+	
 	public static ConceptSuggestionRequestBuilder prepareSuggestConcepts() {
 		return new ConceptSuggestionRequestBuilder();
+	}
+
+	public static QueryOptimizeRequestBuilder prepareOptimizeQueries() {
+		return new QueryOptimizeRequestBuilder();
 	}
 
 	/**

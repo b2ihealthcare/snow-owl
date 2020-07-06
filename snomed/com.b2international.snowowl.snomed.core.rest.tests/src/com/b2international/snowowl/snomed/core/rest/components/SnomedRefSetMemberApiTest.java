@@ -29,11 +29,10 @@ import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.cr
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static com.google.common.collect.Lists.newArrayList;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.util.List;
 import java.util.Map;
@@ -61,6 +60,7 @@ import com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedOWLRelationshipDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.test.commons.Services;
 import com.google.common.collect.ImmutableMap;
@@ -394,7 +394,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		String conceptId = createNewConcept(branchPath);
 		
 		Map<?, ?> requestBody = createRefSetMemberRequestBody(newIdentifierConceptId, conceptId)
-				.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, SnomedApiTestConstants.OWL_AXIOM_1)
+				.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, SnomedApiTestConstants.owlAxiom1(conceptId))
 				.put("commitComment", "Created new OWL Axiom reference set member")
 				.build();
 
@@ -412,6 +412,63 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 	}
 	
 	@Test
+	public void createOwlAxiomWithIncorrectFocusConceptIdInExpression() throws Exception {
+		// ROOT != Abbreviation
+		Map<?, ?> createRequestBody = createRefSetMemberRequestBody(Concepts.REFSET_OWL_AXIOM, Concepts.ROOT_CONCEPT)
+				.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, SnomedApiTestConstants.owlAxiom3(Concepts.ABBREVIATION))
+				.put("commitComment", "Created new OWL Axiom reference set member")
+				.build();
+		createComponent(branchPath, SnomedComponentType.MEMBER, createRequestBody)
+			.statusCode(400);
+	}
+	
+	@Test 
+	public void updateOwlAxiomRefsetMembers() {
+		String conceptId = createNewConcept(branchPath);
+		
+		Map<?, ?> createRequestBody = createRefSetMemberRequestBody(Concepts.REFSET_OWL_AXIOM, conceptId)
+				.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, SnomedApiTestConstants.owlAxiom3(conceptId))
+				.put("commitComment", "Created new OWL Axiom reference set member")
+				.build();
+
+		String memberId = lastPathSegment(createComponent(branchPath, SnomedComponentType.MEMBER, createRequestBody)
+				.statusCode(201)
+				.extract().header("Location"));
+
+		final SnomedReferenceSetMember member = SnomedRequests.prepareGetMember(memberId)
+				.setExpand("owlRelationships()")
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+				.execute(getBus())
+				.getSync();
+		
+		assertThat(member.getClassOWLRelationships())
+			.containsOnly(
+				new SnomedOWLRelationshipDocument(Concepts.IS_A, "410680006", 0),
+				new SnomedOWLRelationshipDocument("734136001", "900000000000470007", 1)
+			);
+		
+		final Map<?, ?> updateRequestBody = ImmutableMap.builder()
+				.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, SnomedApiTestConstants.owlAxiom4(conceptId))
+				.put("commitComment", "Update OWL Axiom reference set member")
+				.build();
+		
+		updateRefSetComponent(branchPath, SnomedComponentType.MEMBER, memberId, updateRequestBody, true).statusCode(204);
+
+		final SnomedReferenceSetMember updatedMember = SnomedRequests.prepareGetMember(memberId)
+				.setExpand("owlRelationships()")
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+				.execute(getBus())
+				.getSync();
+		
+		assertThat(updatedMember.getClassOWLRelationships())
+			.containsOnly(
+				new SnomedOWLRelationshipDocument(Concepts.IS_A, "410680006", 0),
+				new SnomedOWLRelationshipDocument("734136001", "900000000000470007", 1),
+				new SnomedOWLRelationshipDocument("371881003", "900000000000450001", 1)
+			);
+	}
+	
+	@Test
 	public void deleteReferringOwlOntologyRefsetMember() {
 		
 		String newIdentifierConceptId = createNewConcept(branchPath, SnomedRefSetUtil.getParentConceptId(SnomedRefSetType.OWL_ONTOLOGY));
@@ -420,7 +477,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		String conceptId = createNewConcept(branchPath);
 		
 		Map<?, ?> requestBody = createRefSetMemberRequestBody(newIdentifierConceptId, conceptId)
-				.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, SnomedApiTestConstants.OWL_AXIOM_1)
+				.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, SnomedApiTestConstants.owlAxiom1(conceptId))
 				.put("commitComment", "Created new OWL Ontology reference set member")
 				.build();
 

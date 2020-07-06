@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.core.request;
 
+import java.util.Collection;
+import java.util.stream.Collectors;
+
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.Concept;
@@ -33,7 +36,7 @@ public interface ConceptSearchRequestEvaluator {
 		 * Explicit ID filter to return all concepts that have any of the given IDs.
 		 */
 		ID,
-		
+
 		/**
 		 * Match concepts that have the specified active status. Accepts a boolean <code>true</code> or <code>false</code> value.
 		 */
@@ -54,7 +57,7 @@ public interface ConceptSearchRequestEvaluator {
 		 * The minimum number of terms to match.
 		 */
 		MIN_TERM_MATCH,
-		
+
 		/**
 		 * One or more query expressions (defined in the target code system's query language) to include matches.
 		 */
@@ -63,35 +66,38 @@ public interface ConceptSearchRequestEvaluator {
 		/**
 		 * One or more query expressions (defined in the target code system's query language) to exclude matches from the results.
 		 */
-		MUST_NOT_QUERY, 
-		
+		MUST_NOT_QUERY,
+
 		/**
 		 * Language locales (tag, Accept-Language header, etc.) to use in order of preference when determining the display label or term for a match.
 		 */
 		LOCALES,
-		
+
 		/**
 		 * Search matches after the specified sort key.
 		 */
 		AFTER,
-		
+
 		/**
 		 * Number of matches to return.
 		 */
-		LIMIT, 
+		LIMIT,
 	}
 
 	/**
 	 * Evaluate the given search options on the given context and return generic {@link Concept} instances back in a {@link Concepts} pageable
 	 * resource.
 	 * 
-	 * @param uri - the code system uri where the search is being evaluated
-	 * @param context - the context prepared for the search
-	 * @param search - the search filters and options to apply to the code system specific search
+	 * @param uri
+	 *            - the code system uri where the search is being evaluated
+	 * @param context
+	 *            - the context prepared for the search
+	 * @param search
+	 *            - the search filters and options to apply to the code system specific search
 	 * @return
 	 */
 	Concepts evaluate(CodeSystemURI uri, BranchContext context, Options search);
-	
+
 	default Concept toConcept(CodeSystemURI codeSystem, IComponent concept, String iconId, String term) {
 		Concept result = new Concept(codeSystem.toString(), concept.getTerminologyComponentId());
 		result.setId(concept.getId());
@@ -100,17 +106,30 @@ public interface ConceptSearchRequestEvaluator {
 		result.setTerm(term);
 		return result;
 	}
-	
+
 	/**
 	 * No-op request evaluator that returns zero results
+	 * 
 	 * @since 7.5
 	 */
 	ConceptSearchRequestEvaluator NOOP = new ConceptSearchRequestEvaluator() {
-		
+
 		@Override
 		public Concepts evaluate(CodeSystemURI uri, BranchContext context, Options search) {
 			return new Concepts(search.get(OptionKey.LIMIT, Integer.class), 0);
 		}
+
 	};
-	
+
+	/**
+	 * Extract IDs from ID|TERM| like query strings. If the query does not have a PIPE character in it, then treat the entire query as an ID.
+	 * 
+	 * @since 7.7
+	 * @return a collection of extracted IDs
+	 * @see Concept#fromConceptString(String)
+	 */
+	default Collection<String> extractIds(Collection<String> queries) {
+		return queries.stream().map(query -> Concept.fromConceptString(query)[0]).collect(Collectors.toList());
+	}
+
 }

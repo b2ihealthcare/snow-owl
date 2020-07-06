@@ -167,7 +167,7 @@ public final class EvaluateQueryRefSetMemberRequest extends IndexResourceRequest
 	
 	@Override
 	public String getOperation() {
-		return Permission.BROWSE;
+		return Permission.OPERATION_BROWSE;
 	}
 
 }

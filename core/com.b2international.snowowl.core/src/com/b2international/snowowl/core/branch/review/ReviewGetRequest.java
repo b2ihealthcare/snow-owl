@@ -37,7 +37,7 @@ public final class ReviewGetRequest extends ReviewRequest<Review> implements Rep
 	
 	@Override
 	public String getOperation() {
-		return Permission.BROWSE;
+		return Permission.OPERATION_BROWSE;
 	}
 	
 }

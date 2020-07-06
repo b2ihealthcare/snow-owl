@@ -876,6 +876,6 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 
 	@Override
 	public String getOperation() {
-		return Permission.CLASSIFY;
+		return Permission.OPERATION_CLASSIFY;
 	}
 }

@@ -60,7 +60,7 @@ import io.restassured.response.ValidatableResponse;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SnomedImportApiTest extends AbstractSnomedApiTest {
 
-	private static final String OWL_EXPRESSION = "SubClassOf(ObjectIntersectionOf(:73211009 ObjectSomeValuesFrom(:42752001 :64572001)) :8801005)";
+	private static final String OWL_EXPRESSION = "SubClassOf(ObjectIntersectionOf(:73211009 ObjectSomeValuesFrom(:42752001 :64572001)) :"+Concepts.ROOT_CONCEPT+")";
 
 	private void importArchive(final String fileName) {
 		importArchive(branchPath, false, Rf2ReleaseType.DELTA, fileName);

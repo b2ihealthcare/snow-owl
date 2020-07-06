@@ -57,6 +57,6 @@ public abstract class LockRequest<C extends RepositoryContext, R> implements Req
 		}
 	}
 	
-	protected abstract R doExecute(C context);
+	protected abstract R doExecute(C context) throws Exception;
 
 }

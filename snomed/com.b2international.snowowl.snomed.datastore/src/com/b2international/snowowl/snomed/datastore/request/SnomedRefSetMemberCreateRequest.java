@@ -218,9 +218,8 @@ final class SnomedRefSetMemberCreateRequest implements SnomedComponentCreateRequ
 			case SIMPLE_MAP_WITH_DESCRIPTION:
 				return new SnomedSimpleMapMemberWithDescriptionCreateDelegate(this);
 			case OWL_AXIOM:
-				return new SnomedOWLAxiomMemberCreateDelegate(this);
 			case OWL_ONTOLOGY:
-				return new SnomedOWLOntologyMemberCreateDelegate(this);
+				return new SnomedOWLExpressionMemberCreateDelegate(this, referenceSetType);
 			case MRCM_DOMAIN:
 				return new SnomedMRCMDomainMemberCreateDelegate(this);
 			case MRCM_ATTRIBUTE_DOMAIN:

@@ -57,7 +57,7 @@ public final class DeleteRequest implements Request<TransactionContext, Boolean>
 	
 	@Override
 	public String getOperation() {
-		return Permission.EDIT;
+		return Permission.OPERATION_EDIT;
 	}
 	
 }

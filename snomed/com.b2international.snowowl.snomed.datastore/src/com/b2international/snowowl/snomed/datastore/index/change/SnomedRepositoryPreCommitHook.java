@@ -47,7 +47,6 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemb
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedOWLExpressionConverter;
 import com.b2international.snowowl.snomed.datastore.request.SnomedOWLExpressionConverterResult;
-import com.b2international.snowowl.snomed.datastore.request.rf2.SnomedRf2Requests;
 import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2ImportConfiguration;
 import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2TransactionContext;
 import com.b2international.snowowl.snomed.datastore.taxonomy.Taxonomies;

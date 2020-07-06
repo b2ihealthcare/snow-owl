@@ -134,7 +134,7 @@ final class BranchSearchRequest extends SearchIndexResourceRequest<RepositoryCon
 
 	@Override
 	public String getOperation() {
-		return Permission.BROWSE;
+		return Permission.OPERATION_BROWSE;
 	}
 
 }

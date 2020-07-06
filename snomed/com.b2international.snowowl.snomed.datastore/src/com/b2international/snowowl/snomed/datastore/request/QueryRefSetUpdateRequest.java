@@ -54,7 +54,7 @@ public final class QueryRefSetUpdateRequest implements Request<TransactionContex
 	
 	@Override
 	public String getOperation() {
-		return Permission.EDIT;
+		return Permission.OPERATION_EDIT;
 	}
 
 }

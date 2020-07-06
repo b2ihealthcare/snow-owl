@@ -37,7 +37,7 @@ public final class ReviewGetConceptChangesRequest extends ReviewRequest<ConceptC
 	
 	@Override
 	public String getOperation() {
-		return Permission.EDIT;
+		return Permission.OPERATION_EDIT;
 	}
 	
 }

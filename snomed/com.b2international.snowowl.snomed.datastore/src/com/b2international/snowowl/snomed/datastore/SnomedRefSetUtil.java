@@ -29,6 +29,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import com.b2international.commons.BooleanUtils;
 import com.b2international.snowowl.core.ApplicationContext;
@@ -42,6 +43,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 
 /** 
@@ -49,6 +51,9 @@ import com.google.common.collect.Multimap;
  */
 public abstract class SnomedRefSetUtil {
 
+	public static final Set<String> ATTRIBUTE_VALUES_FOR_ACTIVE_CONCEPTS = ImmutableSet.of(Concepts.PENDING_MOVE);
+	public static final Set<String> ATTRIBUTE_VALUES_FOR_ACTIVE_DESCRIPTIONS = ImmutableSet.of(Concepts.CONCEPT_NON_CURRENT, Concepts.PENDING_MOVE);
+	
 	private static BiMap<DataType, String> DATATYPE_TO_REFSET_MAP;
 	
 	public static final BiMap<DataType, String> getConcreteDomainRefSetMap() {
