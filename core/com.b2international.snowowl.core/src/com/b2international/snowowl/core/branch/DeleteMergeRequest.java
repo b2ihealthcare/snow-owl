@@ -44,7 +44,7 @@ final class DeleteMergeRequest implements Request<RepositoryContext, Boolean>, R
 	
 	@Override
 	public String getOperation() {
-		return Permission.EDIT;
+		return Permission.OPERATION_EDIT;
 	}
 	
 }

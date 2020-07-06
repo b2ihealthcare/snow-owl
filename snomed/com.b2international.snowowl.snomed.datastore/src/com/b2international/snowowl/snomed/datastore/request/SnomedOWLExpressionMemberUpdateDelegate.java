@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,13 @@ final class SnomedOWLExpressionMemberUpdateDelegate extends SnomedRefSetMemberUp
 		final String owlExpression = getProperty(SnomedRf2Headers.FIELD_OWL_EXPRESSION);
 
 		if (!Strings.isNullOrEmpty(owlExpression) && !owlExpression.equals(original.getOwlExpression())) {
-			member.field(SnomedRf2Headers.FIELD_OWL_EXPRESSION, owlExpression);
+			SnomedOWLExpressionConverterResult result = context.service(SnomedOWLExpressionConverter.class).toSnomedOWLRelationships(original.getReferencedComponentId(), owlExpression);
+				
+			member
+				.field(SnomedRf2Headers.FIELD_OWL_EXPRESSION, owlExpression)
+				.classAxiomRelationships(result.getClassAxiomRelationships())
+				.gciAxiomRelationships(result.getGciAxiomRelationships());				
+			
 			return true;
 		}
 

@@ -16,13 +16,12 @@
 package com.b2international.snowowl.fhir.tests.endpoints.codesystem;
 
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Collection;
@@ -40,6 +39,7 @@ import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
 import com.b2international.snowowl.fhir.tests.FhirRestTest;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 
 /**
  * CodeSystem $lookup operation REST end-point test cases
@@ -54,7 +54,7 @@ public class LookupSnomedRestTest extends FhirRestTest {
 		
 		String responseString = givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.param("system", "http://snomed.info/sct")
-			.param("code", "64572001")
+			.param("code", Concepts.IS_A)
 			.param("property", "designation", "sufficientlyDefined", "inactive", "effectiveTime")
 			.param("_format", "json")
 			.when().get("/CodeSystem/$lookup")
@@ -65,30 +65,29 @@ public class LookupSnomedRestTest extends FhirRestTest {
 			.body()
 			.asString();
 		
-		System.out.println("Response string: " + responseString);
 		LookupResult result = convertToResult(responseString);
 		
 		assertEquals("SNOMED CT", result.getName());
-		assertEquals("Disease", result.getDisplay());
+		assertEquals("Is a", result.getDisplay());
 		
 		//Designations
 		Collection<Designation> designations = result.getDesignation();
 		
 		Designation ptDesignation = designations.stream()
-			.filter(d -> d.getValue().equals("Disease"))
+			.filter(d -> "Is a".equals(d.getValue()))
 			.findFirst()
 			.get();
 		
-		assertThat("900000000000013009", equalTo(ptDesignation.getUse().getCodeValue()));
-		assertThat(ptDesignation.getUse().getDisplay(), equalTo("Synonym"));
+		assertThat(ptDesignation.getUse().getCodeValue()).isEqualTo(Concepts.SYNONYM);
+		assertThat(ptDesignation.getUse().getDisplay()).isEqualTo("Synonym");
 		
 		Designation fsnDesignation = designations.stream()
-				.filter(d -> d.getValue().equals("Disease (disorder)"))
+				.filter(d -> d.getValue().equals("Is a (attribute)"))
 				.findFirst()
 				.get();
 		
-		assertThat(fsnDesignation.getUse().getCodeValue(), equalTo("900000000000003001"));
-		assertThat(fsnDesignation.getUse().getDisplay(), equalTo("Fully specified name"));
+		assertThat(fsnDesignation.getUse().getCodeValue()).isEqualTo(Concepts.FULLY_SPECIFIED_NAME);
+		assertThat(fsnDesignation.getUse().getDisplay()).isEqualTo("Fully specified name");
 		
 		//Properties
 		Collection<Property> properties = result.getProperty();
@@ -96,16 +95,16 @@ public class LookupSnomedRestTest extends FhirRestTest {
 		properties.forEach(System.out::println);
 		
 		Property definitionProperty = getProperty(properties, "sufficientlyDefined");
-		assertThat(definitionProperty.getValue(), equalTo(false));
+		assertThat(definitionProperty.getValue()).isEqualTo(false);
 		
 		Property statusProperty = getProperty(properties, "inactive");
-		assertThat(statusProperty.getValue(), equalTo(false));
+		assertThat(statusProperty.getValue()).isEqualTo(false);
 		
 		Property effectiveTimeProperty = getProperty(properties, "effectiveTime");
-		assertThat(effectiveTimeProperty.getValue(), equalTo("20020131"));
+		assertThat(effectiveTimeProperty.getValue()).isEqualTo("20110131");
 
 		Set<String> codeValues = properties.stream().map(p -> p.getCode()).collect(Collectors.toSet());
-		assertThat(codeValues, not(hasItem("parent")));
+		assertThat(codeValues).doesNotContain("parent");
 		
 	}
 	
@@ -127,7 +126,6 @@ public class LookupSnomedRestTest extends FhirRestTest {
 			.body()
 			.asString();
 		
-		System.out.println(responseString);
 		LookupResult result = convertToResult(responseString);
 		
 		//Mandatory parameters
@@ -145,10 +143,10 @@ public class LookupSnomedRestTest extends FhirRestTest {
 		assertEquals(2, properties.size());
 		
 		Property inactiveProperty = getProperty(properties, "inactive");
-		assertThat(inactiveProperty.getValue(), equalTo(false));
+		assertThat(inactiveProperty.getValue()).isEqualTo(false);
 		
-		Property associatedMProperty = getProperty(properties, "260686004"); //method
-		assertThat(associatedMProperty.getValue(), equalTo("129264002")); //method = Action
+		Property associatedMProperty = getProperty(properties, Concepts.METHOD);
+		assertThat(associatedMProperty.getValue()).isEqualTo("129264002"); //method = Action
 	}
 	
 	//GET SNOMED CT with properties
@@ -174,7 +172,7 @@ public class LookupSnomedRestTest extends FhirRestTest {
 		
 		String responseString = givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.param("system", "http://snomed.info/sct/900000000000207008/version/20170131")
-			.param("code", "64572001") //Disease
+			.param("code", Concepts.IS_A)
 			.param("property", "version")
 			.when().get("/CodeSystem/$lookup")
 			.then()
@@ -184,7 +182,6 @@ public class LookupSnomedRestTest extends FhirRestTest {
 			.body()
 			.asString();
 		
-		System.out.println(responseString);
 		LookupResult result = convertToResult(responseString);
 		
 		assertEquals("SNOMED CT", result.getName());
@@ -196,7 +193,7 @@ public class LookupSnomedRestTest extends FhirRestTest {
 		
 		Coding coding = Coding.builder()
 			.system("http://snomed.info/sct/900000000000207008/version/20170131")
-			.code("64572001")
+			.code(Concepts.IS_A)
 			.build();
 
 		LookupRequest request = LookupRequest.builder()
@@ -205,12 +202,9 @@ public class LookupSnomedRestTest extends FhirRestTest {
 		
 		Fhir fhirParameters = new Parameters.Fhir(request);
 		
-		String jsonBody = objectMapper.writeValueAsString(fhirParameters);
-//		printPrettyJson(fhirParameters);
-		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.contentType(APPLICATION_FHIR_JSON)
-			.body(jsonBody)
+			.body(fhirParameters)
 			.when().post("/CodeSystem/$lookup")
 			.then()
 			.statusCode(200)
@@ -219,7 +213,7 @@ public class LookupSnomedRestTest extends FhirRestTest {
 			.body("parameter[0].name", equalTo("name"))
 			.body("parameter[0].valueString", equalTo("SNOMED CT"))
 			.body("parameter[1].name", equalTo("display"))
-			.body("parameter[1].valueString", equalTo("Disease"));
+			.body("parameter[1].valueString", equalTo("Is a"));
 	}
 	
 	@Test

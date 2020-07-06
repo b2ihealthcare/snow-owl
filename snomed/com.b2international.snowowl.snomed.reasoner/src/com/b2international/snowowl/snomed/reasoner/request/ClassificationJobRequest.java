@@ -188,7 +188,7 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean>,
 	
 	@Override
 	public String getOperation() {
-		return Permission.CLASSIFY;
+		return Permission.OPERATION_CLASSIFY;
 	}
 	
 }

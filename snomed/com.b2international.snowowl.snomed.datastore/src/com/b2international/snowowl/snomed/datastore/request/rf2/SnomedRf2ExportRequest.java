@@ -1019,7 +1019,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 	
 	@Override
 	public String getOperation() {
-		return Permission.EXPORT;
+		return Permission.OPERATION_EXPORT;
 	}
 
 }

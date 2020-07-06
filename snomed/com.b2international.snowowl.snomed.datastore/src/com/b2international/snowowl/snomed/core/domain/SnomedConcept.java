@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.request.DescendantsExpander;
 import com.b2international.snowowl.core.request.IndexResourceRequestBuilder;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.core.terminology.MapTargetTypes;
@@ -95,10 +96,6 @@ import com.google.common.collect.ImmutableSet;
 		// XXX: Not really SNOMED CT reference set types
 		MapTargetTypes.VALUE_SET,
 		MapTargetTypes.MAPPING_SET
-	},
-	supportedMapTargetTypes = {
-		MapTargetTypes.SIMPLE_MAP,
-		MapTargetTypes.SIMPLE_MAP_WITH_DESCRIPTION
 	}
 )
 public final class SnomedConcept extends SnomedCoreComponent {
@@ -116,7 +113,7 @@ public final class SnomedConcept extends SnomedCoreComponent {
 		public static final String STATED_ANCESTORS = "statedAncestors";
 		public static final String ANCESTORS = "ancestors";
 		public static final String STATED_DESCENDANTS = "statedDescendants";
-		public static final String DESCENDANTS = "descendants";
+		public static final String DESCENDANTS = DescendantsExpander.DEFAULT_DESCENDANTS_EXPAND_KEY;
 		public static final String RELATIONSHIPS = "relationships";
 		public static final String INBOUND_RELATIONSHIPS = "inboundRelationships";
 		public static final String DESCRIPTIONS = "descriptions";

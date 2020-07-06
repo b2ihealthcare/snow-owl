@@ -63,6 +63,6 @@ final class CodeSystemSearchRequest extends SearchIndexResourceRequest<Repositor
 	
 	@Override
 	public String getOperation() {
-		return Permission.BROWSE;
+		return Permission.OPERATION_BROWSE;
 	}
 }

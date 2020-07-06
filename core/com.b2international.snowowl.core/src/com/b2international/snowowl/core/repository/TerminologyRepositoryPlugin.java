@@ -40,6 +40,10 @@ import com.b2international.snowowl.core.merge.IMergeConflictRule;
 import com.b2international.snowowl.core.request.ConceptSearchRequest;
 import com.b2international.snowowl.core.request.ConceptSearchRequestBuilder;
 import com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator;
+import com.b2international.snowowl.core.request.MemberSearchRequest;
+import com.b2international.snowowl.core.request.MemberSearchRequestBuilder;
+import com.b2international.snowowl.core.request.SetMemberSearchRequestEvaluator;
+import com.b2international.snowowl.core.request.QueryOptimizer;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.Plugin;
 import com.b2international.snowowl.core.terminology.Terminology;
@@ -78,6 +82,8 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 					.bind(VersioningRequestBuilder.class, getVersioningRequestBuilder())
 					.bind(ComponentRevisionConflictProcessor.class, getComponentRevisionConflictProcessor())
 					.bind(ConceptSearchRequestEvaluator.class, getConceptSearchRequestEvaluator())
+					.bind(SetMemberSearchRequestEvaluator.class, getMemberSearchRequestEvaluator())
+					.bind(QueryOptimizer.class, getQueryOptimizer())
 					.bind(ContentAvailabilityInfoProvider.class, getContentAvailabilityInfoProvider())
 					.bind(ContextConfigurer.class, getRequestConfigurer())
 					.bind(RepositoryCodeSystemProvider.class, (referenceBranch) -> {
@@ -124,6 +130,27 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 	 * @see ConceptSearchRequest
 	 */
 	protected abstract ConceptSearchRequestEvaluator getConceptSearchRequestEvaluator();
+
+	/**
+	 * Subclasses may override to provide a customized {@link QueryOptimizer} for the underlying terminology tooling and query language.
+	 * <p>
+	 * The default implementation does not suggest changes for any incoming queries.
+	 * @return
+	 */
+	protected QueryOptimizer getQueryOptimizer() {
+		return QueryOptimizer.NOOP;
+	}
+	
+	/**
+	 * An evaluator that can evaluate generic {@link MemberSearchRequest member search requests}. 
+	 * @return a {@link SetMemberSearchRequestEvaluator} instance
+	 * @see MemberSearchRequestBuilder
+	 * @see MemberSearchRequest
+	 */
+	protected SetMemberSearchRequestEvaluator getMemberSearchRequestEvaluator() {
+		return SetMemberSearchRequestEvaluator.NOOP;
+	}
+	
 	
 	/**
 	 * Subclasses may override to provide customized {@link ComponentDeletionPolicy} for the underlying repository.

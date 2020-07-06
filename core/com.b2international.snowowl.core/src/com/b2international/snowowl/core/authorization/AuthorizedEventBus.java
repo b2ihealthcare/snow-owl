@@ -22,6 +22,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
+import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.identity.JWTGenerator;
+import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.eventbus.IHandler;
 import com.b2international.snowowl.eventbus.IMessage;
@@ -44,6 +47,13 @@ public class AuthorizedEventBus implements IEventBus {
 		final Map<String, String> mergedHeaders = newHashMap(this.headers);
 		mergedHeaders.putAll(headers);
 		return ImmutableMap.copyOf(mergedHeaders);
+	}
+	
+	public static IEventBus createSystemUserBus(ServiceProvider env) {
+		return new AuthorizedEventBus(
+			env.service(IEventBus.class),
+			ImmutableMap.of(AuthorizedRequest.AUTHORIZATION_HEADER, env.service(JWTGenerator.class).generate(User.SYSTEM))
+		);
 	}
 	
 	@Override

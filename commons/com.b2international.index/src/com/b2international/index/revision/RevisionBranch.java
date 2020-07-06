@@ -73,7 +73,7 @@ public final class RevisionBranch extends MetadataHolderImpl {
 	/**
 	 * Allowed set of characters for a branch name.
 	 */
-	public static final String DEFAULT_ALLOWED_BRANCH_NAME_CHARACTER_SET = "a-zA-Z0-9_-";
+	public static final String DEFAULT_ALLOWED_BRANCH_NAME_CHARACTER_SET = "a-zA-Z0-9.~_-";
 
 	/**
 	 * The maximum length of a branch.

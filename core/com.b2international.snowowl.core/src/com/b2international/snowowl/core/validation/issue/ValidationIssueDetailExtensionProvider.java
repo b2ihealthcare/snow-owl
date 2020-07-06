@@ -18,6 +18,9 @@ package com.b2international.snowowl.core.validation.issue;
 import java.util.Collection;
 
 import com.b2international.commons.extension.ClassPathScanner;
+import com.b2international.snowowl.core.SnowOwl.InitializationException;
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 
 /**
  * @since 6.4
@@ -26,10 +29,10 @@ public enum ValidationIssueDetailExtensionProvider {
 
 	INSTANCE;
 	
-	private final Collection<ValidationIssueDetailExtension> extensions;
+	private final Collection<ValidationIssueDetailExtension> extensions = Lists.newArrayList();
 	
 	private ValidationIssueDetailExtensionProvider() {
-		this.extensions = ClassPathScanner.INSTANCE.getComponentsByInterface(ValidationIssueDetailExtension.class);
+		ClassPathScanner.INSTANCE.getComponentsByInterface(ValidationIssueDetailExtension.class).forEach(this::addExtension);
 	}
 	
 	public ValidationIssueDetailExtension getExtensions(String toolingId) {
@@ -47,6 +50,9 @@ public enum ValidationIssueDetailExtensionProvider {
 	 * Usage of this function is intended for testing purposes only
 	 */
 	public void addExtension(ValidationIssueDetailExtension extension) {
+		if (Strings.isNullOrEmpty(extension.getToolingId())) {
+			throw new InitializationException(extension.getClass().getName() + " must provide a known toolingID.");
+		}
 		extensions.add(extension);
 	}
 	

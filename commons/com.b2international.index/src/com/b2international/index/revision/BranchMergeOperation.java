@@ -15,6 +15,10 @@
  */
 package com.b2international.index.revision;
 
+import java.util.Set;
+
+import com.google.common.collect.ImmutableSet;
+
 /**
  * @since 7.2
  */
@@ -24,6 +28,7 @@ public final class BranchMergeOperation {
 	
 	final String fromPath;
 	final String toPath;
+	Set<String> exclusions;
 	String author;
 	String commitMessage;
 	RevisionConflictProcessor conflictProcessor = new RevisionConflictProcessor.Default();
@@ -63,6 +68,19 @@ public final class BranchMergeOperation {
 	
 	public Commit merge() {
 		return branching.doMerge(this);
+	}
+
+	public BranchMergeOperation exclude(String ... ids) {
+		return exclude(ImmutableSet.copyOf(ids));
+	}
+	
+	public BranchMergeOperation exclude(Iterable<String> ids) {
+		this.exclusions = ImmutableSet.copyOf(ids);
+		return this;
+	}
+	
+	public Set<String> getExclusions() {
+		return exclusions;
 	}
 	
 }

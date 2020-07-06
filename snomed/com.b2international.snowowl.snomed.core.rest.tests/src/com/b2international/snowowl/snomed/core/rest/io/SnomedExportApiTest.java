@@ -1197,7 +1197,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 				.extract().header("Location"));
 		
 		Map<?, ?> owlAxiomRequestBody = createRefSetMemberRequestBody(Concepts.REFSET_OWL_AXIOM, Concepts.ROOT_CONCEPT)
-				.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, SnomedApiTestConstants.OWL_AXIOM_1)
+				.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, SnomedApiTestConstants.owlAxiom1(Concepts.ROOT_CONCEPT))
 				.put("commitComment", "Created new OWL Axiom reference set member")
 				.build();
 
@@ -1225,7 +1225,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 				Concepts.MODULE_SCT_CORE, 
 				Concepts.REFSET_OWL_AXIOM,
 				Concepts.ROOT_CONCEPT,
-				SnomedApiTestConstants.OWL_AXIOM_1);
+				SnomedApiTestConstants.owlAxiom1(Concepts.ROOT_CONCEPT));
 
 		String expectedOwlExpressionDeltaFile = "sct2_sRefset_OWLExpressionDelta";
 		final Map<String, Boolean> files = ImmutableMap.<String, Boolean>builder()

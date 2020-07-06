@@ -139,11 +139,11 @@ public class SnomedRefSetParameterizedTest extends AbstractSnomedApiTest {
 	
 	@Test
 	public void deleteRefSetWithMember() throws Exception {
-		String componentId = getFirstMatchingComponent(branchPath, getFirstAllowedReferencedComponentType(refSetType));
+		String referencedComponentId = getFirstMatchingComponent(branchPath, getFirstAllowedReferencedComponentType(refSetType));
 
 		String refSetId = createNewRefSet(branchPath, refSetType);
-		Map<?, ?> requestBody = createRefSetMemberRequestBody(refSetId, componentId)
-				.putAll(getValidProperties(refSetType))
+		Map<?, ?> requestBody = createRefSetMemberRequestBody(refSetId, referencedComponentId)
+				.putAll(getValidProperties(refSetType, referencedComponentId))
 				.put("commitComment", "Created new reference set member")
 				.build();
 

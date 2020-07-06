@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -97,6 +97,89 @@ public class RevisionBranchMergeTest extends BaseRevisionIndexTest {
 		assertState(child, MAIN, BranchState.UP_TO_DATE);
 		// 3. revision should be visible from MAIN branch
 		assertNotNull(getRevision(MAIN, RevisionData.class, STORAGE_KEY1));
+	}
+	
+	@Test
+	public void forwardMergeBranchExcludeAddition() throws Exception {
+		String child = createBranch(MAIN, "a");
+		// create a revisions on child branch
+		indexRevision(child, NEW_DATA);
+		indexRevision(child, NEW_DATA2);
+		// after commit child branch becomes FORWARD
+		assertState(child, MAIN, BranchState.FORWARD);
+		// do the merge with an exclusion
+		branching()
+			.prepareMerge(child, MAIN)
+			.exclude(STORAGE_KEY1)
+			.squash(true)
+			.merge();
+		
+		// after fast-forward merge
+		// 1. MAIN falls behind compared to the child
+		assertState(MAIN, child, BranchState.FORWARD);
+		
+		// 2. Child should be UP_TO_DATE state compared to the MAIN
+		assertState(child, MAIN, BranchState.BEHIND);
+		
+		// 3. one revision should be visible from MAIN branch, excluded one should not
+		assertNotNull(getRevision(MAIN, RevisionData.class, STORAGE_KEY2));
+		assertNull(getRevision(MAIN, RevisionData.class, STORAGE_KEY1));
+	}
+	
+	@Test
+	public void forwardMergeBranchExcludeChange() throws Exception {
+		indexRevision(MAIN, NEW_DATA);
+		indexRevision(MAIN, NEW_DATA2);
+		String child = createBranch(MAIN, "a");
+		// change a revision on the child branch
+		indexChange(child, NEW_DATA, CHANGED_DATA);
+		// after commit child branch becomes FORWARD
+		assertState(child, MAIN, BranchState.FORWARD);
+		// do the merge with an exclusion
+		branching()
+			.prepareMerge(child, MAIN)
+			.exclude(STORAGE_KEY1)
+			.squash(true)
+			.merge();
+		
+		// after fast-forward merge
+		// 1. MAIN falls behind compared to the child
+		assertState(MAIN, child, BranchState.FORWARD);
+		
+		// 2. Child should be UP_TO_DATE state compared to the MAIN
+		assertState(child, MAIN, BranchState.BEHIND);
+		
+		// 3. one revision should be visible from MAIN branch, excluded one should not
+		assertNotNull(getRevision(MAIN, RevisionData.class, STORAGE_KEY2));
+		assertEquals(getRevision(MAIN, RevisionData.class, STORAGE_KEY1), NEW_DATA);
+	}
+	
+	@Test
+	public void forwardMergeBrancExcludeDeletion() throws Exception {
+		indexRevision(MAIN, NEW_DATA);
+		indexRevision(MAIN, NEW_DATA2);
+		String child = createBranch(MAIN, "a");
+		// change a revision on the child branch
+		indexRemove(child, NEW_DATA, NEW_DATA2);
+		// after commit child branch becomes FORWARD
+		assertState(child, MAIN, BranchState.FORWARD);
+		// do the merge with an exclusion
+		branching()
+			.prepareMerge(child, MAIN)
+			.exclude(STORAGE_KEY1)
+			.squash(true)
+			.merge();
+		
+		// after fast-forward merge
+		// 1. MAIN falls behind compared to the child
+		assertState(MAIN, child, BranchState.FORWARD);
+		
+		// 2. Child should be UP_TO_DATE state compared to the MAIN
+		assertState(child, MAIN, BranchState.BEHIND);
+		
+		// 3. one revision should be visible from MAIN branch, excluded one should not
+		assertNotNull(getRevision(MAIN, RevisionData.class, STORAGE_KEY1));
+		assertNull(getRevision(MAIN, RevisionData.class, STORAGE_KEY2));
 	}
 	
 	@Test

@@ -115,5 +115,14 @@ public final class CodeSystemURI implements Serializable {
 	public static String head(String codeSystem) {
 		return String.format("%s/%s", codeSystem, HEAD);
 	}
+
+	public static CodeSystemURI branch(String codeSystem, String path) {
+		StringBuilder uri = new StringBuilder(codeSystem);
+		if (!Strings.isNullOrEmpty(path)) {
+			uri.append(Branch.SEPARATOR);
+			uri.append(path);
+		}
+		return new CodeSystemURI(uri.toString());
+	}
 	
 }

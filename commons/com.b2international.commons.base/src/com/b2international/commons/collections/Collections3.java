@@ -23,6 +23,7 @@ import static com.google.common.collect.Sets.difference;
 import static com.google.common.collect.Sets.intersection;
 import static com.google.common.collect.Sets.newHashSet;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -227,4 +228,21 @@ public abstract class Collections3 {
 	}
 	
 	private Collections3() { /*suppress instantiation*/ }
+
+	/**
+	 * Returns <code>true</code> if the two {@link Collection}s are equal, ignoring element order and count. This method is essentially the same as
+	 * {@link Set#equals(Object)}.
+	 * 
+	 * @param <T>
+	 * @param left
+	 * @param right
+	 * @return
+	 * @see Set#equals(Object)
+	 */
+	public static <T> boolean equals(Collection<T> left, Collection<T> right) {
+		if (left == right) return true;
+		if (left == null || right == null) return false;
+		if (left.size() != right.size()) return false;
+		return left.containsAll(right);
+	}
 }
