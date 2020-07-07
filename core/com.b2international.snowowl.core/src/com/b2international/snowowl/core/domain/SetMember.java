@@ -61,7 +61,7 @@ public final class SetMember implements Serializable {
 	@JsonValue
 	@Override
 	public String toString() {
-		return MoreObjects.toStringHelper("AtcConceptEditorState")
+		return MoreObjects.toStringHelper("ConceptEditorState")
 		        .omitNullValues()
 				.add("referencedComponentURI", referencedComponentURI)
 				.add("term", term)
