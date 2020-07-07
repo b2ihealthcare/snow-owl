@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.domain;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 import com.b2international.snowowl.core.uri.ComponentURI;
@@ -22,7 +23,9 @@ import com.b2international.snowowl.core.uri.ComponentURI;
 /**
  * @since 7.7
  */
-public final class SetMember {
+public final class SetMember implements Serializable {
+	
+	private static final long serialVersionUID = 1L;
 
 	private final ComponentURI referencedComponentURI;
 	
