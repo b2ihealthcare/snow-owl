@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.Objects;
 
 import com.b2international.snowowl.core.uri.ComponentURI;
+import com.google.common.base.MoreObjects;
 
 /**
  * @since 7.7
@@ -49,6 +50,15 @@ public final class SetMember implements Serializable {
 	public ComponentURI getReferencedComponentURI() {
 		return referencedComponentURI;
 	}
+	
+	@Override
+	public String toString() {
+		return MoreObjects.toStringHelper("SetMember")
+				.add("referencedComponentURI", referencedComponentURI)
+				.add("term", term)
+				.add("iconId", iconId)
+				.toString();
+	}
 
 	@Override
 	public int hashCode() {
@@ -62,7 +72,7 @@ public final class SetMember implements Serializable {
 		if (getClass() != obj.getClass()) return false;
 		SetMember other = (SetMember) obj;
 		return Objects.equals(referencedComponentURI, other.referencedComponentURI)
-				&& term == other.term
+				&& Objects.equals(term, other.term)
 				&& Objects.equals(iconId, other.iconId);
 	}
 }
