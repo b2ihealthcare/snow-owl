@@ -78,7 +78,8 @@ Export-Package: com.auth0.jwt,
  com.b2international.snowowl.core.validation.eval,
  com.b2international.snowowl.core.validation.issue,
  com.b2international.snowowl.core.validation.rule,
- com.b2international.snowowl.core.validation.whitelist
+ com.b2international.snowowl.core.validation.whitelist,
+ com.b2international.snowowl.core.compare
 Import-Package: org.slf4j;version="1.7.25",
  groovy.beans;version="2.4.17",
  groovy.grape;version="2.4.17",
