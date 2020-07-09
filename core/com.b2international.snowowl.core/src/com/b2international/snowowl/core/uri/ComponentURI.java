@@ -122,6 +122,16 @@ public final class ComponentURI implements Serializable {
 		return COMPONENT_URI_INTERNER.intern(componentURI);
 	}
 	
+	public static boolean isValid(String uriString) {
+		try {
+			of(uriString);
+		} catch (Exception e) {
+			return false;
+		}
+		return true;
+		
+	}
+	
 	public static ComponentURI of(String uri) {
 		if (Strings.isNullOrEmpty(uri)) {
 			return ComponentURI.UNSPECIFIED;
@@ -152,5 +162,5 @@ public final class ComponentURI implements Serializable {
 				&& terminologyComponentId == other.terminologyComponentId
 				&& Objects.equals(identifier, other.identifier);
 	}
-	
+
 }
