@@ -45,7 +45,7 @@ public interface CompareSets <T,R> {
 	}
 	
 	default boolean isChanged(T memberA, T memberB) {
-		if (isSourceEqual(memberA, memberB) || isTargetEqual(memberA, memberB)) {
+		if (isSourceEqual(memberA, memberB) && !isTargetEqual(memberA, memberB)) {
 			return true;
 		}
 		return false;
