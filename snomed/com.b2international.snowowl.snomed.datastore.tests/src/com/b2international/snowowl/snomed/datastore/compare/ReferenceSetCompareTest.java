@@ -71,23 +71,6 @@ public class ReferenceSetCompareTest {
 	}
 	
 	@Test(expected = BadRequestException.class)
-	public void compareDifferentTypeSimleMapRefSets() {
-		SnomedReferenceSet rf1 = new SnomedReferenceSet();
-		rf1.setId("rf1");
-		rf1.setReferencedComponentType(CODE_SYSTEM_1);
-		rf1.setMapTargetComponentType(CODE_SYSTEM_2);
-		rf1.setType(SnomedRefSetType.SIMPLE_MAP);
-
-		SnomedReferenceSet rf2 = new SnomedReferenceSet();
-		rf2.setId("rf2");
-		rf2.setReferencedComponentType(CODE_SYSTEM_1);
-		rf2.setMapTargetComponentType(CODE_SYSTEM_3);
-		rf2.setType(SnomedRefSetType.SIMPLE_MAP);
-
-		comparator.doCompare(rf1, rf2);
-	}
-	
-	@Test(expected = BadRequestException.class)
 	public void compareNonSympleTypeRefSets() {
 		SnomedReferenceSet rf1 = new SnomedReferenceSet();
 		rf1.setId("rf1");
@@ -102,6 +85,73 @@ public class ReferenceSetCompareTest {
 		rf2.setType(SnomedRefSetType.SIMPLE_MAP);
 		
 		comparator.doCompare(rf1, rf2);
+	}
+	
+	@Test
+	public void compareDifferentTargetTypeRefSets() {
+		SnomedReferenceSet rf1 = new SnomedReferenceSet();
+		rf1.setId("rf1");
+		rf1.setReferencedComponentType(CODE_SYSTEM_1);
+		rf1.setMapTargetComponentType(CODE_SYSTEM_2);
+		rf1.setType(SnomedRefSetType.SIMPLE_MAP);
+
+		SnomedReferenceSet rf2 = new SnomedReferenceSet();
+		rf2.setId("rf2");
+		rf2.setReferencedComponentType(CODE_SYSTEM_1);
+		rf2.setMapTargetComponentType(CODE_SYSTEM_3);
+		rf2.setType(SnomedRefSetType.SIMPLE_MAP);
+		
+		final Map<String, Object> properties1 = new HashMap<String, Object>();
+		properties1.put(SnomedRf2Headers.FIELD_MAP_TARGET, "2");
+		
+		SnomedConcept concept1 = new SnomedConcept("1");
+		
+		SnomedReferenceSetMember equalMember1 = new SnomedReferenceSetMember();
+		equalMember1.setId("equalMember1");
+		equalMember1.setProperties(properties1);
+		equalMember1.setReferencedComponent(concept1);
+		
+		SnomedReferenceSetMember equalMember2 = new SnomedReferenceSetMember();
+		equalMember2.setId("equalMember2");
+		equalMember2.setProperties(properties1);
+		equalMember2.setReferencedComponent(concept1);
+		
+		final Map<String, Object> properties2 = new HashMap<String, Object>();
+		properties2.put(SnomedRf2Headers.FIELD_MAP_TARGET, "4");
+		
+		SnomedReferenceSetMember changedMember = new SnomedReferenceSetMember();
+		changedMember.setId("changedMember");
+		changedMember.setProperties(properties2);
+		changedMember.setReferencedComponent(concept1);
+		
+		SnomedConcept removedConcept = new SnomedConcept("4");
+		
+		
+		SnomedReferenceSetMember removedMember = new SnomedReferenceSetMember();
+		removedMember.setId("removedMember");
+		removedMember.setProperties(properties2);
+		removedMember.setReferencedComponent(removedConcept);
+		
+		SnomedConcept addedConcept = new SnomedConcept("5");
+		
+		final Map<String, Object> addedProperties = new HashMap<String, Object>();
+		addedProperties.put(SnomedRf2Headers.FIELD_MAP_TARGET, "5");
+		
+		SnomedReferenceSetMember addedMember = new SnomedReferenceSetMember();
+		addedMember.setId("addedMember");
+		addedMember.setProperties(addedProperties);
+		addedMember.setReferencedComponent(addedConcept);
+		
+		rf1.setMembers(new SnomedReferenceSetMembers(ImmutableList.of(equalMember1, removedMember), null, 2, 2));
+		rf2.setMembers(new SnomedReferenceSetMembers(ImmutableList.of(equalMember2, changedMember, addedMember), null, 3, 3));
+		
+		CompareSetResult<SnomedReferenceSetMember> result = comparator.doCompare(rf1, rf2);
+		assertEquals(1, result.getRemovedMembers().size());
+		assertEquals(1, result.getAddedMembers().size());
+		assertEquals(1, result.getChangedMembers().size());
+		assertEquals(true, result.getAddedMembers().contains(addedMember));
+		assertEquals(true, result.getRemovedMembers().contains(removedMember));
+		assertEquals(true, result.getChangedMembers().containsEntry(equalMember1, changedMember));
 	}
 	
 	@Test
@@ -133,17 +183,16 @@ public class ReferenceSetCompareTest {
 		equalMember2.setProperties(properties1);
 		equalMember2.setReferencedComponent(concept1);
 		
-		SnomedConcept changedConcept = new SnomedConcept("3");
+		final Map<String, Object> properties2 = new HashMap<String, Object>();
+		properties2.put(SnomedRf2Headers.FIELD_MAP_TARGET, "4");
 		
 		SnomedReferenceSetMember changedMember = new SnomedReferenceSetMember();
 		changedMember.setId("changedMember");
-		changedMember.setProperties(properties1);
-		changedMember.setReferencedComponent(changedConcept);
+		changedMember.setProperties(properties2);
+		changedMember.setReferencedComponent(concept1);
 		
 		SnomedConcept removedConcept = new SnomedConcept("4");
 		
-		final Map<String, Object> properties2 = new HashMap<String, Object>();
-		properties2.put(SnomedRf2Headers.FIELD_MAP_TARGET, "4");
 		
 		SnomedReferenceSetMember removedMember = new SnomedReferenceSetMember();
 		removedMember.setId("removedMember");
@@ -156,7 +205,7 @@ public class ReferenceSetCompareTest {
 		addedProperties.put(SnomedRf2Headers.FIELD_MAP_TARGET, "5");
 		
 		SnomedReferenceSetMember addedMember = new SnomedReferenceSetMember();
-		addedMember.setId("5");
+		addedMember.setId("addedMember");
 		addedMember.setProperties(addedProperties);
 		addedMember.setReferencedComponent(addedConcept);
 		

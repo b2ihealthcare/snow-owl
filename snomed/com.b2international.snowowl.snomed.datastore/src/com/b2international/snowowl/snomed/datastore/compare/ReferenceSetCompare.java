@@ -21,10 +21,6 @@ public final class ReferenceSetCompare implements CompareSets<SnomedReferenceSet
 		if (!SnomedRefSetType.SIMPLE_MAP.equals(baseRf.getType()) || !SnomedRefSetType.SIMPLE_MAP.equals(compareRf.getType())) {
 			throw new BadRequestException("Comparing Reference Sets requires the following Reference Sets (%s, %s) to be Simple Map Reference Sets!", baseRf.getId(), compareRf.getId());
 		}
-		if (!baseRf.getReferencedComponentType().equals(compareRf.getReferencedComponentType()) || !baseRf.getMapTargetComponentType().equals(compareRf.getMapTargetComponentType())) {
-			throw new BadRequestException("The choosen Reference Set's referenced component types and map target types should match!", baseRf.getId(), compareRf.getId());
-		}
-
 		return compareDifferents(baseRf.getMembers().getItems(), compareRf.getMembers().getItems());
 	}
 
