@@ -30,24 +30,31 @@ public final class SetMapping implements Serializable {
 
 	private final ComponentURI sourceComponentURI;
 	
-	private final String term;
-	private final String iconId;
+	private final String sourceTerm;
+	private final String sourceIconId;
+	
+	private final boolean isActive;
 	
 	private final ComponentURI targetComponentURI;
+	private final String targetTerm;
 	
-	public SetMapping(ComponentURI sourceComponentURI, ComponentURI targetComponentURI, String term, String iconId) {
+	public SetMapping(ComponentURI sourceComponentURI, ComponentURI targetComponentURI, 
+			String sourceTerm, String sourceIconId,
+			String targetTerm, boolean isActive) {
 		this.sourceComponentURI = sourceComponentURI;
 		this.targetComponentURI = targetComponentURI;
-		this.term = term;
-		this.iconId = iconId;
+		this.sourceTerm = sourceTerm;
+		this.sourceIconId = sourceIconId;
+		this.targetTerm = targetTerm;
+		this.isActive = isActive;
 	}
 
-	public String getIconId() {
-		return iconId;
+	public String getSourceIconId() {
+		return sourceIconId;
 	}
 
-	public String getTerm() {
-		return term;
+	public String getSourceTerm() {
+		return sourceTerm;
 	}
 
 	public ComponentURI getSourceComponentURI() {
@@ -58,19 +65,29 @@ public final class SetMapping implements Serializable {
 		return targetComponentURI;
 	}
 	
+	public String getTargetTerm() {
+		return targetTerm;
+	}
+	
+	public boolean isActive() {
+		return isActive;
+	}
+	
 	@Override
 	public String toString() {
 		return MoreObjects.toStringHelper("SetMember")
 				.add("sourceComponentURI", sourceComponentURI)
-				.add("term", term)
-				.add("iconId", iconId)
+				.add("term", sourceTerm)
+				.add("iconId", sourceIconId)
 				.add("targetComponentURI", targetComponentURI)
+				.add("targetTerm", targetTerm)
+				.add("isActive", isActive)
 				.toString();
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(sourceComponentURI, targetComponentURI, term, iconId);
+		return Objects.hash(sourceComponentURI, targetComponentURI, sourceTerm, targetTerm, sourceIconId, isActive);
 	}
 	
 	@Override
@@ -81,7 +98,9 @@ public final class SetMapping implements Serializable {
 		SetMapping other = (SetMapping) obj;
 		return Objects.equals(sourceComponentURI, other.sourceComponentURI)
 				&& Objects.equals(targetComponentURI, other.targetComponentURI)
-				&& Objects.equals(term, other.term)
-				&& Objects.equals(iconId, other.iconId);
+				&& Objects.equals(sourceTerm, other.sourceTerm)
+				&& Objects.equals(targetTerm, other.targetTerm)
+				&& Objects.equals(sourceIconId, other.sourceIconId)
+				&& Objects.equals(isActive, other.isActive);
 	}
 }

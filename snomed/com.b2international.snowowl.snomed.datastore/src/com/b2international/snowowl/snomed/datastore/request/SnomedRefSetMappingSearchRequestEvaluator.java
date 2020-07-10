@@ -112,7 +112,9 @@ public class SnomedRefSetMappingSearchRequestEvaluator extends SnomedCollectionS
 		SetMapping mapping = new SetMapping(ComponentURI.of(codeSystemURI.getCodeSystem(), terminologyComponentId, member.getReferencedComponentId()),
 				targetComponentURI,
 				term, 
-				iconId);
+				iconId,
+				"", //targetTerm
+				member.isActive());
 		
 		System.out.println("Mapping: " + mapping);
 		return mapping;
