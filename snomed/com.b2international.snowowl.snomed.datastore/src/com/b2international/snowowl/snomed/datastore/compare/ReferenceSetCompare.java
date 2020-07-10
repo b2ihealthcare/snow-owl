@@ -3,11 +3,9 @@
  *******************************************************************************/
 package com.b2international.snowowl.snomed.datastore.compare;
 
-import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.compare.CompareSetResult;
 import com.b2international.snowowl.core.compare.CompareSets;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 
@@ -18,13 +16,6 @@ public final class ReferenceSetCompare implements CompareSets<SnomedReferenceSet
 
 	@Override
 	public CompareSetResult<SnomedReferenceSetMember> doCompare(SnomedReferenceSet baseRf, SnomedReferenceSet compareRf) {
-		if (!SnomedRefSetType.SIMPLE_MAP.equals(baseRf.getType()) || !SnomedRefSetType.SIMPLE_MAP.equals(compareRf.getType())) {
-			throw new BadRequestException("Comparing Reference Sets requires the following Reference Sets (%s, %s) to be Simple Map Reference Sets!", baseRf.getId(), compareRf.getId());
-		}
-		if (!baseRf.getReferencedComponentType().equals(compareRf.getReferencedComponentType()) || !baseRf.getMapTargetComponentType().equals(compareRf.getMapTargetComponentType())) {
-			throw new BadRequestException("The choosen Reference Set's referenced component types and map target types should match!", baseRf.getId(), compareRf.getId());
-		}
-
 		return compareDifferents(baseRf.getMembers().getItems(), compareRf.getMembers().getItems());
 	}
 
