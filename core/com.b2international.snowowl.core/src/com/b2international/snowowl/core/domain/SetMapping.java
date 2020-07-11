@@ -18,6 +18,7 @@ package com.b2international.snowowl.core.domain;
 import java.io.Serializable;
 import java.util.Objects;
 
+import com.b2international.snowowl.core.request.MappingCorrelation;
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.google.common.base.MoreObjects;
 
@@ -27,26 +28,29 @@ import com.google.common.base.MoreObjects;
 public final class SetMapping implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
-
-	private final ComponentURI sourceComponentURI;
 	
 	private final String sourceTerm;
 	private final String sourceIconId;
+	private final ComponentURI sourceComponentURI;
+	
+	private final String targetTerm;
+	private final ComponentURI targetComponentURI;
 	
 	private final boolean isActive;
-	
-	private final ComponentURI targetComponentURI;
-	private final String targetTerm;
+	private final MappingCorrelation mappingCorrelation;
 	
 	public SetMapping(ComponentURI sourceComponentURI, ComponentURI targetComponentURI, 
 			String sourceTerm, String sourceIconId,
-			String targetTerm, boolean isActive) {
+			String targetTerm, 
+			boolean isActive,
+			MappingCorrelation mappingCorrelation) {
 		this.sourceComponentURI = sourceComponentURI;
 		this.targetComponentURI = targetComponentURI;
 		this.sourceTerm = sourceTerm;
 		this.sourceIconId = sourceIconId;
 		this.targetTerm = targetTerm;
 		this.isActive = isActive;
+		this.mappingCorrelation = mappingCorrelation;
 	}
 
 	public String getSourceIconId() {
@@ -73,6 +77,10 @@ public final class SetMapping implements Serializable {
 		return isActive;
 	}
 	
+	public MappingCorrelation getMappingCorrelation() {
+		return mappingCorrelation;
+	}
+	
 	@Override
 	public String toString() {
 		return MoreObjects.toStringHelper("SetMember")
@@ -82,12 +90,14 @@ public final class SetMapping implements Serializable {
 				.add("targetComponentURI", targetComponentURI)
 				.add("targetTerm", targetTerm)
 				.add("isActive", isActive)
+				.add("mappingCorrelation", mappingCorrelation)
 				.toString();
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(sourceComponentURI, targetComponentURI, sourceTerm, targetTerm, sourceIconId, isActive);
+		return Objects.hash(sourceComponentURI, targetComponentURI, sourceTerm, targetTerm, sourceIconId, 
+				isActive, mappingCorrelation);
 	}
 	
 	@Override
@@ -101,6 +111,7 @@ public final class SetMapping implements Serializable {
 				&& Objects.equals(sourceTerm, other.sourceTerm)
 				&& Objects.equals(targetTerm, other.targetTerm)
 				&& Objects.equals(sourceIconId, other.sourceIconId)
-				&& Objects.equals(isActive, other.isActive);
+				&& Objects.equals(isActive, other.isActive)
+				&& Objects.equals(mappingCorrelation, other.mappingCorrelation);
 	}
 }

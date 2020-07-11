@@ -28,12 +28,14 @@ import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.SetMapping;
 import com.b2international.snowowl.core.domain.SetMappings;
+import com.b2international.snowowl.core.request.MappingCorrelation;
 import com.b2international.snowowl.core.request.SetMappingSearchRequestEvaluator;
 import com.b2international.snowowl.core.terminology.Terminology;
 import com.b2international.snowowl.core.terminology.TerminologyComponent;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.core.uri.ComponentURI;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
@@ -108,16 +110,50 @@ public class SnomedRefSetMappingSearchRequestEvaluator extends SnomedCollectionS
 			}
 		}
 		
-		
 		SetMapping mapping = new SetMapping(ComponentURI.of(codeSystemURI.getCodeSystem(), terminologyComponentId, member.getReferencedComponentId()),
 				targetComponentURI,
 				term, 
 				iconId,
 				"", //targetTerm
-				member.isActive());
+				member.isActive(),
+				getEquivalence(member));
 		
 		System.out.println("Mapping: " + mapping);
 		return mapping;
+	}
+	
+	private MappingCorrelation getEquivalence(SnomedReferenceSetMember mappingSetMember) {
+		
+		SnomedRefSetType snomedRefSetType = mappingSetMember.type();
+		
+		if (snomedRefSetType == SnomedRefSetType.SIMPLE_MAP) {
+			return MappingCorrelation.EXACT_MATCH; //probably true
+		}
+		
+		Map<String, Object> properties = mappingSetMember.getProperties();
+		
+		if (properties == null || properties.isEmpty()) {
+			return MappingCorrelation.NOT_SPECIFIED; 
+		}
+		
+		String correlationId = (String) properties.get(SnomedRf2Headers.FIELD_CORRELATION_ID);
+		
+		switch (correlationId) {
+			case Concepts.MAP_CORRELATION_EXACT_MATCH:
+				return MappingCorrelation.EXACT_MATCH;
+			case Concepts.MAP_CORRELATION_BROAD_TO_NARROW:
+				return MappingCorrelation.BROAD_TO_NARROW;
+			case Concepts.MAP_CORRELATION_NARROW_TO_BROAD:
+				return MappingCorrelation.NARROW_TO_BROAD;
+			case Concepts.MAP_CORRELATION_PARTIAL_OVERLAP:
+				return MappingCorrelation.PARTIAL_OVERLAP;
+			case Concepts.MAP_CORRELATION_NOT_MAPPABLE:
+				return MappingCorrelation.NOT_MAPPABLE;
+			case Concepts.MAP_CORRELATION_NOT_SPECIFIED:
+				return MappingCorrelation.NOT_SPECIFIED;
+			default:
+				return MappingCorrelation.NOT_SPECIFIED;
+			}
 	}
 
 	@Override
