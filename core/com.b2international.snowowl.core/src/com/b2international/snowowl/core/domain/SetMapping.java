@@ -29,8 +29,66 @@ public final class SetMapping implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
 	
-	private final String sourceTerm;
+	public static Builder builder() {
+		return new Builder();
+	}
+	
+	public static class Builder {
+		
+		private String sourceIconId;
+		private String sourceTerm;
+		private ComponentURI sourceComponentURI;
+		
+		private String targetTerm;
+		private ComponentURI targetComponentURI;
+		
+		private boolean isActive;
+		private MappingCorrelation mappingCorrelation = MappingCorrelation.NOT_SPECIFIED;
+		
+		public Builder sourceTerm(final String sourceTerm) {
+			this.sourceTerm = sourceTerm;
+			return this;
+		}
+		
+		public Builder sourceIconId(final String sourceIconId) {
+			this.sourceIconId = sourceIconId;
+			return this;
+		}
+		
+		public Builder sourceComponentURI(final ComponentURI sourceComponentURI) {
+			this.sourceComponentURI = sourceComponentURI;
+			return this;
+		}
+		
+		public Builder targetTerm(final String targetTerm) {
+			this.targetTerm = targetTerm;
+			return this;
+		}
+		
+		public Builder targetComponentURI(final ComponentURI targetComponentURI) {
+			this.targetComponentURI = targetComponentURI;
+			return this;
+		}
+		
+		public Builder active(final boolean isActive) {
+			this.isActive = isActive;
+			return this;
+		}
+		
+		public Builder mappingCorrelation(final MappingCorrelation mappingCorrelation) {
+			this.mappingCorrelation = mappingCorrelation;
+			return this;
+		}
+		
+		public SetMapping build() {
+			return new SetMapping(sourceIconId, sourceTerm, sourceComponentURI, 
+					targetTerm, targetComponentURI, isActive, mappingCorrelation);
+		}
+	
+	}
+	
 	private final String sourceIconId;
+	private final String sourceTerm;
 	private final ComponentURI sourceComponentURI;
 	
 	private final String targetTerm;
@@ -39,16 +97,19 @@ public final class SetMapping implements Serializable {
 	private final boolean isActive;
 	private final MappingCorrelation mappingCorrelation;
 	
-	public SetMapping(ComponentURI sourceComponentURI, ComponentURI targetComponentURI, 
-			String sourceTerm, String sourceIconId,
+	SetMapping(String sourceIconId, 
+			String sourceTerm,
+			ComponentURI sourceComponentURI, 
 			String targetTerm, 
+			ComponentURI targetComponentURI, 
 			boolean isActive,
 			MappingCorrelation mappingCorrelation) {
-		this.sourceComponentURI = sourceComponentURI;
-		this.targetComponentURI = targetComponentURI;
-		this.sourceTerm = sourceTerm;
+		
 		this.sourceIconId = sourceIconId;
+		this.sourceTerm = sourceTerm;
+		this.sourceComponentURI = sourceComponentURI;
 		this.targetTerm = targetTerm;
+		this.targetComponentURI = targetComponentURI;
 		this.isActive = isActive;
 		this.mappingCorrelation = mappingCorrelation;
 	}

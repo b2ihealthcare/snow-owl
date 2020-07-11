@@ -110,16 +110,15 @@ public class SnomedRefSetMappingSearchRequestEvaluator extends SnomedCollectionS
 			}
 		}
 		
-		SetMapping mapping = new SetMapping(ComponentURI.of(codeSystemURI.getCodeSystem(), terminologyComponentId, member.getReferencedComponentId()),
-				targetComponentURI,
-				term, 
-				iconId,
-				"", //targetTerm
-				member.isActive(),
-				getEquivalence(member));
-		
-		System.out.println("Mapping: " + mapping);
-		return mapping;
+		return SetMapping.builder()
+			.sourceIconId(iconId)
+			.sourceTerm(term)
+			.sourceComponentURI(ComponentURI.of(codeSystemURI.getCodeSystem(), terminologyComponentId, member.getReferencedComponentId()))
+			.targetTerm("")
+			.targetComponentURI(targetComponentURI)
+			.active(member.isActive())
+			.mappingCorrelation(getEquivalence(member))
+			.build();
 	}
 	
 	private MappingCorrelation getEquivalence(SnomedReferenceSetMember mappingSetMember) {
