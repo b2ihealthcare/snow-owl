@@ -98,6 +98,10 @@ public class CodeSystemRequests {
 	public static QueryOptimizeRequestBuilder prepareOptimizeQueries() {
 		return new QueryOptimizeRequestBuilder();
 	}
+	
+	public static AllCodeSystemSearchRequestBuilder prepareSearchCodeSystemsInAllRepositories(){
+		return new AllCodeSystemSearchRequestBuilder();
+	}
 
 	/**
 	 * Returns all {@link CodeSystem}s from all repositories.
