@@ -396,6 +396,14 @@ public abstract class SnomedRequests {
 	public static QueryRefSetMemberUpdateRequestBuilder prepareUpdateQueryRefSetMember() {
 		return new QueryRefSetMemberUpdateRequestBuilder();
 	}
+	
+	/**
+	 * Returns a SNOMED CT request builder to prepare the updating of a Map type reference set.
+	 * @return SNOMED CT Map type reference set update request builder
+	 */
+	public static MapTypeRefSetUpdateRequestBuilder prepareUpdateMapTypeRefSet() {
+		return new MapTypeRefSetUpdateRequestBuilder();
+	}
 
 	/**
 	 * Returns a SNOMED CT request builder to prepare the updating of a Query type reference set.
