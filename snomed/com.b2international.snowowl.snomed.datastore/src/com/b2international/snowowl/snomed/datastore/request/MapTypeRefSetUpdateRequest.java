@@ -20,9 +20,12 @@ import java.util.Set;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.terminology.TerminologyComponent;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Builder;
 
@@ -48,11 +51,23 @@ public final class MapTypeRefSetUpdateRequest implements SnomedComponentRequest<
 	public Boolean execute(TransactionContext context) {
 		
 		SnomedConceptDocument conceptDocument = context.lookup(referenceSetId, SnomedConceptDocument.class);
+		
+		SnomedRefSetType refSetType = conceptDocument.getRefSetType();
+		if (!SnomedRefSetUtil.isMapping(refSetType)) {
+			throw new BadRequestException("Only map-type reference sets are allowed, reference set: '%s'." , referenceSetId);
+		}
+		
+		Short mapTargetComponentType = conceptDocument.getMapTargetComponentType();
+		if (mapTargetComponentType != null && mapTargetComponentType > 0) {
+			TerminologyComponent currentMapTargetComponent = context.service(TerminologyRegistry.class).getTerminologyComponentByShortId(mapTargetComponentType);
+			throw new BadRequestException("Map target component is already set to '%s'." , currentMapTargetComponent.name());
+		}
+		
 		Builder conceptBuilder = SnomedConceptDocument.builder(conceptDocument);
 		
 		boolean changed = false;
 		
-		TerminologyComponent currentMapTargetComponent = context.service(TerminologyRegistry.class).getTerminologyComponentByShortId(conceptDocument.getMapTargetComponentType());
+		TerminologyComponent currentMapTargetComponent = context.service(TerminologyRegistry.class).getTerminologyComponentByShortId(mapTargetComponentType);
 		String currentMapTargetComponentId = currentMapTargetComponent.id();
 		if (mapTargetComponent != currentMapTargetComponentId) {
 			short terminologyComponentShortId = context.service(TerminologyRegistry.class).getTerminologyComponentById(mapTargetComponent).shortId();
