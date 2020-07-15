@@ -45,8 +45,10 @@ public final class SetMapping implements Serializable {
 		private boolean isActive;
 		private MappingCorrelation mappingCorrelation = MappingCorrelation.NOT_SPECIFIED;
 		
-		private int mapGroup = 0;
-		private int mapPriority = 0;
+		private Integer mapGroup = 0;
+		private Integer mapPriority = 0;
+		private String mapRule = "";
+		private String mapAdvice = "";
 		
 		public Builder sourceTerm(final String sourceTerm) {
 			this.sourceTerm = sourceTerm;
@@ -83,19 +85,29 @@ public final class SetMapping implements Serializable {
 			return this;
 		}
 		
-		public Builder mapGroup(final int mapGroup) {
+		public Builder mapGroup(final Integer mapGroup) {
 			this.mapGroup = mapGroup;
 			return this;
 		}
 		
-		public Builder mapPriority(final int mapPriority) {
+		public Builder mapPriority(final Integer mapPriority) {
 			this.mapPriority = mapPriority;
+			return this;
+		}
+		
+		public Builder mapRule(final String mapRule) {
+			this.mapRule = mapRule;
+			return this;
+		}
+		
+		public Builder mapAdvice(final String mapAdvice) {
+			this.mapAdvice = mapAdvice;
 			return this;
 		}
 		
 		public SetMapping build() {
 			return new SetMapping(sourceIconId, sourceTerm, sourceComponentURI, 
-					targetTerm, targetComponentURI, isActive, mappingCorrelation, mapGroup, mapPriority);
+					targetTerm, targetComponentURI, isActive, mappingCorrelation, mapGroup, mapPriority, mapRule, mapAdvice);
 		}
 	
 	}
@@ -110,8 +122,10 @@ public final class SetMapping implements Serializable {
 	private final boolean isActive;
 	private final MappingCorrelation mappingCorrelation;
 	
-	private int mapGroup;
-	private int mapPriority;
+	private Integer mapGroup;
+	private Integer mapPriority;
+	private String mapRule;
+	private String mapAdvice;
 	
 	SetMapping(String sourceIconId, 
 			String sourceTerm,
@@ -120,8 +134,10 @@ public final class SetMapping implements Serializable {
 			ComponentURI targetComponentURI, 
 			boolean isActive,
 			MappingCorrelation mappingCorrelation,
-			int mapGroup,
-			int mapPriority) {
+			Integer mapGroup,
+			Integer mapPriority, 
+			String mapRule, 
+			String mapAdvice) {
 		
 		this.sourceIconId = sourceIconId;
 		this.sourceTerm = sourceTerm;
@@ -132,6 +148,8 @@ public final class SetMapping implements Serializable {
 		this.mappingCorrelation = mappingCorrelation;
 		this.mapGroup = mapGroup;
 		this.mapPriority = mapPriority;
+		this.mapRule = mapRule;
+		this.mapAdvice = mapAdvice;
 	}
 
 	public String getSourceIconId() {
@@ -170,6 +188,14 @@ public final class SetMapping implements Serializable {
 		return mapPriority;
 	}
 	
+	public String getMapAdvice() {
+		return mapAdvice;
+	}
+	
+	public String getMapRule() {
+		return mapRule;
+	}
+	
 	@Override
 	public String toString() {
 		return MoreObjects.toStringHelper("SetMember")
@@ -188,7 +214,7 @@ public final class SetMapping implements Serializable {
 	@Override
 	public int hashCode() {
 		return Objects.hash(sourceComponentURI, targetComponentURI, sourceTerm, targetTerm, sourceIconId, 
-				isActive, mappingCorrelation, mapGroup, mapPriority);
+				isActive, mappingCorrelation, mapGroup, mapPriority, mapRule, mapAdvice);
 	}
 	
 	@Override
@@ -205,6 +231,8 @@ public final class SetMapping implements Serializable {
 				&& Objects.equals(isActive, other.isActive)
 				&& Objects.equals(mappingCorrelation, other.mappingCorrelation)
 				&& Objects.equals(mapGroup, other.mapGroup)
-				&& Objects.equals(mapPriority, other.mapPriority);
+				&& Objects.equals(mapPriority, other.mapPriority)
+				&& Objects.equals(mapRule, other.mapRule)
+				&& Objects.equals(mapAdvice, other.mapAdvice);
 	}
 }
