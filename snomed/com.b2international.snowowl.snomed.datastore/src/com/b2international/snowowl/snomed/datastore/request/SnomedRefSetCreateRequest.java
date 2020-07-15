@@ -31,6 +31,7 @@ import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
+import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
@@ -94,7 +95,10 @@ final class SnomedRefSetCreateRequest implements Request<TransactionContext, Str
 		final SnomedReferenceSet refSet = new SnomedReferenceSet();
 		refSet.setType(type);
 		refSet.setReferencedComponentType(referencedComponentType);
-		refSet.setMapTargetComponentType(mapTargetComponentType);
+		
+		if (SnomedRefSetUtil.isMapping(type)) {
+			refSet.setMapTargetComponentType(mapTargetComponentType);
+		}
 		updatedConcept.refSet(refSet);
 		context.update(concept, updatedConcept.build());
 		return identifierId;
