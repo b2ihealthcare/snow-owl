@@ -40,7 +40,7 @@ public final class SetMapping implements Serializable {
 		private ComponentURI sourceComponentURI;
 		
 		private String targetTerm;
-		private ComponentURI targetComponentURI;
+		private ComponentURI targetComponentURI = ComponentURI.UNSPECIFIED;
 		
 		private boolean isActive;
 		private MappingCorrelation mappingCorrelation = MappingCorrelation.NOT_SPECIFIED;

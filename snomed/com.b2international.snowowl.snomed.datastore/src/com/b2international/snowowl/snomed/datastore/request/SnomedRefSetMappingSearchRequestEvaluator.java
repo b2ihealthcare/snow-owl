@@ -27,6 +27,7 @@ import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.SetMapping;
+import com.b2international.snowowl.core.domain.SetMapping.Builder;
 import com.b2international.snowowl.core.domain.SetMappings;
 import com.b2international.snowowl.core.request.MappingCorrelation;
 import com.b2international.snowowl.core.request.SetMappingSearchRequestEvaluator;
@@ -97,25 +98,27 @@ public class SnomedRefSetMappingSearchRequestEvaluator extends SnomedCollectionS
 		SnomedConcept concept = (SnomedConcept) member.getReferencedComponent();
 		term = concept.getFsn().getTerm();
 		
-		ComponentURI targetComponentURI = ComponentURI.UNSPECIFIED;
-		
+		Builder mappingBuilder = SetMapping.builder();
+
 		Map<String, Object> properties = member.getProperties();
 		if (properties != null) {
 			String mapTarget = (String) properties.get(SnomedRf2Headers.FIELD_MAP_TARGET);
 			if (ComponentURI.isValid(mapTarget)) {
-				targetComponentURI = ComponentURI.of(mapTarget);
+				mappingBuilder.targetComponentURI(ComponentURI.of(mapTarget));
 			} else {
 				ComponentURI refsetComponentURI = targetCodeSystemMap.get(member.getReferenceSetId());
-				targetComponentURI = ComponentURI.of(refsetComponentURI.codeSystem(), refsetComponentURI.terminologyComponentId(), mapTarget);
+				mappingBuilder.targetComponentURI(ComponentURI.of(refsetComponentURI.codeSystem(), refsetComponentURI.terminologyComponentId(), mapTarget));
 			}
+			
+			Integer mapGroup = (Integer) properties.get(SnomedRf2Headers.FIELD_MAP_GROUP);
+			//mappingBuilder.mapGroup(mapGroup);
 		}
 		
-		return SetMapping.builder()
+		return mappingBuilder
 			.sourceIconId(iconId)
 			.sourceTerm(term)
 			.sourceComponentURI(ComponentURI.of(codeSystemURI.getCodeSystem(), terminologyComponentId, member.getReferencedComponentId()))
 			.targetTerm("")
-			.targetComponentURI(targetComponentURI)
 			.active(member.isActive())
 			.mappingCorrelation(getEquivalence(member))
 			.build();
