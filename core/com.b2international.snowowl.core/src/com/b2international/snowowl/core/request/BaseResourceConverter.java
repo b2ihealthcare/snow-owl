@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.core.request;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -25,7 +23,6 @@ import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
-import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.core.domain.RepositoryContext;
@@ -37,28 +34,10 @@ import com.google.common.collect.Iterables;
  * @param <R>
  * @param <CR>
  */
-public abstract class BaseResourceConverter<T, R, CR extends CollectionResource<R>> implements ResourceConverter<T, R, CR> {
-
-	private final RepositoryContext context;
-	private final Options expand;
-	private final List<ExtendedLocale> locales;
+public abstract class BaseResourceConverter<T, R, CR extends CollectionResource<R>> extends ResourceExpander implements ResourceConverter<T, R, CR> {
 
 	protected BaseResourceConverter(RepositoryContext context, Options expand, List<ExtendedLocale> locales) {
-		this.context = checkNotNull(context, "context");
-		this.expand = expand == null ? OptionsBuilder.newBuilder().build() : expand;
-		this.locales = locales == null ? Collections.<ExtendedLocale>emptyList() : locales;
-	}
-
-	protected final Options expand() {
-		return expand;
-	}
-
-	protected RepositoryContext context() {
-		return context;
-	}
-	
-	protected final List<ExtendedLocale> locales() {
-		return locales;
+		super(context, expand, locales);
 	}
 
 	@Override
@@ -96,11 +75,4 @@ public abstract class BaseResourceConverter<T, R, CR extends CollectionResource<
 		return effectiveTimeAsLong == null ? null : EffectiveTimes.toDate(effectiveTimeAsLong);
 	}
 	
-	protected final int getLimit(final Options expandOptions) {
-		return expandOptions.containsKey("limit") ? expandOptions.get("limit", Integer.class) : 50;
-	}
-
-	protected final int getOffset(final Options expandOptions) {
-		return expandOptions.containsKey("offset") ? expandOptions.get("offset", Integer.class) : 0;
-	}
 }

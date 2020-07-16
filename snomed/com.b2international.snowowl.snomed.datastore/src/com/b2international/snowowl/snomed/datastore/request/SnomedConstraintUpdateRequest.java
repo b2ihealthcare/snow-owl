@@ -50,7 +50,7 @@ public final class SnomedConstraintUpdateRequest implements Request<TransactionC
 	
 	@Override
 	public String getOperation() {
-		return Permission.EDIT;
+		return Permission.OPERATION_EDIT;
 	}
 	
 }

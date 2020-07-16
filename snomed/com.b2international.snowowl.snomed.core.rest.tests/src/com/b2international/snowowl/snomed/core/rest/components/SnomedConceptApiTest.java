@@ -35,7 +35,6 @@ import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.in
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.reactivateConcept;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.reserveComponentId;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
-import static com.google.common.collect.Maps.newHashMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.endsWith;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -59,7 +58,6 @@ import com.b2international.commons.exceptions.ConflictException;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.BranchPathUtils;
-import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
@@ -87,7 +85,6 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Maps;
 
 import io.restassured.response.ValidatableResponse;
 
@@ -222,208 +219,6 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 				.build();
 
 		createComponent(branchPath, SnomedComponentType.RELATIONSHIP, requestBody).statusCode(400);
-	}
-
-	@Test
-	public void inactivatePrimitiveConcept() throws Exception {
-		String conceptId = createNewConcept(branchPath);
-
-		inactivateConcept(branchPath, conceptId);
-		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId).statusCode(200)
-			.body("active", equalTo(false))
-			.body("definitionStatusId", equalTo(Concepts.PRIMITIVE))
-			.body("parentIds", equalTo(ImmutableList.of(IComponent.ROOT_ID)))
-			.body("ancestorIds", equalTo(ImmutableList.of()))
-			.body("statedParentIds", equalTo(ImmutableList.of(IComponent.ROOT_ID)))
-			.body("statedAncestorIds", equalTo(ImmutableList.of()));
-	}
-	
-	@Test
-	public void inactivateFullyDefinedConcept() throws Exception {
-		Map<String, ?> conceptRequestBody = createConceptRequestBody(Concepts.ROOT_CONCEPT)
-				.put("definitionStatusId", Concepts.FULLY_DEFINED)
-				.put("commitComment", "Created new concept")
-				.build();
-		String conceptId = createNewConcept(branchPath, conceptRequestBody);
-
-		inactivateConcept(branchPath, conceptId);
-		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId).statusCode(200)
-			.body("active", equalTo(false))
-			.body("definitionStatusId", equalTo(Concepts.PRIMITIVE))
-			.body("parentIds", equalTo(ImmutableList.of(IComponent.ROOT_ID)))
-			.body("ancestorIds", equalTo(ImmutableList.of()))
-			.body("statedParentIds", equalTo(ImmutableList.of(IComponent.ROOT_ID)))
-			.body("statedAncestorIds", equalTo(ImmutableList.of()));
-	}
-
-	@Test
-	public void reactivateConceptWithActiveParentAndInboundRelationship() throws Exception {
-		// Create two concepts, one that will be inactivated
-		String conceptWithReferenceToInactivatedConcept = createNewConcept(branchPath);
-		String conceptToInactivate = createNewConcept(branchPath);
-		// and an inbound relationship to the inactivated concept
-		String inboundStatedRelationshipId = createNewRelationship(branchPath, conceptWithReferenceToInactivatedConcept, Concepts.PART_OF, conceptToInactivate, Concepts.STATED_RELATIONSHIP);
-		// and an outbound inferred relationships, which will be reactivated along with the concept
-		String outboundInferredRelationshipId = createNewRelationship(branchPath, conceptToInactivate, Concepts.IS_A, Concepts.ROOT_CONCEPT, Concepts.INFERRED_RELATIONSHIP);
-
-		// Inactivate the concept with the relationship is pointing to
-		final InactivationProperties inactivationProperties = new InactivationProperties(
-			Concepts.DUPLICATE,
-			ImmutableList.of(
-				new AssociationTarget(Concepts.REFSET_POSSIBLY_EQUIVALENT_TO_ASSOCIATION, conceptWithReferenceToInactivatedConcept)
-			)
-		);
-		Map<?, ?> inactivationBody = ImmutableMap.<String, Object>builder()
-				.put("active", false)
-				.put("inactivationProperties", inactivationProperties)
-				.put("commitComment", "Inactivated concept")
-				.build();
-
-		updateComponent(branchPath, SnomedComponentType.CONCEPT, conceptToInactivate, inactivationBody)
-			.statusCode(204);
-		
-		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptToInactivate, "inactivationProperties()")
-			.statusCode(200)
-			.body("active", equalTo(false))
-			.body("inactivationProperties.inactivationIndicatorId", equalTo(Concepts.DUPLICATE))
-			.body("inactivationProperties.associationTargets.referenceSetId", hasItem(Concepts.REFSET_POSSIBLY_EQUIVALENT_TO_ASSOCIATION))
-			.body("inactivationProperties.associationTargets.targetComponentId", hasItem(conceptWithReferenceToInactivatedConcept));
-
-		// Verify that the inbound relationship is inactive
-		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, inboundStatedRelationshipId)
-			.statusCode(200)
-			.body("active", equalTo(false));
-
-		// Reactivate the concept
-		reactivateConcept(branchPath, conceptToInactivate);
-
-		// verify that the inferred outbound relationship is active again
-		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, outboundInferredRelationshipId)
-			.statusCode(200)
-			.body("active", equalTo(true));
-		
-		// Verify that the concept is active again, it has two active descriptions, no association targets, no indicator
-		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptToInactivate, "inactivationProperties()").statusCode(200)
-			.body("active", equalTo(true))
-			.body("inactivationIndicator", nullValue())
-			.body("associationTargets", nullValue())
-			.body("parentIds", equalTo(ImmutableList.of(Concepts.ROOT_CONCEPT))) // verify the the inferred and stated hierarchy is back and valid
-			.body("statedParentIds", equalTo(ImmutableList.of(Concepts.ROOT_CONCEPT)))
-			.body("ancestorIds", equalTo(ImmutableList.of(IComponent.ROOT_ID)))
-			.body("statedAncestorIds", equalTo(ImmutableList.of(IComponent.ROOT_ID)));
-		
-		// Verify that the inbound relationship is still inactive, meaning that manual reactivation is required
-		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, inboundStatedRelationshipId).statusCode(200)
-			.body("active", equalTo(false));
-	}
-	
-	@Test
-	public void reactivateConceptWithInactiveParent() throws Exception {
-		// Create two concepts, one that will be inactivated
-		String inactiveParentConcept = createNewConcept(branchPath, createConceptRequestBody(ROOT_CONCEPT, Concepts.MODULE_SCT_CORE, SnomedApiTestConstants.UK_PREFERRED_MAP, false)
-				.put("commitComment", "Created new concept")
-				.build());
-		String inactiveChildConcept = createNewConcept(branchPath, createConceptRequestBody(inactiveParentConcept, Concepts.MODULE_SCT_CORE, SnomedApiTestConstants.UK_PREFERRED_MAP, false)
-				.put("commitComment", "Created new concept")
-				.build());
-
-		// Reactivate the child concept
-		reactivateConcept(branchPath, inactiveChildConcept);
-
-		// Verify that the concept is active again, no association targets, no indicator
-		getComponent(branchPath, SnomedComponentType.CONCEPT, inactiveChildConcept, "inactivationProperties()").statusCode(200)
-			.body("active", equalTo(true))
-			.body("inactivationIndicator", nullValue())
-			.body("associationTargets", nullValue())
-			.body("parentIds", equalTo(ImmutableList.of(IComponent.ROOT_ID)))
-			.body("statedParentIds", equalTo(ImmutableList.of(inactiveParentConcept)))
-			.body("ancestorIds", equalTo(ImmutableList.of()))
-			.body("statedAncestorIds", equalTo(ImmutableList.of(IComponent.ROOT_ID)));
-		
-		// after reactivating the parent the child should have the proper parentage set
-		reactivateConcept(branchPath, inactiveParentConcept);
-		
-		getComponent(branchPath, SnomedComponentType.CONCEPT, inactiveParentConcept, "inactivationProperties()").statusCode(200)
-			.body("active", equalTo(true))
-			.body("inactivationIndicator", nullValue())
-			.body("associationTargets", nullValue())
-			.body("parentIds", equalTo(ImmutableList.of(IComponent.ROOT_ID)))
-			.body("statedParentIds", equalTo(ImmutableList.of(Concepts.ROOT_CONCEPT)))
-			.body("ancestorIds", equalTo(ImmutableList.of()))
-			.body("statedAncestorIds", equalTo(ImmutableList.of(IComponent.ROOT_ID)));
-		
-		getComponent(branchPath, SnomedComponentType.CONCEPT, inactiveChildConcept, "inactivationProperties()").statusCode(200)
-			.body("active", equalTo(true))
-			.body("inactivationIndicator", nullValue())
-			.body("associationTargets", nullValue())
-			.body("parentIds", equalTo(ImmutableList.of(IComponent.ROOT_ID)))
-			.body("statedParentIds", equalTo(ImmutableList.of(inactiveParentConcept)))
-			.body("ancestorIds", equalTo(ImmutableList.of()))
-			.body("statedAncestorIds", equalTo(ImmutableList.of(Concepts.ROOT_CONCEPT, IComponent.ROOT_ID)));
-	}
-
-	@Test
-	public void reactivateConceptWithInactiveParentRelationshipsFirst() throws Exception {
-		// Create two concepts, one that will be inactivated
-		String inactiveParentConcept = createNewConcept(branchPath, createConceptRequestBody(ROOT_CONCEPT, Concepts.MODULE_SCT_CORE, SnomedApiTestConstants.UK_PREFERRED_MAP, false)
-				.put("commitComment", "Created new concept")
-				.build());
-		String inactiveChildConcept = createNewConcept(branchPath, createConceptRequestBody(inactiveParentConcept, Concepts.MODULE_SCT_CORE, SnomedApiTestConstants.UK_PREFERRED_MAP, false)
-				.put("commitComment", "Created new concept")
-				.build());
-
-		final Map<String, Object> concept = getComponent(branchPath, SnomedComponentType.CONCEPT, inactiveChildConcept, "relationships()")
-				.statusCode(200)
-				.extract().as(Map.class);
-		// Reactivate relationships first
-		final List<Map<String, Object>> relationshipItems = (List<Map<String, Object>>) ((Map<String, Object>) concept.get("relationships")).get("items");
-		relationshipItems.forEach(relationship -> {
-			final Map<String, Object> updatedRelationship = newHashMap(relationship);
-			updatedRelationship.put("active", true);
-			updatedRelationship.put("commitComment", "Reactivate Relationship");
-			updateComponent(branchPath, SnomedComponentType.RELATIONSHIP, (String) relationship.get("id"), updatedRelationship).statusCode(204);
-		});
-		
-		// Reactivate the child concept
-		final Map<String, Object> reactivationRequest = Maps.newHashMap(concept);
-		reactivationRequest.put("active", true);
-		reactivationRequest.remove("inactivationIndicator");
-		reactivationRequest.remove("associationTargets");
-		reactivationRequest.remove("relationships"); //remove relationships from concept update call
-		reactivationRequest.put("commitComment", "Reactivated concept");
-
-		updateComponent(branchPath, SnomedComponentType.CONCEPT, inactiveChildConcept, reactivationRequest).statusCode(204);
-
-		// Verify that the concept is active again, no association targets, no indicator
-		getComponent(branchPath, SnomedComponentType.CONCEPT, inactiveChildConcept, "inactivationProperties()").statusCode(200)
-			.body("active", equalTo(true))
-			.body("inactivationIndicator", nullValue())
-			.body("associationTargets", nullValue())
-			.body("parentIds", equalTo(ImmutableList.of(IComponent.ROOT_ID)))
-			.body("statedParentIds", equalTo(ImmutableList.of(inactiveParentConcept)))
-			.body("ancestorIds", equalTo(ImmutableList.of()))
-			.body("statedAncestorIds", equalTo(ImmutableList.of(IComponent.ROOT_ID)));
-		
-		// after reactivating the parent the child should have the proper parentage set
-		reactivateConcept(branchPath, inactiveParentConcept);
-		
-		getComponent(branchPath, SnomedComponentType.CONCEPT, inactiveParentConcept, "inactivationProperties()").statusCode(200)
-			.body("active", equalTo(true))
-			.body("inactivationIndicator", nullValue())
-			.body("associationTargets", nullValue())
-			.body("parentIds", equalTo(ImmutableList.of(IComponent.ROOT_ID)))
-			.body("statedParentIds", equalTo(ImmutableList.of(Concepts.ROOT_CONCEPT)))
-			.body("ancestorIds", equalTo(ImmutableList.of()))
-			.body("statedAncestorIds", equalTo(ImmutableList.of(IComponent.ROOT_ID)));
-		
-		getComponent(branchPath, SnomedComponentType.CONCEPT, inactiveChildConcept, "inactivationProperties()").statusCode(200)
-			.body("active", equalTo(true))
-			.body("inactivationIndicator", nullValue())
-			.body("associationTargets", nullValue())
-			.body("parentIds", equalTo(ImmutableList.of(IComponent.ROOT_ID)))
-			.body("statedParentIds", equalTo(ImmutableList.of(inactiveParentConcept)))
-			.body("ancestorIds", equalTo(ImmutableList.of()))
-			.body("statedAncestorIds", equalTo(ImmutableList.of(Concepts.ROOT_CONCEPT, IComponent.ROOT_ID)));
 	}
 
 	@Test
@@ -948,7 +743,8 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 	
 	@Test
 	public void createConceptWithOwlAxiomMemberWithSubClassOfExpression() throws Exception {
-		final String owlSubclassOfExpression = String.format("SubClassOf(:%s :%s)", Concepts.FULLY_SPECIFIED_NAME, Concepts.AMBIGUOUS);
+		final String conceptId = ApplicationContext.getServiceForClass(ISnomedIdentifierService.class).generate(null, ComponentCategory.CONCEPT, 1).iterator().next();
+		final String owlSubclassOfExpression = String.format("SubClassOf(:%s :%s)", conceptId, Concepts.AMBIGUOUS);
 		
 		final Map<?, ?> memberRequestBody = ImmutableMap.builder()
 				.put("moduleId", Concepts.MODULE_SCT_CORE)
@@ -956,20 +752,20 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 				.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, owlSubclassOfExpression)
 				.build();
 
-		final Map<?, ?> conceptRequestBody = createConceptRequestBody(Concepts.ROOT_CONCEPT)
+		final Map<?, ?> conceptRequestBody = createConceptRequestBody(Concepts.FULLY_SPECIFIED_NAME)
+				.put("id", conceptId)
 				.put("members", ImmutableList.of(memberRequestBody))
 				.put("commitComment", "Created concept with owl axiom reference set member")
 				.build();
 
-		final String conceptId = lastPathSegment(createComponent(branchPath, SnomedComponentType.CONCEPT, conceptRequestBody)
-				.statusCode(201)
-				.extract().header("Location"));
+		createComponent(branchPath, SnomedComponentType.CONCEPT, conceptRequestBody)
+				.statusCode(201);
 		
 		final SnomedConcept conceptWithAxiomMember = SnomedRequests.prepareGetConcept(conceptId)
-			.setExpand("members()")
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
-			.execute(getBus())
-			.getSync();
+				.setExpand("members()")
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+				.execute(getBus())
+				.getSync();
 		
 		assertNotNull(conceptWithAxiomMember);
 		assertEquals(1, conceptWithAxiomMember.getMembers().getTotal());
@@ -978,7 +774,9 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 	
 	@Test
 	public void createConceptWithOwlAxiomMemberWithEquivalentClassesExpression() throws Exception {
-		final String owlEquivalentClassesExpression = String.format("EquivalentClasses(:%s ObjectIntersectionOf(:%s :%s))", Concepts.FULLY_SPECIFIED_NAME, Concepts.AMBIGUOUS, Concepts.NAMESPACE_ROOT);
+		final String conceptId = ApplicationContext.getServiceForClass(ISnomedIdentifierService.class).generate(null, ComponentCategory.CONCEPT, 1).iterator().next();
+		
+		final String owlEquivalentClassesExpression = String.format("EquivalentClasses(:%s ObjectIntersectionOf(:%s :%s))", conceptId, Concepts.AMBIGUOUS, Concepts.NAMESPACE_ROOT);
 		
 		final Map<?, ?> memberRequestBody = ImmutableMap.builder()
 				.put("moduleId", Concepts.MODULE_SCT_CORE)
@@ -987,19 +785,18 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 				.build();
 
 		final Map<?, ?> conceptRequestBody = createConceptRequestBody(Concepts.ROOT_CONCEPT)
+				.put("id", conceptId)
 				.put("members", ImmutableList.of(memberRequestBody))
 				.put("commitComment", "Created concept with owl axiom reference set member")
 				.build();
 
-		final String conceptId = lastPathSegment(createComponent(branchPath, SnomedComponentType.CONCEPT, conceptRequestBody)
-				.statusCode(201)
-				.extract().header("Location"));
+		createComponent(branchPath, SnomedComponentType.CONCEPT, conceptRequestBody).statusCode(201);
 		
 		final SnomedConcept conceptWithAxiomMember = SnomedRequests.prepareGetConcept(conceptId)
-			.setExpand("members()")
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
-			.execute(getBus())
-			.getSync();
+				.setExpand("members()")
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+				.execute(getBus())
+				.getSync();
 		
 		assertNotNull(conceptWithAxiomMember);
 		assertEquals(1, conceptWithAxiomMember.getMembers().getTotal());
@@ -1008,7 +805,9 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void createConceptWithOwlAxiomMemberWithComplexSubClassOfExpressionShouldDefaultToPrimitive() throws Exception {
-		final String owlSubClassOfExpression = "SubClassOf(ObjectIntersectionOf(:73211009 ObjectSomeValuesFrom(:609096000 ObjectSomeValuesFrom(:100106001 :100102001))) :8801005)";
+		final String conceptId = ApplicationContext.getServiceForClass(ISnomedIdentifierService.class).generate(null, ComponentCategory.CONCEPT, 1).iterator().next();
+		
+		final String owlSubClassOfExpression = "SubClassOf(ObjectIntersectionOf(:73211009 ObjectSomeValuesFrom(:609096000 ObjectSomeValuesFrom(:100106001 :100102001))) :"+conceptId+")";
 		final Map<?, ?> memberRequestBody = ImmutableMap.builder()
 				.put("moduleId", Concepts.MODULE_SCT_CORE)
 				.put("referenceSetId", Concepts.REFSET_OWL_AXIOM)
@@ -1016,13 +815,13 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 				.build();
 		
 		final Map<?, ?> conceptRequestBody = createConceptRequestBody(Concepts.ROOT_CONCEPT)
+				.put("id", conceptId)
 				.put("members", ImmutableList.of(memberRequestBody))
 				.put("commitComment", "Created concept with owl axiom reference set member")
 				.build();
 		
-		final String conceptId = lastPathSegment(createComponent(branchPath, SnomedComponentType.CONCEPT, conceptRequestBody)
-				.statusCode(201)
-				.extract().header("Location"));
+		createComponent(branchPath, SnomedComponentType.CONCEPT, conceptRequestBody)
+				.statusCode(201);
 		
 		final SnomedConcept conceptWithAxiomMember = SnomedRequests.prepareGetConcept(conceptId)
 				.setExpand("members()")
@@ -1083,7 +882,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 
 		updateComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, definitionStatusUpdateRequestBody).statusCode(204);
 		
-		final Map<String, Object> properties = ImmutableMap.of(SnomedRf2Headers.FIELD_OWL_EXPRESSION, String.format("EquivalentClasses(:%s ObjectIntersectionOf(:%s :%s))", Concepts.FULLY_SPECIFIED_NAME, Concepts.AMBIGUOUS, Concepts.NAMESPACE_ROOT));
+		final Map<String, Object> properties = ImmutableMap.of(SnomedRf2Headers.FIELD_OWL_EXPRESSION, String.format("EquivalentClasses(:%s ObjectIntersectionOf(:%s :%s))", conceptId, Concepts.AMBIGUOUS, Concepts.NAMESPACE_ROOT));
 		// Add a reference set member
 		final SnomedReferenceSetMember newMember = new SnomedReferenceSetMember();
 		newMember.setId(UUID.randomUUID().toString());
@@ -1119,7 +918,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 	public void testUpdateConceptDefinitionStatusWithEquivalentClassesAxiomMember() {
 		final String conceptId = createNewConcept(branchPath);
 
-		final Map<String, Object> properties = ImmutableMap.of(SnomedRf2Headers.FIELD_OWL_EXPRESSION, String.format("EquivalentClasses(:%s ObjectIntersectionOf(:%s :%s))", Concepts.FULLY_SPECIFIED_NAME, Concepts.AMBIGUOUS, Concepts.NAMESPACE_ROOT));
+		final Map<String, Object> properties = ImmutableMap.of(SnomedRf2Headers.FIELD_OWL_EXPRESSION, String.format("EquivalentClasses(:%s ObjectIntersectionOf(:%s :%s))", conceptId, Concepts.AMBIGUOUS, Concepts.NAMESPACE_ROOT));
 		// Add a reference set member
 		final SnomedReferenceSetMember newMember = new SnomedReferenceSetMember();
 		newMember.setId(UUID.randomUUID().toString());
@@ -1161,7 +960,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 				.build();
 
 		updateComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, definitionStatusUpdateRequestBody).statusCode(204);
-		final Map<String, Object> properties = ImmutableMap.of(SnomedRf2Headers.FIELD_OWL_EXPRESSION, String.format("SubClassOf(:%s :%s)", Concepts.FULLY_SPECIFIED_NAME, Concepts.AMBIGUOUS));
+		final Map<String, Object> properties = ImmutableMap.of(SnomedRf2Headers.FIELD_OWL_EXPRESSION, String.format("SubClassOf(:%s :%s)", conceptId, Concepts.AMBIGUOUS));
 		// Add a reference set member
 		final SnomedReferenceSetMember newMember = new SnomedReferenceSetMember();
 		newMember.setId(UUID.randomUUID().toString());

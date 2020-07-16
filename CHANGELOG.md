@@ -1,6 +1,65 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 7.7.0
+
+### Core
+- Branching
+  * Support more URL safe characters in branch names (#590)
+- Generic Concept Suggestion API (#569, #571, #574, #588)
+  * Based on CodeSystem specific similarity algorithms the system is now able to provide similar concepts for a set of input concepts
+- Generic Query Optimization API (#581)
+  * Based on CodeSystem specific query optimization algorithm the system is now able to optimize queries in a generic fashion
+  * SNOMED CT concept enumerations can now be reduced to a few clauses if they have a common ancestor
+- Generic Member Request API (#558)
+
+### Validation
+- New Validation Rule (#580): 
+  * Active descriptions on inactive concepts should have a single inactivation indicator member
+
+### SNOMED CT
+- IconId calculation improvements (#560):
+  * SNOMED CT Concept Icon computation logic have been improved to take semanticTags of the concept into account.
+  * SemanticTag takes a precendence over the hierarchical placement
+  * `iconId` property will be set to a semantic tag if there is an icon for it
+
+### Bugs/Improvements
+- [core] add new, file-based upload/download methods to Attachment API (6f3a946)
+- [core] new, generic ExportRequest Java API (a021783)
+- [core] consider deleted branches when creating CodeSystems (#565)
+- [api] allow `CodeSystem.locales` update to empty array if it's `null` (00fafec)
+- [api] fix issue with special search syntax `@` parsing (#566)
+- [api] allow creating SNOMED CT Concepts without any relationship/axiom (c9e0aeb)
+- [snomed] fix potential NPE in during locale to refset id list conversion (afffbef)
+- [snomed] add shortcuts to ECL evaluation (#568)
+- [snomed] fix issue without duplicate concept non-current members appearing on descriptions (#584)
+- [snomed] fix RF2 import job key issue (#577)
+- [snomed] properly update OWL Axiom Expression in member update API (7c02b1e, 0a4e09e, 3c0ad0e)
+- [snomed] fix RF2 import content vs release type validation, allow importing on child branches if MAIN is empty (2fa6ea8)  
+- [runtime] decrease embedded Elasticsearch disk threshold monitor values (#570)
+- [runtime] add more curator configuration for backup and restore (#595)
+- [tests] update mini RF2 from 2018-01-31 to 2020-01-31
+
+### Dependencies
+- Upgrade Elasticsearch to 7.7.0 
+- Upgrade Lucene to 8.5.1
+- Upgrade Equinox to 3.20.
+- Upgrade Eclipse Platform to 4.15.0.
+- Upgrade Groovy Eclipse to 3.7.0 (e4.15.0).
+- Upgrade Net4j to 4.9.0.
+- Upgrade Orbit update site to `R20200224183213`.
+- Upgrade Xtext/Xtend to 2.21.0.
+- Upgrade EMF to 2.21.0.
+- Upgrade MWE2 to 2.11.2.
+- Upgrade Guava to 27.1.0.
+- Upgrade classgraph to 4.8.78
+- Upgrade Jackson Databind to 2.9.10.4
+- Upgrade assertj to 3.16.1
+- Upgrade fastutil to 8.3.1.
+- Upgrade commons-codec to 1.13.
+- Upgrade Eclipse Tycho to 1.7.0
+- Remove unused dom4j.
+
 ## 7.6.0
 
 ### Core

@@ -76,7 +76,7 @@ public class SubsumesSnomedRestTest extends FhirRestTest {
 		
 		String responseString = givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.param("codeA", BACTERIA) //Bacteria
-			.param("codeB", MICROORGANISM) //Microorganism (parent)
+			.param("codeB", "410607006") //Organism (parent)
 			.param("system", "http://snomed.info/sct")
 			.when().get("/CodeSystem/$subsumes")
 			.asString();
@@ -89,7 +89,7 @@ public class SubsumesSnomedRestTest extends FhirRestTest {
 	public void subsumesTest() throws Exception {
 		
 		String responseString = givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.param("codeA", MICROORGANISM) //Microorganism (parent)
+			.param("codeA", "410607006") //Organism (parent)
 			.param("codeB", BACTERIA) //Bacteria
 			.param("system", "http://snomed.info/sct")
 			.when().get("/CodeSystem/$subsumes")

@@ -79,7 +79,7 @@ public class ExpandSnomedRestTest extends SnomedFhirRestTest {
 	@Test
 	public void implicitIsaTest() {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.param("url", "http://snomed.info/sct?fhir_vs=isa/" + FhirTestConcepts.MICROORGANISM) 
+			.param("url", "http://snomed.info/sct?fhir_vs=isa/" + FhirTestConcepts.ORGANISM) 
 			.when().get("/ValueSet/$expand")
 			.then()
 			.body("resourceType", equalTo("ValueSet"))

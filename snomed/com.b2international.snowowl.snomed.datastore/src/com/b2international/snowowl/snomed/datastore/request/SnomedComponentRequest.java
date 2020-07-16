@@ -31,7 +31,7 @@ public interface SnomedComponentRequest<R> extends Request<TransactionContext, R
 	
 	@Override
 	default String getOperation() {
-		return Permission.EDIT;
+		return Permission.OPERATION_EDIT;
 	}
 	
 }

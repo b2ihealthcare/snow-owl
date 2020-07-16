@@ -1,6 +1,6 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
- *
+ * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,22 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.datastore.request;
+package com.b2international.snowowl.core.domain;
 
-import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
+import java.util.List;
 
 /**
- * @since 6.5
+ * @since 7.7
  */
-final class SnomedOWLOntologyMemberCreateDelegate extends AbstractSnomedOWLExpressionMemberCreateDelegate {
+public final class QueryExpressionDiffs extends CollectionResource<QueryExpressionDiff> {
 
-	SnomedOWLOntologyMemberCreateDelegate(final SnomedRefSetMemberCreateRequest request) {
-		super(request);
+	private static final long serialVersionUID = 1L;
+	
+	public static final QueryExpressionDiffs EMPTY = new QueryExpressionDiffs(List.of());
+
+	public QueryExpressionDiffs(List<QueryExpressionDiff> items) {
+		super(items);
 	}
-
-	@Override
-	protected SnomedRefSetType getRefsetType() {
-		return SnomedRefSetType.OWL_ONTOLOGY;
-	}
-
 }

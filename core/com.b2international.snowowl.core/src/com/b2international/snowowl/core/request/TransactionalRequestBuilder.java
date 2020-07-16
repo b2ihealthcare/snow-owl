@@ -34,6 +34,14 @@ public interface TransactionalRequestBuilder<R> extends RequestBuilder<Transacti
 				.build(codeSystemUri);
 	}
 	
+	/**
+	 * @param repositoryId
+	 * @param branch
+	 * @param author
+	 * @param commitComment
+	 * @return
+	 * @deprecated - use {@link #build(String, String, String)} instead, this will be removed in 8.0
+	 */
 	default AsyncRequest<CommitResult> build(String repositoryId, 
 			String branch, 
 			String author,

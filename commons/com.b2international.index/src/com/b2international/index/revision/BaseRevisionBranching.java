@@ -294,7 +294,7 @@ public abstract class BaseRevisionBranching {
 		final StagingArea staging = index.prepareCommit(to.getPath()).withContext(operation.context);
 		
 		// TODO add conflict processing
-		long fastForwardCommitTimestamp = staging.merge(from.ref(), to.ref(), operation.squash, operation.conflictProcessor);
+		long fastForwardCommitTimestamp = staging.merge(from.ref(), to.ref(), operation.squash, operation.conflictProcessor, operation.exclusions);
 		// skip fast forward if the tobranch has a later commit than the returned fastForwardCommitTimestamp
 		if (to.getHeadTimestamp() >= fastForwardCommitTimestamp) {
 			fastForwardCommitTimestamp = -1L;

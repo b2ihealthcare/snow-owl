@@ -15,11 +15,13 @@
  */
 package com.b2international.snowowl.core.validation.eval;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.scripts.ScriptEngine;
@@ -39,23 +41,24 @@ public final class GroovyScriptValidationRuleEvaluator implements ValidationRule
 	}
 	
 	@Override
-	public List<?> eval(BranchContext context, ValidationRule rule, Map<String, Object> filterParams) throws Exception {
-		final String script = Files
-			.lines(validationResourcesDirectory.resolve(rule.getImplementation()))
-			.collect(Collectors.joining(System.getProperty("line.separator")));
-		
-		final Builder<String, Object> paramsBuilder = ImmutableMap.<String, Object>builder().put("resourcesDir", validationResourcesDirectory);
-		
-		if (filterParams != null && !filterParams.isEmpty()) {
-			paramsBuilder.putAll(filterParams);
+	public List<?> eval(BranchContext context, ValidationRule rule, Map<String, Object> filterParams) throws IOException {
+		try (final Stream<String> lines = Files.lines(validationResourcesDirectory.resolve(rule.getImplementation()))) {
+			
+			final String script = lines.collect(Collectors.joining(System.getProperty("line.separator")));
+			
+			final Builder<String, Object> paramsBuilder = ImmutableMap.<String, Object>builder().put("resourcesDir", validationResourcesDirectory);
+			
+			if (filterParams != null && !filterParams.isEmpty()) {
+				paramsBuilder.putAll(filterParams);
+			}
+			
+			return ScriptEngine.run("groovy", context.service(ClassLoader.class), script, 
+					ImmutableMap.<String, Object>of(
+							"ctx", context,
+							"params", paramsBuilder.build()
+							)
+					);
 		}
-		
-		return ScriptEngine.run("groovy", context.service(ClassLoader.class), script, 
-			ImmutableMap.<String, Object>of(
-				"ctx", context,
-				"params", paramsBuilder.build()
-			)
-		);
 	}
 
 	@Override

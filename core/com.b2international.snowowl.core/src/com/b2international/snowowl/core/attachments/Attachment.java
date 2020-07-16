@@ -16,6 +16,7 @@
 package com.b2international.snowowl.core.attachments;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.nio.file.Files;
@@ -128,15 +129,15 @@ public final class Attachment implements Serializable {
 	 * 
 	 * @param context
 	 *            - the context to use for downloading the file
-	 * @param exportPath
+	 * @param target
 	 *            - either target directory where the file needs to be downloaded or an abolute path to a file which will replace the default file
 	 *            name included in this attachment
 	 * @return the absolute file path to the downloaded file
 	 * @since 7.7
 	 * @see #download(ServiceProvider, Path)
 	 */
-	public Path download(ServiceProvider context, String exportPath) {
-		return download(context, Paths.get(exportPath));
+	public Path download(ServiceProvider context, String target) {
+		return download(context, Paths.get(target));
 	}
 	
 	/**
@@ -146,20 +147,20 @@ public final class Attachment implements Serializable {
 	 * 
 	 * @param context
 	 *            - the context to use for downloading the file
-	 * @param exportPath
+	 * @param target
 	 *            - either target directory where the file needs to be downloaded or an abolute path to a file which will replace the default file
 	 *            name included in this attachment
 	 * @return the absolute file path to the downloaded file
 	 * @since 7.7
 	 */
-	public Path download(ServiceProvider context, Path exportPath) {
+	public Path download(ServiceProvider context, Path target) {
 		Preconditions.checkNotNull(context, "Context cannot be null");
-		Preconditions.checkNotNull(exportPath, "ExportPath cannot be null");
+		Preconditions.checkNotNull(target, "ExportPath cannot be null");
 		Path resultFile;
-		if (Files.isDirectory(exportPath)) {
-			resultFile = exportPath.resolve(getFileName());
+		if (Files.isDirectory(target)) {
+			resultFile = target.resolve(getFileName());
 		} else {
-			resultFile = exportPath;
+			resultFile = target;
 		}
 		try (OutputStream out = Files.newOutputStream(resultFile)) {
 			context.service(AttachmentRegistry.class).download(attachmentId, out);
@@ -167,6 +168,35 @@ public final class Attachment implements Serializable {
 			throw new SnowowlRuntimeException(String.format("Couldn't download file '%s'.", getFileName()), e);
 		}
 		return resultFile;
+	}
+	
+	/**
+	 * @param context - the context to use for uploading
+	 * @param source - the source path to upload
+	 * @return an {@link Attachment} descriptor
+	 * @since 7.7
+	 */
+	public static Attachment upload(ServiceProvider context, Path source) {
+		return upload(context, source, UUID.randomUUID());
+	}
+
+	/**
+	 * Uploads an attachment using the specified file path as source and the specified attachmentId as the identifier of the attachment.
+	 * 
+	 * @param context - the context to use for uploading
+	 * @param source - the source path to upload
+	 * @param attachmentId - the identifier of the attachment to retrieve it later
+	 * @return an {@link Attachment} descriptor
+	 * @since 7.7
+	 */
+	public static Attachment upload(ServiceProvider context, Path source, UUID attachmentId) {
+		Preconditions.checkArgument(Files.isRegularFile(source), "Source is not a valid file: %s", source);
+		try (final InputStream in = Files.newInputStream(source)) {
+			context.service(AttachmentRegistry.class).upload(attachmentId, in);
+		} catch (IOException e) {
+			throw new SnowowlRuntimeException(e);
+		}
+		return new Attachment(attachmentId, source.getFileName().toString());
 	}
 
 }

@@ -51,7 +51,7 @@ public class GetMergeRequest implements Request<RepositoryContext, Merge>, Repos
 
 	@Override
 	public String getOperation() {
-		return Permission.BROWSE;
+		return Permission.OPERATION_BROWSE;
 	}
 
 }

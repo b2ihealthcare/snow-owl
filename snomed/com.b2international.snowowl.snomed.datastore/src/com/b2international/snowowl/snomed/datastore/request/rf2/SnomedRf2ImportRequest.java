@@ -127,27 +127,19 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportRe
 
 	private void validate(BranchContext context) {
 		final boolean contentAvailable = context.service(ContentAvailabilityInfoProvider.class).isAvailable(context);
-		final boolean isMain = context.isMain();
 		
-		if (contentAvailable && Rf2ReleaseType.FULL.equals(releaseType) && isMain) {
-			throw new BadRequestException("Importing a full release of SNOMED CT "
-					+ "from an archive to MAIN branch is prohibited when SNOMED CT "
+		if (contentAvailable && Rf2ReleaseType.FULL.equals(releaseType)) {
+			throw new BadRequestException("Importing a Full RF2 release of SNOMED CT "
+					+ "from an archive to any branch is prohibited when SNOMED CT "
 					+ "ontology is already available on the terminology server. "
-					+ "Please perform either a delta or a snapshot import instead.");
+					+ "Please perform either a Delta or a Snapshot import instead.");
 		}
 		
-		if (!contentAvailable && Rf2ReleaseType.DELTA.equals(releaseType) && isMain) {
-			throw new BadRequestException("Importing a delta release of SNOMED CT "
-					+ "from an archive to MAIN branch is prohibited when SNOMED CT "
+		if (!contentAvailable && Rf2ReleaseType.DELTA.equals(releaseType)) {
+			throw new BadRequestException("Importing a Delta release of SNOMED CT "
+					+ "from an archive to any branch is prohibited when SNOMED CT "
 					+ "ontology is not available on the terminology server. "
-					+ "Please perform either a full or a snapshot import instead.");
-		}
-		
-		if (!contentAvailable && !isMain) {
-			throw new BadRequestException("Importing a release of SNOMED CT from an "
-					+ "archive to other than MAIN branch is prohibited when SNOMED CT "
-					+ "ontology is not available on the terminology server. "
-					+ "Please perform a full import to MAIN branch first.");
+					+ "Please perform either a Full or a Snapshot import instead.");
 		}
 	}
 
@@ -332,7 +324,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportRe
 
 	@Override
 	public String getOperation() {
-		return Permission.IMPORT;
+		return Permission.OPERATION_IMPORT;
 	}
 
 }

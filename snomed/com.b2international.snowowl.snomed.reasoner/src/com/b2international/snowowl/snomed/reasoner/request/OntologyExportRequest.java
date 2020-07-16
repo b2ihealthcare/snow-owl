@@ -163,7 +163,7 @@ final class OntologyExportRequest implements Request<BranchContext, String>, Bra
 	
 	@Override
 	public String getOperation() {
-		return Permission.CLASSIFY;
+		return Permission.OPERATION_CLASSIFY;
 	}
 
 }

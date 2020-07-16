@@ -49,7 +49,7 @@ public final class BranchUpdateRequest extends BranchBaseRequest<Boolean> implem
 	
 	@Override
 	public String getOperation() {
-		return Permission.BROWSE;
+		return Permission.OPERATION_BROWSE;
 	}
 
 }

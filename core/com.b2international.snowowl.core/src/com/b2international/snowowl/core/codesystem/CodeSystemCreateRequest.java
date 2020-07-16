@@ -266,6 +266,6 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 	
 	@Override
 	public String getOperation() {
-		return Permission.EDIT;
+		return Permission.OPERATION_EDIT;
 	}
 }
