@@ -16,6 +16,7 @@
 package com.b2international.snowowl.validation.snomed;
 
 
+import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER;
 import static com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator.generateConceptId;
 import static com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator.generateDescriptionId;
@@ -54,6 +55,42 @@ import com.google.common.collect.Lists;
  */
 @RunWith(Parameterized.class)
 public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
+	
+	@Test	
+	public void rule110() throws Exception {	
+		// Subsets should not contain retired concepts	
+		final String ruleId = "110";	
+		indexRule(ruleId);	
+
+		// index relationship that doesn't belong to attribute	
+		SnomedRelationshipIndexEntry relationship1 = relationship(Concepts.FULLY_SPECIFIED_NAME, Concepts.SYNONYM, Concepts.MODULE_ROOT)	
+				.build();	
+
+		//index relationship that belongs to attribute	
+		SnomedRelationshipIndexEntry relationship2 = relationship(Concepts.SYNONYM, Concepts.IS_A, Concepts.MODULE_ROOT)	
+				.build();	
+		
+		SnomedConceptDocument validConcept = concept(generateConceptId())
+				.build();
+		
+		SnomedRefSetMemberIndexEntry owlAxiomMember1 = member(validConcept.getId(), CONCEPT_NUMBER, Concepts.REFSET_OWL_AXIOM)
+				.classAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(Concepts.IS_A, Concepts.PHYSICAL_OBJECT, 0)))
+				.build();
+		
+		SnomedConceptDocument invalidConcept = concept(generateConceptId())
+				.build();
+		
+		SnomedRefSetMemberIndexEntry owlAxiomMember2 = member(invalidConcept.getId(), CONCEPT_NUMBER, Concepts.REFSET_OWL_AXIOM)
+				.classAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(Concepts.SYNONYM, Concepts.PHYSICAL_OBJECT, 0)))
+				.build();
+
+		indexRevision(MAIN, relationship1, relationship2, validConcept, invalidConcept, owlAxiomMember1, owlAxiomMember2);	
+
+		ValidationIssues issues = validate(ruleId);	
+
+		assertAffectedComponents(issues, ComponentIdentifier.of(CONCEPT_NUMBER, Concepts.FULLY_SPECIFIED_NAME),
+				ComponentIdentifier.of(CONCEPT_NUMBER, invalidConcept.getId()));	
+	}
 	
 	@Test
 	public void rule663() throws Exception {
