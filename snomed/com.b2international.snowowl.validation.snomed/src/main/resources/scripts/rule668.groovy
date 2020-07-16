@@ -31,8 +31,9 @@ inactiveConceptBatches.each({ conceptBatch ->
 	
 	ExpressionBuilder invalidOWLAxiomExpression = Expressions.builder()
 			.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
-			.filter(SnomedRefSetMemberIndexEntry.Expressions.owlExpressionConcept(inactiveConceptIds));
-			
+			.should(SnomedRefSetMemberIndexEntry.Expressions.owlExpressionConcept(inactiveConceptIds))
+			.should(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(inactiveConceptIds));
+	
 	if (params.isUnpublishedOnly) {
 		invalidOWLAxiomExpression.filter(SnomedRefSetMemberIndexEntry.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
 	}

@@ -130,11 +130,20 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		indexRule(ruleId);
 
 		SnomedConceptDocument activeSourceConcept = concept(generateConceptId()).active(true).build();
+		SnomedConceptDocument inactiveSourceConcept = concept(generateConceptId()).active(false).build();
 		SnomedConceptDocument inactiveTypeConcept = concept(generateConceptId()).active(false).build();
 		SnomedConceptDocument activeTypeConcept = concept(generateConceptId()).active(true).build();
 		SnomedConceptDocument inactiveDestinationConcept = concept(generateConceptId()).active(false).build();
 		SnomedConceptDocument activeDestinationConcept = concept(generateConceptId()).active(true).build();
 
+		SnomedRefSetMemberIndexEntry invalidSourceAxiomMember = member(inactiveSourceConcept.getId(), SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.REFSET_OWL_AXIOM)
+				.classAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(Concepts.IS_A, activeDestinationConcept.getId(), 0)))
+				.build();
+		
+		SnomedRefSetMemberIndexEntry validSourceAxiomMember = member(activeSourceConcept.getId(), SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.REFSET_OWL_AXIOM)
+				.classAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(Concepts.IS_A, activeDestinationConcept.getId(), 0)))
+				.build();
+		
 		SnomedRefSetMemberIndexEntry invalidDestinationAxiomMember = member(activeSourceConcept.getId(), SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.REFSET_OWL_AXIOM)
 				.classAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(Concepts.IS_A, inactiveDestinationConcept.getId(), 0)))
 				.build();
@@ -152,10 +161,13 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 
 		indexRevision(MAIN, 
 			activeSourceConcept,
+			inactiveSourceConcept,
 			inactiveTypeConcept,
 			activeTypeConcept,
 			inactiveDestinationConcept,
 			activeDestinationConcept,
+			validSourceAxiomMember,
+			invalidSourceAxiomMember,
 			invalidDestinationAxiomMember,
 			invalidDestinationGciAxiomMember,
 			invalidTypeAxiomMember,
@@ -165,6 +177,7 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		ValidationIssues validationIssues = validate(ruleId);
 
 		assertAffectedComponents(validationIssues,
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, invalidSourceAxiomMember.getId()),
 				ComponentIdentifier.of(SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, invalidDestinationAxiomMember.getId()),
 				ComponentIdentifier.of(SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, invalidDestinationGciAxiomMember.getId()),
 				ComponentIdentifier.of(SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, invalidTypeAxiomMember.getId()));
