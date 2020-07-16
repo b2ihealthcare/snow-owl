@@ -106,31 +106,6 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		SnomedRelationshipIndexEntry invalidTypeRelationship = relationship(activeConcept.getId(), inactiveTypeConcept.getId(), Concepts.FINDING_SITE).build();
 		SnomedRelationshipIndexEntry validRelationship = relationship(activeConcept.getId(), Concepts.IS_A, Concepts.FINDING_SITE).build();
 		
-		
-		SnomedRefSetMemberIndexEntry invalidSourceAxiom = member(inactiveSourceConcept.getId(), SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.REFSET_OWL_AXIOM)
-				.classAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(Concepts.IS_A, activeConcept.getId(), 0)))
-				.owlExpression(String.format("ObjectSomeValuesFrom(:%s :%s)", Concepts.IS_A, activeConcept.getId()))
-				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
-				.build();
-		
-		SnomedRefSetMemberIndexEntry invalidDestinationAxiom = member(activeConcept.getId(), SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.REFSET_OWL_AXIOM)
-				.classAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(Concepts.IS_A, inactiveDestinationConcept.getId(), 0)))
-				.owlExpression(String.format("ObjectSomeValuesFrom(:%s :%s)", Concepts.IS_A, inactiveDestinationConcept.getId()))
-				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
-				.build();
-		
-		SnomedRefSetMemberIndexEntry invalidTypeAxiom = member(activeConcept.getId(), SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.REFSET_OWL_AXIOM)
-				.classAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(inactiveTypeConcept.getId(), Concepts.FINDING_SITE, 0)))
-				.owlExpression(String.format("ObjectSomeValuesFrom(:%s :%s)", inactiveTypeConcept.getId(), Concepts.FINDING_SITE))
-				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
-				.build();
-		
-		SnomedRefSetMemberIndexEntry validAxiom = member(activeConcept.getId(), SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.REFSET_OWL_AXIOM)
-				.classAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(Concepts.IS_A, Concepts.FINDING_SITE, 0)))
-				.owlExpression(String.format("ObjectSomeValuesFrom(:%s :%s)", Concepts.IS_A, Concepts.FINDING_SITE))
-				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
-				.build();
-		
 		indexRevision(MAIN, 
 			inactiveDestinationConcept, 
 			inactiveSourceConcept,
@@ -139,22 +114,14 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 			invalidSourceRelationship,
 			invalidDestinationRelationship,
 			invalidTypeRelationship,
-			validRelationship,
-			invalidSourceAxiom,
-			invalidTypeAxiom,
-			invalidDestinationAxiom,
-			validAxiom
+			validRelationship
 		);
 		
 		ValidationIssues validationIssues = validate(ruleId);
 		
 		assertAffectedComponents(validationIssues, ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, invalidSourceRelationship.getId()),
 				ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, invalidDestinationRelationship.getId()),
-				ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, invalidTypeRelationship.getId()),
-				ComponentIdentifier.of(SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, invalidSourceAxiom.getId()),
-				ComponentIdentifier.of(SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, invalidTypeAxiom.getId()),
-				ComponentIdentifier.of(SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, invalidDestinationAxiom.getId())
-		);
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, invalidTypeRelationship.getId()));
 	}
 
 	@Test
