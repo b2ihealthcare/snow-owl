@@ -16,27 +16,27 @@
 package com.b2international.snowowl.core.request;
 
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.domain.SetMembers;
+import com.b2international.snowowl.core.domain.SetMappings;
 import com.b2international.snowowl.core.request.SetSearchRequestEvaluator.OptionKey;
 import com.google.common.collect.ImmutableSet;
 
 /**
-* @since 7.7
+* @since 7.8
 */
-public final class MemberSearchRequestBuilder extends SearchResourceRequestBuilder<MemberSearchRequestBuilder, BranchContext, SetMembers> 
-		implements RevisionIndexRequestBuilder<SetMembers> {
+public final class MappingSearchRequestBuilder extends SearchResourceRequestBuilder<MappingSearchRequestBuilder, BranchContext, SetMappings> 
+		implements RevisionIndexRequestBuilder<SetMappings> {
 	
-	public MemberSearchRequestBuilder filterBySet(String setId) {
+	public MappingSearchRequestBuilder filterBySet(String setId) {
 		return filterBySets(ImmutableSet.of(setId));
 	}
 	
-	public MemberSearchRequestBuilder filterBySets(Iterable<String> setIds) {
+	public MappingSearchRequestBuilder filterBySets(Iterable<String> setIds) {
 		return addOption(OptionKey.SET, setIds);
 	}
 	
 	@Override
-	protected SearchResourceRequest<BranchContext, SetMembers> createSearch() {
-		return new MemberSearchRequest();
+	protected SearchResourceRequest<BranchContext, SetMappings> createSearch() {
+		return new MappingSearchRequest();
 	}
 
 }

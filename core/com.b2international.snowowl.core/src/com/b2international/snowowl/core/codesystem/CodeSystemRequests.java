@@ -27,6 +27,7 @@ import com.b2international.snowowl.core.jobs.RemoteJobEntry;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.ConceptSearchRequestBuilder;
 import com.b2international.snowowl.core.request.ConceptSuggestionRequestBuilder;
+import com.b2international.snowowl.core.request.MappingSearchRequestBuilder;
 import com.b2international.snowowl.core.request.MemberSearchRequestBuilder;
 import com.b2international.snowowl.core.request.QueryOptimizeRequestBuilder;
 
@@ -81,12 +82,25 @@ public class CodeSystemRequests {
 		return new MemberSearchRequestBuilder();
 	}
 	
+	/**
+	 * Creates a new generic set mapping search request builder.
+	 * 
+	 * @return the builder to configure for generic mappings search
+	 */
+	public static MappingSearchRequestBuilder prepareSearchMappings() {
+		return new MappingSearchRequestBuilder();
+	}
+	
 	public static ConceptSuggestionRequestBuilder prepareSuggestConcepts() {
 		return new ConceptSuggestionRequestBuilder();
 	}
 
 	public static QueryOptimizeRequestBuilder prepareOptimizeQueries() {
 		return new QueryOptimizeRequestBuilder();
+	}
+	
+	public static AllCodeSystemSearchRequestBuilder prepareSearchCodeSystemsInAllRepositories(){
+		return new AllCodeSystemSearchRequestBuilder();
 	}
 
 	/**
