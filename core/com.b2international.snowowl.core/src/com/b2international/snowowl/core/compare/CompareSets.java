@@ -1,6 +1,18 @@
-/*******************************************************************************
- * Copyright (c) 2020 B2i Healthcare. All rights reserved.
- *******************************************************************************/
+/*
+ * Copyright 2012 B2i Healthcare Pte Ltd, http://b2i.sg
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.b2international.snowowl.core.compare;
 
 import java.util.List;
@@ -14,7 +26,7 @@ import com.google.common.collect.Sets;
  */
 public interface CompareSets <T,R> {
 
-	default CompareSetResult<T> compareDifferents(List<T> baseSet, List<T> compareSet) {
+	default ConceptCompareSetResult<T> compareDifferents(List<T> baseSet, List<T> compareSet) {
 		ListMultimap<T, T> changes = ArrayListMultimap.create();
 		Set<T> remove = Sets.newHashSet();
 		Set<T> add = Sets.newHashSet();
@@ -34,7 +46,7 @@ public interface CompareSets <T,R> {
 				}
 			});
 		}
-		return new CompareSetResult<T>(add, remove, changes);
+		return new ConceptCompareSetResult<T>(add, remove, changes);
 	}
 	
 	default boolean isSame(T memberA, T memberB) {
@@ -51,7 +63,7 @@ public interface CompareSets <T,R> {
 		return false;
 	}
 	
-	CompareSetResult<T> doCompare(R baseSet, R compareSet);
+	ConceptCompareSetResult<T> doCompare(R baseSet, R compareSet);
 	boolean isTargetEqual(T memberA, T memberB);
 	boolean isSourceEqual(T memberA, T memberB);
 
