@@ -87,9 +87,6 @@ public final class SnomedRefSetSearchRequestBuilder extends SnomedSearchRequestB
 		if (Strings.isNullOrEmpty(mapTargetComponentType)) {
 			return getSelf();
 		}
-		if (TerminologyRegistry.UNSPECIFIED.equals(mapTargetComponentType)) {
-			return getSelf();
-		}
 		final int referencedComponentTypeAsInt = TerminologyRegistry.INSTANCE.getTerminologyComponentById(mapTargetComponentType).shortId();
 		return filterByMapTargetComponentType(referencedComponentTypeAsInt);
 	}
