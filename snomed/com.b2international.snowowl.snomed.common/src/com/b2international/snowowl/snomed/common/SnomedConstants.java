@@ -45,6 +45,7 @@ public abstract class SnomedConstants {
 
 		public static final String ROOT_CONCEPT = "138875005";
 		public static final String IS_A = "116680003";
+		public static final String ATTRIBUTE = "246061005";
 		public static final String FINDING_SITE = "363698007";
 		public static final String METHOD = "260686004";
 		public static final String MORPHOLOGY = "116676008";
