@@ -192,7 +192,6 @@ public class SnomedRefSetMappingSearchRequestEvaluator extends SnomedCollectionS
 		
 		TerminologyComponent sourceTerminologyComponent = terminologyRegistry.getTerminologyComponentById(mapTargetComponentType);
 		
-		
 		if (Strings.isNullOrEmpty(mapTargetComponentType)) {
 			return ComponentURI.UNSPECIFIED;
 		} else {
