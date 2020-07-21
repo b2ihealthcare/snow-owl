@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,32 +15,38 @@
  */
 package com.b2international.snowowl.core.compare;
 
-import java.util.Set;
+import java.io.Serializable;
+import java.util.List;
 
+import com.b2international.snowowl.core.domain.SetMapping;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ListMultimap;
 /**
  * @since 7.8
  */
-public class ConceptCompareSetResult <T> {
-	Set<T> addedMembers;
-	Set<T> removedMembers;
-	ListMultimap<T, T> changedMembers;
+final public class ConceptMapCompareResult implements Serializable {
+	private static final long serialVersionUID = 1L;
 	
-	public ConceptCompareSetResult(Set<T> addedMembers, Set<T> removedMembers, ListMultimap<T, T> changedMembers) {
-		this.addedMembers = addedMembers;
-		this.removedMembers = removedMembers;
-		this.changedMembers = changedMembers;
+	private final List<SetMapping> addedMembers;
+	private final List<SetMapping> removedMembers;
+	private final ListMultimap<SetMapping, SetMapping> changedMembers;
+	
+	public ConceptMapCompareResult(List<SetMapping> addedMembers, List<SetMapping> removedMembers, ListMultimap<SetMapping, SetMapping> changedMembers) {
+		this.addedMembers = ImmutableList.copyOf(addedMembers);
+		this.removedMembers = ImmutableList.copyOf(removedMembers);
+		this.changedMembers = ImmutableListMultimap.copyOf(changedMembers);
 	}
 	
-	public Set<T> getAddedMembers() {
+	public List<SetMapping> getAddedMembers() {
 		return addedMembers;
 	}
 	
-	public Set<T> getRemovedMembers() {
+	public List<SetMapping> getRemovedMembers() {
 		return removedMembers;
 	}
 	
-	public ListMultimap<T, T> getChangedMembers() {
+	public ListMultimap<SetMapping, SetMapping> getChangedMembers() {
 		return changedMembers;
 	}
 

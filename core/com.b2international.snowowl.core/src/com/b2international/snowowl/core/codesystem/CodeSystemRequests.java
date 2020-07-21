@@ -25,11 +25,13 @@ import com.b2international.snowowl.core.codesystem.version.CodeSystemVersionCrea
 import com.b2international.snowowl.core.codesystem.version.CodeSystemVersionSearchRequestBuilder;
 import com.b2international.snowowl.core.jobs.RemoteJobEntry;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
+import com.b2international.snowowl.core.request.ConceptMapCompareRequestBuilder;
 import com.b2international.snowowl.core.request.ConceptSearchRequestBuilder;
 import com.b2international.snowowl.core.request.ConceptSuggestionRequestBuilder;
 import com.b2international.snowowl.core.request.MappingSearchRequestBuilder;
 import com.b2international.snowowl.core.request.MemberSearchRequestBuilder;
 import com.b2international.snowowl.core.request.QueryOptimizeRequestBuilder;
+import com.b2international.snowowl.core.uri.ComponentURI;
 
 /**
  * @since 4.7
@@ -101,6 +103,10 @@ public class CodeSystemRequests {
 	
 	public static AllCodeSystemSearchRequestBuilder prepareSearchCodeSystemsInAllRepositories(){
 		return new AllCodeSystemSearchRequestBuilder();
+	}
+	
+	public static ConceptMapCompareRequestBuilder prepareConceptMapCompare(ComponentURI baseConceptMapURI, ComponentURI compareConceptMapURI){
+		return new ConceptMapCompareRequestBuilder(baseConceptMapURI, compareConceptMapURI);
 	}
 
 	/**

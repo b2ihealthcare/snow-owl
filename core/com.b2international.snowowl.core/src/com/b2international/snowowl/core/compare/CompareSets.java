@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,25 +16,26 @@
 package com.b2international.snowowl.core.compare;
 
 import java.util.List;
-import java.util.Set;
+import java.util.Objects;
 
+import com.b2international.snowowl.core.domain.SetMapping;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
 /**
  * @since 7.8
  */
-public interface CompareSets <T,R> {
+public interface CompareSets {
 
-	default ConceptCompareSetResult<T> compareDifferents(List<T> baseSet, List<T> compareSet) {
-		ListMultimap<T, T> changes = ArrayListMultimap.create();
-		Set<T> remove = Sets.newHashSet();
-		Set<T> add = Sets.newHashSet();
+	default ConceptMapCompareResult compareDifferents(List<SetMapping> baseSet, List<SetMapping> compareSet) {
+		ListMultimap<SetMapping, SetMapping> changes = ArrayListMultimap.create();
+		List<SetMapping> remove = Lists.newArrayList();
+		List<SetMapping> add = Lists.newArrayList();
 
 		remove.addAll(baseSet);
 		add.addAll(compareSet);
 
-		for (T memberA : baseSet) {
+		for (SetMapping memberA : baseSet) {
 			compareSet.forEach(memberB -> {
 				if (isSame(memberA, memberB)) {
 					remove.remove(memberA);
@@ -46,25 +47,23 @@ public interface CompareSets <T,R> {
 				}
 			});
 		}
-		return new ConceptCompareSetResult<T>(add, remove, changes);
+		return new ConceptMapCompareResult (add, remove, changes);
 	}
-	
-	default boolean isSame(T memberA, T memberB) {
-		if (isSourceEqual(memberA, memberB) && isTargetEqual(memberA, memberB)) {
-			return true;
-		}
-		return false;
+
+	default boolean isSame(SetMapping memberA, SetMapping memberB) {
+		return isSourceEqual(memberA, memberB) && isTargetEqual(memberA, memberB);
 	}
-	
-	default boolean isChanged(T memberA, T memberB) {
-		if (isSourceEqual(memberA, memberB) && !isTargetEqual(memberA, memberB)) {
-			return true;
-		}
-		return false;
+
+	default boolean isChanged(SetMapping memberA, SetMapping memberB) {
+		return isSourceEqual(memberA, memberB) && !isTargetEqual(memberA, memberB);
 	}
-	
-	ConceptCompareSetResult<T> doCompare(R baseSet, R compareSet);
-	boolean isTargetEqual(T memberA, T memberB);
-	boolean isSourceEqual(T memberA, T memberB);
+
+	default boolean isTargetEqual(SetMapping memberA, SetMapping memberB) {
+		return  Objects.equals(memberA.getTargetComponentURI(),memberB.getTargetComponentURI());
+	}
+
+	default boolean isSourceEqual(SetMapping memberA, SetMapping memberB){
+		return Objects.equals(memberA.getSourceComponentURI(), memberB.getSourceComponentURI());
+	}
 
 }
