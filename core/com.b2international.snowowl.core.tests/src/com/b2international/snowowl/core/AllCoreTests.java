@@ -21,6 +21,7 @@ import org.junit.runners.Suite.SuiteClasses;
 
 import com.b2international.snowowl.core.attachments.AttachmentRegistryTest;
 import com.b2international.snowowl.core.branch.review.ReviewSerializationTest;
+import com.b2international.snowowl.core.compare.ConceptMapCompareTest;
 import com.b2international.snowowl.core.events.NotificationsTest;
 import com.b2international.snowowl.core.events.util.PromiseTest;
 import com.b2international.snowowl.core.events.util.RequestTest;
@@ -52,7 +53,8 @@ import com.b2international.snowowl.core.validation.ValidationWhiteListApiTest;
 	JobRequestsTest.class,
 	MergeConflictSerializationTest.class,
 	ReviewSerializationTest.class,
-	PermissionTest.class
+	PermissionTest.class,
+	ConceptMapCompareTest.class
 })
 public class AllCoreTests {
 
