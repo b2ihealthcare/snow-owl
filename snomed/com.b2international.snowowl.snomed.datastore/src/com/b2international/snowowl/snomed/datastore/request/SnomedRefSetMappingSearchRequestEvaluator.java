@@ -101,20 +101,29 @@ public class SnomedRefSetMappingSearchRequestEvaluator extends SnomedCollectionS
 		Builder mappingBuilder = SetMapping.builder();
 
 		Map<String, Object> properties = member.getProperties();
-		if (properties != null) {
-			String mapTarget = (String) properties.get(SnomedRf2Headers.FIELD_MAP_TARGET);
-			if (ComponentURI.isValid(mapTarget)) {
-				mappingBuilder.targetComponentURI(ComponentURI.of(mapTarget));
-			} else {
-				ComponentURI refsetComponentURI = targetCodeSystemMap.get(member.getReferenceSetId());
-				mappingBuilder.targetComponentURI(ComponentURI.of(refsetComponentURI.codeSystem(), refsetComponentURI.terminologyComponentId(), mapTarget));
-			}
-			
-			Integer mapGroup = (Integer) properties.get(SnomedRf2Headers.FIELD_MAP_GROUP);
-			//mappingBuilder.mapGroup(mapGroup);
+		String mapTarget = (String) properties.get(SnomedRf2Headers.FIELD_MAP_TARGET);
+		if (ComponentURI.isValid(mapTarget)) {
+			mappingBuilder.targetComponentURI(ComponentURI.of(mapTarget));
+		} else {
+			ComponentURI refsetComponentURI = targetCodeSystemMap.get(member.getReferenceSetId());
+			mappingBuilder.targetComponentURI(ComponentURI.of(refsetComponentURI.codeSystem(), refsetComponentURI.terminologyComponentId(), mapTarget));
 		}
 		
+		if (properties.containsKey(SnomedRf2Headers.FIELD_MAP_PRIORITY)) {
+			int mapPriority = (int) properties.get(SnomedRf2Headers.FIELD_MAP_PRIORITY);
+			mappingBuilder.mapPriority(mapPriority);
+		}
+		
+		if (properties.containsKey(SnomedRf2Headers.FIELD_MAP_GROUP)) {
+			int mapGroup = (int) properties.get(SnomedRf2Headers.FIELD_MAP_GROUP);
+			mappingBuilder.mapGroup(mapGroup);
+		}
+			
+		mappingBuilder.mapAdvice((String) properties.get(SnomedRf2Headers.FIELD_MAP_ADVICE));
+		mappingBuilder.mapRule((String) properties.get(SnomedRf2Headers.FIELD_MAP_RULE));
+		
 		return mappingBuilder
+			.active(true)
 			.sourceIconId(iconId)
 			.sourceTerm(term)
 			.sourceComponentURI(ComponentURI.of(codeSystemURI.getCodeSystem(), terminologyComponentId, member.getReferencedComponentId()))
@@ -180,10 +189,8 @@ public class SnomedRefSetMappingSearchRequestEvaluator extends SnomedCollectionS
 		TerminologyRegistry terminologyRegistry = TerminologyRegistry.INSTANCE;
 		
 		Terminology sourceTerminology = terminologyRegistry.getTerminologyByTerminologyComponentId(mapTargetComponentType);
-		System.out.println("Terminology ID: " + sourceTerminology.getId());
 		
 		TerminologyComponent sourceTerminologyComponent = terminologyRegistry.getTerminologyComponentById(mapTargetComponentType);
-		System.out.println("STC: " + sourceTerminologyComponent.shortId());
 		
 		
 		if (Strings.isNullOrEmpty(mapTargetComponentType)) {
