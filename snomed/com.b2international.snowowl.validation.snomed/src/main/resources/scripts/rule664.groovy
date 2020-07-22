@@ -54,7 +54,7 @@ activeDescriptionsByOriginalTerm.getBuckets().values().each({ bucket ->
 		def id = hit[0]
 		def effectiveTime = hit[1]
 		
-		if (!params.isUnpublishedOnly || Long.valueOf(effectiveTime).equals(EffectiveTimes.UNSET_EFFECTIVE_TIME)) {
+		if (!params.isUnpublishedOnly || EffectiveTimes.isUnset(effectiveTime)) {
 			issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, id))
 		}
 	})
