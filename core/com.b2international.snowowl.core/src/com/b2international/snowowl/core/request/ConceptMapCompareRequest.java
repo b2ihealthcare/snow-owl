@@ -16,36 +16,34 @@
 package com.b2international.snowowl.core.request;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
+import java.util.Objects;
 
-import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
-import com.b2international.snowowl.core.compare.CompareSets;
 import com.b2international.snowowl.core.compare.ConceptMapCompareResult;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.SetMapping;
 import com.b2international.snowowl.core.domain.SetMappings;
-import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.core.uri.ComponentURI;
-import com.b2international.snowowl.eventbus.IEventBus;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
 
 /**
 * @since 7.8
 */
-public class ConceptMapCompareRequest implements CompareSets, Request<BranchContext, ConceptMapCompareResult> {
+final class ConceptMapCompareRequest extends ResourceRequest<BranchContext, ConceptMapCompareResult> {
+	
 	private static final long serialVersionUID = 1L;
+	
 	private final ComponentURI baseConceptMapURI;
 	private final ComponentURI compareConceptMapURI;
-	private final List<ExtendedLocale> locales;
 	
-	public ConceptMapCompareRequest(ComponentURI baseConceptMapURI, ComponentURI compareConceptMapURI, List<ExtendedLocale> locales) {
+	ConceptMapCompareRequest(ComponentURI baseConceptMapURI, ComponentURI compareConceptMapURI) {
 		this.baseConceptMapURI = baseConceptMapURI;
 		this.compareConceptMapURI = compareConceptMapURI;
-		this.locales = locales;
 	}
 
+	@Override
 	public ConceptMapCompareResult execute(BranchContext context) {
 		
 		List<SetMapping> baseMappings = Lists.newArrayList();
@@ -54,39 +52,64 @@ public class ConceptMapCompareRequest implements CompareSets, Request<BranchCont
 		final SearchResourceRequestIterator<MappingSearchRequestBuilder, SetMappings> baseIterator = new SearchResourceRequestIterator<>(
 				CodeSystemRequests.prepareSearchMappings()
 				.filterBySet(baseConceptMapURI.identifier())
-				.setLocales(locales)
+				.setLocales(locales())
 				.setLimit(10_000),
-				// FIXME use proper CodeSystemURI instead of fixing it to HEAD of the currently selected
-				r -> r.build(CodeSystemURI.head(baseConceptMapURI.codeSystem()))
-				.execute(context.service(IEventBus.class))
-				.getSync(5, TimeUnit.MINUTES)
-				);
+				r -> r.build().execute(context)
+		);
 		
-		baseIterator.forEachRemaining(hits -> {
-			hits.forEach(member -> {	
-				baseMappings.add(member);
-			});
-		});
+		baseIterator.forEachRemaining(hits -> hits.forEach(baseMappings::add));
 
 		final SearchResourceRequestIterator<MappingSearchRequestBuilder, SetMappings> compareIterator = new SearchResourceRequestIterator<>(
 				CodeSystemRequests.prepareSearchMappings()
 				.filterBySet(compareConceptMapURI.identifier())
-				.setLocales(locales)
+				.setLocales(locales())
 				.setLimit(10_000),
-				// FIXME use proper CodeSystemURI instead of fixing it to HEAD of the currently selected
-				r -> r.build(CodeSystemURI.head(compareConceptMapURI.codeSystem()))
-				.execute(context.service(IEventBus.class))
-				.getSync(5, TimeUnit.MINUTES)
-				);
+				r -> r.build().execute(context)
+		);
 		
-		compareIterator.forEachRemaining(hits -> {
-			hits.forEach(member -> {	
-				compareMappings.add(member);
-			});
-		});
+		compareIterator.forEachRemaining(hits -> hits.forEach(compareMappings::add));
 		
 		ConceptMapCompareResult result = compareDifferents(baseMappings, compareMappings);
 		return result; 
+	}
+	
+	private ConceptMapCompareResult compareDifferents(List<SetMapping> baseSet, List<SetMapping> compareSet) {
+		ListMultimap<SetMapping, SetMapping> changes = ArrayListMultimap.create();
+		List<SetMapping> remove = Lists.newArrayList();
+		List<SetMapping> add = Lists.newArrayList();
+
+		remove.addAll(baseSet);
+		add.addAll(compareSet);
+
+		for (SetMapping memberA : baseSet) {
+			compareSet.forEach(memberB -> {
+				if (isSame(memberA, memberB)) {
+					remove.remove(memberA);
+					add.remove(memberB);
+				} else if (isChanged(memberA, memberB)) {
+					remove.remove(memberA);
+					add.remove(memberB);
+					changes.put(memberA, memberB);
+				}
+			});
+		}
+		return new ConceptMapCompareResult (add, remove, changes);
+	}
+
+	private boolean isSame(SetMapping memberA, SetMapping memberB) {
+		return isSourceEqual(memberA, memberB) && isTargetEqual(memberA, memberB);
+	}
+
+	private boolean isChanged(SetMapping memberA, SetMapping memberB) {
+		return isSourceEqual(memberA, memberB) && !isTargetEqual(memberA, memberB);
+	}
+
+	private boolean isTargetEqual(SetMapping memberA, SetMapping memberB) {
+		return  Objects.equals(memberA.getTargetComponentURI(),memberB.getTargetComponentURI());
+	}
+
+	private boolean isSourceEqual(SetMapping memberA, SetMapping memberB){
+		return Objects.equals(memberA.getSourceComponentURI(), memberB.getSourceComponentURI());
 	}
 
 }

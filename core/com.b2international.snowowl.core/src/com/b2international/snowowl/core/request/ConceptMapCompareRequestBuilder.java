@@ -15,40 +15,28 @@
  */
 package com.b2international.snowowl.core.request;
 
-import java.util.List;
-
-import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.compare.ConceptMapCompareResult;
-import com.b2international.snowowl.core.events.AsyncRequest;
-import com.b2international.snowowl.core.uri.CodeSystemURI;
+import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.uri.ComponentURI;
 
 /**
 * @since 7.8
 */
-public class ConceptMapCompareRequestBuilder {
+public final class ConceptMapCompareRequestBuilder 
+		extends ResourceRequestBuilder<ConceptMapCompareRequestBuilder, BranchContext, ConceptMapCompareResult>
+		implements RevisionIndexRequestBuilder<ConceptMapCompareResult> {
 	
 	private final ComponentURI baseConceptMapURI;
 	private final ComponentURI compareConceptMapURI;
-	private List<ExtendedLocale> locales;
 	
 	public ConceptMapCompareRequestBuilder(ComponentURI baseConceptMapURI, ComponentURI compareConceptMapURI) {
 		this.baseConceptMapURI = baseConceptMapURI;
 		this.compareConceptMapURI = compareConceptMapURI;
 	}
 	
-	public AsyncRequest<ConceptMapCompareResult> build(CodeSystemURI codeSystemURI) {
-		return new AsyncRequest<>(
-				new CodeSystemResourceRequest<>(
-						codeSystemURI,
-					new ConceptMapCompareRequest(baseConceptMapURI, compareConceptMapURI, locales)
-				)
-			);
+	@Override
+	protected ResourceRequest<BranchContext, ConceptMapCompareResult> create() {
+		return new ConceptMapCompareRequest(baseConceptMapURI, compareConceptMapURI);
 	}
-
-	public ConceptMapCompareRequestBuilder setLocales(List<ExtendedLocale> locales) {
-		this.locales = locales;
-		return this;
-	}
-
+	
 }
