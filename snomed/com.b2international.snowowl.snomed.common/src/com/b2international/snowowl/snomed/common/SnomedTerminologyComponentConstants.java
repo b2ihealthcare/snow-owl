@@ -51,8 +51,6 @@ public abstract class SnomedTerminologyComponentConstants {
 	public static final short CONSTRAINT_NUMBER = 105;
 	public static final String TEMPLATE = "com.b2international.snowowl.terminology.snomed.template";
 	public static final short TEMPLATE_NUMBER = 106;
-	public static final String COMPARE_RESULT = "com.b2international.snowowl.terminology.snomed.compare";
-	public static final short COMPARE_RESULT_NUMBER = 106;
 	
 	public static final String SNOMED_SHORT_NAME = "SNOMEDCT";
 	public static final String SNOMED_NAME = "SNOMED CT";
