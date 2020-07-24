@@ -29,6 +29,7 @@
 	</logger>
 
 	<logger level="ERROR" additivity="false" name="org.semanticweb.elk.reasoner.indexing.hierarchy.IndexObjectConverter" />
+  <logger level="WARN" additivity="false" name="org.apache" />
 
 	<root level="INFO">
 		<appender-ref ref="LOG_FILE" />
