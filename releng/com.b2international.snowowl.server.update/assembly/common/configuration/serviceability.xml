@@ -5,14 +5,14 @@
 	<contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator"/>
 
 	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-		<level>${LOG_LEVEL}</level>
+		<level>WARN</level>
 		<encoder>
 			<pattern>[%d{yyyy-MM-dd'T'HH:mm:ss.SSS}] %-5level %-48.48thread %-64.64logger{64} %msg %ex%n</pattern>
 	    </encoder>
 	</appender>
 	
 	<appender name="LOG_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-		<level>${LOG_LEVEL}</level>
+		<level>WARN</level>
 		<file>${so.home}/serviceability/logs/log.log</file>
 		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
 			<fileNamePattern>${so.home}/serviceability/logs/log_%d{yyyy-MM-dd}.log</fileNamePattern>

@@ -2,7 +2,7 @@
         <variable name="LOG_LEVEL" value="${LOG_LEVEL:-WARN}" />
 	<!-- Generic console log. -->
 	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-	    <level>${LOG_LEVEL}</level>
+	    <level>WARN</level>
 	    <filter class="ch.qos.logback.core.filter.EvaluatorFilter">
 			<evaluator class="ch.qos.logback.classic.boolex.OnMarkerEvaluator">
 				<marker>SNOW_OWL</marker>
@@ -26,7 +26,7 @@
 
 	<!--  Appender for user activity to be logged on the console -->
 	<appender name="STDOUT_USER_ACTIVITY" class="ch.qos.logback.core.ConsoleAppender">
-		<level>${LOG_LEVEL}</level>
+		<level>WARN</level>
 		<!-- encoders are assigned the type ch.qos.logback.classic.encoder.PatternLayoutEncoder 
 			by default -->
 		<filter class="ch.qos.logback.core.filter.EvaluatorFilter">
@@ -43,7 +43,7 @@
 	
 	<!--  Appender for user access to be logged on the console -->
 	<appender name="STDOUT_USER_ACCESS" class="ch.qos.logback.core.ConsoleAppender">
-		<level>${LOG_LEVEL}</level>
+		<level>WARN</level>
 		<!-- encoders are assigned the type ch.qos.logback.classic.encoder.PatternLayoutEncoder 
 			by default -->
 		<filter class="ch.qos.logback.core.filter.EvaluatorFilter">
@@ -60,7 +60,7 @@
 	
 	<!--  Appender for import to be logged on the console -->
 	<appender name="STDOUT_IMPORT_ACTIVITY" class="ch.qos.logback.core.ConsoleAppender">
-		<level>${LOG_LEVEL}</level>
+		<level>WARN</level>
 		<!-- encoders are assigned the type ch.qos.logback.classic.encoder.PatternLayoutEncoder 
 			by default -->
 		<filter class="ch.qos.logback.core.filter.EvaluatorFilter">
@@ -77,7 +77,7 @@
 	
 	<!--  Appender for export to be logged on the console -->
 	<appender name="STDOUT_EXPORT_ACTIVITY" class="ch.qos.logback.core.ConsoleAppender">
-		<level>${LOG_LEVEL}</level>
+		<level>WARN</level>
 		<!-- encoders are assigned the type ch.qos.logback.classic.encoder.PatternLayoutEncoder 
 			by default -->
 		<filter class="ch.qos.logback.core.filter.EvaluatorFilter">
@@ -95,7 +95,7 @@
 	<!--  Appender for user activity to be logged in a file -->
 	<appender name="SNOWOWL_LOG_FILE"
 		class="ch.qos.logback.core.rolling.RollingFileAppender">
-		<level>${LOG_LEVEL}</level>
+		<level>WARN</level>
 		<file>serviceability/logs/snowowl_user_audit.log</file>
 		<rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
 			<FileNamePattern>serviceability/logs/snowowl_user_audit%i.log</FileNamePattern>
@@ -122,7 +122,7 @@
 	<!--  Appender for user access to be logged in a file -->
 	<appender name="SNOWOWL_ACCESS_LOG_FILE"
 		class="ch.qos.logback.core.rolling.RollingFileAppender">
-		<level>${LOG_LEVEL}</level>
+		<level>WARN</level>
 		<file>serviceability/logs/snowowl_user_access.log</file>
 		<rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
 			<FileNamePattern>serviceability/logs/snowowl_user_access%i.log</FileNamePattern>
@@ -149,7 +149,7 @@
 	<!--  Appender for import to be logged in a file -->
 	<appender name="SNOWOWL_IMPORT_ACTIVITY"
 		class="ch.qos.logback.core.rolling.RollingFileAppender">
-		<level>${LOG_LEVEL}</level>
+		<level>WARN</level>
 		<file>serviceability/logs/snowowl_import.log</file>
 		<rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
 			<FileNamePattern>serviceability/logs/snowowl_import%i.log</FileNamePattern>
@@ -176,7 +176,7 @@
 	<!--  Appender for import to be logged in a file -->
 	<appender name="SNOWOWL_EXPORT_ACTIVITY"
 		class="ch.qos.logback.core.rolling.RollingFileAppender">
-		<level>${LOG_LEVEL}</level>
+		<level>WARN</level>
 		<file>serviceability/logs/snowowl_export.log</file>
 		<rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
 			<FileNamePattern>serviceability/logs/snowowl_export%i.log</FileNamePattern>
@@ -201,7 +201,7 @@
 	</appender>
 
 	<appender name="LOG_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-		<level>${LOG_LEVEL}</level>
+		<level>WARN</level>
 		<file>serviceability/logs/log.log</file>
 		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
 			<fileNamePattern>serviceability/logs/log_%d{yyyy-MM-dd}.log</fileNamePattern>
