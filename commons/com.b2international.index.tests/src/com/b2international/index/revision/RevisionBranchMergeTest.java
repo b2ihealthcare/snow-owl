@@ -284,7 +284,7 @@ public class RevisionBranchMergeTest extends BaseRevisionIndexTest {
 		// both revisions are visible
 		assertNotNull(getRevision(a, RevisionData.class, STORAGE_KEY1));
 		assertNotNull(getRevision(a, RevisionData.class, STORAGE_KEY2));
-		// task becomes up to date
+		// task becomes forward (up to date with all changes compared to the MAIN)
 		assertState(a, MAIN, BranchState.FORWARD);
 		// MAIN becomes behind compared to the A branch
 		assertState(MAIN, a, BranchState.BEHIND);
@@ -370,11 +370,31 @@ public class RevisionBranchMergeTest extends BaseRevisionIndexTest {
 	@Test
 	public void mergeChildBranchThenDeleteShouldNotAffectSearches() throws Exception {
 		final String branchA = createBranch(MAIN, "a");
-		indexRevision(MAIN, NEW_DATA);
+		indexRevision(branchA, NEW_DATA);
 		branching().prepareMerge(branchA, MAIN).merge();
 		branching().delete(branchA);
 		RevisionData rev = getRevision(MAIN, RevisionData.class, NEW_DATA.getId());
 		assertNotNull(rev);
+	}
+	
+	@Test
+	public void rebaseDivergedThenMerge() throws Exception {
+		final String branchA = createBranch(MAIN, "a");
+		indexRevision(branchA, NEW_DATA);
+		indexRevision(MAIN, NEW_DATA2);
+		// rebase, revision should be visible from task
+		branching().prepareMerge(MAIN, branchA).merge();
+		RevisionData branchARev = getRevision(branchA, RevisionData.class, NEW_DATA.getId());
+		assertNotNull(branchARev);
+		assertState(branchA, MAIN, BranchState.FORWARD);
+		assertState(MAIN, branchA, BranchState.BEHIND);
+		
+		// merge, revision should be visible from MAIN
+		branching().prepareMerge(branchA, MAIN).merge();
+		RevisionData mainRev = getRevision(MAIN, RevisionData.class, NEW_DATA.getId());
+		assertNotNull(mainRev);
+		assertState(branchA, MAIN, BranchState.UP_TO_DATE);
+		assertState(MAIN, branchA, BranchState.UP_TO_DATE);
 	}
 	
 	private void assertState(String branchPath, String compareWith, BranchState expectedState) {

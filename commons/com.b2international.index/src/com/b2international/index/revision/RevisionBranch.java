@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -412,24 +412,24 @@ public final class RevisionBranch extends MetadataHolderImpl {
     
 	/**
 	 * Returns the {@link BranchState} of this {@link RevisionBranch} compared to
-	 * the given target {@link RevisionBranch}.
+	 * the given other {@link RevisionBranch}.
 	 * 
 	 * <ul>
-	 * <li>FORWARD: no commits on target branch since base timestamp, commits on
+	 * <li>FORWARD: no commits on other branch since base timestamp, commits on
 	 * this branch since base timestamp
 	 * <pre>
 	 *              b    h
 	 * this         o----&#x25CF;
-	 * target ----&#x25CF;
+	 * other ----&#x25CF;
 	 *            h
 	 * </pre>
 	 * </li>
-	 * <li>BEHIND: no commits on this branch since base timestamp, commits on target
+	 * <li>BEHIND: no commits on this branch since base timestamp, commits on other
 	 * branch since base timestamp
 	 * <pre>
 	 *             b = h
 	 * this         o&#x25CF;
-	 * target -------------&#x25CF;
+	 * other -------------&#x25CF;
 	 *                     h
 	 * </pre>
 	 * </li> 
@@ -437,7 +437,7 @@ public final class RevisionBranch extends MetadataHolderImpl {
 	 * <pre>
 	 *              b    h
 	 * this         o----&#x25CF;
-	 * target -------------&#x25CF;
+	 * other -------------&#x25CF;
 	 *                     h
 	 * </pre>
 	 * </li> 
@@ -445,7 +445,7 @@ public final class RevisionBranch extends MetadataHolderImpl {
 	 * <pre>
 	 *             b = h
 	 * this         o&#x25CF;
-	 * target ------&#x25CF;
+	 * other ------&#x25CF;
 	 *              h
 	 * </pre>
 	 * </li>
@@ -454,17 +454,17 @@ public final class RevisionBranch extends MetadataHolderImpl {
 	 * Branch base and head timestamps gathered from this branch are adjusted before
 	 * doing the comparison, according to the following rules:
 	 * <ul>
-	 * <li>If the target branch has been merged into this branch, the most recent of
+	 * <li>If the other branch has been merged into this branch, the most recent of
 	 * such points is used as the base timestamp:
 	 * <pre>
 	 *              b   b'   h
 	 * this         o---o----&#x25CF;
 	 *                 /
-	 * target --------&#x25CF;------&#x25CF;
+	 * other --------&#x25CF;------&#x25CF;
 	 *                ms     h
 	 * </pre>
 	 * </li>
-	 * <li>If this branch was merged into the target branch, the most recent of such
+	 * <li>If this branch was merged into the other branch, the most recent of such
 	 * points is used as:
 	 * <ul>
 	 * <li>the base timestamp, if it is greater than the currently held base
@@ -476,43 +476,48 @@ public final class RevisionBranch extends MetadataHolderImpl {
 	 *              b  ms = b' h
 	 * this         o---&#x25CF; o----&#x25CF;
 	 *                   \|
-	 * target ------------&#x25CF;----&#x25CF;
+	 * other ------------&#x25CF;----&#x25CF;
 	 *                         h
 	 * </pre>
 	 * </li>
 	 * </ul>
 	 * </p>
 	 * 
-	 * @param target
+	 * @param other
 	 * @return
 	 */
     @JsonIgnore
-	public BranchState state(RevisionBranch target) {
-    	final RevisionBranchPoint mergeSource = this.getLatestMergeSource(target.getId(), true);
-    	final RevisionBranchPoint mergeTarget = target.getLatestMergeSource(this.getId(), true);
+	public BranchState state(RevisionBranch other) {
+    	final RevisionBranchPoint latestMergePointFromThis = this.getLatestMergeSource(other.getId(), true);
+    	final RevisionBranchPoint latestMergePointFromOther = other.getLatestMergeSource(this.getId(), true);
     	
     	long baseTimestamp = getBaseTimestamp();
-    	if (mergeSource != null) {
-    		baseTimestamp = mergeSource.getTimestamp();
-    	}
-    	
     	long headTimestamp = getHeadTimestamp();
-    	if (mergeTarget != null) {
-    		if (mergeTarget.getTimestamp() > baseTimestamp) {
-    			baseTimestamp = mergeTarget.getTimestamp();
-    		}
-    		if (mergeTarget.getTimestamp() > headTimestamp) {
-    			headTimestamp = mergeTarget.getTimestamp();
+    	long otherBaseTimestamp = other.getBaseTimestamp();
+    	long otherHeadTimestamp = other.getHeadTimestamp();
+    	
+    	if (latestMergePointFromThis != null) {
+    		baseTimestamp = latestMergePointFromThis.getTimestamp();
+    		if (baseTimestamp > headTimestamp) {
+    			baseTimestamp = headTimestamp;
     		}
     	}
     	
-    	final long targetHeadTimestamp = target.getHeadTimestamp();
+    	if (latestMergePointFromOther != null) {
+    		if (latestMergePointFromOther.getTimestamp() > baseTimestamp) {
+    			baseTimestamp = latestMergePointFromOther.getTimestamp();
+    		}
+    		if (latestMergePointFromOther.getTimestamp() > headTimestamp) {
+    			headTimestamp = latestMergePointFromOther.getTimestamp();
+    		}
+    	}
     	
-        if (headTimestamp > baseTimestamp && targetHeadTimestamp <= baseTimestamp) {
+    	
+        if (headTimestamp > baseTimestamp && otherHeadTimestamp <= baseTimestamp) {
         	return BranchState.FORWARD;
-        } else if (headTimestamp == baseTimestamp && targetHeadTimestamp > baseTimestamp) {
+        } else if (headTimestamp == baseTimestamp && otherHeadTimestamp > baseTimestamp) {
         	return BranchState.BEHIND;
-        } else if (headTimestamp > baseTimestamp && targetHeadTimestamp > baseTimestamp) {
+        } else if (headTimestamp > baseTimestamp && otherHeadTimestamp > baseTimestamp) {
         	return BranchState.DIVERGED;
         } else {
     	    return BranchState.UP_TO_DATE;
