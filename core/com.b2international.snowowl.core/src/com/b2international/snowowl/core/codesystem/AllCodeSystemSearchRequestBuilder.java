@@ -27,7 +27,7 @@ import com.google.common.collect.ImmutableSet;
 /**
  * @since 7.8
  */
-public class AllCodeSystemSearchRequestBuilder implements SystemRequestBuilder<CodeSystems>  {
+public final class AllCodeSystemSearchRequestBuilder implements SystemRequestBuilder<CodeSystems>  {
 
 	private Collection<String> ids;
 	private List<String> fields;
