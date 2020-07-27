@@ -27,7 +27,7 @@ import com.google.common.collect.Lists;
 /**
  * @since 7.8
  */
-public class AllCodeSystemSearchRequest implements Request<ServiceProvider, CodeSystems> {
+final class AllCodeSystemSearchRequest implements Request<ServiceProvider, CodeSystems> {
 
 	private static final long serialVersionUID = 1L;
 	
