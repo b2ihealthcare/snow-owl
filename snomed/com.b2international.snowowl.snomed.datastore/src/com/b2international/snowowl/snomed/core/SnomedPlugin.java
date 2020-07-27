@@ -237,7 +237,7 @@ public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 	}
 	
 	@Override
-	protected ConceptMapMappingSearchRequestEvaluator getConceptMapSearchRequestEvaluator() {
+	protected ConceptMapMappingSearchRequestEvaluator getConceptMapMappingSearchRequestEvaluator() {
 		return new SnomedConceptMapSearchRequestEvaluator();
 	}
 	
