@@ -50,7 +50,7 @@ final class ConceptMapCompareRequest extends ResourceRequest<BranchContext, Conc
 		List<SetMapping> compareMappings = Lists.newArrayList();
 		
 		final SearchResourceRequestIterator<MappingSearchRequestBuilder, SetMappings> baseIterator = new SearchResourceRequestIterator<>(
-				CodeSystemRequests.prepareSearchMappings()
+				CodeSystemRequests.prepareSearchConceptMapMappings()
 				.filterBySet(baseConceptMapURI.identifier())
 				.setLocales(locales())
 				.setLimit(10_000),
@@ -60,7 +60,7 @@ final class ConceptMapCompareRequest extends ResourceRequest<BranchContext, Conc
 		baseIterator.forEachRemaining(hits -> hits.forEach(baseMappings::add));
 
 		final SearchResourceRequestIterator<MappingSearchRequestBuilder, SetMappings> compareIterator = new SearchResourceRequestIterator<>(
-				CodeSystemRequests.prepareSearchMappings()
+				CodeSystemRequests.prepareSearchConceptMapMappings()
 				.filterBySet(compareConceptMapURI.identifier())
 				.setLocales(locales())
 				.setLimit(10_000),

@@ -89,7 +89,7 @@ public class CodeSystemRequests {
 	 * 
 	 * @return the builder to configure for generic mappings search
 	 */
-	public static MappingSearchRequestBuilder prepareSearchMappings() {
+	public static MappingSearchRequestBuilder prepareSearchConceptMapMappings() {
 		return new MappingSearchRequestBuilder();
 	}
 	
