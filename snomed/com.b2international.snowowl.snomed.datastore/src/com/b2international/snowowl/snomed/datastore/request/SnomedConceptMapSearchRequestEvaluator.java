@@ -51,7 +51,7 @@ import com.google.common.collect.Sets;
 /**
  * @since 7.8
  */
-public class SnomedConceptMapSearchRequestEvaluator implements ConceptMapMappingSearchRequestEvaluator {
+public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapMappingSearchRequestEvaluator {
 
 	//RefsetID -> targetComponentURI
 
@@ -61,7 +61,7 @@ public class SnomedConceptMapSearchRequestEvaluator implements ConceptMapMapping
 		return toCollectionResource(referenceSetMembers, uri, context);
 	}
 
-	protected ConceptMapMappings toCollectionResource(SnomedReferenceSetMembers referenceSetMembers, CodeSystemURI uri, BranchContext context) {
+	private ConceptMapMappings toCollectionResource(SnomedReferenceSetMembers referenceSetMembers, CodeSystemURI uri, BranchContext context) {
 
 		List<ConceptMapMapping> mappings = referenceSetMembers.stream()
 				.filter(m -> {
@@ -154,7 +154,7 @@ public class SnomedConceptMapSearchRequestEvaluator implements ConceptMapMapping
 		}
 	}
 
-	protected Set<SnomedRefSetType> getRefsetTypes() {
+	private Set<SnomedRefSetType> getRefsetTypes() {
 		return Sets.newHashSet(SnomedRefSetType.SIMPLE_MAP, 
 				SnomedRefSetType.COMPLEX_MAP, 
 				SnomedRefSetType.EXTENDED_MAP, 
@@ -193,7 +193,7 @@ public class SnomedConceptMapSearchRequestEvaluator implements ConceptMapMapping
 		}
 	}
 
-	public SnomedReferenceSetMembers fetchRefsetMembers(CodeSystemURI uri, BranchContext context, Options search) {
+	private SnomedReferenceSetMembers fetchRefsetMembers(CodeSystemURI uri, BranchContext context, Options search) {
 
 		final Integer limit = search.get(OptionKey.LIMIT, Integer.class);
 		final String searchAfter = search.get(OptionKey.AFTER, String.class);

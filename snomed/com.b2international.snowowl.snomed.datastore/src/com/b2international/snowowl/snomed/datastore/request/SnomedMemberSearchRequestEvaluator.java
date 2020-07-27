@@ -39,7 +39,7 @@ import com.google.common.collect.ImmutableSet;
 /**
  * @since 7.7
  */
-public class SnomedMemberSearchRequestEvaluator implements SetMemberSearchRequestEvaluator {
+public final class SnomedMemberSearchRequestEvaluator implements SetMemberSearchRequestEvaluator {
 
 	@Override
 	public SetMembers evaluate(CodeSystemURI uri, BranchContext context, Options search) {
@@ -47,7 +47,7 @@ public class SnomedMemberSearchRequestEvaluator implements SetMemberSearchReques
 		return toCollectionResource(referenceSetMembers, uri);
 	}
 
-	protected Set<SnomedRefSetType> getRefsetTypes() {
+	private Set<SnomedRefSetType> getRefsetTypes() {
 		return ImmutableSet.of(SnomedRefSetType.SIMPLE);
 	}
 
@@ -79,7 +79,7 @@ public class SnomedMemberSearchRequestEvaluator implements SetMemberSearchReques
 				iconId);
 	}
 
-	public SnomedReferenceSetMembers fetchRefsetMembers(CodeSystemURI uri, BranchContext context, Options search) {
+	private SnomedReferenceSetMembers fetchRefsetMembers(CodeSystemURI uri, BranchContext context, Options search) {
 
 		final Integer limit = search.get(OptionKey.LIMIT, Integer.class);
 		final String searchAfter = search.get(OptionKey.AFTER, String.class);
