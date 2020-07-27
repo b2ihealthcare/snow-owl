@@ -22,6 +22,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
@@ -45,59 +46,46 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.google.common.base.Strings;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 /**
  * @since 7.8
  */
-public class SnomedConceptMapSearchRequestEvaluator extends SnomedCollectionSearchRequestEvaluator<ConceptMapMapping, ConceptMapMappings> implements ConceptMapMappingSearchRequestEvaluator {
+public class SnomedConceptMapSearchRequestEvaluator implements ConceptMapMappingSearchRequestEvaluator {
 
 	//RefsetID -> targetComponentURI
-	private Map<String, ComponentURI> targetCodeSystemMap = Maps.newHashMap();
-
-	public ConceptMapMappings evaluate(CodeSystemURI uri, BranchContext context, Options search) {
-		
-		if (search.containsKey(OptionKey.SET)) {
-			
-			final Collection<String> refsetIds = search.getCollection(OptionKey.SET, String.class);
-			for (String refsetId : refsetIds) {
-				targetCodeSystemMap.put(refsetId, getTargetCodeSystemName(uri, context, refsetId, search));
-			}
-		}
-		
-		SnomedReferenceSetMembers referenceSetMembers = fetchRefsetMembers(uri, context, search);
-		return toCollectionResource(referenceSetMembers, uri);
-	}
 
 	@Override
-	protected ConceptMapMappings toCollectionResource(SnomedReferenceSetMembers referenceSetMembers, CodeSystemURI uri) {
-		
-		
+	public ConceptMapMappings evaluate(CodeSystemURI uri, BranchContext context, Options search) {
+		SnomedReferenceSetMembers referenceSetMembers = fetchRefsetMembers(uri, context, search);
+		return toCollectionResource(referenceSetMembers, uri, context);
+	}
+
+	protected ConceptMapMappings toCollectionResource(SnomedReferenceSetMembers referenceSetMembers, CodeSystemURI uri, BranchContext context) {
+
 		List<ConceptMapMapping> mappings = referenceSetMembers.stream()
-			.filter(m -> {
-				short terminologyComponentId = m.getReferencedComponent().getTerminologyComponentId();
-				return terminologyComponentId == SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
-			})
-			.map(m -> toMapping(m, uri))
-			.collect(Collectors.toList());
-		
-		
+				.filter(m -> {
+					short terminologyComponentId = m.getReferencedComponent().getTerminologyComponentId();
+					return terminologyComponentId == SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
+				})
+				.map(m -> toMapping(m, uri, getTargetComponentURI(context, m.getReferenceSetId())))
+				.collect(Collectors.toList());
+
 		return new ConceptMapMappings(mappings,
 				referenceSetMembers.getSearchAfter(),
 				referenceSetMembers.getLimit(),
 				referenceSetMembers.getTotal()
 				);
 	}
-	
-	private ConceptMapMapping toMapping(SnomedReferenceSetMember member, CodeSystemURI codeSystemURI) {	 		
+
+	private ConceptMapMapping toMapping(SnomedReferenceSetMember member, CodeSystemURI codeSystemURI, ComponentURI targetURI) {	 		
 		final String term;		
 		final String iconId = member.getReferencedComponent().getIconId();
 		short terminologyComponentId = member.getReferencedComponent().getTerminologyComponentId();
-		
+
 		SnomedConcept concept = (SnomedConcept) member.getReferencedComponent();
 		term = concept.getFsn().getTerm();
-		
+
 		Builder mappingBuilder = ConceptMapMapping.builder();
 
 		Map<String, Object> properties = member.getProperties();
@@ -105,97 +93,94 @@ public class SnomedConceptMapSearchRequestEvaluator extends SnomedCollectionSear
 		if (ComponentURI.isValid(mapTarget)) {
 			mappingBuilder.targetComponentURI(ComponentURI.of(mapTarget));
 		} else {
-			ComponentURI refsetComponentURI = targetCodeSystemMap.get(member.getReferenceSetId());
-			mappingBuilder.targetComponentURI(ComponentURI.of(refsetComponentURI.codeSystem(), refsetComponentURI.terminologyComponentId(), mapTarget));
+			mappingBuilder.targetComponentURI(ComponentURI.of(targetURI.codeSystem(), targetURI.terminologyComponentId(), mapTarget));
 		}
-		
+
 		if (properties.containsKey(SnomedRf2Headers.FIELD_MAP_PRIORITY)) {
 			int mapPriority = (int) properties.get(SnomedRf2Headers.FIELD_MAP_PRIORITY);
 			mappingBuilder.mapPriority(mapPriority);
 		}
-		
+
 		if (properties.containsKey(SnomedRf2Headers.FIELD_MAP_GROUP)) {
 			int mapGroup = (int) properties.get(SnomedRf2Headers.FIELD_MAP_GROUP);
 			mappingBuilder.mapGroup(mapGroup);
 		}
-			
+
 		mappingBuilder.mapAdvice((String) properties.get(SnomedRf2Headers.FIELD_MAP_ADVICE));
 		mappingBuilder.mapRule((String) properties.get(SnomedRf2Headers.FIELD_MAP_RULE));
-		
+
 		return mappingBuilder
-			.active(true)
-			.sourceIconId(iconId)
-			.sourceTerm(term)
-			.sourceComponentURI(ComponentURI.of(codeSystemURI.getCodeSystem(), terminologyComponentId, member.getReferencedComponentId()))
-			.targetTerm("")
-			.active(member.isActive())
-			.mappingCorrelation(getEquivalence(member))
-			.build();
+				.active(true)
+				.sourceIconId(iconId)
+				.sourceTerm(term)
+				.sourceComponentURI(ComponentURI.of(codeSystemURI.getCodeSystem(), terminologyComponentId, member.getReferencedComponentId()))
+				.targetTerm("")
+				.active(member.isActive())
+				.mappingCorrelation(getEquivalence(member))
+				.build();
 	}
-	
+
 	private MappingCorrelation getEquivalence(SnomedReferenceSetMember mappingSetMember) {
-		
+
 		SnomedRefSetType snomedRefSetType = mappingSetMember.type();
-		
+
 		if (snomedRefSetType == SnomedRefSetType.SIMPLE_MAP) {
 			return MappingCorrelation.EXACT_MATCH; //probably true
 		}
-		
+
 		Map<String, Object> properties = mappingSetMember.getProperties();
-		
+
 		if (properties == null || properties.isEmpty()) {
 			return MappingCorrelation.NOT_SPECIFIED; 
 		}
-		
+
 		String correlationId = (String) properties.get(SnomedRf2Headers.FIELD_CORRELATION_ID);
-		
+
 		switch (correlationId) {
-			case Concepts.MAP_CORRELATION_EXACT_MATCH:
-				return MappingCorrelation.EXACT_MATCH;
-			case Concepts.MAP_CORRELATION_BROAD_TO_NARROW:
-				return MappingCorrelation.BROAD_TO_NARROW;
-			case Concepts.MAP_CORRELATION_NARROW_TO_BROAD:
-				return MappingCorrelation.NARROW_TO_BROAD;
-			case Concepts.MAP_CORRELATION_PARTIAL_OVERLAP:
-				return MappingCorrelation.PARTIAL_OVERLAP;
-			case Concepts.MAP_CORRELATION_NOT_MAPPABLE:
-				return MappingCorrelation.NOT_MAPPABLE;
-			case Concepts.MAP_CORRELATION_NOT_SPECIFIED:
-				return MappingCorrelation.NOT_SPECIFIED;
-			default:
-				return MappingCorrelation.NOT_SPECIFIED;
-			}
+		case Concepts.MAP_CORRELATION_EXACT_MATCH:
+			return MappingCorrelation.EXACT_MATCH;
+		case Concepts.MAP_CORRELATION_BROAD_TO_NARROW:
+			return MappingCorrelation.BROAD_TO_NARROW;
+		case Concepts.MAP_CORRELATION_NARROW_TO_BROAD:
+			return MappingCorrelation.NARROW_TO_BROAD;
+		case Concepts.MAP_CORRELATION_PARTIAL_OVERLAP:
+			return MappingCorrelation.PARTIAL_OVERLAP;
+		case Concepts.MAP_CORRELATION_NOT_MAPPABLE:
+			return MappingCorrelation.NOT_MAPPABLE;
+		case Concepts.MAP_CORRELATION_NOT_SPECIFIED:
+			return MappingCorrelation.NOT_SPECIFIED;
+		default:
+			return MappingCorrelation.NOT_SPECIFIED;
+		}
 	}
 
-	@Override
 	protected Set<SnomedRefSetType> getRefsetTypes() {
 		return Sets.newHashSet(SnomedRefSetType.SIMPLE_MAP, 
 				SnomedRefSetType.COMPLEX_MAP, 
 				SnomedRefSetType.EXTENDED_MAP, 
 				SnomedRefSetType.COMPLEX_BLOCK_MAP);
 	}
-	
-	private ComponentURI getTargetCodeSystemName(CodeSystemURI uri, final BranchContext context, final String refsetId, Options search) {
-		
+
+	private ComponentURI getTargetComponentURI(final BranchContext context, final String refsetId) {
+
 		SnomedReferenceSet referenceSet = SnomedRequests.prepareGetReferenceSet(refsetId)
-			.build()
-			.execute(context);
-		
+				.build()
+				.execute(context);
+
 		String mapTargetComponentType = referenceSet.getMapTargetComponentType();
 		if (mapTargetComponentType == null) {
 			return ComponentURI.UNSPECIFIED;
 		}
-		
+
 		TerminologyRegistry terminologyRegistry = TerminologyRegistry.INSTANCE;
-		
+
 		Terminology sourceTerminology = terminologyRegistry.getTerminologyByTerminologyComponentId(mapTargetComponentType);
-		
+
 		TerminologyComponent sourceTerminologyComponent = terminologyRegistry.getTerminologyComponentById(mapTargetComponentType);
-		
+
 		if (Strings.isNullOrEmpty(mapTargetComponentType)) {
 			return ComponentURI.UNSPECIFIED;
 		} else {
-		
 			Optional<CodeSystem> codeSystemOptional = CodeSystemRequests.getAllCodeSystems(context)
 					.stream()
 					.filter(cs -> cs.getTerminologyId().equals(sourceTerminology.getId()))
@@ -208,5 +193,28 @@ public class SnomedConceptMapSearchRequestEvaluator extends SnomedCollectionSear
 		}
 	}
 
+	public SnomedReferenceSetMembers fetchRefsetMembers(CodeSystemURI uri, BranchContext context, Options search) {
+
+		final Integer limit = search.get(OptionKey.LIMIT, Integer.class);
+		final String searchAfter = search.get(OptionKey.AFTER, String.class);
+		final List<ExtendedLocale> locales = search.getList(OptionKey.LOCALES, ExtendedLocale.class);
+
+		SnomedRefSetMemberSearchRequestBuilder requestBuilder = SnomedRequests.prepareSearchMember();
+
+		if (search.containsKey(OptionKey.SET)) {
+			final Collection<String> refsetId = search.getCollection(OptionKey.SET, String.class);
+			requestBuilder.filterByRefSet(refsetId);
+		}
+
+		return requestBuilder
+				.filterByActive(true)
+				.filterByRefSetType(getRefsetTypes())
+				.setLocales(locales)
+				.setExpand("referencedComponent(expand(fsn()))")
+				.setLimit(limit)
+				.setSearchAfter(searchAfter)
+				.build()
+				.execute(context);
+	}
 
 }
