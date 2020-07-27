@@ -51,7 +51,7 @@ final class ConceptMapCompareRequest extends ResourceRequest<BranchContext, Conc
 		
 		final SearchResourceRequestIterator<ConceptMapMappingSearchRequestBuilder, ConceptMapMappings> baseIterator = new SearchResourceRequestIterator<>(
 				CodeSystemRequests.prepareSearchConceptMapMappings()
-				.filterBySet(baseConceptMapURI.identifier())
+				.filterByConceptMap(baseConceptMapURI.identifier())
 				.setLocales(locales())
 				.setLimit(10_000),
 				r -> r.build().execute(context)
@@ -61,7 +61,7 @@ final class ConceptMapCompareRequest extends ResourceRequest<BranchContext, Conc
 
 		final SearchResourceRequestIterator<ConceptMapMappingSearchRequestBuilder, ConceptMapMappings> compareIterator = new SearchResourceRequestIterator<>(
 				CodeSystemRequests.prepareSearchConceptMapMappings()
-				.filterBySet(compareConceptMapURI.identifier())
+				.filterByConceptMap(compareConceptMapURI.identifier())
 				.setLocales(locales())
 				.setLimit(10_000),
 				r -> r.build().execute(context)

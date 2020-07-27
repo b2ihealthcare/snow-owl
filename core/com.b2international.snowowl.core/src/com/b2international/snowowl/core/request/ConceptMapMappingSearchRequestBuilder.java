@@ -26,8 +26,8 @@ import com.google.common.collect.ImmutableSet;
 public final class ConceptMapMappingSearchRequestBuilder extends SearchResourceRequestBuilder<ConceptMapMappingSearchRequestBuilder, BranchContext, ConceptMapMappings> 
 		implements RevisionIndexRequestBuilder<ConceptMapMappings> {
 	
-	public ConceptMapMappingSearchRequestBuilder filterBySet(String setId) {
-		return filterBySets(ImmutableSet.of(setId));
+	public ConceptMapMappingSearchRequestBuilder filterByConceptMap(String conceptMapId) {
+		return filterBySets(ImmutableSet.of(conceptMapId));
 	}
 	
 	public ConceptMapMappingSearchRequestBuilder filterBySets(Iterable<String> setIds) {
