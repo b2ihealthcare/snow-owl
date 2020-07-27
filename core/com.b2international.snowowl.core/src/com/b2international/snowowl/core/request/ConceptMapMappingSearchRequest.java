@@ -25,7 +25,7 @@ import com.b2international.snowowl.core.uri.CodeSystemURI;
 /**
 * @since 7.8
 */
-public final class MappingSearchRequest extends SearchResourceRequest<BranchContext, ConceptMapMappings> {
+public final class ConceptMapMappingSearchRequest extends SearchResourceRequest<BranchContext, ConceptMapMappings> {
 
 	private static final long serialVersionUID = 1L;
 	

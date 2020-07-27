@@ -36,7 +36,7 @@ public final class MappingSearchRequestBuilder extends SearchResourceRequestBuil
 	
 	@Override
 	protected SearchResourceRequest<BranchContext, ConceptMapMappings> createSearch() {
-		return new MappingSearchRequest();
+		return new ConceptMapMappingSearchRequest();
 	}
 
 }
