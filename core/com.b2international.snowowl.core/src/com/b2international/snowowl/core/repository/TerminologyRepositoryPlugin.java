@@ -86,7 +86,7 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 					.bind(ComponentRevisionConflictProcessor.class, getComponentRevisionConflictProcessor())
 					.bind(ConceptSearchRequestEvaluator.class, getConceptSearchRequestEvaluator())
 					.bind(SetMemberSearchRequestEvaluator.class, getMemberSearchRequestEvaluator())
-					.bind(ConceptMapMappingSearchRequestEvaluator.class, getConceptMapSearchRequestEvaluator())
+					.bind(ConceptMapMappingSearchRequestEvaluator.class, getConceptMapMappingSearchRequestEvaluator())
 					.bind(QueryOptimizer.class, getQueryOptimizer())
 					.bind(ContentAvailabilityInfoProvider.class, getContentAvailabilityInfoProvider())
 					.bind(ContextConfigurer.class, getRequestConfigurer())
@@ -161,7 +161,7 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 	 * @see MappingSearchRequestBuilder
 	 * @see MappingSearchRequest
 	 */
-	protected ConceptMapMappingSearchRequestEvaluator getConceptMapSearchRequestEvaluator() {
+	protected ConceptMapMappingSearchRequestEvaluator getConceptMapMappingSearchRequestEvaluator() {
 		return ConceptMapMappingSearchRequestEvaluator.NOOP;
 	}
 	
