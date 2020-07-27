@@ -25,7 +25,7 @@ import com.google.common.collect.ListMultimap;
 /**
  * @since 7.8
  */
-final public class ConceptMapCompareResult implements Serializable {
+public final class ConceptMapCompareResult implements Serializable {
 	private static final long serialVersionUID = 1L;
 	
 	private final List<ConceptMapMapping> addedMembers;
