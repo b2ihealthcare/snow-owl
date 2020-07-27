@@ -122,10 +122,10 @@ public final class ConceptMapMapping implements Serializable {
 	private final boolean active;
 	private final MappingCorrelation mappingCorrelation;
 	
-	private Integer mapGroup;
-	private Integer mapPriority;
-	private String mapRule;
-	private String mapAdvice;
+	private final Integer mapGroup;
+	private final Integer mapPriority;
+	private final String mapRule;
+	private final String mapAdvice;
 	
 	ConceptMapMapping(String sourceIconId, 
 			String sourceTerm,
