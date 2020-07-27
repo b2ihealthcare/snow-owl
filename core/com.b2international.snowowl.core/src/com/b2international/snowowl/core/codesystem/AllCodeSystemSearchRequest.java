@@ -63,7 +63,7 @@ final class AllCodeSystemSearchRequest implements Request<ServiceProvider, CodeS
 			codeSystemList.addAll(css.getItems());
 		});
 		
-		return new CodeSystems(codeSystemList, null, 50, codeSystemList.size());
+		return new CodeSystems(codeSystemList, null, codeSystemList.size(), codeSystemList.size());
 	}
 	
 }
