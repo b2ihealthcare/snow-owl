@@ -33,7 +33,7 @@ public final class ConceptMapMapping implements Serializable {
 		return new Builder();
 	}
 	
-	public static class Builder {
+	public final static class Builder {
 		
 		private String sourceIconId;
 		private String sourceTerm;
