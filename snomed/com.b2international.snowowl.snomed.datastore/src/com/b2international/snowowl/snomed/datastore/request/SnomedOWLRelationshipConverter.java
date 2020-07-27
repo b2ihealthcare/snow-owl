@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,7 +72,7 @@ public final class SnomedOWLRelationshipConverter {
 		
 		final ImmutableMultimap<Integer, Relationship> groupedRelationshipMap = groupedRelationshipMapBuilder.build();
 		for (Integer group : groupedRelationshipMap.keySet()) {
-			owlToolkitRelationships.put(group, FluentIterable.from(groupedRelationshipMap.get(group)).toList());
+			owlToolkitRelationships.put(0, FluentIterable.from(groupedRelationshipMap.get(group)).toList());
 		}
 		
 		if (gci) {
