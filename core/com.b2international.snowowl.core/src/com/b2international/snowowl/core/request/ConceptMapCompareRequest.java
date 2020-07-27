@@ -83,7 +83,7 @@ final class ConceptMapCompareRequest extends ResourceRequest<BranchContext, Conc
 
 		for (ConceptMapMapping memberA : baseSet) {
 			compareSet.forEach(memberB -> {
-				if (isSame(memberA, memberB)) {
+				if (isEqual(memberA, memberB)) {
 					removed.remove(memberA);
 					added.remove(memberB);
 				} else if (isChanged(memberA, memberB)) {
@@ -96,7 +96,7 @@ final class ConceptMapCompareRequest extends ResourceRequest<BranchContext, Conc
 		return new ConceptMapCompareResult (added, removed, changed);
 	}
 
-	private boolean isSame(ConceptMapMapping memberA, ConceptMapMapping memberB) {
+	private boolean isEqual(ConceptMapMapping memberA, ConceptMapMapping memberB) {
 		return isSourceEqual(memberA, memberB) && isTargetEqual(memberA, memberB);
 	}
 
