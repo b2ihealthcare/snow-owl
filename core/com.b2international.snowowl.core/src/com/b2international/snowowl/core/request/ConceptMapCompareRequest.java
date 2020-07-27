@@ -74,26 +74,26 @@ final class ConceptMapCompareRequest extends ResourceRequest<BranchContext, Conc
 	}
 	
 	private ConceptMapCompareResult compareDifferents(List<ConceptMapMapping> baseSet, List<ConceptMapMapping> compareSet) {
-		ListMultimap<ConceptMapMapping, ConceptMapMapping> changes = ArrayListMultimap.create();
-		List<ConceptMapMapping> remove = Lists.newArrayList();
-		List<ConceptMapMapping> add = Lists.newArrayList();
+		ListMultimap<ConceptMapMapping, ConceptMapMapping> changed = ArrayListMultimap.create();
+		List<ConceptMapMapping> removed = Lists.newArrayList();
+		List<ConceptMapMapping> added = Lists.newArrayList();
 
-		remove.addAll(baseSet);
-		add.addAll(compareSet);
+		removed.addAll(baseSet);
+		added.addAll(compareSet);
 
 		for (ConceptMapMapping memberA : baseSet) {
 			compareSet.forEach(memberB -> {
 				if (isSame(memberA, memberB)) {
-					remove.remove(memberA);
-					add.remove(memberB);
+					removed.remove(memberA);
+					added.remove(memberB);
 				} else if (isChanged(memberA, memberB)) {
-					remove.remove(memberA);
-					add.remove(memberB);
-					changes.put(memberA, memberB);
+					removed.remove(memberA);
+					added.remove(memberB);
+					changed.put(memberA, memberB);
 				}
 			});
 		}
-		return new ConceptMapCompareResult (add, remove, changes);
+		return new ConceptMapCompareResult (added, removed, changed);
 	}
 
 	private boolean isSame(ConceptMapMapping memberA, ConceptMapMapping memberB) {
