@@ -17,7 +17,7 @@ package com.b2international.snowowl.core.request;
 
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.domain.SetMapping;
+import com.b2international.snowowl.core.domain.ConceptMapMapping;
 import com.b2international.snowowl.core.domain.SetMappings;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
 
@@ -50,7 +50,7 @@ public interface SetSearchRequestEvaluator<R> {
 	}
 	
 	/**
-	 * Evaluate the given search options on the given context and return generic {@link SetMapping} instances back in a {@link SetMappings} pageable
+	 * Evaluate the given search options on the given context and return generic {@link ConceptMapMapping} instances back in a {@link SetMappings} pageable
 	 * resource.
 	 * 
 	 * @param uri - the code system uri where the search is being evaluated

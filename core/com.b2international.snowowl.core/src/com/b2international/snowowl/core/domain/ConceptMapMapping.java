@@ -25,7 +25,7 @@ import com.google.common.base.MoreObjects;
 /**
  * @since 7.8
  */
-public final class SetMapping implements Serializable {
+public final class ConceptMapMapping implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
 	
@@ -105,8 +105,8 @@ public final class SetMapping implements Serializable {
 			return this;
 		}
 		
-		public SetMapping build() {
-			return new SetMapping(sourceIconId, sourceTerm, sourceComponentURI, 
+		public ConceptMapMapping build() {
+			return new ConceptMapMapping(sourceIconId, sourceTerm, sourceComponentURI, 
 					targetTerm, targetComponentURI, isActive, mappingCorrelation, mapGroup, mapPriority, mapRule, mapAdvice);
 		}
 	
@@ -127,7 +127,7 @@ public final class SetMapping implements Serializable {
 	private String mapRule;
 	private String mapAdvice;
 	
-	SetMapping(String sourceIconId, 
+	ConceptMapMapping(String sourceIconId, 
 			String sourceTerm,
 			ComponentURI sourceComponentURI, 
 			String targetTerm, 
@@ -222,7 +222,7 @@ public final class SetMapping implements Serializable {
 		if (this == obj) return true;
 		if (obj == null) return false;
 		if (getClass() != obj.getClass()) return false;
-		SetMapping other = (SetMapping) obj;
+		ConceptMapMapping other = (ConceptMapMapping) obj;
 		return Objects.equals(sourceComponentURI, other.sourceComponentURI)
 				&& Objects.equals(targetComponentURI, other.targetComponentURI)
 				&& Objects.equals(sourceTerm, other.sourceTerm)

@@ -18,7 +18,7 @@ package com.b2international.snowowl.core.compare;
 import java.io.Serializable;
 import java.util.List;
 
-import com.b2international.snowowl.core.domain.SetMapping;
+import com.b2international.snowowl.core.domain.ConceptMapMapping;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ListMultimap;
@@ -28,25 +28,25 @@ import com.google.common.collect.ListMultimap;
 final public class ConceptMapCompareResult implements Serializable {
 	private static final long serialVersionUID = 1L;
 	
-	private final List<SetMapping> addedMembers;
-	private final List<SetMapping> removedMembers;
-	private final ListMultimap<SetMapping, SetMapping> changedMembers;
+	private final List<ConceptMapMapping> addedMembers;
+	private final List<ConceptMapMapping> removedMembers;
+	private final ListMultimap<ConceptMapMapping, ConceptMapMapping> changedMembers;
 	
-	public ConceptMapCompareResult(List<SetMapping> addedMembers, List<SetMapping> removedMembers, ListMultimap<SetMapping, SetMapping> changedMembers) {
+	public ConceptMapCompareResult(List<ConceptMapMapping> addedMembers, List<ConceptMapMapping> removedMembers, ListMultimap<ConceptMapMapping, ConceptMapMapping> changedMembers) {
 		this.addedMembers = ImmutableList.copyOf(addedMembers);
 		this.removedMembers = ImmutableList.copyOf(removedMembers);
 		this.changedMembers = ImmutableListMultimap.copyOf(changedMembers);
 	}
 	
-	public List<SetMapping> getAddedMembers() {
+	public List<ConceptMapMapping> getAddedMembers() {
 		return addedMembers;
 	}
 	
-	public List<SetMapping> getRemovedMembers() {
+	public List<ConceptMapMapping> getRemovedMembers() {
 		return removedMembers;
 	}
 	
-	public ListMultimap<SetMapping, SetMapping> getChangedMembers() {
+	public ListMultimap<ConceptMapMapping, ConceptMapMapping> getChangedMembers() {
 		return changedMembers;
 	}
 

@@ -26,8 +26,8 @@ import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.domain.SetMapping;
-import com.b2international.snowowl.core.domain.SetMapping.Builder;
+import com.b2international.snowowl.core.domain.ConceptMapMapping;
+import com.b2international.snowowl.core.domain.ConceptMapMapping.Builder;
 import com.b2international.snowowl.core.domain.SetMappings;
 import com.b2international.snowowl.core.request.ConceptMapMappingSearchRequestEvaluator;
 import com.b2international.snowowl.core.request.MappingCorrelation;
@@ -51,7 +51,7 @@ import com.google.common.collect.Sets;
 /**
  * @since 7.8
  */
-public class SnomedConceptMapSearchRequestEvaluator extends SnomedCollectionSearchRequestEvaluator<SetMapping, SetMappings> implements ConceptMapMappingSearchRequestEvaluator {
+public class SnomedConceptMapSearchRequestEvaluator extends SnomedCollectionSearchRequestEvaluator<ConceptMapMapping, SetMappings> implements ConceptMapMappingSearchRequestEvaluator {
 
 	//RefsetID -> targetComponentURI
 	private Map<String, ComponentURI> targetCodeSystemMap = Maps.newHashMap();
@@ -74,7 +74,7 @@ public class SnomedConceptMapSearchRequestEvaluator extends SnomedCollectionSear
 	protected SetMappings toCollectionResource(SnomedReferenceSetMembers referenceSetMembers, CodeSystemURI uri) {
 		
 		
-		List<SetMapping> mappings = referenceSetMembers.stream()
+		List<ConceptMapMapping> mappings = referenceSetMembers.stream()
 			.filter(m -> {
 				short terminologyComponentId = m.getReferencedComponent().getTerminologyComponentId();
 				return terminologyComponentId == SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
@@ -90,7 +90,7 @@ public class SnomedConceptMapSearchRequestEvaluator extends SnomedCollectionSear
 				);
 	}
 	
-	private SetMapping toMapping(SnomedReferenceSetMember member, CodeSystemURI codeSystemURI) {	 		
+	private ConceptMapMapping toMapping(SnomedReferenceSetMember member, CodeSystemURI codeSystemURI) {	 		
 		final String term;		
 		final String iconId = member.getReferencedComponent().getIconId();
 		short terminologyComponentId = member.getReferencedComponent().getTerminologyComponentId();
@@ -98,7 +98,7 @@ public class SnomedConceptMapSearchRequestEvaluator extends SnomedCollectionSear
 		SnomedConcept concept = (SnomedConcept) member.getReferencedComponent();
 		term = concept.getFsn().getTerm();
 		
-		Builder mappingBuilder = SetMapping.builder();
+		Builder mappingBuilder = ConceptMapMapping.builder();
 
 		Map<String, Object> properties = member.getProperties();
 		String mapTarget = (String) properties.get(SnomedRf2Headers.FIELD_MAP_TARGET);

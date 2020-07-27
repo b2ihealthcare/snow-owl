@@ -21,7 +21,7 @@ import java.util.Objects;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.compare.ConceptMapCompareResult;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.domain.SetMapping;
+import com.b2international.snowowl.core.domain.ConceptMapMapping;
 import com.b2international.snowowl.core.domain.SetMappings;
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.google.common.collect.ArrayListMultimap;
@@ -46,8 +46,8 @@ final class ConceptMapCompareRequest extends ResourceRequest<BranchContext, Conc
 	@Override
 	public ConceptMapCompareResult execute(BranchContext context) {
 		
-		List<SetMapping> baseMappings = Lists.newArrayList();
-		List<SetMapping> compareMappings = Lists.newArrayList();
+		List<ConceptMapMapping> baseMappings = Lists.newArrayList();
+		List<ConceptMapMapping> compareMappings = Lists.newArrayList();
 		
 		final SearchResourceRequestIterator<MappingSearchRequestBuilder, SetMappings> baseIterator = new SearchResourceRequestIterator<>(
 				CodeSystemRequests.prepareSearchConceptMapMappings()
@@ -73,15 +73,15 @@ final class ConceptMapCompareRequest extends ResourceRequest<BranchContext, Conc
 		return result; 
 	}
 	
-	private ConceptMapCompareResult compareDifferents(List<SetMapping> baseSet, List<SetMapping> compareSet) {
-		ListMultimap<SetMapping, SetMapping> changes = ArrayListMultimap.create();
-		List<SetMapping> remove = Lists.newArrayList();
-		List<SetMapping> add = Lists.newArrayList();
+	private ConceptMapCompareResult compareDifferents(List<ConceptMapMapping> baseSet, List<ConceptMapMapping> compareSet) {
+		ListMultimap<ConceptMapMapping, ConceptMapMapping> changes = ArrayListMultimap.create();
+		List<ConceptMapMapping> remove = Lists.newArrayList();
+		List<ConceptMapMapping> add = Lists.newArrayList();
 
 		remove.addAll(baseSet);
 		add.addAll(compareSet);
 
-		for (SetMapping memberA : baseSet) {
+		for (ConceptMapMapping memberA : baseSet) {
 			compareSet.forEach(memberB -> {
 				if (isSame(memberA, memberB)) {
 					remove.remove(memberA);
@@ -96,19 +96,19 @@ final class ConceptMapCompareRequest extends ResourceRequest<BranchContext, Conc
 		return new ConceptMapCompareResult (add, remove, changes);
 	}
 
-	private boolean isSame(SetMapping memberA, SetMapping memberB) {
+	private boolean isSame(ConceptMapMapping memberA, ConceptMapMapping memberB) {
 		return isSourceEqual(memberA, memberB) && isTargetEqual(memberA, memberB);
 	}
 
-	private boolean isChanged(SetMapping memberA, SetMapping memberB) {
+	private boolean isChanged(ConceptMapMapping memberA, ConceptMapMapping memberB) {
 		return isSourceEqual(memberA, memberB) && !isTargetEqual(memberA, memberB);
 	}
 
-	private boolean isTargetEqual(SetMapping memberA, SetMapping memberB) {
+	private boolean isTargetEqual(ConceptMapMapping memberA, ConceptMapMapping memberB) {
 		return  Objects.equals(memberA.getTargetComponentURI(),memberB.getTargetComponentURI());
 	}
 
-	private boolean isSourceEqual(SetMapping memberA, SetMapping memberB){
+	private boolean isSourceEqual(ConceptMapMapping memberA, ConceptMapMapping memberB){
 		return Objects.equals(memberA.getSourceComponentURI(), memberB.getSourceComponentURI());
 	}
 
