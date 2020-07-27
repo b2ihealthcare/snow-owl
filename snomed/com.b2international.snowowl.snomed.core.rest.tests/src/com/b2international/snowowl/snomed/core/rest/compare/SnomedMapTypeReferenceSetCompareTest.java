@@ -18,7 +18,7 @@ package com.b2international.snowowl.snomed.core.rest.compare;
 import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.FULLY_SPECIFIED_NAME;
 import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.IS_A;
 import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.SYNONYM;
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Map;
 import java.util.UUID;
@@ -92,9 +92,9 @@ public class SnomedMapTypeReferenceSetCompareTest extends AbstractCoreApiTest {
 				.execute(getBus())
 				.getSync();
 		
-		assertEquals(0, result.getRemovedMembers().size());
-		assertEquals(0, result.getAddedMembers().size());
-		assertEquals(0, result.getChangedMembers().size());
+		assertThat(result.getRemovedMembers()).hasSize(0);
+		assertThat(result.getAddedMembers()).hasSize(0);
+		assertThat(result.getChangedMembers().entries()).hasSize(0);
 	}
 	
 	@Test
@@ -112,14 +112,14 @@ public class SnomedMapTypeReferenceSetCompareTest extends AbstractCoreApiTest {
 				.execute(getBus())
 				.getSync();
 
-		assertEquals(1, result.getRemovedMembers().size());
-		assertEquals(1, result.getAddedMembers().size());
-		assertEquals(1, result.getChangedMembers().size());
+		assertThat(result.getRemovedMembers()).hasSize(1);
+		assertThat(result.getAddedMembers()).hasSize(1);
+		assertThat(result.getChangedMembers().entries()).hasSize(1);
 
-		assertEquals(true, SOURCE_CODE_1.equals(result.getRemovedMembers().get(0).getSourceComponentURI().identifier()));
-		assertEquals(true, SOURCE_CODE_3.equals(result.getAddedMembers().get(0).getSourceComponentURI().identifier()));
-		assertEquals(true, result.getChangedMembers().keySet().stream().anyMatch(m -> TARGET_CODE_2.equals(m.getTargetComponentURI().identifier())));
-		assertEquals(true, result.getChangedMembers().values().stream().anyMatch(m -> TARGET_CODE_3.equals(m.getTargetComponentURI().identifier())));
+		assertThat(result.getRemovedMembers().get(0).getSourceComponentURI().identifier()).isEqualTo(SOURCE_CODE_1);
+		assertThat(result.getAddedMembers().get(0).getSourceComponentURI().identifier()).isEqualTo(SOURCE_CODE_3);
+		assertThat(result.getChangedMembers().keySet()).anyMatch(m -> TARGET_CODE_2.equals(m.getTargetComponentURI().identifier()));
+		assertThat(result.getChangedMembers().values()).anyMatch(m -> TARGET_CODE_3.equals(m.getTargetComponentURI().identifier()));
 	}
 	
 	private ComponentURI createURI(String rfId) {
