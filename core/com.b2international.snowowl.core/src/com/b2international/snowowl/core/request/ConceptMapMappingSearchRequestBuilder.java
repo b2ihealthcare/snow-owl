@@ -27,11 +27,11 @@ public final class ConceptMapMappingSearchRequestBuilder extends SearchResourceR
 		implements RevisionIndexRequestBuilder<ConceptMapMappings> {
 	
 	public ConceptMapMappingSearchRequestBuilder filterByConceptMap(String conceptMapId) {
-		return filterBySets(ImmutableSet.of(conceptMapId));
+		return filterByConceptMaps(ImmutableSet.of(conceptMapId));
 	}
 	
-	public ConceptMapMappingSearchRequestBuilder filterBySets(Iterable<String> setIds) {
-		return addOption(OptionKey.SET, setIds);
+	public ConceptMapMappingSearchRequestBuilder filterByConceptMaps(Iterable<String> conceptMapIds) {
+		return addOption(OptionKey.SET, conceptMapIds);
 	}
 	
 	@Override
