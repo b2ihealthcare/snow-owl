@@ -31,7 +31,7 @@ import com.google.common.collect.Lists;
 /**
 * @since 7.8
 */
-final class ConceptMapCompareRequest extends ResourceRequest<BranchContext, ConceptMapCompareResult> {
+public final class ConceptMapCompareRequest extends ResourceRequest<BranchContext, ConceptMapCompareResult> {
 	
 	private static final long serialVersionUID = 1L;
 	
@@ -45,18 +45,18 @@ final class ConceptMapCompareRequest extends ResourceRequest<BranchContext, Conc
 
 	@Override
 	public ConceptMapCompareResult execute(BranchContext context) {
-		
+
 		List<ConceptMapMapping> baseMappings = Lists.newArrayList();
 		List<ConceptMapMapping> compareMappings = Lists.newArrayList();
-		
+
 		final SearchResourceRequestIterator<ConceptMapMappingSearchRequestBuilder, ConceptMapMappings> baseIterator = new SearchResourceRequestIterator<>(
 				CodeSystemRequests.prepareSearchConceptMapMappings()
 				.filterByConceptMap(baseConceptMapURI.identifier())
 				.setLocales(locales())
 				.setLimit(10_000),
 				r -> r.build().execute(context)
-		);
-		
+				);
+
 		baseIterator.forEachRemaining(hits -> hits.forEach(baseMappings::add));
 
 		final SearchResourceRequestIterator<ConceptMapMappingSearchRequestBuilder, ConceptMapMappings> compareIterator = new SearchResourceRequestIterator<>(
@@ -65,10 +65,10 @@ final class ConceptMapCompareRequest extends ResourceRequest<BranchContext, Conc
 				.setLocales(locales())
 				.setLimit(10_000),
 				r -> r.build().execute(context)
-		);
-		
+				);
+
 		compareIterator.forEachRemaining(hits -> hits.forEach(compareMappings::add));
-		
+
 		ConceptMapCompareResult result = compareDifferents(baseMappings, compareMappings);
 		return result; 
 	}
@@ -93,7 +93,7 @@ final class ConceptMapCompareRequest extends ResourceRequest<BranchContext, Conc
 				}
 			});
 		}
-		return new ConceptMapCompareResult (added, removed, changed);
+		return new ConceptMapCompareResult(added, removed, changed);
 	}
 
 	private boolean isEqual(ConceptMapMapping memberA, ConceptMapMapping memberB) {
@@ -105,10 +105,10 @@ final class ConceptMapCompareRequest extends ResourceRequest<BranchContext, Conc
 	}
 
 	private boolean isTargetEqual(ConceptMapMapping memberA, ConceptMapMapping memberB) {
-		return  Objects.equals(memberA.getTargetComponentURI(),memberB.getTargetComponentURI());
+		return Objects.equals(memberA.getTargetComponentURI(), memberB.getTargetComponentURI());
 	}
 
-	private boolean isSourceEqual(ConceptMapMapping memberA, ConceptMapMapping memberB){
+	private boolean isSourceEqual(ConceptMapMapping memberA, ConceptMapMapping memberB) {
 		return Objects.equals(memberA.getSourceComponentURI(), memberB.getSourceComponentURI());
 	}
 
