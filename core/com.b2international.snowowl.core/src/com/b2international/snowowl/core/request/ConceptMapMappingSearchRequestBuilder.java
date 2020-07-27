@@ -23,14 +23,14 @@ import com.google.common.collect.ImmutableSet;
 /**
 * @since 7.8
 */
-public final class MappingSearchRequestBuilder extends SearchResourceRequestBuilder<MappingSearchRequestBuilder, BranchContext, ConceptMapMappings> 
+public final class ConceptMapMappingSearchRequestBuilder extends SearchResourceRequestBuilder<ConceptMapMappingSearchRequestBuilder, BranchContext, ConceptMapMappings> 
 		implements RevisionIndexRequestBuilder<ConceptMapMappings> {
 	
-	public MappingSearchRequestBuilder filterBySet(String setId) {
+	public ConceptMapMappingSearchRequestBuilder filterBySet(String setId) {
 		return filterBySets(ImmutableSet.of(setId));
 	}
 	
-	public MappingSearchRequestBuilder filterBySets(Iterable<String> setIds) {
+	public ConceptMapMappingSearchRequestBuilder filterBySets(Iterable<String> setIds) {
 		return addOption(OptionKey.SET, setIds);
 	}
 	

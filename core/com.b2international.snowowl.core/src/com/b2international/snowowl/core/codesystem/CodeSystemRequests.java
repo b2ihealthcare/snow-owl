@@ -28,7 +28,7 @@ import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.ConceptMapCompareRequestBuilder;
 import com.b2international.snowowl.core.request.ConceptSearchRequestBuilder;
 import com.b2international.snowowl.core.request.ConceptSuggestionRequestBuilder;
-import com.b2international.snowowl.core.request.MappingSearchRequestBuilder;
+import com.b2international.snowowl.core.request.ConceptMapMappingSearchRequestBuilder;
 import com.b2international.snowowl.core.request.MemberSearchRequestBuilder;
 import com.b2international.snowowl.core.request.QueryOptimizeRequestBuilder;
 import com.b2international.snowowl.core.uri.ComponentURI;
@@ -89,8 +89,8 @@ public class CodeSystemRequests {
 	 * 
 	 * @return the builder to configure for generic mappings search
 	 */
-	public static MappingSearchRequestBuilder prepareSearchConceptMapMappings() {
-		return new MappingSearchRequestBuilder();
+	public static ConceptMapMappingSearchRequestBuilder prepareSearchConceptMapMappings() {
+		return new ConceptMapMappingSearchRequestBuilder();
 	}
 	
 	public static ConceptSuggestionRequestBuilder prepareSuggestConcepts() {

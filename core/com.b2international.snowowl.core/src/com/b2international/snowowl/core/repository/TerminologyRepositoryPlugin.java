@@ -42,7 +42,7 @@ import com.b2international.snowowl.core.request.ConceptSearchRequest;
 import com.b2international.snowowl.core.request.ConceptSearchRequestBuilder;
 import com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator;
 import com.b2international.snowowl.core.request.ConceptMapMappingSearchRequest;
-import com.b2international.snowowl.core.request.MappingSearchRequestBuilder;
+import com.b2international.snowowl.core.request.ConceptMapMappingSearchRequestBuilder;
 import com.b2international.snowowl.core.request.MemberSearchRequest;
 import com.b2international.snowowl.core.request.MemberSearchRequestBuilder;
 import com.b2international.snowowl.core.request.QueryOptimizer;
@@ -158,7 +158,7 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 	/**
 	 * An evaluator that can evaluate generic {@link ConceptMapMappingSearchRequest member search requests}. 
 	 * @return a {@link ConceptMapMappingSearchRequestEvaluator} instance
-	 * @see MappingSearchRequestBuilder
+	 * @see ConceptMapMappingSearchRequestBuilder
 	 * @see ConceptMapMappingSearchRequest
 	 */
 	protected ConceptMapMappingSearchRequestEvaluator getConceptMapMappingSearchRequestEvaluator() {
