@@ -39,23 +39,24 @@ ExpressionBuilder activeFsnExpression = Expressions.builder()
 		.filter(SnomedDescriptionIndexEntry.Expressions.type(Concepts.FULLY_SPECIFIED_NAME))
 		.filter(SnomedDescriptionIndexEntry.Expressions.concepts(activeConceptIds))
 
-if (params.isUnpublishedOnly) {
-	activeFsnExpression.filter(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
-}
-
-Aggregation<String> activeDescriptionsByOriginalTerm = searcher
-		.aggregate(AggregationBuilder.bucket("ruleSnomedCommon2", String.class, SnomedDescriptionIndexEntry.class)
+Aggregation<String[]> activeDescriptionsByOriginalTerm = searcher
+		.aggregate(AggregationBuilder.bucket("ruleSnomedCommon2", String[].class, SnomedDescriptionIndexEntry.class)
 		.query(activeFsnExpression.build())
 		.onFieldValue(SnomedDescriptionIndexEntry.Fields.ORIGINAL_TERM)
-		.fields(SnomedDescriptionIndexEntry.Fields.ID)
+		.fields(SnomedDescriptionIndexEntry.Fields.ID,
+			SnomedDescriptionIndexEntry.Fields.EFFECTIVE_TIME)
 		.minBucketSize(2))
 
-		
 List<ComponentIdentifier> issues = Lists.newArrayList()
 
 activeDescriptionsByOriginalTerm.getBuckets().values().each({ bucket ->
-	bucket.each({ id ->
-		issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, id))
+	bucket.each({ hit ->
+		def id = hit[0]
+		def effectiveTime = hit[1]
+		
+		if (!params.isUnpublishedOnly || EffectiveTimes.isUnset(effectiveTime)) {
+			issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, id))
+		}
 	})
 })
 
