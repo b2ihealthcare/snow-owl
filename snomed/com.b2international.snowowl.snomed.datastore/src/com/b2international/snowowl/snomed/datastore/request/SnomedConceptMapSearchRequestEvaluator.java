@@ -29,8 +29,8 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.SetMapping;
 import com.b2international.snowowl.core.domain.SetMapping.Builder;
 import com.b2international.snowowl.core.domain.SetMappings;
+import com.b2international.snowowl.core.request.ConceptMapMappingSearchRequestEvaluator;
 import com.b2international.snowowl.core.request.MappingCorrelation;
-import com.b2international.snowowl.core.request.SetMappingSearchRequestEvaluator;
 import com.b2international.snowowl.core.terminology.Terminology;
 import com.b2international.snowowl.core.terminology.TerminologyComponent;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
@@ -51,7 +51,7 @@ import com.google.common.collect.Sets;
 /**
  * @since 7.8
  */
-public class SnomedRefSetMappingSearchRequestEvaluator extends SnomedCollectionSearchRequestEvaluator<SetMapping, SetMappings> implements SetMappingSearchRequestEvaluator {
+public class SnomedConceptMapSearchRequestEvaluator extends SnomedCollectionSearchRequestEvaluator<SetMapping, SetMappings> implements ConceptMapMappingSearchRequestEvaluator {
 
 	//RefsetID -> targetComponentURI
 	private Map<String, ComponentURI> targetCodeSystemMap = Maps.newHashMap();

@@ -37,6 +37,7 @@ import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.ContextConfigurer;
 import com.b2international.snowowl.core.merge.ComponentRevisionConflictProcessor;
 import com.b2international.snowowl.core.merge.IMergeConflictRule;
+import com.b2international.snowowl.core.request.ConceptMapMappingSearchRequestEvaluator;
 import com.b2international.snowowl.core.request.ConceptSearchRequest;
 import com.b2international.snowowl.core.request.ConceptSearchRequestBuilder;
 import com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator;
@@ -45,7 +46,6 @@ import com.b2international.snowowl.core.request.MappingSearchRequestBuilder;
 import com.b2international.snowowl.core.request.MemberSearchRequest;
 import com.b2international.snowowl.core.request.MemberSearchRequestBuilder;
 import com.b2international.snowowl.core.request.QueryOptimizer;
-import com.b2international.snowowl.core.request.SetMappingSearchRequestEvaluator;
 import com.b2international.snowowl.core.request.SetMemberSearchRequestEvaluator;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.Plugin;
@@ -86,7 +86,7 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 					.bind(ComponentRevisionConflictProcessor.class, getComponentRevisionConflictProcessor())
 					.bind(ConceptSearchRequestEvaluator.class, getConceptSearchRequestEvaluator())
 					.bind(SetMemberSearchRequestEvaluator.class, getMemberSearchRequestEvaluator())
-					.bind(SetMappingSearchRequestEvaluator.class, getMappingSearchRequestEvaluator())
+					.bind(ConceptMapMappingSearchRequestEvaluator.class, getConceptMapSearchRequestEvaluator())
 					.bind(QueryOptimizer.class, getQueryOptimizer())
 					.bind(ContentAvailabilityInfoProvider.class, getContentAvailabilityInfoProvider())
 					.bind(ContextConfigurer.class, getRequestConfigurer())
@@ -157,12 +157,12 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 	
 	/**
 	 * An evaluator that can evaluate generic {@link MappingSearchRequest member search requests}. 
-	 * @return a {@link SetMappingSearchRequestEvaluator} instance
+	 * @return a {@link ConceptMapMappingSearchRequestEvaluator} instance
 	 * @see MappingSearchRequestBuilder
 	 * @see MappingSearchRequest
 	 */
-	protected SetMappingSearchRequestEvaluator getMappingSearchRequestEvaluator() {
-		return SetMappingSearchRequestEvaluator.NOOP;
+	protected ConceptMapMappingSearchRequestEvaluator getConceptMapSearchRequestEvaluator() {
+		return ConceptMapMappingSearchRequestEvaluator.NOOP;
 	}
 	
 	

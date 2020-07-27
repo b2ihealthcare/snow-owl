@@ -101,7 +101,7 @@ public class CodeSystemRequests {
 		return new QueryOptimizeRequestBuilder();
 	}
 	
-	public static AllCodeSystemSearchRequestBuilder prepareSearchCodeSystemsInAllRepositories(){
+	public static AllCodeSystemSearchRequestBuilder prepareSearchAllCodeSystems(){
 		return new AllCodeSystemSearchRequestBuilder();
 	}
 	

@@ -23,14 +23,13 @@ import com.b2international.snowowl.core.uri.CodeSystemURI;
 /**
  * @since 7.8
  */
-public interface SetMappingSearchRequestEvaluator extends SetSearchRequestEvaluator<SetMappings> {
-
+public interface ConceptMapMappingSearchRequestEvaluator extends SetSearchRequestEvaluator<SetMappings> {
 
 	/**
 	 * No-op request evaluator that returns zero results
 	 * @since 7.8
 	 */
-	SetMappingSearchRequestEvaluator NOOP = new SetMappingSearchRequestEvaluator() {
+	ConceptMapMappingSearchRequestEvaluator NOOP = new ConceptMapMappingSearchRequestEvaluator() {
 		
 		@Override
 		public SetMappings evaluate(CodeSystemURI uri, BranchContext context, Options search) {

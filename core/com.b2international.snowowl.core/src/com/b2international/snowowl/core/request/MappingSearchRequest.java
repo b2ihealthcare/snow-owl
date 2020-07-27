@@ -27,7 +27,6 @@ import com.b2international.snowowl.core.uri.CodeSystemURI;
 */
 public final class MappingSearchRequest extends SearchResourceRequest<BranchContext, SetMappings> {
 
-	
 	private static final long serialVersionUID = 1L;
 	
 	@Override
@@ -39,13 +38,13 @@ public final class MappingSearchRequest extends SearchResourceRequest<BranchCont
 	protected SetMappings doExecute(BranchContext context) throws IOException {
 		Options options = Options.builder()
 				.putAll(options())
-				.put(SetMappingSearchRequestEvaluator.OptionKey.AFTER, searchAfter())
-				.put(SetMappingSearchRequestEvaluator.OptionKey.LIMIT, limit())
-				.put(SetMappingSearchRequestEvaluator.OptionKey.LOCALES, locales())
+				.put(ConceptMapMappingSearchRequestEvaluator.OptionKey.AFTER, searchAfter())
+				.put(ConceptMapMappingSearchRequestEvaluator.OptionKey.LIMIT, limit())
+				.put(ConceptMapMappingSearchRequestEvaluator.OptionKey.LOCALES, locales())
 				.put(SearchResourceRequest.OptionKey.SORT_BY, sortBy())
 				.build();
 		
-		return context.service(SetMappingSearchRequestEvaluator.class)
+		return context.service(ConceptMapMappingSearchRequestEvaluator.class)
 				.evaluate(context.service(CodeSystemURI.class), context, options);
 	}
 	

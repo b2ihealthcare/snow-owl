@@ -50,7 +50,7 @@ public class CodeSystemRequestTest {
 		
 		assertCodeSystemCreated(shortName, oid);
 		
-		final CodeSystems codeSystems = CodeSystemRequests.prepareSearchCodeSystemsInAllRepositories()
+		final CodeSystems codeSystems = CodeSystemRequests.prepareSearchAllCodeSystems()
 				.build()
 				.execute(Services.context());
 
@@ -59,7 +59,7 @@ public class CodeSystemRequestTest {
 	
 	@Test
 	public void getCodeSystemByShortNameFromAllRepositoreis() {
-		final CodeSystems existingCodeSystem = CodeSystemRequests.prepareSearchCodeSystemsInAllRepositories()
+		final CodeSystems existingCodeSystem = CodeSystemRequests.prepareSearchAllCodeSystems()
 				.filterById(SNOMEDCT)
 				.build()
 				.execute(Services.context());
@@ -67,7 +67,7 @@ public class CodeSystemRequestTest {
 		assertEquals(existingCodeSystem.getTotal(), 1);
 		assertEquals(SNOMEDCT, Iterables.getOnlyElement(existingCodeSystem.getItems()).getShortName());
 
-		final CodeSystems nonExistentCodeSystem = CodeSystemRequests.prepareSearchCodeSystemsInAllRepositories()
+		final CodeSystems nonExistentCodeSystem = CodeSystemRequests.prepareSearchAllCodeSystems()
 				.filterById("not a valid code system short name")
 				.build()
 				.execute(Services.context());
