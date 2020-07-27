@@ -19,23 +19,23 @@ import java.io.IOException;
 
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.domain.SetMappings;
+import com.b2international.snowowl.core.domain.ConceptMapMappings;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
 
 /**
 * @since 7.8
 */
-public final class MappingSearchRequest extends SearchResourceRequest<BranchContext, SetMappings> {
+public final class MappingSearchRequest extends SearchResourceRequest<BranchContext, ConceptMapMappings> {
 
 	private static final long serialVersionUID = 1L;
 	
 	@Override
-	protected SetMappings createEmptyResult(int limit) {
-		return new SetMappings(limit, 0);
+	protected ConceptMapMappings createEmptyResult(int limit) {
+		return new ConceptMapMappings(limit, 0);
 	}
 	
 	@Override
-	protected SetMappings doExecute(BranchContext context) throws IOException {
+	protected ConceptMapMappings doExecute(BranchContext context) throws IOException {
 		Options options = Options.builder()
 				.putAll(options())
 				.put(ConceptMapMappingSearchRequestEvaluator.OptionKey.AFTER, searchAfter())

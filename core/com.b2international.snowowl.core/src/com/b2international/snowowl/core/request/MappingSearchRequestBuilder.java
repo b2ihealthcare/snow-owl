@@ -16,15 +16,15 @@
 package com.b2international.snowowl.core.request;
 
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.domain.SetMappings;
+import com.b2international.snowowl.core.domain.ConceptMapMappings;
 import com.b2international.snowowl.core.request.SetSearchRequestEvaluator.OptionKey;
 import com.google.common.collect.ImmutableSet;
 
 /**
 * @since 7.8
 */
-public final class MappingSearchRequestBuilder extends SearchResourceRequestBuilder<MappingSearchRequestBuilder, BranchContext, SetMappings> 
-		implements RevisionIndexRequestBuilder<SetMappings> {
+public final class MappingSearchRequestBuilder extends SearchResourceRequestBuilder<MappingSearchRequestBuilder, BranchContext, ConceptMapMappings> 
+		implements RevisionIndexRequestBuilder<ConceptMapMappings> {
 	
 	public MappingSearchRequestBuilder filterBySet(String setId) {
 		return filterBySets(ImmutableSet.of(setId));
@@ -35,7 +35,7 @@ public final class MappingSearchRequestBuilder extends SearchResourceRequestBuil
 	}
 	
 	@Override
-	protected SearchResourceRequest<BranchContext, SetMappings> createSearch() {
+	protected SearchResourceRequest<BranchContext, ConceptMapMappings> createSearch() {
 		return new MappingSearchRequest();
 	}
 

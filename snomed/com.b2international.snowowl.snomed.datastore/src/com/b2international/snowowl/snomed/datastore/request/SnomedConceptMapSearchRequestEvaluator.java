@@ -28,7 +28,7 @@ import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.ConceptMapMapping;
 import com.b2international.snowowl.core.domain.ConceptMapMapping.Builder;
-import com.b2international.snowowl.core.domain.SetMappings;
+import com.b2international.snowowl.core.domain.ConceptMapMappings;
 import com.b2international.snowowl.core.request.ConceptMapMappingSearchRequestEvaluator;
 import com.b2international.snowowl.core.request.MappingCorrelation;
 import com.b2international.snowowl.core.terminology.Terminology;
@@ -51,12 +51,12 @@ import com.google.common.collect.Sets;
 /**
  * @since 7.8
  */
-public class SnomedConceptMapSearchRequestEvaluator extends SnomedCollectionSearchRequestEvaluator<ConceptMapMapping, SetMappings> implements ConceptMapMappingSearchRequestEvaluator {
+public class SnomedConceptMapSearchRequestEvaluator extends SnomedCollectionSearchRequestEvaluator<ConceptMapMapping, ConceptMapMappings> implements ConceptMapMappingSearchRequestEvaluator {
 
 	//RefsetID -> targetComponentURI
 	private Map<String, ComponentURI> targetCodeSystemMap = Maps.newHashMap();
 
-	public SetMappings evaluate(CodeSystemURI uri, BranchContext context, Options search) {
+	public ConceptMapMappings evaluate(CodeSystemURI uri, BranchContext context, Options search) {
 		
 		if (search.containsKey(OptionKey.SET)) {
 			
@@ -71,7 +71,7 @@ public class SnomedConceptMapSearchRequestEvaluator extends SnomedCollectionSear
 	}
 
 	@Override
-	protected SetMappings toCollectionResource(SnomedReferenceSetMembers referenceSetMembers, CodeSystemURI uri) {
+	protected ConceptMapMappings toCollectionResource(SnomedReferenceSetMembers referenceSetMembers, CodeSystemURI uri) {
 		
 		
 		List<ConceptMapMapping> mappings = referenceSetMembers.stream()
@@ -83,7 +83,7 @@ public class SnomedConceptMapSearchRequestEvaluator extends SnomedCollectionSear
 			.collect(Collectors.toList());
 		
 		
-		return new SetMappings(mappings,
+		return new ConceptMapMappings(mappings,
 				referenceSetMembers.getSearchAfter(),
 				referenceSetMembers.getLimit(),
 				referenceSetMembers.getTotal()

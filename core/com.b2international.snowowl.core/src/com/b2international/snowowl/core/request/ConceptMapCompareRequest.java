@@ -22,7 +22,7 @@ import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.compare.ConceptMapCompareResult;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.ConceptMapMapping;
-import com.b2international.snowowl.core.domain.SetMappings;
+import com.b2international.snowowl.core.domain.ConceptMapMappings;
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
@@ -49,7 +49,7 @@ final class ConceptMapCompareRequest extends ResourceRequest<BranchContext, Conc
 		List<ConceptMapMapping> baseMappings = Lists.newArrayList();
 		List<ConceptMapMapping> compareMappings = Lists.newArrayList();
 		
-		final SearchResourceRequestIterator<MappingSearchRequestBuilder, SetMappings> baseIterator = new SearchResourceRequestIterator<>(
+		final SearchResourceRequestIterator<MappingSearchRequestBuilder, ConceptMapMappings> baseIterator = new SearchResourceRequestIterator<>(
 				CodeSystemRequests.prepareSearchConceptMapMappings()
 				.filterBySet(baseConceptMapURI.identifier())
 				.setLocales(locales())
@@ -59,7 +59,7 @@ final class ConceptMapCompareRequest extends ResourceRequest<BranchContext, Conc
 		
 		baseIterator.forEachRemaining(hits -> hits.forEach(baseMappings::add));
 
-		final SearchResourceRequestIterator<MappingSearchRequestBuilder, SetMappings> compareIterator = new SearchResourceRequestIterator<>(
+		final SearchResourceRequestIterator<MappingSearchRequestBuilder, ConceptMapMappings> compareIterator = new SearchResourceRequestIterator<>(
 				CodeSystemRequests.prepareSearchConceptMapMappings()
 				.filterBySet(compareConceptMapURI.identifier())
 				.setLocales(locales())

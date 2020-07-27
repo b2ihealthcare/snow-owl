@@ -24,16 +24,16 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * @since 7.8
  */
-public final class SetMappings extends PageableCollectionResource<ConceptMapMapping> {
+public final class ConceptMapMappings extends PageableCollectionResource<ConceptMapMapping> {
 
 	private static final long serialVersionUID = 1L;
 	
-	public SetMappings(int limit, int total) {
+	public ConceptMapMappings(int limit, int total) {
 		super(Collections.emptyList(), null, limit, total);
 	}
 	
 	@JsonCreator
-	public SetMappings(
+	public ConceptMapMappings(
 			@JsonProperty("items") List<ConceptMapMapping> items, 
 			@JsonProperty("searchAfter") String searchAfter,
 			@JsonProperty("limit") int limit, 

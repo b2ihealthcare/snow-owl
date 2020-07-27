@@ -17,13 +17,13 @@ package com.b2international.snowowl.core.request;
 
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.domain.SetMappings;
+import com.b2international.snowowl.core.domain.ConceptMapMappings;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
 
 /**
  * @since 7.8
  */
-public interface ConceptMapMappingSearchRequestEvaluator extends SetSearchRequestEvaluator<SetMappings> {
+public interface ConceptMapMappingSearchRequestEvaluator extends SetSearchRequestEvaluator<ConceptMapMappings> {
 
 	/**
 	 * No-op request evaluator that returns zero results
@@ -32,8 +32,8 @@ public interface ConceptMapMappingSearchRequestEvaluator extends SetSearchReques
 	ConceptMapMappingSearchRequestEvaluator NOOP = new ConceptMapMappingSearchRequestEvaluator() {
 		
 		@Override
-		public SetMappings evaluate(CodeSystemURI uri, BranchContext context, Options search) {
-			return new SetMappings(search.get(OptionKey.LIMIT, Integer.class), 0);
+		public ConceptMapMappings evaluate(CodeSystemURI uri, BranchContext context, Options search) {
+			return new ConceptMapMappings(search.get(OptionKey.LIMIT, Integer.class), 0);
 		}
 	};
 
