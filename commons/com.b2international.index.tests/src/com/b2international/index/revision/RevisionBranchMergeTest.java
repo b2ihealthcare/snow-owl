@@ -15,9 +15,7 @@
  */
 package com.b2international.index.revision;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -367,6 +365,16 @@ public class RevisionBranchMergeTest extends BaseRevisionIndexTest {
 		rebaseDivergedWithBehindChild();
 		branching().prepareMerge("MAIN/a", "MAIN/a/b").merge();
 		assertState("MAIN/a/b", "MAIN/a", BranchState.UP_TO_DATE);
+	}
+	
+	@Test
+	public void mergeChildBranchThenDeleteShouldNotAffectSearches() throws Exception {
+		final String branchA = createBranch(MAIN, "a");
+		indexRevision(MAIN, NEW_DATA);
+		branching().prepareMerge(branchA, MAIN).merge();
+		branching().delete(branchA);
+		RevisionData rev = getRevision(MAIN, RevisionData.class, NEW_DATA.getId());
+		assertNotNull(rev);
 	}
 	
 	private void assertState(String branchPath, String compareWith, BranchState expectedState) {
