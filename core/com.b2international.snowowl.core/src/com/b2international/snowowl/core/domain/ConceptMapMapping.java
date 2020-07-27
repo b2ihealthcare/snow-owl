@@ -42,7 +42,7 @@ public final class ConceptMapMapping implements Serializable {
 		private String targetTerm;
 		private ComponentURI targetComponentURI = ComponentURI.UNSPECIFIED;
 		
-		private boolean isActive;
+		private boolean active;
 		private MappingCorrelation mappingCorrelation = MappingCorrelation.NOT_SPECIFIED;
 		
 		private Integer mapGroup = 0;
@@ -75,8 +75,8 @@ public final class ConceptMapMapping implements Serializable {
 			return this;
 		}
 		
-		public Builder active(final boolean isActive) {
-			this.isActive = isActive;
+		public Builder active(final boolean active) {
+			this.active = active;
 			return this;
 		}
 		
@@ -107,7 +107,7 @@ public final class ConceptMapMapping implements Serializable {
 		
 		public ConceptMapMapping build() {
 			return new ConceptMapMapping(sourceIconId, sourceTerm, sourceComponentURI, 
-					targetTerm, targetComponentURI, isActive, mappingCorrelation, mapGroup, mapPriority, mapRule, mapAdvice);
+					targetTerm, targetComponentURI, active, mappingCorrelation, mapGroup, mapPriority, mapRule, mapAdvice);
 		}
 	
 	}
@@ -119,7 +119,7 @@ public final class ConceptMapMapping implements Serializable {
 	private final String targetTerm;
 	private final ComponentURI targetComponentURI;
 	
-	private final boolean isActive;
+	private final boolean active;
 	private final MappingCorrelation mappingCorrelation;
 	
 	private Integer mapGroup;
@@ -132,7 +132,7 @@ public final class ConceptMapMapping implements Serializable {
 			ComponentURI sourceComponentURI, 
 			String targetTerm, 
 			ComponentURI targetComponentURI, 
-			boolean isActive,
+			boolean active,
 			MappingCorrelation mappingCorrelation,
 			Integer mapGroup,
 			Integer mapPriority, 
@@ -144,7 +144,7 @@ public final class ConceptMapMapping implements Serializable {
 		this.sourceComponentURI = sourceComponentURI;
 		this.targetTerm = targetTerm;
 		this.targetComponentURI = targetComponentURI;
-		this.isActive = isActive;
+		this.active = active;
 		this.mappingCorrelation = mappingCorrelation;
 		this.mapGroup = mapGroup;
 		this.mapPriority = mapPriority;
@@ -173,7 +173,7 @@ public final class ConceptMapMapping implements Serializable {
 	}
 	
 	public boolean isActive() {
-		return isActive;
+		return active;
 	}
 	
 	public MappingCorrelation getMappingCorrelation() {
@@ -204,7 +204,7 @@ public final class ConceptMapMapping implements Serializable {
 				.add("iconId", sourceIconId)
 				.add("targetComponentURI", targetComponentURI)
 				.add("targetTerm", targetTerm)
-				.add("isActive", isActive)
+				.add("active", active)
 				.add("mappingCorrelation", mappingCorrelation)
 				.add("mapGroup", mapGroup)
 				.add("mapPriority", mapPriority)
@@ -214,7 +214,7 @@ public final class ConceptMapMapping implements Serializable {
 	@Override
 	public int hashCode() {
 		return Objects.hash(sourceComponentURI, targetComponentURI, sourceTerm, targetTerm, sourceIconId, 
-				isActive, mappingCorrelation, mapGroup, mapPriority, mapRule, mapAdvice);
+				active, mappingCorrelation, mapGroup, mapPriority, mapRule, mapAdvice);
 	}
 	
 	@Override
@@ -228,7 +228,7 @@ public final class ConceptMapMapping implements Serializable {
 				&& Objects.equals(sourceTerm, other.sourceTerm)
 				&& Objects.equals(targetTerm, other.targetTerm)
 				&& Objects.equals(sourceIconId, other.sourceIconId)
-				&& Objects.equals(isActive, other.isActive)
+				&& Objects.equals(active, other.active)
 				&& Objects.equals(mappingCorrelation, other.mappingCorrelation)
 				&& Objects.equals(mapGroup, other.mapGroup)
 				&& Objects.equals(mapPriority, other.mapPriority)
