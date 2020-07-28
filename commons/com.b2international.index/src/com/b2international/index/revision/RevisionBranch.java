@@ -60,7 +60,6 @@ import com.google.common.primitives.Longs;
 		+ "}")
 @Script(name=RevisionBranch.Scripts.WITH_DELETED, script="ctx._source.deleted = true")
 @Script(name=RevisionBranch.Scripts.WITH_METADATA, script="ctx._source.metadata = params.metadata")
-@Script(name=RevisionBranch.Scripts.REPLACE, script="ctx._source = params.replace")
 public final class RevisionBranch extends MetadataHolderImpl {
 
 	/**
@@ -165,7 +164,6 @@ public final class RevisionBranch extends MetadataHolderImpl {
 		public static final String WITH_DELETED = "withDeleted";
 		public static final String WITH_METADATA = "withMetadata";
 		public static final String WITH_MERGE_SOURCE = "withMergeSource";
-		public static final String REPLACE = "replace";
 	}
 	
 	public static Builder builder() {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,6 @@ import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.query.Query.AfterWhereBuilder;
 import com.b2international.index.revision.RevisionBranch.BranchState;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -58,7 +57,6 @@ public abstract class BaseRevisionBranching {
 
 	private final RevisionIndex index;
 	private final TimestampProvider timestampProvider;
-	private final ObjectMapper mapper;
 	private final List<Consumer<String>> onBranchChange = newArrayListWithCapacity(1);
 	
 	private final LoadingCache<String, ReentrantLock> locks = CacheBuilder.newBuilder()
@@ -70,10 +68,9 @@ public abstract class BaseRevisionBranching {
 				}
 			});
 
-	public BaseRevisionBranching(RevisionIndex index, TimestampProvider timestampProvider, ObjectMapper mapper) {
+	public BaseRevisionBranching(RevisionIndex index, TimestampProvider timestampProvider) {
 		this.index = index;
 		this.timestampProvider = timestampProvider;
-		this.mapper = mapper;
 	}
 	
 	public long currentTime() {
@@ -362,11 +359,6 @@ public abstract class BaseRevisionBranching {
 	protected final RevisionBranch getBranchFromStore(final AfterWhereBuilder<RevisionBranch> query) {
 		return Iterables.getOnlyElement(search(query.limit(1).build()), null);
 	}
-	
-	protected final IndexWrite<Void> prepareReplace(final String path, final RevisionBranch value) {
-		return update(path, RevisionBranch.Scripts.REPLACE, ImmutableMap.of("replace", mapper.convertValue(value, Map.class)));
-	}
-
 	
 	/**
 	 * Updates the branch with the specified properties. Currently {@link Metadata} supported only.
