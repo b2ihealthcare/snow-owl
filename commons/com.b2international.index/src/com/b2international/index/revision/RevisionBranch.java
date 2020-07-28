@@ -51,6 +51,7 @@ import com.google.common.primitives.Longs;
 		+ "boolean found = false;"
 		+ "for (segment in ctx._source.segments) {"
 		+ "    if (segment.branchId == ctx._source.id) {"
+//		+ "        segment.start = params.baseTimestamp != null ? params.baseTimestamp : segment.start;"
 		+ "        segment.end = params.headTimestamp;"
 		+ "        found = true;"
 		+ "    }"
@@ -408,121 +409,7 @@ public final class RevisionBranch extends MetadataHolderImpl {
 		return MAIN_PATH.equals(path);
 	}
     
-	/**
-	 * Returns the {@link BranchState} of this {@link RevisionBranch} compared to
-	 * the given other {@link RevisionBranch}.
-	 * 
-	 * <ul>
-	 * <li>FORWARD: no commits on other branch since base timestamp, commits on
-	 * this branch since base timestamp
-	 * <pre>
-	 *              b    h
-	 * this         o----&#x25CF;
-	 * other ----&#x25CF;
-	 *            h
-	 * </pre>
-	 * </li>
-	 * <li>BEHIND: no commits on this branch since base timestamp, commits on other
-	 * branch since base timestamp
-	 * <pre>
-	 *             b = h
-	 * this         o&#x25CF;
-	 * other -------------&#x25CF;
-	 *                     h
-	 * </pre>
-	 * </li> 
-	 * <li>DIVERGED: commits on both branches since base timestamp
-	 * <pre>
-	 *              b    h
-	 * this         o----&#x25CF;
-	 * other -------------&#x25CF;
-	 *                     h
-	 * </pre>
-	 * </li> 
-	 * <li>UP_TO_DATE: no commits on either branch since base timestamp
-	 * <pre>
-	 *             b = h
-	 * this         o&#x25CF;
-	 * other ------&#x25CF;
-	 *              h
-	 * </pre>
-	 * </li>
-	 * </ul>
-	 * <p>
-	 * Branch base and head timestamps gathered from this branch are adjusted before
-	 * doing the comparison, according to the following rules:
-	 * <ul>
-	 * <li>If the other branch has been merged into this branch, the most recent of
-	 * such points is used as the base timestamp:
-	 * <pre>
-	 *              b   b'   h
-	 * this         o---o----&#x25CF;
-	 *                 /
-	 * other --------&#x25CF;------&#x25CF;
-	 *                ms     h
-	 * </pre>
-	 * </li>
-	 * <li>If this branch was merged into the other branch, the most recent of such
-	 * points is used as:
-	 * <ul>
-	 * <li>the base timestamp, if it is greater than the currently held base
-	 * timestamp (pictured)</li>
-	 * <li>the head timestamp, it it is greater than the currently held head
-	 * timestamp</li>
-	 * </ul>
-	 * <pre>
-	 *              b  ms = b' h
-	 * this         o---&#x25CF; o----&#x25CF;
-	 *                   \|
-	 * other ------------&#x25CF;----&#x25CF;
-	 *                         h
-	 * </pre>
-	 * </li>
-	 * </ul>
-	 * </p>
-	 * 
-	 * @param other
-	 * @return
-	 */
-    @JsonIgnore
-	public BranchState state(RevisionBranch other) {
-    	final RevisionBranchPoint latestMergePointFromThis = this.getLatestMergeSource(other.getId(), true);
-    	final RevisionBranchPoint latestMergePointFromOther = other.getLatestMergeSource(this.getId(), true);
-    	
-    	long baseTimestamp = getBaseTimestamp();
-    	long headTimestamp = getHeadTimestamp();
-    	long otherBaseTimestamp = other.getBaseTimestamp();
-    	long otherHeadTimestamp = other.getHeadTimestamp();
-    	
-    	if (latestMergePointFromThis != null) {
-    		baseTimestamp = latestMergePointFromThis.getTimestamp();
-    		if (baseTimestamp > headTimestamp) {
-    			baseTimestamp = headTimestamp;
-    		}
-    	}
-    	
-    	if (latestMergePointFromOther != null) {
-    		if (latestMergePointFromOther.getTimestamp() > baseTimestamp) {
-    			baseTimestamp = latestMergePointFromOther.getTimestamp();
-    		}
-    		if (latestMergePointFromOther.getTimestamp() > headTimestamp) {
-    			headTimestamp = latestMergePointFromOther.getTimestamp();
-    		}
-    	}
-    	
-    	
-        if (headTimestamp > baseTimestamp && otherHeadTimestamp <= baseTimestamp) {
-        	return BranchState.FORWARD;
-        } else if (headTimestamp == baseTimestamp && otherHeadTimestamp > baseTimestamp) {
-        	return BranchState.BEHIND;
-        } else if (headTimestamp > baseTimestamp && otherHeadTimestamp > baseTimestamp) {
-        	return BranchState.DIVERGED;
-        } else {
-    	    return BranchState.UP_TO_DATE;
-        }
-    }
-
-	private RevisionBranchPoint getLatestMergeSource(long branchToFind, boolean withSquashMerges) {
+	RevisionBranchPoint getLatestMergeSource(long branchToFind, boolean withSquashMerges) {
 		return getLatestMergeSources(withSquashMerges).get(branchToFind);
 	}
 
@@ -539,6 +426,15 @@ public final class RevisionBranch extends MetadataHolderImpl {
 				}
 			});
 		return latestMergeSources;
+	}
+
+	/**
+	 * A branch is considered empty when the base and head timestamps point to the same branch point.
+	 * @return
+	 */
+	@JsonIgnore
+	public boolean isEmpty() {
+		return getBaseTimestamp() == getHeadTimestamp();
 	}
 
 }

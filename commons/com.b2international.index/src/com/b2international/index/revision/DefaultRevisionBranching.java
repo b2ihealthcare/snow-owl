@@ -70,10 +70,8 @@ public final class DefaultRevisionBranching extends BaseRevisionBranching {
 	protected RevisionBranch doReopen(RevisionBranch parentBranch, String child, Metadata metadata) {
 		final long currentTime = currentTime();
 		final long newBranchId = nextBranchId();
-		final RevisionSegment parentLastSegment = parentBranch.getSegments().last();
 		final SortedSet<RevisionSegment> parentSegments = ImmutableSortedSet.<RevisionSegment>naturalOrder()
-			.addAll(parentBranch.getSegments().headSet(parentLastSegment))
-			.add(parentLastSegment.withEnd(currentTime))
+			.addAll(parentBranch.getSegments())
 			.build();
 		
 		final SortedSet<RevisionBranchPoint> initialMergeSources = parentSegments.stream()

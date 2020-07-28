@@ -15,7 +15,7 @@
  */
 package com.b2international.index.revision;
 
-import static com.b2international.index.query.Expressions.exactMatch;
+import static com.b2international.index.query.Expressions.*;
 import static com.b2international.index.query.Expressions.matchAny;
 import static com.b2international.index.query.Expressions.matchRange;
 import static com.b2international.index.query.Expressions.matchTextAll;
@@ -90,6 +90,7 @@ public final class Commit implements WithScore {
 		private List<CommitDetail> details;
 		private String groupId;
 		private RevisionBranchPoint mergeSource;
+		private Boolean squashMerge;
 
 		public Builder id(final String id) {
 			this.id = id;
@@ -131,8 +132,13 @@ public final class Commit implements WithScore {
 			return this;
 		}
 		
+		public Builder squashMerge(Boolean squashMerge) {
+			this.squashMerge = squashMerge;
+			return this;
+		}
+		
 		public Commit build() {
-			return new Commit(id, branch, author, comment, timestamp, groupId, details, mergeSource);
+			return new Commit(id, branch, author, comment, timestamp, groupId, details, mergeSource, squashMerge);
 		}
 
 	}
@@ -186,6 +192,14 @@ public final class Commit implements WithScore {
 					.should(exactMatch(Fields.DETAILS_COMPONENT, objectId))
 					.build();
 		}
+
+		public static Expression fastForwardMergeCommit() {
+			return match("squashMerge", false);
+		}
+		
+		public static Expression squashMergeCommit() {
+			return match("squashMerge", true);
+		}
 		
 	}
 	
@@ -215,6 +229,7 @@ public final class Commit implements WithScore {
 	private final String groupId;
 	private final List<CommitDetail> details;
 	private final RevisionBranchPoint mergeSource;
+	private final Boolean squashMerge;
 	
 	private float score = 0.0f;
 	
@@ -229,7 +244,8 @@ public final class Commit implements WithScore {
 			final long timestamp,
 			final String groupId,
 			final List<CommitDetail> details, 
-			final RevisionBranchPoint mergeSource) {
+			final RevisionBranchPoint mergeSource,
+			final Boolean squashMerge) {
 		this.id = id;
 		this.branch = branch;
 		this.author = author;
@@ -237,6 +253,7 @@ public final class Commit implements WithScore {
 		this.timestamp = timestamp;
 		this.groupId = groupId;
 		this.mergeSource = mergeSource;
+		this.squashMerge = squashMerge;
 		this.details = Collections3.toImmutableList(details);
 	}
 
@@ -283,11 +300,15 @@ public final class Commit implements WithScore {
 		return mergeSource;
 	}
 	
+	public Boolean getSquashMerge() {
+		return squashMerge;
+	}
+	
 	@JsonIgnore
 	public boolean isMergeCommit() {
 		return mergeSource != null;
 	}
-
+	
 	public Collection<CommitDetail> getDetailsByObject(String objectId) {
 		if (detailsByObject == null) {
 			detailsByObject = ArrayListMultimap.create();

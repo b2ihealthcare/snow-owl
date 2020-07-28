@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.b2international.commons.ClassUtils;
+import com.b2international.commons.CompareUtils;
 import com.b2international.commons.Pair;
 import com.b2international.index.BulkUpdate;
 import com.b2international.index.mapping.DocumentMapping;
@@ -435,6 +436,11 @@ public final class StagingArea {
 		removedComponentsByContainer.clear();
 		deletedIdsByType.clear();
 		
+		// nothing to commit, break
+		if (details.isEmpty() && CompareUtils.isEmpty(mergeSources)) {
+			return null;
+		}
+		
 		// generate a commit entry that marks the end of the commit and contains all changes in a details property
 		Commit commitDoc = commit
 				.id(UUID.randomUUID().toString())
@@ -444,20 +450,19 @@ public final class StagingArea {
 				.comment(commitComment)
 				.timestamp(timestamp)
 				.details(details)
-				.mergeSource(mergeSources != null && !mergeSources.isEmpty() ? mergeSources.last() : null)
+				.mergeSource(!CompareUtils.isEmpty(mergeSources) ? mergeSources.last() : null)
+				.squashMerge(!CompareUtils.isEmpty(mergeSources) ? squashMerge : null)
 				.build();
 		writer.put(commitDoc.getId(), commitDoc);
 		
 		// update branch document(s)
-		Map<String, Object> toBranchUpdateParams;
+		ImmutableMap.Builder<String, Object> toBranchUpdateParams = ImmutableMap.builder();
 		if (mergeSources != null && !mergeSources.isEmpty()) {
-			toBranchUpdateParams = ImmutableMap.<String, Object>of(
-				"headTimestamp", timestamp,
-				"mergeSources", mergeSources.stream().map(RevisionBranchPoint::toIpAddress).collect(Collectors.toList()),
-				"squash", squashMerge
-			);
+			toBranchUpdateParams.put("headTimestamp", timestamp);
+			toBranchUpdateParams.put("mergeSources", mergeSources.stream().map(RevisionBranchPoint::toIpAddress).collect(Collectors.toList()));
+			toBranchUpdateParams.put("squash", squashMerge);
 		} else {
-			toBranchUpdateParams = ImmutableMap.of("headTimestamp", timestamp); 
+			toBranchUpdateParams.put("headTimestamp", timestamp); 
 		}
 		
 		writer.bulkUpdate(
@@ -466,7 +471,7 @@ public final class StagingArea {
 				DocumentMapping.matchId(branchPath), 
 				DocumentMapping._ID, 
 				RevisionBranch.Scripts.COMMIT,
-				toBranchUpdateParams
+				toBranchUpdateParams.build()
 			)
 		);
 		
@@ -579,7 +584,7 @@ public final class StagingArea {
 		this.mergeFromBranchRef = fromRef;
 		this.squashMerge = squash;
 		if (exclusions != null) {
-			this.exclusions.addAll(exclusions);			
+			this.exclusions.addAll(exclusions);
 		}
 		
 		final RevisionCompare fromChanges = index.compare(toRef, fromRef, Integer.MAX_VALUE);

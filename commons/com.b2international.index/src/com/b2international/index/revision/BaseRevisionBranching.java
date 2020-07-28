@@ -170,6 +170,19 @@ public abstract class BaseRevisionBranching {
 		return index().read(searcher -> searcher.search(query));
 	}
 	
+	public boolean hasChanges(String branch, long from, long to) {
+		return index().read(searcher -> searcher.search(Query.select(Commit.class)
+				.where(
+					Expressions.builder()
+						.filter(Commit.Expressions.branches(branch))
+						.filter(Commit.Expressions.timestampRange(from, to))
+//						.mustNot(Commit.Expressions.fastForwardMergeCommit())
+					.build()
+				)
+				.limit(0).build()))
+				.getTotal() > 0;
+	}
+	
 	public <T> T commit(IndexWrite<T> changes) {
 		return index().write(writer -> {
 			T result = changes.execute(writer);
@@ -248,15 +261,145 @@ public abstract class BaseRevisionBranching {
 	}
 	
 	public BranchState getBranchState(String branchPath, String compareWith) {
-		return getBranch(branchPath).state(getBranch(compareWith));
+		return getBranchState(getBranch(branchPath), getBranch(compareWith));
 	}
 	
 	public BranchState getBranchState(RevisionBranch branch) {
 		if (RevisionBranch.MAIN_PATH.equals(branch.getPath())) {
 			return BranchState.UP_TO_DATE;
 		} else {
-			return branch.state(getBranch(branch.getParentPath()));
+			return getBranchState(branch, getBranch(branch.getParentPath()));
 		}
+	}
+
+	/**
+	 * Returns the {@link BranchState} of this {@link RevisionBranch} compared to
+	 * the given other {@link RevisionBranch}.
+	 * 
+	 * <ul>
+	 * <li>FORWARD: no commits on other branch since base timestamp, commits on
+	 * this branch since base timestamp
+	 * <pre>
+	 *              b    h
+	 * this         o----&#x25CF;
+	 * other ----&#x25CF;
+	 *            h
+	 * </pre>
+	 * </li>
+	 * <li>BEHIND: no commits on this branch since base timestamp, commits on other
+	 * branch since base timestamp
+	 * <pre>
+	 *             b = h
+	 * this         o&#x25CF;
+	 * other -------------&#x25CF;
+	 *                     h
+	 * </pre>
+	 * </li> 
+	 * <li>DIVERGED: commits on both branches since base timestamp
+	 * <pre>
+	 *              b    h
+	 * this         o----&#x25CF;
+	 * other -------------&#x25CF;
+	 *                     h
+	 * </pre>
+	 * </li> 
+	 * <li>UP_TO_DATE: no commits on either branch since base timestamp
+	 * <pre>
+	 *             b = h
+	 * this         o&#x25CF;
+	 * other ------&#x25CF;
+	 *              h
+	 * </pre>
+	 * </li>
+	 * </ul>
+	 * <p>
+	 * Branch base and head timestamps gathered from this branch are adjusted before
+	 * doing the comparison, according to the following rules:
+	 * <ul>
+	 * <li>If the other branch has been merged into this branch, the most recent of
+	 * such points is used as the base timestamp:
+	 * <pre>
+	 *              b   b'   h
+	 * this         o---o----&#x25CF;
+	 *                 /
+	 * other --------&#x25CF;------&#x25CF;
+	 *                ms     h
+	 * </pre>
+	 * </li>
+	 * <li>If this branch was merged into the other branch, the most recent of such
+	 * points is used as:
+	 * <ul>
+	 * <li>the base timestamp, if it is greater than the currently held base
+	 * timestamp (pictured)</li>
+	 * <li>the head timestamp, it it is greater than the currently held head
+	 * timestamp</li>
+	 * </ul>
+	 * <pre>
+	 *              b  ms = b' h
+	 * this         o---&#x25CF; o----&#x25CF;
+	 *                   \|
+	 * other ------------&#x25CF;----&#x25CF;
+	 *                         h
+	 * </pre>
+	 * </li>
+	 * </ul>
+	 * </p>
+	 * 
+	 * @param left
+	 * @param right
+	 * @return
+	 */
+	public final BranchState getBranchState(RevisionBranch left, RevisionBranch right) {
+//		RevisionBranchRef thisRef = left.ref().difference(right.ref());
+//    	RevisionBranchRef otherRef = right.ref().difference(left.ref());
+//    	
+//        if (!thisRef.isEmpty() && otherRef.isEmpty()) {
+//        	return BranchState.FORWARD;
+//        } else if (thisRef.isEmpty() && !otherRef.isEmpty()) {
+//        	return BranchState.BEHIND;
+//        } else if (!thisRef.isEmpty() && !otherRef.isEmpty()) {
+//        	return BranchState.DIVERGED;
+//        } else {
+//    	    return BranchState.UP_TO_DATE;
+//        }
+    	long leftBaseTimestamp = left.getBaseTimestamp();
+    	long leftHeadTimestamp = left.getHeadTimestamp();
+    	long rightBaseTimestamp = leftBaseTimestamp;
+    	long rightHeadTimestamp = right.getHeadTimestamp();
+    	
+    	// based on latest merge source from the other branch into this branch, modify baseTimestamp
+    	final RevisionBranchPoint latestMergeOfRight = left.getLatestMergeSource(right.getId(), true);
+    	if (latestMergeOfRight != null && latestMergeOfRight.getTimestamp() > rightBaseTimestamp) {
+   			rightBaseTimestamp = latestMergeOfRight.getTimestamp();
+    	}
+    	
+    	final RevisionBranchPoint latestMergeOfLeft = right.getLatestMergeSource(left.getId(), true);
+    	if (latestMergeOfLeft != null) {
+    		if (latestMergeOfLeft.getTimestamp() > leftBaseTimestamp) {
+    			leftBaseTimestamp = latestMergeOfLeft.getTimestamp();
+    		}
+    		if (latestMergeOfLeft.getTimestamp() > leftHeadTimestamp) {
+    			leftHeadTimestamp = latestMergeOfLeft.getTimestamp();
+    		}
+    	}
+    	
+    	if (leftHeadTimestamp > leftBaseTimestamp && rightHeadTimestamp <= rightBaseTimestamp) {
+    		if (hasChanges(left.getPath(), leftBaseTimestamp, leftHeadTimestamp)) {
+    			return BranchState.FORWARD;
+    		} else {
+    			return BranchState.UP_TO_DATE;
+    		}
+        } else if (leftHeadTimestamp <= leftBaseTimestamp && rightHeadTimestamp > rightBaseTimestamp) {
+        	if (hasChanges(right.getPath(), rightBaseTimestamp, rightHeadTimestamp)) {
+    			return BranchState.BEHIND;
+    		} else {
+    			return BranchState.UP_TO_DATE;
+    		}
+        } else if (leftHeadTimestamp > leftBaseTimestamp && rightHeadTimestamp > rightBaseTimestamp) {
+        	return BranchState.DIVERGED;
+        } else {
+    	    return BranchState.UP_TO_DATE;
+        }
 	}
 
 	/**
@@ -280,7 +423,7 @@ public abstract class BaseRevisionBranching {
 		RevisionBranch from = getBranch(source);
 		RevisionBranch to = getBranch(target);
 		
-		BranchState changesFromState = from.state(to);
+		BranchState changesFromState = getBranchState(from, to);
 
 		// do nothing if from state compared to toBranch is either UP_TO_DATE or BEHIND
 		if (changesFromState == BranchState.UP_TO_DATE || changesFromState == BranchState.BEHIND) {
@@ -290,7 +433,6 @@ public abstract class BaseRevisionBranching {
 		final InternalRevisionIndex index = revisionIndex();
 		final StagingArea staging = index.prepareCommit(to.getPath()).withContext(operation.context);
 		
-		// TODO add conflict processing
 		long fastForwardCommitTimestamp = staging.merge(from.ref(), to.ref(), operation.squash, operation.conflictProcessor, operation.exclusions);
 		// skip fast forward if the tobranch has a later commit than the returned fastForwardCommitTimestamp
 		if (to.getHeadTimestamp() >= fastForwardCommitTimestamp) {
