@@ -146,7 +146,10 @@ final class RevisionBranchRef {
 		}
 		
 		while (segmentsIterator.hasNext()) {
-			differenceSegments.add(segmentsIterator.next());
+			RevisionSegment nextSegment = segmentsIterator.next();
+			if (!nextSegment.isEmpty()) {
+				differenceSegments.add(nextSegment);
+			}
 		}
 		
 		return new RevisionBranchRef(branchId, branchPath, differenceSegments);
