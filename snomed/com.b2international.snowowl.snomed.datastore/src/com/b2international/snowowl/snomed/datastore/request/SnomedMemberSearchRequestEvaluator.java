@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
@@ -34,7 +33,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableList;
 
 /**
  * @since 7.7
@@ -45,10 +44,6 @@ public final class SnomedMemberSearchRequestEvaluator implements SetMemberSearch
 	public SetMembers evaluate(CodeSystemURI uri, BranchContext context, Options search) {
 		SnomedReferenceSetMembers referenceSetMembers = fetchRefsetMembers(uri, context, search);
 		return toCollectionResource(referenceSetMembers, uri);
-	}
-
-	private Set<SnomedRefSetType> getRefsetTypes() {
-		return ImmutableSet.of(SnomedRefSetType.SIMPLE);
 	}
 
 	private SetMembers toCollectionResource(SnomedReferenceSetMembers referenceSetMembers, CodeSystemURI uri) {
@@ -91,16 +86,20 @@ public final class SnomedMemberSearchRequestEvaluator implements SetMemberSearch
 			final Collection<String> refsetId = search.getCollection(OptionKey.SET, String.class);
 			requestBuilder.filterByRefSet(refsetId);
 		}
-
+		
 		return requestBuilder
 				.filterByActive(true)
-				.filterByRefSetType(getRefsetTypes())
+				.filterByRefSetType(getSympleTypeRefSets())
 				.setLocales(locales)
 				.setExpand("referencedComponent(expand(fsn()))")
 				.setLimit(limit)
 				.setSearchAfter(searchAfter)
 				.build()
 				.execute(context);
+	}
+
+	private List<SnomedRefSetType> getSympleTypeRefSets() {
+		return ImmutableList.of(SnomedRefSetType.SIMPLE, SnomedRefSetType.DESCRIPTION_TYPE);
 	}
 
 }
