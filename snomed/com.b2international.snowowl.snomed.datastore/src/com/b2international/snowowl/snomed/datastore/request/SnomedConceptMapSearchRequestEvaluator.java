@@ -19,7 +19,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
@@ -45,8 +44,8 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
+import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.google.common.base.Strings;
-import com.google.common.collect.Sets;
 
 /**
  * @since 7.8
@@ -154,13 +153,6 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 		}
 	}
 
-	private Set<SnomedRefSetType> getRefsetTypes() {
-		return Sets.newHashSet(SnomedRefSetType.SIMPLE_MAP, 
-				SnomedRefSetType.COMPLEX_MAP, 
-				SnomedRefSetType.EXTENDED_MAP, 
-				SnomedRefSetType.COMPLEX_BLOCK_MAP);
-	}
-
 	private ComponentURI getTargetComponentURI(final BranchContext context, final String refsetId) {
 
 		SnomedReferenceSet referenceSet = SnomedRequests.prepareGetReferenceSet(refsetId)
@@ -208,7 +200,7 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 
 		return requestBuilder
 				.filterByActive(true)
-				.filterByRefSetType(getRefsetTypes())
+				.filterByRefSetType(SnomedRefSetUtil.getMapTypeRefSets())
 				.setLocales(locales)
 				.setExpand("referencedComponent(expand(fsn()))")
 				.setLimit(limit)
