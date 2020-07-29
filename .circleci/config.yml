@@ -68,33 +68,14 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker
-      - restore_cache:
-          keys:
-            - snow-owl-mvn-cache-{{ checksum "pom.xml" }}
-            - snow-owl-mvn-cache-
-          paths:
-            - "~/.m2"
-            - "/root/.m2"
       - run:
           name: Build prerequisites
           command: |
             docker login -u "$DOCKER_USER" -p "$DOCKER_PASS" quay.io
             apk add --no-cache make=4.2.1-r2 nodejs npm curl openjdk11 --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
-            npm config set unsafe-perm true
-            npm install -g npm
-      - save_cache:
-          key: snow-owl-mvn-cache-{{ checksum "pom.xml" }}
-          paths:
-            - "~/.m2"
-            - "/root/.m2"
       - run:
           name: Build and push docker image
           command: |
-            echo 'export PATH=$JAVA_HOME/bin:$PATH' >> $BASH_ENV
-            source $BASH_ENV
-            make build-project
-            export SNOWOWL_INSTALL_PACKAGE=`find ./releng/com.b2international.snowowl.server.update/target -name "snow-owl-oss*.tar.gz"`
-            cp "${SNOWOWL_INSTALL_PACKAGE}"  ./docker/`basename "${SNOWOWL_INSTALL_PACKAGE}"`
             make build-docker
             make push
       - deploy:
@@ -106,14 +87,6 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker
-      - restore_cache:
-          keys:
-            - snow-owl-mvn-cache-{{ checksum "pom.xml" }}
-            - snow-owl-mvn-cache-
-          paths:
-            - "~/.gradle"
-            - "~/.m2"
-            - "/root/.gradle"
       - run:
           name: Build prerequisites
           command: |

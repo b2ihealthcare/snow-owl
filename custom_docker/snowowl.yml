@@ -1,0 +1,39 @@
+#
+# Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+#
+
+# necessary to connect one user to the system otherwise Snow Owl startup fails
+systemUser: true
+
+identity:
+  providers:
+    - file:
+        name: users
+#   - ldap:
+#        uri: <ldap_uri>
+#        baseDn: dc=snowowl,dc=b2international,dc=com
+#        rootDn: cn=admin,dc=snowowl,dc=b2international,dc=com
+#        rootDnPassword: <adminpwd>
+#        userIdProperty: uid
+#        usePool: false
+
+snomed:
+  languages:
+    -
+      code: en
+      refSetIds: ["900000000000509007", "900000000000508004", "999001261000000100", "999000671000001103"]
+    -
+      code: en-us
+      refSetIds: ["900000000000509007"]
+    -
+      code: en-gb
+      refSetIds: ["900000000000508004"]
+
+monitoring:
+  enabled: true
+
+repository:
+  index:
+    clusterUrl: "${ELASTICSEARCH_CLUSTER_URL}"
+    connectTimeout: "${ELASTICSEARCH_CONNECT_TIMEOUT}"
+    socketTimeout: "${ELASTICSEARCH_SOCKET_TIMEOUT}"

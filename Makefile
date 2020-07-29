@@ -4,19 +4,10 @@ SEMVER_VERSION=$(shell git describe --abbrev=0 --tags)
 REPO=quay.io/babylonhealth
 DEPLOY_DEV_URL=http://dev-ai-deploy.babylontech.co.uk:5199/job/kube-deploy-dev/buildWithParameters
 DEPLOY_STAGING_URL=http://dev-ai-deploy.babylontech.co.uk:5199/job/kube-deploy-staging/buildWithParameters
-SNOWOWL_INSTALL_PACKAGE=$(shell find ./releng/com.b2international.snowowl.server.update/target -name "snow-owl-oss*.tar.gz")
 
-
-build-project:
-	./mvnw clean verify -DskipTests
 
 build-docker:
-	cp "${SNOWOWL_INSTALL_PACKAGE}" "./docker/${`basename "${SNOWOWL_INSTALL_PACKAGE}"`}"
-	docker build ./docker \
-	--build-arg SNOWOWL_INSTALL_PACKAGE=`basename "${SNOWOWL_INSTALL_PACKAGE}"` \
-	--build-arg BUILD_TIMESTAMP=`date +%s` \
-	--build-arg TAG="${RELEASE_VERSION}" \
-	--build-arg GIT_REVISION="${RELEASE_VERSION}" \
+	docker build ./custom_docker \
 	-t $(REPO)/$(NAME):$(RELEASE_VERSION)
 
 push:
@@ -27,12 +18,6 @@ pull:
 
 run:
 	docker run --rm --name $(NAME) \
-    --cpus="3" \
-    --cpuset-cpus="3" \
-    -d \
-    -e ELASTICSEARCH_CLUSTER_URL="${ELASTICSEARCH_CLUSTER_URL}" \
-    -e ELASTICSEARCH_CONNECT_TIMEOUT="${ELASTICSEARCH_CONNECT_TIMEOUT}" \
-    -e ELASTICSEARCH_SOCKET_TIMEOUT="${ELASTICSEARCH_SOCKET_TIMEOUT}" \
     -p 8080:8080 $(REPO)/$(NAME):$(RELEASE_VERSION)
 
 tag-semver:
