@@ -22,6 +22,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.BrokenBarrierException;
@@ -55,6 +56,11 @@ import com.google.common.util.concurrent.MoreExecutors;
 public class RevisionBranchingTest extends BaseRevisionIndexTest {
 
 	private final RevisionData rev1 = new RevisionData(UUID.randomUUID().toString(), "field1", "field2");
+	
+	@Override
+	protected Collection<Class<?>> getTypes() {
+		return Collections.singleton(RevisionData.class);
+	}
 	
 	@Test
 	public void afterInit() throws Exception {
