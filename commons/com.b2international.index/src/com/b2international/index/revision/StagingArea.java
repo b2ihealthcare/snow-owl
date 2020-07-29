@@ -437,7 +437,7 @@ public final class StagingArea {
 		deletedIdsByType.clear();
 		
 		// nothing to commit, break
-		if (details.isEmpty() && CompareUtils.isEmpty(mergeSources)) {
+		if (writer.isEmpty() && CompareUtils.isEmpty(mergeSources)) {
 			return null;
 		}
 		

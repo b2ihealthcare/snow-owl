@@ -15,7 +15,8 @@
  */
 package com.b2international.index.revision;
 
-import static com.b2international.index.query.Expressions.*;
+import static com.b2international.index.query.Expressions.exactMatch;
+import static com.b2international.index.query.Expressions.match;
 import static com.b2international.index.query.Expressions.matchAny;
 import static com.b2international.index.query.Expressions.matchRange;
 import static com.b2international.index.query.Expressions.matchTextAll;
@@ -193,12 +194,11 @@ public final class Commit implements WithScore {
 					.build();
 		}
 
-		public static Expression fastForwardMergeCommit() {
-			return match("squashMerge", false);
-		}
-		
-		public static Expression squashMergeCommit() {
-			return match("squashMerge", true);
+		public static Expression mergeFrom(long branchId, long mergeSourceTimestampStart, long mergeSourceTimestampEnd, boolean squash) {
+			return com.b2international.index.query.Expressions.builder()
+					.filter(match("squashMerge", squash))
+					.filter(matchRange("mergeSource", RevisionBranchPoint.toIpv6(branchId, mergeSourceTimestampStart), RevisionBranchPoint.toIpv6(branchId, mergeSourceTimestampEnd), true, true))
+					.build();
 		}
 		
 	}

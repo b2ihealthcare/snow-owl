@@ -51,7 +51,6 @@ import com.google.common.primitives.Longs;
 		+ "boolean found = false;"
 		+ "for (segment in ctx._source.segments) {"
 		+ "    if (segment.branchId == ctx._source.id) {"
-//		+ "        segment.start = params.baseTimestamp != null ? params.baseTimestamp : segment.start;"
 		+ "        segment.end = params.headTimestamp;"
 		+ "        found = true;"
 		+ "    }"

@@ -170,13 +170,23 @@ public abstract class BaseRevisionBranching {
 		return index().read(searcher -> searcher.search(query));
 	}
 	
-	public boolean hasChanges(String branch, long from, long to) {
+	/**
+	 * Returns <code>true</code> if the given branch has any actual changes.
+	 * An actual change is a commit that has been made on the given branch between the given timeframe (from -> to) and it is not a fast forward merge commit from the given mergeBranch.
+	 *     
+	 * @param branch
+	 * @param from
+	 * @param to
+	 * @param mergeBranch
+	 * @return
+	 */
+	protected final boolean hasChanges(String branch, long from, long to, long mergeBranch) {
 		return index().read(searcher -> searcher.search(Query.select(Commit.class)
 				.where(
 					Expressions.builder()
 						.filter(Commit.Expressions.branches(branch))
 						.filter(Commit.Expressions.timestampRange(from, to))
-//						.mustNot(Commit.Expressions.fastForwardMergeCommit())
+						.mustNot(Commit.Expressions.mergeFrom(mergeBranch, from, to, false))
 					.build()
 				)
 				.limit(0).build()))
@@ -273,60 +283,59 @@ public abstract class BaseRevisionBranching {
 	}
 
 	/**
-	 * Returns the {@link BranchState} of this {@link RevisionBranch} compared to
-	 * the given other {@link RevisionBranch}.
+	 * Returns the {@link BranchState} of the left {@link RevisionBranch} argument compared to
+	 * the given right {@link RevisionBranch} argument.
 	 * 
 	 * <ul>
-	 * <li>FORWARD: no commits on other branch since base timestamp, commits on
-	 * this branch since base timestamp
+	 *  <li>FORWARD: no commits on right branch since base timestamp, commits on left branch since base timestamp
 	 * <pre>
 	 *              b    h
-	 * this         o----&#x25CF;
-	 * other ----&#x25CF;
+	 * left         o----&#x25CF;
+	 * right ----&#x25CF;
 	 *            h
 	 * </pre>
 	 * </li>
-	 * <li>BEHIND: no commits on this branch since base timestamp, commits on other
+	 * <li>BEHIND: no commits on left branch since base timestamp, commits on right
 	 * branch since base timestamp
 	 * <pre>
 	 *             b = h
-	 * this         o&#x25CF;
-	 * other -------------&#x25CF;
+	 * left         o&#x25CF;
+	 * right -------------&#x25CF;
 	 *                     h
 	 * </pre>
 	 * </li> 
 	 * <li>DIVERGED: commits on both branches since base timestamp
 	 * <pre>
 	 *              b    h
-	 * this         o----&#x25CF;
-	 * other -------------&#x25CF;
+	 * left         o----&#x25CF;
+	 * right -------------&#x25CF;
 	 *                     h
 	 * </pre>
 	 * </li> 
 	 * <li>UP_TO_DATE: no commits on either branch since base timestamp
 	 * <pre>
 	 *             b = h
-	 * this         o&#x25CF;
-	 * other ------&#x25CF;
+	 * left         o&#x25CF;
+	 * right ------&#x25CF;
 	 *              h
 	 * </pre>
 	 * </li>
 	 * </ul>
 	 * <p>
-	 * Branch base and head timestamps gathered from this branch are adjusted before
+	 * Branch base and head timestamps gathered from left branch are adjusted before
 	 * doing the comparison, according to the following rules:
 	 * <ul>
-	 * <li>If the other branch has been merged into this branch, the most recent of
+	 * <li>If the right branch has been merged into left branch, the most recent of
 	 * such points is used as the base timestamp:
 	 * <pre>
 	 *              b   b'   h
-	 * this         o---o----&#x25CF;
+	 * left         o---o----&#x25CF;
 	 *                 /
-	 * other --------&#x25CF;------&#x25CF;
+	 * right --------&#x25CF;------&#x25CF;
 	 *                ms     h
 	 * </pre>
 	 * </li>
-	 * <li>If this branch was merged into the other branch, the most recent of such
+	 * <li>If left branch was merged into the right branch, the most recent of such
 	 * points is used as:
 	 * <ul>
 	 * <li>the base timestamp, if it is greater than the currently held base
@@ -336,9 +345,9 @@ public abstract class BaseRevisionBranching {
 	 * </ul>
 	 * <pre>
 	 *              b  ms = b' h
-	 * this         o---&#x25CF; o----&#x25CF;
+	 * left         o---&#x25CF; o----&#x25CF;
 	 *                   \|
-	 * other ------------&#x25CF;----&#x25CF;
+	 * right ------------&#x25CF;----&#x25CF;
 	 *                         h
 	 * </pre>
 	 * </li>
@@ -350,24 +359,11 @@ public abstract class BaseRevisionBranching {
 	 * @return
 	 */
 	public final BranchState getBranchState(RevisionBranch left, RevisionBranch right) {
-//		RevisionBranchRef thisRef = left.ref().difference(right.ref());
-//    	RevisionBranchRef otherRef = right.ref().difference(left.ref());
-//    	
-//        if (!thisRef.isEmpty() && otherRef.isEmpty()) {
-//        	return BranchState.FORWARD;
-//        } else if (thisRef.isEmpty() && !otherRef.isEmpty()) {
-//        	return BranchState.BEHIND;
-//        } else if (!thisRef.isEmpty() && !otherRef.isEmpty()) {
-//        	return BranchState.DIVERGED;
-//        } else {
-//    	    return BranchState.UP_TO_DATE;
-//        }
     	long leftBaseTimestamp = left.getBaseTimestamp();
     	long leftHeadTimestamp = left.getHeadTimestamp();
     	long rightBaseTimestamp = leftBaseTimestamp;
     	long rightHeadTimestamp = right.getHeadTimestamp();
     	
-    	// based on latest merge source from the other branch into this branch, modify baseTimestamp
     	final RevisionBranchPoint latestMergeOfRight = left.getLatestMergeSource(right.getId(), true);
     	if (latestMergeOfRight != null && latestMergeOfRight.getTimestamp() > rightBaseTimestamp) {
    			rightBaseTimestamp = latestMergeOfRight.getTimestamp();
@@ -384,13 +380,13 @@ public abstract class BaseRevisionBranching {
     	}
     	
     	if (leftHeadTimestamp > leftBaseTimestamp && rightHeadTimestamp <= rightBaseTimestamp) {
-    		if (hasChanges(left.getPath(), leftBaseTimestamp, leftHeadTimestamp)) {
+    		if (hasChanges(left.getPath(), leftBaseTimestamp, leftHeadTimestamp, right.getId())) {
     			return BranchState.FORWARD;
     		} else {
     			return BranchState.UP_TO_DATE;
     		}
         } else if (leftHeadTimestamp <= leftBaseTimestamp && rightHeadTimestamp > rightBaseTimestamp) {
-        	if (hasChanges(right.getPath(), rightBaseTimestamp, rightHeadTimestamp)) {
+        	if (hasChanges(right.getPath(), rightBaseTimestamp, rightHeadTimestamp, left.getId())) {
     			return BranchState.BEHIND;
     		} else {
     			return BranchState.UP_TO_DATE;
