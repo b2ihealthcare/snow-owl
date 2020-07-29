@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,6 @@ import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.query.Query.AfterWhereBuilder;
 import com.b2international.index.revision.RevisionBranch.BranchState;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -58,7 +57,6 @@ public abstract class BaseRevisionBranching {
 
 	private final RevisionIndex index;
 	private final TimestampProvider timestampProvider;
-	private final ObjectMapper mapper;
 	private final List<Consumer<String>> onBranchChange = newArrayListWithCapacity(1);
 	
 	private final LoadingCache<String, ReentrantLock> locks = CacheBuilder.newBuilder()
@@ -70,10 +68,9 @@ public abstract class BaseRevisionBranching {
 				}
 			});
 
-	public BaseRevisionBranching(RevisionIndex index, TimestampProvider timestampProvider, ObjectMapper mapper) {
+	public BaseRevisionBranching(RevisionIndex index, TimestampProvider timestampProvider) {
 		this.index = index;
 		this.timestampProvider = timestampProvider;
-		this.mapper = mapper;
 	}
 	
 	public long currentTime() {
@@ -173,6 +170,29 @@ public abstract class BaseRevisionBranching {
 		return index().read(searcher -> searcher.search(query));
 	}
 	
+	/**
+	 * Returns <code>true</code> if the given branch has any actual changes.
+	 * An actual change is a commit that has been made on the given branch between the given timeframe (from -> to) and it is not a fast forward merge commit from the given mergeBranch.
+	 *     
+	 * @param branch
+	 * @param from
+	 * @param to
+	 * @param mergeBranch
+	 * @return
+	 */
+	protected final boolean hasChanges(String branch, long from, long to, long mergeBranch) {
+		return index().read(searcher -> searcher.search(Query.select(Commit.class)
+				.where(
+					Expressions.builder()
+						.filter(Commit.Expressions.branches(branch))
+						.filter(Commit.Expressions.timestampRange(from, to))
+						.mustNot(Commit.Expressions.mergeFrom(mergeBranch, from, to, false))
+					.build()
+				)
+				.limit(0).build()))
+				.getTotal() > 0;
+	}
+	
 	public <T> T commit(IndexWrite<T> changes) {
 		return index().write(writer -> {
 			T result = changes.execute(writer);
@@ -251,15 +271,131 @@ public abstract class BaseRevisionBranching {
 	}
 	
 	public BranchState getBranchState(String branchPath, String compareWith) {
-		return getBranch(branchPath).state(getBranch(compareWith));
+		return getBranchState(getBranch(branchPath), getBranch(compareWith));
 	}
 	
 	public BranchState getBranchState(RevisionBranch branch) {
 		if (RevisionBranch.MAIN_PATH.equals(branch.getPath())) {
 			return BranchState.UP_TO_DATE;
 		} else {
-			return branch.state(getBranch(branch.getParentPath()));
+			return getBranchState(branch, getBranch(branch.getParentPath()));
 		}
+	}
+
+	/**
+	 * Returns the {@link BranchState} of the left {@link RevisionBranch} argument compared to
+	 * the given right {@link RevisionBranch} argument.
+	 * 
+	 * <ul>
+	 *  <li>FORWARD: no commits on right branch since base timestamp, commits on left branch since base timestamp
+	 * <pre>
+	 *              b    h
+	 * left         o----&#x25CF;
+	 * right ----&#x25CF;
+	 *            h
+	 * </pre>
+	 * </li>
+	 * <li>BEHIND: no commits on left branch since base timestamp, commits on right
+	 * branch since base timestamp
+	 * <pre>
+	 *             b = h
+	 * left         o&#x25CF;
+	 * right -------------&#x25CF;
+	 *                     h
+	 * </pre>
+	 * </li> 
+	 * <li>DIVERGED: commits on both branches since base timestamp
+	 * <pre>
+	 *              b    h
+	 * left         o----&#x25CF;
+	 * right -------------&#x25CF;
+	 *                     h
+	 * </pre>
+	 * </li> 
+	 * <li>UP_TO_DATE: no commits on either branch since base timestamp
+	 * <pre>
+	 *             b = h
+	 * left         o&#x25CF;
+	 * right ------&#x25CF;
+	 *              h
+	 * </pre>
+	 * </li>
+	 * </ul>
+	 * <p>
+	 * Branch base and head timestamps gathered from left branch are adjusted before
+	 * doing the comparison, according to the following rules:
+	 * <ul>
+	 * <li>If the right branch has been merged into left branch, the most recent of
+	 * such points is used as the base timestamp:
+	 * <pre>
+	 *              b   b'   h
+	 * left         o---o----&#x25CF;
+	 *                 /
+	 * right --------&#x25CF;------&#x25CF;
+	 *                ms     h
+	 * </pre>
+	 * </li>
+	 * <li>If left branch was merged into the right branch, the most recent of such
+	 * points is used as:
+	 * <ul>
+	 * <li>the base timestamp, if it is greater than the currently held base
+	 * timestamp (pictured)</li>
+	 * <li>the head timestamp, it it is greater than the currently held head
+	 * timestamp</li>
+	 * </ul>
+	 * <pre>
+	 *              b  ms = b' h
+	 * left         o---&#x25CF; o----&#x25CF;
+	 *                   \|
+	 * right ------------&#x25CF;----&#x25CF;
+	 *                         h
+	 * </pre>
+	 * </li>
+	 * </ul>
+	 * </p>
+	 * 
+	 * @param left
+	 * @param right
+	 * @return
+	 */
+	public final BranchState getBranchState(RevisionBranch left, RevisionBranch right) {
+    	long leftBaseTimestamp = left.getBaseTimestamp();
+    	long leftHeadTimestamp = left.getHeadTimestamp();
+    	long rightBaseTimestamp = leftBaseTimestamp;
+    	long rightHeadTimestamp = right.getHeadTimestamp();
+    	
+    	final RevisionBranchPoint latestMergeOfRight = left.getLatestMergeSource(right.getId(), true);
+    	if (latestMergeOfRight != null && latestMergeOfRight.getTimestamp() > rightBaseTimestamp) {
+   			rightBaseTimestamp = latestMergeOfRight.getTimestamp();
+    	}
+    	
+    	final RevisionBranchPoint latestMergeOfLeft = right.getLatestMergeSource(left.getId(), true);
+    	if (latestMergeOfLeft != null) {
+    		if (latestMergeOfLeft.getTimestamp() > leftBaseTimestamp) {
+    			leftBaseTimestamp = latestMergeOfLeft.getTimestamp();
+    		}
+    		if (latestMergeOfLeft.getTimestamp() > leftHeadTimestamp) {
+    			leftHeadTimestamp = latestMergeOfLeft.getTimestamp();
+    		}
+    	}
+    	
+    	if (leftHeadTimestamp > leftBaseTimestamp && rightHeadTimestamp <= rightBaseTimestamp) {
+    		if (hasChanges(left.getPath(), leftBaseTimestamp, leftHeadTimestamp, right.getId())) {
+    			return BranchState.FORWARD;
+    		} else {
+    			return BranchState.UP_TO_DATE;
+    		}
+        } else if (leftHeadTimestamp <= leftBaseTimestamp && rightHeadTimestamp > rightBaseTimestamp) {
+        	if (hasChanges(right.getPath(), rightBaseTimestamp, rightHeadTimestamp, left.getId())) {
+    			return BranchState.BEHIND;
+    		} else {
+    			return BranchState.UP_TO_DATE;
+    		}
+        } else if (leftHeadTimestamp > leftBaseTimestamp && rightHeadTimestamp > rightBaseTimestamp) {
+        	return BranchState.DIVERGED;
+        } else {
+    	    return BranchState.UP_TO_DATE;
+        }
 	}
 
 	/**
@@ -283,7 +419,7 @@ public abstract class BaseRevisionBranching {
 		RevisionBranch from = getBranch(source);
 		RevisionBranch to = getBranch(target);
 		
-		BranchState changesFromState = from.state(to);
+		BranchState changesFromState = getBranchState(from, to);
 
 		// do nothing if from state compared to toBranch is either UP_TO_DATE or BEHIND
 		if (changesFromState == BranchState.UP_TO_DATE || changesFromState == BranchState.BEHIND) {
@@ -293,7 +429,6 @@ public abstract class BaseRevisionBranching {
 		final InternalRevisionIndex index = revisionIndex();
 		final StagingArea staging = index.prepareCommit(to.getPath()).withContext(operation.context);
 		
-		// TODO add conflict processing
 		long fastForwardCommitTimestamp = staging.merge(from.ref(), to.ref(), operation.squash, operation.conflictProcessor, operation.exclusions);
 		// skip fast forward if the tobranch has a later commit than the returned fastForwardCommitTimestamp
 		if (to.getHeadTimestamp() >= fastForwardCommitTimestamp) {
@@ -362,11 +497,6 @@ public abstract class BaseRevisionBranching {
 	protected final RevisionBranch getBranchFromStore(final AfterWhereBuilder<RevisionBranch> query) {
 		return Iterables.getOnlyElement(search(query.limit(1).build()), null);
 	}
-	
-	protected final IndexWrite<Void> prepareReplace(final String path, final RevisionBranch value) {
-		return update(path, RevisionBranch.Scripts.REPLACE, ImmutableMap.of("replace", mapper.convertValue(value, Map.class)));
-	}
-
 	
 	/**
 	 * Updates the branch with the specified properties. Currently {@link Metadata} supported only.

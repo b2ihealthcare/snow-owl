@@ -33,8 +33,6 @@ import com.b2international.commons.options.MetadataImpl;
 import com.b2international.index.Hits;
 import com.b2international.index.Index;
 import com.b2international.index.IndexResource;
-import com.b2international.index.IndexClient;
-import com.b2international.index.Indexes;
 import com.b2international.index.WithScore;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Query;
@@ -130,12 +128,11 @@ public abstract class BaseRevisionIndexTest {
 		commit(branchPath, Arrays.asList(revisions));
 	}
 	
-	protected final void indexChange(final String branchPath, final Revision oldRevision, final Revision newRevision) {
+	protected final Commit indexChange(final String branchPath, final Revision oldRevision, final Revision newRevision) {
 		final long commitTimestamp = currentTime();
-		index().prepareCommit(branchPath)
+		return index().prepareCommit(branchPath)
 			.stageChange(oldRevision, newRevision)
-			.commit(commitTimestamp, UUID.randomUUID().toString(), "Commit")
-			.getTimestamp();
+			.commit(commitTimestamp, UUID.randomUUID().toString(), "Commit");
 	}
 	
 	protected final void indexRemove(final String branchPath, final Revision...removedRevisions) {
@@ -143,17 +140,14 @@ public abstract class BaseRevisionIndexTest {
 		StagingArea staging = index().prepareCommit(branchPath);
 		Arrays.asList(removedRevisions).forEach(staging::stageRemove);
 		staging
-			.commit(commitTimestamp, UUID.randomUUID().toString(), "Commit")
-			.getTimestamp();
+			.commit(commitTimestamp, UUID.randomUUID().toString(), "Commit");
 	}
 
-	protected final long commit(final String branchPath, final Collection<Revision> newRevisions) {
+	protected final Commit commit(final String branchPath, final Iterable<? extends Revision> newRevisions) {
 		final long commitTimestamp = currentTime();
 		StagingArea staging = index().prepareCommit(branchPath);
 		newRevisions.forEach(rev -> staging.stageNew(rev.getId(), rev));
-		return staging
-				.commit(commitTimestamp, UUID.randomUUID().toString(), "Commit")
-				.getTimestamp();
+		return staging.commit(commitTimestamp, UUID.randomUUID().toString(), "Commit");
 	}
 	
 	protected final void deleteRevision(final String branchPath, final Class<? extends Revision> type, final String key) {
