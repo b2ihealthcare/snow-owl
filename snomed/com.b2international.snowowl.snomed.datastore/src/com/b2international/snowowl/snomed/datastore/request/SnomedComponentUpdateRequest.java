@@ -90,7 +90,7 @@ public abstract class SnomedComponentUpdateRequest implements SnomedComponentReq
 			return false;
 		}
 
-		if (original.isActive() != active) {
+		if (!original.isActive().equals(active)) {
 			component.active(active);
 			return true;
 		} else {
