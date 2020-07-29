@@ -435,7 +435,7 @@ public class CodeSystem implements Serializable {
 	 */
 	@JsonIgnore
 	public CodeSystemURI getCodeSystemURI(String activeBranch) {
-		final String relativePath = activeBranch.replaceFirst(branchPath, "");
+		final String relativePath = activeBranch.replaceFirst(branchPath, "").replaceFirst("/", "");
 		final String codeSystemPath = relativePath.isEmpty() ? CodeSystemURI.HEAD : relativePath;
 		return new CodeSystemURI(String.format("%s%s%s", shortName, Branch.SEPARATOR, codeSystemPath));			
 	}
