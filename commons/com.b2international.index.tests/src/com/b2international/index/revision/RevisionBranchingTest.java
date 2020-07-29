@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Collection;
-import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.Executors;
@@ -40,6 +41,7 @@ import com.b2international.index.IndexWrite;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionBranch.BranchState;
+import com.b2international.index.revision.RevisionFixtures.RevisionData;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.Futures;
@@ -52,6 +54,8 @@ import com.google.common.util.concurrent.MoreExecutors;
  */
 public class RevisionBranchingTest extends BaseRevisionIndexTest {
 
+	private final RevisionData rev1 = new RevisionData(UUID.randomUUID().toString(), "field1", "field2");
+	
 	@Test
 	public void afterInit() throws Exception {
 		RevisionBranch main = getMainBranch();
@@ -65,7 +69,7 @@ public class RevisionBranchingTest extends BaseRevisionIndexTest {
 
 	@Test
 	public void commitUpdatesHeadTimestamp() throws Exception {
-		long timestamp = commit(MAIN, Collections.emptySet());
+		long timestamp = commit(MAIN, List.of(rev1)).getTimestamp();
 		assertThat(getMainBranch().getHeadTimestamp()).isEqualTo(timestamp);
 		assertThat(branching().getBranchState(MAIN)).isEqualTo(BranchState.UP_TO_DATE);
 	}
@@ -106,15 +110,15 @@ public class RevisionBranchingTest extends BaseRevisionIndexTest {
 	@Test
 	public void forwardStateAfterCommit() throws Exception {
 		final String path = createBranch(MAIN, "a");
-		commit(path, Collections.emptySet());
+		commit(path, List.of(rev1));
 		assertThat(branching().getBranchState(path)).isEqualTo(BranchState.FORWARD);
 	}
 	
 	@Test
 	public void divergedStateAfterParentAndBranchCommit() throws Exception {
 		final String path = createBranch(MAIN, "a");
-		commit(MAIN, Collections.emptySet());
-		commit(path, Collections.emptySet());
+		commit(MAIN, List.of(rev1));
+		commit(path, List.of(rev1));
 		
 		assertThat(branching().getBranchState(path)).isEqualTo(BranchState.DIVERGED);
 	}

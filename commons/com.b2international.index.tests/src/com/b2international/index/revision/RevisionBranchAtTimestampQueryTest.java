@@ -61,8 +61,8 @@ public class RevisionBranchAtTimestampQueryTest extends BaseRevisionIndexTest {
 		final RevisionData rev1 = new RevisionData(STORAGE_KEY1, "field1", "field2");
 		final RevisionData rev2 = new RevisionData(STORAGE_KEY1, "field1Changed", "field2");
 		
-		long commit1 = commit(MAIN, Collections.singleton(rev1));
-		long commit2 = commit(MAIN, Collections.singleton(rev2));
+		long commit1 = commit(MAIN, Collections.singleton(rev1)).getTimestamp();
+		long commit2 = commit(MAIN, Collections.singleton(rev2)).getTimestamp();;
 		
 		assertDocEquals(rev2, getRevision(MAIN, RevisionData.class, STORAGE_KEY1));
 		assertDocEquals(rev1, getRevision("MAIN@"+commit1, RevisionData.class, STORAGE_KEY1));

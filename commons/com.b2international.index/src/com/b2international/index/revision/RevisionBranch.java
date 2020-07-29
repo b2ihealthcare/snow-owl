@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,7 +60,6 @@ import com.google.common.primitives.Longs;
 		+ "}")
 @Script(name=RevisionBranch.Scripts.WITH_DELETED, script="ctx._source.deleted = true")
 @Script(name=RevisionBranch.Scripts.WITH_METADATA, script="ctx._source.metadata = params.metadata")
-@Script(name=RevisionBranch.Scripts.REPLACE, script="ctx._source = params.replace")
 public final class RevisionBranch extends MetadataHolderImpl {
 
 	/**
@@ -165,7 +164,6 @@ public final class RevisionBranch extends MetadataHolderImpl {
 		public static final String WITH_DELETED = "withDeleted";
 		public static final String WITH_METADATA = "withMetadata";
 		public static final String WITH_MERGE_SOURCE = "withMergeSource";
-		public static final String REPLACE = "replace";
 	}
 	
 	public static Builder builder() {
@@ -410,116 +408,7 @@ public final class RevisionBranch extends MetadataHolderImpl {
 		return MAIN_PATH.equals(path);
 	}
     
-	/**
-	 * Returns the {@link BranchState} of this {@link RevisionBranch} compared to
-	 * the given target {@link RevisionBranch}.
-	 * 
-	 * <ul>
-	 * <li>FORWARD: no commits on target branch since base timestamp, commits on
-	 * this branch since base timestamp
-	 * <pre>
-	 *              b    h
-	 * this         o----&#x25CF;
-	 * target ----&#x25CF;
-	 *            h
-	 * </pre>
-	 * </li>
-	 * <li>BEHIND: no commits on this branch since base timestamp, commits on target
-	 * branch since base timestamp
-	 * <pre>
-	 *             b = h
-	 * this         o&#x25CF;
-	 * target -------------&#x25CF;
-	 *                     h
-	 * </pre>
-	 * </li> 
-	 * <li>DIVERGED: commits on both branches since base timestamp
-	 * <pre>
-	 *              b    h
-	 * this         o----&#x25CF;
-	 * target -------------&#x25CF;
-	 *                     h
-	 * </pre>
-	 * </li> 
-	 * <li>UP_TO_DATE: no commits on either branch since base timestamp
-	 * <pre>
-	 *             b = h
-	 * this         o&#x25CF;
-	 * target ------&#x25CF;
-	 *              h
-	 * </pre>
-	 * </li>
-	 * </ul>
-	 * <p>
-	 * Branch base and head timestamps gathered from this branch are adjusted before
-	 * doing the comparison, according to the following rules:
-	 * <ul>
-	 * <li>If the target branch has been merged into this branch, the most recent of
-	 * such points is used as the base timestamp:
-	 * <pre>
-	 *              b   b'   h
-	 * this         o---o----&#x25CF;
-	 *                 /
-	 * target --------&#x25CF;------&#x25CF;
-	 *                ms     h
-	 * </pre>
-	 * </li>
-	 * <li>If this branch was merged into the target branch, the most recent of such
-	 * points is used as:
-	 * <ul>
-	 * <li>the base timestamp, if it is greater than the currently held base
-	 * timestamp (pictured)</li>
-	 * <li>the head timestamp, it it is greater than the currently held head
-	 * timestamp</li>
-	 * </ul>
-	 * <pre>
-	 *              b  ms = b' h
-	 * this         o---&#x25CF; o----&#x25CF;
-	 *                   \|
-	 * target ------------&#x25CF;----&#x25CF;
-	 *                         h
-	 * </pre>
-	 * </li>
-	 * </ul>
-	 * </p>
-	 * 
-	 * @param target
-	 * @return
-	 */
-    @JsonIgnore
-	public BranchState state(RevisionBranch target) {
-    	final RevisionBranchPoint mergeSource = this.getLatestMergeSource(target.getId(), true);
-    	final RevisionBranchPoint mergeTarget = target.getLatestMergeSource(this.getId(), true);
-    	
-    	long baseTimestamp = getBaseTimestamp();
-    	if (mergeSource != null) {
-    		baseTimestamp = mergeSource.getTimestamp();
-    	}
-    	
-    	long headTimestamp = getHeadTimestamp();
-    	if (mergeTarget != null) {
-    		if (mergeTarget.getTimestamp() > baseTimestamp) {
-    			baseTimestamp = mergeTarget.getTimestamp();
-    		}
-    		if (mergeTarget.getTimestamp() > headTimestamp) {
-    			headTimestamp = mergeTarget.getTimestamp();
-    		}
-    	}
-    	
-    	final long targetHeadTimestamp = target.getHeadTimestamp();
-    	
-        if (headTimestamp > baseTimestamp && targetHeadTimestamp <= baseTimestamp) {
-        	return BranchState.FORWARD;
-        } else if (headTimestamp == baseTimestamp && targetHeadTimestamp > baseTimestamp) {
-        	return BranchState.BEHIND;
-        } else if (headTimestamp > baseTimestamp && targetHeadTimestamp > baseTimestamp) {
-        	return BranchState.DIVERGED;
-        } else {
-    	    return BranchState.UP_TO_DATE;
-        }
-    }
-
-	private RevisionBranchPoint getLatestMergeSource(long branchToFind, boolean withSquashMerges) {
+	RevisionBranchPoint getLatestMergeSource(long branchToFind, boolean withSquashMerges) {
 		return getLatestMergeSources(withSquashMerges).get(branchToFind);
 	}
 
@@ -536,6 +425,15 @@ public final class RevisionBranch extends MetadataHolderImpl {
 				}
 			});
 		return latestMergeSources;
+	}
+
+	/**
+	 * A branch is considered empty when the base and head timestamps point to the same branch point.
+	 * @return
+	 */
+	@JsonIgnore
+	public boolean isEmpty() {
+		return getBaseTimestamp() == getHeadTimestamp();
 	}
 
 }

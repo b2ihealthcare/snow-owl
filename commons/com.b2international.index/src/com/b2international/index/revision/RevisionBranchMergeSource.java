@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.util.SortedSet;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 
 /**
  * @since 7.0
@@ -51,6 +52,11 @@ public final class RevisionBranchMergeSource implements Serializable {
 	
 	public SortedSet<RevisionBranchPoint> getBranchPoints() {
 		return branchPoints;
+	}
+	
+	@Override
+	public String toString() {
+		return MoreObjects.toStringHelper(getClass()).add("timestamp", timestamp).add("branchPoints", branchPoints).add("squash", squash).toString();
 	}
 	
 }

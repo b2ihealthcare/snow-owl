@@ -158,6 +158,11 @@ public class DefaultRevisionWriter implements RevisionWriter {
 		return searcher;
 	}
 	
+	@Override
+	public boolean isEmpty() {
+		return index.isEmpty();
+	}
+	
 	private String generateRevisionId() {
 		return UUID.randomUUID().toString();
 	}
