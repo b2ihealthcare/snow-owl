@@ -15,7 +15,10 @@
  */
 package com.b2international.snowowl.core.request;
 
+import static com.google.common.collect.Sets.newHashSet;
+
 import java.util.Collection;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.options.Options;
@@ -107,6 +110,28 @@ public interface ConceptSearchRequestEvaluator {
 		return result;
 	}
 
+	default void evaluateIdFilters(SearchResourceRequestBuilder<?, ?, ?> requestBuilder, Options search) {
+		
+		Set<String> idFilter = newHashSet();
+		
+		if (search.containsKey(OptionKey.ID)) {
+			idFilter.addAll(search.getCollection(OptionKey.ID, String.class));
+		}
+		
+		if (search.containsKey(OptionKey.QUERY)) {
+			idFilter.addAll(extractIds(search.getCollection(OptionKey.QUERY, String.class)));
+		}
+		
+		if (search.containsKey(OptionKey.MUST_NOT_QUERY)) {
+			idFilter.removeAll(extractIds(search.getCollection(OptionKey.MUST_NOT_QUERY, String.class)));
+		}
+		
+		if (!idFilter.isEmpty()) {
+			requestBuilder.filterByIds(idFilter);
+		}
+		
+	}
+	
 	/**
 	 * No-op request evaluator that returns zero results
 	 * 
