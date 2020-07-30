@@ -19,6 +19,7 @@ import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.ComponentStatusConflictException;
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.request.UpdateRequest;
 import com.b2international.snowowl.snomed.core.domain.InactivationProperties;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
@@ -30,18 +31,16 @@ import com.google.common.collect.Multimap;
  * @since 4.5
  * @param <B>
  */
-public abstract class SnomedComponentUpdateRequest implements SnomedComponentRequest<Boolean> {
+public abstract class SnomedComponentUpdateRequest extends UpdateRequest<TransactionContext> implements SnomedComponentRequest<Boolean> {
 
 	private static final long serialVersionUID = 1L;
 
-	private final String componentId;
-	
 	private String moduleId;
 	private Boolean active;
 	private InactivationProperties inactivationProperties;
 	
 	protected SnomedComponentUpdateRequest(String componentId) {
-		this.componentId = componentId;
+		super(componentId);
 	}
 	
 	void setActive(Boolean active) {
@@ -64,38 +63,18 @@ public abstract class SnomedComponentUpdateRequest implements SnomedComponentReq
 		return moduleId;
 	}
 	
-	protected String getComponentId() {
-		return componentId;
-	}
-	
 	protected InactivationProperties getInactivationProperties() {
 		return inactivationProperties;
 	}
 	
 	protected boolean updateModule(final TransactionContext context, final SnomedComponentDocument original, final SnomedComponentDocument.Builder<?, ?> component) {
-		if (null == moduleId) {
-			return false;
-		}
-
-		if (!original.getModuleId().equals(moduleId)) {
+		return updateProperty(moduleId, original::getModuleId, moduleId -> {
 			component.moduleId(context.lookup(moduleId, SnomedConceptDocument.class).getId());
-			return true;
-		} else {
-			return false;
-		}
+		});
 	}
 
 	protected boolean updateStatus(final TransactionContext context, final SnomedComponentDocument original, final SnomedComponentDocument.Builder<?, ?> component) {
-		if (null == active) {
-			return false;
-		}
-
-		if (original.isActive() != active) {
-			component.active(active);
-			return true;
-		} else {
-			return false;
-		}
+		return updateProperty(active, original::isActive, component::active);
 	}
 	
 	protected void checkUpdateOnReleased(SnomedComponentDocument component, String field, Object value) {

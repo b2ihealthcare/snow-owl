@@ -77,7 +77,7 @@ public final class SnomedRelationshipUpdateRequest extends SnomedComponentUpdate
 	
 	@Override
 	public Boolean execute(TransactionContext context) {
-		final SnomedRelationshipIndexEntry relationship = context.lookup(getComponentId(), SnomedRelationshipIndexEntry.class);
+		final SnomedRelationshipIndexEntry relationship = context.lookup(componentId(), SnomedRelationshipIndexEntry.class);
 		final SnomedRelationshipIndexEntry.Builder updatedRelationship = SnomedRelationshipIndexEntry.builder(relationship);
 
 		boolean changed = false;
@@ -190,7 +190,7 @@ public final class SnomedRelationshipUpdateRequest extends SnomedComponentUpdate
 	@Override
 	public Set<String> getRequiredComponentIds(TransactionContext context) {
 		final Builder<String> ids = ImmutableSet.<String>builder();
-		ids.add(getComponentId());
+		ids.add(componentId());
 		if (characteristicTypeId != null) {
 			ids.add(characteristicTypeId);
 		}

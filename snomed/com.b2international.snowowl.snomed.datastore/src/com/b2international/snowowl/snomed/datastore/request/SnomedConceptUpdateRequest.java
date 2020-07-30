@@ -113,7 +113,7 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 	
 	@Override
 	public Boolean execute(TransactionContext context) {
-		final SnomedConceptDocument concept = context.lookup(getComponentId(), SnomedConceptDocument.class);
+		final SnomedConceptDocument concept = context.lookup(componentId(), SnomedConceptDocument.class);
 		final SnomedConceptDocument.Builder updatedConcept = SnomedConceptDocument.builder(concept);
 
 		boolean changed = false;
@@ -189,7 +189,7 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 		if (refSet == SnomedReferenceSet.DELETE || force) {
 			for (Hits<SnomedRefSetMemberIndexEntry> hits : context.service(RevisionSearcher.class).scroll(Query
 					.select(SnomedRefSetMemberIndexEntry.class)
-					.where(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(getComponentId()))
+					.where(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(componentId()))
 					.limit(10_000)
 					.build()))  {
 				for (SnomedRefSetMemberIndexEntry member : hits) {
@@ -337,7 +337,7 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 	@Override
 	public Set<String> getRequiredComponentIds(TransactionContext context) {
 		final Builder<String> ids = ImmutableSet.<String>builder();
-		ids.add(getComponentId());
+		ids.add(componentId());
 		if (getModuleId() != null) {
 			ids.add(getModuleId());
 		}
