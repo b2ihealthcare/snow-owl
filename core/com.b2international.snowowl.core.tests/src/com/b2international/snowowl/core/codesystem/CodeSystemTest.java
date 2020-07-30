@@ -56,6 +56,16 @@ public class CodeSystemTest {
 	}
 	
 	@Test
+	public void codeSystemMainBranchToURI() throws Exception {
+		CodeSystem cs = CodeSystem.builder()
+				.shortName("SNOMEDCT")
+				.branchPath("MAIN")
+				.build();
+		CodeSystemURI uri = cs.getCodeSystemURI("MAIN");
+		assertThat(uri).isEqualTo(new CodeSystemURI("SNOMEDCT/HEAD"));
+	}
+	
+	@Test
 	public void extensionCodeSystemChildBranchToURI() throws Exception {
 		CodeSystem cs = CodeSystem.builder()
 				.shortName("SNOMEDCT-UK")

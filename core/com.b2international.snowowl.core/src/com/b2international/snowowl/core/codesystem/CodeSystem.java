@@ -447,10 +447,9 @@ public class CodeSystem implements Serializable {
 	public CodeSystemURI getCodeSystemURI(String branch) {
 		Preconditions.checkNotNull(branch, "Branch argument should not be null");
 		if (!Strings.isNullOrEmpty(branch)) {
-			final String codeSystemBranchPath = branchPath + "/";
-			Preconditions.checkArgument(branch.startsWith(codeSystemBranchPath), "Branch argument '%s' should start with Code System working branch '%s'.", branch, branchPath);
-			final String relativePath = branch.replaceFirst(codeSystemBranchPath, "");
-			return CodeSystemURI.branch(shortName, relativePath);
+			Preconditions.checkArgument(branch.startsWith(branchPath), "Branch argument '%s' should start with Code System working branch '%s'.", branch, branchPath);
+			final String relativePath = branch.replaceFirst(branchPath, "").replaceFirst("/", "");
+			return relativePath.isEmpty() ? CodeSystemURI.head(shortName) : CodeSystemURI.branch(shortName, relativePath);
 		} else {
 			return CodeSystemURI.head(shortName);
 		}
