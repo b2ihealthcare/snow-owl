@@ -1,18 +1,16 @@
 <configuration>
-	<variable name="LOG_LEVEL" value="${LOG_LEVEL:-WARN}" />
+
 	<jmxConfigurator />
 
 	<contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator"/>
 
 	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-		<level>WARN</level>
 		<encoder>
 			<pattern>[%d{yyyy-MM-dd'T'HH:mm:ss.SSS}] %-5level %-48.48thread %-64.64logger{64} %msg %ex%n</pattern>
 	    </encoder>
 	</appender>
 
 	<appender name="LOG_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-		<level>WARN</level>
 		<file>${so.home}/serviceability/logs/log.log</file>
 		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
 			<fileNamePattern>${so.home}/serviceability/logs/log_%d{yyyy-MM-dd}.log</fileNamePattern>
@@ -29,7 +27,6 @@
 	</logger>
 
 	<logger level="ERROR" additivity="false" name="org.semanticweb.elk.reasoner.indexing.hierarchy.IndexObjectConverter" />
-  <logger level="WARN" additivity="false" name="org.apache" />
 
 	<root level="INFO">
 		<appender-ref ref="LOG_FILE" />

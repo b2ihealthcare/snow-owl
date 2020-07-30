@@ -210,7 +210,7 @@
 		</encoder>
 	</appender>
 
-	<root level="INFO">
+	<root level="${LOG_LEVEL}">
 		<appender-ref ref="STDOUT" />
 		<appender-ref ref="STDOUT_USER_ACTIVITY" />
 		<!-- <appender-ref ref="STDOUT_USER_ACCESS" /> -->
