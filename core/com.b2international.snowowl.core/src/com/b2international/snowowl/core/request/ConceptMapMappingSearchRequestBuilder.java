@@ -16,27 +16,27 @@
 package com.b2international.snowowl.core.request;
 
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.domain.SetMembers;
+import com.b2international.snowowl.core.domain.ConceptMapMappings;
 import com.b2international.snowowl.core.request.SetSearchRequestEvaluator.OptionKey;
 import com.google.common.collect.ImmutableSet;
 
 /**
-* @since 7.7
+* @since 7.8
 */
-public final class MemberSearchRequestBuilder extends SearchResourceRequestBuilder<MemberSearchRequestBuilder, BranchContext, SetMembers> 
-		implements RevisionIndexRequestBuilder<SetMembers> {
+public final class ConceptMapMappingSearchRequestBuilder extends SearchResourceRequestBuilder<ConceptMapMappingSearchRequestBuilder, BranchContext, ConceptMapMappings> 
+		implements RevisionIndexRequestBuilder<ConceptMapMappings> {
 	
-	public MemberSearchRequestBuilder filterBySet(String setId) {
-		return filterBySets(ImmutableSet.of(setId));
+	public ConceptMapMappingSearchRequestBuilder filterByConceptMap(String conceptMapId) {
+		return filterByConceptMaps(ImmutableSet.of(conceptMapId));
 	}
 	
-	public MemberSearchRequestBuilder filterBySets(Iterable<String> setIds) {
-		return addOption(OptionKey.SET, setIds);
+	public ConceptMapMappingSearchRequestBuilder filterByConceptMaps(Iterable<String> conceptMapIds) {
+		return addOption(OptionKey.SET, conceptMapIds);
 	}
 	
 	@Override
-	protected SearchResourceRequest<BranchContext, SetMembers> createSearch() {
-		return new MemberSearchRequest();
+	protected SearchResourceRequest<BranchContext, ConceptMapMappings> createSearch() {
+		return new ConceptMapMappingSearchRequest();
 	}
 
 }

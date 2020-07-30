@@ -37,13 +37,16 @@ import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.ContextConfigurer;
 import com.b2international.snowowl.core.merge.ComponentRevisionConflictProcessor;
 import com.b2international.snowowl.core.merge.IMergeConflictRule;
+import com.b2international.snowowl.core.request.ConceptMapMappingSearchRequestEvaluator;
 import com.b2international.snowowl.core.request.ConceptSearchRequest;
 import com.b2international.snowowl.core.request.ConceptSearchRequestBuilder;
 import com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator;
+import com.b2international.snowowl.core.request.ConceptMapMappingSearchRequest;
+import com.b2international.snowowl.core.request.ConceptMapMappingSearchRequestBuilder;
 import com.b2international.snowowl.core.request.MemberSearchRequest;
 import com.b2international.snowowl.core.request.MemberSearchRequestBuilder;
-import com.b2international.snowowl.core.request.SetMemberSearchRequestEvaluator;
 import com.b2international.snowowl.core.request.QueryOptimizer;
+import com.b2international.snowowl.core.request.SetMemberSearchRequestEvaluator;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.Plugin;
 import com.b2international.snowowl.core.terminology.Terminology;
@@ -83,6 +86,7 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 					.bind(ComponentRevisionConflictProcessor.class, getComponentRevisionConflictProcessor())
 					.bind(ConceptSearchRequestEvaluator.class, getConceptSearchRequestEvaluator())
 					.bind(SetMemberSearchRequestEvaluator.class, getMemberSearchRequestEvaluator())
+					.bind(ConceptMapMappingSearchRequestEvaluator.class, getConceptMapMappingSearchRequestEvaluator())
 					.bind(QueryOptimizer.class, getQueryOptimizer())
 					.bind(ContentAvailabilityInfoProvider.class, getContentAvailabilityInfoProvider())
 					.bind(ContextConfigurer.class, getRequestConfigurer())
@@ -149,6 +153,16 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 	 */
 	protected SetMemberSearchRequestEvaluator getMemberSearchRequestEvaluator() {
 		return SetMemberSearchRequestEvaluator.NOOP;
+	}
+	
+	/**
+	 * An evaluator that can evaluate generic {@link ConceptMapMappingSearchRequest member search requests}. 
+	 * @return a {@link ConceptMapMappingSearchRequestEvaluator} instance
+	 * @see ConceptMapMappingSearchRequestBuilder
+	 * @see ConceptMapMappingSearchRequest
+	 */
+	protected ConceptMapMappingSearchRequestEvaluator getConceptMapMappingSearchRequestEvaluator() {
+		return ConceptMapMappingSearchRequestEvaluator.NOOP;
 	}
 	
 	

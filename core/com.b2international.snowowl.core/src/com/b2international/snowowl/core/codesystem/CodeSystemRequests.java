@@ -25,10 +25,13 @@ import com.b2international.snowowl.core.codesystem.version.CodeSystemVersionCrea
 import com.b2international.snowowl.core.codesystem.version.CodeSystemVersionSearchRequestBuilder;
 import com.b2international.snowowl.core.jobs.RemoteJobEntry;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
+import com.b2international.snowowl.core.request.ConceptMapCompareRequestBuilder;
 import com.b2international.snowowl.core.request.ConceptSearchRequestBuilder;
 import com.b2international.snowowl.core.request.ConceptSuggestionRequestBuilder;
+import com.b2international.snowowl.core.request.ConceptMapMappingSearchRequestBuilder;
 import com.b2international.snowowl.core.request.MemberSearchRequestBuilder;
 import com.b2international.snowowl.core.request.QueryOptimizeRequestBuilder;
+import com.b2international.snowowl.core.uri.ComponentURI;
 
 /**
  * @since 4.7
@@ -81,12 +84,29 @@ public class CodeSystemRequests {
 		return new MemberSearchRequestBuilder();
 	}
 	
+	/**
+	 * Creates a new generic set mapping search request builder.
+	 * 
+	 * @return the builder to configure for generic mappings search
+	 */
+	public static ConceptMapMappingSearchRequestBuilder prepareSearchConceptMapMappings() {
+		return new ConceptMapMappingSearchRequestBuilder();
+	}
+	
 	public static ConceptSuggestionRequestBuilder prepareSuggestConcepts() {
 		return new ConceptSuggestionRequestBuilder();
 	}
 
 	public static QueryOptimizeRequestBuilder prepareOptimizeQueries() {
 		return new QueryOptimizeRequestBuilder();
+	}
+	
+	public static AllCodeSystemSearchRequestBuilder prepareSearchAllCodeSystems(){
+		return new AllCodeSystemSearchRequestBuilder();
+	}
+	
+	public static ConceptMapCompareRequestBuilder prepareConceptMapCompare(ComponentURI baseConceptMapURI, ComponentURI compareConceptMapURI){
+		return new ConceptMapCompareRequestBuilder(baseConceptMapURI, compareConceptMapURI);
 	}
 
 	/**

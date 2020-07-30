@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 
 import org.junit.Before;
@@ -25,7 +25,6 @@ import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.test.commons.Services;
-import com.google.common.collect.Iterables;
 
 /**
  * @since 4.7
@@ -41,6 +40,46 @@ public class CodeSystemRequestTest {
 	@Before
 	public void setup() {
 		this.bus = Services.bus();
+	}
+	
+	@Test
+	public void getAllCodeSystems() {
+		final String shortName = "newCodeSystemShortName";
+		final String oid = "newCodeSystemOid";
+		
+		assertCodeSystemCreated(shortName, oid);
+		
+		final CodeSystems codeSystems = CodeSystemRequests.prepareSearchAllCodeSystems()
+				.build()
+				.execute(Services.context());
+		
+		assertThat(codeSystems.getItems()).hasSizeGreaterThanOrEqualTo(2);
+	}
+	
+	@Test
+	public void getCodeSystemByShortNameFromAllRepositoreis() {
+		final String shortName = "ShortName";
+		final String oid = "Oid";
+		
+		assertCodeSystemCreated(shortName, oid);
+		
+		final CodeSystems existingCodeSystem = CodeSystemRequests.prepareSearchAllCodeSystems()
+				.filterById(shortName)
+				.build()
+				.execute(Services.context());
+
+		assertThat(existingCodeSystem.getItems()).hasSize(1);
+		assertThat(existingCodeSystem.getItems().get(0).getShortName()).isEqualTo(shortName);
+	}
+	
+	@Test
+	public void getNonExistentCodeSystemByShortNameFromAllRepositoreis() {
+		
+		final CodeSystems nonExistentCodeSystem = CodeSystemRequests.prepareSearchAllCodeSystems()
+				.filterById("not a valid code system short name")
+				.build()
+				.execute(Services.context());
+		assertThat(nonExistentCodeSystem.getItems()).hasSize(0);
 	}
 	
 	@Test
@@ -62,7 +101,7 @@ public class CodeSystemRequestTest {
 		assertCodeSystemCreated(shortName, oid);
 		
 		final CodeSystem codeSystem = getCodeSystem(shortName);
-		assertEquals(shortName, codeSystem.getShortName());
+		assertThat(codeSystem.getShortName()).isEqualTo(shortName);
 	}
 	
 	@Test
@@ -82,7 +121,7 @@ public class CodeSystemRequestTest {
 		
 		final CodeSystem updatedCodeSystem = getCodeSystem(shortName);
 		assertNotNull(updatedCodeSystem);
-		assertEquals("updated name", updatedCodeSystem.getName());
+		assertThat(updatedCodeSystem.getName()).isEqualTo("updated name");
 	}
 	
 	@Test(expected = NotFoundException.class)
@@ -109,8 +148,8 @@ public class CodeSystemRequestTest {
 			.execute(bus)
 			.getSync();
 		
-		assertEquals(1, codeSystems.getItems().size());
-		assertEquals(SNOMEDCT, Iterables.getOnlyElement(codeSystems.getItems()).getShortName());
+		assertThat(codeSystems.getItems()).hasSize(1);
+		assertThat(codeSystems.getItems().get(0).getShortName()).isEqualTo(SNOMEDCT);
 	}
 	
 	private void createCodeSystem(final String shortName, final String oid) {

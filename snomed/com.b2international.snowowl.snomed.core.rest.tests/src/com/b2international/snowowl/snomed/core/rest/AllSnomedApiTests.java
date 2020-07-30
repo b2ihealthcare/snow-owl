@@ -37,6 +37,7 @@ import com.b2international.snowowl.snomed.core.rest.branches.SnomedMergeApiTest;
 import com.b2international.snowowl.snomed.core.rest.branches.SnomedMergeConflictTest;
 import com.b2international.snowowl.snomed.core.rest.branches.SnomedReviewApiTest;
 import com.b2international.snowowl.snomed.core.rest.classification.SnomedClassificationApiTest;
+import com.b2international.snowowl.snomed.core.rest.compare.SnomedMapTypeReferenceSetCompareTest;
 import com.b2international.snowowl.snomed.core.rest.components.*;
 import com.b2international.snowowl.snomed.core.rest.io.SnomedExportApiTest;
 import com.b2international.snowowl.snomed.core.rest.io.SnomedImportApiTest;
@@ -99,7 +100,8 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	SnomedMergePerformanceTest.class,
 	// Generic API
 	ConceptSearchRequestSnomedTest.class,
-	MemberSearchRequestSnomedTest.class
+	MemberSearchRequestSnomedTest.class,
+	SnomedMapTypeReferenceSetCompareTest.class
 })
 public class AllSnomedApiTests {
 

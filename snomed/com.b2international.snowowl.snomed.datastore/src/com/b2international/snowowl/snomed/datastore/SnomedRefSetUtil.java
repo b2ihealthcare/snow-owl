@@ -27,6 +27,7 @@ import static java.util.stream.Collectors.toMap;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -41,6 +42,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -153,6 +155,18 @@ public abstract class SnomedRefSetUtil {
 				|| COMPLEX_MAP.equals(type)
 				|| COMPLEX_BLOCK_MAP.equals(type)
 				|| EXTENDED_MAP.equals(type);
+	}
+	
+	/**
+	 * Returns the map type reference set types.
+	 * @return 
+	 */
+	public static List<SnomedRefSetType> getMapTypeRefSets() {
+		return ImmutableList.of(SnomedRefSetType.SIMPLE_MAP, 
+				SnomedRefSetType.SIMPLE_MAP_WITH_DESCRIPTION,
+				SnomedRefSetType.COMPLEX_MAP,
+				SnomedRefSetType.COMPLEX_BLOCK_MAP,
+				SnomedRefSetType.EXTENDED_MAP);
 	}
 	
 	/**
