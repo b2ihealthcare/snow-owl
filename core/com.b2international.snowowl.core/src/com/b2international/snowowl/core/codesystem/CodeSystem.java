@@ -31,6 +31,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -431,13 +433,27 @@ public class CodeSystem implements Serializable {
 	}
 	
 	/**
-	 * Returns the CodeSystemURI of this code system at the given active branch
+	 * @return the {@link CodeSystemURI} of this code system that points to the latest development version of it (HEAD).
 	 */
 	@JsonIgnore
-	public CodeSystemURI getCodeSystemURI(String activeBranch) {
-		final String relativePath = activeBranch.replaceFirst(branchPath, "");
-		final String codeSystemPath = relativePath.isEmpty() ? CodeSystemURI.HEAD : relativePath;
-		return new CodeSystemURI(String.format("%s%s%s", shortName, Branch.SEPARATOR, codeSystemPath));			
+	public CodeSystemURI getCodeSystemURI() {
+		return getCodeSystemURI("");
+	}
+	
+	/**
+	 * @return the {@link CodeSystemURI} of this code system at the given active branch, if the branch is empty it returns the HEAD of this {@link CodeSystem}.
+	 */
+	@JsonIgnore
+	public CodeSystemURI getCodeSystemURI(String branch) {
+		Preconditions.checkNotNull(branch, "Branch argument should not be null");
+		if (!Strings.isNullOrEmpty(branch)) {
+			final String codeSystemBranchPath = branchPath + "/";
+			Preconditions.checkArgument(branch.startsWith(codeSystemBranchPath), "Branch argument '%s' should start with Code System working branch '%s'.", branch, branchPath);
+			final String relativePath = branch.replaceFirst(codeSystemBranchPath, "");
+			return CodeSystemURI.branch(shortName, relativePath);
+		} else {
+			return CodeSystemURI.head(shortName);
+		}
 	}
 
 	@Override
