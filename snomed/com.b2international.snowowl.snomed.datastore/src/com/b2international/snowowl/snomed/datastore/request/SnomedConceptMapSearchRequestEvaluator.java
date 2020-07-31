@@ -19,6 +19,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
@@ -26,6 +28,7 @@ import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.domain.Concept;
 import com.b2international.snowowl.core.domain.ConceptMapMapping;
 import com.b2international.snowowl.core.domain.ConceptMapMapping.Builder;
 import com.b2international.snowowl.core.domain.ConceptMapMappings;
@@ -36,6 +39,7 @@ import com.b2international.snowowl.core.terminology.TerminologyComponent;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.core.uri.ComponentURI;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
@@ -61,29 +65,48 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 	}
 
 	private ConceptMapMappings toCollectionResource(SnomedReferenceSetMembers referenceSetMembers, CodeSystemURI uri, BranchContext context) {
-
 		List<ConceptMapMapping> mappings = referenceSetMembers.stream()
-				.filter(m -> {
-					short terminologyComponentId = m.getReferencedComponent().getTerminologyComponentId();
-					return terminologyComponentId == SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
-				})
+				.filter(m -> SnomedTerminologyComponentConstants.CONCEPT_NUMBER == m.getReferencedComponent().getTerminologyComponentId())
 				.map(m -> toMapping(m, uri, getTargetComponentURI(context, m.getReferenceSetId())))
 				.collect(Collectors.toList());
-
-		return new ConceptMapMappings(mappings,
-				referenceSetMembers.getSearchAfter(),
-				referenceSetMembers.getLimit(),
-				referenceSetMembers.getTotal()
-				);
+		
+		if (!mappings.isEmpty()) {
+			Set<String> targetComponentURIs = mappings.stream().map(ConceptMapMapping::getTargetComponentURI).map(ComponentURI::identifier).collect(Collectors.toSet());
+			
+			Map<String, Concept> mapTargetsById = CodeSystemRequests.prepareSearchConcepts()
+				.filterByIds(targetComponentURIs)
+				.build(mappings.stream().findFirst().get().getTargetComponentURI().codeSystemUri())
+				.execute(context.service(IEventBus.class))
+				.getSync(5, TimeUnit.MINUTES)
+				.stream()
+				.collect(Collectors.toMap(Concept::getId, c -> c));
+			
+			mappings = mappings.stream().map(mapping -> {
+				final String mapTarget = mapping.getTargetComponentURI().identifier();
+				if (mapTargetsById.containsKey(mapTarget)) {
+					return mapping.toBuilder()
+						.targetTerm(mapTargetsById.get(mapTarget).getTerm())
+						.build();
+				} else {
+					return mapping;
+				}
+			}).collect(Collectors.toList());
+		}
+		
+		return new ConceptMapMappings(
+			mappings,
+			referenceSetMembers.getSearchAfter(),
+			referenceSetMembers.getLimit(),
+			referenceSetMembers.getTotal()
+		);
 	}
 
 	private ConceptMapMapping toMapping(SnomedReferenceSetMember member, CodeSystemURI codeSystemURI, ComponentURI targetURI) {	 		
-		final String term;		
 		final String iconId = member.getReferencedComponent().getIconId();
-		short terminologyComponentId = member.getReferencedComponent().getTerminologyComponentId();
+		final short terminologyComponentId = member.getReferencedComponent().getTerminologyComponentId();
 
-		SnomedConcept concept = (SnomedConcept) member.getReferencedComponent();
-		term = concept.getFsn().getTerm();
+		final SnomedConcept concept = (SnomedConcept) member.getReferencedComponent();
+		final String term  = concept.getFsn().getTerm();
 
 		Builder mappingBuilder = ConceptMapMapping.builder();
 

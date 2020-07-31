@@ -33,6 +33,21 @@ public final class ConceptMapMapping implements Serializable {
 		return new Builder();
 	}
 	
+	public static Builder builder(ConceptMapMapping from) {
+		return builder()
+				.active(from.isActive())
+				.mapAdvice(from.getMapAdvice())
+				.mapGroup(from.getMapGroup())
+				.mappingCorrelation(from.getMappingCorrelation())
+				.mapPriority(from.getMapPriority())
+				.mapRule(from.getMapRule())
+				.sourceComponentURI(from.getSourceComponentURI())
+				.sourceIconId(from.getSourceIconId())
+				.sourceTerm(from.getSourceTerm())
+				.targetComponentURI(from.getTargetComponentURI())
+				.targetTerm(from.getTargetTerm());
+	}
+	
 	public final static class Builder {
 		
 		private String sourceIconId;
@@ -119,7 +134,7 @@ public final class ConceptMapMapping implements Serializable {
 	private final String targetTerm;
 	private final ComponentURI targetComponentURI;
 	
-	private final boolean active;
+	private final Boolean active;
 	private final MappingCorrelation mappingCorrelation;
 	
 	private final Integer mapGroup;
@@ -172,7 +187,7 @@ public final class ConceptMapMapping implements Serializable {
 		return targetTerm;
 	}
 	
-	public boolean isActive() {
+	public Boolean isActive() {
 		return active;
 	}
 	
@@ -180,11 +195,11 @@ public final class ConceptMapMapping implements Serializable {
 		return mappingCorrelation;
 	}
 	
-	public int getMapGroup() {
+	public Integer getMapGroup() {
 		return mapGroup;
 	}
 	
-	public int getMapPriority() {
+	public Integer getMapPriority() {
 		return mapPriority;
 	}
 	
@@ -235,4 +250,9 @@ public final class ConceptMapMapping implements Serializable {
 				&& Objects.equals(mapRule, other.mapRule)
 				&& Objects.equals(mapAdvice, other.mapAdvice);
 	}
+
+	public Builder toBuilder() {
+		return builder(this);
+	}
+
 }
