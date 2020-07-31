@@ -111,6 +111,9 @@ public interface ConceptSearchRequestEvaluator {
 	}
 
 	default void evaluateIdFilters(SearchResourceRequestBuilder<?, ?, ?> requestBuilder, Options search) {
+		if (!search.containsKey(OptionKey.ID) && !search.containsKey(OptionKey.QUERY) && !search.containsKey(OptionKey.MUST_NOT_QUERY)) {
+			return;
+		}
 		
 		Set<String> idFilter = newHashSet();
 		
@@ -126,10 +129,7 @@ public interface ConceptSearchRequestEvaluator {
 			idFilter.removeAll(extractIds(search.getCollection(OptionKey.MUST_NOT_QUERY, String.class)));
 		}
 		
-		if (!idFilter.isEmpty()) {
-			requestBuilder.filterByIds(idFilter);
-		}
-		
+		requestBuilder.filterByIds(idFilter);
 	}
 	
 	/**
