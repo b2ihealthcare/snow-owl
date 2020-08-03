@@ -1,6 +1,31 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 7.8.0
+
+### Core
+- Branching/Commits (#621)
+  * New `squashMerge` field has been added to Commit documents to detect squash vs. fast-forward merges (this index schema change is backward compatible in most cases, feel free to report [here](https://github.com/b2ihealthcare/snow-owl/issues/new/choose) if not in your case)
+  * Properly calculate the state of a branch compared to another branch even if the branch has been synchronized with the other branch a couple of times. Take actual commits into account before deciding whether a branch is in forward or behind state.
+  * Fixes #594
+- Add generic ConceptMap Mapping Java API search functionality (#610) 
+- Add generic ConceptMap Compare Java API functionality (supports SNOMED CT map type reference sets) (#610)
+
+### SNOMED CT
+- Support for setting target code system for Map type refsets (#609)
+
+### Validation
+- Add OWL Axiom support to the validation rules (#611) 
+
+### Bugs/Improvements
+- Fix Boolean compare in SNOMED CT component status check (#622)
+- Fix issue with CodeSystemURI calculation on CodeSystem type (#624)
+- Ensure rule 668 returns only OWL Axioms members (#620)
+
+### Dependencies
+- Upgrade Elasticsearch to 7.8.0 (#615)
+- Upgrade Netty to 4.1.50.Final (#606) 
+
 ## 7.7.0
 
 ### Core
