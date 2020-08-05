@@ -12,6 +12,7 @@ import com.b2international.snowowl.core.ComponentIdentifier
 import com.b2international.snowowl.core.date.EffectiveTimes
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry
@@ -37,7 +38,7 @@ Set<ComponentIdentifier> issues = Sets.newHashSet()
 ExpressionBuilder owlAxiomMemberQuery = Expressions
 	.builder()
 	.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
-	.filter(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Concepts.REFSET_OWL_AXIOM))
+	.filter(SnomedRefSetMemberIndexEntry.Expressions.refSetTypes([SnomedRefSetType.OWL_AXIOM]))
 	.filter(Expressions.builder()
 		.should(nestedMatch("classAxiomRelationships", exists("typeId")))
 		.should(nestedMatch("gciAxiomRelationships", exists("typeId")))

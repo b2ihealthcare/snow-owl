@@ -76,6 +76,7 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 				.build();
 		
 		SnomedRefSetMemberIndexEntry owlAxiomMember1 = member(validConcept.getId(), CONCEPT_NUMBER, Concepts.REFSET_OWL_AXIOM)
+				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
 				.classAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(Concepts.IS_A, Concepts.PHYSICAL_OBJECT, 0)))
 				.build();
 		
@@ -83,10 +84,14 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 				.build();
 		
 		SnomedRefSetMemberIndexEntry owlAxiomMember2 = member(invalidConcept.getId(), CONCEPT_NUMBER, Concepts.REFSET_OWL_AXIOM)
+				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
 				.classAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(Concepts.SYNONYM, Concepts.PHYSICAL_OBJECT, 0)))
 				.build();
 		
 		SnomedRefSetMemberIndexEntry owlAxiomMemberWithoutClassAxioms = member(invalidConcept.getId(), CONCEPT_NUMBER, Concepts.REFSET_OWL_AXIOM)
+				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
+				.classAxiomRelationships(Lists.newArrayList())
+				.gciAxiomRelationships(Lists.newArrayList())
 				.build();
 
 		indexRevision(MAIN, relationship1, relationship2, validConcept, invalidConcept, owlAxiomMember1, owlAxiomMember2, owlAxiomMemberWithoutClassAxioms);	
