@@ -85,8 +85,11 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		SnomedRefSetMemberIndexEntry owlAxiomMember2 = member(invalidConcept.getId(), CONCEPT_NUMBER, Concepts.REFSET_OWL_AXIOM)
 				.classAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(Concepts.SYNONYM, Concepts.PHYSICAL_OBJECT, 0)))
 				.build();
+		
+		SnomedRefSetMemberIndexEntry owlAxiomMemberWithoutClassAxioms = member(invalidConcept.getId(), CONCEPT_NUMBER, Concepts.REFSET_OWL_AXIOM)
+				.build();
 
-		indexRevision(MAIN, relationship1, relationship2, validConcept, invalidConcept, owlAxiomMember1, owlAxiomMember2);	
+		indexRevision(MAIN, relationship1, relationship2, validConcept, invalidConcept, owlAxiomMember1, owlAxiomMember2, owlAxiomMemberWithoutClassAxioms);	
 
 		ValidationIssues issues = validate(ruleId);	
 

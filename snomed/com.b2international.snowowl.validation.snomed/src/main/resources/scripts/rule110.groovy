@@ -1,5 +1,8 @@
 package scripts
 
+import static com.b2international.index.query.Expressions.*
+import static com.b2international.index.query.Expressions.nestedMatch
+
 import com.b2international.index.Hits
 import com.b2international.index.query.Expressions
 import com.b2international.index.query.Query
@@ -35,6 +38,10 @@ ExpressionBuilder owlAxiomMemberQuery = Expressions
 	.builder()
 	.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
 	.filter(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Concepts.REFSET_OWL_AXIOM))
+	.filter(Expressions.builder()
+		.should(nestedMatch("classAxiomRelationships", exists("typeId")))
+		.should(nestedMatch("gciAxiomRelationships", exists("typeId")))
+	.build())
 	.mustNot(SnomedRefSetMemberIndexEntry.Expressions.owlExpressionType(attributeHierarchyConceptIds))
 	
 if (params.isUnpublishedOnly) {
