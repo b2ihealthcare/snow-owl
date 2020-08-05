@@ -18,6 +18,8 @@ package com.b2international.snowowl.validation.snomed;
 
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER;
+import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER;
+import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER;
 import static com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator.generateConceptId;
 import static com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator.generateDescriptionId;
 
@@ -88,8 +90,10 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 
 		ValidationIssues issues = validate(ruleId);	
 
-		assertAffectedComponents(issues, ComponentIdentifier.of(CONCEPT_NUMBER, Concepts.FULLY_SPECIFIED_NAME),
-				ComponentIdentifier.of(CONCEPT_NUMBER, invalidConcept.getId()));	
+		assertAffectedComponents(issues, 
+			ComponentIdentifier.of(RELATIONSHIP_NUMBER, relationship1.getId()),
+			ComponentIdentifier.of(REFSET_MEMBER_NUMBER, owlAxiomMember2.getId())
+		);	
 	}
 	
 	@Test

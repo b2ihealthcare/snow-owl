@@ -19,6 +19,7 @@ RevisionSearcher searcher = ctx.service(RevisionSearcher.class)
 
 Set<String> attributeHierarchyConceptIds = 
 	SnomedRequests.prepareSearchConcept()
+		.all()
 		.filterByEcl(String.format("<<%s", Concepts.ATTRIBUTE))
 		.build()
 		.execute(ctx)
@@ -43,14 +44,14 @@ if (params.isUnpublishedOnly) {
 Iterable<Hits<String>> owlAxiomMemberQueryResult = searcher
 	.scroll(Query.select(String.class)
 	.from(SnomedRefSetMemberIndexEntry.class)
-	.fields(SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID)
+	.fields(SnomedRefSetMemberIndexEntry.Fields.ID)
 	.where(owlAxiomMemberQuery.build())
 	.limit(10_000)
 	.build())
 	
 owlAxiomMemberQueryResult.each({relHits ->
 	for (String id: relHits) {
-		ComponentIdentifier affectedComponent = ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, id);
+		ComponentIdentifier affectedComponent = ComponentIdentifier.of(SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, id);
 		issues.add(affectedComponent)
 	}
 })
@@ -67,14 +68,14 @@ if (params.isUnpublishedOnly) {
 Iterable<Hits<String>> relationshipQueryResult = searcher
 	.scroll(Query.select(String.class)
 		.from(SnomedRelationshipIndexEntry.class)
-		.fields(SnomedRelationshipIndexEntry.Fields.SOURCE_ID)
+		.fields(SnomedRelationshipIndexEntry.Fields.ID)
 		.where(relationshipQuery.build())
 		.limit(10_000)
 		.build())
 
 relationshipQueryResult.each({relHits ->
 	for (String id: relHits) {
-		ComponentIdentifier affectedComponent = ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, id);
+		ComponentIdentifier affectedComponent = ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, id);
 		issues.add(affectedComponent)
 	}
 })
