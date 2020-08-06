@@ -36,6 +36,7 @@ import com.b2international.index.query.SortBy;
 import com.b2international.index.query.SortBy.Order;
 import com.b2international.index.revision.RevisionCompare.Builder;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
@@ -164,7 +165,10 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex, Hooks 
 			final Builder result = RevisionCompare.builder(baseOfCompareRef, compareRef, limit);
 			
 			if (base.branchId() != compare.branchId()) {
+				Stopwatch w = Stopwatch.createStarted();
+				admin.log().info("Comparing changes between {} -> {}.", base, compare);
 				doRevisionCompare(searcher, compareRef, result);
+				admin.log().info("Compared changes between {} -> {} in {}.", base, compare, w);
 			}
 
 			return result.build();
@@ -186,12 +190,12 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex, Hooks 
 		}
 		
 		// apply commits happened on the compareRef segments in chronological order 
-		searcher.search(Query.select(Commit.class)
+		searcher.scroll(Query.select(Commit.class)
 				.where(compareCommitsQuery.build())
-				.limit(Integer.MAX_VALUE)
+				.limit(20) // load only 20 commits for each batch (import commits tend to be large, so if we load 20 of them we should not use that much memory)
 				.sortBy(SortBy.field(Commit.Fields.TIMESTAMP, Order.ASC))
 				.build())
-				.forEach(result::apply);
+				.forEach(commits -> commits.forEach(result::apply));
 	}
 
 	private String getBranchPath(Searcher searcher, long branchId) throws IOException {
