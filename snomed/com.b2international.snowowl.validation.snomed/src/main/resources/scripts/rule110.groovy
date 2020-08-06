@@ -1,5 +1,8 @@
 package scripts
 
+import static com.b2international.index.query.Expressions.*
+import static com.b2international.index.query.Expressions.nestedMatch
+
 import com.b2international.index.Hits
 import com.b2international.index.query.Expressions
 import com.b2international.index.query.Query
@@ -9,6 +12,7 @@ import com.b2international.snowowl.core.ComponentIdentifier
 import com.b2international.snowowl.core.date.EffectiveTimes
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry
@@ -19,6 +23,7 @@ RevisionSearcher searcher = ctx.service(RevisionSearcher.class)
 
 Set<String> attributeHierarchyConceptIds = 
 	SnomedRequests.prepareSearchConcept()
+		.all()
 		.filterByEcl(String.format("<<%s", Concepts.ATTRIBUTE))
 		.build()
 		.execute(ctx)
@@ -33,7 +38,11 @@ Set<ComponentIdentifier> issues = Sets.newHashSet()
 ExpressionBuilder owlAxiomMemberQuery = Expressions
 	.builder()
 	.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
-	.filter(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Concepts.REFSET_OWL_AXIOM))
+	.filter(SnomedRefSetMemberIndexEntry.Expressions.refSetTypes([SnomedRefSetType.OWL_AXIOM]))
+	.filter(Expressions.builder()
+		.should(nestedMatch("classAxiomRelationships", exists("typeId")))
+		.should(nestedMatch("gciAxiomRelationships", exists("typeId")))
+	.build())
 	.mustNot(SnomedRefSetMemberIndexEntry.Expressions.owlExpressionType(attributeHierarchyConceptIds))
 	
 if (params.isUnpublishedOnly) {
@@ -43,14 +52,14 @@ if (params.isUnpublishedOnly) {
 Iterable<Hits<String>> owlAxiomMemberQueryResult = searcher
 	.scroll(Query.select(String.class)
 	.from(SnomedRefSetMemberIndexEntry.class)
-	.fields(SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID)
+	.fields(SnomedRefSetMemberIndexEntry.Fields.ID)
 	.where(owlAxiomMemberQuery.build())
 	.limit(10_000)
 	.build())
 	
 owlAxiomMemberQueryResult.each({relHits ->
 	for (String id: relHits) {
-		ComponentIdentifier affectedComponent = ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, id);
+		ComponentIdentifier affectedComponent = ComponentIdentifier.of(SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, id);
 		issues.add(affectedComponent)
 	}
 })
@@ -67,14 +76,14 @@ if (params.isUnpublishedOnly) {
 Iterable<Hits<String>> relationshipQueryResult = searcher
 	.scroll(Query.select(String.class)
 		.from(SnomedRelationshipIndexEntry.class)
-		.fields(SnomedRelationshipIndexEntry.Fields.SOURCE_ID)
+		.fields(SnomedRelationshipIndexEntry.Fields.ID)
 		.where(relationshipQuery.build())
 		.limit(10_000)
 		.build())
 
 relationshipQueryResult.each({relHits ->
 	for (String id: relHits) {
-		ComponentIdentifier affectedComponent = ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, id);
+		ComponentIdentifier affectedComponent = ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, id);
 		issues.add(affectedComponent)
 	}
 })

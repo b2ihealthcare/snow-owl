@@ -18,6 +18,8 @@ package com.b2international.snowowl.validation.snomed;
 
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER;
+import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER;
+import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER;
 import static com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator.generateConceptId;
 import static com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator.generateDescriptionId;
 
@@ -74,22 +76,32 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 				.build();
 		
 		SnomedRefSetMemberIndexEntry owlAxiomMember1 = member(validConcept.getId(), CONCEPT_NUMBER, Concepts.REFSET_OWL_AXIOM)
+				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
 				.classAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(Concepts.IS_A, Concepts.PHYSICAL_OBJECT, 0)))
 				.build();
 		
-		SnomedConceptDocument invalidConcept = concept(generateConceptId())
+		SnomedConceptDocument concept = concept(generateConceptId())
 				.build();
 		
-		SnomedRefSetMemberIndexEntry owlAxiomMember2 = member(invalidConcept.getId(), CONCEPT_NUMBER, Concepts.REFSET_OWL_AXIOM)
+		SnomedRefSetMemberIndexEntry owlAxiomMember2 = member(concept.getId(), CONCEPT_NUMBER, Concepts.REFSET_OWL_AXIOM)
+				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
 				.classAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(Concepts.SYNONYM, Concepts.PHYSICAL_OBJECT, 0)))
 				.build();
+		
+		SnomedRefSetMemberIndexEntry owlAxiomMemberWithoutClassAxioms = member(concept.getId(), CONCEPT_NUMBER, Concepts.REFSET_OWL_AXIOM)
+				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
+				.classAxiomRelationships(Lists.newArrayList())
+				.gciAxiomRelationships(Lists.newArrayList())
+				.build();
 
-		indexRevision(MAIN, relationship1, relationship2, validConcept, invalidConcept, owlAxiomMember1, owlAxiomMember2);	
+		indexRevision(MAIN, relationship1, relationship2, validConcept, concept, owlAxiomMember1, owlAxiomMember2, owlAxiomMemberWithoutClassAxioms);	
 
 		ValidationIssues issues = validate(ruleId);	
 
-		assertAffectedComponents(issues, ComponentIdentifier.of(CONCEPT_NUMBER, Concepts.FULLY_SPECIFIED_NAME),
-				ComponentIdentifier.of(CONCEPT_NUMBER, invalidConcept.getId()));	
+		assertAffectedComponents(issues, 
+			ComponentIdentifier.of(RELATIONSHIP_NUMBER, relationship1.getId()),
+			ComponentIdentifier.of(REFSET_MEMBER_NUMBER, owlAxiomMember2.getId())
+		);	
 	}
 	
 	@Test
