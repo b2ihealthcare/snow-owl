@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,8 @@ import com.google.common.base.Strings;
  */
 public final class RevisionCompareDetail {
 
+	private static final String PROPERTY_CHANGE_KEY_TEMPLATE = "_";
+	
 	// commit details
 	private final String author;
 	private final long timestamp;
@@ -39,6 +41,9 @@ public final class RevisionCompareDetail {
 	private final String property;
 	private final String fromValue;
 	private final String value;
+	
+	@JsonIgnore
+	private final String key;
 	
 	public static RevisionCompareDetail propertyChange(String author, 
 			long timestamp, 
@@ -79,6 +84,11 @@ public final class RevisionCompareDetail {
 		this.property = property;
 		this.fromValue = fromValue;
 		this.value = value;
+		if (isComponentChange()) {
+			this.key = component.toString();
+		} else {
+			this.key = String.join(PROPERTY_CHANGE_KEY_TEMPLATE, object.toString(), property);
+		}
 	}
 	
 	public String getAuthor() {
@@ -139,11 +149,7 @@ public final class RevisionCompareDetail {
 
 	@JsonIgnore
 	String key() {
-		if (isComponentChange()) {
-			return component.toString();
-		} else {
-			return String.format("%s_%s", object, property);
-		}
+		return key;
 	}
 
 	RevisionCompareDetail merge(RevisionCompareDetail other) {
