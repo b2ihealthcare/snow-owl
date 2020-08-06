@@ -150,7 +150,7 @@ public interface RevisionIndex extends Administrable<RevisionIndexAdmin> {
 	static String toRevisionRange(String base, String compare) {
 		checkArgument(!Strings.isNullOrEmpty(base));
 		checkArgument(!Strings.isNullOrEmpty(compare));
-		return String.format("%s%s%s", base, REV_RANGE, compare);
+		return String.format(REV_RANGE, base, compare);
 	}
 	
 	/**

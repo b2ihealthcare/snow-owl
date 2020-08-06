@@ -113,7 +113,7 @@ public final class CodeSystemURI implements Serializable {
 	}
 
 	public static CodeSystemURI head(String codeSystem) {
-		return new CodeSystemURI(String.format("%s/%s", codeSystem, HEAD));
+		return new CodeSystemURI(String.join(Branch.SEPARATOR, codeSystem, HEAD));
 	}
 
 	public static CodeSystemURI branch(String codeSystem, String path) {

@@ -892,7 +892,7 @@ public final class StagingArea {
 		}
 
 		public String toValueChangeString() {
-			return String.format("%s -> %s", getOldValue(), getNewValue());
+			return String.join(" -> ", getOldValue(), getNewValue());
 		}
 		
 		public RevisionPropertyDiff convert(RevisionConflictProcessor processor) {

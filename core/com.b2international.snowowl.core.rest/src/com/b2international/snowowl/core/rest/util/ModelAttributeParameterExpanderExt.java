@@ -262,7 +262,7 @@ public class ModelAttributeParameterExpanderExt extends ModelAttributeParameterE
 		if (isNullOrEmpty(parentName)) {
 			return name;
 		}
-		return String.format("%s.%s", parentName, name);
+		return String.join(".", parentName, name);
 	}
 
 	private ResolvedType fieldType(AlternateTypeProvider alternateTypeProvider, ResolvedField field) {
@@ -285,7 +285,7 @@ public class ModelAttributeParameterExpanderExt extends ModelAttributeParameterE
 			return beanProps;
 
 		} catch (IntrospectionException e) {
-			LOG.warn(String.format("Failed to get bean properties on (%s)", clazz), e);
+			LOG.warn("Failed to get bean properties on ({})", clazz, e);
 		}
 		return newHashSet();
 	}

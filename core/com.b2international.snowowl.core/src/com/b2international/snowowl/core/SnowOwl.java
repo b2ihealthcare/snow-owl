@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -236,9 +236,9 @@ public final class SnowOwl {
 	}
 	
 	private void logEnvironment() {
-		log.info(String.format("Home path: %s", this.environment.getHomePath()));
-		log.info(String.format("Config path: %s", this.environment.getConfigPath()));
-		log.info(String.format("Data path: %s", this.environment.getDataPath()));
+		log.info("Home path: {}", this.environment.getHomePath());
+		log.info("Config path: {}", this.environment.getConfigPath());
+		log.info("Data path: {}", this.environment.getDataPath());
 	}
 
 	/**

@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.BaseResourceConverter;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
@@ -111,6 +112,6 @@ public final class CodeSystemConverter extends BaseResourceConverter<CodeSystemE
 	}
 
 	private CodeSystemURI createCodeSystemUri(CodeSystemVersionEntry version) {
-		return new CodeSystemURI(String.format("%s/%s", version.getCodeSystemShortName(), version.getVersionId()));
+		return new CodeSystemURI(String.join(Branch.SEPARATOR, version.getCodeSystemShortName(), version.getVersionId()));
 	}
 }
