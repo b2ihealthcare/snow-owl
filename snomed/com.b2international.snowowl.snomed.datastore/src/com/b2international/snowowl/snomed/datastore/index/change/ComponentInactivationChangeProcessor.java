@@ -122,6 +122,7 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 						inactivationMember = SnomedRefSetMemberIndexEntry.builder()
 							.id(UUID.randomUUID().toString())
 							.active(true)
+							.released(false)
 							.referenceSetId(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR)
 							.referenceSetType(SnomedRefSetType.ATTRIBUTE_VALUE)
 							.referencedComponentId(descriptionId)
@@ -141,6 +142,7 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 			final Map<ObjectId, RevisionDiff> changedRevisions = staging.getChangedRevisions();
 			for (Hits<SnomedRelationshipIndexEntry> hits : searcher.scroll(Query.select(SnomedRelationshipIndexEntry.class)
 					.where(Expressions.builder()
+							.filter(SnomedRelationshipIndexEntry.Expressions.active())
 							.should(SnomedRelationshipIndexEntry.Expressions.sourceIds(inactivatedConceptIds))
 							.should(SnomedRelationshipIndexEntry.Expressions.destinationIds(inactivatedConceptIds))
 							.build())
@@ -151,9 +153,13 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 					if (changedRevisions.containsKey(relationship.getObjectId())) {
 						stageChange(relationship, SnomedRelationshipIndexEntry.builder((SnomedRelationshipIndexEntry) changedRevisions.get(relationship.getObjectId()).newRevision)
 								.active(false)
+								.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
 								.build());
 					} else {
-						stageChange(relationship, SnomedRelationshipIndexEntry.builder(relationship).active(false).build());
+						stageChange(relationship, SnomedRelationshipIndexEntry.builder(relationship)
+								.active(false)
+								.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
+								.build());
 					}
 				});
 			}
@@ -227,7 +233,9 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 			for (SnomedRefSetMemberIndexEntry indicatorMember : members) {
 				// check if this member is present in the transaction, if yes, do not auto-update/delete it
 				if (indicatorMember.isReleased() != null && indicatorMember.isReleased()) {
-					stageChange(indicatorMember, SnomedRefSetMemberIndexEntry.builder(indicatorMember).active(false).build());
+					stageChange(indicatorMember, SnomedRefSetMemberIndexEntry.builder(indicatorMember).active(false)
+							.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
+							.build());
 				} else {
 					stageRemove(indicatorMember);
 				}

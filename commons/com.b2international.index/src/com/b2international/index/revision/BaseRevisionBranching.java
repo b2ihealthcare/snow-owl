@@ -429,14 +429,12 @@ public abstract class BaseRevisionBranching {
 		final InternalRevisionIndex index = revisionIndex();
 		final StagingArea staging = index.prepareCommit(to.getPath()).withContext(operation.context);
 		
-		long fastForwardCommitTimestamp = staging.merge(from.ref(), to.ref(), operation.squash, operation.conflictProcessor, operation.exclusions);
-		// skip fast forward if the tobranch has a later commit than the returned fastForwardCommitTimestamp
-		if (to.getHeadTimestamp() >= fastForwardCommitTimestamp) {
-			fastForwardCommitTimestamp = -1L;
-		}
-		final boolean isFastForwardMerge = fastForwardCommitTimestamp != -1L && !operation.squash;
+		// apply changes from source ref
+		staging.merge(from.ref(), to.ref(), operation.squash, operation.conflictProcessor, operation.exclusions);
+		
+		// commit changes to index
 		final String commitMessage = !Strings.isNullOrEmpty(operation.commitMessage) ? operation.commitMessage : String.format("Merge %s into %s", source, target);
-		return staging.commit(isFastForwardMerge ? fastForwardCommitTimestamp : currentTime(), operation.author, commitMessage);
+		return staging.commit(currentTime(), operation.author, commitMessage);
 	}
 	
 	protected final IndexWrite<Void> update(final String path, final String script, final Map<String, Object> params) {
