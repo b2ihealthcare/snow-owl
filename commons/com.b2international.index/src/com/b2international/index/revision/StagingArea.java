@@ -496,6 +496,13 @@ public final class StagingArea {
 	}
 	
 	/**
+	 * @return <code>true</code> if the staging area is merging content from another branch into the current branch
+	 */
+	public boolean isMerge() {
+		return mergeFromBranchRef != null;
+	}
+	
+	/**
 	 * Reset staging area to empty.
 	 */
 	private void reset() {
@@ -743,7 +750,7 @@ public final class StagingArea {
 		for (Class<? extends Revision> type : fromChangeSet.getAddedTypes()) {
 			final Collection<String> newRevisionIds = fromChangeSet.getAddedIds(type);
 			index.read(fromRef, searcher -> searcher.get(type, newRevisionIds)).forEach(rev -> stageNew(rev, squash));
-			stagedChanges = squash;
+			stagedChanges |= squash;
 		}
 		
 		// apply changed objects
@@ -760,7 +767,7 @@ public final class StagingArea {
 				} else {
 					stageNew(updatedRevisionsById.get(updatedId), squash);
 				}
-				stagedChanges = squash;
+				stagedChanges |= squash;
 			}
 		}
 		
