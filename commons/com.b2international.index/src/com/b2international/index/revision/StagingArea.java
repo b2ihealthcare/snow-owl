@@ -580,7 +580,7 @@ public final class StagingArea {
 		}
 	}
 	
-	long merge(RevisionBranchRef fromRef, RevisionBranchRef toRef, boolean squash, RevisionConflictProcessor conflictProcessor, Set<String> exclusions) {
+	void merge(RevisionBranchRef fromRef, RevisionBranchRef toRef, boolean squash, RevisionConflictProcessor conflictProcessor, Set<String> exclusions) {
 		checkArgument(this.mergeSources == null, "Already merged another ref to this StagingArea. Commit staged changes to apply them.");
 		this.mergeSources = fromRef.difference(toRef)
 				.segments()
@@ -598,11 +598,9 @@ public final class StagingArea {
 		
 		final List<RevisionCompareDetail> fromChangeDetails = fromChanges.getDetails();
 		
-		final long fastForwardCommitTimestamp = fromChanges.getCompare().segments().last().end();
-		
-		// in case of nothing to merge, then just commit the headtimestamp change, similar to fast forward in Git
+		// in case of nothing to merge, then just proceed to commit
 		if (fromChangeDetails.isEmpty()) {
-			return squash ? -1L : fastForwardCommitTimestamp;
+			return;
 		}
 		
 		final RevisionCompare toChanges = index.compare(fromRef, toRef, Integer.MAX_VALUE);
@@ -611,7 +609,7 @@ public final class StagingArea {
 		
 		// in case of fast-forward merge only check conflicts when there are changes on the to branch
 		if (toChangeDetails.isEmpty() && !squash) {
-			return fastForwardCommitTimestamp;
+			return;
 		}
 		
 		final RevisionBranchChangeSet fromChangeSet = new RevisionBranchChangeSet(index, fromRef, fromChanges);
@@ -729,7 +727,6 @@ public final class StagingArea {
 			throw new BranchMergeConflictException(conflicts.stream().map(conflictProcessor::convertConflict).collect(Collectors.toList()));
 		}
 		
-		boolean stagedChanges = false;
 		// apply property changes, conflicts, etc.
 		if (!propertyUpdatesToApply.isEmpty()) {
 			// if there are property conflict resolutions, then we have staged changes and it does not matter if the merge is fast-forward
@@ -740,7 +737,6 @@ public final class StagingArea {
 				final Iterable<? extends Revision> objectsToUpdate = index.read(toRef, searcher -> searcher.get(type, propertyUpdatesByObject.keySet()));
 				for (Revision objectToUpdate : objectsToUpdate) {
 					stageChange(objectToUpdate, objectToUpdate.withUpdates(mapping, propertyUpdatesByObject.get(objectToUpdate.getId())));
-					stagedChanges = true;
 					revisionsToReviseOnMergeSource.put(type, objectToUpdate.getId());
 				}
 			}
@@ -750,7 +746,6 @@ public final class StagingArea {
 		for (Class<? extends Revision> type : fromChangeSet.getAddedTypes()) {
 			final Collection<String> newRevisionIds = fromChangeSet.getAddedIds(type);
 			index.read(fromRef, searcher -> searcher.get(type, newRevisionIds)).forEach(rev -> stageNew(rev, squash));
-			stagedChanges |= squash;
 		}
 		
 		// apply changed objects
@@ -767,7 +762,6 @@ public final class StagingArea {
 				} else {
 					stageNew(updatedRevisionsById.get(updatedId), squash);
 				}
-				stagedChanges |= squash;
 			}
 		}
 		
@@ -775,10 +769,7 @@ public final class StagingArea {
 		for (Class<? extends Revision> type : fromChangeSet.getRemovedTypes()) {
 			final Collection<String> removedRevisionIds = fromChangeSet.getRemovedIds(type);
 			index.read(toRef, searcher -> searcher.get(type, removedRevisionIds)).forEach(this::stageRemove);
-			stagedChanges = true;
 		}
-		
-		return stagedChanges ? -1L : fastForwardCommitTimestamp;
 	}
 	
 	public final class RevisionDiff {
