@@ -278,7 +278,7 @@ public final class StagingArea {
 		for (Class<?> type : deletedIdsByType.keySet()) {
 			final Set<String> deletedDocIds = ImmutableSet.copyOf(deletedIdsByType.get(type));
 			writer.remove(type, deletedDocIds);
-			if (shouldSetRevisedOnMergeBranch()) {
+			if (isMerge()) {
 				revisionsToReviseOnMergeSource.putAll(type, deletedDocIds);
 			}
 		}
@@ -293,7 +293,7 @@ public final class StagingArea {
 				if (document instanceof Revision) {
 					Revision rev = (Revision) document;
 					newComponentsByContainer.put(checkNotNull(rev.getContainerId(), "Missing containerId for revision: %s", rev), rev.getObjectId());
-					if (shouldSetRevisedOnMergeBranch()) {
+					if (isMerge()) {
 						revisionsToReviseOnMergeSource.put(document.getClass(), key.id());
 					}
 				} else {
@@ -313,7 +313,7 @@ public final class StagingArea {
 					RevisionDiff revisionDiff = value.getDiff();
 					final Revision rev = revisionDiff.newRevision;
 					
-					if (shouldSetRevisedOnMergeBranch()) {
+					if (isMerge()) {
 						revisionsToReviseOnMergeSource.put(rev.getClass(), rev.getId());
 						writer.put(key.id(), rev);
 					}
@@ -322,7 +322,7 @@ public final class StagingArea {
 						return;
 					}
 
-					if (!shouldSetRevisedOnMergeBranch()) {
+					if (!isMerge()) {
 						writer.put(key.id(), rev);
 					}
 					
@@ -481,10 +481,6 @@ public final class StagingArea {
 		mergeSources = null;
 		
 		return commitDoc;
-	}
-
-	private boolean shouldSetRevisedOnMergeBranch() {
-		return mergeFromBranchRef != null;
 	}
 
 	/**
