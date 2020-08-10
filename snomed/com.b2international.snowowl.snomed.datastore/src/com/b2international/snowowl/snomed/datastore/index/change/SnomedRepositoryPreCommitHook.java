@@ -69,8 +69,13 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 	protected void preUpdateDocuments(StagingArea staging, RevisionSearcher index) throws IOException {
 		final RepositoryContext context = ClassUtils.checkAndCast(staging.getContext(), RepositoryContext.class);
 		
-		if (!(context instanceof Rf2TransactionContext) && !staging.isMerge()) {
-			doProcess(ImmutableList.of(new ComponentInactivationChangeProcessor(), new DetachedContainerChangeProcessor()), staging, index);
+		if (!(context instanceof Rf2TransactionContext)) {
+			final ImmutableList.Builder<ChangeSetProcessor> processors = ImmutableList.builder();
+			processors.add(new DetachedContainerChangeProcessor());
+			if (!staging.isMerge()) {
+				processors.add(new ComponentInactivationChangeProcessor());
+			}
+			doProcess(processors.build(), staging, index);
 		}
 	}
 	
