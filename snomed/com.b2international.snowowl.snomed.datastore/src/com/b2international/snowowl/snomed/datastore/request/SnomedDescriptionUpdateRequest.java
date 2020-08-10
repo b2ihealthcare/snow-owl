@@ -67,7 +67,7 @@ public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateR
 	
 	@Override
 	public Boolean execute(TransactionContext context) {
-		final SnomedDescriptionIndexEntry description = context.lookup(getComponentId(), SnomedDescriptionIndexEntry.class);
+		final SnomedDescriptionIndexEntry description = context.lookup(componentId(), SnomedDescriptionIndexEntry.class);
 		final SnomedDescriptionIndexEntry.Builder updatedDescription = SnomedDescriptionIndexEntry.builder(description); 
 
 		boolean changed = false;
@@ -158,7 +158,7 @@ public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateR
 	@Override
 	public Set<String> getRequiredComponentIds(TransactionContext context) {
 		final Builder<String> ids = ImmutableSet.<String>builder();
-		ids.add(getComponentId());
+		ids.add(componentId());
 		if (getInactivationProperties() != null && getInactivationProperties().getInactivationIndicatorId() != null) {
 			ids.add(getInactivationProperties().getInactivationIndicatorId());
 		}

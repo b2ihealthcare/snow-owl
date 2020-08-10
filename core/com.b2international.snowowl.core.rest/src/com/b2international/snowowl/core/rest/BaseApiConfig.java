@@ -1,6 +1,6 @@
 /*
  * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -72,7 +72,7 @@ public abstract class BaseApiConfig {
 	 * @return the api base url for all services grouped by this configuration class
 	 */
 	public abstract String getApiBaseUrl();
-	
+
 	/**
 	 * @return the base packages where all controllers classes can be found for this API group
 	 */
@@ -84,7 +84,7 @@ public abstract class BaseApiConfig {
 			return new String[]{getClass().getPackageName()};
 		}
 	}
-	
+
 	/**
 	 * Expose this as @Bean annotated component in the implementation configuration class.
 	 * @return a configured docket for this API module
@@ -100,47 +100,49 @@ public abstract class BaseApiConfig {
 			final String apiLicenseUrl,
 			final String apiDescription) {
 		final TypeResolver resolver = new TypeResolver();
-		final Predicate<String> paths = PathSelectors.regex(apiBaseUrl + "/.*");
+		final Predicate<String> paths = PathSelectors.regex(apiBaseUrl + ".*");
 		return new Docket(DocumentationType.SWAGGER_2)
 				.securitySchemes(ImmutableList.of(
-					new BasicAuth("basic"),
-					new ApiKey("bearer", HttpHeaders.AUTHORIZATION, In.HEADER.name())
+						new BasicAuth("basic"),
+						new ApiKey("bearer", HttpHeaders.AUTHORIZATION, In.HEADER.name())
 				))
 				.securityContexts(ImmutableList.of(
-					SecurityContext.builder()
-						.forPaths(paths)
-						.securityReferences(ImmutableList.of(
-							new SecurityReference("basic", new AuthorizationScope[0]),
-							new SecurityReference("bearer", new AuthorizationScope[0])
-						))
-						.build()
+						SecurityContext.builder()
+								.forPaths(paths)
+								.securityReferences(ImmutableList.of(
+										new SecurityReference("basic", new AuthorizationScope[0]),
+										new SecurityReference("bearer", new AuthorizationScope[0])
+								))
+								.build()
 				))
 				.useDefaultResponseMessages(false)
 				.ignoredParameterTypes(Principal.class)
 				.alternateTypeRules(
-					newRule(resolver.resolve(UUID.class), resolver.resolve(String.class)),
-					newRule(
-						resolver.resolve(Promise.class, WildcardType.class),
-			            resolver.resolve(WildcardType.class)
-			        ),
-					newRule(
-						resolver.resolve(Promise.class, resolver.resolve(ResponseEntity.class, WildcardType.class)),
-			            resolver.resolve(WildcardType.class)
-			        )
+						newRule(resolver.resolve(UUID.class), resolver.resolve(String.class)),
+						newRule(resolver.resolve(CodeSystemURI.class), resolver.resolve(String.class)),
+						newRule(resolver.resolve(ExtendedLocale.class), resolver.resolve(String.class)),
+						newRule(
+								resolver.resolve(List.class, resolver.resolve(CodeSystemURI.class)),
+								resolver.resolve(List.class, resolver.resolve(String.class))
+						),
+						newRule(
+								resolver.resolve(List.class, resolver.resolve(ExtendedLocale.class)),
+								resolver.resolve(List.class, resolver.resolve(String.class))
+						),
+						newRule(
+								resolver.resolve(Promise.class, WildcardType.class),
+								resolver.resolve(WildcardType.class)
+						),
+						newRule(
+								resolver.resolve(Promise.class, resolver.resolve(ResponseEntity.class, WildcardType.class)),
+								resolver.resolve(WildcardType.class)
+						)
 				)
 				.groupName(apiGroup)
-	            .select()
-	            	.paths(input -> {
-									if(apiBaseUrl != null && apiBaseUrl.equals("/")) {
-										return input != null && input.startsWith("//");
-									}
-									return paths.apply(input);
-	            	})
-	            	.build()
-	            .select()
-	            	.paths(paths)
-	            	.build()
-	            .apiInfo(new ApiInfo(apiTitle, apiDescription, apiVersion, apiTermsOfServiceUrl, new Contact("B2i Healthcare", apiLicenseUrl, apiContact), apiLicense, apiLicenseUrl, Collections.emptyList()));
+				.select()
+				.paths(paths)
+				.build()
+				.apiInfo(new ApiInfo(apiTitle, apiDescription, apiVersion, apiTermsOfServiceUrl, new Contact("B2i Healthcare", apiLicenseUrl, apiContact), apiLicense, apiLicenseUrl, Collections.emptyList()));
 	}
-	
+
 }

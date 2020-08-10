@@ -18,6 +18,7 @@ package com.b2international.snowowl.core.request;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.events.RequestBuilder;
+import com.b2international.snowowl.core.uri.CodeSystemURI;
 
 /**
  * @since 5.7
@@ -33,6 +34,14 @@ public interface TransactionalRequestBuilder<R> extends RequestBuilder<Transacti
 				.setCommitComment(commitComment)
 				.build(codeSystemUri);
 	}
+	
+	default AsyncRequest<CommitResult> build(CodeSystemURI codeSystemUri, 
+			String author,
+			String commitComment) {
+		
+		return build(codeSystemUri.getUri(), author, commitComment);
+	}
+	
 	
 	/**
 	 * @param repositoryId

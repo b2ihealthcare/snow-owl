@@ -36,7 +36,7 @@ import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
 import org.elasticsearch.action.admin.indices.settings.get.GetSettingsRequest;
 import org.elasticsearch.action.admin.indices.settings.get.GetSettingsResponse;
 import org.elasticsearch.cluster.health.ClusterHealthStatus;
-import org.elasticsearch.cluster.metadata.MetaData;
+import org.elasticsearch.cluster.metadata.Metadata;
 import org.elasticsearch.rest.RestStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -146,7 +146,7 @@ public abstract class EsClientBase implements EsClient {
 	private GetSettingsResponse checkIndicesSettings(GetSettingsResponse previousSettings) {
 		try {
 			log.info("Checking indices settings at '{}'...", host.toURI());
-			return indices().settings(new GetSettingsRequest().indices(MetaData.ALL));
+			return indices().settings(new GetSettingsRequest().indices(Metadata.ALL));
 		} catch (IOException e) {
 			throw new IndexException("Failed to get indices settings", e);
 		}

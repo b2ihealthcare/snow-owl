@@ -17,7 +17,7 @@ package com.b2international.snowowl.core.request;
 
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.SetMembers;
-import com.b2international.snowowl.core.request.SetMemberSearchRequestEvaluator.OptionKey;
+import com.b2international.snowowl.core.request.SetSearchRequestEvaluator.OptionKey;
 import com.google.common.collect.ImmutableSet;
 
 /**

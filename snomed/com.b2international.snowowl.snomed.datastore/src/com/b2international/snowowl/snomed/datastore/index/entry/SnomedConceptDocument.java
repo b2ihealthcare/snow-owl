@@ -66,7 +66,8 @@ import com.google.common.collect.ImmutableMap;
 		SnomedDocument.Fields.MODULE_ID,
 		SnomedDocument.Fields.RELEASED,
 		SnomedConceptDocument.Fields.PRIMITIVE,
-		SnomedConceptDocument.Fields.EXHAUSTIVE
+		SnomedConceptDocument.Fields.EXHAUSTIVE,
+		SnomedConceptDocument.Fields.MAP_TARGET_COMPONENT_TYPE
 	}
 )
 @JsonDeserialize(builder=SnomedConceptDocument.Builder.class)

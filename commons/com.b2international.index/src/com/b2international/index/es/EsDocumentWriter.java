@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -124,7 +124,7 @@ public class EsDocumentWriter implements Writer {
 
 	@Override
 	public void commit() throws IOException {
-		if (indexOperations.isEmpty() && deleteOperations.isEmpty() && bulkUpdateOperations.isEmpty() && bulkDeleteOperations.isEmpty()) {
+		if (isEmpty()) {
 			return;
 		}
 		
@@ -260,6 +260,11 @@ public class EsDocumentWriter implements Writer {
 
 		// refresh the index if there were only updates
 		admin.refresh(mappingsToRefresh);
+	}
+
+	@Override
+	public boolean isEmpty() {
+		return indexOperations.isEmpty() && deleteOperations.isEmpty() && bulkUpdateOperations.isEmpty() && bulkDeleteOperations.isEmpty();
 	}
 
 	private int getConcurrencyLevel() {

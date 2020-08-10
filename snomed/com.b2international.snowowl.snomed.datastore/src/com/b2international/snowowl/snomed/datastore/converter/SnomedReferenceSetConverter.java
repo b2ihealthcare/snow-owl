@@ -83,7 +83,7 @@ final class SnomedReferenceSetConverter extends BaseRevisionResourceConverter<Sn
 			refset.setReferencedComponentType(getReferencedComponentType(referencedComponentType));
 		}
 		final Short mapTargetComponentType = entry.getMapTargetComponentType();
-		if (mapTargetComponentType != null && mapTargetComponentType > 0) {
+		if (mapTargetComponentType != null) {
 			refset.setMapTargetComponentType(getReferencedComponentType(mapTargetComponentType));
 		}
 		refset.setType(entry.getRefSetType());
