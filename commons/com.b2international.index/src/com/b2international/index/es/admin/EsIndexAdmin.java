@@ -49,7 +49,7 @@ import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
 import org.elasticsearch.action.bulk.BulkItemResponse.Failure;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
-import org.elasticsearch.cluster.metadata.MappingMetaData;
+import org.elasticsearch.cluster.metadata.MappingMetadata;
 import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.collect.ImmutableOpenMap;
 import org.elasticsearch.common.settings.Settings;
@@ -63,7 +63,16 @@ import org.slf4j.LoggerFactory;
 import com.b2international.commons.ClassUtils;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.ReflectionUtils;
-import com.b2international.index.*;
+import com.b2international.index.Analyzers;
+import com.b2international.index.BulkDelete;
+import com.b2international.index.BulkOperation;
+import com.b2international.index.BulkUpdate;
+import com.b2international.index.Doc;
+import com.b2international.index.IP;
+import com.b2international.index.IndexClientFactory;
+import com.b2international.index.IndexException;
+import com.b2international.index.Keyword;
+import com.b2international.index.Text;
 import com.b2international.index.admin.IndexAdmin;
 import com.b2international.index.es.client.EsClient;
 import com.b2international.index.es.query.EsQueryBuilder;
@@ -157,7 +166,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 			
 			if (exists(mapping)) {
 				// update mapping if required
-				ImmutableOpenMap<String, MappingMetaData> currentIndexMapping;
+				ImmutableOpenMap<String, MappingMetadata> currentIndexMapping;
 				try {
 					currentIndexMapping = client.indices().getMapping(new GetMappingsRequest().types(type).indices(index)).mappings().get(index);
 				} catch (Exception e) {
@@ -236,7 +245,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 		return ImmutableMap.<String, Object>builder()
 				.put("analysis", analysisMap)
 				.put("number_of_shards", String.valueOf(settings().getOrDefault(IndexClientFactory.NUMBER_OF_SHARDS, "1")))
-				.put("number_of_replicas", String.valueOf(settings().getOrDefault(IndexClientFactory.NUMBER_OF_REPLICAS, "0")))
+				.put("number_of_replicas", "0")
 				// disable es refresh, we will do it manually on each commit
 				.put("refresh_interval", "-1")
 				// use async durability for the translog

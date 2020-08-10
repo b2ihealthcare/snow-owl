@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>snowowl-parent</artifactId>
-		<version>7.7.0</version>
+		<version>7.8.1</version>
 	</parent>
 
 	<properties>
@@ -258,12 +258,6 @@
 			<artifactId>com.b2international.snowowl.validation.snomed</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.b2international.snowowl</groupId>
-			<artifactId>com.babylonhealth.snowowl.rest</artifactId>
-			<version>${project.version}</version>
-			<scope>compile</scope>
 		</dependency>
 	</dependencies>
 

@@ -84,7 +84,9 @@ public final class CodeSystemsCommand extends Command {
 			.append("OID: ").append(codeSystem.getOid()).append("\n")
 			.append("Maintaining organization link: ").append(codeSystem.getOrganizationLink()).append("\n")
 			.append("Language: ").append(codeSystem.getPrimaryLanguage()).append("\n")
-			.append("Working branch: ").append(codeSystem.getBranchPath())
+			.append("Repository: ").append(codeSystem.getRepositoryId()).append("\n")
+			.append("Working branch: ").append(codeSystem.getBranchPath()).append("\n")
+			.append("Terminology ID: ").append(codeSystem.getTerminologyId())
 			.append(showVersions ? getCodeSystemVersionsInfo(codeSystem) : "")
 			.toString();
 	}

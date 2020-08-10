@@ -46,7 +46,6 @@ TMP_DIR=$KERNEL_HOME/work/tmp
 # Ensure that the tmp directory exists
 mkdir -p "$TMP_DIR"
 
-echo "SO_PATH_CONF env: $SO_PATH_CONF"
 SO_JAVA_OPTS="-Xms6g \
                 -Xmx6g \
                 -XX:+AlwaysPreTouch \
@@ -63,17 +62,10 @@ SO_JAVA_OPTS="-Xms6g \
                 -XX:+UseCMSInitiatingOccupancyOnly \
                 -XX:+HeapDumpOnOutOfMemoryError \
                 -Djdk.security.defaultKeySize=DSA:1024 \
-                -Dso.path.conf="$SO_PATH_CONF" \
                 $SO_JAVA_OPTS"
 
 pushd "$KERNEL_HOME"
 
-echo "JAVA_EXECUTABLE $JAVA_EXECUTABLE"
-echo "SO_JAVA_OPTS $SO_JAVA_OPTS"
-echo "TMP_DIR $TMP_DIR"
-echo "JAVA_EXECUTABLE $JAVA_EXECUTABLE"
-echo "KERNEL_HOME $KERNEL_HOME"
-echo "CONFIG_AREA $CONFIG_AREA"
 exec $JAVA_EXECUTABLE $SO_JAVA_OPTS \
   -Djava.io.tmpdir="$TMP_DIR" \
   -Dosgi.install.area="$KERNEL_HOME" \

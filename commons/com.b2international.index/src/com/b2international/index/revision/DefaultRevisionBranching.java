@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.query.SortBy;
 import com.b2international.index.query.SortBy.Order;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 
@@ -39,8 +38,8 @@ public final class DefaultRevisionBranching extends BaseRevisionBranching {
 	private final long mainHeadTimestamp;
 	private final long mainBranchId;
 
-	public DefaultRevisionBranching(RevisionIndex index, TimestampProvider timestampProvider, ObjectMapper mapper) {
-		super(index, timestampProvider, mapper);
+	public DefaultRevisionBranching(RevisionIndex index, TimestampProvider timestampProvider) {
+		super(index, timestampProvider);
 		this.mainBaseTimestamp = this.mainHeadTimestamp = currentTime();
 		this.mainBranchId = nextBranchId();
 	}

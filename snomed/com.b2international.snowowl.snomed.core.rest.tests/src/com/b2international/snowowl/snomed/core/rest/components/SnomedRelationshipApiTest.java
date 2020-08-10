@@ -32,10 +32,11 @@ import static com.google.common.collect.Lists.newArrayList;
 import static org.hamcrest.CoreMatchers.endsWith;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 
@@ -51,6 +52,7 @@ import com.b2international.snowowl.snomed.cis.domain.IdentifierStatus;
 import com.b2international.snowowl.snomed.cis.domain.SctId;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
@@ -507,4 +509,20 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 		.body("released", equalTo(true))
 		.body("effectiveTime", equalTo(effectiveDate));
 	}
+	
+	@Test
+	public void updateRelationshipWithSamePropertiesShouldNotCauseAnyChange() throws Exception {
+		final String relationshipId = createNewRelationship(branchPath);
+		final SnomedRelationship relationship = getRelationship(relationshipId);
+		relationship.setActive(new Boolean(true)); // explicitly create a new Boolean object with same value to simulate deserialization "bug"
+		Boolean updated = SnomedRequests.prepareCommit()
+			.setCommitComment("Update relationship")
+			.setBody(relationship.toUpdateRequest())
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+			.execute(getBus())
+			.getSync(1, TimeUnit.MINUTES)
+			.getResultAs(Boolean.class);
+		assertFalse(updated);
+	}
+	
 }

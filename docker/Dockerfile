@@ -1,4 +1,4 @@
-FROM centos:7 AS builder
+FROM b2ihealthcare/centos:7 AS builder
 
 ARG SNOWOWL_INSTALL_PACKAGE
 
@@ -19,7 +19,7 @@ ARG BUILD_TIMESTAMP
 ARG TAG
 ARG GIT_REVISION
 ARG PRODUCT_NAME="Snow Owl OSS"
-ARG REPOSITORY_URL="https://github.com/babylonhealth/snow-owl"
+ARG REPOSITORY_URL="https://github.com/b2ihealthcare/snow-owl"
 
 RUN groupadd -g 1000 snowowl && \
     adduser -u 1000 -g 1000 -G 0 -d /usr/share/snowowl snowowl && \
@@ -28,17 +28,7 @@ RUN groupadd -g 1000 snowowl && \
 
 WORKDIR /usr/share/snowowl
 COPY --from=builder --chown=1000:0 /usr/share/snowowl /usr/share/snowowl
-
-ENV SO_PATH_CONF="/opt/snowowl/bbl/config"
-RUN mkdir -p /opt/snowowl/bbl/config
-#TODO restrict linux files permission
-RUN mv configuration/* $SO_PATH_CONF/
-
-#babylon hack since SO_PATH_CONF doesn't seem to be taken into account
-RUN rm -rf /usr/share/snowowl/configuration  && \
-ln -s $SO_PATH_CONF /usr/share/snowowl/configuration
-
-RUN ln -s $SO_PATH_CONF /etc/snowowl && \
+RUN ln -s /usr/share/snowowl/configuration /etc/snowowl && \
     ln -s /usr/share/snowowl/resources /var/lib/snowowl && \
     ln -s /usr/share/snowowl/serviceability /var/log/snowowl
 

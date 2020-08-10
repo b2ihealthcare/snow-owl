@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.b2international.commons.ClassUtils;
+import com.b2international.commons.CompareUtils;
 import com.b2international.commons.Pair;
 import com.b2international.index.BulkUpdate;
 import com.b2international.index.mapping.DocumentMapping;
@@ -277,7 +278,7 @@ public final class StagingArea {
 		for (Class<?> type : deletedIdsByType.keySet()) {
 			final Set<String> deletedDocIds = ImmutableSet.copyOf(deletedIdsByType.get(type));
 			writer.remove(type, deletedDocIds);
-			if (shouldSetRevisedOnMergeBranch()) {
+			if (isMerge()) {
 				revisionsToReviseOnMergeSource.putAll(type, deletedDocIds);
 			}
 		}
@@ -292,7 +293,7 @@ public final class StagingArea {
 				if (document instanceof Revision) {
 					Revision rev = (Revision) document;
 					newComponentsByContainer.put(checkNotNull(rev.getContainerId(), "Missing containerId for revision: %s", rev), rev.getObjectId());
-					if (shouldSetRevisedOnMergeBranch()) {
+					if (isMerge()) {
 						revisionsToReviseOnMergeSource.put(document.getClass(), key.id());
 					}
 				} else {
@@ -312,7 +313,7 @@ public final class StagingArea {
 					RevisionDiff revisionDiff = value.getDiff();
 					final Revision rev = revisionDiff.newRevision;
 					
-					if (shouldSetRevisedOnMergeBranch()) {
+					if (isMerge()) {
 						revisionsToReviseOnMergeSource.put(rev.getClass(), rev.getId());
 						writer.put(key.id(), rev);
 					}
@@ -321,7 +322,7 @@ public final class StagingArea {
 						return;
 					}
 
-					if (!shouldSetRevisedOnMergeBranch()) {
+					if (!isMerge()) {
 						writer.put(key.id(), rev);
 					}
 					
@@ -435,6 +436,11 @@ public final class StagingArea {
 		removedComponentsByContainer.clear();
 		deletedIdsByType.clear();
 		
+		// nothing to commit, break
+		if (writer.isEmpty() && CompareUtils.isEmpty(mergeSources)) {
+			return null;
+		}
+		
 		// generate a commit entry that marks the end of the commit and contains all changes in a details property
 		Commit commitDoc = commit
 				.id(UUID.randomUUID().toString())
@@ -444,20 +450,19 @@ public final class StagingArea {
 				.comment(commitComment)
 				.timestamp(timestamp)
 				.details(details)
-				.mergeSource(mergeSources != null && !mergeSources.isEmpty() ? mergeSources.last() : null)
+				.mergeSource(!CompareUtils.isEmpty(mergeSources) ? mergeSources.last() : null)
+				.squashMerge(!CompareUtils.isEmpty(mergeSources) ? squashMerge : null)
 				.build();
 		writer.put(commitDoc.getId(), commitDoc);
 		
 		// update branch document(s)
-		Map<String, Object> toBranchUpdateParams;
+		ImmutableMap.Builder<String, Object> toBranchUpdateParams = ImmutableMap.builder();
 		if (mergeSources != null && !mergeSources.isEmpty()) {
-			toBranchUpdateParams = ImmutableMap.<String, Object>of(
-				"headTimestamp", timestamp,
-				"mergeSources", mergeSources.stream().map(RevisionBranchPoint::toIpAddress).collect(Collectors.toList()),
-				"squash", squashMerge
-			);
+			toBranchUpdateParams.put("headTimestamp", timestamp);
+			toBranchUpdateParams.put("mergeSources", mergeSources.stream().map(RevisionBranchPoint::toIpAddress).collect(Collectors.toList()));
+			toBranchUpdateParams.put("squash", squashMerge);
 		} else {
-			toBranchUpdateParams = ImmutableMap.of("headTimestamp", timestamp); 
+			toBranchUpdateParams.put("headTimestamp", timestamp); 
 		}
 		
 		writer.bulkUpdate(
@@ -466,7 +471,7 @@ public final class StagingArea {
 				DocumentMapping.matchId(branchPath), 
 				DocumentMapping._ID, 
 				RevisionBranch.Scripts.COMMIT,
-				toBranchUpdateParams
+				toBranchUpdateParams.build()
 			)
 		);
 		
@@ -478,16 +483,19 @@ public final class StagingArea {
 		return commitDoc;
 	}
 
-	private boolean shouldSetRevisedOnMergeBranch() {
-		return mergeFromBranchRef != null;
-	}
-
 	/**
 	 * Dirty staging area if at least one object has been staged.
 	 * @return <code>true</code> if the staging area is dirty and can be committed via {@link #commit(String, long, String, String)}
 	 */
 	public boolean isDirty() {
 		return !stagedObjects.isEmpty();
+	}
+	
+	/**
+	 * @return <code>true</code> if the staging area is merging content from another branch into the current branch
+	 */
+	public boolean isMerge() {
+		return mergeFromBranchRef != null;
 	}
 	
 	/**
@@ -568,7 +576,7 @@ public final class StagingArea {
 		}
 	}
 	
-	long merge(RevisionBranchRef fromRef, RevisionBranchRef toRef, boolean squash, RevisionConflictProcessor conflictProcessor, Set<String> exclusions) {
+	void merge(RevisionBranchRef fromRef, RevisionBranchRef toRef, boolean squash, RevisionConflictProcessor conflictProcessor, Set<String> exclusions) {
 		checkArgument(this.mergeSources == null, "Already merged another ref to this StagingArea. Commit staged changes to apply them.");
 		this.mergeSources = fromRef.difference(toRef)
 				.segments()
@@ -579,18 +587,16 @@ public final class StagingArea {
 		this.mergeFromBranchRef = fromRef;
 		this.squashMerge = squash;
 		if (exclusions != null) {
-			this.exclusions.addAll(exclusions);			
+			this.exclusions.addAll(exclusions);
 		}
 		
 		final RevisionCompare fromChanges = index.compare(toRef, fromRef, Integer.MAX_VALUE);
 		
 		final List<RevisionCompareDetail> fromChangeDetails = fromChanges.getDetails();
 		
-		final long fastForwardCommitTimestamp = fromChanges.getCompare().segments().last().end();
-		
-		// in case of nothing to merge, then just commit the headtimestamp change, similar to fast forward in Git
+		// in case of nothing to merge, then just proceed to commit
 		if (fromChangeDetails.isEmpty()) {
-			return squash ? -1L : fastForwardCommitTimestamp;
+			return;
 		}
 		
 		final RevisionCompare toChanges = index.compare(fromRef, toRef, Integer.MAX_VALUE);
@@ -599,7 +605,7 @@ public final class StagingArea {
 		
 		// in case of fast-forward merge only check conflicts when there are changes on the to branch
 		if (toChangeDetails.isEmpty() && !squash) {
-			return fastForwardCommitTimestamp;
+			return;
 		}
 		
 		final RevisionBranchChangeSet fromChangeSet = new RevisionBranchChangeSet(index, fromRef, fromChanges);
@@ -717,7 +723,6 @@ public final class StagingArea {
 			throw new BranchMergeConflictException(conflicts.stream().map(conflictProcessor::convertConflict).collect(Collectors.toList()));
 		}
 		
-		boolean stagedChanges = false;
 		// apply property changes, conflicts, etc.
 		if (!propertyUpdatesToApply.isEmpty()) {
 			// if there are property conflict resolutions, then we have staged changes and it does not matter if the merge is fast-forward
@@ -728,7 +733,6 @@ public final class StagingArea {
 				final Iterable<? extends Revision> objectsToUpdate = index.read(toRef, searcher -> searcher.get(type, propertyUpdatesByObject.keySet()));
 				for (Revision objectToUpdate : objectsToUpdate) {
 					stageChange(objectToUpdate, objectToUpdate.withUpdates(mapping, propertyUpdatesByObject.get(objectToUpdate.getId())));
-					stagedChanges = true;
 					revisionsToReviseOnMergeSource.put(type, objectToUpdate.getId());
 				}
 			}
@@ -738,7 +742,6 @@ public final class StagingArea {
 		for (Class<? extends Revision> type : fromChangeSet.getAddedTypes()) {
 			final Collection<String> newRevisionIds = fromChangeSet.getAddedIds(type);
 			index.read(fromRef, searcher -> searcher.get(type, newRevisionIds)).forEach(rev -> stageNew(rev, squash));
-			stagedChanges = squash;
 		}
 		
 		// apply changed objects
@@ -755,7 +758,6 @@ public final class StagingArea {
 				} else {
 					stageNew(updatedRevisionsById.get(updatedId), squash);
 				}
-				stagedChanges = squash;
 			}
 		}
 		
@@ -763,10 +765,7 @@ public final class StagingArea {
 		for (Class<? extends Revision> type : fromChangeSet.getRemovedTypes()) {
 			final Collection<String> removedRevisionIds = fromChangeSet.getRemovedIds(type);
 			index.read(toRef, searcher -> searcher.get(type, removedRevisionIds)).forEach(this::stageRemove);
-			stagedChanges = true;
 		}
-		
-		return stagedChanges ? -1L : fastForwardCommitTimestamp;
 	}
 	
 	public final class RevisionDiff {

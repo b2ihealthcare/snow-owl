@@ -30,42 +30,27 @@ import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
+import com.google.common.collect.ImmutableList;
 
 /**
  * @since 7.7
  */
-public class SnomedRefSetMemberSearchRequestEvaluator implements SetMemberSearchRequestEvaluator {
+public final class SnomedMemberSearchRequestEvaluator implements SetMemberSearchRequestEvaluator {
 
 	@Override
 	public SetMembers evaluate(CodeSystemURI uri, BranchContext context, Options search) {
-		final Integer limit = search.get(OptionKey.LIMIT, Integer.class);
-		final String searchAfter = search.get(OptionKey.AFTER, String.class);
-		final List<ExtendedLocale> locales = search.getList(OptionKey.LOCALES, ExtendedLocale.class);
-		
-		SnomedRefSetMemberSearchRequestBuilder requestBuilder = SnomedRequests.prepareSearchMember();
-		
-		if (search.containsKey(OptionKey.SET)) {
-			final Collection<String> refsetId = search.getCollection(OptionKey.SET, String.class);
-			requestBuilder.filterByRefSet(refsetId);
-		}
-		
-		SnomedReferenceSetMembers referenceSetMembers = requestBuilder
-			.filterByActive(true)
-			.setLocales(locales)
-			.setExpand("referencedComponent(expand(fsn()))")
-			.setLimit(limit)
-			.setSearchAfter(searchAfter)
-			.build()
-			.execute(context);
-		
+		SnomedReferenceSetMembers referenceSetMembers = fetchRefsetMembers(uri, context, search);
+		return toCollectionResource(referenceSetMembers, uri);
+	}
+
+	private SetMembers toCollectionResource(SnomedReferenceSetMembers referenceSetMembers, CodeSystemURI uri) {
 		return new SetMembers(referenceSetMembers.stream().map(m -> toMember(m, uri)).collect(Collectors.toList()),
 				referenceSetMembers.getSearchAfter(),
 				referenceSetMembers.getLimit(),
-				referenceSetMembers.getTotal()
-		);
-		
+				referenceSetMembers.getTotal());
 	}
 
 	private SetMember toMember(SnomedReferenceSetMember member, CodeSystemURI codeSystemURI) {	 		
@@ -73,20 +58,48 @@ public class SnomedRefSetMemberSearchRequestEvaluator implements SetMemberSearch
 		final String iconId = member.getReferencedComponent().getIconId();
 		short terminologyComponentId = member.getReferencedComponent().getTerminologyComponentId();
 		switch (terminologyComponentId) {
-			case SnomedTerminologyComponentConstants.CONCEPT_NUMBER: 
-				SnomedConcept concept = (SnomedConcept) member.getReferencedComponent();
-				term = concept.getFsn().getTerm();
-				break;
-			case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER:
-				SnomedDescription description = (SnomedDescription) member.getReferencedComponent();
-				term = description.getTerm();
-				break;
-			default: term = member.getReferencedComponentId();
+		case SnomedTerminologyComponentConstants.CONCEPT_NUMBER: 
+			SnomedConcept concept = (SnomedConcept) member.getReferencedComponent();
+			term = concept.getFsn().getTerm();
+			break;
+		case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER:
+			SnomedDescription description = (SnomedDescription) member.getReferencedComponent();
+			term = description.getTerm();
+			break;
+		default: term = member.getReferencedComponentId();
 		}
-		
+
 		return new SetMember(ComponentURI.of(codeSystemURI.getCodeSystem(), terminologyComponentId, member.getReferencedComponentId()),
 				term, 
 				iconId);
 	}
-	
+
+	private SnomedReferenceSetMembers fetchRefsetMembers(CodeSystemURI uri, BranchContext context, Options search) {
+
+		final Integer limit = search.get(OptionKey.LIMIT, Integer.class);
+		final String searchAfter = search.get(OptionKey.AFTER, String.class);
+		final List<ExtendedLocale> locales = search.getList(OptionKey.LOCALES, ExtendedLocale.class);
+
+		SnomedRefSetMemberSearchRequestBuilder requestBuilder = SnomedRequests.prepareSearchMember();
+
+		if (search.containsKey(OptionKey.SET)) {
+			final Collection<String> refsetId = search.getCollection(OptionKey.SET, String.class);
+			requestBuilder.filterByRefSet(refsetId);
+		}
+		
+		return requestBuilder
+				.filterByActive(true)
+				.filterByRefSetType(getSympleTypeRefSets())
+				.setLocales(locales)
+				.setExpand("referencedComponent(expand(fsn()))")
+				.setLimit(limit)
+				.setSearchAfter(searchAfter)
+				.build()
+				.execute(context);
+	}
+
+	private List<SnomedRefSetType> getSympleTypeRefSets() {
+		return ImmutableList.of(SnomedRefSetType.SIMPLE, SnomedRefSetType.DESCRIPTION_TYPE);
+	}
+
 }

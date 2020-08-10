@@ -25,6 +25,7 @@ import static com.b2international.snowowl.snomed.core.rest.SnomedRefSetRestReque
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.*;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.junit.Assert.*;
 
 import java.util.Calendar;
 import java.util.Map;
@@ -41,6 +42,7 @@ import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
 import com.google.common.collect.ImmutableMap;
@@ -76,6 +78,21 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 		getComponent(a, SnomedComponentType.CONCEPT, conceptId).statusCode(200);
 		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId).statusCode(200);
+	}
+	
+	@Test
+	public void mergeNewConceptForwardWithChildBranchDelete() {
+		final IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		branching.createBranch(a).statusCode(201);
+
+		final String conceptId = createNewConcept(a);
+		merge(a, branchPath, "Merged new concept from child branch").body("status", equalTo(Merge.Status.COMPLETED.name()));
+		branching.deleteBranch(a).statusCode(204);
+
+//		getComponent(a, SnomedComponentType.CONCEPT, conceptId).statusCode(404);
+		SnomedConcept concept = getConcept(conceptId, "descriptions(),relationships()");
+		assertFalse(concept.getDescriptions().isEmpty());
+		assertFalse(concept.getRelationships().isEmpty());
 	}
 
 	@Test

@@ -17,49 +17,14 @@ package com.b2international.snowowl.core.request;
 
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.domain.SetMember;
 import com.b2international.snowowl.core.domain.SetMembers;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
 
 /**
  * @since 7.7
  */
-public interface SetMemberSearchRequestEvaluator {
+public interface SetMemberSearchRequestEvaluator extends SetSearchRequestEvaluator<SetMembers> {
 
-	public enum OptionKey {
-
-		/**
-		 * Search for members in the specified set.
-		 */
-		SET,
-		
-		/**
-		 * Language locales (tag, Accept-Language header, etc.) to use in order of preference when determining the display label or term for a match.
-		 */
-		LOCALES,
-		
-		/**
-		 * Search matches after the specified sort key.
-		 */
-		AFTER,
-		
-		/**
-		 * Number of matches to return.
-		 */
-		LIMIT, 
-	}
-
-	/**
-	 * Evaluate the given search options on the given context and return generic {@link SetMember} instances back in a {@link SetMembers} pageable
-	 * resource.
-	 * 
-	 * @param uri - the code system uri where the search is being evaluated
-	 * @param context - the context prepared for the search
-	 * @param search - the search filters and options to apply to the code system specific search
-	 * @return
-	 */
-	SetMembers evaluate(CodeSystemURI uri, BranchContext context, Options search);
-	
 	/**
 	 * No-op request evaluator that returns zero results
 	 * @since 7.7

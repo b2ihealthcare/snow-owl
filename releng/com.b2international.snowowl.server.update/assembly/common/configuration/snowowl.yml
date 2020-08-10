@@ -29,7 +29,7 @@ snomed:
   languages:
     -
       code: en
-      refSetIds: ["900000000000509007", "900000000000508004", "999001261000000100", "999000671000001103"]
+      refSetIds: ["900000000000509007", "900000000000508004"]
     -
       code: en-us
       refSetIds: ["900000000000509007"]
@@ -38,8 +38,8 @@ snomed:
       refSetIds: ["900000000000508004"]
 
 # Request execution metrics (response-time, jvm, gc, etc.)
-monitoring:
-  enabled: true
+#monitoring:
+#  enabled: true
 
 # reviewManager:
   # Minutes to keep reviews in CURRENT state persisted in the index (default 15 minutes)

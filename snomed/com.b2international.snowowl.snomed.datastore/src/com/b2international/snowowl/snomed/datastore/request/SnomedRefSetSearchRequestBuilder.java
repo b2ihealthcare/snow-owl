@@ -82,6 +82,14 @@ public final class SnomedRefSetSearchRequestBuilder extends SnomedSearchRequestB
 		}
 		return addOption(SnomedRefSetSearchRequest.OptionKey.MAP_TARGET_COMPONENT_TYPE, mapTargetComponentType);
 	}
+	
+	public SnomedRefSetSearchRequestBuilder filterByMapTargetComponentType(String mapTargetComponentType) {
+		if (Strings.isNullOrEmpty(mapTargetComponentType)) {
+			return getSelf();
+		}
+		final int referencedComponentTypeAsInt = TerminologyRegistry.INSTANCE.getTerminologyComponentById(mapTargetComponentType).shortId();
+		return filterByMapTargetComponentType(referencedComponentTypeAsInt);
+	}
 
 	/**
 	 * Returns map type reference sets that have the exact matching map target component types. Only applicable for maps, other refsets will not match

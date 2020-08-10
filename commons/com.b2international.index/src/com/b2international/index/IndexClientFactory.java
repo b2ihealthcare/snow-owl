@@ -63,11 +63,6 @@ public interface IndexClientFactory {
 	String NUMBER_OF_SHARDS = "number_of_shards";
 
 	/**
-	 * Configuration key to specify the number of replicas for the index.
-	 */
-	String NUMBER_OF_REPLICAS = "number_of_replicas";
-
-	/**
 	 * Configuration key to specify the concurrency level for bulk commit operations.
 	 */
 	String COMMIT_CONCURRENCY_LEVEL = "concurrencyLevel";

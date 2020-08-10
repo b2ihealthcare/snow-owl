@@ -21,7 +21,7 @@ snomed:
   languages:
     -
       code: en
-      refSetIds: ["900000000000509007", "900000000000508004", "999001261000000100", "999000671000001103"]
+      refSetIds: ["900000000000509007", "900000000000508004"]
     -
       code: en-us
       refSetIds: ["900000000000509007"]
@@ -31,11 +31,4 @@ snomed:
 
 monitoring:
   enabled: true
-
-repository:
-  index:
-    clusterUrl: "${ELASTICSEARCH_CLUSTER_URL}"
-    connectTimeout: "${ELASTICSEARCH_CONNECT_TIMEOUT}"
-    socketTimeout: "${ELASTICSEARCH_SOCKET_TIMEOUT}"
-    numberOfReplicas: ${ELASTICSEARCH_NUMBER_OF_REPLICAS}
 

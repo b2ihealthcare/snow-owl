@@ -9,7 +9,7 @@
 			<pattern>[%d{yyyy-MM-dd'T'HH:mm:ss.SSS}] %-5level %-48.48thread %-64.64logger{64} %msg %ex%n</pattern>
 	    </encoder>
 	</appender>
-
+	
 	<appender name="LOG_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
 		<file>${so.home}/serviceability/logs/log.log</file>
 		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
@@ -25,7 +25,7 @@
 	<logger level="INFO" additivity="false" name="org.osgi.service.log.LogService">
 		<appender-ref ref="LOG_FILE" />
 	</logger>
-
+	
 	<logger level="ERROR" additivity="false" name="org.semanticweb.elk.reasoner.indexing.hierarchy.IndexObjectConverter" />
 
 	<root level="INFO">
@@ -33,4 +33,4 @@
 		<appender-ref ref="STDOUT" />
 	</root>
 
-</configuration>
+</configuration> 
