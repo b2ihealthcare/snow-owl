@@ -133,6 +133,11 @@ public final class RevisionCompareDetail {
 	}
 	
 	@JsonIgnore
+	public boolean isPropertyChange() {
+		return !isComponentChange();
+	}
+	
+	@JsonIgnore
 	public boolean isAdd() {
 		return Operation.ADD == op;
 	}
