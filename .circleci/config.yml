@@ -8,7 +8,7 @@ workflows:
           filters:
             branches:
               only:
-                - CHR-2724
+                - 7.x
       - deploy-service-dev:
           context: babylon
           filters:
