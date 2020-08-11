@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 7.8.2
+
+### Bugs/Improvements
+- Fixed issue when merging deletions to a branch with related components
+
 ## 7.8.1
 
 ### Bugs/Improvements

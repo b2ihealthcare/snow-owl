@@ -6,7 +6,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.b2international.snowowl</groupId>
 	<artifactId>snowowl-parent</artifactId>
-	<version>7.8.1</version>
+	<version>7.8.2</version>
 	<packaging>pom</packaging>
 
 	<properties>
@@ -873,6 +873,21 @@
 			</plugins>
 		</pluginManagement>
 	</build>
+
+	<profiles>
+		<profile>
+			<id>docs</id>
+			<activation>
+				<property>
+					<name>docs</name>
+					<value>true</value>
+				</property>
+			</activation>
+			<modules>
+				<module>documentation</module>
+			</modules>
+		</profile>
+	</profiles>
 
 	<distributionManagement>
 		<repository>
