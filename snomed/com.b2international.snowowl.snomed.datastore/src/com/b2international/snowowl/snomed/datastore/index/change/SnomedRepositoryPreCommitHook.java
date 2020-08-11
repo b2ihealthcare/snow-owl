@@ -70,7 +70,12 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 		final RepositoryContext context = ClassUtils.checkAndCast(staging.getContext(), RepositoryContext.class);
 		
 		if (!(context instanceof Rf2TransactionContext)) {
-			doProcess(ImmutableList.of(new ComponentInactivationChangeProcessor(), new DetachedContainerChangeProcessor()), staging, index);
+			final ImmutableList.Builder<ChangeSetProcessor> processors = ImmutableList.builder();
+			processors.add(new DetachedContainerChangeProcessor());
+			if (!staging.isMerge()) {
+				processors.add(new ComponentInactivationChangeProcessor());
+			}
+			doProcess(processors.build(), staging, index);
 		}
 	}
 	
@@ -247,7 +252,7 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 	protected void postUpdateDocuments(StagingArea staging, RevisionSearcher index) throws IOException {
 		final RepositoryContext context = ClassUtils.checkAndCast(staging.getContext(), RepositoryContext.class);
 		
-		if (canRestoreEffectiveTime(context)) {
+		if (canRestoreEffectiveTime(context) && !staging.isMerge()) {
 			final long branchBaseTimestamp = index.get(RevisionBranch.class, staging.getBranchPath()).getBaseTimestamp();
 			// XXX effective time restore should be the last processing unit before we send the changes to commit
 			doProcess(Collections.singleton(new ComponentEffectiveTimeRestoreChangeProcessor(log, branchBaseTimestamp)), staging, index);
