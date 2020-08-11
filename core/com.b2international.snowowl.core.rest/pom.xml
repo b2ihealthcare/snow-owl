@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>core-parent</artifactId>
-		<version>7.8.1</version>
+		<version>7.8.2</version>
 	</parent>
 
 	<artifactId>com.b2international.snowowl.core.rest</artifactId>
@@ -165,8 +165,13 @@
 							</arguments>
 						</configuration>
 					</execution>
-				</executions>
-			</plugin>
+    			</executions>
+    			<configuration>
+    				<installDirectory>${project.build.directory}/node</installDirectory>
+    				<workingDirectory>${basedir}/snow-owl-api-docs</workingDirectory>
+        			<nodeVersion>${node.version}</nodeVersion>
+    			</configuration>
+		    </plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-resources-plugin</artifactId>
