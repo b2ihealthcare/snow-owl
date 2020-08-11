@@ -23,11 +23,13 @@ import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRe
 import static com.b2international.snowowl.snomed.core.rest.SnomedRefSetRestRequests.updateRefSetComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRefSetRestRequests.updateRefSetMemberEffectiveTime;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
 
 import java.util.Calendar;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.Ignore;
@@ -42,6 +44,8 @@ import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
+import com.b2international.snowowl.snomed.core.domain.AssociationTarget;
+import com.b2international.snowowl.snomed.core.domain.InactivationProperties;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
@@ -776,6 +780,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		.body("active", equalTo(false)); // Child didn't update the status, so inactivation on the parent is in effect
 	}
 	
+	@Ignore
 	@Test
 	public void rebaseConceptDeletionOverNewOutboundRelationships() throws Exception {
 		// new concept on test branch
@@ -794,10 +799,9 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		// rebase child branch with deletion over new relationship, this should succeed, but should also implicitly delete the relationship
 		merge(branchPath, a, "Rebased concept deletion over new outbound relationship").body("status", equalTo(Merge.Status.CONFLICTS.name()));
 		
-		// TODO allow deletion of source relationships of a concept without reporting conflict
-//		merge(branchPath, a, "Rebased concept deletion over new outbound relationship").body("status", equalTo(Merge.Status.COMPLETED.name()));
-//		// relationships should be deleted along with the already deleted destination concept
-//		getComponent(a, SnomedComponentType.RELATIONSHIP, newOutboundRelationshipFromDeletedConcept).statusCode(404);
+		merge(branchPath, a, "Rebased concept deletion over new outbound relationship").body("status", equalTo(Merge.Status.COMPLETED.name()));
+		// relationships should be deleted along with the already deleted destination concept
+		getComponent(a, SnomedComponentType.RELATIONSHIP, newOutboundRelationshipFromDeletedConcept).statusCode(404);
 	}
 	
 	@Test
@@ -818,9 +822,8 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		// rebase child branch with deletion over new relationship, this should succeed, but should also implicitly delete the relationship
 		merge(branchPath, a, "Rebased concept deletion over new inbound relationship").body("status", equalTo(Merge.Status.CONFLICTS.name()));
 		
-		// TODO when new conflict??? 
-//		// relationships should be deleted along with the already deleted destination concept
-//		getComponent(a, SnomedComponentType.RELATIONSHIP, newInboundRelationshipToDeletedConcept).statusCode(404);
+		// relationships should be deleted along with the already deleted destination concept
+		getComponent(a, SnomedComponentType.RELATIONSHIP, newInboundRelationshipToDeletedConcept).statusCode(404);
 	}
 	
 	@Test
@@ -842,10 +845,41 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		// rebase child branch with deletion over new relationship, this should succeed, but should also implicitly delete the relationship
 		merge(branchPath, a, "Rebased concept deletion over new outbound and inbound relationships").body("status", equalTo(Merge.Status.CONFLICTS.name()));
 		
-		// when new conflict processing rules are in place enable???
-//		// relationships should be deleted along with the already deleted destination concept
-//		getComponent(a, SnomedComponentType.RELATIONSHIP, newOutboundRelationshipFromDeletedConcept).statusCode(404);
-//		getComponent(a, SnomedComponentType.RELATIONSHIP, newInboundRelationshipToDeletedConcept).statusCode(404);
+		// relationships should be deleted along with the already deleted destination concept
+		getComponent(a, SnomedComponentType.RELATIONSHIP, newOutboundRelationshipFromDeletedConcept).statusCode(404);
+		getComponent(a, SnomedComponentType.RELATIONSHIP, newInboundRelationshipToDeletedConcept).statusCode(404);
+	}
+	
+	@Test
+	public void mergeThenRebaseOtherTask() throws Exception {
+		final String conceptA = createNewConcept(branchPath);
+		
+		final IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		final IBranchPath b = BranchPathUtils.createPath(branchPath, "b");
+		branching.createBranch(a).statusCode(201);
+		branching.createBranch(b).statusCode(201);
+		
+		Map<?, ?> inactivationRequest = ImmutableMap.builder()
+				.put("active", false)
+				.put("inactivationProperties", new InactivationProperties(Concepts.DUPLICATE, List.of(new AssociationTarget(Concepts.REFSET_SAME_AS_ASSOCIATION, Concepts.FULLY_SPECIFIED_NAME))))
+				.put("commitComment", "Inactivated concept")
+				.build();
+
+		updateComponent(a, SnomedComponentType.CONCEPT, conceptA, inactivationRequest).statusCode(204);
+		
+		final String conceptB = createNewConcept(b);
+		
+		merge(a, branchPath, "Merge branch A").body("status", equalTo(Merge.Status.COMPLETED.name()));
+		SnomedConcept conceptAOnParent = getComponent(branchPath, SnomedComponentType.CONCEPT, conceptA, "members(),relationships()").statusCode(200).extract().as(SnomedConcept.class);
+		assertThat(conceptAOnParent.getRelationships()).hasSize(1);
+		assertThat(conceptAOnParent.getMembers()).hasSize(2);
+		
+		merge(branchPath, b, "Rebase branch B").body("status", equalTo(Merge.Status.COMPLETED.name()));
+		SnomedConcept conceptAOnBranchB = getComponent(b, SnomedComponentType.CONCEPT, conceptA, "members(),relationships()").statusCode(200).extract().as(SnomedConcept.class);
+		assertThat(conceptAOnBranchB.getRelationships()).hasSize(1);
+		assertThat(conceptAOnBranchB.getMembers()).hasSize(2);
+		
+		getComponent(b, SnomedComponentType.CONCEPT, conceptB, "relationships()").statusCode(200).extract().as(SnomedConcept.class);
 	}
 
 }

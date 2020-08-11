@@ -383,6 +383,24 @@ public class RevisionBranchMergeTest extends BaseRevisionIndexTest {
 		assertState(MAIN, branchA, BranchState.FORWARD);
 	}
 	
+	@Test
+	public void squashMergeThenRebase() throws Exception {
+		final String branchA = createBranch(MAIN, "a");
+		final String branchB = createBranch(MAIN, "b");
+		
+		indexRevision(branchA, NEW_DATA);
+		indexRevision(branchB, NEW_DATA2);
+
+		// merge then rebase Branch B
+		branching().prepareMerge(branchA, MAIN).squash(true).merge();
+		branching().prepareMerge(MAIN, branchB).merge();
+		
+		assertNotNull(getRevision(MAIN, RevisionData.class, NEW_DATA.getId()));
+		assertNotNull(getRevision(branchB, RevisionData.class, NEW_DATA.getId()));
+		assertNull(getRevision(MAIN, RevisionData.class, NEW_DATA2.getId()));
+		assertNotNull(getRevision(branchB, RevisionData.class, NEW_DATA2.getId()));
+	}
+	
 	private void assertState(String branchPath, String compareWith, BranchState expectedState) {
 		assertEquals(expectedState, branching().getBranchState(branchPath, compareWith));
 	}
