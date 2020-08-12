@@ -676,13 +676,18 @@ public final class StagingArea {
 				final Map<String, Map<String, RevisionCompareDetail>> sourcePropertyChangesByObject = indexPropertyChangesByObject(fromChangeDetails);
 				final Map<String, Map<String, RevisionCompareDetail>> targetPropertyChangesByObject = indexPropertyChangesByObject(toChangeDetails);
 				for (String changedInSourceAndTargetId : changedInSourceAndTargetIds) {
-					final Map<String, RevisionCompareDetail> sourcePropertyChanges = sourcePropertyChangesByObject.get(changedInSourceAndTargetId);
-					final Map<String, RevisionCompareDetail> targetPropertyChanges = targetPropertyChangesByObject.get(changedInSourceAndTargetId);
+					// take the prop changes from both paths
+					final Map<String, RevisionCompareDetail> sourcePropertyChanges = sourcePropertyChangesByObject.remove(changedInSourceAndTargetId);
+					final Map<String, RevisionCompareDetail> targetPropertyChanges = targetPropertyChangesByObject.remove(changedInSourceAndTargetId);
 					
 					if (sourcePropertyChanges != null) {
-						for (Entry<String, RevisionCompareDetail> sourceChange : Iterables.consumingIterable(sourcePropertyChanges.entrySet())) {
-							final RevisionPropertyDiff sourceChangeDiff = new RevisionPropertyDiff(sourceChange.getValue().getProperty(), sourceChange.getValue().getFromValue(), sourceChange.getValue().getValue());
-							final RevisionCompareDetail targetPropertyChange = targetPropertyChanges.remove(sourceChange.getKey());
+						for (Entry<String, RevisionCompareDetail> sourceChange : sourcePropertyChanges.entrySet()) {
+							final String changedProperty = sourceChange.getKey();
+							final RevisionCompareDetail sourcePropertyChange = sourceChange.getValue();
+							
+							final RevisionPropertyDiff sourceChangeDiff = new RevisionPropertyDiff(changedProperty, sourcePropertyChange.getFromValue(), sourcePropertyChange.getValue());
+							final RevisionCompareDetail targetPropertyChange = targetPropertyChanges.get(changedProperty);
+							
 							if (targetPropertyChange == null) {
 								// this property did not change in target, just apply directly on the target object via
 								if (!propertyUpdatesToApply.containsKey(type)) {
@@ -699,7 +704,7 @@ public final class StagingArea {
 										targetChangeDiff
 										);
 								if (resolution == null) {
-									conflicts.add(new ChangedInSourceAndTargetConflict(sourceChange.getValue().getObject(), sourceChangeDiff.convert(conflictProcessor), targetChangeDiff.convert(conflictProcessor)));
+									conflicts.add(new ChangedInSourceAndTargetConflict(sourcePropertyChange.getObject(), sourceChangeDiff.convert(conflictProcessor), targetChangeDiff.convert(conflictProcessor)));
 								} else {
 									if (!propertyUpdatesToApply.containsKey(type)) {
 										propertyUpdatesToApply.put(type, HashMultimap.create());
