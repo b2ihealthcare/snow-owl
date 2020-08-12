@@ -99,7 +99,7 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 			for (ValueSet valueSet : valueSets) {
 				applyResponseContentFilter(valueSet, requestParameters);
 				
-				String resourceUrl = String.format("%s/%s", uri, valueSet.getId().getIdValue());
+				String resourceUrl = String.join("/", uri, valueSet.getId().getIdValue());
 				
 				Entry entry = new Entry(new Uri(resourceUrl), valueSet);
 				builder.addEntry(entry);

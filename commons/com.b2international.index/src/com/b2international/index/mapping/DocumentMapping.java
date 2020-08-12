@@ -243,7 +243,7 @@ public final class DocumentMapping {
 	}
 	
 	public String toUid(String key) {
-		return String.format("%s#%s", typeAsString, key);
+		return String.join("#", typeAsString, key);
 	}
 	
 	@Override

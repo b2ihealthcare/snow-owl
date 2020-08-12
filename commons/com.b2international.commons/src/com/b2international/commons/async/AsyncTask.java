@@ -191,7 +191,7 @@ public abstract class AsyncTask<Params, Result> extends Job {
 	 * @param exception
 	 */
 	protected void onFailure(final Exception exception) {
-		LOG.error(String.format("'%s' failed to finish the task:", getClass().getName()), exception);
+		LOG.error("'{}' failed to finish the task:", getClass().getName(), exception);
 	}
 
 	/**

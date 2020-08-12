@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,12 +33,7 @@ public class AlreadyExistsException extends ConflictException {
 	 * @param id   the identifier of the existing item
 	 */
 	public AlreadyExistsException(final String type, final String id) {
-		super(formatMessage(type, id));
+		super("%s with '%s' identifier already exists.", checkNotNull(type, "type"), checkNotNull(id, "id"));
 	}
 
-	private static String formatMessage(final String type, final String id) {
-		checkNotNull(type, "type");
-		checkNotNull(id, "id");
-		return String.format("%s with '%s' identifier already exists.", type, id);
-	}
 }

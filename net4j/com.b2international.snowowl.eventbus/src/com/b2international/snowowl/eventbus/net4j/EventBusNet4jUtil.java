@@ -79,7 +79,7 @@ public class EventBusNet4jUtil {
 	 */
 	private static IEventBus getBus(IManagedContainer container, String name, int numberOfWorkers, boolean worker) {
 		return (IEventBus) container.getElement(EventBusConstants.EVENT_BUS_PRODUCT_GROUP,
-				EventBusConstants.PROTOCOL_NAME, String.format("%s:%s:%s", name, numberOfWorkers, worker), true);
+				EventBusConstants.PROTOCOL_NAME, String.join(":", name, Integer.toString(numberOfWorkers), Boolean.toString(worker)), true);
 	}
 
 }

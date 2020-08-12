@@ -215,7 +215,7 @@ public final class EsQueryBuilder {
 	}
 
 	private String toFieldPath(final String subPath) {
-		return path.isEmpty() ? subPath : String.format("%s.%s", path, subPath);
+		return path.isEmpty() ? subPath : String.join(".", path, subPath);
 	}
 	
 	private void visit(HasParentPredicate predicate) {

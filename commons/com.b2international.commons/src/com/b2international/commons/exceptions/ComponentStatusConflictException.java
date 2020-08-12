@@ -31,6 +31,6 @@ public class ComponentStatusConflictException extends ConflictException {
 	 * @param componentStatus {@code true} if the component is currently active, {@code false} if it is inactive
 	 */
 	public ComponentStatusConflictException(String componentId, boolean componentStatus) {
-		super(String.format("Component %s is already %s.", componentId, componentStatus ? "active" : "inactive"));
+		super("Component %s is already %s.", componentId, componentStatus ? "active" : "inactive");
 	}
 }

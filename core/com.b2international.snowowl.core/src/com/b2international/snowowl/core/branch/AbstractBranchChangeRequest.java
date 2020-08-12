@@ -125,6 +125,7 @@ public abstract class AbstractBranchChangeRequest implements Request<RepositoryC
 			} catch (ApiException e) {
 				return merge.failed(e.toApiError());
 			} catch (RuntimeException e) {
+				context.log().error("Failed to merge {} into {}", sourcePath, targetPath, e);
 				return merge.failed(ApiError.Builder.of(e.getMessage()).build());
 			}
 			

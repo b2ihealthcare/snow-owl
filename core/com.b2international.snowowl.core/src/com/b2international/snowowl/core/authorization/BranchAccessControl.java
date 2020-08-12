@@ -26,7 +26,7 @@ public interface BranchAccessControl extends RepositoryAccessControl {
 
 	@Override
 	default String getResource(ServiceProvider context) {
-		return String.format("%s/%s", REPOSITORY_TEMPLATE, BRANCH_TEMPLATE);
+		return String.join("/", REPOSITORY_TEMPLATE, BRANCH_TEMPLATE);
 	}
 	
 }
