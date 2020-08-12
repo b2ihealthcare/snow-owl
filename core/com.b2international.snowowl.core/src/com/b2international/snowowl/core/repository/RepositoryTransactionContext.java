@@ -110,6 +110,10 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 		return !Strings.isNullOrEmpty(author) ? author : service(User.class).getUsername();
 	}
 	
+	public String getLockContext() {
+		return parentLockContext;
+	}
+	
 	@Override
 	public <T> T lookup(String componentId, Class<T> type) {
 		final T component = lookupIfExists(componentId, type);
