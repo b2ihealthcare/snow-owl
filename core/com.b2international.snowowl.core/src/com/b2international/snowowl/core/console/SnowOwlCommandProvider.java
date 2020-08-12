@@ -85,10 +85,9 @@ public final class SnowOwlCommandProvider implements CommandProvider {
 			// we should get an executable Snow Owl Command, so execute it
 			BaseCommand cmd = (BaseCommand) cli.getCommand();
 			final String authorizationToken = ApplicationContext.getServiceForClass(JWTGenerator.class).generate(User.SYSTEM);
-			cmd.setBus(new AuthorizedEventBus(ApplicationContext.getServiceForClass(IEventBus.class), ImmutableMap.of(AuthorizedRequest.AUTHORIZATION_HEADER, authorizationToken)));
 			final ServiceProvider context = ApplicationContext.getServiceForClass(Environment.class)
 					.inject()
-					.bind(IEventBus.class, cmd.getBus())
+					.bind(IEventBus.class, new AuthorizedEventBus(ApplicationContext.getServiceForClass(IEventBus.class), ImmutableMap.of(AuthorizedRequest.AUTHORIZATION_HEADER, authorizationToken)))
 					.build();
 			cmd.setContext(context);
 			cmd.run(out);
