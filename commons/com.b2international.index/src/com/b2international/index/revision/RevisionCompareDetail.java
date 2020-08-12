@@ -27,7 +27,7 @@ import com.google.common.base.Strings;
  */
 public final class RevisionCompareDetail {
 
-	private static final String PROPERTY_CHANGE_KEY_TEMPLATE = "_";
+	private static final String PROPERTY_CHANGE_KEY_SEPARATOR = "_";
 	
 	// commit details
 	private final String author;
@@ -87,7 +87,7 @@ public final class RevisionCompareDetail {
 		if (isComponentChange()) {
 			this.key = component.toString();
 		} else {
-			this.key = String.join(PROPERTY_CHANGE_KEY_TEMPLATE, object.toString(), property);
+			this.key = String.join(PROPERTY_CHANGE_KEY_SEPARATOR, object.toString(), property);
 		}
 	}
 	
