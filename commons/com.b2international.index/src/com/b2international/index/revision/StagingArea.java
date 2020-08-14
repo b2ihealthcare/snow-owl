@@ -313,32 +313,28 @@ public final class StagingArea {
 					RevisionDiff revisionDiff = value.getDiff();
 					final Revision rev = revisionDiff.newRevision;
 					
-					if (isMerge()) {
-						revisionsToReviseOnMergeSource.put(rev.getClass(), rev.getId());
+					if (isMerge() || revisionDiff.hasChanges()) {
+						if (isMerge()) {
+							revisionsToReviseOnMergeSource.put(rev.getClass(), rev.getId());
+						}
+						
 						writer.put(key.id(), rev);
+						
+						ObjectId containerId = checkNotNull(rev.getContainerId(), "Missing containerId for revision: %s", rev);
+						ObjectId objectId = rev.getObjectId();
+						if (!containerId.isRoot()) { // XXX register only sub-components in the changed objects
+							changedComponentsByContainer.put(containerId, objectId);
+						}
+						
+						if (revisionDiff.diff() != null) {
+							revisionDiff.diff().forEach(node -> {
+								if (node instanceof ObjectNode) {
+									revisionsByChange.put((ObjectNode) node, objectId);
+								}
+							});
+						}
 					}
 					
-					if (!revisionDiff.hasChanges()) {
-						return;
-					}
-
-					if (!isMerge()) {
-						writer.put(key.id(), rev);
-					}
-					
-					ObjectId containerId = checkNotNull(rev.getContainerId(), "Missing containerId for revision: %s", rev);
-					ObjectId objectId = rev.getObjectId();
-					if (!containerId.isRoot()) { // XXX register only sub-components in the changed objects
-						changedComponentsByContainer.put(containerId, objectId);
-					}
-					
-					if (revisionDiff.diff() != null) {
-						revisionDiff.diff().forEach(node -> {
-							if (node instanceof ObjectNode) {
-								revisionsByChange.put((ObjectNode) node, objectId);
-							}
-						});
-					}
 				} else {
 					writer.put(key.id(), object);
 					changedComponentsByContainer.put(ObjectId.rootOf(DocumentMapping.getType(object.getClass())), key);
@@ -744,7 +740,17 @@ public final class StagingArea {
 		// apply new objects
 		for (Class<? extends Revision> type : fromChangeSet.getAddedTypes()) {
 			final Collection<String> newRevisionIds = fromChangeSet.getAddedIds(type);
-			index.read(fromRef, searcher -> searcher.get(type, newRevisionIds)).forEach(rev -> stageNew(rev, squash));
+			final Iterable<? extends Revision> oldRevisions = index.read(toRef, searcher -> searcher.get(type, newRevisionIds));
+			final Iterable<? extends Revision> newRevisions = index.read(fromRef, searcher -> searcher.get(type, newRevisionIds));
+			final Map<String, ? extends Revision> oldRevisionsById = FluentIterable.from(oldRevisions).uniqueIndex(Revision::getId);
+			
+			newRevisions.forEach(rev -> {
+				if (oldRevisionsById.containsKey(rev.getId())) {
+					stageChange(oldRevisionsById.get(rev.getId()), rev, squash);
+				} else {
+					stageNew(rev, squash);
+				}
+			});
 		}
 		
 		// apply changed objects
