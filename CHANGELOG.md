@@ -1,6 +1,13 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 7.8.3
+
+### Bugs/Improvements
+- Fix another revision duplication issue when rebasing a child branch on top of the parent branch (#638)
+- Fix missing context when using certain commands in Snow Owl CLI (#635)
+- Improve performance of conflict processing, reaching super fast execution times (#634)  
+
 ## 7.8.2
 
 ### Bugs/Improvements
