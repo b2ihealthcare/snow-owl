@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,8 @@ import com.b2international.collections.ints.IntSet;
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongOpenHashSetWrapper;
 import com.b2international.collections.longs.LongSet;
+import com.b2international.collections.longs.LongSortedSet;
+import com.b2international.collections.longs.LongSortedSetWrapper;
 import com.google.common.hash.HashFunction;
 
 /**
@@ -84,5 +86,16 @@ public final class FastUtilPrimitiveSetFactory implements PrimitiveSetFactory {
 	@Override
 	public LongSet newLongOpenHashSet(LongCollection source) {
 		return LongOpenHashSetWrapper.create(source);
+	}
+	
+	@Override
+	public LongSortedSet newLongSortedSet(long... source) {
+		return LongSortedSetWrapper.create(source);
+	}
+	
+	
+	@Override
+	public LongSortedSet newLongSortedSet(LongCollection source) {
+		return LongSortedSetWrapper.create(source);
 	}
 }
