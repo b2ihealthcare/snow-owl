@@ -26,6 +26,7 @@ import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.b2international.commons.StopWatch;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.compare.ConceptMapCompareResult;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
@@ -120,6 +121,23 @@ public class SnomedMapTypeReferenceSetCompareTest extends AbstractCoreApiTest {
 		assertThat(result.getAddedMembers().get(0).getSourceComponentURI().identifier()).isEqualTo(SOURCE_CODE_3);
 		assertThat(result.getChangedMembers().keySet()).anyMatch(m -> TARGET_CODE_2.equals(m.getTargetComponentURI().identifier()));
 		assertThat(result.getChangedMembers().values()).anyMatch(m -> TARGET_CODE_3.equals(m.getTargetComponentURI().identifier()));
+	}
+	
+	@Test
+	public void compareLargeSimpleMapTypeReferenceSets() {
+		long startTime = StopWatch.time();
+		final String baseSimpleMapReferenceSet = "900000000000497000";
+		final String  compareSimpleMapReferenceSet = "447562003";
+		ComponentURI baseURI = ComponentURI.of(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, SnomedTerminologyComponentConstants.REFSET_NUMBER, baseSimpleMapReferenceSet);
+		ComponentURI compareURI = ComponentURI.of(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, SnomedTerminologyComponentConstants.REFSET_NUMBER, compareSimpleMapReferenceSet);
+		
+		CodeSystemRequests.prepareConceptMapCompare(baseURI, compareURI)
+				.build(codeSystemURI)
+				.execute(getBus())
+				.getSync();
+		
+		long endTime = StopWatch.time();
+		assertThat(endTime-startTime).isLessThan(1000);
 	}
 	
 	private ComponentURI createURI(String rfId) {
