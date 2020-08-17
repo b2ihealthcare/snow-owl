@@ -81,6 +81,7 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 			if (!ComponentURI.UNSPECIFIED.codeSystem().equals(codeSystem)) {
 				Map<String, Concept> mapTargetsById = CodeSystemRequests.prepareSearchConcepts()
 						.filterByIds(targetIds)
+						.all()
 						.build(CodeSystemURI.head(codeSystem))
 						.execute(context.service(IEventBus.class))
 						.getSync(5, TimeUnit.MINUTES)
