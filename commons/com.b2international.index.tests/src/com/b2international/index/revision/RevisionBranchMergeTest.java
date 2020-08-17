@@ -39,6 +39,7 @@ public class RevisionBranchMergeTest extends BaseRevisionIndexTest {
 
 	private static final RevisionData NEW_DATA = new RevisionData(STORAGE_KEY1, "field1", "field2");
 	private static final RevisionData NEW_DATA2 = new RevisionData(STORAGE_KEY2, "field1", "field2");
+	private static final RevisionData NEW_DATA3 = new RevisionData("3", "field1", "field2");
 	private static final RevisionData CHANGED_DATA = new RevisionData(STORAGE_KEY1, "field1Changed", "field2");
 
 	@Override
@@ -399,6 +400,48 @@ public class RevisionBranchMergeTest extends BaseRevisionIndexTest {
 		assertNotNull(getRevision(branchB, RevisionData.class, NEW_DATA.getId()));
 		assertNull(getRevision(MAIN, RevisionData.class, NEW_DATA2.getId()));
 		assertNotNull(getRevision(branchB, RevisionData.class, NEW_DATA2.getId()));
+	}
+	
+	@Test
+	public void rebaseDivergedThenMergeTwoBranches() throws Exception {
+		final String branchA = createBranch(MAIN, "a");
+		final String branchB = createBranch(MAIN, "b");
+		
+		
+		indexRevision(branchA, NEW_DATA);
+		indexRevision(branchB, NEW_DATA2);
+		indexRevision(MAIN, NEW_DATA3);
+		
+		Hooks.PreCommitHook hook = new Hooks.PreCommitHook() {
+			@Override
+			public void run(StagingArea staging) {
+				if (branchA.equals(staging.getBranchPath())) {
+					staging.getNewObjects(RevisionData.class).forEach(newRevision -> {
+						if (NEW_DATA3.getId().equals(newRevision.getId())) {
+							staging.stageNew(newRevision);
+						}
+					});
+				}
+			}
+		};
+		index().hooks().addHook(hook);
+		
+		try {
+			assertNull(getRevision(branchA, RevisionData.class, NEW_DATA3.getId()));
+			branching().prepareMerge(MAIN, branchA).merge();
+			assertNotNull(getRevision(branchA, RevisionData.class, NEW_DATA3.getId()));
+			
+			branching().prepareMerge(MAIN, branchB).merge();
+			branching().prepareMerge(branchB, MAIN).merge();
+			
+			branching().prepareMerge(MAIN, branchA).merge();
+			
+			getRevision(branchA, RevisionData.class, NEW_DATA.getId());
+			getRevision(branchA, RevisionData.class, NEW_DATA2.getId());
+			getRevision(branchA, RevisionData.class, NEW_DATA3.getId());
+		} finally {
+			index().hooks().removeHook(hook);
+		}
 	}
 	
 	private void assertState(String branchPath, String compareWith, BranchState expectedState) {

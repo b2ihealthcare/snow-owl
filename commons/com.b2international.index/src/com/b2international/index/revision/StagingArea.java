@@ -516,7 +516,17 @@ public final class StagingArea {
 	}
 	
 	public StagingArea stageNew(String key, Object newDocument, boolean commit) {
-		stagedObjects.put(toObjectId(newDocument, key), added(newDocument, null, commit));
+		ObjectId objectId = toObjectId(newDocument, key);
+		if (stagedObjects.containsKey(objectId)) {
+			StagedObject currentStagedObject = stagedObjects.get(objectId);
+			if (!currentStagedObject.isCommit() && currentStagedObject.getObject() instanceof Revision && newDocument instanceof Revision) {
+				stagedObjects.put(objectId, changed(newDocument, new RevisionDiff((Revision) currentStagedObject.getObject(), (Revision) newDocument), commit));
+			} else {
+				stagedObjects.put(objectId, added(newDocument, null, commit));
+			}
+		} else {
+			stagedObjects.put(objectId, added(newDocument, null, commit));
+		}
 		return this;
 	}
 

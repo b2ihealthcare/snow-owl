@@ -154,6 +154,19 @@ public interface RevisionIndex extends Administrable<RevisionIndexAdmin> {
 	}
 	
 	/**
+	 * Returns a branch expression String that represent the base of the given branchPath.
+	 * 
+	 * @param branchPath
+	 * @return
+	 * @see #BASE_REF_CHAR
+	 * @see #isBaseRefPath(String)
+	 */
+	static String toBaseRef(String branchPath) {
+		if (isBaseRefPath(branchPath)) return branchPath;
+		return branchPath.concat(BASE_REF_CHAR);
+	}
+	
+	/**
 	 * Extracts the branch paths from the given revision range path expression.
 	 * @param revisionRangePath
 	 * @return
