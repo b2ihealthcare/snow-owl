@@ -1,6 +1,12 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 7.8.4
+
+### Bugs/Improvements
+- Further improvements and fixes related to rebasing/merging changes between child-parent branches
+- Make sure we only register actual changes in commits and not everything when merging from another branches 
+
 ## 7.8.3
 
 ### Bugs/Improvements
