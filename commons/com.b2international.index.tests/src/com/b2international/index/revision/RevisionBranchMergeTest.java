@@ -15,9 +15,7 @@
  */
 package com.b2international.index.revision;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 import java.util.Collection;
 import java.util.List;
@@ -443,6 +441,28 @@ public class RevisionBranchMergeTest extends BaseRevisionIndexTest {
 			index().hooks().removeHook(hook);
 		}
 	}
+	
+	@Test
+	public void rebaseThenMergeDifferentPropertyChanges() throws Exception {
+		indexRevision(MAIN, NEW_DATA);
+		final String branchA = createBranch(MAIN, "a");
+		
+		indexChange(MAIN, NEW_DATA, NEW_DATA.toBuilder().field1("field1Changed").build());
+		indexChange(branchA, NEW_DATA, NEW_DATA.toBuilder().field2("field2Changed").build());
+		
+		branching().prepareMerge(MAIN, branchA).merge();
+		RevisionData mainRevision = getRevision(MAIN, RevisionData.class, NEW_DATA.getId());
+		assertDocEquals(new RevisionData(NEW_DATA.getId(), "field1Changed", "field2"), mainRevision);
+		RevisionData branchARevision = getRevision(branchA, RevisionData.class, NEW_DATA.getId());
+		assertDocEquals(new RevisionData(NEW_DATA.getId(), "field1Changed", "field2Changed"), branchARevision);
+		
+		branching().prepareMerge(branchA, MAIN).squash(true).merge();
+		mainRevision = getRevision(MAIN, RevisionData.class, NEW_DATA.getId());
+		assertDocEquals(new RevisionData(NEW_DATA.getId(), "field1Changed", "field2Changed"), mainRevision);
+		branchARevision = getRevision(branchA, RevisionData.class, NEW_DATA.getId());
+		assertDocEquals(new RevisionData(NEW_DATA.getId(), "field1Changed", "field2Changed"), branchARevision);
+	}
+	
 	
 	private void assertState(String branchPath, String compareWith, BranchState expectedState) {
 		assertEquals(expectedState, branching().getBranchState(branchPath, compareWith));
