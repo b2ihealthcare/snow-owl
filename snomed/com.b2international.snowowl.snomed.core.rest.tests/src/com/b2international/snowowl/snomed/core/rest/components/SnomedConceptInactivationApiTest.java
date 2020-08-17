@@ -35,8 +35,8 @@ import java.util.Map;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.domain.IComponent;
-import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.AssociationTarget;
 import com.b2international.snowowl.snomed.core.domain.InactivationProperties;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
@@ -190,7 +190,7 @@ public class SnomedConceptInactivationApiTest extends AbstractSnomedApiTest {
 			.body("parentIds", equalTo(ImmutableList.of(IComponent.ROOT_ID)))
 			.body("statedParentIds", equalTo(ImmutableList.of(inactiveParentConcept)))
 			.body("ancestorIds", equalTo(ImmutableList.of()))
-			.body("statedAncestorIds", equalTo(ImmutableList.of(Concepts.ROOT_CONCEPT, IComponent.ROOT_ID)))
+			.body("statedAncestorIds", equalTo(ImmutableList.of(IComponent.ROOT_ID, Concepts.ROOT_CONCEPT)))
 			.body("inactivationProperties.inactivationIndicator", nullValue())
 			.body("inactivationProperties.associationTargets", equalTo(ImmutableList.of()));
 	}
@@ -255,7 +255,7 @@ public class SnomedConceptInactivationApiTest extends AbstractSnomedApiTest {
 			.body("parentIds", equalTo(ImmutableList.of(IComponent.ROOT_ID)))
 			.body("statedParentIds", equalTo(ImmutableList.of(inactiveParentConcept)))
 			.body("ancestorIds", equalTo(ImmutableList.of()))
-			.body("statedAncestorIds", equalTo(ImmutableList.of(Concepts.ROOT_CONCEPT, IComponent.ROOT_ID)))
+			.body("statedAncestorIds", equalTo(ImmutableList.of(IComponent.ROOT_ID, Concepts.ROOT_CONCEPT)))
 			.body("inactivationProperties.inactivationIndicator", nullValue())
 			.body("inactivationProperties.associationTargets", equalTo(ImmutableList.of()));
 	}
