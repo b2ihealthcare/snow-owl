@@ -59,10 +59,10 @@ public abstract class DocumentBuilders {
 				.moduleId(Concepts.MODULE_SCT_CORE)
 				.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
 				.primitive(true)
-				.parents(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
-				.ancestors(PrimitiveSets.newLongOpenHashSet())
-				.statedParents(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
-				.statedAncestors(PrimitiveSets.newLongOpenHashSet());
+				.parents(PrimitiveSets.newLongSortedSet(IComponent.ROOT_IDL))
+				.ancestors(PrimitiveSets.newLongSortedSet())
+				.statedParents(PrimitiveSets.newLongSortedSet(IComponent.ROOT_IDL))
+				.statedAncestors(PrimitiveSets.newLongSortedSet());
 	}
 	
 	public static SnomedConstraintDocument.Builder constraint() {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,7 +51,6 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import com.b2international.collections.PrimitiveCollectionModule;
-import com.b2international.collections.PrimitiveSets;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.index.Index;
 import com.b2international.index.query.Expression;
@@ -241,8 +240,8 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 		indexRevision(MAIN, concept(Concepts.SYNONYM)
 				.parents(Long.parseLong(Concepts.REFSET_DESCRIPTION_TYPE))
 				.statedParents(Long.parseLong(Concepts.REFSET_DESCRIPTION_TYPE))
-				.ancestors(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
-				.statedAncestors(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
+				.ancestors(IComponent.ROOT_IDL)
+				.statedAncestors(IComponent.ROOT_IDL)
 				.build());
 		final Expression actual = eval("^(<" + Concepts.REFSET_DESCRIPTION_TYPE + ")");
 		final Expression expected = activeMemberOf(Collections.singleton(Concepts.SYNONYM));
@@ -328,9 +327,9 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	public void ancestorOf() throws Exception {
 		// SCT Core module has a single parent and a single ancestor in this test case
 		indexRevision(MAIN, concept(Concepts.MODULE_SCT_CORE)
-				.ancestors(PrimitiveSets.newLongOpenHashSet(Long.parseLong(Concepts.ROOT_CONCEPT)))
+				.ancestors(Long.parseLong(Concepts.ROOT_CONCEPT))
 				.parents(Long.parseLong(Concepts.MODULE_ROOT))
-				.statedAncestors(PrimitiveSets.newLongOpenHashSet(Long.parseLong(Concepts.ROOT_CONCEPT)))
+				.statedAncestors(Long.parseLong(Concepts.ROOT_CONCEPT))
 				.statedParents(Long.parseLong(Concepts.MODULE_ROOT))
 				.build());
 		final Expression actual = eval(">"+Concepts.MODULE_SCT_CORE);
@@ -342,9 +341,9 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	public void ancestorOrSelfOf() throws Exception {
 		// SCT Core module has a single parent and a single ancestor in this test case
 		indexRevision(MAIN, concept(Concepts.MODULE_SCT_CORE)
-				.ancestors(PrimitiveSets.newLongOpenHashSet(Long.parseLong(Concepts.ROOT_CONCEPT)))
+				.ancestors(Long.parseLong(Concepts.ROOT_CONCEPT))
 				.parents(Long.parseLong(Concepts.MODULE_ROOT))
-				.statedAncestors(PrimitiveSets.newLongOpenHashSet(Long.parseLong(Concepts.ROOT_CONCEPT)))
+				.statedAncestors(Long.parseLong(Concepts.ROOT_CONCEPT))
 				.statedParents(Long.parseLong(Concepts.MODULE_ROOT))
 				.build());
 		final Expression actual = eval(">>"+Concepts.MODULE_SCT_CORE);

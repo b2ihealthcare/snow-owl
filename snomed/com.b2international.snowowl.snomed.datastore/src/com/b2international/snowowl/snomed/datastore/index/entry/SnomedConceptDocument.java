@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.b2international.collections.PrimitiveSets;
-import com.b2international.collections.longs.LongSet;
+import com.b2international.collections.longs.LongSortedSet;
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.exceptions.BadRequestException;
@@ -257,10 +257,10 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 				.iconId(input.getIconId())
 				.primitive(input.isPrimitive())
 				.exhaustive(input.getSubclassDefinitionStatus().isExhaustive())
-				.parents(PrimitiveSets.newLongOpenHashSet(input.getParentIds()))
-				.ancestors(PrimitiveSets.newLongOpenHashSet(input.getAncestorIds()))
-				.statedParents(PrimitiveSets.newLongOpenHashSet(input.getStatedParentIds()))
-				.statedAncestors(PrimitiveSets.newLongOpenHashSet(input.getStatedAncestorIds()));
+				.parents(PrimitiveSets.newLongSortedSet(input.getParentIds()))
+				.ancestors(PrimitiveSets.newLongSortedSet(input.getAncestorIds()))
+				.statedParents(PrimitiveSets.newLongSortedSet(input.getStatedParentIds()))
+				.statedAncestors(PrimitiveSets.newLongSortedSet(input.getStatedAncestorIds()));
 		
 		if (input.getReferenceSet() != null) {
 			builder.refSet(input.getReferenceSet());
@@ -286,10 +286,10 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 
 		private Boolean primitive;
 		private Boolean exhaustive;
-		private LongSet parents;
-		private LongSet ancestors;
-		private LongSet statedParents;
-		private LongSet statedAncestors;
+		private LongSortedSet parents;
+		private LongSortedSet ancestors;
+		private LongSortedSet statedParents;
+		private LongSortedSet statedAncestors;
 		private SnomedRefSetType refSetType;
 		private Short referencedComponentType = TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT;
 		private Short mapTargetComponentType;
@@ -318,32 +318,44 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 		
 		@JsonIgnore
 		public Builder parents(final long...parents) {
-			return parents(PrimitiveSets.newLongOpenHashSet(parents));
+			return parents(PrimitiveSets.newLongSortedSet(parents));
 		}
 
 		@JsonProperty("parents")
-		public Builder parents(final LongSet parents) {
+		public Builder parents(final LongSortedSet parents) {
 			this.parents = parents;
 			return getSelf();
 		}
 		
 		@JsonIgnore
 		public Builder statedParents(final long...statedParents) {
-			return statedParents(PrimitiveSets.newLongOpenHashSet(statedParents));
+			return statedParents(PrimitiveSets.newLongSortedSet(statedParents));
 		}
 		
 		@JsonProperty("statedParents")
-		public Builder statedParents(final LongSet statedParents) {
+		public Builder statedParents(final LongSortedSet statedParents) {
 			this.statedParents = statedParents;
 			return getSelf();
 		}
 		
-		public Builder ancestors(final LongSet ancestors) {
+		@JsonIgnore
+		public Builder ancestors(final long... ancestors) {
+			return ancestors(PrimitiveSets.newLongSortedSet(ancestors));
+		}
+		
+		@JsonProperty("ancestors")
+		public Builder ancestors(final LongSortedSet ancestors) {
 			this.ancestors = ancestors;
 			return getSelf();
 		}
 		
-		public Builder statedAncestors(final LongSet statedAncestors) {
+		@JsonIgnore
+		public Builder statedAncestors(final long... statedAncestors) {
+			return statedAncestors(PrimitiveSets.newLongSortedSet(statedAncestors));
+		}
+		
+		@JsonProperty("statedAncestors")
+		public Builder statedAncestors(final LongSortedSet statedAncestors) {
 			this.statedAncestors = statedAncestors;
 			return getSelf();
 		}
@@ -445,10 +457,10 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 	private final Short mapTargetComponentType;
 	private final List<SnomedDescriptionFragment> preferredDescriptions;
 	
-	private LongSet parents;
-	private LongSet ancestors;
-	private LongSet statedParents;
-	private LongSet statedAncestors;
+	private LongSortedSet parents;
+	private LongSortedSet ancestors;
+	private LongSortedSet statedParents;
+	private LongSortedSet statedAncestors;
 	private float doi;
 
 	private SnomedConceptDocument(final String id,
@@ -499,19 +511,19 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 		return exhaustive;
 	}
 	
-	public LongSet getParents() {
+	public LongSortedSet getParents() {
 		return parents;
 	}
 	
-	public LongSet getStatedParents() {
+	public LongSortedSet getStatedParents() {
 		return statedParents;
 	}
 	
-	public LongSet getAncestors() {
+	public LongSortedSet getAncestors() {
 		return ancestors;
 	}
 	
-	public LongSet getStatedAncestors() {
+	public LongSortedSet getStatedAncestors() {
 		return statedAncestors;
 	}
 	

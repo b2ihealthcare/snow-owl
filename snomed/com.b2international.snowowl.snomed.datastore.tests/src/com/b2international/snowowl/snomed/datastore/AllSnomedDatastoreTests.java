@@ -34,7 +34,7 @@ import com.b2international.snowowl.snomed.datastore.index.change.PreferredDescri
 import com.b2international.snowowl.snomed.datastore.index.change.RelationshipChangeProcessorTest;
 import com.b2international.snowowl.snomed.datastore.index.change.TaxonomyPreCommitHookTest;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocumentTermSortTest;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptIndexEntrySerializationTest;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocumentSerializationTest;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConstraintDocumentSerializationTest;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntrySerializationTest;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberDocumentSerializationTest;
@@ -57,7 +57,7 @@ import com.b2international.snowowl.snomed.validation.SnomedQueryValidationRuleEv
 	DefaultSnomedIdentifierServiceTest.class,
 	DefaultSnomedIdentifierServiceRegressionTest.class,
 	// index document test cases 
-	SnomedConceptIndexEntrySerializationTest.class,
+	SnomedConceptDocumentSerializationTest.class,
 	SnomedRelationshipIndexEntrySerializationTest.class,
 	SnomedDescriptionIndexEntrySerializationTest.class,
 	SnomedConstraintDocumentSerializationTest.class,

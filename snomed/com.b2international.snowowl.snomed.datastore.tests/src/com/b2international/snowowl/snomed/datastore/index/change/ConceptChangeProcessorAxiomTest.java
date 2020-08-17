@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import java.util.Collections;
 
 import org.junit.Test;
 
-import com.b2international.collections.PrimitiveSets;
 import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
@@ -76,7 +75,7 @@ public class ConceptChangeProcessorAxiomTest extends BaseConceptPreCommitHookTes
 		assertEquals(1, processor.getChangedMappings().size());
 		final SnomedConceptDocument expected = docWithDefaults(concept)
 				.statedParents(Long.parseLong(parentConcept.getId()))
-				.statedAncestors(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
+				.statedAncestors(IComponent.ROOT_IDL)
 				.activeMemberOf(Collections.singleton(Concepts.REFSET_OWL_AXIOM))
 				.memberOf(Collections.singleton(Concepts.REFSET_OWL_AXIOM))
 				.build();
@@ -105,7 +104,7 @@ public class ConceptChangeProcessorAxiomTest extends BaseConceptPreCommitHookTes
 		assertEquals(1, processor.getChangedMappings().size());
 		final SnomedConceptDocument expected = docWithDefaults(concept)
 				.statedParents(Long.parseLong(parentConcept.getId()), Long.parseLong(parentConcept2.getId()))
-				.statedAncestors(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
+				.statedAncestors(IComponent.ROOT_IDL)
 				.activeMemberOf(Collections.singleton(Concepts.REFSET_OWL_AXIOM))
 				.memberOf(Collections.singleton(Concepts.REFSET_OWL_AXIOM))
 				.build();
@@ -137,7 +136,7 @@ public class ConceptChangeProcessorAxiomTest extends BaseConceptPreCommitHookTes
 		assertEquals(1, processor.getChangedMappings().size());
 		final SnomedConceptDocument expected = docWithDefaults(concept)
 				.statedParents(Long.parseLong(parentConcept.getId()))
-				.statedAncestors(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
+				.statedAncestors(IComponent.ROOT_IDL)
 				.activeMemberOf(Collections.singleton(Concepts.REFSET_OWL_AXIOM))
 				.memberOf(Collections.singleton(Concepts.REFSET_OWL_AXIOM))
 				.build();
@@ -152,7 +151,7 @@ public class ConceptChangeProcessorAxiomTest extends BaseConceptPreCommitHookTes
 		SnomedConceptDocument parentConcept = concept().build();
 		SnomedConceptDocument concept = concept()
 				.statedParents(Long.parseLong(parentConcept.getId()))
-				.statedAncestors(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
+				.statedAncestors(IComponent.ROOT_IDL)
 				.activeMemberOf(Collections.singleton(Concepts.REFSET_OWL_AXIOM))
 				.memberOf(Collections.singleton(Concepts.REFSET_OWL_AXIOM))
 				.build();
@@ -175,7 +174,7 @@ public class ConceptChangeProcessorAxiomTest extends BaseConceptPreCommitHookTes
 		assertEquals(1, processor.getChangedMappings().size());
 		final SnomedConceptDocument expected = docWithDefaults(concept)
 				.statedParents(Long.parseLong(parentConcept2.getId()))
-				.statedAncestors(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
+				.statedAncestors(IComponent.ROOT_IDL)
 				.activeMemberOf(Collections.singleton(Concepts.REFSET_OWL_AXIOM))
 				.memberOf(Collections.singleton(Concepts.REFSET_OWL_AXIOM))
 				.build();
@@ -212,7 +211,7 @@ public class ConceptChangeProcessorAxiomTest extends BaseConceptPreCommitHookTes
 		final SnomedConceptDocument parentConcept = concept().build();
 		final SnomedConceptDocument concept = concept()
 				.statedParents(Long.parseLong(parentConcept.getId()))
-				.statedAncestors(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
+				.statedAncestors(IComponent.ROOT_IDL)
 				.build();
 		SnomedRefSetMemberIndexEntry member = createOwlAxiom(concept.getId(), String.format("SubClassOf(:%s :%s)", concept.getId(), parentConcept.getId()))
 				.classAxiomRelationships(ImmutableList.of(new SnomedOWLRelationshipDocument(Concepts.IS_A, parentConcept.getId(), 0)))
@@ -229,7 +228,7 @@ public class ConceptChangeProcessorAxiomTest extends BaseConceptPreCommitHookTes
 		
 		assertEquals(1, processor.getChangedMappings().size());
 		final SnomedConceptDocument expected = docWithDefaults(concept)
-				.statedParents(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
+				.statedParents(IComponent.ROOT_IDL)
 				.build();
 		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values()).getNewRevision();
 		assertDocEquals(expected, actual);
@@ -243,7 +242,7 @@ public class ConceptChangeProcessorAxiomTest extends BaseConceptPreCommitHookTes
 		final SnomedConceptDocument parentConcept2 = concept().build();
 		final SnomedConceptDocument concept = concept()
 				.statedParents(Long.parseLong(parentConcept.getId()))
-				.statedAncestors(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
+				.statedAncestors(IComponent.ROOT_IDL)
 				.build();
 		final SnomedRefSetMemberIndexEntry member = createOwlAxiom(concept.getId(), String.format("SubClassOf(:%s ObjectIntersectionOf(:%s :%s))", concept.getId(), parentConcept.getId(), parentConcept2.getId()))
 				.classAxiomRelationships(ImmutableList.of(new SnomedOWLRelationshipDocument(Concepts.IS_A, parentConcept.getId(), 0)))
@@ -260,7 +259,7 @@ public class ConceptChangeProcessorAxiomTest extends BaseConceptPreCommitHookTes
 		
 		assertEquals(1, processor.getChangedMappings().size());
 		final SnomedConceptDocument expected = docWithDefaults(concept)
-				.statedParents(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
+				.statedParents(IComponent.ROOT_IDL)
 				.build();
 		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values()).getNewRevision();
 		assertDocEquals(expected, actual);
@@ -273,7 +272,7 @@ public class ConceptChangeProcessorAxiomTest extends BaseConceptPreCommitHookTes
 		final SnomedConceptDocument parentConcept = concept().build();
 		final SnomedConceptDocument concept = concept()
 				.statedParents(Long.parseLong(parentConcept.getId()))
-				.statedAncestors(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
+				.statedAncestors(IComponent.ROOT_IDL)
 				.build();
 		SnomedRelationshipIndexEntry isaRelationship = createStatedRelationship(concept.getId(), Concepts.IS_A, parentConcept.getId());
 
@@ -292,7 +291,7 @@ public class ConceptChangeProcessorAxiomTest extends BaseConceptPreCommitHookTes
 		assertEquals(1, processor.getChangedMappings().size());
 		final SnomedConceptDocument expected = docWithDefaults(concept)
 				.statedParents(Long.parseLong(parentConcept.getId()))
-				.statedAncestors(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
+				.statedAncestors(IComponent.ROOT_IDL)
 				.activeMemberOf(Collections.singleton(Concepts.REFSET_OWL_AXIOM))
 				.memberOf(Collections.singleton(Concepts.REFSET_OWL_AXIOM))
 				.build();
@@ -308,7 +307,7 @@ public class ConceptChangeProcessorAxiomTest extends BaseConceptPreCommitHookTes
 		final SnomedConceptDocument parentConcept = concept().build();
 		final SnomedConceptDocument concept = concept()
 				.statedParents(Long.parseLong(parentConcept.getId()))
-				.statedAncestors(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
+				.statedAncestors(IComponent.ROOT_IDL)
 				.activeMemberOf(Collections.singleton(Concepts.REFSET_OWL_AXIOM))
 				.memberOf(Collections.singleton(Concepts.REFSET_OWL_AXIOM))
 				.build();
@@ -330,7 +329,7 @@ public class ConceptChangeProcessorAxiomTest extends BaseConceptPreCommitHookTes
 		assertEquals(1, processor.getChangedMappings().size());
 		final SnomedConceptDocument expected = docWithDefaults(concept)
 				.statedParents(Long.parseLong(parentConcept.getId()))
-				.statedAncestors(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
+				.statedAncestors(IComponent.ROOT_IDL)
 				.memberOf(Collections.singleton(Concepts.REFSET_OWL_AXIOM))
 				.build();
 		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values()).getNewRevision();

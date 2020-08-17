@@ -125,10 +125,10 @@ public class SnomedConceptDocumentTermSortTest extends BaseRevisionIndexTest {
 				.moduleId(Concepts.MODULE_ROOT)
 				.exhaustive(true)
 				.primitive(true)
-				.parents(PrimitiveSets.newLongOpenHashSet(-1L))
-				.ancestors(PrimitiveSets.newLongOpenHashSet(-1L))
-				.statedAncestors(PrimitiveSets.newLongOpenHashSet(-1L))
-				.statedParents(PrimitiveSets.newLongOpenHashSet(-1L));
+				.parents(PrimitiveSets.newLongSortedSet(-1L))
+				.ancestors(PrimitiveSets.newLongSortedSet(-1L))
+				.statedAncestors(PrimitiveSets.newLongSortedSet(-1L))
+				.statedParents(PrimitiveSets.newLongSortedSet(-1L));
 	}
 	
 	private SnomedDescriptionFragment fsn(String term, String languageRefSetId) {

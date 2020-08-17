@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.b2international.collections.PrimitiveCollectionModule;
-import com.b2international.collections.PrimitiveSets;
 import com.b2international.index.Index;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
@@ -115,7 +114,7 @@ public class SnomedStatedEclEvaluationTest extends BaseRevisionIndexTest {
 	
 	private void generateTestHierarchy() {
 		indexRevision(MAIN, 
-			concept(STATED_CONCEPT).statedParents(PrimitiveSets.newLongOpenHashSet(Long.parseLong(ROOT_CONCEPT))).build(),
+			concept(STATED_CONCEPT).statedParents(Long.parseLong(ROOT_CONCEPT)).build(),
 			relationship(STATED_CONCEPT, HAS_ACTIVE_INGREDIENT, SUBSTANCE, Concepts.STATED_RELATIONSHIP).group(1).build()
 		);
 	}

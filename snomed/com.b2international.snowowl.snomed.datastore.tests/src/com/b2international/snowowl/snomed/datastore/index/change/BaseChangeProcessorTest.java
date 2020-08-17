@@ -212,9 +212,9 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 				// new concepts without any ISA or Description should get the following derived values as defaults via the change processor
 				.iconId(Concepts.ROOT_CONCEPT)
 				.parents(IComponent.ROOT_IDL)
-				.ancestors(PrimitiveSets.emptyLongSet())
+				.ancestors(PrimitiveSets.emptyLongSortedSet())
 				.statedParents(IComponent.ROOT_IDL)
-				.statedAncestors(PrimitiveSets.emptyLongSet());
+				.statedAncestors(PrimitiveSets.emptyLongSortedSet());
 	}
 
 	protected final SnomedConceptDocument.Builder concept() {
@@ -231,9 +231,9 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 				// defaults
 				.iconId(Concepts.ROOT_CONCEPT)
 				.parents(IComponent.ROOT_IDL)
-				.ancestors(PrimitiveSets.newLongOpenHashSet())
+				.ancestors(PrimitiveSets.newLongSortedSet())
 				.statedParents(IComponent.ROOT_IDL)
-				.statedAncestors(PrimitiveSets.newLongOpenHashSet());
+				.statedAncestors(PrimitiveSets.newLongSortedSet());
 	}
 	
 	protected SnomedRefSetMemberIndexEntry.Builder createOwlAxiom(final String referencedComponentId, final String owlExpression) {
