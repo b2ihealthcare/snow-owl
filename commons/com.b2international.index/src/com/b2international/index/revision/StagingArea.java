@@ -313,26 +313,30 @@ public final class StagingArea {
 					RevisionDiff revisionDiff = value.getDiff();
 					final Revision rev = revisionDiff.newRevision;
 					
-					if (isMerge() || revisionDiff.hasChanges()) {
-						if (isMerge()) {
-							revisionsToReviseOnMergeSource.put(rev.getClass(), rev.getId());
-						}
-						
-						writer.put(key.id(), rev);
-						
-						ObjectId containerId = checkNotNull(rev.getContainerId(), "Missing containerId for revision: %s", rev);
-						ObjectId objectId = rev.getObjectId();
-						if (!containerId.isRoot()) { // XXX register only sub-components in the changed objects
-							changedComponentsByContainer.put(containerId, objectId);
-						}
-						
-						if (revisionDiff.diff() != null) {
-							revisionDiff.diff().forEach(node -> {
-								if (node instanceof ObjectNode) {
-									revisionsByChange.put((ObjectNode) node, objectId);
-								}
-							});
-						}
+					if (!revisionDiff.hasChanges()) {
+						return;
+					}
+					
+					if (isMerge()) {
+						revisionsToReviseOnMergeSource.put(rev.getClass(), rev.getId());
+					}
+					
+					writer.put(key.id(), rev);
+					
+					// register component as changed in commit doc
+					ObjectId containerId = checkNotNull(rev.getContainerId(), "Missing containerId for revision: %s", rev);
+					ObjectId objectId = rev.getObjectId();
+					if (!containerId.isRoot()) { // XXX register only sub-components in the changed objects
+						changedComponentsByContainer.put(containerId, objectId);
+					}
+					
+					if (revisionDiff.diff() != null) {
+						// register actual difference between revisions to commit
+						revisionDiff.diff().forEach(node -> {
+							if (node instanceof ObjectNode) {
+								revisionsByChange.put((ObjectNode) node, objectId);
+							}
+						});
 					}
 					
 				} else {
