@@ -25,14 +25,13 @@ import static com.b2international.index.query.Expressions.matchTextParsed;
 import static com.b2international.index.query.Expressions.matchTextRegexp;
 import static com.b2international.index.query.Expressions.scriptScore;
 import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
+import java.util.SortedSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -60,6 +59,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 /**
  * A transfer object representing a SNOMED CT description.
@@ -276,8 +276,8 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		private String languageCode;
 		private String typeId;
 		private String caseSignificanceId;
-		private Set<String> acceptableIn = newHashSetWithExpectedSize(2);
-		private Set<String> preferredIn = newHashSetWithExpectedSize(2);
+		private SortedSet<String> acceptableIn = Sets.newTreeSet();
+		private SortedSet<String> preferredIn = Sets.newTreeSet();
 		private String semanticTag;
 
 		@JsonCreator
@@ -320,13 +320,15 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 			return getSelf();
 		}
 		
-		public Builder acceptableIn(final Set<String> acceptableIn) {
-			this.acceptableIn = acceptableIn;
+		public Builder acceptableIn(final Collection<String> acceptableIn) {
+			this.acceptableIn.clear();
+			this.acceptableIn.addAll(acceptableIn);
 			return getSelf();
 		}
 		
-		public Builder preferredIn(final Set<String> preferredIn) {
-			this.preferredIn = preferredIn;
+		public Builder preferredIn(final Collection<String> preferredIn) {
+			this.preferredIn.clear();
+			this.preferredIn.addAll(preferredIn);
 			return getSelf();
 		}
 		
@@ -344,8 +346,8 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		}
 		
 		public Builder acceptabilityMap(final Map<String, Acceptability> acceptabilityMap) {
-			this.acceptableIn = newHashSetWithExpectedSize(2);
-			this.preferredIn = newHashSetWithExpectedSize(2);
+			this.acceptableIn = Sets.newTreeSet();
+			this.preferredIn = Sets.newTreeSet();
 			for (Entry<String, Acceptability> entry : acceptabilityMap.entrySet()) {
 				acceptability(entry.getKey(), entry.getValue());
 			}
@@ -394,8 +396,8 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 	private final String semanticTag;
 	private final String typeId;
 	private final String caseSignificanceId;
-	private final Set<String> acceptableIn;
-	private final Set<String> preferredIn;
+	private final SortedSet<String> acceptableIn;
+	private final SortedSet<String> preferredIn;
 
 	private SnomedDescriptionIndexEntry(final String id,
 			final String label,
@@ -409,8 +411,8 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 			final String semanticTag,
 			final String typeId,
 			final String caseSignificanceId,
-			final Set<String> preferredIn, 
-			final Set<String> acceptableIn,
+			final SortedSet<String> preferredIn, 
+			final SortedSet<String> acceptableIn,
 			final List<String> referringRefSets,
 			final List<String> referringMappingRefSets) {
 		
@@ -430,8 +432,8 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		this.semanticTag = semanticTag;
 		this.typeId = typeId;
 		this.caseSignificanceId = caseSignificanceId;
-		this.preferredIn = preferredIn == null ? Collections.<String>emptySet() : preferredIn;
-		this.acceptableIn = acceptableIn == null ? Collections.<String>emptySet() : acceptableIn;
+		this.preferredIn = preferredIn == null ? Collections.<String>emptySortedSet() : preferredIn;
+		this.acceptableIn = acceptableIn == null ? Collections.<String>emptySortedSet() : acceptableIn;
 	}
 	
 	@Override
@@ -498,7 +500,7 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 	 * Returns the language reference set identifiers where this description is preferred.
 	 * @return
 	 */
-	public Set<String> getPreferredIn() {
+	public SortedSet<String> getPreferredIn() {
 		return preferredIn;
 	}
 	
@@ -506,7 +508,7 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 	 * Returns the language reference set identifiers where this description is acceptable.
 	 * @return
 	 */
-	public Set<String> getAcceptableIn() {
+	public SortedSet<String> getAcceptableIn() {
 		return acceptableIn;
 	}
 	
