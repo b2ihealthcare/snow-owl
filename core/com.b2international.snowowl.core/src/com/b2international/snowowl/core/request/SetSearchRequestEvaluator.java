@@ -47,6 +47,11 @@ public interface SetSearchRequestEvaluator<R> {
 		 * Number of matches to return.
 		 */
 		LIMIT, 
+		
+		/**
+		 * Search for mappings with the specified source tooling id.
+		 */
+		TOOLING_ID
 	}
 	
 	/**
