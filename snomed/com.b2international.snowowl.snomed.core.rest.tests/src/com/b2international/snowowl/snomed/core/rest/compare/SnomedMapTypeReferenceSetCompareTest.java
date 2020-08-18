@@ -22,6 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -134,7 +135,7 @@ public class SnomedMapTypeReferenceSetCompareTest extends AbstractCoreApiTest {
 		CodeSystemRequests.prepareConceptMapCompare(baseURI, compareURI)
 				.build(codeSystemURI)
 				.execute(getBus())
-				.getSync();
+				.getSync(1, TimeUnit.SECONDS);
 		
 		long endTime = StopWatch.time();
 		assertThat(endTime-startTime).isLessThan(1000);
