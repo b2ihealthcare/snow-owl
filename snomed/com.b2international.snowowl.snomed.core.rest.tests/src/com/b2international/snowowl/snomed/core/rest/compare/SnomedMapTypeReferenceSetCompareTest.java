@@ -27,7 +27,6 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.b2international.commons.StopWatch;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.compare.ConceptMapCompareResult;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
@@ -126,7 +125,6 @@ public class SnomedMapTypeReferenceSetCompareTest extends AbstractCoreApiTest {
 	
 	@Test
 	public void compareLargeSimpleMapTypeReferenceSets() {
-		long startTime = StopWatch.time();
 		final String baseSimpleMapReferenceSet = "900000000000497000";
 		final String  compareSimpleMapReferenceSet = "447562003";
 		ComponentURI baseURI = ComponentURI.of(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, SnomedTerminologyComponentConstants.REFSET_NUMBER, baseSimpleMapReferenceSet);
@@ -136,9 +134,6 @@ public class SnomedMapTypeReferenceSetCompareTest extends AbstractCoreApiTest {
 				.build(codeSystemURI)
 				.execute(getBus())
 				.getSync(1, TimeUnit.SECONDS);
-		
-		long endTime = StopWatch.time();
-		assertThat(endTime-startTime).isLessThan(1000);
 	}
 	
 	private ComponentURI createURI(String rfId) {
