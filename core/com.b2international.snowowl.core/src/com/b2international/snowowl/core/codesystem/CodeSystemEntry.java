@@ -64,6 +64,10 @@ public final class CodeSystemEntry implements Serializable {
 		public static Expression oids(Collection<String> oids) {
 			return matchAny(Fields.OID, oids);
 		}
+		
+		public static Expression toolingIds(Iterable<String> toolingIds) {
+			return matchAny(Fields.TERMINOLOGY_COMPONENT_ID, toolingIds);
+		}
 	}
 	
 	public static class Fields {

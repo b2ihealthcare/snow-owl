@@ -34,11 +34,13 @@ final class AllCodeSystemSearchRequest implements Request<ServiceProvider, CodeS
 	private final Collection<String> ids;
 	private final List<String> fields;
 	private final String expand;
+	private final Iterable<String> toolingIds;
 	
-	AllCodeSystemSearchRequest(final Collection<String> ids, final List<String> fields, final String expand) {
+	AllCodeSystemSearchRequest(final Collection<String> ids, final List<String> fields, final String expand, final Iterable<String> toolingIds) {
 		this.ids = ids;
 		this.fields = fields;
 		this.expand = expand;
+		this.toolingIds= toolingIds;
 	}
 
 	@Override
@@ -54,6 +56,7 @@ final class AllCodeSystemSearchRequest implements Request<ServiceProvider, CodeS
 			CodeSystems css = CodeSystemRequests.prepareSearchCodeSystem()
 					.all()
 					.filterByIds(ids)
+					.filterByToolingIds(toolingIds)
 					.setFields(fields)
 					.setExpand(expand)
 					.build(repositoryInfo.id())
