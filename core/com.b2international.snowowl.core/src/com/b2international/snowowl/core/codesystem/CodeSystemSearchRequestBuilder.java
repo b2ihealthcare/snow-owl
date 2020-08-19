@@ -15,10 +15,10 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
+import com.b2international.snowowl.core.codesystem.CodeSystemSearchRequest.OptionKey;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.RepositoryRequestBuilder;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
-import com.b2international.snowowl.core.request.SearchResourceRequest.OptionKey;
 import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
 
 /**
