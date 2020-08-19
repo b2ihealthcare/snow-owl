@@ -35,7 +35,7 @@ public final class ConceptMapMappingSearchRequestBuilder extends SearchResourceR
 	}
 	
 	public ConceptMapMappingSearchRequestBuilder filterBySourceToolingId(String toolingId) {
-		return addOption(OptionKey.SOURCE_TOOLING_ID, toolingId);
+		return addOption(OptionKey.TOOLING_ID, toolingId);
 	}
 	
 	@Override
