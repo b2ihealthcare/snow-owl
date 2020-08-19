@@ -32,6 +32,7 @@ public final class AllCodeSystemSearchRequestBuilder implements SystemRequestBui
 	private Collection<String> ids;
 	private List<String> fields;
 	private String expand;
+	private Iterable<String> toolingIds;
 	
 	public AllCodeSystemSearchRequestBuilder filterById(final String id) {
 		this.ids = ImmutableSet.of(id);
@@ -40,6 +41,11 @@ public final class AllCodeSystemSearchRequestBuilder implements SystemRequestBui
 	
 	public AllCodeSystemSearchRequestBuilder filterByIds(final Collection<String> ids) {
 		this.ids = ImmutableSet.copyOf(ids);
+		return this;
+	}
+	
+	public AllCodeSystemSearchRequestBuilder filterByToolingIds(final Iterable<String> toolingIds) {
+		this.toolingIds = ImmutableSet.copyOf(toolingIds);
 		return this;
 	}
 	
@@ -55,7 +61,7 @@ public final class AllCodeSystemSearchRequestBuilder implements SystemRequestBui
 	
 	@Override
 	public Request<ServiceProvider, CodeSystems> build() {
-		return new AllCodeSystemSearchRequest(ids, fields, expand);
+		return new AllCodeSystemSearchRequest(ids, fields, expand, toolingIds);
 	}
 
 }

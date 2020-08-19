@@ -62,7 +62,11 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 		/**
 		 * Sort result by the specified sort fields.
 		 */
-		SORT_BY;
+		SORT_BY,
+		/**
+		 * Search by the specific tooling id.
+		 */
+		TOOLING_ID;
 	}
 
 	public static abstract class Sort implements Serializable {

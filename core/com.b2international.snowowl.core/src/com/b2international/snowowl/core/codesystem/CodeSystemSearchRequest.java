@@ -47,6 +47,9 @@ final class CodeSystemSearchRequest extends SearchIndexResourceRequest<Repositor
 				.should(CodeSystemEntry.Expressions.shortNames(ids))
 				.should(CodeSystemEntry.Expressions.oids(ids))
 				.build());
+		if (containsKey(OptionKey.TOOLING_ID)) {
+			queryBuilder.filter(CodeSystemEntry.Expressions.toolingIds(getCollection(OptionKey.TOOLING_ID, String.class)));
+		}
 		return queryBuilder.build();
 	}
 
