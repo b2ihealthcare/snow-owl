@@ -1,5 +1,6 @@
 package scripts;
 
+import com.b2international.index.Hits
 import com.b2international.index.query.Expressions
 import com.b2international.index.query.Query
 import com.b2international.index.query.Expressions.ExpressionBuilder
@@ -23,24 +24,27 @@ final Set<ComponentIdentifier> issues = Sets.newHashSet()
 final RevisionSearcher searcher = ctx.service(RevisionSearcher.class)
 final List<String> activeDescriptionIndicatorIds = ImmutableList.of(Concepts.PENDING_MOVE, Concepts.LIMITED, Concepts.CONCEPT_NON_CURRENT)
 
-def checkDescriptions = { boolean active , Set<String> inactiveConceptIds ->
+def checkDescriptions = { boolean active , List<String> inactiveConceptIds ->
 	ExpressionBuilder filterSnomedDescriptions = Expressions.builder()
 			.filter(SnomedDescriptionIndexEntry.Expressions.concepts(inactiveConceptIds))
 			.filter(SnomedDescriptionIndexEntry.Expressions.active(active))
 
-	final Set<String> descriptionIds = Sets.newHashSet()
+	final List<String> descriptionIds = []
 
+//	println "Searching ${active ? 'active' : 'inactive'} descriptions on inactive concepts..."
+	
 	searcher.scroll(Query.select(String.class)
 			.from(SnomedDescriptionIndexEntry.class)
 			.fields(SnomedDescriptionIndexEntry.Fields.ID)
 			.where(filterSnomedDescriptions.build())
-			.limit(10_000)
+			.withScores(false)
+			.limit(100_000)
 			.build())
-			.each({hits ->
-				hits.each({ id ->
-					descriptionIds.add(id)
-				})
+			.each({Hits<String> hits ->
+				descriptionIds.addAll(hits.getHits())
 			})
+			
+//	println "Found ${descriptionIds.size()} ${active ? 'active' : 'inactive'} descriptions on inactive concepts..."
 
 	ExpressionBuilder filterDescriptionsExpressionBuilder = Expressions.builder()
 			.filter(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR))
@@ -51,41 +55,49 @@ def checkDescriptions = { boolean active , Set<String> inactiveConceptIds ->
 		filterDescriptionsExpressionBuilder.filter(SnomedRefSetMemberIndexEntry.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
 	}
 
-	if(active) {
+	if (active) {
 		filterDescriptionsExpressionBuilder
 				.mustNot(SnomedRefSetMemberIndexEntry.Expressions.valueIds(activeDescriptionIndicatorIds))
 	} else {
 		filterDescriptionsExpressionBuilder
 				.filter(SnomedRefSetMemberIndexEntry.Expressions.valueIds(activeDescriptionIndicatorIds))
 	}
-	searcher.scroll(Query.select(SnomedRefSetMemberIndexEntry.class)
+	
+//	println "Searching matching reference set members..."
+	
+	searcher.scroll(Query.select(String.class)
 		.from(SnomedRefSetMemberIndexEntry.class)
+		.fields(SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID)
 		.where(filterDescriptionsExpressionBuilder.build())
+		.withScores(false)
 		.limit(10_000)
 		.build())
 		.each({hits ->
 			hits.each({ hit ->
-				issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, hit.getReferencedComponentId()))
+				issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, hit))
 			})
 		})
+	
+//	println "Found ${issues.size()} issues"
 }
 
 ExpressionBuilder filterInactiveConceptsExpressionBuilder = Expressions.builder()
 		.filter(SnomedConceptDocument.Expressions.inactive())
 
-Set<String> inactiveConceptIds = Sets.newHashSet()
+List<String> inactiveConceptIds = []
 
+//println "Loading inactive concepts"
 searcher.scroll(Query.select(String.class)
 		.from(SnomedConceptDocument.class)
 		.fields(SnomedConceptDocument.Fields.ID)
 		.where(filterInactiveConceptsExpressionBuilder.build())
-		.limit(10_000)
+		.withScores(false)
+		.limit(100_000)
 		.build())
-		.each({hits ->
-			hits.each({ id ->
-				inactiveConceptIds.add(id)
-			})
+		.each({Hits<String> hits ->
+			inactiveConceptIds.addAll(hits.getHits())
 		})
+//println "Loaded ${inactiveConceptIds.size()} inactive concepts"
 		
 checkDescriptions(true, inactiveConceptIds)
 checkDescriptions(false, inactiveConceptIds)
