@@ -53,7 +53,7 @@ public abstract class IndexResourceRequestBuilder<B extends IndexResourceRequest
 		return setFields(Lists.asList(first, rest));
 	}
 	
-	public final B setFields(Iterable<String> fields) {
+	public final B setFields(List<String> fields) {
 		if (!CompareUtils.isEmpty(fields)) {
 			this.fields = ImmutableList.copyOf(fields);
 		}
