@@ -21,7 +21,6 @@ import java.util.List;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.SystemRequestBuilder;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -45,12 +44,12 @@ public final class AllCodeSystemSearchRequestBuilder implements SystemRequestBui
 	}
 	
 	public AllCodeSystemSearchRequestBuilder filterByToolingIds(final Iterable<String> toolingIds) {
-		this.toolingIds = ImmutableSet.copyOf(toolingIds);
+		this.toolingIds = toolingIds;
 		return this;
 	}
 	
-	public AllCodeSystemSearchRequestBuilder setFields(final Collection<String> fields) {
-		this.fields = ImmutableList.copyOf(fields);
+	public AllCodeSystemSearchRequestBuilder setFields(final List<String> fields) {
+		this.fields = fields;
 		return this;
 	}
 	
