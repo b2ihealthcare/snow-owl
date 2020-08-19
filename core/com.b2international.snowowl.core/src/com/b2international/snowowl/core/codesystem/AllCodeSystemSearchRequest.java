@@ -32,11 +32,11 @@ final class AllCodeSystemSearchRequest implements Request<ServiceProvider, CodeS
 	private static final long serialVersionUID = 1L;
 	
 	private final Collection<String> ids;
-	private final List<String> fields;
+	private final Iterable<String> fields;
 	private final String expand;
 	private final Iterable<String> toolingIds;
 	
-	AllCodeSystemSearchRequest(final Collection<String> ids, final List<String> fields, final String expand, final Iterable<String> toolingIds) {
+	AllCodeSystemSearchRequest(final Collection<String> ids, final Iterable<String> fields, final String expand, final Iterable<String> toolingIds) {
 		this.ids = ids;
 		this.fields = fields;
 		this.expand = expand;
