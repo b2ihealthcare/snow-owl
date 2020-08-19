@@ -35,6 +35,16 @@ final class CodeSystemSearchRequest extends SearchIndexResourceRequest<Repositor
 
 	CodeSystemSearchRequest() { }
 
+	/**
+	 * @since 7.9
+	 */
+	public enum OptionKey {
+		/**
+		 * Search by the specific tooling id.
+		 */
+		TOOLING_ID;
+	}
+	
 	@Override
 	protected Class<CodeSystemEntry> getDocumentType() {
 		return CodeSystemEntry.class;
