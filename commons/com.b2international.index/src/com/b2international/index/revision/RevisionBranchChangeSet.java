@@ -52,9 +52,11 @@ public final class RevisionBranchChangeSet {
 					}
 				}
 			} else if (detail.isChange()) {
-				Class<?> revType = DocumentMapping.getClass(detail.getObject().type());
+				String changeType = detail.isComponentChange() ? detail.getComponent().type() : detail.getObject().type();
+				String changeId = detail.isComponentChange() ? detail.getComponent().id() : detail.getObject().id();
+				Class<?> revType = DocumentMapping.getClass(changeType);
 				if (Revision.class.isAssignableFrom(revType)) {
-					changedRevisionIdsByType.put((Class<? extends Revision>) revType, detail.getObject().id());
+					changedRevisionIdsByType.put((Class<? extends Revision>) revType, changeId);
 				}
 			} else if (detail.isRemove()) {
 				Class<?> revType = DocumentMapping.getClass(detail.getComponent().type());

@@ -115,7 +115,7 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 		if (id != null) {
 			CodeSystem codeSystem = getCodeSystemById(id);
 			applyResponseContentFilter(codeSystem, requestParameters);
-			String resourceUrl = String.format("%s/%s", uri, codeSystem.getId().getIdValue());
+			String resourceUrl = String.join("/", uri, codeSystem.getId().getIdValue());
 			Entry entry = new Entry(new Uri(resourceUrl), codeSystem);
 			builder.addEntry(entry);
 			total = 1;

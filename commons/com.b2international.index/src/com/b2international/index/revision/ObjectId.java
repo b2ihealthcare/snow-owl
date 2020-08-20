@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,12 +27,16 @@ import com.fasterxml.jackson.annotation.JsonValue;
  */
 public final class ObjectId {
 
+	private static final String SEPARATOR = "/";
+
 	static final String ROOT = "-1";
 	
+	private final String objectId;
 	private final String type;
 	private final String id;
 
-	private ObjectId(String type, String id) {
+	private ObjectId(String objectId, String type, String id) {
+		this.objectId = objectId;
 		this.type = type;
 		this.id = id;
 	}
@@ -68,21 +72,22 @@ public final class ObjectId {
 	@JsonValue
 	@Override
 	public String toString() {
-		return String.format("%s/%s", type, id);
+		return objectId;
 	}
 	
 	@JsonCreator
 	public static ObjectId fromString(String value) {
-		final String[] parts = value.split("/");
-		return of(parts[0], parts[1]);
+		final String[] parts = value.split(SEPARATOR);
+		return new ObjectId(value, parts[0], parts[1]);
 	}
 
 	public static ObjectId of(String type, String id) {
-		return new ObjectId(type, id);
+		return new ObjectId(String.join(SEPARATOR, type, id), type, id);
 	}
 	
 	public static ObjectId of(Class<?> type, String id) {
-		return new ObjectId(DocumentMapping.getType(type), id);
+		final String typeAsString = DocumentMapping.getType(type);
+		return new ObjectId(String.join(SEPARATOR, typeAsString, id), typeAsString, id);
 	}
 	
 	public static ObjectId rootOf(String type) {

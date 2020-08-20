@@ -108,7 +108,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 		}
 		
 		// check that the new versionId does not conflict with any other currently available branch
-		final String newVersionPath = String.format("%s%s%s", codeSystem.getBranchPath(), Branch.SEPARATOR, versionId);
+		final String newVersionPath = String.join(Branch.SEPARATOR, codeSystem.getBranchPath(), versionId);
 		final String repositoryId = codeSystem.getRepositoryId();
 		
 		// validate new path

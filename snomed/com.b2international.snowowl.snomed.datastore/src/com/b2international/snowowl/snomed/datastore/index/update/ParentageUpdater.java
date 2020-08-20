@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package com.b2international.snowowl.snomed.datastore.index.update;
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongCollections;
-import com.b2international.collections.longs.LongSet;
+import com.b2international.collections.longs.LongSortedSet;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.taxonomy.TaxonomyGraph;
@@ -38,8 +38,8 @@ public class ParentageUpdater {
 	
 	public void update(final String id, SnomedConceptDocument.Builder doc) {
 		long idLong = Long.parseLong(id);
-		LongSet parents = PrimitiveSets.newLongOpenHashSet(getParentIds(idLong));
-		LongSet ancestors = PrimitiveSets.newLongOpenHashSet(getAncestorIds(idLong));
+		LongSortedSet parents = PrimitiveSets.newLongSortedSet(getParentIds(idLong));
+		LongSortedSet ancestors = PrimitiveSets.newLongSortedSet(getAncestorIds(idLong));
 		
 		// index/add ROOT_ID if parentIds are empty
 		if (parents.isEmpty()) {

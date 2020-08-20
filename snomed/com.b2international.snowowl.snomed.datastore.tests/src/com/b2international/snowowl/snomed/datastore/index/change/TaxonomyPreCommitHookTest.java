@@ -77,8 +77,8 @@ public class TaxonomyPreCommitHookTest extends BaseConceptPreCommitHookTest {
 		final ConceptChangeProcessor processor = process();
 		
 		final SnomedConceptDocument expected = docWithDefaults(concept)
-				.statedParents(PrimitiveSets.newLongOpenHashSet(ROOT_CONCEPTL))
-				.statedAncestors(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
+				.statedParents(PrimitiveSets.newLongSortedSet(ROOT_CONCEPTL))
+				.statedAncestors(PrimitiveSets.newLongSortedSet(IComponent.ROOT_IDL))
 				.build();
 		final Revision actual = Iterables.getOnlyElement(processor.getNewMappings().values());
 		assertDocEquals(expected, actual);
@@ -105,10 +105,10 @@ public class TaxonomyPreCommitHookTest extends BaseConceptPreCommitHookTest {
 		final ConceptChangeProcessor processor = process();
 		
 		final SnomedConceptDocument expected = docWithDefaults(concept)
-				.parents(PrimitiveSets.newLongOpenHashSet(rootConceptId))
-				.ancestors(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
-				.statedParents(PrimitiveSets.newLongOpenHashSet(rootConceptId))
-				.statedAncestors(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
+				.parents(PrimitiveSets.newLongSortedSet(rootConceptId))
+				.ancestors(PrimitiveSets.newLongSortedSet(IComponent.ROOT_IDL))
+				.statedParents(PrimitiveSets.newLongSortedSet(rootConceptId))
+				.statedAncestors(PrimitiveSets.newLongSortedSet(IComponent.ROOT_IDL))
 				.build();
 		final Revision actual = Iterables.getOnlyElement(processor.getNewMappings().values());
 		assertDocEquals(expected, actual);
@@ -147,8 +147,8 @@ public class TaxonomyPreCommitHookTest extends BaseConceptPreCommitHookTest {
 		
 		final SnomedConceptDocument expected = docWithDefaults(sourceConcept)
 				.iconId(Concepts.NAMESPACE_ROOT)
-				.statedParents(PrimitiveSets.newLongOpenHashSet(concept2Id))
-				.statedAncestors(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
+				.statedParents(PrimitiveSets.newLongSortedSet(concept2Id))
+				.statedAncestors(PrimitiveSets.newLongSortedSet(IComponent.ROOT_IDL))
 				.build();
 		assertEquals(1, processor.getChangedMappings().size());
 		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values()).getNewRevision();
@@ -192,8 +192,8 @@ public class TaxonomyPreCommitHookTest extends BaseConceptPreCommitHookTest {
 			docWithDefaults(parent).build(),
 			// child concept has stated parent and ROOT ancestor
 			docWithDefaults(child)
-				.statedParents(PrimitiveSets.newLongOpenHashSet(parentIdLong))
-				.statedAncestors(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
+				.statedParents(PrimitiveSets.newLongSortedSet(parentIdLong))
+				.statedAncestors(PrimitiveSets.newLongSortedSet(IComponent.ROOT_IDL))
 				.build(),
 			// index existing stated relationships
 			childToParentIsa,
@@ -218,8 +218,8 @@ public class TaxonomyPreCommitHookTest extends BaseConceptPreCommitHookTest {
 		final Revision newChildRevision = Iterables.getOnlyElement(processor.getChangedMappings().values()).getNewRevision();
 		final SnomedConceptDocument expectedChildRevision = docWithDefaults(child)
 				.iconId(Concepts.NAMESPACE_ROOT)
-				.statedParents(PrimitiveSets.newLongOpenHashSet(namespaceRootLong))
-				.statedAncestors(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
+				.statedParents(PrimitiveSets.newLongSortedSet(namespaceRootLong))
+				.statedAncestors(PrimitiveSets.newLongSortedSet(IComponent.ROOT_IDL))
 				.build();
 		assertDocEquals(expectedChildRevision, newChildRevision);
 		
@@ -253,8 +253,8 @@ public class TaxonomyPreCommitHookTest extends BaseConceptPreCommitHookTest {
 		// the child document should be reindexed with new parent information 
 		assertEquals(1, processor.getChangedMappings().size());
 		final SnomedConceptDocument expectedDoc = docWithDefaults(child)
-				.statedParents(PrimitiveSets.newLongOpenHashSet(parentIdLong))
-				.statedAncestors(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
+				.statedParents(PrimitiveSets.newLongSortedSet(parentIdLong))
+				.statedAncestors(PrimitiveSets.newLongSortedSet(IComponent.ROOT_IDL))
 				.build();
 		final Revision changedDoc = Iterables.getOnlyElement(processor.getChangedMappings().values()).getNewRevision();
 		assertDocEquals(expectedDoc, changedDoc);
@@ -277,8 +277,8 @@ public class TaxonomyPreCommitHookTest extends BaseConceptPreCommitHookTest {
 		initRevisions(
 			docWithDefaults(parent).build(), 
 			docWithDefaults(child)
-				.statedParents(PrimitiveSets.newLongOpenHashSet(parentIdLong))
-				.statedAncestors(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
+				.statedParents(PrimitiveSets.newLongSortedSet(parentIdLong))
+				.statedAncestors(PrimitiveSets.newLongSortedSet(IComponent.ROOT_IDL))
 				.build(), 
 			statedIsa
 		);
@@ -294,10 +294,10 @@ public class TaxonomyPreCommitHookTest extends BaseConceptPreCommitHookTest {
 		
 		assertEquals(1, processor.getChangedMappings().size());
 		final SnomedConceptDocument expected = docWithDefaults(child)
-				.statedParents(PrimitiveSets.newLongOpenHashSet(parentIdLong))
-				.statedAncestors(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
-				.parents(PrimitiveSets.newLongOpenHashSet(parentIdLong))
-				.ancestors(PrimitiveSets.newLongOpenHashSet(IComponent.ROOT_IDL))
+				.statedParents(PrimitiveSets.newLongSortedSet(parentIdLong))
+				.statedAncestors(PrimitiveSets.newLongSortedSet(IComponent.ROOT_IDL))
+				.parents(PrimitiveSets.newLongSortedSet(parentIdLong))
+				.ancestors(PrimitiveSets.newLongSortedSet(IComponent.ROOT_IDL))
 				.build();
 		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values()).getNewRevision();
 		assertDocEquals(expected, actual);

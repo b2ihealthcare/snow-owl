@@ -61,11 +61,7 @@ public class ControllerExceptionMapper {
 		if (!Strings.isNullOrEmpty(message) && message.toLowerCase().contains("broken pipe")) {
 	        return null; // socket is closed, cannot return any response    
 	    } else {
-	    	if (PlatformUtil.isDevVersion()) {
-	    		LOG.error("Exception during request processing", ex);
-	    	} else {
-	    		LOG.trace("Exception during request processing", ex);
-	    	}
+    		LOG.error("Exception during request processing", ex);
 	    	return RestApiError.of(ApiError.Builder.of(GENERIC_USER_MESSAGE).build()).build(HttpStatus.INTERNAL_SERVER_ERROR.value());
 	    }
 	}

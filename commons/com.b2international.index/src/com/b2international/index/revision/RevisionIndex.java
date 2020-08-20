@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -150,7 +150,20 @@ public interface RevisionIndex extends Administrable<RevisionIndexAdmin> {
 	static String toRevisionRange(String base, String compare) {
 		checkArgument(!Strings.isNullOrEmpty(base));
 		checkArgument(!Strings.isNullOrEmpty(compare));
-		return String.format("%s%s%s", base, REV_RANGE, compare);
+		return String.join(REV_RANGE, base, compare);
+	}
+	
+	/**
+	 * Returns a branch expression String that represent the base of the given branchPath.
+	 * 
+	 * @param branchPath
+	 * @return
+	 * @see #BASE_REF_CHAR
+	 * @see #isBaseRefPath(String)
+	 */
+	static String toBaseRef(String branchPath) {
+		if (isBaseRefPath(branchPath)) return branchPath;
+		return branchPath.concat(BASE_REF_CHAR);
 	}
 	
 	/**

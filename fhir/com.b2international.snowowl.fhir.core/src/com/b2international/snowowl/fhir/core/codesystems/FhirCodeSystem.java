@@ -57,7 +57,7 @@ public interface FhirCodeSystem {
 	 * @return
 	 */
 	default Uri getUri() {
-		return new Uri(String.format("%s/%s", getCodeSystemUri(), getCodeValue()));
+		return new Uri(String.join("/", getCodeSystemUri(), getCodeValue()));
 	}
 
 	/**

@@ -313,19 +313,17 @@ public final class StagingArea {
 					RevisionDiff revisionDiff = value.getDiff();
 					final Revision rev = revisionDiff.newRevision;
 					
-					if (isMerge()) {
-						revisionsToReviseOnMergeSource.put(rev.getClass(), rev.getId());
-						writer.put(key.id(), rev);
-					}
-					
 					if (!revisionDiff.hasChanges()) {
 						return;
 					}
-
-					if (!isMerge()) {
-						writer.put(key.id(), rev);
+					
+					if (isMerge()) {
+						revisionsToReviseOnMergeSource.put(rev.getClass(), rev.getId());
 					}
 					
+					writer.put(key.id(), rev);
+					
+					// register component as changed in commit doc
 					ObjectId containerId = checkNotNull(rev.getContainerId(), "Missing containerId for revision: %s", rev);
 					ObjectId objectId = rev.getObjectId();
 					if (!containerId.isRoot()) { // XXX register only sub-components in the changed objects
@@ -333,12 +331,14 @@ public final class StagingArea {
 					}
 					
 					if (revisionDiff.diff() != null) {
+						// register actual difference between revisions to commit
 						revisionDiff.diff().forEach(node -> {
 							if (node instanceof ObjectNode) {
 								revisionsByChange.put((ObjectNode) node, objectId);
 							}
 						});
 					}
+					
 				} else {
 					writer.put(key.id(), object);
 					changedComponentsByContainer.put(ObjectId.rootOf(DocumentMapping.getType(object.getClass())), key);
@@ -520,7 +520,17 @@ public final class StagingArea {
 	}
 	
 	public StagingArea stageNew(String key, Object newDocument, boolean commit) {
-		stagedObjects.put(toObjectId(newDocument, key), added(newDocument, null, commit));
+		ObjectId objectId = toObjectId(newDocument, key);
+		if (stagedObjects.containsKey(objectId)) {
+			StagedObject currentStagedObject = stagedObjects.get(objectId);
+			if (!currentStagedObject.isCommit() && currentStagedObject.getObject() instanceof Revision && newDocument instanceof Revision) {
+				stagedObjects.put(objectId, changed(newDocument, new RevisionDiff((Revision) currentStagedObject.getObject(), (Revision) newDocument), commit));
+			} else {
+				stagedObjects.put(objectId, added(newDocument, null, commit));
+			}
+		} else {
+			stagedObjects.put(objectId, added(newDocument, null, commit));
+		}
 		return this;
 	}
 
@@ -613,7 +623,7 @@ public final class StagingArea {
 		
 		List<Conflict> conflicts = newArrayList();
 		
-		for (Class<? extends Revision> type : Iterables.concat(fromChangeSet.getAddedTypes(), toChangeSet.getAddedTypes())) {
+		for (Class<? extends Revision> type : ImmutableSet.copyOf(Iterables.concat(fromChangeSet.getAddedTypes(), toChangeSet.getAddedTypes()))) {
 			final Set<String> newRevisionIdsOnSource = fromChangeSet.getAddedIds(type);
 			final Set<String> newRevisionIdsOnTarget = toChangeSet.getAddedIds(type);
 			final Set<String> addedInSourceAndTarget = Sets.intersection(newRevisionIdsOnSource, newRevisionIdsOnTarget);
@@ -673,43 +683,46 @@ public final class StagingArea {
 			// then handle changed vs. changed with the conflict processor
 			Set<String> changedInSourceAndTargetIds = Sets.intersection(changedRevisionIdsToMerge, changedRevisionIdsToCheck);
 			if (!changedInSourceAndTargetIds.isEmpty()) {
+				final Map<String, Map<String, RevisionCompareDetail>> sourcePropertyChangesByObject = indexPropertyChangesByObject(fromChangeDetails);
+				final Map<String, Map<String, RevisionCompareDetail>> targetPropertyChangesByObject = indexPropertyChangesByObject(toChangeDetails);
 				for (String changedInSourceAndTargetId : changedInSourceAndTargetIds) {
-					Map<String, RevisionCompareDetail> sourcePropertyChanges = fromChangeDetails.stream()
-							.filter(detail -> detail.getObject().id().equals(changedInSourceAndTargetId))
-							.filter(detail -> !detail.isComponentChange())
-							.collect(Collectors.toMap(RevisionCompareDetail::getProperty, d -> d));
-					Map<String, RevisionCompareDetail> targetPropertyChanges = toChangeDetails.stream()
-							.filter(detail -> detail.getObject().id().equals(changedInSourceAndTargetId))
-							.filter(detail -> !detail.isComponentChange())
-							.collect(Collectors.toMap(RevisionCompareDetail::getProperty, d -> d));
+					// take the prop changes from both paths
+					final Map<String, RevisionCompareDetail> sourcePropertyChanges = sourcePropertyChangesByObject.remove(changedInSourceAndTargetId);
+					final Map<String, RevisionCompareDetail> targetPropertyChanges = targetPropertyChangesByObject.remove(changedInSourceAndTargetId);
 					
-					for (Entry<String, RevisionCompareDetail> sourceChange : Iterables.consumingIterable(sourcePropertyChanges.entrySet())) {
-						final RevisionPropertyDiff sourceChangeDiff = new RevisionPropertyDiff(sourceChange.getValue().getProperty(), sourceChange.getValue().getFromValue(), sourceChange.getValue().getValue());
-						final RevisionCompareDetail targetPropertyChange = targetPropertyChanges.remove(sourceChange.getKey());
-						if (targetPropertyChange == null) {
-							// this property did not change in target, just apply directly on the target object via
-							if (!propertyUpdatesToApply.containsKey(type)) {
-								propertyUpdatesToApply.put(type, HashMultimap.create());
-							}
-							propertyUpdatesToApply.get(type).put(changedInSourceAndTargetId, sourceChangeDiff);
-							fromChangeSet.removeChanged(type, changedInSourceAndTargetId);
-						} else {
-							RevisionPropertyDiff targetChangeDiff = new RevisionPropertyDiff(targetPropertyChange.getProperty(), targetPropertyChange.getFromValue(), targetPropertyChange.getValue());
-							// changed on both sides, ask conflict processor to resolve the issue or raise conflict error
-							RevisionPropertyDiff resolution = conflictProcessor.handleChangedInSourceAndTarget(
-								changedInSourceAndTargetId, 
-								sourceChangeDiff,
-								targetChangeDiff
-							);
-							if (resolution == null) {
-								conflicts.add(new ChangedInSourceAndTargetConflict(sourceChange.getValue().getObject(), sourceChangeDiff.convert(conflictProcessor), targetChangeDiff.convert(conflictProcessor)));
-							} else {
+					if (sourcePropertyChanges != null) {
+						for (Entry<String, RevisionCompareDetail> sourceChange : sourcePropertyChanges.entrySet()) {
+							final String changedProperty = sourceChange.getKey();
+							final RevisionCompareDetail sourcePropertyChange = sourceChange.getValue();
+							
+							final RevisionPropertyDiff sourceChangeDiff = new RevisionPropertyDiff(changedProperty, sourcePropertyChange.getFromValue(), sourcePropertyChange.getValue());
+							final RevisionCompareDetail targetPropertyChange = targetPropertyChanges.get(changedProperty);
+							
+							if (targetPropertyChange == null) {
+								// this property did not change in target, just apply directly on the target object via
 								if (!propertyUpdatesToApply.containsKey(type)) {
 									propertyUpdatesToApply.put(type, HashMultimap.create());
 								}
-								propertyUpdatesToApply.get(type).put(changedInSourceAndTargetId, resolution);
+								propertyUpdatesToApply.get(type).put(changedInSourceAndTargetId, sourceChangeDiff);
+								fromChangeSet.removeChanged(type, changedInSourceAndTargetId);
+							} else {
+								RevisionPropertyDiff targetChangeDiff = new RevisionPropertyDiff(targetPropertyChange.getProperty(), targetPropertyChange.getFromValue(), targetPropertyChange.getValue());
+								// changed on both sides, ask conflict processor to resolve the issue or raise conflict error
+								RevisionPropertyDiff resolution = conflictProcessor.handleChangedInSourceAndTarget(
+										changedInSourceAndTargetId, 
+										sourceChangeDiff,
+										targetChangeDiff
+										);
+								if (resolution == null) {
+									conflicts.add(new ChangedInSourceAndTargetConflict(sourcePropertyChange.getObject(), sourceChangeDiff.convert(conflictProcessor), targetChangeDiff.convert(conflictProcessor)));
+								} else {
+									if (!propertyUpdatesToApply.containsKey(type)) {
+										propertyUpdatesToApply.put(type, HashMultimap.create());
+									}
+									propertyUpdatesToApply.get(type).put(changedInSourceAndTargetId, resolution);
+								}
+								fromChangeSet.removeChanged(type, changedInSourceAndTargetId);
 							}
-							fromChangeSet.removeChanged(type, changedInSourceAndTargetId);
 						}
 					}
 				}
@@ -741,7 +754,17 @@ public final class StagingArea {
 		// apply new objects
 		for (Class<? extends Revision> type : fromChangeSet.getAddedTypes()) {
 			final Collection<String> newRevisionIds = fromChangeSet.getAddedIds(type);
-			index.read(fromRef, searcher -> searcher.get(type, newRevisionIds)).forEach(rev -> stageNew(rev, squash));
+			final Iterable<? extends Revision> oldRevisions = index.read(toRef, searcher -> searcher.get(type, newRevisionIds));
+			final Iterable<? extends Revision> newRevisions = index.read(fromRef, searcher -> searcher.get(type, newRevisionIds));
+			final Map<String, ? extends Revision> oldRevisionsById = FluentIterable.from(oldRevisions).uniqueIndex(Revision::getId);
+			
+			newRevisions.forEach(rev -> {
+				if (oldRevisionsById.containsKey(rev.getId())) {
+					stageChange(oldRevisionsById.get(rev.getId()), rev, squash);
+				} else {
+					stageNew(rev, squash);
+				}
+			});
 		}
 		
 		// apply changed objects
@@ -768,6 +791,20 @@ public final class StagingArea {
 		}
 	}
 	
+	private Map<String, Map<String, RevisionCompareDetail>> indexPropertyChangesByObject(List<RevisionCompareDetail> changeDetails) {
+		final Map<String, Map<String, RevisionCompareDetail>> propertyChangesByObject = newHashMap();
+		for (RevisionCompareDetail changeDetail : changeDetails) {
+			if (changeDetail.isPropertyChange()) {
+				final String changedObjectId = changeDetail.getObject().id();
+				if (!propertyChangesByObject.containsKey(changedObjectId)) {
+					propertyChangesByObject.put(changedObjectId, newHashMap());
+				}
+				propertyChangesByObject.get(changedObjectId).put(changeDetail.getProperty(), changeDetail);
+			}
+		}
+		return propertyChangesByObject;
+	}
+
 	public final class RevisionDiff {
 		
 		public final Revision oldRevision;
@@ -886,7 +923,7 @@ public final class StagingArea {
 		}
 
 		public String toValueChangeString() {
-			return String.format("%s -> %s", getOldValue(), getNewValue());
+			return String.join(" -> ", getOldValue(), getNewValue());
 		}
 		
 		public RevisionPropertyDiff convert(RevisionConflictProcessor processor) {
