@@ -8,7 +8,7 @@ git push -u origin myUpdateBranch
 git remote add b2i git@github.com:b2ihealthcare/snow-owl.git
 
 # rebase our branch against it
-git pull b2i 7.x
+git pull b2i v7.8.4
 
 # resolve conflicts using the checklist https://github.com/babylonhealth/snow-owl/blob/7.x/B2iUpdates.md
 git push 
