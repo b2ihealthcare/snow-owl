@@ -881,5 +881,42 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		
 		getComponent(b, SnomedComponentType.CONCEPT, conceptB, "relationships()").statusCode(200).extract().as(SnomedConcept.class);
 	}
+	
+	@Test
+	public void rebaseDivergedThenMerge() throws Exception {
+		final IBranchPath task1 = BranchPathUtils.createPath(branchPath, "task1");
+		branching.createBranch(task1).statusCode(201);
+		
+		final IBranchPath task2 = BranchPathUtils.createPath(branchPath, "task2");
+		branching.createBranch(task2).statusCode(201);
+		
+		final String task1Concept = createNewConcept(task1);
+		final String task2Concept = createNewConcept(task2);
+		final String parentConcept = createNewConcept(branchPath);
 
+		// Synchronization makes parentConcept visible on task 2
+		getComponent(task2, SnomedComponentType.CONCEPT, parentConcept).statusCode(404);
+		merge(branchPath, task2, "Synchronize task 2").body("status", equalTo(Merge.Status.COMPLETED.name()));
+		getComponent(task2, SnomedComponentType.CONCEPT, parentConcept).statusCode(200);
+
+		// Synchronization makes parentConcept visible on task 1
+		getComponent(task1, SnomedComponentType.CONCEPT, parentConcept).statusCode(404);
+		merge(branchPath, task1, "Synchronize task 1").body("status", equalTo(Merge.Status.COMPLETED.name()));
+		getComponent(task1, SnomedComponentType.CONCEPT, parentConcept).statusCode(200);
+
+		// Promotion makes task2Concept visible on parent branch
+		getComponent(branchPath, SnomedComponentType.CONCEPT, task2Concept).statusCode(404);
+		merge(task2, branchPath, "Promote task 2").body("status", equalTo(Merge.Status.COMPLETED.name()));
+		getComponent(branchPath, SnomedComponentType.CONCEPT, task2Concept).statusCode(200);
+
+		// Synchronization makes task2Concept (that was just promoted to the parent branch) visible on task 1
+		getComponent(task1, SnomedComponentType.CONCEPT, task2Concept).statusCode(404);
+		merge(branchPath, task1, "Synchronize task 1 after promoting task 2").body("status", equalTo(Merge.Status.COMPLETED.name()));
+		getComponent(task1, SnomedComponentType.CONCEPT, task2Concept).statusCode(200);
+		
+		// Promotion makes task1Concept visible on parent branch
+		getComponent(branchPath, SnomedComponentType.CONCEPT, task1Concept).statusCode(404);
+		merge(task1, branchPath, "Promote task 1").body("status", equalTo(Merge.Status.COMPLETED.name()));
+		getComponent(branchPath, SnomedComponentType.CONCEPT, task1Concept).statusCode(200);
+	}
 }

@@ -109,7 +109,7 @@ public class AggregationsTest extends BaseIndexTest {
 		);
 		
 		assertThat(buckets.getBuckets()).hasSize(1);
-		assertThat(buckets.getBucket(String.format("%s_%s", "field1", "field2"))).containsOnly(dup1, dup2);
+		assertThat(buckets.getBucket(String.join("_", "field1", "field2"))).containsOnly(dup1, dup2);
 	}
 	
 }

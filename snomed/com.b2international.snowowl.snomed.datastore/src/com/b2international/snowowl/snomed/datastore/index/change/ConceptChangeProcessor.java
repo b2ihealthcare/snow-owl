@@ -59,6 +59,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Ordering;
+import com.google.common.collect.Streams;
 
 /**
  * @since 4.3
@@ -112,28 +113,7 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		// collect member changes
 		this.referringRefSets = HashMultimap.create(memberChangeProcessor.process(staging, searcher));
 
-		final Multimap<String, SnomedDescriptionFragment> newDescriptionFragmentsByConcept = HashMultimap.create();
-		
-		staging.getNewObjects(SnomedDescriptionIndexEntry.class)
-			.filter(SnomedDescriptionIndexEntry::isActive)
-			.filter(description -> !Concepts.TEXT_DEFINITION.equals(description.getTypeId()))
-			.filter(description -> !getPreferredLanguageMembers(description).isEmpty())
-			.forEach(description -> newDescriptionFragmentsByConcept.put(description.getConceptId(), toDescriptionFragment(description)));
-		
-		// index new concepts
-		staging.getNewObjects(SnomedConceptDocument.class).forEach(concept -> {
-			final String id = concept.getId();
-			final Builder doc = SnomedConceptDocument.builder().id(id);
-			
-			// in case of a new concept, all of its descriptions should be part of the staging area as well
-			final List<SnomedDescriptionFragment> preferredDescriptions = newDescriptionFragmentsByConcept.removeAll(id)
-					.stream()
-					.sorted(DESCRIPTION_FRAGMENT_ORDER)
-					.collect(Collectors.toList());
-			
-			update(doc, preferredDescriptions, concept, null);
-			stageNew(doc.build());
-		});
+		processNewConcepts(staging);
 		
 		// collect dirty concepts that require additional properties to be set for index
 		final Map<String, RevisionDiff> dirtyConceptDiffsById = Maps.uniqueIndex(staging.getChangedRevisions(SnomedConceptDocument.class).collect(Collectors.toList()), diff -> diff.newRevision.getId());
@@ -211,6 +191,32 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 				stageChange(currentDoc, doc.build());
 			}
 		}
+	}
+
+	private void processNewConcepts(StagingArea staging) {
+		final Multimap<String, SnomedDescriptionFragment> newDescriptionFragmentsByConcept = HashMultimap.create();
+		
+		// changed descriptions are coming from potential merges/rebases
+		Streams.concat(staging.getNewObjects(SnomedDescriptionIndexEntry.class), staging.getChangedObjects(SnomedDescriptionIndexEntry.class))
+			.filter(SnomedDescriptionIndexEntry::isActive)
+			.filter(description -> !Concepts.TEXT_DEFINITION.equals(description.getTypeId()))
+			.filter(description -> !getPreferredLanguageMembers(description).isEmpty())
+			.forEach(description -> newDescriptionFragmentsByConcept.put(description.getConceptId(), toDescriptionFragment(description)));
+		
+		// index new concepts
+		staging.getNewObjects(SnomedConceptDocument.class).forEach(concept -> {
+			final String id = concept.getId();
+			final Builder doc = SnomedConceptDocument.builder().id(id);
+			
+			// in case of a new concept, all of its descriptions should be part of the staging area as well
+			final List<SnomedDescriptionFragment> preferredDescriptions = newDescriptionFragmentsByConcept.removeAll(id)
+					.stream()
+					.sorted(DESCRIPTION_FRAGMENT_ORDER)
+					.collect(Collectors.toList());
+			
+			update(doc, preferredDescriptions, concept, null);
+			stageNew(doc.build());
+		});
 	}
 	
 	private Map<String, SnomedDescriptionIndexEntry> getDescriptionDocuments(StagingArea staging, RevisionSearcher searcher) throws IOException {

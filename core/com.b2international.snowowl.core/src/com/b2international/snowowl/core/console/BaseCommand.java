@@ -26,18 +26,13 @@ import com.b2international.snowowl.eventbus.IEventBus;
 public abstract class BaseCommand {
 	
 	private ServiceProvider context;
-	private IEventBus bus;
 	
 	void setContext(ServiceProvider context) {
 		this.context = context;
 	}
 	
-	void setBus(IEventBus bus) {
-		this.bus = bus;
-	}
-
 	protected final IEventBus getBus() {
-		return bus;
+		return context.service(IEventBus.class);
 	}
 	
 	protected final ServiceProvider getContext() {

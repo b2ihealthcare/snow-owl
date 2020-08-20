@@ -257,7 +257,7 @@ public final class RevisionBranch extends MetadataHolderImpl {
     	this.id = id;
 		this.parentPath = parentPath;
 		this.name = name;
-		this.path = CompareUtils.isEmpty(parentPath) ? name : String.format("%s%s%s", parentPath, SEPARATOR, name);
+		this.path = CompareUtils.isEmpty(parentPath) ? name : String.join(SEPARATOR, parentPath, name);
 		this.deleted = deleted;
 		this.segments = ImmutableSortedSet.copyOf(segments);
 		this.mergeSources = Collections3.toImmutableList(mergeSources);

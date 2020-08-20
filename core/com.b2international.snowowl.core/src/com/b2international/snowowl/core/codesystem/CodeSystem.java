@@ -429,7 +429,7 @@ public class CodeSystem implements Serializable {
 	 */
 	@JsonIgnore
 	public String getRelativeBranchPath(String relativeTo) {
-		return String.format("%s%s%s", branchPath, Branch.SEPARATOR, relativeTo);
+		return String.join(Branch.SEPARATOR, branchPath, relativeTo);
 	}
 	
 	/**

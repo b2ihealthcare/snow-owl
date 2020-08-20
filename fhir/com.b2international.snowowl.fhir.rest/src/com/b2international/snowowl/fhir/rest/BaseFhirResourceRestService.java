@@ -124,7 +124,7 @@ public abstract class BaseFhirResourceRestService<R extends FhirResource> extend
 		
 		for (FhirResource fhirResource : filteredResources) {
 			applyResponseContentFilter(fhirResource, parameters);
-			String resourceUrl = String.format("%s/%s", uri, fhirResource.getId().getIdValue());
+			String resourceUrl = String.join("/", uri, fhirResource.getId().getIdValue());
 			Entry entry = new Entry(new Uri(resourceUrl), fhirResource);
 			builder.addEntry(entry);
 			total++;

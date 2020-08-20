@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 /**
  * @since 4.7
  */
-public class SnomedConceptIndexEntrySerializationTest extends BaseRevisionIndexTest {
+public class SnomedConceptDocumentSerializationTest extends BaseRevisionIndexTest {
 
 	@Override
 	protected void configureMapper(ObjectMapper mapper) {
@@ -58,10 +58,10 @@ public class SnomedConceptIndexEntrySerializationTest extends BaseRevisionIndexT
 				.moduleId(Concepts.MODULE_ROOT)
 				.exhaustive(true)
 				.primitive(true)
-				.parents(PrimitiveSets.newLongOpenHashSet(-1L))
-				.ancestors(PrimitiveSets.newLongOpenHashSet(-1L))
-				.statedAncestors(PrimitiveSets.newLongOpenHashSet(-1L))
-				.statedParents(PrimitiveSets.newLongOpenHashSet(-1L))
+				.parents(PrimitiveSets.newLongSortedSet(-1L))
+				.ancestors(PrimitiveSets.newLongSortedSet(-1L))
+				.statedAncestors(PrimitiveSets.newLongSortedSet(-1L))
+				.statedParents(PrimitiveSets.newLongSortedSet(-1L))
 				.build();
 		
 		indexRevision(RevisionBranch.MAIN_PATH, concept);
@@ -81,10 +81,10 @@ public class SnomedConceptIndexEntrySerializationTest extends BaseRevisionIndexT
 				.moduleId(Concepts.MODULE_ROOT)
 				.exhaustive(true)
 				.primitive(true)
-				.parents(PrimitiveSets.newLongOpenHashSet(-1L))
-				.ancestors(PrimitiveSets.newLongOpenHashSet(-1L))
-				.statedAncestors(PrimitiveSets.newLongOpenHashSet(-1L))
-				.statedParents(PrimitiveSets.newLongOpenHashSet(-1L))
+				.parents(PrimitiveSets.newLongSortedSet(-1L))
+				.ancestors(PrimitiveSets.newLongSortedSet(-1L))
+				.statedAncestors(PrimitiveSets.newLongSortedSet(-1L))
+				.statedParents(PrimitiveSets.newLongSortedSet(-1L))
 				.refSetType(SnomedRefSetType.ASSOCIATION)
 				.referencedComponentType(SnomedTerminologyComponentConstants.CONCEPT_NUMBER)
 				.mapTargetComponentType(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER)

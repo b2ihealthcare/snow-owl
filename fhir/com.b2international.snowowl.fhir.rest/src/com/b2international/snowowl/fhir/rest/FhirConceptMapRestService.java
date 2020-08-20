@@ -99,7 +99,7 @@ public class FhirConceptMapRestService extends BaseFhirResourceRestService<Conce
 			for (ConceptMap conceptMap : conceptMaps) {
 				applyResponseContentFilter(conceptMap, requestParameters);
 				
-				String resourceUrl = String.format("%s/%s", uri, conceptMap.getId().getIdValue());
+				String resourceUrl = String.join("/", uri, conceptMap.getId().getIdValue());
 				
 				Entry entry = new Entry(new Uri(resourceUrl), conceptMap);
 				builder.addEntry(entry);

@@ -29,6 +29,7 @@ import com.b2international.collections.ints.IntIterator;
 import com.b2international.collections.ints.IntSet;
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongSet;
+import com.b2international.collections.longs.LongSortedSet;
 import com.google.common.hash.HashFunction;
 
 /**
@@ -46,6 +47,8 @@ public abstract class PrimitiveSets {
 	}
 	
 	private static final LongSet EMPTY_SET = PrimitiveSets.newLongOpenHashSetWithExpectedSize(0);
+	private static final LongSortedSet EMPTY_SORTED_SET = PrimitiveSets.newLongSortedSet();
+	
 	private PrimitiveSets() {}
 
 	public static ByteSet newByteOpenHashSet() {
@@ -141,9 +144,29 @@ public abstract class PrimitiveSets {
 			return FACTORY.newLongOpenHashSet(source);
 		}
 	}
+	
+	public static LongSortedSet newLongSortedSet(long... source) {
+		if (source == null) {
+			return newLongSortedSet();
+		} else {
+			return FACTORY.newLongSortedSet(source);
+		}
+	}
+	
+	public static LongSortedSet newLongSortedSet(LongCollection source) {
+		if (source == null) {
+			return newLongSortedSet();
+		} else {
+			return FACTORY.newLongSortedSet(source);
+		}
+	}
 
 	public static LongSet emptyLongSet() {
 		return EMPTY_SET;
+	}
+	
+	public static LongSortedSet emptyLongSortedSet() {
+		return EMPTY_SORTED_SET;
 	}
 	
 	/**

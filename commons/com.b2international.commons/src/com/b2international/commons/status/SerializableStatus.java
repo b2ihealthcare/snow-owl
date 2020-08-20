@@ -231,7 +231,7 @@ public class SerializableStatus implements IStatus, Serializable {
 			oos = new ObjectOutputStream(new ByteArrayOutputStream());
 			oos.writeObject(exception2);
 		} catch (IOException e) {
-			LOG.warn(String.format("Exception %s could not be serialized for SerializableStatus", exception2), e); //$NON-NLS-1$
+			LOG.warn("Exception {} could not be serialized for SerializableStatus", exception2, e); //$NON-NLS-1$
 			// In this case, we'll create a new exception that can be serialized
 			return createNewExceptionFor(exception2);
 		} finally {

@@ -107,7 +107,7 @@ final class FileIdentityProvider implements IdentityProvider, IdentityWriter {
 	
 	@Override
 	public String getInfo() {
-		return String.format("%s@%s", TYPE, usersFile);
+		return String.join("@", TYPE, usersFile.toString());
 	}
 	
 	private FileUser getFileUser(String username) {

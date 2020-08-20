@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import com.b2international.collections.longs.LongCollection;
 import com.b2international.collections.longs.LongDeque;
 import com.b2international.collections.longs.LongList;
 import com.b2international.collections.longs.LongSet;
+import com.b2international.collections.longs.LongSortedSet;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.JsonToken;
@@ -66,7 +67,9 @@ class CollectionDeserializers
             	return new IntListDeserializer(type, config);
             }
         } else if (LongCollection.class.isAssignableFrom(raw)) {
-        	if (LongSet.class.isAssignableFrom(raw)) {
+        	if (LongSortedSet.class.isAssignableFrom(raw)) {
+        		return new LongSortedSetDeserializer(type, config);
+        	} else if (LongSet.class.isAssignableFrom(raw)) {
                 return new LongSetDeserializer(type, config);
             } else if (LongDeque.class.isAssignableFrom(raw)) {
                 return new LongDequeDeserializer(type, config);
@@ -261,6 +264,27 @@ class CollectionDeserializers
         protected IntList newInstance() throws InstantiationException, IllegalAccessException, InvocationTargetException {
         	return PrimitiveLists.newIntArrayList();
         }
+    }
+    
+    static class LongSortedSetDeserializer extends LongCollectionDeserializerBase<LongSortedSet>
+    {
+        private static final long serialVersionUID = 1L;
+
+        public LongSortedSetDeserializer(JavaType type, DeserializationConfig config)
+        {
+            super(type, config);
+        }
+
+        @Override
+        protected void add(LongSortedSet container, long value) {
+            container.add(value);
+        }
+        
+        @Override
+        protected LongSortedSet newInstance() throws InstantiationException, IllegalAccessException, InvocationTargetException {
+        	return PrimitiveSets.newLongSortedSet();
+        }
+        
     }
     
     static class LongSetDeserializer extends LongCollectionDeserializerBase<LongSet>

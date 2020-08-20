@@ -100,7 +100,7 @@ final class LdapIdentityProvider implements IdentityProvider {
 	
 	@Override
 	public String getInfo() {
-		return String.format("%s@%s", TYPE, conf.getUri());
+		return String.join("@", TYPE, conf.getUri());
 	}
 	
 	@Override
