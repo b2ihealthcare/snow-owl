@@ -16,7 +16,6 @@
 package com.b2international.index.revision;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
 
 import java.util.Collection;
 
@@ -163,20 +162,6 @@ public class RevisionCompareTest extends BaseRevisionIndexTest {
 	}
 	
 	@Test
-	public void compareBranchWithRevertedChanges() throws Exception {
-		RevisionData rev1 = new RevisionData(STORAGE_KEY1, "field1", "field2");
-		indexRevision(MAIN, rev1);
-		final String branch = createBranch(MAIN, "a");
-		// change storageKey1 component then revert the change
-		RevisionData changed = new RevisionData(STORAGE_KEY1, "field1", "field2Changed");
-		indexChange(branch, rev1, changed);
-		indexChange(branch, changed, rev1); // this actually reverts the prev. change, via a new revision
-
-		final RevisionCompare compare = index().compare(MAIN, branch);
-		assertThat(compare.getDetails()).isEmpty();
-	}
-	
-	@Test
 	public void compareBranchWithNewAndChanged() throws Exception {
 		final String branch = createBranch(MAIN, "a");
 		// new revision
@@ -191,6 +176,48 @@ public class RevisionCompareTest extends BaseRevisionIndexTest {
 		assertThat(compare.getTotalAdded()).isEqualTo(1);
 		assertThat(compare.getTotalChanged()).isEqualTo(0);
 		assertThat(compare.getTotalRemoved()).isEqualTo(0);
+	}
+	
+	@Test
+	public void compareBranchWithRevertedChanges() throws Exception {
+		RevisionData rev1 = new RevisionData(STORAGE_KEY1, "field1", "field2");
+		indexRevision(MAIN, rev1);
+		final String branch = createBranch(MAIN, "a");
+		// change storageKey1 component then revert the change
+		RevisionData changed = new RevisionData(STORAGE_KEY1, "field1", "field2Changed");
+		indexChange(branch, rev1, changed);
+		indexChange(branch, changed, rev1); // this actually reverts the prev. change, via a new revision
+
+		final RevisionCompare compare = index().compare(MAIN, branch);
+		assertThat(compare.getDetails()).isEmpty();
+	}
+	
+	@Test
+	public void compareBranchWithNewThenDeleted() throws Exception {
+		final String branch = createBranch(MAIN, "a");
+		indexRevision(branch, new RevisionData(STORAGE_KEY1, "field1", "field2"));
+		deleteRevision(branch, RevisionData.class, STORAGE_KEY1);
+		
+		final RevisionCompare compare = index().compare(MAIN, branch);
+		assertThat(compare.getDetails()).isEmpty();
+	}
+	
+	@Test
+	public void compareBranchWithChangedThenDeleted() throws Exception {
+		final RevisionData rev = new RevisionData(STORAGE_KEY1, "field1", "field2");
+		indexRevision(MAIN, rev);
+		
+		final String branch = createBranch(MAIN, "a");
+		RevisionData changed = new RevisionData(STORAGE_KEY1, "field1", "field2Changed");
+		indexChange(branch, rev, changed);
+		
+		deleteRevision(branch, RevisionData.class, STORAGE_KEY1);
+		
+		final RevisionCompare compare = index().compare(MAIN, branch);
+		assertThat(compare.getDetails()).hasSize(1);
+		assertThat(compare.getTotalAdded()).isEqualTo(0);
+		assertThat(compare.getTotalChanged()).isEqualTo(0);
+		assertThat(compare.getTotalRemoved()).isEqualTo(1);
 	}
 	
 }

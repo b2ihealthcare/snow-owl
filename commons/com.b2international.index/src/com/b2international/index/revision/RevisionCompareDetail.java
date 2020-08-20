@@ -27,7 +27,7 @@ import com.google.common.base.Strings;
  */
 public final class RevisionCompareDetail {
 
-	private static final String PROPERTY_CHANGE_KEY_SEPARATOR = "_";
+	static final String PROPERTY_CHANGE_KEY_SEPARATOR = "#";
 	
 	// commit details
 	private final String author;
