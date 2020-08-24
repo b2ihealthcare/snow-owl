@@ -27,7 +27,7 @@
 	<classpathentry exported="true" kind="lib" path="lib/elasticsearch-x-content-7.9.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/hppc-0.8.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/hppcrt-0.7.5.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/jna-4.5.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jna-5.5.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/joda-time-2.10.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jopt-simple-5.0.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/lang-mustache-client-7.9.0.jar"/>
