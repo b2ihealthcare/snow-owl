@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ import java.util.Collection;
 import org.junit.Test;
 
 import com.b2international.index.mapping.DocumentMapping;
+import com.b2international.index.revision.RevisionFixtures.ComponentRevisionData;
+import com.b2international.index.revision.RevisionFixtures.ContainerRevisionData;
 import com.b2international.index.revision.RevisionFixtures.RevisionData;
 import com.google.common.collect.ImmutableSet;
 
@@ -35,7 +37,7 @@ public class RevisionCompareTest extends BaseRevisionIndexTest {
 	
 	@Override
 	protected Collection<Class<?>> getTypes() {
-		return ImmutableSet.<Class<?>>of(RevisionData.class);
+		return ImmutableSet.<Class<?>>of(RevisionData.class, ContainerRevisionData.class, ComponentRevisionData.class);
 	}
 	
 	@Test
@@ -218,6 +220,26 @@ public class RevisionCompareTest extends BaseRevisionIndexTest {
 		assertThat(compare.getTotalAdded()).isEqualTo(0);
 		assertThat(compare.getTotalChanged()).isEqualTo(0);
 		assertThat(compare.getTotalRemoved()).isEqualTo(1);
+	}
+	
+	@Test
+	public void compareBranchWithChangedRootAndChildThenDeletedRootObject() throws Exception {
+		final ContainerRevisionData container = new ContainerRevisionData(STORAGE_KEY1);
+		final ComponentRevisionData component = new ComponentRevisionData(STORAGE_KEY2, STORAGE_KEY1, "value");
+		indexRevision(MAIN, container, component);
+		
+		final String branch = createBranch(MAIN, "a");
+		final ComponentRevisionData componentChanged = new ComponentRevisionData(STORAGE_KEY2, STORAGE_KEY1, "valueChanged");
+		indexChange(branch, component, componentChanged);
+		
+		deleteRevision(branch, ComponentRevisionData.class, STORAGE_KEY2);
+		deleteRevision(branch, ContainerRevisionData.class, STORAGE_KEY1);
+		
+		final RevisionCompare compare = index().compare(MAIN, branch);
+		assertThat(compare.getDetails()).hasSize(2);
+		assertThat(compare.getTotalAdded()).isEqualTo(0);
+		assertThat(compare.getTotalChanged()).isEqualTo(0);
+		assertThat(compare.getTotalRemoved()).isEqualTo(2);
 	}
 	
 }

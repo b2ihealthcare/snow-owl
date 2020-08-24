@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -110,7 +110,7 @@ public class RevisionFixtures {
 	}
 	
 	@Doc
-	public static class AnalyzedData extends Revision {
+	public static final class AnalyzedData extends Revision {
 		
 		@Text
 		private final String field;
@@ -146,7 +146,7 @@ public class RevisionFixtures {
 	@Doc
 	@Script(name="doi", script="return doc.doi.value")
 	@Script(name="doiFactor", script="return doc.doi.value * params.factor")
-	public static class ScoredData extends RevisionData implements WithScore {
+	public static final class ScoredData extends RevisionData implements WithScore {
 		
 		private float score = 0.0f;
 		private final float doi;
@@ -185,7 +185,7 @@ public class RevisionFixtures {
 	}
 	
 	@Doc
-	public static class BooleanData extends RevisionData {
+	public static final class BooleanData extends RevisionData {
 
 		private final boolean active;
 
@@ -206,7 +206,7 @@ public class RevisionFixtures {
 	}
 	
 	@Doc
-	public static class RangeData extends RevisionData {
+	public static final class RangeData extends RevisionData {
 		
 		private final int from;
 		private final int to;
@@ -234,7 +234,7 @@ public class RevisionFixtures {
 	}
 	
 	@Doc
-	public static class NestedRevisionData extends Revision {
+	public static final class NestedRevisionData extends Revision {
 		
 		private String field1;
 		// using unversioned data not the revision based one here
@@ -267,7 +267,7 @@ public class RevisionFixtures {
 	}
 	
 	@Doc
-	public static class DeeplyNestedData extends Revision {
+	public static final class DeeplyNestedData extends Revision {
 		
 		private com.b2international.index.Fixtures.ParentData parentData;
 		
@@ -291,6 +291,44 @@ public class RevisionFixtures {
 			if (getClass() != obj.getClass()) return false;
 			DeeplyNestedData other = (DeeplyNestedData) obj;
 			return Objects.equals(parentData, other.parentData); 
+		}
+		
+	}
+	
+	@Doc
+	public static final class ContainerRevisionData extends Revision {
+
+		@JsonCreator
+		public ContainerRevisionData(@JsonProperty("id") String id) {
+			super(id);
+		}
+		
+	}
+	
+	@Doc
+	public static final class ComponentRevisionData extends Revision {
+
+		private final String container;
+		private final String property;
+
+		@JsonCreator
+		public ComponentRevisionData(@JsonProperty("id") String id, @JsonProperty("container") String container, @JsonProperty("property") String property) {
+			super(id);
+			this.container = container;
+			this.property = property;
+		}
+		
+		@Override
+		protected ObjectId getContainerId() {
+			return ObjectId.of(ContainerRevisionData.class, container);
+		}
+		
+		public String getContainer() {
+			return container;
+		}
+		
+		public String getProperty() {
+			return property;
 		}
 		
 	}
