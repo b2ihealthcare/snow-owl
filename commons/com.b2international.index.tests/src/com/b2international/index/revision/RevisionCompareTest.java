@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,14 @@
 package com.b2international.index.revision;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
 
 import java.util.Collection;
 
 import org.junit.Test;
 
 import com.b2international.index.mapping.DocumentMapping;
+import com.b2international.index.revision.RevisionFixtures.ComponentRevisionData;
+import com.b2international.index.revision.RevisionFixtures.ContainerRevisionData;
 import com.b2international.index.revision.RevisionFixtures.RevisionData;
 import com.google.common.collect.ImmutableSet;
 
@@ -36,7 +37,7 @@ public class RevisionCompareTest extends BaseRevisionIndexTest {
 	
 	@Override
 	protected Collection<Class<?>> getTypes() {
-		return ImmutableSet.<Class<?>>of(RevisionData.class);
+		return ImmutableSet.<Class<?>>of(RevisionData.class, ContainerRevisionData.class, ComponentRevisionData.class);
 	}
 	
 	@Test
@@ -163,20 +164,6 @@ public class RevisionCompareTest extends BaseRevisionIndexTest {
 	}
 	
 	@Test
-	public void compareBranchWithRevertedChanges() throws Exception {
-		RevisionData rev1 = new RevisionData(STORAGE_KEY1, "field1", "field2");
-		indexRevision(MAIN, rev1);
-		final String branch = createBranch(MAIN, "a");
-		// change storageKey1 component then revert the change
-		RevisionData changed = new RevisionData(STORAGE_KEY1, "field1", "field2Changed");
-		indexChange(branch, rev1, changed);
-		indexChange(branch, changed, rev1); // this actually reverts the prev. change, via a new revision
-
-		final RevisionCompare compare = index().compare(MAIN, branch);
-		assertThat(compare.getDetails()).isEmpty();
-	}
-	
-	@Test
 	public void compareBranchWithNewAndChanged() throws Exception {
 		final String branch = createBranch(MAIN, "a");
 		// new revision
@@ -191,6 +178,68 @@ public class RevisionCompareTest extends BaseRevisionIndexTest {
 		assertThat(compare.getTotalAdded()).isEqualTo(1);
 		assertThat(compare.getTotalChanged()).isEqualTo(0);
 		assertThat(compare.getTotalRemoved()).isEqualTo(0);
+	}
+	
+	@Test
+	public void compareBranchWithRevertedChanges() throws Exception {
+		RevisionData rev1 = new RevisionData(STORAGE_KEY1, "field1", "field2");
+		indexRevision(MAIN, rev1);
+		final String branch = createBranch(MAIN, "a");
+		// change storageKey1 component then revert the change
+		RevisionData changed = new RevisionData(STORAGE_KEY1, "field1", "field2Changed");
+		indexChange(branch, rev1, changed);
+		indexChange(branch, changed, rev1); // this actually reverts the prev. change, via a new revision
+
+		final RevisionCompare compare = index().compare(MAIN, branch);
+		assertThat(compare.getDetails()).isEmpty();
+	}
+	
+	@Test
+	public void compareBranchWithNewThenDeleted() throws Exception {
+		final String branch = createBranch(MAIN, "a");
+		indexRevision(branch, new RevisionData(STORAGE_KEY1, "field1", "field2"));
+		deleteRevision(branch, RevisionData.class, STORAGE_KEY1);
+		
+		final RevisionCompare compare = index().compare(MAIN, branch);
+		assertThat(compare.getDetails()).isEmpty();
+	}
+	
+	@Test
+	public void compareBranchWithChangedThenDeleted() throws Exception {
+		final RevisionData rev = new RevisionData(STORAGE_KEY1, "field1", "field2");
+		indexRevision(MAIN, rev);
+		
+		final String branch = createBranch(MAIN, "a");
+		RevisionData changed = new RevisionData(STORAGE_KEY1, "field1", "field2Changed");
+		indexChange(branch, rev, changed);
+		
+		deleteRevision(branch, RevisionData.class, STORAGE_KEY1);
+		
+		final RevisionCompare compare = index().compare(MAIN, branch);
+		assertThat(compare.getDetails()).hasSize(1);
+		assertThat(compare.getTotalAdded()).isEqualTo(0);
+		assertThat(compare.getTotalChanged()).isEqualTo(0);
+		assertThat(compare.getTotalRemoved()).isEqualTo(1);
+	}
+	
+	@Test
+	public void compareBranchWithChangedRootAndChildThenDeletedRootObject() throws Exception {
+		final ContainerRevisionData container = new ContainerRevisionData(STORAGE_KEY1);
+		final ComponentRevisionData component = new ComponentRevisionData(STORAGE_KEY2, STORAGE_KEY1, "value");
+		indexRevision(MAIN, container, component);
+		
+		final String branch = createBranch(MAIN, "a");
+		final ComponentRevisionData componentChanged = new ComponentRevisionData(STORAGE_KEY2, STORAGE_KEY1, "valueChanged");
+		indexChange(branch, component, componentChanged);
+		
+		deleteRevision(branch, ComponentRevisionData.class, STORAGE_KEY2);
+		deleteRevision(branch, ContainerRevisionData.class, STORAGE_KEY1);
+		
+		final RevisionCompare compare = index().compare(MAIN, branch);
+		assertThat(compare.getDetails()).hasSize(2);
+		assertThat(compare.getTotalAdded()).isEqualTo(0);
+		assertThat(compare.getTotalChanged()).isEqualTo(0);
+		assertThat(compare.getTotalRemoved()).isEqualTo(2);
 	}
 	
 }
