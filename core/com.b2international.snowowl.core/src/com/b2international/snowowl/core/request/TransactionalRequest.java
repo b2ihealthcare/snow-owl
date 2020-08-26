@@ -75,7 +75,7 @@ public final class TransactionalRequest implements Request<BranchContext, Commit
 		 * FIXME: at this point, the component identifier might have changed even though the input 
 		 * required an exact ID to be assigned. What to do?
 		 */
-		final long commitTimestamp = context.commit(context.author(), commitComment, parentLockContext);
+		final Long commitTimestamp = context.commit(context.author(), commitComment, parentLockContext);
 		return new CommitResult(commitTimestamp, body);
 	}
 	
