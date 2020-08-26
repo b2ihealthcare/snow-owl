@@ -22,6 +22,8 @@ import com.b2international.index.Doc;
 import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.index.revision.StagingArea;
+import com.b2international.snowowl.core.codesystem.CodeSystemEntry;
+import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
 import com.b2international.snowowl.core.domain.DelegatingContext.Builder;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 
@@ -77,7 +79,7 @@ public interface TransactionContext extends BranchContext, AutoCloseable {
 	 * 
 	 * @return - the timestamp of the successful commit
 	 */
-	long commit();
+	Long commit();
 	
 	/**
 	 * Commits all changes made so far using the current userId, the given commit comment and no lock context.
@@ -85,7 +87,7 @@ public interface TransactionContext extends BranchContext, AutoCloseable {
 	 * @param commitComment - the commit comment to use for the commit
 	 * @return - the timestamp of the successful commit
 	 */
-	long commit(String commitComment);
+	Long commit(String commitComment);
 	
 	/**
 	 * Commits all changes made so far using the current userId and the given commitComment and lock context.
@@ -94,7 +96,7 @@ public interface TransactionContext extends BranchContext, AutoCloseable {
 	 * @param parentContextDescription - the parent lock context to use for the commit
 	 * @return - the timestamp of the successful commit
 	 */
-	long commit(String commitComment, String parentContextDescription);
+	Long commit(String commitComment, String parentContextDescription);
 	
 	/**
 	 * Commits all changes made so far.
@@ -109,7 +111,7 @@ public interface TransactionContext extends BranchContext, AutoCloseable {
 	 * 
 	 * @return - the timestamp of the successful commit
 	 */
-	long commit(String userId, String commitComment, String parentContextDescription);
+	Long commit(String userId, String commitComment, String parentContextDescription);
 	
 	/**
 	 * @return whether the commit will notify interested services, notification services about this transaction's commit or not. It's enabled by default.
