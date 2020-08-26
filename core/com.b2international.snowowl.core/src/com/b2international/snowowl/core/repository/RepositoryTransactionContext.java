@@ -276,7 +276,7 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 		Commit commit = null;
 		try {
 			acquireLock(locks, lockContext, lockTarget);
-			final Long timestamp = service(TimestampProvider.class).getTimestamp();
+			final long timestamp = service(TimestampProvider.class).getTimestamp();
 			log().info("Persisting changes to {}@{}", path(), timestamp);
 			commit = staging.commit(null, timestamp, author, commitComment);
 			log().info("Changes have been successfully persisted to {}@{}.", path(), timestamp);
