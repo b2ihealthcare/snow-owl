@@ -72,7 +72,7 @@ public class SnomedQueryRefSetImporter extends AbstractSnomedRefSetImporter<Quer
 
 	@Override
 	protected void initRefSet(final SnomedRefSet refSet, final String referencedComponentId) {
-		refSet.setReferencedComponentType(SnomedTerminologyComponentConstants.REFSET_NUMBER);
+		refSet.setReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT_NUMBER);
 	}
 
 	@Override
