@@ -48,6 +48,7 @@ import com.b2international.snowowl.snomed.core.domain.AssociationTarget;
 import com.b2international.snowowl.snomed.core.domain.InactivationProperties;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
+import com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
 import com.google.common.collect.ImmutableMap;
 
@@ -880,6 +881,26 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		assertThat(conceptAOnBranchB.getMembers()).hasSize(2);
 		
 		getComponent(b, SnomedComponentType.CONCEPT, conceptB, "relationships()").statusCode(200).extract().as(SnomedConcept.class);
+	}
+	
+    @Test
+	public void rebaseDescriptionChange() throws Exception {
+		final String conceptA = createNewConcept(branchPath);
+		final String descriptionB = createNewDescription(branchPath, conceptA, Concepts.SYNONYM, SnomedApiTestConstants.UK_PREFERRED_MAP);
+		
+		final IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		branching.createBranch(a).statusCode(201);
+		
+		Map<?, ?> descriptionBUpdateRequest = ImmutableMap.builder()
+				.put("term", "Decription B New Term")
+				.put("commitComment", "Change description B")
+				.build();
+		updateComponent(a, SnomedComponentType.DESCRIPTION, descriptionB, descriptionBUpdateRequest).statusCode(204);
+		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionB, descriptionBUpdateRequest).statusCode(204);
+		
+		merge(branchPath, a, "Merge MAIN into branch A").body("status", equalTo(Merge.Status.COMPLETED.name()));	
+				
+		getComponent(a, SnomedComponentType.CONCEPT, conceptA, "members(),relationships(),descriptions()").statusCode(200).extract().as(SnomedConcept.class);
 	}
 	
 	@Test
