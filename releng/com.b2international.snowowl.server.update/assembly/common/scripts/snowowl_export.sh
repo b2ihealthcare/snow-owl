@@ -37,7 +37,7 @@ TARGET_FOLDER=""
 #
 
 # Code system URI branch path to export defaults to SNOMEDCT/LATEST
-BRANCH_TO_EXPORT="SNOMEDCT/LATEST"
+BRANCH_TO_EXPORT="SNOMEDCT/HEAD"
 
 # Specified moduleIds to export
 MODULES_TO_EXPORT=()
@@ -100,8 +100,8 @@ NAME:
         Effective time range lower bound, in yyyyMMdd format
     -g
         Effective time range upper bound, in yyyyMMdd format
-	-i
-		Include pre-release content
+    -i
+        Include pre-release content, defaults to 'true'
 
 NOTES:
 
@@ -175,7 +175,7 @@ initiate_export() {
 			EXPORT_CONFIG+="&moduleIds=${module}"
 		done
 	fi
-	
+
 	EXPORT_CONFIG+="&includeUnpublished=${INCLUDE_UNPUBLISHED}"
 
 	EXPORTS_ENDPOINT="${SNOW_OWL_BASE_URL}${EXPORTS_POST_ENDPOINT}"
@@ -192,7 +192,7 @@ initiate_export() {
 		--silent \
 		--show-error \
 		"${EXPORTS_ENDPOINT}${EXPORT_CONFIG}")
-		
+
 	if [ "${HTTP_STATUS}" != "200" ]; then
 		echo_date "Download of export archive returned with code ${HTTP_STATUS}"
 	else
@@ -201,8 +201,8 @@ initiate_export() {
 }
 
 execute() {
-	validate_variables
 
+	validate_variables
 	initiate_export
 
 	exit 0
