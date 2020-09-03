@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.core.rest.branches;
 import static com.b2international.snowowl.snomed.core.rest.CodeSystemVersionRestRequests.getNextAvailableEffectiveDate;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.createComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.deleteComponent;
+import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.getComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.updateComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRefSetRestRequests.updateRefSetComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.changeCaseSignificance;
@@ -405,6 +406,28 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		assertEquals("concept", conflict.getComponentType());
 		assertEquals(ConflictType.CAUSES_MISSING_REFERENCE, conflict.getType());
 		assertEquals(0, conflict.getConflictingAttributes().size());
+	}
+	
+    @Test
+	public void rebaseResolvableDescriptionConflict() throws Exception {
+		final String conceptA = createNewConcept(branchPath);
+		final String descriptionB = createNewDescription(branchPath, conceptA, Concepts.SYNONYM, SnomedApiTestConstants.UK_PREFERRED_MAP);
+		
+		final IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		branching.createBranch(a).statusCode(201);
+		
+		Map<?, ?> descriptionBUpdateRequest = ImmutableMap.builder()
+				.put("term", "Description B New Term")
+				.put("commitComment", "Change description B")
+				.build();
+		updateComponent(a, SnomedComponentType.DESCRIPTION, descriptionB, descriptionBUpdateRequest).statusCode(204);
+		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionB, descriptionBUpdateRequest).statusCode(204);
+		
+		merge(branchPath, a, "Rebase branch A").body("status", equalTo(Merge.Status.COMPLETED.name()));
+		
+		// checking duplicate revisions after sync
+		getComponent(a, SnomedComponentType.DESCRIPTION, descriptionB).statusCode(200);
+		getComponent(a, SnomedComponentType.CONCEPT, conceptA).statusCode(200);
 	}
 
 }

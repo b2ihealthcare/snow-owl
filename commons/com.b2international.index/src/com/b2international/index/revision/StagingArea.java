@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -661,7 +661,7 @@ public final class StagingArea {
 			final String docType = DocumentMapping.getType(type);
 			Set<String> changedRevisionIdsToMerge = newHashSet(fromChangeSet.getChangedIds(type));
 			// first handle changed vs. removed
-			Set<String> changedInSourceDetachedInTargetIds = Sets.intersection(changedRevisionIdsToMerge, removedRevisionIdsToCheck);
+			Set<String> changedInSourceDetachedInTargetIds = Sets.newHashSet(Sets.intersection(changedRevisionIdsToMerge, removedRevisionIdsToCheck));
 			if (!changedInSourceDetachedInTargetIds.isEmpty()) {
 				// report any conflicts
 				changedInSourceDetachedInTargetIds.forEach(changedInSourceDetachedInTargetId -> {
@@ -724,6 +724,9 @@ public final class StagingArea {
 								fromChangeSet.removeChanged(type, changedInSourceAndTargetId);
 							}
 						}
+					} else {
+						// this object has changed on both sides probably due to some cascading change, revise the revision on source, since we already have one on this branch
+						revisionsToReviseOnMergeSource.put(type, changedInSourceAndTargetId);
 					}
 				}
 			}

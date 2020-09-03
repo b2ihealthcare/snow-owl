@@ -47,8 +47,15 @@ public final class RevisionBranchChangeSet {
 				Class<?> revType = DocumentMapping.getClass(detail.getComponent().type());
 				if (Revision.class.isAssignableFrom(revType)) {
 					newRevisionIdsByType.put((Class<? extends Revision>) revType, detail.getComponent().id());
+					// XXX since there is a new detail for the component, it cannot be a changed revision, remove if it were added due to the next few statement 
+					changedRevisionIdsByType.remove((Class<? extends Revision>) revType, detail.getComponent().id());
 					if (!detail.getObject().isRoot()) {
+						Class<?> objectType = DocumentMapping.getClass(detail.getObject().type());
 						containersRequiredForNewAndChangedRevisions.put(detail.getComponent(), detail.getObject());
+						// only register as changed container, if the container is not registered as a new revision
+						if (!newRevisionIdsByType.containsEntry((Class<? extends Revision>) objectType, detail.getObject().id())) {
+							changedRevisionIdsByType.put((Class<? extends Revision>) objectType, detail.getObject().id());
+						}
 					}
 				}
 			} else if (detail.isChange()) {
@@ -60,6 +67,16 @@ public final class RevisionBranchChangeSet {
 				Class<?> revType = DocumentMapping.getClass(detail.getComponent().type());
 				if (Revision.class.isAssignableFrom(revType)) {
 					removedRevisionIdsByType.put((Class<? extends Revision>) revType, detail.getComponent().id());
+					// XXX since there is a remove detail for the component, it cannot be a changed revision, remove if it were added due to the next few statement 
+					changedRevisionIdsByType.put((Class<? extends Revision>) revType, detail.getComponent().id());
+					if (!detail.getObject().isRoot()) {
+						Class<?> objectType = DocumentMapping.getClass(detail.getObject().type());						
+						changedRevisionIdsByType.put((Class<? extends Revision>) objectType, detail.getObject().id());
+						// only register as removed container, if the container is not registered as a removed revision
+						if (!removedRevisionIdsByType.containsEntry((Class<? extends Revision>) objectType, detail.getObject().id())) {
+							changedRevisionIdsByType.put((Class<? extends Revision>) objectType, detail.getObject().id());
+						}
+					}
 				}
 			} else {
 				throw new UnsupportedOperationException("Unsupported diff operation: " + detail.getOp());

@@ -35,6 +35,7 @@ import com.b2international.snowowl.snomed.core.request.MemberSearchRequestSnomed
 import com.b2international.snowowl.snomed.core.rest.branches.SnomedBranchingApiTest;
 import com.b2international.snowowl.snomed.core.rest.branches.SnomedMergeApiTest;
 import com.b2international.snowowl.snomed.core.rest.branches.SnomedMergeConflictTest;
+import com.b2international.snowowl.snomed.core.rest.branches.SnomedRebaseApiTest;
 import com.b2international.snowowl.snomed.core.rest.branches.SnomedReviewApiTest;
 import com.b2international.snowowl.snomed.core.rest.classification.SnomedClassificationApiTest;
 import com.b2international.snowowl.snomed.core.rest.compare.SnomedMapTypeReferenceSetCompareTest;
