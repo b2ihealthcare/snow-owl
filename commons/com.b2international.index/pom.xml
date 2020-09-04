@@ -11,7 +11,7 @@
 	
 	<properties>
 		<elasticsearch.version>7.9.1</elasticsearch.version>
-		<log4j2.version>2.11.1</log4j2.version>
+		<log4j2.version>2.13.2</log4j2.version>
     </properties>
     
     <!-- NOTE: in case of dependency changes, please update "includeArtifactIds" in maven-dependency-plugin's configuration as well, listing all (exact and transitive) dependency artifacts -->
