@@ -43,13 +43,16 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.merge.ConflictingAttribute;
 import com.b2international.snowowl.core.merge.ConflictingAttributeImpl;
 import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.core.merge.MergeConflict;
 import com.b2international.snowowl.core.merge.MergeConflict.ConflictType;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
@@ -430,4 +433,46 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		getComponent(a, SnomedComponentType.CONCEPT, conceptA).statusCode(200);
 	}
 
+    @Test
+   	public void rebaseResolvableRelationshipConflict() throws Exception {
+   		final String concept = createNewConcept(branchPath, Concepts.ROOT_CONCEPT);
+   		
+   		final IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+   		branching.createBranch(a).statusCode(201);
+
+   		String relationshipOnParent = createNewRelationship(branchPath, concept, Concepts.IS_A, Concepts.TOPLEVEL_METADATA);
+   		String relationshipOnChild = createNewRelationship(a, concept, Concepts.IS_A, Concepts.TOPLEVEL_METADATA);
+   		
+   		merge(branchPath, a, "Rebase branch A").body("status", equalTo(Merge.Status.COMPLETED.name()));
+   		
+   		getComponent(a, SnomedComponentType.RELATIONSHIP, relationshipOnChild).statusCode(200);
+   		getComponent(a, SnomedComponentType.RELATIONSHIP, relationshipOnParent).statusCode(200);
+   		SnomedConcept conceptOnChild = getComponent(a, SnomedComponentType.CONCEPT, concept).statusCode(200).extract().as(SnomedConcept.class);
+   		assertThat(conceptOnChild.getStatedParentIdsAsString()).containsOnly(Concepts.ROOT_CONCEPT, Concepts.TOPLEVEL_METADATA);
+   		assertThat(conceptOnChild.getParentIdsAsString()).containsOnly(IComponent.ROOT_ID);
+   		assertThat(conceptOnChild.getStatedAncestorIdsAsString()).containsOnly(IComponent.ROOT_ID, Concepts.ROOT_CONCEPT);
+   		assertThat(conceptOnChild.getAncestorIdsAsString()).isEmpty();
+   	}
+       
+    @Test
+   	public void rebaseResolvableAxiomMemberConflict() throws Exception {
+   		final String concept = createNewConcept(branchPath, Concepts.ROOT_CONCEPT);
+   		
+   		final IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+   		branching.createBranch(a).statusCode(201);
+
+   		String axiomOnParent = createNewRefSetMember(branchPath, concept, Concepts.REFSET_OWL_AXIOM, Map.of(SnomedRf2Headers.FIELD_OWL_EXPRESSION, String.format("SubClassOf(:%s :%s)", concept, Concepts.TOPLEVEL_METADATA)));
+   		String axiomOnChild = createNewRefSetMember(a, concept, Concepts.REFSET_OWL_AXIOM, Map.of(SnomedRf2Headers.FIELD_OWL_EXPRESSION, String.format("SubClassOf(:%s :%s)", concept, Concepts.TOPLEVEL_METADATA)));
+   		
+   		merge(branchPath, a, "Rebase branch A").body("status", equalTo(Merge.Status.COMPLETED.name()));
+   		
+   		getComponent(a, SnomedComponentType.MEMBER, axiomOnChild).statusCode(200);
+   		getComponent(a, SnomedComponentType.MEMBER, axiomOnParent).statusCode(200);
+   		SnomedConcept conceptOnChild = getComponent(a, SnomedComponentType.CONCEPT, concept).statusCode(200).extract().as(SnomedConcept.class);
+   		assertThat(conceptOnChild.getStatedParentIdsAsString()).containsOnly(Concepts.ROOT_CONCEPT, Concepts.TOPLEVEL_METADATA);
+   		assertThat(conceptOnChild.getParentIdsAsString()).containsOnly(IComponent.ROOT_ID);
+   		assertThat(conceptOnChild.getStatedAncestorIdsAsString()).containsOnly(IComponent.ROOT_ID, Concepts.ROOT_CONCEPT);
+   		assertThat(conceptOnChild.getAncestorIdsAsString()).isEmpty();
+   	}
+    
 }
