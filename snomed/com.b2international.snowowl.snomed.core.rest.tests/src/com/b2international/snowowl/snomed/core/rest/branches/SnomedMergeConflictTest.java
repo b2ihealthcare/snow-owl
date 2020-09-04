@@ -30,8 +30,7 @@ import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.me
 import static com.google.common.collect.Maps.newHashMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 import java.util.Collection;
 import java.util.Date;
