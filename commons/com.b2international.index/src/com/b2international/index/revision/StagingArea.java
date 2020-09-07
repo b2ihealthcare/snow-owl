@@ -588,13 +588,13 @@ public final class StagingArea {
 	
 	void merge(RevisionBranchRef fromRef, RevisionBranchRef toRef, boolean squash, RevisionConflictProcessor conflictProcessor, Set<String> exclusions) {
 		checkArgument(this.mergeSources == null, "Already merged another ref to this StagingArea. Commit staged changes to apply them.");
-		this.mergeSources = fromRef.difference(toRef)
+		this.mergeFromBranchRef = fromRef.difference(toRef);
+		this.mergeSources = this.mergeFromBranchRef
 				.segments()
 				.stream()
 				.filter(segment -> segment.branchId() != toRef.branchId())
 				.map(RevisionSegment::getEndPoint)
 				.collect(Collectors.toCollection(TreeSet::new));
-		this.mergeFromBranchRef = fromRef;
 		this.squashMerge = squash;
 		if (exclusions != null) {
 			this.exclusions.addAll(exclusions);
