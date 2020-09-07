@@ -304,6 +304,18 @@ public abstract class SnomedRestFixtures {
 				.body(equalTo(""))
 				.extract().header("Location"));
 	}
+	
+	public static String createNewRefSetMember(IBranchPath memberPath, String referencedConceptId, String refSetId, final Map<String, Object> properties) {
+		Map<?, ?> requestBody = createRefSetMemberRequestBody(refSetId, referencedConceptId)
+				.put("commitComment", "Created new reference set member")
+				.putAll(properties)
+				.build();
+
+		return lastPathSegment(createComponent(memberPath, SnomedComponentType.MEMBER, requestBody)
+				.statusCode(201)
+				.body(equalTo(""))
+				.extract().header("Location"));
+	}
 
 	public static String createNewLanguageRefSetMember(IBranchPath memberPath, String referencedDescriptionId, String refSetId, String acceptabilityId) {
 		Map<?, ?> requestBody = createRefSetMemberRequestBody(refSetId, referencedDescriptionId)
