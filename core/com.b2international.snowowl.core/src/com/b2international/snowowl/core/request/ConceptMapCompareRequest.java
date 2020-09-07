@@ -19,6 +19,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import javax.validation.constraints.Min;
+
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.compare.ConceptMapCompareResult;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -41,9 +43,13 @@ public final class ConceptMapCompareRequest extends ResourceRequest<BranchContex
 	private final ComponentURI baseConceptMapURI;
 	private final ComponentURI compareConceptMapURI;
 	
-	ConceptMapCompareRequest(ComponentURI baseConceptMapURI, ComponentURI compareConceptMapURI) {
+	@Min(0)
+	private int limit;
+	
+	ConceptMapCompareRequest(ComponentURI baseConceptMapURI, ComponentURI compareConceptMapURI, int limit) {
 		this.baseConceptMapURI = baseConceptMapURI;
 		this.compareConceptMapURI = compareConceptMapURI;
+		this.limit = limit;
 	}
 
 	@Override
@@ -109,7 +115,7 @@ public final class ConceptMapCompareRequest extends ResourceRequest<BranchContex
 		SetView<ComponentURI> addedURIs = Sets.difference(compareURIs, baseURIs);
 		addedURIs.forEach(uri -> allAdded.addAll(compareMappings.get(uri)));
 		
-		return new ConceptMapCompareResult(allAdded, allRemoved, allChanged);
+		return new ConceptMapCompareResult(allAdded, allRemoved, allChanged, limit);
 	}
 
 	private boolean isChanged(ConceptMapMapping memberA, ConceptMapMapping memberB) {

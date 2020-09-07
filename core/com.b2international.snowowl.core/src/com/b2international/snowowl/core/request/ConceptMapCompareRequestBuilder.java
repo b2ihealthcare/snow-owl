@@ -15,6 +15,10 @@
  */
 package com.b2international.snowowl.core.request;
 
+import static com.b2international.snowowl.core.compare.ConceptMapCompareResult.DEFAULT_LIMIT_PER_COMPARE_CATEGORY;
+
+import javax.validation.constraints.Min;
+
 import com.b2international.snowowl.core.compare.ConceptMapCompareResult;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.uri.ComponentURI;
@@ -26,17 +30,26 @@ public final class ConceptMapCompareRequestBuilder
 		extends ResourceRequestBuilder<ConceptMapCompareRequestBuilder, BranchContext, ConceptMapCompareResult>
 		implements RevisionIndexRequestBuilder<ConceptMapCompareResult> {
 	
+	@Min(0)
+	private int limit;
+
 	private final ComponentURI baseConceptMapURI;
 	private final ComponentURI compareConceptMapURI;
 	
 	public ConceptMapCompareRequestBuilder(ComponentURI baseConceptMapURI, ComponentURI compareConceptMapURI) {
 		this.baseConceptMapURI = baseConceptMapURI;
 		this.compareConceptMapURI = compareConceptMapURI;
+		this.limit = DEFAULT_LIMIT_PER_COMPARE_CATEGORY;
+	}
+	
+	public ConceptMapCompareRequestBuilder setLimit(int limit) {
+		this.limit = limit;
+		return this;
 	}
 	
 	@Override
 	protected ResourceRequest<BranchContext, ConceptMapCompareResult> create() {
-		return new ConceptMapCompareRequest(baseConceptMapURI, compareConceptMapURI);
+		return new ConceptMapCompareRequest(baseConceptMapURI, compareConceptMapURI, limit);
 	}
 	
 }

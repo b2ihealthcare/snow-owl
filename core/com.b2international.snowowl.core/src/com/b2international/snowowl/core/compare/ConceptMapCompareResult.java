@@ -28,14 +28,34 @@ import com.google.common.collect.ListMultimap;
 public final class ConceptMapCompareResult implements Serializable {
 	private static final long serialVersionUID = 1L;
 	
+	public static final int DEFAULT_LIMIT_PER_COMPARE_CATEGORY = 5000;
+	
+	private final int totalAdded;
+	private final int totalRemoved;
+	private final int totalChanged;
+	
 	private final List<ConceptMapMapping> addedMembers;
 	private final List<ConceptMapMapping> removedMembers;
 	private final ListMultimap<ConceptMapMapping, ConceptMapMapping> changedMembers;
 	
-	public ConceptMapCompareResult(List<ConceptMapMapping> addedMembers, List<ConceptMapMapping> removedMembers, ListMultimap<ConceptMapMapping, ConceptMapMapping> changedMembers) {
-		this.addedMembers = ImmutableList.copyOf(addedMembers);
-		this.removedMembers = ImmutableList.copyOf(removedMembers);
-		this.changedMembers = ImmutableListMultimap.copyOf(changedMembers);
+	public ConceptMapCompareResult(List<ConceptMapMapping> addedMembers, List<ConceptMapMapping> removedMembers, ListMultimap<ConceptMapMapping, ConceptMapMapping> changedMembers, int limit) {
+		this.addedMembers = ImmutableList.copyOf(limit < addedMembers.size() ? addedMembers.subList(0, limit) : addedMembers);
+		this.removedMembers = ImmutableList.copyOf(limit < removedMembers.size() ? removedMembers.subList(0, limit) : removedMembers);
+		
+		ImmutableListMultimap.Builder<ConceptMapMapping, ConceptMapMapping> builder = ImmutableListMultimap.builder();
+		int noOfChangedMappings = 0;
+		for (ConceptMapMapping key : changedMembers.keySet()) {
+			if (noOfChangedMappings < DEFAULT_LIMIT_PER_COMPARE_CATEGORY) {
+				List<ConceptMapMapping> memberChanges = changedMembers.get(key);
+				builder.putAll(key, memberChanges);
+				noOfChangedMappings += memberChanges.size();
+			}
+		}
+		this.changedMembers = builder.build();
+		
+		this.totalAdded = addedMembers.size();
+		this.totalRemoved = removedMembers.size();
+		this.totalChanged = changedMembers.values().size();
 	}
 	
 	public List<ConceptMapMapping> getAddedMembers() {
@@ -49,5 +69,17 @@ public final class ConceptMapCompareResult implements Serializable {
 	public ListMultimap<ConceptMapMapping, ConceptMapMapping> getChangedMembers() {
 		return changedMembers;
 	}
-
+	
+	public int getTotalAdded() {
+		return totalAdded;
+	}
+	
+	public int getTotalRemoved() {
+		return totalRemoved;
+	}
+	
+	public int getTotalChanged() {
+		return totalChanged;
+	}
+	
 }
