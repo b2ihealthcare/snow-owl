@@ -1,22 +1,30 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## 7.9.0
+## 7.9.1
 
 ### Bugs/Improvements
-- Improve ConceptMap Compare performance (#637, #639)
-- Improve ConceptMap Mapping Java API (#640)
-- Add new convenience method to Dates Java API (#642)
-- Fix SNOMED CT icon calculation (#645)
-- Add support for CHANGE vs REMOVE case during branch compare (#646)
-- Avoid creating duplicate description inactivation indicators (#648)
-- Make return value of commit timestamps more flexible (#649)
+- Fix branch rebase issue when there are no semantic changes between the two branches (#652) 
+
+### Dependencies 
+- Upgrade Elasticsearch to 7.9.1 (#653)
+
+## 7.9.0
 
 ### SNOMED CT
 - Enforce order of preferred descriptions: US preferred FSN, GB preferred FSN, all other Synonyms grouped by type (#645)
 
 ### Validation
 - Improve performance of rule 671
+
+### Bugs/Improvements
+- Improve ConceptMap Compare performance (#637, #639)
+- Improve ConceptMap Mapping Java API (#640)
+- Add new convenience method to Dates Java API (#642)
+- Fix SNOMED CT icon calculation (#645)
+- Add support for CHANGE vs. REMOVE case during branch compare (#646)
+- Avoid creating duplicate description inactivation indicators (#648)
+- Make return value of commit timestamps more flexible (#649)
 
 ### Dependencies
 - Upgrade Elasticsearch to 7.9.0 (PR: #641, Fixes GH issue: #626)
