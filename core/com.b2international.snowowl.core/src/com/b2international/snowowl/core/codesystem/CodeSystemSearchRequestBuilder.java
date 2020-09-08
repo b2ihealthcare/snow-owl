@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
+import com.b2international.snowowl.core.codesystem.CodeSystemSearchRequest.OptionKey;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.RepositoryRequestBuilder;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
@@ -30,7 +31,11 @@ public final class CodeSystemSearchRequestBuilder
 	CodeSystemSearchRequestBuilder() {
 		super();
 	}
-
+	
+	public CodeSystemSearchRequestBuilder filterByToolingIds(Iterable<String> toolingIds) {
+		return addOption(OptionKey.TOOLING_ID, toolingIds);
+	}
+	
 	@Override
 	protected SearchResourceRequest<RepositoryContext, CodeSystems> createSearch() {
 		return new CodeSystemSearchRequest();

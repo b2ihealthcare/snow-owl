@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -191,6 +191,21 @@ public abstract class Dates {
 	 */
 	public static TimeZone getGmtTimeZone() {
 		return TimeZone.getTimeZone("GMT");
+	}
+	
+	/**
+	 *@return the {@link Date} instance for the beginning of the current day in the local timezone.
+	 */
+	public static Date todayLocal() {
+		final Calendar todayInLocalTime = Calendar.getInstance();
+
+		final int year = todayInLocalTime.get(Calendar.YEAR);
+		final int month = todayInLocalTime.get(Calendar.MONTH);
+		final int date = todayInLocalTime.get(Calendar.DATE);
+
+		todayInLocalTime.clear();
+		todayInLocalTime.set(year, month, date);
+		return todayInLocalTime.getTime();
 	}
 
 	private static Object convert(Object date) {

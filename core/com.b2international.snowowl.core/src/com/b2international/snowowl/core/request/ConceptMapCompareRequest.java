@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.request;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.compare.ConceptMapCompareResult;
@@ -27,6 +28,8 @@ import com.b2international.snowowl.core.uri.ComponentURI;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import com.google.common.collect.Sets.SetView;
 
 /**
 * @since 7.8
@@ -46,8 +49,10 @@ public final class ConceptMapCompareRequest extends ResourceRequest<BranchContex
 	@Override
 	public ConceptMapCompareResult execute(BranchContext context) {
 
-		List<ConceptMapMapping> baseMappings = Lists.newArrayList();
-		List<ConceptMapMapping> compareMappings = Lists.newArrayList();
+		ListMultimap<ComponentURI, ConceptMapMapping> baseMappings = ArrayListMultimap.create();
+		ListMultimap<ComponentURI, ConceptMapMapping> compareMappings = ArrayListMultimap.create();
+		Set<ComponentURI> baseURIs = Sets.newHashSet();
+		Set<ComponentURI> compareURIs = Sets.newHashSet();
 
 		final SearchResourceRequestIterator<ConceptMapMappingSearchRequestBuilder, ConceptMapMappings> baseIterator = new SearchResourceRequestIterator<>(
 				CodeSystemRequests.prepareSearchConceptMapMappings()
@@ -57,7 +62,10 @@ public final class ConceptMapCompareRequest extends ResourceRequest<BranchContex
 				r -> r.build().execute(context)
 				);
 
-		baseIterator.forEachRemaining(hits -> hits.forEach(baseMappings::add));
+		baseIterator.forEachRemaining(hits -> hits.forEach(hit -> {
+			baseMappings.put(hit.getSourceComponentURI(), hit);
+			baseURIs.add(hit.getSourceComponentURI());
+		}));
 
 		final SearchResourceRequestIterator<ConceptMapMappingSearchRequestBuilder, ConceptMapMappings> compareIterator = new SearchResourceRequestIterator<>(
 				CodeSystemRequests.prepareSearchConceptMapMappings()
@@ -67,37 +75,41 @@ public final class ConceptMapCompareRequest extends ResourceRequest<BranchContex
 				r -> r.build().execute(context)
 				);
 
-		compareIterator.forEachRemaining(hits -> hits.forEach(compareMappings::add));
+		compareIterator.forEachRemaining(hits -> hits.forEach(hit -> {
+			compareMappings.put(hit.getSourceComponentURI(), hit);
+			compareURIs.add(hit.getSourceComponentURI());
+		}));
 
-		ConceptMapCompareResult result = compareDifferents(baseMappings, compareMappings);
+		ConceptMapCompareResult result = compareDifferences(baseMappings, baseURIs, compareMappings, compareURIs);
 		return result; 
 	}
 	
-	private ConceptMapCompareResult compareDifferents(List<ConceptMapMapping> baseSet, List<ConceptMapMapping> compareSet) {
-		ListMultimap<ConceptMapMapping, ConceptMapMapping> changed = ArrayListMultimap.create();
-		List<ConceptMapMapping> removed = Lists.newArrayList();
-		List<ConceptMapMapping> added = Lists.newArrayList();
-
-		removed.addAll(baseSet);
-		added.addAll(compareSet);
-
-		for (ConceptMapMapping memberA : baseSet) {
-			compareSet.forEach(memberB -> {
-				if (isEqual(memberA, memberB)) {
-					removed.remove(memberA);
-					added.remove(memberB);
-				} else if (isChanged(memberA, memberB)) {
-					removed.remove(memberA);
-					added.remove(memberB);
-					changed.put(memberA, memberB);
-				}
-			});
-		}
-		return new ConceptMapCompareResult(added, removed, changed);
-	}
-
-	private boolean isEqual(ConceptMapMapping memberA, ConceptMapMapping memberB) {
-		return isSourceEqual(memberA, memberB) && isTargetEqual(memberA, memberB);
+	private ConceptMapCompareResult compareDifferences(ListMultimap<ComponentURI, ConceptMapMapping> baseMappings, Set<ComponentURI> baseURIs, ListMultimap<ComponentURI, ConceptMapMapping> compareMappings, Set<ComponentURI> compareURIs) {
+		ListMultimap<ConceptMapMapping, ConceptMapMapping> allChanged = ArrayListMultimap.create();
+		List<ConceptMapMapping> allRemoved = Lists.newArrayList();
+		List<ConceptMapMapping> allAdded = Lists.newArrayList();
+		
+		SetView<ComponentURI> changedURIs = Sets.intersection(baseURIs, compareURIs);
+		
+		changedURIs.forEach(changedURI -> {
+			ListMultimap<ConceptMapMapping, ConceptMapMapping> changed = ArrayListMultimap.create();
+			for (ConceptMapMapping memberA : baseMappings.get(changedURI)) {
+				compareMappings.get(changedURI).forEach(memberB -> {
+					if (isChanged(memberA, memberB)) {
+						changed.put(memberA, memberB);
+					}
+				});
+			}
+			allChanged.putAll(changed);
+		});
+		
+		SetView<ComponentURI> removedURIs = Sets.difference(baseURIs, compareURIs);
+		removedURIs.forEach(uri -> allRemoved.addAll(baseMappings.get(uri)));
+		
+		SetView<ComponentURI> addedURIs = Sets.difference(compareURIs, baseURIs);
+		addedURIs.forEach(uri -> allAdded.addAll(compareMappings.get(uri)));
+		
+		return new ConceptMapCompareResult(allAdded, allRemoved, allChanged);
 	}
 
 	private boolean isChanged(ConceptMapMapping memberA, ConceptMapMapping memberB) {

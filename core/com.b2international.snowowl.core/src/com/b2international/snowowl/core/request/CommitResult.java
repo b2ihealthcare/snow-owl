@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,15 +26,15 @@ public final class CommitResult implements Serializable {
 
 	private static final long serialVersionUID = -7479022976959306232L;
 	
-	private final long commitTimestamp;
+	private final Long commitTimestamp;
 	private final Object result;
 
-	CommitResult(long commitTimestamp, Object result) {
+	CommitResult(Long commitTimestamp, Object result) {
 		this.commitTimestamp = commitTimestamp;
 		this.result = result;
 	}
 	
-	public long getCommitTimestamp() {
+	public Long getCommitTimestamp() {
 		return commitTimestamp;
 	}
 	
