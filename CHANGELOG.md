@@ -4,7 +4,8 @@ All notable changes to this project will be documented in this file.
 ## 7.9.1
 
 ### Bugs/Improvements
-- Fix branch rebase issue when there are no semantic changes between the two branches (#652) 
+- Support multi-valued (List, Set, Array) String properties on JSON documents in history and automatic conflict resolution (f39e115)
+- Fix branch rebase issue when there are no semantic changes between the two branches (#652, 0d9f55a)
 
 ### Dependencies 
 - Upgrade Elasticsearch to 7.9.1 (#653)
