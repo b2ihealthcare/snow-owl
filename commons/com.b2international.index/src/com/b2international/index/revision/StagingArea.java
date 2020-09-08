@@ -737,6 +737,7 @@ public final class StagingArea {
 					} else {
 						// this object has changed on both sides probably due to some cascading change, revise the revision on source, since we already have one on this branch
 						revisionsToReviseOnMergeSource.put(type, changedInSourceAndTargetId);
+						fromChangeSet.removeChanged(type, changedInSourceAndTargetId);
 					}
 				}
 			}

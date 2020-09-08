@@ -543,4 +543,44 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
    		assertThat(conceptOnChild.getAncestorIdsAsString()).isEmpty();
    	}
     
+    @Test
+	public void rebaseResolvableModuleAndTermChange() throws Exception {
+    	final String conceptA = createNewConcept(branchPath);
+		final String descriptionB = createNewDescription(branchPath, conceptA, Concepts.SYNONYM, SnomedApiTestConstants.UK_PREFERRED_MAP);
+		
+		final IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		branching.createBranch(a).statusCode(201);
+		
+		Map<?, ?> descriptionBUpdateRequest = ImmutableMap.builder()
+				.put("term", "Description B New Term")
+				.put("commitComment", "Change description B")
+				.build();
+		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionB, descriptionBUpdateRequest).statusCode(204);
+		
+		Map<?, ?> conceptUpdateRequest = ImmutableMap.builder()
+				.put("moduleId", Concepts.MODULE_SCT_MODEL_COMPONENT)
+				.put("commitComment", "Change description B")
+				.build();
+		updateComponent(a, SnomedComponentType.CONCEPT, conceptA, conceptUpdateRequest).statusCode(204);
+		
+		merge(branchPath, a, "Rebase branch A").body("status", equalTo(Merge.Status.COMPLETED.name()));
+		
+		// checking duplicate revisions and properties after sync
+		// on parent branch
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionB)
+			.statusCode(200)
+			.body("term", equalTo("Description B New Term"));
+		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptA)
+			.statusCode(200)
+			.body("moduleId", equalTo(Concepts.MODULE_SCT_CORE));
+		
+		// on task branch
+		getComponent(a, SnomedComponentType.DESCRIPTION, descriptionB)
+			.statusCode(200)
+			.body("term", equalTo("Description B New Term"));
+		getComponent(a, SnomedComponentType.CONCEPT, conceptA)
+			.statusCode(200)
+			.body("moduleId", equalTo(Concepts.MODULE_SCT_MODEL_COMPONENT));
+	}
+    
 }
