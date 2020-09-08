@@ -706,7 +706,7 @@ public final class StagingArea {
 							final RevisionCompareDetail sourcePropertyChange = sourceChange.getValue();
 							
 							final RevisionPropertyDiff sourceChangeDiff = new RevisionPropertyDiff(changedProperty, sourcePropertyChange.getFromValue(), sourcePropertyChange.getValue());
-							final RevisionCompareDetail targetPropertyChange = targetPropertyChanges.get(changedProperty);
+							final RevisionCompareDetail targetPropertyChange = targetPropertyChanges == null ? null : targetPropertyChanges.get(changedProperty);
 							
 							if (targetPropertyChange == null) {
 								// this property did not change in target, just apply directly on the target object via

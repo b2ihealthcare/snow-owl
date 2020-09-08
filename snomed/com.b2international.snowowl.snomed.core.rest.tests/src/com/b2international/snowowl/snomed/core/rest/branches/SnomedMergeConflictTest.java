@@ -411,6 +411,57 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		assertEquals(0, conflict.getConflictingAttributes().size());
 	}
 	
+	@Test
+	public void rebaseConceptModuleConflictShouldReportConflict() throws Exception {
+		final String concept = createNewConcept(branchPath);
+		
+		final IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		branching.createBranch(a).statusCode(201);
+		
+		final Map<?, ?> moduleUpdateOnParent = Map.of(
+			"moduleId", Concepts.MODULE_ROOT,
+			"commitComment", "Update module"
+		);
+		updateComponent(branchPath, SnomedComponentType.CONCEPT, concept, moduleUpdateOnParent);
+		
+		final Map<?, ?> moduleUpdateOnChild = Map.of(
+			"moduleId", Concepts.MODULE_SCT_MODEL_COMPONENT,
+			"commitComment", "Update module"
+		);
+		updateComponent(a, SnomedComponentType.CONCEPT, concept, moduleUpdateOnChild);
+		
+		merge(branchPath, a, "Rebase branch A").body("status", equalTo(Merge.Status.CONFLICTS.name()));
+	}
+	
+	@Test
+	public void rebaseModuleChangeOverNewRelationship() throws Exception {
+		final String concept = createNewConcept(branchPath);
+		
+		final IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		branching.createBranch(a).statusCode(201);
+		
+		String relationshipOnChild = createNewRelationship(a, concept, Concepts.IS_A, Concepts.REFSET_ALL);
+		
+		final Map<?, ?> moduleUpdateOnParent = Map.of(
+			"moduleId", Concepts.MODULE_ROOT,
+			"commitComment", "Update module"
+		);
+		updateComponent(branchPath, SnomedComponentType.CONCEPT, concept, moduleUpdateOnParent);
+			
+		merge(branchPath, a, "Rebase branch A").body("status", equalTo(Merge.Status.COMPLETED.name()));
+		getComponent(branchPath, SnomedComponentType.CONCEPT, concept)
+			.statusCode(200)
+			.body("moduleId", equalTo(Concepts.MODULE_ROOT));
+		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipOnChild)
+			.statusCode(404);
+		
+		getComponent(a, SnomedComponentType.CONCEPT, concept)
+			.statusCode(200)
+			.body("moduleId", equalTo(Concepts.MODULE_ROOT));
+		getComponent(a, SnomedComponentType.RELATIONSHIP, relationshipOnChild)
+			.statusCode(200);
+	}
+	
     @Test
 	public void rebaseResolvableDescriptionConflictOnTheSameDescription() throws Exception {
 		final String conceptA = createNewConcept(branchPath);
