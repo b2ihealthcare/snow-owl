@@ -76,16 +76,27 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 			.add(SnomedRefSetMemberIndexEntry.Fields.ACCEPTABILITY_ID)
 			.build();
 	
-	private static final Ordering<SnomedDescriptionFragment> DESCRIPTION_FRAGMENT_ORDER = Ordering.natural()
+	private static final Ordering<SnomedDescriptionFragment> DESCRIPTION_TYPE_ORDER = Ordering.natural()
 			.onResultOf((SnomedDescriptionFragment description) -> {
 				if (Concepts.FULLY_SPECIFIED_NAME.equals(description.getTypeId())) {
-					return 0;
+					if (description.getLanguageRefSetIds().contains(Concepts.REFSET_LANGUAGE_TYPE_US)) {
+						return 0;
+					} else if (description.getLanguageRefSetIds().contains(Concepts.REFSET_LANGUAGE_TYPE_UK)) {
+						return 1;
+					}
+					return 2;
 				} else if (Concepts.SYNONYM.equals(description.getTypeId())) {
-					return 1;
+					return 3;
 				} else {
-					return description.getId();
+					return description.getTypeId();
 				}
 			});
+	
+	private static final Comparator<SnomedDescriptionFragment> DESCRIPTION_FRAGMENT_ORDER = DESCRIPTION_TYPE_ORDER.thenComparing(
+			Comparator.comparingInt(d -> d.getId().length())
+		).thenComparing(
+			Comparator.comparing(SnomedDescriptionFragment::getId)
+		);
 	
 	private final DoiData doiData;
 	private final IconIdUpdater iconId;
@@ -314,7 +325,6 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		if (inStated || inInferred) {
 			final String semanticTag = preferredDescriptions.stream()
 					.filter(f -> Concepts.FULLY_SPECIFIED_NAME.equals(f.getTypeId()))
-					.sorted(Comparator.comparing(SnomedDescriptionFragment::getId))
 					.findFirst()
 					.map(SnomedDescriptionFragment::getTerm)
 					.map(SnomedDescriptionIndexEntry::extractSemanticTag)

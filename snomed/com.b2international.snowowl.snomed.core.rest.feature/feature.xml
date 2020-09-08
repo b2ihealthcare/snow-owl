@@ -2,7 +2,7 @@
 <feature
       id="com.b2international.snowowl.snomed.core.rest.feature"
       label="SNOMED CT REST API Feature"
-      version="7.8.4"
+      version="7.9.0"
       provider-name="B2iHealthcare">
 
    <description url="http://b2i.sg">
