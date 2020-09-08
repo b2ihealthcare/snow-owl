@@ -358,11 +358,11 @@ public final class StagingArea {
 			final String prop = change.get("path").asText().substring(1); // XXX removes the forward slash from the beginning
 			final String from;
 			if (change.has("fromValue")) {
-				from = change.get("fromValue").asText();
+				from = serializeToCommitDetailValue(change.get("fromValue"));
 			} else  {
 				from = "";
 			}
-			final String to = change.get("value").asText();
+			final String to = serializeToCommitDetailValue(change.get("value"));
 			ListMultimap<String, String> objectIdsByType = ArrayListMultimap.create();
 			objects.forEach(objectId -> objectIdsByType.put(objectId.type(), objectId.id()));
 			// split by object type
@@ -481,6 +481,16 @@ public final class StagingArea {
 		mergeSources = null;
 		
 		return commitDoc;
+	}
+
+	private String serializeToCommitDetailValue(JsonNode value) {
+		if (value.isNull()) {
+			return null;
+		} else if (value.isArray()) {
+			return value.toString();
+		} else {
+			return value.asText();
+		}
 	}
 
 	/**
@@ -748,7 +758,7 @@ public final class StagingArea {
 				final DocumentMapping mapping = index.admin().mappings().getMapping(type);
 				final Iterable<? extends Revision> objectsToUpdate = index.read(toRef, searcher -> searcher.get(type, propertyUpdatesByObject.keySet()));
 				for (Revision objectToUpdate : objectsToUpdate) {
-					stageChange(objectToUpdate, objectToUpdate.withUpdates(mapping, propertyUpdatesByObject.get(objectToUpdate.getId())));
+					stageChange(objectToUpdate, objectToUpdate.withUpdates(mapper, mapping, propertyUpdatesByObject.get(objectToUpdate.getId())));
 					revisionsToReviseOnMergeSource.put(type, objectToUpdate.getId());
 				}
 			}
@@ -931,6 +941,11 @@ public final class StagingArea {
 		
 		public RevisionPropertyDiff convert(RevisionConflictProcessor processor) {
 			return new RevisionPropertyDiff(property, processor.convertPropertyValue(property, oldValue), processor.convertPropertyValue(property, newValue));
+		}
+		
+		@Override
+		public String toString() {
+			return String.format("%s[%s]", getProperty(), toValueChangeString());
 		}
 		
 	}
