@@ -67,6 +67,7 @@ public final class StagingArea {
 	private boolean squashMerge;
 	private Multimap<Class<?>, String> revisionsToReviseOnMergeSource;
 	private Object context;
+	private List<CommitDetail> clearMarkers;
 
 	StagingArea(DefaultRevisionIndex index, String branchPath, ObjectMapper mapper) {
 		this.index = index;
@@ -351,7 +352,7 @@ public final class StagingArea {
 			writer.setRevised(type, ImmutableSet.copyOf(revisionsToReviseOnMergeSource.get(type)), mergeFromBranchRef);
 		}
 		
-		final List<CommitDetail> details = newArrayList();
+		final List<CommitDetail> stagingAreaDetails = newArrayList();
 		
 		// collect property changes
 		revisionsByChange.asMap().forEach((change, objects) -> {
@@ -367,7 +368,7 @@ public final class StagingArea {
 			objects.forEach(objectId -> objectIdsByType.put(objectId.type(), objectId.id()));
 			// split by object type
 			objectIdsByType.keySet().forEach(type -> {
-				details.add(CommitDetail.changedProperty(prop, from, to, type, objectIdsByType.get(type)));
+				stagingAreaDetails.add(CommitDetail.changedProperty(prop, from, to, type, objectIdsByType.get(type)));
 			});
 		});
 
@@ -396,7 +397,7 @@ public final class StagingArea {
 				buildersByRelationship.values()
 					.stream()
 					.map(CommitDetail.Builder::build)
-					.forEach(details::add);
+					.forEach(stagingAreaDetails::add);
 			}
 		}
 		
@@ -408,19 +409,19 @@ public final class StagingArea {
 				String componentType = key.type();
 				switch (value.stageKind) {
 				case ADDED:
-					details.add(CommitDetail.added(componentType, componentType)
+					stagingAreaDetails.add(CommitDetail.added(componentType, componentType)
 							.objects(ObjectId.ROOT)
 							.components(Collections.singleton(key.id()))
 							.build());
 					break;
 				case CHANGED:
-					details.add(CommitDetail.changed(componentType, componentType)
+					stagingAreaDetails.add(CommitDetail.changed(componentType, componentType)
 							.objects(ObjectId.ROOT)
 							.components(Collections.singleton(key.id()))
 							.build());
 					break;
 				case REMOVED:
-					details.add(CommitDetail.removed(componentType, componentType)
+					stagingAreaDetails.add(CommitDetail.removed(componentType, componentType)
 							.objects(ObjectId.ROOT)
 							.components(Collections.singleton(key.id()))
 							.build());
@@ -429,6 +430,12 @@ public final class StagingArea {
 			}
 		});
 		
+		// TODO add clear markers
+//		List<CommitDetail> details = stagingAreaDetails;
+//		if (!clearMarkers.isEmpty()) {
+//			details.addAll(clearMarkers);
+//		}
+
 		// free up memory before committing 
 		reset();
 		newComponentsByContainer.clear();
@@ -440,6 +447,7 @@ public final class StagingArea {
 		if (writer.isEmpty() && CompareUtils.isEmpty(mergeSources)) {
 			return null;
 		}
+
 		
 		// generate a commit entry that marks the end of the commit and contains all changes in a details property
 		Commit commitDoc = commit
@@ -449,7 +457,7 @@ public final class StagingArea {
 				.branch(branchPath)
 				.comment(commitComment)
 				.timestamp(timestamp)
-				.details(details)
+				.details(stagingAreaDetails)
 				.mergeSource(!CompareUtils.isEmpty(mergeSources) ? mergeSources.last() : null)
 				.squashMerge(!CompareUtils.isEmpty(mergeSources) ? squashMerge : null)
 				.build();
@@ -515,6 +523,7 @@ public final class StagingArea {
 		stagedObjects = newHashMap();
 		exclusions = Sets.newHashSet();
 		revisionsToReviseOnMergeSource = HashMultimap.create();
+		clearMarkers = Lists.newArrayList();
 	}
 
 	public StagingArea stageNew(Revision newRevision) {
@@ -623,10 +632,10 @@ public final class StagingArea {
 		// check conflicts and commit only the resolved conflicts
 		final List<RevisionCompareDetail> toChangeDetails = toChanges.getDetails();
 		
-		// in case of fast-forward merge only check conflicts when there are changes on the to branch
-		if (toChangeDetails.isEmpty() && !squash) {
-			return;
-		}
+//		// in case of fast-forward merge only check conflicts when there are changes on the to branch
+//		if (toChangeDetails.isEmpty() && !squash) {
+//			return;
+//		}
 		
 		final RevisionBranchChangeSet fromChangeSet = new RevisionBranchChangeSet(index, fromRef, fromChanges);
 		final RevisionBranchChangeSet toChangeSet = new RevisionBranchChangeSet(index, toRef, toChanges);
@@ -761,7 +770,10 @@ public final class StagingArea {
 				for (Revision objectToUpdate : objectsToUpdate) {
 					final Collection<RevisionPropertyDiff> propertyDiffs = propertyUpdatesByObject.get(objectToUpdate.getId());
 					stageChange(objectToUpdate, objectToUpdate.withUpdates(mapper, mapping, propertyDiffs));
-					// TODO add clear marker
+					for (RevisionPropertyDiff propertyDiff : propertyDiffs) {
+						clearMarkers.add(CommitDetail.changedProperty(propertyDiff.property, propertyDiff.oldValue, propertyDiff.newValue,
+								objectToUpdate.getObjectId().type(), List.of(objectToUpdate.getObjectId().id())).asClear());
+					}
 					revisionsToReviseOnMergeSource.put(type, objectToUpdate.getId());
 				}
 			}
@@ -770,16 +782,16 @@ public final class StagingArea {
 		// apply clear marker for removed objects on both branches
 		for (Class<? extends Revision> removedType : fromChangeSet.getRemovedTypes()) {
 			if (toChangeSet.getRemovedTypes().contains(removedType)) {
-//				CommitDetail.removed(container.type(), removedObject.type());
 				Set<String> removedIdsOnTarget = toChangeSet.getRemovedIds(removedType);
 				for (String removedIdOnSource : fromChangeSet.getRemovedIds(removedType)) {
 					if (removedIdsOnTarget.contains(removedIdOnSource)) {
-						// TODO add CLEAR marker to merge commit
 						ObjectId removedObject = ObjectId.of(removedType, removedIdOnSource);
 						ObjectId container = fromChangeSet.getContainerId(removedObject);
-//						CommitDetail clearMarker = 
-//								.objects(List.of(container.id()))
-//								.components(List.of(Set.of(removedIdOnSource)));
+						clearMarkers.add(CommitDetail.removed(container.type(), removedObject.type())
+								.objects(List.of(container.id()))
+								.components(List.of(Set.of(removedIdOnSource)))
+								.build()
+								.asClear());
 					}
 				}
 			}

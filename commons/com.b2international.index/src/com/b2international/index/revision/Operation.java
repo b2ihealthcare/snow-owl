@@ -30,7 +30,7 @@ public enum Operation {
 		ADD("+"),
 	    REMOVE("-"),
 	    CHANGE("~"),
-	    CLEAR("X");
+	    CLEAR("x");
 	
 		private final static Map<String, Operation> OPS = initOps();
 

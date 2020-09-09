@@ -267,6 +267,11 @@ public final class CommitDetail {
 	}
 	
 	@JsonIgnore
+	public boolean isClear() {
+		return Operation.CLEAR == op;
+	}
+	
+	@JsonIgnore
 	public boolean isEmpty() {
 		return !isPropertyChange() && CompareUtils.isEmpty(objects);
 	}

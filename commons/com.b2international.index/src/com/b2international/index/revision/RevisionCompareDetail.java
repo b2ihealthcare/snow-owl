@@ -151,6 +151,11 @@ public final class RevisionCompareDetail {
 	public boolean isRemove() {
 		return Operation.REMOVE == op;
 	}
+	
+	@JsonIgnore
+	public boolean isClear() {
+		return Operation.CLEAR == op;
+	}
 
 	@JsonIgnore
 	String key() {
@@ -159,7 +164,10 @@ public final class RevisionCompareDetail {
 
 	RevisionCompareDetail merge(RevisionCompareDetail other) {
 		checkArgument(key().equals(other.key()), "Cannot merge unrelated compare details.");
-		if (isComponentChange()) {
+		if (isClear() || other.isClear()) {
+			// if either this or the other is CLEAR then clear it regardless of what actually happened
+			return null;
+		} else if (isComponentChange()) {
 			if ((isAdd() && other.isRemove()) || (isRemove() && other.isAdd())) {
 				// NEW and REMOVED, clear it, nothing happened
 				return null;
