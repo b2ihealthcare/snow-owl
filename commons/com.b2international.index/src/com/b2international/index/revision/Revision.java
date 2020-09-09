@@ -18,8 +18,11 @@ package com.b2international.index.revision;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
+import org.apache.commons.lang.ClassUtils;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -34,6 +37,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.MoreObjects.ToStringHelper;
+import com.google.common.collect.Iterables;
 
 import net.jodah.typetools.TypeResolver;
 
@@ -187,6 +191,12 @@ public abstract class Revision {
 			
 			for (Method m : getClass().getMethods()) {
 				if (m.getName().equals(property)) {
+					Class<?> parameterType = Iterables.getOnlyElement(Arrays.asList(m.getParameterTypes()));
+					
+					if (!ClassUtils.isAssignable(parameterType, value.getClass(), true)) {
+						continue;
+					}
+					
 					try {
 						m.invoke(this, value);
 					} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
