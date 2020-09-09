@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,8 @@ public enum Operation {
 		
 		ADD("+"),
 	    REMOVE("-"),
-	    CHANGE("~");
+	    CHANGE("~"),
+	    CLEAR("X");
 	
 		private final static Map<String, Operation> OPS = initOps();
 
@@ -38,6 +39,7 @@ public enum Operation {
 	        map.put(ADD.opType, ADD);
 	        map.put(REMOVE.opType, REMOVE);
 	        map.put(CHANGE.opType, CHANGE);
+	        map.put(CLEAR.opType, CLEAR);
 	        return Collections.unmodifiableMap(map);
 	    }
 
@@ -66,6 +68,7 @@ public enum Operation {
 			case "add": return Operation.ADD;
 			case "remove": return Operation.REMOVE;
 			case "replace": return Operation.CHANGE;
+			case "clear": return Operation.CLEAR;
 			default: throw new IllegalArgumentException("unknown / unsupported operation " + rfcName);
 			}
 		}

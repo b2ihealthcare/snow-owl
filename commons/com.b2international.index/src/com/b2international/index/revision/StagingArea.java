@@ -759,8 +759,28 @@ public final class StagingArea {
 				final DocumentMapping mapping = index.admin().mappings().getMapping(type);
 				final Iterable<? extends Revision> objectsToUpdate = index.read(toRef, searcher -> searcher.get(type, propertyUpdatesByObject.keySet()));
 				for (Revision objectToUpdate : objectsToUpdate) {
-					stageChange(objectToUpdate, objectToUpdate.withUpdates(mapper, mapping, propertyUpdatesByObject.get(objectToUpdate.getId())));
+					final Collection<RevisionPropertyDiff> propertyDiffs = propertyUpdatesByObject.get(objectToUpdate.getId());
+					stageChange(objectToUpdate, objectToUpdate.withUpdates(mapper, mapping, propertyDiffs));
+					// TODO add clear marker
 					revisionsToReviseOnMergeSource.put(type, objectToUpdate.getId());
+				}
+			}
+		}
+		
+		// apply clear marker for removed objects on both branches
+		for (Class<? extends Revision> removedType : fromChangeSet.getRemovedTypes()) {
+			if (toChangeSet.getRemovedTypes().contains(removedType)) {
+//				CommitDetail.removed(container.type(), removedObject.type());
+				Set<String> removedIdsOnTarget = toChangeSet.getRemovedIds(removedType);
+				for (String removedIdOnSource : fromChangeSet.getRemovedIds(removedType)) {
+					if (removedIdsOnTarget.contains(removedIdOnSource)) {
+						// TODO add CLEAR marker to merge commit
+						ObjectId removedObject = ObjectId.of(removedType, removedIdOnSource);
+						ObjectId container = fromChangeSet.getContainerId(removedObject);
+//						CommitDetail clearMarker = 
+//								.objects(List.of(container.id()))
+//								.components(List.of(Set.of(removedIdOnSource)));
+					}
 				}
 			}
 		}

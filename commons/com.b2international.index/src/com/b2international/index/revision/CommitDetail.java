@@ -253,17 +253,17 @@ public final class CommitDetail {
 	
 	@JsonIgnore
 	public boolean isAdd() {
-		return Operation.ADD == op; 
+		return Operation.ADD == op;
 	}
 	
 	@JsonIgnore
 	public boolean isRemove() {
-		return Operation.REMOVE == op; 
+		return Operation.REMOVE == op;
 	}
 	
 	@JsonIgnore
 	public boolean isChange() {
-		return Operation.CHANGE == op; 
+		return Operation.CHANGE == op;
 	}
 	
 	@JsonIgnore
@@ -294,6 +294,14 @@ public final class CommitDetail {
 	@JsonIgnore
 	public boolean isPropertyChange() {
 		return !Strings.isNullOrEmpty(prop);
+	}
+	
+	/**
+	 * Convert this {@link CommitDetail} to a clear marker. This is currently being used by merge commits to clear out certain parts of commits which happened on both branches.
+	 * @return
+	 */
+	public CommitDetail asClear() {
+		return new CommitDetail(Operation.CLEAR, prop, from, to, objectType, objects, componentType, components);
 	}
 	
 }
