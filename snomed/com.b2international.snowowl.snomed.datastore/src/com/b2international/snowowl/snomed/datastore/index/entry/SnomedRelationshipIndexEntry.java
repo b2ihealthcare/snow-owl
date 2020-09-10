@@ -202,7 +202,7 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 		}
 		
 		@Override
-		protected Builder getSelf() {
+		public Builder getSelf() {
 			return this;
 		}
 
@@ -337,7 +337,7 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 	}
 	
 	@Override
-	protected Revision.Builder<?, ? extends Revision> toBuilder() {
+	public Revision.Builder<?, ? extends Revision> toBuilder() {
 		return builder(this);
 	}
 

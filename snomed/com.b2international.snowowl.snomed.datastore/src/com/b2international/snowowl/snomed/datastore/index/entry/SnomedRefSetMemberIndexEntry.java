@@ -628,7 +628,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		}
 
 		@Override
-		protected Builder getSelf() {
+		public Builder getSelf() {
 			return this;
 		}
 
@@ -1088,7 +1088,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	}
 	
 	@Override
-	protected Revision.Builder<?, ? extends Revision> toBuilder() {
+	public Revision.Builder<?, ? extends Revision> toBuilder() {
 		return builder(this);
 	}
 
