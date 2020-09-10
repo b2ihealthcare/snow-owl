@@ -38,6 +38,22 @@ public final class ConceptMapMappingSearchRequestBuilder extends SearchResourceR
 		return addOption(OptionKey.SOURCE_TOOLING_ID, toolingId);
 	}
 	
+	public ConceptMapMappingSearchRequestBuilder filterByReferencedComponentId(String componentId) {
+		return filterByReferencedComponentIds(ImmutableSet.of(componentId));
+	}
+	
+	public ConceptMapMappingSearchRequestBuilder filterByReferencedComponentIds(Iterable<String> componentIds) {
+		return addOption(OptionKey.REFERENCED_COMPONENT, componentIds);
+	}
+	
+	public ConceptMapMappingSearchRequestBuilder filterByMapTarget(String mapTarget) {
+		return filterByMapTargets(ImmutableSet.of(mapTarget));
+	}
+	
+	public ConceptMapMappingSearchRequestBuilder filterByMapTargets(Iterable<String> mapTarget) {
+		return addOption(OptionKey.MAP_TARGET, mapTarget);
+	}
+	
 	@Override
 	protected SearchResourceRequest<BranchContext, ConceptMapMappings> createSearch() {
 		return new ConceptMapMappingSearchRequest();
