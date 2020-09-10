@@ -148,6 +148,8 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 		mappingBuilder.mapRule((String) properties.get(SnomedRf2Headers.FIELD_MAP_RULE));
 
 		return mappingBuilder
+				.containerSetURI(ComponentURI.of(codeSystemURI.getCodeSystem(), SnomedTerminologyComponentConstants.REFSET_NUMBER, member.getReferenceSetId()))
+				.memberId(member.getId())
 				.active(true)
 				.sourceIconId(iconId)
 				.sourceTerm(term)
