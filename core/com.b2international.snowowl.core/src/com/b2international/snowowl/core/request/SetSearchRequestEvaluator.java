@@ -51,7 +51,17 @@ public interface SetSearchRequestEvaluator<R> {
 		/**
 		 * Search for mappings with the specified source tooling id.
 		 */
-		SOURCE_TOOLING_ID
+		SOURCE_TOOLING_ID,
+		
+		/**
+		 * Search for mappings with the specified referenced component id(s)
+		 */
+		REFERENCED_COMPONENT,
+		
+		/**
+		 * Search for mappings with the specified map target id(s)
+		 */
+		MAP_TARGET
 	}
 	
 	/**
