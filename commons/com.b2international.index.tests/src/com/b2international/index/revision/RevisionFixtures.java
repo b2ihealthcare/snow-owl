@@ -74,7 +74,7 @@ public class RevisionFixtures {
 			}
 			
 			@Override
-			protected Builder getSelf() {
+			public Builder getSelf() {
 				return this;
 			}
 
@@ -134,7 +134,7 @@ public class RevisionFixtures {
 		}
 		
 		@Override
-		protected Builder toBuilder() {
+		public Builder toBuilder() {
 			return new Builder(this);
 		}
 	}

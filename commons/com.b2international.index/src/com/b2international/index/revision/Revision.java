@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,20 +18,13 @@ package com.b2international.index.revision;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
-import com.b2international.index.IndexException;
 import com.b2international.index.Script;
 import com.b2international.index.mapping.DocumentMapping;
-import com.b2international.index.revision.StagingArea.RevisionPropertyDiff;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.MoreObjects.ToStringHelper;
 
@@ -40,14 +33,17 @@ import net.jodah.typetools.TypeResolver;
 /**
  * @since 4.7
  */
-@Script(name=Revision.UPDATE_REVISED, script=""
+@Script(
+	name=Revision.UPDATE_REVISED, 
+	script=""
 		+ "int idx = ctx._source.revised.indexOf(params.oldRevised);"
 		+ "if (idx > -1) {"
 		+ "    ctx._source.revised.set(idx, params.newRevised);"
 		+ "} else {"
 		+ "    ctx._source.revised.add(params.newRevised);"
-		+ "}")
-public abstract class Revision {
+		+ "}"
+)
+public abstract class Revision implements Mutable {
 	
 	public static class Fields {
 		public static final String ID = "id";
@@ -113,18 +109,6 @@ public abstract class Revision {
 		return ObjectId.rootOf(DocumentMapping.getType(getClass())).equals(getContainerId());
 	}
 	
-	public Revision withUpdates(ObjectMapper mapper, DocumentMapping mapping, Collection<RevisionPropertyDiff> propertyDiffs) throws IndexException {
-		Revision.Builder<?, ? extends Revision> builder = toBuilder();
-		for (RevisionPropertyDiff diff : propertyDiffs) {
-			try {
-				builder = builder._setProperty(mapper, mapping, diff.getProperty(), diff.getNewValue());
-			} catch (Exception e) {
-				throw new IndexException("Couldn't apply property change update: " + diff, e);
-			} 
-		}
-		return builder.build();
-	}
-	
 	@Override
 	public final String toString() {
 		return doToString().toString();
@@ -137,16 +121,12 @@ public abstract class Revision {
 				.add(Revision.Fields.REVISED, revised);
 	}
 	
-	protected Builder<?, ? extends Revision> toBuilder() {
-		throw new UnsupportedOperationException("TODO implement a custom builder for document: " + getClass());
-	}
-	
 	/**
 	 * @since 7.0
 	 * @param <B>
 	 * @param <T>
 	 */
-	public static abstract class Builder<B extends Builder<B, T>, T extends Revision> {
+	public static abstract class Builder<B extends Builder<B, T>, T extends Revision> implements Mutable.Builder<B, T> {
 		
 		// XXX only for JSON deserialization
 		protected RevisionBranchPoint created;
@@ -163,44 +143,6 @@ public abstract class Revision {
 			this.created = created;
 			return getSelf();
 		}
-		
-		B _setProperty(ObjectMapper mapper, DocumentMapping mapping, String property, String newValue) throws Exception {
-			final Class<?> fieldType = mapping.getFieldType(property);
-			final Object value;
-			if (String.class == fieldType) {
-				value = newValue;
-			} else if (Boolean.class == fieldType || boolean.class == fieldType) {
-				value = Boolean.valueOf(newValue);
-			} else if (Short.class == fieldType || short.class == fieldType) {
-				value = Short.valueOf(newValue);
-			} else if (Long.class == fieldType || long.class == fieldType) {
-				value = Long.valueOf(newValue);
-			} else if (String[].class.isAssignableFrom(fieldType)) {
-				value = mapper.readValue(newValue, String[].class);
-			} else if (Set.class.isAssignableFrom(fieldType)) {
-				value = Set.of(mapper.readValue(newValue, String[].class));
-			} else if (List.class.isAssignableFrom(fieldType)) {
-				value = List.of(mapper.readValue(newValue, String[].class));
-			} else {
-				throw new UnsupportedOperationException("TODO reflective property setter is not supported for property: " + property + " > " + fieldType);
-			}
-			
-			for (Method m : getClass().getMethods()) {
-				if (m.getName().equals(property)) {
-					try {
-						m.invoke(this, value);
-					} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-						throw new RuntimeException(e);
-					}
-					return getSelf();
-				}
-			}
-			throw new IllegalArgumentException("Couldn't find public builder method for property: " + property);
-		}
-		
-		protected abstract B getSelf();
-		
-		public abstract T build();
 		
 		protected final Class<T> getDocumentType() {
 			final Class<?>[] types = TypeResolver.resolveRawArguments(Revision.Builder.class, getClass());
