@@ -35,6 +35,8 @@ public final class ConceptMapMapping implements Serializable {
 	
 	public static Builder builder(ConceptMapMapping from) {
 		return builder()
+				.containerSetURI(from.containerSetURI)
+				.memberId(from.memberId)
 				.active(from.isActive())
 				.mapAdvice(from.getMapAdvice())
 				.mapGroup(from.getMapGroup())
