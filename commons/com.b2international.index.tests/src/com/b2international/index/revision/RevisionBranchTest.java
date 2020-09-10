@@ -206,7 +206,7 @@ public class RevisionBranchTest {
 		RevisionBranchRef baseDiff = base.difference(compare);
 		RevisionBranchRef compareDiff = compare.difference(base);
 		
-		assertTrue(baseDiff.isEmpty());
+		assertEquals(ImmutableSortedSet.of(new RevisionSegment(base.getId(), 301, 600)), baseDiff.segments());
 		assertTrue(compareDiff.isEmpty());
 	}
 	
