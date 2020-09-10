@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -121,12 +121,12 @@ public abstract class AbstractBranchChangeRequest implements Request<RepositoryC
 				applyChanges(context, source, target);
 				return merge.completed();
 			} catch (BranchMergeConflictException e) {
-				return merge.failedWithConflicts(toMergeConflicts(e.getConflicts()));
+				return merge.failedWithConflicts(e.getMessage(), toMergeConflicts(e.getConflicts()));
 			} catch (ApiException e) {
 				return merge.failed(e.toApiError());
 			} catch (RuntimeException e) {
 				context.log().error("Failed to merge {} into {}", sourcePath, targetPath, e);
-				return merge.failed(ApiError.Builder.of(e.getMessage()).build());
+				return merge.failed(ApiError.of(e.getMessage()));
 			}
 			
 		} catch (NotFoundException e) {

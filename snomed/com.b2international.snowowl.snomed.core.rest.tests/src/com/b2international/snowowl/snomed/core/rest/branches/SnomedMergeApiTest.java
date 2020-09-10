@@ -48,6 +48,7 @@ import com.b2international.snowowl.snomed.core.domain.AssociationTarget;
 import com.b2international.snowowl.snomed.core.domain.InactivationProperties;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
+import com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
 import com.google.common.collect.ImmutableMap;
 
@@ -919,4 +920,38 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		merge(task1, branchPath, "Promote task 1").body("status", equalTo(Merge.Status.COMPLETED.name()));
 		getComponent(branchPath, SnomedComponentType.CONCEPT, task1Concept).statusCode(200);
 	}
+	
+	@Test
+	public void rebaseMultipleChangesFromParent() throws Exception {
+		final String concept = createNewConcept(branchPath);
+		
+		final IBranchPath task = BranchPathUtils.createPath(branchPath, "task1");
+		branching.createBranch(task).statusCode(201);
+		
+		String newParentDescription1 = createNewDescription(branchPath, concept, Concepts.SYNONYM, SnomedApiTestConstants.UK_PREFERRED_MAP);
+		String newChildDescription1 = createNewDescription(task, concept, Concepts.SYNONYM, SnomedApiTestConstants.UK_PREFERRED_MAP);
+		merge(branchPath, task, "Synchronize task").body("status", equalTo(Merge.Status.COMPLETED.name()));
+		getComponent(task, SnomedComponentType.CONCEPT, concept).statusCode(200);
+		getComponent(task, SnomedComponentType.DESCRIPTION, newParentDescription1).statusCode(200);
+		getComponent(task, SnomedComponentType.DESCRIPTION, newChildDescription1).statusCode(200);
+		
+		String newParentDescription2 = createNewDescription(branchPath, concept, Concepts.SYNONYM, SnomedApiTestConstants.UK_PREFERRED_MAP);
+		String newChildDescription2 = createNewDescription(task, concept, Concepts.SYNONYM, SnomedApiTestConstants.UK_PREFERRED_MAP);
+		merge(branchPath, task, "Synchronize task").body("status", equalTo(Merge.Status.COMPLETED.name()));
+		getComponent(task, SnomedComponentType.CONCEPT, concept).statusCode(200);
+		getComponent(task, SnomedComponentType.DESCRIPTION, newParentDescription2).statusCode(200);
+		getComponent(task, SnomedComponentType.DESCRIPTION, newChildDescription2).statusCode(200);
+
+		String newParentDescription3 = createNewDescription(branchPath, concept, Concepts.SYNONYM, SnomedApiTestConstants.UK_PREFERRED_MAP);
+		String newChildDescription3 = createNewDescription(task, concept, Concepts.SYNONYM, SnomedApiTestConstants.UK_PREFERRED_MAP);
+		merge(branchPath, task, "Synchronize task").body("status", equalTo(Merge.Status.COMPLETED.name()));
+		getComponent(task, SnomedComponentType.CONCEPT, concept).statusCode(200);
+		getComponent(task, SnomedComponentType.DESCRIPTION, newParentDescription3).statusCode(200);
+		getComponent(task, SnomedComponentType.DESCRIPTION, newChildDescription3).statusCode(200);
+		
+		SnomedConcept finalConcept = getComponent(task, SnomedComponentType.CONCEPT, concept, "descriptions(),preferredDescriptions()").statusCode(200).extract().as(SnomedConcept.class);
+		assertThat(finalConcept.getDescriptions()).hasSize(8); // 2 default + 6 newly added
+		assertThat(finalConcept.getPreferredDescriptions()).hasSize(8);
+	}
+	
 }

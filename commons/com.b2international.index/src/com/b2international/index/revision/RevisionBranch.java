@@ -170,6 +170,17 @@ public final class RevisionBranch extends MetadataHolderImpl {
 		return new Builder();
 	}
 	
+	public static Builder builder(RevisionBranch from) {
+		return builder()
+				.id(from.getId())
+				.name(from.getName())
+				.parentPath(from.getParentPath())
+				.metadata(from.metadata())
+				.deleted(from.isDeleted())
+				.segments(from.getSegments())
+				.mergeSources(from.getMergeSources());
+	}
+	
 	@JsonPOJOBuilder(withPrefix="")
 	public static final class Builder {
 		
@@ -434,6 +445,30 @@ public final class RevisionBranch extends MetadataHolderImpl {
 	@JsonIgnore
 	public boolean isEmpty() {
 		return getBaseTimestamp() == getHeadTimestamp();
+	}
+
+	/**
+	 * Returns the intersection {@link RevisionBranchRef} of this {@link RevisionBranch} and the given other {@link RevisionBranch}.
+	 * 
+	 * @param other - the branch to use for computing the intersection
+	 * @return
+	 */
+	public RevisionBranchRef intersection(RevisionBranch other) {
+		return ref().intersection(other.ref());
+	}
+
+	/**
+	 * Returns the difference {@link RevisionBranchRef} of this {@link RevisionBranch} and the given other {@link RevisionBranch}.
+	 * 
+	 * @param other - the branch to use for computing the difference
+	 * @return
+	 */
+	public RevisionBranchRef difference(RevisionBranch other) {
+		return ref().difference(other.ref());
+	}
+
+	public RevisionBranch.Builder toBuilder() {
+		return builder(this);
 	}
 
 }

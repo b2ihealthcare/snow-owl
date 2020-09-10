@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -125,8 +125,8 @@ public final class Merge implements Serializable {
 		return new Merge(id, source, target, Status.FAILED, scheduledDate, startDate, new Date(), newApiError, conflicts);
 	}
 
-	public Merge failedWithConflicts(Collection<MergeConflict> newConflicts) {
-		return new Merge(id, source, target, Status.CONFLICTS, scheduledDate, startDate, new Date(), apiError, newConflicts);
+	public Merge failedWithConflicts(String errorMessage, Collection<MergeConflict> newConflicts) {
+		return new Merge(id, source, target, Status.CONFLICTS, scheduledDate, startDate, new Date(), ApiError.of(errorMessage), newConflicts);
 	}
 
 	public Merge cancelRequested() {
