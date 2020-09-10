@@ -2,7 +2,7 @@
 <feature
       id="com.b2international.snowowl.snomed.cis.feature"
       label="Snow Owl SNOMED CT CIS Feature"
-      version="7.9.0"
+      version="7.9.1"
       provider-name="B2i Healthcare">
 
    <description url="http://www.example.com/description">

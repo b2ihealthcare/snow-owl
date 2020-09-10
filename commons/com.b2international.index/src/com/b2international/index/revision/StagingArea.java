@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -358,11 +358,11 @@ public final class StagingArea {
 			final String prop = change.get("path").asText().substring(1); // XXX removes the forward slash from the beginning
 			final String from;
 			if (change.has("fromValue")) {
-				from = change.get("fromValue").asText();
+				from = serializeToCommitDetailValue(change.get("fromValue"));
 			} else  {
 				from = "";
 			}
-			final String to = change.get("value").asText();
+			final String to = serializeToCommitDetailValue(change.get("value"));
 			ListMultimap<String, String> objectIdsByType = ArrayListMultimap.create();
 			objects.forEach(objectId -> objectIdsByType.put(objectId.type(), objectId.id()));
 			// split by object type
@@ -483,6 +483,16 @@ public final class StagingArea {
 		return commitDoc;
 	}
 
+	private String serializeToCommitDetailValue(JsonNode value) {
+		if (value.isNull()) {
+			return null;
+		} else if (value.isArray()) {
+			return value.toString();
+		} else {
+			return value.asText();
+		}
+	}
+
 	/**
 	 * Dirty staging area if at least one object has been staged.
 	 * @return <code>true</code> if the staging area is dirty and can be committed via {@link #commit(String, long, String, String)}
@@ -588,13 +598,13 @@ public final class StagingArea {
 	
 	void merge(RevisionBranchRef fromRef, RevisionBranchRef toRef, boolean squash, RevisionConflictProcessor conflictProcessor, Set<String> exclusions) {
 		checkArgument(this.mergeSources == null, "Already merged another ref to this StagingArea. Commit staged changes to apply them.");
-		this.mergeSources = fromRef.difference(toRef)
+		this.mergeFromBranchRef = fromRef.difference(toRef);
+		this.mergeSources = this.mergeFromBranchRef
 				.segments()
 				.stream()
 				.filter(segment -> segment.branchId() != toRef.branchId())
 				.map(RevisionSegment::getEndPoint)
 				.collect(Collectors.toCollection(TreeSet::new));
-		this.mergeFromBranchRef = fromRef;
 		this.squashMerge = squash;
 		if (exclusions != null) {
 			this.exclusions.addAll(exclusions);
@@ -661,7 +671,7 @@ public final class StagingArea {
 			final String docType = DocumentMapping.getType(type);
 			Set<String> changedRevisionIdsToMerge = newHashSet(fromChangeSet.getChangedIds(type));
 			// first handle changed vs. removed
-			Set<String> changedInSourceDetachedInTargetIds = Sets.intersection(changedRevisionIdsToMerge, removedRevisionIdsToCheck);
+			Set<String> changedInSourceDetachedInTargetIds = Sets.newHashSet(Sets.intersection(changedRevisionIdsToMerge, removedRevisionIdsToCheck));
 			if (!changedInSourceDetachedInTargetIds.isEmpty()) {
 				// report any conflicts
 				changedInSourceDetachedInTargetIds.forEach(changedInSourceDetachedInTargetId -> {
@@ -696,7 +706,7 @@ public final class StagingArea {
 							final RevisionCompareDetail sourcePropertyChange = sourceChange.getValue();
 							
 							final RevisionPropertyDiff sourceChangeDiff = new RevisionPropertyDiff(changedProperty, sourcePropertyChange.getFromValue(), sourcePropertyChange.getValue());
-							final RevisionCompareDetail targetPropertyChange = targetPropertyChanges.get(changedProperty);
+							final RevisionCompareDetail targetPropertyChange = targetPropertyChanges == null ? null : targetPropertyChanges.get(changedProperty);
 							
 							if (targetPropertyChange == null) {
 								// this property did not change in target, just apply directly on the target object via
@@ -724,6 +734,10 @@ public final class StagingArea {
 								fromChangeSet.removeChanged(type, changedInSourceAndTargetId);
 							}
 						}
+					} else {
+						// this object has changed on both sides probably due to some cascading change, revise the revision on source, since we already have one on this branch
+						revisionsToReviseOnMergeSource.put(type, changedInSourceAndTargetId);
+						fromChangeSet.removeChanged(type, changedInSourceAndTargetId);
 					}
 				}
 			}
@@ -745,7 +759,7 @@ public final class StagingArea {
 				final DocumentMapping mapping = index.admin().mappings().getMapping(type);
 				final Iterable<? extends Revision> objectsToUpdate = index.read(toRef, searcher -> searcher.get(type, propertyUpdatesByObject.keySet()));
 				for (Revision objectToUpdate : objectsToUpdate) {
-					stageChange(objectToUpdate, objectToUpdate.withUpdates(mapping, propertyUpdatesByObject.get(objectToUpdate.getId())));
+					stageChange(objectToUpdate, objectToUpdate.withUpdates(mapper, mapping, propertyUpdatesByObject.get(objectToUpdate.getId())));
 					revisionsToReviseOnMergeSource.put(type, objectToUpdate.getId());
 				}
 			}
@@ -928,6 +942,11 @@ public final class StagingArea {
 		
 		public RevisionPropertyDiff convert(RevisionConflictProcessor processor) {
 			return new RevisionPropertyDiff(property, processor.convertPropertyValue(property, oldValue), processor.convertPropertyValue(property, newValue));
+		}
+		
+		@Override
+		public String toString() {
+			return String.format("%s[%s]", getProperty(), toValueChangeString());
 		}
 		
 	}

@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>snomed-parent</artifactId>
-		<version>7.9.0</version>
+		<version>7.9.1</version>
 	</parent>
 	<artifactId>com.b2international.snowowl.snomed.ecl.tests</artifactId>
 	<packaging>eclipse-test-plugin</packaging>

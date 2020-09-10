@@ -23,12 +23,15 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
+import com.b2international.index.IndexException;
 import com.b2international.index.Script;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.revision.StagingArea.RevisionPropertyDiff;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.MoreObjects.ToStringHelper;
 
@@ -110,10 +113,14 @@ public abstract class Revision {
 		return ObjectId.rootOf(DocumentMapping.getType(getClass())).equals(getContainerId());
 	}
 	
-	public Revision withUpdates(DocumentMapping mapping, Collection<RevisionPropertyDiff> propertyDiffs) {
+	public Revision withUpdates(ObjectMapper mapper, DocumentMapping mapping, Collection<RevisionPropertyDiff> propertyDiffs) throws IndexException {
 		Revision.Builder<?, ? extends Revision> builder = toBuilder();
 		for (RevisionPropertyDiff diff : propertyDiffs) {
-			builder = builder._setProperty(mapping, diff.getProperty(), diff.getNewValue()); 
+			try {
+				builder = builder._setProperty(mapper, mapping, diff.getProperty(), diff.getNewValue());
+			} catch (Exception e) {
+				throw new IndexException("Couldn't apply property change update: " + diff, e);
+			} 
 		}
 		return builder.build();
 	}
@@ -157,7 +164,7 @@ public abstract class Revision {
 			return getSelf();
 		}
 		
-		B _setProperty(DocumentMapping mapping, String property, String newValue) {
+		B _setProperty(ObjectMapper mapper, DocumentMapping mapping, String property, String newValue) throws Exception {
 			final Class<?> fieldType = mapping.getFieldType(property);
 			final Object value;
 			if (String.class == fieldType) {
@@ -168,6 +175,12 @@ public abstract class Revision {
 				value = Short.valueOf(newValue);
 			} else if (Long.class == fieldType || long.class == fieldType) {
 				value = Long.valueOf(newValue);
+			} else if (String[].class.isAssignableFrom(fieldType)) {
+				value = mapper.readValue(newValue, String[].class);
+			} else if (Set.class.isAssignableFrom(fieldType)) {
+				value = Set.of(mapper.readValue(newValue, String[].class));
+			} else if (List.class.isAssignableFrom(fieldType)) {
+				value = List.of(mapper.readValue(newValue, String[].class));
 			} else {
 				throw new UnsupportedOperationException("TODO reflective property setter is not supported for property: " + property + " > " + fieldType);
 			}

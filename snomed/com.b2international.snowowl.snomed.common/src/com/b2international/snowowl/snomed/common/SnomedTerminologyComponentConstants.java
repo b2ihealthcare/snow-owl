@@ -52,6 +52,9 @@ public abstract class SnomedTerminologyComponentConstants {
 	public static final String TEMPLATE = "com.b2international.snowowl.terminology.snomed.template";
 	public static final short TEMPLATE_NUMBER = 106;
 	
+	/**
+	 * @deprecated - will be moved to test API in Snow Owl 8.0, using it in business logic might yield incorrect results
+	 */
 	public static final String SNOMED_SHORT_NAME = "SNOMEDCT";
 	public static final String SNOMED_NAME = "SNOMED CT";
 	
@@ -65,6 +68,9 @@ public abstract class SnomedTerminologyComponentConstants {
 			"Patients benefit from the use of SNOMED CT because it improves the recording of EHR information and facilitates better communication, " +
 			"leading to improvements in the quality of care.";
 	
+	/**
+	 * @deprecated - will be moved to test API in Snow Owl 8.0, using it in business logic might yield incorrect results
+	 */
 	public static final String SNOMED_B2I_SHORT_NAME = SNOMED_SHORT_NAME + "-B2I";
 	public static final String SNOMED_B2I_NAME = SNOMED_NAME + ", B2i extension";
 	public static final String SNOMED_B2I_OID = SNOMED_INT_OID + ".1000154";
