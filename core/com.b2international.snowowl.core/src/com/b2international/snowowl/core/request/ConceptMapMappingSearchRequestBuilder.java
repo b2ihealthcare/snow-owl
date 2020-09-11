@@ -54,6 +54,14 @@ public final class ConceptMapMappingSearchRequestBuilder extends SearchResourceR
 		return addOption(OptionKey.MAP_TARGET, mapTarget);
 	}
 	
+	public ConceptMapMappingSearchRequestBuilder filterByComponentId(String componentId) {
+		return filterByComponentIds(ImmutableSet.of(componentId));
+	}
+	
+	public ConceptMapMappingSearchRequestBuilder filterByComponentIds(Iterable<String> componentIds) {
+		return addOption(OptionKey.COMPONENT, componentIds);
+	}
+	
 	@Override
 	protected SearchResourceRequest<BranchContext, ConceptMapMappings> createSearch() {
 		return new ConceptMapMappingSearchRequest();

@@ -61,7 +61,12 @@ public interface SetSearchRequestEvaluator<R> {
 		/**
 		 * Search for mappings with the specified map target id(s)
 		 */
-		MAP_TARGET
+		MAP_TARGET,
+		
+		/**
+		 * Matches concept map mappings where either the source or target component id matches the given value.
+		 */
+		COMPONENT
 	}
 	
 	/**

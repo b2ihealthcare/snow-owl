@@ -76,7 +76,12 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 		/**
 		 * Filter by member specific props, the value should be a {@link Map} of RF2 headers and their corresponding values.
 		 */
-		PROPS
+		PROPS,
+		
+		/**
+		 * Matches reference set members where either the referenced component or map target matches the given value.
+		 */
+		COMPONENT
 	}
 
 	SnomedRefSetMemberSearchRequest() {}
@@ -100,6 +105,7 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 		addIdFilter(queryBuilder, RevisionDocument.Expressions::ids);
 		addEffectiveTimeClause(queryBuilder);
 		addEclFilter(context, queryBuilder, OptionKey.REFSET, SnomedRefSetMemberIndexEntry.Expressions::referenceSetId);
+		addComponentClause(queryBuilder);
 		
 		if (containsKey(OptionKey.REFERENCED_COMPONENT_TYPE)) {
 			queryBuilder.filter(referencedComponentTypes(getCollection(OptionKey.REFERENCED_COMPONENT_TYPE, Short.class)));
@@ -268,6 +274,18 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 	private static void checkRangeValue(final Collection<Object> attributeValues) {
 		if (attributeValues.size() != 1) {
 			throw new BadRequestException("Exactly one attribute value is required for range queries");
+		}
+	}
+	
+	private void addComponentClause(ExpressionBuilder builder) {
+		if (containsKey(OptionKey.COMPONENT)) {
+			final Collection<String> componentIds = getCollection(OptionKey.COMPONENT, String.class);
+			builder.filter(
+				Expressions.builder()
+					.should(referencedComponentIds(componentIds))
+					.should(mapTargets(componentIds))
+				.build()
+			);
 		}
 	}
 	
