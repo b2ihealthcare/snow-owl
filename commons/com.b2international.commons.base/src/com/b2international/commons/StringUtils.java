@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 
 /**
@@ -268,7 +269,26 @@ public class StringUtils {
 		}
 		
 		return false;
+	}
+	
+	/**
+	 * Returns {@code true} if the specified string contains only numeric characters, {@code false} otherwise.
+	 * @param s the string to check. Can be {@code null}. If {@code null} this method returns {@code true}.
+	 * @return {@code true} if specified string contains only numeric characters.
+	 */
+	public static boolean isNumeric(final String s) {
 		
+		if (Strings.isNullOrEmpty(s)) {
+			return true;
+		}
+		
+		for (final char c : s.toCharArray()) {
+			if (!Character.isDigit(c)) {
+				return false;
+			}
+		}
+		
+		return true;
 	}
 	
 	/**
