@@ -120,10 +120,33 @@ public interface ApiError extends Serializable {
 			return new ApiErrorImpl(this.message, this.developerMessage, this.code, this.status, this.additionalInfo);
 		}
 		
+		/**
+		 * @param message
+		 * @return
+		 * @deprecated - use {@link ApiError#builder(String)} instead
+		 */
 		public static Builder of(String message) {
 			return new Builder(message);
 		}
 		
+	}
+
+	/**
+	 * Prepares a new {@link ApiError.Builder} with the given error message and returns it.
+	 * @param errorMessage
+	 * @return
+	 */
+	static ApiError.Builder builder(String errorMessage) {
+		return new ApiError.Builder(errorMessage);
+	}
+
+	/**
+	 * Creates a new {@link ApiError} from the given error message and returns it.
+	 * @param errorMessage
+	 * @return
+	 */
+	static ApiError of(String errorMessage) {
+		return builder(errorMessage).build();
 	}
 
 }
