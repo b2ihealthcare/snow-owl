@@ -26,7 +26,7 @@ import com.google.common.base.Strings;
  */
 public final class SnomedOWLAxiomHelper {
 
-	private static final String EQUIVALENTCLASSES = "equivalentclasses";
+	private static final String SUBCLASSOF = "subclassof";
 
 	public static String getDefinitionStatusFromExpressions(Set<String> owlExpressions) {
 		if (owlExpressions.isEmpty()) {
@@ -35,10 +35,10 @@ public final class SnomedOWLAxiomHelper {
 		
 		return owlExpressions.stream()
 				.filter(expression -> !Strings.isNullOrEmpty(expression))
-				.filter(expression -> expression.toLowerCase(Locale.ENGLISH).contains(EQUIVALENTCLASSES))
+				.filter(expression -> expression.toLowerCase(Locale.ENGLISH).contains(SUBCLASSOF))
 				.findFirst()
-				.map(equivalentClassesAxiom -> Concepts.FULLY_DEFINED)
-				.orElse(Concepts.PRIMITIVE);
+				.map(equivalentClassesAxiom -> Concepts.PRIMITIVE)
+				.orElse(Concepts.FULLY_DEFINED);
 	}
 
 }
