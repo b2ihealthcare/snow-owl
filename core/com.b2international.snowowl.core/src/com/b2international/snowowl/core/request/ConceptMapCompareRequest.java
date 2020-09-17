@@ -98,6 +98,8 @@ public final class ConceptMapCompareRequest extends ResourceRequest<BranchContex
 				compareMappings.get(changedURI).forEach(memberB -> {
 					if (isChanged(memberA, memberB)) {
 						changed.put(memberA, memberB);
+					} else {
+						allUnchanged.add(memberA);
 					}
 				});
 			}
@@ -109,9 +111,6 @@ public final class ConceptMapCompareRequest extends ResourceRequest<BranchContex
 		
 		SetView<ComponentURI> addedURIs = Sets.difference(compareURIs, baseURIs);
 		addedURIs.forEach(uri -> allAdded.addAll(compareMappings.get(uri)));
-		
-		SetView<ComponentURI> unchangedURIs = Sets.intersection(compareURIs, baseURIs);
-		unchangedURIs.forEach(uri -> allUnchanged.addAll(compareMappings.get(uri)));
 		
 		return new ConceptMapCompareResult(allAdded, allRemoved, allChanged, allUnchanged);
 	}
