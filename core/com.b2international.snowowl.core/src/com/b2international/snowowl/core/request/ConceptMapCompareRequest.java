@@ -88,6 +88,7 @@ public final class ConceptMapCompareRequest extends ResourceRequest<BranchContex
 		ListMultimap<ConceptMapMapping, ConceptMapMapping> allChanged = ArrayListMultimap.create();
 		List<ConceptMapMapping> allRemoved = Lists.newArrayList();
 		List<ConceptMapMapping> allAdded = Lists.newArrayList();
+		List<ConceptMapMapping> allUnchanged = Lists.newArrayList();
 		
 		SetView<ComponentURI> changedURIs = Sets.intersection(baseURIs, compareURIs);
 		
@@ -109,7 +110,10 @@ public final class ConceptMapCompareRequest extends ResourceRequest<BranchContex
 		SetView<ComponentURI> addedURIs = Sets.difference(compareURIs, baseURIs);
 		addedURIs.forEach(uri -> allAdded.addAll(compareMappings.get(uri)));
 		
-		return new ConceptMapCompareResult(allAdded, allRemoved, allChanged);
+		SetView<ComponentURI> unchangedURIs = Sets.intersection(compareURIs, baseURIs);
+		unchangedURIs.forEach(uri -> allUnchanged.addAll(compareMappings.get(uri)));
+		
+		return new ConceptMapCompareResult(allAdded, allRemoved, allChanged, allUnchanged);
 	}
 
 	private boolean isChanged(ConceptMapMapping memberA, ConceptMapMapping memberB) {

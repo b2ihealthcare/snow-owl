@@ -31,11 +31,13 @@ public final class ConceptMapCompareResult implements Serializable {
 	private final List<ConceptMapMapping> addedMembers;
 	private final List<ConceptMapMapping> removedMembers;
 	private final ListMultimap<ConceptMapMapping, ConceptMapMapping> changedMembers;
+	private final List<ConceptMapMapping> unChangedMembers;
 	
-	public ConceptMapCompareResult(List<ConceptMapMapping> addedMembers, List<ConceptMapMapping> removedMembers, ListMultimap<ConceptMapMapping, ConceptMapMapping> changedMembers) {
+	public ConceptMapCompareResult(List<ConceptMapMapping> addedMembers, List<ConceptMapMapping> removedMembers, ListMultimap<ConceptMapMapping, ConceptMapMapping> changedMembers, List<ConceptMapMapping> unChangedMembers) {
 		this.addedMembers = ImmutableList.copyOf(addedMembers);
 		this.removedMembers = ImmutableList.copyOf(removedMembers);
 		this.changedMembers = ImmutableListMultimap.copyOf(changedMembers);
+		this.unChangedMembers = ImmutableList.copyOf(unChangedMembers);
 	}
 	
 	public List<ConceptMapMapping> getAddedMembers() {
@@ -44,6 +46,10 @@ public final class ConceptMapCompareResult implements Serializable {
 	
 	public List<ConceptMapMapping> getRemovedMembers() {
 		return removedMembers;
+	}
+	
+	public List<ConceptMapMapping> getUnChangedMembers() {
+		return unChangedMembers;
 	}
 	
 	public ListMultimap<ConceptMapMapping, ConceptMapMapping> getChangedMembers() {
