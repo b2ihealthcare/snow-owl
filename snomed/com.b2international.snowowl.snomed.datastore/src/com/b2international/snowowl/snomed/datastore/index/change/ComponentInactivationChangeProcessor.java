@@ -31,7 +31,6 @@ import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.StagingArea;
 import com.b2international.index.revision.StagingArea.RevisionDiff;
 import com.b2international.index.revision.StagingArea.RevisionPropertyDiff;
-import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.repository.ChangeSetProcessorBase;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
@@ -111,64 +110,31 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 				// TODO exclude descriptions that are already present in the tx or apply 
 				hits.forEach(description -> {
 					final String descriptionId = description[0];
-					SnomedRefSetMemberIndexEntry existingInactivationMember;
-					
-					existingInactivationMember = changedMembersByReferencedComponentId.get(descriptionId).stream()
+					SnomedRefSetMemberIndexEntry existingInactivationMember = changedMembersByReferencedComponentId.get(descriptionId).stream()
 								.map(diff -> diff.newRevision)
 								.map(SnomedRefSetMemberIndexEntry.class::cast)
 								.filter(member -> Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR.equals(member.getReferenceSetId()))
 								.findFirst()
 								.orElse(null);
 					
+					SnomedRefSetMemberIndexEntry.Builder inactivationMember;
 					if (existingInactivationMember == null) {
-						try {
-							existingInactivationMember = searcher.search(Query.select(SnomedRefSetMemberIndexEntry.class)
-									.where(Expressions.builder()
-											.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
-											.filter(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentId(descriptionId))
-											.filter(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR))
-											.build())
-									.limit(1)
-									.build())
-									.stream()
-									.findFirst()
-									.orElse(null);						
-						} catch (IOException e) {
-							throw new SnowowlRuntimeException(e.getMessage());
-						}						
-					}
-					
-					SnomedRefSetMemberIndexEntry.Builder inactivationMember =  SnomedRefSetMemberIndexEntry.builder();
-					if (existingInactivationMember == null) {
-						inactivationMember
+						inactivationMember = SnomedRefSetMemberIndexEntry.builder()
+							.id(UUID.randomUUID().toString())
 							.active(true)
 							.released(false)
 							.referenceSetId(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR)
 							.referenceSetType(SnomedRefSetType.ATTRIBUTE_VALUE)
 							.referencedComponentId(descriptionId)
 							.moduleId(description[1]);
-					} else {						
+					} else {
 						inactivationMember = SnomedRefSetMemberIndexEntry.builder(existingInactivationMember);
 					}
 					
 					// set to concept non current
 					inactivationMember.field(SnomedRf2Headers.FIELD_VALUE_ID, Concepts.CONCEPT_NON_CURRENT);
-					inactivationMember.id(UUID.randomUUID().toString());
 					
 					stageNew(inactivationMember.build());
-					
-					if (existingInactivationMember != null) {
-						if (existingInactivationMember.isReleased()) {
-							SnomedRefSetMemberIndexEntry inactivatedMember = SnomedRefSetMemberIndexEntry.builder(existingInactivationMember)
-								.active(false)
-								.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
-								.build();
-							stageChange(existingInactivationMember, inactivatedMember);
-						} else {
-							stageRemove(existingInactivationMember);					
-						}
-					}
-					
 				});
 			}
 			
