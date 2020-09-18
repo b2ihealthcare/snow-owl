@@ -2,7 +2,7 @@
 <feature
       id="com.b2international.snowowl.fhir.rest.feature"
       label="Snow Owl FHIR API Feature"
-      version="7.9.2"
+      version="7.10.0.qualifier"
       provider-name="B2i Healthcare">
 
    <description url="http://www.example.com/description">
