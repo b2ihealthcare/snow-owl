@@ -137,7 +137,7 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 					// if there were no registered member changes to this description
 					if (transactionMembers.isEmpty()) {
 						// apply CONCEPT_NON_CURRENT to all existing members or generate a new one 
-						final Collection<SnomedRefSetMemberIndexEntry> existingMembers = existingIndicatorReferenceSetMembers.get(descriptionId)
+						final SnomedRefSetMemberIndexEntry existingMember = existingIndicatorReferenceSetMembers.get(descriptionId)
 								.stream()
 								.filter(member -> {
 									// reusable member, if it was inactivated earlier
@@ -145,8 +145,9 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 									return !member.isActive() 
 											|| SnomedRefSetUtil.ATTRIBUTE_VALUES_FOR_ACTIVE_DESCRIPTIONS.contains(member.getValueId());
 								})
-								.collect(Collectors.toList());
-						if (existingMembers.isEmpty()) {
+								.findFirst()
+								.orElse(null);
+						if (existingMember == null) {
 							SnomedRefSetMemberIndexEntry inactivationMember = SnomedRefSetMemberIndexEntry.builder()
 								.id(UUID.randomUUID().toString())
 								.active(true)
@@ -160,15 +161,13 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 								.build();
 							stageNew(inactivationMember);
 						} else {
-							for (SnomedRefSetMemberIndexEntry existingMember : existingMembers) {
-								// update the existing member only, if it was active, registered as PENDING_MOVE
-								final SnomedRefSetMemberIndexEntry updated = SnomedRefSetMemberIndexEntry.builder(existingMember)
-										.active(true) // ensure active
-										.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME) // ensure unpublished
-										.field(SnomedRf2Headers.FIELD_VALUE_ID, Concepts.CONCEPT_NON_CURRENT) // ensure non-current
-										.build();
-								stageChange(existingMember, updated);
-							}
+							// update the existing member only, if it was active, registered as PENDING_MOVE
+							final SnomedRefSetMemberIndexEntry updated = SnomedRefSetMemberIndexEntry.builder(existingMember)
+									.active(true) // ensure active
+									.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME) // ensure unpublished
+									.field(SnomedRf2Headers.FIELD_VALUE_ID, Concepts.CONCEPT_NON_CURRENT) // ensure non-current
+									.build();
+							stageChange(existingMember, updated);
 						}
 						
 					}
