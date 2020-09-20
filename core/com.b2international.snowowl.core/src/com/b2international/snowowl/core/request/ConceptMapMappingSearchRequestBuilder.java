@@ -18,7 +18,6 @@ package com.b2international.snowowl.core.request;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.ConceptMapMappings;
 import com.b2international.snowowl.core.request.SetSearchRequestEvaluator.OptionKey;
-import com.google.common.collect.ImmutableSet;
 
 /**
 * @since 7.8
@@ -27,7 +26,7 @@ public final class ConceptMapMappingSearchRequestBuilder extends SearchResourceR
 		implements RevisionIndexRequestBuilder<ConceptMapMappings> {
 	
 	public ConceptMapMappingSearchRequestBuilder filterByConceptMap(String conceptMapId) {
-		return filterByConceptMaps(ImmutableSet.of(conceptMapId));
+		return addOption(OptionKey.SET, conceptMapId);
 	}
 	
 	public ConceptMapMappingSearchRequestBuilder filterByConceptMaps(Iterable<String> conceptMapIds) {
@@ -36,6 +35,30 @@ public final class ConceptMapMappingSearchRequestBuilder extends SearchResourceR
 	
 	public ConceptMapMappingSearchRequestBuilder filterBySourceToolingId(String toolingId) {
 		return addOption(OptionKey.SOURCE_TOOLING_ID, toolingId);
+	}
+	
+	public ConceptMapMappingSearchRequestBuilder filterByReferencedComponentId(String componentId) {
+		return addOption(OptionKey.REFERENCED_COMPONENT, componentId);
+	}
+	
+	public ConceptMapMappingSearchRequestBuilder filterByReferencedComponentIds(Iterable<String> componentIds) {
+		return addOption(OptionKey.REFERENCED_COMPONENT, componentIds);
+	}
+	
+	public ConceptMapMappingSearchRequestBuilder filterByMapTarget(String mapTarget) {
+		return addOption(OptionKey.MAP_TARGET, mapTarget);
+	}
+	
+	public ConceptMapMappingSearchRequestBuilder filterByMapTargets(Iterable<String> mapTargets) {
+		return addOption(OptionKey.MAP_TARGET, mapTargets);
+	}
+	
+	public ConceptMapMappingSearchRequestBuilder filterByComponentId(String componentId) {
+		return addOption(OptionKey.COMPONENT, componentId);
+	}
+	
+	public ConceptMapMappingSearchRequestBuilder filterByComponentIds(Iterable<String> componentIds) {
+		return addOption(OptionKey.COMPONENT, componentIds);
 	}
 	
 	@Override
