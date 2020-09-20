@@ -42,14 +42,13 @@ import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.junit.Test;
 
@@ -362,10 +361,11 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 			new InactivationProperties(Concepts.CONCEPT_NON_CURRENT, Collections.emptyList())
 		).extract().as(SnomedDescription.class);
 		
-		SnomedReferenceSetMember inactivationIndicator = description.getMembers().stream()
+		List<SnomedReferenceSetMember> inactivationIndicators = description.getMembers().stream()
 			.filter(member -> Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR.equals(member.getReferenceSetId()))
-			.findFirst()
-			.get();
+			.collect(Collectors.toList());
+		
+		final SnomedReferenceSetMember inactivationIndicator = Iterables.getOnlyElement(inactivationIndicators); 
 		
 		assertEquals(Concepts.CONCEPT_NON_CURRENT, inactivationIndicator.getProperties().get(SnomedRf2Headers.FIELD_VALUE_ID));
 		assertNull(inactivationIndicator.getEffectiveTime());

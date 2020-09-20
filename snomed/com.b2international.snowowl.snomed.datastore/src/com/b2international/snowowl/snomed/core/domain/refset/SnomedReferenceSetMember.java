@@ -253,5 +253,14 @@ public final class SnomedReferenceSetMember extends SnomedComponent {
 				.setSource(changes)
 				.build();
 	}
+
+	@Override
+	public String toString() {
+		return String.format(
+				"SnomedReferenceSetMember [type=%s, referencedComponent=%s, referenceSetId=%s, properties=%s, equivalentOWLRelationships=%s, classOWLRelationships=%s, gciOWLRelationships=%s]",
+				type, referencedComponent, referenceSetId, properties, equivalentOWLRelationships, classOWLRelationships, gciOWLRelationships);
+	}
+	
+	
 	
 }
