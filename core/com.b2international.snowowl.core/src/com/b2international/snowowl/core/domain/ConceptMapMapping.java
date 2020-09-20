@@ -27,7 +27,7 @@ import com.google.common.base.MoreObjects;
  */
 public final class ConceptMapMapping implements Serializable {
 	
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 	
 	public static Builder builder() {
 		return new Builder();
@@ -35,8 +35,8 @@ public final class ConceptMapMapping implements Serializable {
 	
 	public static Builder builder(ConceptMapMapping from) {
 		return builder()
-				.containerSetURI(from.containerSetURI)
-				.memberId(from.memberId)
+				.containerSetURI(from.getContainerSetURI())
+				.memberId(from.getMemberId())
 				.active(from.isActive())
 				.mapAdvice(from.getMapAdvice())
 				.mapGroup(from.getMapGroup())
@@ -167,7 +167,7 @@ public final class ConceptMapMapping implements Serializable {
 			ComponentURI sourceComponentURI, 
 			String targetTerm, 
 			ComponentURI targetComponentURI, 
-			boolean active,
+			Boolean active,
 			MappingCorrelation mappingCorrelation,
 			Integer mapGroup,
 			Integer mapPriority, 
@@ -243,25 +243,40 @@ public final class ConceptMapMapping implements Serializable {
 	
 	@Override
 	public String toString() {
-		return MoreObjects.toStringHelper("SetMember")
-				.add("containerSetURI", containerSetURI)
+		return MoreObjects.toStringHelper(getClass())
 				.add("memberId", memberId)
+				.add("containerSetURI", containerSetURI)
+				.add("active", active)
 				.add("sourceComponentURI", sourceComponentURI)
-				.add("term", sourceTerm)
-				.add("iconId", sourceIconId)
+				.add("sourceTerm", sourceTerm)
+				.add("sourceIconId", sourceIconId)
 				.add("targetComponentURI", targetComponentURI)
 				.add("targetTerm", targetTerm)
-				.add("active", active)
 				.add("mappingCorrelation", mappingCorrelation)
 				.add("mapGroup", mapGroup)
 				.add("mapPriority", mapPriority)
+				.add("mapRule", mapRule)
+				.add("mapAdvice", mapAdvice)
 				.toString();
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(sourceComponentURI, targetComponentURI, sourceTerm, targetTerm, sourceIconId, 
-				active, mappingCorrelation, mapGroup, mapPriority, mapRule, mapAdvice);
+		return Objects.hash(
+			memberId,
+			containerSetURI,
+			active, 
+			sourceComponentURI,
+			sourceTerm,
+			sourceIconId,
+			targetComponentURI, 
+			targetTerm, 
+			mappingCorrelation, 
+			mapGroup, 
+			mapPriority, 
+			mapRule, 
+			mapAdvice
+		);
 	}
 	
 	@Override
@@ -270,14 +285,14 @@ public final class ConceptMapMapping implements Serializable {
 		if (obj == null) return false;
 		if (getClass() != obj.getClass()) return false;
 		ConceptMapMapping other = (ConceptMapMapping) obj;
-		return Objects.equals(containerSetURI, other.containerSetURI)
-				&& Objects.equals(memberId, other.memberId)
-				&& Objects.equals(sourceComponentURI, other.sourceComponentURI)
-				&& Objects.equals(targetComponentURI, other.targetComponentURI)
-				&& Objects.equals(sourceTerm, other.sourceTerm)
-				&& Objects.equals(targetTerm, other.targetTerm)
-				&& Objects.equals(sourceIconId, other.sourceIconId)
+		return Objects.equals(memberId, other.memberId)
+				&& Objects.equals(containerSetURI, other.containerSetURI)
 				&& Objects.equals(active, other.active)
+				&& Objects.equals(sourceComponentURI, other.sourceComponentURI)
+				&& Objects.equals(sourceTerm, other.sourceTerm)
+				&& Objects.equals(sourceIconId, other.sourceIconId)
+				&& Objects.equals(targetComponentURI, other.targetComponentURI)
+				&& Objects.equals(targetTerm, other.targetTerm)
 				&& Objects.equals(mappingCorrelation, other.mappingCorrelation)
 				&& Objects.equals(mapGroup, other.mapGroup)
 				&& Objects.equals(mapPriority, other.mapPriority)
