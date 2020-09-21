@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.datastore.index.change;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -31,12 +32,12 @@ import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.StagingArea;
 import com.b2international.index.revision.StagingArea.RevisionDiff;
 import com.b2international.index.revision.StagingArea.RevisionPropertyDiff;
-import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.repository.ChangeSetProcessorBase;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
@@ -90,7 +91,7 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 		processReactivations(staging, searcher, reactivatedConceptIds, reactivatedComponentIds);
 	}
 
-	private void processInactivations(StagingArea staging, RevisionSearcher searcher, Set<String> inactivatedConceptIds, Set<String> inactivatedComponentIds) {
+	private void processInactivations(StagingArea staging, RevisionSearcher searcher, Set<String> inactivatedConceptIds, Set<String> inactivatedComponentIds) throws IOException {
 		// inactivate descriptions of inactivated concepts, take current description changes into account
 		if (!inactivatedConceptIds.isEmpty()) {
 			
@@ -108,68 +109,69 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 							.build())
 					.limit(PAGE_SIZE)
 					.build())) {
-				// TODO exclude descriptions that are already present in the tx or apply 
-				hits.forEach(description -> {
-					final String descriptionId = description[0];
-					SnomedRefSetMemberIndexEntry existingInactivationMember;
-					
-					existingInactivationMember = changedMembersByReferencedComponentId.get(descriptionId).stream()
-								.map(diff -> diff.newRevision)
-								.map(SnomedRefSetMemberIndexEntry.class::cast)
-								.filter(member -> Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR.equals(member.getReferenceSetId()))
+				final Set<String> descriptionIds = hits.stream().map(description -> description[0]).collect(Collectors.toSet());
+				
+				// load existing indicator reference set members from index
+				final Multimap<String, SnomedRefSetMemberIndexEntry> existingIndicatorReferenceSetMembers = HashMultimap.create();
+				searcher.search(Query.select(SnomedRefSetMemberIndexEntry.class)
+						.where(Expressions.builder()
+								.filter(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR))
+								.filter(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(descriptionIds))
+								.build())
+						.limit(Integer.MAX_VALUE)
+						.build())
+						.forEach(existingIndicatorMember -> {
+							existingIndicatorReferenceSetMembers.put(existingIndicatorMember.getReferencedComponentId(), existingIndicatorMember);
+						});
+				
+				// override members with the ones that present in the staging area
+				for (String[] descriptionToCheck : hits) {
+					final String descriptionId = descriptionToCheck[0];
+					// get the persisted, existing members
+					// get the current members from the tx
+					final Collection<SnomedRefSetMemberIndexEntry> transactionMembers = changedMembersByReferencedComponentId.get(descriptionId).stream()
+							.map(diff -> diff.newRevision)
+							.map(SnomedRefSetMemberIndexEntry.class::cast)
+							.filter(member -> Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR.equals(member.getReferenceSetId()))
+							.collect(Collectors.toList());
+					// if there were no registered member changes to this description
+					if (transactionMembers.isEmpty()) {
+						// apply CONCEPT_NON_CURRENT to all existing members or generate a new one 
+						final SnomedRefSetMemberIndexEntry existingMember = existingIndicatorReferenceSetMembers.get(descriptionId)
+								.stream()
+								.filter(member -> {
+									// reusable member, if it was inactivated earlier
+									// was active and used one of the active description attribute values
+									return !member.isActive() 
+											|| SnomedRefSetUtil.ATTRIBUTE_VALUES_FOR_ACTIVE_DESCRIPTIONS.contains(member.getValueId());
+								})
 								.findFirst()
 								.orElse(null);
-					
-					if (existingInactivationMember == null) {
-						try {
-							existingInactivationMember = searcher.search(Query.select(SnomedRefSetMemberIndexEntry.class)
-									.where(Expressions.builder()
-											.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
-											.filter(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentId(descriptionId))
-											.filter(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR))
-											.build())
-									.limit(1)
-									.build())
-									.stream()
-									.findFirst()
-									.orElse(null);						
-						} catch (IOException e) {
-							throw new SnowowlRuntimeException(e.getMessage());
-						}						
-					}
-					
-					SnomedRefSetMemberIndexEntry.Builder inactivationMember =  SnomedRefSetMemberIndexEntry.builder();
-					if (existingInactivationMember == null) {
-						inactivationMember
-							.active(true)
-							.released(false)
-							.referenceSetId(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR)
-							.referenceSetType(SnomedRefSetType.ATTRIBUTE_VALUE)
-							.referencedComponentId(descriptionId)
-							.moduleId(description[1]);
-					} else {						
-						inactivationMember = SnomedRefSetMemberIndexEntry.builder(existingInactivationMember);
-					}
-					
-					// set to concept non current
-					inactivationMember.field(SnomedRf2Headers.FIELD_VALUE_ID, Concepts.CONCEPT_NON_CURRENT);
-					inactivationMember.id(UUID.randomUUID().toString());
-					
-					stageNew(inactivationMember.build());
-					
-					if (existingInactivationMember != null) {
-						if (existingInactivationMember.isReleased()) {
-							SnomedRefSetMemberIndexEntry inactivatedMember = SnomedRefSetMemberIndexEntry.builder(existingInactivationMember)
-								.active(false)
+						if (existingMember == null) {
+							SnomedRefSetMemberIndexEntry inactivationMember = SnomedRefSetMemberIndexEntry.builder()
+								.id(UUID.randomUUID().toString())
+								.active(true)
+								.released(false)
+								.referenceSetId(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR)
+								.referenceSetType(SnomedRefSetType.ATTRIBUTE_VALUE)
+								.referencedComponentId(descriptionId)
 								.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
+								.moduleId(descriptionToCheck[1])
+								.field(SnomedRf2Headers.FIELD_VALUE_ID, Concepts.CONCEPT_NON_CURRENT)
 								.build();
-							stageChange(existingInactivationMember, inactivatedMember);
+							stageNew(inactivationMember);
 						} else {
-							stageRemove(existingInactivationMember);					
+							// update the existing member only, if it was active, registered as PENDING_MOVE
+							final SnomedRefSetMemberIndexEntry updated = SnomedRefSetMemberIndexEntry.builder(existingMember)
+									.active(true) // ensure active
+									.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME) // ensure unpublished
+									.field(SnomedRf2Headers.FIELD_VALUE_ID, Concepts.CONCEPT_NON_CURRENT) // ensure non-current
+									.build();
+							stageChange(existingMember, updated);
 						}
+						
 					}
-					
-				});
+				}
 			}
 			
 			// inactivate relationships of inactivated concepts
