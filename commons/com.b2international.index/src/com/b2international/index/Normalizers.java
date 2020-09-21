@@ -37,6 +37,18 @@ public enum Normalizers {
 	/**
 	 * Use the default normalizer specified in the index module implementation.
 	 */
-	NONE
+	NONE;
+	
+	/**
+	 * @return the actual normalizer registered in Elasticsearch
+	 * @see analysis.json for further details
+	 */
+	public String getNormalizer() {
+		switch (this) {
+		case LOWER_ASCII: return "lowerascii";
+		case NONE: return null;
+		default: throw new UnsupportedOperationException("Unsupported normalizer: " + this);
+		}
+	}
 	
 }

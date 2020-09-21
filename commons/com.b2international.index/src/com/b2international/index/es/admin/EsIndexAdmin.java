@@ -63,16 +63,7 @@ import org.slf4j.LoggerFactory;
 import com.b2international.commons.ClassUtils;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.ReflectionUtils;
-import com.b2international.index.Analyzers;
-import com.b2international.index.BulkDelete;
-import com.b2international.index.BulkOperation;
-import com.b2international.index.BulkUpdate;
-import com.b2international.index.Doc;
-import com.b2international.index.IP;
-import com.b2international.index.IndexClientFactory;
-import com.b2international.index.IndexException;
-import com.b2international.index.Keyword;
-import com.b2international.index.Text;
+import com.b2international.index.*;
 import com.b2international.index.admin.IndexAdmin;
 import com.b2international.index.es.client.EsClient;
 import com.b2international.index.es.query.EsQueryBuilder;
@@ -354,15 +345,15 @@ public final class EsIndexAdmin implements IndexAdmin {
 					
 					if (textMapping != null) {
 						prop.put("type", "text");
-						prop.put("analyzer", EsTextAnalysis.getAnalyzer(textMapping.analyzer()));
+						prop.put("analyzer", textMapping.analyzer().getAnalyzer());
 						if (textMapping.searchAnalyzer() != Analyzers.INDEX) {
-							prop.put("search_analyzer", EsTextAnalysis.getAnalyzer(textMapping.searchAnalyzer()));
+							prop.put("search_analyzer", textMapping.searchAnalyzer().getAnalyzer());
 						}
 					}
 					
 					if (keywordMapping != null) {
 						prop.put("type", "keyword");
-						String normalizer = EsTextAnalysis.getNormalizer(keywordMapping.normalizer());
+						String normalizer = keywordMapping.normalizer().getNormalizer();
 						if (!Strings.isNullOrEmpty(normalizer)) {
 							prop.put("normalizer", normalizer);
 						}
@@ -382,9 +373,9 @@ public final class EsIndexAdmin implements IndexAdmin {
 							final Text analyzed = analyzer.getValue();
 							final Map<String, Object> fieldProps = newHashMap();
 							fieldProps.put("type", "text");
-							fieldProps.put("analyzer", EsTextAnalysis.getAnalyzer(analyzed.analyzer()));
+							fieldProps.put("analyzer", analyzed.analyzer().getAnalyzer());
 							if (analyzed.searchAnalyzer() != Analyzers.INDEX) {
-								fieldProps.put("search_analyzer", EsTextAnalysis.getAnalyzer(analyzed.searchAnalyzer()));
+								fieldProps.put("search_analyzer", analyzed.searchAnalyzer().getAnalyzer());
 							}
 							fields.put(extraFieldParts[1], fieldProps);
 						}
@@ -398,7 +389,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 							final Keyword analyzed = analyzer.getValue();
 							final Map<String, Object> fieldProps = newHashMap();
 							fieldProps.put("type", "keyword");
-							String normalizer = EsTextAnalysis.getNormalizer(analyzed.normalizer());
+							String normalizer = analyzed.normalizer().getNormalizer();
 							if (!Strings.isNullOrEmpty(normalizer)) {
 								fieldProps.put("normalizer", normalizer);
 							}

@@ -15,6 +15,9 @@
  */
 package com.b2international.index.query;
 
+import com.b2international.commons.CompareUtils;
+import com.b2international.index.Analyzers;
+
 /**
  * @since 4.7
  */
@@ -27,6 +30,8 @@ public final class TextPredicate extends Predicate {
 	private final String term;
 	private final MatchType type;
 	private final int minShouldMatch;
+	
+	private String analyzer;
 	
 	TextPredicate(String field, String term, MatchType type) {
 		this(field, term, type, 1);
@@ -51,9 +56,18 @@ public final class TextPredicate extends Predicate {
 		return minShouldMatch;
 	}
 	
+	public String analyzer() {
+		return analyzer;
+	}
+	
+	public TextPredicate withAnalyzer(Analyzers analyzer) {
+		this.analyzer = analyzer == null ? null : analyzer.getAnalyzer();
+		return this;
+	}
+	
 	@Override
 	public String toString() {
-		return String.format("TEXT(%s %s %s)", getField(), type(), term());
+		return String.format("TEXT(%s %s '%s'[])", getField(), type(), term(), CompareUtils.isEmpty(analyzer));
 	}
 
 }
