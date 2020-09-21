@@ -230,25 +230,31 @@ public final class EsQueryBuilder {
 		QueryBuilder query;
 		switch (type) {
 		case PHRASE:
-			query = QueryBuilders.matchPhraseQuery(field, term);
+			query = QueryBuilders.matchPhraseQuery(field, term)
+						.analyzer(predicate.analyzer());
 			break;
 		case ALL:
-			query = QueryBuilders.matchQuery(field, term).operator(Operator.AND);
+			query = QueryBuilders.matchQuery(field, term)
+						.analyzer(predicate.analyzer())
+						.operator(Operator.AND);
 			break;
 		case ANY:
 			query = QueryBuilders.matchQuery(field, term)
-				.operator(Operator.OR)
-				.minimumShouldMatch(Integer.toString(minShouldMatch));
+						.analyzer(predicate.analyzer())
+						.operator(Operator.OR)
+						.minimumShouldMatch(Integer.toString(minShouldMatch));
 			break;
 		case FUZZY:
 			query = QueryBuilders.matchQuery(field, term)
-				.fuzziness(Fuzziness.ONE)
-				.prefixLength(1)
-				.operator(Operator.AND)
-				.maxExpansions(10);
+						.analyzer(predicate.analyzer())
+						.fuzziness(Fuzziness.ONE)
+						.prefixLength(1)
+						.operator(Operator.AND)
+						.maxExpansions(10);
 			break;
 		case PARSED:
 			query = QueryBuilders.queryStringQuery(TextConstants.escape(term))
+						.analyzer(predicate.analyzer())
 						.field(field)
 						.escape(false)
 						.allowLeadingWildcard(true)
