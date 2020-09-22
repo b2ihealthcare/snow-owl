@@ -66,9 +66,9 @@ abstract class TreeBuilderImpl implements TreeBuilder {
 	}
 	
 	@Override
-	public TerminologyTree build(final String branch, final Iterable<SnomedConceptDocument> nodes) {
+	public TerminologyTree build(final String branch, final Iterable<SnomedConceptDocument> nodes, final String snomedDescriptionExpand) {
 		final Collection<SnomedConceptDocument> topLevelConcepts = this.topLevelConcepts == null ? 
-				getDefaultTopLevelConcepts(branch) : this.topLevelConcepts;
+				getDefaultTopLevelConcepts(branch, snomedDescriptionExpand) : this.topLevelConcepts;
 		
 		final Map<String, SnomedConceptDocument> treeItemsById = newHashMap();
 		
@@ -147,14 +147,14 @@ abstract class TreeBuilderImpl implements TreeBuilder {
 		allRequiredComponents.remove(null);
 		
 		// fetch required data for all unknown items
-		for (SnomedConceptDocument entry : getComponents(branch, allRequiredComponents)) {
+		for (SnomedConceptDocument entry : getComponents(branch, allRequiredComponents, snomedDescriptionExpand)) {
 			treeItemsById.put(entry.getId(), entry);
 		}
 		
 		return new TerminologyTree(treeItemsById, subTypeMap, superTypeMap);
 	}
 	
-	private Collection<SnomedConceptDocument> getComponents(String branch, Set<String> componentIds) {
+	private Collection<SnomedConceptDocument> getComponents(String branch, Set<String> componentIds, final String snomedDescriptionExpand) {
 		if (CompareUtils.isEmpty(componentIds)) {
 			return Collections.emptySet();
 		}
@@ -162,16 +162,16 @@ abstract class TreeBuilderImpl implements TreeBuilder {
 				.all()
 				.filterByIds(ImmutableSet.copyOf(componentIds))
 				.setLocales(locales)
-				.setExpand("pt(),parentIds(),ancestorIds()")
+				.setExpand(snomedDescriptionExpand + ",parentIds(),ancestorIds()")
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(getBus())
 				.then(SnomedConcepts.TO_DOCS)
 				.getSync();
 	}
 
-	private List<SnomedConceptDocument> getDefaultTopLevelConcepts(final String branch) {
+	private List<SnomedConceptDocument> getDefaultTopLevelConcepts(final String branch, final String snomedDescriptionExpand) {
 		final SnomedConcept root = SnomedRequests.prepareGetConcept(Concepts.ROOT_CONCEPT)
-				.setExpand(String.format("pt(),%s(direct:true,expand(pt()))", Trees.STATED_FORM.equals(getForm()) ? "statedDescendants" : "descendants"))
+				.setExpand(String.format("%2$s,%s(direct:true,expand(%2$s))", Trees.STATED_FORM.equals(getForm()) ? "statedDescendants" : "descendants", snomedDescriptionExpand))
 				.setLocales(locales)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(getBus())

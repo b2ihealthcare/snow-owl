@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 7.9.2
+
+### Bugs/Improvements
+- Fix incorrect reuse and auto-generation of inactivation indicator members (#664)
+
 ## 7.9.1
 
 ### Bugs/Improvements

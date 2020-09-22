@@ -24,7 +24,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDoc
  */
 public interface TreeBuilder {
 
-	TerminologyTree build(String branch, Iterable<SnomedConceptDocument> nodes);
+	TerminologyTree build(String branch, Iterable<SnomedConceptDocument> nodes, String snomedDescriptionExpand);
 	
 	TreeBuilder withTopLevelConcepts(Collection<SnomedConceptDocument> topLevelConcepts);
 	

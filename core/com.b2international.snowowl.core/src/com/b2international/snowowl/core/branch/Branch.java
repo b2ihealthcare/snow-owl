@@ -29,6 +29,7 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.events.Request;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Joiner;
+import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 
@@ -57,6 +58,11 @@ public final class Branch implements MetadataHolder, Serializable {
 	 * @see #get(String...)
 	 */
 	public static final Joiner BRANCH_PATH_JOINER = Joiner.on(SEPARATOR);
+	
+	/**
+	 * A singleton {@link Splitter} that can be used to break an existing branch path into its constituent segments.
+	 */
+	public static final Splitter BRANCH_PATH_SPLITTER = Splitter.on(Branch.SEPARATOR);
 	
 	/**
 	 * @since 6.16
@@ -223,4 +229,11 @@ public final class Branch implements MetadataHolder, Serializable {
 		return BRANCH_PATH_JOINER.join(segments);
 	}
 
+	/**
+	 * @param path - an absolute branch path 
+	 * @return the list of segments making up the input branch path  
+	 */
+	public static final List<String> split(String path) {
+		return BRANCH_PATH_SPLITTER.splitToList(path);
+	}
 }
