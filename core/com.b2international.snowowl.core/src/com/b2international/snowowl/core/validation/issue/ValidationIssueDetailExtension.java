@@ -16,6 +16,7 @@
 package com.b2international.snowowl.core.validation.issue;
 
 import java.util.Collection;
+import java.util.Map;
 
 import com.b2international.commons.options.Options;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
@@ -46,7 +47,7 @@ public interface ValidationIssueDetailExtension {
 	 * @param issues
 	 *                    - the issues to extend
 	 */
-	void extendIssues(BranchContext context, Collection<ValidationIssue> issues);
+	void extendIssues(BranchContext context, Collection<ValidationIssue> issues, Map<String, Object> ruleParamters);
 
 	/**
 	 * @return the tooling identifier
