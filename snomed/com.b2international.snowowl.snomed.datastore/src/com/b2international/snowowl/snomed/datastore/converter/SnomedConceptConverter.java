@@ -62,7 +62,7 @@ import com.google.common.collect.TreeMultimap;
 /**
  * @since 4.5
  */
-final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedConceptDocument, SnomedConcept, SnomedConcepts> {
+public final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedConceptDocument, SnomedConcept, SnomedConcepts> {
 
 	private SnomedReferenceSetConverter referenceSetConverter;
 	
