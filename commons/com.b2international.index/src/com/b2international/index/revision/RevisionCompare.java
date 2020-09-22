@@ -110,8 +110,10 @@ public final class RevisionCompare {
 						case ADD:
 							added++;
 							break;
-						case CHANGE:
-							changed++;
+						case CHANGE: 
+							if(compareDetail.isPropertyChange()) {
+								changed++;
+							}
 							break;
 						case REMOVE:
 							removed++;
