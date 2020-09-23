@@ -158,7 +158,7 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 				.sourceIconId(iconId)
 				.sourceTerm(term)
 				.sourceComponentURI(ComponentURI.of(codeSystemURI.getCodeSystem(), terminologyComponentId, member.getReferencedComponentId()))
-				.targetTerm("")
+				.targetTerm((String) member.getProperties().get(SnomedRf2Headers.FIELD_MAP_TARGET))
 				.active(member.isActive())
 				.mappingCorrelation(getEquivalence(member))
 				.build();
