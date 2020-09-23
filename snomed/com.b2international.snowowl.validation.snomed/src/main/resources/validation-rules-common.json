@@ -51,7 +51,7 @@
     "severity": "WARNING",
     "checkType": "FAST",
     "type": "snomed-query",
-    "implementation": "{\"componentType\": \"relationship\",\"characteristicType\": \"<900000000000449001 MINUS <900000000000006009\",\"groupMin\": \"0\",\"groupMax\": \"0\"}"
+    "implementation": "{\"componentType\": \"relationship\",\"active\": \"true\",\"characteristicType\": \"<900000000000449001 MINUS <900000000000006009\",\"groupMin\": \"0\",\"groupMax\": \"0\"}"
   },
   {
     "id": "75",
