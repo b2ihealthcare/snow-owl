@@ -66,7 +66,12 @@ public interface SetSearchRequestEvaluator<R> {
 		/**
 		 * Matches concept map mappings where either the source or target component id matches the given value.
 		 */
-		COMPONENT
+		COMPONENT,
+		
+		/**
+		 * Set the preferred display type to return
+		 */
+		DISPLAY,
 	}
 	
 	/**
