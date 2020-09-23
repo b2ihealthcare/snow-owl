@@ -15,20 +15,21 @@
  */
 package com.b2international.snowowl.core.compare;
 
+import static java.util.stream.Collectors.toList;
+
 import java.io.Serializable;
 import java.util.List;
 
 import com.b2international.snowowl.core.domain.ConceptMapMapping;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ListMultimap;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableMultimap.Builder;
+import com.google.common.collect.Multimap;
 /**
  * @since 7.8
  */
 public final class ConceptMapCompareResult implements Serializable {
-	private static final long serialVersionUID = 1L;
 	
-	public static final int DEFAULT_LIMIT_PER_COMPARE_CATEGORY = 5000;
+	private static final long serialVersionUID = 1L;
 	
 	private final int totalAdded;
 	private final int totalRemoved;
@@ -36,26 +37,21 @@ public final class ConceptMapCompareResult implements Serializable {
 	
 	private final List<ConceptMapMapping> addedMembers;
 	private final List<ConceptMapMapping> removedMembers;
-	private final ListMultimap<ConceptMapMapping, ConceptMapMapping> changedMembers;
+	private final Multimap<ConceptMapMapping, ConceptMapMapping> changedMembers;
 	
-	public ConceptMapCompareResult(List<ConceptMapMapping> addedMembers, List<ConceptMapMapping> removedMembers, ListMultimap<ConceptMapMapping, ConceptMapMapping> changedMembers, int limit) {
-		this.addedMembers = ImmutableList.copyOf(limit < addedMembers.size() ? addedMembers.subList(0, limit) : addedMembers);
-		this.removedMembers = ImmutableList.copyOf(limit < removedMembers.size() ? removedMembers.subList(0, limit) : removedMembers);
+	public ConceptMapCompareResult(List<ConceptMapMapping> addedMembers, List<ConceptMapMapping> removedMembers, Multimap<ConceptMapMapping, ConceptMapMapping> changedMembers, int limit) {
 		
-		ImmutableListMultimap.Builder<ConceptMapMapping, ConceptMapMapping> builder = ImmutableListMultimap.builder();
-		int noOfChangedMappings = 0;
-		for (ConceptMapMapping key : changedMembers.keySet()) {
-			if (noOfChangedMappings < DEFAULT_LIMIT_PER_COMPARE_CATEGORY) {
-				List<ConceptMapMapping> memberChanges = changedMembers.get(key);
-				builder.putAll(key, memberChanges);
-				noOfChangedMappings += memberChanges.size();
-			}
-		}
-		this.changedMembers = builder.build();
+		this.addedMembers = addedMembers.stream().limit(limit).collect(toList());
+		this.removedMembers = removedMembers.stream().limit(limit).collect(toList());
+		
+		Builder<ConceptMapMapping, ConceptMapMapping> limitedMembers = ImmutableMultimap.builder();
+		changedMembers.entries().stream().limit(limit).forEach(limitedMembers::put);
+		this.changedMembers = limitedMembers.build();
 		
 		this.totalAdded = addedMembers.size();
 		this.totalRemoved = removedMembers.size();
 		this.totalChanged = changedMembers.values().size();
+		
 	}
 	
 	public List<ConceptMapMapping> getAddedMembers() {
@@ -66,7 +62,7 @@ public final class ConceptMapCompareResult implements Serializable {
 		return removedMembers;
 	}
 	
-	public ListMultimap<ConceptMapMapping, ConceptMapMapping> getChangedMembers() {
+	public Multimap<ConceptMapMapping, ConceptMapMapping> getChangedMembers() {
 		return changedMembers;
 	}
 	
