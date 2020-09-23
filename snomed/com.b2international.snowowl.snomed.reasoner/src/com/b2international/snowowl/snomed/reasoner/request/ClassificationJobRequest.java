@@ -29,6 +29,8 @@ import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.reasoner.OWLReasonerRuntimeException;
 import org.semanticweb.owlapi.reasoner.ReasonerInterruptedException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.authorization.BranchAccessControl;
@@ -63,6 +65,8 @@ import com.b2international.snowowl.snomed.reasoner.ontology.DelegateOntologyFact
  */
 final class ClassificationJobRequest implements Request<BranchContext, Boolean>, BranchAccessControl {
 
+	private static final Logger LOGGER = LoggerFactory.getLogger("reasoner");
+	
 	@NotEmpty
 	private String reasonerId;
 
@@ -103,6 +107,7 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean>,
 			tracker.classificationFailed(classificationId);
 			throw e;
 		} catch (final Exception e) {
+			LOGGER.error("Unexpected error encountered while running classification job.", e);
 			tracker.classificationFailed(classificationId);
 			throw new ReasonerApiException("Exception caught while running classification.", e);
 		}

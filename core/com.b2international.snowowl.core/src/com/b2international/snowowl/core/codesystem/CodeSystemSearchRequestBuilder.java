@@ -32,13 +32,24 @@ public final class CodeSystemSearchRequestBuilder
 		super();
 	}
 	
+	public CodeSystemSearchRequestBuilder filterByToolingId(String toolingId) {
+		return addOption(OptionKey.TOOLING_ID, toolingId);
+	}
+
 	public CodeSystemSearchRequestBuilder filterByToolingIds(Iterable<String> toolingIds) {
 		return addOption(OptionKey.TOOLING_ID, toolingIds);
 	}
 	
+	public CodeSystemSearchRequestBuilder filterByName(String term) {
+		return addOption(OptionKey.NAME, term);
+	}
+	
+	public CodeSystemSearchRequestBuilder filterByNameExact(String term) {
+		return addOption(OptionKey.NAME_EXACT, term);
+	}
+
 	@Override
 	protected SearchResourceRequest<RepositoryContext, CodeSystems> createSearch() {
 		return new CodeSystemSearchRequest();
 	}
-
 }

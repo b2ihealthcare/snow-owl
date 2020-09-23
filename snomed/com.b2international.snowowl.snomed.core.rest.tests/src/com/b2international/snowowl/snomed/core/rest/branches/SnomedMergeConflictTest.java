@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.core.rest.branches;
 import static com.b2international.snowowl.snomed.core.rest.CodeSystemVersionRestRequests.getNextAvailableEffectiveDate;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.createComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.deleteComponent;
+import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.getComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.updateComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRefSetRestRequests.updateRefSetComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.changeCaseSignificance;
@@ -42,13 +43,16 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.merge.ConflictingAttribute;
 import com.b2international.snowowl.core.merge.ConflictingAttributeImpl;
 import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.core.merge.MergeConflict;
 import com.b2international.snowowl.core.merge.MergeConflict.ConflictType;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
@@ -406,5 +410,228 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		assertEquals(ConflictType.CAUSES_MISSING_REFERENCE, conflict.getType());
 		assertEquals(0, conflict.getConflictingAttributes().size());
 	}
+	
+	@Test
+	public void rebaseConceptModuleConflictShouldReportConflict() throws Exception {
+		final String concept = createNewConcept(branchPath);
+		
+		final IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		branching.createBranch(a).statusCode(201);
+		
+		final Map<?, ?> moduleUpdateOnParent = Map.of(
+			"moduleId", Concepts.MODULE_ROOT,
+			"commitComment", "Update module"
+		);
+		updateComponent(branchPath, SnomedComponentType.CONCEPT, concept, moduleUpdateOnParent);
+		
+		final Map<?, ?> moduleUpdateOnChild = Map.of(
+			"moduleId", Concepts.MODULE_SCT_MODEL_COMPONENT,
+			"commitComment", "Update module"
+		);
+		updateComponent(a, SnomedComponentType.CONCEPT, concept, moduleUpdateOnChild);
+		
+		merge(branchPath, a, "Rebase branch A").body("status", equalTo(Merge.Status.CONFLICTS.name()));
+	}
+	
+	@Test
+	public void rebaseModuleChangeOverNewRelationship() throws Exception {
+		final String concept = createNewConcept(branchPath);
+		
+		final IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		branching.createBranch(a).statusCode(201);
+		
+		String relationshipOnChild = createNewRelationship(a, concept, Concepts.IS_A, Concepts.REFSET_ALL);
+		
+		final Map<?, ?> moduleUpdateOnParent = Map.of(
+			"moduleId", Concepts.MODULE_ROOT,
+			"commitComment", "Update module"
+		);
+		updateComponent(branchPath, SnomedComponentType.CONCEPT, concept, moduleUpdateOnParent);
+			
+		merge(branchPath, a, "Rebase branch A").body("status", equalTo(Merge.Status.COMPLETED.name()));
+		getComponent(branchPath, SnomedComponentType.CONCEPT, concept)
+			.statusCode(200)
+			.body("moduleId", equalTo(Concepts.MODULE_ROOT));
+		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipOnChild)
+			.statusCode(404);
+		
+		getComponent(a, SnomedComponentType.CONCEPT, concept)
+			.statusCode(200)
+			.body("moduleId", equalTo(Concepts.MODULE_ROOT));
+		getComponent(a, SnomedComponentType.RELATIONSHIP, relationshipOnChild)
+			.statusCode(200);
+	}
+	
+    @Test
+	public void rebaseResolvableDescriptionConflictOnTheSameDescription() throws Exception {
+		final String conceptA = createNewConcept(branchPath);
+		final String descriptionB = createNewDescription(branchPath, conceptA, Concepts.SYNONYM, SnomedApiTestConstants.UK_PREFERRED_MAP);
+		
+		final IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		branching.createBranch(a).statusCode(201);
+		
+		Map<?, ?> descriptionBUpdateRequest = ImmutableMap.builder()
+				.put("term", "Description B New Term")
+				.put("commitComment", "Change description B")
+				.build();
+		updateComponent(a, SnomedComponentType.DESCRIPTION, descriptionB, descriptionBUpdateRequest).statusCode(204);
+		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionB, descriptionBUpdateRequest).statusCode(204);
+		
+		merge(branchPath, a, "Rebase branch A").body("status", equalTo(Merge.Status.COMPLETED.name()));
+		
+		// checking duplicate revisions after sync
+		getComponent(a, SnomedComponentType.DESCRIPTION, descriptionB).statusCode(200);
+		getComponent(a, SnomedComponentType.CONCEPT, conceptA).statusCode(200);
+	}
+    
+    @Test
+	public void rebaseResolvableDescriptionConflictOnTwoDifferentDescriptions() throws Exception {
+		final String concept = createNewConcept(branchPath);
+		final String syn = createNewDescription(branchPath, concept, Concepts.SYNONYM, SnomedApiTestConstants.UK_PREFERRED_MAP);
+		final String fsn = createNewDescription(branchPath, concept, Concepts.FULLY_SPECIFIED_NAME, SnomedApiTestConstants.UK_PREFERRED_MAP);
+		
+		final IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		branching.createBranch(a).statusCode(201);
+		
+		Map<?, ?> synUpdateRequest = ImmutableMap.builder()
+				.put("term", "Updated")
+				.put("commitComment", "Change " + syn)
+				.build();
+		
+		updateComponent(a, SnomedComponentType.DESCRIPTION, syn, synUpdateRequest).statusCode(204);
+		
+		Map<?, ?> fsnUpdateRequest = ImmutableMap.builder()
+				.put("term", "Updated")
+				.put("commitComment", "Change " + fsn)
+				.build();
+		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, fsn, fsnUpdateRequest).statusCode(204);
+		
+		merge(branchPath, a, "Rebase branch A").body("status", equalTo(Merge.Status.COMPLETED.name()));
+		
+		// checking duplicate revisions after sync
+		getComponent(a, SnomedComponentType.DESCRIPTION, syn).statusCode(200);
+		getComponent(a, SnomedComponentType.DESCRIPTION, fsn).statusCode(200);
+		getComponent(a, SnomedComponentType.CONCEPT, concept).statusCode(200);
+	}
 
+    @Test
+   	public void rebaseResolvableIsaRelationshipConflictSameDestination() throws Exception {
+   		final String concept = createNewConcept(branchPath, Concepts.ROOT_CONCEPT);
+   		
+   		final IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+   		branching.createBranch(a).statusCode(201);
+
+   		String relationshipOnParent = createNewRelationship(branchPath, concept, Concepts.IS_A, Concepts.TOPLEVEL_METADATA);
+   		String relationshipOnChild = createNewRelationship(a, concept, Concepts.IS_A, Concepts.TOPLEVEL_METADATA);
+   		
+   		merge(branchPath, a, "Rebase branch A").body("status", equalTo(Merge.Status.COMPLETED.name()));
+   		
+   		getComponent(a, SnomedComponentType.RELATIONSHIP, relationshipOnChild).statusCode(200);
+   		getComponent(a, SnomedComponentType.RELATIONSHIP, relationshipOnParent).statusCode(200);
+   		SnomedConcept conceptOnChild = getComponent(a, SnomedComponentType.CONCEPT, concept).statusCode(200).extract().as(SnomedConcept.class);
+   		assertThat(conceptOnChild.getStatedParentIdsAsString()).containsOnly(Concepts.ROOT_CONCEPT, Concepts.TOPLEVEL_METADATA);
+   		assertThat(conceptOnChild.getParentIdsAsString()).containsOnly(IComponent.ROOT_ID);
+   		assertThat(conceptOnChild.getStatedAncestorIdsAsString()).containsOnly(IComponent.ROOT_ID, Concepts.ROOT_CONCEPT);
+   		assertThat(conceptOnChild.getAncestorIdsAsString()).isEmpty();
+   	}
+    
+    @Test
+   	public void rebaseResolvableIsaRelationshipConflictTwoDifferentDestinations() throws Exception {
+   		final String concept = createNewConcept(branchPath, Concepts.ROOT_CONCEPT);
+   		
+   		final IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+   		branching.createBranch(a).statusCode(201);
+
+   		String relationshipOnParent = createNewRelationship(branchPath, concept, Concepts.IS_A, Concepts.CONCEPT_MODEL_DATA_ATTRIBUTE);
+   		String relationshipOnChild = createNewRelationship(a, concept, Concepts.IS_A, Concepts.CONCEPT_MODEL_OBJECT_ATTRIBUTE);
+   		
+   		merge(branchPath, a, "Rebase branch A").body("status", equalTo(Merge.Status.COMPLETED.name()));
+   		
+   		getComponent(a, SnomedComponentType.RELATIONSHIP, relationshipOnChild).statusCode(200);
+   		getComponent(a, SnomedComponentType.RELATIONSHIP, relationshipOnParent).statusCode(200);
+   		SnomedConcept conceptOnChild = getComponent(a, SnomedComponentType.CONCEPT, concept).statusCode(200).extract().as(SnomedConcept.class);
+   		assertThat(conceptOnChild.getStatedParentIdsAsString()).containsOnly(Concepts.ROOT_CONCEPT, Concepts.CONCEPT_MODEL_DATA_ATTRIBUTE, Concepts.CONCEPT_MODEL_OBJECT_ATTRIBUTE);
+   		assertThat(conceptOnChild.getParentIdsAsString()).containsOnly(IComponent.ROOT_ID);
+   		assertThat(conceptOnChild.getStatedAncestorIdsAsString()).containsOnly(IComponent.ROOT_ID, Concepts.ROOT_CONCEPT, Concepts.LINKAGE, Concepts.ATTRIBUTE, Concepts.CONCEPT_MODEL_ATTRIBUTE, Concepts.TOPLEVEL_METADATA);
+   		assertThat(conceptOnChild.getAncestorIdsAsString()).isEmpty();
+   	}
+    
+    @Test
+	public void rebaseResolvableNonIsaRelationshipConflict() throws Exception {
+    	final String concept = createNewConcept(branchPath, Concepts.ROOT_CONCEPT);
+   		
+   		final IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+   		branching.createBranch(a).statusCode(201);
+
+   		String relationshipOnChild = createNewRelationship(a, concept, Concepts.FINDING_SITE, Concepts.TOPLEVEL_METADATA);
+   		String relationshipOnParent = createNewRelationship(branchPath, concept, Concepts.FINDING_SITE, Concepts.TOPLEVEL_METADATA);
+   		
+   		merge(branchPath, a, "Rebase branch A").body("status", equalTo(Merge.Status.COMPLETED.name()));
+   		
+   		getComponent(a, SnomedComponentType.RELATIONSHIP, relationshipOnChild).statusCode(200);
+   		getComponent(a, SnomedComponentType.RELATIONSHIP, relationshipOnParent).statusCode(200);
+   		getComponent(a, SnomedComponentType.CONCEPT, concept).statusCode(200).extract().as(SnomedConcept.class);
+	}
+       
+    @Test
+   	public void rebaseResolvableAxiomMemberConflict() throws Exception {
+   		final String concept = createNewConcept(branchPath, Concepts.ROOT_CONCEPT);
+   		
+   		final IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+   		branching.createBranch(a).statusCode(201);
+
+   		String axiomOnParent = createNewRefSetMember(branchPath, concept, Concepts.REFSET_OWL_AXIOM, Map.of(SnomedRf2Headers.FIELD_OWL_EXPRESSION, String.format("SubClassOf(:%s :%s)", concept, Concepts.TOPLEVEL_METADATA)));
+   		String axiomOnChild = createNewRefSetMember(a, concept, Concepts.REFSET_OWL_AXIOM, Map.of(SnomedRf2Headers.FIELD_OWL_EXPRESSION, String.format("SubClassOf(:%s :%s)", concept, Concepts.TOPLEVEL_METADATA)));
+   		
+   		merge(branchPath, a, "Rebase branch A").body("status", equalTo(Merge.Status.COMPLETED.name()));
+   		
+   		getComponent(a, SnomedComponentType.MEMBER, axiomOnChild).statusCode(200);
+   		getComponent(a, SnomedComponentType.MEMBER, axiomOnParent).statusCode(200);
+   		SnomedConcept conceptOnChild = getComponent(a, SnomedComponentType.CONCEPT, concept).statusCode(200).extract().as(SnomedConcept.class);
+   		assertThat(conceptOnChild.getStatedParentIdsAsString()).containsOnly(Concepts.ROOT_CONCEPT, Concepts.TOPLEVEL_METADATA);
+   		assertThat(conceptOnChild.getParentIdsAsString()).containsOnly(IComponent.ROOT_ID);
+   		assertThat(conceptOnChild.getStatedAncestorIdsAsString()).containsOnly(IComponent.ROOT_ID, Concepts.ROOT_CONCEPT);
+   		assertThat(conceptOnChild.getAncestorIdsAsString()).isEmpty();
+   	}
+    
+    @Test
+	public void rebaseResolvableModuleAndTermChange() throws Exception {
+    	final String conceptA = createNewConcept(branchPath);
+		final String descriptionB = createNewDescription(branchPath, conceptA, Concepts.SYNONYM, SnomedApiTestConstants.UK_PREFERRED_MAP);
+		
+		final IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
+		branching.createBranch(a).statusCode(201);
+		
+		Map<?, ?> descriptionBUpdateRequest = ImmutableMap.builder()
+				.put("term", "Description B New Term")
+				.put("commitComment", "Change description B")
+				.build();
+		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionB, descriptionBUpdateRequest).statusCode(204);
+		
+		Map<?, ?> conceptUpdateRequest = ImmutableMap.builder()
+				.put("moduleId", Concepts.MODULE_SCT_MODEL_COMPONENT)
+				.put("commitComment", "Change description B")
+				.build();
+		updateComponent(a, SnomedComponentType.CONCEPT, conceptA, conceptUpdateRequest).statusCode(204);
+		
+		merge(branchPath, a, "Rebase branch A").body("status", equalTo(Merge.Status.COMPLETED.name()));
+		
+		// checking duplicate revisions and properties after sync
+		// on parent branch
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionB)
+			.statusCode(200)
+			.body("term", equalTo("Description B New Term"));
+		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptA)
+			.statusCode(200)
+			.body("moduleId", equalTo(Concepts.MODULE_SCT_CORE));
+		
+		// on task branch
+		getComponent(a, SnomedComponentType.DESCRIPTION, descriptionB)
+			.statusCode(200)
+			.body("term", equalTo("Description B New Term"));
+		getComponent(a, SnomedComponentType.CONCEPT, conceptA)
+			.statusCode(200)
+			.body("moduleId", equalTo(Concepts.MODULE_SCT_MODEL_COMPONENT));
+	}
+    
 }

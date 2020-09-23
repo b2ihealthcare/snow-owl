@@ -15,8 +15,10 @@
  */
 package com.b2international.index.revision;
 
+import java.util.List;
 import java.util.Objects;
 
+import com.b2international.commons.collections.Collections3;
 import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
 import com.b2international.index.Script;
@@ -34,7 +36,7 @@ public class RevisionFixtures {
 	private RevisionFixtures() {
 	}
 	
-	@Doc(revisionHash = { "field1", "field2" })
+	@Doc(revisionHash = { "field1", "field2", "terms" })
 	public static class RevisionData extends Revision {
 		
 		public static class Builder extends Revision.Builder<RevisionData.Builder, RevisionData> {
@@ -42,11 +44,13 @@ public class RevisionFixtures {
 			private String id;
 			private String field1;
 			private String field2;
+			private List<String> terms;
 			
 			public Builder(RevisionData revisionData) {
 				this.id = revisionData.getId();
 				this.field1 = revisionData.field1;
 				this.field2 = revisionData.field2;
+				this.terms = revisionData.terms;
 			}
 
 			public Builder id(String id) {
@@ -64,6 +68,11 @@ public class RevisionFixtures {
 				return getSelf();
 			}
 			
+			public Builder terms(Iterable<String> terms) {
+				this.terms = terms != null ? Collections3.toImmutableList(terms) : null;
+				return getSelf();
+			}
+			
 			@Override
 			protected Builder getSelf() {
 				return this;
@@ -71,22 +80,41 @@ public class RevisionFixtures {
 
 			@Override
 			public RevisionData build() {
-				return new RevisionData(id, field1, field2);
+				return new RevisionData(id, field1, field2, terms);
 			}
 		}
 		
 		@Text(analyzer=Analyzers.TOKENIZED)
-		private String field1;
-		private String field2;
+		private final String field1;
+		private final String field2;
+		private final List<String> terms;
 
+		public RevisionData(final String id, final String field1, final String field2) {
+			this(id, field1, field2, null);
+		}
+		
 		@JsonCreator
 		public RevisionData(
 				@JsonProperty(Revision.Fields.ID) final String id, 
 				@JsonProperty("field1") final String field1, 
-				@JsonProperty("field2") final String field2) {
+				@JsonProperty("field2") final String field2,
+				@JsonProperty("terms") final List<String> terms) {
 			super(id);
 			this.field1 = field1;
 			this.field2 = field2;
+			this.terms = terms;
+		}
+		
+		public String getField1() {
+			return field1;
+		}
+		
+		public String getField2() {
+			return field2;
+		}
+		
+		public List<String> getTerms() {
+			return terms;
 		}
 		
 		@Override
@@ -95,12 +123,14 @@ public class RevisionFixtures {
 			if (obj == null) return false;
 			if (getClass() != obj.getClass()) return false;
 			RevisionData other = (RevisionData) obj;
-			return Objects.equals(field1, other.field1) && Objects.equals(field2, other.field2); 
+			return Objects.equals(field1, other.field1) 
+					&& Objects.equals(field2, other.field2)
+					&& Objects.equals(terms, other.terms); 
 		}
 		
 		@Override
 		public int hashCode() {
-			return Objects.hash(field1, field2);
+			return Objects.hash(field1, field2, terms);
 		}
 		
 		@Override
@@ -156,8 +186,9 @@ public class RevisionFixtures {
 				@JsonProperty(Revision.Fields.ID) final String id,
 				@JsonProperty("field1") final String field1, 
 				@JsonProperty("field2") final String field2,
+				@JsonProperty("terms") final List<String> terms,
 				@JsonProperty("doi") final float doi) {
-			super(id, field1, field2);
+			super(id, field1, field2, terms);
 			this.doi = doi;
 		}
 		
@@ -194,8 +225,9 @@ public class RevisionFixtures {
 				@JsonProperty(Revision.Fields.ID) final String id,
 				@JsonProperty("field1") final String field1, 
 				@JsonProperty("field2") final String field2,
+				@JsonProperty("terms") final List<String> terms,
 				@JsonProperty("value") final boolean active) {
-			super(id, field1, field2);
+			super(id, field1, field2, terms);
 			this.active = active;
 		}
 		
@@ -216,9 +248,10 @@ public class RevisionFixtures {
 				@JsonProperty(Revision.Fields.ID) final String id,
 				@JsonProperty("field1") final String field1, 
 				@JsonProperty("field2") final String field2, 
+				@JsonProperty("terms") final List<String> terms,
 				@JsonProperty("from") final int from,
 				@JsonProperty("to") final int to) {
-			super(id, field1, field2);
+			super(id, field1, field2, terms);
 			this.from = from;
 			this.to = to;
 		}

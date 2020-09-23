@@ -32,4 +32,13 @@
 		
 	</modules>
 	
+	<profiles>
+		<profile>
+			<id>extras</id>
+			<modules>
+				<module>com.b2international.snowowl.logback.config</module>
+			</modules>
+		</profile>
+	</profiles>
+	
 </project>

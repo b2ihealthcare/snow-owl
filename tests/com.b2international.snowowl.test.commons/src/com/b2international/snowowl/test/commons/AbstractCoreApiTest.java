@@ -19,13 +19,13 @@ import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Rule;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
 import com.b2international.commons.exceptions.NotFoundException;
-import com.b2international.commons.options.Metadata;
 import com.b2international.commons.options.MetadataImpl;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.Branch;
@@ -33,20 +33,17 @@ import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.b2international.snowowl.core.branch.Branching;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.test.commons.rest.BranchBase;
 import com.google.common.collect.ImmutableMap;
 
 /**
  * Superclass for branch-isolated Java API testing.
+ * 
  * @since 7.6
  */
-@BranchBase(Branch.MAIN_PATH)
 public abstract class AbstractCoreApiTest {
 
 	private final class CoreApiTestWatcher extends ApiTestWatcher {
 		
-		private final Branching branching = RepositoryRequests.branching();
-
 		@Override
 		protected void starting(Description description) {
 			System.out.println("===== Start of " + description + " =====");
@@ -58,7 +55,7 @@ public abstract class AbstractCoreApiTest {
 			createBranchRecursively(branchPath, ImmutableMap.of());
 		}
 
-		public void createBranchRecursively(IBranchPath branchPath, Map<?, ?> metadata) {
+		public void createBranchRecursively(IBranchPath branchPath, Map<String, Object> metadata) {
 			
 			IBranchPath currentPath = branchPath;
 			Branch branch = getBranch(currentPath);
@@ -75,40 +72,15 @@ public abstract class AbstractCoreApiTest {
 			// Step downwards and create all non-existing segments
 			while (!segmentsToCreate.isEmpty()) {
 				currentPath = BranchPathUtils.createPath(currentPath, segmentsToCreate.remove(segmentsToCreate.size() - 1));
-				Map<?, ?> currentMetadata = segmentsToCreate.isEmpty() ? metadata : ImmutableMap.of();
+				Map<String, Object> currentMetadata = segmentsToCreate.isEmpty() ? metadata : ImmutableMap.of();
 				createBranch(currentPath, currentMetadata);
 			}
 		}
 		
-		public Branch getBranch(IBranchPath branchPath) {
-			
-			Branch branch = null;
-			try {
-				branch = branching.prepareGet(branchPath.getPath())
-						.build(getRepositoryId())
-						.execute(getBus())
-						.getSync();
-			} catch (NotFoundException nfe) {
-				//do nothing
-			}
-			return branch;
-		}
-		
-		public String createBranch(IBranchPath branchPath, Map<?, ?> metadataMap) {
-			
-			final Metadata metadata = new MetadataImpl();
-			metadataMap.forEach((k, v) -> metadata.put((String) k, v));
-			
-			return branching.prepareCreate()
-				.setMetadata(metadata)
-				.setParent(branchPath.getParentPath())
-				.setName(branchPath.lastSegment())
-				.build(getRepositoryId())
-				.execute(getBus())
-				.getSync();
-		}
 	}
 
+	private final Branching branching = RepositoryRequests.branching();
+	
 	protected IBranchPath branchPath;
 
 	@Rule 
@@ -118,6 +90,31 @@ public abstract class AbstractCoreApiTest {
 	
 	protected final IEventBus getBus() {
 		return Services.bus();
+	}
+	
+	protected final Branch getBranch(IBranchPath branchPath) {
+		try {
+			return branching.prepareGet(branchPath.getPath())
+					.build(getRepositoryId())
+					.execute(getBus())
+					.getSync(1, TimeUnit.MINUTES);
+		} catch (NotFoundException nfe) {
+			return null;
+		}
+	}
+	
+	protected final String createBranch(IBranchPath branchPath) {
+		return createBranch(branchPath, null);
+	}
+	
+	protected final String createBranch(IBranchPath branchPath, Map<String, Object> metadataMap) {
+		return branching.prepareCreate()
+			.setMetadata(metadataMap != null ? new MetadataImpl(metadataMap) : null)
+			.setParent(branchPath.getParentPath())
+			.setName(branchPath.lastSegment())
+			.build(getRepositoryId())
+			.execute(getBus())
+			.getSync(1, TimeUnit.MINUTES);
 	}
 
 }
