@@ -150,31 +150,31 @@ public class Expressions {
 		return new BoostPredicate(expression, boost);
 	}
 	
-	public static Expression matchTextAll(String field, String term) {
+	public static TextPredicate matchTextAll(String field, String term) {
 		return new TextPredicate(field, term, MatchType.ALL);
 	}
 	
-	public static Expression matchTextAny(String field, String term) {
+	public static TextPredicate matchTextAny(String field, String term) {
 		return new TextPredicate(field, term, MatchType.ANY);
 	}
 	
-	public static Expression matchTextAny(String field, String term, int minShouldMatch) {
+	public static TextPredicate matchTextAny(String field, String term, int minShouldMatch) {
 		return new TextPredicate(field, term, MatchType.ANY, minShouldMatch);
 	}
 	
-	public static Expression matchTextPhrase(String field, String term) {
+	public static TextPredicate matchTextPhrase(String field, String term) {
 		return new TextPredicate(field, term, MatchType.PHRASE);
 	}
 	
-	public static Expression matchTextFuzzy(String field, String term) {
+	public static TextPredicate matchTextFuzzy(String field, String term) {
 		return new TextPredicate(field, term, MatchType.FUZZY);
 	}
 	
-	public static Expression matchTextParsed(String field, String term) {
+	public static TextPredicate matchTextParsed(String field, String term) {
 		return new TextPredicate(field, term, MatchType.PARSED);
 	}
 	
-	public static Expression matchTextRegexp(String field, String regexp) {
+	public static TextPredicate matchTextRegexp(String field, String regexp) {
 		return new TextPredicate(field, regexp, MatchType.REGEXP);
 	}
 	

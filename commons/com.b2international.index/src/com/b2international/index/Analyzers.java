@@ -27,6 +27,11 @@ public enum Analyzers {
 	 * trailing marker from the Unicode Private Use Area characters to mark the beginning and end of a text.
 	 */
 	DEFAULT,
+	
+	/**
+	 * Keyword analyzer present in Elasticsearch by default, does not modify the given text at all, uses it as is for both indexing and search.
+	 */
+	KEYWORD,
 
 	/**
 	 * Indexes the term as is for exact match searches with ASCII folding and in lower-case form.
@@ -55,13 +60,14 @@ public enum Analyzers {
 	    "word_splitter": {
             "type": "word_delimiter",
             "split_on_case_change": "false",
+            "split_on_numerics": "false",
             "preserve_original": "true",
             "stem_english_possessive": "false",
             "type_table": [", => DIGIT", ". => DIGIT"]
         }
 	 */
 	TOKENIZED,
-
+	
 	/**
 	 * "stemming": {
         	"tokenizer" : "whitespace",
@@ -158,6 +164,27 @@ public enum Analyzers {
 	/**
 	 * Use the same analyzer that is configured for the {@link Analyzed#analyzer()} field. 
 	 */
-	INDEX
+	INDEX;
+	
+	/**
+	 * @return the actual analyzer registered in Elasticsearch
+	 * @see analysis.json for further details
+	 */
+	public String getAnalyzer() {
+		switch (this) {
+		case DEFAULT: return "standard";
+		case KEYWORD: return "keyword";
+		case EXACT: return "exact";
+		case TOKENIZED: return "tokenized";
+		case STEMMING: return "stemming";
+		case SEARCH_STEMMING: return "search_stemming";
+		case CASE_SENSITIVE: return "case_sensitive";
+		case CASE_SENSITIVE_ASCII: return "case_sensitive_ascii";
+		case CASE_SENSITIVE_ASCII_EXACT: return "case_sensitive_ascii_exact";
+		case CASE_SENSITIVE_PREFIX: return "case_sensitive_prefix";
+		case PREFIX: return "prefix";
+		default: throw new UnsupportedOperationException("Unsupported analyzer: " + this);
+		}
+	}
 	
 }

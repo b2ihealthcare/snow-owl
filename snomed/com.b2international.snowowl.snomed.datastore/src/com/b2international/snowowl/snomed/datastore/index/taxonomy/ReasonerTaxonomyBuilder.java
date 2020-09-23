@@ -816,7 +816,7 @@ public final class ReasonerTaxonomyBuilder {
 						equivalentStatements.putAll(lastReferencedComponentId, equivalentFragments);
 						statedAncestors.addEdges(sourceIds, destinationIds);
 						statedDescendants.addEdges(destinationIds, sourceIds);
-						statedAdditionalAxioms.putAll(referencedComponentId, additionalAxioms);
+						statedAdditionalAxioms.putAll(lastReferencedComponentId, additionalAxioms);
 					} else {
 						LOGGER.debug("Not registering OWL axioms for concept {} as it is inactive.", lastReferencedComponentId);
 					}
