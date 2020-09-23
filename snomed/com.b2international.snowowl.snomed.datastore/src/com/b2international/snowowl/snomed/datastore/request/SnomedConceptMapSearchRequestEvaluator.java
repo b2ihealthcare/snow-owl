@@ -44,6 +44,7 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.SnomedDisplayTermType;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
@@ -61,16 +62,23 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 
 	@Override
 	public ConceptMapMappings evaluate(CodeSystemURI uri, BranchContext context, Options search) {
-		SnomedReferenceSetMembers referenceSetMembers = fetchRefsetMembers(uri, context, search);
-		return toCollectionResource(referenceSetMembers, uri, context, search);
+		final String preferredDisplay = search.get(OptionKey.DISPLAY, String.class);
+		SnomedDisplayTermType snomedDisplayTermType;
+		try {
+			snomedDisplayTermType = SnomedDisplayTermType.valueOf(preferredDisplay);
+		} catch(Exception e) {
+			snomedDisplayTermType = SnomedDisplayTermType.PT;
+		}
+		SnomedReferenceSetMembers referenceSetMembers = fetchRefsetMembers(uri, context, search, snomedDisplayTermType);
+		return toCollectionResource(referenceSetMembers, uri, context, search, snomedDisplayTermType);
 	}
 
-	private ConceptMapMappings toCollectionResource(SnomedReferenceSetMembers referenceSetMembers, CodeSystemURI uri, BranchContext context, Options search) {
+	private ConceptMapMappings toCollectionResource(SnomedReferenceSetMembers referenceSetMembers, CodeSystemURI uri, BranchContext context, Options search, SnomedDisplayTermType snomedDisplayTermType) {
 		Map<String, ComponentURI> targetComponentMap = getTargetComponentMap(context, search);
 		List<ConceptMapMapping> mappings = referenceSetMembers.stream()
 				.filter(m -> SnomedTerminologyComponentConstants.CONCEPT_NUMBER == m.getReferencedComponent().getTerminologyComponentId())
 				.map(m -> {
-					return toMapping(m, uri, targetComponentMap.get(m.getReferenceSetId()));
+					return toMapping(m, uri, targetComponentMap.get(m.getReferenceSetId()), snomedDisplayTermType);
 				})
 				.collect(Collectors.toList());
 		
@@ -113,12 +121,12 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 		return getTargetComponentURI(context, refsetIds);
 	}
 
-	private ConceptMapMapping toMapping(SnomedReferenceSetMember member, CodeSystemURI codeSystemURI, ComponentURI targetURI) {	 		
+	private ConceptMapMapping toMapping(SnomedReferenceSetMember member, CodeSystemURI codeSystemURI, ComponentURI targetURI, final SnomedDisplayTermType snomedDisplayTermType) {	 		
 		final String iconId = member.getReferencedComponent().getIconId();
 		final short terminologyComponentId = member.getReferencedComponent().getTerminologyComponentId();
 
 		final SnomedConcept concept = (SnomedConcept) member.getReferencedComponent();
-		final String term  = concept.getFsn().getTerm();
+		final String term  = snomedDisplayTermType.getLabel(concept);
 
 		Builder mappingBuilder = ConceptMapMapping.builder();
 
@@ -234,7 +242,7 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 
 	}
 
-	private SnomedReferenceSetMembers fetchRefsetMembers(CodeSystemURI uri, BranchContext context, Options search) {
+	private SnomedReferenceSetMembers fetchRefsetMembers(CodeSystemURI uri, BranchContext context, Options search, SnomedDisplayTermType snomedDisplayTermType) {
 
 		final Integer limit = search.get(OptionKey.LIMIT, Integer.class);
 		final String searchAfter = search.get(OptionKey.AFTER, String.class);
@@ -257,7 +265,7 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 				.filterByComponentIds(componentIds)
 				.filterByProps(OptionsBuilder.newBuilder().put(SnomedRf2Headers.FIELD_MAP_TARGET, mapTargetIds).build())
 				.setLocales(locales)
-				.setExpand("referencedComponent(expand(fsn()))")
+				.setExpand(String.format("referencedComponent(expand(%s))", snomedDisplayTermType.getExpand()))
 				.setLimit(limit)
 				.setSearchAfter(searchAfter)
 				.build()
