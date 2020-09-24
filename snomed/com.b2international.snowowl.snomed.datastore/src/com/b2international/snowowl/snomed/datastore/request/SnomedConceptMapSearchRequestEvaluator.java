@@ -99,14 +99,12 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 				.collect(Collectors.toList());
 		
 		if (!mappings.isEmpty()) {
-			final Map<String, Map<String, Concept>> conceptMapByRefSet = Multimaps.index(mappings, mapping -> targetComponentsByRefSetId.get(mapping.getContainerSetURI().identifier()))
+			final Map<String, Concept> conceptsById = Multimaps.index(mappings, mapping -> targetComponentsByRefSetId.get(mapping.getContainerSetURI().identifier()))
 					.asMap()
 					.entrySet()
 					.stream()
 					.filter(entry -> !entry.getKey().isUnspecified())
-					.collect(Collectors.toMap(
-							entry -> entry.getKey().identifier(),
-							entry -> {
+					.map(entry -> {
 								final String cs = entry.getKey().codeSystemUri().getCodeSystem();
 								final Set<String> idsToFetch = entry.getValue().stream().map(map -> map.getTargetComponentURI().identifier()).collect(Collectors.toSet());
 								return CodeSystemRequests.prepareSearchConcepts()
@@ -117,18 +115,17 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 										.getSync(5, TimeUnit.MINUTES)
 										.stream()
 										.collect(Collectors.toMap(Concept::getId, c -> c));
-							}));
+							})
+					.flatMap(map -> map.entrySet().stream())
+					.collect(Collectors.toMap(
+							entry -> entry.getKey(), 
+							entry -> entry.getValue(),
+							(concept1, concept2) -> concept1));
 			
 			mappings = mappings.stream().map(mapping -> {
-				final Map<String, Concept> conceptMap = conceptMapByRefSet.get(mapping.getContainerSetURI().identifier());
-				
-				if(conceptMap == null) {
-					return mapping;
-				}
-				
 				final String mapTargetId = mapping.getTargetComponentURI().identifier();
-				if (conceptMap.containsKey(mapTargetId)) {
-					final Concept concept = conceptMap.get(mapTargetId);
+				if (conceptsById.containsKey(mapTargetId)) {
+					final Concept concept = conceptsById.get(mapTargetId);
 					return mapping.toBuilder()
 							.targetTerm(concept.getTerm())
 							.targetIconId(concept.getIconId())
