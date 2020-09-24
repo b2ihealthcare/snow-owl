@@ -47,7 +47,7 @@ public interface ValidationIssueDetailExtension {
 	 * @param issues
 	 *                    - the issues to extend
 	 */
-	void extendIssues(BranchContext context, Collection<ValidationIssue> issues, Map<String, Object> ruleParamters);
+	void extendIssues(BranchContext context, Collection<ValidationIssue> issues, Map<String, Object> ruleParameters);
 
 	/**
 	 * @return the tooling identifier
