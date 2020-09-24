@@ -55,7 +55,6 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Queues;
 import com.google.common.collect.Sets;
@@ -71,7 +70,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult>,
 	
 	Collection<String> ruleIds;
 
-	private Map<String, Object> ruleParameters = Maps.newHashMap();
+	private Map<String, Object> ruleParameters;
 	
 	ValidateRequest() {}
 	
