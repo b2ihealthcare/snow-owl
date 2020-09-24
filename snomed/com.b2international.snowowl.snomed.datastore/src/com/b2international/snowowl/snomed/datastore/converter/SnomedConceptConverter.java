@@ -42,7 +42,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
-import com.b2international.snowowl.snomed.datastore.SnomedDescriptionOrdering;
+import com.b2international.snowowl.snomed.datastore.SnomedDescriptionUtils;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Functions;
@@ -217,7 +217,7 @@ final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedC
 			}
 		}
 		
-		final Map<String, SnomedDescription> terms = SnomedDescriptionOrdering.indexBestPreferredByConceptId(synonyms, locales());
+		final Map<String, SnomedDescription> terms = SnomedDescriptionUtils.indexBestPreferredByConceptId(synonyms, locales());
 		for (SnomedConcept concept : results) {
 			concept.setPt(terms.get(concept.getId()));
 		}
@@ -241,7 +241,7 @@ final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedC
 			}
 		}
 		
-		final Map<String, SnomedDescription> terms = SnomedDescriptionOrdering.indexBestPreferredByConceptId(fsns, locales());
+		final Map<String, SnomedDescription> terms = SnomedDescriptionUtils.indexBestPreferredByConceptId(fsns, locales());
 		
 		for (SnomedConcept concept : results) {
 			SnomedDescription fsn = terms.get(concept.getId());

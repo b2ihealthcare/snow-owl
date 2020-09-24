@@ -15,24 +15,17 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import static com.google.common.collect.Lists.newArrayList;
-
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
-import com.b2international.commons.CompareUtils;
 import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
-import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
+import com.b2international.snowowl.snomed.datastore.SnomedDescriptionUtils;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionSearchRequest.OptionKey;
-import com.google.common.collect.Iterables;
 
 /**
  * <i>Builder</i> class to build requests responsible for searching SNOMED CT descriptions.
@@ -237,10 +230,10 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponent
 	 * @param locales - the locales to use as source of language reference set IDs 
 	 * @return <code>this</code> search request builder, for method chaining
 	 * @see #filterByLanguageRefSet(Iterable)
-	 * @see #getLanguageRefSetIds(List)
+	 * @see #SnomedDescriptionUtils.getLanguageRefSetIds(List)
 	 */
 	public SnomedDescriptionSearchRequestBuilder filterByLanguageRefSets(List<ExtendedLocale> locales) {
-		return filterByLanguageRefSets(getLanguageRefSetIds(locales));
+		return filterByLanguageRefSets(SnomedDescriptionUtils.getLanguageRefSetIds(locales));
 	}
 	
 	/**
@@ -280,10 +273,10 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponent
 	 *            - the locales to use as source of language reference set IDs 
 	 * @return <code>this</code> search request builder, for method chaining
 	 * @see #filterByPreferredIn(Iterable)
-	 * @see #getLanguageRefSetIds(List)
+	 * @see #SnomedDescriptionUtils.getLanguageRefSetIds(List)
 	 */
 	public SnomedDescriptionSearchRequestBuilder filterByPreferredIn(List<ExtendedLocale> locales) {
-		return filterByPreferredIn(getLanguageRefSetIds(locales));
+		return filterByPreferredIn(SnomedDescriptionUtils.getLanguageRefSetIds(locales));
 	}
 	
 	/**
@@ -323,61 +316,15 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponent
 	 *            - the locales to use as source of language reference set IDs 
 	 * @return <code>this</code> search request builder, for method chaining
 	 * @see #filterByAcceptableIn(Iterable)
-	 * @see #getLanguageRefSetIds(List)
+	 * @see #SnomedDescriptionUtils.getLanguageRefSetIds(List)
 	 */
 	public SnomedDescriptionSearchRequestBuilder filterByAcceptableIn(List<ExtendedLocale> locales) {
-		return filterByAcceptableIn(getLanguageRefSetIds(locales));
+		return filterByAcceptableIn(SnomedDescriptionUtils.getLanguageRefSetIds(locales));
 	}
 	
 	@Override
 	protected SearchResourceRequest<BranchContext, SnomedDescriptions> createSearch() {
 		return new SnomedDescriptionSearchRequest();
-	}
-	
-	/**
-	 * Extracts the language reference set identifier from the specified list of {@link ExtendedLocale}s. 
-	 * <p>
-	 * The identifiers may come from the value itself, if it includes a reference set ID (eg. {@code en-x-12345678901}),
-	 * or from the language tag part, if it is well known (eg. {@code en-US}).
-	 * <p>
-	 * If no element from the input list can be converted, an {@link IllegalArgumentException} is thrown; no exception occurs
-	 * if only some of the {@code ExtendedLocale}s could not be transformed into a language reference set identifier, however. 
-	 *  
-	 * @param locales  the extended locale list to process (may not be {@code null})
-	 * @return the converted language reference set identifiers or an empty {@link List}, never <code>null</code>
-	 */
-	public static List<String> getLanguageRefSetIds(List<ExtendedLocale> locales) {
-		if (CompareUtils.isEmpty(locales)) {
-			return Collections.emptyList();
-		}
-		List<String> languageRefSetIds = newArrayList();
-		List<ExtendedLocale> unconvertableLocales = new ArrayList<ExtendedLocale>();
-	
-		for (ExtendedLocale extendedLocale : locales) {
-			Collection<String> mappedRefSetIds;
-	
-			if (!extendedLocale.getLanguageRefSetId().isEmpty()) {
-				mappedRefSetIds = Collections.singleton(extendedLocale.getLanguageRefSetId());
-			} else {
-				mappedRefSetIds = ApplicationContext.getServiceForClass(SnomedCoreConfiguration.class).getMappedLanguageRefSetIds(extendedLocale.getLanguageTag());
-			}
-	
-			if (mappedRefSetIds.isEmpty()) {
-				unconvertableLocales.add(extendedLocale);
-			} else {
-				mappedRefSetIds.forEach(mappedRefSetId -> {
-					if (!languageRefSetIds.contains(mappedRefSetId)) {
-						languageRefSetIds.add(mappedRefSetId);
-					}
-				});
-			}
-		}
-	
-		if (languageRefSetIds.isEmpty() && !unconvertableLocales.isEmpty()) {
-			throw new IllegalArgumentException("Don't know how to convert extended locale " + Iterables.toString(unconvertableLocales) + " to a language reference set identifier.");
-		}
-		
-		return languageRefSetIds;
 	}
 
 }
