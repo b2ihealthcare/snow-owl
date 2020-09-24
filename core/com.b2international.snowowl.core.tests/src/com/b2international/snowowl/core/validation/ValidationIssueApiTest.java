@@ -74,7 +74,7 @@ public class ValidationIssueApiTest {
 		}
 
 		@Override
-		public void extendIssues(BranchContext context, Collection<ValidationIssue> issue) {}
+		public void extendIssues(BranchContext context, Collection<ValidationIssue> issues, Map<String, Object> ruleParameters) {}
 
 		@Override
 		public String getToolingId() { 

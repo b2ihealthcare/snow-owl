@@ -79,7 +79,8 @@ import com.b2international.snowowl.snomed.validation.SnomedQueryValidationRuleEv
 	SnomedQueryEvaluationRequestTest.class,
 	SnomedQueryValidationRuleEvaluatorTest.class,
 	SnomedQueryLabelerRequestTest.class,
-	SnomedEclShortcutTest.class
+	SnomedEclShortcutTest.class,
+	SnomedDescriptionUtilsTest.class
 })
 public class AllSnomedDatastoreTests {
 

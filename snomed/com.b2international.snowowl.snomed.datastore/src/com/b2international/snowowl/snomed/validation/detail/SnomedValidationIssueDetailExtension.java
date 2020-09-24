@@ -29,12 +29,14 @@ import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.extension.Component;
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
@@ -42,17 +44,19 @@ import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.Query;
 import com.b2international.index.query.Query.QueryBuilder;
-import com.b2international.index.query.SortBy;
-import com.b2international.index.query.SortBy.Order;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.internal.validation.ValidationConfiguration;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.core.validation.issue.ValidationIssue;
 import com.b2international.snowowl.core.validation.issue.ValidationIssueDetailExtension;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
+import com.b2international.snowowl.snomed.datastore.SnomedDescriptionUtils;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
@@ -64,7 +68,6 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableMultimap.Builder;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
@@ -137,10 +140,10 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 	}
 	
 	@Override
-	public void extendIssues(BranchContext context, Collection<ValidationIssue> issues) {
+	public void extendIssues(BranchContext context, Collection<ValidationIssue> issues, Map<String, Object> ruleParameters) {
 		extendIssueDetails(context, issues); // XXX adds labels for description issues
-		extendConceptIssueLabels(context, issues);
-		extendRelationshipIssueLabels(context, issues);
+		extendConceptIssueLabels(context, issues, ruleParameters);
+		extendRelationshipIssueLabels(context, issues, ruleParameters);
 	}
 
 	private void extendIssueDetails(BranchContext context, Collection<ValidationIssue> issues) {
@@ -206,7 +209,7 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 		}
 	}
 	
-	private void extendConceptIssueLabels(BranchContext context, Collection<ValidationIssue> issues) {
+	private void extendConceptIssueLabels(BranchContext context, Collection<ValidationIssue> issues, Map<String, Object> ruleParameters) {
 		final RevisionSearcher searcher = context.service(RevisionSearcher.class);
 		
 		final List<ValidationIssue> conceptIssues = issues.stream()
@@ -241,44 +244,63 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 						issuesByConceptId.put(containerConcpetId, memberIssues.get(memberId));
 					}
 				});
-		final Multimap<String, ValidationIssue> issuesByConceptMap = issuesByConceptId.build();
-
-		final Set<String> synonymIds = SnomedRequests.prepareGetSynonyms().build().execute(context).stream().map(SnomedConcept::getId).collect(Collectors.toSet());
 		
-		final Multimap<String, String> affectedComponentLabelsByConcept = HashMultimap.create();
-
-		searcher.scroll(Query.select(String[].class)
-			.from(SnomedDescriptionIndexEntry.class)
-			.fields(SnomedDescriptionIndexEntry.Fields.CONCEPT_ID, SnomedDescriptionIndexEntry.Fields.TERM)
-			.where(Expressions.builder()
-				.filter(SnomedDescriptionIndexEntry.Expressions.active())
-				.filter(SnomedDescriptionIndexEntry.Expressions.concepts(issuesByConceptMap.keySet()))
-				.filter(SnomedDescriptionIndexEntry.Expressions.types(ImmutableSet.<String>builder()
-						.add(Concepts.FULLY_SPECIFIED_NAME)
-						.addAll(synonymIds)
-						.build()))
-				.build()
-			)
-			.limit(SCROLL_SIZE)
-			.build())
-			.forEach(hits -> {
-				for (String[] hit : hits) {
-					affectedComponentLabelsByConcept.put(hit[0], hit[1]);
-				}
-			});
+		final Multimap<String, ValidationIssue> issuesByConceptMap = issuesByConceptId.build();
+		final Map<String, String> affectedComponentLabelsByConcept = getAffectedComponentLabels(context, ruleParameters, issuesByConceptMap.keySet());
 
 		if (!affectedComponentLabelsByConcept.isEmpty()) {
 			issuesByConceptMap.keySet().forEach(conceptId -> {
 				issuesByConceptMap.get(conceptId).forEach(issue -> {
-					final Collection<String> labels = affectedComponentLabelsByConcept.get(conceptId);
-					issue.setAffectedComponentLabels(ImmutableList.copyOf(labels));
+					issue.setAffectedComponentLabels(ImmutableList.of(affectedComponentLabelsByConcept.get(conceptId)));
 				});
 				
 			});
 		}
+		
+	}
+
+	@SuppressWarnings("unchecked")
+	private Map<String, String> getAffectedComponentLabels(BranchContext context, Map<String, Object> ruleParameters, final Set<String> conceptIds) {
+		
+		boolean useFsn = ruleParameters.containsKey(ValidationConfiguration.USE_FSN) ? (boolean) ruleParameters.get(ValidationConfiguration.USE_FSN) : false;
+		
+		Set<String> types;
+		
+		if (useFsn) {
+			types = Set.of(Concepts.FULLY_SPECIFIED_NAME);
+		} else {
+			types = SnomedRequests.prepareGetSynonyms().build().execute(context).stream().map(SnomedConcept::getId).collect(Collectors.toSet());
+		}
+		
+		List<ExtendedLocale> locales;
+		
+		if (ruleParameters.containsKey(ValidationConfiguration.LOCALES)) {
+			locales = (List<ExtendedLocale>) ruleParameters.get(ValidationConfiguration.LOCALES);
+		} else {
+			locales = List.of();
+		}
+		
+		final Map<String, String> affectedComponentLabelsByConcept = new HashMap<>();
+		
+		for (List<String> partition : Iterables.partition(conceptIds, SCROLL_SIZE)) {
+			
+			SnomedDescriptions descriptions = SnomedRequests.prepareSearchDescription()
+				.all()
+				.filterByActive(true)
+				.filterByConceptId(partition)
+				.filterByType(types)
+				.build()
+				.execute(context);
+			
+			Map<String, SnomedDescription> preferredDescriptions = SnomedDescriptionUtils.indexBestPreferredByConceptId(descriptions, locales);
+			preferredDescriptions.forEach( (id, description) -> affectedComponentLabelsByConcept.put(id, description.getTerm()));
+			
+		}
+		
+		return affectedComponentLabelsByConcept;
 	}
 	
-	private void extendRelationshipIssueLabels(BranchContext context, Collection<ValidationIssue> issues) {
+	private void extendRelationshipIssueLabels(BranchContext context, Collection<ValidationIssue> issues, Map<String, Object> ruleParameters) {
 		final RevisionSearcher searcher = context.service(RevisionSearcher.class);
 		
 		final List<ValidationIssue> relationshipIssues = issues.stream()
@@ -291,8 +313,6 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 		
 		final Multimap<String, ValidationIssue> issuesByRelationshipId = Multimaps.index(relationshipIssues, issue -> issue.getAffectedComponent().getComponentId());
 
-		final Set<String> synonymIds = SnomedRequests.prepareGetSynonyms().build().execute(context).stream().map(SnomedConcept::getId).collect(Collectors.toSet());
-		
 		final Set<String> conceptsToFetch = newHashSet();
 
 		final Map<String, String> relationshipFragmentsByRelationshipId= Maps.newHashMap(); 
@@ -312,29 +332,8 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 				}
 			});
 		
-		final Multimap<String, String> affectedComponentLabelsByConcept = HashMultimap.create();
+		Map<String, String> affectedComponentLabelsByConcept = getAffectedComponentLabels(context, ruleParameters, conceptsToFetch);
 		
-		searcher.scroll(Query.select(String[].class)
-				.from(SnomedDescriptionIndexEntry.class)
-				.fields(SnomedDescriptionIndexEntry.Fields.CONCEPT_ID, SnomedDescriptionIndexEntry.Fields.TERM)
-				.where(Expressions.builder()
-					.filter(SnomedDescriptionIndexEntry.Expressions.active())
-					.filter(SnomedDescriptionIndexEntry.Expressions.concepts(conceptsToFetch))
-					.filter(SnomedDescriptionIndexEntry.Expressions.types(ImmutableSet.<String>builder()
-							.add(Concepts.FULLY_SPECIFIED_NAME)
-							.addAll(synonymIds)
-							.build()))
-					.build()
-				)
-				.limit(SCROLL_SIZE)
-				.sortBy(SortBy.field(SnomedDescriptionIndexEntry.Fields.TYPE_ID, Order.ASC))
-				.build())
-				.forEach(hits -> {
-					for (String[] hit : hits) {
-						affectedComponentLabelsByConcept.put(hit[0], hit[1]);
-					}
-				});
-
 		if (!affectedComponentLabelsByConcept.isEmpty()) {
 			issuesByRelationshipId.values().forEach(issue -> {
 				final String[] relationshipFragments = relationshipFragmentsByRelationshipId.get(issue.getAffectedComponent().getComponentId()).split("[|]");
@@ -343,10 +342,9 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 				final String typeId = relationshipFragments[1];
 				final String destinationId = relationshipFragments[2];
 				
-				final String sourceTerm = Iterables.getFirst(affectedComponentLabelsByConcept.get(sourceId), sourceId);
-				final String typeTerm = Iterables.getFirst(affectedComponentLabelsByConcept.get(typeId), typeId);
-				final String destinationTerm = Iterables.getFirst(affectedComponentLabelsByConcept.get(destinationId), destinationId);
-
+				final String sourceTerm = affectedComponentLabelsByConcept.getOrDefault(sourceId, sourceId);
+				final String typeTerm = affectedComponentLabelsByConcept.getOrDefault(typeId, typeId);
+				final String destinationTerm = affectedComponentLabelsByConcept.getOrDefault(destinationId, destinationId);
 				issue.setAffectedComponentLabels(ImmutableList.of(String.format("%s - %s - %s", sourceTerm, typeTerm, destinationTerm)));
 			});
 			
