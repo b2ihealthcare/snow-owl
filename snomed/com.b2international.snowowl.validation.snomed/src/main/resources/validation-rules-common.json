@@ -81,15 +81,6 @@
     "implementation": "scripts/rule110.groovy"
   },
   {
-    "id": "113",
-    "toolingId": "com.b2international.snowowl.terminology.snomed",
-    "messageTemplate": "Relationship groups higher than Group 0 should contain more than one attribute.",
-    "severity": "WARNING",
-    "checkType": "FAST",
-    "type": "script-groovy",
-    "implementation": "scripts/rule113.groovy"
-  },
-  {
   	"id": "663",
     "toolingId": "com.b2international.snowowl.terminology.snomed",
     "messageTemplate": "Relationships must not have inactive source, destination or type concepts.",
