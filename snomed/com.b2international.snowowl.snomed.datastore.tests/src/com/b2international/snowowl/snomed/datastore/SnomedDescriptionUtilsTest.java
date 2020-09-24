@@ -5,6 +5,7 @@ package com.b2international.snowowl.snomed.datastore;
 
 import static com.b2international.snowowl.snomed.datastore.SnomedDescriptionUtils.indexBestPreferredByConceptId;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import java.util.List;
 import java.util.Map;
@@ -151,6 +152,11 @@ public class SnomedDescriptionUtilsTest {
 	@Test
 	public void testCustomLanguageRefsetOrdering3() {
 		assertEquals(gbPreferredDescription, indexBestPreferredByConceptId(descriptions, List.of(new ExtendedLocale("en", "", "1234"), GB_LOCALE, US_LOCALE, SG_LOCALE)).get(Concepts.ROOT_CONCEPT));
+	}
+	
+	@Test
+	public void testCustomLanguageRefsetOrdering4() {
+		assertNull(indexBestPreferredByConceptId(descriptions, List.of(new ExtendedLocale("en", "", "1234"))).get(Concepts.ROOT_CONCEPT));
 	}
 	
 	@SuppressWarnings("deprecation")

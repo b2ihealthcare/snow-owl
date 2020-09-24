@@ -72,7 +72,15 @@ public final class SnomedDescriptionUtils {
 					.findFirst();
 			
 			if (bestPreferredDescription.isPresent()) {
-				conceptToBestPreferredDescriptionMap.put(conceptId, bestPreferredDescription.get());
+				
+				if (getPreferredLanguageRefsetIds(languageRefSetIds, bestPreferredDescription.get()).isEmpty()) {
+					// if the best description is not preferred in any of the provided 
+					// extended locales then do not return anything for the concept 
+					continue;
+				} else {
+					conceptToBestPreferredDescriptionMap.put(conceptId, bestPreferredDescription.get());
+				}
+				
 			}
 
 		}
