@@ -36,6 +36,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.extension.Component;
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
@@ -52,10 +53,10 @@ import com.b2international.snowowl.core.validation.issue.ValidationIssue;
 import com.b2international.snowowl.core.validation.issue.ValidationIssueDetailExtension;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
+import com.b2international.snowowl.snomed.datastore.SnomedDescriptionUtils;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
@@ -67,7 +68,6 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableMultimap.Builder;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
@@ -209,7 +209,6 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 		}
 	}
 	
-	@SuppressWarnings("unchecked")
 	private void extendConceptIssueLabels(BranchContext context, Collection<ValidationIssue> issues, Map<String, Object> ruleParameters) {
 		final RevisionSearcher searcher = context.service(RevisionSearcher.class);
 		
@@ -245,30 +244,9 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 						issuesByConceptId.put(containerConcpetId, memberIssues.get(memberId));
 					}
 				});
+		
 		final Multimap<String, ValidationIssue> issuesByConceptMap = issuesByConceptId.build();
-
-		final Set<String> synonymIds = SnomedRequests.prepareGetSynonyms().build().execute(context).stream().map(SnomedConcept::getId).collect(Collectors.toSet());
-		
-		final Map<String, String> affectedComponentLabelsByConcept = new HashMap<>();
-		
-		boolean shouldUseFsn = ruleParameters.containsKey(ValidationConfiguration.SHOULD_USE_FSN) 
-				? (boolean) ruleParameters.get(ValidationConfiguration.SHOULD_USE_FSN) : true;
-		List<String> locales = ruleParameters.containsKey(ValidationConfiguration.EXTENDED_LOCALES) 
-				? (ImmutableList<String>) ruleParameters.get(ValidationConfiguration.EXTENDED_LOCALES) : ImmutableList.of();
-		
-		Set<String> types =  shouldUseFsn ? ImmutableSet.of(Concepts.FULLY_SPECIFIED_NAME) : synonymIds;
-		
-		for (List<String> partition : Iterables.partition(issuesByConceptMap.keySet(), SCROLL_SIZE)) {
-			SnomedDescriptions descriptions = SnomedRequests.prepareSearchDescription()
-				.all()
-				.filterByActive(true)
-				.filterByConceptId(partition)
-				.filterByType(types)
-				.build()
-				.execute(context);
-			
-			affectedComponentLabelsByConcept.putAll(getPreferredDescriptions(locales, descriptions));
-		}
+		final Map<String, String> affectedComponentLabelsByConcept = getAffectedComponentLabels(context, ruleParameters, issuesByConceptMap.keySet());
 
 		if (!affectedComponentLabelsByConcept.isEmpty()) {
 			issuesByConceptMap.keySet().forEach(conceptId -> {
@@ -278,9 +256,50 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 				
 			});
 		}
+		
+	}
+
+	@SuppressWarnings("unchecked")
+	private Map<String, String> getAffectedComponentLabels(BranchContext context, Map<String, Object> ruleParameters, final Set<String> conceptIds) {
+		
+		boolean useFsn = ruleParameters.containsKey(ValidationConfiguration.USE_FSN) ? (boolean) ruleParameters.get(ValidationConfiguration.USE_FSN) : false;
+		
+		Set<String> types;
+		
+		if (useFsn) {
+			types = Set.of(Concepts.FULLY_SPECIFIED_NAME);
+		} else {
+			types = SnomedRequests.prepareGetSynonyms().build().execute(context).stream().map(SnomedConcept::getId).collect(Collectors.toSet());
+		}
+		
+		List<ExtendedLocale> locales;
+		
+		if (ruleParameters.containsKey(ValidationConfiguration.EXTENDED_LOCALES)) {
+			locales = (List<ExtendedLocale>) ruleParameters.get(ValidationConfiguration.EXTENDED_LOCALES);
+		} else {
+			locales = List.of();
+		}
+		
+		final Map<String, String> affectedComponentLabelsByConcept = new HashMap<>();
+		
+		for (List<String> partition : Iterables.partition(conceptIds, SCROLL_SIZE)) {
+			
+			SnomedDescriptions descriptions = SnomedRequests.prepareSearchDescription()
+				.all()
+				.filterByActive(true)
+				.filterByConceptId(partition)
+				.filterByType(types)
+				.build()
+				.execute(context);
+			
+			Map<String, SnomedDescription> preferredDescriptions = SnomedDescriptionUtils.indexBestPreferredByConceptId(descriptions, locales);
+			preferredDescriptions.forEach( (id, description) -> affectedComponentLabelsByConcept.put(id, description.getTerm()));
+			
+		}
+		
+		return affectedComponentLabelsByConcept;
 	}
 	
-	@SuppressWarnings("unchecked")
 	private void extendRelationshipIssueLabels(BranchContext context, Collection<ValidationIssue> issues, Map<String, Object> ruleParameters) {
 		final RevisionSearcher searcher = context.service(RevisionSearcher.class);
 		
@@ -294,8 +313,6 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 		
 		final Multimap<String, ValidationIssue> issuesByRelationshipId = Multimaps.index(relationshipIssues, issue -> issue.getAffectedComponent().getComponentId());
 
-		final Set<String> synonymIds = SnomedRequests.prepareGetSynonyms().build().execute(context).stream().map(SnomedConcept::getId).collect(Collectors.toSet());
-		
 		final Set<String> conceptsToFetch = newHashSet();
 
 		final Map<String, String> relationshipFragmentsByRelationshipId= Maps.newHashMap(); 
@@ -315,28 +332,8 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 				}
 			});
 		
-		final Map<String, String> affectedComponentLabelsByConcept = new HashMap<>();
+		Map<String, String> affectedComponentLabelsByConcept = getAffectedComponentLabels(context, ruleParameters, conceptsToFetch);
 		
-		boolean shouldUseFsn = ruleParameters.containsKey(ValidationConfiguration.SHOULD_USE_FSN) 
-				? (boolean) ruleParameters.get(ValidationConfiguration.SHOULD_USE_FSN) : true;
-		List<String> locales = ruleParameters.containsKey(ValidationConfiguration.EXTENDED_LOCALES) 
-				? (List<String>) ruleParameters.get(ValidationConfiguration.EXTENDED_LOCALES) 
-				: ImmutableList.of();
-		
-		Set<String> types =  shouldUseFsn ? ImmutableSet.of(Concepts.FULLY_SPECIFIED_NAME) : synonymIds;
-		
-		for (List<String> partition : Iterables.partition(conceptsToFetch, SCROLL_SIZE)) {
-			SnomedDescriptions descriptions = SnomedRequests.prepareSearchDescription()
-				.all()
-				.filterByActive(true)
-				.filterByConceptId(partition)
-				.filterByType(types)
-				.build()
-				.execute(context);
-			
-			affectedComponentLabelsByConcept.putAll(getPreferredDescriptions(locales, descriptions));
-		}
-
 		if (!affectedComponentLabelsByConcept.isEmpty()) {
 			issuesByRelationshipId.values().forEach(issue -> {
 				final String[] relationshipFragments = relationshipFragmentsByRelationshipId.get(issue.getAffectedComponent().getComponentId()).split("[|]");
@@ -352,40 +349,6 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 			});
 			
 		}
-	}
-	
-	@SuppressWarnings("deprecation")
-	private String mostPreferredLocale(SnomedDescription description, List<String> locales) {
-		Map<String, Acceptability> acceptabilityMap = description.getAcceptabilityMap();
-		for (String locale : locales) {
-			if (acceptabilityMap.containsKey(locale)) {
-				if (Acceptability.PREFERRED.equals(acceptabilityMap.get(locale))) {
-					return locale;					
-				}
-			}
-		}
-		return "";
-	}
-	
-	private Map<String, String> getPreferredDescriptions(List<String> locales, SnomedDescriptions descriptions) {
-		final Map<String, SnomedDescription> mostPreferredDescriptions = new HashMap<>();
-		
-		for (SnomedDescription description : descriptions) {						
-			if (mostPreferredDescriptions.containsKey(description.getConceptId())) {
-				SnomedDescription currentDescription = mostPreferredDescriptions.get(description.getConceptId());
-				String currentPreferredLocale = mostPreferredLocale(currentDescription, locales);
-				String newPreferredLocale = mostPreferredLocale(description, locales);
-
-				if (locales.indexOf(newPreferredLocale) < locales.indexOf(currentPreferredLocale)) {
-					mostPreferredDescriptions.put(description.getConceptId(), description);								
-				}
-			} else {
-				mostPreferredDescriptions.put(description.getConceptId(), description);															
-			}
-		}
-		return mostPreferredDescriptions.values()
-			.stream()
-			.collect(Collectors.toMap(description -> description.getConceptId(), description -> description.getTerm()));
 	}
 	
 	private Query<String[]> buildQuery(ComponentCategory category, Collection<String> issueIds) {
