@@ -274,8 +274,8 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 		
 		List<ExtendedLocale> locales;
 		
-		if (ruleParameters.containsKey(ValidationConfiguration.EXTENDED_LOCALES)) {
-			locales = (List<ExtendedLocale>) ruleParameters.get(ValidationConfiguration.EXTENDED_LOCALES);
+		if (ruleParameters.containsKey(ValidationConfiguration.LOCALES)) {
+			locales = (List<ExtendedLocale>) ruleParameters.get(ValidationConfiguration.LOCALES);
 		} else {
 			locales = List.of();
 		}
