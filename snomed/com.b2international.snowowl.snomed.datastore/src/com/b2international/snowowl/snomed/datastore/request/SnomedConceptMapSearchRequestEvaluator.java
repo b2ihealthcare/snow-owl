@@ -52,6 +52,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetM
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.google.common.base.Strings;
+import com.google.common.collect.Multimaps;
 
 /**
  * @since 7.8
@@ -81,45 +82,61 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 		final Map<String, SnomedConcept> refSetsById = SnomedRequests.prepareSearchConcept()
 				.filterByIds(refSetsToFetch)
 				.setLocales(search.getList(OptionKey.LOCALES, ExtendedLocale.class))
-				.setExpand(snomedDisplayTermType.getExpand())
+				.setExpand(String.format("%s,referenceSet()", snomedDisplayTermType.getExpand()))
 				.build(uri)
 				.execute(context.service(IEventBus.class))
 				.getSync()
 				.stream()
 				.collect(Collectors.toMap(SnomedConcept::getId, concept -> concept));
 		
-		Map<String, ComponentURI> targetComponentMap = getTargetComponentMap(context, search);
+		final Map<String, ComponentURI> targetComponentsByRefSetId = getTargetComponentsByRefSetId(context, refSetsById);
+		
 		List<ConceptMapMapping> mappings = referenceSetMembers.stream()
 				.filter(m -> SnomedTerminologyComponentConstants.CONCEPT_NUMBER == m.getReferencedComponent().getTerminologyComponentId())
 				.map(m -> {
-					return toMapping(m, uri, targetComponentMap.get(m.getReferenceSetId()), snomedDisplayTermType, refSetsById);
+					return toMapping(m, uri, targetComponentsByRefSetId.get(m.getReferenceSetId()), snomedDisplayTermType, refSetsById);
 				})
 				.collect(Collectors.toList());
 		
 		if (!mappings.isEmpty()) {
-			Set<String> targetIds = mappings.stream().map(ConceptMapMapping::getTargetComponentURI).map(ComponentURI::identifier).collect(Collectors.toSet());
-			String codeSystem = mappings.stream().findFirst().get().getTargetComponentURI().codeSystem();
+			final Map<String, Map<String, Concept>> conceptMapByRefSet = Multimaps.index(mappings, mapping -> targetComponentsByRefSetId.get(mapping.getContainerSetURI().identifier()))
+					.asMap()
+					.entrySet()
+					.stream()
+					.filter(entry -> !entry.getKey().isUnspecified())
+					.collect(Collectors.toMap(
+							entry -> entry.getKey().identifier(),
+							entry -> {
+								final String cs = entry.getKey().codeSystemUri().getCodeSystem();
+								final Set<String> idsToFetch = entry.getValue().stream().map(map -> map.getTargetComponentURI().identifier()).collect(Collectors.toSet());
+								return CodeSystemRequests.prepareSearchConcepts()
+										.all()
+										.filterByIds(idsToFetch)
+										.build(CodeSystemURI.head(cs)) // FIXME implicit HEAD used here instead of using a proper CodeSystemURI
+										.execute(context.service(IEventBus.class))
+										.getSync(5, TimeUnit.MINUTES)
+										.stream()
+										.collect(Collectors.toMap(Concept::getId, c -> c));
+							}));
 			
-			if (!ComponentURI.UNSPECIFIED.codeSystem().equals(codeSystem)) {
-				Map<String, Concept> mapTargetsById = CodeSystemRequests.prepareSearchConcepts()
-						.all()
-						.filterByIds(targetIds)
-						.build(CodeSystemURI.head(codeSystem)) // FIXME implicit HEAD used here instead of using a proper CodeSystemURI
-						.execute(context.service(IEventBus.class))
-						.getSync(5, TimeUnit.MINUTES)
-						.stream()
-						.collect(Collectors.toMap(Concept::getId, c -> c));
-				mappings = mappings.stream().map(mapping -> {
-					final String mapTarget = mapping.getTargetComponentURI().identifier();
-					if (mapTargetsById.containsKey(mapTarget)) {
-						return mapping.toBuilder()
-								.targetTerm(mapTargetsById.get(mapTarget).getTerm())
-								.build();
-					} else {
-						return mapping;
-					}
-				}).collect(Collectors.toList());
-			}
+			mappings = mappings.stream().map(mapping -> {
+				final Map<String, Concept> conceptMap = conceptMapByRefSet.get(mapping.getContainerSetURI().identifier());
+				
+				if(conceptMap == null) {
+					return mapping;
+				}
+				
+				final String mapTargetId = mapping.getTargetComponentURI().identifier();
+				if (conceptMap.containsKey(mapTargetId)) {
+					final Concept concept = conceptMap.get(mapTargetId);
+					return mapping.toBuilder()
+							.targetTerm(concept.getTerm())
+							.targetIconId(concept.getIconId())
+							.build();
+				} else {
+					return mapping;
+				}
+			}).collect(Collectors.toList());
 		}
 		
 		return new ConceptMapMappings(
@@ -130,9 +147,41 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 		);
 	}
 
-	private Map<String, ComponentURI> getTargetComponentMap(BranchContext context, Options search) {
-		final Collection<String> refsetIds = search.containsKey(OptionKey.SET) ? search.getCollection(OptionKey.SET, String.class) : null;
-		return getTargetComponentURI(context, refsetIds);
+	private Map<String, ComponentURI> getTargetComponentsByRefSetId(BranchContext context, Map<String, SnomedConcept> refSetsById) {
+		final List<CodeSystem> codeSystemList = CodeSystemRequests.getAllCodeSystems(context)
+				.stream()
+				.collect(Collectors.toList());
+		
+		return refSetsById.entrySet()
+				.stream()
+				.collect(Collectors.toMap(
+						entry -> entry.getKey(), 
+						entry -> {
+							final SnomedReferenceSet refSet = entry.getValue().getReferenceSet();
+							String mapTargetComponentType = refSet.getMapTargetComponentType();
+							if (mapTargetComponentType == null) {
+								return ComponentURI.UNSPECIFIED;
+							}
+							
+							TerminologyRegistry terminologyRegistry = TerminologyRegistry.INSTANCE;
+							
+							Terminology sourceTerminology = terminologyRegistry.getTerminologyByTerminologyComponentId(mapTargetComponentType);
+							
+							TerminologyComponent sourceTerminologyComponent = terminologyRegistry.getTerminologyComponentById(mapTargetComponentType);
+							
+							if (Strings.isNullOrEmpty(mapTargetComponentType)) {
+								return ComponentURI.UNSPECIFIED;
+							} else {
+								final Optional<CodeSystem> codeSystemOptional = codeSystemList.stream()
+										.filter(cs -> cs.getTerminologyId().equals(sourceTerminology.getId()))
+										.findFirst();
+								if (codeSystemOptional.isPresent()) {
+									return ComponentURI.of(codeSystemOptional.get().getShortName(), sourceTerminologyComponent.shortId(), refSet.getId());
+								} else {
+									return ComponentURI.UNSPECIFIED;
+								}
+							}
+				}));
 	}
 
 	private ConceptMapMapping toMapping(SnomedReferenceSetMember member, CodeSystemURI codeSystemURI, ComponentURI targetURI, final SnomedDisplayTermType snomedDisplayTermType, final Map<String, SnomedConcept> refSetsByIds) {	 		
@@ -168,6 +217,7 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 		final SnomedConcept referenceSet = refSetsByIds.get(member.getReferenceSetId());
 
 		return mappingBuilder
+				.containerIconId(referenceSet.getIconId())
 				.containerTerm(snomedDisplayTermType.getLabel(referenceSet))
 				.containerSetURI(ComponentURI.of(codeSystemURI.getCodeSystem(), SnomedTerminologyComponentConstants.REFSET_NUMBER, member.getReferenceSetId()))
 				.memberId(member.getId())
@@ -213,50 +263,6 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 		default:
 			return MappingCorrelation.NOT_SPECIFIED;
 		}
-	}
-	
-
-	private Map<String, ComponentURI> getTargetComponentURI(final BranchContext context, final Collection<String> refsetIds) {
-		final List<CodeSystem> codeSystemList = CodeSystemRequests.getAllCodeSystems(context)
-				.stream()
-				.collect(Collectors.toList());
-		
-		return SnomedRequests.prepareSearchRefSet()
-				.all()
-				.filterByIds(refsetIds)
-				.build()
-				.execute(context)
-				.getItems()
-				.stream()
-				.collect(Collectors.toMap (
-						SnomedReferenceSet::getId,
-						refSet -> {
-							String mapTargetComponentType = refSet.getMapTargetComponentType();
-							if (mapTargetComponentType == null) {
-								return ComponentURI.UNSPECIFIED;
-							}
-							
-							TerminologyRegistry terminologyRegistry = TerminologyRegistry.INSTANCE;
-							
-							Terminology sourceTerminology = terminologyRegistry.getTerminologyByTerminologyComponentId(mapTargetComponentType);
-							
-							TerminologyComponent sourceTerminologyComponent = terminologyRegistry.getTerminologyComponentById(mapTargetComponentType);
-							
-							if (Strings.isNullOrEmpty(mapTargetComponentType)) {
-								return ComponentURI.UNSPECIFIED;
-							} else {
-								final Optional<CodeSystem> codeSystemOptional = codeSystemList.stream()
-										.filter(cs -> cs.getTerminologyId().equals(sourceTerminology.getId()))
-										.findFirst();
-								if (codeSystemOptional.isPresent()) {
-									return ComponentURI.of(codeSystemOptional.get().getShortName(), sourceTerminologyComponent.shortId(), refSet.getId());
-								} else {
-									return ComponentURI.UNSPECIFIED;
-								}
-							}
-						}
-				));
-
 	}
 
 	private SnomedReferenceSetMembers fetchRefsetMembers(CodeSystemURI uri, BranchContext context, Options search, SnomedDisplayTermType snomedDisplayTermType) {
