@@ -75,10 +75,12 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 				.map(SnomedReferenceSetMember::getReferenceSetId)
 				.collect(Collectors.toSet());
 		
+		String expand = String.format("%sreferenceSet()", !Strings.isNullOrEmpty(snomedDisplayTermType.getExpand()) ? snomedDisplayTermType.getExpand() + "," : "");
+		
 		final Map<String, SnomedConcept> refSetsById = SnomedRequests.prepareSearchConcept()
 				.filterByIds(refSetsToFetch)
 				.setLocales(search.getList(OptionKey.LOCALES, ExtendedLocale.class))
-				.setExpand(String.format("%s,referenceSet()", snomedDisplayTermType.getExpand()))
+				.setExpand(expand)
 				.build(uri)
 				.execute(context.service(IEventBus.class))
 				.getSync()
@@ -281,7 +283,7 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 				.filterByComponentIds(componentIds)
 				.filterByProps(OptionsBuilder.newBuilder().put(SnomedRf2Headers.FIELD_MAP_TARGET, mapTargetIds).build())
 				.setLocales(locales)
-				.setExpand(String.format("referencedComponent(expand(%s))", snomedDisplayTermType.getExpand()))
+				.setExpand(String.format("referencedComponent(%s)", !Strings.isNullOrEmpty(snomedDisplayTermType.getExpand()) ? "expand(" + snomedDisplayTermType.getExpand() + ")" : ""))
 				.setLimit(limit)
 				.setSearchAfter(searchAfter)
 				.build()
