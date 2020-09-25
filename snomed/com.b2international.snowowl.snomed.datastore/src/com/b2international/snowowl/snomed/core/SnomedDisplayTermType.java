@@ -5,7 +5,6 @@ package com.b2international.snowowl.snomed.core;
 
 import java.util.function.Function;
 
-import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 
 /**
@@ -23,6 +22,12 @@ public enum SnomedDisplayTermType {
 		"Preferred term", 
 		SnomedConcept.Expand.PREFERRED_TERM + "()",
 		concept -> concept.getPt() != null ? concept.getPt().getTerm() : concept.getId()
+	),
+	
+	ID_ONLY(
+		"ID", 
+		"",
+		SnomedConcept::getId
 	);
 	
 	private final String label;
@@ -56,7 +61,7 @@ public enum SnomedDisplayTermType {
 		try {
 			return SnomedDisplayTermType.valueOf(value);
 		} catch(Exception e) {
-			throw new SnowowlRuntimeException(String.format("Could not find the value of: %s in Enum: %s", value, SnomedDisplayTermType.class.getName()), e);
+			return ID_ONLY;
 		}
 	}
 	
