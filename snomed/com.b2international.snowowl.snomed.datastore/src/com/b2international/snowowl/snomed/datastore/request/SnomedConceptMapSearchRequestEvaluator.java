@@ -64,12 +64,8 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 	@Override
 	public ConceptMapMappings evaluate(CodeSystemURI uri, BranchContext context, Options search) {
 		final String preferredDisplay = search.get(OptionKey.DISPLAY, String.class);
-		SnomedDisplayTermType snomedDisplayTermType;
-		try {
-			snomedDisplayTermType = SnomedDisplayTermType.valueOf(preferredDisplay);
-		} catch(Exception e) {
-			snomedDisplayTermType = SnomedDisplayTermType.PT;
-		}
+		final SnomedDisplayTermType snomedDisplayTermType = SnomedDisplayTermType.getEnum(preferredDisplay);
+
 		SnomedReferenceSetMembers referenceSetMembers = fetchRefsetMembers(uri, context, search, snomedDisplayTermType);
 		return toCollectionResource(referenceSetMembers, uri, context, search, snomedDisplayTermType);
 	}
