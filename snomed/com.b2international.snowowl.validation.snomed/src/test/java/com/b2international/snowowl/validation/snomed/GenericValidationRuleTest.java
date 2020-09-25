@@ -308,42 +308,6 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 	}
 	
 	@Test
-	public void rule113() throws Exception {
-		final String ruleId = "113";
-		indexRule(ruleId);
-		
-		// index bad concept with less than 2 relationships per group
-		SnomedConceptDocument concept = concept(generateConceptId())
-				.build();
-		
-		SnomedRelationshipIndexEntry relationship1 = relationship(concept.getId(), Concepts.IS_A, Concepts.CASE_SIGNIFICANCE_ROOT_CONCEPT)
-			.group(1)
-			.build();
-		
-		SnomedRelationshipIndexEntry relationship2 = relationship(concept.getId(), Concepts.IS_A, Concepts.CASE_SIGNIFICANCE_ROOT_CONCEPT)
-				.group(2)
-				.build();
-		
-		// index good concept with more than 2 relationships per group
-		SnomedConceptDocument concept2 = concept(generateConceptId())
-				.build();
-		
-		SnomedRelationshipIndexEntry relationship3 = relationship(concept.getId(), Concepts.IS_A, Concepts.CASE_SIGNIFICANCE_ROOT_CONCEPT)
-			.group(1)
-			.build();
-		
-		SnomedRelationshipIndexEntry relationship4 = relationship(concept.getId(), Concepts.IS_A, Concepts.CASE_SIGNIFICANCE_ROOT_CONCEPT)
-				.group(1)
-				.build();
-		
-		indexRevision(MAIN, concept, concept2, relationship1, relationship2, relationship3, relationship4);
-		
-		ValidationIssues issues = validate(ruleId);
-		
-		assertAffectedComponents(issues, ComponentIdentifier.of(CONCEPT_NUMBER, concept.getId()));
-	}
-	
-	@Test
 	public void rule663() throws Exception {
 		final String ruleId = "663";
 		indexRule(ruleId);
