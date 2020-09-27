@@ -16,7 +16,6 @@
 package com.b2international.index.revision;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
 
 import java.util.Collections;
 import java.util.List;
@@ -27,8 +26,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.MoreObjects.ToStringHelper;
-
-import net.jodah.typetools.TypeResolver;
 
 /**
  * @since 4.7
@@ -43,7 +40,7 @@ import net.jodah.typetools.TypeResolver;
 		+ "    ctx._source.revised.add(params.newRevised);"
 		+ "}"
 )
-public abstract class Revision implements Mutable {
+public abstract class Revision {
 	
 	public static class Fields {
 		public static final String ID = "id";
@@ -122,11 +119,20 @@ public abstract class Revision implements Mutable {
 	}
 	
 	/**
+	 * Converts an immutable object into a mutable builder with the usual prefixless setter methods.
+	 * 
+	 * @return
+	 */
+	protected Builder<?, ? extends Revision> toBuilder() {
+		throw new UnsupportedOperationException();
+	}
+	
+	/**
 	 * @since 7.0
 	 * @param <B>
 	 * @param <T>
 	 */
-	public static abstract class Builder<B extends Builder<B, T>, T extends Revision> implements Mutable.Builder<B, T> {
+	public static abstract class Builder<B extends Builder<B, T>, T extends Revision> {
 		
 		// XXX only for JSON deserialization
 		protected RevisionBranchPoint created;
@@ -144,11 +150,9 @@ public abstract class Revision implements Mutable {
 			return getSelf();
 		}
 		
-		protected final Class<T> getDocumentType() {
-			final Class<?>[] types = TypeResolver.resolveRawArguments(Revision.Builder.class, getClass());
-			checkState(TypeResolver.Unknown.class != types[1], "Couldn't resolve document type parameter for builder class %s", getClass().getSimpleName());
-			return (Class<T>) types[1];
-		}
+		protected abstract B getSelf();
+		
+		public abstract T build();
 		
 	}
 
