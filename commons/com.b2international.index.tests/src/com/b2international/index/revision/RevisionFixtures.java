@@ -134,7 +134,7 @@ public class RevisionFixtures {
 		}
 		
 		@Override
-		public Builder toBuilder() {
+		protected Builder toBuilder() {
 			return new Builder(this);
 		}
 	}
