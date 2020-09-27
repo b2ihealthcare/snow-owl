@@ -1088,7 +1088,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	}
 	
 	@Override
-	public Revision.Builder<?, ? extends Revision> toBuilder() {
+	protected Revision.Builder<?, ? extends Revision> toBuilder() {
 		return builder(this);
 	}
 

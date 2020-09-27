@@ -337,7 +337,7 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 	}
 	
 	@Override
-	public Revision.Builder<?, ? extends Revision> toBuilder() {
+	protected Revision.Builder<?, ? extends Revision> toBuilder() {
 		return builder(this);
 	}
 

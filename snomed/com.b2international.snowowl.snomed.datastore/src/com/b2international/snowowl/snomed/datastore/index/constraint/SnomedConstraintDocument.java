@@ -316,7 +316,7 @@ public final class SnomedConstraintDocument extends RevisionDocument {
 	}
 	
 	@Override
-	public Revision.Builder<?, ? extends Revision> toBuilder() {
+	protected Revision.Builder<?, ? extends Revision> toBuilder() {
 		return builder(this);
 	}
 
