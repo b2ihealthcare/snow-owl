@@ -22,6 +22,7 @@ import static com.b2international.snowowl.snomed.common.SnomedTerminologyCompone
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER;
 import static com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator.generateConceptId;
 import static com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator.generateDescriptionId;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.stream.Collectors;
 
@@ -57,6 +58,208 @@ import com.google.common.collect.Lists;
  */
 @RunWith(Parameterized.class)
 public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
+	
+	@Test
+	public void rule34() throws Exception {
+		// Relationships must be unique within a relationship group
+		final String ruleId = "34";
+		indexRule(ruleId);
+
+		final SnomedRelationshipIndexEntry relationship1 = relationship(Concepts.FINDING_SITE, Concepts.IS_A, Concepts.MODULE_SCT_MODEL_COMPONENT)
+				.group(1).build();
+
+		final SnomedRelationshipIndexEntry relationship2 = relationship(Concepts.FINDING_SITE, Concepts.IS_A, Concepts.MODULE_SCT_MODEL_COMPONENT)
+				.group(1).build();
+
+		final SnomedRelationshipIndexEntry relationship3 = relationship(Concepts.FINDING_SITE, Concepts.IS_A, Concepts.MODULE_SCT_MODEL_COMPONENT)
+				.group(2).build();
+		
+		final SnomedRelationshipIndexEntry relationship4 = relationship(Concepts.FINDING_SITE, Concepts.IS_A, Concepts.MODULE_SCT_MODEL_COMPONENT)
+				.group(0).build();
+		
+		final SnomedRelationshipIndexEntry relationship5 = relationship(Concepts.FINDING_SITE, Concepts.IS_A, Concepts.MODULE_SCT_MODEL_COMPONENT)
+				.group(0).build();
+		
+		indexRevision(MAIN, relationship1, relationship2, relationship3, relationship4, relationship5);
+		
+		ValidationIssues issues = validate(ruleId);
+		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship1.getId()),
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship2.getId()),
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship4.getId()),
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship5.getId()));
+	}
+	
+	@Test
+	public void rule38a() throws Exception {
+		// Active concepts should have at least one active inferred parent.
+		final String ruleId = "38a";
+		indexRule(ruleId);
+		
+		final SnomedConceptDocument activeConceptWithInferredParent = concept(generateConceptId())
+				.active(true)
+				.parents(Long.valueOf(Concepts.MODULE_SCT_MODEL_COMPONENT))
+				.build();
+		
+		final SnomedConceptDocument activeConceptWithoutInferredParent = concept(generateConceptId()).active(true).build();
+		
+		final SnomedConceptDocument inactiveConceptWithoutInferredParent = concept(generateConceptId()).active(false).build();
+				
+		indexRevision(MAIN, activeConceptWithInferredParent, activeConceptWithoutInferredParent, inactiveConceptWithoutInferredParent);
+		
+		ValidationIssues issues = validate(ruleId);
+		assertThat(issues.stream().map(ValidationIssue::getAffectedComponent).collect(Collectors.toSet()))
+			.contains(ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, activeConceptWithoutInferredParent.getId()))
+			.doesNotContainAnyElementsOf(ImmutableList.of(ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, activeConceptWithInferredParent.getId()),
+					ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, inactiveConceptWithoutInferredParent.getId())));
+	}
+	
+	@Test
+	public void rule38b() throws Exception {
+		// Active concepts should have at least one active stated parent
+		final String ruleId = "38b";
+		indexRule(ruleId);
+		
+		final SnomedConceptDocument activeConceptWithStatedParent = concept(generateConceptId())
+				.active(true)
+				.statedParents(Long.valueOf(Concepts.MODULE_SCT_MODEL_COMPONENT))
+				.build();
+		
+		final SnomedConceptDocument activeConceptWithoutStatedParent = concept(generateConceptId()).active(true).build();
+		
+		final SnomedConceptDocument inactiveConceptWithoutStatedParent = concept(generateConceptId()).active(false).build();
+				
+		indexRevision(MAIN, activeConceptWithStatedParent, activeConceptWithoutStatedParent, inactiveConceptWithoutStatedParent);
+		
+		ValidationIssues issues = validate(ruleId);
+		assertThat(issues.stream().map(ValidationIssue::getAffectedComponent).collect(Collectors.toSet()))
+			.contains(ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, activeConceptWithoutStatedParent.getId()))
+			.doesNotContainAnyElementsOf(ImmutableList.of(ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, activeConceptWithStatedParent.getId()),
+					ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, inactiveConceptWithoutStatedParent.getId())));
+	}
+	
+	@Test
+	public void rule45a() throws Exception {
+		final String ruleId = "45a";
+		indexRule(ruleId);
+
+		// index invalid hierarchical relationship to group 1
+		final SnomedRelationshipIndexEntry relationship = relationship(Concepts.FINDING_SITE, Concepts.IS_A, Concepts.MODULE_SCT_MODEL_COMPONENT)
+				.group(1)
+				.build();
+		
+		indexRevision(MAIN, relationship);
+
+		ValidationIssues issues = validate(ruleId);
+		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship.getId()));
+	}
+
+	@Test
+	public void rule45b() throws Exception {
+		final String ruleId = "45b";
+		indexRule(ruleId);
+
+		// index invalid non-defining relationship to group 1
+		final SnomedRelationshipIndexEntry relationship = relationship(Concepts.MORPHOLOGY, Concepts.CAUSATIVE_AGENT, Concepts.MODULE_SCT_MODEL_COMPONENT, Concepts.ADDITIONAL_RELATIONSHIP)
+				.group(1)
+				.build();
+		
+		indexRevision(MAIN, relationship);
+
+		ValidationIssues issues = validate(ruleId);
+
+		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship.getId()));
+	}
+
+	@Test
+	public void rule45c() throws Exception {
+		final String ruleId = "45c";
+		indexRule(ruleId);
+		
+		// index invalid non-defining relationship to group 0
+		final SnomedRelationshipIndexEntry nonDefiningRelationshipInGroup0 = relationship(Concepts.MORPHOLOGY, Concepts.CAUSATIVE_AGENT, Concepts.MODULE_SCT_MODEL_COMPONENT, Concepts.ADDITIONAL_RELATIONSHIP)
+				.group(0)
+				.build();
+
+		// index valid defining relationship to group 0
+		final SnomedRelationshipIndexEntry definingRelationshipInGroup0 = relationship(Concepts.MORPHOLOGY, Concepts.CAUSATIVE_AGENT, Concepts.MODULE_SCT_MODEL_COMPONENT, Concepts.STATED_RELATIONSHIP)
+				.group(0)
+				.build();
+		
+		// index valid non-defining relationship to group 2
+		final SnomedRelationshipIndexEntry relationshipInGroup2 = relationship(Concepts.MORPHOLOGY, Concepts.CAUSATIVE_AGENT, Concepts.MODULE_SCT_MODEL_COMPONENT, Concepts.ADDITIONAL_RELATIONSHIP)
+				.group(2)
+				.build();
+		
+		indexRevision(MAIN, nonDefiningRelationshipInGroup0, definingRelationshipInGroup0, relationshipInGroup2);
+		
+		ValidationIssues issues = validate(ruleId);
+		
+		assertThat(issues.stream().map(ValidationIssue::getAffectedComponent).collect(Collectors.toSet()))
+			.contains(ComponentIdentifier.of(RELATIONSHIP_NUMBER, nonDefiningRelationshipInGroup0.getId()))
+			.doesNotContainAnyElementsOf(ImmutableList.of(ComponentIdentifier.of(RELATIONSHIP_NUMBER, definingRelationshipInGroup0.getId()),
+				ComponentIdentifier.of(RELATIONSHIP_NUMBER, relationshipInGroup2.getId())));		
+	}
+	
+	@Test
+	public void rule75() throws Exception {
+		// Message: Relationships in group 0 should not be duplicated in any other group.
+		final String ruleId = "75";
+		indexRule(ruleId);
+
+		SnomedRelationshipIndexEntry goodRel1 = relationship(Concepts.MODULE_ROOT, Concepts.IS_A, Concepts.CONCEPT_INACTIVATION_VALUE).active(true)
+				.group(0).build();
+
+		SnomedRelationshipIndexEntry badRel1 = relationship(Concepts.MODULE_ROOT, Concepts.IS_A, Concepts.CONCEPT_INACTIVATION_VALUE).active(true)
+				.group(1).build();
+
+		SnomedRelationshipIndexEntry badRel2 = relationship(Concepts.MODULE_ROOT, Concepts.IS_A, Concepts.CONCEPT_INACTIVATION_VALUE).active(true)
+				.group(2).build();
+
+		SnomedRelationshipIndexEntry goodRel2 = relationship(Concepts.MODULE_ROOT, Concepts.IS_A, Concepts.CORE_NAMESPACE).active(true).group(0)
+				.build();
+
+		indexRevision(MAIN, goodRel1, goodRel2, badRel1, badRel2);
+
+		ValidationIssues issues = validate(ruleId);
+
+		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, badRel1.getId()),
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, badRel2.getId()));
+	}
+	
+	@Test
+	public void rule80() throws Exception {
+		final String ruleId = "80";
+		indexRule(ruleId);
+		
+		SnomedConceptDocument invalidConcept = concept(generateConceptId())
+				.active(true)
+				.build();
+		
+		SnomedConceptDocument validConcept1 = concept(generateConceptId())
+				.active(true)
+				.build();
+		
+		SnomedConceptDocument validConcept2 = concept(generateConceptId())
+				.active(true)
+				.build();
+		
+		SnomedRelationshipIndexEntry relationshipOnValidConcept = relationship(validConcept1.getId(), Concepts.IS_A, invalidConcept.getId()).build();
+		
+		SnomedRefSetMemberIndexEntry owlAxiomMemberOnValidConcpet = member(validConcept2.getId(), CONCEPT_NUMBER, Concepts.REFSET_OWL_AXIOM)
+				.classAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(Concepts.IS_A, validConcept1.getId(), 0)))
+				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
+				.build();
+		
+		indexRevision(MAIN, invalidConcept, validConcept1, validConcept2, relationshipOnValidConcept, owlAxiomMemberOnValidConcpet);
+		
+		ValidationIssues issues = validate(ruleId);
+		
+		assertThat(issues.stream().map(ValidationIssue::getAffectedComponent).collect(Collectors.toSet()))
+			.contains(ComponentIdentifier.of(CONCEPT_NUMBER, invalidConcept.getId()))
+			.doesNotContainAnyElementsOf(ImmutableList.of(ComponentIdentifier.of(CONCEPT_NUMBER, validConcept1.getId()),
+					ComponentIdentifier.of(CONCEPT_NUMBER, validConcept2.getId())));
+	}
+
 	
 	@Test	
 	public void rule110() throws Exception {	

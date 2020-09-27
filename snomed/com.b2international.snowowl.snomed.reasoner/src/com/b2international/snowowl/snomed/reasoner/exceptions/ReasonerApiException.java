@@ -15,7 +15,10 @@
  */
 package com.b2international.snowowl.snomed.reasoner.exceptions;
 
+import java.util.Map;
+
 import com.b2international.commons.exceptions.ApiException;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * @since 7.0
@@ -24,6 +27,18 @@ public final class ReasonerApiException extends ApiException {
 
 	public ReasonerApiException(final String template, final Object... args) {
 		super(template, args);
+	}
+	
+	@Override
+	protected Map<String, Object> getAdditionalInfo() {
+		final ImmutableMap.Builder<String, Object> additionalInfoBuilder = ImmutableMap.<String, Object>builder()
+				.putAll(super.getAdditionalInfo());
+		
+		if (getCause() != null) {
+			additionalInfoBuilder.put("cause", getCause().getMessage());
+		}
+		
+		return additionalInfoBuilder.build();
 	}
 
 	@Override

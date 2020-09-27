@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -150,32 +150,32 @@ public class Expressions {
 		return new BoostPredicate(expression, boost);
 	}
 	
-	public static Expression matchTextAll(String field, String term) {
+	public static TextPredicate matchTextAll(String field, String term) {
 		return new TextPredicate(field, term, MatchType.ALL);
 	}
 	
-	public static Expression matchTextAny(String field, String term) {
+	public static TextPredicate matchTextAny(String field, String term) {
 		return new TextPredicate(field, term, MatchType.ANY);
 	}
 	
-	public static Expression matchTextAny(String field, String term, int minShouldMatch) {
+	public static TextPredicate matchTextAny(String field, String term, int minShouldMatch) {
 		return new TextPredicate(field, term, MatchType.ANY, minShouldMatch);
 	}
 	
-	public static Expression matchTextPhrase(String field, String term) {
+	public static TextPredicate matchTextPhrase(String field, String term) {
 		return new TextPredicate(field, term, MatchType.PHRASE);
 	}
 	
-	public static Expression matchTextFuzzy(String field, String term) {
+	public static TextPredicate matchTextFuzzy(String field, String term) {
 		return new TextPredicate(field, term, MatchType.FUZZY);
 	}
 	
-	public static Expression matchTextParsed(String field, String term) {
+	public static TextPredicate matchTextParsed(String field, String term) {
 		return new TextPredicate(field, term, MatchType.PARSED);
 	}
 	
-	public static Expression matchTextRegexp(String field, String regexp) {
-		return new TextPredicate(field, regexp, MatchType.REGEXP);
+	public static RegexpPredicate regexp(String field, String regexp) {
+		return new RegexpPredicate(field, regexp);
 	}
 	
 	public static Expression dismax(Collection<Expression> disjuncts) {

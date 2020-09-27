@@ -161,14 +161,6 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 		LOGGER.debug("Registering {} component IDs.", componentIds.size());
 
 		final Map<String, SctId> sctIds = getSctIds(componentIds);
-		final Map<String, SctId> problemSctIds = ImmutableMap.copyOf(Maps.filterValues(sctIds, Predicates.<SctId>not(Predicates.or(
-				SctId::isAvailable, 
-				SctId::isReserved, 
-				SctId::isAssigned))));
-		
-		if (!problemSctIds.isEmpty()) {
-			throw new SctIdStatusException("Cannot register %s component IDs because they are not available, reserved, or already assigned.", problemSctIds);
-		}
 
 		final Map<String, SctId> availableOrReservedSctIds = ImmutableMap.copyOf(Maps.filterValues(sctIds, Predicates.or(
 				SctId::isAvailable, 

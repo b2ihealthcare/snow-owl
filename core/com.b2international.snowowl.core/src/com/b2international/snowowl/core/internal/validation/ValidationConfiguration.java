@@ -27,6 +27,8 @@ public class ValidationConfiguration {
 
 	public static final int DEFAULT_NUMBER_OF_VALIDATION_THREADS = Math.max(2, Runtime.getRuntime().availableProcessors() / 2); 
 	public static final String IS_UNPUBLISHED_ONLY = "isUnpublishedOnly";
+	public static final String USE_FSN = "useFsn";
+	public static final String LOCALES = "extendedLocales";
 	private static final int DEFAULT_MAX_CONCURRENT_EXPENSIVE_JOBS = 1;
 	private static final int DEFAULT_MAX_CONCURRENT_NORMAL_JOBS = 4;
 	

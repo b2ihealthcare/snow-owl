@@ -39,7 +39,7 @@ public final class DeleteRequest implements Request<TransactionContext, Boolean>
 	@NotNull
 	private Boolean force;
 
-	DeleteRequest(String componentId, Class<? extends RevisionDocument> type, Boolean force) {
+	public DeleteRequest(String componentId, Class<? extends RevisionDocument> type, Boolean force) {
 		this.componentId = componentId;
 		this.type = type;
 		this.force = force;

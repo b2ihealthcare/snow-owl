@@ -39,11 +39,11 @@ import io.restassured.response.ValidatableResponse;
  */
 public abstract class SnomedComponentRestRequests {
 
-	public static ValidatableResponse assertInactivation(final IBranchPath branchPath, final String conceptId, InactivationProperties inactivationProperties) {
-		return assertInactivation(branchPath, conceptId, inactivationProperties, null);
+	public static ValidatableResponse assertInactivation(final IBranchPath branchPath, final String componentId, InactivationProperties inactivationProperties) {
+		return assertInactivation(branchPath, componentId, inactivationProperties, null);
 	}
 	
-	public static ValidatableResponse assertInactivation(final IBranchPath branchPath, final String conceptId, InactivationProperties inactivationProperties, final String defaultModuleId) {
+	public static ValidatableResponse assertInactivation(final IBranchPath branchPath, final String componentId, InactivationProperties inactivationProperties, final String defaultModuleId) {
 		ImmutableMap.Builder<String, Object> inactivationRequestBody = ImmutableMap.<String, Object>builder()
 				.put("active", false)
 				.put("inactivationProperties", inactivationProperties)
@@ -53,14 +53,14 @@ public abstract class SnomedComponentRestRequests {
 			inactivationRequestBody.put("defaultModuleId", defaultModuleId);
 		}
 
-		SnomedComponentType type = SnomedComponentType.getByComponentId(conceptId);
-		updateComponent(branchPath, type, conceptId, inactivationRequestBody.build())
+		SnomedComponentType type = SnomedComponentType.getByComponentId(componentId);
+		updateComponent(branchPath, type, componentId, inactivationRequestBody.build())
 			.statusCode(204);
 		
 		final String[] associationReferenceSetIds = inactivationProperties.getAssociationTargets().stream().map(AssociationTarget::getReferenceSetId).toArray(length -> new String[length]);
 		final String[] associationTargets = inactivationProperties.getAssociationTargets().stream().map(AssociationTarget::getTargetComponentId).toArray(length -> new String[length]);
 		
-		return getComponent(branchPath, type, conceptId, "inactivationProperties(),members()")
+		return getComponent(branchPath, type, componentId, "inactivationProperties(),members()")
 			.statusCode(200)
 			.body("active", equalTo(false))
 			.body("inactivationProperties.inactivationIndicatorId", equalTo(inactivationProperties.getInactivationIndicatorId()))

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,7 +65,7 @@ public class SnomedIdentifierConfiguration {
 
 	@Min(1000)
 	@Max(50000)
-	private int requestBulkLimit = 50_000;
+	private int requestBulkLimit = 10_000;
 	
 	public IdGenerationStrategy getStrategy() {
 		return strategy;

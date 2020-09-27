@@ -17,6 +17,8 @@ package com.b2international.snowowl.core.codesystem;
 
 import static com.b2international.index.query.Expressions.exactMatch;
 import static com.b2international.index.query.Expressions.matchAny;
+import static com.b2international.index.query.Expressions.matchTextAll;
+import static com.b2international.index.query.Expressions.regexp;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -26,7 +28,10 @@ import java.util.Objects;
 import java.util.Optional;
 
 import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
+import com.b2international.index.Normalizers;
+import com.b2international.index.Text;
 import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -68,6 +73,26 @@ public final class CodeSystemEntry implements Serializable {
 		public static Expression toolingIds(Iterable<String> toolingIds) {
 			return matchAny(Fields.TERMINOLOGY_COMPONENT_ID, toolingIds);
 		}
+
+		public static Expression matchNameExact(String term) {
+			return matchTextAll(Fields.NAME_EXACT, term);
+		}
+		
+		public static Expression matchNameOriginal(String term) {
+			return exactMatch(Fields.NAME, term);
+		}
+		
+		public static Expression matchNameRegex(String regex) {
+			return regexp(Fields.NAME, regex);
+		}
+		
+		public static Expression matchNameAllPrefixesPresent(String term) {
+			return matchTextAll(Fields.NAME_PREFIX, term);
+		}
+		
+		public static Expression matchNameAllTermsPresent(String term) {
+			return matchTextAll(Fields.NAME_ANALYZED, term);
+		}
 	}
 	
 	public static class Fields {
@@ -80,6 +105,11 @@ public final class CodeSystemEntry implements Serializable {
 		public static final String ICON_PATH = "iconPath"; 
 		public static final String TERMINOLOGY_COMPONENT_ID = "terminologyComponentId";
 		public static final String REPOSITORY_ID = "repositoryId";
+		
+		// analyzed fields
+		private static final String NAME_PREFIX   = NAME + ".prefix";
+		private static final String NAME_EXACT    = NAME + ".exact";
+		private static final String NAME_ANALYZED = NAME + ".analyzed";
 	}
 
 	public static Builder builder() {
@@ -220,7 +250,13 @@ public final class CodeSystemEntry implements Serializable {
 	}
 
 	private final String oid;
+	
+	@com.b2international.index.Keyword // The original type
+	@Text(alias="prefix", analyzer=Analyzers.PREFIX, searchAnalyzer=Analyzers.TOKENIZED)
+	@com.b2international.index.Keyword(alias="exact", normalizer=Normalizers.LOWER_ASCII)
+	@com.b2international.index.Text(alias="analyzed") // Analyzed text appears as a field alias
 	private final String name; 
+
 	private final String shortName; 
 	private final String orgLink; 
 	private final String language; 

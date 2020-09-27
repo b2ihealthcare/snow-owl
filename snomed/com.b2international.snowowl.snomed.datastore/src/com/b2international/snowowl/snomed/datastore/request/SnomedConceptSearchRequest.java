@@ -44,6 +44,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.ecl.EclExpression;
 import com.b2international.snowowl.snomed.core.ql.SnomedQueryExpression;
 import com.b2international.snowowl.snomed.core.tree.Trees;
+import com.b2international.snowowl.snomed.datastore.SnomedDescriptionUtils;
 import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
@@ -264,7 +265,7 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 			SortField sortField = (SortField) sort;
 			if (SnomedConceptSearchRequestBuilder.TERM_SORT.equals(sortField.getField())) {
 				final Set<String> synonymIds = context.service(Synonyms.class).get();
-				final Map<String, Object> args = ImmutableMap.of("locales", SnomedDescriptionSearchRequestBuilder.getLanguageRefSetIds(locales()), "synonymIds", synonymIds);
+				final Map<String, Object> args = ImmutableMap.of("locales", SnomedDescriptionUtils.getLanguageRefSetIds(locales()), "synonymIds", synonymIds);
 				sortBuilder.sortByScript("termSort", args, sort.isAscending() ? Order.ASC : Order.DESC);
 				return;
 			}
