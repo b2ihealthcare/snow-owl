@@ -156,6 +156,37 @@ public final class RevisionCompareDetail {
 	String key() {
 		return key;
 	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null) return false;
+		if (this == obj) return true;
+		if (getClass() != obj.getClass()) return false;
+		RevisionCompareDetail other = (RevisionCompareDetail) obj;
+		return Objects.equals(author, other.author)
+				&& Objects.equals(timestamp, other.timestamp)
+				&& Objects.equals(comment, other.comment)
+				&& Objects.equals(op, other.op)
+				&& Objects.equals(object, other.object)
+				&& Objects.equals(component, other.component)
+				&& Objects.equals(property, other.property)
+				&& Objects.equals(fromValue, other.fromValue)
+				&& Objects.equals(value, other.value);
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(author, timestamp, comment, op, object, component, property, fromValue, value);
+	}
+	
+	@Override
+	public String toString() {
+		if (isComponentChange()) {
+			return String.format("%s[obj=%s, component=%s]", op, object, component);
+		} else {
+			return String.format("%s[obj=%s, property=%s, from=%s, to=%s]", op, object, property, fromValue, value);
+		}
+	}
 
 	RevisionCompareDetail merge(RevisionCompareDetail other) {
 		checkArgument(key().equals(other.key()), "Cannot merge unrelated compare details.");

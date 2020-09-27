@@ -266,7 +266,9 @@ public class RevisionFixtures {
 		
 	}
 	
-	@Doc
+	@Doc(
+		revisionHash = {"field1", "data"}
+	)
 	public static final class NestedRevisionData extends Revision {
 		
 		private String field1;
