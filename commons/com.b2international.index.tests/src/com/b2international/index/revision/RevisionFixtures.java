@@ -74,7 +74,7 @@ public class RevisionFixtures {
 			}
 			
 			@Override
-			public Builder getSelf() {
+			protected Builder getSelf() {
 				return this;
 			}
 

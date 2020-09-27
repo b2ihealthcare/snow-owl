@@ -209,7 +209,7 @@ public final class SnomedConstraintDocument extends RevisionDocument {
 		}
 
 		@Override
-		public Builder getSelf() {
+		protected Builder getSelf() {
 			return this;
 		}
 

@@ -302,7 +302,7 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 		}
 		
 		@Override
-		public Builder getSelf() {
+		protected Builder getSelf() {
 			return this;
 		}
 		

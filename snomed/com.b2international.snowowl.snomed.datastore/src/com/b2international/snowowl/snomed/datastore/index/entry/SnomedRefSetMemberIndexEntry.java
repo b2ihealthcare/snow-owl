@@ -628,7 +628,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		}
 
 		@Override
-		public Builder getSelf() {
+		protected Builder getSelf() {
 			return this;
 		}
 

@@ -286,7 +286,7 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		}
 		
 		@Override
-		public Builder getSelf() {
+		protected Builder getSelf() {
 			return this;
 		}
 
