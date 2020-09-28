@@ -770,7 +770,7 @@ public final class StagingArea {
 					// apply the JSON patch from the updates in place on the same JSON tree
 					ArrayNode patch = mapper.createArrayNode();
 					for (RevisionPropertyDiff diff : propertyUpdatesByObject.get(oldRevision.getId())) {
-						patch.add(diff.asPatch(mapper));
+						patch.add(diff.asPatch(mapper, objectToUpdate));
 					}
 					JsonPatch.applyInPlace(patch, objectToUpdate);
 					
@@ -961,9 +961,9 @@ public final class StagingArea {
 			return new RevisionPropertyDiff(property, processor.convertPropertyValue(property, oldValue), processor.convertPropertyValue(property, newValue));
 		}
 
-		public JsonNode asPatch(ObjectMapper mapper) {
+		public JsonNode asPatch(ObjectMapper mapper, JsonNode objectToUpdate) {
 			ObjectNode patch = mapper.createObjectNode();
-			patch.set("op", mapper.valueToTree("replace"));
+			patch.set("op", mapper.valueToTree(objectToUpdate.path(property).isMissingNode() ? "add" : "replace"));
 			patch.set("path", mapper.valueToTree("/".concat(property)));
 			try {
 				patch.set("value", mapper.readTree(newValue));

@@ -294,6 +294,14 @@ public class RevisionFixtures {
 			return Objects.equals(field1, other.field1) && Objects.equals(data, other.data); 
 		}
 		
+		public String getField1() {
+			return field1;
+		}
+		
+		public com.b2international.index.Fixtures.Data getData() {
+			return data;
+		}
+		
 		@Override
 		public int hashCode() {
 			return Objects.hash(field1, data);

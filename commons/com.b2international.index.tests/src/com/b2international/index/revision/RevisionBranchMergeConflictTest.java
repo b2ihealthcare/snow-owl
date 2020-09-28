@@ -23,6 +23,8 @@ import org.junit.Test;
 import com.b2international.index.Fixtures.Data;
 import com.b2international.index.revision.RevisionFixtures.NestedRevisionData;
 import com.b2international.index.revision.RevisionFixtures.RevisionData;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -35,6 +37,12 @@ public class RevisionBranchMergeConflictTest extends BaseRevisionIndexTest {
 	@Override
 	protected Collection<Class<?>> getTypes() {
 		return ImmutableList.<Class<?>>of(RevisionData.class, NestedRevisionData.class);
+	}
+	
+	@Override
+	protected void configureMapper(ObjectMapper mapper) {
+		super.configureMapper(mapper);
+		mapper.setSerializationInclusion(Include.NON_NULL);
 	}
 	
 	@Test
