@@ -97,41 +97,4 @@ public class NestedDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 		);
 	}
 	
-	@Test
-	public void rebaseNestedRevisionDataChanges() throws Exception {
-		final Data nestedData = new Data();
-		nestedData.setField1("field1_1");
-		nestedData.setField2("field2_1");
-		final NestedRevisionData doc = new NestedRevisionData(STORAGE_KEY1, "parent1", nestedData);
-		
-		indexRevision(MAIN, doc);
-		
-		String a = createBranch(MAIN, "a");
-		
-		final Data updatedNestedDataOnChild = new Data();
-		updatedNestedDataOnChild.setField1("field1_2");
-		updatedNestedDataOnChild.setField2("field2_1");
-		final NestedRevisionData updatedOnChild = new NestedRevisionData(STORAGE_KEY1, "parent1", updatedNestedDataOnChild);
-		indexChange(a, doc, updatedOnChild);
-		
-		final Data updatedNestedDataOnParent = new Data();
-		updatedNestedDataOnParent.setField1("field1_1");
-		updatedNestedDataOnParent.setField2("field2_2");
-		final NestedRevisionData updatedOnParent = new NestedRevisionData(STORAGE_KEY1, "parent1", updatedNestedDataOnParent);
-		indexChange(MAIN, doc, updatedOnParent);
-		
-		// rebase should be able to merge the two non-conflicting changes
-		branching().prepareMerge(MAIN, a).merge();
-		
-		NestedRevisionData latestOnChild = getRevision(a, NestedRevisionData.class, STORAGE_KEY1);
-		
-		final Data expectedNestedDataOnChildAfterRebase = new Data();
-		expectedNestedDataOnChildAfterRebase.setField1("field1_2");
-		expectedNestedDataOnChildAfterRebase.setField2("field2_2");
-		final NestedRevisionData expectedOnChildAfterRebase = new NestedRevisionData(STORAGE_KEY1, "parent1", expectedNestedDataOnChildAfterRebase);
-		
-		assertDocEquals(expectedOnChildAfterRebase, latestOnChild);
-		
-	}
-	
 }
