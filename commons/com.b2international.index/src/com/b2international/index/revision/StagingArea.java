@@ -491,7 +491,7 @@ public final class StagingArea {
 	private String serializeToCommitDetailValue(JsonNode value) {
 		if (value.isNull()) {
 			return null;
-		} else if (value.isArray()) {
+		} else if (value.isArray() || value.isObject()) {
 			return value.toString();
 		} else {
 			return value.asText();

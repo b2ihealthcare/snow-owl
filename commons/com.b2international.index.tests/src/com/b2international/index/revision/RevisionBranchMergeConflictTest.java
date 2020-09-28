@@ -125,7 +125,7 @@ public class RevisionBranchMergeConflictTest extends BaseRevisionIndexTest {
 	}
 	
 	@Test
-	public void rebaseResolvableNestedRevisionDataChanges() throws Exception {
+	public void rebaseResolvableNestedRevisionDataChanges_NestedObjectChange() throws Exception {
 		final Data nestedData = new Data();
 		nestedData.setField1("field1_1");
 		nestedData.setField2("field2_1");
@@ -161,6 +161,32 @@ public class RevisionBranchMergeConflictTest extends BaseRevisionIndexTest {
 		
 	}
 	
-	
+	@Test
+	public void rebaseResolvableNestedRevisionDataChanges_SetObject() throws Exception {
+		final NestedRevisionData doc = new NestedRevisionData(STORAGE_KEY1, "parent1", null);
+		indexRevision(MAIN, doc);
+		
+		String a = createBranch(MAIN, "a");
+		final NestedRevisionData updatedOnChild = new NestedRevisionData(STORAGE_KEY1, "parent2", null);
+		indexChange(a, doc, updatedOnChild);
+		
+		final Data nestedData = new Data();
+		nestedData.setField1("field1_1");
+		nestedData.setField2("field2_1");
+		final NestedRevisionData updatedOnParent = new NestedRevisionData(STORAGE_KEY1, "parent1", nestedData);
+		indexChange(MAIN, doc, updatedOnParent);
+		
+		// rebase should be able to merge the two non-conflicting changes
+		branching().prepareMerge(MAIN, a).merge();
+		
+		NestedRevisionData latestOnChild = getRevision(a, NestedRevisionData.class, STORAGE_KEY1);
+		
+		final Data expectedNestedDataOnChildAfterRebase = new Data();
+		expectedNestedDataOnChildAfterRebase.setField1("field1_1");
+		expectedNestedDataOnChildAfterRebase.setField2("field2_1");
+		final NestedRevisionData expectedOnChildAfterRebase = new NestedRevisionData(STORAGE_KEY1, "parent2", expectedNestedDataOnChildAfterRebase);
+		
+		assertDocEquals(expectedOnChildAfterRebase, latestOnChild);
+	}
 	
 }
