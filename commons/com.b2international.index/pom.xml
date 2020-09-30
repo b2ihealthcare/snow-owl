@@ -107,7 +107,6 @@
 								elasticsearch-ssl-config,
 								elasticsearch-x-content,
 								hppc,
-								hppcrt,
 								jna,
 								joda-time,
 								jopt-simple,
