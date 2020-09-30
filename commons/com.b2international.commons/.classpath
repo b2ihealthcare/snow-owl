@@ -12,7 +12,7 @@
 	<classpathentry exported="true" kind="lib" path="lib/bucket4j-core-4.4.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/h2-1.4.199.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/hibernate-validator-5.3.6.Final.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/jboss-logging-3.1.3.GA.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jboss-logging-3.3.0.Final.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jgrapht-core-1.3.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jheaps-0.9.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jsr305-1.3.9.jar"/>
