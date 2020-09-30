@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,16 +33,21 @@ import com.b2international.commons.ClassUtils;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.Pair;
 import com.b2international.index.BulkUpdate;
+import com.b2international.index.IndexException;
 import com.b2international.index.mapping.DocumentMapping;
+import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Query;
 import com.b2international.index.revision.Hooks.Hook;
 import com.b2international.index.revision.Hooks.PostCommitHook;
 import com.b2international.index.revision.Hooks.PreCommitHook;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.flipkart.zjsonpatch.DiffFlags;
 import com.flipkart.zjsonpatch.JsonDiff;
+import com.flipkart.zjsonpatch.JsonPatch;
 import com.google.common.collect.*;
 
 /**
@@ -358,11 +363,11 @@ public final class StagingArea {
 			final String prop = change.get("path").asText().substring(1); // XXX removes the forward slash from the beginning
 			final String from;
 			if (change.has("fromValue")) {
-				from = change.get("fromValue").asText();
+				from = serializeToCommitDetailValue(change.get("fromValue"));
 			} else  {
 				from = "";
 			}
-			final String to = change.get("value").asText();
+			final String to = serializeToCommitDetailValue(change.get("value"));
 			ListMultimap<String, String> objectIdsByType = ArrayListMultimap.create();
 			objects.forEach(objectId -> objectIdsByType.put(objectId.type(), objectId.id()));
 			// split by object type
@@ -483,6 +488,16 @@ public final class StagingArea {
 		return commitDoc;
 	}
 
+	private String serializeToCommitDetailValue(JsonNode value) {
+		if (value.isNull()) {
+			return null;
+		} else if (value.isArray() || value.isObject()) {
+			return value.toString();
+		} else {
+			return value.asText();
+		}
+	}
+
 	/**
 	 * Dirty staging area if at least one object has been staged.
 	 * @return <code>true</code> if the staging area is dirty and can be committed via {@link #commit(String, long, String, String)}
@@ -588,13 +603,13 @@ public final class StagingArea {
 	
 	void merge(RevisionBranchRef fromRef, RevisionBranchRef toRef, boolean squash, RevisionConflictProcessor conflictProcessor, Set<String> exclusions) {
 		checkArgument(this.mergeSources == null, "Already merged another ref to this StagingArea. Commit staged changes to apply them.");
-		this.mergeSources = fromRef.difference(toRef)
+		this.mergeFromBranchRef = fromRef.difference(toRef);
+		this.mergeSources = this.mergeFromBranchRef
 				.segments()
 				.stream()
 				.filter(segment -> segment.branchId() != toRef.branchId())
 				.map(RevisionSegment::getEndPoint)
 				.collect(Collectors.toCollection(TreeSet::new));
-		this.mergeFromBranchRef = fromRef;
 		this.squashMerge = squash;
 		if (exclusions != null) {
 			this.exclusions.addAll(exclusions);
@@ -661,7 +676,7 @@ public final class StagingArea {
 			final String docType = DocumentMapping.getType(type);
 			Set<String> changedRevisionIdsToMerge = newHashSet(fromChangeSet.getChangedIds(type));
 			// first handle changed vs. removed
-			Set<String> changedInSourceDetachedInTargetIds = Sets.intersection(changedRevisionIdsToMerge, removedRevisionIdsToCheck);
+			Set<String> changedInSourceDetachedInTargetIds = Sets.newHashSet(Sets.intersection(changedRevisionIdsToMerge, removedRevisionIdsToCheck));
 			if (!changedInSourceDetachedInTargetIds.isEmpty()) {
 				// report any conflicts
 				changedInSourceDetachedInTargetIds.forEach(changedInSourceDetachedInTargetId -> {
@@ -696,7 +711,7 @@ public final class StagingArea {
 							final RevisionCompareDetail sourcePropertyChange = sourceChange.getValue();
 							
 							final RevisionPropertyDiff sourceChangeDiff = new RevisionPropertyDiff(changedProperty, sourcePropertyChange.getFromValue(), sourcePropertyChange.getValue());
-							final RevisionCompareDetail targetPropertyChange = targetPropertyChanges.get(changedProperty);
+							final RevisionCompareDetail targetPropertyChange = targetPropertyChanges == null ? null : targetPropertyChanges.get(changedProperty);
 							
 							if (targetPropertyChange == null) {
 								// this property did not change in target, just apply directly on the target object via
@@ -724,6 +739,10 @@ public final class StagingArea {
 								fromChangeSet.removeChanged(type, changedInSourceAndTargetId);
 							}
 						}
+					} else {
+						// this object has changed on both sides probably due to some cascading change, revise the revision on source, since we already have one on this branch
+						revisionsToReviseOnMergeSource.put(type, changedInSourceAndTargetId);
+						fromChangeSet.removeChanged(type, changedInSourceAndTargetId);
 					}
 				}
 			}
@@ -736,17 +755,29 @@ public final class StagingArea {
 			throw new BranchMergeConflictException(conflicts.stream().map(conflictProcessor::convertConflict).collect(Collectors.toList()));
 		}
 		
-		// apply property changes, conflicts, etc.
+		// apply property changes, conflicts in all cases, so merge commits will have the actual conflict resolutions
 		if (!propertyUpdatesToApply.isEmpty()) {
-			// if there are property conflict resolutions, then we have staged changes and it does not matter if the merge is fast-forward
 			for (Entry<Class<? extends Revision>, Multimap<String, RevisionPropertyDiff>> entry : propertyUpdatesToApply.entrySet()) {
 				final Class<? extends Revision> type = entry.getKey();
 				final Multimap<String, RevisionPropertyDiff> propertyUpdatesByObject = entry.getValue();
-				final DocumentMapping mapping = index.admin().mappings().getMapping(type);
-				final Iterable<? extends Revision> objectsToUpdate = index.read(toRef, searcher -> searcher.get(type, propertyUpdatesByObject.keySet()));
-				for (Revision objectToUpdate : objectsToUpdate) {
-					stageChange(objectToUpdate, objectToUpdate.withUpdates(mapping, propertyUpdatesByObject.get(objectToUpdate.getId())));
-					revisionsToReviseOnMergeSource.put(type, objectToUpdate.getId());
+				final Iterable<JsonNode> objectsToUpdate = index.read(toRef, searcher -> {
+					return searcher.search(Query.select(JsonNode.class).from(type).where(Expressions.matchAny(Revision.Fields.ID, propertyUpdatesByObject.keySet())).limit(propertyUpdatesByObject.keySet().size()).build());
+				});
+				for (JsonNode objectToUpdate : objectsToUpdate) {
+					// read into revision object first
+					Revision oldRevision = mapper.convertValue(objectToUpdate, type);
+					
+					// apply the JSON patch from the updates in place on the same JSON tree
+					ArrayNode patch = mapper.createArrayNode();
+					for (RevisionPropertyDiff diff : propertyUpdatesByObject.get(oldRevision.getId())) {
+						patch.add(diff.asPatch(mapper, objectToUpdate));
+					}
+					JsonPatch.applyInPlace(patch, objectToUpdate);
+					
+					// convert it to Revision again to get the new object
+					// FIXME for the future, figure out how to reduce the number of ser/deser during merge
+					stageChange(oldRevision, mapper.convertValue(objectToUpdate, type));
+					revisionsToReviseOnMergeSource.put(type, oldRevision.getId());
 				}
 			}
 		}
@@ -928,6 +959,29 @@ public final class StagingArea {
 		
 		public RevisionPropertyDiff convert(RevisionConflictProcessor processor) {
 			return new RevisionPropertyDiff(property, processor.convertPropertyValue(property, oldValue), processor.convertPropertyValue(property, newValue));
+		}
+
+		public JsonNode asPatch(ObjectMapper mapper, JsonNode objectToUpdate) {
+			ObjectNode patch = mapper.createObjectNode();
+			patch.set("op", mapper.valueToTree(objectToUpdate.path(property).isMissingNode() ? "add" : "replace"));
+			patch.set("path", mapper.valueToTree("/".concat(property)));
+			try {
+				patch.set("value", mapper.readTree(newValue));
+				// if it is unable to convert the newValue to a JSON value, then it is either an array or object, read it as tree
+			} catch (JsonProcessingException e) {
+				try {
+					patch.set("value", mapper.valueToTree(newValue));
+				} catch (IllegalArgumentException ex) {
+					ex.addSuppressed(e);
+					throw new IndexException("Unable to read value to JSON. Value: " + newValue, ex);
+				}
+			}
+			return patch; 
+		}
+		
+		@Override
+		public String toString() {
+			return String.format("%s[%s]", getProperty(), toValueChangeString());
 		}
 		
 	}

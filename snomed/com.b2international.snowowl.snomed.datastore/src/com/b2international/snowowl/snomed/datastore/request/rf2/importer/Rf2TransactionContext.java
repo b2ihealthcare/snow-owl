@@ -118,17 +118,17 @@ public final class Rf2TransactionContext extends DelegatingBranchContext impleme
 	}
 	
 	@Override
-	public long commit() {
+	public Long commit() {
 		throw new UnsupportedOperationException("Use the single supported commit(String) method");
 	}
 	
 	@Override
-	public long commit(String commitComment) {
+	public Long commit(String commitComment) {
 		final Set<String> idsToRegister = ImmutableSet.copyOf(newComponents.keySet().stream().filter(SnomedIdentifiers::isValid).iterator());
 		// clear local cache before executing commit
 		newComponents = newHashMap();
 		LOG.info("Pushing changes: {}", commitComment);
-		long timestamp = getDelegate().commit(commitComment);
+		Long timestamp = getDelegate().commit(commitComment);
 		// after successful commit register all commited IDs to CIS
 		final ISnomedIdentifierService cis = service(ISnomedIdentifierService.class);
 		if (cis.importSupported()) {
@@ -138,12 +138,12 @@ public final class Rf2TransactionContext extends DelegatingBranchContext impleme
 	}
 	
 	@Override
-	public long commit(String commitComment, String parentContextDescription) {
+	public Long commit(String commitComment, String parentContextDescription) {
 		throw new UnsupportedOperationException("Use the single supported commit(String) method");
 	}
 	
 	@Override
-	public long commit(String userId, String commitComment, String parentContextDescription) {
+	public Long commit(String userId, String commitComment, String parentContextDescription) {
 		throw new UnsupportedOperationException("Use the single supported commit(String) method");
 	}
 	

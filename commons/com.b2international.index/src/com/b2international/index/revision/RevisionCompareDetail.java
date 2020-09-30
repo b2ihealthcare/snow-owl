@@ -27,7 +27,7 @@ import com.google.common.base.Strings;
  */
 public final class RevisionCompareDetail {
 
-	private static final String PROPERTY_CHANGE_KEY_SEPARATOR = "_";
+	static final String PROPERTY_CHANGE_KEY_SEPARATOR = "#";
 	
 	// commit details
 	private final String author;
@@ -156,20 +156,59 @@ public final class RevisionCompareDetail {
 	String key() {
 		return key;
 	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null) return false;
+		if (this == obj) return true;
+		if (getClass() != obj.getClass()) return false;
+		RevisionCompareDetail other = (RevisionCompareDetail) obj;
+		return Objects.equals(author, other.author)
+				&& Objects.equals(timestamp, other.timestamp)
+				&& Objects.equals(comment, other.comment)
+				&& Objects.equals(op, other.op)
+				&& Objects.equals(object, other.object)
+				&& Objects.equals(component, other.component)
+				&& Objects.equals(property, other.property)
+				&& Objects.equals(fromValue, other.fromValue)
+				&& Objects.equals(value, other.value);
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(author, timestamp, comment, op, object, component, property, fromValue, value);
+	}
+	
+	@Override
+	public String toString() {
+		if (isComponentChange()) {
+			return String.format("%s[obj=%s, component=%s]", op, object, component);
+		} else {
+			return String.format("%s[obj=%s, property=%s, from=%s, to=%s]", op, object, property, fromValue, value);
+		}
+	}
 
 	RevisionCompareDetail merge(RevisionCompareDetail other) {
 		checkArgument(key().equals(other.key()), "Cannot merge unrelated compare details.");
 		if (isComponentChange()) {
-			if ((isAdd() && other.isRemove()) || 
-					(isRemove() && other.isAdd())) {
-				// other is a revert of this detail return null
+			if ((isAdd() && other.isRemove()) || (isRemove() && other.isAdd())) {
+				// NEW and REMOVED, clear it, nothing happened
 				return null;
 			} else if (isAdd() && other.isChange()) {
+				// NEW and CHANGED, register as NEW
 				return this;
 			} else if (isChange() && other.isAdd()) {
+				// NEW and CHANGED, register as NEW
+				return other;
+			} else if (isRemove() && other.isChange()) {
+				// CHANGED and REMOVED, register as REMOVED
+				return this;
+			} else if (isChange() && other.isRemove()) {
+				// CHANGED and REMOVED, register as REMOVED
 				return other;
 			} else if (getOp() == other.getOp()) {
-				return this; // two changes after each other in the commit history, keep only a single component change
+				// two changes after each other in the commit history, keep only a single component change
+				return this; 
 			} else {
 				throw new UnsupportedOperationException("Unknown case for _component change: " + this.getOp() + " vs. " + other.getOp());
 			}

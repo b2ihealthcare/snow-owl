@@ -15,7 +15,10 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
+import static com.google.common.collect.Lists.newArrayList;
+
 import java.util.Collections;
+import java.util.List;
 
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
@@ -29,9 +32,11 @@ import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
 /**
  * @since 4.7
  */
-final class CodeSystemSearchRequest extends SearchIndexResourceRequest<RepositoryContext, CodeSystems, CodeSystemEntry> implements RepositoryAccessControl {
+final class CodeSystemSearchRequest 
+	extends SearchIndexResourceRequest<RepositoryContext, CodeSystems, CodeSystemEntry> 
+	implements RepositoryAccessControl {
 
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 
 	CodeSystemSearchRequest() { }
 
@@ -39,10 +44,12 @@ final class CodeSystemSearchRequest extends SearchIndexResourceRequest<Repositor
 	 * @since 7.9
 	 */
 	public enum OptionKey {
-		/**
-		 * Search by the specific tooling id.
-		 */
-		TOOLING_ID;
+		/** Search by specific tooling ID */
+		TOOLING_ID,
+		/** "Smart" search by name (taking prefixes, stemming, etc. into account) */
+		NAME,
+		/** Exact match for code system name */
+		NAME_EXACT,
 	}
 	
 	@Override
@@ -53,16 +60,45 @@ final class CodeSystemSearchRequest extends SearchIndexResourceRequest<Repositor
 	@Override
 	protected Expression prepareQuery(RepositoryContext context) {
 		final ExpressionBuilder queryBuilder = Expressions.builder();
+		
 		addIdFilter(queryBuilder, ids -> Expressions.builder()
 				.should(CodeSystemEntry.Expressions.shortNames(ids))
 				.should(CodeSystemEntry.Expressions.oids(ids))
 				.build());
-		if (containsKey(OptionKey.TOOLING_ID)) {
-			queryBuilder.filter(CodeSystemEntry.Expressions.toolingIds(getCollection(OptionKey.TOOLING_ID, String.class)));
-		}
+		
+		addToolingIdFilter(queryBuilder);
+		addNameFilter(queryBuilder);
+		addNameExactFilter(queryBuilder);
+		
 		return queryBuilder.build();
 	}
 
+	private void addToolingIdFilter(final ExpressionBuilder queryBuilder) {
+		if (containsKey(OptionKey.TOOLING_ID)) {
+			queryBuilder.filter(CodeSystemEntry.Expressions.toolingIds(getCollection(OptionKey.TOOLING_ID, String.class)));
+		}
+	}
+
+	private void addNameFilter(ExpressionBuilder queryBuilder) {
+		if (containsKey(OptionKey.NAME)) {
+			final String searchTerm = getString(OptionKey.NAME);
+			ExpressionBuilder termFilter = Expressions.builder();
+			final List<Expression> disjuncts = newArrayList();
+			disjuncts.add(CodeSystemEntry.Expressions.matchNameExact(searchTerm));
+			disjuncts.add(CodeSystemEntry.Expressions.matchNameAllTermsPresent(searchTerm));
+			disjuncts.add(CodeSystemEntry.Expressions.matchNameAllPrefixesPresent(searchTerm));
+			termFilter.should(Expressions.dismax(disjuncts));
+			termFilter.should(Expressions.boost(CodeSystemEntry.Expressions.shortName(searchTerm), 1000.0f));
+			queryBuilder.must(termFilter.build());
+		}
+	}
+	
+	private void addNameExactFilter(ExpressionBuilder queryBuilder) {
+		if (containsKey(OptionKey.NAME_EXACT)) {
+			queryBuilder.must(CodeSystemEntry.Expressions.matchNameOriginal(getString(OptionKey.NAME_EXACT)));
+		}		
+	}
+	
 	@Override
 	protected CodeSystems toCollectionResource(RepositoryContext context, Hits<CodeSystemEntry> hits) {
 		final CodeSystemConverter converter = new CodeSystemConverter(context, expand(), null);

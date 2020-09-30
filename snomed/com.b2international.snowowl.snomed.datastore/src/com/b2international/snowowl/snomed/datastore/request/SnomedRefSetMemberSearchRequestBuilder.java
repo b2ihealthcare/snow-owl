@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 package com.b2international.snowowl.snomed.datastore.request;
-
-import java.util.Collections;
 
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -69,7 +67,7 @@ public final class SnomedRefSetMemberSearchRequestBuilder
 	}
 	
 	public SnomedRefSetMemberSearchRequestBuilder filterByRefSetType(final SnomedRefSetType refSetType) {
-		return filterByRefSetType(Collections.singleton(refSetType));
+		return addOption(OptionKey.REFSET_TYPE, refSetType);
 	}
 	
 	public SnomedRefSetMemberSearchRequestBuilder filterByRefSetType(final Iterable<SnomedRefSetType> refSetTypes) {
@@ -90,6 +88,17 @@ public final class SnomedRefSetMemberSearchRequestBuilder
 	
 	public SnomedRefSetMemberSearchRequestBuilder filterByReferencedComponentTypes(Iterable<Short> referencedComponentTypes) {
 		return addOption(OptionKey.REFERENCED_COMPONENT_TYPE, referencedComponentTypes);
+	}
+	
+	/**
+	 * Matches reference set members where either the referenced component or map target matches the given value.
+	 */
+	public SnomedRefSetMemberSearchRequestBuilder filterByComponentId(String componentId) {
+		return addOption(OptionKey.COMPONENT, componentId);
+	}
+	
+	public SnomedRefSetMemberSearchRequestBuilder filterByComponentIds(Iterable<String> componentIds) {
+		return addOption(OptionKey.COMPONENT, componentIds);
 	}
 
 }

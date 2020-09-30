@@ -15,11 +15,11 @@
  */
 package com.b2international.index.revision;
 
-import static com.google.common.collect.Maps.newHashMap;
-
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.collections.Collections3;
@@ -42,7 +42,7 @@ public final class RevisionCompare {
 		private int removed;
 		private final int limit;
 	
-		private final Map<String, RevisionCompareDetail> detailsByComponent = newHashMap();
+		private final TreeMap<String, RevisionCompareDetail> detailsByComponent = new TreeMap<>();
 		
 		Builder(RevisionBranchRef base, RevisionBranchRef compare, int limit) {
 			this.base = base;
@@ -83,6 +83,19 @@ public final class RevisionCompare {
 					}
 					
 					details.forEach(compareDetail -> {
+						// if a REMOVED detail comes for a component, delete all previously registered property changes, ADD will be handled by the merge operation
+						if (compareDetail.isComponentChange() && compareDetail.isRemove()) {
+							final String propChangeKey = compareDetail.key() + RevisionCompareDetail.PROPERTY_CHANGE_KEY_SEPARATOR;
+							Iterator<Entry<String, RevisionCompareDetail>> followingCompareDetails = detailsByComponent.tailMap(propChangeKey, true).entrySet().iterator();
+							while (followingCompareDetails.hasNext()) {
+								Entry<String, RevisionCompareDetail> followingCompareDetail = followingCompareDetails.next();
+								if (followingCompareDetail.getValue().isPropertyChange() && followingCompareDetail.getKey().startsWith(propChangeKey)) {
+									followingCompareDetails.remove();
+								} else {
+									break;
+								}
+							}
+						}
 						detailsByComponent.merge(compareDetail.key(), compareDetail, (oldV, newV) -> oldV.merge(newV));
 					});
 				}

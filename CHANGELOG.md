@@ -1,6 +1,64 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 7.10.0
+
+### Core
+- Code Systems
+  * Support analyzed (tokenized, exact, prefix) `name` property searches in Code System Java API (#667)
+- Concept Maps
+  * Support fetching concept map mappings by reference source and target IDs (#660)
+  * Improve Concept Map model to include the following attributes: `containerIconId`, `containerTerm`, `targetIconId` (#679)
+  * Limit Concept Map compare results to `5000` per change category (#654)
+
+### Validation
+- Make some SNOMED CT validation rules available in the OSS version (#666, #675)
+- Allow users to customize display labels in FSN via Validation Java API (#674) 
+
+### Bugs/Improvements
+- [index] add the ability to change the search time analyzer to something else than the default specified on the index field mapping (#669)
+- [index] serialize nested objects as JSON during commits (75d2139)
+- [index] apply recognized property diff conflict resolutions as JSON patch directly on the source document (#680, 3b7fddc)
+- [core] support ID prefix and ID regexp queries (21eacab)
+- [classification] log unexpected errors during classification (#673)
+- [classification] fix registration of GCI, reflexive, transitive axioms (#673)
+- [snomed] fix `owlExpressions()` expansion issue (857db34) 
+- [cis] port some CIS ID registration leftover fixes from 6.x (5f3f9f0, 0341b5d, 1e7e965)
+
+## 7.9.2
+
+### Bugs/Improvements
+- Fix incorrect reuse and auto-generation of inactivation indicator members (#664)
+
+## 7.9.1
+
+### Bugs/Improvements
+- Support multi-valued (List, Set, Array) String properties on JSON documents in history and automatic conflict resolution (f39e115)
+- Fix branch rebase issue when there are no semantic changes between the two branches (#652, 0d9f55a)
+
+### Dependencies 
+- Upgrade Elasticsearch to 7.9.1 (#653)
+
+## 7.9.0
+
+### SNOMED CT
+- Enforce order of preferred descriptions: US preferred FSN, GB preferred FSN, all other Synonyms grouped by type (#645)
+
+### Validation
+- Improve performance of rule 671
+
+### Bugs/Improvements
+- Improve ConceptMap Compare performance (#637, #639)
+- Improve ConceptMap Mapping Java API (#640)
+- Add new convenience method to Dates Java API (#642)
+- Fix SNOMED CT icon calculation (#645)
+- Add support for CHANGE vs. REMOVE case during branch compare (#646)
+- Avoid creating duplicate description inactivation indicators (#648)
+- Make return value of commit timestamps more flexible (#649)
+
+### Dependencies
+- Upgrade Elasticsearch to 7.9.0 (PR: #641, Fixes GH issue: #626)
+
 ## 7.8.4
 
 ### Bugs/Improvements

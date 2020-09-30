@@ -124,7 +124,7 @@ public final class SnomedVersioningRequest extends VersioningRequest {
 			}
 			
 			// stage update on components based on actual type
-			final SnomedDocument.Builder updatedComponent; 
+			final SnomedDocument.Builder<?, ?> updatedComponent;
 			if (componentToVersion instanceof SnomedConceptDocument) {
 				final SnomedConceptDocument concept = (SnomedConceptDocument) componentToVersion;
 				componentIdsByReferringModule.put(concept.getModuleId(), concept.isPrimitive() ? Concepts.PRIMITIVE : Concepts.FULLY_DEFINED);

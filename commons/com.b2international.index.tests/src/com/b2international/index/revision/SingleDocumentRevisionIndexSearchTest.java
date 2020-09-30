@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -101,8 +101,8 @@ public class SingleDocumentRevisionIndexSearchTest extends BaseRevisionIndexTest
 	
 	@Test
 	public void searchWithCustomScore() throws Exception {
-		final ScoredData first = new ScoredData(STORAGE_KEY1, "field1", "field2", 1.0f);
-		final ScoredData second = new ScoredData(STORAGE_KEY2, "field1", "field2.2", 2.0f);
+		final ScoredData first = new ScoredData(STORAGE_KEY1, "field1", "field2", null, 1.0f);
+		final ScoredData second = new ScoredData(STORAGE_KEY2, "field1", "field2.2", null, 2.0f);
 		
 		indexRevision(MAIN, first, second);
 		
@@ -125,8 +125,8 @@ public class SingleDocumentRevisionIndexSearchTest extends BaseRevisionIndexTest
 	
 	@Test
 	public void searchWithCustomScoreParams() throws Exception {
-		final ScoredData first = new ScoredData(STORAGE_KEY1, "field1", "field2", 1.0f);
-		final ScoredData second = new ScoredData(STORAGE_KEY2, "field1", "field2.2", 2.0f);
+		final ScoredData first = new ScoredData(STORAGE_KEY1, "field1", "field2", null, 1.0f);
+		final ScoredData second = new ScoredData(STORAGE_KEY2, "field1", "field2.2", null, 2.0f);
 		
 		indexRevision(MAIN, first, second);
 		
@@ -202,8 +202,8 @@ public class SingleDocumentRevisionIndexSearchTest extends BaseRevisionIndexTest
 
 	@Test
 	public void searchWithMatchBool() throws Exception {
-		final BooleanData first = new BooleanData(STORAGE_KEY1, "field1", "field2", true);
-		final BooleanData second = new BooleanData(STORAGE_KEY2, "field1", "field2", false);
+		final BooleanData first = new BooleanData(STORAGE_KEY1, "field1", "field2", null, true);
+		final BooleanData second = new BooleanData(STORAGE_KEY2, "field1", "field2", null, false);
 		
 		indexRevision(MAIN, first, second);
 		
@@ -216,8 +216,8 @@ public class SingleDocumentRevisionIndexSearchTest extends BaseRevisionIndexTest
 	
 	@Test
 	public void searchWithMatchRange() throws Exception {
-		final RangeData first = new RangeData(STORAGE_KEY1, "field1", "field2", 2, 4);
-		final RangeData second = new RangeData(STORAGE_KEY2, "field1", "field2", 3, 5);
+		final RangeData first = new RangeData(STORAGE_KEY1, "field1", "field2", null, 2, 4);
+		final RangeData second = new RangeData(STORAGE_KEY2, "field1", "field2", null, 3, 5);
 		
 		indexRevision(MAIN, first, second);
 		

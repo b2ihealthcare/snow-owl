@@ -251,22 +251,22 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 	}
 
 	@Override
-	public long commit() {
+	public Long commit() {
 		return commit(author(), commitComment, parentLockContext);
 	}
 	
 	@Override
-	public long commit(String commitComment) {
+	public Long commit(String commitComment) {
 		return commit(author(), commitComment, parentLockContext);
 	}
 	
 	@Override
-	public long commit(String commitComment, String parentLockContext) {
+	public Long commit(String commitComment, String parentLockContext) {
 		return commit(author(), commitComment, parentLockContext);
 	}
 	
 	@Override
-	public long commit(String author, String commitComment, String parentLockContext) {
+	public Long commit(String author, String commitComment, String parentLockContext) {
 		if (!isDirty()) {
 			return -1L;
 		}
@@ -280,7 +280,7 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 			log().info("Persisting changes to {}@{}", path(), timestamp);
 			commit = staging.commit(null, timestamp, author, commitComment);
 			log().info("Changes have been successfully persisted to {}@{}.", path(), timestamp);
-			return commit.getTimestamp();
+			return commit == null ? null : commit.getTimestamp();
 		} catch (final IndexException e) {
 			Throwable rootCause = Throwables.getRootCause(e);
 			if (rootCause instanceof CycleDetectedException) {
