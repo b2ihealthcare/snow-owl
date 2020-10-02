@@ -24,11 +24,11 @@ try {
 			
 			if (!custom_maven_settings.isEmpty()) {
 				withMaven(jdk: 'OpenJDK 11', maven: 'Maven 3.6.0', mavenSettingsConfig: custom_maven_settings, options: [artifactsPublisher(disabled: true)],  publisherStrategy: 'EXPLICIT') {
-					sh "mvn clean deploy -Dmaven.test.skip=${skipTests} -Dmaven.install.skip=true -Dtycho.localArtifacts=ignore"
+					sh "mvn clean deploy -Dmaven.test.skip=${skipTests} -Dmaven.install.skip=true -Dtycho.localArtifacts=ignore --no-transfer-progress"
 				}
 			} else {
 				withMaven(jdk: 'OpenJDK 11', maven: 'Maven 3.6.0', options: [artifactsPublisher(disabled: true)], publisherStrategy: 'EXPLICIT') {
-					sh "mvn clean deploy -Dmaven.test.skip=${skipTests} -Dmaven.install.skip=true -Dtycho.localArtifacts=ignore"
+					sh "mvn clean deploy -Dmaven.test.skip=${skipTests} -Dmaven.install.skip=true -Dtycho.localArtifacts=ignore --no-transfer-progress"
 				}
 			}
 			
