@@ -73,7 +73,6 @@ import com.b2international.snowowl.core.rate.ApiConfiguration;
 import com.b2international.snowowl.core.rate.HttpConfig;
 import com.b2international.snowowl.core.rest.util.AntPathWildcardMatcher;
 import com.b2international.snowowl.core.rest.util.CsvMessageConverter;
-import com.b2international.snowowl.core.rest.util.ModelAttributeParameterExpanderExt;
 import com.b2international.snowowl.core.rest.util.PromiseMethodReturnValueHandler;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -86,18 +85,14 @@ import com.google.common.collect.ImmutableMap;
 import com.google.inject.Provider;
 
 import io.micrometer.core.instrument.MeterRegistry;
-import springfox.documentation.schema.property.bean.AccessorsProvider;
-import springfox.documentation.schema.property.field.FieldProvider;
-import springfox.documentation.spi.schema.EnumTypeDeterminer;
-import springfox.documentation.spring.web.readers.parameter.ModelAttributeParameterExpander;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
+import springfox.documentation.oas.annotations.EnableOpenApi;
 
 /**
  * The Spring configuration class for Snow Owl's internal REST services module.
  *
  * @since 1.0
  */
-@EnableSwagger2
+@EnableOpenApi
 @Configuration
 @ComponentScan({"com.b2international.snowowl.core.rest"})
 @Import({ SnowOwlSecurityConfig.class })
@@ -146,13 +141,13 @@ public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 	    return multipartResolver;
 	}
 	
-	@Bean
-	public ModelAttributeParameterExpander modelAttributeParameterExpander(
-			@Autowired FieldProvider fieldProvider, 
-			@Autowired AccessorsProvider accessorsProvider,
-			@Autowired EnumTypeDeterminer enumTypeDeterminer) {
-		return new ModelAttributeParameterExpanderExt(fieldProvider, accessorsProvider, enumTypeDeterminer);
-	}
+//	@Bean
+//	public ModelAttributeParameterExpander modelAttributeParameterExpander(
+//			@Autowired FieldProvider fieldProvider, 
+//			@Autowired AccessorsProvider accessorsProvider,
+//			@Autowired EnumTypeDeterminer enumTypeDeterminer) {
+//		return new ModelAttributeParameterExpanderExt(fieldProvider, accessorsProvider, enumTypeDeterminer);
+//	}
 
 	@Bean
 	public IdentityProvider identityProvider() {

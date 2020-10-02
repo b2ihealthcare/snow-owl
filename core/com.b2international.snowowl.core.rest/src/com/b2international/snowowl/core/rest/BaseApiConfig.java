@@ -21,7 +21,9 @@ import java.security.Principal;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Predicate;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -33,10 +35,9 @@ import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.fasterxml.classmate.TypeResolver;
-import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 
-import io.swagger.models.auth.In;
+import io.swagger.v3.oas.models.security.SecurityScheme.In;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.schema.WildcardType;
 import springfox.documentation.service.ApiInfo;
@@ -45,6 +46,7 @@ import springfox.documentation.service.AuthorizationScope;
 import springfox.documentation.service.BasicAuth;
 import springfox.documentation.service.Contact;
 import springfox.documentation.service.SecurityReference;
+import springfox.documentation.service.SecurityScheme;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spi.service.contexts.SecurityContext;
 import springfox.documentation.spring.web.plugins.Docket;
@@ -68,6 +70,9 @@ import springfox.documentation.spring.web.plugins.Docket;
  */
 public abstract class BaseApiConfig {
 
+	@Value("#{servletContext.contextPath}")
+    private String servletContextPath;
+	
 	/**
 	 * @return the api base url for all services grouped by this configuration class
 	 */
@@ -86,7 +91,8 @@ public abstract class BaseApiConfig {
 	}
 	
 	/**
-	 * Expose this as @Bean annotated component in the implementation configuration class.
+	 * Expose this as {@link Bean} annotated component in the implementation configuration class.
+	 * 
 	 * @return a configured docket for this API module
 	 */
 	protected final Docket docs(
@@ -100,9 +106,9 @@ public abstract class BaseApiConfig {
 			final String apiLicenseUrl,
 			final String apiDescription) {
 		final TypeResolver resolver = new TypeResolver();
-		final Predicate<String> paths = PathSelectors.regex(apiBaseUrl + ".*");
-		return new Docket(DocumentationType.SWAGGER_2)
-				.securitySchemes(ImmutableList.of(
+		final Predicate<String> paths = PathSelectors.regex(servletContextPath + apiBaseUrl + ".*");
+		return new Docket(DocumentationType.OAS_30)
+				.securitySchemes(ImmutableList.<SecurityScheme>of(
 					new BasicAuth("basic"),
 					new ApiKey("bearer", HttpHeaders.AUTHORIZATION, In.HEADER.name())
 				))
@@ -142,7 +148,15 @@ public abstract class BaseApiConfig {
 	            .select()
 	            	.paths(paths)
 	            	.build()
-	            .apiInfo(new ApiInfo(apiTitle, apiDescription, apiVersion, apiTermsOfServiceUrl, new Contact("B2i Healthcare", apiLicenseUrl, apiContact), apiLicense, apiLicenseUrl, Collections.emptyList()));
+	            .apiInfo(new ApiInfo(apiTitle, apiDescription, apiVersion, apiTermsOfServiceUrl, new Contact(getOrganization(), apiLicenseUrl, apiContact), apiLicense, apiLicenseUrl, Collections.emptyList()));
+	}
+
+	/**
+	 * Subclasses may override the default organization 
+	 * @return
+	 */
+	protected String getOrganization() {
+		return "B2i Healthcare Pte Ltd";
 	}
 	
 }
