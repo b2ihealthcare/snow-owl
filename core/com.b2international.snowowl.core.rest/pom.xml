@@ -29,15 +29,9 @@
 		</dependency>
 		<dependency>
 			<groupId>io.springfox</groupId>
-			<artifactId>springfox-swagger2</artifactId>
+			<artifactId>springfox-oas</artifactId>
 			<version>${springfox.version}</version>
 			<scope>provided</scope>
-			<exclusions>
-				<exclusion>
-          			<groupId>org.reflections</groupId>
-          			<artifactId>reflections</artifactId>
-        		</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 		    <groupId>org.springframework</groupId>
@@ -124,8 +118,10 @@
 								springfox-schema,
 								springfox-spi,
 								springfox-spring-web,
+								springfox-spring-webmvc,
+								springfox-spring-webflux,
 								springfox-swagger-common,
-								springfox-swagger2,
+								springfox-oas,
 								commons-logging,
 								commons-fileupload
 							</includeArtifactIds>

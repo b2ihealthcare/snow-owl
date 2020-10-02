@@ -14,8 +14,8 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
 		<!-- Maven Dependency Versions -->
-		<jackson.version>2.10.4</jackson.version>
-		<jackson.databind.version>2.10.4</jackson.databind.version>
+		<jackson.version>2.11.3</jackson.version>
+		<jackson.databind.version>2.11.3</jackson.databind.version>
 		<netty.version>4.1.50.Final</netty.version>
 		<slf4j.version>1.7.25</slf4j.version>
 		<logback.version>1.2.3</logback.version>
@@ -37,6 +37,8 @@
 		<javax.activation.version>1.2.0</javax.activation.version>
 		<snomed.owl.toolkit.version>2.6.0</snomed.owl.toolkit.version>
 		<failsafe.version>2.3.1</failsafe.version>
+		<swagger.version>1.6.2</swagger.version>
+		<swagger.v3.version>2.1.4</swagger.v3.version>
 		<!-- Build tool/compiler versions -->
 		<tycho.version>1.7.0</tycho.version>
 		<tycho-extras.version>1.7.0</tycho-extras.version>
@@ -459,25 +461,37 @@
     	<dependency>
     		<groupId>com.fasterxml</groupId>
     		<artifactId>classmate</artifactId>
-    		<version>1.3.4</version>
+    		<version>1.5.1</version>
     		<scope>provided</scope>
     	</dependency>
     	<dependency>
     		<groupId>org.mapstruct</groupId>
     		<artifactId>mapstruct</artifactId>
-    		<version>1.2.0.Final</version>
+    		<version>1.3.1.Final</version>
     		<scope>provided</scope>
     	</dependency>
     	<dependency>
     		<groupId>io.swagger</groupId>
     		<artifactId>swagger-annotations</artifactId>
-    		<version>1.5.23</version>
+    		<version>${swagger.version}</version>
     		<scope>provided</scope>
     	</dependency>
     	<dependency>
     		<groupId>io.swagger</groupId>
     		<artifactId>swagger-models</artifactId>
-    		<version>1.5.23</version>
+    		<version>${swagger.version}</version>
+    		<scope>provided</scope>
+    	</dependency>
+    	<dependency>
+    		<groupId>io.swagger.core.v3</groupId>
+    		<artifactId>swagger-annotations</artifactId>
+    		<version>${swagger.v3.version}</version>
+    		<scope>provided</scope>
+    	</dependency>
+    	<dependency>
+    		<groupId>io.swagger.core.v3</groupId>
+    		<artifactId>swagger-models</artifactId>
+    		<version>${swagger.v3.version}</version>
     		<scope>provided</scope>
     	</dependency>
 		<dependency>
