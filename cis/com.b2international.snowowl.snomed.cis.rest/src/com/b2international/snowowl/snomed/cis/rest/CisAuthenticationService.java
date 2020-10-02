@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,21 +31,20 @@ import com.b2international.snowowl.core.identity.Credentials;
 import com.b2international.snowowl.core.identity.Token;
 import com.b2international.snowowl.core.identity.request.UserRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
-import com.b2international.snowowl.core.rest.RestApiError;
 import com.b2international.snowowl.snomed.cis.rest.model.EmptyJsonResponse;
 import com.b2international.snowowl.snomed.cis.rest.model.UserData;
 import com.google.common.base.Strings;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * @since 6.18
  */
-@Api(value = "Authentication", description="Authentication", tags = { "Authentication" })
+@Tag(description="Authentication", name = "Authentication")
 @RestController
 @RequestMapping(produces={ MediaType.APPLICATION_JSON_VALUE })
 public class CisAuthenticationService extends AbstractRestService {
@@ -53,14 +52,16 @@ public class CisAuthenticationService extends AbstractRestService {
 	@Autowired
 	private JWTVerifier jwtVerifier;
 	
-	@ApiOperation(value="Creates a session, obtaining a token for next operations.")
+	@Operation(
+		summary = "Creates a session, obtaining a token for next operations."
+	)
 	@ApiResponses({
-		@ApiResponse(code = 400, message = "Error", response = RestApiError.class),
-		@ApiResponse(code = 401, message = "Unauthorized", response = RestApiError.class)
+		@ApiResponse(responseCode = "400", description="Error"),
+		@ApiResponse(responseCode = "401", description="Unauthorized")
 	})
 	@PostMapping(value="/login")
 	public Token login(
-			@ApiParam(value = "The user credentials.", required = true) 
+			@Parameter(description = "The user credentials.", required = true) 
 			@RequestBody Credentials credentials) {
 		return UserRequests.prepareLogin()
 				.setUsername(credentials.getUsername())
@@ -70,26 +71,30 @@ public class CisAuthenticationService extends AbstractRestService {
 				.getSync();
 	}
 	
-	@ApiOperation(value="Closes a session, identified by the token.")
+	@Operation(
+		summary="Closes a session, identified by the token."
+	)
 	@ApiResponses({
-		@ApiResponse(code = 400, message = "Error", response = RestApiError.class)
+		@ApiResponse(responseCode = "400", description="Error")
 	})
 	@PostMapping(value="/logout")
 	public ResponseEntity<EmptyJsonResponse> logout(
-			@ApiParam(value = "The security access token.", required = true)
+			@Parameter(description = "The security access token.", required = true)
 			@RequestBody 
 			Token token) {
 		return new ResponseEntity<>(new EmptyJsonResponse(), HttpStatus.OK);
 	}
 	
-	@ApiOperation(value = "Validates a token, checking if it's assigned to a current session, and retrieves user data.")
+	@Operation(
+		summary = "Validates a token, checking if it's assigned to a current session, and retrieves user data."
+	)
 	@ApiResponses({
-		@ApiResponse(code = 400, message = "Error", response = RestApiError.class),
-		@ApiResponse(code = 401, message = "Unauthorized", response = RestApiError.class)
+		@ApiResponse(responseCode = "400", description="Error"),
+		@ApiResponse(responseCode = "401", description="Unauthorized")
 	})
 	@PostMapping(value="/authenticate")
 	public UserData authenticate(
-			@ApiParam(value = "The security access token.", required = true)
+			@Parameter(description = "The security access token.", required = true)
 			@RequestBody 
 			Token token) {
 		String username = verify(token.getToken());
