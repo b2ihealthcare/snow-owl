@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,20 +27,21 @@ import com.b2international.snowowl.core.identity.Token;
 import com.b2international.snowowl.core.identity.request.UserRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * @since 7.2
  */
-@Api(value = "Authorization", description = "Authorization", tags = "authorization")
+@Tag(name = "authorization", description = "Authorization")
 @RestController
-@RequestMapping(produces={ MediaType.APPLICATION_JSON_VALUE })
+@RequestMapping(produces={ AbstractRestService.JSON_MEDIA_TYPE })
 public class AuthorizationService extends AbstractRestService {
 
-	@PostMapping("/login")
+	@Operation
+	@PostMapping(value = "/login", consumes = { MediaType.APPLICATION_JSON_VALUE })
 	public Promise<Token> login(
-			@ApiParam(value = "The user credentials.", required = true) 
+			@io.swagger.v3.oas.annotations.parameters.RequestBody(description = "The user credentials.", required = true) 
 			@RequestBody Credentials credentials) {
 		return UserRequests.prepareLogin()
 				.setUsername(credentials.getUsername())

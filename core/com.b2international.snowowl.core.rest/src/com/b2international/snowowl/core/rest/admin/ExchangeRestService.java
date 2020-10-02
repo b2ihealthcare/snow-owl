@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,14 +38,14 @@ import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBui
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.rest.AbstractRestService;
-import com.b2international.snowowl.core.rest.RestApiError;
 import com.b2international.snowowl.core.rest.codesystem.CodeSystemVersionRestService;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import springfox.documentation.annotations.ApiIgnore;
 
 /**
  * RESTful service that exposes the content provisioning capabilities of the Snow Owl server
@@ -53,19 +53,22 @@ import io.swagger.annotations.ApiResponses;
  * 
  * @since 7.0
  */
-@Api("Exchange")
+@ApiIgnore
+@Tag(name = "exchange", description = "Exchange")
 @Controller
 @RequestMapping(
-		value="/exchange/{shortName}", 
-		produces={ AbstractRestService.JSON_MEDIA_TYPE })
+	value="/exchange/{shortName}", 
+	produces={ AbstractRestService.JSON_MEDIA_TYPE }
+)
 public class ExchangeRestService {
 	
-	@ApiOperation(
-			value="Exports a code system version",
-			notes="Exports the content of a code system version in the exchange format for syndication.")
+	@Operation(
+		summary = "Exports a code system version",
+		description = "Exports the content of a code system version in the exchange format for syndication."
+	)
 	@ApiResponses({
-		@ApiResponse(code=200, message="Export successful"),
-		@ApiResponse(code=404, message="Code system version not found")
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "404", description = "Not found")
 	})
 	@ResponseStatus(HttpStatus.OK)
 	@RequestMapping(
@@ -74,11 +77,13 @@ public class ExchangeRestService {
 			produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
 	@ResponseBody
 	public ResponseEntity<?> exportContent(
-			@ApiParam(value="The code system short name") @PathVariable(value="shortName") final String shortName,
-			@ApiParam(value="Code system version") @PathVariable(value="version") String version) throws Exception {
-		
-		System.out.println("Code system:" + shortName);
-		System.out.println("Version:" + version);
+			@Parameter(description = "The code system short name") 
+			@PathVariable(value = "shortName") 
+			final String shortName,
+			
+			@Parameter(description = "Code system version") 
+			@PathVariable(value="version") 
+			String version) throws Exception {
 		
 		URL url = getClass().getClassLoader()
 				.getResource("com/b2international/snowowl/api/rest/service_configuration.properties");
@@ -95,12 +100,13 @@ public class ExchangeRestService {
 		return new ResponseEntity<>(fileSystemResource, httpHeaders, HttpStatus.OK);
 	}
 	
-	@ApiOperation(
-			value="Imports a new code system version",
-			notes="Imports a new code system version provided in the exchange format")
+	@Operation(
+		summary="Imports a new code system version",
+		description="Imports a new code system version provided in the exchange format"
+	)
 	@ApiResponses({
-		@ApiResponse(code = 201, message = "Created", response = Void.class),
-		@ApiResponse(code = 404, message = "Code system not found", response = RestApiError.class)
+		@ApiResponse(responseCode = "201", description = "Created"),
+		@ApiResponse(responseCode = "404", description = "Not found")
 	})
 	@RequestMapping(value="/version/{versionId}",
 			method = RequestMethod.POST)

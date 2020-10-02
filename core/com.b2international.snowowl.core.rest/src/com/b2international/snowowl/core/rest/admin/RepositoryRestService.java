@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,29 +46,30 @@ import com.b2international.snowowl.core.locks.IOperationLockManager;
 import com.b2international.snowowl.core.locks.OperationLockException;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
-import com.b2international.snowowl.core.rest.RestApiError;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * Spring controller for exposing repository related administration functionalities.
+ * 
  * @since 7.0
  */
-@Api(value = "Repositories", description="Repositories", tags = { "repositories" })
+@Tag(name = "repositories", description = "Repositories")
 @RestController
 @RequestMapping(value = "/repositories") 
 public class RepositoryRestService extends AbstractRestService {
 	
-	@ApiOperation(
-			value="Retrieve all repositories",
-			notes="Retrieves all repositories that store terminology content.")
+	@Operation(
+		summary="Retrieve all repositories",
+		description="Retrieves all repositories that store terminology content."
+	)
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public @ResponseBody Promise<Repositories> getRepositories(
-			@ApiParam
+			@Parameter
 			@RequestParam(value="id", required=false)
 			String[] idFilter) {
 		return RepositoryRequests.prepareSearch()
@@ -78,36 +79,36 @@ public class RepositoryRestService extends AbstractRestService {
 				.execute(getBus());
 	}
 	
-	@ApiOperation(
-		value="Retrieve a repository",
-		notes="Retrieves a single repository by its identifier"
+	@Operation(
+		summary="Retrieve a repository",
+		description="Retrieves a single repository by its identifier"
 	)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK", response = Void.class),
-		@ApiResponse(code = 404, message = "Not found", response = RestApiError.class)
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "404", description = "Not found")
 	})
 	@GetMapping(value = "/{id}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public @ResponseBody Promise<RepositoryInfo> getRepository(
-			@ApiParam("The repository identifier")
+			@Parameter(description="The repository identifier")
 			@PathVariable("id")
 			String id) {
 		return RepositoryRequests.prepareGet(id).buildAsync().execute(getBus());
 	}
 	
-	@ApiOperation(
-			value="Lock all repositories",
-			notes="Places a global lock, which prevents other users from making changes to any of the repositories "
-					+ "while a backup is created. The call may block up to the specified timeout to acquire the lock; "
-					+ "if timeoutMillis is set to 0, it returns immediately.")
+	@Operation(
+		summary="Lock all repositories",
+		description="Places a global lock, which prevents other users from making changes to any of the repositories "
+				+ "while a backup is created. The call may block up to the specified timeout to acquire the lock; "
+				+ "if timeoutMillis is set to 0, it returns immediately.")
 	@ApiResponses({
-		@ApiResponse(code=204, message="Lock successful"),
-		@ApiResponse(code=409, message="Conflicting lock already taken"),
-		@ApiResponse(code=400, message="Illegal timeout value, or locking-related issue")
+		@ApiResponse(responseCode = "204", description="Lock successful"),
+		@ApiResponse(responseCode = "409", description="Conflicting lock already taken"),
+		@ApiResponse(responseCode = "400", description="Illegal timeout value, or locking-related issue")
 	})
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@PostMapping("/lock")
 	public void lockGlobal(
-			@ApiParam(value="lock timeout in milliseconds", defaultValue = "5000")
+			@Parameter(description="lock timeout in milliseconds")
 			@RequestParam(value="timeoutMillis", defaultValue="5000", required=false) 
 			final int timeoutMillis) {
 
@@ -120,12 +121,12 @@ public class RepositoryRestService extends AbstractRestService {
 		doLock(timeoutMillis, context, target);
 	}
 
-	@ApiOperation(
-			value="Unlock all repositories",
-			notes="Releases a previously acquired global lock.")
+	@Operation(
+		summary="Unlock all repositories",
+		description="Releases a previously acquired global lock.")
 	@ApiResponses({
-		@ApiResponse(code=204, message="Unlock successful"),
-		@ApiResponse(code=400, message="Unspecified unlock-related issue")
+		@ApiResponse(responseCode = "204", description = "Unlock successful"),
+		@ApiResponse(responseCode = "400", description = "Unspecified unlock-related issue")
 	})
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@PostMapping("/unlock")
@@ -135,25 +136,25 @@ public class RepositoryRestService extends AbstractRestService {
 		doUnlock(context, target);
 	}
 
-	@ApiOperation(
-			value="Lock single repository",
-			notes="Places a repository-level lock, which prevents other users from making changes to the specified repository. "
+	@Operation(
+		summary="Lock single repository",
+		description="Places a repository-level lock, which prevents other users from making changes to the specified repository. "
 					+ "The call may block up to the specified timeout to acquire the lock; if timeoutMillis is set to 0, "
 					+ "it returns immediately.")
 	@ApiResponses({
-		@ApiResponse(code=204, message="Lock successful"),
-		@ApiResponse(code=409, message="Conflicting lock already taken"),
-		@ApiResponse(code=404, message="Repository not found"),
-		@ApiResponse(code=400, message="Illegal timeout value, or locking-related issue")
+		@ApiResponse(responseCode = "204", description = "Lock successful"),
+		@ApiResponse(responseCode = "409", description = "Conflicting lock already taken"),
+		@ApiResponse(responseCode = "404", description = "Repository not found"),
+		@ApiResponse(responseCode = "400", description = "Illegal timeout value, or locking-related issue")
 	})
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@PostMapping("/{id}/lock")
 	public void lockRepository(
 			@PathVariable(value="id") 
-			@ApiParam(value="The repository id")
+			@Parameter(description = "The repository id")
 			final String id, 
 
-			@ApiParam(value="lock timeout in milliseconds", defaultValue = "5000")
+			@Parameter(description = "lock timeout in milliseconds")
 			@RequestParam(value="timeoutMillis", defaultValue="5000", required=false)
 			final int timeoutMillis) {
 		checkValidRepositoryUuid(id);
@@ -167,18 +168,19 @@ public class RepositoryRestService extends AbstractRestService {
 		doLock(timeoutMillis, context, target);
 	}
 
-	@ApiOperation(
-			value="Unlock single repository",
-			notes="Releases a previously acquired repository-level lock on the specified repository.")
+	@Operation(
+		summary="Unlock single repository",
+		description="Releases a previously acquired repository-level lock on the specified repository."
+	)
 	@ApiResponses({
-		@ApiResponse(code=204, message="Unlock successful"),
-		@ApiResponse(code=404, message="Repository not found"),
-		@ApiResponse(code=400, message="Unspecified unlock-related issue")
+		@ApiResponse(responseCode = "204", description = "Unlock successful"),
+		@ApiResponse(responseCode = "404", description = "Repository not found"),
+		@ApiResponse(responseCode = "400", description = "Unspecified unlock-related issue")
 	})
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@PostMapping("/{id}/unlock")
 	public void unlockRepository(
-			@ApiParam(value="The repository id")
+			@Parameter(description = "The repository id")
 			@PathVariable(value="id") 
 			final String repositoryUuid) {
 
