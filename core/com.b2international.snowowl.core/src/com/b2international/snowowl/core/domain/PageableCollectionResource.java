@@ -23,20 +23,23 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 /**
  * {@link CollectionResource} containing paging information like offset, limit and total.
  * 
  * @since 4.0
  */
-//@ApiModel("Pageable Collection")
+@Schema(name = "Pageable Collection")
 public class PageableCollectionResource<T> extends CollectionResource<T> {
 
+	@Schema(description = "The cursor to request next page of items")
 	private final String searchAfter;
 	
-//	@ApiModelProperty("The number of requested maximum items")
+	@Schema(description = "The number of requested maximum items")
 	private final int limit;
 	
-//	@ApiModelProperty("Total number of results available")
+	@Schema(description = "Total number of results available")
 	private final int total;
 
 	protected PageableCollectionResource(List<T> items, String searchAfter, int limit, int total) {

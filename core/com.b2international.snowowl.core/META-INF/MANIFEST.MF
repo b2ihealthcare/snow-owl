@@ -23,7 +23,9 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  com.b2international.snowowl.eventbus;visibility:=reexport,
  com.b2international.collections.jackson,
  org.apache.commons.codec;bundle-version="1.10.0",
- org.apache.commons.io;bundle-version="2.6.0"
+ org.apache.commons.io;bundle-version="2.6.0",
+ io.swagger.core.v3.swagger-annotations;bundle-version="2.1.4",
+ io.swagger.core.v3.swagger-models;bundle-version="2.1.4"
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ActivationPolicy: lazy
 Export-Package: com.auth0.jwt,

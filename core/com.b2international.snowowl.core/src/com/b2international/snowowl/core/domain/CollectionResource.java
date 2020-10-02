@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,16 +32,20 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 /**
  * Represents a collection resource in the RESTful API.
  * 
  * @since 4.0
  */
+@Schema(name = "Collection")
 @JsonInclude(Include.NON_NULL)
 public class CollectionResource<T> implements Serializable, Iterable<T> {
 
 	private static final long serialVersionUID = -840552452105348114L;
 	
+	@Schema(description = "The items in the collection")
 	private final List<T> items;
 
 	protected CollectionResource(List<T> items) {
