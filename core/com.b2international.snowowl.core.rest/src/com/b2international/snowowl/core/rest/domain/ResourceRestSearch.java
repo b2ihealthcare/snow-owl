@@ -18,24 +18,27 @@ package com.b2international.snowowl.core.rest.domain;
 import java.util.List;
 import java.util.Set;
 
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Parameter;
 
 /**
  * @since 7.3
  */
 public abstract class ResourceRestSearch {
 
-	@ApiParam(value = "The identifier(s) to match")
+	@Parameter(description = "The identifier(s) to match")
 	private Set<String> id;
 	
 	// scrolling/paging/expansion/sorting
-	@ApiParam(value = "Expansion parameters")
+	@Parameter(description = "Expansion parameters")
 	private String expand;
-	@ApiParam(value = "The search key to use for retrieving the next page of results")
+	
+	@Parameter(description = "The search key to use for retrieving the next page of results")
 	private String searchAfter;
-	@ApiParam(value = "Sort keys")
+	
+	@Parameter(description = "Sort keys")
 	private List<String> sort;
-	@ApiParam(value = "The maximum number of items to return", defaultValue = "50")
+	
+	@Parameter(description = "The maximum number of items to return")
 	private int limit = 50;
 
 	public final Set<String> getId() {

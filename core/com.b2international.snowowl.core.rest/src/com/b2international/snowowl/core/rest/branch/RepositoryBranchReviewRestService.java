@@ -32,19 +32,18 @@ import com.b2international.snowowl.core.branch.review.Review;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
-import com.b2international.snowowl.core.rest.RestApiError;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * Provides REST endpoints for computing Reviewerences between branches.
  * 
  * @since 4.2
  */
-@Api(value = "Branches", description = "Branches", tags = "branches")
+@Tag(description = "Branches", name = "branches")
 @RequestMapping(value="/reviews", produces={AbstractRestService.JSON_MEDIA_TYPE})
 public abstract class RepositoryBranchReviewRestService extends AbstractRestService {
 
@@ -55,13 +54,13 @@ public abstract class RepositoryBranchReviewRestService extends AbstractRestServ
 		this.repositoryId = repositoryId;
 	}
 	
-	@ApiOperation(
-		value = "Create new review", 
-		notes = "Creates a new terminology review for the SNOMED CT repository."
+	@Operation(
+		summary = "Create new review", 
+		description = "Creates a new terminology review for the SNOMED CT repository."
 	)
 	@ApiResponses({
-		@ApiResponse(code = 201, message = "Created"),
-		@ApiResponse(code = 400, message = "Bad Request", response=RestApiError.class)
+		@ApiResponse(responseCode = "201", description = "Created"),
+		@ApiResponse(responseCode = "400", description = "Bad Request")
 	})
 	@RequestMapping(method=RequestMethod.POST, consumes={AbstractRestService.JSON_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE})
 	@ResponseStatus(HttpStatus.CREATED)
@@ -80,13 +79,13 @@ public abstract class RepositoryBranchReviewRestService extends AbstractRestServ
 			});
 	}
 
-	@ApiOperation(
-		value = "Retrieve single review", 
-		notes = "Retrieves an existing terminology review with the specified identifier, if it exists."
+	@Operation(
+		summary = "Retrieve single review", 
+		description = "Retrieves an existing terminology review with the specified identifier, if it exists."
 	)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Review not found", response=RestApiError.class),
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "404", description = "Review not found"),
 	})
 	@RequestMapping(value="/{id}", method=RequestMethod.GET)
 	public Promise<Review> getReview(@PathVariable("id") final String reviewId) {
@@ -97,13 +96,13 @@ public abstract class RepositoryBranchReviewRestService extends AbstractRestServ
 			.execute(getBus());
 	}
 
-	@ApiOperation(
-		value = "Retrieve change set for review", 
-		notes = "Retrieves the set of created, changed and detached concepts for an existing review with the specified identifier, if it exists."
+	@Operation(
+		summary = "Retrieve change set for review", 
+		description = "Retrieves the set of created, changed and detached concepts for an existing review with the specified identifier, if it exists."
 	)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Review not found or changes are not yet available", response=RestApiError.class),
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "404", description = "Review not found or changes are not yet available"),
 	})
 	@RequestMapping(value="/{id}/concept-changes", method=RequestMethod.GET)
 	public Promise<ConceptChanges> getConceptChanges(@PathVariable("id") final String reviewId) {
@@ -114,13 +113,13 @@ public abstract class RepositoryBranchReviewRestService extends AbstractRestServ
 					.execute(getBus());
 	}
 
-	@ApiOperation(
-		value = "Delete single review", 
-		notes = "Deletes a review run along with its computed change set, if any of them exist."
+	@Operation(
+		summary = "Delete single review", 
+		description = "Deletes a review run along with its computed change set, if any of them exist."
 	)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Review not found", response=RestApiError.class),
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "404", description = "Review not found"),
 	})
 	@RequestMapping(value="/{id}", method=RequestMethod.DELETE)
 	@ResponseStatus(HttpStatus.NO_CONTENT)

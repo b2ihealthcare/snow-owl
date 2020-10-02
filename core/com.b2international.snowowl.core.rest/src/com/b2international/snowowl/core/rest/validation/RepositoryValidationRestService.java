@@ -35,7 +35,6 @@ import com.b2international.snowowl.core.jobs.RemoteJobEntry;
 import com.b2international.snowowl.core.jobs.RemoteJobs;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
 import com.b2international.snowowl.core.rest.AbstractRestService;
-import com.b2international.snowowl.core.rest.RestApiError;
 import com.b2international.snowowl.core.validation.ValidationRequests;
 import com.b2international.snowowl.core.validation.issue.ValidationIssue;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
@@ -45,19 +44,18 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.net.HttpHeaders;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-import springfox.documentation.annotations.ApiIgnore;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * Spring controller for exposing validation functionality.
  * 
  * @since 6.13
  */
-@Api(value = "Validations", description="Validations", tags = { "validations" })
+@Tag(description="Validations", name = "validations")
 @RequestMapping(value = "/validations", produces={ AbstractRestService.JSON_MEDIA_TYPE })
 public abstract class RepositoryValidationRestService extends AbstractRestService {
 	
@@ -71,11 +69,12 @@ public abstract class RepositoryValidationRestService extends AbstractRestServic
 		this.repositoryId = repositoryId;
 	}
 	
-	@ApiOperation(
-			value="Retrieve all validation runs from the termserver", 
-			notes="Returns a list of validations runs")
+	@Operation(
+		summary="Retrieve all validation runs from the termserver", 
+		description="Returns a list of validations runs"
+	)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK")
+		@ApiResponse(responseCode = "200", description="OK")
 	})
 	@GetMapping
 	public @ResponseBody Promise<RemoteJobs> getAllValidationRuns() {
@@ -92,20 +91,20 @@ public abstract class RepositoryValidationRestService extends AbstractRestServic
 			});
 	}
 	
-	@ApiOperation(
-			value="Start a validation on a branch",
-			notes = "Validation runs are async jobs. The call to this method immediately returns with a unique URL "
+	@Operation(
+		summary="Start a validation on a branch",
+		description = "Validation runs are async jobs. The call to this method immediately returns with a unique URL "
 					+ "pointing to the validation run.<p>The URL can be used to fetch the state of the validation "
 					+ "to determine whether it's completed or not.")
 	@ApiResponses({
-		@ApiResponse(code = 201, message = "Created"),
-		@ApiResponse(code = 404, message = "Branch or CodeSystem not found", response=RestApiError.class),
-		@ApiResponse(code = 409, message = "Validation job with the same id is already running", response=RestApiError.class)
+		@ApiResponse(responseCode = "201", description="Created"),
+		@ApiResponse(responseCode = "404", description="Branch or CodeSystem not found"),
+		@ApiResponse(responseCode = "409", description="Validation job with the same id is already running")
 	})
 	@PostMapping(consumes={ AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(value=HttpStatus.CREATED)
 	public ResponseEntity<Void> beginValidation(
-			@ApiParam(value="Validation parameters")
+			@Parameter(description="Validation parameters")
 			@RequestBody 
 			final ValidationRestInput validationInput) {
 
@@ -125,15 +124,16 @@ public abstract class RepositoryValidationRestService extends AbstractRestServic
 		return ResponseEntity.created(getResourceLocationURI(jobId)).build();
 	}
 	
-	@ApiOperation(
-			value="Retrieve the state of a validation run from branch")
+	@Operation(
+		summary="Retrieve the state of a validation run from branch"
+	)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Validation not found", response=RestApiError.class)
+		@ApiResponse(responseCode = "200", description="OK"),
+		@ApiResponse(responseCode = "404", description="Validation not found")
 	})
 	@GetMapping(value="/{validationId}")
 	public @ResponseBody Promise<RemoteJobEntry> getValidationRun(
-			@ApiParam(value="The validation identifier")
+			@Parameter(description="The validation identifier")
 			@PathVariable(value="validationId") 
 			final String validationId) {
 		return JobRequests.prepareGet(validationId)
@@ -141,27 +141,28 @@ public abstract class RepositoryValidationRestService extends AbstractRestServic
 				.execute(getBus());
 	}
 
-	@ApiOperation(
-			value="Retrieve the validation issues from a completed validation on a branch. Output may differ by the chosen content type.")
+	@Operation(
+		summary="Retrieve the validation issues from a completed validation on a branch. Output may differ by the chosen content type."
+	)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Branch not found", response=RestApiError.class)
+		@ApiResponse(responseCode = "200", description="OK"),
+		@ApiResponse(responseCode = "404", description="Branch not found")
 	})
 	@RequestMapping(value="/validations/{validationId}/issues", method=RequestMethod.GET, produces={ AbstractRestService.JSON_MEDIA_TYPE, AbstractRestService.CSV_MEDIA_TYPE })
 	public @ResponseBody Promise<Collection<Object>> getValidationResults(
-			@ApiParam(value="The unique validation identifier.")
+			@Parameter(description="The unique validation identifier.")
 			@PathVariable(value="validationId")
 			final String validationId,
 		
-			@ApiParam(value="The search key to use for retrieving the next page of results")
+			@Parameter(description="The search key to use for retrieving the next page of results")
 			@RequestParam(value="searchAfter", required=false) 
 			final String searchAfter,
 			
-			@ApiParam(value="The maximum number of items to return", defaultValue = "50")
+			@Parameter(description="The maximum number of items to return")
 			@RequestParam(value="limit", defaultValue="50", required=false)   
 			final int limit,
 			
-			@ApiIgnore
+			@Parameter(hidden = true)
 			@RequestHeader(value=HttpHeaders.ACCEPT, defaultValue=AbstractRestService.JSON_MEDIA_TYPE,  required=false)
 			final String contentType) {
 		final IEventBus bus = getBus();

@@ -17,22 +17,23 @@ package com.b2international.snowowl.core.rest.compare;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * @since 7.0
  */
 public final class CompareRestRequest {
 	
-	@ApiParam(required = true)
+	@Parameter(required = true)
 	@NotEmpty
 	private String baseBranch;
 	
-	@ApiParam(required = true)
+	@Parameter(required = true)
 	@NotEmpty
 	private String compareBranch;
 	
-	@ApiParam(required = false)
+	@Parameter(required = false)
 	private int limit = 50;
 	
 	public String getBaseBranch() {

@@ -37,19 +37,18 @@ import com.b2international.snowowl.core.branch.Branches;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
-import com.b2international.snowowl.core.rest.RestApiError;
 import com.google.common.collect.ImmutableList;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * @since 4.1
  */
-@Api(value = "Branches", description = "Branches", tags = "branches")
+@Tag(description = "Branches", name = "branches")
 @RequestMapping(value="/branches", produces={AbstractRestService.JSON_MEDIA_TYPE})
 public abstract class RepositoryBranchRestService extends AbstractRestService {
 
@@ -60,13 +59,13 @@ public abstract class RepositoryBranchRestService extends AbstractRestService {
 		this.repositoryId = repositoryId;
 	}
 	
-	@ApiOperation(
-		value = "Create a new branch", 
-		notes = "Create a new branch in the SNOMED CT repository."
+	@Operation(
+		summary = "Create a new branch", 
+		description = "Create a new branch in the SNOMED CT repository."
 	)
 	@ApiResponses({
-		@ApiResponse(code = 201, message = "Created"),
-		@ApiResponse(code = 400, message = "Bad Request", response=RestApiError.class)
+		@ApiResponse(responseCode = "201", description = "Created"),
+		@ApiResponse(responseCode = "400", description = "Bad Request")
 	})
 	@RequestMapping(method=RequestMethod.POST, consumes={AbstractRestService.JSON_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE})
 	@ResponseStatus(HttpStatus.CREATED)
@@ -84,12 +83,12 @@ public abstract class RepositoryBranchRestService extends AbstractRestService {
 					.then(success -> ResponseEntity.created(location).build()); 
 	}
 	
-	@ApiOperation(
-		value = "Retrieve all branches", 
-		notes = "Returns all SNOMED CT branches from the repository."
+	@Operation(
+		summary = "Retrieve all branches", 
+		description = "Returns all SNOMED CT branches from the repository."
 	)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK", response=Branches.class)
+		@ApiResponse(responseCode = "200", description = "OK")
 	})
 	@RequestMapping(method=RequestMethod.GET)
 	public Promise<Branches> searchBranches(
@@ -99,15 +98,15 @@ public abstract class RepositoryBranchRestService extends AbstractRestService {
 			@RequestParam(value="name", required=false)
 			final String[] names,
 			
-			@ApiParam(value = "The search key to use for retrieving the next page of results")
+			@Parameter(description = "The search key to use for retrieving the next page of results")
 			@RequestParam(value="searchAfter", required=false)
 			final String searchAfter,
 			
-			@ApiParam(value = "Sort keys")
+			@Parameter(description = "Sort keys")
 			@RequestParam(value="sort", required=false)
 			final List<String> sort,
 			
-			@ApiParam(value = "The maximum number of items to return", defaultValue = "50")
+			@Parameter(description = "The maximum number of items to return")
 			@RequestParam(value="limit", defaultValue="50", required=false) 
 			final int limit) {
 		return RepositoryRequests
@@ -122,13 +121,13 @@ public abstract class RepositoryBranchRestService extends AbstractRestService {
 					.execute(getBus());
 	}
 	
-	@ApiOperation(
-		value = "Retrieve children of a single branch", 
-		notes = "Returns the children of a single SNOMED CT branch (both direct and transitive)."
+	@Operation(
+		summary = "Retrieve children of a single branch", 
+		description = "Returns the children of a single SNOMED CT branch (both direct and transitive)."
 	)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK", response=Branches.class),
-		@ApiResponse(code = 404, message = "Not Found", response=RestApiError.class),
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "404", description = "Not Found"),
 	})
 	@RequestMapping(value="/{path:**}/children", method=RequestMethod.GET)
 	public Promise<Branches> getChildren(@PathVariable("path") String branchPath) {
@@ -141,13 +140,13 @@ public abstract class RepositoryBranchRestService extends AbstractRestService {
 					.then(Branch::getChildren);
 	}
 	
-	@ApiOperation(
-		value = "Retrieve a single branch", 
-		notes = "Returns a SNOMED CT branch."
+	@Operation(
+		summary = "Retrieve a single branch", 
+		description = "Returns a SNOMED CT branch."
 	)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Not Found", response=RestApiError.class),
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "404", description = "Not Found"),
 	})
 	@GetMapping("/{path:**}")
 	public Promise<Branch> getBranch(@PathVariable("path") String branchPath) {
@@ -158,17 +157,17 @@ public abstract class RepositoryBranchRestService extends AbstractRestService {
 					.execute(getBus());
 	}
 	
-	@ApiOperation(
-		value = "Delete a branch", 
-		notes = "Deletes a branch and all its children."
+	@Operation(
+		summary = "Delete a branch", 
+		description = "Deletes a branch and all its children."
 				+ "<p>"
 				+ "Note that deleted branch are still available and will be listed in <b>GET /branches</b> but with the flag <b>deleted</b> set to <i>true</i>. "
 				+ "The API will return <strong>HTTP 400</strong> responses, if clients send requests to <strong>deleted</strong> branches."
 				+ "</p>"
 	)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Not Found", response=RestApiError.class),
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "404", description = "Not Found"),
 	})
 	@DeleteMapping("/{path:**}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
@@ -181,15 +180,15 @@ public abstract class RepositoryBranchRestService extends AbstractRestService {
 					.then(success -> ResponseEntity.noContent().build());
 	}
 	
-	@ApiOperation(
-		value = "Update a branch", 
-		notes = "Updates a branch"
+	@Operation(
+		summary = "Update a branch", 
+		description = "Updates a branch"
 				+ "<p>"
 				+ "The endpoint allows clients to update any metadata properties, other properties are immutable."
 				+ "</p>")
 	@ApiResponses({
-		@ApiResponse(code = 204, message = "No Content"),
-		@ApiResponse(code = 404, message = "Not Found", response=RestApiError.class),
+		@ApiResponse(responseCode = "204", description = "No Content"),
+		@ApiResponse(responseCode = "404", description = "Not Found"),
 	})
 	@PutMapping(value="/{path:**}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)

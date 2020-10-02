@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,8 @@ import java.util.Map;
 import com.b2international.commons.exceptions.ApiError;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * {@link RestApiError} represents a generic multi purpose user AND developer friendly error/exception representation, which should be used in all
@@ -28,22 +29,24 @@ import io.swagger.annotations.ApiParam;
  * 
  * @since 3.7
  */
-//@ApiModel("Error Response")
-public class RestApiError implements ApiError {
+@Schema(name = "Error Response")
+public final class RestApiError implements ApiError {
 
-	@ApiParam(required = true)
+	private static final long serialVersionUID = 1L;
+
+	@Parameter(required = true)
 	private int status;
 
-	@ApiParam(required = false)
+	@Parameter(required = false)
 	private Integer code;
 
-	@ApiParam(required = true)
+	@Parameter(required = true)
 	private String message = "Request failed";
 
-	@ApiParam(required = true)
+	@Parameter(required = true)
 	private String developerMessage;
 
-	@ApiParam(required = false, hidden = true)
+	@Parameter(required = false, hidden = true)
 	private Map<String, Object> additionalInformation;
 
 	private RestApiError() {

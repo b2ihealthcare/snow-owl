@@ -28,17 +28,16 @@ import com.b2international.snowowl.core.branch.compare.BranchCompareResult;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
-import com.b2international.snowowl.core.rest.RestApiError;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * @since 7.0
  */
-@Api(value = "Compare", description = "Compare", tags = "compare")
+@Tag(description = "Compare", name = "compare")
 @RequestMapping(value = "/compare")
 public abstract class RepositoryBranchCompareRestService extends AbstractRestService {
 	
@@ -49,13 +48,13 @@ public abstract class RepositoryBranchCompareRestService extends AbstractRestSer
 		this.repositoryId = repositoryId;
 	}
 	
-	@ApiOperation(
-		value = "Compare two branches", 
-		notes = "Returns the new, changed and deleted components of two branches"
+	@Operation(
+		summary = "Compare two branches", 
+		description = "Returns the new, changed and deleted components of two branches"
 	)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 400, message = "Bad Request", response=RestApiError.class)
+		@ApiResponse(responseCode = "200", description="OK"),
+		@ApiResponse(responseCode = "400", description="Bad Request")
 	})
 	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE }, produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.OK)
