@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,18 +33,17 @@ import com.b2international.commons.validation.ApiValidation;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersion;
 import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.core.rest.AbstractRestService;
-import com.b2international.snowowl.core.rest.RestApiError;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * @since 1.0
  */
-@Api(value = "CodeSystem", description="Code Systems", tags = { "code-systems" })
+@Tag(description="CodeSystems", name = "codesystems")
 @RestController
 @RequestMapping(value = "/codesystems/{shortName}/versions")
 public class CodeSystemVersionRestService extends AbstractRestService {
@@ -52,59 +51,61 @@ public class CodeSystemVersionRestService extends AbstractRestService {
 	@Autowired
 	protected CodeSystemVersionService codeSystemVersionService;
 
-	@ApiOperation(
-			value="Retrieve all code system versions",
-			notes="Returns a list containing all released code system versions for the specified code system.")
+	@Operation(
+		summary="Retrieve all Code System versions",
+		description="Returns a list containing all released Code System versions for the specified Code System."
+	)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Code system not found", response = RestApiError.class)
+		@ApiResponse(responseCode = "200", description="OK"),
+		@ApiResponse(responseCode = "404", description="Code System not found")
 	})
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public CollectionResource<CodeSystemVersion> getAllCodeSystemVersionsByShortName(
-			@ApiParam(value="The code system short name")
+			@Parameter(description="The Code System short name")
 			@PathVariable(value="shortName") final String shortName) {
 
 		return CollectionResource.of(codeSystemVersionService.getCodeSystemVersions(shortName));
 	}
 
-	@ApiOperation(
-			value="Retrieve code system version by identifier",
-			notes="Returns a released code system version for the specified code system with the given version identifier.")
+	@Operation(
+		summary="Retrieve Code System version by identifier",
+		description="Returns a released Code System version for the specified Code System with the given version identifier."
+	)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Code system or version not found", response = RestApiError.class)
+		@ApiResponse(responseCode = "200", description="OK"),
+		@ApiResponse(responseCode = "404", description="Code System or version not found")
 	})
 	@GetMapping(value = "/{version}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public CodeSystemVersion getCodeSystemVersionByShortNameAndVersionId(
-			@ApiParam(value="The code system short name")
+			@Parameter(description="The Code System short name")
 			@PathVariable(value="shortName") 
 			final String shortName,
 			
-			@ApiParam(value="The code system version")
+			@Parameter(description="The Code System version")
 			@PathVariable(value="version") 
 			final String version) {
 
 		return codeSystemVersionService.getCodeSystemVersionById(shortName, version);
 	}
 	
-	@ApiOperation(
-			value="Create a new code system version",
-			notes="Creates a new code system version in the specified terminology.  "
+	@Operation(
+			summary="Create a new Code System version",
+			description="Creates a new Code System version in the specified terminology.  "
 					+ "The version tag (represented by an empty branch) is created on the specified parent branch. "
 					+ "Where applicable, effective times are set on the unpublished content as part of this operation.")
 	@ApiResponses({
-		@ApiResponse(code = 201, message = "Created"),
-		@ApiResponse(code = 404, message = "Not found", response = RestApiError.class),
-		@ApiResponse(code = 409, message = "Code system version conflicts with existing branch", response = RestApiError.class)
+		@ApiResponse(responseCode = "201", description="Created"),
+		@ApiResponse(responseCode = "404", description="Not found"),
+		@ApiResponse(responseCode = "409", description="Code System version conflicts with existing branch")
 	})
 	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(value = HttpStatus.CREATED)
 	public ResponseEntity<Void> createVersion(
-			@ApiParam(value="The code system short name")
+			@Parameter(description="The Code System short name")
 			@PathVariable(value="shortName") 
 			final String shortName, 
 			
-			@ApiParam(value="Version parameters")
+			@Parameter(description="Version parameters")
 			@RequestBody final VersionInput input) {
 		ApiValidation.checkInput(input);
 		final CodeSystemVersion version = codeSystemVersionService.createVersion(shortName, input);
