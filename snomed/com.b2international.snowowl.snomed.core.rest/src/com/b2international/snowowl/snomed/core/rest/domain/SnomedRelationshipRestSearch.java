@@ -17,41 +17,41 @@ package com.b2international.snowowl.snomed.core.rest.domain;
 
 import com.b2international.snowowl.core.rest.domain.ResourceRestSearch;
 
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Parameter;
 
 /**
  * @since 6.16
  */
 public final class SnomedRelationshipRestSearch extends ResourceRestSearch {
 
-	@ApiParam(value = "The effective time to match (yyyyMMdd, exact matches only)")
+	@Parameter(description = "The effective time to match (yyyyMMdd, exact matches only)")
 	private String effectiveTime;
 
-	@ApiParam(value = "The status to match")
+	@Parameter(description = "The status to match")
 	private Boolean active;
 
-	@ApiParam(value = "The module identifier to match")
+	@Parameter(description = "The module identifier to match")
 	private String module;
 
-	@ApiParam(value = "The namespace to match")
+	@Parameter(description = "The namespace to match")
 	private String namespace;
 
-	@ApiParam(value = "The source concept to match")
+	@Parameter(description = "The source concept to match")
 	private String source;
 
-	@ApiParam(value = "The type concept to match")
+	@Parameter(description = "The type concept to match")
 	private String type;
 
-	@ApiParam(value = "The destination concept to match")
+	@Parameter(description = "The destination concept to match")
 	private String destination;
 
-	@ApiParam(value = "The characteristic type to match")
+	@Parameter(description = "The characteristic type to match")
 	private String characteristicType;
 
-	@ApiParam(value = "The group to match")
+	@Parameter(description = "The group to match")
 	private Integer group;
 
-	@ApiParam(value = "The union group to match")
+	@Parameter(description = "The union group to match")
 	private Integer unionGroup;
 
 	public String getEffectiveTime() {

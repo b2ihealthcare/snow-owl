@@ -17,50 +17,50 @@ package com.b2international.snowowl.snomed.core.rest.domain;
 
 import com.b2international.snowowl.core.rest.domain.ResourceRestSearch;
 
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Parameter;
 
 /**
  * @since 6.16
  */
 public final class SnomedDescriptionRestSearch extends ResourceRestSearch {
 
-	@ApiParam(value = "The effective time to match (yyyyMMdd, exact matches only)")
+	@Parameter(description = "The effective time to match (yyyyMMdd, exact matches only)")
 	private String effectiveTime;
 
-	@ApiParam(value = "The status to match")
+	@Parameter(description = "The status to match")
 	private Boolean active;
 
-	@ApiParam(value = "The module identifier to match")
+	@Parameter(description = "The module identifier to match")
 	private String module;
 
-	@ApiParam(value = "The namespace to match")
+	@Parameter(description = "The namespace to match")
 	private String namespace;
 
-	@ApiParam(value = "The term to match")
+	@Parameter(description = "The term to match")
 	private String term;
 
-	@ApiParam(value = "The concept ECL expression to match")
+	@Parameter(description = "The concept ECL expression to match")
 	private String concept;
 
-	@ApiParam(value = "The language code to match")
+	@Parameter(description = "The language code to match")
 	private String[] languageCode;
 
-	@ApiParam(value = "The type ECL expression to match")
+	@Parameter(description = "The type ECL expression to match")
 	private String type;
 
-	@ApiParam(value = "The case significance ECL expression to match")
+	@Parameter(description = "The case significance ECL expression to match")
 	private String caseSignificance;
 
-	@ApiParam(value = "Semantic tag(s) to match")
+	@Parameter(description = "Semantic tag(s) to match")
 	private String[] semanticTag;
 
-	@ApiParam(value = "Acceptable membership to match in these language refsets")
+	@Parameter(description = "Acceptable membership to match in these language refsets")
 	private String[] acceptableIn;
 
-	@ApiParam(value = "Preferred membership to match in these language refsets")
+	@Parameter(description = "Preferred membership to match in these language refsets")
 	private String[] preferredIn;
 
-	@ApiParam(value = "Any membership to match in these language refsets")
+	@Parameter(description = "Any membership to match in these language refsets")
 	private String[] languageRefSet;
 
 	public String getEffectiveTime() {

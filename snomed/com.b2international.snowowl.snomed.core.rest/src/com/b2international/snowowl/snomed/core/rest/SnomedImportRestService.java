@@ -38,24 +38,23 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import com.b2international.snowowl.core.rest.AbstractRestService;
-import com.b2international.snowowl.core.rest.RestApiError;
 import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedImportDetails;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedImportRestConfiguration;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedImportStatus;
 import com.b2international.snowowl.snomed.core.rest.services.SnomedRf2ImportService;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * @since 1.0
  * @deprecated - refactored and redesigned - see {@link SnomedRf2ImportRestService} - to eliminate the necessity of a memory stored object {@link ISnomedImportConfiguration}
  */
-@Api(value = "Imports (deprecated)", description="Imports (deprecated)", tags = "imports (deprecated)")
+@Tag(description="Imports (deprecated)", name = "imports (deprecated)")
 @RestController
 @RequestMapping(value = "/imports")
 public class SnomedImportRestService extends AbstractSnomedRestService {
@@ -67,21 +66,21 @@ public class SnomedImportRestService extends AbstractSnomedRestService {
 		super(Collections.emptySet());
 	}
 	
-	@ApiOperation(
-		value="Import SNOMED CT content", 
-		notes="Configures processes to import RF2 based archives. The configured process will wait until the archive actually uploaded via the <em>/archive</em> endpoint. "
+	@Operation(
+		summary="Import SNOMED CT content", 
+		description="Configures processes to import RF2 based archives. The configured process will wait until the archive actually uploaded via the <em>/archive</em> endpoint. "
 				+ "The actual import process will start after the file upload completed. Note: unpublished components (with no value entered in the 'effectiveTime' column) are "
 				+ "only allowed in DELTA import mode."
 	)
 	@ApiResponses({
-		@ApiResponse(code = 201, message = "Created"),
-		@ApiResponse(code = 404, message = "Code system version not found"),
-		@ApiResponse(code = 404, message = "Task not found", response = RestApiError.class),
+		@ApiResponse(responseCode = "201", description="Created"),
+		@ApiResponse(responseCode = "404", description="Code system version not found"),
+		@ApiResponse(responseCode = "404", description="Task not found"),
 	})
 	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.CREATED)
 	public ResponseEntity<Void> create(
-			@ApiParam(value = "Import parameters")
+			@Parameter(description = "Import parameters")
 			@RequestBody 
 			final SnomedImportRestConfiguration importConfiguration) {
 
@@ -89,57 +88,57 @@ public class SnomedImportRestService extends AbstractSnomedRestService {
 		return ResponseEntity.created(MvcUriComponentsBuilder.fromMethodName(SnomedImportRestService.class, "getImportDetails", importId).build().toUri()).build();
 	}
 
-	@ApiOperation(
-		value="Retrieve import run details", 
-		notes="Returns the specified import run's configuration and status."
+	@Operation(
+		summary = "Retrieve import run details", 
+		description = "Returns the specified import run's configuration and status."
 	)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Code system version or import not found", response = RestApiError.class),
+		@ApiResponse(responseCode = "200", description="OK"),
+		@ApiResponse(responseCode = "404", description="Code system version or import not found"),
 	})
 	@GetMapping(value = "/{importId}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public SnomedImportDetails getImportDetails(
-			@ApiParam(value = "The import identifier")
+			@Parameter(description = "The import identifier")
 			@PathVariable(value="importId") 
 			final UUID importId) {
 
 		return convertToDetails(importId, delegate.getImportDetails(importId));
 	}
 	
-	@ApiOperation(
-		value="Delete import run", 
-		notes="Removes a pending or finished import configuration from the server."
+	@Operation(
+		summary = "Delete import run", 
+		description = "Removes a pending or finished import configuration from the server."
 	)
 	@ApiResponses({
-		@ApiResponse(code = 204, message = "Delete successful"),
-		@ApiResponse(code = 404, message = "Code system version or import not found", response = RestApiError.class),
+		@ApiResponse(responseCode = "204", description="Delete successful"),
+		@ApiResponse(responseCode = "404", description="Code system version or import not found"),
 	})
 	@DeleteMapping(value="/{importId}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void deleteImportDetails(
-			@ApiParam(value = "The import identifier")
+			@Parameter(description = "The import identifier")
 			@PathVariable(value="importId") 
 			final UUID importId) {
 		
 		delegate.deleteImportDetails(importId);
 	}
 	
-	@ApiOperation(
-		value="Upload archive file and start the import", 
-		notes="Removes a pending or finished import configuration from the server."
+	@Operation(
+		summary = "Upload archive file and start the import", 
+		description = "Removes a pending or finished import configuration from the server."
 	)
 	@ApiResponses({
-		@ApiResponse(code = 204, message = "No content"),
-		@ApiResponse(code = 404, message = "Code system version or import not found", response = RestApiError.class),
+		@ApiResponse(responseCode = "204", description="No content"),
+		@ApiResponse(responseCode = "404", description="Code system version or import not found"),
 	})
 	@PostMapping(value="/{importId}/archive", consumes = { AbstractRestService.MULTIPART_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void startImport(
-			@ApiParam(value = "The import identifier")
+			@Parameter(description = "The import identifier")
 			@PathVariable(value="importId") 
 			final UUID importId,
 			
-			@ApiParam(value = "RF2 import archive")
+			@Parameter(description = "RF2 import archive")
 			@RequestPart("file") 
 			final MultipartFile file) {
 		
