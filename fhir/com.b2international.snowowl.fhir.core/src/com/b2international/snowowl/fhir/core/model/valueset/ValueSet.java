@@ -37,7 +37,7 @@ import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * A value set contains a set of codes from those defined by one or more code systems to specify which codes can be used in a particular context.
@@ -51,7 +51,7 @@ import io.swagger.annotations.ApiModel;
  * @see <a href="https://www.hl7.org/fhir/valueset.html">FHIR:ValueSet</a>
  * @since 6.3
  */
-@ApiModel("ValueSet")
+@Schema(name = "ValueSet")
 @JsonFilter(FhirBeanPropertyFilter.FILTER_NAME)
 public class ValueSet extends MetadataResource {
 	

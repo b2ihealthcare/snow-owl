@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,6 @@
  * limitations under the License.
  */
 package com.b2international.snowowl.fhir.rest;
-
-import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
-import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
-import static java.net.HttpURLConnection.HTTP_OK;
 
 import java.text.ParseException;
 import java.util.Collection;
@@ -42,7 +38,6 @@ import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.Entry;
-import com.b2international.snowowl.fhir.core.model.OperationOutcome;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest.Builder;
@@ -57,11 +52,11 @@ import com.b2international.snowowl.fhir.core.search.SearchRequestParameters;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * Code system resource REST endpoint.
@@ -77,7 +72,7 @@ import io.swagger.annotations.ApiResponses;
  * @since 6.4
  * 
  */
-@Api(value = "CodeSystem", description="FHIR CodeSystem Resource", tags = { "CodeSystem" })
+@Tag(description="FHIR CodeSystem Resource", name = "CodeSystem")
 @RestController //no need for method level @ResponseBody annotations
 @RequestMapping(value="/CodeSystem", produces = { BaseFhirResourceRestService.APPLICATION_FHIR_JSON })
 public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeSystem> {
@@ -87,11 +82,12 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 	 * @param parameters - request parameters
 	 * @return bundle of code systems
 	 */
-	@ApiOperation(
-			value="Retrieve all code systems",
-			notes="Returns a collection of the supported code systems.")
+	@Operation(
+		summary="Retrieve all code systems",
+		description="Returns a collection of the supported code systems."
+	)
 	@ApiResponses({
-		@ApiResponse(code = HTTP_OK, message = "OK")
+		@ApiResponse(responseCode = "200", description="OK")
 	})
 	@GetMapping
 	public Bundle getCodeSystems(@RequestParam(required=false) MultiValueMap<String, String> parameters) {
@@ -136,14 +132,14 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 	 * @param parameters - request parameters
 	 * @return
 	 */
-	@ApiOperation(
-			response=CodeSystem.class,
-			value="Retrieve the code system by id",
-			notes="Retrieves the code system specified by its logical id.")
+	@Operation(
+		summary = "Retrieve the code system by id",
+		description = "Retrieves the code system specified by its logical id."
+	)
 	@ApiResponses({
-		@ApiResponse(code = HTTP_OK, message = "OK"),
-		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
-		@ApiResponse(code = HTTP_NOT_FOUND, message = "Code system not found", response = OperationOutcome.class)
+		@ApiResponse(responseCode = "200", description="OK"),
+		@ApiResponse(responseCode = "400", description="Bad request"),
+		@ApiResponse(responseCode = "404", description="Code system not found")
 	})
 	@RequestMapping(value="/{codeSystemId:**}", method=RequestMethod.GET)
 	public MappingJacksonValue getCodeSystem(@PathVariable("codeSystemId") String codeSystemId, 
@@ -167,25 +163,26 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 	 * @param properties
 	 * @throws ParseException 
 	 */
-	@ApiOperation(
-			value="Concept lookup and decomposition",
-			notes="Given a code/version/system, or a Coding, get additional details about the concept.")
+	@Operation(
+		summary="Concept lookup and decomposition",
+		description="Given a code/version/system, or a Coding, get additional details about the concept."
+	)
 	@ApiResponses({
-		@ApiResponse(code = HTTP_OK, message = "OK"),
-		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
-		@ApiResponse(code = HTTP_NOT_FOUND, message = "Code system not found", response = OperationOutcome.class)
+		@ApiResponse(responseCode = "200", description="OK"),
+		@ApiResponse(responseCode = "400", description="Bad request"),
+		@ApiResponse(responseCode = "404", description="Code system not found")
 	})
 	@RequestMapping(value="/$lookup", method=RequestMethod.GET)
 	public Parameters.Fhir lookup(
 		
-		@ApiParam(value="The code to look up") @RequestParam(value="code") final String code,
-		@ApiParam(value="The code system's uri") @RequestParam(value="system") final String system,
-		@ApiParam(value="The code system version") @RequestParam(value="version") final Optional<String> version,
-		@ApiParam(value="Lookup date in datetime format") @RequestParam(value="date") final Optional<String> date,
-		@ApiParam(value="Language code for display") @RequestParam(value="displayLanguage") final Optional<String> displayLanguage,
+		@Parameter(description="The code to look up") @RequestParam(value="code") final String code,
+		@Parameter(description="The code system's uri") @RequestParam(value="system") final String system,
+		@Parameter(description="The code system version") @RequestParam(value="version") final Optional<String> version,
+		@Parameter(description="Lookup date in datetime format") @RequestParam(value="date") final Optional<String> date,
+		@Parameter(description="Language code for display") @RequestParam(value="displayLanguage") final Optional<String> displayLanguage,
 		
 		//Collection binding does not work with Optional!! (Optional<Set<String>> properties does not get populated with multiple properties, only the first one is present!)
-		@ApiParam(value="Properties to return in the output") @RequestParam(value="property", required = false) Set<String> properties) {
+		@Parameter(description="Properties to return in the output") @RequestParam(value="property", required = false) Set<String> properties) {
 		
 		Builder builder = LookupRequest.builder()
 			.code(code)
@@ -216,16 +213,20 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 	 * All parameters are in the request body.
 	 * @param in - FHIR parameters
 	 */
-	@ApiOperation(value="Concept lookup and decomposition", notes="Given a code/version/system, or a Coding, get additional details about the concept.")
+	@Operation(
+		summary="Concept lookup and decomposition", 
+		description="Given a code/version/system, or a Coding, get additional details about the concept."
+	)
 	@ApiResponses({
-		@ApiResponse(code = HTTP_OK, message = "OK"),
-		@ApiResponse(code = HTTP_NOT_FOUND, message = "Not found", response = OperationOutcome.class),
-		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class)
+		@ApiResponse(responseCode = "200", description="OK"),
+		@ApiResponse(responseCode = "400", description="Bad request"),
+		@ApiResponse(responseCode = "404", description="Not found")
 	})
 	@RequestMapping(value="/$lookup", method=RequestMethod.POST, consumes = BaseFhirResourceRestService.APPLICATION_FHIR_JSON)
 	public Parameters.Fhir lookup(
-			@ApiParam(name = "body", value = "The lookup request parameters")
-			@RequestBody Parameters.Fhir in) {
+			@Parameter(name = "body", description = "The lookup request parameters")
+			@RequestBody 
+			Parameters.Fhir in) {
 		
 		final LookupRequest req = toRequest(in, LookupRequest.class);
 		
@@ -236,20 +237,21 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 	/*
 	 * Subsumes GET method with no codeSystemId and parameters
 	 */
-	@ApiOperation(
-			value="Subsumption testing",
-			notes="Test the subsumption relationship between code/Coding A and code/Coding B given the semantics of subsumption in the underlying code system (see hierarchyMeaning).")
+	@Operation(
+		summary="Subsumption testing",
+		description="Test the subsumption relationship between code/Coding A and code/Coding B given the semantics of subsumption in the underlying code system (see hierarchyMeaning)."
+	)
 	@ApiResponses({
-		@ApiResponse(code = HTTP_OK, message = "OK"),
-		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
-		@ApiResponse(code = HTTP_NOT_FOUND, message = "Code system not found", response = OperationOutcome.class)
+		@ApiResponse(responseCode = "200", description="OK"),
+		@ApiResponse(responseCode = "400", description="Bad request"),
+		@ApiResponse(responseCode = "404", description="Code system not found")
 	})
 	@RequestMapping(value="/$subsumes", method=RequestMethod.GET)
 	public Parameters.Fhir subsumes(
-			@ApiParam(value="The \"A\" code that is to be tested") @RequestParam(value="codeA") final String codeA,
-			@ApiParam(value="The \"B\" code that is to be tested") @RequestParam(value="codeB") final String codeB,
-			@ApiParam(value="The code system's uri") @RequestParam(value="system") final String system,
-			@ApiParam(value="The code system version") @RequestParam(value="version", required=false) final String version) {
+			@Parameter(description="The \"A\" code that is to be tested") @RequestParam(value="codeA") final String codeA,
+			@Parameter(description="The \"B\" code that is to be tested") @RequestParam(value="codeB") final String codeB,
+			@Parameter(description="The code system's uri") @RequestParam(value="system") final String system,
+			@Parameter(description="The code system version") @RequestParam(value="version", required=false) final String version) {
 		
 		validateSubsumptionRequest(codeA, codeB, system, version);
 		
@@ -269,21 +271,22 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 	/*
 	 * Subsumes GET method with codeSystemId and parameters
 	 */
-	@ApiOperation(
-			value="Subsumption testing",
-			notes="Test the subsumption relationship between code/Coding A and code/Coding B given the semantics of subsumption in the underlying code system (see hierarchyMeaning).")
+	@Operation(
+		summary="Subsumption testing",
+		description="Test the subsumption relationship between code/Coding A and code/Coding B given the semantics of subsumption in the underlying code system (see hierarchyMeaning)."
+	)
 	@ApiResponses({
-		@ApiResponse(code = HTTP_OK, message = "OK"),
-		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
-		@ApiResponse(code = HTTP_NOT_FOUND, message = "Code system not found", response = OperationOutcome.class)
+		@ApiResponse(responseCode = "200", description="OK"),
+		@ApiResponse(responseCode = "400", description="Bad request"),
+		@ApiResponse(responseCode = "404", description="Code system not found")
 	})
 	@RequestMapping(value="{codeSystemId:**}/$subsumes", method=RequestMethod.GET)
 	public Parameters.Fhir subsumes(
-			@ApiParam(value="The id of the code system to invoke the operation on") 	@PathVariable("codeSystemId") String codeSystemId,
-			@ApiParam(value="The \"A\" code that is to be tested") @RequestParam(value="codeA") final String codeA,
-			@ApiParam(value="The \"B\" code that is to be tested") @RequestParam(value="codeB") final String codeB,
-			@ApiParam(value="The code system's uri") @RequestParam(value="system") final String system,
-			@ApiParam(value="The code system version") @RequestParam(value="version", required=false) final String version	) {
+			@Parameter(description="The id of the code system to invoke the operation on") 	@PathVariable("codeSystemId") String codeSystemId,
+			@Parameter(description="The \"A\" code that is to be tested") @RequestParam(value="codeA") final String codeA,
+			@Parameter(description="The \"B\" code that is to be tested") @RequestParam(value="codeB") final String codeB,
+			@Parameter(description="The code system's uri") @RequestParam(value="system") final String system,
+			@Parameter(description="The code system version") @RequestParam(value="version", required=false) final String version	) {
 		
 		validateSubsumptionRequest(codeSystemId, codeA, codeB, system, version);
 		
@@ -303,15 +306,18 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 	/*
 	 * Subsumes POST method without codeSystemId and body
 	 */
-	@ApiOperation(value="Subsumption testing", notes="Test the subsumption relationship between code/Coding A and code/Coding B given the semantics of subsumption in the underlying code system (see hierarchyMeaning).")
+	@Operation(
+		summary="Subsumption testing", 
+		description="Test the subsumption relationship between code/Coding A and code/Coding B given the semantics of subsumption in the underlying code system (see hierarchyMeaning)."
+	)
 	@ApiResponses({
-		@ApiResponse(code = HTTP_OK, message = "OK"),
-		@ApiResponse(code = HTTP_NOT_FOUND, message = "Not found", response = OperationOutcome.class),
-		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class)
+		@ApiResponse(responseCode = "200", description="OK"),
+		@ApiResponse(responseCode = "400", description="Bad request"),
+		@ApiResponse(responseCode = "404", description="Not found")
 	})
 	@RequestMapping(value="/$subsumes", method=RequestMethod.POST, consumes = BaseFhirResourceRestService.APPLICATION_FHIR_JSON)
 	public Parameters.Fhir subsumes(
-			@ApiParam(name = "body", value = "The lookup request parameters")
+			@Parameter(name = "body", description = "The lookup request parameters")
 			@RequestBody Parameters.Fhir in) {
 		
 		SubsumptionRequest request = toRequest(in, SubsumptionRequest.class);
@@ -326,16 +332,19 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 	/*
 	 * Subsumes POST method with code system as path parameter
 	 */
-	@ApiOperation(value="Subsumption testing", notes="Test the subsumption relationship between code/Coding A and code/Coding B given the semantics of subsumption in the underlying code system (see hierarchyMeaning).")
+	@Operation(
+		summary = "Subsumption testing", 
+		description="Test the subsumption relationship between code/Coding A and code/Coding B given the semantics of subsumption in the underlying code system (see hierarchyMeaning)."
+	)
 	@ApiResponses({
-		@ApiResponse(code = HTTP_OK, message = "OK"),
-		@ApiResponse(code = HTTP_NOT_FOUND, message = "Not found", response = OperationOutcome.class),
-		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class)
+		@ApiResponse(responseCode = "200", description="OK"),
+		@ApiResponse(responseCode = "400", description="Bad request"),
+		@ApiResponse(responseCode = "404", description="Not found")
 	})
 	@RequestMapping(value="{codeSystemId:**}/$subsumes", method=RequestMethod.POST, consumes = BaseFhirResourceRestService.APPLICATION_FHIR_JSON)
 	public Parameters.Fhir subsumes(
-			@ApiParam(value="The id of the code system to invoke the operation on") 	@PathVariable("codeSystemId") String codeSystemId,
-			@ApiParam(name = "body", value = "The lookup request parameters") @RequestBody Parameters.Fhir in) {
+			@Parameter(description="The id of the code system to invoke the operation on") 	@PathVariable("codeSystemId") String codeSystemId,
+			@Parameter(name = "body", description = "The lookup request parameters") @RequestBody Parameters.Fhir in) {
 		
 		SubsumptionRequest request = toRequest(in, SubsumptionRequest.class);
 		
@@ -345,9 +354,10 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 		return toResponse(result);
 	}
 	
-	@ApiOperation(
-			value="FHIR REST API Ping Test",
-			notes="This is only an FHIR ping test.")
+	@Operation(
+		summary = "FHIR REST API Ping Test",
+		description = "This is only an FHIR ping test."
+	)
 	@RequestMapping(value="/ping", method=RequestMethod.GET)
 	public String ping() {
 		System.out.println("ServeFhirCodeSystemRestService.ping()");

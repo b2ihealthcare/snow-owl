@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Sets;
 
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * This class represents a FHIR Structure Definition.  
@@ -49,7 +49,7 @@ import io.swagger.annotations.ApiModel;
  * @see <a href="https://www.hl7.org/fhir/structuredefinition.html">FHIR:StructureDefinition</a>
  * @since 7.1
  */
-@ApiModel("ConceptMap")
+@Schema(name = "StructureDefinition")
 @JsonFilter(FhirBeanPropertyFilter.FILTER_NAME)
 public class StructureDefinition extends MetadataResource {
 

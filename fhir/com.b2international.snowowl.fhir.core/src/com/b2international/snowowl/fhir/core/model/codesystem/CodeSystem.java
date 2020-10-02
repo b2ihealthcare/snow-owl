@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * This class represents a FHIR code system. The CodeSystem resource is used to
@@ -63,7 +63,7 @@ import io.swagger.annotations.ApiModel;
  * @see <a href="https://www.hl7.org/fhir/codesystem.html">FHIR:CodeSystem</a>
  * @since 6.3
  */
-@ApiModel("CodeSystem")
+@Schema(name = "CodeSystem")
 @JsonFilter(FhirBeanPropertyFilter.FILTER_NAME)
 public class CodeSystem extends MetadataResource {
 

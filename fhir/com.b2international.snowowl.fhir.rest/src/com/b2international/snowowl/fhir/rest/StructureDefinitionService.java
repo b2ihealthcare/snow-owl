@@ -15,10 +15,6 @@
  */
 package com.b2international.snowowl.fhir.rest;
 
-import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
-import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
-import static java.net.HttpURLConnection.HTTP_OK;
-
 import java.util.UUID;
 
 import org.springframework.http.converter.json.MappingJacksonValue;
@@ -33,16 +29,15 @@ import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBui
 import com.b2international.snowowl.fhir.core.LogicalId;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.model.Bundle;
-import com.b2international.snowowl.fhir.core.model.OperationOutcome;
 import com.b2international.snowowl.fhir.core.model.structuredefinition.StructureDefinition;
 import com.b2international.snowowl.fhir.core.search.SearchRequestParameters;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * A definition of a FHIR structure. 
@@ -52,7 +47,7 @@ import io.swagger.annotations.ApiResponses;
  * @see <a href="https://www.hl7.org/fhir/structuredefinition.html">StructureDefinition</a>
  * @since 7.1
  */
-@Api(value = "StructureDefinition", description="FHIR StructureDefinition Resource", tags = { "StructureDefinition" })
+@Tag(description="FHIR StructureDefinition Resource", name = "StructureDefinition")
 @RestController //no need for method level @ResponseBody annotations
 @RequestMapping(value="/StructureDefinition", produces = { BaseFhirResourceRestService.APPLICATION_FHIR_JSON })
 public class StructureDefinitionService extends BaseFhirResourceRestService<StructureDefinition> {
@@ -62,11 +57,12 @@ public class StructureDefinitionService extends BaseFhirResourceRestService<Stru
 	 * @param parameters
 	 * @return bundle of {@link StructureDefinition}s
 	 */
-	@ApiOperation(
-		value="Retrieve all structure definitions",
-		notes="Returns a collection of the supported structure definitions.")
+	@Operation(
+		summary = "Retrieve all structure definitions",
+		description = "Returns a collection of the supported structure definitions."
+	)
 	@ApiResponses({
-		@ApiResponse(code = HTTP_OK, message = "OK")
+		@ApiResponse(responseCode = "200", description="OK")
 	})
 	@RequestMapping(method=RequestMethod.GET)
 	public Bundle getStructureDefinitions(@RequestParam(required=false) MultiValueMap<String, String> parameters) {
@@ -93,14 +89,14 @@ public class StructureDefinitionService extends BaseFhirResourceRestService<Stru
 	 * @param parameters
 	 * @return @link {@link StructureDefinition}
 	 */
-	@ApiOperation(
-		response=StructureDefinition.class,
-		value="Retrieve the structure definition by id",
-		notes="Retrieves the structure definition specified by its logical id.")
+	@Operation(
+		summary = "Retrieve the structure definition by id",
+		description = "Retrieves the structure definition specified by its logical id."
+	)
 	@ApiResponses({
-		@ApiResponse(code = HTTP_OK, message = "OK"),
-		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
-		@ApiResponse(code = HTTP_NOT_FOUND, message = "Structure definition not found", response = OperationOutcome.class)
+		@ApiResponse(responseCode = "200", description="OK"),
+		@ApiResponse(responseCode = "400", description="Bad request"),
+		@ApiResponse(responseCode = "404", description="Structure definition not found")
 	})
 	@RequestMapping(value="/{structureDefinitionId:**}", method=RequestMethod.GET)
 	public MappingJacksonValue getStructureDefinition(@PathVariable("structureDefinitionId") String structureDefinitionId, 

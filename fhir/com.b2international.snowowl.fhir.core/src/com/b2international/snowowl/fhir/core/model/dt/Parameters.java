@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,8 +46,7 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * Class to represent a list of FHIR parameters.
@@ -88,7 +87,7 @@ import io.swagger.annotations.ApiModelProperty;
 }
  * @since 6.4
  */
-@ApiModel("Parameters")
+@Schema(name = "Parameters")
 public final class Parameters {
 
 	private final List<Parameter> parameters;
@@ -178,7 +177,7 @@ public final class Parameters {
 		
 	}
 	
-	@ApiModel("Parameters")
+	@Schema(name = "Parameters")
 	@JsonSerialize(using = Parameters.Fhir.Ser.class)
 	@JsonDeserialize(using = Parameters.Fhir.Deser.class)
 	public static final class Fhir {
@@ -204,7 +203,7 @@ public final class Parameters {
 				.findFirst();
 		}
 		
-		@ApiModelProperty("parameter")
+		@Schema(name = "parameter")
 		public List<Parameter> getParameters() {
 			return parameters.getParameters();
 		} 
