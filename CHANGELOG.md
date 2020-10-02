@@ -1,6 +1,17 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 7.11.0-SNAPSHOT
+
+### Dependencies 
+- Upgrade Elasticsearch to 7.9.2 (#682)
+- Upgrade Spring to 5.2.9 (#683)
+- Upgrade Jackson to 2.11.3 (#683)
+- Upgrade Springfox to 3.0.0 (#683)
+- Upgrade Swagger to 1.6.2 (#683)
+- Upgrade Swagger UI to 3.35.0 (#683) 
+- Add Swagger-OAS 2.1.4 (#683)
+
 ## 7.10.0
 
 ### Core
