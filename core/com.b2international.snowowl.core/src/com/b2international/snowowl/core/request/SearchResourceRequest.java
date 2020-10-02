@@ -212,6 +212,9 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 	
 	@Min(0)
 	private int limit;
+	
+	@Min(1)
+	private int minTermMatch;
 
 	@NotNull
 	private Options options;
@@ -234,6 +237,10 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 	
 	void setComponentIds(Set<String> componentIds) {
 		this.componentIds = componentIds;
+	}
+	
+	public void setMinTermMatch(int minTermMatch) {
+		this.minTermMatch = minTermMatch;
 	}
 
 	@JsonProperty
@@ -261,6 +268,10 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 	
 	protected final Set<String> componentIds() {
 		return componentIds;
+	}
+	
+	protected final int minTermMatch() {
+		return minTermMatch;
 	}
 
 	/**

@@ -42,6 +42,8 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	
 	private int limit = 50;
 	
+	private int minTermMatch = 1;
+	
 	private final OptionsBuilder optionsBuilder = OptionsBuilder.newBuilder();
 	
 	protected SearchResourceRequestBuilder() {
@@ -141,6 +143,16 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 		return setLimit(1);
 	}
 	
+	/**
+	 * Sets the minimum number of terms to match
+	 * @param minTermMatch
+	 * @return this builder instance
+	 */
+	public final B withMinTermMatch(int minTermMatch) {
+		this.minTermMatch = minTermMatch;
+		return getSelf();
+	}
+	
 	// XXX: Does not allow null values or collections with null values
 	protected final B addOption(String key, Object value) {
 		if (value instanceof Iterable<?>) {
@@ -167,6 +179,7 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 		req.setSearchAfter(searchAfter);
 		req.setLimit(Math.min(limit, MAX_LIMIT));
 		req.setOptions(optionsBuilder.build());
+		req.setMinTermMatch(minTermMatch);
 		return req;
 	}
 	
