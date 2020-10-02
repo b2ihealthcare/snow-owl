@@ -71,6 +71,8 @@
         <setEntry value="io.netty.transport@default:default"/>
         <setEntry value="io.reactivex.rxjava2.rxjava@default:default"/>
         <setEntry value="io.swagger.annotations@default:default"/>
+        <setEntry value="io.swagger.core.v3.swagger-annotations@default:default"/>
+        <setEntry value="io.swagger.core.v3.swagger-models@default:default"/>
         <setEntry value="io.swagger.models@default:default"/>
         <setEntry value="it.unimi.dsi.fastutil@default:default"/>
         <setEntry value="javax.activation-api@default:default"/>
@@ -79,8 +81,8 @@
         <setEntry value="javax.servlet@default:default"/>
         <setEntry value="jaxb-api@default:default"/>
         <setEntry value="log4j.over.slf4j@default:default"/>
-        <setEntry value="net.bytebuddy.byte-buddy*1.9.0.v20181107-1410@default:default"/>
         <setEntry value="net.bytebuddy.byte-buddy-agent@default:default"/>
+        <setEntry value="net.bytebuddy.byte-buddy@default:default"/>
         <setEntry value="net.jodah.failsafe@default:default"/>
         <setEntry value="net.jodah.typetools@default:default"/>
         <setEntry value="org.antlr.runtime@default:default"/>

@@ -69,6 +69,8 @@
         <setEntry value="io.netty.transport@default:default"/>
         <setEntry value="io.reactivex.rxjava2.rxjava@default:default"/>
         <setEntry value="io.swagger.annotations@default:default"/>
+        <setEntry value="io.swagger.core.v3.swagger-annotations@default:default"/>
+        <setEntry value="io.swagger.core.v3.swagger-models@default:default"/>
         <setEntry value="io.swagger.models@default:default"/>
         <setEntry value="it.unimi.dsi.fastutil@default:default"/>
         <setEntry value="javax.activation-api@default:default"/>
@@ -80,9 +82,8 @@
         <setEntry value="jcl.over.slf4j@default:default"/>
         <setEntry value="jul.to.slf4j@default:default"/>
         <setEntry value="log4j.over.slf4j@default:default"/>
-        <setEntry value="net.bytebuddy.byte-buddy*1.9.0.v20181107-1410@default:default"/>
-        <setEntry value="net.bytebuddy.byte-buddy*1.9.3@default:default"/>
         <setEntry value="net.bytebuddy.byte-buddy-agent@default:default"/>
+        <setEntry value="net.bytebuddy.byte-buddy@default:default"/>
         <setEntry value="net.jodah.failsafe@default:default"/>
         <setEntry value="net.jodah.typetools@default:default"/>
         <setEntry value="org.antlr.runtime@default:default"/>
@@ -224,7 +225,7 @@
         <setEntry value="com.b2international.snowowl.core.rest@default:default"/>
         <setEntry value="com.b2international.snowowl.core@default:default"/>
         <setEntry value="com.b2international.snowowl.eventbus@default:default"/>
-        <setEntry value="com.b2international.snowowl.logback.config@default:default"/>
+        <setEntry value="com.b2international.snowowl.logback.config@default:false"/>
         <setEntry value="com.b2international.snowowl.rpc@default:default"/>
         <setEntry value="com.b2international.snowowl.snomed.cis.rest@default:false"/>
         <setEntry value="com.b2international.snowowl.snomed.cis@default:default"/>
