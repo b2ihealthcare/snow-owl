@@ -15,9 +15,8 @@
  */
 package com.b2international.snowowl.fhir.tests.serialization.dt;
 
-import static org.hamcrest.CoreMatchers.equalTo;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -71,9 +70,9 @@ public class ComplexDataTypeSerializationTest extends FhirTest {
 			.build();
 		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(coding));
-		assertThat(jsonPath.getString("code"), equalTo("1234"));
-		assertThat(jsonPath.getString("system"), equalTo("http://www.whocc.no/atc"));
-		assertThat(jsonPath.getString("version"), equalTo("20180131"));
+		assertThat(jsonPath.getString("code")).isEqualTo("1234");
+		assertThat(jsonPath.getString("system")).isEqualTo("http://www.whocc.no/atc");
+		assertThat(jsonPath.getString("version")).isEqualTo("20180131");
 	}
 	
 	@Test
@@ -123,10 +122,10 @@ public class ComplexDataTypeSerializationTest extends FhirTest {
 				.build();
 		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(cc));
-		assertThat(jsonPath.getString("text"), equalTo("text"));
-		assertThat(jsonPath.getString("coding[0].code"), equalTo("1234"));
-		assertThat(jsonPath.getString("coding[0].system"), equalTo("http://www.whocc.no/atc"));
-		assertThat(jsonPath.getString("coding[0].version"), equalTo("20180131"));
+		assertThat(jsonPath.getString("text")).isEqualTo("text");
+		assertThat(jsonPath.getString("coding[0].code")).isEqualTo("1234");
+		assertThat(jsonPath.getString("coding[0].system")).isEqualTo("http://www.whocc.no/atc");
+		assertThat(jsonPath.getString("coding[0].version")).isEqualTo("20180131");
 		
 	}
 	
@@ -138,8 +137,8 @@ public class ComplexDataTypeSerializationTest extends FhirTest {
 				.build();
 		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(narrative));
-		assertThat(jsonPath.getString("status"), equalTo("generated"));
-		assertThat(jsonPath.getString("div"), equalTo("<div>This is text</div>"));
+		assertThat(jsonPath.getString("status")).isEqualTo("generated");
+		assertThat(jsonPath.getString("div")).isEqualTo("<div>This is text</div>");
 	}
 	
 	@Test
@@ -169,11 +168,11 @@ public class ComplexDataTypeSerializationTest extends FhirTest {
 			.build();
 		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(quantity));
-		assertThat(jsonPath.getDouble("value"), equalTo(12.3));
-		assertThat(jsonPath.getString("comparator"), equalTo(">="));
-		assertThat(jsonPath.getString("unit"), equalTo("mg"));
-		assertThat(jsonPath.getString("system"), equalTo("uri:LOINC"));
-		assertThat(jsonPath.getString("code"), equalTo("code"));
+		assertThat(jsonPath.getDouble("value")).isEqualTo(12.3);
+		assertThat(jsonPath.getString("comparator")).isEqualTo(">=");
+		assertThat(jsonPath.getString("unit")).isEqualTo("mg");
+		assertThat(jsonPath.getString("system")).isEqualTo("uri:LOINC");
+		assertThat(jsonPath.getString("code")).isEqualTo("code");
 	}
 	
 	@Test
@@ -207,8 +206,8 @@ public class ComplexDataTypeSerializationTest extends FhirTest {
 		
 		Period period = new Period(startDate, cal.getTime());
 		
-		String expected = "{\"start\":\"2018-03-23T07:49:40.000+0000\"," + 
-				"\"end\":\"2018-03-24T07:49:40.000+0000\"}";
+		String expected = "{\"start\":\"2018-03-23T07:49:40.000+00:00\"," + 
+				"\"end\":\"2018-03-24T07:49:40.000+00:00\"}";
 		
 		Assert.assertEquals(expected, objectMapper.writeValueAsString(period));
 	}
@@ -234,14 +233,14 @@ public class ComplexDataTypeSerializationTest extends FhirTest {
 		Range range = new Range(low, high);
 		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(range));
-		assertThat(jsonPath.getDouble("low.value"), equalTo(12.3));
-		assertThat(jsonPath.getString("low.unit"), equalTo("mg"));
-		assertThat(jsonPath.getString("low.system"), equalTo("uri:LOINC"));
-		assertThat(jsonPath.getString("low.code"), equalTo("code1"));
-		assertThat(jsonPath.getDouble("high.value"), equalTo(120.3));
-		assertThat(jsonPath.getString("high.unit"), equalTo("mg"));
-		assertThat(jsonPath.getString("high.system"), equalTo("uri:LOINC"));
-		assertThat(jsonPath.getString("high.code"), equalTo("code1"));
+		assertThat(jsonPath.getDouble("low.value")).isEqualTo(12.3d);
+		assertThat(jsonPath.getString("low.unit")).isEqualTo("mg");
+		assertThat(jsonPath.getString("low.system")).isEqualTo("uri:LOINC");
+		assertThat(jsonPath.getString("low.code")).isEqualTo("code1");
+		assertThat(jsonPath.getDouble("high.value")).isEqualTo(120.3);
+		assertThat(jsonPath.getString("high.unit")).isEqualTo("mg");
+		assertThat(jsonPath.getString("high.system")).isEqualTo("uri:LOINC");
+		assertThat(jsonPath.getString("high.code")).isEqualTo("code1");
 	}
 	
 	@Test
@@ -258,9 +257,9 @@ public class ComplexDataTypeSerializationTest extends FhirTest {
 				"\"display\":\"displayString\"}";
 		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(reference));
-		assertThat(jsonPath.getString("reference"), equalTo("reference url"));
-		assertThat(jsonPath.getString("identifier.system"), equalTo("system"));
-		assertThat(jsonPath.getString("display"), equalTo("displayString"));
+		assertThat(jsonPath.getString("reference")).isEqualTo("reference url");
+		assertThat(jsonPath.getString("identifier.system")).isEqualTo("system");
+		assertThat(jsonPath.getString("display")).isEqualTo("displayString");
 		
 		Assert.assertEquals(expected, objectMapper.writeValueAsString(reference));
 	}
@@ -290,16 +289,16 @@ public class ComplexDataTypeSerializationTest extends FhirTest {
 				.build();
 		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(cp));
-		assertThat(jsonPath.getString("id"), equalTo("element_id"));
-		assertThat(jsonPath.getString("system"), equalTo("system"));
-		assertThat(jsonPath.getString("value"), equalTo("value"));
-		assertThat(jsonPath.getInt("rank"), equalTo(1));
-		assertThat(jsonPath.get("period.start"), equalTo(null));
-		assertThat(jsonPath.get("period.end"), equalTo(null));
-		assertThat(jsonPath.getString("extension[0].url"), equalTo("url"));
-		assertThat(jsonPath.getInt("extension[0].valueInteger"), equalTo(1));
-		assertThat(jsonPath.getString("extension[1].url"), equalTo("url2"));
-		assertThat(jsonPath.getInt("extension[1].valueInteger"), equalTo(2));
+		assertThat(jsonPath.getString("id")).isEqualTo("element_id");
+		assertThat(jsonPath.getString("system")).isEqualTo("system");
+		assertThat(jsonPath.getString("value")).isEqualTo("value");
+		assertThat(jsonPath.getInt("rank")).isEqualTo(1);
+		assertThat(jsonPath.<Date>get("period.start")).isNull();
+		assertThat(jsonPath.<Date>get("period.end")).isNull();
+		assertThat(jsonPath.getString("extension[0].url")).isEqualTo("url");
+		assertThat(jsonPath.getInt("extension[0].valueInteger")).isEqualTo(1);
+		assertThat(jsonPath.getString("extension[1].url")).isEqualTo("url2");
+		assertThat(jsonPath.getInt("extension[1].valueInteger")).isEqualTo(2);
 	}
 	
 	@Test
@@ -339,19 +338,19 @@ public class ComplexDataTypeSerializationTest extends FhirTest {
 			.build();
 		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(identifier));
-		assertThat(jsonPath.getString("use"), equalTo("official"));
-		assertThat(jsonPath.getString("system"), equalTo("system"));
-		assertThat(jsonPath.getString("value"), equalTo("value"));
+		assertThat(jsonPath.getString("use")).isEqualTo("official");
+		assertThat(jsonPath.getString("system")).isEqualTo("system");
+		assertThat(jsonPath.getString("value")).isEqualTo("value");
 		
-		assertThat(jsonPath.getString("type.text"), equalTo("codingText"));
-		assertThat(jsonPath.getString("type.coding[0].code"), equalTo("codingCode"));
-		assertThat(jsonPath.getString("type.coding[0].display"), equalTo("codingDisplay"));
+		assertThat(jsonPath.getString("type.text")).isEqualTo("codingText");
+		assertThat(jsonPath.getString("type.coding[0].code")).isEqualTo("codingCode");
+		assertThat(jsonPath.getString("type.coding[0].display")).isEqualTo("codingDisplay");
 
-		assertThat(jsonPath.getString("period.start"), equalTo("2018-03-23T07:49:40.000+0000"));
-		assertThat(jsonPath.getString("period.end"), equalTo("2018-03-24T07:49:40.000+0000"));
-		assertThat(jsonPath.getString("assigner.reference"), equalTo("reference url"));
-		assertThat(jsonPath.getString("assigner.display"), equalTo("displayString"));
-		assertThat(jsonPath.getString("assigner.identifier.system"), equalTo("system"));
+		assertThat(jsonPath.getString("period.start")).isEqualTo("2018-03-23T07:49:40.000+00:00");
+		assertThat(jsonPath.getString("period.end")).isEqualTo("2018-03-24T07:49:40.000+00:00");
+		assertThat(jsonPath.getString("assigner.reference")).isEqualTo("reference url");
+		assertThat(jsonPath.getString("assigner.display")).isEqualTo("displayString");
+		assertThat(jsonPath.getString("assigner.identifier.system")).isEqualTo("system");
 	}
 	
 	@Test
@@ -374,13 +373,13 @@ public class ComplexDataTypeSerializationTest extends FhirTest {
 			.build();
 		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(signature));
-		assertThat(jsonPath.getString("when"), equalTo("2018-03-23T07:49:40Z"));
-		assertThat(jsonPath.getString("whoUri"), equalTo("whoUri"));
-		assertThat(jsonPath.getString("onBehalfOfUri"), equalTo("onBehalfUri"));
-		assertThat(jsonPath.getString("contentType"), equalTo("contentTypeCode"));
+		assertThat(jsonPath.getString("when")).isEqualTo("2018-03-23T07:49:40Z");
+		assertThat(jsonPath.getString("whoUri")).isEqualTo("whoUri");
+		assertThat(jsonPath.getString("onBehalfOfUri")).isEqualTo("onBehalfUri");
+		assertThat(jsonPath.getString("contentType")).isEqualTo("contentTypeCode");
 		
-		assertThat(jsonPath.getString("type[0].code"), equalTo("codingCode"));
-		assertThat(jsonPath.getString("type[0].display"), equalTo("codingDisplay"));
+		assertThat(jsonPath.getString("type[0].code")).isEqualTo("codingCode");
+		assertThat(jsonPath.getString("type[0].display")).isEqualTo("codingDisplay");
 		
 		List<Byte> blobList = jsonPath.getList("blob");
 		byte[] bytes = Bytes.toArray(blobList);
@@ -405,11 +404,11 @@ public class ComplexDataTypeSerializationTest extends FhirTest {
 			.build();
 		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(signature));
-		assertThat(jsonPath.getString("when"), equalTo("2018-03-23T07:49:40Z"));
+		assertThat(jsonPath.getString("when")).isEqualTo("2018-03-23T07:49:40Z");
 		jsonPath.setRoot("whoReference");
-		assertThat(jsonPath.getString("reference"), equalTo("reference"));
-		assertThat(jsonPath.getString("identifier.system"), equalTo(null));
-		assertThat(jsonPath.getString("display"), equalTo("display"));
+		assertThat(jsonPath.getString("reference")).isEqualTo("reference");
+		assertThat(jsonPath.getString("identifier.system")).isEqualTo(null);
+		assertThat(jsonPath.getString("display")).isEqualTo("display");
 	}
 	
 	@Test

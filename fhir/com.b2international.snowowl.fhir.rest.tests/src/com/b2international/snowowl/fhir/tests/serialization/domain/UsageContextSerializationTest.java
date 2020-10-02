@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,7 @@
  */
 package com.b2international.snowowl.fhir.tests.serialization.domain;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 
@@ -61,11 +60,11 @@ public class UsageContextSerializationTest extends FhirTest {
 		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(usageContext));
 		
-		assertThat(jsonPath.getString("code.code"), equalTo("codingCode"));
-		assertThat(jsonPath.getString("code.display"), equalTo("codingDisplay"));
-		assertThat(jsonPath.getString("valueCodeableConcept.text"), equalTo("codingText"));
-		assertThat(jsonPath.getString("valueCodeableConcept.coding[0].code"), equalTo("codingCode"));
-		assertThat(jsonPath.getString("valueCodeableConcept.coding[0].display"), equalTo("codingDisplay"));
+		assertThat(jsonPath.getString("code.code")).isEqualTo("codingCode");
+		assertThat(jsonPath.getString("code.display")).isEqualTo("codingDisplay");
+		assertThat(jsonPath.getString("valueCodeableConcept.text")).isEqualTo("codingText");
+		assertThat(jsonPath.getString("valueCodeableConcept.coding[0].code")).isEqualTo("codingCode");
+		assertThat(jsonPath.getString("valueCodeableConcept.coding[0].display")).isEqualTo("codingDisplay");
 	}
 	
 	@Test
@@ -93,13 +92,13 @@ public class UsageContextSerializationTest extends FhirTest {
 		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(usageContext));
 		
-		assertThat(jsonPath.getString("code.code"), equalTo("codingCode"));
-		assertThat(jsonPath.getString("code.display"), equalTo("codingDisplay"));
-		assertThat(jsonPath.getDouble("valueQuantity.value"), equalTo(12.3));
-		assertThat(jsonPath.getString("valueQuantity.comparator"), equalTo(">="));
-		assertThat(jsonPath.getString("valueQuantity.unit"), equalTo("mg"));
-		assertThat(jsonPath.getString("valueQuantity.system"), equalTo("uri:LOINC"));
-		assertThat(jsonPath.getString("valueQuantity.code"), equalTo("code"));
+		assertThat(jsonPath.getString("code.code")).isEqualTo("codingCode");
+		assertThat(jsonPath.getString("code.display")).isEqualTo("codingDisplay");
+		assertThat(jsonPath.getDouble("valueQuantity.value")).isEqualTo(12.3);
+		assertThat(jsonPath.getString("valueQuantity.comparator")).isEqualTo(">=");
+		assertThat(jsonPath.getString("valueQuantity.unit")).isEqualTo("mg");
+		assertThat(jsonPath.getString("valueQuantity.system")).isEqualTo("uri:LOINC");
+		assertThat(jsonPath.getString("valueQuantity.code")).isEqualTo("code");
 	}
 	
 	@Test
@@ -134,20 +133,20 @@ public class UsageContextSerializationTest extends FhirTest {
 		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(usageContext));
 		
-		assertThat(jsonPath.getString("code.code"), equalTo("codingCode"));
-		assertThat(jsonPath.getString("code.display"), equalTo("codingDisplay"));
+		assertThat(jsonPath.getString("code.code")).isEqualTo("codingCode");
+		assertThat(jsonPath.getString("code.display")).isEqualTo("codingDisplay");
 		
 		jsonPath.setRoot("valueRange");
 		
-		assertThat(jsonPath.getDouble("low.value"), equalTo(12.3));
-		assertThat(jsonPath.getString("low.unit"), equalTo("mg"));
-		assertThat(jsonPath.getString("low.system"), equalTo("uri:LOINC"));
-		assertThat(jsonPath.getString("low.code"), equalTo("code1"));
+		assertThat(jsonPath.getDouble("low.value")).isEqualTo(12.3);
+		assertThat(jsonPath.getString("low.unit")).isEqualTo("mg");
+		assertThat(jsonPath.getString("low.system")).isEqualTo("uri:LOINC");
+		assertThat(jsonPath.getString("low.code")).isEqualTo("code1");
 		
-		assertThat(jsonPath.getDouble("high.value"), equalTo(120.3));
-		assertThat(jsonPath.getString("high.unit"), equalTo("mg"));
-		assertThat(jsonPath.getString("high.system"), equalTo("uri:LOINC"));
-		assertThat(jsonPath.getString("high.code"), equalTo("code1"));
+		assertThat(jsonPath.getDouble("high.value")).isEqualTo(120.3);
+		assertThat(jsonPath.getString("high.unit")).isEqualTo("mg");
+		assertThat(jsonPath.getString("high.system")).isEqualTo("uri:LOINC");
+		assertThat(jsonPath.getString("high.code")).isEqualTo("code1");
 		
 	}
 

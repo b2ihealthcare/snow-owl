@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,8 @@
  */
 package com.b2international.snowowl.fhir.tests.serialization.domain;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItem;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 
@@ -48,7 +46,6 @@ public class ConceptMapSerializationTest extends FhirTest {
 	
 	@Test
 	public void unMappedTest() throws Exception {
-		
 		UnMapped unMapped = UnMapped.builder()
 			.mode("Mode")
 			.code("Code")
@@ -58,15 +55,14 @@ public class ConceptMapSerializationTest extends FhirTest {
 
 		JsonPath jsonPath = getJsonPath(unMapped);
 		
-		assertThat(jsonPath.get("mode"), equalTo("Mode"));
-		assertThat(jsonPath.get("code"), equalTo("Code"));
-		assertThat(jsonPath.getString("display"), equalTo("Display"));
-		assertThat(jsonPath.get("url"),  equalTo("Url"));
+		assertThat(jsonPath.getString("mode")).isEqualTo("Mode");
+		assertThat(jsonPath.getString("code")).isEqualTo("Code");
+		assertThat(jsonPath.getString("display")).isEqualTo("Display");
+		assertThat(jsonPath.getString("url")).isEqualTo("Url");
 	}
 	
 	@Test
 	public void unMappedMissingOptionalFieldsTest() throws Exception {
-		
 		UnMapped unMapped = UnMapped.builder()
 			.mode("Mode")
 			.build();
@@ -99,10 +95,10 @@ public class ConceptMapSerializationTest extends FhirTest {
 		
 		JsonPath jsonPath = getJsonPath(dependsOn);
 		
-		assertThat(jsonPath.get("property"), equalTo("Property"));
-		assertThat(jsonPath.get("system"), equalTo("System"));
-		assertThat(jsonPath.get("value"), equalTo("Value"));
-		assertThat(jsonPath.getString("display"), equalTo("Display"));
+		assertThat(jsonPath.getString("property")).isEqualTo("Property");
+		assertThat(jsonPath.getString("system")).isEqualTo("System");
+		assertThat(jsonPath.getString("value")).isEqualTo("Value");
+		assertThat(jsonPath.getString("display")).isEqualTo("Display");
 	}
 	
 	@Test
@@ -117,10 +113,10 @@ public class ConceptMapSerializationTest extends FhirTest {
 		
 		JsonPath jsonPath = getJsonPath(dependsOn);
 		
-		assertThat(jsonPath.get("property"), equalTo("Property"));
-		assertNull(jsonPath.get("system"));
-		assertThat(jsonPath.get("value"), equalTo("Value"));
-		assertNull(jsonPath.get("display"));
+		assertThat(jsonPath.getString("property")).isEqualTo("Property");
+		assertNull(jsonPath.getString("system"));
+		assertThat(jsonPath.getString("value")).isEqualTo("Value");
+		assertNull(jsonPath.getString("display"));
 	}
 	
 	@Test
@@ -163,12 +159,12 @@ public class ConceptMapSerializationTest extends FhirTest {
 		
 		JsonPath jsonPath = getJsonPath(target);
 		
-		assertThat(jsonPath.get("code"), equalTo("Code"));
-		assertThat(jsonPath.get("display"), equalTo("Display"));
-		assertThat(jsonPath.get("equivalence"), equalTo("Equivalence") );
-		assertThat(jsonPath.get("comment"),equalTo("Comment"));
-		assertThat(jsonPath.get("dependsOn.property"), hasItem("Property.2"));
-		assertThat(jsonPath.get("product.property"), hasItem("ProductProperty.2"));
+		assertThat(jsonPath.getString("code")).isEqualTo("Code");
+		assertThat(jsonPath.getString("display")).isEqualTo("Display");
+		assertThat(jsonPath.getString("equivalence")).isEqualTo("Equivalence");
+		assertThat(jsonPath.getString("comment")).isEqualTo("Comment");
+		assertThat(jsonPath.getList("dependsOn.property")).contains("Property.2");
+		assertThat(jsonPath.getList("product.property")).contains("ProductProperty.2");
 	}
 	
 	@Test
@@ -202,10 +198,10 @@ public class ConceptMapSerializationTest extends FhirTest {
 		
 		JsonPath jsonPath = getJsonPath(element);
 		
-		assertThat(jsonPath.get("code"), equalTo("Code"));
-		assertThat(jsonPath.get("display"), equalTo("Display"));
-		assertThat(jsonPath.get("target.equivalence"), hasItem("Equivalence"));
-		assertThat(jsonPath.get("target.display"), hasItem("Display"));
+		assertThat(jsonPath.getString("code")).isEqualTo("Code");
+		assertThat(jsonPath.getString("display")).isEqualTo("Display");
+		assertThat(jsonPath.getList("target.equivalence")).contains("Equivalence");
+		assertThat(jsonPath.getList("target.display")).contains("Display");
 	}
 	
 	@Test
@@ -242,13 +238,13 @@ public class ConceptMapSerializationTest extends FhirTest {
 		
 		JsonPath jsonPath = getJsonPath(group);
 		
-		assertThat(jsonPath.get("source"), equalTo("Source"));
-		assertThat(jsonPath.get("sourceVersion"), equalTo("SourceVersion"));
-		assertThat(jsonPath.get("target"), equalTo("Target"));
-		assertThat(jsonPath.get("targetVersion"), equalTo("TargetVersion"));
-		assertThat(jsonPath.get("element.code"), hasItem("ElementCode") );
-		assertThat(jsonPath.get("element.display"), hasItem("ElementDisplay"));
-		assertThat(jsonPath.get("unmapped.mode"), equalTo("Mode") );
+		assertThat(jsonPath.getString("source")).isEqualTo("Source");
+		assertThat(jsonPath.getString("sourceVersion")).isEqualTo("SourceVersion");
+		assertThat(jsonPath.getString("target")).isEqualTo("Target");
+		assertThat(jsonPath.getString("targetVersion")).isEqualTo("TargetVersion");
+		assertThat(jsonPath.getList("element.code")).contains("ElementCode");
+		assertThat(jsonPath.getList("element.display")).contains("ElementDisplay");
+		assertThat(jsonPath.getString("unmapped.mode")).isEqualTo("Mode");
 	}
 	
 	@Test
@@ -267,8 +263,8 @@ public class ConceptMapSerializationTest extends FhirTest {
 		assertNull(jsonPath.get("sourceVersion"));
 		assertNull(jsonPath.get("target"));
 		assertNull(jsonPath.get("targetVersion"));
-		assertThat(jsonPath.get("element.code"), hasItem("ElementCode") );
-		assertThat(jsonPath.get("element.display"), hasItem("ElementDisplay"));
+		assertThat(jsonPath.getList("element.code")).contains("ElementCode");
+		assertThat(jsonPath.getList("element.display")).contains("ElementDisplay");
 		assertNull(jsonPath.get("unmapped"));
 	}
 	
@@ -312,12 +308,12 @@ public class ConceptMapSerializationTest extends FhirTest {
 		
 		JsonPath jsonPath = getJsonPath(conceptMap);
 		
-		assertThat(jsonPath.get("url"), equalTo("http://who.org"));
-		assertThat(jsonPath.get("name"), equalTo("conceptMapName"));
-		assertThat(jsonPath.get("title"), equalTo("conceptMapTitle"));
-		assertThat(jsonPath.get("purpose"), equalTo("Purpose"));
-		assertThat(jsonPath.get("sourceUri"), equalTo("SourceUri"));
-		assertThat(jsonPath.get("useContext.valueCodeableConcept.text"), hasItem("CodeableConceptText"));
+		assertThat(jsonPath.getString("url")).isEqualTo("http://who.org");
+		assertThat(jsonPath.getString("name")).isEqualTo("conceptMapName");
+		assertThat(jsonPath.getString("title")).isEqualTo("conceptMapTitle");
+		assertThat(jsonPath.getString("purpose")).isEqualTo("Purpose");
+		assertThat(jsonPath.getString("sourceUri")).isEqualTo("SourceUri");
+		assertThat(jsonPath.getList("useContext.valueCodeableConcept.text")).contains("CodeableConceptText");
 	}
 
 }

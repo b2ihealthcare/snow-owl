@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,7 @@
  */
 package com.b2international.snowowl.fhir.tests.serialization.parameterized;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 
@@ -62,18 +61,18 @@ public class DesignationSerializationTest extends FhirTest {
 
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(fhirParameters));
 		
-		assertThat(jsonPath.getString("resourceType"), equalTo("Parameters"));
-		assertThat(jsonPath.getString("parameter[0].name"), equalTo("language"));
-		assertThat(jsonPath.getString("parameter[0].valueCode"), equalTo("en_uk"));
-		assertThat(jsonPath.getString("parameter[2].name"), equalTo("value"));
-		assertThat(jsonPath.getString("parameter[2].valueString"), equalTo("dValue"));
+		assertThat(jsonPath.getString("resourceType")).isEqualTo("Parameters");
+		assertThat(jsonPath.getString("parameter[0].name")).isEqualTo("language");
+		assertThat(jsonPath.getString("parameter[0].valueCode")).isEqualTo("en_uk");
+		assertThat(jsonPath.getString("parameter[2].name")).isEqualTo("value");
+		assertThat(jsonPath.getString("parameter[2].valueString")).isEqualTo("dValue");
 		
 		jsonPath.setRoot("parameter[1]");
 		
-		assertThat(jsonPath.getString("name"), equalTo("use"));
-		assertThat(jsonPath.getString("valueCoding.code"), equalTo("1234"));
-		assertThat(jsonPath.getString("valueCoding.system"), equalTo("http://www.whocc.no/atc"));
-		assertThat(jsonPath.getString("valueCoding.version"), equalTo("20180131"));
+		assertThat(jsonPath.getString("name")).isEqualTo("use");
+		assertThat(jsonPath.getString("valueCoding.code")).isEqualTo("1234");
+		assertThat(jsonPath.getString("valueCoding.system")).isEqualTo("http://www.whocc.no/atc");
+		assertThat(jsonPath.getString("valueCoding.version")).isEqualTo("20180131");
 	}
 	
 	@Test

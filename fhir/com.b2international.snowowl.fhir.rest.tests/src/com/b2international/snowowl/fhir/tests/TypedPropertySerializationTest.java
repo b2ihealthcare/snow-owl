@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,7 @@
  */
 package com.b2international.snowowl.fhir.tests;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Date;
 
@@ -63,8 +62,8 @@ public class TypedPropertySerializationTest extends FhirTest {
 		
 		TestClass testObject = new TestClass();
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(testObject));
-		assertThat(jsonPath.getString("testString"), equalTo("test"));
-		assertThat(jsonPath.getString("valueString"), equalTo("stringValue"));
+		assertThat(jsonPath.getString("testString")).isEqualTo("test");
+		assertThat(jsonPath.getString("valueString")).isEqualTo("stringValue");
 	}
 	
 	@Test
@@ -82,7 +81,7 @@ public class TypedPropertySerializationTest extends FhirTest {
 		
 		TestClass testObject = new TestClass();
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(testObject));
-		assertThat(jsonPath.getString("valueDate"), equalTo("2018-03-23T00:00:00.000+0000"));
+		assertThat(jsonPath.getString("valueDate")).isEqualTo("2018-03-23T00:00:00.000+00:00");
 		
 	}
 	
@@ -101,7 +100,7 @@ public class TypedPropertySerializationTest extends FhirTest {
 		
 		TestClass testObject = new TestClass();
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(testObject));
-		assertThat(jsonPath.getString("valueDate"), equalTo(TEST_DATE_STRING));
+		assertThat(jsonPath.getString("valueDate")).isEqualTo(TEST_DATE_STRING);
 	}
 	
 	@Test
@@ -120,7 +119,7 @@ public class TypedPropertySerializationTest extends FhirTest {
 		
 		TestClass testObject = new TestClass();
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(testObject));
-		assertThat(jsonPath.getString("valueInstant"), equalTo("2018-03-23T07:49:40Z"));
+		assertThat(jsonPath.getString("valueInstant")).isEqualTo("2018-03-23T07:49:40Z");
 	}
 
 }

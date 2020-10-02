@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,8 @@
  */
 package com.b2international.snowowl.fhir.tests.serialization.domain;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -71,8 +68,8 @@ public class ValueSetSerializationTest extends FhirTest {
 			.build();
 		
 		JsonPath jsonPath = getJsonPath(parameter);
-		assertThat(jsonPath.getString("name"), equalTo("paramName"));
-		assertThat(jsonPath.get("valueString"), equalTo("paramValue"));
+		assertThat(jsonPath.getString("name")).isEqualTo("paramName");
+		assertThat(jsonPath.getString("valueString")).isEqualTo("paramValue");
 	}
 	
 	@Test
@@ -84,8 +81,8 @@ public class ValueSetSerializationTest extends FhirTest {
 			.build();
 		
 		JsonPath jsonPath = getJsonPath(parameter);
-		assertThat(jsonPath.getString("name"), equalTo("paramName"));
-		assertThat(jsonPath.get("valueUri"), equalTo("paramValue"));
+		assertThat(jsonPath.getString("name")).isEqualTo("paramName");
+		assertThat(jsonPath.getString("valueUri")).isEqualTo("paramValue");
 	}
 	
 	@Test
@@ -99,8 +96,8 @@ public class ValueSetSerializationTest extends FhirTest {
 			.build();
 		
 		JsonPath jsonPath = getJsonPath(parameter);
-		assertThat(jsonPath.getString("name"), equalTo("paramName"));
-		assertThat(jsonPath.get("valueDateTime"), equalTo(TEST_DATE_STRING));
+		assertThat(jsonPath.getString("name")).isEqualTo("paramName");
+		assertThat(jsonPath.getString("valueDateTime")).isEqualTo(TEST_DATE_STRING);
 	}
 	
 	@Test
@@ -125,9 +122,9 @@ public class ValueSetSerializationTest extends FhirTest {
 			.build();
 		
 		JsonPath jsonPath = getJsonPath(expansion);
-		assertThat(jsonPath.getString("identifier"), equalTo("identifier"));
-		assertThat(jsonPath.get("parameter.name"), hasItem("uriParamName"));
-		assertThat(jsonPath.get("parameter.name"), hasItem("paramName"));
+		assertThat(jsonPath.getString("identifier")).isEqualTo("identifier");
+		assertThat(jsonPath.getList("parameter.name")).contains("uriParamName");
+		assertThat(jsonPath.getList("parameter.name")).contains("paramName");
 	}
 	
 	@Test
@@ -148,14 +145,14 @@ public class ValueSetSerializationTest extends FhirTest {
 			.build();
 		
 		JsonPath jsonPath = getJsonPath(contains);
-		assertThat(jsonPath.getString("system"), equalTo("systemUri"));
-		assertThat(jsonPath.getBoolean("abstract"), equalTo(true));
-		assertThat(jsonPath.getBoolean("inactive"), equalTo(false));
-		assertThat(jsonPath.getString("version"), equalTo("20140131"));
-		assertThat(jsonPath.getString("code"), equalTo("Code"));
-		assertThat(jsonPath.getString("display"), equalTo("displayValue"));
-		assertThat(jsonPath.getString("designation"), notNullValue());
-		assertThat(jsonPath.getString("contains"), notNullValue());
+		assertThat(jsonPath.getString("system")).isEqualTo("systemUri");
+		assertThat(jsonPath.getBoolean("abstract")).isEqualTo(true);
+		assertThat(jsonPath.getBoolean("inactive")).isEqualTo(false);
+		assertThat(jsonPath.getString("version")).isEqualTo("20140131");
+		assertThat(jsonPath.getString("code")).isEqualTo("Code");
+		assertThat(jsonPath.getString("display")).isEqualTo("displayValue");
+		assertThat(jsonPath.getString("designation")).isNotNull();
+		assertThat(jsonPath.getString("contains")).isNotNull();
 	}
 	
 	@Test
@@ -220,13 +217,13 @@ public class ValueSetSerializationTest extends FhirTest {
 		applyFilter(valueSet);
 		
 		JsonPath jsonPath = getJsonPath(valueSet);
-		assertThat(jsonPath.getString("url"), equalTo("http://who.org"));
-		assertThat(jsonPath.getString("version"), equalTo("20130131"));
-		assertThat(jsonPath.getString("name"), equalTo("refsetName"));
-		assertThat(jsonPath.getString("description"), equalTo("descriptionString"));
-		assertThat(jsonPath.getString("title"), equalTo("refsetTitle"));
-		assertThat(jsonPath.get("expansion.parameter.name"), hasItem("paramName"));
-		assertThat(jsonPath.get("expansion.contains.system"), hasItem("systemUri"));
+		assertThat(jsonPath.getString("url")).isEqualTo("http://who.org");
+		assertThat(jsonPath.getString("version")).isEqualTo("20130131");
+		assertThat(jsonPath.getString("name")).isEqualTo("refsetName");
+		assertThat(jsonPath.getString("description")).isEqualTo("descriptionString");
+		assertThat(jsonPath.getString("title")).isEqualTo("refsetTitle");
+		assertThat(jsonPath.getList("expansion.parameter.name")).contains("paramName");
+		assertThat(jsonPath.getList("expansion.contains.system")).contains("systemUri");
 		
 	}
 

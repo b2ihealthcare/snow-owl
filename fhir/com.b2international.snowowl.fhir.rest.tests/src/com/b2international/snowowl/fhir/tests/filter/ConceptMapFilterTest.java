@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,7 @@
  */
 package com.b2international.snowowl.fhir.tests.filter;
 
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
@@ -102,7 +100,7 @@ public class ConceptMapFilterTest extends FhirTest {
 		setupSummaryFilter(summaryParameter);
 		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(conceptMap));
-		assertThat(jsonPath.getString("group"), notNullValue());
+		assertThat(jsonPath.getString("group")).isNotNull();
 	}
 	
 	@Test
@@ -116,7 +114,7 @@ public class ConceptMapFilterTest extends FhirTest {
 		setupSummaryFilter(summaryParameter);
 
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(conceptMap));
-		assertThat(jsonPath.getString("group"), nullValue());
+		assertThat(jsonPath.getString("group")).isNull();
 	}
 	
 	private void setupSummaryFilter(SummaryParameterValue summaryParameter) {

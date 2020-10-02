@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,8 @@
  */
 package com.b2international.snowowl.fhir.tests.serialization.parameterized;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItems;
-import static org.junit.Assert.assertThat;
+import static com.b2international.snowowl.fhir.tests.FhirParameterAssert.fhirParameter;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 
@@ -35,7 +34,6 @@ import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
 import com.b2international.snowowl.fhir.core.model.dt.SubProperty;
 import com.b2international.snowowl.fhir.tests.FhirExceptionIssueMatcher;
-import com.b2international.snowowl.fhir.tests.FhirParameterMatcher;
 import com.b2international.snowowl.fhir.tests.FhirTest;
 
 import io.restassured.path.json.JsonPath;
@@ -139,34 +137,34 @@ public class LookupResultSerializationTest extends FhirTest {
 		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(fhirParameters));
 		
-		assertThat(jsonPath.getString("resourceType"), equalTo("Parameters"));
+		assertThat(jsonPath.getString("resourceType")).isEqualTo("Parameters");
 
-		assertThat(jsonPath.getList("parameter.name"), hasItems("name", "display", "designation", "property"));
+		assertThat(jsonPath.getList("parameter.name")).containsOnly("name", "display", "designation", "property");
 		
-		assertThat(jsonPath, FhirParameterMatcher.hasParameter("name", FhirDataType.STRING, "test"));
-		assertThat(jsonPath, FhirParameterMatcher.hasParameter("display", FhirDataType.STRING, "display"));
+		assertThat(jsonPath).has(fhirParameter("name", FhirDataType.STRING, "test"));
+		assertThat(jsonPath).has(fhirParameter("display", FhirDataType.STRING, "display"));
 		
-		assertThat(jsonPath.getString("parameter[2].name"), equalTo("designation"));
-		assertThat(jsonPath.getString("parameter[2].part[0].name"), equalTo("language"));
-		assertThat(jsonPath.getString("parameter[2].part[0].valueCode"), equalTo("uk"));
-		assertThat(jsonPath.getString("parameter[2].part[1].name"), equalTo("value"));
-		assertThat(jsonPath.getString("parameter[2].part[1].valueString"), equalTo("dValue"));
+		assertThat(jsonPath.getString("parameter[2].name")).isEqualTo("designation");
+		assertThat(jsonPath.getString("parameter[2].part[0].name")).isEqualTo("language");
+		assertThat(jsonPath.getString("parameter[2].part[0].valueCode")).isEqualTo("uk");
+		assertThat(jsonPath.getString("parameter[2].part[1].name")).isEqualTo("value");
+		assertThat(jsonPath.getString("parameter[2].part[1].valueString")).isEqualTo("dValue");
 		
-		assertThat(jsonPath.getString("parameter[3].name"), equalTo("property"));
-		assertThat(jsonPath.getString("parameter[3].part[0].name"), equalTo("code"));
-		assertThat(jsonPath.getString("parameter[3].part[0].valueCode"), equalTo("1234"));
-		assertThat(jsonPath.getString("parameter[3].part[1].name"), equalTo("value"));
-		assertThat(jsonPath.getString("parameter[3].part[1].valueString"), equalTo("sds"));
-		assertThat(jsonPath.getString("parameter[3].part[2].name"), equalTo("description"));
-		assertThat(jsonPath.getString("parameter[3].part[2].valueString"), equalTo("propDescription"));
+		assertThat(jsonPath.getString("parameter[3].name")).isEqualTo("property");
+		assertThat(jsonPath.getString("parameter[3].part[0].name")).isEqualTo("code");
+		assertThat(jsonPath.getString("parameter[3].part[0].valueCode")).isEqualTo("1234");
+		assertThat(jsonPath.getString("parameter[3].part[1].name")).isEqualTo("value");
+		assertThat(jsonPath.getString("parameter[3].part[1].valueString")).isEqualTo("sds");
+		assertThat(jsonPath.getString("parameter[3].part[2].name")).isEqualTo("description");
+		assertThat(jsonPath.getString("parameter[3].part[2].valueString")).isEqualTo("propDescription");
 
-		assertThat(jsonPath.getString("parameter[3].part[3].name"), equalTo("subproperty"));
-		assertThat(jsonPath.getString("parameter[3].part[3].part[0].name"), equalTo("code"));
-		assertThat(jsonPath.getString("parameter[3].part[3].part[0].valueCode"), equalTo("subCode"));
-		assertThat(jsonPath.getString("parameter[3].part[3].part[1].name"), equalTo("value"));
-		assertThat(jsonPath.getInt("parameter[3].part[3].part[1].valueInteger"), equalTo(1));
-		assertThat(jsonPath.getString("parameter[3].part[3].part[2].name"), equalTo("description"));
-		assertThat(jsonPath.getString("parameter[3].part[3].part[2].valueString"), equalTo("subDescription"));
+		assertThat(jsonPath.getString("parameter[3].part[3].name")).isEqualTo("subproperty");
+		assertThat(jsonPath.getString("parameter[3].part[3].part[0].name")).isEqualTo("code");
+		assertThat(jsonPath.getString("parameter[3].part[3].part[0].valueCode")).isEqualTo("subCode");
+		assertThat(jsonPath.getString("parameter[3].part[3].part[1].name")).isEqualTo("value");
+		assertThat(jsonPath.getInt("parameter[3].part[3].part[1].valueInteger")).isEqualTo(1);
+		assertThat(jsonPath.getString("parameter[3].part[3].part[2].name")).isEqualTo("description");
+		assertThat(jsonPath.getString("parameter[3].part[3].part[2].valueString")).isEqualTo("subDescription");
 	}
 	
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,7 @@
  */
 package com.b2international.snowowl.fhir.tests.filter;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItems;
-import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
@@ -45,14 +42,14 @@ public class ParameterParsingTest extends FhirTest {
 		
 		MultiValueMap<String,String> queryParams = createQueryParams("http://localhost?_summary=1, 2&_elements=id&_summary=3");
 		List<String> requestedFields = getRequestedFields(queryParams, "_summary");
-		assertThat(requestedFields, contains("1", "2", "3"));
+		assertThat(requestedFields).contains("1", "2", "3");
 		requestedFields = getRequestedFields(queryParams, "_elements");
-		assertThat(requestedFields, contains("id"));
+		assertThat(requestedFields).contains("id");
 		
 		Multimap<String, String> multiMap = HashMultimap.create();
 		queryParams.keySet().forEach(k -> multiMap.putAll(k, queryParams.get(k)));
-		assertThat(multiMap.keySet().size(), equalTo(2));
-		assertThat(multiMap.get("_summary"), hasItems("1, 2", "3")); //note, that this is one string
+		assertThat(multiMap.keySet()).hasSize(2);
+		assertThat(multiMap.get("_summary")).contains("1, 2", "3"); //note, that this is one string
 		
 	}
 	
@@ -65,12 +62,12 @@ public class ParameterParsingTest extends FhirTest {
 		
 		queryParams = createQueryParams("http://localhost?_summary=1, 2");
 		requestedFields = getRequestedFields(queryParams, "_summary");
-		assertThat(requestedFields, contains("1", "2"));
+		assertThat(requestedFields).contains("1", "2");
 		
 		
 		queryParams = createQueryParams("http://localhost?_summary=1&_summary=2");
 		requestedFields = getRequestedFields(queryParams, "_summary");
-		assertThat(requestedFields, contains("1", "2"));
+		assertThat(requestedFields).contains("1", "2");
 		
 		queryParams = createQueryParams("http://localhost?_summary=");
 		requestedFields = getRequestedFields(queryParams, "_summary");
@@ -84,13 +81,13 @@ public class ParameterParsingTest extends FhirTest {
 		
 		queryParams = createQueryParams("http://localhost?_summary=1, 2&_elements=id");
 		requestedFields = getRequestedFields(queryParams, "_summary");
-		assertThat(requestedFields, contains("1", "2"));
+		assertThat(requestedFields).contains("1", "2");
 		requestedFields = getRequestedFields(queryParams, "_elements");
-		assertThat(requestedFields, contains("id"));
+		assertThat(requestedFields).contains("id");
 		
 		queryParams = createQueryParams("http://localhost?property=isActive&property=effectiveTime");
 		requestedFields = getRequestedFields(queryParams, "property");
-		assertThat(requestedFields, contains("isActive", "effectiveTime"));
+		assertThat(requestedFields).contains("isActive", "effectiveTime");
 		
 	}
 	

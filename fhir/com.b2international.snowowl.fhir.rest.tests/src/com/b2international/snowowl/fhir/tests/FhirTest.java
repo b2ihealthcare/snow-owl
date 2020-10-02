@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ import io.restassured.path.json.JsonPath;
  */
 public class FhirTest {
 	
-	protected static final String TEST_DATE_STRING = "2018-03-23T07:49:40.000+0000"; //$NON-NLS-N$
+	protected static final String TEST_DATE_STRING = "2018-03-23T07:49:40.000+00:00"; //$NON-NLS-N$
 	
 	protected static final ObjectMapper objectMapper = new SnowOwlApiConfig().objectMapper();
 	

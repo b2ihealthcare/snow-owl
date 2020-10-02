@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,9 @@
  */
 package com.b2international.snowowl.fhir.tests.serialization.parameterized;
 
-import static org.hamcrest.collection.IsArrayContainingInAnyOrder.arrayContainingInAnyOrder;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Collection;
@@ -209,7 +208,7 @@ public class ParameterDeserializationTest extends FhirTest {
 		
 		assertFalse(lookupRequest.getProperties().isEmpty());
 		Collection<String> properties = lookupRequest.getPropertyCodes();
-		assertThat(properties.toArray(), arrayContainingInAnyOrder("prop1", "prop2"));
+		assertThat(properties).containsExactlyInAnyOrder("prop1", "prop2");
 	}
 
 	private void assertParameter(String jsonParam, String paramName, FhirDataType fhirDataType, Object paramValue) throws Exception {

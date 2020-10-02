@@ -20,6 +20,7 @@ import java.util.Date;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.jobs.JobRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.test.commons.Services;
 
 /**
@@ -27,7 +28,9 @@ import com.b2international.snowowl.test.commons.Services;
  * 
  * @since 7.0
  */
-public class TestArtifactCreator {
+public abstract class TestArtifactCreator {
+	
+	protected static final String REPOSITORY_UUID = SnomedDatastoreActivator.REPOSITORY_UUID;
 	
 	protected synchronized static void createVersion(String version, String codeSystemName) {
 		

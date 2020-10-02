@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,9 @@
  */
 package com.b2international.snowowl.fhir.tests.serialization.domain;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
@@ -38,9 +35,6 @@ import io.restassured.path.json.JsonPath;
  * @since 6.3
  */
 public class BundleSerializationTest extends FhirTest {
-	
-	@Rule
-	public ExpectedException exception = ExpectedException.none();
 	
 	@Test
 	public void bundleTest() throws Exception {
@@ -68,28 +62,28 @@ public class BundleSerializationTest extends FhirTest {
 		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(bundle));
 		
-		assertThat(jsonPath.getString("resourceType"), equalTo("Bundle"));
-		assertThat(jsonPath.getString("id"), equalTo("bundle_Id?"));
-		assertThat(jsonPath.getString("language"), equalTo("en"));
-		assertThat(jsonPath.getString("type"), equalTo("searchset"));
-		assertThat(jsonPath.getInt("total"), equalTo(1));
+		assertThat(jsonPath.getString("resourceType")).isEqualTo("Bundle");
+		assertThat(jsonPath.getString("id")).isEqualTo("bundle_Id?");
+		assertThat(jsonPath.getString("language")).isEqualTo("en");
+		assertThat(jsonPath.getString("type")).isEqualTo("searchset");
+		assertThat(jsonPath.getInt("total")).isEqualTo(1);
 		
 		jsonPath.setRoot("link[0]");
 		
-		assertThat(jsonPath.getString("relation"), equalTo("self"));
-		assertThat(jsonPath.getString("url"), equalTo("http://localhost:8080/snowowl/CodeSystem"));
+		assertThat(jsonPath.getString("relation")).isEqualTo("self");
+		assertThat(jsonPath.getString("url")).isEqualTo("http://localhost:8080/snowowl/CodeSystem");
 		
 		jsonPath.setRoot("entry[0]");
 		
-		assertThat(jsonPath.getString("fullUrl"), equalTo("full Url"));
+		assertThat(jsonPath.getString("fullUrl")).isEqualTo("full Url");
 		jsonPath.setRoot("entry[0].resource");
 		
-		assertThat(jsonPath.getString("resourceType"), equalTo("CodeSystem"));
-		assertThat(jsonPath.getString("id"), equalTo("repo/shortName"));
-		assertThat(jsonPath.getString("url"), equalTo("code system uri"));
-		assertThat(jsonPath.getString("name"), equalTo("Local code system"));
-		assertThat(jsonPath.getString("status"), equalTo("active"));
-		assertThat(jsonPath.getString("content"), equalTo("complete"));
+		assertThat(jsonPath.getString("resourceType")).isEqualTo("CodeSystem");
+		assertThat(jsonPath.getString("id")).isEqualTo("repo/shortName");
+		assertThat(jsonPath.getString("url")).isEqualTo("code system uri");
+		assertThat(jsonPath.getString("name")).isEqualTo("Local code system");
+		assertThat(jsonPath.getString("status")).isEqualTo("active");
+		assertThat(jsonPath.getString("content")).isEqualTo("complete");
 	}
 
 }

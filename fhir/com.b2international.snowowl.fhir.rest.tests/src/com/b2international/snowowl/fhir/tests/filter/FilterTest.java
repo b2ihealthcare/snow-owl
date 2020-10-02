@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,8 @@
  */
 package com.b2international.snowowl.fhir.tests.filter;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 
 import java.util.List;
 import java.util.Set;
@@ -114,7 +112,7 @@ public class FilterTest extends FhirTest {
 		MultiValueMap<String,String> queryParams = uriComponentsBuilder.build().getQueryParams();
 		Set<String> keySet = queryParams.keySet();
 		for (String key : keySet) {
-			assertThat(queryParams.get(key), contains("1, 2"));
+			assertThat(queryParams.get(key)).contains("1, 2");
 		}
 	}
 	
@@ -176,42 +174,42 @@ public class FilterTest extends FhirTest {
 
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(codeSystem));
 		
-		assertThat(jsonPath.getString("resourceType"), equalTo("CodeSystem"));
-		assertThat(jsonPath.getString("id"), equalTo("repo/shortName"));
-		assertThat(jsonPath.getString("language"), equalTo("en"));
-		assertThat(jsonPath.getString("text.status"), equalTo("additional"));
-		assertThat(jsonPath.getString("text.div"), equalTo("<div>Some html text</div>"));
-		assertThat(jsonPath.getString("url"), equalTo("code system uri"));
+		assertThat(jsonPath.getString("resourceType")).isEqualTo("CodeSystem");
+		assertThat(jsonPath.getString("id")).isEqualTo("repo/shortName");
+		assertThat(jsonPath.getString("language")).isEqualTo("en");
+		assertThat(jsonPath.getString("text.status")).isEqualTo("additional");
+		assertThat(jsonPath.getString("text.div")).isEqualTo("<div>Some html text</div>");
+		assertThat(jsonPath.getString("url")).isEqualTo("code system uri");
 
-		assertThat(jsonPath.getString("identifier.use"), equalTo("official"));
-		assertThat(jsonPath.getString("identifier.system"), equalTo("www.hl7.org"));
-		assertThat(jsonPath.getString("identifier.value"), equalTo("OID:1234.1234"));
-		assertThat(jsonPath.getString("version"), equalTo("2018.01.01"));
-		assertThat(jsonPath.getString("name"), equalTo("Local code system"));
-		assertThat(jsonPath.getString("title"), equalTo("title"));
-		assertThat(jsonPath.getString("status"), equalTo("active"));
-		assertThat(jsonPath.getString("publisher"), equalTo("B2i"));
-		assertThat(jsonPath.getString("description"), equalTo("Code system description"));
-		assertThat(jsonPath.getString("hierarchyMeaning"), equalTo("is-a"));
-		assertThat(jsonPath.getString("content"), equalTo("complete"));
-		assertThat(jsonPath.getString("property[0].code"), equalTo("child"));
-		assertThat(jsonPath.getString("property[0].uri"), equalTo("http://hl7.org/fhir/concept-properties/child"));
-		assertThat(jsonPath.getString("property[0].description"), equalTo("Child"));
-		assertThat(jsonPath.getString("property[0].type"), equalTo("code"));
+		assertThat(jsonPath.getString("identifier.use")).isEqualTo("official");
+		assertThat(jsonPath.getString("identifier.system")).isEqualTo("www.hl7.org");
+		assertThat(jsonPath.getString("identifier.value")).isEqualTo("OID:1234.1234");
+		assertThat(jsonPath.getString("version")).isEqualTo("2018.01.01");
+		assertThat(jsonPath.getString("name")).isEqualTo("Local code system");
+		assertThat(jsonPath.getString("title")).isEqualTo("title");
+		assertThat(jsonPath.getString("status")).isEqualTo("active");
+		assertThat(jsonPath.getString("publisher")).isEqualTo("B2i");
+		assertThat(jsonPath.getString("description")).isEqualTo("Code system description");
+		assertThat(jsonPath.getString("hierarchyMeaning")).isEqualTo("is-a");
+		assertThat(jsonPath.getString("content")).isEqualTo("complete");
+		assertThat(jsonPath.getString("property[0].code")).isEqualTo("child");
+		assertThat(jsonPath.getString("property[0].uri")).isEqualTo("http://hl7.org/fhir/concept-properties/child");
+		assertThat(jsonPath.getString("property[0].description")).isEqualTo("Child");
+		assertThat(jsonPath.getString("property[0].type")).isEqualTo("code");
 		
 		jsonPath.setRoot("concept[0]");
 		
-		assertThat(jsonPath.getString("code"), equalTo("conceptCode"));
-		assertThat(jsonPath.getString("display"), equalTo("Label"));
-		assertThat(jsonPath.getString("definition"), equalTo("This is a code definition"));
-		assertThat(jsonPath.getString("designation[0].language"), equalTo("uk_en"));
-		assertThat(jsonPath.getString("designation[0].use.code"), equalTo("internal"));
-		assertThat(jsonPath.getString("designation[0].use.system"), equalTo("http://b2i.sg/test"));
-		assertThat(jsonPath.getString("designation[0].value"), equalTo("conceptLabel_uk"));
-		assertThat(jsonPath.getString("designation[0].languageCode"), equalTo("uk_en"));
+		assertThat(jsonPath.getString("code")).isEqualTo("conceptCode");
+		assertThat(jsonPath.getString("display")).isEqualTo("Label");
+		assertThat(jsonPath.getString("definition")).isEqualTo("This is a code definition");
+		assertThat(jsonPath.getString("designation[0].language")).isEqualTo("uk_en");
+		assertThat(jsonPath.getString("designation[0].use.code")).isEqualTo("internal");
+		assertThat(jsonPath.getString("designation[0].use.system")).isEqualTo("http://b2i.sg/test");
+		assertThat(jsonPath.getString("designation[0].value")).isEqualTo("conceptLabel_uk");
+		assertThat(jsonPath.getString("designation[0].languageCode")).isEqualTo("uk_en");
 
-		assertThat(jsonPath.getString("property[0].code"), equalTo("childConcept"));
-		assertThat(jsonPath.getString("property[0].valueCode"), equalTo("childId"));
+		assertThat(jsonPath.getString("property[0].code")).isEqualTo("childConcept");
+		assertThat(jsonPath.getString("property[0].valueCode")).isEqualTo("childId");
 		
 		//Just in case once again
 		String expectedJson = "{\"resourceType\":\"CodeSystem\","

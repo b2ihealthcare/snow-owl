@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,11 @@
  */
 package com.b2international.snowowl.fhir.tests.serialization.parameterized;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
+import static com.b2international.snowowl.fhir.tests.FhirParameterAssert.fhirParameter;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import com.b2international.snowowl.fhir.core.codesystems.ConceptMapEquivalence;
 import com.b2international.snowowl.fhir.core.model.conceptmap.Match;
@@ -32,7 +29,6 @@ import com.b2international.snowowl.fhir.core.model.dt.FhirDataType;
 import com.b2international.snowowl.fhir.core.model.dt.Parameter;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
-import com.b2international.snowowl.fhir.tests.FhirParameterMatcher;
 import com.b2international.snowowl.fhir.tests.FhirTest;
 
 import io.restassured.path.json.JsonPath;
@@ -45,9 +41,6 @@ import io.restassured.path.json.JsonPath;
  */
 public class TranslateResultSerializationTest extends FhirTest {
 	
-	@Rule
-	public ExpectedException exception = ExpectedException.none();
-	
 	@Test
 	public void falseResultTest() throws Exception {
 
@@ -57,9 +50,9 @@ public class TranslateResultSerializationTest extends FhirTest {
 		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(fhirParameters));
 		
-		assertThat(jsonPath.getString("resourceType"), equalTo("Parameters"));
-		assertThat(jsonPath.getList("parameter").size(), is(1));
-		assertThat(jsonPath, FhirParameterMatcher.hasParameter("result", FhirDataType.BOOLEAN, false));
+		assertThat(jsonPath.getString("resourceType")).isEqualTo("Parameters");
+		assertThat(jsonPath.getList("parameter")).hasSize(1);
+		assertThat(jsonPath).has(fhirParameter("result", FhirDataType.BOOLEAN, false));
 	}
 	
 	@Test
@@ -126,9 +119,9 @@ public class TranslateResultSerializationTest extends FhirTest {
 		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(fhirParameters));
 		
-		assertThat(jsonPath.getString("resourceType"), equalTo("Parameters"));
-		assertThat(jsonPath.getList("parameter").size(), is(1));
-		assertThat(jsonPath, FhirParameterMatcher.hasParameter("result", FhirDataType.BOOLEAN, false));
+		assertThat(jsonPath.getString("resourceType")).isEqualTo("Parameters");
+		assertThat(jsonPath.getList("parameter")).hasSize(1);
+		assertThat(jsonPath).has(fhirParameter("result", FhirDataType.BOOLEAN, false));
 	}
 	
 }

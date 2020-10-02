@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,8 @@
  */
 package com.b2international.snowowl.fhir.tests.filter;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItems;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 import org.springframework.util.MultiValueMap;
@@ -85,18 +83,17 @@ public class SearchRequestParametersTest extends FhirTest {
 	@Test
 	public void testElements() {
 		SearchRequestParameters parameters = getSearchRequestParameters("http://localhost?_elements=1, 2&_elements=3");
-		assertThat(parameters.getElements(), hasItems("1", "2", "3"));
+		assertThat(parameters.getElements()).contains("1", "2", "3");
 	}
 	
 	@Test
 	public void testModifier() {
 		SearchRequestParameters parameters = getSearchRequestParameters("http://localhost?_lastUpdated:missing");
-		assertThat(parameters.getLastUpdatedParameter().getModifier(), equalTo(SearchRequestParameterModifier.missing));
+		assertThat(parameters.getLastUpdatedParameter().getModifier()).isEqualTo(SearchRequestParameterModifier.missing);
 	}
 
 	@Test
 	public void testInvalidModifier() {
-		
 		exception.expect(FhirException.class);
 		exception.expectMessage("Invalid modifier [type] for date/datetime type parameter [_lastUpdated].");
 		getSearchRequestParameters("http://localhost?_lastUpdated:type");
@@ -105,16 +102,16 @@ public class SearchRequestParametersTest extends FhirTest {
 	@Test
 	public void testPrefix() {
 		SearchRequestParameters parameters = getSearchRequestParameters("http://localhost?_lastUpdated=gt20120131");
-		assertThat(parameters.getLastUpdatedParameter().getPrefix(), equalTo(SearchRequestParameterValuePrefix.gt));
-		assertThat(parameters.getLastUpdatedParameter().getValues(), hasItems("20120131"));
+		assertThat(parameters.getLastUpdatedParameter().getPrefix()).isEqualTo(SearchRequestParameterValuePrefix.gt);
+		assertThat(parameters.getLastUpdatedParameter().getValues()).contains("20120131");
 	}
 	
 	@Test
 	public void testModifierAndPrefix() {
 		SearchRequestParameters parameters = getSearchRequestParameters("http://localhost?_lastUpdated:missing=gt20120131");
-		assertThat(parameters.getLastUpdatedParameter().getModifier(), equalTo(SearchRequestParameterModifier.missing));
-		assertThat(parameters.getLastUpdatedParameter().getPrefix(), equalTo(SearchRequestParameterValuePrefix.gt));
-		assertThat(parameters.getLastUpdatedParameter().getValues(), hasItems("20120131"));
+		assertThat(parameters.getLastUpdatedParameter().getModifier()).isEqualTo(SearchRequestParameterModifier.missing);
+		assertThat(parameters.getLastUpdatedParameter().getPrefix()).isEqualTo(SearchRequestParameterValuePrefix.gt);
+		assertThat(parameters.getLastUpdatedParameter().getValues()).contains("20120131");
 	}
 	
 	@Test

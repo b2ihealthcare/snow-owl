@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.fhir.tests.serialization.dt;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Date;
@@ -89,7 +90,7 @@ public class PrimitiveDataTypeSerializationTest extends FhirTest {
 	public void instantTest() throws Exception {
 		Date date = Dates.parse(TEST_DATE_STRING, FhirConstants.DATE_TIME_FORMAT);
 		Instant instant = Instant.builder().instant(date).build();
-		assertEquals("\"2018-03-23T07:49:40Z\"", objectMapper.writeValueAsString(instant));
+		assertThat(objectMapper.writeValueAsString(instant)).isEqualTo("\"2018-03-23T07:49:40Z\"");
 	}
 
 }
