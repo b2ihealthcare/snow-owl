@@ -101,7 +101,7 @@
 		"edge_ngram": {
 			"type": "edge_ngram",
 			"min_gram": 1,
-			"max_gram": 20
+			"max_gram": 10
 		},
 		"possessive": {
 			"type": "stemmer",
