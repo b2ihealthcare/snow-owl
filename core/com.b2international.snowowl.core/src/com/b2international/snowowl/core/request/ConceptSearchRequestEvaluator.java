@@ -85,6 +85,11 @@ public interface ConceptSearchRequestEvaluator {
 		 * Number of matches to return.
 		 */
 		LIMIT,
+		
+		/**
+		 * Use fuzzy query in the search
+		 */
+		USE_FUZZY;
 	}
 
 	/**
