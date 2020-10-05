@@ -139,7 +139,7 @@ public interface ConceptSearchRequestEvaluator {
 	
 	default void evaluateTermFilterOptions(SearchResourceRequestBuilder<?, ?, ?> requestBuilder, Options search) {
 		if (search.containsKey(OptionKey.MIN_TERM_MATCH)) {
-			requestBuilder.withMinTermMatch((int) search.get(OptionKey.MIN_TERM_MATCH));
+			requestBuilder.withMinTermMatch(search.get(OptionKey.MIN_TERM_MATCH, Integer.class));
 		}
 		
 		if (search.containsKey(OptionKey.USE_FUZZY)) {
