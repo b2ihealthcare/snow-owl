@@ -280,7 +280,7 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 		return minTermMatch;
 	}
 	
-	protected final boolean fuzzy() {
+	protected final boolean useFuzzy() {
 		return fuzzy;
 	}
 
