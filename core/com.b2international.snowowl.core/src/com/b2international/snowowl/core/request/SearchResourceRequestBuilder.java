@@ -44,6 +44,8 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	
 	private int minTermMatch = 0;
 	
+	private boolean fuzzy = false;
+	
 	private final OptionsBuilder optionsBuilder = OptionsBuilder.newBuilder();
 	
 	protected SearchResourceRequestBuilder() {
@@ -153,6 +155,15 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 		return getSelf();
 	}
 	
+	/**
+	 * Enables fuzzy search
+	 * @return this builder instance
+	 */
+	public final B withFuzzy() {
+		this.fuzzy = true;
+		return getSelf();
+	}
+	
 	// XXX: Does not allow null values or collections with null values
 	protected final B addOption(String key, Object value) {
 		if (value instanceof Iterable<?>) {
@@ -180,6 +191,7 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 		req.setLimit(Math.min(limit, MAX_LIMIT));
 		req.setOptions(optionsBuilder.build());
 		req.setMinTermMatch(minTermMatch);
+		req.setFuzzy(fuzzy);
 		return req;
 	}
 	

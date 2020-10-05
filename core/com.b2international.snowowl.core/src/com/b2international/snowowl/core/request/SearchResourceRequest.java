@@ -219,6 +219,8 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 	@NotNull
 	private Options options;
 	
+	private boolean fuzzy;
+	
 	protected SearchResourceRequest() {}
 	
 	/**
@@ -239,8 +241,12 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 		this.componentIds = componentIds;
 	}
 	
-	public void setMinTermMatch(int minTermMatch) {
+	void setMinTermMatch(int minTermMatch) {
 		this.minTermMatch = minTermMatch;
+	}
+	
+	void setFuzzy(boolean fuzzy) {
+		this.fuzzy = fuzzy;
 	}
 
 	@JsonProperty
@@ -272,6 +278,10 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 	
 	protected final int minTermMatch() {
 		return minTermMatch;
+	}
+	
+	protected final boolean fuzzy() {
+		return fuzzy;
 	}
 
 	/**
