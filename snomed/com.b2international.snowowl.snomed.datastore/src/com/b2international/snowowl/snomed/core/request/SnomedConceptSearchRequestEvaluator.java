@@ -49,6 +49,7 @@ public final class SnomedConceptSearchRequestEvaluator implements ConceptSearchR
 	@Override
 	public Concepts evaluate(CodeSystemURI uri, BranchContext context, Options search) {
 		final SnomedConceptSearchRequestBuilder req = SnomedRequests.prepareSearchConcept();
+		evaluateTermFilterOptions(req, search);
 		
 		if (search.containsKey(OptionKey.ID)) {
 			req.filterByIds(search.getCollection(OptionKey.ID, String.class));
@@ -60,10 +61,6 @@ public final class SnomedConceptSearchRequestEvaluator implements ConceptSearchR
 		
 		if (search.containsKey(OptionKey.TERM)) {
 			req.filterByTerm(search.getString(OptionKey.TERM));
-		}
-		
-		if (search.containsKey(OptionKey.MIN_TERM_MATCH)) {
-			req.withMinTermMatch(search.get(OptionKey.MIN_TERM_MATCH, Integer.class));
 		}
 		
 		if (search.containsKey(OptionKey.QUERY) || search.containsKey(OptionKey.MUST_NOT_QUERY)) {
