@@ -213,7 +213,7 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 	@Min(0)
 	private int limit;
 	
-	@Min(1)
+	@Min(0)
 	private int minTermMatch;
 
 	@NotNull

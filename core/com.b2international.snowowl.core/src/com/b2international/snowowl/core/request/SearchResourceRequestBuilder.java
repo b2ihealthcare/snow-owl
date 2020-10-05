@@ -42,7 +42,7 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	
 	private int limit = 50;
 	
-	private int minTermMatch = 1;
+	private int minTermMatch = 0;
 	
 	private final OptionsBuilder optionsBuilder = OptionsBuilder.newBuilder();
 	
