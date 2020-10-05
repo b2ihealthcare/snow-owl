@@ -137,6 +137,16 @@ public interface ConceptSearchRequestEvaluator {
 		requestBuilder.filterByIds(idFilter);
 	}
 	
+	default void evaluateTermFilterOptions(SearchResourceRequestBuilder<?, ?, ?> requestBuilder, Options search) {
+		if (search.containsKey(OptionKey.MIN_TERM_MATCH)) {
+			requestBuilder.withMinTermMatch((int) search.get(OptionKey.MIN_TERM_MATCH));
+		}
+		
+		if (search.containsKey(OptionKey.USE_FUZZY)) {
+			requestBuilder.withFuzzy();
+		}
+	}
+	
 	/**
 	 * No-op request evaluator that returns zero results
 	 * 
