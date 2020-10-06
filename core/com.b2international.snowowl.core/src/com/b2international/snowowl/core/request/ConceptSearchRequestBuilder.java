@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.request;
 
+import java.util.Map;
+
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.Concepts;
 import com.b2international.snowowl.core.events.AsyncRequest;
@@ -110,6 +112,18 @@ public final class ConceptSearchRequestBuilder extends SearchResourceRequestBuil
 	 */
 	public ConceptSearchRequestBuilder filterByExclusions(Iterable<String> exclusions) {
 		return addOption(OptionKey.MUST_NOT_QUERY, exclusions);
+	}
+	
+	/**
+	 * Sets the preferred display term to return for every code system
+	 * 
+	 * @param prefferedDisplayMap
+	 *            - key: code system short name
+	 *            - value: String representation of the preferred display
+	 * @return
+	 */
+	public ConceptSearchRequestBuilder setPreferredDisplayMap(Map<String, String> prefferedDisplayMap) {
+		return addOption(OptionKey.PREFERED_DISPLAY_MAP, prefferedDisplayMap);
 	}
 
 	@Override
