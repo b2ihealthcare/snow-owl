@@ -43,6 +43,11 @@ public class Description {
 		return type;
 	}
 	
+	@Override
+	public String toString() {
+		return term + " " + type.name();
+	}
+	
 	public static Description toSynonym(final String term) {
 		return new Description(term, Type.SYNONYM);
 	}
