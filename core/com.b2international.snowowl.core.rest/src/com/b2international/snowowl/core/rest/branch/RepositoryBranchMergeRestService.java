@@ -60,8 +60,7 @@ public abstract class RepositoryBranchMergeRestService extends AbstractRestServi
 	
 	@ApiOperation(
 		value = "Start branch merge or rebase", 
-		notes = "Signals that making changes on the source branch available on the target branch in the SNOMED CT repository " +
-				"should start as soon as possible."
+		notes = "Signals that making changes on the source branch available on the target branch in the repository should start as soon as possible."
 	)
 	@ApiResponses({
 		@ApiResponse(code = 202, message = "Accepted"),
@@ -87,6 +86,7 @@ public abstract class RepositoryBranchMergeRestService extends AbstractRestServi
 				.setReviewId(restRequest.getReviewId())
 				.setUserId(author)
 				.setCommitComment(restRequest.getCommitComment())
+				.setSquash(restRequest.isSquash())
 				.build(repositoryId)
 				.runAsJob(String.format("Merge branch '%s' into '%s'", sourcePath, targetPath))
 				.execute(getBus())
