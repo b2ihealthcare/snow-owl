@@ -15,7 +15,9 @@
  */
 package com.b2international.snowowl.core.domain;
 
-import java.util.SortedSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -34,7 +36,7 @@ public final class Concept extends BaseComponent {
 	
 	private String term;
 	private String iconId;
-	private SortedSet<String> alternativeTerms;
+	private List<Description> alternativeDescriptions;
 	
 	public Concept(String codeSystem, short terminologyComponentId) {
 		this.codeSystem = codeSystem;
@@ -61,12 +63,16 @@ public final class Concept extends BaseComponent {
 		this.iconId = iconId;
 	}
 	
-	public void setAlternativeTerms(SortedSet<String> alternativeTerms) {
-		this.alternativeTerms = alternativeTerms;
+	public void setAlternativeDescriptions(List<Description> alternativeTerms) {
+		this.alternativeDescriptions = alternativeTerms;
 	}
 	
-	public SortedSet<String> getAlternativeTerms() {
-		return alternativeTerms;
+	public List<Description> getAlternativeDescriptions() {
+		return alternativeDescriptions;
+	}
+	
+	public Set<String> getAlternativeTerms() {
+		return alternativeDescriptions.stream().map(Description::getTerm).collect(Collectors.toSet());
 	}
 	
 	@Override
