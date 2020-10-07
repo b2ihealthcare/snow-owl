@@ -43,6 +43,10 @@ public class MergeRestRequest {
 	@ApiParam(required = false)
 	@JsonProperty
 	private String reviewId;
+	
+	@ApiParam(required = false)
+	@JsonProperty
+	private boolean squash = true;
 
 	public String getCommitComment() {
 		return commitComment;
@@ -58,6 +62,10 @@ public class MergeRestRequest {
 	
 	public String getTarget() {
 		return target;
+	}
+	
+	public boolean isSquash() {
+		return squash;
 	}
 	
 }
