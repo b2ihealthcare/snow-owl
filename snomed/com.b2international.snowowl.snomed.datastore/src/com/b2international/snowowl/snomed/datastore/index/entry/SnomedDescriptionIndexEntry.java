@@ -22,7 +22,7 @@ import static com.b2international.index.query.Expressions.matchTextAll;
 import static com.b2international.index.query.Expressions.matchTextAny;
 import static com.b2international.index.query.Expressions.matchTextFuzzy;
 import static com.b2international.index.query.Expressions.matchTextParsed;
-import static com.b2international.index.query.Expressions.matchTextRegexp;
+import static com.b2international.index.query.Expressions.regexp;
 import static com.b2international.index.query.Expressions.scriptScore;
 import static com.google.common.collect.Lists.newArrayList;
 
@@ -191,7 +191,7 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		}
 		
 		public static Expression matchTermRegex(String regex) {
-			return matchTextRegexp(Fields.TERM + ".original", regex);
+			return regexp(Fields.TERM + ".original", regex);
 		}
 		
 		public static Expression anyTermPrefixesPresent(String term, int minShouldMatch) {
@@ -263,7 +263,7 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		}
 		
 		public static Expression semanticTagRegex(String regex) {
-			return matchTextRegexp(Fields.SEMANTIC_TAG, regex);
+			return regexp(Fields.SEMANTIC_TAG, regex);
 		}
 
 	}

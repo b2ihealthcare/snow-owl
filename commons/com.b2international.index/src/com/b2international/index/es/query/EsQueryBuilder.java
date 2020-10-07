@@ -114,6 +114,8 @@ public final class EsQueryBuilder {
 			visit((HasParentPredicate) expression);
 		} else if (expression instanceof PrefixPredicate) {
 			visit((PrefixPredicate) expression);
+		} else if (expression instanceof RegexpPredicate) {
+			visit((RegexpPredicate) expression);
 		} else if (expression instanceof StringSetPredicate) {
 			visit((StringSetPredicate) expression);
 		} else if (expression instanceof LongSetPredicate) {
@@ -230,32 +232,35 @@ public final class EsQueryBuilder {
 		QueryBuilder query;
 		switch (type) {
 		case PHRASE:
-			query = QueryBuilders.matchPhraseQuery(field, term);
+			query = QueryBuilders.matchPhraseQuery(field, term)
+						.analyzer(predicate.analyzer());
 			break;
 		case ALL:
-			query = QueryBuilders.matchQuery(field, term).operator(Operator.AND);
+			query = QueryBuilders.matchQuery(field, term)
+						.analyzer(predicate.analyzer())
+						.operator(Operator.AND);
 			break;
 		case ANY:
 			query = QueryBuilders.matchQuery(field, term)
-				.operator(Operator.OR)
-				.minimumShouldMatch(Integer.toString(minShouldMatch));
+						.analyzer(predicate.analyzer())
+						.operator(Operator.OR)
+						.minimumShouldMatch(Integer.toString(minShouldMatch));
 			break;
 		case FUZZY:
 			query = QueryBuilders.matchQuery(field, term)
-				.fuzziness(Fuzziness.ONE)
-				.prefixLength(1)
-				.operator(Operator.AND)
-				.maxExpansions(10);
+						.analyzer(predicate.analyzer())
+						.fuzziness(Fuzziness.ONE)
+						.prefixLength(1)
+						.operator(Operator.AND)
+						.maxExpansions(10);
 			break;
 		case PARSED:
 			query = QueryBuilders.queryStringQuery(TextConstants.escape(term))
+						.analyzer(predicate.analyzer())
 						.field(field)
 						.escape(false)
 						.allowLeadingWildcard(true)
 						.defaultOperator(Operator.AND);
-			break;
-		case REGEXP:
-			query = QueryBuilders.regexpQuery(field, term);
 			break;
 		default: throw new UnsupportedOperationException("Unexpected text match type: " + type);
 		}
@@ -309,6 +314,10 @@ public final class EsQueryBuilder {
 	
 	private void visit(PrefixPredicate predicate) {
 		deque.push(QueryBuilders.prefixQuery(toFieldPath(predicate), predicate.getArgument()));
+	}
+	
+	private void visit(RegexpPredicate regexp) {
+		deque.push(QueryBuilders.regexpQuery(toFieldPath(regexp), regexp.getArgument()));
 	}
 	
 	private void visit(RangePredicate<?> range) {

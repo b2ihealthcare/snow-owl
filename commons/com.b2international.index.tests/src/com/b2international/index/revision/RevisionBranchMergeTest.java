@@ -15,7 +15,9 @@
  */
 package com.b2international.index.revision;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.util.Collection;
 import java.util.List;
@@ -440,93 +442,6 @@ public class RevisionBranchMergeTest extends BaseRevisionIndexTest {
 		} finally {
 			index().hooks().removeHook(hook);
 		}
-	}
-	
-	@Test
-	public void rebaseThenMergeResolvableSingleValuedPropertyChanges() throws Exception {
-		indexRevision(MAIN, NEW_DATA);
-		final String branchA = createBranch(MAIN, "a");
-		
-		indexChange(MAIN, NEW_DATA, NEW_DATA.toBuilder().field1("field1Changed").build());
-		indexChange(branchA, NEW_DATA, NEW_DATA.toBuilder().field2("field2Changed").build());
-		
-		branching().prepareMerge(MAIN, branchA).merge();
-		RevisionData mainRevision = getRevision(MAIN, RevisionData.class, NEW_DATA.getId());
-		assertDocEquals(new RevisionData(NEW_DATA.getId(), "field1Changed", "field2"), mainRevision);
-		RevisionData branchARevision = getRevision(branchA, RevisionData.class, NEW_DATA.getId());
-		assertDocEquals(new RevisionData(NEW_DATA.getId(), "field1Changed", "field2Changed"), branchARevision);
-		
-		branching().prepareMerge(branchA, MAIN).squash(true).merge();
-		mainRevision = getRevision(MAIN, RevisionData.class, NEW_DATA.getId());
-		assertDocEquals(new RevisionData(NEW_DATA.getId(), "field1Changed", "field2Changed"), mainRevision);
-		branchARevision = getRevision(branchA, RevisionData.class, NEW_DATA.getId());
-		assertDocEquals(new RevisionData(NEW_DATA.getId(), "field1Changed", "field2Changed"), branchARevision);
-	}
-	
-	@Test
-	public void rebaseThenMergeResolvableMultiValuedPropertyChanges() throws Exception {
-		indexRevision(MAIN, NEW_DATA);
-		final String branchA = createBranch(MAIN, "a");
-		
-		final List<String> terms = List.of("term1", "term2");
-		indexChange(MAIN, NEW_DATA, NEW_DATA.toBuilder().terms(terms).build());
-		indexChange(branchA, NEW_DATA, NEW_DATA.toBuilder().field1("field1Changed").build());
-		
-		branching().prepareMerge(MAIN, branchA).merge();
-		RevisionData mainRevision = getRevision(MAIN, RevisionData.class, NEW_DATA.getId());
-		assertDocEquals(new RevisionData(NEW_DATA.getId(), "field1", "field2", terms), mainRevision);
-		RevisionData branchARevision = getRevision(branchA, RevisionData.class, NEW_DATA.getId());
-		assertDocEquals(new RevisionData(NEW_DATA.getId(), "field1Changed", "field2", terms), branchARevision);
-		
-		branching().prepareMerge(branchA, MAIN).squash(true).merge();
-		mainRevision = getRevision(MAIN, RevisionData.class, NEW_DATA.getId());
-		assertDocEquals(new RevisionData(NEW_DATA.getId(), "field1Changed", "field2", terms), mainRevision);
-		branchARevision = getRevision(branchA, RevisionData.class, NEW_DATA.getId());
-		assertDocEquals(new RevisionData(NEW_DATA.getId(), "field1Changed", "field2", terms), branchARevision);
-	}
-	
-	@Test
-	public void rebaseResolvableConflictSingleValuedProperty() throws Exception {
-		indexRevision(MAIN, NEW_DATA);
-		final String branchA = createBranch(MAIN, "a");
-		
-		indexChange(MAIN, NEW_DATA, NEW_DATA.toBuilder().field1("field1Changed").build());
-		indexChange(branchA, NEW_DATA, NEW_DATA.toBuilder().field1("field1Changed").build());
-		
-		branching().prepareMerge(MAIN, branchA).merge();
-		RevisionData mainRevision = getRevision(MAIN, RevisionData.class, NEW_DATA.getId());
-		assertDocEquals(new RevisionData(NEW_DATA.getId(), "field1Changed", "field2"), mainRevision);
-		RevisionData branchARevision = getRevision(branchA, RevisionData.class, NEW_DATA.getId());
-		assertDocEquals(new RevisionData(NEW_DATA.getId(), "field1Changed", "field2"), branchARevision);
-		
-		branching().prepareMerge(branchA, MAIN).squash(true).merge();
-		mainRevision = getRevision(MAIN, RevisionData.class, NEW_DATA.getId());
-		assertDocEquals(new RevisionData(NEW_DATA.getId(), "field1Changed", "field2"), mainRevision);
-		branchARevision = getRevision(branchA, RevisionData.class, NEW_DATA.getId());
-		assertDocEquals(new RevisionData(NEW_DATA.getId(), "field1Changed", "field2"), branchARevision);
-	}
-	
-	@Test
-	public void rebaseResolvableConflictMultiValuedProperty() throws Exception {
-		final List<String> terms = List.of("term1", "term2");
-		
-		indexRevision(MAIN, NEW_DATA);
-		final String branchA = createBranch(MAIN, "a");
-		
-		indexChange(MAIN, NEW_DATA, NEW_DATA.toBuilder().terms(terms).build());
-		indexChange(branchA, NEW_DATA, NEW_DATA.toBuilder().terms(terms).build());
-		
-		branching().prepareMerge(MAIN, branchA).merge();
-		RevisionData mainRevision = getRevision(MAIN, RevisionData.class, NEW_DATA.getId());
-		assertDocEquals(new RevisionData(NEW_DATA.getId(), "field1", "field2", List.of("term1", "term2")), mainRevision);
-		RevisionData branchARevision = getRevision(branchA, RevisionData.class, NEW_DATA.getId());
-		assertDocEquals(new RevisionData(NEW_DATA.getId(), "field1", "field2", List.of("term1", "term2")), branchARevision);
-		
-		branching().prepareMerge(branchA, MAIN).squash(true).merge();
-		mainRevision = getRevision(MAIN, RevisionData.class, NEW_DATA.getId());
-		assertDocEquals(new RevisionData(NEW_DATA.getId(), "field1", "field2", List.of("term1", "term2")), mainRevision);
-		branchARevision = getRevision(branchA, RevisionData.class, NEW_DATA.getId());
-		assertDocEquals(new RevisionData(NEW_DATA.getId(), "field1", "field2", List.of("term1", "term2")), branchARevision);
 	}
 	
 	private void assertState(String branchPath, String compareWith, BranchState expectedState) {

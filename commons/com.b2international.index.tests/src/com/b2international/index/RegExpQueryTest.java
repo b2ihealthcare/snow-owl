@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ public class RegExpQueryTest extends BaseIndexTest {
 		
 		final Hits<Data> hits = search(
 			Query.select(Data.class)
-				.where(Expressions.matchTextRegexp("analyzedField.exact", ".*Regexp.*"))
+				.where(Expressions.regexp("analyzedField.exact", ".*Regexp.*"))
 				.build()
 		);
 		
@@ -83,7 +83,7 @@ public class RegExpQueryTest extends BaseIndexTest {
 		
 		final Hits<Data> hits = search(
 			Query.select(Data.class)
-				.where(Expressions.matchTextRegexp("analyzedField.exact", ".*[\\t\\r\\n]+.*"))
+				.where(Expressions.regexp("analyzedField.exact", ".*[\\t\\r\\n]+.*"))
 				.build()
 		);
 		
@@ -103,7 +103,7 @@ public class RegExpQueryTest extends BaseIndexTest {
 	
 		final Hits<Data> hits = search(
 			Query.select(Data.class)
-				.where(Expressions.matchTextRegexp("analyzedField.exact", ".*[ ]{2,}.*"))
+				.where(Expressions.regexp("analyzedField.exact", ".*[ ]{2,}.*"))
 				.build()
 		);
 		

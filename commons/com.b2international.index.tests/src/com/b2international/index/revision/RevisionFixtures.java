@@ -266,7 +266,9 @@ public class RevisionFixtures {
 		
 	}
 	
-	@Doc
+	@Doc(
+		revisionHash = {"field1", "data"}
+	)
 	public static final class NestedRevisionData extends Revision {
 		
 		private String field1;
@@ -290,6 +292,14 @@ public class RevisionFixtures {
 			if (getClass() != obj.getClass()) return false;
 			NestedRevisionData other = (NestedRevisionData) obj;
 			return Objects.equals(field1, other.field1) && Objects.equals(data, other.data); 
+		}
+		
+		public String getField1() {
+			return field1;
+		}
+		
+		public com.b2international.index.Fixtures.Data getData() {
+			return data;
 		}
 		
 		@Override
