@@ -148,7 +148,7 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Branch
 
 	private List<String> getAllTerms(Concept concept) {
 		return ImmutableList.<String>builder()
-			.add(concept.getTerm())
+			.add(concept.getPreferredTerm())
 			.addAll(concept.getAlternativeTerms())
 			.build();
 	}

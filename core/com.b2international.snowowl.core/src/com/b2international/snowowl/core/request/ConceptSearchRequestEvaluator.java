@@ -106,7 +106,7 @@ public interface ConceptSearchRequestEvaluator {
 		result.setId(concept.getId());
 		result.setReleased(concept.isReleased());
 		result.setIconId(iconId);
-		result.setTerm(term);
+		result.setPreferredTerm(term);
 		return result;
 	}
 
