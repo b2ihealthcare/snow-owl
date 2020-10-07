@@ -15,11 +15,17 @@
  */
 package com.b2international.snowowl.core.domain;
 
+import java.io.Serializable;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  * @since 7.11
  */
-public class Description {
+public class Description implements Serializable {
 	
+	private static final long serialVersionUID = 1L;
+
 	public enum Type {
 		FSN,
 		PT,
@@ -56,6 +62,7 @@ public class Description {
 		return term + " " + type.name();
 	}
 	
+	@JsonIgnore
 	public static Description toSynonym(final String term) {
 		return new Description(term, Type.SYNONYM);
 	}
