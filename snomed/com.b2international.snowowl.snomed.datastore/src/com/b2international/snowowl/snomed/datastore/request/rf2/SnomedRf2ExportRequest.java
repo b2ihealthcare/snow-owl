@@ -545,7 +545,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 				.collect(Collectors.toSet());
 
 		final Branches versionBranches = getBranches(context, versionPaths);
-		final Map<String, Branch> versionBranchesByName = Maps.uniqueIndex(versionBranches, Branch::name);
+		final Map<String, Branch> versionBranchesByPath = Maps.uniqueIndex(versionBranches, Branch::path);
 
 		// cutoff timestamp represents the timestamp on the current referenceBranch segments, cutting off any versions created after this timestamp
 		final Branch cutoffBranch = getBranch(context, referenceBranch);
@@ -557,8 +557,8 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 
 		// Remove all code system versions which were created after the cut-off date, or don't have a corresponding branch 
 		candidateVersions.removeIf(v -> false
-				|| !versionBranchesByName.containsKey(v.getVersionId())
-				|| versionBranchesByName.get(v.getVersionId()).baseTimestamp() > cutoffBaseTimestamp);
+				|| !versionBranchesByPath.containsKey(v.getPath())
+				|| versionBranchesByPath.get(v.getPath()).baseTimestamp() > cutoffBaseTimestamp);
 
 		versionsToExport.addAll(candidateVersions);
 
