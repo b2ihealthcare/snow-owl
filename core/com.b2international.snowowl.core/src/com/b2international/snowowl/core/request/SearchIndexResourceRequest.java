@@ -58,10 +58,10 @@ public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B, D
 	
 	@Override
 	protected final B doExecute(C context) throws IOException {
-		final Class<D> docType = getDocumentType();
 		final Searcher searcher = searcher(context);
 		final Expression where = prepareQuery(context);
-		final Hits<D> hits = searcher.search(Query.select(docType)
+		final Hits<D> hits = searcher.search(Query.select(getSelect())
+				.from(getFrom())
 				.fields(fields())
 				.where(where)
 				.searchAfter(searchAfter())
@@ -81,7 +81,7 @@ public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B, D
 	 * @return
 	 */
 	protected Searcher searcher(C context) {
-		if (Revision.class.isAssignableFrom(getDocumentType())) {
+		if (Revision.class.isAssignableFrom(getFrom())) {
 			return context.service(RevisionSearcher.class);
 		} else {
 			return context.service(Searcher.class);
@@ -142,10 +142,26 @@ public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B, D
 	}
 	
 	/**
-	 * Returns the type of documents to search for.
-	 * @return
+	 * @return the view class to return as matches
 	 */
-	protected abstract Class<D> getDocumentType();
+	protected Class<D> getSelect() {
+		return getDocumentType();
+	}
+	
+	/**
+	 * @return the document type from which the hits will be returned 
+	 */
+	protected Class<?> getFrom() {
+		return getSelect();
+	}
+	
+	/**
+	 * @return the type of documents to search for.
+	 * @deprecated - will be replaced by {@link #getSelect()} and {@link #getFrom()} in 8.0
+	 */
+	protected Class<D> getDocumentType() {
+		throw new UnsupportedOperationException("No longer supported, use getSelect() and getFrom() methods instead.");
+	}
 	
 	/**
 	 * Converts the document hits to a API response of {@link CollectionResource} subtype.
@@ -165,6 +181,16 @@ public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B, D
 		} catch (NoResultException e) {
 			return Expressions.matchNone();
 		}
+	}
+	
+	/**
+	 * Converts this actual document type search request to a raw search request, to retrieve only partial representation of the original document instead of using the full resource.
+	 * @param <T>
+	 * @param rawType
+	 * @return
+	 */
+	public final <T> SearchRawIndexResourceRequest<C, T> toRawSearch(Class<T> rawType) {
+		return new SearchRawIndexResourceRequest<C, T>(this, rawType);
 	}
 	
 }
