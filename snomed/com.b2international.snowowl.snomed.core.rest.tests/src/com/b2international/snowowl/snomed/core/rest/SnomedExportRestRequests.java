@@ -24,7 +24,6 @@ import java.io.InputStream;
 import java.util.Map;
 
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.test.commons.rest.AbstractApiTest;
 import com.google.common.io.ByteSource;
 import com.google.common.io.Files;
 
@@ -33,10 +32,9 @@ import io.restassured.response.Response;
 /**
  * @since 5.4
  */
-public abstract class SnomedExportRestRequests extends AbstractApiTest {
+public abstract class SnomedExportRestRequests {
 
 	private SnomedExportRestRequests() {
-		throw new UnsupportedOperationException("This class is not supposed to be instantiated.");
 	}
 	
 	public static Response export(IBranchPath branchPath, Map<String, ?> exportConfiguration) {
