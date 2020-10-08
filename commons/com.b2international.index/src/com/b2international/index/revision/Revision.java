@@ -23,6 +23,7 @@ import java.util.List;
 import com.b2international.index.Script;
 import com.b2international.index.mapping.DocumentMapping;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.MoreObjects.ToStringHelper;
@@ -52,7 +53,11 @@ public abstract class Revision {
 	public static final String UPDATE_REVISED = "updateRevised";
 
 	private String id;
+	
+	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	private RevisionBranchPoint created;
+	
+	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	private List<RevisionBranchPoint> revised = Collections.emptyList();
 
 	public Revision(String id) {
@@ -71,12 +76,10 @@ public abstract class Revision {
 		this.revised = revised;
 	}
 	
-	@JsonProperty
 	final RevisionBranchPoint getCreated() {
 		return created;
 	}
 	
-	@JsonProperty
 	final List<RevisionBranchPoint> getRevised() {
 		return revised;
 	}
@@ -132,23 +135,8 @@ public abstract class Revision {
 	 * @param <B>
 	 * @param <T>
 	 */
+	@JsonIgnoreProperties(value = {"created", "revised"})
 	public static abstract class Builder<B extends Builder<B, T>, T extends Revision> {
-		
-		// XXX only for JSON deserialization
-		protected RevisionBranchPoint created;
-		protected List<RevisionBranchPoint> revised = Collections.emptyList();
-		
-		@JsonProperty
-		B revised(final List<RevisionBranchPoint> revised) {
-			this.revised = revised;
-			return getSelf();
-		}
-		
-		@JsonProperty
-		B created(final RevisionBranchPoint created) {
-			this.created = created;
-			return getSelf();
-		}
 		
 		protected abstract B getSelf();
 		
