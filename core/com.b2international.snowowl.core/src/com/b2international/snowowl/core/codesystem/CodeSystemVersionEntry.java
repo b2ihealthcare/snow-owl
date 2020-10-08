@@ -330,6 +330,7 @@ public final class CodeSystemVersionEntry implements Serializable {
 	/**
 	 * @return the {@link CodeSystemURI} that represents this version of the corresponding CodeSystem, never <code>null</code>
 	 */
+	@JsonIgnore
 	public CodeSystemURI getCodeSystemURI() {
 		return CodeSystemURI.branch(getCodeSystemShortName(), getVersionId());
 	}
