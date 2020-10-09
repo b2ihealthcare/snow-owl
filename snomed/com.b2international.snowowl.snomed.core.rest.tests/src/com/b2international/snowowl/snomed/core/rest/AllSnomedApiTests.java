@@ -71,6 +71,7 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	SnomedConceptInactivationApiTest.class,
 	SnomedDescriptionApiTest.class,
 	SnomedRelationshipApiTest.class,
+	SnomedPartialLoadingApiTest.class,
 	SnomedComponentInactivationApiTest.class,
 	SnomedRefSetApiTest.class,
 	SnomedReferenceSetDeletionPerformanceTest.class,

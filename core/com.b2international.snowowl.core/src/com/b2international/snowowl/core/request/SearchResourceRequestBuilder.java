@@ -171,4 +171,13 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	}
 	
 	protected abstract SearchResourceRequest<C, R> createSearch();
+	
+	/**
+	 * @param <T> - the type of the data view to return from the original search request
+	 * @param select - the actual type reference
+	 * @return a new builder that can return raw types (especially useful for String[], JsonNode and other non-domain specific object retrieval from the index)
+	 */
+	public final <T> SearchRawIndexResourceRequestBuilder<C, T> toRawSearch(Class<T> select) {
+		return new SearchRawIndexResourceRequestBuilder<C, T>(this, select);
+	}
 }

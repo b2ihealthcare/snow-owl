@@ -183,14 +183,4 @@ public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B, D
 		}
 	}
 	
-	/**
-	 * Converts this actual document type search request to a raw search request, to retrieve only partial representation of the original document instead of using the full resource.
-	 * @param <T>
-	 * @param rawType
-	 * @return
-	 */
-	public final <T> SearchRawIndexResourceRequest<C, T> toRawSearch(Class<T> rawType) {
-		return new SearchRawIndexResourceRequest<C, T>(this, rawType);
-	}
-	
 }

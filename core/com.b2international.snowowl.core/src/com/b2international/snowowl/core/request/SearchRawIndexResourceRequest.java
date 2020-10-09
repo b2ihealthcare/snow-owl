@@ -15,14 +15,17 @@
  */
 package com.b2international.snowowl.core.request;
 
+import java.util.List;
+
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.domain.PageableCollectionResource;
 
 /**
  * @since 7.11
  */
-public final class SearchRawIndexResourceRequest<C extends ServiceProvider, D> extends SearchIndexResourceRequest<C, Hits<D>, D> {
+public final class SearchRawIndexResourceRequest<C extends ServiceProvider, D> extends SearchIndexResourceRequest<C, PageableCollectionResource<D>, D> {
 
 	private final Class<D> select;
 	private final SearchIndexResourceRequest<C, ?, ?> original;
@@ -48,13 +51,13 @@ public final class SearchRawIndexResourceRequest<C extends ServiceProvider, D> e
 	}
 
 	@Override
-	protected Hits<D> toCollectionResource(C context, Hits<D> hits) {
-		return hits;
+	protected PageableCollectionResource<D> toCollectionResource(C context, Hits<D> hits) {
+		return PageableCollectionResource.of(hits.getHits(), hits.getSearchAfter(), hits.getLimit(), hits.getTotal());
 	}
 
 	@Override
-	protected Hits<D> createEmptyResult(int limit) {
-		return Hits.empty(limit);
+	protected PageableCollectionResource<D> createEmptyResult(int limit) {
+		return PageableCollectionResource.of(List.of(), null, limit, 0);
 	}
 
 }
