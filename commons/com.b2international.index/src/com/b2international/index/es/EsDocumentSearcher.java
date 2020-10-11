@@ -97,8 +97,6 @@ public class EsDocumentSearcher implements Searcher {
 	private static final List<String> STORED_FIELDS_ID_ONLY = ImmutableList.of("_id");
 	private static final List<String> STORED_FIELDS_NONE = ImmutableList.of("_none_");
 
-	private static final String[] EXCLUDED_SOURCE_FIELDS = { DocumentMapping._HASH };
-	
 	private final EsIndexAdmin admin;
 	private final ObjectMapper mapper;
 	private final int resultWindow;
@@ -233,7 +231,7 @@ public class EsDocumentSearcher implements Searcher {
 	private <T> boolean applySourceFiltering(List<String> fields, boolean isDocIdOnly, final DocumentMapping mapping, final SearchSourceBuilder reqSource) {
 		// No specific fields requested? Use _source to retrieve all of them
 		if (fields.isEmpty()) {
-			reqSource.fetchSource(null, EXCLUDED_SOURCE_FIELDS);
+			reqSource.fetchSource();
 			return true;
 		}
 		
@@ -245,7 +243,7 @@ public class EsDocumentSearcher implements Searcher {
 		
 		// Any field requested that can only retrieved from _source? Use source filtering
 		if (requiresDocumentSourceField(mapping, fields)) {
-			reqSource.fetchSource(Iterables.toArray(fields, String.class), EXCLUDED_SOURCE_FIELDS);
+			reqSource.fetchSource(Iterables.toArray(fields, String.class), null);
 			return true;
 		}
 		
@@ -518,7 +516,7 @@ public class EsDocumentSearcher implements Searcher {
 			if (fetchSource) {
 				topHitsAgg
 					.storedFields(STORED_FIELDS_ID_ONLY)
-					.fetchSource(null, EXCLUDED_SOURCE_FIELDS);
+					.fetchSource();
 			} else {
 				topHitsAgg
 					.storedFields(STORED_FIELDS_NONE)

@@ -63,7 +63,6 @@ public final class DocumentMapping {
 	public static final String _ID = "_id";
 	public static final String _UID = "_uid";
 	public static final String _TYPE = "_type";
-	public static final String _HASH = "_hash";
 
 	private static final Function<? super Field, String> GET_NAME = Field::getName;
 	
@@ -199,8 +198,8 @@ public final class DocumentMapping {
 	}
 	
 	public Class<?> getFieldType(String key) {
-		// XXX: _hash and _id can be retrieved via field selection, but has not corresponding entry in the mapping
-		if (DocumentMapping._HASH.equals(key) || DocumentMapping._ID.equals(key)) {
+		// XXX: _id can be retrieved via field selection, but has no corresponding entry in the mapping
+		if (DocumentMapping._ID.equals(key)) {
 			return String.class;
 		}
 		return getField(key).getType();

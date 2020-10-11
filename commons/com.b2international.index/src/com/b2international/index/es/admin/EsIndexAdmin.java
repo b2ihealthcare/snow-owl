@@ -409,14 +409,6 @@ public final class EsIndexAdmin implements IndexAdmin {
 			}
 		}
 		
-		// Add system field "_hash", if there is at least a single field to hash
-		if (!mapping.getHashedFields().isEmpty()) {
-			final Map<String, Object> prop = newHashMap();
-			prop.put("type", "keyword");
-			prop.put("index", false);
-			properties.put(DocumentMapping._HASH, prop);
-		}
-		
 		return ImmutableMap.of("properties", properties);
 	}
 
