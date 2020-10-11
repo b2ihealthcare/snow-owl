@@ -41,7 +41,7 @@
 		<tycho.version>1.7.0</tycho.version>
 		<tycho-extras.version>1.7.0</tycho-extras.version>
 		<xtend.compiler.version>2.21.0</xtend.compiler.version>
-		<jacoco.version>0.8.4</jacoco.version>
+		<jacoco.version>0.8.6</jacoco.version>
 		
 		<!-- Versioning -->
 		<maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
