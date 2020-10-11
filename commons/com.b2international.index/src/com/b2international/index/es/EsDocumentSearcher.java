@@ -65,7 +65,6 @@ import com.b2international.index.IndexException;
 import com.b2international.index.Scroll;
 import com.b2international.index.SearchContextMissingException;
 import com.b2international.index.Searcher;
-import com.b2international.index.WithId;
 import com.b2international.index.WithScore;
 import com.b2international.index.aggregations.Aggregation;
 import com.b2international.index.aggregations.AggregationBuilder;
@@ -324,9 +323,6 @@ public class EsDocumentSearcher implements Searcher {
 			SearchHit hit = iterator.next();
 			// if this was the last value then collect the sort values for searchAfter
 			final T value = hitConverter.convert(hit);
-			if (value instanceof WithId) {
-				((WithId) value).set_id(hit.getId());
-			}
 			if (value instanceof WithScore) {
 				((WithScore) value).setScore(Float.isNaN(hit.getScore()) ? 0.0f : hit.getScore());
 			}
