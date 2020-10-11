@@ -225,7 +225,7 @@ public final class DocumentMapping {
 		return keywordFields;
 	}
 	
-	public Set<String> getHashedFields() {
+	public Set<String> getRevisionFields() {
 		return hashedFields;
 	}
 
