@@ -106,6 +106,16 @@ public interface IndexClientFactory {
 	 * Configuration key to specify the time to wait until yellow cluster health state is reached in milliseconds.
 	 */
 	String CLUSTER_HEALTH_TIMEOUT = "clusterHealthTimeout";
+	
+	/**
+	 * Configuration key to specify the number of bulk action items to send to the Elasticsearch cluster when performing bulk commit operations
+	 */
+	String BULK_ACTIONS_SIZE = "bulk_action_size";
+	
+	/**
+	 * Configuration key to specify the number of bulk action items in MB to send to the Elasticsearch cluster when performing bulk commit operations
+	 */
+	String BULK_ACTIONS_SIZE_IN_MB = "bulk_action_size_in_mb";
 
 	
 	//
@@ -158,6 +168,10 @@ public interface IndexClientFactory {
 	 * The default cluster.name value for embedded nodes and tcp based clients.
 	 */
 	String DEFAULT_CLUSTER_NAME = "elastic-snowowl";
+	
+	int DEFAULT_BULK_ACTIONS_SIZE = 10_000;
+			
+	int DEFAULT_BULK_ACTIONS_SIZE_IN_MB = 10;
 
 	/**
 	 * Create a new {@link IndexClient} with the given name.
