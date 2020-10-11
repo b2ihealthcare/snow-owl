@@ -155,9 +155,9 @@ public class EsDocumentSearcher implements Searcher {
 		// and _id in cases where we explicitly require the _source
 		// ES internals require loading the _id field when we require the _source
 		if (fetchSource	|| query.isDocIdOnly()) {
-			reqSource.storedField("_id");
+			reqSource.storedFields(STORED_FIELDS_ID_ONLY);
 		} else {
-			reqSource.storedField("_none_");
+			reqSource.storedFields(STORED_FIELDS_NONE);
 		}
 		
 		// sorting
