@@ -806,6 +806,14 @@
 						</goals>
 					</execution>
 				</executions>
+				<configuration>
+					<excludes>
+						<exclude>com/b2international/snowowl/snomed/ecl/parser/**/*</exclude>
+						<exclude>com/b2international/snowowl/snomed/etl/parser/**/*</exclude>
+						<exclude>com/b2international/snowowl/snomed/ql/parser/**/*</exclude>
+						<exclude>com/b2international/snowowl/snomed/scg/parser/**/*</exclude>
+					</excludes>
+				</configuration>
 			</plugin>
 		</plugins>
 		<pluginManagement>
