@@ -23,6 +23,7 @@ import java.util.List;
 import com.b2international.index.Script;
 import com.b2international.index.mapping.DocumentMapping;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.MoreObjects.ToStringHelper;
@@ -40,6 +41,7 @@ import com.google.common.base.MoreObjects.ToStringHelper;
 		+ "    ctx._source.revised.add(params.newRevised);"
 		+ "}"
 )
+@JsonIgnoreProperties(value = { "_hash" }) // XXX keep _hash field ignored for backward compatibility, remove in 8.0
 public abstract class Revision {
 	
 	public static class Fields {
@@ -132,6 +134,7 @@ public abstract class Revision {
 	 * @param <B>
 	 * @param <T>
 	 */
+	@JsonIgnoreProperties(value = { "_hash" }) // XXX keep _hash field ignored for backward compatibility, remove in 8.0
 	public static abstract class Builder<B extends Builder<B, T>, T extends Revision> {
 		
 		// XXX only for JSON deserialization
