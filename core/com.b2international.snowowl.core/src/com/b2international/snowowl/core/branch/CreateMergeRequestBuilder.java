@@ -17,13 +17,13 @@ package com.b2international.snowowl.core.branch;
 
 import java.util.Set;
 
+import com.b2international.commons.collections.Collections3;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.core.request.RepositoryRequestBuilder;
-import com.google.common.collect.Sets;
 
 /**
  * @since 4.5
@@ -34,10 +34,11 @@ public final class CreateMergeRequestBuilder extends BaseRequestBuilder<CreateMe
 	private String target;
 	private String commitComment;
 	private String reviewId;
-	private Set<String> exclusions = Sets.newHashSet();
+	private Set<String> exclusions;
 	
 	private String userId;
 	private String parentLockContext;
+	private boolean squash = true;
 	
 	CreateMergeRequestBuilder() {}
 	
@@ -76,6 +77,11 @@ public final class CreateMergeRequestBuilder extends BaseRequestBuilder<CreateMe
 		return this;
 	}
 	
+	public CreateMergeRequestBuilder setSquash(boolean squash) {
+		this.squash = squash;
+		return this;
+	}
+	
 	@Override
 	protected Request<RepositoryContext, Merge> doBuild() {
 		final IBranchPath sourcePath = BranchPathUtils.createPath(source);
@@ -83,7 +89,7 @@ public final class CreateMergeRequestBuilder extends BaseRequestBuilder<CreateMe
 		if (targetPath.getParent().equals(sourcePath)) {
 			return new BranchRebaseRequest(source, target, userId, commitComment, reviewId, parentLockContext);
 		} else {
-			return new BranchMergeRequest(source, target, exclusions, userId, commitComment, reviewId, parentLockContext);
+			return new BranchMergeRequest(source, target, Collections3.toImmutableSet(exclusions), userId, commitComment, reviewId, parentLockContext, squash);
 		}
 	}
 	
