@@ -33,9 +33,6 @@ import com.b2international.commons.test.config.ConfigurationFactoryTest;
 @SuiteClasses({ 
 	ArabicToRomanNumeralConverterTest.class, 
 	ConsoleProgressMonitorTest.class, 
-	DfsDirectedPathServiceTest.class,
-	DirectedGraphTest.class, 
-	TopologicalSortTest.class, 
 	VersionNumberComparatorTest.class, 
 	VersionTest.class, 
 	ConfigurationFactoryTest.class, 
