@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,105 +23,20 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * <p>
  * The order of enumeration represents priority; 
  * <br>values that come first will be preferred over values that come later when displaying a change.
- *
  */
-public enum ChangeKind implements Change {
+public enum ChangeKind {
 
 	/** Deletion. */
-	DELETED("Deleted") {
-		@Override
-		public boolean isDeleted() {
-			return true;
-		}
-		@Override
-		public boolean isDirty() {
-			return false;
-		}
-		@Override
-		public boolean hasChanged() {
-			return true;
-		}
-		@Override
-		public ChangeKind getChange() {
-			return this;
-		}
-		@Override
-		public boolean isNew() {
-			return false;
-		}
-	},
+	DELETED("Deleted"),
 
 	/** Represent a creation or addition. */
-	ADDED("New") {
-		@Override
-		public boolean isDeleted() {
-			return false;
-		}
-		@Override
-		public boolean isDirty() {
-			return false;
-		}
-		@Override
-		public boolean hasChanged() {
-			return true;
-		}
-		@Override
-		public ChangeKind getChange() {
-			return this;
-		}
-		@Override
-		public boolean isNew() {
-			return true;
-		}
-	},
+	ADDED("New"),
 	
 	/** Represents a modification. */
-	UPDATED("Changed") {
-		@Override
-		public boolean isDeleted() {
-			return false;
-		}
-		@Override
-		public boolean isDirty() {
-			return true;
-		}
-		@Override
-		public boolean hasChanged() {
-			return true;
-		}
-		@Override
-		public ChangeKind getChange() {
-			return this;
-		}
-		@Override
-		public boolean isNew() {
-			return false;
-		}
-	},
+	UPDATED("Changed"),
 	
 	/** Represents no modification. */
-	UNCHANGED("Unchanged") {
-		@Override
-		public boolean isDeleted() {
-			return false;
-		}
-		@Override
-		public boolean isDirty() {
-			return false;
-		}
-		@Override
-		public boolean hasChanged() {
-			return false;
-		}
-		@Override
-		public ChangeKind getChange() {
-			return this;
-		}
-		@Override
-		public boolean isNew() {
-			return false;
-		}
-	};
+	UNCHANGED("Unchanged");
 	
 	private final String label;
 	
@@ -133,4 +48,21 @@ public enum ChangeKind implements Change {
 	public String toString() {
 		return label;
 	}
+	
+	public boolean isDeleted() {
+		return DELETED == this;
+	}
+	
+	public boolean isAdded() {
+		return ADDED == this;
+	}
+	
+	public boolean isUpdated() {
+		return UPDATED == this;
+	}
+	
+	public boolean isUnchanged() {
+		return UNCHANGED == this;
+	}
+	
 }
