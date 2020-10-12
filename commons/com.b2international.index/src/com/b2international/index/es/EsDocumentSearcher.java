@@ -65,7 +65,6 @@ import com.b2international.index.IndexException;
 import com.b2international.index.Scroll;
 import com.b2international.index.SearchContextMissingException;
 import com.b2international.index.Searcher;
-import com.b2international.index.WithId;
 import com.b2international.index.WithScore;
 import com.b2international.index.aggregations.Aggregation;
 import com.b2international.index.aggregations.AggregationBuilder;
@@ -97,8 +96,6 @@ public class EsDocumentSearcher implements Searcher {
 	private static final List<String> STORED_FIELDS_ID_ONLY = ImmutableList.of("_id");
 	private static final List<String> STORED_FIELDS_NONE = ImmutableList.of("_none_");
 
-	private static final String[] EXCLUDED_SOURCE_FIELDS = { DocumentMapping._HASH };
-	
 	private final EsIndexAdmin admin;
 	private final ObjectMapper mapper;
 	private final int resultWindow;
@@ -157,9 +154,9 @@ public class EsDocumentSearcher implements Searcher {
 		// and _id in cases where we explicitly require the _source
 		// ES internals require loading the _id field when we require the _source
 		if (fetchSource	|| query.isDocIdOnly()) {
-			reqSource.storedField("_id");
+			reqSource.storedFields(STORED_FIELDS_ID_ONLY);
 		} else {
-			reqSource.storedField("_none_");
+			reqSource.storedFields(STORED_FIELDS_NONE);
 		}
 		
 		// sorting
@@ -233,7 +230,7 @@ public class EsDocumentSearcher implements Searcher {
 	private <T> boolean applySourceFiltering(List<String> fields, boolean isDocIdOnly, final DocumentMapping mapping, final SearchSourceBuilder reqSource) {
 		// No specific fields requested? Use _source to retrieve all of them
 		if (fields.isEmpty()) {
-			reqSource.fetchSource(null, EXCLUDED_SOURCE_FIELDS);
+			reqSource.fetchSource(true);
 			return true;
 		}
 		
@@ -245,7 +242,7 @@ public class EsDocumentSearcher implements Searcher {
 		
 		// Any field requested that can only retrieved from _source? Use source filtering
 		if (requiresDocumentSourceField(mapping, fields)) {
-			reqSource.fetchSource(Iterables.toArray(fields, String.class), EXCLUDED_SOURCE_FIELDS);
+			reqSource.fetchSource(Iterables.toArray(fields, String.class), null);
 			return true;
 		}
 		
@@ -326,9 +323,6 @@ public class EsDocumentSearcher implements Searcher {
 			SearchHit hit = iterator.next();
 			// if this was the last value then collect the sort values for searchAfter
 			final T value = hitConverter.convert(hit);
-			if (value instanceof WithId) {
-				((WithId) value).set_id(hit.getId());
-			}
 			if (value instanceof WithScore) {
 				((WithScore) value).setScore(Float.isNaN(hit.getScore()) ? 0.0f : hit.getScore());
 			}
@@ -518,7 +512,7 @@ public class EsDocumentSearcher implements Searcher {
 			if (fetchSource) {
 				topHitsAgg
 					.storedFields(STORED_FIELDS_ID_ONLY)
-					.fetchSource(null, EXCLUDED_SOURCE_FIELDS);
+					.fetchSource(true);
 			} else {
 				topHitsAgg
 					.storedFields(STORED_FIELDS_NONE)
