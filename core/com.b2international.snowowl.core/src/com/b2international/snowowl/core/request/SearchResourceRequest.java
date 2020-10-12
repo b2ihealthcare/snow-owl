@@ -62,7 +62,17 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 		/**
 		 * Sort result by the specified sort fields.
 		 */
-		SORT_BY;
+		SORT_BY,
+		
+		/**
+		 * Use fuzzy query in the search.
+		 */
+		USE_FUZZY,
+		
+		/**
+		 * Set the minimum number of terms to match.
+		 */
+		MIN_TERM_MATCH,
 	}
 
 	public static abstract class Sort implements Serializable {
@@ -212,14 +222,9 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 	
 	@Min(0)
 	private int limit;
-	
-	@Min(0)
-	private int minTermMatch;
 
 	@NotNull
 	private Options options;
-	
-	private boolean fuzzy;
 	
 	protected SearchResourceRequest() {}
 	
@@ -239,14 +244,6 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 	
 	void setComponentIds(Set<String> componentIds) {
 		this.componentIds = componentIds;
-	}
-	
-	void setMinTermMatch(int minTermMatch) {
-		this.minTermMatch = minTermMatch;
-	}
-	
-	void setFuzzy(boolean fuzzy) {
-		this.fuzzy = fuzzy;
 	}
 
 	@JsonProperty
@@ -274,14 +271,6 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 	
 	protected final Set<String> componentIds() {
 		return componentIds;
-	}
-	
-	protected final int minTermMatch() {
-		return minTermMatch;
-	}
-	
-	protected final boolean useFuzzy() {
-		return fuzzy;
 	}
 
 	/**

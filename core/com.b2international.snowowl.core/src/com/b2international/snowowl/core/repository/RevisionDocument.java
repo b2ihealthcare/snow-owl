@@ -17,8 +17,6 @@ package com.b2international.snowowl.core.repository;
 
 import static com.b2international.index.query.Expressions.exactMatch;
 import static com.b2international.index.query.Expressions.matchAny;
-import static com.b2international.index.query.Expressions.matchTextAny;
-import static com.b2international.index.query.Expressions.matchTextFuzzy;
 import static com.b2international.index.query.Expressions.prefixMatch;
 import static com.b2international.index.query.Expressions.regexp;
 
@@ -55,14 +53,6 @@ public abstract class RevisionDocument extends Revision implements IComponent<St
 		
 		public static Expression idRegex(String idRegex) {
 			return regexp(Fields.ID, idRegex);
-		}
-		
-		public static Expression anyFieldValuePresent(final String field, final String value, final int minShouldMatch) {
-			return matchTextAny(field, value, minShouldMatch);
-		}
-
-		public static Expression fuzzy(final String field, final String value) {
-			return matchTextFuzzy(field, value);
 		}
 
 	}

@@ -42,10 +42,6 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	
 	private int limit = 50;
 	
-	private int minTermMatch = 0;
-	
-	private boolean fuzzy = false;
-	
 	private final OptionsBuilder optionsBuilder = OptionsBuilder.newBuilder();
 	
 	protected SearchResourceRequestBuilder() {
@@ -151,7 +147,9 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	 * @return this builder instance
 	 */
 	public final B withMinTermMatch(int minTermMatch) {
-		this.minTermMatch = minTermMatch;
+		if (minTermMatch > 0) {
+			optionsBuilder.put(OptionKey.MIN_TERM_MATCH, minTermMatch);
+		}
 		return getSelf();
 	}
 	
@@ -160,7 +158,7 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	 * @return this builder instance
 	 */
 	public final B withFuzzy() {
-		this.fuzzy = true;
+		optionsBuilder.put(OptionKey.USE_FUZZY, true);
 		return getSelf();
 	}
 	
@@ -190,8 +188,6 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 		req.setSearchAfter(searchAfter);
 		req.setLimit(Math.min(limit, MAX_LIMIT));
 		req.setOptions(optionsBuilder.build());
-		req.setMinTermMatch(minTermMatch);
-		req.setFuzzy(fuzzy);
 		return req;
 	}
 	
