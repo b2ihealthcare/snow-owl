@@ -169,9 +169,15 @@ public interface IndexClientFactory {
 	 */
 	String DEFAULT_CLUSTER_NAME = "elastic-snowowl";
 	
+	/**
+	 * Default number of bulk action items to send in a single outgoing bulk request.
+	 */
 	int DEFAULT_BULK_ACTIONS_SIZE = 10_000;
-			
-	int DEFAULT_BULK_ACTIONS_SIZE_IN_MB = 10;
+	
+	/**
+	 * Default size in megabytes to limit all outgoing bulk requests.
+	 */
+	int DEFAULT_BULK_ACTIONS_SIZE_IN_MB = 9;
 
 	/**
 	 * Create a new {@link IndexClient} with the given name.
