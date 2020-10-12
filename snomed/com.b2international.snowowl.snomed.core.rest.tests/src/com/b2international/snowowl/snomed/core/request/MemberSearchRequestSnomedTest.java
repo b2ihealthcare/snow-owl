@@ -26,7 +26,6 @@ import java.util.UUID;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
-import com.b2international.snowowl.core.domain.ConceptMapMappings;
 import com.b2international.snowowl.core.domain.SetMembers;
 import com.b2international.snowowl.snomed.common.SnomedConstants;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
@@ -103,23 +102,11 @@ public class MemberSearchRequestSnomedTest {
 			.execute(Services.bus())
 			.getSync();
 		
-		final ConceptMapMappings conceptMapMappings = CodeSystemRequests.prepareSearchConceptMapMappings()
-			.filterByConceptMap(refSetId)
-			.filterByComponentId(filteredId)
-			.build(CODESYSTEM)
-			.execute(Services.bus())
-			.getSync();
-		
 		assertEquals(3, refSetMembers.getTotal());
-		assertEquals(3, conceptMapMappings.getTotal());
 		
 		refSetMembers.forEach(refSetMember -> assertTrue(
 				filteredId.equals(refSetMember.getReferencedComponentId()) || 
 				filteredId.equals(refSetMember.getProperties().get(SnomedRf2Headers.FIELD_MAP_TARGET))));
-		
-		conceptMapMappings.forEach(concepMap -> assertTrue(
-				filteredId.equals(concepMap.getSourceComponentURI().identifier()) || 
-				filteredId.equals(concepMap.getTargetComponentURI().identifier())));
 	}
 	
 	private String createSimpleMapTypeRefSet() {
