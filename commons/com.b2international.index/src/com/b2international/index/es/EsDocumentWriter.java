@@ -178,8 +178,8 @@ public class EsDocumentWriter implements Writer {
 				}
 			})
 			.setConcurrentRequests(getConcurrencyLevel())
-			.setBulkActions(10_000)
-			.setBulkSize(new ByteSizeValue(10L, ByteSizeUnit.MB))
+			.setBulkActions((int) admin.settings().get(IndexClientFactory.BULK_ACTIONS_SIZE))
+			.setBulkSize(new ByteSizeValue((int) admin.settings().get(IndexClientFactory.BULK_ACTIONS_SIZE_IN_MB), ByteSizeUnit.MB))
 			.build();
 			
 			for (Class<?> type : ImmutableSet.copyOf(indexOperations.rowKeySet())) {
