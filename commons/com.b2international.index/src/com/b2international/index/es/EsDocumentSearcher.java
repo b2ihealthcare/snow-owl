@@ -230,7 +230,7 @@ public class EsDocumentSearcher implements Searcher {
 	private <T> boolean applySourceFiltering(List<String> fields, boolean isDocIdOnly, final DocumentMapping mapping, final SearchSourceBuilder reqSource) {
 		// No specific fields requested? Use _source to retrieve all of them
 		if (fields.isEmpty()) {
-			reqSource.fetchSource();
+			reqSource.fetchSource(true);
 			return true;
 		}
 		
@@ -512,7 +512,7 @@ public class EsDocumentSearcher implements Searcher {
 			if (fetchSource) {
 				topHitsAgg
 					.storedFields(STORED_FIELDS_ID_ONLY)
-					.fetchSource();
+					.fetchSource(true);
 			} else {
 				topHitsAgg
 					.storedFields(STORED_FIELDS_NONE)
