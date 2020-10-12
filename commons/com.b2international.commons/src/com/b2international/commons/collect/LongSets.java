@@ -22,7 +22,6 @@ import static com.google.common.collect.Sets.newHashSet;
 import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -35,11 +34,9 @@ import com.b2international.collections.longs.LongCollections;
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.CompareUtils;
-import com.b2international.commons.StopWatch;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.google.common.primitives.Longs;
 
 /**
@@ -481,116 +478,4 @@ public class LongSets {
 		return new NotLongPredicate(checkNotNull(predicate, "predicate"));
 	}
 	
-	public static void main(final String[] args) {
-		
-		System.out.println("**********************************************");
-		System.out.println("difference");
-		System.out.println("**********************************************");
-		
-		HashSet<Long> set1 = Sets.newHashSet();
-		HashSet<Long> set2 = Sets.newHashSet();
-		for (int i = 1; i < 12; i++) {
-			set1.add((long) i);
-		}
-		
-		for (int i = 5; i < 20; i++) {
-			set2.add((long) i);
-		}
-		
-		System.out.println("reference " + Sets.difference(set1, set2));
-		System.out.println("reference " + Sets.difference(set2, set1));
-		
-		LongSet longset1 = PrimitiveSets.newLongOpenHashSet(Longs.toArray(set1));
-		LongSet longset2 = PrimitiveSets.newLongOpenHashSet(Longs.toArray(set2));
-		LongSet diff1 = LongSets.difference(longset1, longset2);
-		LongSet diff2 = LongSets.difference(longset2, longset1);
-		System.out.println("assert " + diff1);
-		System.out.println("assert " + diff2);
-		
-		System.out.println("*******************************************");
-		
-		set1 = Sets.newHashSet();
-		set2 = Sets.newHashSet();
-		for (int i = 1; i < 3500000; i++) {
-			set1.add((long) i);
-		}
-		
-		for (int i = 500000; i < 4000000; i++) {
-			set2.add((long) i);
-		}
-		
-		long t = System.currentTimeMillis();
-		
-		System.out.println(Sets.difference(set1, set2).size());
-		System.out.println(Sets.difference(set2, set1).size());
-		
-		StopWatch.time("diff sets", t);
-		longset1 = PrimitiveSets.newLongOpenHashSet(Longs.toArray(set1));
-		longset2 = PrimitiveSets.newLongOpenHashSet(Longs.toArray(set2));
-		
-		t = System.currentTimeMillis();
-		diff1 = LongSets.difference(longset1, longset2);
-		diff2 = LongSets.difference(longset2, longset1);
-		System.out.println(diff1.size());
-		System.out.println(diff2.size());
-		StopWatch.time("diff longsets", t);
-		
-		
-		System.out.println("**********************************************");
-		System.out.println("intersection");
-		System.out.println("**********************************************");
-		
-		set1 = Sets.newHashSet();
-		set2 = Sets.newHashSet();
-		for (int i = 1; i < 12; i++) {
-			set1.add((long) i);
-		}
-		
-		for (int i = 5; i < 20; i++) {
-			set2.add((long) i);
-		}
-		
-		System.out.println("reference " + Sets.intersection(set1, set2));
-		System.out.println("reference " + Sets.intersection(set2, set1));
-		
-		longset1 = PrimitiveSets.newLongOpenHashSet(Longs.toArray(set1));
-		longset2 = PrimitiveSets.newLongOpenHashSet(Longs.toArray(set2));
-		LongSet intersection1 = LongSets.intersection(longset1, longset2);
-		LongSet intersection2 = LongSets.intersection(longset2, longset1);
-		System.out.println("assert " + intersection1);
-		System.out.println("assser " + intersection2);
-		
-		System.out.println("*******************************************");
-		
-		set1 = Sets.newHashSet();
-		set2 = Sets.newHashSet();
-		for (int i = 1; i < 3500000; i++) {
-			set1.add((long) i);
-		}
-		
-		for (int i = 500000; i < 4000000; i++) {
-			set2.add((long) i);
-		}
-		
-		t = System.currentTimeMillis();
-		
-		System.out.println(Sets.intersection(set1, set2).size());
-		System.out.println(Sets.intersection(set2, set1).size());
-		
-		StopWatch.time("intersection sets", t);
-		longset1 = PrimitiveSets.newLongOpenHashSet(Longs.toArray(set1));
-		longset2 = PrimitiveSets.newLongOpenHashSet(Longs.toArray(set2));
-		
-		t = System.currentTimeMillis();
-		intersection1 = LongSets.intersection(longset1, longset2);
-		intersection2 = LongSets.intersection(longset2, longset1);
-		System.out.println(intersection1.size());
-		System.out.println(intersection2.size());
-		StopWatch.time("intersection longsets", t);
-		
-		
-		
-		
-	}
-
 }
