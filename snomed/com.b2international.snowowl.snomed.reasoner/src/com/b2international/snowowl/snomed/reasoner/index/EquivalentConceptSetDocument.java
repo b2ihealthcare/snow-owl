@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,12 +20,12 @@ import static com.b2international.index.query.Expressions.matchAny;
 import static com.b2international.index.query.Expressions.matchAnyLong;
 
 import com.b2international.collections.longs.LongList;
-import com.b2international.commons.functions.StringToLongFunction;
 import com.b2international.index.Doc;
 import com.b2international.index.query.Expression;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.google.common.collect.FluentIterable;
 
 /**
  * @since 7.0
@@ -49,7 +49,7 @@ public final class EquivalentConceptSetDocument {
 		}
 
 		public static Expression conceptIds(final Iterable<String> conceptIds) {
-			return matchAnyLong(Fields.CONCEPT_IDS, StringToLongFunction.copyOf(conceptIds));
+			return matchAnyLong(Fields.CONCEPT_IDS, FluentIterable.from(conceptIds).transform(Long::parseLong).toSet());
 		}
 	}
 
