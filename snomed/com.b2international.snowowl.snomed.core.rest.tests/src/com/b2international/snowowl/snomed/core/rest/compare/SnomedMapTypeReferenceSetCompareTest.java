@@ -89,6 +89,7 @@ public class SnomedMapTypeReferenceSetCompareTest extends AbstractCoreApiTest {
 		ComponentURI compareURI = createURI(rf2Id);
 		
 		ConceptMapCompareResult result = CodeSystemRequests.prepareConceptMapCompare(baseURI, compareURI)
+				.setLocales("en")
 				.build(codeSystemURI)
 				.execute(getBus())
 				.getSync();
@@ -109,6 +110,7 @@ public class SnomedMapTypeReferenceSetCompareTest extends AbstractCoreApiTest {
 		ComponentURI compareURI = createURI(rf4Id);
 		
 		ConceptMapCompareResult result = CodeSystemRequests.prepareConceptMapCompare(baseURI, compareURI)
+				.setLocales("en")
 				.build(codeSystemURI)
 				.execute(getBus())
 				.getSync();
@@ -131,6 +133,7 @@ public class SnomedMapTypeReferenceSetCompareTest extends AbstractCoreApiTest {
 		ComponentURI compareURI = ComponentURI.of(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, SnomedTerminologyComponentConstants.REFSET_NUMBER, compareSimpleMapReferenceSet);
 		
 		CodeSystemRequests.prepareConceptMapCompare(baseURI, compareURI)
+				.setLocales("en")
 				.build(codeSystemURI)
 				.execute(getBus())
 				.getSync(1, TimeUnit.SECONDS);
