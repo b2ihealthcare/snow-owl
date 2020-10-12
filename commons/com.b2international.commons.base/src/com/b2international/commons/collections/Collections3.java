@@ -16,11 +16,7 @@
 package com.b2international.commons.collections;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.ImmutableSet.copyOf;
-import static com.google.common.collect.Iterables.transform;
 import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Sets.difference;
-import static com.google.common.collect.Sets.intersection;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
@@ -31,12 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 
-import com.google.common.base.Equivalence;
-import com.google.common.base.Equivalence.Wrapper;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
@@ -115,102 +106,6 @@ public abstract class Collections3 {
 		return sortedSet;
 	}
 	
-	/**
-	 * Returns with the {@link SetDifference difference} of the two sets.
-	 * @param left the left set.
-	 * @param right the other set.
-	 * @return the difference.
-	 */
-	public static <E> SetDifference<E> compare(final Set<E> left, final Set<E> right) {
-		return compare(checkNotNull(left, "left"),  checkNotNull(right, "right"), DefaultEquivalence.<E>getDefaultEquivalence());
-	}
-	
-	/**
-	 * Returns with the {@link SetDifference difference} of the two sets using the given {@link Equivalence equivalence} 
-	 * among the set elements. 
-	 * @param left the left set.
-	 * @param right the other set.
-	 * @param equivalence equivalence for comparing set elements between each others. 
-	 * @return the difference.
-	 */
-	public static <E> SetDifference<E> compare(final Set<E> left, final Set<E> right, final Equivalence<E> equivalence) {
-		
-		checkNotNull(left, "left");
-		checkNotNull(right, "right");
-		checkNotNull(equivalence, "equivalence");
-		
-		final Function<Wrapper<E>, E> unwrapFunction = new Function<Wrapper<E>, E>() {
-			@Override public E apply(final Wrapper<E> wrapper) {
-				return wrapper.get();
-			}
-		};
-		
-		final Function<E, Wrapper<E>> wrapFunction = new Function<E, Wrapper<E>>() {
-			@Override public Wrapper<E> apply(final E element) {
-				return equivalence.wrap(element);
-			}
-		};
-
-		final Set<Wrapper<E>> leftCopy = copyOf(transform(left, wrapFunction));
-		final Set<Wrapper<E>> rightCopy = copyOf(transform(right, wrapFunction));
-		
-		//TODO check identical equality
-		//TODO consider empty left and/or right
-		
-		final AtomicReference<Set<Wrapper<E>>> leftDiff = new AtomicReference<>();
-		final AtomicReference<Set<Wrapper<E>>> rightDiff = new AtomicReference<>();
-		final AtomicReference<Set<Wrapper<E>>> intersection = new AtomicReference<>();
-		
-		final CountDownLatch latch = new CountDownLatch(3);
-		
-		new Thread(new Runnable() {
-			public void run() {
-				try {
-					leftDiff.set(difference(leftCopy, rightCopy));
-				} finally {
-					latch.countDown();
-				}
-			}
-		}, "Calculate-set-left-diff-thread").start();
-		
-		new Thread(new Runnable() {
-			public void run() {
-				try {
-					rightDiff.set(difference(rightCopy, leftCopy));
-				} finally {
-					latch.countDown();
-				}
-			}
-		}, "Calculate-set-right-diff-thread").start();;
-		
-		new Thread(new Runnable() {
-			public void run() {
-				try {
-					intersection.set(intersection(leftCopy, rightCopy));
-				} finally {
-					latch.countDown();
-				}
-			}
-		}, "Calculate-set-intersection-thread").start();
-		
-		try {
-			latch.await(15L, TimeUnit.MINUTES);
-		} catch (final InterruptedException e) {
-			throw new RuntimeException("Failed to calculate set difference.", e);
-		}
-		
-		final Function<AtomicReference<Set<Wrapper<E>>>, Set<E>> toSetFunction = new Function<AtomicReference<Set<Wrapper<E>>>, Set<E>>() {
-			@Override public Set<E> apply(final AtomicReference<Set<Wrapper<E>>> input) {
-				return newHashSet(transform(input.get(), unwrapFunction));
-			}
-		};
-		
-		return new SetDifferenceImpl<E>(
-				toSetFunction.apply(leftDiff), 
-				toSetFunction.apply(rightDiff),
-				toSetFunction.apply(intersection));
-	}
-
 	public static <T> Set<T> toImmutableSet(Iterable<T> values) {
 		return values != null ? ImmutableSet.copyOf(values) : Collections.emptySet();
 	}

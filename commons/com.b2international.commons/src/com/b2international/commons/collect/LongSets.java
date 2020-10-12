@@ -27,11 +27,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.AbstractLongIterator;
@@ -101,22 +96,6 @@ public class LongSets {
 		final LongSet result = PrimitiveSets.newLongOpenHashSet(set1);
 		result.retainAll(set2);
 		return result;
-	}
-	
-	/**
-	 * Returns the number of elements remaining in {@link LongIterator iterator}. 
-	 * The iterator will be left exhausted: its {@link LongIterator#hasNext()} method will return {@code false}.
-	 * @param itr the iterator.
- 	 * @return the number of remaining elements.
-	 */
-	private static int size(final LongIterator itr) {
-		checkNotNull(itr, "Long iterator argument cannot be null.");
-		int $ = 0;
-		while (itr.hasNext()) {
-			itr.next();
-			$++;
-		}
-		return $;
 	}
 	
 	/**
@@ -218,61 +197,6 @@ public class LongSets {
 	 */
 	public static void forEach(final LongCollection collection, final LongCollectionProcedure procedure) {
 		forEach(collection.iterator(), procedure);
-	}
-	
-	/**
-	 * Just as {@link #forEach(LongIterator, LongCollectionProcedure)} but parallel evaluates the procedure argument 
-	 * on each element of the given iterator.
-	 * @param iterator the iterator which elements will be evaluated against the procedure.
-	 * @param procedure the procedure to apply on each element of the given iterator of primitive long numbers.
-	 */
-	public static void parallelForEach(final LongIterator iterator, final LongCollectionProcedure procedure) {
-		checkNotNull(procedure, "procedure");
-		
-		final LongListIteratorWrapper itr = new LongListIteratorWrapper(iterator); 
-		final int nThreads = Runtime.getRuntime().availableProcessors();
-		final ExecutorService service = Executors.newFixedThreadPool(nThreads);
-		
-		try {
-			
-			@SuppressWarnings("unchecked") final Future<Void>[] $ = new Future[size(itr)];
-			itr.reset();
-			
-			final AtomicInteger i = new AtomicInteger();
-			forEach(itr, new LongCollectionProcedure() {
-				
-				@Override
-				public void apply(final long input) {
-					$[i.getAndIncrement()] = service.submit(() -> {
-						procedure.apply(input);
-						return com.b2international.commons.Void.VOID;
-					});
-				}
-			});
-			
-			for (final Future<Void> f : $) {
-				f.get();
-			}
-			
-		} catch (final InterruptedException e) {
-			Thread.interrupted();
-			throw new RuntimeException(e);
-		} catch (final ExecutionException e) {
-			throw new RuntimeException(e);
-		} finally {
-			service.shutdown();
-		}
-		
-	}
-	
-	/**
-	 * Just as {@link #forEach(LongCollection, LongCollectionProcedure)} but parallel evaluates the procedure argument 
-	 * on each element of the given collection.
-	 * @param collection the collection which each element will be evaluated against the procedure.
-	 * @param procedure the procedure to apply on each element of the given iterator of primitive long numbers.
-	 */
-	public static void parallelForEach(final LongCollection collection, final LongCollectionProcedure procedure) {
-		parallelForEach(collection.iterator(), procedure);
 	}
 	
 	/**
