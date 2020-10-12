@@ -33,7 +33,6 @@ import com.b2international.commons.test.config.ConfigurationFactoryTest;
 @SuiteClasses({ 
 	ArabicToRomanNumeralConverterTest.class, 
 	BidiMapWithInternalIdTest.class,
-	ConcurrentCollectionUtilsTest.class, 
 	ConsoleProgressMonitorTest.class, 
 	DfsDirectedPathServiceTest.class,
 	DirectedGraphTest.class, 
