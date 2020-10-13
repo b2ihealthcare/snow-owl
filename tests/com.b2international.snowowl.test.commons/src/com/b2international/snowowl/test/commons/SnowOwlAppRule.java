@@ -22,13 +22,13 @@ import org.junit.rules.ExternalResource;
 
 import com.b2international.commons.FileUtils;
 import com.b2international.commons.exceptions.AlreadyExistsException;
-import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.SnowOwl;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.identity.IdentityProvider;
 import com.b2international.snowowl.core.identity.IdentityWriter;
 import com.b2international.snowowl.core.setup.Plugin;
+import com.b2international.snowowl.core.util.PlatformUtil;
 import com.b2international.snowowl.test.commons.rest.RestExtensions;
 
 /**

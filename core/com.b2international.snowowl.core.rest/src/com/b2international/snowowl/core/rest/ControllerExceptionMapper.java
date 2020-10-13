@@ -34,7 +34,7 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartException;
 
 import com.b2international.commons.exceptions.*;
-import com.b2international.commons.platform.PlatformUtil;
+import com.b2international.snowowl.core.util.PlatformUtil;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
