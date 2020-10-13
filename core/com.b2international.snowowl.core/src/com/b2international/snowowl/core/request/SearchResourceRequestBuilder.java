@@ -144,12 +144,17 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	// XXX: Does not allow null values or collections with null values
 	protected final B addOption(String key, Object value) {
 		if (value instanceof Iterable<?>) {
-			for (final Object val : (Iterable<?>)value) {
+			for (final Object val : (Iterable<?>) value) {
 				if (val == null) {
 					throw new BadRequestException("%s filter cannot contain null values", key);
 				}
 			}
-			optionsBuilder.put(key, Collections3.toImmutableSet((Iterable<?>) value));
+			if (value instanceof List) {
+				optionsBuilder.put(key, Collections3.toImmutableList((Iterable<?>) value));
+			} else {
+				// handle any other Iterable subtype as Set
+				optionsBuilder.put(key, Collections3.toImmutableSet((Iterable<?>) value));
+			}
 		} else if (value != null) {
 			optionsBuilder.put(key, value);
 		}
