@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.commons;
+package com.b2international.snowowl.core.monitoring;
 
 import static com.b2international.commons.StringUtils.valueOfOrEmptyString;
 import static com.b2international.commons.time.TimeUtil.nanoToString;

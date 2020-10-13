@@ -32,7 +32,6 @@ import com.b2international.commons.test.config.ConfigurationFactoryTest;
 @RunWith(Suite.class)
 @SuiteClasses({ 
 	ArabicToRomanNumeralConverterTest.class, 
-	ConsoleProgressMonitorTest.class, 
 	VersionNumberComparatorTest.class, 
 	VersionTest.class, 
 	ConfigurationFactoryTest.class, 
