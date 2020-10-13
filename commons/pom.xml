@@ -17,7 +17,6 @@
 		<module>com.b2international.collections.fastutil</module>
 		<module>com.b2international.collections.jackson</module>
 		<module>com.b2international.commons</module>
-		<module>com.b2international.commons.base</module>
 		<module>com.b2international.commons.test</module>
 		<module>com.b2international.index</module>
 		<module>com.b2international.index.tests</module>
