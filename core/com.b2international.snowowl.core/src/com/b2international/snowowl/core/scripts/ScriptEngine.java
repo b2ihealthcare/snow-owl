@@ -19,7 +19,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.Map;
 
-import com.b2international.commons.extension.ClassPathScanner;
+import com.b2international.snowowl.core.plugin.ClassPathScanner;
 import com.google.common.collect.Maps;
 
 /**

@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import com.b2international.commons.CompareUtils;
-import com.b2international.commons.extension.Component;
+import com.b2international.snowowl.core.plugin.Component;
 
 import picocli.CommandLine.HelpCommand;
 

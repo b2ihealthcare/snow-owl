@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.commons.extension.ClassPathScanner;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.revision.Hooks;
 import com.b2international.index.revision.RevisionIndex;
@@ -39,6 +38,7 @@ import com.b2international.snowowl.core.codesystem.CodeSystemEntry;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.identity.User;
+import com.b2international.snowowl.core.plugin.ClassPathScanner;
 import com.b2international.snowowl.core.request.RepositoryRequest;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.terminology.Terminology;

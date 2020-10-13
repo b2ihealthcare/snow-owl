@@ -18,7 +18,6 @@ package com.b2international.snowowl.core.locks;
 import java.util.List;
 
 import com.b2international.commons.StringUtils;
-import com.b2international.commons.extension.Component;
 import com.b2international.index.revision.BaseRevisionBranching;
 import com.b2international.index.revision.RevisionBranch;
 import com.b2international.snowowl.core.ApplicationContext;
@@ -34,6 +33,7 @@ import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContext;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockTarget;
+import com.b2international.snowowl.core.plugin.Component;
 import com.google.common.base.Strings;
 import com.google.common.primitives.Ints;
 

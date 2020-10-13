@@ -27,13 +27,13 @@ import java.util.List;
 import org.eclipse.osgi.framework.console.CommandInterpreter;
 import org.eclipse.osgi.framework.console.CommandProvider;
 
-import com.b2international.commons.extension.ClassPathScanner;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.authorization.AuthorizedEventBus;
 import com.b2international.snowowl.core.authorization.AuthorizedRequest;
 import com.b2international.snowowl.core.identity.JWTGenerator;
 import com.b2international.snowowl.core.identity.User;
+import com.b2international.snowowl.core.plugin.ClassPathScanner;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.eventbus.IEventBus;

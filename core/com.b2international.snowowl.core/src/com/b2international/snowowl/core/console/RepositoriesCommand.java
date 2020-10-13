@@ -17,9 +17,9 @@ package com.b2international.snowowl.core.console;
 
 import static com.google.common.collect.Lists.newArrayList;
 
-import com.b2international.commons.extension.Component;
 import com.b2international.snowowl.core.Repositories;
 import com.b2international.snowowl.core.RepositoryInfo;
+import com.b2international.snowowl.core.plugin.Component;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.repository.RepositorySearchRequestBuilder;
 import com.google.common.base.Function;
