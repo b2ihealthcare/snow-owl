@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.commons.tree.emf;
+package com.b2international.snowowl.core.emf;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,17 +27,12 @@ import org.eclipse.emf.ecore.impl.EClassImpl;
 
 import com.b2international.commons.tree.TreeVisitor;
 import com.b2international.commons.tree.TreeWalker;
-import com.b2international.commons.tree.TreeWalker.ChildProvider;
-
-
-
 
 /**
  *  A TreeWalker that can walk an EObject tree, traversing it's structural features. Only contained features and attributes are traversed,
  *  this guaranteeing a tree.
- *  
  */
-public class EObjectWalker extends TreeWalker<EObjectTreeNode> {
+public final class EObjectWalker extends TreeWalker<EObjectTreeNode> {
 
 	public static EObjectWalker createContainmentWalker(TreeVisitor<EObjectTreeNode> visitor) {
 		return new EObjectWalker(visitor, new EObjectContainmentTreeNodeProvider());
