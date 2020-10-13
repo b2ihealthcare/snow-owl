@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Status;
 
-import com.b2international.commons.CommonsActivator;
+import com.b2international.snowowl.core.CoreActivator;
 
 /**
  * Common methods and functions to work with {@link IStatus},
@@ -72,7 +72,7 @@ public final class Statuses {
 	 * @return
 	 */
 	public static IStatus error(final String message) {
-		return new Status(IStatus.ERROR, CommonsActivator.PLUGIN_ID, message);
+		return new Status(IStatus.ERROR, CoreActivator.PLUGIN_ID, message);
 	}
 
 	/**
@@ -84,7 +84,7 @@ public final class Statuses {
 	 * @return
 	 */
 	public static IStatus warn(final String message) {
-		return new Status(IStatus.WARNING, CommonsActivator.PLUGIN_ID, message);
+		return new Status(IStatus.WARNING, CoreActivator.PLUGIN_ID, message);
 	}
 
 	/**
@@ -96,7 +96,7 @@ public final class Statuses {
 	 * @return
 	 */
 	public static IStatus info(final String message) {
-		return new Status(IStatus.INFO, CommonsActivator.PLUGIN_ID, message);
+		return new Status(IStatus.INFO, CoreActivator.PLUGIN_ID, message);
 	}
 
 	/**

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.commons.CommonsActivator;
+import com.b2international.snowowl.core.CoreActivator;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -46,8 +46,8 @@ public class SerializableStatus implements IStatus, Serializable {
 	private static final Logger LOG = LoggerFactory.getLogger(SerializableStatus.class);
 	private static final long serialVersionUID = -1874392357776889683L;
 
-	public static final IStatus OK_STATUS = new SerializableStatus(OK, CommonsActivator.PLUGIN_ID, OK, "ok", null); //$NON-NLS-1$
-	public static final IStatus CANCEL_STATUS = new SerializableStatus(CANCEL, CommonsActivator.PLUGIN_ID, 1, "", null); //$NON-NLS-1$
+	public static final IStatus OK_STATUS = new SerializableStatus(OK, CoreActivator.PLUGIN_ID, OK, "ok", null); //$NON-NLS-1$
+	public static final IStatus CANCEL_STATUS = new SerializableStatus(CANCEL, CoreActivator.PLUGIN_ID, 1, "", null); //$NON-NLS-1$
 
 	/**
 	 * The severity. One of

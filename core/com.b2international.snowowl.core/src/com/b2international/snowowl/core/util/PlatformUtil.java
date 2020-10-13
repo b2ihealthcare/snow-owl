@@ -32,7 +32,7 @@ import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.prefs.PreferencesService;
 
-import com.b2international.commons.CommonsActivator;
+import com.b2international.snowowl.core.CoreActivator;
 import com.google.common.base.Strings;
 import com.google.common.io.Resources;
 
@@ -50,7 +50,7 @@ public class PlatformUtil {
 	 * @return <code>true</code> if the platform is running in dev mode, otherwise <code>false</code>.
 	 */
 	public static final boolean isDevVersion() {
-		return isDevVersion(CommonsActivator.PLUGIN_ID);
+		return isDevVersion(CoreActivator.PLUGIN_ID);
 	}
 
 	/**
