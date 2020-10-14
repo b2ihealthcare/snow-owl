@@ -18,7 +18,6 @@ package com.b2international.snowowl.core.request;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -88,9 +87,9 @@ public interface ConceptSearchRequestEvaluator {
 		LIMIT,
 		
 		/**
-		 * Contains the preferred display for every code system
+		 * Set the preferred display type to return
 		 */
-		PREFERED_DISPLAY_MAP
+		DISPLAY,
 	}
 
 	/**
@@ -136,23 +135,6 @@ public interface ConceptSearchRequestEvaluator {
 		}
 		
 		requestBuilder.filterByIds(idFilter);
-	}
-	
-	/**
-	 * Returns the preferred display configured for the given <b>codeSystemShortName</b>.
-	 * If no preferred display was configured it returns <b>null</b>
-	 * 
-	 * @param codeSystemShortName
-	 * @param search
-	 * @return
-	 */
-	default String getPreferredDisplayForCodeSystem(String codeSystemShortName, Options search) {
-		if(!search.containsKey(OptionKey.PREFERED_DISPLAY_MAP)) {
-			return null;
-		}
-		
-		final Map<String, String> preferredDisplays = search.get(OptionKey.PREFERED_DISPLAY_MAP, Map.class);
-		return preferredDisplays.get(codeSystemShortName);
 	}
 	
 	/**

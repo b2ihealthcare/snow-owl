@@ -117,13 +117,11 @@ public final class ConceptSearchRequestBuilder extends SearchResourceRequestBuil
 	/**
 	 * Sets the preferred display term to return for every code system
 	 * 
-	 * @param prefferedDisplayMap
-	 *            - key: code system short name
-	 *            - value: String representation of the preferred display
+	 * @param prefferedDisplayMap: String representation of the preferred display
 	 * @return
 	 */
-	public ConceptSearchRequestBuilder setPreferredDisplayMap(Map<String, String> prefferedDisplayMap) {
-		return addOption(OptionKey.PREFERED_DISPLAY_MAP, prefferedDisplayMap);
+	public ConceptSearchRequestBuilder setPreferredDisplay(String prefferedDisplay) {
+		return addOption(OptionKey.DISPLAY, prefferedDisplay);
 	}
 
 	@Override
