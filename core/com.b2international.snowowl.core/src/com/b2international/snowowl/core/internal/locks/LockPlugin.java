@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.core.internal.locks;
 
-import com.b2international.commons.extension.Component;
 import com.b2international.index.Index;
 import com.b2international.index.Indexes;
 import com.b2international.index.mapping.Mappings;
@@ -24,6 +23,7 @@ import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.locks.DatastoreLockIndexEntry;
 import com.b2international.snowowl.core.locks.DatastoreOperationLockManager;
 import com.b2international.snowowl.core.locks.IOperationLockManager;
+import com.b2international.snowowl.core.plugin.Component;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.Plugin;
 import com.b2international.snowowl.rpc.RpcSession;

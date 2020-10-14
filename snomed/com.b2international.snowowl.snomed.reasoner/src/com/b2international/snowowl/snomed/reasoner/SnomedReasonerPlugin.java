@@ -18,10 +18,10 @@ package com.b2international.snowowl.snomed.reasoner;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
-import com.b2international.commons.extension.Component;
 import com.b2international.index.Index;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
+import com.b2international.snowowl.core.plugin.Component;
 import com.b2international.snowowl.core.repository.ComponentDeletionPolicy;
 import com.b2international.snowowl.core.repository.CompositeComponentDeletionPolicy;
 import com.b2international.snowowl.core.repository.TerminologyRepositoryConfigurer;

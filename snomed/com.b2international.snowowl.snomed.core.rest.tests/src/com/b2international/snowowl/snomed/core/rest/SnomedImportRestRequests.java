@@ -22,9 +22,9 @@ import static org.junit.Assert.fail;
 import java.util.Map;
 import java.util.Set;
 
-import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.jobs.RemoteJobState;
+import com.b2international.snowowl.core.util.PlatformUtil;
 import com.google.common.collect.ImmutableSet;
 
 import io.restassured.response.ValidatableResponse;

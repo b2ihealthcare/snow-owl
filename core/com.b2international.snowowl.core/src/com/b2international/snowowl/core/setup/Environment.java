@@ -21,11 +21,11 @@ import org.eclipse.net4j.util.container.IManagedContainer;
 import org.eclipse.net4j.util.container.IPluginContainer;
 import org.osgi.service.prefs.PreferencesService;
 
-import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.CoreActivator;
 import com.b2international.snowowl.core.Mode;
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.util.PlatformUtil;
 import com.google.inject.Provider;
 
 /**

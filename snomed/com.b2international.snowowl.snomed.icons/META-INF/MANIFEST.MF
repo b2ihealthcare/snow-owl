@@ -5,7 +5,7 @@ Bundle-SymbolicName: com.b2international.snowowl.snomed.icons;singleton:=true
 Bundle-Version: 7.11.0.qualifier
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-11
-Require-Bundle: com.b2international.commons,
+Require-Bundle: com.b2international.snowowl.core,
  com.b2international.snowowl.snomed.common
 Export-Package: com.b2international.snowowl.snomed.icons
 Bundle-ClassPath: .

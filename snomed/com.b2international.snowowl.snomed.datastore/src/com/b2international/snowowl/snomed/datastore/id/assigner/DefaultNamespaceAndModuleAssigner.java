@@ -17,8 +17,8 @@ package com.b2international.snowowl.snomed.datastore.id.assigner;
 
 import java.util.Set;
 
-import com.b2international.commons.extension.Component;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.plugin.Component;
 
 /**
  * Simple assigner that allocates the default namespace and module for relationships and concrete domains.
