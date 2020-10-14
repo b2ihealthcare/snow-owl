@@ -161,11 +161,11 @@ public class HashMapOptions extends HashMap<String, Object> implements Options {
 		if (type.isInstance(value)) {
 			return Collections.singleton(type.cast(value));
 		} else {
-			final Set<Object> list = get(key, Set.class);
-			final Object first = list != null ? Iterables.getFirst(list, null) : null;
+			final Set<Object> set = get(key, Set.class);
+			final Object first = set != null ? Iterables.getFirst(set, null) : null;
 			if (first != null) {
 				if (type.isInstance(first)) {
-					return (Set<T>) list;
+					return (Set<T>) set;
 				}
 				throw new IllegalArgumentException(String.format("The elements (%s) in the List are not the instance of the given type (%s)", first.getClass(), type));
 			}

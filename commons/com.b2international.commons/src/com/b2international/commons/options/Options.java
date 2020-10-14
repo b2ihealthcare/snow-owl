@@ -196,7 +196,7 @@ public interface Options {
 	<T> Collection<T> getCollection(Enum<?> key, Class<T> type);
 
 	/**
-	 * Returns a set of values conform to the given class type found on the given key. If a single value (not a {@link List}) is mapped to the given
+	 * Returns a set of values conform to the given class type found on the given key. If a single value (not a {@link Set}) is mapped to the given
 	 * key, then it wraps the value in a {@link Collections#singleton(Object) singleton set} and returns it. Otherwise it tries to get the value
 	 * as an immutable {@link Set} and return it.
 	 * 
