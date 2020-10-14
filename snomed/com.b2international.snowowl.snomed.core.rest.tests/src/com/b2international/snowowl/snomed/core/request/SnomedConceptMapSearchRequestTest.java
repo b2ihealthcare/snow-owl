@@ -38,6 +38,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionCre
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.test.commons.Services;
+import com.b2international.snowowl.test.commons.rest.RestExtensions;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -197,7 +198,7 @@ public class SnomedConceptMapSearchRequestTest {
 				.setRefSet(SnomedRequests.prepareNewRefSet()
 						.setReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
 						.setType(SnomedRefSetType.SIMPLE_MAP))
-				.build(CODESYSTEM, "info@b2international.com", "New Reference Set")
+				.build(CODESYSTEM, RestExtensions.USER, "New Reference Set")
 				.execute(Services.bus())
 				.getSync()
 				.getResultAs(String.class);
@@ -234,7 +235,7 @@ public class SnomedConceptMapSearchRequestTest {
 			.setActive(true)
 			.setModuleId(Concepts.MODULE_SCT_CORE)
 			.setProperties(ImmutableMap.of(SnomedRf2Headers.FIELD_MAP_TARGET, targetCode))
-			.build(CODESYSTEM, "info@b2international.com", "New Reference Set")
+			.build(CODESYSTEM, RestExtensions.USER, "New Reference Set")
 			.execute(Services.bus())
 			.getSync();
 	}

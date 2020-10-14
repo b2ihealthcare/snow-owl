@@ -43,6 +43,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionCre
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.test.commons.AbstractCoreApiTest;
+import com.b2international.snowowl.test.commons.rest.RestExtensions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
@@ -64,7 +65,6 @@ public class SnomedMapTypeReferenceSetCompareTest extends AbstractCoreApiTest {
 	private String rf2Id;
 	private String rf3Id;
 	private String rf4Id;
-	protected static final String USER = "info@b2international.com";
 	private CodeSystemURI codeSystemURI;
 	
 
@@ -156,7 +156,7 @@ public class SnomedMapTypeReferenceSetCompareTest extends AbstractCoreApiTest {
 						.setReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
 						.setMapTargetComponentType(SnomedTerminologyComponentConstants.CONCEPT)
 						.setType(SnomedRefSetType.SIMPLE_MAP))
-				.build(codeSystemURI.toString(), USER, "New Reference Set")
+				.build(codeSystemURI.toString(), RestExtensions.USER, "New Reference Set")
 				.execute(getBus())
 				.getSync()
 				.getResultAs(String.class);
@@ -198,7 +198,7 @@ public class SnomedMapTypeReferenceSetCompareTest extends AbstractCoreApiTest {
 		.setActive(true)
 		.setModuleId(Concepts.MODULE_SCT_CORE)
 		.setProperties(properties)
-		.build(codeSystemURI.toString(), USER, "New Member")
+		.build(codeSystemURI.toString(), RestExtensions.USER, "New Member")
 		.execute(getBus())
 		.getSync();
 	}
