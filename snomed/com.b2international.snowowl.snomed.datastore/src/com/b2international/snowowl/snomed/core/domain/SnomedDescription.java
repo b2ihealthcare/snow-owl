@@ -19,14 +19,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.b2international.snowowl.core.domain.Description;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.IndexResourceRequestBuilder;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.core.terminology.MapTargetTypes;
 import com.b2international.snowowl.core.terminology.TerminologyComponent;
-import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
@@ -227,29 +225,6 @@ public final class SnomedDescription extends SnomedCoreComponent {
 	 */
 	public List<AcceptabilityMembership> getAcceptabilities() {
 		return acceptabilities;
-	}
-	
-	/**
-	 * Return the common description equivalent of the description type identifier
-	 * 
-	 * @see Description
-	 * @return common description type
-	 */
-	public Description.Type getCommonDescriptionType() {
-		final String typeId = getTypeId();
-		
-		if(typeId == null) {
-			return Description.Type.UNKNOWN;
-		}
-		
-		switch(typeId) {
-			case Concepts.FULLY_SPECIFIED_NAME: 
-				return Description.Type.FSN;
-			case Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED: 
-				return Description.Type.PT;
-			default: 
-				return Description.Type.UNKNOWN;
-		}
 	}
 	
 	@JsonIgnore
