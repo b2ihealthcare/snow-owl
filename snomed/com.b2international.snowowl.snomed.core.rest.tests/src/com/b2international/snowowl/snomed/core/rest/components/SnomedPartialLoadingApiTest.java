@@ -52,7 +52,6 @@ public class SnomedPartialLoadingApiTest extends AbstractSnomedApiTest {
 						.execute(context);
 			}
 		)).execute(ApplicationContext.getServiceForClass(Environment.class));
-		System.err.println(hits);
 		hits.forEach(hit -> {
 			// simple assertions to parse the ID as SCT ID and effective time as short date
 			assertNotNull(SnomedIdentifiers.create(hit[0]));
