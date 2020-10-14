@@ -75,12 +75,10 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 				.map(SnomedReferenceSetMember::getReferenceSetId)
 				.collect(Collectors.toSet());
 		
-		String expand = String.format("%sreferenceSet()", !Strings.isNullOrEmpty(snomedDisplayTermType.getExpand()) ? snomedDisplayTermType.getExpand() + "," : "");
-		
 		final Map<String, SnomedConcept> refSetsById = SnomedRequests.prepareSearchConcept()
 				.filterByIds(refSetsToFetch)
 				.setLocales(search.getList(OptionKey.LOCALES, ExtendedLocale.class))
-				.setExpand(expand)
+				.setExpand("pt(),referenceSet()")
 				.build(uri)
 				.execute(context.service(IEventBus.class))
 				.getSync()
@@ -213,7 +211,7 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 
 		return mappingBuilder
 				.containerIconId(referenceSet.getIconId())
-				.containerTerm(snomedDisplayTermType.getLabel(referenceSet))
+				.containerTerm(referenceSet.getPt().getTerm())
 				.containerSetURI(ComponentURI.of(codeSystemURI.getCodeSystem(), SnomedTerminologyComponentConstants.REFSET_NUMBER, member.getReferenceSetId()))
 				.memberId(member.getId())
 				.active(true)
