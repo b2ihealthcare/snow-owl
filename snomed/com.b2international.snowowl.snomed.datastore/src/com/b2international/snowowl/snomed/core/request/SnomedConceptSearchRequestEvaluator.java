@@ -106,7 +106,7 @@ public final class SnomedConceptSearchRequestEvaluator implements ConceptSearchR
 				.sortBy(search.containsKey(SearchResourceRequest.OptionKey.SORT_BY) ? search.getList(SearchResourceRequest.OptionKey.SORT_BY, SearchResourceRequest.Sort.class) : null)
 				.build()
 				.execute(context);
-		
+
 		return new Concepts(
 			matches
 				.stream()
