@@ -34,7 +34,7 @@ public final class Concept extends BaseComponent {
 	private final String codeSystem;
 	private final short terminologyComponentId;
 	
-	private String preferredTerm;
+	private String term;
 	private String iconId;
 	private List<Description> alternativeDescriptions;
 	
@@ -47,16 +47,16 @@ public final class Concept extends BaseComponent {
 		return codeSystem;
 	}
 	
-	public String getPreferredTerm() {
-		return preferredTerm;
+	public String getTerm() {
+		return term;
 	}
 	
 	public String getIconId() {
 		return iconId;
 	}
 	
-	public void setPreferredTerm(String preferredTerm) {
-		this.preferredTerm = preferredTerm;
+	public void setTerm(String term) {
+		this.term = term;
 	}
 	
 	public void setIconId(String iconId) {
@@ -87,7 +87,7 @@ public final class Concept extends BaseComponent {
 	
 	@Override
 	public String toString() {
-		return toConceptString(getId(), getPreferredTerm());
+		return toConceptString(getId(), getTerm());
 	}
 	
 	/**

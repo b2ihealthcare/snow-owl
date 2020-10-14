@@ -245,8 +245,8 @@ public final class SnomedDescription extends SnomedCoreComponent {
 		switch(typeId) {
 			case Concepts.FULLY_SPECIFIED_NAME: 
 				return Description.Type.FSN;
-			case Concepts.SYNONYM: 
-				return Description.Type.SYNONYM;
+			case Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED: 
+				return Description.Type.PT;
 			default: 
 				return Description.Type.UNKNOWN;
 		}

@@ -125,7 +125,7 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 				if (conceptsById.containsKey(mapTargetId)) {
 					final Concept concept = conceptsById.get(mapTargetId);
 					return mapping.toBuilder()
-							.targetTerm(concept.getPreferredTerm())
+							.targetTerm(concept.getTerm())
 							.targetIconId(concept.getIconId())
 							.build();
 				} else {
