@@ -41,7 +41,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.b2international.commons.platform.PlatformUtil;
+import com.b2international.snowowl.core.util.PlatformUtil;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.test.commons.Resources;
 import com.google.common.base.Splitter;
