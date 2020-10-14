@@ -41,6 +41,7 @@ import com.google.common.base.MoreObjects.ToStringHelper;
 		+ "    ctx._source.revised.add(params.newRevised);"
 		+ "}"
 )
+@JsonIgnoreProperties(value = { "_hash" }) // XXX keep _hash field ignored for backward compatibility, remove in 8.0
 public abstract class Revision {
 	
 	public static class Fields {
@@ -135,7 +136,7 @@ public abstract class Revision {
 	 * @param <B>
 	 * @param <T>
 	 */
-	@JsonIgnoreProperties(value = {"created", "revised"})
+	@JsonIgnoreProperties(value = { "_hash" }) // XXX keep _hash field ignored for backward compatibility, remove in 8.0
 	public static abstract class Builder<B extends Builder<B, T>, T extends Revision> {
 		
 		protected abstract B getSelf();
