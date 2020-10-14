@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang.text.StrSubstitutor;
 import org.hamcrest.CoreMatchers;
 
-import com.b2international.commons.platform.PlatformUtil;
+import com.b2international.snowowl.core.util.PlatformUtil;
 import com.b2international.snowowl.test.commons.json.JsonExtensions;
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;

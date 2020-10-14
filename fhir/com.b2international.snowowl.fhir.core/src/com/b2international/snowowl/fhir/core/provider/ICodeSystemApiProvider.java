@@ -19,8 +19,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.b2international.commons.extension.ClassPathScanner;
 import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.snowowl.core.plugin.ClassPathScanner;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.fhir.core.LogicalId;
 import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;

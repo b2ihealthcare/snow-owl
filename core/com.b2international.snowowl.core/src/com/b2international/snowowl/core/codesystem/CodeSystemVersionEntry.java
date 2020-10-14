@@ -33,6 +33,7 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
@@ -325,6 +326,14 @@ public final class CodeSystemVersionEntry implements Serializable {
 	public boolean isLatestVersion() {
 		return MAIN_BRANCH.equals(getVersionId());
 	}
+	
+	/**
+	 * @return the {@link CodeSystemURI} that represents this version of the corresponding CodeSystem, never <code>null</code>
+	 */
+	@JsonIgnore
+	public CodeSystemURI getCodeSystemURI() {
+		return CodeSystemURI.branch(getCodeSystemShortName(), getVersionId());
+	}
 
 	@Override
 	public int hashCode() {
@@ -352,5 +361,5 @@ public final class CodeSystemVersionEntry implements Serializable {
 				.add("versionId", versionId)
 				.toString();
 	}
-	
+
 }

@@ -121,42 +121,6 @@ public abstract class SnomedTerminologyComponentConstants {
 		}
 	}
 
-	/**
-	 * Converts the specified SNOMED&nbsp;CT terminology component identifier value to the associated unique ID.  
-	 * @param value the component identifier value.
-	 * @return the unique terminology component ID.
-	 */
-	public static String getId(final short value) {
-		switch (value) {
-			case CONCEPT_NUMBER: return CONCEPT;
-			case DESCRIPTION_NUMBER: return DESCRIPTION;
-			case RELATIONSHIP_NUMBER: return RELATIONSHIP;
-			case REFSET_NUMBER: return REFSET;
-			case REFSET_MEMBER_NUMBER: return REFSET_MEMBER;
-			case CONSTRAINT_NUMBER: return CONSTRAINT;
-			case TEMPLATE_NUMBER: return TEMPLATE;
-			default: throw new IllegalArgumentException("Unknown terminology component identifier value: " + value);
-		}
-	}
-	
-	/**
-	 * Converts the specified SNOMED&nbsp;CT terminology component identifier to the associated value.  
-	 * @param id the terminology component ID.
-	 * @return the unique value of the specified ID.
-	 */
-	public static short getValue(final String id) {
-		switch (id) {
-			case CONCEPT: return CONCEPT_NUMBER;
-			case DESCRIPTION: return DESCRIPTION_NUMBER;
-			case RELATIONSHIP: return RELATIONSHIP_NUMBER;
-			case REFSET: return REFSET_NUMBER;
-			case REFSET_MEMBER: return REFSET_MEMBER_NUMBER;
-			case CONSTRAINT: return CONSTRAINT_NUMBER;
-			case TEMPLATE: return TEMPLATE_NUMBER;
-			default: throw new IllegalArgumentException("Unknown terminology component identifier: " + id);
-		}
-	}
-
 	public static boolean isCoreComponentId(String componentId) {
 		return isCoreComponentType(getTerminologyComponentIdValueSafe(componentId));
 	}

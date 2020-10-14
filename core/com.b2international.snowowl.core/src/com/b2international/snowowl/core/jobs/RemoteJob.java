@@ -27,13 +27,13 @@ import org.eclipse.core.runtime.jobs.Job;
 
 import com.b2international.commons.exceptions.ApiError;
 import com.b2international.commons.exceptions.ApiException;
-import com.b2international.commons.status.Statuses;
 import com.b2international.snowowl.core.CoreActivator;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.identity.request.UserRequests;
+import com.b2international.snowowl.core.status.Statuses;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableMap;
@@ -105,7 +105,7 @@ public final class RemoteJob extends Job {
 			if (e instanceof ApiException) {
 				apiError = ((ApiException) e).toApiError();
 			} else {
-				apiError = ApiError.Builder.of(e.getMessage())
+				apiError = ApiError.builder(e.getMessage())
 					.status(500)
 					.developerMessage("Exception caught while executing request in remote job.")
 					.addInfo("exception-class", e.getClass().getSimpleName())
@@ -161,6 +161,7 @@ public final class RemoteJob extends Job {
 		return response;
 	}
 
+	@SuppressWarnings("unchecked")
 	public Map<String, Object> getParameters(ObjectMapper mapper) {
 		return mapper.convertValue(request, Map.class);
 	}

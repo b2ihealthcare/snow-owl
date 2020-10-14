@@ -26,8 +26,8 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 import org.springframework.security.web.firewall.HttpFirewall;
 import org.springframework.security.web.firewall.StrictHttpFirewall;
 
-import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.core.rest.util.CORSFilter;
+import com.b2international.snowowl.core.util.PlatformUtil;
 
 /**
  * @since 7.0

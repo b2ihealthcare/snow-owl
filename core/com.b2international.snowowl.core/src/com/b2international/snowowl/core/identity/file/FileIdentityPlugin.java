@@ -15,9 +15,9 @@
  */
 package com.b2international.snowowl.core.identity.file;
 
-import com.b2international.commons.extension.Component;
 import com.b2international.snowowl.core.identity.IdentityProvider;
 import com.b2international.snowowl.core.identity.IdentityProviderFactory;
+import com.b2international.snowowl.core.plugin.Component;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.Plugin;
 

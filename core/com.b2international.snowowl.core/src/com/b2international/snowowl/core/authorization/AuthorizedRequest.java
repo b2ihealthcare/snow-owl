@@ -19,7 +19,6 @@ import java.util.Collection;
 
 import com.b2international.commons.exceptions.ForbiddenException;
 import com.b2international.commons.exceptions.UnauthorizedException;
-import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
@@ -30,6 +29,7 @@ import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.request.BranchRequest;
 import com.b2international.snowowl.core.request.CodeSystemResourceRequest;
 import com.b2international.snowowl.core.request.RepositoryRequest;
+import com.b2international.snowowl.core.util.PlatformUtil;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;

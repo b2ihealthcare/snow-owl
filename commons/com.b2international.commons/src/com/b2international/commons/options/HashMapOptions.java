@@ -15,14 +15,15 @@
  */
 package com.b2international.commons.options;
 
-import static java.util.Collections.emptySet;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -151,6 +152,30 @@ public class HashMapOptions extends HashMap<String, Object> implements Options {
 	@Override
 	public <T> Collection<T> getCollection(Enum<?> key, Class<T> type) {
 		return getCollection(key.name(), type);
+	}
+	
+	@Override
+	@SuppressWarnings("unchecked")
+	public final <T> Set<T> getSet(String key, Class<T> type) {
+		final Object value = get(key);
+		if (type.isInstance(value)) {
+			return Collections.singleton(type.cast(value));
+		} else {
+			final Set<Object> set = get(key, Set.class);
+			final Object first = set != null ? Iterables.getFirst(set, null) : null;
+			if (first != null) {
+				if (type.isInstance(first)) {
+					return (Set<T>) set;
+				}
+				throw new IllegalArgumentException(String.format("The elements (%s) in the List are not the instance of the given type (%s)", first.getClass(), type));
+			}
+			return emptySet();
+		}
+	}
+	
+	@Override
+	public <T> Set<T> getSet(Enum<?> key, Class<T> type) {
+		return getSet(key.name(), type);
 	}
 	
 	@Override
