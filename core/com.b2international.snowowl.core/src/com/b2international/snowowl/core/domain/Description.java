@@ -31,14 +31,6 @@ public class Description implements Serializable {
 		PT,
 		SYNONYM,
 		UNKNOWN;
-		
-		public static Type getEnum(final String value) {
-			try {
-				return Type.valueOf(value);
-			} catch(Exception e) {
-				return UNKNOWN;
-			}
-		}
 	}
 	
 	private final String term;
