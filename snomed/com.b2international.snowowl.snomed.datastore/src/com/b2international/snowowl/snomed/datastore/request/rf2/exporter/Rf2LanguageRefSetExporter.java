@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
@@ -88,12 +89,17 @@ public final class Rf2LanguageRefSetExporter extends Rf2RefSetExporter {
 				.setFields(SnomedDescriptionIndexEntry.Fields.ID)
 				.build();
 
-		final Set<String> validDescriptionIds = new BranchRequest<>(branch, new RevisionIndexReadRequest<>(request))
+		String branchToQueryForDescriptions = branch;
+		if (RevisionIndex.isRevRangePath(branch)) {
+			branchToQueryForDescriptions = RevisionIndex.getRevisionRangePaths(branch)[1];
+		}
+		
+		final Set<String> validDescriptionIds = new BranchRequest<>(branchToQueryForDescriptions, new RevisionIndexReadRequest<>(request))
 				.execute(context)
 				.stream()
 				.map(d -> d.getId())
 				.collect(Collectors.toSet());
-
+		
 		return super.getMappedStream(results, context, branch)
 				.filter(row -> validDescriptionIds.contains(row.get(5))); // referencedComponentId
 	}
