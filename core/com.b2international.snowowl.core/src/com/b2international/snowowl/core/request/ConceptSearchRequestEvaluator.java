@@ -90,6 +90,11 @@ public interface ConceptSearchRequestEvaluator {
 		 * Set the preferred display type to return
 		 */
 		DISPLAY,
+		
+		/**
+		 * Explicit ancestor ID filter to return all concepts that have any of the given ancestor IDs.
+		 */
+		ANCESTOR_ID,
 	}
 
 	/**
