@@ -105,7 +105,7 @@ public final class RemoteJob extends Job {
 			if (e instanceof ApiException) {
 				apiError = ((ApiException) e).toApiError();
 			} else {
-				apiError = ApiError.Builder.of(e.getMessage())
+				apiError = ApiError.builder(e.getMessage())
 					.status(500)
 					.developerMessage("Exception caught while executing request in remote job.")
 					.addInfo("exception-class", e.getClass().getSimpleName())
@@ -161,6 +161,7 @@ public final class RemoteJob extends Job {
 		return response;
 	}
 
+	@SuppressWarnings("unchecked")
 	public Map<String, Object> getParameters(ObjectMapper mapper) {
 		return mapper.convertValue(request, Map.class);
 	}

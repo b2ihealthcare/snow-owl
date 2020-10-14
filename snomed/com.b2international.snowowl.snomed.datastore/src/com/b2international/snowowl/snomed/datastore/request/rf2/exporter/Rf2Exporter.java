@@ -164,7 +164,7 @@ public abstract class Rf2Exporter<B extends SnomedSearchRequestBuilder<B, R>, R 
 							String id = row.get(0);
 							String effectiveTime = row.get(1);
 							
-							if (!visitedComponentEffectiveTimes.add(String.format("%s_%s", id, effectiveTime))) {
+							if (!visitedComponentEffectiveTimes.add(String.join("_", id, effectiveTime))) {
 								return;
 							}
 							

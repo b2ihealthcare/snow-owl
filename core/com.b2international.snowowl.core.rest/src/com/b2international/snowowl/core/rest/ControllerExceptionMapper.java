@@ -62,44 +62,44 @@ public class ControllerExceptionMapper {
 	        return null; // socket is closed, cannot return any response    
 	    } else {
     		LOG.error("Exception during request processing", ex);
-	    	return RestApiError.of(ApiError.Builder.of(GENERIC_USER_MESSAGE).build()).build(HttpStatus.INTERNAL_SERVER_ERROR.value());
+	    	return RestApiError.of(ApiError.builder(GENERIC_USER_MESSAGE).build()).build(HttpStatus.INTERNAL_SERVER_ERROR.value());
 	    }
 	}
 	
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	public RestApiError handle(final MaxUploadSizeExceededException e) {
-		return RestApiError.of(ApiError.Builder.of(e.getMessage()).build()).build(HttpStatus.BAD_REQUEST.value());
+		return RestApiError.of(ApiError.builder(e.getMessage()).build()).build(HttpStatus.BAD_REQUEST.value());
 	}
 	
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	public RestApiError handle(final MultipartException e) {
-		return RestApiError.of(ApiError.Builder.of("Couldn't process multipart request: " + e.getMostSpecificCause().getMessage()).build()).build(HttpStatus.BAD_REQUEST.value());
+		return RestApiError.of(ApiError.builder("Couldn't process multipart request: " + e.getMostSpecificCause().getMessage()).build()).build(HttpStatus.BAD_REQUEST.value());
 	}
 	
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
 	public RestApiError handle(final HttpMediaTypeNotSupportedException e) {
-		return RestApiError.of(ApiError.Builder.of("HTTP Media Type " + e.getContentType() + " is not supported. Supported media types are: " + e.getSupportedMediaTypes()).build()).build(HttpStatus.UNSUPPORTED_MEDIA_TYPE.value());
+		return RestApiError.of(ApiError.builder("HTTP Media Type " + e.getContentType() + " is not supported. Supported media types are: " + e.getSupportedMediaTypes()).build()).build(HttpStatus.UNSUPPORTED_MEDIA_TYPE.value());
 	}
 	
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.METHOD_NOT_ALLOWED)
 	public RestApiError handle(final HttpRequestMethodNotSupportedException e) {
-		return RestApiError.of(ApiError.Builder.of("Method " + e.getMethod() + " is not allowed").build()).build(HttpStatus.METHOD_NOT_ALLOWED.value());
+		return RestApiError.of(ApiError.builder("Method " + e.getMethod() + " is not allowed").build()).build(HttpStatus.METHOD_NOT_ALLOWED.value());
 	}
 	
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	public RestApiError handle(final BindException e) {
-		return RestApiError.of(ApiError.Builder.of("Invalid  parameter: '" + e.getMessage() + "'.").build()).build(HttpStatus.BAD_REQUEST.value());
+		return RestApiError.of(ApiError.builder("Invalid  parameter: '" + e.getMessage() + "'.").build()).build(HttpStatus.BAD_REQUEST.value());
 	}
 	
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	public RestApiError handle(final MissingPathVariableException e) {
-		return RestApiError.of(ApiError.Builder.of("Missing path parameter: '" + e.getVariableName() + "'.").build()).build(HttpStatus.BAD_REQUEST.value());
+		return RestApiError.of(ApiError.builder("Missing path parameter: '" + e.getVariableName() + "'.").build()).build(HttpStatus.BAD_REQUEST.value());
 	}
 	
 	@ExceptionHandler
@@ -124,7 +124,7 @@ public class ControllerExceptionMapper {
     	} else {
     		LOG.trace("Timeout during request processing", ex);
     	}
-		return RestApiError.of(ApiError.Builder.of(GENERIC_USER_MESSAGE).build()).build(HttpStatus.REQUEST_TIMEOUT.value());
+		return RestApiError.of(ApiError.builder(GENERIC_USER_MESSAGE).build()).build(HttpStatus.REQUEST_TIMEOUT.value());
 	}
 	
 	/**
@@ -137,7 +137,7 @@ public class ControllerExceptionMapper {
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	public RestApiError handle(final HttpMessageNotReadableException ex) {
 		LOG.trace("Exception during processing of a JSON document", ex);
-		return RestApiError.of(ApiError.Builder.of("Invalid JSON representation").developerMessage(ex.getMessage()).build()).build(HttpStatus.BAD_REQUEST.value());
+		return RestApiError.of(ApiError.builder("Invalid JSON representation").developerMessage(ex.getMessage()).build()).build(HttpStatus.BAD_REQUEST.value());
 	}
 	
 	@ExceptionHandler
@@ -187,7 +187,7 @@ public class ControllerExceptionMapper {
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	public RestApiError handle(final IllegalArgumentException ex) {
 		ex.printStackTrace();
-		return RestApiError.of(ApiError.Builder.of(ex.getMessage()).build()).build(HttpStatus.BAD_REQUEST.value());
+		return RestApiError.of(ApiError.builder(ex.getMessage()).build()).build(HttpStatus.BAD_REQUEST.value());
 	}
 	
 	/**
@@ -222,7 +222,7 @@ public class ControllerExceptionMapper {
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
     public RestApiError handle(final ConversionFailedException ex) {
-		return RestApiError.of(ApiError.Builder.of(ex.getMessage()).build()).build(HttpStatus.BAD_REQUEST.value());
+		return RestApiError.of(ApiError.builder(ex.getMessage()).build()).build(HttpStatus.BAD_REQUEST.value());
     }
 
 	/**
@@ -233,7 +233,7 @@ public class ControllerExceptionMapper {
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
 	public RestApiError handle(final MethodArgumentTypeMismatchException ex) {
-		return RestApiError.of(ApiError.Builder.of(ex.getMessage()).build()).build(HttpStatus.BAD_REQUEST.value());
+		return RestApiError.of(ApiError.builder(ex.getMessage()).build()).build(HttpStatus.BAD_REQUEST.value());
 	}
 	
 }
