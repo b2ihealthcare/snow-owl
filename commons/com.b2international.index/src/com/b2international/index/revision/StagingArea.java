@@ -880,9 +880,9 @@ public final class StagingArea {
 		public ArrayNode diff() {
 			if (diff == null) {
 				final DocumentMapping mapping = index.admin().mappings().getMapping(newRevision.getClass());
-				final Set<String> diffFields = mapping.getHashedFields();
-				if (diffFields.isEmpty()) {
-					return null; // in case of no hash fields, do NOT try to compute the diff
+				final Set<String> revisionFields = mapping.getRevisionFields();
+				if (revisionFields.isEmpty()) {
+					return null; // in case of no fields to revision control, do NOT try to compute the diff
 				}
 				
 				final ArrayNode diff = mapper.createArrayNode();
@@ -898,8 +898,8 @@ public final class StagingArea {
 						property = property.substring(0, nextSegmentIdx);
 					}
 
-					// Keep hashed fields only
-					if (diffFields.contains(property)) {
+					// Keep revision fields only
+					if (revisionFields.contains(property)) {
 						diff.add(change);
 					}
 				}

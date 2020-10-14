@@ -16,6 +16,7 @@
 package com.b2international.snowowl.core.repository;
 
 import org.eclipse.emf.common.util.WrappedException;
+import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.exceptions.ApiException;
 import com.b2international.snowowl.core.ServiceProvider;
@@ -72,6 +73,7 @@ public final class ApiRequestHandler implements IHandler<IMessage> {
 		} catch (ApiException e) {
 			message.fail(e);
 		} catch (Throwable e) {
+			LoggerFactory.getLogger(ApiRequestHandler.class).error("Unexpected error when executing request:", e);
 			message.fail(e);
 		}
 	}
