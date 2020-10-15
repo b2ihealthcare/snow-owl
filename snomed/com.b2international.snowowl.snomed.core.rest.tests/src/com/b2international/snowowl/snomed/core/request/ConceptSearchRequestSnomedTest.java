@@ -61,22 +61,13 @@ public class ConceptSearchRequestSnomedTest {
 	@Test
 	public void filterByQuery() throws Exception {
 		Concepts matches = CodeSystemRequests.prepareSearchConcepts()
+			.setLimit(0)
 			.filterByQuery("*")
 			.filterByExclusion(SnomedConstants.Concepts.ROOT_CONCEPT)
 			.build(CODESYSTEM)
 			.execute(Services.bus())
 			.getSync();
 		assertThat(matches.getTotal()).isEqualTo(1872);
-	}
-	
-	@Test
-	public void filterByAncestorId() throws Exception {
-		Concepts matches = CodeSystemRequests.prepareSearchConcepts()
-			.filterByAncestorId(ID)
-			.build(CODESYSTEM)
-			.execute(Services.bus())
-			.getSync();
-		assertThat(matches.getTotal()).isEqualTo(5);
 	}
 	
 	@Test
