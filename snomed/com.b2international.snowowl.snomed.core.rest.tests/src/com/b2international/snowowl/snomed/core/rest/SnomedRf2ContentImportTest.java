@@ -224,7 +224,7 @@ public class SnomedRf2ContentImportTest extends AbstractSnomedApiTest {
 
 		final Multimap<String, String> lines = HashMultimap.create();
 
-		try (FileSystem fs = FileSystems.newFileSystem(input.toPath(), null)) {
+		try (FileSystem fs = FileSystems.newFileSystem(input.toPath(), SnomedRf2ContentImportTest.class.getClassLoader())) {
 			for (final Path path : fs.getRootDirectories()) {
 				Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
 					@Override
