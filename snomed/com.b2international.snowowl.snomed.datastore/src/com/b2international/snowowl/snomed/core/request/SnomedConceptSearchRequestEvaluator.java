@@ -76,10 +76,6 @@ public final class SnomedConceptSearchRequestEvaluator implements ConceptSearchR
 			req.withMinTermMatch(search.get(OptionKey.MIN_TERM_MATCH, Integer.class));
 		}
 		
-		if(search.containsKey(OptionKey.ANCESTOR_ID)) {
-			req.filterByAncestors(search.getCollection(OptionKey.ANCESTOR_ID, String.class));
-		}
-		
 		if (search.containsKey(OptionKey.QUERY) || search.containsKey(OptionKey.MUST_NOT_QUERY)) {
 			StringBuilder query = new StringBuilder();
 			
