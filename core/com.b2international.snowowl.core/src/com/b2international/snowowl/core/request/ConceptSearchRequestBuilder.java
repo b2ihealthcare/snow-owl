@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.core.request;
 
-import java.util.Collection;
-
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.Concepts;
 import com.b2international.snowowl.core.events.AsyncRequest;
@@ -122,26 +120,6 @@ public final class ConceptSearchRequestBuilder extends SearchResourceRequestBuil
 	 */
 	public ConceptSearchRequestBuilder setPreferredDisplay(String prefferedDisplay) {
 		return addOption(OptionKey.DISPLAY, prefferedDisplay);
-	}
-	
-	/**
-	 * Filters matches by their ancestor ID
-	 * 
-	 * @param ancestorId
-	 * @return
-	 */
-	public ConceptSearchRequestBuilder filterByAncestorId(final String ancestorId) {
-		return addOption(OptionKey.ANCESTOR_ID, ancestorId);
-	}
-
-	/**
-	 * Filters matches by their ancestor IDs
-	 * 
-	 * @param ancestorIds
-	 * @return
-	 */
-	public ConceptSearchRequestBuilder filterByAncestorIds(final Collection<String> ancestorIds) {
-		return addOption(OptionKey.ANCESTOR_ID, ancestorIds);
 	}
 
 	@Override
