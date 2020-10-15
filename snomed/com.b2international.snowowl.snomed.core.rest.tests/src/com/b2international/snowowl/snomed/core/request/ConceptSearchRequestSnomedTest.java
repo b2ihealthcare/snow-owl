@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
+import com.b2international.snowowl.core.domain.Concept;
 import com.b2international.snowowl.core.domain.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedConstants;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
@@ -31,6 +32,10 @@ import com.b2international.snowowl.test.commons.Services;
 public class ConceptSearchRequestSnomedTest {
 
 	private static final String CODESYSTEM = SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME + "/2018-01-31";
+	
+	private static final String ID = "105590001";
+	private static final String PT = "Substance";
+	private static final String FSN = "Substance (substance)";
 	
 	@Test
 	public void hitCount() throws Exception {
@@ -56,13 +61,49 @@ public class ConceptSearchRequestSnomedTest {
 	@Test
 	public void filterByQuery() throws Exception {
 		Concepts matches = CodeSystemRequests.prepareSearchConcepts()
-			.setLimit(0)
 			.filterByQuery("*")
 			.filterByExclusion(SnomedConstants.Concepts.ROOT_CONCEPT)
 			.build(CODESYSTEM)
 			.execute(Services.bus())
 			.getSync();
 		assertThat(matches.getTotal()).isEqualTo(1872);
+	}
+	
+	@Test
+	public void filterByAncestorId() throws Exception {
+		Concepts matches = CodeSystemRequests.prepareSearchConcepts()
+			.filterByAncestorId(ID)
+			.build(CODESYSTEM)
+			.execute(Services.bus())
+			.getSync();
+		assertThat(matches.getTotal()).isEqualTo(5);
+	}
+	
+	@Test
+	public void setPreferreDisplayToFsn() throws Exception {
+		Concepts matches = CodeSystemRequests.prepareSearchConcepts()
+			.filterById(ID)
+			.setPreferredDisplay("FSN")
+			.setLocales("en")
+			.build(CODESYSTEM)
+			.execute(Services.bus())
+			.getSync();
+		assertThat(matches.getTotal()).isEqualTo(1);
+		final Concept concept = matches.first().get();
+		assertThat(concept.getTerm()).isEqualTo(FSN);
+	}
+	
+	@Test
+	public void useDefaultDisplay() throws Exception {
+		Concepts matches = CodeSystemRequests.prepareSearchConcepts()
+			.filterById(ID)
+			.setLocales("en")
+			.build(CODESYSTEM)
+			.execute(Services.bus())
+			.getSync();
+		assertThat(matches.getTotal()).isEqualTo(1);
+		final Concept concept = matches.first().get();
+		assertThat(concept.getTerm()).isEqualTo(PT);
 	}
 	
 }
