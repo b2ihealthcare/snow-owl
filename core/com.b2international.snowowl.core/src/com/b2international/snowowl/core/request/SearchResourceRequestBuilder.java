@@ -147,9 +147,10 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	 * @return this builder instance
 	 */
 	public final B withMinTermMatch(int minTermMatch) {
-		if (minTermMatch > 0) {
-			optionsBuilder.put(OptionKey.MIN_TERM_MATCH, minTermMatch);
+		if (minTermMatch <= 0) {
+			throw new BadRequestException("Min number of terms to match should be greater than 0. It was: '%s'.", minTermMatch);
 		}
+		optionsBuilder.put(OptionKey.MIN_TERM_MATCH, minTermMatch);
 		return getSelf();
 	}
 	
