@@ -69,6 +69,13 @@ public final class ConceptSearchRequestBuilder extends SearchResourceRequestBuil
 	}
 	
 	/**
+	 * Enables fuzzy term query
+	 */
+	public ConceptSearchRequestBuilder useFuzzy() {
+		return addOption(OptionKey.USE_FUZZY, true);
+	}
+	
+	/**
 	 * Filters matches by a query expression defined in the target code system's query language.
 	 * 
 	 * @param query

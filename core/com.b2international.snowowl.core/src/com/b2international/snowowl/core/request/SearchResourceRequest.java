@@ -62,7 +62,17 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 		/**
 		 * Sort result by the specified sort fields.
 		 */
-		SORT_BY;
+		SORT_BY,
+		
+		/**
+		 * Use fuzzy query in the search.
+		 */
+		USE_FUZZY,
+		
+		/**
+		 * Set the minimum number of terms to match.
+		 */
+		MIN_TERM_MATCH,
 	}
 
 	public static abstract class Sort implements Serializable {

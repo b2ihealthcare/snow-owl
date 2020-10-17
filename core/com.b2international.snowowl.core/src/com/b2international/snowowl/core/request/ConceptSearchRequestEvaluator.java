@@ -85,6 +85,11 @@ public interface ConceptSearchRequestEvaluator {
 		 * Number of matches to return.
 		 */
 		LIMIT,
+		
+		/**
+		 * Use fuzzy query in the search
+		 */
+		USE_FUZZY;
 	}
 
 	/**
@@ -130,6 +135,16 @@ public interface ConceptSearchRequestEvaluator {
 		}
 		
 		requestBuilder.filterByIds(idFilter);
+	}
+	
+	default void evaluateTermFilterOptions(SearchResourceRequestBuilder<?, ?, ?> requestBuilder, Options search) {
+		if (search.containsKey(OptionKey.MIN_TERM_MATCH)) {
+			requestBuilder.withMinTermMatch(search.get(OptionKey.MIN_TERM_MATCH, Integer.class));
+		}
+		
+		if (search.containsKey(OptionKey.USE_FUZZY)) {
+			requestBuilder.withFuzzy();
+		}
 	}
 	
 	/**
