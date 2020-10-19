@@ -1,6 +1,28 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 7.10.1
+
+### Core
+- Add `minTermMatch` and `fuzzy` search support to Generic Concept Search API (#684)
+- Expose `squash` property for advanced branch merge scenarios (#686)
+- New configuration keys to configure index bulk commit sizes (#690, 38bc1bd):
+  * `repository.index.bulkActionSize` - the number of bulk action requests to send in a single batch to the configured Elasticsearch cluster, defaults to `10.000`.
+  * `repository.index.bulkActionSizeInMb` - the maximum bulk request size (in megabytes) to send to the configured Elasticsearch cluster, defaults to `9MB`.
+
+### Bugs/Improvements
+- [index] reduce the number of edge_ngram prefixes generated to `2-12` (#684)
+- [index] fix potential branch rebase issue when there were no actual tracked changes on both branches (#696)
+- [index] make index bulk commits configurable ()
+- [index] remove deprecated `_hash` field (#691)
+- [core] always render SNOMED CT Metadata concepts with their preferred synonym (PT) (#685) 
+- [snomed] fix RF2 FULL export issue when exporting SNOMED CT Extensions in a deep branching scenario (#689, 57f1fdf)
+- [releng] improve test code coverage numbers, clean up unused functionality, types, libraries (#694)
+
+### Dependencies
+- Bump Elasticsearch to 7.9.2 (#682)
+- Bump Hibernate validator to 5.3.6 (#644)
+
 ## 7.10.0
 
 ### Core
