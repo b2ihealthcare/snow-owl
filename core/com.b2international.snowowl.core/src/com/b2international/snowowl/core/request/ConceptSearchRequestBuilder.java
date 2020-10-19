@@ -122,12 +122,12 @@ public final class ConceptSearchRequestBuilder extends SearchResourceRequestBuil
 	/**
 	 * Sets the preferred display term to return for every code system
 	 * 
-	 * @param prefferedDisplay
+	 * @param preferredDisplay
 	 *            - String representation of the preferred display
 	 * @return
 	 */
-	public ConceptSearchRequestBuilder setPreferredDisplay(String prefferedDisplay) {
-		return addOption(OptionKey.DISPLAY, prefferedDisplay);
+	public ConceptSearchRequestBuilder setPreferredDisplay(String preferredDisplay) {
+		return addOption(OptionKey.DISPLAY, preferredDisplay);
 	}
 
 	@Override

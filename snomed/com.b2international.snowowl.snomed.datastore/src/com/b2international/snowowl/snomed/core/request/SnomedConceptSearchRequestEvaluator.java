@@ -49,10 +49,11 @@ public final class SnomedConceptSearchRequestEvaluator implements ConceptSearchR
 	
 	@Override
 	public Concepts evaluate(CodeSystemURI uri, BranchContext context, Options search) {
+		
 		final String preferredDisplay = search.getString(OptionKey.DISPLAY);
 		SnomedDisplayTermType displayTermType;
 		
-		if(preferredDisplay != null) {
+		if (preferredDisplay != null) {
 			displayTermType = SnomedDisplayTermType.getEnum(preferredDisplay);
 		} else {
 			displayTermType = SnomedDisplayTermType.PT;
