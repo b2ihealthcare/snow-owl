@@ -13,7 +13,6 @@ All notable changes to this project will be documented in this file.
 ### Bugs/Improvements
 - [index] reduce the number of edge_ngram prefixes generated to `2-12` (#684)
 - [index] fix potential branch rebase issue when there were no actual tracked changes on both branches (#696)
-- [index] make index bulk commits configurable ()
 - [index] remove deprecated `_hash` field (#691)
 - [core] always render SNOMED CT Metadata concepts with their preferred synonym (PT) (#685) 
 - [snomed] fix RF2 FULL export issue when exporting SNOMED CT Extensions in a deep branching scenario (#689, 57f1fdf)
