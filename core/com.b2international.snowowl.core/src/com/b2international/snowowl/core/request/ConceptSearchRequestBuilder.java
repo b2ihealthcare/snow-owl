@@ -118,6 +118,17 @@ public final class ConceptSearchRequestBuilder extends SearchResourceRequestBuil
 	public ConceptSearchRequestBuilder filterByExclusions(Iterable<String> exclusions) {
 		return addOption(OptionKey.MUST_NOT_QUERY, exclusions);
 	}
+	
+	/**
+	 * Sets the preferred display term to return for every code system
+	 * 
+	 * @param preferredDisplay
+	 *            - String representation of the preferred display
+	 * @return
+	 */
+	public ConceptSearchRequestBuilder setPreferredDisplay(String preferredDisplay) {
+		return addOption(OptionKey.DISPLAY, preferredDisplay);
+	}
 
 	@Override
 	protected SearchResourceRequest<BranchContext, Concepts> createSearch() {

@@ -87,6 +87,11 @@ public interface ConceptSearchRequestEvaluator {
 		LIMIT,
 		
 		/**
+		 * Set the preferred display type to return
+		 */
+		DISPLAY,
+		
+		/**
 		 * Use fuzzy query in the search
 		 */
 		USE_FUZZY;
