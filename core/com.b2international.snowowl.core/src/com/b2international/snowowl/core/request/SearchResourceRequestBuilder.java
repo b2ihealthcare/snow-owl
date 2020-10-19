@@ -141,6 +141,28 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 		return setLimit(1);
 	}
 	
+	/**
+	 * Sets the minimum number of terms to match
+	 * @param minTermMatch
+	 * @return this builder instance
+	 */
+	public final B withMinTermMatch(int minTermMatch) {
+		if (minTermMatch <= 0) {
+			throw new BadRequestException("Min number of terms to match should be greater than 0. It was: '%s'.", minTermMatch);
+		}
+		optionsBuilder.put(OptionKey.MIN_TERM_MATCH, minTermMatch);
+		return getSelf();
+	}
+	
+	/**
+	 * Enables fuzzy search
+	 * @return this builder instance
+	 */
+	public final B withFuzzy() {
+		optionsBuilder.put(OptionKey.USE_FUZZY, true);
+		return getSelf();
+	}
+	
 	// XXX: Does not allow null values or collections with null values
 	protected final B addOption(String key, Object value) {
 		if (value instanceof Iterable<?>) {
