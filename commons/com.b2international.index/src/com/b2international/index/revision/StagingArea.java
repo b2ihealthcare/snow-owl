@@ -331,9 +331,7 @@ public final class StagingArea {
 					// register component as changed in commit doc
 					ObjectId containerId = checkNotNull(rev.getContainerId(), "Missing containerId for revision: %s", rev);
 					ObjectId objectId = rev.getObjectId();
-					if (!containerId.isRoot()) { // XXX register only sub-components in the changed objects
-						changedComponentsByContainer.put(containerId, objectId);
-					}
+					changedComponentsByContainer.put(containerId, objectId);
 					
 					if (revisionDiff.diff() != null) {
 						// register actual difference between revisions to commit
@@ -740,10 +738,12 @@ public final class StagingArea {
 							}
 						}
 					} else {
-						// this object has changed on both sides probably due to some cascading change, revise the revision on source, since we already have one on this branch
-						revisionsToReviseOnMergeSource.put(type, changedInSourceAndTargetId);
 						fromChangeSet.removeChanged(type, changedInSourceAndTargetId);
 					}
+					
+					// this object has changed on both sides either by tracked field changes or due to some cascading derived field change
+					// revise the revision on source, since we already have one on this branch already
+					revisionsToReviseOnMergeSource.put(type, changedInSourceAndTargetId);
 				}
 			}
 		}
