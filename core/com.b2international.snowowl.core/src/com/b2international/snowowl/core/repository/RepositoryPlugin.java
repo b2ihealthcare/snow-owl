@@ -140,6 +140,8 @@ public final class RepositoryPlugin extends Plugin {
 		builder.put(IndexClientFactory.CONNECT_TIMEOUT, indexConfig.getConnectTimeout());
 		builder.put(IndexClientFactory.SOCKET_TIMEOUT, indexConfig.getSocketTimeout());
 		builder.put(IndexClientFactory.CLUSTER_HEALTH_TIMEOUT, indexConfig.getClusterHealthTimeout());
+		builder.put(IndexClientFactory.BULK_ACTIONS_SIZE, indexConfig.getBulkActionSize());
+		builder.put(IndexClientFactory.BULK_ACTIONS_SIZE_IN_MB, indexConfig.getBulkActionSizeInMb());
 		
 		return builder.build();
 	}
