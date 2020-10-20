@@ -45,12 +45,14 @@ public class RevisionFixtures {
 			private String field1;
 			private String field2;
 			private List<String> terms;
+			private String derivedField;
 			
 			public Builder(RevisionData revisionData) {
 				this.id = revisionData.getId();
 				this.field1 = revisionData.field1;
 				this.field2 = revisionData.field2;
 				this.terms = revisionData.terms;
+				this.derivedField = revisionData.derivedField;
 			}
 
 			public Builder id(String id) {
@@ -73,6 +75,11 @@ public class RevisionFixtures {
 				return getSelf();
 			}
 			
+			public Builder derivedField(String derivedField) {
+				this.derivedField = derivedField;
+				return getSelf();
+			}
+			
 			@Override
 			protected Builder getSelf() {
 				return this;
@@ -80,7 +87,7 @@ public class RevisionFixtures {
 
 			@Override
 			public RevisionData build() {
-				return new RevisionData(id, field1, field2, terms);
+				return new RevisionData(id, field1, field2, terms, derivedField);
 			}
 		}
 		
@@ -88,9 +95,10 @@ public class RevisionFixtures {
 		private final String field1;
 		private final String field2;
 		private final List<String> terms;
+		private final String derivedField;
 
 		public RevisionData(final String id, final String field1, final String field2) {
-			this(id, field1, field2, null);
+			this(id, field1, field2, null, null);
 		}
 		
 		@JsonCreator
@@ -98,11 +106,13 @@ public class RevisionFixtures {
 				@JsonProperty(Revision.Fields.ID) final String id, 
 				@JsonProperty("field1") final String field1, 
 				@JsonProperty("field2") final String field2,
-				@JsonProperty("terms") final List<String> terms) {
+				@JsonProperty("terms") final List<String> terms,
+				@JsonProperty("derivedField") final String derivedField) {
 			super(id);
 			this.field1 = field1;
 			this.field2 = field2;
 			this.terms = terms;
+			this.derivedField = derivedField;
 		}
 		
 		public String getField1() {
@@ -115,6 +125,10 @@ public class RevisionFixtures {
 		
 		public List<String> getTerms() {
 			return terms;
+		}
+		
+		public String getDerivedField() {
+			return derivedField;
 		}
 		
 		@Override
@@ -188,7 +202,7 @@ public class RevisionFixtures {
 				@JsonProperty("field2") final String field2,
 				@JsonProperty("terms") final List<String> terms,
 				@JsonProperty("doi") final float doi) {
-			super(id, field1, field2, terms);
+			super(id, field1, field2, terms, null);
 			this.doi = doi;
 		}
 		
@@ -227,7 +241,7 @@ public class RevisionFixtures {
 				@JsonProperty("field2") final String field2,
 				@JsonProperty("terms") final List<String> terms,
 				@JsonProperty("value") final boolean active) {
-			super(id, field1, field2, terms);
+			super(id, field1, field2, terms, null);
 			this.active = active;
 		}
 		
@@ -251,7 +265,7 @@ public class RevisionFixtures {
 				@JsonProperty("terms") final List<String> terms,
 				@JsonProperty("from") final int from,
 				@JsonProperty("to") final int to) {
-			super(id, field1, field2, terms);
+			super(id, field1, field2, terms, null);
 			this.from = from;
 			this.to = to;
 		}
@@ -266,7 +280,9 @@ public class RevisionFixtures {
 		
 	}
 	
-	@Doc
+	@Doc(
+		revisionHash = {"field1", "data"}
+	)
 	public static final class NestedRevisionData extends Revision {
 		
 		private String field1;
@@ -290,6 +306,14 @@ public class RevisionFixtures {
 			if (getClass() != obj.getClass()) return false;
 			NestedRevisionData other = (NestedRevisionData) obj;
 			return Objects.equals(field1, other.field1) && Objects.equals(data, other.data); 
+		}
+		
+		public String getField1() {
+			return field1;
+		}
+		
+		public com.b2international.index.Fixtures.Data getData() {
+			return data;
 		}
 		
 		@Override

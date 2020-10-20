@@ -29,10 +29,6 @@ public final class RevisionCompareDetail {
 
 	static final String PROPERTY_CHANGE_KEY_SEPARATOR = "#";
 	
-	// commit details
-	private final String author;
-	private final long timestamp;
-	private final String comment;
 	// change details (hierarchy)
 	private final Operation op;
 	private final ObjectId object;
@@ -45,39 +41,26 @@ public final class RevisionCompareDetail {
 	@JsonIgnore
 	private final String key;
 	
-	public static RevisionCompareDetail propertyChange(String author, 
-			long timestamp, 
-			String comment, 
-			Operation op,
+	public static RevisionCompareDetail propertyChange(Operation op,
 			ObjectId object,
 			String property,
 			String fromValue,
 			String value) {
-		return new RevisionCompareDetail(author, timestamp, comment, op, object, null, property, fromValue, value);
+		return new RevisionCompareDetail(op, object, null, property, fromValue, value);
 	}
 	
-	public static RevisionCompareDetail componentChange(String author, 
-			long timestamp, 
-			String comment, 
-			Operation op,
+	public static RevisionCompareDetail componentChange(Operation op,
 			ObjectId object,
 			ObjectId component) {
-		return new RevisionCompareDetail(author, timestamp, comment, op, object, component, null, null, null);
+		return new RevisionCompareDetail(op, object, component, null, null, null);
 	}
 	
-	private RevisionCompareDetail(
-			String author, 
-			long timestamp, 
-			String comment, 
-			Operation op,
+	private RevisionCompareDetail(Operation op,
 			ObjectId object,
 			ObjectId component,
 			String property,
 			String fromValue,
 			String value) {
-		this.author = author;
-		this.timestamp = timestamp;
-		this.comment = comment;
 		this.op = op;
 		this.object = object;
 		this.component = component;
@@ -89,18 +72,6 @@ public final class RevisionCompareDetail {
 		} else {
 			this.key = String.join(PROPERTY_CHANGE_KEY_SEPARATOR, object.toString(), property);
 		}
-	}
-	
-	public String getAuthor() {
-		return author;
-	}
-	
-	public String getComment() {
-		return comment;
-	}
-	
-	public long getTimestamp() {
-		return timestamp;
 	}
 	
 	public Operation getOp() {
@@ -156,6 +127,34 @@ public final class RevisionCompareDetail {
 	String key() {
 		return key;
 	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null) return false;
+		if (this == obj) return true;
+		if (getClass() != obj.getClass()) return false;
+		RevisionCompareDetail other = (RevisionCompareDetail) obj;
+		return Objects.equals(op, other.op)
+				&& Objects.equals(object, other.object)
+				&& Objects.equals(component, other.component)
+				&& Objects.equals(property, other.property)
+				&& Objects.equals(fromValue, other.fromValue)
+				&& Objects.equals(value, other.value);
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(op, object, component, property, fromValue, value);
+	}
+	
+	@Override
+	public String toString() {
+		if (isComponentChange()) {
+			return String.format("%s[obj=%s, component=%s]", op, object, component);
+		} else {
+			return String.format("%s[obj=%s, property=%s, from=%s, to=%s]", op, object, property, fromValue, value);
+		}
+	}
 
 	RevisionCompareDetail merge(RevisionCompareDetail other) {
 		checkArgument(key().equals(other.key()), "Cannot merge unrelated compare details.");
@@ -187,7 +186,7 @@ public final class RevisionCompareDetail {
 				return null;
 			} else {
 				// otherwise all new values except the from value, we would like to see the original from value -> latest new value change in the result
-				return propertyChange(other.author, other.timestamp, other.comment, other.op, other.object, other.property, fromValue, other.value);
+				return propertyChange(other.op, other.object, other.property, fromValue, other.value);
 			}
 		}
 	}

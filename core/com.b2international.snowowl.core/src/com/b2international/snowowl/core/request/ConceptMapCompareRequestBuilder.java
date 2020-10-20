@@ -26,8 +26,15 @@ public final class ConceptMapCompareRequestBuilder
 		extends ResourceRequestBuilder<ConceptMapCompareRequestBuilder, BranchContext, ConceptMapCompareResult>
 		implements RevisionIndexRequestBuilder<ConceptMapCompareResult> {
 	
+	private int limit = 5000;
+	
 	private final ComponentURI baseConceptMapURI;
 	private final ComponentURI compareConceptMapURI;
+	
+	public ConceptMapCompareRequestBuilder setLimit(int limit) {
+		this.limit = limit;
+		return getSelf();
+	}
 	
 	public ConceptMapCompareRequestBuilder(ComponentURI baseConceptMapURI, ComponentURI compareConceptMapURI) {
 		this.baseConceptMapURI = baseConceptMapURI;
@@ -36,7 +43,7 @@ public final class ConceptMapCompareRequestBuilder
 	
 	@Override
 	protected ResourceRequest<BranchContext, ConceptMapCompareResult> create() {
-		return new ConceptMapCompareRequest(baseConceptMapURI, compareConceptMapURI);
+		return new ConceptMapCompareRequest(baseConceptMapURI, compareConceptMapURI, limit);
 	}
 	
 }

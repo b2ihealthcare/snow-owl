@@ -69,6 +69,13 @@ public final class ConceptSearchRequestBuilder extends SearchResourceRequestBuil
 	}
 	
 	/**
+	 * Enables fuzzy term query
+	 */
+	public ConceptSearchRequestBuilder useFuzzy() {
+		return addOption(OptionKey.USE_FUZZY, true);
+	}
+	
+	/**
 	 * Filters matches by a query expression defined in the target code system's query language.
 	 * 
 	 * @param query
@@ -110,6 +117,17 @@ public final class ConceptSearchRequestBuilder extends SearchResourceRequestBuil
 	 */
 	public ConceptSearchRequestBuilder filterByExclusions(Iterable<String> exclusions) {
 		return addOption(OptionKey.MUST_NOT_QUERY, exclusions);
+	}
+	
+	/**
+	 * Sets the preferred display term to return for every code system
+	 * 
+	 * @param preferredDisplay
+	 *            - String representation of the preferred display
+	 * @return
+	 */
+	public ConceptSearchRequestBuilder setPreferredDisplay(String preferredDisplay) {
+		return addOption(OptionKey.DISPLAY, preferredDisplay);
 	}
 
 	@Override

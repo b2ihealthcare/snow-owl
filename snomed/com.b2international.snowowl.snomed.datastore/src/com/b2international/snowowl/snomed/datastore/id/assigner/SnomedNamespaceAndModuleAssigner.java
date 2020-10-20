@@ -18,8 +18,8 @@ package com.b2international.snowowl.snomed.datastore.id.assigner;
 import java.util.Set;
 
 import com.b2international.commons.exceptions.FormattedRuntimeException;
-import com.b2international.commons.extension.ClassPathScanner;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.plugin.ClassPathScanner;
 
 /**
  * Common interface for a namespace-module allocator which:

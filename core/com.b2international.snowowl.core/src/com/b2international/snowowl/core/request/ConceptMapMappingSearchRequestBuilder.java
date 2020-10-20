@@ -61,6 +61,10 @@ public final class ConceptMapMappingSearchRequestBuilder extends SearchResourceR
 		return addOption(OptionKey.COMPONENT, componentIds);
 	}
 	
+	public ConceptMapMappingSearchRequestBuilder setPreferredDisplay(String displayType) {
+		return addOption(OptionKey.DISPLAY, displayType);
+	}
+	
 	@Override
 	protected SearchResourceRequest<BranchContext, ConceptMapMappings> createSearch() {
 		return new ConceptMapMappingSearchRequest();

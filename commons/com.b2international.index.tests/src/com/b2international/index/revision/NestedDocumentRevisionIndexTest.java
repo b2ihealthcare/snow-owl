@@ -73,4 +73,29 @@ public class NestedDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 		assertThat(matches).containsOnly(parent1);
 	}
 	
+	@Test
+	public void compareNestedRevisionData() throws Exception {
+		final Data nestedData = new Data();
+		nestedData.setField1("field1_1");
+		nestedData.setField2("field2_1");
+		final NestedRevisionData doc = new NestedRevisionData(STORAGE_KEY1, "parent1", nestedData);
+		
+		indexRevision(MAIN, doc);
+		
+		String a = createBranch(MAIN, "a");
+		
+		final Data updatedNestedData = new Data();
+		updatedNestedData.setField1("field1_2");
+		updatedNestedData.setField2("field2_2");
+		final NestedRevisionData updatedDoc = new NestedRevisionData(STORAGE_KEY1, "parent1", updatedNestedData);
+		indexChange(a, doc, updatedDoc);
+		
+		RevisionCompare compare = index().compare(MAIN, a);
+		assertThat(compare.getDetails()).containsOnly(
+			RevisionCompareDetail.componentChange(Operation.CHANGE, updatedDoc.getContainerId(), updatedDoc.getObjectId()),
+			RevisionCompareDetail.propertyChange(Operation.CHANGE, updatedDoc.getObjectId(), "data/field1", "field1_1", "field1_2"),
+			RevisionCompareDetail.propertyChange(Operation.CHANGE, updatedDoc.getObjectId(), "data/field2", "field2_1", "field2_2")
+		);
+	}
+	
 }

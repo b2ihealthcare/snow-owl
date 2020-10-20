@@ -114,6 +114,8 @@ public final class EsQueryBuilder {
 			visit((HasParentPredicate) expression);
 		} else if (expression instanceof PrefixPredicate) {
 			visit((PrefixPredicate) expression);
+		} else if (expression instanceof RegexpPredicate) {
+			visit((RegexpPredicate) expression);
 		} else if (expression instanceof StringSetPredicate) {
 			visit((StringSetPredicate) expression);
 		} else if (expression instanceof LongSetPredicate) {
@@ -260,9 +262,6 @@ public final class EsQueryBuilder {
 						.allowLeadingWildcard(true)
 						.defaultOperator(Operator.AND);
 			break;
-		case REGEXP:
-			query = QueryBuilders.regexpQuery(field, term);
-			break;
 		default: throw new UnsupportedOperationException("Unexpected text match type: " + type);
 		}
 		if (query == null) {
@@ -315,6 +314,10 @@ public final class EsQueryBuilder {
 	
 	private void visit(PrefixPredicate predicate) {
 		deque.push(QueryBuilders.prefixQuery(toFieldPath(predicate), predicate.getArgument()));
+	}
+	
+	private void visit(RegexpPredicate regexp) {
+		deque.push(QueryBuilders.regexpQuery(toFieldPath(regexp), regexp.getArgument()));
 	}
 	
 	private void visit(RangePredicate<?> range) {

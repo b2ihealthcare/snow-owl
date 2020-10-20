@@ -34,9 +34,10 @@ import com.google.common.base.Strings;
  */
 public final class BranchMergeRequest extends AbstractBranchChangeRequest {
 
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 
 	private final Set<String> exclusions;
+	private final boolean squash;
 	
 	private static String commitMessageOrDefault(final String sourcePath, final String targetPath, final String commitMessage) {
 		return !Strings.isNullOrEmpty(commitMessage) 
@@ -44,9 +45,10 @@ public final class BranchMergeRequest extends AbstractBranchChangeRequest {
 				: String.format("Merge branch '%s' into '%s'", sourcePath, targetPath);
 	}
 
-	BranchMergeRequest(final String sourcePath, final String targetPath, Set<String> exclusions, final String userId, final String commitMessage, String reviewId, String parentLockContext) {
+	BranchMergeRequest(final String sourcePath, final String targetPath, Set<String> exclusions, final String userId, final String commitMessage, String reviewId, String parentLockContext, boolean squash) {
 		super(sourcePath, targetPath, userId, commitMessageOrDefault(sourcePath, targetPath, commitMessage), reviewId, parentLockContext);
 		this.exclusions = exclusions;
+		this.squash = squash;
 	}
 	
 	@Override
@@ -63,7 +65,7 @@ public final class BranchMergeRequest extends AbstractBranchChangeRequest {
 				.author(author)
 				.commitMessage(commitMessage)
 				.conflictProcessor(context.service(ComponentRevisionConflictProcessor.class))
-				.squash(true)
+				.squash(squash)
 				.context(context)
 				.merge();
 		} catch (BranchMergeException e) {

@@ -18,7 +18,7 @@ package com.b2international.snowowl.core.codesystem;
 import static com.b2international.index.query.Expressions.exactMatch;
 import static com.b2international.index.query.Expressions.matchAny;
 import static com.b2international.index.query.Expressions.matchTextAll;
-import static com.b2international.index.query.Expressions.matchTextRegexp;
+import static com.b2international.index.query.Expressions.regexp;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -83,7 +83,7 @@ public final class CodeSystemEntry implements Serializable {
 		}
 		
 		public static Expression matchNameRegex(String regex) {
-			return matchTextRegexp(Fields.NAME, regex);
+			return regexp(Fields.NAME, regex);
 		}
 		
 		public static Expression matchNameAllPrefixesPresent(String term) {

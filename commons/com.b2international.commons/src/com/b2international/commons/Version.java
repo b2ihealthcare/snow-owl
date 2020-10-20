@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,10 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
-import com.b2international.commons.functions.StringToIntegerParserFunction;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
@@ -70,34 +71,21 @@ public class Version implements Comparable<Version> {
 	public static Version parseVersion(String versionString) {
 		checkNotNull(versionString, "Version string must not be null.");
 		checkArgument(VERSION_PATTERN.matcher(versionString).matches(), "Version string format is invalid: " + versionString);
-		List<Integer> versionParts = Lists.transform(
-				ImmutableList.copyOf(Splitter.on(VERSION_PART_SEPARATOR).split(versionString)),	new StringToIntegerParserFunction());
-		return new Version(versionParts);
+		return new Version(parseParts(versionString));
 	}
 
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((parts == null) ? 0 : parts.hashCode());
-		return result;
+		return Objects.hash(parts);
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
+		if (this == obj) return true;
+		if (obj == null) return false;
+		if (getClass() != obj.getClass()) return false;
 		Version other = (Version) obj;
-		if (parts == null) {
-			if (other.parts != null)
-				return false;
-		} else if (!parts.equals(other.parts))
-			return false;
-		return true;
+		return Objects.equals(parts, other.parts);
 	}
 
 	@Override
@@ -120,6 +108,10 @@ public class Version implements Comparable<Version> {
 		} else {
 			return 0;
 		}
+	}
+
+	public static List<Integer> parseParts(String version) {
+		return Splitter.on(VERSION_PART_SEPARATOR).splitToList(version).stream().map(Integer::valueOf).collect(Collectors.toList());
 	}
 	
 }

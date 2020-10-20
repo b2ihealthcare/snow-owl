@@ -33,16 +33,21 @@ import com.b2international.commons.ClassUtils;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.Pair;
 import com.b2international.index.BulkUpdate;
+import com.b2international.index.IndexException;
 import com.b2international.index.mapping.DocumentMapping;
+import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Query;
 import com.b2international.index.revision.Hooks.Hook;
 import com.b2international.index.revision.Hooks.PostCommitHook;
 import com.b2international.index.revision.Hooks.PreCommitHook;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.flipkart.zjsonpatch.DiffFlags;
 import com.flipkart.zjsonpatch.JsonDiff;
+import com.flipkart.zjsonpatch.JsonPatch;
 import com.google.common.collect.*;
 
 /**
@@ -326,9 +331,7 @@ public final class StagingArea {
 					// register component as changed in commit doc
 					ObjectId containerId = checkNotNull(rev.getContainerId(), "Missing containerId for revision: %s", rev);
 					ObjectId objectId = rev.getObjectId();
-					if (!containerId.isRoot()) { // XXX register only sub-components in the changed objects
-						changedComponentsByContainer.put(containerId, objectId);
-					}
+					changedComponentsByContainer.put(containerId, objectId);
 					
 					if (revisionDiff.diff() != null) {
 						// register actual difference between revisions to commit
@@ -486,7 +489,7 @@ public final class StagingArea {
 	private String serializeToCommitDetailValue(JsonNode value) {
 		if (value.isNull()) {
 			return null;
-		} else if (value.isArray()) {
+		} else if (value.isArray() || value.isObject()) {
 			return value.toString();
 		} else {
 			return value.asText();
@@ -735,10 +738,12 @@ public final class StagingArea {
 							}
 						}
 					} else {
-						// this object has changed on both sides probably due to some cascading change, revise the revision on source, since we already have one on this branch
-						revisionsToReviseOnMergeSource.put(type, changedInSourceAndTargetId);
 						fromChangeSet.removeChanged(type, changedInSourceAndTargetId);
 					}
+					
+					// this object has changed on both sides either by tracked field changes or due to some cascading derived field change
+					// revise the revision on source, since we already have one on this branch already
+					revisionsToReviseOnMergeSource.put(type, changedInSourceAndTargetId);
 				}
 			}
 		}
@@ -750,17 +755,29 @@ public final class StagingArea {
 			throw new BranchMergeConflictException(conflicts.stream().map(conflictProcessor::convertConflict).collect(Collectors.toList()));
 		}
 		
-		// apply property changes, conflicts, etc.
+		// apply property changes, conflicts in all cases, so merge commits will have the actual conflict resolutions
 		if (!propertyUpdatesToApply.isEmpty()) {
-			// if there are property conflict resolutions, then we have staged changes and it does not matter if the merge is fast-forward
 			for (Entry<Class<? extends Revision>, Multimap<String, RevisionPropertyDiff>> entry : propertyUpdatesToApply.entrySet()) {
 				final Class<? extends Revision> type = entry.getKey();
 				final Multimap<String, RevisionPropertyDiff> propertyUpdatesByObject = entry.getValue();
-				final DocumentMapping mapping = index.admin().mappings().getMapping(type);
-				final Iterable<? extends Revision> objectsToUpdate = index.read(toRef, searcher -> searcher.get(type, propertyUpdatesByObject.keySet()));
-				for (Revision objectToUpdate : objectsToUpdate) {
-					stageChange(objectToUpdate, objectToUpdate.withUpdates(mapper, mapping, propertyUpdatesByObject.get(objectToUpdate.getId())));
-					revisionsToReviseOnMergeSource.put(type, objectToUpdate.getId());
+				final Iterable<JsonNode> objectsToUpdate = index.read(toRef, searcher -> {
+					return searcher.search(Query.select(JsonNode.class).from(type).where(Expressions.matchAny(Revision.Fields.ID, propertyUpdatesByObject.keySet())).limit(propertyUpdatesByObject.keySet().size()).build());
+				});
+				for (JsonNode objectToUpdate : objectsToUpdate) {
+					// read into revision object first
+					Revision oldRevision = mapper.convertValue(objectToUpdate, type);
+					
+					// apply the JSON patch from the updates in place on the same JSON tree
+					ArrayNode patch = mapper.createArrayNode();
+					for (RevisionPropertyDiff diff : propertyUpdatesByObject.get(oldRevision.getId())) {
+						patch.add(diff.asPatch(mapper, objectToUpdate));
+					}
+					JsonPatch.applyInPlace(patch, objectToUpdate);
+					
+					// convert it to Revision again to get the new object
+					// FIXME for the future, figure out how to reduce the number of ser/deser during merge
+					stageChange(oldRevision, mapper.convertValue(objectToUpdate, type));
+					revisionsToReviseOnMergeSource.put(type, oldRevision.getId());
 				}
 			}
 		}
@@ -863,9 +880,9 @@ public final class StagingArea {
 		public ArrayNode diff() {
 			if (diff == null) {
 				final DocumentMapping mapping = index.admin().mappings().getMapping(newRevision.getClass());
-				final Set<String> diffFields = mapping.getHashedFields();
-				if (diffFields.isEmpty()) {
-					return null; // in case of no hash fields, do NOT try to compute the diff
+				final Set<String> revisionFields = mapping.getRevisionFields();
+				if (revisionFields.isEmpty()) {
+					return null; // in case of no fields to revision control, do NOT try to compute the diff
 				}
 				
 				final ArrayNode diff = mapper.createArrayNode();
@@ -881,8 +898,8 @@ public final class StagingArea {
 						property = property.substring(0, nextSegmentIdx);
 					}
 
-					// Keep hashed fields only
-					if (diffFields.contains(property)) {
+					// Keep revision fields only
+					if (revisionFields.contains(property)) {
 						diff.add(change);
 					}
 				}
@@ -942,6 +959,24 @@ public final class StagingArea {
 		
 		public RevisionPropertyDiff convert(RevisionConflictProcessor processor) {
 			return new RevisionPropertyDiff(property, processor.convertPropertyValue(property, oldValue), processor.convertPropertyValue(property, newValue));
+		}
+
+		public JsonNode asPatch(ObjectMapper mapper, JsonNode objectToUpdate) {
+			ObjectNode patch = mapper.createObjectNode();
+			patch.set("op", mapper.valueToTree(objectToUpdate.path(property).isMissingNode() ? "add" : "replace"));
+			patch.set("path", mapper.valueToTree("/".concat(property)));
+			try {
+				patch.set("value", mapper.readTree(newValue));
+				// if it is unable to convert the newValue to a JSON value, then it is either an array or object, read it as tree
+			} catch (JsonProcessingException e) {
+				try {
+					patch.set("value", mapper.valueToTree(newValue));
+				} catch (IllegalArgumentException ex) {
+					ex.addSuppressed(e);
+					throw new IndexException("Unable to read value to JSON. Value: " + newValue, ex);
+				}
+			}
+			return patch; 
 		}
 		
 		@Override

@@ -1,6 +1,51 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 7.10.1
+
+### Core
+- Add `minTermMatch` and `fuzzy` search support to Generic Concept Search API (#684)
+- Expose `squash` property for advanced branch merge scenarios (#686)
+- New configuration keys to configure index bulk commit sizes (#690, 38bc1bd):
+  * `repository.index.bulkActionSize` - the number of bulk action requests to send in a single batch to the configured Elasticsearch cluster, defaults to `10.000`.
+  * `repository.index.bulkActionSizeInMb` - the maximum bulk request size (in megabytes) to send to the configured Elasticsearch cluster, defaults to `9MB`.
+
+### Bugs/Improvements
+- [index] reduce the number of edge_ngram prefixes generated to `2-12` (#684)
+- [index] fix potential branch rebase issue when there were no actual tracked changes on both branches (#696)
+- [index] remove deprecated `_hash` field (#691)
+- [core] always render SNOMED CT Metadata concepts with their preferred synonym (PT) (#685) 
+- [snomed] fix RF2 FULL export issue when exporting SNOMED CT Extensions in a deep branching scenario (#689, 57f1fdf)
+- [releng] improve test code coverage numbers, clean up unused functionality, types, libraries (#694)
+
+### Dependencies
+- Bump Elasticsearch to 7.9.2 (#682)
+- Bump Hibernate validator to 5.3.6 (#644)
+
+## 7.10.0
+
+### Core
+- Code Systems
+  * Support analyzed (tokenized, exact, prefix) `name` property searches in Code System Java API (#667)
+- Concept Maps
+  * Support fetching concept map mappings by reference source and target IDs (#660)
+  * Improve Concept Map model to include the following attributes: `containerIconId`, `containerTerm`, `targetIconId` (#679)
+  * Limit Concept Map compare results to `5000` per change category (#654)
+
+### Validation
+- Make some SNOMED CT validation rules available in the OSS version (#666, #675)
+- Allow users to customize display labels in FSN via Validation Java API (#674) 
+
+### Bugs/Improvements
+- [index] add the ability to change the search time analyzer to something else than the default specified on the index field mapping (#669)
+- [index] serialize nested objects as JSON during commits (75d2139)
+- [index] apply recognized property diff conflict resolutions as JSON patch directly on the source document (#680, 3b7fddc)
+- [core] support ID prefix and ID regexp queries (21eacab)
+- [classification] log unexpected errors during classification (#673)
+- [classification] fix registration of GCI, reflexive, transitive axioms (#673)
+- [snomed] fix `owlExpressions()` expansion issue (857db34) 
+- [cis] port some CIS ID registration leftover fixes from 6.x (5f3f9f0, 0341b5d, 1e7e965)
+
 ## 7.9.2
 
 ### Bugs/Improvements

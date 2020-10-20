@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -174,8 +174,8 @@ public class Expressions {
 		return new TextPredicate(field, term, MatchType.PARSED);
 	}
 	
-	public static TextPredicate matchTextRegexp(String field, String regexp) {
-		return new TextPredicate(field, regexp, MatchType.REGEXP);
+	public static RegexpPredicate regexp(String field, String regexp) {
+		return new RegexpPredicate(field, regexp);
 	}
 	
 	public static Expression dismax(Collection<Expression> disjuncts) {

@@ -21,7 +21,7 @@ import org.eclipse.xtext.util.Pair;
 import org.eclipse.xtext.util.Tuples;
 
 import com.b2international.commons.CompositeClassLoader;
-import com.b2international.commons.extension.Component;
+import com.b2international.snowowl.core.plugin.Component;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;

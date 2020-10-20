@@ -22,7 +22,6 @@ import org.eclipse.xtext.serializer.ISerializer;
 import org.eclipse.xtext.validation.IResourceValidator;
 import org.slf4j.Logger;
 
-import com.b2international.commons.extension.Component;
 import com.b2international.index.revision.Hooks.PreCommitHook;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.codesystem.version.VersioningRequestBuilder;
@@ -32,6 +31,7 @@ import com.b2international.snowowl.core.domain.ContextConfigurer;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.core.merge.ComponentRevisionConflictProcessor;
+import com.b2international.snowowl.core.plugin.Component;
 import com.b2international.snowowl.core.repository.ComponentDeletionPolicy;
 import com.b2international.snowowl.core.repository.CompositeComponentDeletionPolicy;
 import com.b2international.snowowl.core.repository.ContentAvailabilityInfoProvider;

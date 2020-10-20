@@ -183,7 +183,7 @@ public interface Options {
 	/**
 	 * Returns a collection of values conform to the given class type found on the given Enum key's name. If a single value (not a {@link Collection}) is mapped
 	 * to the given key, then it wraps the value in a {@link Collections#singleton(Object) singleton set} and returns it. Otherwise it tries to get
-	 * the value as a {@link Collection} and return it.
+	 * the value as an immutable {@link Collection} and return it.
 	 * 
 	 * @param key
 	 *            - the key whose associated value is to be returned
@@ -196,9 +196,39 @@ public interface Options {
 	<T> Collection<T> getCollection(Enum<?> key, Class<T> type);
 
 	/**
+	 * Returns a set of values conform to the given class type found on the given key. If a single value (not a {@link Set}) is mapped to the given
+	 * key, then it wraps the value in a {@link Collections#singleton(Object) singleton set} and returns it. Otherwise it tries to get the value
+	 * as an immutable {@link Set} and return it.
+	 * 
+	 * @param key
+	 *            - the key whose associated value is to be returned
+	 * @param type
+	 *            - the type of the items if a set is mapped to the given key in this map
+	 * @return a {@link Set} mapped to the given key, or an empty set if there was no mapping for the key, never <code>null</code>.
+	 * @throws IllegalArgumentException
+	 *             - if the elements in the set is not applicable to the given type.
+	 */
+	<T> Set<T> getSet(String key, Class<T> type);
+	
+	/**
+	 * Returns a set of values conform to the given class type found on the given Enum key's name. If a single value (not a {@link Set}) is mapped to the given
+	 * key, then it wraps the value in a {@link Collections#singleton(Object) singleton set} and returns it. Otherwise it tries to get the value
+	 * as an immutable {@link Set} and return it.
+	 * 
+	 * @param key
+	 *            - the key whose associated value is to be returned
+	 * @param type
+	 *            - the type of the items if a set is mapped to the given key in this map
+	 * @return a {@link Set} mapped to the given key, or an empty set if there was no mapping for the key, never <code>null</code>.
+	 * @throws IllegalArgumentException
+	 *             - if the elements in the set is not applicable to the given type.
+	 */
+	<T> Set<T> getSet(Enum<?> key, Class<T> type);
+	
+	/**
 	 * Returns a list of values conform to the given class type found on the given key. If a single value (not a {@link List}) is mapped to the given
 	 * key, then it wraps the value in a {@link Collections#singletonList(Object) singleton list} and returns it. Otherwise it tries to get the value
-	 * as a {@link List} and return it.
+	 * as an immutable {@link List} and return it.
 	 * 
 	 * @param key
 	 *            - the key whose associated value is to be returned
@@ -213,7 +243,7 @@ public interface Options {
 	/**
 	 * Returns a list of values conform to the given class type found on the given Enum key's name. If a single value (not a {@link List}) is mapped to the given
 	 * key, then it wraps the value in a {@link Collections#singletonList(Object) singleton list} and returns it. Otherwise it tries to get the value
-	 * as a {@link List} and return it.
+	 * as an immutable {@link List} and return it.
 	 * 
 	 * @param key
 	 *            - the key whose associated value is to be returned

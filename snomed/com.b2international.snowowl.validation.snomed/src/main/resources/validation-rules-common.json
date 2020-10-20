@@ -51,7 +51,7 @@
     "severity": "WARNING",
     "checkType": "FAST",
     "type": "snomed-query",
-    "implementation": "{\"componentType\": \"relationship\",\"characteristicType\": \"<900000000000449001 MINUS <900000000000006009\",\"groupMin\": \"0\",\"groupMax\": \"0\"}"
+    "implementation": "{\"componentType\": \"relationship\",\"active\": \"true\",\"characteristicType\": \"<900000000000449001 MINUS <900000000000006009\",\"groupMin\": \"0\",\"groupMax\": \"0\"}"
   },
   {
     "id": "75",
@@ -79,15 +79,6 @@
     "checkType": "NORMAL",
     "type": "script-groovy",
     "implementation": "scripts/rule110.groovy"
-  },
-  {
-    "id": "113",
-    "toolingId": "com.b2international.snowowl.terminology.snomed",
-    "messageTemplate": "Relationship groups higher than Group 0 should contain more than one attribute.",
-    "severity": "WARNING",
-    "checkType": "FAST",
-    "type": "script-groovy",
-    "implementation": "scripts/rule113.groovy"
   },
   {
   	"id": "663",

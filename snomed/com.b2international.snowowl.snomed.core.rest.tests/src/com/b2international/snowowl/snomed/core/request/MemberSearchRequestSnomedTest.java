@@ -26,7 +26,6 @@ import java.util.UUID;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
-import com.b2international.snowowl.core.domain.ConceptMapMappings;
 import com.b2international.snowowl.core.domain.SetMembers;
 import com.b2international.snowowl.snomed.common.SnomedConstants;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
@@ -40,6 +39,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionCre
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.test.commons.Services;
+import com.b2international.snowowl.test.commons.rest.RestExtensions;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
 
@@ -103,23 +103,11 @@ public class MemberSearchRequestSnomedTest {
 			.execute(Services.bus())
 			.getSync();
 		
-		final ConceptMapMappings conceptMapMappings = CodeSystemRequests.prepareSearchConceptMapMappings()
-			.filterByConceptMap(refSetId)
-			.filterByComponentId(filteredId)
-			.build(CODESYSTEM)
-			.execute(Services.bus())
-			.getSync();
-		
 		assertEquals(3, refSetMembers.getTotal());
-		assertEquals(3, conceptMapMappings.getTotal());
 		
 		refSetMembers.forEach(refSetMember -> assertTrue(
 				filteredId.equals(refSetMember.getReferencedComponentId()) || 
 				filteredId.equals(refSetMember.getProperties().get(SnomedRf2Headers.FIELD_MAP_TARGET))));
-		
-		conceptMapMappings.forEach(concepMap -> assertTrue(
-				filteredId.equals(concepMap.getSourceComponentURI().identifier()) || 
-				filteredId.equals(concepMap.getTargetComponentURI().identifier())));
 	}
 	
 	private String createSimpleMapTypeRefSet() {
@@ -134,7 +122,7 @@ public class MemberSearchRequestSnomedTest {
 				.setRefSet(SnomedRequests.prepareNewRefSet()
 						.setReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
 						.setType(SnomedRefSetType.SIMPLE_MAP))
-				.build(CODESYSTEM, "info@b2international.com", "New Reference Set")
+				.build(CODESYSTEM, RestExtensions.USER, "New Reference Set")
 				.execute(Services.bus())
 				.getSync()
 				.getResultAs(String.class);
@@ -171,7 +159,7 @@ public class MemberSearchRequestSnomedTest {
 			.setActive(true)
 			.setModuleId(Concepts.MODULE_SCT_CORE)
 			.setProperties(ImmutableMap.of(SnomedRf2Headers.FIELD_MAP_TARGET, targetCode))
-			.build(CODESYSTEM, "info@b2international.com", "New Reference Set")
+			.build(CODESYSTEM, RestExtensions.USER, "New Reference Set")
 			.execute(Services.bus())
 			.getSync();
 	}

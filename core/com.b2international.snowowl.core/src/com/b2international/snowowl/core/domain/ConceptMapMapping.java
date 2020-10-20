@@ -35,6 +35,8 @@ public final class ConceptMapMapping implements Serializable {
 	
 	public static Builder builder(ConceptMapMapping from) {
 		return builder()
+				.containerIconId(from.getContainerIconId())
+				.containerTerm(from.getContainerTerm())
 				.containerSetURI(from.getContainerSetURI())
 				.memberId(from.getMemberId())
 				.active(from.isActive())
@@ -46,12 +48,15 @@ public final class ConceptMapMapping implements Serializable {
 				.sourceComponentURI(from.getSourceComponentURI())
 				.sourceIconId(from.getSourceIconId())
 				.sourceTerm(from.getSourceTerm())
+				.targetIconId(from.getTargetIconId())
 				.targetComponentURI(from.getTargetComponentURI())
 				.targetTerm(from.getTargetTerm());
 	}
 	
 	public final static class Builder {
 		
+		private String containerIconId;
+		private String containerTerm;
 		private ComponentURI containerSetURI;
 		private String memberId;
 		
@@ -59,6 +64,7 @@ public final class ConceptMapMapping implements Serializable {
 		private String sourceTerm;
 		private ComponentURI sourceComponentURI;
 		
+		private String targetIconId;
 		private String targetTerm;
 		private ComponentURI targetComponentURI = ComponentURI.UNSPECIFIED;
 		
@@ -69,6 +75,16 @@ public final class ConceptMapMapping implements Serializable {
 		private Integer mapPriority = 0;
 		private String mapRule = "";
 		private String mapAdvice = "";
+		
+		public Builder containerIconId(final String containerIconId) {
+			this.containerIconId = containerIconId;
+			return this;
+		}
+		
+		public Builder containerTerm(final String containerTerm) {
+			this.containerTerm = containerTerm;
+			return this;
+		}
 		
 		public Builder containerSetURI(final ComponentURI containerSetURI) {
 			this.containerSetURI = containerSetURI;
@@ -92,6 +108,11 @@ public final class ConceptMapMapping implements Serializable {
 		
 		public Builder sourceComponentURI(final ComponentURI sourceComponentURI) {
 			this.sourceComponentURI = sourceComponentURI;
+			return this;
+		}
+		
+		public Builder targetIconId(final String targetIconId) {
+			this.targetIconId = targetIconId;
 			return this;
 		}
 		
@@ -136,12 +157,14 @@ public final class ConceptMapMapping implements Serializable {
 		}
 		
 		public ConceptMapMapping build() {
-			return new ConceptMapMapping(containerSetURI, memberId, sourceIconId, sourceTerm, sourceComponentURI, 
-					targetTerm, targetComponentURI, active, mappingCorrelation, mapGroup, mapPriority, mapRule, mapAdvice);
+			return new ConceptMapMapping(containerIconId, containerTerm, containerSetURI, memberId, sourceIconId, sourceTerm, sourceComponentURI, 
+					targetIconId, targetTerm, targetComponentURI, active, mappingCorrelation, mapGroup, mapPriority, mapRule, mapAdvice);
 		}
 	
 	}
 	
+	private String containerIconId;
+	private final String containerTerm;
 	private final ComponentURI containerSetURI;
 	private final String memberId;
 	
@@ -149,6 +172,7 @@ public final class ConceptMapMapping implements Serializable {
 	private final String sourceTerm;
 	private final ComponentURI sourceComponentURI;
 	
+	private String targetIconId;
 	private final String targetTerm;
 	private final ComponentURI targetComponentURI;
 	
@@ -160,11 +184,14 @@ public final class ConceptMapMapping implements Serializable {
 	private final String mapRule;
 	private final String mapAdvice;
 	
-	ConceptMapMapping(ComponentURI containerSetURI,
+	ConceptMapMapping(String containerIconId,
+			String containerTerm,
+			ComponentURI containerSetURI,
 			String memberId,
 			String sourceIconId, 
 			String sourceTerm,
 			ComponentURI sourceComponentURI, 
+			String targetIconId,
 			String targetTerm, 
 			ComponentURI targetComponentURI, 
 			Boolean active,
@@ -174,11 +201,14 @@ public final class ConceptMapMapping implements Serializable {
 			String mapRule, 
 			String mapAdvice) {
 		
+		this.containerIconId = containerIconId;
+		this.containerTerm = containerTerm;
 		this.containerSetURI = containerSetURI;
 		this.memberId = memberId;
 		this.sourceIconId = sourceIconId;
 		this.sourceTerm = sourceTerm;
 		this.sourceComponentURI = sourceComponentURI;
+		this.targetIconId = targetIconId;
 		this.targetTerm = targetTerm;
 		this.targetComponentURI = targetComponentURI;
 		this.active = active;
@@ -187,6 +217,14 @@ public final class ConceptMapMapping implements Serializable {
 		this.mapPriority = mapPriority;
 		this.mapRule = mapRule;
 		this.mapAdvice = mapAdvice;
+	}
+	
+	public String getContainerIconId() {
+		return containerIconId;
+	}
+	
+	public String getContainerTerm() {
+		return containerTerm;
 	}
 	
 	public ComponentURI getContainerSetURI() {
@@ -207,6 +245,10 @@ public final class ConceptMapMapping implements Serializable {
 
 	public ComponentURI getSourceComponentURI() {
 		return sourceComponentURI;
+	}
+	
+	public String getTargetIconId() {
+		return targetIconId;
 	}
 	
 	public ComponentURI getTargetComponentURI() {
@@ -244,12 +286,15 @@ public final class ConceptMapMapping implements Serializable {
 	@Override
 	public String toString() {
 		return MoreObjects.toStringHelper(getClass())
+				.add("containerIconId", containerIconId)
+				.add("containerTerm", containerTerm)
 				.add("memberId", memberId)
 				.add("containerSetURI", containerSetURI)
 				.add("active", active)
 				.add("sourceComponentURI", sourceComponentURI)
 				.add("sourceTerm", sourceTerm)
 				.add("sourceIconId", sourceIconId)
+				.add("targetIconId", targetIconId)
 				.add("targetComponentURI", targetComponentURI)
 				.add("targetTerm", targetTerm)
 				.add("mappingCorrelation", mappingCorrelation)
@@ -263,6 +308,8 @@ public final class ConceptMapMapping implements Serializable {
 	@Override
 	public int hashCode() {
 		return Objects.hash(
+			containerIconId,
+			containerTerm,
 			memberId,
 			containerSetURI,
 			active, 
@@ -270,6 +317,7 @@ public final class ConceptMapMapping implements Serializable {
 			sourceTerm,
 			sourceIconId,
 			targetComponentURI, 
+			targetIconId,
 			targetTerm, 
 			mappingCorrelation, 
 			mapGroup, 
@@ -286,12 +334,15 @@ public final class ConceptMapMapping implements Serializable {
 		if (getClass() != obj.getClass()) return false;
 		ConceptMapMapping other = (ConceptMapMapping) obj;
 		return Objects.equals(memberId, other.memberId)
+				&& Objects.equals(containerIconId, other.containerIconId)
+				&& Objects.equals(containerTerm, other.containerTerm)
 				&& Objects.equals(containerSetURI, other.containerSetURI)
 				&& Objects.equals(active, other.active)
 				&& Objects.equals(sourceComponentURI, other.sourceComponentURI)
 				&& Objects.equals(sourceTerm, other.sourceTerm)
 				&& Objects.equals(sourceIconId, other.sourceIconId)
 				&& Objects.equals(targetComponentURI, other.targetComponentURI)
+				&& Objects.equals(targetIconId, other.targetIconId)
 				&& Objects.equals(targetTerm, other.targetTerm)
 				&& Objects.equals(mappingCorrelation, other.mappingCorrelation)
 				&& Objects.equals(mapGroup, other.mapGroup)

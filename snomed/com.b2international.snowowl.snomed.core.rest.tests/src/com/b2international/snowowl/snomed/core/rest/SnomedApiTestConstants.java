@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.core.rest;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.google.common.collect.ImmutableMap;
@@ -210,6 +211,8 @@ public abstract class SnomedApiTestConstants {
 			
 	public static final String RULE_REFSET_ID = "723562003";
 	public static final String RULE_REFSET_ID_2 = "723560006";
+
+	public static final String INT_CODESYSTEM = SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME;
 	
 	private SnomedApiTestConstants() {
 		throw new UnsupportedOperationException("This class is not supposed to be instantiated.");

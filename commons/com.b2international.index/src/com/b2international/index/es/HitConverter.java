@@ -28,6 +28,7 @@ import org.elasticsearch.search.SearchHit;
 
 import com.b2international.commons.CompareUtils;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.google.common.collect.Iterables;
@@ -187,6 +188,23 @@ public interface HitConverter<T> {
 		
 	}
 	
+	final class SourceAsJsonNodeHitConverter<T> implements HitConverter<T> {
+		
+		private final ObjectMapper mapper;
+		private final Class<T> select;
+		
+		public SourceAsJsonNodeHitConverter(ObjectMapper mapper, Class<T> select) {
+			this.mapper = mapper;
+			this.select = select;
+		}
+		
+		@Override
+		public T convert(SearchHit hit) throws IOException {
+			return select.cast(mapper.convertValue(hit.getSourceAsMap(), JsonNode.class));
+		}
+		
+	}
+	
 	static <T> HitConverter<T> getConverter(ObjectMapper mapper, Class<T> select, Class<?> from, boolean fetchSource, List<String> fields) {
 		if (Primitives.isWrapperType(select) || String.class.isAssignableFrom(select)) {
 			checkState(!fetchSource, "Single field fetching is not supported when it requires to load the source of the document.");
@@ -203,6 +221,8 @@ public interface HitConverter<T> {
 			} else {
 				return new FieldsAsStringArrayHitConverter<>(select, fields);
 			}
+		} else if (JsonNode.class.isAssignableFrom(select)) {
+			return new SourceAsJsonNodeHitConverter<>(mapper, select);
 		} else {
 			if (fetchSource) {
 				return new SourceAsObjectHitConverter<>(getResultObjectReader(mapper, select, from));

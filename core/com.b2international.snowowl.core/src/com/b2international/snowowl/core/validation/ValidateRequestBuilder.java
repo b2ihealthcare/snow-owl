@@ -34,7 +34,7 @@ public final class ValidateRequestBuilder
 	
 	private Collection<String> ruleIds;
 	
-	private Map<String, Object> ruleParameters;
+	private Map<String, Object> ruleParameters = Map.of();
 	
 	public ValidateRequestBuilder setRuleIds(Collection<String> ruleIds) {
 		this.ruleIds = ruleIds;

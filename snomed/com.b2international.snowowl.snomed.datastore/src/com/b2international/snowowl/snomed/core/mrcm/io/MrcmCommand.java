@@ -26,13 +26,13 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 
 import com.b2international.commons.exceptions.BadRequestException;
-import com.b2international.commons.extension.Component;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.console.Command;
 import com.b2international.snowowl.core.console.CommandLineStream;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.identity.User;
+import com.b2international.snowowl.core.plugin.Component;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 
 import picocli.CommandLine;

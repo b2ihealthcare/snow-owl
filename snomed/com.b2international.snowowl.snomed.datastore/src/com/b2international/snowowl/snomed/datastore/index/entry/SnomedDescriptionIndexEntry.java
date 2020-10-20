@@ -22,7 +22,7 @@ import static com.b2international.index.query.Expressions.matchTextAll;
 import static com.b2international.index.query.Expressions.matchTextAny;
 import static com.b2international.index.query.Expressions.matchTextFuzzy;
 import static com.b2international.index.query.Expressions.matchTextParsed;
-import static com.b2international.index.query.Expressions.matchTextRegexp;
+import static com.b2international.index.query.Expressions.regexp;
 import static com.b2international.index.query.Expressions.scriptScore;
 import static com.google.common.collect.Lists.newArrayList;
 
@@ -156,13 +156,14 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		public static final String CONCEPT_ID = SnomedRf2Headers.FIELD_CONCEPT_ID;
 		public static final String TYPE_ID = SnomedRf2Headers.FIELD_TYPE_ID;
 		public static final String CASE_SIGNIFICANCE_ID = SnomedRf2Headers.FIELD_CASE_SIGNIFICANCE_ID;
-		public static final String TERM = SnomedRf2Headers.FIELD_TERM;
 		public static final String LANGUAGE_CODE = SnomedRf2Headers.FIELD_LANGUAGE_CODE;
 		public static final String PREFERRED_IN = "preferredIn";
 		public static final String ACCEPTABLE_IN = "acceptableIn";
 		public static final String SEMANTIC_TAG = "semanticTag";
-		public static final String ORIGINAL_TERM = Fields.TERM + ".original";
-		public static final String EXACT_TERM = Fields.TERM + ".exact";
+		public static final String TERM = SnomedRf2Headers.FIELD_TERM;
+		public static final String TERM_PREFIX = Fields.TERM + ".prefix";
+		public static final String TERM_ORIGINAL = Fields.TERM + ".original";
+		public static final String TERM_EXACT = Fields.TERM + ".exact";
 	}
 	
 	public final static class Expressions extends SnomedComponentDocument.Expressions {
@@ -183,15 +184,15 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		}
 		
 		public static Expression matchEntireTerm(String term) {
-			return matchTextAll(Fields.TERM + ".exact", term);
+			return matchTextAll(Fields.TERM_EXACT, term);
 		}
 		
 		public static Expression matchTermOriginal(String term) {
-			return exactMatch(Fields.ORIGINAL_TERM, term);
+			return exactMatch(Fields.TERM_ORIGINAL, term);
 		}
 		
 		public static Expression matchTermRegex(String regex) {
-			return matchTextRegexp(Fields.TERM + ".original", regex);
+			return regexp(Fields.TERM_ORIGINAL, regex);
 		}
 		
 		public static Expression anyTermPrefixesPresent(String term, int minShouldMatch) {
@@ -263,7 +264,7 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		}
 		
 		public static Expression semanticTagRegex(String regex) {
-			return matchTextRegexp(Fields.SEMANTIC_TAG, regex);
+			return regexp(Fields.SEMANTIC_TAG, regex);
 		}
 
 	}

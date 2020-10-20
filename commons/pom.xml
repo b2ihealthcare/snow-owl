@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>snowowl-parent</artifactId>
-		<version>7.10.0-SNAPSHOT</version>
+		<version>7.11.0-SNAPSHOT</version>
 	</parent>
 	
 	<modules>
@@ -17,7 +17,6 @@
 		<module>com.b2international.collections.fastutil</module>
 		<module>com.b2international.collections.jackson</module>
 		<module>com.b2international.commons</module>
-		<module>com.b2international.commons.base</module>
 		<module>com.b2international.commons.test</module>
 		<module>com.b2international.index</module>
 		<module>com.b2international.index.tests</module>

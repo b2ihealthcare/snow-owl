@@ -28,7 +28,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.collections.PrimitiveCollectionModule;
-import com.b2international.commons.extension.Component;
 import com.b2international.index.Index;
 import com.b2international.index.IndexClientFactory;
 import com.b2international.index.Indexes;
@@ -49,6 +48,7 @@ import com.b2international.snowowl.core.events.Notifications;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.jobs.RemoteJobEntry;
 import com.b2international.snowowl.core.jobs.RemoteJobTracker;
+import com.b2international.snowowl.core.plugin.Component;
 import com.b2international.snowowl.core.setup.ConfigurationRegistry;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.Plugin;
@@ -140,6 +140,8 @@ public final class RepositoryPlugin extends Plugin {
 		builder.put(IndexClientFactory.CONNECT_TIMEOUT, indexConfig.getConnectTimeout());
 		builder.put(IndexClientFactory.SOCKET_TIMEOUT, indexConfig.getSocketTimeout());
 		builder.put(IndexClientFactory.CLUSTER_HEALTH_TIMEOUT, indexConfig.getClusterHealthTimeout());
+		builder.put(IndexClientFactory.BULK_ACTIONS_SIZE, indexConfig.getBulkActionSize());
+		builder.put(IndexClientFactory.BULK_ACTIONS_SIZE_IN_MB, indexConfig.getBulkActionSizeInMb());
 		
 		return builder.build();
 	}

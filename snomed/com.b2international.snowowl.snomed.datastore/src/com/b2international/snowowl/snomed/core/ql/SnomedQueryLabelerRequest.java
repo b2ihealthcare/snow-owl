@@ -26,10 +26,10 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.tree.NoopTreeVisitor;
-import com.b2international.commons.tree.emf.EObjectTreeNode;
-import com.b2international.commons.tree.emf.EObjectWalker;
 import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.emf.EObjectTreeNode;
+import com.b2international.snowowl.core.emf.EObjectWalker;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.request.ResourceRequest;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;

@@ -22,8 +22,8 @@ import java.util.function.Consumer;
 
 import com.b2international.collections.PrimitiveMaps;
 import com.b2international.collections.longs.LongKeyLongMap;
-import com.b2international.commons.extension.Component;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.plugin.Component;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.common.SnomedConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;

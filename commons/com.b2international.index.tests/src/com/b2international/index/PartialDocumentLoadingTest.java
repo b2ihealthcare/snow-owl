@@ -15,8 +15,7 @@
  */
 package com.b2international.index;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 import java.math.BigDecimal;
 import java.util.Collection;
@@ -30,6 +29,7 @@ import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.query.SortBy;
 import com.b2international.index.query.SortBy.Order;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 
@@ -394,4 +394,25 @@ public class PartialDocumentLoadingTest extends BaseIndexTest {
 		assertEquals(data1.getIntField(), hits.getHits().get(0).intValue());
 		assertEquals(data2.getIntField(), hits.getHits().get(1).intValue());
 	}
+	
+	@Test
+	public void selectJsonNode() throws Exception {
+		final Data data1 = new Data();
+		data1.setField1("field1_1"); 
+		data1.setField2("field2_1");
+		indexDocument(KEY1, data1);
+		
+		final Query<JsonNode> query = Query.select(JsonNode.class)
+				.from(Data.class)
+				.where(Expressions.matchAll())
+				.build();
+
+		final Hits<JsonNode> hits = search(query);
+		
+		checkHits(hits, DEFAULT_LIMIT, 1, 1);
+		JsonNode hit = hits.stream().findFirst().get();
+		assertEquals("field1_1", hit.get("field1").asText());
+		assertEquals("field2_1", hit.get("field2").asText());
+	}
+	
 }
