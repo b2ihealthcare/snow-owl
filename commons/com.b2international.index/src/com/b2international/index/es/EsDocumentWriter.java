@@ -49,6 +49,7 @@ import com.b2international.index.Writer;
 import com.b2international.index.es.admin.EsIndexAdmin;
 import com.b2international.index.es.client.EsClient;
 import com.b2international.index.mapping.DocumentMapping;
+import com.b2international.index.revision.Revision;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.HashMultimap;
@@ -191,11 +192,15 @@ public class EsDocumentWriter implements Writer {
 					if (!deleteOperations.containsValue(id)) {
 						final Object obj = entry.getValue();
 						final byte[] _source = mapper.writeValueAsBytes(obj);
-						processor.add(new IndexRequest()
+						IndexRequest indexRequest = new IndexRequest()
 								.index(typeIndex)
-								.id(id)
 								.opType(OpType.INDEX)
-								.source(_source, XContentType.JSON));
+								.source(_source, XContentType.JSON);
+						// XXX revisions has their special local ID, but that's not needed when sending them to ES, ES will autogenerate a non-conflicting ID for them 
+						if (!(obj instanceof Revision)) {
+							indexRequest.id(id);
+						}
+						processor.add(indexRequest);
 					}
 				}
 	
