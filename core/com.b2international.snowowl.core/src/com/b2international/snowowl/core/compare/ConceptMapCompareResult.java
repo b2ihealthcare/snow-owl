@@ -19,6 +19,7 @@ import static java.util.stream.Collectors.toList;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Set;
 
 import com.b2international.snowowl.core.domain.ConceptMapMapping;
 import com.google.common.collect.ImmutableList;
@@ -43,7 +44,7 @@ public final class ConceptMapCompareResult implements Serializable {
 	private final Multimap<ConceptMapMapping, ConceptMapMapping> changedMembers;
 	private final List<ConceptMapMapping> unChangedMembers;
 	
-	public ConceptMapCompareResult(List<ConceptMapMapping> addedMembers, List<ConceptMapMapping> removedMembers, Multimap<ConceptMapMapping, ConceptMapMapping> changedMembers, List<ConceptMapMapping> unChangedMembers, int limit) {
+	public ConceptMapCompareResult(List<ConceptMapMapping> addedMembers, List<ConceptMapMapping> removedMembers, Multimap<ConceptMapMapping, ConceptMapMapping> changedMembers, Set<ConceptMapMapping> unChangedMembers, int limit) {
 		
 		this.addedMembers = addedMembers.stream().limit(limit).collect(toList());
 		this.removedMembers = removedMembers.stream().limit(limit).collect(toList());

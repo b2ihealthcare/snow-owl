@@ -94,7 +94,7 @@ public final class ConceptMapCompareRequest extends ResourceRequest<BranchContex
 		Multimap<ConceptMapMapping, ConceptMapMapping> allChanged = HashMultimap.create();
 		List<ConceptMapMapping> allRemoved = Lists.newArrayList();
 		List<ConceptMapMapping> allAdded = Lists.newArrayList();
-		List<ConceptMapMapping> allUnchanged = Lists.newArrayList();
+		Set<ConceptMapMapping> allUnchanged = Sets.newHashSet();
 		
 		Set<ComponentURI> changedURIs = Sets.intersection(baseMappings.keySet(), compareMappings.keySet());
 		
@@ -105,14 +105,16 @@ public final class ConceptMapCompareRequest extends ResourceRequest<BranchContex
 			
 			for (ConceptMapMapping baseConceptMapping : baseConceptMappings) {
 				compareConceptMappings.stream()
-					.filter(compareConceptMapping -> isChanged(baseConceptMapping, compareConceptMapping))
-					.forEach(compareConceptMapping -> {
-						allChanged.put(baseConceptMapping, compareConceptMapping);
-					});
-				compareConceptMappings.stream()
-				.filter(compareConceptMapping -> !isChanged(baseConceptMapping, compareConceptMapping))
+				.filter(compareConceptMapping -> isChanged(baseConceptMapping, compareConceptMapping))
 				.forEach(compareConceptMapping -> {
-					allUnchanged.add(baseConceptMapping);
+					if(!allChanged.keySet().stream().anyMatch(mapping -> isSame(baseConceptMapping, mapping)) && !allChanged.values().stream().anyMatch(mapping -> isSame(compareConceptMapping, mapping))) {
+						allChanged.put(baseConceptMapping, compareConceptMapping);
+					}
+				});
+				compareConceptMappings.stream()
+				.filter(compareConceptMapping -> isSame(baseConceptMapping, compareConceptMapping))
+				.forEach(compareConceptMapping -> {
+					allUnchanged.add(compareConceptMapping);
 				});
 			}
 			
@@ -130,6 +132,10 @@ public final class ConceptMapCompareRequest extends ResourceRequest<BranchContex
 
 	private boolean isChanged(ConceptMapMapping memberA, ConceptMapMapping memberB) {
 		return isSourceEqual(memberA, memberB) && !isTargetEqual(memberA, memberB);
+	}
+	
+	private boolean isSame(ConceptMapMapping memberA, ConceptMapMapping memberB) {
+		return isSourceEqual(memberA, memberB) && isTargetEqual(memberA, memberB);
 	}
 
 	private boolean isTargetEqual(ConceptMapMapping memberA, ConceptMapMapping memberB) {
