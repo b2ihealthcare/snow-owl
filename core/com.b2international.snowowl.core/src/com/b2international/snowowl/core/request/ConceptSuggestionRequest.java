@@ -131,8 +131,9 @@ public final class ConceptSuggestionRequest extends SearchResourceRequest<Branch
 
 		final ConceptSearchRequestBuilder resultRequestBuilder = new ConceptSearchRequestBuilder()
 				.filterByActive(true)
-				.filterByTerm(topTokens.stream().collect(Collectors.joining(" ")))
-				.setMinTermMatch(minOccurrenceCount)
+				.filterByTerm(TermFilter.minTermMatch(
+						topTokens.stream().collect(Collectors.joining(" ")),
+						minOccurrenceCount))
 				.setLimit(limit())
 				.setSearchAfter(searchAfter())
 				.setLocales(locales());
