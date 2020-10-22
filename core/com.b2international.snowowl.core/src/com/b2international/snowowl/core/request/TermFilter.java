@@ -35,6 +35,10 @@ public class TermFilter implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	
+	private static final String PREFIX = ".pefix";
+	private static final String EXACT = ".exact";
+	private static final String ORIGINAL = ".original";
+	
 	private final String term;
 	private final Integer minShouldMatch;
 	private final boolean fuzzy;
@@ -100,18 +104,41 @@ public class TermFilter implements Serializable {
 		}
 	}
 	
+	/**
+	 * Evaluate the filter configuration based on the given term field.
+	 * 
+	 * @param field
+	 * 			- the field to apply the expressions on
+	 * @return - The term filter Expression
+	 */
 	@JsonIgnore
 	public Expression evaluateOnField(final String field) {
 		
-		//default
-		if (!fuzzy && !exact && minShouldMatch == null) {
+		//fuzzy
+		if (fuzzy) {
+			return Expressions.matchTextFuzzy(term, field);
+		}
+		
+		//exact
+		if (exact)  {
+			return Expressions.matchTextAll(term, field + ORIGINAL);
+		}
+		
+		//minTermMatch
+		if (minShouldMatch != null) {
 			final List<Expression> disjuncts = Lists.newArrayList();
-			disjuncts.add(Expressions.matchTextAll(field, field));
-			disjuncts.add(scriptScore(Expressions.matchTextAll(term, field + ".exact"), "normalizeWithOffset", ImmutableMap.of("offset", 2)));
-			disjuncts.add(scriptScore(Expressions.matchTextAll(term, field), "normalizeWithOffset", ImmutableMap.of("offset", 1)));
-			disjuncts.add(scriptScore(Expressions.matchTextAll(term, field + ".prefix"), "normalizeWithOffset", ImmutableMap.of("offset", 0)));
+			disjuncts.add(Expressions.matchTextAny(field, term, minShouldMatch.intValue()));
+			disjuncts.add(Expressions.matchTextAny(field + PREFIX, term, minShouldMatch.intValue()));
 			return Expressions.dismax(disjuncts);
 		}
+		
+		//default
+		final List<Expression> disjuncts = Lists.newArrayList();
+		disjuncts.add(Expressions.matchTextAll(field, field));
+		disjuncts.add(scriptScore(Expressions.matchTextAll(field + EXACT, term), "normalizeWithOffset", ImmutableMap.of("offset", 2)));
+		disjuncts.add(scriptScore(Expressions.matchTextAll(field, term), "normalizeWithOffset", ImmutableMap.of("offset", 1)));
+		disjuncts.add(scriptScore(Expressions.matchTextAll(field + PREFIX, term), "normalizeWithOffset", ImmutableMap.of("offset", 0)));
+		return Expressions.dismax(disjuncts);
 	}
 	
 	/**
