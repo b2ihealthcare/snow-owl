@@ -19,8 +19,10 @@ import static java.util.stream.Collectors.toList;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Set;
 
 import com.b2international.snowowl.core.domain.ConceptMapMapping;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableMultimap.Builder;
 import com.google.common.collect.Multimap;
@@ -38,9 +40,11 @@ public final class ConceptMapCompareResult implements Serializable {
 	
 	private final List<ConceptMapMapping> addedMembers;
 	private final List<ConceptMapMapping> removedMembers;
-	private final Multimap<ConceptMapMapping, ConceptMapMapping> changedMembers;
 	
-	public ConceptMapCompareResult(List<ConceptMapMapping> addedMembers, List<ConceptMapMapping> removedMembers, Multimap<ConceptMapMapping, ConceptMapMapping> changedMembers, int limit) {
+	private final Multimap<ConceptMapMapping, ConceptMapMapping> changedMembers;
+	private final List<ConceptMapMapping> unchangedMembers;
+	
+	public ConceptMapCompareResult(List<ConceptMapMapping> addedMembers, List<ConceptMapMapping> removedMembers, Multimap<ConceptMapMapping, ConceptMapMapping> changedMembers, Set<ConceptMapMapping> unchangedMembers, int limit) {
 		
 		this.addedMembers = addedMembers.stream().limit(limit).collect(toList());
 		this.removedMembers = removedMembers.stream().limit(limit).collect(toList());
@@ -48,12 +52,12 @@ public final class ConceptMapCompareResult implements Serializable {
 		Builder<ConceptMapMapping, ConceptMapMapping> limitedMembers = ImmutableMultimap.builder();
 		changedMembers.entries().stream().limit(limit).forEach(limitedMembers::put);
 		this.changedMembers = limitedMembers.build();
+		this.unchangedMembers = ImmutableList.copyOf(unchangedMembers);
 		
 		this.totalAdded = addedMembers.size();
 		this.totalRemoved = removedMembers.size();
 		this.totalChanged = changedMembers.values().size();
 		this.limit = limit;
-		
 	}
 	
 	public List<ConceptMapMapping> getAddedMembers() {
@@ -62,6 +66,10 @@ public final class ConceptMapCompareResult implements Serializable {
 	
 	public List<ConceptMapMapping> getRemovedMembers() {
 		return removedMembers;
+	}
+	
+	public List<ConceptMapMapping> getUnchangedMembers() {
+		return unchangedMembers;
 	}
 	
 	public Multimap<ConceptMapMapping, ConceptMapMapping> getChangedMembers() {
