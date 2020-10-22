@@ -45,15 +45,16 @@ public final class GroovyScriptEngine implements ScriptEngine {
 			return new GroovyShell(classLoader);
 		}
 	});
-	private final LoadingCache<Pair<ClassLoader, String>, Class<? extends Script>> scriptCache = CacheBuilder.newBuilder().build(new CacheLoader<Pair<ClassLoader, String>, Class<? extends Script>>() {
+	private final LoadingCache<Pair<ClassLoader, ScriptSource>, Class<? extends Script>> scriptCache = CacheBuilder.newBuilder().build(new CacheLoader<Pair<ClassLoader, ScriptSource>, Class<? extends Script>>() {
 		@Override
-		public Class<? extends Script> load(Pair<ClassLoader, String> ctxAndScript) throws Exception {
-			return shells.getUnchecked(ctxAndScript.getFirst()).getClassLoader().parseClass(ctxAndScript.getSecond());
+		public Class<? extends Script> load(Pair<ClassLoader, ScriptSource> ctxAndScript) throws Exception {
+			ScriptSource source = ctxAndScript.getSecond();
+			return shells.getUnchecked(ctxAndScript.getFirst()).getClassLoader().parseClass(source.getScript(), source.getScriptName());
 		}
 	});
 	
 	@Override
-	public <T> T run(ClassLoader ctx, String script, Map<String, Object> params) {
+	public <T> T run(ClassLoader ctx, ScriptSource script, Map<String, Object> params) {
 		final Script compiledScript = compile(ctx, script);
 		final Binding binding = new Binding(params);
 		compiledScript.setBinding(binding);
@@ -65,7 +66,7 @@ public final class GroovyScriptEngine implements ScriptEngine {
 		return "groovy";
 	}
 	
-	private Script compile(ClassLoader ctx, String script) {
+	private Script compile(ClassLoader ctx, ScriptSource script) {
 		final Class<? extends Script> scriptClass = scriptCache.getUnchecked(Tuples.pair(ctx, script));
 		try {
 			return scriptClass.newInstance();

@@ -25,6 +25,7 @@ import java.util.stream.Stream;
 
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.scripts.ScriptEngine;
+import com.b2international.snowowl.core.scripts.ScriptSource;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
@@ -42,7 +43,8 @@ public final class GroovyScriptValidationRuleEvaluator implements ValidationRule
 	
 	@Override
 	public List<?> eval(BranchContext context, ValidationRule rule, Map<String, Object> filterParams) throws IOException {
-		try (final Stream<String> lines = Files.lines(validationResourcesDirectory.resolve(rule.getImplementation()))) {
+		final Path validationRuleFilePath = validationResourcesDirectory.resolve(rule.getImplementation());
+		try (final Stream<String> lines = Files.lines(validationRuleFilePath)) {
 			
 			final String script = lines.collect(Collectors.joining(System.getProperty("line.separator")));
 			
@@ -52,12 +54,15 @@ public final class GroovyScriptValidationRuleEvaluator implements ValidationRule
 				paramsBuilder.putAll(filterParams);
 			}
 			
-			return ScriptEngine.run("groovy", context.service(ClassLoader.class), script, 
-					ImmutableMap.<String, Object>of(
-							"ctx", context,
-							"params", paramsBuilder.build()
-							)
-					);
+			return ScriptEngine.run(
+				"groovy", 
+				context.service(ClassLoader.class), 
+				new ScriptSource(validationRuleFilePath.getFileName().toString(), script),
+				ImmutableMap.<String, Object>of(
+					"ctx", context,
+					"params", paramsBuilder.build()
+				)
+			);
 		}
 	}
 
