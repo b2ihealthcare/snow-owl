@@ -36,6 +36,7 @@ import com.b2international.index.query.SortBy.Builder;
 import com.b2international.index.query.SortBy.Order;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.repository.RevisionDocument;
+import com.b2international.snowowl.core.request.TermFilter;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
@@ -219,13 +220,13 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 			bq.filter(queryBuilder.build());
 			queryBuilder = bq;
 			
-			final String term = getString(OptionKey.TERM);
-			final Map<String, Float> conceptScoreMap = executeDescriptionSearch(context, term);
+			final TermFilter termFilter = get(OptionKey.TERM, TermFilter.class);
+			final Map<String, Float> conceptScoreMap = executeDescriptionSearch(context, termFilter);
 			
 			try {
-				final ComponentCategory category = SnomedIdentifiers.getComponentCategory(term);
+				final ComponentCategory category = SnomedIdentifiers.getComponentCategory(termFilter.getTerm());
 				if (category == ComponentCategory.CONCEPT) {
-					conceptScoreMap.put(term, Float.MAX_VALUE);
+					conceptScoreMap.put(termFilter.getTerm(), Float.MAX_VALUE);
 				}
 			} catch (IllegalArgumentException e) {
 				// ignored
@@ -298,11 +299,11 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 		}
 	}
 	
-	private Map<String, Float> executeDescriptionSearch(BranchContext context, String term) {
+	private Map<String, Float> executeDescriptionSearch(BranchContext context, TermFilter termFilter) {
 		final SnomedDescriptionSearchRequestBuilder requestBuilder = SnomedRequests.prepareSearchDescription()
 			.all()
 			.filterByActive(true)
-			.filterByTerm(term)
+			.filterByTerm(termFilter)
 			.setFields(SnomedDescriptionIndexEntry.Fields.ID, SnomedDescriptionIndexEntry.Fields.CONCEPT_ID)
 			.sortBy(SCORE);
 		
