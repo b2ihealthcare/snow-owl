@@ -15,9 +15,16 @@
  */
 package com.b2international.snowowl.core.request;
 
-import java.io.Serializable;
+import static com.b2international.index.query.Expressions.scriptScore;
 
+import java.io.Serializable;
+import java.util.List;
+
+import com.b2international.index.query.Expression;
+import com.b2international.index.query.Expressions;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 
 /**
  * Represents a {@link Serializable} encapsulation of term search configuration.
@@ -90,6 +97,20 @@ public class TermFilter implements Serializable {
 		
 		public final TermFilter build() {
 			return new TermFilter(term, minShouldMatch, fuzzy, exact);
+		}
+	}
+	
+	@JsonIgnore
+	public Expression evaluateOnField(final String field) {
+		
+		//default
+		if (!fuzzy && !exact && minShouldMatch == null) {
+			final List<Expression> disjuncts = Lists.newArrayList();
+			disjuncts.add(Expressions.matchTextAll(field, field));
+			disjuncts.add(scriptScore(Expressions.matchTextAll(term, field + ".exact"), "normalizeWithOffset", ImmutableMap.of("offset", 2)));
+			disjuncts.add(scriptScore(Expressions.matchTextAll(term, field), "normalizeWithOffset", ImmutableMap.of("offset", 1)));
+			disjuncts.add(scriptScore(Expressions.matchTextAll(term, field + ".prefix"), "normalizeWithOffset", ImmutableMap.of("offset", 0)));
+			return Expressions.dismax(disjuncts);
 		}
 	}
 	
