@@ -42,9 +42,9 @@ public final class ConceptMapCompareResult implements Serializable {
 	private final List<ConceptMapMapping> removedMembers;
 	
 	private final Multimap<ConceptMapMapping, ConceptMapMapping> changedMembers;
-	private final List<ConceptMapMapping> unChangedMembers;
+	private final List<ConceptMapMapping> unchangedMembers;
 	
-	public ConceptMapCompareResult(List<ConceptMapMapping> addedMembers, List<ConceptMapMapping> removedMembers, Multimap<ConceptMapMapping, ConceptMapMapping> changedMembers, Set<ConceptMapMapping> unChangedMembers, int limit) {
+	public ConceptMapCompareResult(List<ConceptMapMapping> addedMembers, List<ConceptMapMapping> removedMembers, Multimap<ConceptMapMapping, ConceptMapMapping> changedMembers, Set<ConceptMapMapping> unchangedMembers, int limit) {
 		
 		this.addedMembers = addedMembers.stream().limit(limit).collect(toList());
 		this.removedMembers = removedMembers.stream().limit(limit).collect(toList());
@@ -52,7 +52,7 @@ public final class ConceptMapCompareResult implements Serializable {
 		Builder<ConceptMapMapping, ConceptMapMapping> limitedMembers = ImmutableMultimap.builder();
 		changedMembers.entries().stream().limit(limit).forEach(limitedMembers::put);
 		this.changedMembers = limitedMembers.build();
-		this.unChangedMembers = ImmutableList.copyOf(unChangedMembers);
+		this.unchangedMembers = ImmutableList.copyOf(unchangedMembers);
 		
 		this.totalAdded = addedMembers.size();
 		this.totalRemoved = removedMembers.size();
@@ -68,8 +68,8 @@ public final class ConceptMapCompareResult implements Serializable {
 		return removedMembers;
 	}
 	
-	public List<ConceptMapMapping> getUnChangedMembers() {
-		return unChangedMembers;
+	public List<ConceptMapMapping> getUnchangedMembers() {
+		return unchangedMembers;
 	}
 	
 	public Multimap<ConceptMapMapping, ConceptMapMapping> getChangedMembers() {
