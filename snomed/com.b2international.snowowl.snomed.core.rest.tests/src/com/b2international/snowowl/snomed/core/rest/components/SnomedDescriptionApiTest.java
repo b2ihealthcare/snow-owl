@@ -64,6 +64,7 @@ import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
 import com.b2international.snowowl.core.request.RepositoryRequest;
+import com.b2international.snowowl.core.request.TermFilter;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.cis.ISnomedIdentifierService;
@@ -851,8 +852,7 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 	public void searchFuzzyWithFilteredCharacters() throws Exception {
 		int numberOfResults = SnomedRequests.prepareSearchDescription()
 			.setLimit(0)
-			.filterByTerm(TextConstants.DELIMITERS)
-			.withFuzzySearch()
+			.filterByTerm(TermFilter.fuzzyMatch(TextConstants.DELIMITERS))
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 			.execute(getBus())
 			.getSync()
