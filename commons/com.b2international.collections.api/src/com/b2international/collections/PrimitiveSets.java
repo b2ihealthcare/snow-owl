@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,6 +44,8 @@ public abstract class PrimitiveSets {
 		checkState(services.hasNext(), "No %s implementation has been found", PrimitiveSetFactory.class.getName());
 		FACTORY = services.next();
 	}
+	
+	private static final LongSet EMPTY_SET = newLongOpenHashSetWithExpectedSize(0);
 	
 	private PrimitiveSets() {}
 
@@ -139,6 +141,10 @@ public abstract class PrimitiveSets {
 		} else {
 			return FACTORY.newLongOpenHashSet(source);
 		}
+	}
+	
+	public static LongSet emptyLongSet() {
+		return EMPTY_SET;
 	}
 	
 	/**
