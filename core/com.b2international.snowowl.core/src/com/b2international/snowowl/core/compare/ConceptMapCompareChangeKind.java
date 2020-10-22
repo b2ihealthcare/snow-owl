@@ -22,7 +22,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public enum ConceptMapCompareChangeKind {
 	PRESENT("Present"),
-	NOT_PRESENT("Not Present"),
+	MISSING("Missing"),
 
 	DIFFERENT_TARGET("Different Target"),
 
