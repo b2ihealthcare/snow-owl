@@ -18,7 +18,7 @@ package com.b2international.snowowl.core.compare;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
- * @since 7.10
+ * @since 7.11
  */
 public enum ConceptMapCompareChangeKind {
 	PRESENT("Present"),
