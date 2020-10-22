@@ -21,6 +21,8 @@ import java.util.List;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
+import com.b2international.snowowl.core.request.TermFilter;
+import com.b2international.snowowl.core.request.TermFilterSupport;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
@@ -35,14 +37,11 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionSea
  * 
  * @since 4.5
  */
-public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponentSearchRequestBuilder<SnomedDescriptionSearchRequestBuilder, SnomedDescriptions> {
+public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponentSearchRequestBuilder<SnomedDescriptionSearchRequestBuilder, SnomedDescriptions>
+		implements TermFilterSupport<SnomedDescriptionSearchRequestBuilder>{
 
 	SnomedDescriptionSearchRequestBuilder() {}
 	
-	public SnomedDescriptionSearchRequestBuilder withFuzzySearch() {
-		return addOption(OptionKey.USE_FUZZY, true);
-	}
-
 	public SnomedDescriptionSearchRequestBuilder withParsedTerm() {
 		return addOption(OptionKey.PARSED_TERM, true);
 	}
@@ -57,7 +56,7 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponent
 	 * @return <code>this</code> search request builder, for method chaining
 	 */
 	public SnomedDescriptionSearchRequestBuilder filterByTerm(String termFilter) {
-		return addOption(OptionKey.TERM, termFilter == null ? termFilter : termFilter.trim());
+		return filterByTerm(TermFilter.defaultTermMatch(termFilter == null ? termFilter : termFilter.trim()));
 	}
 
 	/**
@@ -71,7 +70,12 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponent
 	 * @return <code>this</code> search request builder, for method chaining
 	 */
 	public SnomedDescriptionSearchRequestBuilder filterByExactTerm(String exactTermFilter) {
-		return addOption(OptionKey.EXACT_TERM, exactTermFilter == null ? exactTermFilter : exactTermFilter.trim());
+		return filterByTerm(TermFilter.exactTermMatch(exactTermFilter == null ? exactTermFilter : exactTermFilter.trim()));
+	}
+	
+	@Override
+	public SnomedDescriptionSearchRequestBuilder filterByTerm(TermFilter termFilter) {
+		return addOption(OptionKey.TERM, termFilter);
 	}
 
 	/**
@@ -322,5 +326,4 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponent
 	protected SearchResourceRequest<BranchContext, SnomedDescriptions> createSearch() {
 		return new SnomedDescriptionSearchRequest();
 	}
-
 }
