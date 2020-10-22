@@ -17,12 +17,9 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import static com.b2international.snowowl.core.repository.RevisionDocument.Expressions.id;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.acceptableIn;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.fuzzy;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.languageCodes;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.matchTermOriginal;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.parsedTerm;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.preferredIn;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.termDisjunctionQuery;
 
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.index.Hits;
@@ -31,6 +28,7 @@ import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.repository.RevisionDocument;
+import com.b2international.snowowl.core.request.TermFilter;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
@@ -44,12 +42,10 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<SnomedDescriptions, SnomedDescriptionIndexEntry> {
 
 	enum OptionKey {
-		EXACT_TERM,
 		TERM,
 		CONCEPT,
 		TYPE,
 		LANGUAGE,
-		USE_FUZZY,
 		PARSED_TERM, 
 		CASE_SIGNIFICANCE, 
 		TERM_REGEX, 
@@ -58,7 +54,6 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 		LANGUAGE_REFSET,
 		ACCEPTABLE_IN,
 		PREFERRED_IN, 
-		MIN_TERM_MATCH,
 	}
 	
 	SnomedDescriptionSearchRequest() {}
@@ -113,16 +108,8 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 		}
 		
 		if (containsKey(OptionKey.TERM)) {
-			final String searchTerm = getString(OptionKey.TERM);
-			if (!containsKey(OptionKey.USE_FUZZY)) {
-				queryBuilder.must(toDescriptionTermQuery(searchTerm));
-			} else {
-				queryBuilder.must(fuzzy(searchTerm));
-			}
-		}
-		
-		if (containsKey(OptionKey.EXACT_TERM)) {
-			queryBuilder.must(matchTermOriginal(getString(OptionKey.EXACT_TERM)));
+			final TermFilter termFilter = get(OptionKey.TERM, TermFilter.class);
+			queryBuilder.must(toDescriptionTermQuery(termFilter));
 		}
 		
 		return queryBuilder.build();
@@ -147,29 +134,22 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 		return new SnomedDescriptions(limit, 0);
 	}
 	
-	private Expression toDescriptionTermQuery(final String searchTerm) {
+	private Expression toDescriptionTermQuery(final TermFilter termFilter) {
 		final ExpressionBuilder qb = Expressions.builder();
 		
 		if (containsKey(OptionKey.PARSED_TERM)) {
-			qb.should(parsedTerm(searchTerm));
-		} else if (containsKey(OptionKey.MIN_TERM_MATCH)) {
-			qb.should(anyTerm(searchTerm));
+			qb.should(parsedTerm(termFilter.getTerm()));
 		} else {
-			qb.should(termDisjunctionQuery(searchTerm));
+			qb.should(termFilter.evaluateOnField(SnomedDescriptionIndexEntry.Fields.TERM));
 		}
 		
-		if (isComponentId(searchTerm, ComponentCategory.DESCRIPTION)) {
-			qb.should(Expressions.boost(id(searchTerm), 1000f));
+		if (isComponentId(termFilter.getTerm(), ComponentCategory.DESCRIPTION)) {
+			qb.should(Expressions.boost(id(termFilter.getTerm()), 1000f));
 		}
 		
 		return qb.build();
 	}
 	
-	private Expression anyTerm(String searchTerm) {
-		final Integer minTermMatch = get(OptionKey.MIN_TERM_MATCH, Integer.class);
-		return SnomedDescriptionIndexEntry.Expressions.anyTermPrefixesPresent(searchTerm, minTermMatch);
-	}
-
 	private boolean isComponentId(String value, ComponentCategory type) {
 		try {
 			return SnomedIdentifiers.getComponentCategory(value) == type;
