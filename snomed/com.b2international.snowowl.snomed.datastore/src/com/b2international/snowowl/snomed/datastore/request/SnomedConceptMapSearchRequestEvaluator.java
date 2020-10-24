@@ -101,12 +101,12 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 					.stream()
 					.filter(entry -> !entry.getKey().isUnspecified())
 					.map(entry -> {
-								final String cs = entry.getKey().codeSystemUri().getCodeSystem();
+								final CodeSystemURI cs = entry.getKey().codeSystemUri();
 								final Set<String> idsToFetch = entry.getValue().stream().map(map -> map.getTargetComponentURI().identifier()).collect(Collectors.toSet());
 								return CodeSystemRequests.prepareSearchConcepts()
 										.all()
 										.filterByIds(idsToFetch)
-										.build(CodeSystemURI.head(cs)) // FIXME implicit HEAD used here instead of using a proper CodeSystemURI
+										.build(cs)
 										.execute(context.service(IEventBus.class))
 										.getSync(5, TimeUnit.MINUTES)
 										.stream()
