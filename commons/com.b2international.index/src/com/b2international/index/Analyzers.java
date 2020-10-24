@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,6 +67,21 @@ public enum Analyzers {
         }
 	 */
 	TOKENIZED,
+	
+	/**
+	 * "tokenized_ignore_stopwords": {
+			"tokenizer": "whitespace",
+			"filter": [
+				"asciifolding",
+				"lowercase",
+				"stop_words",
+				"possessive",
+				"word_splitter",
+				"unique_token"				
+			]
+		}
+	 */
+	TOKENIZED_IGNORE_STOPWORDS,
 	
 	/**
 	 * "stemming": {
@@ -176,6 +191,7 @@ public enum Analyzers {
 		case KEYWORD: return "keyword";
 		case EXACT: return "exact";
 		case TOKENIZED: return "tokenized";
+		case TOKENIZED_IGNORE_STOPWORDS: return "tokenized_ignore_stopwords";
 		case STEMMING: return "stemming";
 		case SEARCH_STEMMING: return "search_stemming";
 		case CASE_SENSITIVE: return "case_sensitive";
