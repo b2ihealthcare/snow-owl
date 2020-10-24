@@ -42,7 +42,7 @@ public class SnomedPartialLoadingApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void partialLoadingConceptApi() throws Exception {
-		PageableCollectionResource<String[]> hits = new CodeSystemResourceRequest<>(CodeSystemURI.head(SnomedApiTestConstants.INT_CODESYSTEM), new RevisionIndexReadRequest<>(
+		PageableCollectionResource<String[]> hits = new CodeSystemResourceRequest<>(new CodeSystemURI(SnomedApiTestConstants.INT_CODESYSTEM), new RevisionIndexReadRequest<>(
 			context -> {
 				return SnomedRequests.prepareSearchConcept()
 						.all()

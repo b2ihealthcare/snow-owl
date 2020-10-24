@@ -45,7 +45,7 @@ public final class CodeSystemURI implements Serializable {
 	public static final String LATEST = "LATEST";
 	
 	/**
-	 * Represents the latest development version of a code system.
+	 * Represents the latest development version of a code system (often referenced as MAIN).
 	 */
 	public static final String HEAD = "HEAD";
 	
@@ -69,7 +69,7 @@ public final class CodeSystemURI implements Serializable {
 		}
 		this.uri = uri;
 		this.codeSystem = matcher.group(1);
-		this.path = CompareUtils.isEmpty(matcher.group(2)) ? LATEST : matcher.group(2).substring(1); // removes the leading slash character
+		this.path = CompareUtils.isEmpty(matcher.group(2)) ? HEAD : matcher.group(2).substring(1); // removes the leading slash character
 	}
 	
 	public String getUri() {
@@ -110,10 +110,6 @@ public final class CodeSystemURI implements Serializable {
 	@Override
 	public String toString() {
 		return getUri();
-	}
-
-	public static CodeSystemURI head(String codeSystem) {
-		return new CodeSystemURI(String.join(Branch.SEPARATOR, codeSystem, HEAD));
 	}
 
 	public static CodeSystemURI branch(String codeSystem, String path) {
