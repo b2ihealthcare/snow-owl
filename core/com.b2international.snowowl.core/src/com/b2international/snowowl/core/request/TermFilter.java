@@ -116,12 +116,12 @@ public class TermFilter implements Serializable {
 		
 		//fuzzy
 		if (fuzzy) {
-			return Expressions.matchTextFuzzy(term, field);
+			return Expressions.matchTextFuzzy(field, term);
 		}
 		
 		//exact
 		if (exact)  {
-			return Expressions.matchTextAll(term, field + ORIGINAL);
+			return Expressions.matchTextAll(field + ORIGINAL, term);
 		}
 		
 		//minTermMatch
