@@ -68,7 +68,7 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 	
 	@Override
 	protected Expression prepareQuery(BranchContext context) {
-		if (containsKey(OptionKey.TERM) && getString(OptionKey.TERM).length() < 2) {
+		if (containsKey(OptionKey.TERM) && get(OptionKey.TERM, TermFilter.class).getTerm().length() < 2) {
 			throw new BadRequestException("Description term must be at least 2 characters long.");
 		}
 
