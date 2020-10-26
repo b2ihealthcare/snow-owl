@@ -38,12 +38,14 @@ public final class TermFilter implements Serializable {
 	
 	private final boolean fuzzy;
 	private final boolean exact;
+	private final boolean parsed;
 
-	public TermFilter(final String term, final Integer minShouldMatch, final boolean fuzzy, final boolean exact) {
+	public TermFilter(final String term, final Integer minShouldMatch, final boolean fuzzy, final boolean exact, final boolean parsed) {
 		this.term = term;
 		this.minShouldMatch = minShouldMatch;
 		this.fuzzy = fuzzy;
 		this.exact = exact;
+		this.parsed = parsed;
 	}
 	
 	public String getTerm() {
@@ -62,11 +64,16 @@ public final class TermFilter implements Serializable {
 		return exact;
 	}
 	
+	public boolean isParsed() {
+		return parsed;
+	}
+	
 	public static final class Builder {
 		private String term;
 		private Integer minShouldMatch;
 		private boolean fuzzy = false;
 		private boolean exact = false;
+		private boolean parsed = false;
 		
 		private Builder() { }
 		
@@ -94,8 +101,13 @@ public final class TermFilter implements Serializable {
 			return this;
 		}
 		
+		public final Builder parsed(final boolean exact) {
+			this.exact = exact;
+			return this;
+		}
+		
 		public final TermFilter build() {
-			return new TermFilter(term, minShouldMatch, fuzzy, exact);
+			return new TermFilter(term, minShouldMatch, fuzzy, exact, parsed);
 		}
 	}
 	
@@ -162,5 +174,15 @@ public final class TermFilter implements Serializable {
 	@JsonIgnore
 	public static final TermFilter exactTermMatch(final String term) {
 		return Builder.builder().term(term).exact(true).build();
+	}
+	
+	/**
+	 * @param term
+	 * 			- the term to apply the expressions on
+	 * @return {@link TermFilter}
+	 */
+	@JsonIgnore
+	public static final TermFilter parsedTermMatch(final String term) {
+		return Builder.builder().term(term).parsed(true).build();
 	}
 }
