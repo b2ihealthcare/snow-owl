@@ -108,8 +108,8 @@ public final class ConceptMapCompareRequest extends ResourceRequest<BranchContex
 		Set<Wrapper<ConceptMapMapping>> changedWrappedMappings = Sets.intersection(baseWrappedMappings, compareWrappedMappings);
 
 		changedWrappedMappings.forEach(changedMapping -> {
-			List<ConceptMapMapping> baseConceptMappings = baseMappings.get(changedMapping.get().getSourceComponentURI());
-			List<ConceptMapMapping> compareConceptMappings = compareMappings.get(changedMapping.get().getSourceComponentURI());
+			List<ConceptMapMapping> baseConceptMappings = baseMappings.values().stream().filter(mapping -> isSourceEqual(mapping, changedMapping.get())).collect(Collectors.toList());
+			List<ConceptMapMapping> compareConceptMappings = compareMappings.values().stream().filter(mapping -> isSourceEqual(mapping, changedMapping.get())).collect(Collectors.toList());
 
 			for (ConceptMapMapping baseConceptMapping : baseConceptMappings) {
 				compareConceptMappings.stream()
