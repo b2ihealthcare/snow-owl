@@ -88,7 +88,7 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 	 * @return <code>this</code> search request builder, for method chaining
 	 */
 	public final SnomedConceptSearchRequestBuilder filterByTerm(String term) {
-		return filterByTerm(TermFilter.defaultTermMatch(term));
+		return filterByTerm(term != null ? TermFilter.defaultTermMatch(term) : null);
 	}
 
 	@Override
