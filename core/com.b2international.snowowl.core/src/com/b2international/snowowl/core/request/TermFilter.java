@@ -68,6 +68,15 @@ public final class TermFilter implements Serializable {
 		return parsed;
 	}
 	
+	public static final Builder builder(final TermFilter termFilter) {
+		return new Builder()
+				.term(termFilter.getTerm())
+				.minShouldMatch(termFilter.getMinShouldMatch())
+				.fuzzy(termFilter.isFuzzy())
+				.exact(termFilter.isExact())
+				.parsed(termFilter.isParsed());
+	}
+	
 	public static final class Builder {
 		private String term;
 		private Integer minShouldMatch;
@@ -79,15 +88,6 @@ public final class TermFilter implements Serializable {
 		
 		public static final Builder builder() {
 			return new Builder();
-		}
-		
-		public static final Builder builder(final TermFilter termFilter) {
-			return new Builder()
-					.term(termFilter.getTerm())
-					.minShouldMatch(termFilter.getMinShouldMatch())
-					.fuzzy(termFilter.isFuzzy())
-					.exact(termFilter.isExact())
-					.parsed(termFilter.isParsed());
 		}
 		
 		public final Builder term(final String term) {
