@@ -68,11 +68,6 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 		TERM,
 		
 		/**
-		 * Parse the term for query syntax search
-		 */
-		PARSED_TERM,
-		
-		/**
 		 * Description type to match
 		 */
 		DESCRIPTION_TYPE,
