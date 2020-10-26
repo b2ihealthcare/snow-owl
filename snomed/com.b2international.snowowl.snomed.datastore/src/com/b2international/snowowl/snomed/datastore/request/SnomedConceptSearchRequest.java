@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import com.b2international.commons.options.Options;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
@@ -131,8 +132,8 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 	}
 	
 	@Override
-	protected String extractSpecialOption(Enum<?> key) {
-		return get(OptionKey.TERM, TermFilter.class).getTerm();
+	protected String extractSpecialOptionValue(Options options, Enum<?> key) {
+		return options.get(OptionKey.TERM, TermFilter.class).getTerm();
 	}
 	
 	@Override
