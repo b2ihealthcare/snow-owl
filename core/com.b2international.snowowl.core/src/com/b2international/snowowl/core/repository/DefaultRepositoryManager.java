@@ -26,6 +26,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.domain.RepositoryContext;
@@ -52,6 +53,9 @@ public final class DefaultRepositoryManager implements RepositoryManager {
 	@Override
 	public RepositoryContext getContext(String repositoryId) {
 		final Repository repository = get(repositoryId);
+		if (repository == null) {
+			throw new BadRequestException("Repository '%s' is unavailable.", repositoryId);
+		}
 		return new DefaultRepositoryContext(repository, repository.status());
 	}
 
