@@ -44,7 +44,7 @@ public final class ConceptSearchRequestBuilder extends SearchResourceRequestBuil
 	 * @return
 	 */
 	public ConceptSearchRequestBuilder filterByTerm(String term) {
-		return filterByTerm(TermFilter.defaultTermMatch(term));
+		return filterByTerm(term != null ? TermFilter.defaultTermMatch(term) : null);
 	}
 	
 	@Override
