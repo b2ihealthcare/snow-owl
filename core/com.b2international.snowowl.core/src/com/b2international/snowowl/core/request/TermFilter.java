@@ -81,6 +81,15 @@ public final class TermFilter implements Serializable {
 			return new Builder();
 		}
 		
+		public static final Builder builder(final TermFilter termFilter) {
+			return new Builder()
+					.term(termFilter.getTerm())
+					.minShouldMatch(termFilter.getMinShouldMatch())
+					.fuzzy(termFilter.isFuzzy())
+					.exact(termFilter.isExact())
+					.parsed(termFilter.isParsed());
+		}
+		
 		public final Builder term(final String term) {
 			this.term = term;
 			return this;
