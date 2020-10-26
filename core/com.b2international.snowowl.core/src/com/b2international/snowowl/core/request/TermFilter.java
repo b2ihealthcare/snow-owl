@@ -43,7 +43,7 @@ public final class TermFilter implements Serializable {
 	private final boolean parsed;
 
 	public TermFilter(final String term, final Integer minShouldMatch, final boolean fuzzy, final boolean exact, final boolean parsed) {
-		this.term = term;
+		this.term = term.trim();
 		this.minShouldMatch = minShouldMatch;
 		this.fuzzy = fuzzy;
 		this.exact = exact;

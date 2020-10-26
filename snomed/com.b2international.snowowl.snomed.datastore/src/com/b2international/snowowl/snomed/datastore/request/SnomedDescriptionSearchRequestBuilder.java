@@ -52,7 +52,7 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponent
 	 * @return <code>this</code> search request builder, for method chaining
 	 */
 	public SnomedDescriptionSearchRequestBuilder filterByTerm(String termFilter) {
-		return filterByTerm(termFilter != null ? TermFilter.defaultTermMatch(termFilter.trim()) : null);
+		return filterByTerm(termFilter != null ? TermFilter.defaultTermMatch(termFilter) : null);
 	}
 
 	/**
@@ -66,7 +66,7 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponent
 	 * @return <code>this</code> search request builder, for method chaining
 	 */
 	public SnomedDescriptionSearchRequestBuilder filterByExactTerm(String exactTermFilter) {
-		return filterByTerm(exactTermFilter != null ? TermFilter.exactTermMatch(exactTermFilter.trim()) : null);
+		return filterByTerm(exactTermFilter != null ? TermFilter.exactTermMatch(exactTermFilter) : null);
 	}
 	
 	@Override
