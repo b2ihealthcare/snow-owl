@@ -49,7 +49,7 @@ public class SearchResourceRequestTest {
 	@Test
 	public void specialOptionKeyWithNonExpressionValue() throws Exception {
 		final Options options = Options.builder()
-				.put(OptionKey.SPECIAL, "not an expression")
+				.put(OptionKey.SPECIAL, TermFilter.defaultTermMatch("not an expression"))
 				.build();
 		final Options actual = SearchResourceRequest.processSpecialOptionKey(options, OptionKey.SPECIAL);
 		assertTrue(options == actual);
@@ -58,7 +58,7 @@ public class SearchResourceRequestTest {
 	@Test
 	public void specialOptionKeyWithExpressionValueIncorrectSyntaxOnlyLeadingChar() throws Exception {
 		final Options options = Options.builder()
-				.put(OptionKey.SPECIAL, "@")
+				.put(OptionKey.SPECIAL, TermFilter.defaultTermMatch("@"))
 				.build();
 		final Options actual = SearchResourceRequest.processSpecialOptionKey(options, OptionKey.SPECIAL);
 		assertTrue(options == actual);
@@ -67,7 +67,7 @@ public class SearchResourceRequestTest {
 	@Test
 	public void specialOptionKeyWithExpressionValueIncorrectSyntaxNoValueBracket() throws Exception {
 		final Options options = Options.builder()
-				.put(OptionKey.SPECIAL, "@field")
+				.put(OptionKey.SPECIAL, TermFilter.defaultTermMatch("@field"))
 				.build();
 		final Options actual = SearchResourceRequest.processSpecialOptionKey(options, OptionKey.SPECIAL);
 		assertTrue(options == actual);
@@ -76,7 +76,7 @@ public class SearchResourceRequestTest {
 	@Test
 	public void specialOptionKeyWithExpressionValueIncorrectSyntaxNoValue() throws Exception {
 		final Options options = Options.builder()
-				.put(OptionKey.SPECIAL, "@field()")
+				.put(OptionKey.SPECIAL, TermFilter.defaultTermMatch("@field()"))
 				.build();
 		final Options actual = SearchResourceRequest.processSpecialOptionKey(options, OptionKey.SPECIAL);
 		assertTrue(options == actual);
@@ -85,7 +85,7 @@ public class SearchResourceRequestTest {
 	@Test
 	public void specialOptionKeyWithExpressionValue() throws Exception {
 		final Options options = Options.builder()
-				.put(OptionKey.SPECIAL, "@field(value)")
+				.put(OptionKey.SPECIAL, TermFilter.defaultTermMatch("@field(value)"))
 				.build();
 		final Options actual = SearchResourceRequest.processSpecialOptionKey(options, OptionKey.SPECIAL);
 		assertEquals(Options.builder()
@@ -96,7 +96,7 @@ public class SearchResourceRequestTest {
 	@Test
 	public void specialOptionKeyWithExpressionValueOtherOptionKeys() throws Exception {
 		final Options options = Options.builder()
-				.put(OptionKey.SPECIAL, "@field(value)")
+				.put(OptionKey.SPECIAL, TermFilter.defaultTermMatch("@field(value)"))
 				.put("OTHER", "filter")
 				.build();
 		final Options actual = SearchResourceRequest.processSpecialOptionKey(options, OptionKey.SPECIAL);
@@ -109,7 +109,7 @@ public class SearchResourceRequestTest {
 	@Test
 	public void specialOptionKeyWithExtraParenthesis() throws Exception {
 		final Options options = Options.builder()
-				.put(OptionKey.SPECIAL, "@field(value (extra))")
+				.put(OptionKey.SPECIAL, TermFilter.defaultTermMatch("@field(value (extra))"))
 				.build();
 		final Options actual = SearchResourceRequest.processSpecialOptionKey(options, OptionKey.SPECIAL);
 		assertEquals(Options.builder()
