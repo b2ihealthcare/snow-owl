@@ -24,7 +24,7 @@ import com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator.Op
  * @since 7.5
  */
 public final class ConceptSearchRequestBuilder extends SearchResourceRequestBuilder<ConceptSearchRequestBuilder, BranchContext, Concepts>
-		implements RevisionIndexRequestBuilder<Concepts> {
+		implements RevisionIndexRequestBuilder<Concepts>, TermFilterSupport<ConceptSearchRequestBuilder> {
 
 	/**
 	 * Filters matches by their active/inactive status. 
@@ -37,44 +37,13 @@ public final class ConceptSearchRequestBuilder extends SearchResourceRequestBuil
 	}
 	
 	/**
-	 * Filters matches by their lexical terms. The exact semantics of how a term match works depends on the given code system, but usually it supports
-	 * exact, partial word and prefix matches.
-	 * 
-	 * @param term
-	 * @return
+	 * {@inheritDoc}
 	 */
-	public ConceptSearchRequestBuilder filterByTerm(String term) {
-		return addOption(OptionKey.TERM, term);
+	@Override
+	public ConceptSearchRequestBuilder filterByTerm(TermFilter termFilter) {
+		return addOption(OptionKey.TERM, termFilter);
 	}
 
-	/**
-	 * Filters matches by their lexical terms. Returns matches with exact case insensitive term matches.
-	 * 
-	 * @param exactTerm
-	 * @return
-	 */
-	public ConceptSearchRequestBuilder filterByExactTerm(String exactTerm) {
-		return addOption(OptionKey.TERM_EXACT, exactTerm);
-	}
-
-	/**
-	 * Sets the minimum number of terms that should be matched in a {@link #filterByTerm(String)} clause.
-	 * The default is "all terms", when not given.
-	 * 
-	 * @param minTermMatch
-	 * @return
-	 */
-	public ConceptSearchRequestBuilder setMinTermMatch(int minTermMatch) {
-		return addOption(OptionKey.MIN_TERM_MATCH, minTermMatch);
-	}
-	
-	/**
-	 * Enables fuzzy term query
-	 */
-	public ConceptSearchRequestBuilder useFuzzy() {
-		return addOption(OptionKey.USE_FUZZY, true);
-	}
-	
 	/**
 	 * Filters matches by a query expression defined in the target code system's query language.
 	 * 

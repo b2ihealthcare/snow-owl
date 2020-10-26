@@ -20,6 +20,8 @@ import java.util.List;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
+import com.b2international.snowowl.core.request.TermFilter;
+import com.b2international.snowowl.core.request.TermFilterSupport;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.datastore.SnomedDescriptionUtils;
@@ -31,7 +33,8 @@ import com.b2international.snowowl.snomed.datastore.SnomedDescriptionUtils;
  * 
  * @since 4.5
  */
-public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSearchRequestBuilder<SnomedConceptSearchRequestBuilder, SnomedConcepts> {
+public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSearchRequestBuilder<SnomedConceptSearchRequestBuilder, SnomedConcepts>
+		implements TermFilterSupport<SnomedConceptSearchRequestBuilder>{
 
 	/**
 	 * Special term based sort key for
@@ -74,26 +77,9 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 		return addOption(SnomedConceptSearchRequest.OptionKey.USE_DOI, withDoi);
 	}
 
-	public final SnomedConceptSearchRequestBuilder withFuzzySearch() {
-		return addOption(SnomedConceptSearchRequest.OptionKey.USE_FUZZY, true);
-	}
-
-	public final SnomedConceptSearchRequestBuilder withParsedTerm() {
-		return addOption(SnomedConceptSearchRequest.OptionKey.PARSED_TERM, true);
-	}
-
-	/**
-	 * Filters results by matching description terms on each concept, using different methods for comparison.
-	 * <p>
-	 * This filter affects the score of each result. If results should be returned in order of relevance, specify {@link SearchResourceRequest#SCORE}
-	 * as one of the sort fields.
-	 * 
-	 * @param term
-	 *            - the expression to match
-	 * @return <code>this</code> search request builder, for method chaining
-	 */
-	public final SnomedConceptSearchRequestBuilder filterByTerm(String term) {
-		return addOption(SnomedConceptSearchRequest.OptionKey.TERM, term);
+	@Override
+	public SnomedConceptSearchRequestBuilder filterByTerm(TermFilter termFilter) {
+		return addOption(SnomedConceptSearchRequest.OptionKey.TERM, termFilter);
 	}
 
 	/**
