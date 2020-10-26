@@ -334,10 +334,9 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 	@VisibleForTesting
 	static Options processSpecialOptionKey(Options options, Enum<?> specialOptionKey) {
 		if (specialOptionKey != null && options.containsKey(specialOptionKey)) {
-			// this will throw a CCE if non-TermFilter value is encountered in the option key and that is okay
-			final TermFilter termFilter = options.get(specialOptionKey, TermFilter.class);
-			String specialOption = termFilter.getTerm();
-			if (specialOption != null && specialOption.startsWith(SPECIAL_OPTION_CHARACTER) && specialOption.endsWith(")")) {
+			// this will throw a CCE if non-String value is encountered in the option key and that is okay
+			String specialOption = options.getString(specialOptionKey);
+			if (specialOption.startsWith(SPECIAL_OPTION_CHARACTER) && specialOption.endsWith(")")) {
 				// strip of the leading and trailing characters so we end up with a field(value expression that can be split on the first occurence of
 				// the ( character
 				String fieldAndValueWithParenSeparator = specialOption.substring(1, specialOption.length() - 1);
@@ -347,13 +346,7 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 					String value = fieldAndValueWithParenSeparator.substring(separatorIdx + 1);
 					
 					if (!CompareUtils.isEmpty(field) && !CompareUtils.isEmpty(value)) {
-						OptionsBuilder newOptions = Options.builder();
-						
-						if (specialOptionKey.name().equals(field)) {
-							newOptions.put(field, TermFilter.builder(termFilter).term(value));
-						} else {
-							newOptions.put(field, value);
-						}
+						OptionsBuilder newOptions = Options.builder().put(field, value);
 						
 						for (String key : options.keySet()) {
 							if (!specialOptionKey.name().equals(key)) {
