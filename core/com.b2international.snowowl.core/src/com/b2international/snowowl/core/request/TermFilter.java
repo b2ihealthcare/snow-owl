@@ -31,7 +31,7 @@ import com.google.common.collect.Lists;
  * 
  * @since 7.11
  */
-public class TermFilter implements Serializable {
+public final class TermFilter implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	
