@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.core.request;
 
+import java.util.Set;
+
+import com.b2international.snowowl.core.compare.ConceptMapCompareConfigurationProperties;
 import com.b2international.snowowl.core.compare.ConceptMapCompareResult;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.uri.ComponentURI;
@@ -30,20 +33,23 @@ public final class ConceptMapCompareRequestBuilder
 	
 	private final ComponentURI baseConceptMapURI;
 	private final ComponentURI compareConceptMapURI;
+	private final Set<ConceptMapCompareConfigurationProperties> selectedConfig;
 	
 	public ConceptMapCompareRequestBuilder setLimit(int limit) {
 		this.limit = limit;
 		return getSelf();
 	}
 	
-	public ConceptMapCompareRequestBuilder(ComponentURI baseConceptMapURI, ComponentURI compareConceptMapURI) {
+	public ConceptMapCompareRequestBuilder(ComponentURI baseConceptMapURI, ComponentURI compareConceptMapURI, Set<ConceptMapCompareConfigurationProperties> selectedConfig) {
 		this.baseConceptMapURI = baseConceptMapURI;
 		this.compareConceptMapURI = compareConceptMapURI;
+		this.selectedConfig = selectedConfig;
+		
 	}
 	
 	@Override
 	protected ResourceRequest<BranchContext, ConceptMapCompareResult> create() {
-		return new ConceptMapCompareRequest(baseConceptMapURI, compareConceptMapURI, limit);
+		return new ConceptMapCompareRequest(baseConceptMapURI, compareConceptMapURI, limit, selectedConfig);
 	}
 	
 }

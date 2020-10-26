@@ -28,6 +28,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
+import com.b2international.snowowl.core.compare.ConceptMapCompareConfigurationProperties;
 import com.b2international.snowowl.core.compare.ConceptMapCompareResult;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.core.uri.ComponentURI;
@@ -45,6 +46,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.test.commons.AbstractCoreApiTest;
 import com.b2international.snowowl.test.commons.rest.RestExtensions;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
 /**
@@ -60,6 +62,7 @@ public class SnomedMapTypeReferenceSetCompareTest extends AbstractCoreApiTest {
 
 	protected static final String SOURCE_CODE_3 = Concepts.ACCEPTABILITY;
 	protected static final String TARGET_CODE_3 = Concepts.INAPPROPRIATE;
+	protected static final ImmutableSet<ConceptMapCompareConfigurationProperties> COMPARE_CONFIG = ImmutableSet.of(ConceptMapCompareConfigurationProperties.CODE_SYSTEM, ConceptMapCompareConfigurationProperties.CODE, ConceptMapCompareConfigurationProperties.TERM);
 
 	private String rf1Id;
 	private String rf2Id;
@@ -88,7 +91,7 @@ public class SnomedMapTypeReferenceSetCompareTest extends AbstractCoreApiTest {
 		ComponentURI baseURI = createURI(rf1Id);
 		ComponentURI compareURI = createURI(rf2Id);
 		
-		ConceptMapCompareResult result = CodeSystemRequests.prepareConceptMapCompare(baseURI, compareURI)
+		ConceptMapCompareResult result = CodeSystemRequests.prepareConceptMapCompare(baseURI, compareURI, COMPARE_CONFIG)
 				.setLocales("en")
 				.build(codeSystemURI)
 				.execute(getBus())
@@ -109,7 +112,7 @@ public class SnomedMapTypeReferenceSetCompareTest extends AbstractCoreApiTest {
 		ComponentURI baseURI = createURI(rf3Id);
 		ComponentURI compareURI = createURI(rf4Id);
 		
-		ConceptMapCompareResult result = CodeSystemRequests.prepareConceptMapCompare(baseURI, compareURI)
+		ConceptMapCompareResult result = CodeSystemRequests.prepareConceptMapCompare(baseURI, compareURI, COMPARE_CONFIG)
 				.setLocales("en")
 				.build(codeSystemURI)
 				.execute(getBus())
@@ -132,7 +135,7 @@ public class SnomedMapTypeReferenceSetCompareTest extends AbstractCoreApiTest {
 		ComponentURI baseURI = ComponentURI.of(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, SnomedTerminologyComponentConstants.REFSET_NUMBER, baseSimpleMapReferenceSet);
 		ComponentURI compareURI = ComponentURI.of(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, SnomedTerminologyComponentConstants.REFSET_NUMBER, compareSimpleMapReferenceSet);
 		
-		CodeSystemRequests.prepareConceptMapCompare(baseURI, compareURI)
+		CodeSystemRequests.prepareConceptMapCompare(baseURI, compareURI, COMPARE_CONFIG)
 				.setLocales("en")
 				.build(codeSystemURI)
 				.execute(getBus())
