@@ -131,6 +131,11 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 	}
 	
 	@Override
+	protected String extractSpecialOption(Enum<?> key) {
+		return get(OptionKey.TERM, TermFilter.class).getTerm();
+	}
+	
+	@Override
 	protected Expression prepareQuery(BranchContext context) {
 		ExpressionBuilder queryBuilder = Expressions.builder();
 		

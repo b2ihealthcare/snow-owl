@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -322,7 +323,7 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 	public final B execute(C context) {
 		try {
 			// process the options for special option expressions and map them as options on their own
-			setOptions(processSpecialOptionKey(options, getSpecialOptionKey()));
+			setOptions(processSpecialOptionKey(options, getSpecialOptionKey(), this::extractSpecialOption));
 			return doExecute(context);
 		} catch (NoResultException e) {
 			return createEmptyResult(limit);
@@ -331,11 +332,15 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 		}
 	}
 	
+	protected String extractSpecialOption(final Enum<?> key) {
+		return String.valueOf(options.get(key));
+	}
+	
 	@VisibleForTesting
-	static Options processSpecialOptionKey(Options options, Enum<?> specialOptionKey) {
+	static Options processSpecialOptionKey(Options options, Enum<?> specialOptionKey, Function<Enum<?>, String> extractSpecialOption) {
 		if (specialOptionKey != null && options.containsKey(specialOptionKey)) {
 			// this will throw a CCE if non-String value is encountered in the option key and that is okay
-			String specialOption = options.getString(specialOptionKey);
+			String specialOption = extractSpecialOption.apply(specialOptionKey);
 			if (specialOption.startsWith(SPECIAL_OPTION_CHARACTER) && specialOption.endsWith(")")) {
 				// strip of the leading and trailing characters so we end up with a field(value expression that can be split on the first occurence of
 				// the ( character

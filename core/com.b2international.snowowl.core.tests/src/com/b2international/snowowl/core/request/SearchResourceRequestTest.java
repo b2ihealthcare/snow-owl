@@ -35,14 +35,14 @@ public class SearchResourceRequestTest {
 	@Test
 	public void nullSpecialOptionKey() throws Exception {
 		final Options options = Options.builder().build();
-		final Options actual = SearchResourceRequest.processSpecialOptionKey(options, null);
+		final Options actual = SearchResourceRequest.processSpecialOptionKey(options, null, key -> options.getString(key));
 		assertTrue(options == actual);
 	}
 	
 	@Test
 	public void specialOptionKeyWithNoValue() throws Exception {
 		final Options options = Options.builder().build();
-		final Options actual = SearchResourceRequest.processSpecialOptionKey(options, OptionKey.SPECIAL);
+		final Options actual = SearchResourceRequest.processSpecialOptionKey(options, OptionKey.SPECIAL, key -> options.getString(key));
 		assertTrue(options == actual);
 	}
 	
@@ -51,7 +51,7 @@ public class SearchResourceRequestTest {
 		final Options options = Options.builder()
 				.put(OptionKey.SPECIAL, "not an expression")
 				.build();
-		final Options actual = SearchResourceRequest.processSpecialOptionKey(options, OptionKey.SPECIAL);
+		final Options actual = SearchResourceRequest.processSpecialOptionKey(options, OptionKey.SPECIAL, key -> options.getString(key));
 		assertTrue(options == actual);
 	}
 	
@@ -60,7 +60,7 @@ public class SearchResourceRequestTest {
 		final Options options = Options.builder()
 				.put(OptionKey.SPECIAL, "@")
 				.build();
-		final Options actual = SearchResourceRequest.processSpecialOptionKey(options, OptionKey.SPECIAL);
+		final Options actual = SearchResourceRequest.processSpecialOptionKey(options, OptionKey.SPECIAL, key -> options.getString(key));
 		assertTrue(options == actual);
 	}
 	
@@ -69,7 +69,7 @@ public class SearchResourceRequestTest {
 		final Options options = Options.builder()
 				.put(OptionKey.SPECIAL, "@field")
 				.build();
-		final Options actual = SearchResourceRequest.processSpecialOptionKey(options, OptionKey.SPECIAL);
+		final Options actual = SearchResourceRequest.processSpecialOptionKey(options, OptionKey.SPECIAL, key -> options.getString(key));
 		assertTrue(options == actual);
 	}
 	
@@ -78,7 +78,7 @@ public class SearchResourceRequestTest {
 		final Options options = Options.builder()
 				.put(OptionKey.SPECIAL, "@field()")
 				.build();
-		final Options actual = SearchResourceRequest.processSpecialOptionKey(options, OptionKey.SPECIAL);
+		final Options actual = SearchResourceRequest.processSpecialOptionKey(options, OptionKey.SPECIAL, key -> options.getString(key));
 		assertTrue(options == actual);
 	}
 	
@@ -87,7 +87,7 @@ public class SearchResourceRequestTest {
 		final Options options = Options.builder()
 				.put(OptionKey.SPECIAL, "@field(value)")
 				.build();
-		final Options actual = SearchResourceRequest.processSpecialOptionKey(options, OptionKey.SPECIAL);
+		final Options actual = SearchResourceRequest.processSpecialOptionKey(options, OptionKey.SPECIAL, key -> options.getString(key));
 		assertEquals(Options.builder()
 				.put("FIELD", "value")
 				.build(), actual);
@@ -99,7 +99,7 @@ public class SearchResourceRequestTest {
 				.put(OptionKey.SPECIAL, "@field(value)")
 				.put("OTHER", "filter")
 				.build();
-		final Options actual = SearchResourceRequest.processSpecialOptionKey(options, OptionKey.SPECIAL);
+		final Options actual = SearchResourceRequest.processSpecialOptionKey(options, OptionKey.SPECIAL, key -> options.getString(key));
 		assertEquals(Options.builder()
 				.put("FIELD", "value")
 				.put("OTHER", "filter")
@@ -111,7 +111,7 @@ public class SearchResourceRequestTest {
 		final Options options = Options.builder()
 				.put(OptionKey.SPECIAL, "@field(value (extra))")
 				.build();
-		final Options actual = SearchResourceRequest.processSpecialOptionKey(options, OptionKey.SPECIAL);
+		final Options actual = SearchResourceRequest.processSpecialOptionKey(options, OptionKey.SPECIAL, key -> options.getString(key));
 		assertEquals(Options.builder()
 				.put("FIELD", "value (extra)")
 				.build(), actual);
