@@ -20,6 +20,9 @@ import static com.b2international.index.query.Expressions.scriptScore;
 import java.io.Serializable;
 import java.util.List;
 
+import javax.validation.constraints.Min;
+
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -40,7 +43,10 @@ public final class TermFilter implements Serializable {
 	private static final String ORIGINAL = ".original";
 	
 	private final String term;
+	
+	@Min(0)
 	private final Integer minShouldMatch;
+	
 	private final boolean fuzzy;
 	private final boolean exact;
 
@@ -171,7 +177,11 @@ public final class TermFilter implements Serializable {
 	 */
 	@JsonIgnore
 	public static final TermFilter minTermMatch(final String term, final Integer minShouldMatch) {
-		return Builder.builder().term(term).minShouldMatch(minShouldMatch).build();
+		if (minShouldMatch >= 1) {
+			return Builder.builder().term(term).minShouldMatch(minShouldMatch).build();
+		} else {
+			throw new BadRequestException(String.format("minShouldMatch parameter must be greater than or equal to 1. It was %s ", minShouldMatch.toString()));
+		}
 	}
 	
 	/**
