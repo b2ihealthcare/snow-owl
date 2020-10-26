@@ -79,6 +79,9 @@ public final class TermFilter implements Serializable {
 				.parsed(termFilter.isParsed());
 	}
 	
+	/**
+	 * @since 7.11
+	 */
 	public static final class Builder {
 		private String term;
 		private Integer minShouldMatch;
@@ -155,7 +158,7 @@ public final class TermFilter implements Serializable {
 		if (minShouldMatch >= 1) {
 			return Builder.builder().term(term).minShouldMatch(minShouldMatch).build();
 		} else {
-			throw new BadRequestException(String.format("minShouldMatch parameter must be greater than or equal to 1. It was %s ", minShouldMatch.toString()));
+			throw new BadRequestException("minShouldMatch parameter must be greater than or equal to 1. It was '%s'.", minShouldMatch);
 		}
 	}
 	
