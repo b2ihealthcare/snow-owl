@@ -16,9 +16,11 @@
 package com.b2international.snowowl.core.compare;
 
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.BiFunction;
 
 import com.b2international.snowowl.core.domain.ConceptMapMapping;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 7.11
@@ -43,6 +45,9 @@ public enum ConceptMapCompareConfigurationProperties {
 			(member1, member2) -> Objects.equals(member1.getTargetComponentURI().identifier(), member2.getTargetComponentURI().identifier())
 			);
 
+	public static final Set<ConceptMapCompareConfigurationProperties> ALL_PROPERTIES = ImmutableSet.of(ConceptMapCompareConfigurationProperties.CODE_SYSTEM, ConceptMapCompareConfigurationProperties.CODE, ConceptMapCompareConfigurationProperties.TERM);
+	public static final Set<ConceptMapCompareConfigurationProperties> DEFAULT_SELECTED_PROPERTIES = ImmutableSet.of(ConceptMapCompareConfigurationProperties.CODE_SYSTEM, ConceptMapCompareConfigurationProperties.CODE);
+			
 	private final String label;
 	private final BiFunction<ConceptMapMapping, ConceptMapMapping, Boolean> getSourceEqualFunction;
 	private final BiFunction<ConceptMapMapping, ConceptMapMapping, Boolean> getTargetEqualFunction;
