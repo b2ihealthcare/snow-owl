@@ -20,6 +20,10 @@ import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDes
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.languageCodes;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.parsedTerm;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.preferredIn;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.fuzzy;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.matchTermOriginal;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.termDisjunctionQuery;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.minShouldMatchTermDisjunctionQuery;
 
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.index.Hits;
@@ -46,7 +50,6 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 		CONCEPT,
 		TYPE,
 		LANGUAGE,
-		PARSED_TERM, 
 		CASE_SIGNIFICANCE, 
 		TERM_REGEX, 
 		SEMANTIC_TAG,
@@ -136,11 +139,17 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 	
 	private Expression toDescriptionTermQuery(final TermFilter termFilter) {
 		final ExpressionBuilder qb = Expressions.builder();
-		
-		if (containsKey(OptionKey.PARSED_TERM)) {
+	
+		if (termFilter.isFuzzy()) {
+			qb.should(fuzzy(termFilter.getTerm()));
+		} else if (termFilter.isExact()) {
+			qb.should(matchTermOriginal(termFilter.getTerm()));
+		} else if (termFilter.isParsed()) {
 			qb.should(parsedTerm(termFilter.getTerm()));
+		} else if (termFilter.getMinShouldMatch() != null) {
+			qb.should(minShouldMatchTermDisjunctionQuery(termFilter.getTerm(), termFilter.getMinShouldMatch()));
 		} else {
-			qb.should(termFilter.evaluateOnField(SnomedDescriptionIndexEntry.Fields.TERM));
+			qb.should(termDisjunctionQuery(termFilter.getTerm()));
 		}
 		
 		if (isComponentId(termFilter.getTerm(), ComponentCategory.DESCRIPTION)) {

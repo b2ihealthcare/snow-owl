@@ -323,10 +323,6 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 			requestBuilder.filterBySemanticTags(semanticTags);
 		}
 		
-		if (containsKey(OptionKey.PARSED_TERM)) {
-			requestBuilder.withParsedTerm();
-		}
-		
 		final Collection<SnomedDescription> items = requestBuilder
 			.build()
 			.execute(context)

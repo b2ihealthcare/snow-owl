@@ -42,10 +42,6 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponent
 
 	SnomedDescriptionSearchRequestBuilder() {}
 	
-	public SnomedDescriptionSearchRequestBuilder withParsedTerm() {
-		return addOption(OptionKey.PARSED_TERM, true);
-	}
-	
 	/**
 	 * Filters results by matching description terms, using different methods for comparison.
 	 * <p>
