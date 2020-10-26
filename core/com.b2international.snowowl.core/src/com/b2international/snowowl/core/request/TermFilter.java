@@ -17,9 +17,6 @@ package com.b2international.snowowl.core.request;
 
 import java.io.Serializable;
 
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-
 import com.b2international.commons.exceptions.BadRequestException;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -32,10 +29,7 @@ public final class TermFilter implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	
-	@NotNull
 	private final String term;
-	
-	@Min(1)
 	private final Integer minShouldMatch;
 	
 	private final boolean fuzzy;
@@ -43,6 +37,9 @@ public final class TermFilter implements Serializable {
 	private final boolean parsed;
 
 	public TermFilter(final String term, final Integer minShouldMatch, final boolean fuzzy, final boolean exact, final boolean parsed) {
+		if (term == null) {
+			throw new BadRequestException("'term' filter parameter was null.");
+		}
 		this.term = term.trim();
 		this.minShouldMatch = minShouldMatch;
 		this.fuzzy = fuzzy;
