@@ -210,10 +210,10 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 		final SnomedConcept referenceSet = refSetsByIds.get(member.getReferenceSetId());
 
 		return mappingBuilder
+				.uri(ComponentURI.of(codeSystemURI.getCodeSystem(), SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, member.getId()))
 				.containerIconId(referenceSet.getIconId())
 				.containerTerm(referenceSet.getPt().getTerm())
 				.containerSetURI(ComponentURI.of(codeSystemURI.getCodeSystem(), SnomedTerminologyComponentConstants.REFSET_NUMBER, member.getReferenceSetId()))
-				.memberId(member.getId())
 				.active(true)
 				.sourceIconId(iconId)
 				.sourceTerm(term)
