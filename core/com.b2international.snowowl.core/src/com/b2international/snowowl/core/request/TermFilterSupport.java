@@ -16,43 +16,54 @@
 package com.b2international.snowowl.core.request;
 
 /**
- * Supporting interface to add filterByTerm({@link TermFilter}) configuration.
+ * Interface to configure term filters in a given request
  * 
  * @since 7.11
  */
 public interface TermFilterSupport<T> {
-	
+
 	/**
-	 * Set the term filter configuration.
+	 * Filters results by matching terms, as entered (the comparison depends on the configuration selected in the {@link TermFilter term filter
+	 * configuration type}).
 	 * 
 	 * @param termFilter
-	 * 			- {@link TermFilter} configuration
-	 * @return
+	 *            - {@link TermFilter} configuration
+	 * @return <code>this</code> for method chaining
+	 * @see TermFilter#defaultTermMatch(String)
+	 * @see TermFilter#exactTermMatch(String)
+	 * @see TermFilter#fuzzyMatch(String)
+	 * @see TermFilter#minTermMatch(String, Integer)
+	 * @see TermFilter#parsedTermMatch(String)
 	 */
 	T filterByTerm(final TermFilter termFilter);
 
 	/**
-	 * Filters results by matching description terms, as entered (the comparison is case 
-	 * insensitive and folds non-ASCII characters to their closest equivalent).
+	 * Filters results by matching exact terms, as entered (the comparison is case insensitive and folds non-ASCII characters to their closest
+	 * equivalent).
 	 * <p>
-	 * This filter affects the score of each result. If results should be returned in order of 
-	 * relevance, specify {@link SearchResourceRequest#SCORE} as one of the sort fields.
+	 * This filter affects the score of each result. If results should be returned in order of relevance, specify {@link SearchResourceRequest#SCORE}
+	 * as one of the sort fields.
 	 * 
-	 * @param exactTermFilter - the expression to match
-	 * @return <code>this</code> search request builder, for method chaining
+	 * @param exactTermFilter
+	 *            - the expression to match
+	 * @return <code>this</code> for method chaining
+	 * @see TermFilter#exactTermMatch(String)
 	 */
 	default T filterByExactTerm(final String exactTermFilter) {
 		return filterByTerm(exactTermFilter != null ? TermFilter.exactTermMatch(exactTermFilter) : null);
-	};
+	}
 
 	/**
-	 * Filters results by matching description terms, using different methods for comparison.
+	 * Filters results by matching description terms, as entered (the comparison is case insensitive and folds non-ASCII characters to their closest
+	 * equivalent).
 	 * <p>
-	 * This filter affects the score of each result. If results should be returned in order of 
-	 * relevance, specify {@link SearchResourceRequest#SCORE} as one of the sort fields.
+	 * This filter affects the score of each result. If results should be returned in order of relevance, specify {@link SearchResourceRequest#SCORE}
+	 * as one of the sort fields.
 	 * 
-	 * @param termFilter - the expression to match
-	 * @return <code>this</code> search request builder, for method chaining
+	 * @param termFilter
+	 *            - the expression to match
+	 * @return <code>this</code> for method chaining
+	 * @see TermFilter#defaultTermMatch(String)
 	 */
 	default T filterByTerm(final String termFilter) {
 		return filterByTerm(termFilter != null ? TermFilter.defaultTermMatch(termFilter) : null);

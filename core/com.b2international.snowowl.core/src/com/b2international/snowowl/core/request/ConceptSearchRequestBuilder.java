@@ -36,6 +36,9 @@ public final class ConceptSearchRequestBuilder extends SearchResourceRequestBuil
 		return addOption(OptionKey.ACTIVE, active);
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public ConceptSearchRequestBuilder filterByTerm(TermFilter termFilter) {
 		return addOption(OptionKey.TERM, termFilter);
