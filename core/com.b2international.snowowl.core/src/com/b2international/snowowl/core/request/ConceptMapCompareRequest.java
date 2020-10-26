@@ -17,16 +17,19 @@ package com.b2international.snowowl.core.request;
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.validation.constraints.Min;
 
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.compare.ConceptMapCompareConfigurationProperties;
 import com.b2international.snowowl.core.compare.ConceptMapCompareResult;
+import com.b2international.snowowl.core.compare.MapCompareEquivalence;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.ConceptMapMapping;
 import com.b2international.snowowl.core.domain.ConceptMapMappings;
 import com.b2international.snowowl.core.uri.ComponentURI;
+import com.google.common.base.Equivalence.Wrapper;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ListMultimap;
@@ -97,14 +100,17 @@ public final class ConceptMapCompareRequest extends ResourceRequest<BranchContex
 		List<ConceptMapMapping> allRemoved = Lists.newArrayList();
 		List<ConceptMapMapping> allAdded = Lists.newArrayList();
 		Set<ConceptMapMapping> allUnchanged = Sets.newHashSet();
-		
-		Set<ComponentURI> changedURIs = Sets.intersection(baseMappings.keySet(), compareMappings.keySet());
-		
-		changedURIs.forEach(changedURI -> {
-			
-			List<ConceptMapMapping> baseConceptMappings = baseMappings.get(changedURI);
-			List<ConceptMapMapping> compareConceptMappings = compareMappings.get(changedURI);
-			
+
+		MapCompareEquivalence mapCompareEquivalence = new MapCompareEquivalence(selectedConfig);
+		Set<Wrapper<ConceptMapMapping>> baseWrappedMappings = baseMappings.values().stream().map(mapping -> mapCompareEquivalence.wrap(mapping)).collect(Collectors.toSet());
+		Set<Wrapper<ConceptMapMapping>> compareWrappedMappings = compareMappings.values().stream().map(mapping -> mapCompareEquivalence.wrap(mapping)).collect(Collectors.toSet());
+
+		Set<Wrapper<ConceptMapMapping>> changedWrappedMappings = Sets.intersection(baseWrappedMappings, compareWrappedMappings);
+
+		changedWrappedMappings.forEach(changedMapping -> {
+			List<ConceptMapMapping> baseConceptMappings = baseMappings.get(changedMapping.get().getSourceComponentURI());
+			List<ConceptMapMapping> compareConceptMappings = compareMappings.get(changedMapping.get().getSourceComponentURI());
+
 			for (ConceptMapMapping baseConceptMapping : baseConceptMappings) {
 				compareConceptMappings.stream()
 				.filter(compareConceptMapping -> isChanged(baseConceptMapping, compareConceptMapping))
@@ -121,13 +127,13 @@ public final class ConceptMapCompareRequest extends ResourceRequest<BranchContex
 			}
 			
 		});
-		
-		SetView<ComponentURI> removedURIs = Sets.difference(baseMappings.keySet(), compareMappings.keySet());
-		removedURIs.forEach(uri -> allRemoved.addAll(baseMappings.get(uri)));
-		
-		SetView<ComponentURI> addedURIs = Sets.difference(compareMappings.keySet(), baseMappings.keySet());
-		addedURIs.forEach(uri -> allAdded.addAll(compareMappings.get(uri)));
-		
+
+		SetView<Wrapper<ConceptMapMapping>> removedWrappedMappings = Sets.difference(baseWrappedMappings, compareWrappedMappings);
+		removedWrappedMappings.forEach(mapping -> allRemoved.add(mapping.get()));
+
+		SetView<Wrapper<ConceptMapMapping>> addedWrappedMappings = Sets.difference(compareWrappedMappings, baseWrappedMappings);
+		addedWrappedMappings.forEach(mapping -> allAdded.add(mapping.get()));
+
 		return new ConceptMapCompareResult(allAdded, allRemoved, allChanged, allUnchanged, limit);
 		
 	}
