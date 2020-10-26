@@ -36,17 +36,6 @@ public final class ConceptSearchRequestBuilder extends SearchResourceRequestBuil
 		return addOption(OptionKey.ACTIVE, active);
 	}
 	
-	/**
-	 * Filters matches by their lexical terms. The exact semantics of how a term match works depends on the given code system, but usually it supports
-	 * exact, partial word and prefix matches.
-	 * 
-	 * @param term
-	 * @return
-	 */
-	public ConceptSearchRequestBuilder filterByTerm(String term) {
-		return filterByTerm(term != null ? TermFilter.defaultTermMatch(term) : null);
-	}
-	
 	@Override
 	public ConceptSearchRequestBuilder filterByTerm(TermFilter termFilter) {
 		return addOption(OptionKey.TERM, termFilter);

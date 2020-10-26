@@ -42,33 +42,6 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponent
 
 	SnomedDescriptionSearchRequestBuilder() {}
 	
-	/**
-	 * Filters results by matching description terms, using different methods for comparison.
-	 * <p>
-	 * This filter affects the score of each result. If results should be returned in order of 
-	 * relevance, specify {@link SearchResourceRequest#SCORE} as one of the sort fields.
-	 * 
-	 * @param termFilter - the expression to match
-	 * @return <code>this</code> search request builder, for method chaining
-	 */
-	public SnomedDescriptionSearchRequestBuilder filterByTerm(String termFilter) {
-		return filterByTerm(termFilter != null ? TermFilter.defaultTermMatch(termFilter) : null);
-	}
-
-	/**
-	 * Filters results by matching description terms, as entered (the comparison is case 
-	 * insensitive and folds non-ASCII characters to their closest equivalent).
-	 * <p>
-	 * This filter affects the score of each result. If results should be returned in order of 
-	 * relevance, specify {@link SearchResourceRequest#SCORE} as one of the sort fields.
-	 * 
-	 * @param exactTermFilter - the expression to match
-	 * @return <code>this</code> search request builder, for method chaining
-	 */
-	public SnomedDescriptionSearchRequestBuilder filterByExactTerm(String exactTermFilter) {
-		return filterByTerm(exactTermFilter != null ? TermFilter.exactTermMatch(exactTermFilter) : null);
-	}
-	
 	@Override
 	public SnomedDescriptionSearchRequestBuilder filterByTerm(TermFilter termFilter) {
 		return addOption(OptionKey.TERM, termFilter);

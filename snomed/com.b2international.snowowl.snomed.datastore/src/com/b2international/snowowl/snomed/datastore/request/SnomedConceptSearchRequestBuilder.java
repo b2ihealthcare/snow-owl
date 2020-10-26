@@ -77,20 +77,6 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 		return addOption(SnomedConceptSearchRequest.OptionKey.USE_DOI, withDoi);
 	}
 
-	/**
-	 * Filters results by matching description terms on each concept, using different methods for comparison.
-	 * <p>
-	 * This filter affects the score of each result. If results should be returned in order of relevance, specify {@link SearchResourceRequest#SCORE}
-	 * as one of the sort fields.
-	 * 
-	 * @param term
-	 *            - the expression to match
-	 * @return <code>this</code> search request builder, for method chaining
-	 */
-	public final SnomedConceptSearchRequestBuilder filterByTerm(String term) {
-		return filterByTerm(term != null ? TermFilter.defaultTermMatch(term) : null);
-	}
-
 	@Override
 	public SnomedConceptSearchRequestBuilder filterByTerm(TermFilter termFilter) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.TERM, termFilter);
