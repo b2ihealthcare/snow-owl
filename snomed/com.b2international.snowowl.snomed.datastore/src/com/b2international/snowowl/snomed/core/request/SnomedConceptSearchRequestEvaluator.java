@@ -96,7 +96,7 @@ public final class SnomedConceptSearchRequestEvaluator implements ConceptSearchR
 				.setLocales(search.getList(OptionKey.LOCALES, ExtendedLocale.class))
 				.setSearchAfter(search.getString(OptionKey.AFTER))
 				.setLimit(search.get(OptionKey.LIMIT, Integer.class))
-				.setExpand(String.format("preferredDescriptions(),%s", displayTermType.getExpand()))
+				.setExpand(String.join(",", "preferredDescriptions()", displayTermType.getExpand()))
 				.sortBy(search.containsKey(SearchResourceRequest.OptionKey.SORT_BY) ? search.getList(SearchResourceRequest.OptionKey.SORT_BY, SearchResourceRequest.Sort.class) : null)
 				.build()
 				.execute(context);
