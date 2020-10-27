@@ -106,7 +106,7 @@ public final class ConceptMapCompareRequest extends ResourceRequest<BranchContex
 		Set<Wrapper<ConceptMapMapping>> compareWrappedMappings = compareMappings.values().stream().map(mapping -> mapCompareEquivalence.wrap(mapping)).collect(Collectors.toSet());
 		Set<Wrapper<ConceptMapMapping>> changedWrappedMappings = Sets.intersection(baseWrappedMappings, compareWrappedMappings);
 		
-		Set<Wrapper<ConceptMapMapping>> mappingsToRemove = Sets.newHashSet();
+		Set<ConceptMapMapping> mappingsToRemove = Sets.newHashSet();
 
 		changedWrappedMappings.forEach(changedMapping -> {
 			List<ConceptMapMapping> baseConceptMappings = baseMappings.values().stream().filter(mapping -> isSourceEqual(mapping, changedMapping.get())).collect(Collectors.toList());
@@ -117,17 +117,28 @@ public final class ConceptMapCompareRequest extends ResourceRequest<BranchContex
 				.filter(compareConceptMapping -> isSame(baseConceptMapping, compareConceptMapping))
 				.forEach(compareConceptMapping -> {
 					allUnchanged.add(compareConceptMapping);
-					mappingsToRemove.add(changedMapping);
+					mappingsToRemove.add(baseConceptMapping);
+					mappingsToRemove.add(compareConceptMapping);
 				});
 			}
 			
 		});
 		
-		Set<Wrapper<ConceptMapMapping>> filteredChangedWrappedMappings = changedWrappedMappings.stream().filter(mapping -> !mappingsToRemove.contains(mapping)).collect(Collectors.toSet());
+		Set<Wrapper<ConceptMapMapping>> filteredBaseWrappedMappings = baseMappings.values().stream()
+				.filter(mapping -> !mappingsToRemove.stream().anyMatch(mappingToRemove -> isSame(mappingToRemove, mapping)))
+				.map(mapping -> mapCompareEquivalence.wrap(mapping))
+				.collect(Collectors.toSet());
 		
-		filteredChangedWrappedMappings.forEach(changedMapping -> {
-			List<ConceptMapMapping> baseConceptMappings = baseMappings.values().stream().filter(mapping -> isSourceEqual(mapping, changedMapping.get())).collect(Collectors.toList());
-			List<ConceptMapMapping> compareConceptMappings = compareMappings.values().stream().filter(mapping -> isSourceEqual(mapping, changedMapping.get())).collect(Collectors.toList());
+		Set<Wrapper<ConceptMapMapping>> filteredCompareWrappedMappings = compareMappings.values().stream()
+				.filter(mapping -> !mappingsToRemove.stream().anyMatch(mappingToRemove -> isSame(mappingToRemove, mapping)))
+				.map(mapping -> mapCompareEquivalence.wrap(mapping))
+				.collect(Collectors.toSet());
+		
+		Set<Wrapper<ConceptMapMapping>> changedFilteredWrappedMappings = Sets.intersection(filteredBaseWrappedMappings, filteredCompareWrappedMappings);
+		
+		changedFilteredWrappedMappings.forEach(changedMapping -> {
+			List<ConceptMapMapping> baseConceptMappings = filteredBaseWrappedMappings.stream().filter(mapping -> isSourceEqual(mapping.get(), changedMapping.get())).map(wrappedMapping -> wrappedMapping.get()).collect(Collectors.toList());
+			List<ConceptMapMapping> compareConceptMappings = filteredCompareWrappedMappings.stream().filter(mapping -> isSourceEqual(mapping.get(), changedMapping.get())).map(wrappedMapping -> wrappedMapping.get()).collect(Collectors.toList());
 			
 			for (ConceptMapMapping baseConceptMapping : baseConceptMappings) {
 				compareConceptMappings.stream()
@@ -141,10 +152,10 @@ public final class ConceptMapCompareRequest extends ResourceRequest<BranchContex
 			
 		});
 
-		SetView<Wrapper<ConceptMapMapping>> removedWrappedMappings = Sets.difference(baseWrappedMappings, compareWrappedMappings);
+		SetView<Wrapper<ConceptMapMapping>> removedWrappedMappings = Sets.difference(filteredBaseWrappedMappings, filteredCompareWrappedMappings);
 		removedWrappedMappings.forEach(mapping -> allRemoved.add(mapping.get()));
 
-		SetView<Wrapper<ConceptMapMapping>> addedWrappedMappings = Sets.difference(compareWrappedMappings, baseWrappedMappings);
+		SetView<Wrapper<ConceptMapMapping>> addedWrappedMappings = Sets.difference(filteredCompareWrappedMappings, filteredBaseWrappedMappings);
 		addedWrappedMappings.forEach(mapping -> allAdded.add(mapping.get()));
 
 		return new ConceptMapCompareResult(allAdded, allRemoved, allChanged, allUnchanged, limit);
