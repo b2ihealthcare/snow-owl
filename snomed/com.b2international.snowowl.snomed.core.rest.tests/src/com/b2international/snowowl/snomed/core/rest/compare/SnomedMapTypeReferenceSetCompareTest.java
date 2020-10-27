@@ -46,7 +46,6 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.test.commons.AbstractCoreApiTest;
 import com.b2international.snowowl.test.commons.rest.RestExtensions;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
 /**
@@ -62,7 +61,6 @@ public class SnomedMapTypeReferenceSetCompareTest extends AbstractCoreApiTest {
 
 	protected static final String SOURCE_CODE_3 = Concepts.ACCEPTABILITY;
 	protected static final String TARGET_CODE_3 = Concepts.INAPPROPRIATE;
-	protected static final ImmutableSet<ConceptMapCompareConfigurationProperties> COMPARE_CONFIG = ImmutableSet.of(ConceptMapCompareConfigurationProperties.CODE_SYSTEM, ConceptMapCompareConfigurationProperties.CODE, ConceptMapCompareConfigurationProperties.TERM);
 
 	private String rf1Id;
 	private String rf2Id;
@@ -91,7 +89,7 @@ public class SnomedMapTypeReferenceSetCompareTest extends AbstractCoreApiTest {
 		ComponentURI baseURI = createURI(rf1Id);
 		ComponentURI compareURI = createURI(rf2Id);
 		
-		ConceptMapCompareResult result = CodeSystemRequests.prepareConceptMapCompare(baseURI, compareURI, COMPARE_CONFIG)
+		ConceptMapCompareResult result = CodeSystemRequests.prepareConceptMapCompare(baseURI, compareURI, ConceptMapCompareConfigurationProperties.DEFAULT_SELECTED_PROPERTIES)
 				.setLocales("en")
 				.build(codeSystemURI)
 				.execute(getBus())
@@ -99,7 +97,7 @@ public class SnomedMapTypeReferenceSetCompareTest extends AbstractCoreApiTest {
 		
 		assertThat(result.getRemovedMembers()).hasSize(0);
 		assertThat(result.getAddedMembers()).hasSize(0);
-		assertThat(result.getChangedMembers().entries()).hasSize(0);
+		assertThat(result.getChangedMembers()).hasSize(0);
 	}
 	
 	@Test
@@ -112,7 +110,7 @@ public class SnomedMapTypeReferenceSetCompareTest extends AbstractCoreApiTest {
 		ComponentURI baseURI = createURI(rf3Id);
 		ComponentURI compareURI = createURI(rf4Id);
 		
-		ConceptMapCompareResult result = CodeSystemRequests.prepareConceptMapCompare(baseURI, compareURI, COMPARE_CONFIG)
+		ConceptMapCompareResult result = CodeSystemRequests.prepareConceptMapCompare(baseURI, compareURI, ConceptMapCompareConfigurationProperties.DEFAULT_SELECTED_PROPERTIES)
 				.setLocales("en")
 				.build(codeSystemURI)
 				.execute(getBus())
@@ -120,12 +118,12 @@ public class SnomedMapTypeReferenceSetCompareTest extends AbstractCoreApiTest {
 
 		assertThat(result.getRemovedMembers()).hasSize(1);
 		assertThat(result.getAddedMembers()).hasSize(1);
-		assertThat(result.getChangedMembers().entries()).hasSize(1);
+		assertThat(result.getChangedMembers()).hasSize(2);
 
 		assertThat(result.getRemovedMembers().get(0).getSourceComponentURI().identifier()).isEqualTo(SOURCE_CODE_1);
 		assertThat(result.getAddedMembers().get(0).getSourceComponentURI().identifier()).isEqualTo(SOURCE_CODE_3);
-		assertThat(result.getChangedMembers().keySet()).anyMatch(m -> TARGET_CODE_2.equals(m.getTargetComponentURI().identifier()));
-		assertThat(result.getChangedMembers().values()).anyMatch(m -> TARGET_CODE_3.equals(m.getTargetComponentURI().identifier()));
+		assertThat(result.getChangedMembers()).anyMatch(m -> TARGET_CODE_2.equals(m.getTargetComponentURI().identifier()));
+		assertThat(result.getChangedMembers()).anyMatch(m -> TARGET_CODE_3.equals(m.getTargetComponentURI().identifier()));
 	}
 	
 	@Test
@@ -135,7 +133,7 @@ public class SnomedMapTypeReferenceSetCompareTest extends AbstractCoreApiTest {
 		ComponentURI baseURI = ComponentURI.of(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, SnomedTerminologyComponentConstants.REFSET_NUMBER, baseSimpleMapReferenceSet);
 		ComponentURI compareURI = ComponentURI.of(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, SnomedTerminologyComponentConstants.REFSET_NUMBER, compareSimpleMapReferenceSet);
 		
-		CodeSystemRequests.prepareConceptMapCompare(baseURI, compareURI, COMPARE_CONFIG)
+		CodeSystemRequests.prepareConceptMapCompare(baseURI, compareURI, ConceptMapCompareConfigurationProperties.DEFAULT_SELECTED_PROPERTIES)
 				.setLocales("en")
 				.build(codeSystemURI)
 				.execute(getBus())

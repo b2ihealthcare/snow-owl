@@ -94,9 +94,7 @@ public final class ConceptMapCompareRequest extends ResourceRequest<BranchContex
 	
 	private ConceptMapCompareResult compareDifferences(ListMultimap<ComponentURI, ConceptMapMapping> baseMappings, ListMultimap<ComponentURI, ConceptMapMapping> compareMappings) {
 		
-		Set<ConceptMapMapping> allChanged = Sets.newHashSet();
-		List<ConceptMapMapping> allRemoved = Lists.newArrayList();
-		List<ConceptMapMapping> allAdded = Lists.newArrayList();
+		List<ConceptMapMapping> allChanged = Lists.newArrayList();
 		Set<ConceptMapMapping> allUnchanged = Sets.newHashSet();
 
 		MapCompareSourceAndTargetEquivalence mapCompareEquivalence = new MapCompareSourceAndTargetEquivalence(selectedConfig);
@@ -106,93 +104,24 @@ public final class ConceptMapCompareRequest extends ResourceRequest<BranchContex
 		Set<Wrapper<ConceptMapMapping>> allUnchangedWrappedMappings = Sets.intersection(baseWrappedMappings, compareWrappedMappings);
 		allUnchangedWrappedMappings.forEach(wrappedMapping -> allUnchanged.add(wrappedMapping.get()));
 		
-		SetView<Wrapper<ConceptMapMapping>> removedWrappedMappings = Sets.difference(baseWrappedMappings, compareWrappedMappings);
-		removedWrappedMappings.forEach(wrappedMapping -> allRemoved.add(wrappedMapping.get()));
-		SetView<Wrapper<ConceptMapMapping>> addedWrappedMappings = Sets.difference(compareWrappedMappings, baseWrappedMappings);
-		addedWrappedMappings.forEach(wrappedMapping -> allAdded.add(wrappedMapping.get()));
+		SetView<Wrapper<ConceptMapMapping>> onlyBaseWrappedMappings = Sets.difference(baseWrappedMappings, allUnchangedWrappedMappings);
+		SetView<Wrapper<ConceptMapMapping>> onlyCompareWrappedMappings = Sets.difference(compareWrappedMappings, allUnchangedWrappedMappings);
 		
-		allChanged.addAll(baseMappings.values().stream().filter(mapping -> !contains(allRemoved, allAdded, allUnchanged, mapping)).collect(Collectors.toSet()));
-		allChanged.addAll(compareMappings.values().stream().filter(mapping -> !contains(allRemoved, allAdded, allUnchanged, mapping)).collect(Collectors.toSet()));
-
-//		Set<Wrapper<ConceptMapMapping>> changedWrappedMappings = Sets.intersection(baseWrappedMappings, compareWrappedMappings);
-//		
-//		Set<ConceptMapMapping> mappingsToRemove = Sets.newHashSet();
-//
-//		changedWrappedMappings.forEach(changedMapping -> {
-//			List<ConceptMapMapping> baseConceptMappings = baseMappings.values().stream().filter(mapping -> isSourceEqual(mapping, changedMapping.get())).collect(Collectors.toList());
-//			List<ConceptMapMapping> compareConceptMappings = compareMappings.values().stream().filter(mapping -> isSourceEqual(mapping, changedMapping.get())).collect(Collectors.toList());
-//
-//			for (ConceptMapMapping baseConceptMapping : baseConceptMappings) {
-//				compareConceptMappings.stream()
-//				.filter(compareConceptMapping -> isSame(baseConceptMapping, compareConceptMapping))
-//				.forEach(compareConceptMapping -> {
-//					allUnchanged.add(compareConceptMapping);
-//					mappingsToRemove.add(baseConceptMapping);
-//					mappingsToRemove.add(compareConceptMapping);
-//				});
-//			}
-//			
-//		});
-//		
-//		Set<Wrapper<ConceptMapMapping>> filteredBaseWrappedMappings = baseMappings.values().stream()
-//				.filter(mapping -> !mappingsToRemove.stream().anyMatch(mappingToRemove -> isSame(mappingToRemove, mapping)))
-//				.map(mapping -> mapCompareEquivalence.wrap(mapping))
-//				.collect(Collectors.toSet());
-//		
-//		Set<Wrapper<ConceptMapMapping>> filteredCompareWrappedMappings = compareMappings.values().stream()
-//				.filter(mapping -> !mappingsToRemove.stream().anyMatch(mappingToRemove -> isSame(mappingToRemove, mapping)))
-//				.map(mapping -> mapCompareEquivalence.wrap(mapping))
-//				.collect(Collectors.toSet());
-//		
-//		Set<Wrapper<ConceptMapMapping>> changedFilteredWrappedMappings = Sets.intersection(filteredBaseWrappedMappings, filteredCompareWrappedMappings);
-//		
-//		changedFilteredWrappedMappings.forEach(changedMapping -> {
-//			List<ConceptMapMapping> baseConceptMappings = filteredBaseWrappedMappings.stream().filter(mapping -> isSourceEqual(mapping.get(), changedMapping.get())).map(wrappedMapping -> wrappedMapping.get()).collect(Collectors.toList());
-//			List<ConceptMapMapping> compareConceptMappings = filteredCompareWrappedMappings.stream().filter(mapping -> isSourceEqual(mapping.get(), changedMapping.get())).map(wrappedMapping -> wrappedMapping.get()).collect(Collectors.toList());
-//			
-//			for (ConceptMapMapping baseConceptMapping : baseConceptMappings) {
-//				compareConceptMappings.stream()
-//				.filter(compareConceptMapping -> isChanged(baseConceptMapping, compareConceptMapping))
-//				.forEach(compareConceptMapping -> {
-//					if(!allChanged.keySet().stream().anyMatch(mapping -> isSame(baseConceptMapping, mapping)) && !allChanged.values().stream().anyMatch(mapping -> isSame(compareConceptMapping, mapping))) {
-//						allChanged.put(baseConceptMapping, compareConceptMapping);
-//					}
-//				});
-//			}
-//			
-//		});
-//
-//		SetView<Wrapper<ConceptMapMapping>> removedWrappedMappings = Sets.difference(filteredBaseWrappedMappings, filteredCompareWrappedMappings);
-//		removedWrappedMappings.forEach(mapping -> allRemoved.add(mapping.get()));
-//
-//		SetView<Wrapper<ConceptMapMapping>> addedWrappedMappings = Sets.difference(filteredCompareWrappedMappings, filteredBaseWrappedMappings);
-//		addedWrappedMappings.forEach(mapping -> allAdded.add(mapping.get()));
-
+		Set<Wrapper<ConceptMapMapping>> changedBase = onlyBaseWrappedMappings.stream().filter(wrappedMapping -> onlyCompareWrappedMappings.stream().anyMatch(compareWrappedMapping -> isSourceEqual(wrappedMapping.get(), compareWrappedMapping.get()))).collect(Collectors.toSet());
+		Set<Wrapper<ConceptMapMapping>> changedCompare = onlyCompareWrappedMappings.stream().filter(wrappedMapping -> onlyBaseWrappedMappings.stream().anyMatch(baseWrappedMapping -> isSourceEqual(wrappedMapping.get(), baseWrappedMapping.get()))).collect(Collectors.toSet());
+		
+		changedBase.forEach(mapping -> allChanged.add(mapping.get()));
+		changedCompare.forEach(mapping -> allChanged.add(mapping.get()));
+		
+		List<ConceptMapMapping> allRemoved = onlyBaseWrappedMappings.stream().filter(mapping -> !changedBase.stream().anyMatch(changed -> isSourceEqual(mapping.get(), changed.get()))).map(mapping -> mapping.get()).collect(Collectors.toList());
+		List<ConceptMapMapping> allAdded = onlyCompareWrappedMappings.stream().filter(mapping -> !changedCompare.stream().anyMatch(changed -> isSourceEqual(mapping.get(), changed.get()))).map(mapping -> mapping.get()).collect(Collectors.toList());
+		
 		return new ConceptMapCompareResult(allAdded, allRemoved, allChanged, allUnchanged, limit);
-		
 	}
-
-	private boolean contains(List<ConceptMapMapping> allRemoved, List<ConceptMapMapping> allAdded,
-			Set<ConceptMapMapping> allUnchanged, ConceptMapMapping mapping) {
-		return allUnchanged.contains(mapping) || allRemoved.contains(mapping) || allAdded.contains(mapping);
-	}
-
-//	private boolean isChanged(ConceptMapMapping memberA, ConceptMapMapping memberB) {
-//		return isSourceEqual(memberA, memberB) && !isTargetEqual(memberA, memberB);
-//	}
-//	
-//	private boolean isSame(ConceptMapMapping memberA, ConceptMapMapping memberB) {
-//		return isSourceEqual(memberA, memberB) && isTargetEqual(memberA, memberB);
-//	}
-
-	private boolean isTargetEqual(ConceptMapMapping memberA, ConceptMapMapping memberB) {
-		boolean isDifferent = selectedConfig.stream().anyMatch(config -> !config.isTargetEqual(memberA, memberB));
-		return !isDifferent;
-	}
-
+	
 	private boolean isSourceEqual(ConceptMapMapping memberA, ConceptMapMapping memberB) {
 		boolean isDifferent = selectedConfig.stream().anyMatch(config -> !config.isSourceEqual(memberA, memberB));
 		return !isDifferent;
 	}
-
+	
 }

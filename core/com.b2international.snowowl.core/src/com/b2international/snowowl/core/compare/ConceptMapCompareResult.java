@@ -23,9 +23,6 @@ import java.util.Set;
 
 import com.b2international.snowowl.core.domain.ConceptMapMapping;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.ImmutableMultimap.Builder;
-import com.google.common.collect.Multimap;
 /**
  * @since 7.8
  */
@@ -41,22 +38,20 @@ public final class ConceptMapCompareResult implements Serializable {
 	private final List<ConceptMapMapping> addedMembers;
 	private final List<ConceptMapMapping> removedMembers;
 	
-	private final Multimap<ConceptMapMapping, ConceptMapMapping> changedMembers;
+	private final List<ConceptMapMapping> changedMembers;
 	private final List<ConceptMapMapping> unchangedMembers;
 	
-	public ConceptMapCompareResult(List<ConceptMapMapping> addedMembers, List<ConceptMapMapping> removedMembers, Multimap<ConceptMapMapping, ConceptMapMapping> changedMembers, Set<ConceptMapMapping> unchangedMembers, int limit) {
+	public ConceptMapCompareResult(List<ConceptMapMapping> addedMembers, List<ConceptMapMapping> removedMembers, List<ConceptMapMapping> changedMembers, Set<ConceptMapMapping> unchangedMembers, int limit) {
 		
 		this.addedMembers = addedMembers.stream().limit(limit).collect(toList());
 		this.removedMembers = removedMembers.stream().limit(limit).collect(toList());
 		
-		Builder<ConceptMapMapping, ConceptMapMapping> limitedMembers = ImmutableMultimap.builder();
-		changedMembers.entries().stream().limit(limit).forEach(limitedMembers::put);
-		this.changedMembers = limitedMembers.build();
+		this.changedMembers = changedMembers.stream().limit(limit).collect(toList());
 		this.unchangedMembers = ImmutableList.copyOf(unchangedMembers);
 		
 		this.totalAdded = addedMembers.size();
 		this.totalRemoved = removedMembers.size();
-		this.totalChanged = changedMembers.values().size();
+		this.totalChanged = changedMembers.size()/2;
 		this.limit = limit;
 	}
 	
@@ -72,7 +67,7 @@ public final class ConceptMapCompareResult implements Serializable {
 		return unchangedMembers;
 	}
 	
-	public Multimap<ConceptMapMapping, ConceptMapMapping> getChangedMembers() {
+	public List<ConceptMapMapping> getChangedMembers() {
 		return changedMembers;
 	}
 	
