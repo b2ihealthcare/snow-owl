@@ -16,11 +16,13 @@
 package com.b2international.snowowl.core.request;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.Min;
 
+import com.b2international.commons.Pair;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.compare.ConceptMapCompareConfigurationProperties;
 import com.b2international.snowowl.core.compare.ConceptMapCompareResult;
@@ -114,6 +116,8 @@ public final class ConceptMapCompareRequest extends ResourceRequest<BranchContex
 		SetView<Wrapper<ConceptMapMapping>> onlyBaseWrappedMappings = Sets.difference(baseWrappedMappings, allUnchangedWrappedMappings);
 		SetView<Wrapper<ConceptMapMapping>> onlyCompareWrappedMappings = Sets.difference(compareWrappedMappings, allUnchangedWrappedMappings);
 		
+		Set<Pair<ConceptMapMapping, ConceptMapMapping>> changedMappings = findChangedMappings(onlyBaseWrappedMappings, onlyCompareWrappedMappings);
+		
 		Set<Wrapper<ConceptMapMapping>> changedBase = onlyBaseWrappedMappings.stream()
 				.filter(wrappedMapping -> onlyCompareWrappedMappings.stream()
 						.anyMatch(compareWrappedMapping -> isSourceEqual(wrappedMapping.get(), compareWrappedMapping.get())))
@@ -142,6 +146,25 @@ public final class ConceptMapCompareRequest extends ResourceRequest<BranchContex
 		return new ConceptMapCompareResult(allAdded, allRemoved, allChanged, allUnchanged, limit);
 	}
 	
+	private Set<Pair<ConceptMapMapping, ConceptMapMapping>> findChangedMappings(Set<Wrapper<ConceptMapMapping>> onlyBaseWrappedMappings,
+			Set<Wrapper<ConceptMapMapping>> onlyCompareWrappedMappings) {
+		
+		Map<String, ConceptMapMapping> baseMappings = onlyBaseWrappedMappings.stream()
+				.collect(Collectors.toMap(w -> w.get().getSourceComponentURI().identifier(), w -> w.get()));
+		
+		Map<String, ConceptMapMapping> compareMappings = onlyCompareWrappedMappings.stream()
+				.collect(Collectors.toMap(w -> w.get().getSourceComponentURI().identifier(), w -> w.get()));
+		
+		//the intersection is the changed
+		SetView<String> commonSourceIds = Sets.intersection(baseMappings.keySet(), compareMappings.keySet());
+		
+		Set<Pair<ConceptMapMapping, ConceptMapMapping>> changedPairs = commonSourceIds.stream()
+			.map(sourceId -> Pair.<ConceptMapMapping, ConceptMapMapping>of(baseMappings.get(sourceId), compareMappings.get(sourceId)))
+			.collect(Collectors.toSet());
+		
+		return changedPairs;
+	}
+
 	private boolean isSourceEqual(ConceptMapMapping memberA, ConceptMapMapping memberB) {
 		boolean isDifferent = selectedConfig.stream().anyMatch(config -> !config.isSourceEqual(memberA, memberB));
 		return !isDifferent;
