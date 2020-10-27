@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import com.b2international.commons.options.Options;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
@@ -36,6 +37,7 @@ import com.b2international.index.query.SortBy.Builder;
 import com.b2international.index.query.SortBy.Order;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.repository.RevisionDocument;
+import com.b2international.snowowl.core.request.TermFilter;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
@@ -65,11 +67,6 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 		 * Description term to (smart) match
 		 */
 		TERM,
-		
-		/**
-		 * Parse the term for query syntax search
-		 */
-		PARSED_TERM,
 		
 		/**
 		 * Description type to match
@@ -125,16 +122,6 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 		 * Enable score boosting using DOI field
 		 */
 		USE_DOI,
-		
-		/**
-		 * Use fuzzy query in the search
-		 */
-		USE_FUZZY, 
-		
-		/**
-		 * Match any of the given terms (with minimum threshold given as an Integer)
-		 */
-		MIN_TERM_MATCH,
 	}
 	
 	protected SnomedConceptSearchRequest() {}
@@ -142,6 +129,11 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 	@Override
 	protected Enum<?> getSpecialOptionKey() {
 		return OptionKey.TERM;
+	}
+	
+	@Override
+	protected String extractSpecialOptionValue(Options options, Enum<?> key) {
+		return options.get(OptionKey.TERM, TermFilter.class).getTerm();
 	}
 	
 	@Override
@@ -229,13 +221,13 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 			bq.filter(queryBuilder.build());
 			queryBuilder = bq;
 			
-			final String term = getString(OptionKey.TERM);
-			final Map<String, Float> conceptScoreMap = executeDescriptionSearch(context, term);
+			final TermFilter termFilter = get(OptionKey.TERM, TermFilter.class);
+			final Map<String, Float> conceptScoreMap = executeDescriptionSearch(context, termFilter);
 			
 			try {
-				final ComponentCategory category = SnomedIdentifiers.getComponentCategory(term);
+				final ComponentCategory category = SnomedIdentifiers.getComponentCategory(termFilter.getTerm());
 				if (category == ComponentCategory.CONCEPT) {
-					conceptScoreMap.put(term, Float.MAX_VALUE);
+					conceptScoreMap.put(termFilter.getTerm(), Float.MAX_VALUE);
 				}
 			} catch (IllegalArgumentException e) {
 				// ignored
@@ -308,11 +300,11 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 		}
 	}
 	
-	private Map<String, Float> executeDescriptionSearch(BranchContext context, String term) {
+	private Map<String, Float> executeDescriptionSearch(BranchContext context, TermFilter termFilter) {
 		final SnomedDescriptionSearchRequestBuilder requestBuilder = SnomedRequests.prepareSearchDescription()
 			.all()
 			.filterByActive(true)
-			.filterByTerm(term)
+			.filterByTerm(termFilter)
 			.setFields(SnomedDescriptionIndexEntry.Fields.ID, SnomedDescriptionIndexEntry.Fields.CONCEPT_ID)
 			.sortBy(SCORE);
 		
@@ -330,18 +322,6 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 		if (containsKey(OptionKey.DESCRIPTION_SEMANTIC_TAG)) {
 			final Collection<String> semanticTags = getCollection(OptionKey.DESCRIPTION_SEMANTIC_TAG, String.class);
 			requestBuilder.filterBySemanticTags(semanticTags);
-		}
-		
-		if (containsKey(OptionKey.USE_FUZZY)) {
-			requestBuilder.withFuzzySearch();
-		}
-		
-		if (containsKey(OptionKey.PARSED_TERM)) {
-			requestBuilder.withParsedTerm();
-		}
-		
-		if (containsKey(OptionKey.MIN_TERM_MATCH)) {
-			requestBuilder.withMinTermMatch(get(OptionKey.MIN_TERM_MATCH, Integer.class));
 		}
 		
 		final Collection<SnomedDescription> items = requestBuilder

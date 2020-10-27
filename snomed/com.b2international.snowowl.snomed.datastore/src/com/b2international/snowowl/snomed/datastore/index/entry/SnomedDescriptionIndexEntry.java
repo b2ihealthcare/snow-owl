@@ -58,6 +58,7 @@ import com.google.common.base.MoreObjects.ToStringHelper;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
@@ -178,6 +179,13 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 			disjuncts.add(scriptScore(allTermPrefixesPresent(searchTerm), "normalizeWithOffset", ImmutableMap.of("offset", 0)));
 			return dismax(disjuncts);
 		}
+		
+		public static Expression minShouldMatchTermDisjunctionQuery(final String searchTerm, final int minShouldMatch) {
+			final List<Expression> disjuncts = Lists.newArrayList();
+			disjuncts.add(anyTermPresent(searchTerm, minShouldMatch));
+			disjuncts.add(anyTermPrefixesPresent(searchTerm, minShouldMatch));
+			return dismax(disjuncts);
+		}
 
 		public static Expression fuzzy(String term) {
 			return matchTextFuzzy(Fields.TERM, term);
@@ -195,12 +203,16 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 			return regexp(Fields.TERM_ORIGINAL, regex);
 		}
 		
+		public static Expression anyTermPresent(String term, int minShouldMatch) {
+			return matchTextAny(Fields.TERM, term, minShouldMatch);
+		}
+		
 		public static Expression anyTermPrefixesPresent(String term, int minShouldMatch) {
-			return matchTextAny(Fields.TERM + ".prefix", term, minShouldMatch);
+			return matchTextAny(Fields.TERM_PREFIX, term, minShouldMatch);
 		}
 		
 		public static Expression allTermPrefixesPresent(String term) {
-			return matchTextAll(Fields.TERM + ".prefix", term);
+			return matchTextAll(Fields.TERM_PREFIX, term);
 		}
 		
 		public static Expression allTermsPresent(String term) {
