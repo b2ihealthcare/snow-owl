@@ -25,11 +25,11 @@ import com.google.common.collect.ImmutableSet;
 /**
  * @since 7.11
  */
-public class MapCompareEquivalence  extends Equivalence<ConceptMapMapping> {
+public class MapCompareSourceAndTargetEquivalence  extends Equivalence<ConceptMapMapping> {
 	
 	Set<ConceptMapCompareConfigurationProperties> configProps;
 	
-	public MapCompareEquivalence(Set<ConceptMapCompareConfigurationProperties> configProps) {
+	public MapCompareSourceAndTargetEquivalence(Set<ConceptMapCompareConfigurationProperties> configProps) {
 		this.configProps = configProps;
 	}
 
@@ -37,7 +37,8 @@ public class MapCompareEquivalence  extends Equivalence<ConceptMapMapping> {
 	protected boolean doEquivalent(ConceptMapMapping a, ConceptMapMapping b) {
 		if (!configProps.isEmpty()) {
 			boolean isSourceDifferent = configProps.stream().anyMatch(config -> !config.isSourceEqual(a, b));
-			return !isSourceDifferent;
+			boolean isTargetDifferent = configProps.stream().anyMatch(config -> !config.isTargetEqual(a, b));
+			return !isSourceDifferent && !isTargetDifferent;
 		}
 		return false;
 	}
@@ -45,19 +46,19 @@ public class MapCompareEquivalence  extends Equivalence<ConceptMapMapping> {
 	@Override
 	protected int doHash(ConceptMapMapping t) {
 		if (configProps.containsAll(ImmutableSet.of(ConceptMapCompareConfigurationProperties.CODE_SYSTEM, ConceptMapCompareConfigurationProperties.CODE, ConceptMapCompareConfigurationProperties.TERM))) {
-			return Objects.hashCode(t.getSourceComponentURI().codeSystem(), t.getSourceComponentURI().identifier(), t.getSourceTerm());
+			return Objects.hashCode(t.getSourceComponentURI().codeSystem(), t.getTargetComponentURI().codeSystem(), t.getSourceComponentURI().identifier(), t.getTargetComponentURI().identifier(), t.getSourceTerm(), t.getTargetTerm());
 		} else if (configProps.containsAll(ImmutableSet.of(ConceptMapCompareConfigurationProperties.CODE_SYSTEM, ConceptMapCompareConfigurationProperties.CODE))) {
-			return Objects.hashCode(t.getSourceComponentURI().codeSystem(), t.getSourceComponentURI().identifier());
+			return Objects.hashCode(t.getSourceComponentURI().codeSystem(), t.getTargetComponentURI().codeSystem(), t.getSourceComponentURI().identifier(), t.getTargetComponentURI().identifier());
 		} else if (configProps.containsAll(ImmutableSet.of(ConceptMapCompareConfigurationProperties.CODE_SYSTEM, ConceptMapCompareConfigurationProperties.TERM))) {
-			return Objects.hashCode(t.getSourceComponentURI().codeSystem(), t.getSourceTerm());
+			return Objects.hashCode(t.getSourceComponentURI().codeSystem(), t.getTargetComponentURI().codeSystem(), t.getSourceTerm(), t.getTargetTerm());
 		} else if (configProps.containsAll(ImmutableSet.of(ConceptMapCompareConfigurationProperties.CODE, ConceptMapCompareConfigurationProperties.TERM))) {
-			return Objects.hashCode(t.getSourceComponentURI().identifier(), t.getSourceTerm());
+			return Objects.hashCode(t.getSourceComponentURI().identifier(), t.getTargetComponentURI().identifier(), t.getSourceTerm(), t.getTargetTerm());
 		} else if (configProps.contains(ConceptMapCompareConfigurationProperties.CODE_SYSTEM)) {
-			return Objects.hashCode(t.getSourceComponentURI().codeSystem());
+			return Objects.hashCode(t.getSourceComponentURI().codeSystem(), t.getTargetComponentURI().codeSystem());
 		} else if (configProps.contains(ConceptMapCompareConfigurationProperties.CODE)) {
-			return Objects.hashCode(t.getSourceComponentURI().identifier());
+			return Objects.hashCode(t.getSourceComponentURI().identifier(), t.getTargetComponentURI().identifier());
 		} else if (configProps.contains(ConceptMapCompareConfigurationProperties.TERM)) {
-			return Objects.hashCode(t.getSourceTerm());
+			return Objects.hashCode(t.getSourceTerm(), t.getTargetTerm());
 		} else {
 			return t.hashCode();
 		}

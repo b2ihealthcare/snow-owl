@@ -24,7 +24,7 @@ import javax.validation.constraints.Min;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.compare.ConceptMapCompareConfigurationProperties;
 import com.b2international.snowowl.core.compare.ConceptMapCompareResult;
-import com.b2international.snowowl.core.compare.MapCompareEquivalence;
+import com.b2international.snowowl.core.compare.MapCompareSourceAndTargetEquivalence;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.ConceptMapMapping;
 import com.b2international.snowowl.core.domain.ConceptMapMappings;
@@ -101,7 +101,7 @@ public final class ConceptMapCompareRequest extends ResourceRequest<BranchContex
 		List<ConceptMapMapping> allAdded = Lists.newArrayList();
 		Set<ConceptMapMapping> allUnchanged = Sets.newHashSet();
 
-		MapCompareEquivalence mapCompareEquivalence = new MapCompareEquivalence(selectedConfig);
+		MapCompareSourceAndTargetEquivalence mapCompareEquivalence = new MapCompareSourceAndTargetEquivalence(selectedConfig);
 		Set<Wrapper<ConceptMapMapping>> baseWrappedMappings = baseMappings.values().stream().map(mapping -> mapCompareEquivalence.wrap(mapping)).collect(Collectors.toSet());
 		Set<Wrapper<ConceptMapMapping>> compareWrappedMappings = compareMappings.values().stream().map(mapping -> mapCompareEquivalence.wrap(mapping)).collect(Collectors.toSet());
 		Set<Wrapper<ConceptMapMapping>> changedWrappedMappings = Sets.intersection(baseWrappedMappings, compareWrappedMappings);
