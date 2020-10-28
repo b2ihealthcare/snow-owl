@@ -34,7 +34,7 @@ public enum ConceptMapCompareChangeKind {
 	DIFFERENT_MAP_PRIORITY("Different Map Priority"),
 	DIFFERENT_MAP_RULE("Different Map Rule"),
 
-	UNCHANGED("Unchanged");
+	UNCHANGED("Same");
 
 	private final String label;
 
