@@ -27,23 +27,23 @@ import com.google.common.collect.ImmutableSet;
  */
 public enum ConceptMapCompareConfigurationProperties {
 
-	CODE_SYSTEM(
-			"Code System", 
-			(member1, member2) -> Objects.equals(member1.getSourceComponentURI().codeSystem(), member2.getSourceComponentURI().codeSystem()),
-			(member1, member2) -> Objects.equals(member1.getTargetComponentURI().codeSystem(), member2.getTargetComponentURI().codeSystem())
-			),
+	CODE_SYSTEM (
+		"Code System", 
+		(member1, member2) -> Objects.equals(member1.getSourceComponentURI().codeSystem(), member2.getSourceComponentURI().codeSystem()),
+		(member1, member2) -> Objects.equals(member1.getTargetComponentURI().codeSystem(), member2.getTargetComponentURI().codeSystem())
+	),
 
-	TERM(
-			"Term", 
-			(member1, member2) -> Objects.equals(member1.getSourceTerm(), member2.getSourceTerm()),
-			(member1, member2) -> Objects.equals(member1.getTargetTerm(), member2.getTargetTerm())
-			),
+	TERM (
+		"Term", 
+		(member1, member2) -> Objects.equals(member1.getSourceTerm(), member2.getSourceTerm()),
+		(member1, member2) -> Objects.equals(member1.getTargetTerm(), member2.getTargetTerm())
+	),
 
-	CODE(
-			"Code", 
-			(member1, member2) -> Objects.equals(member1.getSourceComponentURI().identifier(), member2.getSourceComponentURI().identifier()),
-			(member1, member2) -> Objects.equals(member1.getTargetComponentURI().identifier(), member2.getTargetComponentURI().identifier())
-			);
+	CODE (
+		"Code", 
+		(member1, member2) -> Objects.equals(member1.getSourceComponentURI().identifier(), member2.getSourceComponentURI().identifier()),
+		(member1, member2) -> Objects.equals(member1.getTargetComponentURI().identifier(), member2.getTargetComponentURI().identifier())
+	);
 
 	public static final Set<ConceptMapCompareConfigurationProperties> ALL_PROPERTIES = ImmutableSet.of(ConceptMapCompareConfigurationProperties.CODE_SYSTEM, ConceptMapCompareConfigurationProperties.CODE, ConceptMapCompareConfigurationProperties.TERM);
 	public static final Set<ConceptMapCompareConfigurationProperties> DEFAULT_SELECTED_PROPERTIES = ImmutableSet.of(ConceptMapCompareConfigurationProperties.CODE_SYSTEM, ConceptMapCompareConfigurationProperties.CODE);
@@ -64,19 +64,11 @@ public enum ConceptMapCompareConfigurationProperties {
 		return label;
 	}
 
-	public BiFunction<ConceptMapMapping, ConceptMapMapping, Boolean> getSourceEqualFunction() {
-		return getSourceEqualFunction;
-	}
-
-	public BiFunction<ConceptMapMapping, ConceptMapMapping, Boolean> getTargetEqualFunction() {
-		return getTargetEqualFunction;
-	}
-
-	public Boolean isSourceEqual(ConceptMapMapping member1, ConceptMapMapping member2) {
+	public boolean isSourceEqual(ConceptMapMapping member1, ConceptMapMapping member2) {
 		return getSourceEqualFunction.apply(member1, member2);
 	}
 
-	public Boolean isTargetEqual(ConceptMapMapping member1, ConceptMapMapping member2) {
+	public boolean isTargetEqual(ConceptMapMapping member1, ConceptMapMapping member2) {
 		return getTargetEqualFunction.apply(member1, member2);
 	}
 

@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.Objects;
 
 import com.b2international.snowowl.core.domain.ConceptMapMapping;
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ComparisonChain;
 
 /**
@@ -65,6 +66,11 @@ public final class ConceptMapCompareResultItem implements Serializable, Comparab
 			.compare(changeKind, o.getChangeKind())
 			.compare(mapping.getSourceTerm(), o.getMapping().getSourceTerm())
 			.result();
+	}
+	
+	@Override
+	public String toString() {
+		return String.format("%s[%s]", changeKind, mapping);
 	}
 	
 }

@@ -21,6 +21,7 @@ import java.util.Objects;
 import com.b2international.snowowl.core.request.MappingCorrelation;
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Strings;
 
 /**
  * @since 7.8
@@ -138,22 +139,22 @@ public final class ConceptMapMapping implements Serializable {
 		}
 		
 		public Builder mapGroup(final Integer mapGroup) {
-			this.mapGroup = mapGroup;
+			this.mapGroup = mapGroup == null ? 0 : mapGroup;
 			return this;
 		}
 		
 		public Builder mapPriority(final Integer mapPriority) {
-			this.mapPriority = mapPriority;
+			this.mapPriority = mapPriority == null ? 0 : mapPriority;
 			return this;
 		}
 		
 		public Builder mapRule(final String mapRule) {
-			this.mapRule = mapRule;
+			this.mapRule = Strings.nullToEmpty(mapRule);
 			return this;
 		}
 		
 		public Builder mapAdvice(final String mapAdvice) {
-			this.mapAdvice = mapAdvice;
+			this.mapAdvice = Strings.nullToEmpty(mapAdvice);
 			return this;
 		}
 		
@@ -320,15 +321,11 @@ public final class ConceptMapMapping implements Serializable {
 	public int hashCode() {
 		return Objects.hash(
 			uri,
-			containerIconId,
-			containerTerm,
 			containerSetURI,
 			active, 
 			sourceComponentURI,
 			sourceTerm,
-			sourceIconId,
 			targetComponentURI, 
-			targetIconId,
 			targetTerm, 
 			mappingCorrelation, 
 			mapGroup, 
@@ -345,15 +342,11 @@ public final class ConceptMapMapping implements Serializable {
 		if (getClass() != obj.getClass()) return false;
 		ConceptMapMapping other = (ConceptMapMapping) obj;
 		return Objects.equals(uri, other.uri)
-				&& Objects.equals(containerIconId, other.containerIconId)
-				&& Objects.equals(containerTerm, other.containerTerm)
 				&& Objects.equals(containerSetURI, other.containerSetURI)
 				&& Objects.equals(active, other.active)
 				&& Objects.equals(sourceComponentURI, other.sourceComponentURI)
 				&& Objects.equals(sourceTerm, other.sourceTerm)
-				&& Objects.equals(sourceIconId, other.sourceIconId)
 				&& Objects.equals(targetComponentURI, other.targetComponentURI)
-				&& Objects.equals(targetIconId, other.targetIconId)
 				&& Objects.equals(targetTerm, other.targetTerm)
 				&& Objects.equals(mappingCorrelation, other.mappingCorrelation)
 				&& Objects.equals(mapGroup, other.mapGroup)

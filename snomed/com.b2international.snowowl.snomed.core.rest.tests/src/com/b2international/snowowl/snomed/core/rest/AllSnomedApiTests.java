@@ -30,15 +30,15 @@ import com.b2international.snowowl.snomed.core.io.MrcmImportExportTest;
 import com.b2international.snowowl.snomed.core.io.SnomedRefSetDSVExportTest;
 import com.b2international.snowowl.snomed.core.issue.EclSerializerTest;
 import com.b2international.snowowl.snomed.core.issue.IssueSO2503RemoteJobDynamicMappingFix;
+import com.b2international.snowowl.snomed.core.request.ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest;
 import com.b2international.snowowl.snomed.core.request.ConceptSearchRequestSnomedTest;
-import com.b2international.snowowl.snomed.core.request.MemberSearchRequestSnomedTest;
-import com.b2international.snowowl.snomed.core.request.SnomedConceptMapSearchRequestTest;
+import com.b2international.snowowl.snomed.core.request.ValueSetMemberSearchSnomedReferenceSetTest;
 import com.b2international.snowowl.snomed.core.rest.branches.SnomedBranchingApiTest;
 import com.b2international.snowowl.snomed.core.rest.branches.SnomedMergeApiTest;
 import com.b2international.snowowl.snomed.core.rest.branches.SnomedMergeConflictTest;
 import com.b2international.snowowl.snomed.core.rest.branches.SnomedReviewApiTest;
 import com.b2international.snowowl.snomed.core.rest.classification.SnomedClassificationApiTest;
-import com.b2international.snowowl.snomed.core.rest.compare.SnomedMapTypeReferenceSetCompareTest;
+import com.b2international.snowowl.snomed.core.rest.compare.ConceptMapCompareSnomedMapTypeReferenceSetTest;
 import com.b2international.snowowl.snomed.core.rest.components.*;
 import com.b2international.snowowl.snomed.core.rest.io.SnomedExportApiTest;
 import com.b2international.snowowl.snomed.core.rest.io.SnomedImportApiTest;
@@ -104,9 +104,9 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	SnomedMergePerformanceTest.class,
 	// Generic API
 	ConceptSearchRequestSnomedTest.class,
-	MemberSearchRequestSnomedTest.class,
-	SnomedMapTypeReferenceSetCompareTest.class,
-	SnomedConceptMapSearchRequestTest.class
+	ValueSetMemberSearchSnomedReferenceSetTest.class,
+	ConceptMapCompareSnomedMapTypeReferenceSetTest.class,
+	ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest.class
 })
 public class AllSnomedApiTests {
 

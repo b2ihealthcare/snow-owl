@@ -44,7 +44,7 @@ import com.google.common.collect.ImmutableMap;
 /**
  * @since 7.11
  */
-public class SnomedConceptMapSearchRequestTest {
+public class ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest {
 	
 	private static final String CODESYSTEM = "SNOMEDCT/LATEST";
 	
