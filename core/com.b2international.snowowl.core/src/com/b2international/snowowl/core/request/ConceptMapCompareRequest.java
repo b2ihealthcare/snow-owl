@@ -15,26 +15,26 @@
  */
 package com.b2international.snowowl.core.request;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
+import com.b2international.snowowl.core.compare.ConceptMapCompareChangeKind;
 import com.b2international.snowowl.core.compare.ConceptMapCompareConfigurationProperties;
 import com.b2international.snowowl.core.compare.ConceptMapCompareResult;
+import com.b2international.snowowl.core.compare.ConceptMapCompareResultItem;
 import com.b2international.snowowl.core.compare.MapCompareSourceAndTargetEquivalence;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.ConceptMapMapping;
-import com.b2international.snowowl.core.domain.ConceptMapMappings;
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.google.common.base.Equivalence.Wrapper;
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ListMultimap;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Sets.SetView;
@@ -42,14 +42,16 @@ import com.google.common.collect.Sets.SetView;
 /**
 * @since 7.8
 */
-public final class ConceptMapCompareRequest extends ResourceRequest<BranchContext, ConceptMapCompareResult> {
-	public static final int DEFAULT_MEMBER_COMPARE_LIMIT = 50_000;
+final class ConceptMapCompareRequest extends ResourceRequest<BranchContext, ConceptMapCompareResult> {
 	
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 	
 	private static final int DEFAULT_MEMBER_SCROLL_LIMIT = 10_000;
 	
+	@NotNull
 	private final ComponentURI baseConceptMapURI;
+	
+	@NotNull
 	private final ComponentURI compareConceptMapURI;
 	
 	@NotEmpty
@@ -57,15 +59,6 @@ public final class ConceptMapCompareRequest extends ResourceRequest<BranchContex
 	
 	@Min(0)
 	private int limit;
-	
-	private class ResultComparator implements Comparator<ConceptMapMapping> {
-
-		@Override
-		public int compare(ConceptMapMapping o1, ConceptMapMapping o2) {
-			return o1.getSourceTerm().compareTo(o2.getSourceTerm());
-		}
-
-	}
 	
 	ConceptMapCompareRequest(ComponentURI baseConceptMapURI, ComponentURI compareConceptMapURI, int limit, Set<ConceptMapCompareConfigurationProperties> selectedConfig) {
 		this.baseConceptMapURI = baseConceptMapURI;
@@ -76,53 +69,38 @@ public final class ConceptMapCompareRequest extends ResourceRequest<BranchContex
 
 	@Override
 	public ConceptMapCompareResult execute(BranchContext context) {
-
-		ListMultimap<ComponentURI, ConceptMapMapping> baseMappings = ArrayListMultimap.create();
-		ListMultimap<ComponentURI, ConceptMapMapping> compareMappings = ArrayListMultimap.create();
-
-		final SearchResourceRequestIterator<ConceptMapMappingSearchRequestBuilder, ConceptMapMappings> baseIterator = new SearchResourceRequestIterator<>(
-				CodeSystemRequests.prepareSearchConceptMapMappings()
-				.filterByConceptMap(baseConceptMapURI.identifier())
-				.setLocales(locales())
-				.setLimit(DEFAULT_MEMBER_SCROLL_LIMIT),
-				r -> r.build().execute(context)
-			);
-
-		baseIterator.forEachRemaining(hits -> hits.forEach(hit -> {
-			baseMappings.put(hit.getSourceComponentURI(), hit);
-		}));
-
-		final SearchResourceRequestIterator<ConceptMapMappingSearchRequestBuilder, ConceptMapMappings> compareIterator = new SearchResourceRequestIterator<>(
-				CodeSystemRequests.prepareSearchConceptMapMappings()
-				.filterByConceptMap(compareConceptMapURI.identifier())
-				.setLocales(locales())
-				.setLimit(DEFAULT_MEMBER_SCROLL_LIMIT),
-				r -> r.build().execute(context)
-			);
-
-		compareIterator.forEachRemaining(hits -> hits.forEach(hit -> {
-			compareMappings.put(hit.getSourceComponentURI(), hit);
-		}));
-
+		List<ConceptMapMapping> baseMappings = fetchConceptMapMappings(context, baseConceptMapURI.identifier());
+		List<ConceptMapMapping> compareMappings = fetchConceptMapMappings(context, compareConceptMapURI.identifier());
 		return compareDifferences(baseMappings, compareMappings);
 	}
+
+	private List<ConceptMapMapping> fetchConceptMapMappings(BranchContext context, String conceptMapId) {
+		List<ConceptMapMapping> baseMappings = Lists.newArrayList();
+		new SearchResourceRequestIterator<>(
+				CodeSystemRequests.prepareSearchConceptMapMappings()
+				.filterByConceptMap(conceptMapId)
+				.setLocales(locales())
+				.setLimit(DEFAULT_MEMBER_SCROLL_LIMIT),
+				r -> r.build().execute(context)
+			).forEachRemaining(hits -> hits.forEach(baseMappings::add));
+		return baseMappings;
+	}
 	
-	private ConceptMapCompareResult compareDifferences(ListMultimap<ComponentURI, ConceptMapMapping> baseMappings, ListMultimap<ComponentURI, ConceptMapMapping> compareMappings) {
-		
-		List<ConceptMapMapping> allChanged = Lists.newArrayList();
-		Set<ConceptMapMapping> allUnchanged = Sets.newHashSet();
+	private ConceptMapCompareResult compareDifferences(List<ConceptMapMapping> baseMappings, List<ConceptMapMapping> compareMappings) {
 
 		MapCompareSourceAndTargetEquivalence mapCompareEquivalence = new MapCompareSourceAndTargetEquivalence(selectedConfig);
-		Set<Wrapper<ConceptMapMapping>> baseWrappedMappings = baseMappings.values().stream()
+		Set<Wrapper<ConceptMapMapping>> baseWrappedMappings = baseMappings.stream()
 				.map(mapping -> mapCompareEquivalence.wrap(mapping))
 				.collect(Collectors.toSet());
 		
-		Set<Wrapper<ConceptMapMapping>> compareWrappedMappings = compareMappings.values().stream()
+		Set<Wrapper<ConceptMapMapping>> compareWrappedMappings = compareMappings.stream()
 				.map(mapping -> mapCompareEquivalence.wrap(mapping))
 				.collect(Collectors.toSet());
 		
 		//Unchanged elements are in the intersection
 		Set<Wrapper<ConceptMapMapping>> allUnchangedWrappedMappings = Sets.intersection(baseWrappedMappings, compareWrappedMappings);
+		
+		Set<ConceptMapMapping> allUnchanged = Sets.newHashSet();
 		allUnchangedWrappedMappings.forEach(wrappedMapping -> allUnchanged.add(wrappedMapping.get()));
 		
 		//Remove the unchanged from further comparison
@@ -132,36 +110,32 @@ public final class ConceptMapCompareRequest extends ResourceRequest<BranchContex
 		Set<Wrapper<ConceptMapMapping>> changedBase = extractChangedMappings(onlyBaseWrappedMappings, onlyCompareWrappedMappings);
 		Set<Wrapper<ConceptMapMapping>> changedCompare = extractChangedMappings(onlyCompareWrappedMappings, onlyBaseWrappedMappings);
 		
-		changedBase.forEach(mapping -> allChanged.add(mapping.get()));
-		changedCompare.forEach(mapping -> allChanged.add(mapping.get()));
+		// handle different map target case
+		// TODO add more differences like map property based diffs, etc, see ConceptMapCompareChangeKind enum literals
+		List<ConceptMapCompareResultItem> allChanged = Lists.newArrayList();
+		changedBase.forEach(mapping -> allChanged.add(new ConceptMapCompareResultItem(ConceptMapCompareChangeKind.DIFFERENT_TARGET, mapping.get())));
+		changedCompare.forEach(mapping -> allChanged.add(new ConceptMapCompareResultItem(ConceptMapCompareChangeKind.DIFFERENT_TARGET, mapping.get())));
 		
-		List<ConceptMapMapping> allRemoved = Sets.difference(onlyBaseWrappedMappings, changedBase).stream()
-				.map(mapping -> mapping.get())
+		List<ConceptMapCompareResultItem> allRemoved = Sets.difference(onlyBaseWrappedMappings, changedBase).stream()
+				.map(mapping -> new ConceptMapCompareResultItem(ConceptMapCompareChangeKind.PRESENT, mapping.get()))
 				.collect(Collectors.toList());
 		
-		List<ConceptMapMapping> allAdded = Sets.difference(onlyCompareWrappedMappings, changedCompare).stream()
-				.map(mapping -> mapping.get())
+		List<ConceptMapCompareResultItem> allAdded = Sets.difference(onlyCompareWrappedMappings, changedCompare).stream()
+				.map(mapping -> new ConceptMapCompareResultItem(ConceptMapCompareChangeKind.MISSING, mapping.get()))
 				.collect(Collectors.toList());
 		
-		List<ConceptMapMapping> limitedAllAdded = Lists.newArrayList();
-		List<ConceptMapMapping> limitedAllRemoved = Lists.newArrayList();
-		List<ConceptMapMapping> limitedAllChanged = Lists.newArrayList();
-		List<ConceptMapMapping> limitedAllUnchanged = Lists.newArrayList();
+		List<ConceptMapCompareResultItem> items = ImmutableList.<ConceptMapCompareResultItem>builder()
+			.addAll(allAdded)
+			.addAll(allRemoved)
+			.addAll(allChanged)
+			.addAll(allUnchanged.stream().map(mapping -> new ConceptMapCompareResultItem(ConceptMapCompareChangeKind.SAME, mapping)).collect(Collectors.toList()))
+			.build()
+			.stream()
+			.sorted()
+			.limit(limit)
+			.collect(Collectors.toList());
 		
-		limitedAllAdded.addAll(allAdded.stream().limit(limit).collect(Collectors.toList()));
-		
-		if (limitedAllAdded.size() < limit) {
-			limitedAllRemoved.addAll(allRemoved.stream().limit(limit-limitedAllAdded.size()).collect(Collectors.toList()));
-			int addedAndRemovedSize = limitedAllAdded.size() + limitedAllRemoved.size();
-			if (addedAndRemovedSize < limit) {
-				limitedAllChanged.addAll(allChanged.stream().sorted(new ResultComparator()).limit(limit-addedAndRemovedSize).collect(Collectors.toList()));
-				int addedAndRemovedAndChangedSize = addedAndRemovedSize + limitedAllChanged.size();
-				if (addedAndRemovedAndChangedSize < limit) {
-					limitedAllUnchanged.addAll(allUnchanged.stream().limit(limit-addedAndRemovedAndChangedSize).collect(Collectors.toList()));
-				}
-			}
-		}
-		return new ConceptMapCompareResult(limitedAllAdded, limitedAllRemoved, limitedAllChanged, limitedAllUnchanged, allAdded.size(), allRemoved.size(), allChanged.size(), allUnchanged.size(), limit);
+		return new ConceptMapCompareResult(items, allAdded.size(), allRemoved.size(), allChanged.size(), allUnchanged.size(), limit);
 	}
 
 	private Set<Wrapper<ConceptMapMapping>> extractChangedMappings(SetView<Wrapper<ConceptMapMapping>> mappingsToChooseFrom,

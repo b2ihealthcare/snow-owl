@@ -15,61 +15,32 @@
  */
 package com.b2international.snowowl.core.compare;
 
-import java.io.Serializable;
 import java.util.List;
 
-import com.b2international.snowowl.core.domain.ConceptMapMapping;
+import com.b2international.snowowl.core.domain.CollectionResource;
 /**
  * @since 7.8
  */
-public final class ConceptMapCompareResult implements Serializable {
+public final class ConceptMapCompareResult extends CollectionResource<ConceptMapCompareResultItem> {
 	
 	private static final long serialVersionUID = 1L;
+	
+	private final int limit;
 	
 	private final int totalAdded;
 	private final int totalRemoved;
 	private final int totalChanged;
 	private final int totalUnchanged;
-	private final int limit;
-	
-	private final List<ConceptMapMapping> addedMembers;
-	private final List<ConceptMapMapping> removedMembers;
-	
-	private final List<ConceptMapMapping> changedMembers;
-	private final List<ConceptMapMapping> unchangedMembers;
-	
-	public ConceptMapCompareResult(List<ConceptMapMapping> addedMembers, List<ConceptMapMapping> removedMembers, List<ConceptMapMapping> changedMembers, List<ConceptMapMapping> unchangedMembers,
-			int totalAdded, int totalRemoved, int totalChanged, int totalUnchanged, int limit) {
-		
-		this.addedMembers = List.copyOf(addedMembers);
-		this.removedMembers = List.copyOf(removedMembers);
-		
-		this.changedMembers = List.copyOf(changedMembers);
-		this.unchangedMembers = List.copyOf(unchangedMembers);
-		
+
+	public ConceptMapCompareResult(List<ConceptMapCompareResultItem> items, int totalAdded, int totalRemoved, int totalChanged, int totalUnchanged, int limit) {
+		super(items);
 		this.totalAdded = totalAdded;
 		this.totalRemoved = totalRemoved;
 		this.totalChanged = totalChanged;
 		this.totalUnchanged = totalUnchanged;
 		this.limit = limit;
 	}
-	
-	public List<ConceptMapMapping> getAddedMembers() {
-		return addedMembers;
-	}
-	
-	public List<ConceptMapMapping> getRemovedMembers() {
-		return removedMembers;
-	}
-	
-	public List<ConceptMapMapping> getUnchangedMembers() {
-		return unchangedMembers;
-	}
-	
-	public List<ConceptMapMapping> getChangedMembers() {
-		return changedMembers;
-	}
-	
+
 	public int getTotalAdded() {
 		return totalAdded;
 	}

@@ -21,27 +21,24 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * @since 7.11
  */
 public enum ConceptMapCompareChangeKind {
-	PRESENT("Present", "2"),
-	MISSING("Missing", "1"),
 
-	DIFFERENT_TARGET("Different Target", "3"),
+	MISSING("Missing"),
+	PRESENT("Present"),
 
-	DIFFERENT_STATUS("Different Status", "4"),
+	DIFFERENT_TARGET("Different Target"),
+	DIFFERENT_STATUS("Different Status"),
+	DIFFERENT_MAP_ADVICE("Different Map Advice"),
+	DIFFERENT_MAP_GROUP("Different Map Group"),
+	DIFFERENT_MAPPING_CORRELATION("Different Mapping Correlation"),
+	DIFFERENT_MAP_PRIORITY("Different Map Priority"),
+	DIFFERENT_MAP_RULE("Different Map Rule"),
 
-	DIFFERENT_MAP_ADVICE("Different Map Advice", "5"),
-	DIFFERENT_MAP_GROUP("Different Map Group", "6"),
-	DIFFERENT_MAPPING_CORRELATION("Different Mapping Correlation", "7"),
-	DIFFERENT_MAP_PRIORITY("Different Map Priority", "8"),
-	DIFFERENT_MAP_RULE("Different Map Rule", "9"),
-
-	UNCHANGED("Same", "10");
+	SAME("Same");
 
 	private final String label;
-	private final String priority;
 
-	private ConceptMapCompareChangeKind(final String label, final String priority) {
+	private ConceptMapCompareChangeKind(final String label) {
 		this.label = checkNotNull(label, "label");
-		this.priority = priority;
 	}
 
 	@Override
@@ -49,7 +46,4 @@ public enum ConceptMapCompareChangeKind {
 		return label;
 	}
 
-	public String getPriority() {
-		return priority;
-	}
 }
