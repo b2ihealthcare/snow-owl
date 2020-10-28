@@ -33,6 +33,7 @@ public final class ConceptMapCompareResult implements Serializable {
 	private final int totalAdded;
 	private final int totalRemoved;
 	private final int totalChanged;
+	private final int totalUnchanged;
 	private final int limit;
 	
 	private final List<ConceptMapMapping> addedMembers;
@@ -43,15 +44,16 @@ public final class ConceptMapCompareResult implements Serializable {
 	
 	public ConceptMapCompareResult(List<ConceptMapMapping> addedMembers, List<ConceptMapMapping> removedMembers, List<ConceptMapMapping> changedMembers, Set<ConceptMapMapping> unchangedMembers, int limit) {
 		
-		this.addedMembers = addedMembers.stream().limit(limit).collect(toList());
-		this.removedMembers = removedMembers.stream().limit(limit).collect(toList());
+		this.addedMembers = addedMembers.stream().collect(toList());
+		this.removedMembers = removedMembers.stream().collect(toList());
 		
-		this.changedMembers = changedMembers.stream().limit(limit).collect(toList());
+		this.changedMembers = changedMembers.stream().collect(toList());
 		this.unchangedMembers = ImmutableList.copyOf(unchangedMembers);
 		
 		this.totalAdded = addedMembers.size();
 		this.totalRemoved = removedMembers.size();
 		this.totalChanged = changedMembers.size()/2;
+		this.totalUnchanged = unchangedMembers.size();
 		this.limit = limit;
 	}
 	
@@ -81,6 +83,10 @@ public final class ConceptMapCompareResult implements Serializable {
 	
 	public int getTotalChanged() {
 		return totalChanged;
+	}
+	
+	public int getTotalUnchanged() {
+		return totalUnchanged;
 	}
 	
 	public int getLimit() {
