@@ -121,19 +121,20 @@ public final class ConceptMapCompareRequest extends ResourceRequest<BranchContex
 		changedBase.forEach(mapping -> allChanged.add(mapping.get()));
 		changedCompare.forEach(mapping -> allChanged.add(mapping.get()));
 		
-		List<ConceptMapMapping> allRemoved = onlyBaseWrappedMappings.stream()
-				.filter(mapping -> !changedBase.stream()
-						.anyMatch(changed -> isSourceEqual(mapping.get(), changed.get())))
-				.map(mapping -> mapping.get())
-				.collect(Collectors.toList());
+		List<ConceptMapMapping> allRemoved = extractUniqueMappings(onlyBaseWrappedMappings, changedBase);
 		
-		List<ConceptMapMapping> allAdded = onlyCompareWrappedMappings.stream()
+		List<ConceptMapMapping> allAdded = extractUniqueMappings(onlyCompareWrappedMappings, changedCompare);
+		
+		return new ConceptMapCompareResult(allAdded, allRemoved, allChanged, allUnchanged, limit);
+	}
+
+	private List<ConceptMapMapping> extractUniqueMappings(SetView<Wrapper<ConceptMapMapping>> onlyCompareWrappedMappings,
+			Set<Wrapper<ConceptMapMapping>> changedCompare) {
+		return onlyCompareWrappedMappings.stream()
 				.filter(mapping -> !changedCompare.stream()
 						.anyMatch(changed -> isSourceEqual(mapping.get(), changed.get())))
 				.map(mapping -> mapping.get())
 				.collect(Collectors.toList());
-		
-		return new ConceptMapCompareResult(allAdded, allRemoved, allChanged, allUnchanged, limit);
 	}
 
 	private Set<Wrapper<ConceptMapMapping>> extractChangedMappings(SetView<Wrapper<ConceptMapMapping>> mappingsToChooseFrom,
