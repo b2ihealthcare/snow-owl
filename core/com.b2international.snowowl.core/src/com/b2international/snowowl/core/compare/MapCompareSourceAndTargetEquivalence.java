@@ -15,12 +15,13 @@
  */
 package com.b2international.snowowl.core.compare;
 
+import java.util.List;
 import java.util.Set;
 
 import com.b2international.snowowl.core.domain.ConceptMapMapping;
 import com.google.common.base.Equivalence;
 import com.google.common.base.Objects;
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 
 /**
  * @since 7.11
@@ -45,20 +46,24 @@ public final class MapCompareSourceAndTargetEquivalence  extends Equivalence<Con
 
 	@Override
 	protected int doHash(ConceptMapMapping t) {
-		if (configProps.containsAll(ImmutableSet.of(ConceptMapCompareConfigurationProperties.CODE_SYSTEM, ConceptMapCompareConfigurationProperties.CODE, ConceptMapCompareConfigurationProperties.TERM))) {
-			return Objects.hashCode(t.getSourceComponentURI().codeSystem(), t.getTargetComponentURI().codeSystem(), t.getSourceComponentURI().identifier(), t.getTargetComponentURI().identifier(), t.getSourceTerm(), t.getTargetTerm());
-		} else if (configProps.containsAll(ImmutableSet.of(ConceptMapCompareConfigurationProperties.CODE_SYSTEM, ConceptMapCompareConfigurationProperties.CODE))) {
-			return Objects.hashCode(t.getSourceComponentURI().codeSystem(), t.getTargetComponentURI().codeSystem(), t.getSourceComponentURI().identifier(), t.getTargetComponentURI().identifier());
-		} else if (configProps.containsAll(ImmutableSet.of(ConceptMapCompareConfigurationProperties.CODE_SYSTEM, ConceptMapCompareConfigurationProperties.TERM))) {
-			return Objects.hashCode(t.getSourceComponentURI().codeSystem(), t.getTargetComponentURI().codeSystem(), t.getSourceTerm(), t.getTargetTerm());
-		} else if (configProps.containsAll(ImmutableSet.of(ConceptMapCompareConfigurationProperties.CODE, ConceptMapCompareConfigurationProperties.TERM))) {
-			return Objects.hashCode(t.getSourceComponentURI().identifier(), t.getTargetComponentURI().identifier(), t.getSourceTerm(), t.getTargetTerm());
-		} else if (configProps.contains(ConceptMapCompareConfigurationProperties.CODE_SYSTEM)) {
-			return Objects.hashCode(t.getSourceComponentURI().codeSystem(), t.getTargetComponentURI().codeSystem());
-		} else if (configProps.contains(ConceptMapCompareConfigurationProperties.CODE)) {
-			return Objects.hashCode(t.getSourceComponentURI().identifier(), t.getTargetComponentURI().identifier());
-		} else if (configProps.contains(ConceptMapCompareConfigurationProperties.TERM)) {
-			return Objects.hashCode(t.getSourceTerm(), t.getTargetTerm());
+		List<String> objectsToHash = Lists.newArrayList();
+		if (configProps.contains(ConceptMapCompareConfigurationProperties.CODE_SYSTEM)) {
+			objectsToHash.add(t.getSourceComponentURI().codeSystem());
+			objectsToHash.add(t.getTargetComponentURI().codeSystem());
+		}
+		
+		if (configProps.contains(ConceptMapCompareConfigurationProperties.CODE)) {
+			objectsToHash.add(t.getSourceComponentURI().identifier());
+			objectsToHash.add(t.getTargetComponentURI().identifier());
+		}
+		
+		if (configProps.contains(ConceptMapCompareConfigurationProperties.TERM)) {
+			objectsToHash.add(t.getSourceTerm());
+			objectsToHash.add(t.getTargetTerm());
+		}
+		
+		if (!objectsToHash.isEmpty()) {
+			return Objects.hashCode(objectsToHash);
 		} else {
 			return t.hashCode();
 		}
