@@ -40,6 +40,7 @@ import com.google.common.collect.Sets.SetView;
 * @since 7.8
 */
 public final class ConceptMapCompareRequest extends ResourceRequest<BranchContext, ConceptMapCompareResult> {
+	public static final int DEFAULT_MEMBER_COMPARE_LIMIT = 50_000;
 	
 	private static final long serialVersionUID = 1L;
 	
