@@ -46,7 +46,7 @@ import com.google.common.collect.ImmutableMap;
 /**
  * @since 7.7
  */
-public class MemberSearchRequestSnomedTest {
+public class ValueSetMemberSearchSnomedReferenceSetTest {
 
 	private static final String CODESYSTEM = "SNOMEDCT/LATEST";
 	

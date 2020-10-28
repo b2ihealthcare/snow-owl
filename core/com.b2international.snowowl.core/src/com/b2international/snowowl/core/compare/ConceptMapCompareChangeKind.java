@@ -21,20 +21,19 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * @since 7.11
  */
 public enum ConceptMapCompareChangeKind {
-	PRESENT("Present"),
+
 	MISSING("Missing"),
+	PRESENT("Present"),
 
 	DIFFERENT_TARGET("Different Target"),
-
 	DIFFERENT_STATUS("Different Status"),
-
 	DIFFERENT_MAP_ADVICE("Different Map Advice"),
 	DIFFERENT_MAP_GROUP("Different Map Group"),
 	DIFFERENT_MAPPING_CORRELATION("Different Mapping Correlation"),
 	DIFFERENT_MAP_PRIORITY("Different Map Priority"),
 	DIFFERENT_MAP_RULE("Different Map Rule"),
 
-	UNCHANGED("Unchanged");
+	SAME("Same");
 
 	private final String label;
 
@@ -46,4 +45,5 @@ public enum ConceptMapCompareChangeKind {
 	public String toString() {
 		return label;
 	}
+
 }

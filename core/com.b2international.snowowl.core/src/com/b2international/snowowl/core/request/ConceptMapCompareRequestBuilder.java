@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.core.request;
 
+import java.util.Set;
+
+import com.b2international.snowowl.core.compare.ConceptMapCompareConfigurationProperties;
 import com.b2international.snowowl.core.compare.ConceptMapCompareResult;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.uri.ComponentURI;
@@ -26,24 +29,30 @@ public final class ConceptMapCompareRequestBuilder
 		extends ResourceRequestBuilder<ConceptMapCompareRequestBuilder, BranchContext, ConceptMapCompareResult>
 		implements RevisionIndexRequestBuilder<ConceptMapCompareResult> {
 	
-	private int limit = 5000;
-	
 	private final ComponentURI baseConceptMapURI;
 	private final ComponentURI compareConceptMapURI;
+	
+	private int limit = 5000;
+	private Set<ConceptMapCompareConfigurationProperties> compareConfig = ConceptMapCompareConfigurationProperties.DEFAULT_SELECTED_PROPERTIES;
+
+	public ConceptMapCompareRequestBuilder(ComponentURI baseConceptMapURI, ComponentURI compareConceptMapURI) {
+		this.baseConceptMapURI = baseConceptMapURI;
+		this.compareConceptMapURI = compareConceptMapURI;
+	}
 	
 	public ConceptMapCompareRequestBuilder setLimit(int limit) {
 		this.limit = limit;
 		return getSelf();
 	}
 	
-	public ConceptMapCompareRequestBuilder(ComponentURI baseConceptMapURI, ComponentURI compareConceptMapURI) {
-		this.baseConceptMapURI = baseConceptMapURI;
-		this.compareConceptMapURI = compareConceptMapURI;
+	public ConceptMapCompareRequestBuilder setCompareConfig(Set<ConceptMapCompareConfigurationProperties> compareConfig) {
+		this.compareConfig = compareConfig;
+		return getSelf();
 	}
 	
 	@Override
 	protected ResourceRequest<BranchContext, ConceptMapCompareResult> create() {
-		return new ConceptMapCompareRequest(baseConceptMapURI, compareConceptMapURI, limit);
+		return new ConceptMapCompareRequest(baseConceptMapURI, compareConceptMapURI, limit, compareConfig);
 	}
 	
 }
