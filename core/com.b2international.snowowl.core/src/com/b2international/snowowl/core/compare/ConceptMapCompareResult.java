@@ -15,14 +15,10 @@
  */
 package com.b2international.snowowl.core.compare;
 
-import static java.util.stream.Collectors.toList;
-
 import java.io.Serializable;
 import java.util.List;
-import java.util.Set;
 
 import com.b2international.snowowl.core.domain.ConceptMapMapping;
-import com.google.common.collect.ImmutableList;
 /**
  * @since 7.8
  */
@@ -42,18 +38,19 @@ public final class ConceptMapCompareResult implements Serializable {
 	private final List<ConceptMapMapping> changedMembers;
 	private final List<ConceptMapMapping> unchangedMembers;
 	
-	public ConceptMapCompareResult(List<ConceptMapMapping> addedMembers, List<ConceptMapMapping> removedMembers, List<ConceptMapMapping> changedMembers, Set<ConceptMapMapping> unchangedMembers, int limit) {
+	public ConceptMapCompareResult(List<ConceptMapMapping> addedMembers, List<ConceptMapMapping> removedMembers, List<ConceptMapMapping> changedMembers, List<ConceptMapMapping> unchangedMembers,
+			int totalAdded, int totalRemoved, int totalChanged, int totalUnchanged, int limit) {
 		
-		this.addedMembers = addedMembers.stream().collect(toList());
-		this.removedMembers = removedMembers.stream().collect(toList());
+		this.addedMembers = List.copyOf(addedMembers);
+		this.removedMembers = List.copyOf(removedMembers);
 		
-		this.changedMembers = changedMembers.stream().collect(toList());
-		this.unchangedMembers = ImmutableList.copyOf(unchangedMembers);
+		this.changedMembers = List.copyOf(changedMembers);
+		this.unchangedMembers = List.copyOf(unchangedMembers);
 		
-		this.totalAdded = addedMembers.size();
-		this.totalRemoved = removedMembers.size();
-		this.totalChanged = changedMembers.size()/2;
-		this.totalUnchanged = unchangedMembers.size();
+		this.totalAdded = totalAdded;
+		this.totalRemoved = totalRemoved;
+		this.totalChanged = totalChanged;
+		this.totalUnchanged = totalUnchanged;
 		this.limit = limit;
 	}
 	

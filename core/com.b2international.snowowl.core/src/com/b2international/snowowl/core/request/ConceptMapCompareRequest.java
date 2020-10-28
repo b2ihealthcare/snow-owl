@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.request;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -56,6 +57,15 @@ public final class ConceptMapCompareRequest extends ResourceRequest<BranchContex
 	
 	@Min(0)
 	private int limit;
+	
+	private class ResultComparator implements Comparator<ConceptMapMapping> {
+
+		@Override
+		public int compare(ConceptMapMapping o1, ConceptMapMapping o2) {
+			return o1.getSourceTerm().compareTo(o2.getSourceTerm());
+		}
+
+	}
 	
 	ConceptMapCompareRequest(ComponentURI baseConceptMapURI, ComponentURI compareConceptMapURI, int limit, Set<ConceptMapCompareConfigurationProperties> selectedConfig) {
 		this.baseConceptMapURI = baseConceptMapURI;
@@ -133,7 +143,25 @@ public final class ConceptMapCompareRequest extends ResourceRequest<BranchContex
 				.map(mapping -> mapping.get())
 				.collect(Collectors.toList());
 		
-		return new ConceptMapCompareResult(allAdded, allRemoved, allChanged, allUnchanged, limit);
+		List<ConceptMapMapping> limitedAllAdded = Lists.newArrayList();
+		List<ConceptMapMapping> limitedAllRemoved = Lists.newArrayList();
+		List<ConceptMapMapping> limitedAllChanged = Lists.newArrayList();
+		List<ConceptMapMapping> limitedAllUnchanged = Lists.newArrayList();
+		
+		limitedAllAdded.addAll(allAdded.stream().limit(limit).collect(Collectors.toList()));
+		
+		if (limitedAllAdded.size() < limit) {
+			limitedAllRemoved.addAll(allRemoved.stream().limit(limit-limitedAllAdded.size()).collect(Collectors.toList()));
+			int addedAndRemovedSize = limitedAllAdded.size() + limitedAllRemoved.size();
+			if (addedAndRemovedSize < limit) {
+				limitedAllChanged.addAll(allChanged.stream().sorted(new ResultComparator()).limit(limit-addedAndRemovedSize).collect(Collectors.toList()));
+				int addedAndRemovedAndChangedSize = addedAndRemovedSize + limitedAllChanged.size();
+				if (addedAndRemovedAndChangedSize < limit) {
+					limitedAllUnchanged.addAll(allUnchanged.stream().limit(limit-addedAndRemovedAndChangedSize).collect(Collectors.toList()));
+				}
+			}
+		}
+		return new ConceptMapCompareResult(limitedAllAdded, limitedAllRemoved, limitedAllChanged, limitedAllUnchanged, allAdded.size(), allRemoved.size(), allChanged.size(), allUnchanged.size(), limit);
 	}
 
 	private Set<Wrapper<ConceptMapMapping>> extractChangedMappings(SetView<Wrapper<ConceptMapMapping>> mappingsToChooseFrom,
