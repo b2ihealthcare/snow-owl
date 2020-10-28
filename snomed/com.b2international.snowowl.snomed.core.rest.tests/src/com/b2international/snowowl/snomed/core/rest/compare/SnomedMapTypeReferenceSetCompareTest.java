@@ -28,7 +28,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
-import com.b2international.snowowl.core.compare.ConceptMapCompareConfigurationProperties;
 import com.b2international.snowowl.core.compare.ConceptMapCompareResult;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.core.uri.ComponentURI;
@@ -89,7 +88,7 @@ public class SnomedMapTypeReferenceSetCompareTest extends AbstractCoreApiTest {
 		ComponentURI baseURI = createURI(rf1Id);
 		ComponentURI compareURI = createURI(rf2Id);
 		
-		ConceptMapCompareResult result = CodeSystemRequests.prepareConceptMapCompare(baseURI, compareURI, ConceptMapCompareConfigurationProperties.DEFAULT_SELECTED_PROPERTIES)
+		ConceptMapCompareResult result = CodeSystemRequests.prepareConceptMapCompare(baseURI, compareURI)
 				.setLocales("en")
 				.build(codeSystemURI)
 				.execute(getBus())
@@ -110,7 +109,7 @@ public class SnomedMapTypeReferenceSetCompareTest extends AbstractCoreApiTest {
 		ComponentURI baseURI = createURI(rf3Id);
 		ComponentURI compareURI = createURI(rf4Id);
 		
-		ConceptMapCompareResult result = CodeSystemRequests.prepareConceptMapCompare(baseURI, compareURI, ConceptMapCompareConfigurationProperties.DEFAULT_SELECTED_PROPERTIES)
+		ConceptMapCompareResult result = CodeSystemRequests.prepareConceptMapCompare(baseURI, compareURI)
 				.setLocales("en")
 				.build(codeSystemURI)
 				.execute(getBus())
@@ -133,7 +132,7 @@ public class SnomedMapTypeReferenceSetCompareTest extends AbstractCoreApiTest {
 		ComponentURI baseURI = ComponentURI.of(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, SnomedTerminologyComponentConstants.REFSET_NUMBER, baseSimpleMapReferenceSet);
 		ComponentURI compareURI = ComponentURI.of(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, SnomedTerminologyComponentConstants.REFSET_NUMBER, compareSimpleMapReferenceSet);
 		
-		CodeSystemRequests.prepareConceptMapCompare(baseURI, compareURI, ConceptMapCompareConfigurationProperties.DEFAULT_SELECTED_PROPERTIES)
+		CodeSystemRequests.prepareConceptMapCompare(baseURI, compareURI)
 				.setLocales("en")
 				.build(codeSystemURI)
 				.execute(getBus())

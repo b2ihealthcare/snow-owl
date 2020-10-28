@@ -33,23 +33,27 @@ public final class ConceptMapCompareRequestBuilder
 	
 	private final ComponentURI baseConceptMapURI;
 	private final ComponentURI compareConceptMapURI;
-	private final Set<ConceptMapCompareConfigurationProperties> selectedConfig;
+	
+	private Set<ConceptMapCompareConfigurationProperties> compareConfig = ConceptMapCompareConfigurationProperties.DEFAULT_SELECTED_PROPERTIES;
 	
 	public ConceptMapCompareRequestBuilder setLimit(int limit) {
 		this.limit = limit;
 		return getSelf();
 	}
+	public ConceptMapCompareRequestBuilder setcompareConfig(Set<ConceptMapCompareConfigurationProperties> compareConfig) {
+		this.compareConfig = compareConfig;
+		return getSelf();
+	}
 	
-	public ConceptMapCompareRequestBuilder(ComponentURI baseConceptMapURI, ComponentURI compareConceptMapURI, Set<ConceptMapCompareConfigurationProperties> selectedConfig) {
+	public ConceptMapCompareRequestBuilder(ComponentURI baseConceptMapURI, ComponentURI compareConceptMapURI) {
 		this.baseConceptMapURI = baseConceptMapURI;
 		this.compareConceptMapURI = compareConceptMapURI;
-		this.selectedConfig = selectedConfig;
 		
 	}
 	
 	@Override
 	protected ResourceRequest<BranchContext, ConceptMapCompareResult> create() {
-		return new ConceptMapCompareRequest(baseConceptMapURI, compareConceptMapURI, limit, selectedConfig);
+		return new ConceptMapCompareRequest(baseConceptMapURI, compareConceptMapURI, limit, compareConfig);
 	}
 	
 }

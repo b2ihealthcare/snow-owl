@@ -107,8 +107,8 @@ public class CodeSystemRequests {
 		return new AllCodeSystemSearchRequestBuilder();
 	}
 	
-	public static ConceptMapCompareRequestBuilder prepareConceptMapCompare(ComponentURI baseConceptMapURI, ComponentURI compareConceptMapURI, Set<ConceptMapCompareConfigurationProperties> selectedConfig){
-		return new ConceptMapCompareRequestBuilder(baseConceptMapURI, compareConceptMapURI, selectedConfig);
+	public static ConceptMapCompareRequestBuilder prepareConceptMapCompare(ComponentURI baseConceptMapURI, ComponentURI compareConceptMapURI){
+		return new ConceptMapCompareRequestBuilder(baseConceptMapURI, compareConceptMapURI);
 	}
 
 	/**
