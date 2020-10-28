@@ -27,7 +27,7 @@ import com.google.common.collect.ImmutableSet;
  */
 public final class MapCompareSourceAndTargetEquivalence  extends Equivalence<ConceptMapMapping> {
 	
-	Set<ConceptMapCompareConfigurationProperties> configProps;
+	private Set<ConceptMapCompareConfigurationProperties> configProps;
 	
 	public MapCompareSourceAndTargetEquivalence(Set<ConceptMapCompareConfigurationProperties> configProps) {
 		this.configProps = configProps;
