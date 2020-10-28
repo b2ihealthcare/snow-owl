@@ -115,26 +115,20 @@ public final class ConceptMapCompareRequest extends ResourceRequest<BranchContex
 		SetView<Wrapper<ConceptMapMapping>> onlyCompareWrappedMappings = Sets.difference(compareWrappedMappings, allUnchangedWrappedMappings);
 		
 		Set<Wrapper<ConceptMapMapping>> changedBase = extractChangedMappings(onlyBaseWrappedMappings, onlyCompareWrappedMappings);
-		
 		Set<Wrapper<ConceptMapMapping>> changedCompare = extractChangedMappings(onlyCompareWrappedMappings, onlyBaseWrappedMappings);
 		
 		changedBase.forEach(mapping -> allChanged.add(mapping.get()));
 		changedCompare.forEach(mapping -> allChanged.add(mapping.get()));
 		
-		List<ConceptMapMapping> allRemoved = extractUniqueMappings(onlyBaseWrappedMappings, changedBase);
-		
-		List<ConceptMapMapping> allAdded = extractUniqueMappings(onlyCompareWrappedMappings, changedCompare);
-		
-		return new ConceptMapCompareResult(allAdded, allRemoved, allChanged, allUnchanged, limit);
-	}
-
-	private List<ConceptMapMapping> extractUniqueMappings(SetView<Wrapper<ConceptMapMapping>> onlyCompareWrappedMappings,
-			Set<Wrapper<ConceptMapMapping>> changedCompare) {
-		return onlyCompareWrappedMappings.stream()
-				.filter(mapping -> !changedCompare.stream()
-						.anyMatch(changed -> isSourceEqual(mapping.get(), changed.get())))
+		List<ConceptMapMapping> allRemoved = Sets.difference(onlyBaseWrappedMappings, changedBase).stream()
 				.map(mapping -> mapping.get())
 				.collect(Collectors.toList());
+		
+		List<ConceptMapMapping> allAdded = Sets.difference(onlyCompareWrappedMappings, changedCompare).stream()
+				.map(mapping -> mapping.get())
+				.collect(Collectors.toList());
+		
+		return new ConceptMapCompareResult(allAdded, allRemoved, allChanged, allUnchanged, limit);
 	}
 
 	private Set<Wrapper<ConceptMapMapping>> extractChangedMappings(SetView<Wrapper<ConceptMapMapping>> mappingsToChooseFrom,
