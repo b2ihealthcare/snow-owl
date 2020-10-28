@@ -21,6 +21,8 @@ import java.util.stream.Collectors;
 
 import javax.validation.constraints.Min;
 
+import org.hibernate.validator.constraints.NotEmpty;
+
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.compare.ConceptMapCompareConfigurationProperties;
 import com.b2international.snowowl.core.compare.ConceptMapCompareResult;
@@ -48,6 +50,8 @@ public final class ConceptMapCompareRequest extends ResourceRequest<BranchContex
 	
 	private final ComponentURI baseConceptMapURI;
 	private final ComponentURI compareConceptMapURI;
+	
+	@NotEmpty
 	private final Set<ConceptMapCompareConfigurationProperties> selectedConfig;
 	
 	@Min(0)
