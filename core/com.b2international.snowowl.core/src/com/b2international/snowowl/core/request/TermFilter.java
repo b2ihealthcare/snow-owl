@@ -82,9 +82,9 @@ public final class TermFilter implements Serializable {
 	public static final class Builder {
 		private String term;
 		private Integer minShouldMatch;
-		private boolean fuzzy = false;
-		private boolean exact = false;
-		private boolean parsed = false;
+		private boolean fuzzy;
+		private boolean exact;
+		private boolean parsed;
 		
 		private Builder() { }
 		
@@ -112,8 +112,8 @@ public final class TermFilter implements Serializable {
 			return this;
 		}
 		
-		public final Builder parsed(final boolean exact) {
-			this.exact = exact;
+		public final Builder parsed(final boolean parsed) {
+			this.parsed = parsed;
 			return this;
 		}
 		
