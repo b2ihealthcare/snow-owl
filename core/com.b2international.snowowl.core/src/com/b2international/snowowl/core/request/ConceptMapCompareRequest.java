@@ -58,7 +58,7 @@ final class ConceptMapCompareRequest extends ResourceRequest<BranchContext, Conc
 	@NotEmpty
 	private final Set<ConceptMapCompareConfigurationProperties> selectedConfig;
 	
-	private MapCompareSourceAndTargetEquivalence mapCompareEquivalence;
+	private transient MapCompareSourceAndTargetEquivalence mapCompareEquivalence;
 	
 	@Min(0)
 	private int limit;
