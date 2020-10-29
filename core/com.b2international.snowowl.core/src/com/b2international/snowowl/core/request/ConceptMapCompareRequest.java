@@ -162,7 +162,7 @@ final class ConceptMapCompareRequest extends ResourceRequest<BranchContext, Conc
 	 */
 	private Multimap<String, Wrapper<ConceptMapMapping>> collectMapEntries(Set<Wrapper<ConceptMapMapping>> wrappedMappings) {
 		Multimap<String, Wrapper<ConceptMapMapping>> baseMMap = HashMultimap.create();
-		wrappedMappings.stream().forEach(w -> baseMMap.put(getCompoundKey(selectedConfig, w.get()), w));
+		wrappedMappings.forEach(w -> baseMMap.put(getCompoundKey(selectedConfig, w.get()), w));
 		return baseMMap;
 	}
 	
