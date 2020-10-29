@@ -34,6 +34,7 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.ConceptMapMapping;
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.google.common.base.Equivalence.Wrapper;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -107,6 +108,49 @@ final class ConceptMapCompareRequest extends ResourceRequest<BranchContext, Conc
 		SetView<Wrapper<ConceptMapMapping>> onlyBaseWrappedMappings = Sets.difference(baseWrappedMappings, allUnchangedWrappedMappings);
 		SetView<Wrapper<ConceptMapMapping>> onlyCompareWrappedMappings = Sets.difference(compareWrappedMappings, allUnchangedWrappedMappings);
 		
+		
+		HashMultimap<String, Wrapper<ConceptMapMapping>> sourceMap = HashMultimap.create();
+		HashMultimap<String, Wrapper<ConceptMapMapping>> targetMap = HashMultimap.create();
+		
+		onlyBaseWrappedMappings.stream().forEach(w -> sourceMap.put(ConceptMapCompareConfigurationProperties.getCompoundKey(selectedConfig, w.get()), w));
+		onlyCompareWrappedMappings.stream().forEach(w -> targetMap.put(ConceptMapCompareConfigurationProperties.getCompoundKey(selectedConfig, w.get()), w));
+		
+		Set<String> sourceCompoundKeys = sourceMap.keySet();
+		Set<String> targetCompoundKeys = targetMap.keySet();
+		
+		Set<String> presentKeys = Sets.difference(sourceCompoundKeys, targetCompoundKeys);
+		Set<String> missingKeys = Sets.difference(targetCompoundKeys, sourceCompoundKeys);
+		
+		//TODO:get the actual mappings from the map
+		Set<Wrapper<ConceptMapMapping>> presentMappings = Sets.newHashSet();
+		
+		presentKeys.stream().forEach(k -> {
+			presentMappings.addAll(sourceMap.get(k));
+		});
+		
+		//TODO:get the actual mappings from the map
+		Set<Wrapper<ConceptMapMapping>> missingMappings = Sets.newHashSet();
+		
+		missingKeys.stream().forEach(k -> {
+			missingMappings.addAll(targetMap.get(k));
+		});
+		
+		
+		Set<ConceptMapMapping> differentMappings = Sets.newHashSet();
+		
+		Set<Wrapper<ConceptMapMapping>> sourceDifferentMappings = Sets.difference(onlyBaseWrappedMappings, presentMappings);
+		Set<Wrapper<ConceptMapMapping>> targetDifferentMappings = Sets.difference(onlyCompareWrappedMappings, missingMappings);
+		
+		sourceDifferentMappings.forEach(w -> {
+			differentMappings.add(w.get());
+		});
+		targetDifferentMappings.forEach(w -> {
+			differentMappings.add(w.get());
+		});
+		
+		/*
+		
+		//99% of the time spent
 		Set<Wrapper<ConceptMapMapping>> changedBase = extractChangedMappings(onlyBaseWrappedMappings, onlyCompareWrappedMappings);
 		Set<Wrapper<ConceptMapMapping>> changedCompare = extractChangedMappings(onlyCompareWrappedMappings, onlyBaseWrappedMappings);
 		
@@ -123,6 +167,10 @@ final class ConceptMapCompareRequest extends ResourceRequest<BranchContext, Conc
 		List<ConceptMapCompareResultItem> allAdded = Sets.difference(onlyCompareWrappedMappings, changedCompare).stream()
 				.map(mapping -> new ConceptMapCompareResultItem(ConceptMapCompareChangeKind.MISSING, mapping.get()))
 				.collect(Collectors.toList());
+				
+		 */
+		
+		
 		
 		List<ConceptMapCompareResultItem> items = ImmutableList.<ConceptMapCompareResultItem>builder()
 			.addAll(allAdded)
@@ -136,6 +184,79 @@ final class ConceptMapCompareRequest extends ResourceRequest<BranchContext, Conc
 			.collect(Collectors.toList());
 		
 		return new ConceptMapCompareResult(items, allAdded.size(), allRemoved.size(), allChanged.size(), allUnchanged.size(), limit);
+	}
+	
+	private void processNonIdentical(Set<Wrapper<ConceptMapMapping>> sourceMappings, Set<Wrapper<ConceptMapMapping>> targetMappings) {
+		
+		HashMultimap<String, Wrapper<ConceptMapMapping>> sourceMap = HashMultimap.create();
+		HashMultimap<String, Wrapper<ConceptMapMapping>> targetMap = HashMultimap.create();
+		
+		sourceMappings.stream().forEach(w -> sourceMap.put(ConceptMapCompareConfigurationProperties.getCompoundKey(selectedConfig, w.get()), w));
+		targetMappings.stream().forEach(w -> targetMap.put(ConceptMapCompareConfigurationProperties.getCompoundKey(selectedConfig, w.get()), w));
+		
+		Set<String> sourceCompoundKeys = sourceMap.keySet();
+		Set<String> targetCompoundKeys = targetMap.keySet();
+		
+		Set<String> presentKeys = Sets.difference(sourceCompoundKeys, targetCompoundKeys);
+		Set<String> missingKeys = Sets.difference(targetCompoundKeys, sourceCompoundKeys);
+		
+		//TODO:get the actual mappings from the map
+		Set<Wrapper<ConceptMapMapping>> presentMappings = Sets.newHashSet();
+		
+		presentKeys.stream().forEach(k -> {
+			presentMappings.addAll(sourceMap.get(k));
+		});
+		
+		//TODO:get the actual mappings from the map
+		Set<Wrapper<ConceptMapMapping>> missingMappings = Sets.newHashSet();
+		
+		missingKeys.stream().forEach(k -> {
+			missingMappings.addAll(targetMap.get(k));
+		});
+		
+		
+		Set<ConceptMapMapping> differentMappings = Sets.newHashSet();
+		
+		Set<Wrapper<ConceptMapMapping>> sourceDifferentMappings = Sets.difference(sourceMappings, presentMappings);
+		Set<Wrapper<ConceptMapMapping>> targetDifferentMappings = Sets.difference(targetMappings, missingMappings);
+		
+		sourceDifferentMappings.forEach(w -> {
+			differentMappings.add(w.get());
+		});
+		targetDifferentMappings.forEach(w -> {
+			differentMappings.add(w.get());
+		});
+		
+	}
+	
+	
+	//Try to see performance imporovements
+	private Set<Wrapper<ConceptMapMapping>> findDifferentMappings(Set<Wrapper<ConceptMapMapping>> sourceMappings, Set<Wrapper<ConceptMapMapping>> targetMappings) {
+		
+		Set<Wrapper<ConceptMapMapping>> results = Sets.newHashSet();
+		
+		for (Wrapper<ConceptMapMapping> sourceWrapper : sourceMappings) {
+			for (Wrapper<ConceptMapMapping> targetWrapper : targetMappings) {
+				
+				ConceptMapMapping sourceMapping = sourceWrapper.get();
+				ConceptMapMapping targetMapping = targetWrapper.get();
+				if (isSourceEqual(sourceMapping, targetMapping)) {
+					results.add(sourceWrapper);
+					break;
+				}
+			}
+			
+		}
+		return results;
+	}
+	
+	//Might be possible to remove the hits from the second loop
+	private Set<Wrapper<ConceptMapMapping>> extractChangedMappingsInParallel(SetView<Wrapper<ConceptMapMapping>> mappingsToChooseFrom,
+			SetView<Wrapper<ConceptMapMapping>> mappingsToCompareTo) {
+		return mappingsToChooseFrom.parallelStream()
+				.filter(wrappedMapping -> mappingsToCompareTo.parallelStream() //?
+						.anyMatch(compareWrappedMapping -> isSourceEqual(wrappedMapping.get(), compareWrappedMapping.get())))
+				.collect(Collectors.toSet());
 	}
 
 	private Set<Wrapper<ConceptMapMapping>> extractChangedMappings(SetView<Wrapper<ConceptMapMapping>> mappingsToChooseFrom,
