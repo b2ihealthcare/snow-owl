@@ -17,8 +17,6 @@ package com.b2international.snowowl.core.request;
 
 import java.util.Set;
 
-import javax.validation.constraints.NotNull;
-
 import com.b2international.snowowl.core.compare.ConceptMapCompareConfigurationProperties;
 import com.b2international.snowowl.core.compare.ConceptMapCompareResult;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -36,7 +34,7 @@ public final class ConceptMapCompareRequestBuilder
 	
 	private int limit = 5000;
 	private Set<ConceptMapCompareConfigurationProperties> compareConfig = ConceptMapCompareConfigurationProperties.DEFAULT_SELECTED_PROPERTIES;
-	private String displayType;
+	private String preferredDisplay = "FSN";
 
 	public ConceptMapCompareRequestBuilder(ComponentURI baseConceptMapURI, ComponentURI compareConceptMapURI) {
 		this.baseConceptMapURI = baseConceptMapURI;
@@ -48,8 +46,8 @@ public final class ConceptMapCompareRequestBuilder
 		return getSelf();
 	}
 	
-	public ConceptMapCompareRequestBuilder setPreferredDisplay(String displayType) {
-		this.displayType = displayType;
+	public ConceptMapCompareRequestBuilder setPreferredDisplay(String preferredDisplay) {
+		this.preferredDisplay = preferredDisplay;
 		return getSelf();
 	}
 	
@@ -60,7 +58,7 @@ public final class ConceptMapCompareRequestBuilder
 	
 	@Override
 	protected ResourceRequest<BranchContext, ConceptMapCompareResult> create() {
-		return new ConceptMapCompareRequest(baseConceptMapURI, compareConceptMapURI, limit, compareConfig, displayType);
+		return new ConceptMapCompareRequest(baseConceptMapURI, compareConceptMapURI, limit, compareConfig, preferredDisplay);
 	}
 	
 }
