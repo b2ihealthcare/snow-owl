@@ -17,10 +17,10 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import java.util.List;
 
+import com.b2international.commons.TermFilter;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
-import com.b2international.snowowl.core.request.TermFilter;
 import com.b2international.snowowl.core.request.TermFilterSupport;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;

@@ -25,6 +25,7 @@ import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDes
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.preferredIn;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.termDisjunctionQuery;
 
+import com.b2international.commons.TermFilter;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
@@ -32,7 +33,6 @@ import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.repository.RevisionDocument;
-import com.b2international.snowowl.core.request.TermFilter;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;

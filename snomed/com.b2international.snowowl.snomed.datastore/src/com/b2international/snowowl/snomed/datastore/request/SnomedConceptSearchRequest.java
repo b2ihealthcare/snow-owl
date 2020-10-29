@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import com.b2international.commons.TermFilter;
 import com.b2international.commons.options.Options;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
@@ -37,7 +38,6 @@ import com.b2international.index.query.SortBy.Builder;
 import com.b2international.index.query.SortBy.Order;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.repository.RevisionDocument;
-import com.b2international.snowowl.core.request.TermFilter;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;

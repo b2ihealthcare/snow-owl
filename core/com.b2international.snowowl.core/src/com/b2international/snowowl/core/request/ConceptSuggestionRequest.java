@@ -27,6 +27,7 @@ import javax.validation.constraints.Min;
 
 import org.tartarus.snowball.ext.EnglishStemmer;
 
+import com.b2international.commons.TermFilter;
 import com.b2international.index.compat.TextConstants;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.Concept;

@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.b2international.commons.TermFilter;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.Concept;
