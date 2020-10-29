@@ -39,7 +39,6 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.fasterxml.jackson.databind.SequenceWriter;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ListMultimap;
@@ -145,7 +144,7 @@ public final class CompareResultsDsvExporter {
 						.getSync();
 					
 					for (IComponent component : components) {
-						writer.write(new CompareData(component, ChangeKind.ADDED));
+						writer.write(added(codeSystem, component));
 					}
 					
 					monitor.worked(components.getItems().size());
@@ -208,7 +207,7 @@ public final class CompareResultsDsvExporter {
 						.getSync();
 					
 					for (IComponent component : components) {
-						writer.write(new CompareData(component, ChangeKind.DELETED));
+						writer.write(removed(codeSystem, component));
 					}
 					
 					monitor.worked(components.getItems().size());
@@ -225,40 +224,43 @@ public final class CompareResultsDsvExporter {
 	 * 
 	 * @see http://groovy-lang.org/differences.html#_creating_instances_of_non_static_inner_classes 
 	 */
-	public CompareData createCompareData(String codeSystem, IComponent component, String attribute, String from, String to) {
-		return new CompareData(codeSystem, component, attribute, from, to);
+	public CompareData changed(String codeSystem, IComponent component, String attribute, String from, String to) {
+		return new CompareData(ChangeKind.UPDATED, component, labelResolvers.get(codeSystem).apply(component), attribute, from, to);
+	}
+	
+	public CompareData removed(String codeSystem, IComponent component) {
+		return new CompareData(ChangeKind.DELETED, component, labelResolvers.get(codeSystem).apply(component), null, null, null);
+	}
+	
+	public CompareData added(String codeSystem, IComponent component) {
+		return new CompareData(ChangeKind.ADDED, component, labelResolvers.get(codeSystem).apply(component), null, null, null);
 	}
 	
 	public class CompareData {
 		
 		private final ChangeKind changeKind;
+		
+		private final String componentType;
 		private final IComponent component;
 		private final String label;
-		private String attribute;
-		private String from;
-		private String to;
-		private final String componentType;
-		private String codeSystem;
 		
-		public CompareData(String codeSystem, IComponent component, String attribute, String from, String to) {
-			this.codeSystem = codeSystem;
+		private final String attribute;
+		private final String from;
+		private final String to;
+		
+		private CompareData(ChangeKind changeKind, 
+				IComponent component,
+				String label,
+				String attribute, 
+				String from, 
+				String to) {
+			this.changeKind = changeKind;
 			this.component = component;
+			this.label = label;
 			this.componentType = TerminologyRegistry.INSTANCE.getTerminologyComponentByShortId(component.getTerminologyComponentId()).name();
-			this.label = labelResolvers.get(codeSystem).apply(component);
-			this.changeKind = ChangeKind.UPDATED;
 			this.attribute = attribute;
 			this.from = from;
 			this.to = to;
-		}
-		
-		private CompareData(IComponent component, ChangeKind changeKind) {
-			Preconditions.checkArgument(changeKind == ChangeKind.ADDED || changeKind == ChangeKind.DELETED);
-			
-			this.changeKind = changeKind;
-			this.component = component;
-			this.componentType = TerminologyRegistry.INSTANCE.getTerminologyComponentByShortId(component.getTerminologyComponentId()).name();
-			this.label = labelResolvers.get(codeSystem).apply(component);
-			
 		}
 		
 		public ChangeKind getChangeKind() {
