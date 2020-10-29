@@ -39,7 +39,7 @@ public final class TextPredicate extends Predicate {
 	}
 	
 	TextPredicate(String field, MatchType type, TermFilter termFilter) {
-		this(field, termFilter.getTerm(), type, termFilter.getMinShouldMatch());
+		this(field, termFilter.getTerm(), type, termFilter.getMinShouldMatch() == null ? 1 : termFilter.getMinShouldMatch());
 		if (termFilter.isIgnoreStopWords()) analyzer = Analyzers.TOKENIZED_IGNORE_STOPWORDS.getAnalyzer();
 	}
 	
