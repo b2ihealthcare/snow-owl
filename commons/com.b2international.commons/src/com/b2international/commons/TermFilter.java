@@ -146,8 +146,13 @@ public final class TermFilter implements Serializable {
 	 * @return {@link TermFilter}
 	 */
 	@JsonIgnore
+	public static final TermFilter defaultTermMatch(final String term, final boolean ignoreStopWords) {
+		return Builder.builder().ignoreStopWords(ignoreStopWords).term(term).build();
+	}
+	
+	@JsonIgnore
 	public static final TermFilter defaultTermMatch(final String term) {
-		return Builder.builder().term(term).build();
+		return defaultTermMatch(term, false);
 	}
 	
 	/**
@@ -163,12 +168,17 @@ public final class TermFilter implements Serializable {
 	 * @return {@link TermFilter}
 	 */
 	@JsonIgnore
-	public static final TermFilter minTermMatch(final String term, final Integer minShouldMatch) {
+	public static final TermFilter minTermMatch(final String term, final Integer minShouldMatch, final boolean ignoreStopWords) {
 		if (minShouldMatch >= 1) {
-			return Builder.builder().term(term).minShouldMatch(minShouldMatch).build();
+			return Builder.builder().ignoreStopWords(ignoreStopWords).term(term).minShouldMatch(minShouldMatch).build();
 		} else {
 			throw new BadRequestException("minShouldMatch parameter must be greater than or equal to 1. It was '%s'.", minShouldMatch);
 		}
+	}
+	
+	@JsonIgnore
+	public static final TermFilter minTermMatch(final String term, final Integer minShouldMatch) {
+		return minTermMatch(term, minShouldMatch, false);
 	}
 	
 	/**
