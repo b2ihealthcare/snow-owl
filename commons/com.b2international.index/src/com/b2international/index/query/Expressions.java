@@ -154,12 +154,20 @@ public class Expressions {
 		return new TextPredicate(field, term, MatchType.ALL);
 	}
 	
+	public static TextPredicate matchTextAll(String field, String term, boolean ignoreStopWords) {
+		return new TextPredicate(field, term, MatchType.ALL, ignoreStopWords);
+	}
+	
 	public static TextPredicate matchTextAny(String field, String term) {
 		return new TextPredicate(field, term, MatchType.ANY);
 	}
 	
 	public static TextPredicate matchTextAny(String field, String term, int minShouldMatch) {
 		return new TextPredicate(field, term, MatchType.ANY, minShouldMatch);
+	}
+	
+	public static TextPredicate matchTextAny(String field, String term, int minShouldMatch, boolean ignoreStopWords) {
+		return new TextPredicate(field, term, MatchType.ANY, minShouldMatch, ignoreStopWords);
 	}
 	
 	public static TextPredicate matchTextPhrase(String field, String term) {
