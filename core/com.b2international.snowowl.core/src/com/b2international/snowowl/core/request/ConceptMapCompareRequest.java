@@ -121,56 +121,32 @@ final class ConceptMapCompareRequest extends ResourceRequest<BranchContext, Conc
 		Set<String> presentKeys = Sets.difference(sourceCompoundKeys, targetCompoundKeys);
 		Set<String> missingKeys = Sets.difference(targetCompoundKeys, sourceCompoundKeys);
 		
-		//TODO:get the actual mappings from the map
 		Set<Wrapper<ConceptMapMapping>> presentMappings = Sets.newHashSet();
-		
 		presentKeys.stream().forEach(k -> {
 			presentMappings.addAll(sourceMap.get(k));
 		});
+		List<ConceptMapCompareResultItem> allRemoved = presentMappings.stream().map(w -> new ConceptMapCompareResultItem(ConceptMapCompareChangeKind.PRESENT, w.get())).collect(Collectors.toList());
 		
-		//TODO:get the actual mappings from the map
 		Set<Wrapper<ConceptMapMapping>> missingMappings = Sets.newHashSet();
-		
 		missingKeys.stream().forEach(k -> {
 			missingMappings.addAll(targetMap.get(k));
 		});
+		List<ConceptMapCompareResultItem> allAdded = missingMappings.stream().map(w -> new ConceptMapCompareResultItem(ConceptMapCompareChangeKind.MISSING, w.get())).collect(Collectors.toList());
 		
 		
-		Set<ConceptMapMapping> differentMappings = Sets.newHashSet();
 		
 		Set<Wrapper<ConceptMapMapping>> sourceDifferentMappings = Sets.difference(onlyBaseWrappedMappings, presentMappings);
 		Set<Wrapper<ConceptMapMapping>> targetDifferentMappings = Sets.difference(onlyCompareWrappedMappings, missingMappings);
 		
-		sourceDifferentMappings.forEach(w -> {
-			differentMappings.add(w.get());
-		});
-		targetDifferentMappings.forEach(w -> {
-			differentMappings.add(w.get());
-		});
-		
-		/*
-		
-		//99% of the time spent
-		Set<Wrapper<ConceptMapMapping>> changedBase = extractChangedMappings(onlyBaseWrappedMappings, onlyCompareWrappedMappings);
-		Set<Wrapper<ConceptMapMapping>> changedCompare = extractChangedMappings(onlyCompareWrappedMappings, onlyBaseWrappedMappings);
-		
-		// handle different map target case
-		// TODO add more differences like map property based diffs, etc, see ConceptMapCompareChangeKind enum literals
 		List<ConceptMapCompareResultItem> allChanged = Lists.newArrayList();
-		changedBase.forEach(mapping -> allChanged.add(new ConceptMapCompareResultItem(ConceptMapCompareChangeKind.DIFFERENT_TARGET, mapping.get())));
-		changedCompare.forEach(mapping -> allChanged.add(new ConceptMapCompareResultItem(ConceptMapCompareChangeKind.DIFFERENT_TARGET, mapping.get())));
 		
-		List<ConceptMapCompareResultItem> allRemoved = Sets.difference(onlyBaseWrappedMappings, changedBase).stream()
-				.map(mapping -> new ConceptMapCompareResultItem(ConceptMapCompareChangeKind.PRESENT, mapping.get()))
-				.collect(Collectors.toList());
+		sourceDifferentMappings.forEach(w -> {
+			allChanged.add(new ConceptMapCompareResultItem(ConceptMapCompareChangeKind.DIFFERENT_TARGET, w.get()));
+		});
 		
-		List<ConceptMapCompareResultItem> allAdded = Sets.difference(onlyCompareWrappedMappings, changedCompare).stream()
-				.map(mapping -> new ConceptMapCompareResultItem(ConceptMapCompareChangeKind.MISSING, mapping.get()))
-				.collect(Collectors.toList());
-				
-		 */
-		
-		
+		targetDifferentMappings.forEach(w -> {
+			allChanged.add(new ConceptMapCompareResultItem(ConceptMapCompareChangeKind.DIFFERENT_TARGET, w.get()));
+		});
 		
 		List<ConceptMapCompareResultItem> items = ImmutableList.<ConceptMapCompareResultItem>builder()
 			.addAll(allAdded)
