@@ -55,6 +55,9 @@ final class ConceptMapCompareRequest extends ResourceRequest<BranchContext, Conc
 	@NotNull
 	private final ComponentURI compareConceptMapURI;
 	
+	@NotNull
+	private final String displayType;
+	
 	@NotEmpty
 	private final Set<ConceptMapCompareConfigurationProperties> selectedConfig;
 	
@@ -63,11 +66,12 @@ final class ConceptMapCompareRequest extends ResourceRequest<BranchContext, Conc
 	@Min(0)
 	private int limit;
 	
-	ConceptMapCompareRequest(ComponentURI baseConceptMapURI, ComponentURI compareConceptMapURI, int limit, Set<ConceptMapCompareConfigurationProperties> selectedConfig) {
+	ConceptMapCompareRequest(ComponentURI baseConceptMapURI, ComponentURI compareConceptMapURI, int limit, Set<ConceptMapCompareConfigurationProperties> selectedConfig, String displayType) {
 		this.baseConceptMapURI = baseConceptMapURI;
 		this.compareConceptMapURI = compareConceptMapURI;
 		this.limit = limit;
 		this.selectedConfig = selectedConfig;
+		this.displayType = displayType;
 	}
 
 	@Override
@@ -86,6 +90,7 @@ final class ConceptMapCompareRequest extends ResourceRequest<BranchContext, Conc
 				CodeSystemRequests.prepareSearchConceptMapMappings()
 				.filterByConceptMap(conceptMapId)
 				.setLocales(locales())
+				.setPreferredDisplay(displayType)
 				.setLimit(DEFAULT_MEMBER_SCROLL_LIMIT),
 				r -> r.build().execute(context)
 			).forEachRemaining(hits -> hits.forEach(baseMappings::add));
