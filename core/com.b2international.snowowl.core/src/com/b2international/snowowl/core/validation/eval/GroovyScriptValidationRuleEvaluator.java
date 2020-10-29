@@ -27,6 +27,7 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.scripts.ScriptEngine;
 import com.b2international.snowowl.core.scripts.ScriptSource;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 
@@ -35,9 +36,14 @@ import com.google.common.collect.ImmutableMap.Builder;
  */
 public final class GroovyScriptValidationRuleEvaluator implements ValidationRuleEvaluator {
 
-	private final Path validationResourcesDirectory;
+	private Path validationResourcesDirectory;
 
 	public GroovyScriptValidationRuleEvaluator(Path validationResourcesDirectory) {
+		this.validationResourcesDirectory = validationResourcesDirectory;
+	}
+	
+	@VisibleForTesting
+	public void setValidationResourcesDirectory(Path validationResourcesDirectory) {
 		this.validationResourcesDirectory = validationResourcesDirectory;
 	}
 	
