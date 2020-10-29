@@ -55,7 +55,7 @@ final class ConceptMapCompareRequest extends ResourceRequest<BranchContext, Conc
 	@NotNull
 	private final ComponentURI compareConceptMapURI;
 	
-	@NotNull
+	@NotEmpty
 	private final String preferredDisplay;
 	
 	@NotEmpty
