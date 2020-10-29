@@ -77,21 +77,4 @@ public enum ConceptMapCompareConfigurationProperties {
 		return label;
 	}
 	
-	public static String getCompoundKey(Set<ConceptMapCompareConfigurationProperties> configuration, ConceptMapMapping mapping) {
-		
-		StringBuilder sb = new StringBuilder();
-		if (configuration.contains(CODE)) {
-			sb.append(mapping.getSourceComponentURI().identifier());
-		}
-		
-		if (configuration.contains(CODE_SYSTEM)) {
-			sb.append(mapping.getSourceComponentURI().codeSystem());
-		}
-		
-		if (configuration.contains(TERM)) {
-			sb.append(mapping.getSourceTerm());
-		}
-		return sb.toString();
-	}
-	
 }
