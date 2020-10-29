@@ -35,6 +35,7 @@ import java.util.SortedSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.b2international.commons.TermFilter;
 import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
 import com.b2international.index.Keyword;
@@ -172,18 +173,18 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		private Expressions() {
 		}
 		
-		public static Expression termDisjunctionQuery(final String searchTerm) {
+		public static Expression termDisjunctionQuery(final TermFilter termFilter) {
 			final List<Expression> disjuncts = newArrayList();
-			disjuncts.add(scriptScore(matchEntireTerm(searchTerm), "normalizeWithOffset", ImmutableMap.of("offset", 2)));
-			disjuncts.add(scriptScore(allTermsPresent(searchTerm), "normalizeWithOffset", ImmutableMap.of("offset", 1)));
-			disjuncts.add(scriptScore(allTermPrefixesPresent(searchTerm), "normalizeWithOffset", ImmutableMap.of("offset", 0)));
+			disjuncts.add(scriptScore(matchEntireTerm(termFilter), "normalizeWithOffset", ImmutableMap.of("offset", 2)));
+			disjuncts.add(scriptScore(allTermsPresent(termFilter), "normalizeWithOffset", ImmutableMap.of("offset", 1)));
+			disjuncts.add(scriptScore(allTermPrefixesPresent(termFilter), "normalizeWithOffset", ImmutableMap.of("offset", 0)));
 			return dismax(disjuncts);
 		}
 		
-		public static Expression minShouldMatchTermDisjunctionQuery(final String searchTerm, final int minShouldMatch) {
+		public static Expression minShouldMatchTermDisjunctionQuery(final TermFilter termFilter) {
 			final List<Expression> disjuncts = Lists.newArrayList();
-			disjuncts.add(anyTermPresent(searchTerm, minShouldMatch));
-			disjuncts.add(anyTermPrefixesPresent(searchTerm, minShouldMatch));
+			disjuncts.add(anyTermPresent(termFilter));
+			disjuncts.add(anyTermPrefixesPresent(termFilter));
 			return dismax(disjuncts);
 		}
 
@@ -195,6 +196,10 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 			return matchTextAll(Fields.TERM_EXACT, term);
 		}
 		
+		public static Expression matchEntireTerm(final TermFilter termFilter) {
+			return matchTextAll(Fields.TERM_EXACT, termFilter);
+		}
+		
 		public static Expression matchTermOriginal(String term) {
 			return exactMatch(Fields.TERM_ORIGINAL, term);
 		}
@@ -203,20 +208,20 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 			return regexp(Fields.TERM_ORIGINAL, regex);
 		}
 		
-		public static Expression anyTermPresent(String term, int minShouldMatch) {
-			return matchTextAny(Fields.TERM, term, minShouldMatch);
+		public static Expression anyTermPresent(final TermFilter termFilter) {
+			return matchTextAny(Fields.TERM, termFilter);
 		}
 		
-		public static Expression anyTermPrefixesPresent(String term, int minShouldMatch) {
-			return matchTextAny(Fields.TERM_PREFIX, term, minShouldMatch);
+		public static Expression anyTermPrefixesPresent(final TermFilter termFilter) {
+			return matchTextAny(Fields.TERM_PREFIX, termFilter);
 		}
 		
-		public static Expression allTermPrefixesPresent(String term) {
-			return matchTextAll(Fields.TERM_PREFIX, term);
+		public static Expression allTermPrefixesPresent(final TermFilter termFilter) {
+			return matchTextAll(Fields.TERM_PREFIX, termFilter);
 		}
 		
-		public static Expression allTermsPresent(String term) {
-			return matchTextAll(Fields.TERM, term);
+		public static Expression allTermsPresent(final TermFilter termFilter) {
+			return matchTextAll(Fields.TERM, termFilter);
 		}
 		
 		public static Expression parsedTerm(String term) {

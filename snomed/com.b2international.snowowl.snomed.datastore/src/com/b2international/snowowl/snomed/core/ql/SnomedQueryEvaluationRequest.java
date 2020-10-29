@@ -201,7 +201,7 @@ final class SnomedQueryEvaluationRequest implements Request<BranchContext, Promi
 		Expression expression;
 		switch (termFilter.getLexicalSearchType()) {
 		case MATCH:
-			expression = SnomedDescriptionIndexEntry.Expressions.termDisjunctionQuery(termFilter.getTerm());
+			expression = SnomedDescriptionIndexEntry.Expressions.termDisjunctionQuery(com.b2international.commons.TermFilter.defaultTermMatch(termFilter.getTerm()));
 			break;
 		case REGEX:
 			expression = SnomedDescriptionIndexEntry.Expressions.matchTermRegex(termFilter.getTerm());

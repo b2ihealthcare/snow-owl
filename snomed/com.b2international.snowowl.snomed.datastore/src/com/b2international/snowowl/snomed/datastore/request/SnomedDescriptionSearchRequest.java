@@ -147,9 +147,9 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 		} else if (termFilter.isParsed()) {
 			qb.should(parsedTerm(termFilter.getTerm()));
 		} else if (termFilter.getMinShouldMatch() != null) {
-			qb.should(minShouldMatchTermDisjunctionQuery(termFilter.getTerm(), termFilter.getMinShouldMatch()));
+			qb.should(minShouldMatchTermDisjunctionQuery(termFilter));
 		} else {
-			qb.should(termDisjunctionQuery(termFilter.getTerm()));
+			qb.should(termDisjunctionQuery(termFilter));
 		}
 		
 		if (isComponentId(termFilter.getTerm(), ComponentCategory.DESCRIPTION)) {
