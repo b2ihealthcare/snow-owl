@@ -33,15 +33,24 @@ public final class TextPredicate extends Predicate {
 	
 	private String analyzer;
 	
+	TextPredicate(String field, String term, MatchType type, boolean ignoreStopWords) {
+		this(field, term, type, 1, ignoreStopWords);
+	}
+	
 	TextPredicate(String field, String term, MatchType type) {
-		this(field, term, type, 1);
+		this(field, term, type, 1, false);
 	}
 	
 	TextPredicate(String field, String term, MatchType type, int minShouldMatch) {
+		this(field, term, type, minShouldMatch, false);
+	}
+	
+	TextPredicate(String field, String term, MatchType type, int minShouldMatch, boolean ignoreStopWords) {
 		super(field);
 		this.term = term;
 		this.type = type;
 		this.minShouldMatch = minShouldMatch;
+		if (ignoreStopWords) this.analyzer = Analyzers.TOKENIZED_IGNORE_STOPWORDS.getAnalyzer();
 	}
 	
 	public String term() {
