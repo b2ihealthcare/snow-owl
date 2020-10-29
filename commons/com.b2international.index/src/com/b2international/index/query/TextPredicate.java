@@ -16,6 +16,7 @@
 package com.b2international.index.query;
 
 import com.b2international.commons.CompareUtils;
+import com.b2international.commons.TermFilter;
 import com.b2international.index.Analyzers;
 
 /**
@@ -35,6 +36,11 @@ public final class TextPredicate extends Predicate {
 	
 	TextPredicate(String field, String term, MatchType type) {
 		this(field, term, type, 1);
+	}
+	
+	TextPredicate(String field, MatchType type, TermFilter termFilter) {
+		this(field, termFilter.getTerm(), type, termFilter.getMinShouldMatch());
+		if (termFilter.isIgnoreStopWords()) analyzer = Analyzers.TOKENIZED_IGNORE_STOPWORDS.getAnalyzer();
 	}
 	
 	TextPredicate(String field, String term, MatchType type, int minShouldMatch) {

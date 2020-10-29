@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import com.b2international.commons.TermFilter;
 import com.b2international.index.query.TextPredicate.MatchType;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
@@ -154,8 +155,8 @@ public class Expressions {
 		return new TextPredicate(field, term, MatchType.ALL);
 	}
 	
-	public static TextPredicate matchTextAll(String field, String term, boolean ignoreStopWords) {
-		return new TextPredicate(field, term, MatchType.ALL, ignoreStopWords);
+	public static TextPredicate matchTextAll(String field, TermFilter termFilter) {
+		return new TextPredicate(field, MatchType.ALL, termFilter);
 	}
 	
 	public static TextPredicate matchTextAny(String field, String term) {
@@ -166,8 +167,8 @@ public class Expressions {
 		return new TextPredicate(field, term, MatchType.ANY, minShouldMatch);
 	}
 	
-	public static TextPredicate matchTextAny(String field, String term, int minShouldMatch, boolean ignoreStopWords) {
-		return new TextPredicate(field, term, MatchType.ANY, minShouldMatch, ignoreStopWords);
+	public static TextPredicate matchTextAny(String field, TermFilter termFilter) {
+		return new TextPredicate(field, MatchType.ANY, termFilter);
 	}
 	
 	public static TextPredicate matchTextPhrase(String field, String term) {
