@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.core.ql;
 
-import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
 import com.b2international.snowowl.snomed.ql.ql.Query;
 
 /**
@@ -30,13 +29,5 @@ public interface SnomedQuerySerializer {
 	 * @return
 	 */
 	String serialize(Query query);
-
-	/**
-	 * Serialize an ECL part of a Query expression to its brief syntax equivalent.
-	 * 
-	 * @param ecl
-	 * @return
-	 */
-	String serialize(ExpressionConstraint ecl);
 
 }
