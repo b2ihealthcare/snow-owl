@@ -16,7 +16,6 @@
 package com.b2international.index.query;
 
 import com.b2international.commons.CompareUtils;
-import com.b2international.commons.TermFilter;
 import com.b2international.index.Analyzers;
 
 /**

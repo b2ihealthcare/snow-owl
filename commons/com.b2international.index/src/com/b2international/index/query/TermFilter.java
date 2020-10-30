@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.commons;
+package com.b2international.index.query;
 
 import java.io.Serializable;
 
@@ -71,6 +71,10 @@ public final class TermFilter implements Serializable {
 
 	public boolean isIgnoreStopWords() {
 		return ignoreStopWords;
+	}
+	
+	public TermFilter withStopwordsIgnored() {
+		return builder(this).ignoreStopWords(true).build();
 	}
 	
 	public static final Builder builder(final TermFilter termFilter) {
@@ -146,13 +150,8 @@ public final class TermFilter implements Serializable {
 	 * @return {@link TermFilter}
 	 */
 	@JsonIgnore
-	public static final TermFilter defaultTermMatch(final String term, final boolean ignoreStopWords) {
-		return Builder.builder().ignoreStopWords(ignoreStopWords).term(term).build();
-	}
-	
-	@JsonIgnore
 	public static final TermFilter defaultTermMatch(final String term) {
-		return defaultTermMatch(term, false);
+		return Builder.builder().term(term).build();
 	}
 	
 	/**
@@ -168,17 +167,12 @@ public final class TermFilter implements Serializable {
 	 * @return {@link TermFilter}
 	 */
 	@JsonIgnore
-	public static final TermFilter minTermMatch(final String term, final Integer minShouldMatch, final boolean ignoreStopWords) {
+	public static final TermFilter minTermMatch(final String term, final Integer minShouldMatch) {
 		if (minShouldMatch >= 1) {
-			return Builder.builder().ignoreStopWords(ignoreStopWords).term(term).minShouldMatch(minShouldMatch).build();
+			return Builder.builder().term(term).minShouldMatch(minShouldMatch).build();
 		} else {
 			throw new BadRequestException("minShouldMatch parameter must be greater than or equal to 1. It was '%s'.", minShouldMatch);
 		}
-	}
-	
-	@JsonIgnore
-	public static final TermFilter minTermMatch(final String term, final Integer minShouldMatch) {
-		return minTermMatch(term, minShouldMatch, false);
 	}
 	
 	/**

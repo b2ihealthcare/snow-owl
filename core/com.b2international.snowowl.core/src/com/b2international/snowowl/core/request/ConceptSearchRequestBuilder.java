@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.core.request;
 
-import com.b2international.commons.TermFilter;
+import com.b2international.index.query.TermFilter;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.Concepts;
 import com.b2international.snowowl.core.events.AsyncRequest;

@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import com.b2international.commons.TermFilter;
 import com.b2international.index.query.TextPredicate.MatchType;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;

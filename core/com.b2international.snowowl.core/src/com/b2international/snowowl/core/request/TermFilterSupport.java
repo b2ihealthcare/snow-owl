@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.core.request;
 
-import com.b2international.commons.TermFilter;
+import com.b2international.index.query.TermFilter;
 
 /**
  * Interface to configure term filters in a given request

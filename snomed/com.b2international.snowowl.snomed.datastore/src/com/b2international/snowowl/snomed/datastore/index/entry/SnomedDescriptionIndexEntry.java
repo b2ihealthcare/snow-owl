@@ -35,7 +35,6 @@ import java.util.SortedSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.b2international.commons.TermFilter;
 import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
 import com.b2international.index.Keyword;
@@ -43,6 +42,7 @@ import com.b2international.index.Normalizers;
 import com.b2international.index.Script;
 import com.b2international.index.Text;
 import com.b2international.index.query.Expression;
+import com.b2international.index.query.TermFilter;
 import com.b2international.index.revision.ObjectId;
 import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.date.EffectiveTimes;

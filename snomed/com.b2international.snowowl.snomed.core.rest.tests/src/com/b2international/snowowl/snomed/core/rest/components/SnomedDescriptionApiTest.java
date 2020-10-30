@@ -52,9 +52,9 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
-import com.b2international.commons.TermFilter;
 import com.b2international.commons.exceptions.ConflictException;
 import com.b2international.index.compat.TextConstants;
+import com.b2international.index.query.TermFilter;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.index.revision.TimestampProvider;
 import com.b2international.snowowl.core.ApplicationContext;
