@@ -19,7 +19,6 @@ import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.ComponentStatusConflictException;
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.request.UpdateRequest;
 import com.b2international.snowowl.snomed.core.domain.InactivationProperties;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
@@ -31,13 +30,14 @@ import com.google.common.collect.Multimap;
  * @since 4.5
  * @param <B>
  */
-public abstract class SnomedComponentUpdateRequest extends UpdateRequest<TransactionContext> implements SnomedComponentRequest<Boolean> {
+public abstract class SnomedComponentUpdateRequest extends SnomedComponentUpdateRequestBase implements SnomedComponentRequest<Boolean> {
 
 	private static final long serialVersionUID = 1L;
 
 	private String moduleId;
 	private Boolean active;
 	private InactivationProperties inactivationProperties;
+	private String effectiveTime;
 	
 	protected SnomedComponentUpdateRequest(String componentId) {
 		super(componentId);
@@ -55,6 +55,10 @@ public abstract class SnomedComponentUpdateRequest extends UpdateRequest<Transac
 		this.inactivationProperties = inactivationProperties;
 	}
 	
+	void setEffectiveTime(String effectiveTime) {
+		this.effectiveTime = effectiveTime;
+	}
+	
 	protected Boolean isActive() {
 		return active;
 	}
@@ -65,6 +69,11 @@ public abstract class SnomedComponentUpdateRequest extends UpdateRequest<Transac
 	
 	protected InactivationProperties getInactivationProperties() {
 		return inactivationProperties;
+	}
+	
+	@Override
+	protected final String effectiveTime() {
+		return effectiveTime;
 	}
 	
 	protected boolean updateModule(final TransactionContext context, final SnomedComponentDocument original, final SnomedComponentDocument.Builder<?, ?> component) {

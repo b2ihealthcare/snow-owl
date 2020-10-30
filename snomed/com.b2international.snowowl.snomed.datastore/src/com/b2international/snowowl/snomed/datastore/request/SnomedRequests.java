@@ -414,10 +414,11 @@ public abstract class SnomedRequests {
 
 	/**
 	 * Returns a SNOMED CT request builder to prepare the updating of a single reference set member.
+	 * @param memberId - the member to update
 	 * @return SNOMED CT reference set member update request builder
 	 */
-	public static SnomedRefSetMemberUpdateRequestBuilder prepareUpdateMember() {
-		return new SnomedRefSetMemberUpdateRequestBuilder();
+	public static SnomedRefSetMemberUpdateRequestBuilder prepareUpdateMember(String memberId) {
+		return new SnomedRefSetMemberUpdateRequestBuilder(memberId);
 	}
 	
 	/**

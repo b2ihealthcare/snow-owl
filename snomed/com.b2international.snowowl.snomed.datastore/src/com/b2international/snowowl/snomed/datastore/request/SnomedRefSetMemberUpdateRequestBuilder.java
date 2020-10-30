@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,35 +17,18 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import java.util.Map;
 
-import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.events.BaseRequestBuilder;
-import com.b2international.snowowl.core.events.Request;
-
 /**
  * @since 4.5
  */
-public final class SnomedRefSetMemberUpdateRequestBuilder 
-		extends BaseRequestBuilder<SnomedRefSetMemberUpdateRequestBuilder, TransactionContext, Boolean> 
-		implements SnomedTransactionalRequestBuilder<Boolean> {
+public final class SnomedRefSetMemberUpdateRequestBuilder extends SnomedComponentUpdateRequestBuilderBase<SnomedRefSetMemberUpdateRequestBuilder, SnomedRefSetMemberUpdateRequest> {
 
-	private String memberId;
 	private Map<String, Object> source;
-	private Boolean force = Boolean.FALSE;
 	
-	SnomedRefSetMemberUpdateRequestBuilder() {
-		super();
-	}
-	
-	public SnomedRefSetMemberUpdateRequestBuilder setMemberId(String memberId) {
-		this.memberId = memberId;
-		return getSelf();
+	SnomedRefSetMemberUpdateRequestBuilder(String memberId) {
+		super(memberId);
 	}
 	
 	public SnomedRefSetMemberUpdateRequestBuilder setSource(Map<String, Object> source) {
-		// try to set memberId if not set
-		if (memberId == null) {
-			setMemberId((String) source.get("memberId"));
-		}
 		this.source = source;
 		return getSelf();
 	}
@@ -54,10 +37,17 @@ public final class SnomedRefSetMemberUpdateRequestBuilder
 		this.force = force;
 		return getSelf();
 	}
-	
-	@Override
-	protected Request<TransactionContext, Boolean> doBuild() {
-		return new SnomedRefSetMemberUpdateRequest(memberId, source, force);
-	}
 
+	@Override
+	protected SnomedRefSetMemberUpdateRequest create(String componentId) {
+		final String memberId;
+		if (componentId != null) {
+			memberId = componentId;
+		} else {
+			// try to get memberId from the given source Map
+			memberId = (String) source.get("memberId");
+		}
+		return new SnomedRefSetMemberUpdateRequest(memberId, source);
+	}
+	
 }

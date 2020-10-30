@@ -666,8 +666,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 		
 		if (released) {
 			request = SnomedRequests
-					.prepareUpdateMember()
-					.setMemberId(memberId)
+					.prepareUpdateMember(memberId)
 					.setSource(ImmutableMap.<String, Object>builder()
 						.put(SnomedRf2Headers.FIELD_ACTIVE, false)
 						.put(SnomedRf2Headers.FIELD_MODULE_ID, namespaceAndModuleAssigner.getConcreteDomainModuleId(referencedComponentId))
@@ -864,12 +863,11 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 			final ReasonerConcreteDomainMember referenceSetMember) {
 		
 		final SnomedRefSetMemberUpdateRequestBuilder updateRequest = SnomedRequests
-				.prepareUpdateMember()
-				.setMemberId(referenceSetMember.getOriginMemberId())
-				.setSource(ImmutableMap.<String,Object>builder()
-						.put(SnomedRf2Headers.FIELD_VALUE, referenceSetMember.getSerializedValue())
-						.put(SnomedRf2Headers.FIELD_MODULE_ID, namespaceAndModuleAssigner.getConcreteDomainModuleId(referenceSetMember.getReferencedComponentId()))
-						.build());
+				.prepareUpdateMember(referenceSetMember.getOriginMemberId())
+				.setSource(ImmutableMap.<String,Object>of(
+					SnomedRf2Headers.FIELD_VALUE, referenceSetMember.getSerializedValue(),
+					SnomedRf2Headers.FIELD_MODULE_ID, namespaceAndModuleAssigner.getConcreteDomainModuleId(referenceSetMember.getReferencedComponentId())
+				));
 
 		bulkRequestBuilder.add(updateRequest);		
 	}

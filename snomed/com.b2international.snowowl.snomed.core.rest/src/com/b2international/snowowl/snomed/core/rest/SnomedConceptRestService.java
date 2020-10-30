@@ -265,6 +265,10 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 			@ApiParam(value = "Updated Concept parameters")
 			@RequestBody 
 			final SnomedResourceRequest<SnomedConceptRestUpdate> body,
+			
+			@ApiParam(value = "Force update flag")
+			@RequestParam(defaultValue="false", required=false)
+			final Boolean force,
 
 			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
@@ -274,6 +278,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 		final String defaultModuleId = body.getDefaultModuleId();
 		
 		change.toRequestBuilder(conceptId)
+			.force(force)
 			.build(repositoryId, branchPath, author, commitComment, defaultModuleId)
 			.execute(getBus())
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);

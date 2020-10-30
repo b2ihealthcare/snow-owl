@@ -74,8 +74,7 @@ public final class QueryRefSetMemberUpdateRequest implements Request<Transaction
 					.build()
 					.execute(context);
 				if (member.isReleased()) {
-					SnomedRequests.prepareUpdateMember()
-						.setMemberId(change.getMemberId())
+					SnomedRequests.prepareUpdateMember(change.getMemberId())
 						.setSource(ImmutableMap.of(SnomedRf2Headers.FIELD_ACTIVE, Boolean.FALSE))
 						.build()
 						.execute(context);
@@ -90,8 +89,7 @@ public final class QueryRefSetMemberUpdateRequest implements Request<Transaction
 					.build()
 					.execute(context);
 				if(!memberToChange.isActive()) {
-					SnomedRequests.prepareUpdateMember()
-					.setMemberId(change.getMemberId())
+					SnomedRequests.prepareUpdateMember(change.getMemberId())
 					.setSource(ImmutableMap.of(SnomedRf2Headers.FIELD_ACTIVE, Boolean.TRUE))
 					.build()
 					.execute(context);

@@ -207,6 +207,10 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 			@RequestBody 
 			final SnomedResourceRequest<SnomedRelationshipRestUpdate> body,
 			
+			@ApiParam(value = "Force update flag")
+			@RequestParam(defaultValue="false", required=false)
+			final Boolean force,
+			
 			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
 
@@ -224,6 +228,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 			.setModifierId(update.getModifierId())
 			.setTypeId(update.getTypeId())
 			.setDestinationId(update.getDestinationId())
+			.force(force)
 			.build(repositoryId, branchPath, author, commitComment, defaultModuleId)
 			.execute(getBus())
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);
