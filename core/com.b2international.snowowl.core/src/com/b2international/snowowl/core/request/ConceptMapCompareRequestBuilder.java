@@ -34,6 +34,7 @@ public final class ConceptMapCompareRequestBuilder
 	
 	private int limit = 5000;
 	private Set<ConceptMapCompareConfigurationProperties> compareConfig = ConceptMapCompareConfigurationProperties.DEFAULT_SELECTED_PROPERTIES;
+	private String preferredDisplay = "FSN";
 
 	public ConceptMapCompareRequestBuilder(ComponentURI baseConceptMapURI, ComponentURI compareConceptMapURI) {
 		this.baseConceptMapURI = baseConceptMapURI;
@@ -45,6 +46,11 @@ public final class ConceptMapCompareRequestBuilder
 		return getSelf();
 	}
 	
+	public ConceptMapCompareRequestBuilder setPreferredDisplay(String preferredDisplay) {
+		this.preferredDisplay = preferredDisplay;
+		return getSelf();
+	}
+	
 	public ConceptMapCompareRequestBuilder setCompareConfig(Set<ConceptMapCompareConfigurationProperties> compareConfig) {
 		this.compareConfig = compareConfig;
 		return getSelf();
@@ -52,7 +58,7 @@ public final class ConceptMapCompareRequestBuilder
 	
 	@Override
 	protected ResourceRequest<BranchContext, ConceptMapCompareResult> create() {
-		return new ConceptMapCompareRequest(baseConceptMapURI, compareConceptMapURI, limit, compareConfig);
+		return new ConceptMapCompareRequest(baseConceptMapURI, compareConceptMapURI, limit, compareConfig, preferredDisplay);
 	}
 	
 }

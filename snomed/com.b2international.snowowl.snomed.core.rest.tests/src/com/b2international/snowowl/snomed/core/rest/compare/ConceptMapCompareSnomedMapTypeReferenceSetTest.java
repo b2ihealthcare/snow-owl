@@ -119,6 +119,7 @@ public class ConceptMapCompareSnomedMapTypeReferenceSetTest extends AbstractCore
 	private ConceptMapCompareResult compare(ComponentURI baseURI, ComponentURI compareURI) {
 		return CodeSystemRequests.prepareConceptMapCompare(baseURI, compareURI)
 				.setLocales("en")
+				.setPreferredDisplay("ID_ONLY")
 				.build(codeSystemURI)
 				.execute(getBus())
 				.getSync(1, TimeUnit.MINUTES);
