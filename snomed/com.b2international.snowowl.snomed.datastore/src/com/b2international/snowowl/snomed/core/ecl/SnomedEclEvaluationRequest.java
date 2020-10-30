@@ -18,6 +18,8 @@ package com.b2international.snowowl.snomed.core.ecl;
 import static com.b2international.index.revision.Revision.Fields.ID;
 import static com.b2international.snowowl.core.repository.RevisionDocument.Expressions.id;
 import static com.b2international.snowowl.core.repository.RevisionDocument.Expressions.ids;
+import static com.b2international.snowowl.snomed.core.ecl.EclExpression.isAnyExpression;
+import static com.b2international.snowowl.snomed.core.ecl.EclExpression.isEclConceptReference;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Expressions.activeMemberOf;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Fields.ACTIVE_MEMBER_OF;
 import static com.google.common.collect.Sets.newHashSet;
@@ -90,9 +92,13 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 
 	@Override
 	public Promise<Expression> execute(BranchContext context) {
-		// parse and rewrite the ECL expression before processing
-		final ExpressionConstraint exp = context.service(EclParser.class).parse(expression);
-		return evaluate(context, new SnomedEclRewriter().rewrite(exp));
+		final ExpressionConstraint expressionConstraint = context.service(EclParser.class).parse(expression);
+		return doEval(context, expressionConstraint);
+	}
+
+	Promise<Expression> doEval(BranchContext context, final ExpressionConstraint expressionConstraint) {
+		ExpressionConstraint rewritten = new SnomedEclRewriter().rewrite(expressionConstraint);
+		return evaluate(context, rewritten);
 	}
 	
 	private Promise<Expression> evaluate(BranchContext context, EObject expression) {
@@ -131,8 +137,7 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 		} else if (isAnyExpression(inner)) {
 			return Promise.immediate(Expressions.exists(ACTIVE_MEMBER_OF));
 		} else if (inner instanceof NestedExpression) {
-			final String focusConceptExpression = context.service(EclSerializer.class).serializeWithoutTerms(inner);
-			return EclExpression.of(focusConceptExpression, expressionForm)
+			return EclExpression.of(inner, expressionForm)
 					.resolve(context)
 					.then(ids -> activeMemberOf(ids));
 		} else {
@@ -204,8 +209,7 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.1+Simple+Expression+Constraints
 	 */
 	protected Promise<Expression> eval(BranchContext context, final ParentOf parentOf) {
-		final String inner = context.service(EclSerializer.class).serializeWithoutTerms(parentOf.getConstraint());
-		return EclExpression.of(inner, expressionForm)
+		return EclExpression.of(parentOf.getConstraint(), expressionForm)
 				.resolveConcepts(context)
 				.then(concepts -> {
 					final Set<String> parents = newHashSet();
@@ -222,8 +226,7 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.1+Simple+Expression+Constraints
 	 */
 	protected Promise<Expression> eval(BranchContext context, final AncestorOf ancestorOf) {
-		final String inner = context.service(EclSerializer.class).serializeWithoutTerms(ancestorOf.getConstraint());
-		return EclExpression.of(inner, expressionForm)
+		return EclExpression.of(ancestorOf.getConstraint(), expressionForm)
 				.resolveConcepts(context)
 				.then(concepts -> {
 					final Set<String> ancestors = newHashSet();
@@ -246,8 +249,7 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 		if (isAnyExpression(innerConstraint)) {
 			return evaluate(context, innerConstraint);
 		} else {
-			final String inner = context.service(EclSerializer.class).serializeWithoutTerms(innerConstraint);
-			return EclExpression.of(inner, expressionForm)
+			return EclExpression.of(innerConstraint, expressionForm)
 					.resolveConcepts(context)
 					.then(concepts -> {
 						final Set<String> ancestors = newHashSet();
@@ -370,8 +372,7 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 	 * Delegates evaluation of Refinement expression constraints to {@link SnomedEclRefinementEvaluator}.
 	 */
 	protected Promise<Expression> eval(final BranchContext context, final RefinedExpressionConstraint refined) {
-		final String focusConceptExpression = context.service(EclSerializer.class).serializeWithoutTerms(refined.getConstraint());
-		return new SnomedEclRefinementEvaluator(EclExpression.of(focusConceptExpression, expressionForm)).evaluate(context, refined.getRefinement());
+		return new SnomedEclRefinementEvaluator(EclExpression.of(refined.getConstraint(), expressionForm)).evaluate(context, refined.getRefinement());
 	}
 	
 	/**
@@ -379,17 +380,21 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.2+Refinements
 	 */
 	protected Promise<Expression> eval(BranchContext context, DottedExpressionConstraint dotted) {
-		final EclSerializer serializer = context.service(EclSerializer.class);
-		final Collection<String> sourceFilter = Collections.singleton(serializer.serializeWithoutTerms(dotted.getConstraint()));
-		final Collection<String> typeFilter = Collections.singleton(serializer.serializeWithoutTerms(dotted.getAttribute()));
-		return SnomedEclRefinementEvaluator.evalStatements(context, sourceFilter, typeFilter, Collections.singleton(Ecl.ANY), false, expressionForm)
-				.then(new Function<Collection<SnomedEclRefinementEvaluator.Property>, Set<String>>() {
-					@Override
-					public Set<String> apply(Collection<SnomedEclRefinementEvaluator.Property> input) {
-						return FluentIterable.from(input).transform(SnomedEclRefinementEvaluator.Property::getValue).filter(String.class).toSet();
-					}
-				})
-				.then(matchIdsOrNone());
+		final Promise<Set<String>> focusConceptIds = SnomedEclRefinementEvaluator.evalToConceptIds(context, dotted.getConstraint(), expressionForm);
+		final Promise<Set<String>> typeConceptIds = SnomedEclRefinementEvaluator.evalToConceptIds(context, dotted.getAttribute(), expressionForm);
+		return Promise.all(focusConceptIds, typeConceptIds)
+			.thenWith(responses -> {
+				Set<String> focusConcepts = (Set<String>) responses.get(0);
+				Set<String> typeConcepts = (Set<String>) responses.get(1);
+				return SnomedEclRefinementEvaluator.evalStatements(context, focusConcepts, typeConcepts, null /* ANY */, false, expressionForm);
+			})
+			.then(new Function<Collection<SnomedEclRefinementEvaluator.Property>, Set<String>>() {
+				@Override
+				public Set<String> apply(Collection<SnomedEclRefinementEvaluator.Property> input) {
+					return FluentIterable.from(input).transform(SnomedEclRefinementEvaluator.Property::getValue).filter(String.class).toSet();
+				}
+			})
+			.then(matchIdsOrNone());
 	}
 	
 	/**
@@ -436,9 +441,8 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 			try {
 				return Promise.immediate(extractIds(expression));
 			} catch (UnsupportedOperationException e) {
-				final String eclExpression = context.service(EclSerializer.class).serializeWithoutTerms(ecl);
 				// otherwise always evaluate the expression to ID set and return that
-				return EclExpression.of(eclExpression, expressionForm).resolve(context);
+				return EclExpression.of(ecl, expressionForm).resolve(context);
 			}
 		};
 	}
@@ -489,14 +493,6 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 				}
 			}
 		}		
-	}
-	
-	private boolean isAnyExpression(ExpressionConstraint expression) {
-		return expression instanceof Any || expression instanceof NestedExpression && ((NestedExpression) expression).getNested() instanceof Any;
-	}
-	
-	private boolean isEclConceptReference(ExpressionConstraint expression) {
-		return expression instanceof EclConceptReference || expression instanceof NestedExpression && ((NestedExpression) expression).getNested() instanceof EclConceptReference;
 	}
 	
 	/*package*/ static Function<Set<String>, Expression> matchIdsOrNone() {

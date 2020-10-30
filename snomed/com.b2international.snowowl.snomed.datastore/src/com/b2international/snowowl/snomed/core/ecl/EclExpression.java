@@ -22,6 +22,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+
 import com.b2international.commons.options.Options;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
@@ -45,6 +48,10 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDoc
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.ecl.Ecl;
+import com.b2international.snowowl.snomed.ecl.ecl.Any;
+import com.b2international.snowowl.snomed.ecl.ecl.EclConceptReference;
+import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
+import com.b2international.snowowl.snomed.ecl.ecl.NestedExpression;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSetMultimap;
@@ -56,7 +63,13 @@ import com.google.common.collect.Multimaps;
  */
 public final class EclExpression {
 
+	@Nullable
 	private final String ecl;
+	
+	@Nullable
+	private final ExpressionConstraint expressionConstraint;
+	
+	@NotNull
 	private final String expressionForm;
 	
 	private Promise<Set<String>> promise;
@@ -64,14 +77,12 @@ public final class EclExpression {
 	private Promise<SnomedConcepts> conceptPromise;
 	private Promise<Multimap<String, Integer>> conceptsWithGroups;
 
-	private EclExpression(String ecl, String expressionForm) {
-		this.ecl = ecl.trim();
+	private EclExpression(String ecl, ExpressionConstraint expressionConstraint, String expressionForm) {
+		this.ecl = ecl != null ? ecl.trim() : ecl;
+		this.expressionConstraint = expressionConstraint;
 		this.expressionForm = expressionForm;
+		Preconditions.checkArgument(ecl != null || expressionConstraint != null, "Either a raw or parsed ECL expression is required");
 		Preconditions.checkArgument(isInferred() || isStated(), "Allowed expression forms are 'inferred', 'stated' but was '%s'", expressionForm);
-	}
-	
-	public String getEcl() {
-		return ecl;
 	}
 	
 	public String getExpressionForm() {
@@ -87,7 +98,7 @@ public final class EclExpression {
 	}
 	
 	public boolean isAnyExpression() {
-		return Ecl.ANY.equals(ecl);
+		return Ecl.ANY.equals(ecl) || isAnyExpression(expressionConstraint);
 	}
 	
 	public Promise<Set<String>> resolve(final BranchContext context) {
@@ -117,9 +128,15 @@ public final class EclExpression {
 	
 	public Promise<SnomedConcepts> resolveConcepts(final BranchContext context) {
 		if (conceptPromise == null) {
+			String eclToEvaluate;
+			if (ecl != null) {
+				eclToEvaluate = ecl;
+			} else {
+				eclToEvaluate = context.service(EclSerializer.class).serialize(expressionConstraint);
+			}
 			conceptPromise = SnomedRequests.prepareSearchConcept()
 					.all()
-					.filterByEcl(ecl)
+					.filterByEcl(eclToEvaluate)
 					.build(context.id(), context.path())
 					.execute(context.service(IEventBus.class));
 		}
@@ -128,16 +145,24 @@ public final class EclExpression {
 
 	public Promise<Expression> resolveToExpression(final BranchContext context) {
 		if (expressionPromise == null) {
-			expressionPromise = SnomedRequests.prepareEclEvaluation(ecl)
-					.setExpressionForm(expressionForm)
-					.build()
-					.execute(context);
+			SnomedEclEvaluationRequest req = new SnomedEclEvaluationRequest();
+			req.setExpressionForm(expressionForm);
+			if (ecl != null) {
+				req.setExpression(ecl);
+				expressionPromise = req.execute(context);
+			} else {
+				expressionPromise = req.doEval(context, expressionConstraint);				
+			}
 		}
 		return expressionPromise;
 	}
 	
 	public static EclExpression of(String ecl, String expressionForm) {
-		return new EclExpression(ecl, expressionForm);
+		return new EclExpression(ecl, null, expressionForm);
+	}
+	
+	public static EclExpression of(ExpressionConstraint ecl, String expressionForm) {
+		return new EclExpression(null, ecl, expressionForm);
 	}
 
 	public Promise<Expression> resolveToExclusionExpression(final BranchContext context, final Set<String> excludedMatches) {
@@ -249,6 +274,14 @@ public final class EclExpression {
 								.build();
 					});
 		}
+	}
+	
+	public static boolean isAnyExpression(ExpressionConstraint expression) {
+		return expression instanceof Any || expression instanceof NestedExpression && ((NestedExpression) expression).getNested() instanceof Any;
+	}
+	
+	public static boolean isEclConceptReference(ExpressionConstraint expression) {
+		return expression instanceof EclConceptReference || expression instanceof NestedExpression && ((NestedExpression) expression).getNested() instanceof EclConceptReference;
 	}
 
 }

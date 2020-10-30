@@ -313,8 +313,7 @@ public abstract class SnomedRequests {
 	}
 	
 	/**
-	 * Returns a SNOMED CT request builder to prepare the evaluation of an 
-	 * Expression Constraint Language (ECL) expression.
+	 * Returns a SNOMED CT request builder to prepare the evaluation of an Expression Constraint Language (ECL) expression.
 	 * @param expression - the ECL expression to evaluate
 	 * @return SNOMED CT ECL evaluation request builder
 	 */

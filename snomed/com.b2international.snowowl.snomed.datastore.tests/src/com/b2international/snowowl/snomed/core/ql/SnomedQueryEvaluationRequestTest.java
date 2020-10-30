@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,8 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.eclipse.xtext.parser.IParser;
 import org.eclipse.xtext.serializer.ISerializer;
@@ -51,6 +53,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationsh
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.ecl.EclStandaloneSetup;
 import com.b2international.snowowl.snomed.ql.QLStandaloneSetup;
+import com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator;
 import com.b2international.snowowl.test.commons.snomed.TestBranchContext;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -425,6 +428,13 @@ public class SnomedQueryEvaluationRequestTest extends BaseRevisionIndexTest {
 	@Test
 	public void queryDisjunctionWithParenthesis() throws Exception {
 		eval("* {{ active = false }} OR (* {{ Description.active = true }})");
+	}
+	
+	@Test
+	public void evaluateLargeOrIDToExpression() throws Exception {
+		eval(IntStream.range(0, 10_000)
+				.mapToObj(i -> RandomSnomedIdentiferGenerator.generateConceptId())
+				.collect(Collectors.joining(" OR ")));
 	}
 	
 }
