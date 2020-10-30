@@ -45,6 +45,7 @@ import com.b2international.index.query.Expression;
 import com.b2international.index.revision.ObjectId;
 import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.request.TermFilter;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
@@ -172,18 +173,18 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		private Expressions() {
 		}
 		
-		public static Expression termDisjunctionQuery(final String searchTerm) {
+		public static Expression termDisjunctionQuery(final TermFilter termFilter) {
 			final List<Expression> disjuncts = newArrayList();
-			disjuncts.add(scriptScore(matchEntireTerm(searchTerm), "normalizeWithOffset", ImmutableMap.of("offset", 2)));
-			disjuncts.add(scriptScore(allTermsPresent(searchTerm), "normalizeWithOffset", ImmutableMap.of("offset", 1)));
-			disjuncts.add(scriptScore(allTermPrefixesPresent(searchTerm), "normalizeWithOffset", ImmutableMap.of("offset", 0)));
+			disjuncts.add(scriptScore(matchEntireTerm(termFilter.getTerm()), "normalizeWithOffset", ImmutableMap.of("offset", 2)));
+			disjuncts.add(scriptScore(matchTextAll(Fields.TERM, termFilter.getTerm()).withIgnoreStopwords(termFilter.isIgnoreStopwords()), "normalizeWithOffset", ImmutableMap.of("offset", 1)));
+			disjuncts.add(scriptScore(matchTextAll(Fields.TERM_PREFIX, termFilter.getTerm()).withIgnoreStopwords(termFilter.isIgnoreStopwords()), "normalizeWithOffset", ImmutableMap.of("offset", 0)));
 			return dismax(disjuncts);
 		}
 		
-		public static Expression minShouldMatchTermDisjunctionQuery(final String searchTerm, final int minShouldMatch) {
+		public static Expression minShouldMatchTermDisjunctionQuery(final TermFilter termFilter) {
 			final List<Expression> disjuncts = Lists.newArrayList();
-			disjuncts.add(anyTermPresent(searchTerm, minShouldMatch));
-			disjuncts.add(anyTermPrefixesPresent(searchTerm, minShouldMatch));
+			disjuncts.add(matchTextAny(Fields.TERM, termFilter.getTerm(), termFilter.getMinShouldMatch()).withIgnoreStopwords(termFilter.isIgnoreStopwords()));
+			disjuncts.add(matchTextAny(Fields.TERM_PREFIX, termFilter.getTerm(), termFilter.getMinShouldMatch()).withIgnoreStopwords(termFilter.isIgnoreStopwords()));
 			return dismax(disjuncts);
 		}
 
@@ -201,22 +202,6 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		
 		public static Expression matchTermRegex(String regex) {
 			return regexp(Fields.TERM_ORIGINAL, regex);
-		}
-		
-		public static Expression anyTermPresent(String term, int minShouldMatch) {
-			return matchTextAny(Fields.TERM, term, minShouldMatch);
-		}
-		
-		public static Expression anyTermPrefixesPresent(String term, int minShouldMatch) {
-			return matchTextAny(Fields.TERM_PREFIX, term, minShouldMatch);
-		}
-		
-		public static Expression allTermPrefixesPresent(String term) {
-			return matchTextAll(Fields.TERM_PREFIX, term);
-		}
-		
-		public static Expression allTermsPresent(String term) {
-			return matchTextAll(Fields.TERM, term);
 		}
 		
 		public static Expression parsedTerm(String term) {

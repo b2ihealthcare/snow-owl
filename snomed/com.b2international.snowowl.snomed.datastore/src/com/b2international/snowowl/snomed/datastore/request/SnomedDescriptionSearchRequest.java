@@ -45,6 +45,8 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
  */
 final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<SnomedDescriptions, SnomedDescriptionIndexEntry> {
 
+	private static final long serialVersionUID = 1L;
+
 	enum OptionKey {
 		TERM,
 		CONCEPT,
@@ -146,10 +148,10 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 			qb.should(matchTermOriginal(termFilter.getTerm()));
 		} else if (termFilter.isParsed()) {
 			qb.should(parsedTerm(termFilter.getTerm()));
-		} else if (termFilter.getMinShouldMatch() != null) {
-			qb.should(minShouldMatchTermDisjunctionQuery(termFilter.getTerm(), termFilter.getMinShouldMatch()));
+		} else if (termFilter.isAnyMatch()) {
+			qb.should(minShouldMatchTermDisjunctionQuery(termFilter));
 		} else {
-			qb.should(termDisjunctionQuery(termFilter.getTerm()));
+			qb.should(termDisjunctionQuery(termFilter));
 		}
 		
 		if (isComponentId(termFilter.getTerm(), ComponentCategory.DESCRIPTION)) {
