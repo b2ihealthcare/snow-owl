@@ -1,6 +1,24 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 7.11.0
+
+### Core
+- New, configurable term search API (#701)
+- Added `stop-word` search to Generic Concept Search API (65cc672, #701)
+- Improved Concept Map Compare API and algorithm (#702, #703, #704)
+  * Support equivalence configuration, supported values are, `codeSystem`, `code`, `term`
+
+### SNOMED CT
+- Support `effectiveTime` force updates on concept/description/relationship REST API (2dfbe7c)
+- Added `stop-word` search to SNOMED CT Description Search API (65cc672, #701)
+
+### Bugs/Improvements
+- [index] use Elasticsearch auto-generated IDs for revision documents to increase indexing perf (bab9cc0)
+- [core] support file names when executing groovy scripts (f56cfc8)
+- [snomed] fix potential StackOverflowError when evaluating large OR'd ID ECL/QL expressions (6c666a5)
+- [classification] cache computed direct/indirect destination edges to speed up classification process by ~80% (#700)
+
 ## 7.10.1
 
 ### Core
