@@ -70,4 +70,13 @@ public final class TextPredicate extends Predicate {
 		return String.format("TEXT(%s %s '%s'[])", getField(), type(), term(), CompareUtils.isEmpty(analyzer));
 	}
 
+	public TextPredicate withIgnoreStopwords(boolean ignoreStopwords) {
+		if (ignoreStopwords) {
+			analyzer = Analyzers.TOKENIZED_IGNORE_STOPWORDS.getAnalyzer();
+		} else {
+			analyzer = null;
+		}
+		return this;
+	}
+
 }

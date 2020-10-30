@@ -35,8 +35,9 @@ public final class TermFilter implements Serializable {
 	private final boolean fuzzy;
 	private final boolean exact;
 	private final boolean parsed;
+	private final boolean ignoreStopwords;
 
-	public TermFilter(final String term, final Integer minShouldMatch, final boolean fuzzy, final boolean exact, final boolean parsed) {
+	public TermFilter(final String term, final Integer minShouldMatch, final boolean fuzzy, final boolean exact, final boolean parsed, final boolean ignoreStopwords) {
 		if (term == null) {
 			throw new BadRequestException("'term' filter parameter was null.");
 		}
@@ -45,6 +46,7 @@ public final class TermFilter implements Serializable {
 		this.fuzzy = fuzzy;
 		this.exact = exact;
 		this.parsed = parsed;
+		this.ignoreStopwords = ignoreStopwords;
 	}
 	
 	public String getTerm() {
@@ -67,6 +69,18 @@ public final class TermFilter implements Serializable {
 		return parsed;
 	}
 	
+	public boolean isIgnoreStopwords() {
+		return ignoreStopwords;
+	}
+	
+	public boolean isAnyMatch() {
+		return getMinShouldMatch() != null;
+	}
+	
+	public TermFilter withIgnoreStopwords() {
+		return builder(this).ignoreStopwords(true).build();
+	}
+	
 	public static final Builder builder(final TermFilter termFilter) {
 		return new Builder()
 				.term(termFilter.getTerm())
@@ -85,6 +99,7 @@ public final class TermFilter implements Serializable {
 		private boolean fuzzy;
 		private boolean exact;
 		private boolean parsed;
+		private boolean ignoreStopwords;
 		
 		private Builder() { }
 		
@@ -92,33 +107,38 @@ public final class TermFilter implements Serializable {
 			return new Builder();
 		}
 		
-		public final Builder term(final String term) {
+		public Builder term(final String term) {
 			this.term = term;
 			return this;
 		}
 		
-		public final Builder minShouldMatch(final Integer minShouldMatch) {
+		public Builder minShouldMatch(final Integer minShouldMatch) {
 			this.minShouldMatch = minShouldMatch;
 			return this;
 		}
 		
-		public final Builder fuzzy(final boolean fuzzy) {
+		public Builder fuzzy(final boolean fuzzy) {
 			this.fuzzy = fuzzy;
 			return this;
 		}
 		
-		public final Builder exact(final boolean exact) {
+		public Builder exact(final boolean exact) {
 			this.exact = exact;
 			return this;
 		}
 		
-		public final Builder parsed(final boolean parsed) {
+		public Builder parsed(final boolean parsed) {
 			this.parsed = parsed;
 			return this;
 		}
 		
-		public final TermFilter build() {
-			return new TermFilter(term, minShouldMatch, fuzzy, exact, parsed);
+		public Builder ignoreStopwords(boolean ignoreStopwords) {
+			this.ignoreStopwords = ignoreStopwords;
+			return this;
+		}
+		
+		public TermFilter build() {
+			return new TermFilter(term, minShouldMatch, fuzzy, exact, parsed, ignoreStopwords);
 		}
 	}
 	
@@ -196,4 +216,5 @@ public final class TermFilter implements Serializable {
 	public static final TermFilter parsedTermMatch(final String term) {
 		return Builder.builder().term(term).parsed(true).build();
 	}
+
 }
