@@ -110,7 +110,6 @@
         <setEntry value="com.b2international.collections.api@default:default"/>
         <setEntry value="com.b2international.collections.fastutil@default:false"/>
         <setEntry value="com.b2international.collections.jackson@default:default"/>
-        <setEntry value="com.b2international.commons.base@default:default"/>
         <setEntry value="com.b2international.commons.test@default:false"/>
         <setEntry value="com.b2international.commons@default:default"/>
         <setEntry value="com.b2international.snowowl.logback.config@default:default"/>
