@@ -893,19 +893,19 @@
 
 	<distributionManagement>
 		<repository>
-			<id>${maven.repository.id}</id>
-			<url>${nexus.releases.url}</url>
+			<id>artifactory-releases</id>
+			<url>https://artifactory.ops.babylontech.co.uk/artifactory/babylon-maven-releases</url>
 		</repository>
 		<snapshotRepository>
-			<id>${maven.repository.id}</id>
-			<url>${nexus.snapshots.url}</url>
+			<id>artifactory-snapshots</id>
+			<url>https://artifactory.ops.babylontech.co.uk/artifactory/babylon-maven-snapshots</url>
 		</snapshotRepository>
 	</distributionManagement>
 
 	<scm>
-		<url>https://github.com/b2ihealthcare/snow-owl</url>
-		<connection>scm:git:ssh://github.com/b2ihealthcare/snow-owl.git</connection>
-		<developerConnection>scm:git:ssh@github.com:b2ihealthcare/snow-owl.git</developerConnection>
+		<url>https://github.com/babylonhealth/snow-owl</url>
+		<connection>scm:git:ssh://github.com/babylonhealth/snow-owl.git</connection>
+		<developerConnection>scm:git:ssh@github.com:babylonhealth/snow-owl.git</developerConnection>
 	</scm>
 	
 </project>
