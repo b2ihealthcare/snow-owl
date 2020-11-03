@@ -44,6 +44,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public abstract class BaseRevisionIndexTest {
 	
+	protected static final String USER_ID = UUID.randomUUID().toString();
 	protected static final String MAIN = RevisionBranch.MAIN_PATH;
 	protected static final String STORAGE_KEY1 = "1";
 	protected static final String STORAGE_KEY2 = "2";
@@ -132,7 +133,7 @@ public abstract class BaseRevisionIndexTest {
 		final long commitTimestamp = currentTime();
 		return index().prepareCommit(branchPath)
 			.stageChange(oldRevision, newRevision)
-			.commit(commitTimestamp, UUID.randomUUID().toString(), "Commit");
+			.commit(commitTimestamp, USER_ID, "Commit");
 	}
 	
 	protected final void indexRemove(final String branchPath, final Revision...removedRevisions) {
@@ -140,21 +141,21 @@ public abstract class BaseRevisionIndexTest {
 		StagingArea staging = index().prepareCommit(branchPath);
 		Arrays.asList(removedRevisions).forEach(staging::stageRemove);
 		staging
-			.commit(commitTimestamp, UUID.randomUUID().toString(), "Commit");
+			.commit(commitTimestamp, USER_ID, "Commit");
 	}
 
 	protected final Commit commit(final String branchPath, final Iterable<? extends Revision> newRevisions) {
 		final long commitTimestamp = currentTime();
 		StagingArea staging = index().prepareCommit(branchPath);
 		newRevisions.forEach(rev -> staging.stageNew(rev.getId(), rev));
-		return staging.commit(commitTimestamp, UUID.randomUUID().toString(), "Commit");
+		return staging.commit(commitTimestamp, USER_ID, "Commit");
 	}
 	
 	protected final void deleteRevision(final String branchPath, final Class<? extends Revision> type, final String key) {
 		final long commitTimestamp = currentTime();
 		StagingArea staging = index().prepareCommit(branchPath);
 		staging.stageRemove(key, getRevision(branchPath, type, key));
-		staging.commit(commitTimestamp, UUID.randomUUID().toString(), "Commit");
+		staging.commit(commitTimestamp, USER_ID, "Commit");
 	}
 	
 	protected final <T> Hits<T> search(final String branchPath, final Query<T> query) {

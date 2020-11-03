@@ -77,15 +77,15 @@ public class RevisionBranchMergeConflictTest extends BaseRevisionIndexTest {
 		
 		branching().prepareMerge(MAIN, branchA).merge();
 		RevisionData mainRevision = getRevision(MAIN, RevisionData.class, NEW_DATA.getId());
-		assertDocEquals(new RevisionData(NEW_DATA.getId(), "field1", "field2", terms), mainRevision);
+		assertDocEquals(NEW_DATA.toBuilder().terms(terms).build(), mainRevision);
 		RevisionData branchARevision = getRevision(branchA, RevisionData.class, NEW_DATA.getId());
-		assertDocEquals(new RevisionData(NEW_DATA.getId(), "field1Changed", "field2", terms), branchARevision);
+		assertDocEquals(NEW_DATA.toBuilder().field1("field1Changed").terms(terms).build(), branchARevision);
 		
 		branching().prepareMerge(branchA, MAIN).squash(true).merge();
 		mainRevision = getRevision(MAIN, RevisionData.class, NEW_DATA.getId());
-		assertDocEquals(new RevisionData(NEW_DATA.getId(), "field1Changed", "field2", terms), mainRevision);
+		assertDocEquals(NEW_DATA.toBuilder().field1("field1Changed").terms(terms).build(), mainRevision);
 		branchARevision = getRevision(branchA, RevisionData.class, NEW_DATA.getId());
-		assertDocEquals(new RevisionData(NEW_DATA.getId(), "field1Changed", "field2", terms), branchARevision);
+		assertDocEquals(NEW_DATA.toBuilder().field1("field1Changed").terms(terms).build(), branchARevision);
 	}
 	
 	@Test
@@ -116,20 +116,21 @@ public class RevisionBranchMergeConflictTest extends BaseRevisionIndexTest {
 		indexRevision(MAIN, NEW_DATA);
 		final String branchA = createBranch(MAIN, "a");
 		
-		indexChange(MAIN, NEW_DATA, NEW_DATA.toBuilder().terms(terms).build());
-		indexChange(branchA, NEW_DATA, NEW_DATA.toBuilder().terms(terms).build());
+		RevisionData newDataWithUpdatedTerms = NEW_DATA.toBuilder().terms(terms).build();
+		indexChange(MAIN, NEW_DATA, newDataWithUpdatedTerms);
+		indexChange(branchA, NEW_DATA, newDataWithUpdatedTerms);
 		
 		branching().prepareMerge(MAIN, branchA).merge();
 		RevisionData mainRevision = getRevision(MAIN, RevisionData.class, NEW_DATA.getId());
-		assertDocEquals(new RevisionData(NEW_DATA.getId(), "field1", "field2", List.of("term1", "term2")), mainRevision);
+		assertDocEquals(newDataWithUpdatedTerms, mainRevision);
 		RevisionData branchARevision = getRevision(branchA, RevisionData.class, NEW_DATA.getId());
-		assertDocEquals(new RevisionData(NEW_DATA.getId(), "field1", "field2", List.of("term1", "term2")), branchARevision);
+		assertDocEquals(newDataWithUpdatedTerms, branchARevision);
 		
 		branching().prepareMerge(branchA, MAIN).squash(true).merge();
 		mainRevision = getRevision(MAIN, RevisionData.class, NEW_DATA.getId());
-		assertDocEquals(new RevisionData(NEW_DATA.getId(), "field1", "field2", List.of("term1", "term2")), mainRevision);
+		assertDocEquals(newDataWithUpdatedTerms, mainRevision);
 		branchARevision = getRevision(branchA, RevisionData.class, NEW_DATA.getId());
-		assertDocEquals(new RevisionData(NEW_DATA.getId(), "field1", "field2", List.of("term1", "term2")), branchARevision);
+		assertDocEquals(newDataWithUpdatedTerms, branchARevision);
 	}
 	
 	@Test
@@ -195,6 +196,22 @@ public class RevisionBranchMergeConflictTest extends BaseRevisionIndexTest {
 		final NestedRevisionData expectedOnChildAfterRebase = new NestedRevisionData(STORAGE_KEY1, "parent2", expectedNestedDataOnChildAfterRebase);
 		
 		assertDocEquals(expectedOnChildAfterRebase, latestOnChild);
+	}
+	
+	@Test
+	public void rebaseSameChanges() throws Exception {
+		indexRevision(MAIN, NEW_DATA);
+		final String branchA = createBranch(MAIN, "a");
+		
+		RevisionData newDataWithUpdatedDerivedField = NEW_DATA.toBuilder().derivedField("derived").build();
+		indexChange(MAIN, NEW_DATA, newDataWithUpdatedDerivedField);
+		indexChange(branchA, NEW_DATA, newDataWithUpdatedDerivedField);
+		
+		// rebase should make the revision on merge source revised from the perspective of the child branch
+		branching().prepareMerge(MAIN, branchA).merge();
+		
+		// this would fail with multiple entries exception if the rebase could not resolve the two existing revisions
+		assertDocEquals(newDataWithUpdatedDerivedField, getRevision(branchA, RevisionData.class, NEW_DATA.getId()));
 	}
 	
 }

@@ -24,12 +24,12 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.commons.extension.Component;
 import com.b2international.index.Index;
 import com.b2international.index.Indexes;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.snowowl.core.config.IndexSettings;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
+import com.b2international.snowowl.core.plugin.Component;
 import com.b2international.snowowl.core.setup.ConfigurationRegistry;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.Plugin;

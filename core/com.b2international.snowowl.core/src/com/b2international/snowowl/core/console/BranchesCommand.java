@@ -19,13 +19,13 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import com.b2international.commons.exceptions.NotFoundException;
-import com.b2international.commons.extension.Component;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
+import com.b2international.snowowl.core.plugin.Component;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;

@@ -21,9 +21,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.b2international.commons.extension.Component;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.monitoring.MonitoringConfiguration;
+import com.b2international.snowowl.core.plugin.Component;
 import com.b2international.snowowl.core.setup.ConfigurationRegistry;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.Plugin;

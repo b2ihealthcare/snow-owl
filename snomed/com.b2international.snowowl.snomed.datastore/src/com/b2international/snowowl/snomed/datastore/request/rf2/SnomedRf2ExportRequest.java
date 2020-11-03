@@ -492,7 +492,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 			}
 			
 			final Optional<SnomedReferenceSetMember> moduleDependencyMember = requestBuilder 
-				.build(context.id(), version.getPath())
+				.build(version.getCodeSystemURI())
 				.execute(context.service(IEventBus.class))
 				.getSync(1, TimeUnit.MINUTES)
 				.first();
@@ -539,26 +539,26 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 		if (candidateVersions.isEmpty()) {
 			return;
 		}
-
-		final String versionParentPath = candidateVersions.stream()
-				.map(CodeSystemVersionEntry::getParentBranchPath)
-				.findFirst()
-				.get();
-
-		final Set<String> versionNames = candidateVersions.stream()
-				.map(CodeSystemVersionEntry::getVersionId)
+		
+		final Set<String> versionPaths = candidateVersions.stream()
+				.map(CodeSystemVersionEntry::getPath)
 				.collect(Collectors.toSet());
 
-		final Branches versionBranches = getBranches(context, versionParentPath, versionNames);
-		final Map<String, Branch> versionBranchesByName = Maps.uniqueIndex(versionBranches, Branch::name);
+		final Branches versionBranches = getBranches(context, versionPaths);
+		final Map<String, Branch> versionBranchesByPath = Maps.uniqueIndex(versionBranches, Branch::path);
 
+		// cutoff timestamp represents the timestamp on the current referenceBranch segments, cutting off any versions created after this timestamp
 		final Branch cutoffBranch = getBranch(context, referenceBranch);
-		final long cutoffBaseTimestamp = getCutoffBaseTimestamp(context, cutoffBranch, versionParentPath);
+		final String latestVersionParentBranch = candidateVersions.stream()
+				.findFirst()
+				.map(CodeSystemVersionEntry::getParentBranchPath)
+				.get();
+		final long cutoffBaseTimestamp = getCutoffBaseTimestamp(context, cutoffBranch, latestVersionParentBranch);
 
 		// Remove all code system versions which were created after the cut-off date, or don't have a corresponding branch 
 		candidateVersions.removeIf(v -> false
-				|| !versionBranchesByName.containsKey(v.getVersionId())
-				|| versionBranchesByName.get(v.getVersionId()).baseTimestamp() > cutoffBaseTimestamp);
+				|| !versionBranchesByPath.containsKey(v.getPath())
+				|| versionBranchesByPath.get(v.getPath()).baseTimestamp() > cutoffBaseTimestamp);
 
 		versionsToExport.addAll(candidateVersions);
 
@@ -975,7 +975,6 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 	}
 
 	private static long getCutoffBaseTimestamp(final RepositoryContext context, final Branch cutoffBranch, final String versionParentPath) {
-//		System.err.println("SnomedRf2ExportRequest.getCutoffBaseTimestamp(): branch[" + cutoffBranch.path() + "], branchParentPath: [" + cutoffBranch.parentPath() +  "], versionParentPath: [" + versionParentPath + "]");
 		if (cutoffBranch.path().equals(versionParentPath) || Branch.MAIN_PATH.equals(cutoffBranch.path())) {
 			// We are on the working branch of the code system, all versions are visible for export
 			return Long.MAX_VALUE;	
@@ -999,20 +998,17 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 	}
 
 	private static Branch getBranch(final RepositoryContext context, final String path) {
-//		System.err.println("SnomedRf2ExportRequest.getBranch(): " + path);
 		return RepositoryRequests.branching()
 				.prepareGet(path)
 				.build()
 				.execute(context);
 	}
 
-	private static Branches getBranches(final RepositoryContext context, final String parent, final Collection<String> paths) {
-//		System.err.println("SnomedRf2ExportRequest.getBranches(): " + parent + ", paths: " + paths + "");
+	private static Branches getBranches(final RepositoryContext context, final Collection<String> paths) {
 		return RepositoryRequests.branching()
 				.prepareSearch()
 				.all()
-				.filterByParent(parent)
-				.filterByName(paths)
+				.filterByIds(paths)
 				.build()
 				.execute(context);
 	}

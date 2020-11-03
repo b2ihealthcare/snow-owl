@@ -81,6 +81,17 @@
 				"unique_token",
 				"edge_ngram"
 			]
+		},
+		"tokenized_ignore_stopwords": {
+			"tokenizer": "whitespace",
+			"filter": [
+				"asciifolding",
+				"lowercase",
+				"stop_words",
+				"possessive",
+				"word_splitter",
+				"unique_token"				
+			]
 		}
 	},
 	"normalizer": {
@@ -100,8 +111,8 @@
 		},
 		"edge_ngram": {
 			"type": "edge_ngram",
-			"min_gram": 1,
-			"max_gram": 20
+			"min_gram": 2,
+			"max_gram": 12
 		},
 		"possessive": {
 			"type": "stemmer",
@@ -121,6 +132,10 @@
 		"unique_token": {
 			"type": "unique",
 			"only_on_same_position": "true"
+		},
+		"stop_words": {
+			"type": "stop",
+			"stopwords": ["a", "an", "and", "are", "as", "at", "be", "but", "by", "for", "if", "in", "into", "is", "it", "of", "on", "or", "such", "that", "the", "their", "then", "there", "these", "they", "this", "to", "was", "will", "with"]
 		}
 	}
 }

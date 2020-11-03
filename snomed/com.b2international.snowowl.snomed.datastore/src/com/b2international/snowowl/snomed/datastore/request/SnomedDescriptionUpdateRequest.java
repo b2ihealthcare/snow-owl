@@ -76,6 +76,7 @@ public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateR
 		changed |= updateTypeId(context, description, updatedDescription);
 		changed |= updateTerm(context, description, updatedDescription);
 		changed |= updateLanguageCode(context, description, updatedDescription);
+		changed |= updateEffectiveTime(description, updatedDescription);
 		changed |= processInactivation(context, description, updatedDescription);
 
 		// XXX: acceptability and association changes do not push the effective time forward on the description
@@ -83,7 +84,7 @@ public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateR
 		updateAcceptability(context, description);
 
 		if (changed) {
-			if (description.getEffectiveTime() != EffectiveTimes.UNSET_EFFECTIVE_TIME) {
+			if (!isEffectiveTimeUpdate() && description.getEffectiveTime() != EffectiveTimes.UNSET_EFFECTIVE_TIME) {
 				updatedDescription.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME);
 			}
 			context.update(description, updatedDescription.build());

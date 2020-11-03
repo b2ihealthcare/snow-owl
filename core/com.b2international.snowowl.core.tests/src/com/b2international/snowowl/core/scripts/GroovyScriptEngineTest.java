@@ -22,7 +22,6 @@ import java.util.Collections;
 
 import org.junit.Test;
 
-import com.b2international.snowowl.core.scripts.ScriptEngine;
 import com.google.common.collect.ImmutableMap;
 
 /**

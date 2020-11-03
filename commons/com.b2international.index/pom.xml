@@ -4,13 +4,13 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>commons-parent</artifactId>
-		<version>7.10.0</version>
+		<version>7.11.0</version>
 	</parent>
 	<artifactId>com.b2international.index</artifactId>
 	<packaging>eclipse-plugin</packaging>
 	
 	<properties>
-		<elasticsearch.version>7.9.1</elasticsearch.version>
+		<elasticsearch.version>7.9.2</elasticsearch.version>
 		<log4j2.version>2.11.1</log4j2.version>
     </properties>
     
@@ -107,7 +107,6 @@
 								elasticsearch-ssl-config,
 								elasticsearch-x-content,
 								hppc,
-								hppcrt,
 								jna,
 								joda-time,
 								jopt-simple,

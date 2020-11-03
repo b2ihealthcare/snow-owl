@@ -30,12 +30,4 @@ public interface EclSerializer {
 	 */
 	String serialize(ExpressionConstraint expression);
 
-	/**
-	 * Serializes an {@link ExpressionConstraint} to its brief syntax equivalent without any Concept Terms.
-	 * 
-	 * @param expression
-	 * @return
-	 */
-	String serializeWithoutTerms(ExpressionConstraint expression);
-
 }

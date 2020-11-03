@@ -17,8 +17,8 @@ package com.b2international.snowowl.core.validation.issue;
 
 import java.util.Collection;
 
-import com.b2international.commons.extension.ClassPathScanner;
 import com.b2international.snowowl.core.SnowOwl.InitializationException;
+import com.b2international.snowowl.core.plugin.ClassPathScanner;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 

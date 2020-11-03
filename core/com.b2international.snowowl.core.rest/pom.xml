@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>core-parent</artifactId>
-		<version>7.10.0</version>
+		<version>7.11.0</version>
 	</parent>
 
 	<artifactId>com.b2international.snowowl.core.rest</artifactId>
@@ -134,36 +134,37 @@
 				</executions>
 			</plugin>
 			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>exec-maven-plugin</artifactId>
-				<version>1.6.0</version>
-				<executions>
-					<execution>
-						<id>npm install</id>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-						<phase>generate-resources</phase>
-						<configuration>
-							<executable>npm</executable>
-							<workingDirectory>${basedir}/snow-owl-api-docs</workingDirectory>
-							<arguments>install</arguments>
-						</configuration>
+        		<groupId>com.github.eirslett</groupId>
+        		<artifactId>frontend-maven-plugin</artifactId>
+        		<version>1.8.0</version>
+        		<executions>
+        			<execution>
+	            		<id>install node and npm</id>
+	            		<goals>
+	                		<goal>install-node-and-npm</goal>
+	            		</goals>
+	            		<phase>generate-resources</phase>
+        			</execution>
+        			<execution>
+    					<id>npm install</id>
+    					<goals>
+        					<goal>npm</goal>
+    					</goals>
+    					<phase>generate-resources</phase>
+    					<configuration>
+        					<arguments>install</arguments>
+    					</configuration>
 					</execution>
 					<execution>
-						<id>npm build</id>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-						<phase>generate-resources</phase>
-						<configuration>
-							<executable>npm</executable>
-							<workingDirectory>${basedir}/snow-owl-api-docs</workingDirectory>
-							<arguments>
-								<argument>run</argument>
-								<argument>build</argument>
-							</arguments>
-						</configuration>
+    					<id>npm build</id>
+    					<goals>
+        					<goal>npm</goal>
+    					</goals>
+    					<phase>generate-resources</phase>
+    					<configuration>
+    						<workingDirectory>${basedir}/snow-owl-api-docs</workingDirectory>
+        					<arguments>run build</arguments>
+    					</configuration>
 					</execution>
     			</executions>
     			<configuration>

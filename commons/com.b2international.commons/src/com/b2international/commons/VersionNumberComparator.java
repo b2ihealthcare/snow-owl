@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,10 +21,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import com.b2international.commons.functions.StringToIntegerParserFunction;
-import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import com.google.common.primitives.Ints;
 
 /**
@@ -42,10 +38,8 @@ public final class VersionNumberComparator implements Comparator<String> {
 	public int compare(String version1, String version2) {
 		checkArgument(checkVersionFormat(version1), "Version string format is invalid: " + version1);
 		checkArgument(checkVersionFormat(version2), "Version string format is invalid: " + version2);
-		List<Integer> version1Parts = Lists.transform(ImmutableList.copyOf(Splitter.on('.').split(version1)), 
-				new StringToIntegerParserFunction());
-		List<Integer> version2Parts = Lists.transform(ImmutableList.copyOf(Splitter.on('.').split(version2)), 
-				new StringToIntegerParserFunction());
+		List<Integer> version1Parts = Version.parseParts(version1);
+		List<Integer> version2Parts = Version.parseParts(version2);
 		int minLength = Math.min(version1Parts.size(), version2Parts.size());
 		int maxLength = Math.max(version1Parts.size(), version2Parts.size());
 

@@ -75,12 +75,10 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 				.map(SnomedReferenceSetMember::getReferenceSetId)
 				.collect(Collectors.toSet());
 		
-		String expand = String.format("%sreferenceSet()", !Strings.isNullOrEmpty(snomedDisplayTermType.getExpand()) ? snomedDisplayTermType.getExpand() + "," : "");
-		
 		final Map<String, SnomedConcept> refSetsById = SnomedRequests.prepareSearchConcept()
 				.filterByIds(refSetsToFetch)
 				.setLocales(search.getList(OptionKey.LOCALES, ExtendedLocale.class))
-				.setExpand(expand)
+				.setExpand("pt(),referenceSet()")
 				.build(uri)
 				.execute(context.service(IEventBus.class))
 				.getSync()
@@ -103,12 +101,12 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 					.stream()
 					.filter(entry -> !entry.getKey().isUnspecified())
 					.map(entry -> {
-								final String cs = entry.getKey().codeSystemUri().getCodeSystem();
+								final CodeSystemURI cs = entry.getKey().codeSystemUri();
 								final Set<String> idsToFetch = entry.getValue().stream().map(map -> map.getTargetComponentURI().identifier()).collect(Collectors.toSet());
 								return CodeSystemRequests.prepareSearchConcepts()
 										.all()
 										.filterByIds(idsToFetch)
-										.build(CodeSystemURI.head(cs)) // FIXME implicit HEAD used here instead of using a proper CodeSystemURI
+										.build(cs)
 										.execute(context.service(IEventBus.class))
 										.getSync(5, TimeUnit.MINUTES)
 										.stream()
@@ -212,10 +210,10 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 		final SnomedConcept referenceSet = refSetsByIds.get(member.getReferenceSetId());
 
 		return mappingBuilder
+				.uri(ComponentURI.of(codeSystemURI.getCodeSystem(), SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, member.getId()))
 				.containerIconId(referenceSet.getIconId())
-				.containerTerm(snomedDisplayTermType.getLabel(referenceSet))
+				.containerTerm(referenceSet.getPt().getTerm())
 				.containerSetURI(ComponentURI.of(codeSystemURI.getCodeSystem(), SnomedTerminologyComponentConstants.REFSET_NUMBER, member.getReferenceSetId()))
-				.memberId(member.getId())
 				.active(true)
 				.sourceIconId(iconId)
 				.sourceTerm(term)

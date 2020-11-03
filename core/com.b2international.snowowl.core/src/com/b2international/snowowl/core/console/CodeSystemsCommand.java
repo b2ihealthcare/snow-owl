@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import com.b2international.commons.extension.Component;
 import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
@@ -31,6 +30,7 @@ import com.b2international.snowowl.core.codesystem.CodeSystems;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.events.util.Promise;
+import com.b2international.snowowl.core.plugin.Component;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
 import com.google.common.base.Joiner;

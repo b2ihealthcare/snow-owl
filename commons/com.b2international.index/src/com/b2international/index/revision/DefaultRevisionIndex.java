@@ -166,9 +166,9 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex, Hooks 
 			
 			if (base.branchId() != compare.branchId()) {
 				Stopwatch w = Stopwatch.createStarted();
-				admin.log().info("Comparing changes between {} -> {}.", base, compare);
+				admin.log().trace("Comparing changes between {} -> {}.", base, compare);
 				doRevisionCompare(searcher, compareRef, result);
-				admin.log().info("Compared changes between {} -> {} in {}.", base, compare, w);
+				admin.log().trace("Compared changes between {} -> {} in {}.", base, compare, w);
 			}
 
 			return result.build();

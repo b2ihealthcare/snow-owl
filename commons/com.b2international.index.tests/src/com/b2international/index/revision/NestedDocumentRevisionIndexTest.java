@@ -16,7 +16,7 @@
 package com.b2international.index.revision;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.util.Collection;
 
@@ -88,12 +88,13 @@ public class NestedDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 		updatedNestedData.setField1("field1_2");
 		updatedNestedData.setField2("field2_2");
 		final NestedRevisionData updatedDoc = new NestedRevisionData(STORAGE_KEY1, "parent1", updatedNestedData);
-		Commit commit = indexChange(a, doc, updatedDoc);
+		indexChange(a, doc, updatedDoc);
 		
 		RevisionCompare compare = index().compare(MAIN, a);
 		assertThat(compare.getDetails()).containsOnly(
-			RevisionCompareDetail.propertyChange(commit.getAuthor(), commit.getTimestamp(), commit.getComment(), Operation.CHANGE, updatedDoc.getObjectId(), "data/field1", "field1_1", "field1_2"),
-			RevisionCompareDetail.propertyChange(commit.getAuthor(), commit.getTimestamp(), commit.getComment(), Operation.CHANGE, updatedDoc.getObjectId(), "data/field2", "field2_1", "field2_2")
+			RevisionCompareDetail.componentChange(Operation.CHANGE, updatedDoc.getContainerId(), updatedDoc.getObjectId()),
+			RevisionCompareDetail.propertyChange(Operation.CHANGE, updatedDoc.getObjectId(), "data/field1", "field1_1", "field1_2"),
+			RevisionCompareDetail.propertyChange(Operation.CHANGE, updatedDoc.getObjectId(), "data/field2", "field2_1", "field2_2")
 		);
 	}
 	

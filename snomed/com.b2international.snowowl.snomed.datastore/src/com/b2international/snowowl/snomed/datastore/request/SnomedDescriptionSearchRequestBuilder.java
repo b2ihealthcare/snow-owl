@@ -21,6 +21,8 @@ import java.util.List;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
+import com.b2international.snowowl.core.request.TermFilter;
+import com.b2international.snowowl.core.request.TermFilterSupport;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
@@ -35,47 +37,14 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionSea
  * 
  * @since 4.5
  */
-public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponentSearchRequestBuilder<SnomedDescriptionSearchRequestBuilder, SnomedDescriptions> {
+public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponentSearchRequestBuilder<SnomedDescriptionSearchRequestBuilder, SnomedDescriptions>
+		implements TermFilterSupport<SnomedDescriptionSearchRequestBuilder>{
 
 	SnomedDescriptionSearchRequestBuilder() {}
 	
-	public SnomedDescriptionSearchRequestBuilder withFuzzySearch() {
-		return addOption(OptionKey.USE_FUZZY, true);
-	}
-
-	public SnomedDescriptionSearchRequestBuilder withParsedTerm() {
-		return addOption(OptionKey.PARSED_TERM, true);
-	}
-	
-	public SnomedDescriptionSearchRequestBuilder withMinTermMatch(int minTermMatch) {
-		return addOption(OptionKey.MIN_TERM_MATCH, minTermMatch);
-	}
-	
-	/**
-	 * Filters results by matching description terms, using different methods for comparison.
-	 * <p>
-	 * This filter affects the score of each result. If results should be returned in order of 
-	 * relevance, specify {@link SearchResourceRequest#SCORE} as one of the sort fields.
-	 * 
-	 * @param termFilter - the expression to match
-	 * @return <code>this</code> search request builder, for method chaining
-	 */
-	public SnomedDescriptionSearchRequestBuilder filterByTerm(String termFilter) {
-		return addOption(OptionKey.TERM, termFilter == null ? termFilter : termFilter.trim());
-	}
-
-	/**
-	 * Filters results by matching description terms, as entered (the comparison is case 
-	 * insensitive and folds non-ASCII characters to their closest equivalent).
-	 * <p>
-	 * This filter affects the score of each result. If results should be returned in order of 
-	 * relevance, specify {@link SearchResourceRequest#SCORE} as one of the sort fields.
-	 * 
-	 * @param exactTermFilter - the expression to match
-	 * @return <code>this</code> search request builder, for method chaining
-	 */
-	public SnomedDescriptionSearchRequestBuilder filterByExactTerm(String exactTermFilter) {
-		return addOption(OptionKey.EXACT_TERM, exactTermFilter == null ? exactTermFilter : exactTermFilter.trim());
+	@Override
+	public SnomedDescriptionSearchRequestBuilder filterByTerm(TermFilter termFilter) {
+		return addOption(OptionKey.TERM, termFilter);
 	}
 
 	/**
@@ -326,5 +295,4 @@ public final class SnomedDescriptionSearchRequestBuilder extends SnomedComponent
 	protected SearchResourceRequest<BranchContext, SnomedDescriptions> createSearch() {
 		return new SnomedDescriptionSearchRequest();
 	}
-
 }

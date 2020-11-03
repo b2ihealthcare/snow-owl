@@ -17,7 +17,7 @@ package com.b2international.index;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.math.BigDecimal;
 import java.util.Collection;
@@ -41,10 +41,12 @@ public class DecimalFieldTest extends BaseIndexTest {
 
 	private static final BigDecimal REALLY_SMALL = new BigDecimal("1234567890123456789012345678901E-100");
 	private static final BigDecimal REALLY_BIG = new BigDecimal("1234567890123456789012345678901E100");
+	private static final BigDecimal VALUE_00 = new BigDecimal("0.0");
 	private static final BigDecimal VALUE_05 = new BigDecimal("0.5");
 	private static final BigDecimal VALUE_10 = new BigDecimal("1.0");
 	private static final BigDecimal VALUE_20 = new BigDecimal("2.0");
 	private static final String KEY3 = "key3";
+	private static final String KEY4 = "key4";
 	
 	@Override
 	protected Collection<Class<?>> getTypes() {
@@ -56,7 +58,8 @@ public class DecimalFieldTest extends BaseIndexTest {
 		indexDocuments(ImmutableMap.of(
 			KEY1, new DataWithDecimal(VALUE_10),
 			KEY2, new DataWithDecimal(VALUE_05),
-			KEY3, new DataWithDecimal(VALUE_20)
+			KEY3, new DataWithDecimal(VALUE_20),
+			KEY4, new DataWithDecimal(VALUE_00)
 		));
 	}
 	
@@ -78,8 +81,12 @@ public class DecimalFieldTest extends BaseIndexTest {
 						.build())
 				.build());
 		assertThat(hits)
-			.hasSize(2)
-			.containsOnly(new DataWithDecimal(VALUE_05), new DataWithDecimal(VALUE_20));
+			.hasSize(3)
+			.containsOnly(
+				new DataWithDecimal(VALUE_00),
+				new DataWithDecimal(VALUE_05), 
+				new DataWithDecimal(VALUE_20)
+			);
 	}
 	
 	@Test
@@ -98,8 +105,11 @@ public class DecimalFieldTest extends BaseIndexTest {
 				.where(Expressions.matchRange("value", null, VALUE_10, false, false))
 				.build());
 		assertThat(hits)
-			.hasSize(1)
-			.containsOnly(new DataWithDecimal(VALUE_05));
+			.hasSize(2)
+			.containsOnly(
+				new DataWithDecimal(VALUE_00),
+				new DataWithDecimal(VALUE_05)
+			);
 	}
 	
 	@Test
@@ -118,8 +128,12 @@ public class DecimalFieldTest extends BaseIndexTest {
 				.where(Expressions.matchRange("value", null, VALUE_10, false, true))
 				.build());
 		assertThat(hits)
-			.hasSize(2)
-			.containsOnly(new DataWithDecimal(VALUE_05), new DataWithDecimal(VALUE_10));
+			.hasSize(3)
+			.containsOnly(
+				new DataWithDecimal(VALUE_00),
+				new DataWithDecimal(VALUE_05), 
+				new DataWithDecimal(VALUE_10)
+			);
 	}
 	
 	@Test

@@ -64,9 +64,13 @@ public class RevisionHistoryTest extends BaseRevisionIndexTest {
 		assertThat(commits).hasSize(2);
 		// first element should be the latest commit
 		final Commit commit = Iterables.getFirst(commits, null);
-		assertThat(commit.getDetails()).hasSize(1);
-		final CommitDetail objectChange = CommitDetail.changedProperty("field1", "field1", "field1Changed", DOC_TYPE, Collections.singletonList(STORAGE_KEY1));
-		assertThat(commit.getDetailsByObject(STORAGE_KEY1)).containsOnly(objectChange);
+		assertThat(commit.getDetails()).hasSize(2);
+		final CommitDetail expectedObjectPropertyChange = CommitDetail.changedProperty("field1", "field1", "field1Changed", DOC_TYPE, Collections.singletonList(STORAGE_KEY1));
+		final CommitDetail expectedObjectChange = CommitDetail.changed(DOC_TYPE, DOC_TYPE).putObjects(ObjectId.ROOT, Collections.singleton(STORAGE_KEY1)).build();
+		assertThat(commit.getDetailsByObject(STORAGE_KEY1)).contains(
+			expectedObjectPropertyChange,
+			expectedObjectChange
+		);
 	}
 	
 	@Test

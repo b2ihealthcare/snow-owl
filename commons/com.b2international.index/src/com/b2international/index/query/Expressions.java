@@ -178,6 +178,10 @@ public class Expressions {
 		return new RegexpPredicate(field, regexp);
 	}
 	
+	public static Expression dismax(Expression...disjuncts) {
+		return dismax(List.of(disjuncts));
+	}
+	
 	public static Expression dismax(Collection<Expression> disjuncts) {
 		return new DisMaxPredicate(disjuncts, 0.0f);
 	}

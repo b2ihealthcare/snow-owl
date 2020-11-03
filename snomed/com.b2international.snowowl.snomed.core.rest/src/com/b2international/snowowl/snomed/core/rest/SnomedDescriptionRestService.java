@@ -224,6 +224,10 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 			@RequestBody 
 			final SnomedResourceRequest<SnomedDescriptionRestUpdate> body,
 			
+			@ApiParam(value = "Force update flag")
+			@RequestParam(defaultValue="false", required=false)
+			final Boolean force,
+			
 			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
 
@@ -231,6 +235,7 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 		final String defaultModuleId = body.getDefaultModuleId();
 		body.getChange()
 			.toRequestBuilder(descriptionId)
+			.force(force)
 			.build(repositoryId, branchPath, author, commitComment, defaultModuleId)
 			.execute(getBus())
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);

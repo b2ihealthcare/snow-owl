@@ -17,8 +17,8 @@ package com.b2international.snowowl.core.propertytester;
 
 import org.eclipse.core.expressions.PropertyTester;
 
-import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.core.CoreActivator;
+import com.b2international.snowowl.core.util.PlatformUtil;
 
 /**
  * Property tester for development version test. Returns <code>true</code> if the running SnowOwl is a dev version,

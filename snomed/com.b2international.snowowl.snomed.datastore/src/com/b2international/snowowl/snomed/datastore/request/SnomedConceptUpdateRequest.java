@@ -119,6 +119,7 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 		boolean changed = false;
 		changed |= updateModule(context, concept, updatedConcept);
 		changed |= updateDefinitionStatus(context, concept, updatedConcept);
+		changed |= updateEffectiveTime(concept, updatedConcept);
 		
 		if (descriptions != null) {
 			updateComponents(
@@ -151,7 +152,7 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 		
 		changed |= processInactivation(context, concept, updatedConcept);
 
-		if (changed && concept.getEffectiveTime() != EffectiveTimes.UNSET_EFFECTIVE_TIME) {
+		if (changed && concept.getEffectiveTime() != EffectiveTimes.UNSET_EFFECTIVE_TIME && !isEffectiveTimeUpdate()) {
 			updatedConcept.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME);
 		}
 	

@@ -111,20 +111,32 @@ public class SnomedEclRewriter {
 	}
 
 	private ExpressionConstraint rewriteExpression(OrExpressionConstraint it) {
-		it.setLeft(rewrite(it.getLeft()));
-		it.setRight(rewrite(it.getRight()));
+		ExpressionConstraint left = it;
+		while (left instanceof OrExpressionConstraint) {
+			OrExpressionConstraint newLeft = (OrExpressionConstraint) left;
+			newLeft.setRight(rewrite(newLeft.getRight()));
+			left = newLeft.getLeft();
+		}
 		return it;
 	}
 	
 	private ExpressionConstraint rewriteExpression(AndExpressionConstraint it) {
-		it.setLeft(rewrite(it.getLeft()));
-		it.setRight(rewrite(it.getRight()));
+		ExpressionConstraint left = it;
+		while (left instanceof AndExpressionConstraint) {
+			AndExpressionConstraint newAnd = (AndExpressionConstraint) left;
+			newAnd.setRight(rewrite(newAnd.getRight()));
+			left = newAnd.getLeft();
+		}
 		return it;
 	}
 	
 	private ExpressionConstraint rewriteExpression(ExclusionExpressionConstraint it) {
-		it.setLeft(rewrite(it.getLeft()));
-		it.setRight(rewrite(it.getRight()));
+		ExpressionConstraint left = it;
+		while (left instanceof ExclusionExpressionConstraint) {
+			ExclusionExpressionConstraint newExclusion = (ExclusionExpressionConstraint) left;
+			newExclusion.setRight(rewrite(newExclusion.getRight()));
+			left = newExclusion.getLeft();
+		}
 		return it;
 	}
 	

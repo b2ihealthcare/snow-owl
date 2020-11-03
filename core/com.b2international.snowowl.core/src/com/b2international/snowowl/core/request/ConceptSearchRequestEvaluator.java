@@ -52,16 +52,6 @@ public interface ConceptSearchRequestEvaluator {
 		TERM,
 
 		/**
-		 * A term filter that matches concepts having an exact term match regardless of case.
-		 */
-		TERM_EXACT,
-
-		/**
-		 * The minimum number of terms to match.
-		 */
-		MIN_TERM_MATCH,
-
-		/**
 		 * One or more query expressions (defined in the target code system's query language) to include matches.
 		 */
 		QUERY,
@@ -85,6 +75,11 @@ public interface ConceptSearchRequestEvaluator {
 		 * Number of matches to return.
 		 */
 		LIMIT,
+		
+		/**
+		 * Set the preferred display type to return
+		 */
+		DISPLAY,
 	}
 
 	/**
@@ -130,6 +125,12 @@ public interface ConceptSearchRequestEvaluator {
 		}
 		
 		requestBuilder.filterByIds(idFilter);
+	}
+	
+	default void evaluateTermFilterOptions(TermFilterSupport<?> requestBuilder, Options search) {
+		if (search.containsKey(OptionKey.TERM)) {
+			requestBuilder.filterByTerm(search.get(OptionKey.TERM, TermFilter.class));
+		}
 	}
 	
 	/**

@@ -46,7 +46,7 @@ if (params.isUnpublishedOnly) {
 Aggregation<String> activeDescriptionsByOriginalTerm = searcher
 		.aggregate(AggregationBuilder.bucket("ruleSnomedCommon2", String.class, SnomedDescriptionIndexEntry.class)
 		.query(activeFsnExpression.build())
-		.onFieldValue(SnomedDescriptionIndexEntry.Fields.ORIGINAL_TERM)
+		.onFieldValue(SnomedDescriptionIndexEntry.Fields.TERM_ORIGINAL)
 		.fields(SnomedDescriptionIndexEntry.Fields.ID)
 		.minBucketSize(2))
 

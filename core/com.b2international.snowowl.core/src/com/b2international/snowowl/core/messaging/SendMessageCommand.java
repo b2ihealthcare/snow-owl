@@ -17,9 +17,9 @@ package com.b2international.snowowl.core.messaging;
 
 import java.util.concurrent.TimeUnit;
 
-import com.b2international.commons.extension.Component;
 import com.b2international.snowowl.core.console.Command;
 import com.b2international.snowowl.core.console.CommandLineStream;
+import com.b2international.snowowl.core.plugin.Component;
 
 import picocli.CommandLine;
 import picocli.CommandLine.Parameters;
