@@ -45,6 +45,7 @@ import com.b2international.index.query.Expression;
 import com.b2international.index.revision.ObjectId;
 import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.request.TermFilter;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
@@ -58,6 +59,7 @@ import com.google.common.base.MoreObjects.ToStringHelper;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
@@ -156,13 +158,14 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		public static final String CONCEPT_ID = SnomedRf2Headers.FIELD_CONCEPT_ID;
 		public static final String TYPE_ID = SnomedRf2Headers.FIELD_TYPE_ID;
 		public static final String CASE_SIGNIFICANCE_ID = SnomedRf2Headers.FIELD_CASE_SIGNIFICANCE_ID;
-		public static final String TERM = SnomedRf2Headers.FIELD_TERM;
 		public static final String LANGUAGE_CODE = SnomedRf2Headers.FIELD_LANGUAGE_CODE;
 		public static final String PREFERRED_IN = "preferredIn";
 		public static final String ACCEPTABLE_IN = "acceptableIn";
 		public static final String SEMANTIC_TAG = "semanticTag";
-		public static final String ORIGINAL_TERM = Fields.TERM + ".original";
-		public static final String EXACT_TERM = Fields.TERM + ".exact";
+		public static final String TERM = SnomedRf2Headers.FIELD_TERM;
+		public static final String TERM_PREFIX = Fields.TERM + ".prefix";
+		public static final String TERM_ORIGINAL = Fields.TERM + ".original";
+		public static final String TERM_EXACT = Fields.TERM + ".exact";
 	}
 	
 	public final static class Expressions extends SnomedComponentDocument.Expressions {
@@ -170,11 +173,18 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		private Expressions() {
 		}
 		
-		public static Expression termDisjunctionQuery(final String searchTerm) {
+		public static Expression termDisjunctionQuery(final TermFilter termFilter) {
 			final List<Expression> disjuncts = newArrayList();
-			disjuncts.add(scriptScore(matchEntireTerm(searchTerm), "normalizeWithOffset", ImmutableMap.of("offset", 2)));
-			disjuncts.add(scriptScore(allTermsPresent(searchTerm), "normalizeWithOffset", ImmutableMap.of("offset", 1)));
-			disjuncts.add(scriptScore(allTermPrefixesPresent(searchTerm), "normalizeWithOffset", ImmutableMap.of("offset", 0)));
+			disjuncts.add(scriptScore(matchEntireTerm(termFilter.getTerm()), "normalizeWithOffset", ImmutableMap.of("offset", 2)));
+			disjuncts.add(scriptScore(matchTextAll(Fields.TERM, termFilter.getTerm()).withIgnoreStopwords(termFilter.isIgnoreStopwords()), "normalizeWithOffset", ImmutableMap.of("offset", 1)));
+			disjuncts.add(scriptScore(matchTextAll(Fields.TERM_PREFIX, termFilter.getTerm()).withIgnoreStopwords(termFilter.isIgnoreStopwords()), "normalizeWithOffset", ImmutableMap.of("offset", 0)));
+			return dismax(disjuncts);
+		}
+		
+		public static Expression minShouldMatchTermDisjunctionQuery(final TermFilter termFilter) {
+			final List<Expression> disjuncts = Lists.newArrayList();
+			disjuncts.add(matchTextAny(Fields.TERM, termFilter.getTerm(), termFilter.getMinShouldMatch()).withIgnoreStopwords(termFilter.isIgnoreStopwords()));
+			disjuncts.add(matchTextAny(Fields.TERM_PREFIX, termFilter.getTerm(), termFilter.getMinShouldMatch()).withIgnoreStopwords(termFilter.isIgnoreStopwords()));
 			return dismax(disjuncts);
 		}
 
@@ -183,27 +193,15 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		}
 		
 		public static Expression matchEntireTerm(String term) {
-			return matchTextAll(Fields.TERM + ".exact", term);
+			return matchTextAll(Fields.TERM_EXACT, term);
 		}
 		
 		public static Expression matchTermOriginal(String term) {
-			return exactMatch(Fields.ORIGINAL_TERM, term);
+			return exactMatch(Fields.TERM_ORIGINAL, term);
 		}
 		
 		public static Expression matchTermRegex(String regex) {
-			return regexp(Fields.TERM + ".original", regex);
-		}
-		
-		public static Expression anyTermPrefixesPresent(String term, int minShouldMatch) {
-			return matchTextAny(Fields.TERM + ".prefix", term, minShouldMatch);
-		}
-		
-		public static Expression allTermPrefixesPresent(String term) {
-			return matchTextAll(Fields.TERM + ".prefix", term);
-		}
-		
-		public static Expression allTermsPresent(String term) {
-			return matchTextAll(Fields.TERM, term);
+			return regexp(Fields.TERM_ORIGINAL, regex);
 		}
 		
 		public static Expression parsedTerm(String term) {

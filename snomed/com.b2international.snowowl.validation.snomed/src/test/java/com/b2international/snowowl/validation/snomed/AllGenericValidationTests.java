@@ -22,8 +22,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
-import com.b2international.commons.platform.PlatformUtil;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
+import com.b2international.snowowl.core.util.PlatformUtil;
 import com.b2international.snowowl.core.validation.eval.GroovyScriptValidationRuleEvaluator;
 import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
 import com.b2international.snowowl.snomed.core.SnomedPlugin;

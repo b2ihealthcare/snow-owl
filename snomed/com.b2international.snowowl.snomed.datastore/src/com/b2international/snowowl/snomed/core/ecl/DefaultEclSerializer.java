@@ -15,10 +15,8 @@
  */
 package com.b2international.snowowl.snomed.core.ecl;
 
-import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.serializer.ISerializer;
 
-import com.b2international.snowowl.snomed.ecl.ecl.EclConceptReference;
 import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
 
 /**
@@ -39,19 +37,4 @@ public class DefaultEclSerializer implements EclSerializer {
 		}
 	}
 	
-	@Override
-	public String serializeWithoutTerms(ExpressionConstraint expression) {
-		removeTerms(expression);
-		return serialize(expression).trim();
-	}
-
-	private void removeTerms(EObject expression) {
-		if (expression instanceof EclConceptReference) {
-			((EclConceptReference) expression).setTerm(null);
-		} else {
-			for (EObject object : expression.eContents()) {
-				removeTerms(object);
-			}
-		}
-	}
 }

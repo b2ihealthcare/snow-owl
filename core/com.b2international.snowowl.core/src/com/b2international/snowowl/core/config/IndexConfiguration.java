@@ -33,6 +33,10 @@ public class IndexConfiguration {
 	private Integer numberOfShards = 6;
 	@Min(1)
 	private int commitConcurrencyLevel = Math.max(1, Runtime.getRuntime().availableProcessors() / 4);
+	@Min(1)
+	private int bulkActionSize = IndexClientFactory.DEFAULT_BULK_ACTIONS_SIZE;
+	@Min(1)
+	private int bulkActionSizeInMb = IndexClientFactory.DEFAULT_BULK_ACTIONS_SIZE_IN_MB;
 
 	@NotEmpty
 	private String clusterName = IndexClientFactory.DEFAULT_CLUSTER_NAME;
@@ -168,6 +172,22 @@ public class IndexConfiguration {
 	
 	public void setResultWindow(int resultWindow) {
 		this.resultWindow = resultWindow;
+	}
+	
+	public int getBulkActionSize() {
+		return bulkActionSize;
+	}
+	
+	public int getBulkActionSizeInMb() {
+		return bulkActionSizeInMb;
+	}
+	
+	public void setBulkActionSize(int bulkActionSize) {
+		this.bulkActionSize = bulkActionSize;
+	}
+	
+	public void setBulkActionSizeInMb(int bulkActionSizeInMb) {
+		this.bulkActionSizeInMb = bulkActionSizeInMb;
 	}
 	
 }

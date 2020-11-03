@@ -15,17 +15,12 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import java.util.Date;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
-
-import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.exceptions.BadRequestException;
-import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
@@ -37,25 +32,14 @@ import com.google.common.collect.ImmutableSet;
 /**
  * @since 4.5
  */
-final class SnomedRefSetMemberUpdateRequest implements SnomedComponentRequest<Boolean> {
+final class SnomedRefSetMemberUpdateRequest extends SnomedComponentUpdateRequestBase {
 
-	@NotEmpty
-	private final String memberId;
-	
 	@NotEmpty
 	private final Map<String, Object> properties;
 
-	@NotNull
-	private final Boolean force;
-	
-	SnomedRefSetMemberUpdateRequest(String memberId, Map<String, Object> properties, Boolean force) {
-		this.memberId = memberId;
+	SnomedRefSetMemberUpdateRequest(String componentId, Map<String, Object> properties) {
+		super(componentId);
 		this.properties = properties;
-		this.force = force;
-	}
-	
-	String getMemberId() {
-		return memberId;
 	}
 	
 	boolean hasProperty(String key) {
@@ -98,12 +82,12 @@ final class SnomedRefSetMemberUpdateRequest implements SnomedComponentRequest<Bo
 	
 	@Override
 	public Set<String> getRequiredComponentIds(TransactionContext context) {
-		return ImmutableSet.of(memberId);
+		return ImmutableSet.of(componentId());
 	}
 
 	@Override
 	public Boolean execute(TransactionContext context) {
-		SnomedRefSetMemberIndexEntry member = context.lookup(memberId, SnomedRefSetMemberIndexEntry.class);
+		SnomedRefSetMemberIndexEntry member = context.lookup(componentId(), SnomedRefSetMemberIndexEntry.class);
 		SnomedRefSetMemberIndexEntry.Builder updatedMember = SnomedRefSetMemberIndexEntry.builder(member); 
 
 		/* 
@@ -201,29 +185,9 @@ final class SnomedRefSetMemberUpdateRequest implements SnomedComponentRequest<Bo
 		}
 	}
 
-	private boolean updateEffectiveTime(SnomedRefSetMemberIndexEntry original, SnomedRefSetMemberIndexEntry.Builder member) {
-		if (!isEffectiveTimeUpdate()) {
-			return false;
-		}
-		
-		Date newEffectiveTime = EffectiveTimes.parse(getProperty(SnomedRf2Headers.FIELD_EFFECTIVE_TIME), DateFormats.SHORT);
-		if (!Objects.equals(newEffectiveTime, EffectiveTimes.toDate(original.getEffectiveTime()))) {
-			if (newEffectiveTime == null) {
-				// if effective time is null, then unset the effective time but don't change the released flag
-				member.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME);
-			} else {
-				// otherwise set the value and toggle the "relased" flag
-				member.effectiveTime(newEffectiveTime.getTime());
-				member.released(true);
-			}
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	private boolean isEffectiveTimeUpdate() {
-		return force && hasProperty(SnomedRf2Headers.FIELD_EFFECTIVE_TIME);
+	@Override
+	protected String effectiveTime() {
+		return getProperty(SnomedRf2Headers.FIELD_EFFECTIVE_TIME);
 	}
 
 }

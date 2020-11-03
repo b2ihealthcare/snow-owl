@@ -250,11 +250,8 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 				.put("commitComment", "Updated effective time on reference set member without force flag")
 				.build();
 
-		// The update goes through, but will have no effect
-		updateRefSetComponent(branchPath, SnomedComponentType.MEMBER, memberId, updateRequest, false).statusCode(204);
-		getComponent(branchPath, SnomedComponentType.MEMBER, memberId).statusCode(200)
-		.body("effectiveTime", nullValue())
-		.body("released", equalTo(false));
+		// The update does not go through anymore, rejected with an error
+		updateRefSetComponent(branchPath, SnomedComponentType.MEMBER, memberId, updateRequest, false).statusCode(400);
 	}
 
 	@Test

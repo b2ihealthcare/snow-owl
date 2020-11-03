@@ -26,6 +26,7 @@ import com.b2international.snowowl.core.domain.Concepts;
 import com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
+import com.b2international.snowowl.snomed.core.SnomedDisplayTermType;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptSearchRequestBuilder;
@@ -38,8 +39,8 @@ import com.google.common.collect.FluentIterable;
  */
 public final class SnomedConceptSearchRequestEvaluator implements ConceptSearchRequestEvaluator {
 
-	private Concept toConcept(CodeSystemURI codeSystem, SnomedConcept snomedConcept) {
-		final Concept concept = toConcept(codeSystem, snomedConcept, snomedConcept.getIconId(), snomedConcept.getPt() == null ? snomedConcept.getId() : snomedConcept.getPt().getTerm());
+	private Concept toConcept(CodeSystemURI codeSystem, SnomedConcept snomedConcept, String term) {
+		final Concept concept = toConcept(codeSystem, snomedConcept, snomedConcept.getIconId(), term);
 		concept.setAlternativeTerms(FluentIterable.from(snomedConcept.getPreferredDescriptions())
 				.transform(pd -> pd.getTerm())
 				.toSortedSet(Comparator.naturalOrder()));
@@ -48,7 +49,18 @@ public final class SnomedConceptSearchRequestEvaluator implements ConceptSearchR
 	
 	@Override
 	public Concepts evaluate(CodeSystemURI uri, BranchContext context, Options search) {
+		
+		final String preferredDisplay = search.getString(OptionKey.DISPLAY);
+		SnomedDisplayTermType displayTermType;
+		
+		if (preferredDisplay != null) {
+			displayTermType = SnomedDisplayTermType.getEnum(preferredDisplay);
+		} else {
+			displayTermType = SnomedDisplayTermType.PT;
+		}
+		
 		final SnomedConceptSearchRequestBuilder req = SnomedRequests.prepareSearchConcept();
+		evaluateTermFilterOptions(req, search);
 		
 		if (search.containsKey(OptionKey.ID)) {
 			req.filterByIds(search.getCollection(OptionKey.ID, String.class));
@@ -56,14 +68,6 @@ public final class SnomedConceptSearchRequestEvaluator implements ConceptSearchR
 		
 		if (search.containsKey(OptionKey.ACTIVE)) {
 			req.filterByActive(search.getBoolean(OptionKey.ACTIVE));
-		}
-		
-		if (search.containsKey(OptionKey.TERM)) {
-			req.filterByTerm(search.getString(OptionKey.TERM));
-		}
-		
-		if (search.containsKey(OptionKey.MIN_TERM_MATCH)) {
-			req.withMinTermMatch(search.get(OptionKey.MIN_TERM_MATCH, Integer.class));
 		}
 		
 		if (search.containsKey(OptionKey.QUERY) || search.containsKey(OptionKey.MUST_NOT_QUERY)) {
@@ -92,7 +96,7 @@ public final class SnomedConceptSearchRequestEvaluator implements ConceptSearchR
 				.setLocales(search.getList(OptionKey.LOCALES, ExtendedLocale.class))
 				.setSearchAfter(search.getString(OptionKey.AFTER))
 				.setLimit(search.get(OptionKey.LIMIT, Integer.class))
-				.setExpand("preferredDescriptions(),pt()")
+				.setExpand(String.join(",", "preferredDescriptions()", displayTermType.getExpand()))
 				.sortBy(search.containsKey(SearchResourceRequest.OptionKey.SORT_BY) ? search.getList(SearchResourceRequest.OptionKey.SORT_BY, SearchResourceRequest.Sort.class) : null)
 				.build()
 				.execute(context);
@@ -100,7 +104,7 @@ public final class SnomedConceptSearchRequestEvaluator implements ConceptSearchR
 		return new Concepts(
 			matches
 				.stream()
-				.map(concept -> toConcept(uri, concept))
+				.map(concept -> toConcept(uri, concept, displayTermType.getLabel(concept)))
 				.collect(Collectors.toList()), 
 			matches.getSearchAfter(), 
 			matches.getLimit(), 

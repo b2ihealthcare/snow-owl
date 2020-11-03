@@ -15,8 +15,8 @@
  */
 package com.b2international.snowowl.core.rate;
 
-import com.b2international.commons.extension.Component;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
+import com.b2international.snowowl.core.plugin.Component;
 import com.b2international.snowowl.core.setup.ConfigurationRegistry;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.Plugin;

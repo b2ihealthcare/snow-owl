@@ -99,13 +99,10 @@ public class RevisionCompareTest extends BaseRevisionIndexTest {
 		indexChange(MAIN, rev1, rev2);
 		
 		final RevisionCompare compare = index().compare(branch, MAIN);
-		assertThat(compare.getDetails()).hasSize(1);
-		final RevisionCompareDetail detail = compare.getDetails().iterator().next();
-		assertThat(detail.getOp()).isEqualTo(Operation.CHANGE);
-		assertThat(detail.getObject()).isEqualTo(ObjectId.of(DOC_TYPE, STORAGE_KEY1));
-		assertThat(detail.getProperty()).isEqualTo("field1");
-		assertThat(detail.getFromValue()).isEqualTo("field1");
-		assertThat(detail.getValue()).isEqualTo("field1Changed");
+		assertThat(compare.getDetails()).containsOnly(
+			RevisionCompareDetail.componentChange(Operation.CHANGE, rev2.getContainerId(), rev2.getObjectId()),
+			RevisionCompareDetail.propertyChange(Operation.CHANGE, rev2.getObjectId(), "field1", "field1", "field1Changed")
+		);
 	}
 	
 	@Test
@@ -118,13 +115,10 @@ public class RevisionCompareTest extends BaseRevisionIndexTest {
 		
 		final RevisionCompare compare = index().compare(MAIN, branch);
 		
-		assertThat(compare.getDetails()).hasSize(1);
-		final RevisionCompareDetail detail = compare.getDetails().iterator().next();
-		assertThat(detail.getOp()).isEqualTo(Operation.CHANGE);
-		assertThat(detail.getObject()).isEqualTo(ObjectId.of(DOC_TYPE, STORAGE_KEY1));
-		assertThat(detail.getProperty()).isEqualTo("field1");
-		assertThat(detail.getFromValue()).isEqualTo("field1");
-		assertThat(detail.getValue()).isEqualTo("field1Changed");
+		assertThat(compare.getDetails()).containsOnly(
+			RevisionCompareDetail.componentChange(Operation.CHANGE, rev2.getContainerId(), rev2.getObjectId()),
+			RevisionCompareDetail.propertyChange(Operation.CHANGE, rev2.getObjectId(), "field1", "field1", "field1Changed")
+		);
 	}
 	
 	@Test
@@ -191,7 +185,9 @@ public class RevisionCompareTest extends BaseRevisionIndexTest {
 		indexChange(branch, changed, rev1); // this actually reverts the prev. change, via a new revision
 
 		final RevisionCompare compare = index().compare(MAIN, branch);
-		assertThat(compare.getDetails()).isEmpty();
+		assertThat(compare.getDetails()).containsOnly(
+			RevisionCompareDetail.componentChange(Operation.CHANGE, rev1.getContainerId(), rev1.getObjectId())
+		);
 	}
 	
 	@Test

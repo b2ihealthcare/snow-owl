@@ -22,14 +22,13 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.UUID;
 
-import com.b2international.commons.extension.Component;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.console.Command;
 import com.b2international.snowowl.core.console.CommandLineStream;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.identity.User;
-import com.b2international.snowowl.core.uri.CodeSystemURI;
+import com.b2international.snowowl.core.plugin.Component;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration.ImportStatus;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
@@ -72,7 +71,7 @@ public final class SnomedCommand extends Command {
 		private static final String SUPPORTED_FORMAT = "rf2";
 		
 		@Option(names = { "-b", "--branch" }, description = "The target branch. After a successful import all importable content will be accessible from this branch.", defaultValue = "SNOMEDCT/HEAD", required = true)
-		String branch = CodeSystemURI.head(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME).toString();
+		String branch = SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME;
 		
 		@Option(names = { "-f", "--format" }, description = "The import file format. Currently 'rf2' is supported only.", defaultValue = SUPPORTED_FORMAT)
 		String format = SUPPORTED_FORMAT;

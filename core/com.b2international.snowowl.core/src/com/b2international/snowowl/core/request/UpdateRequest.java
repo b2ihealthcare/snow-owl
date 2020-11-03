@@ -36,7 +36,7 @@ public abstract class UpdateRequest<C extends ServiceProvider> implements Reques
 		this.componentId = componentId;
 	}
 
-	protected final String componentId() {
+	public final String componentId() {
 		return componentId;
 	}
 	

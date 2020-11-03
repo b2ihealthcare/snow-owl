@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -29,6 +30,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import com.b2international.commons.ChangeKind;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.ComponentIdentifier;
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.request.RevisionIndexRequestBuilder;
@@ -37,7 +39,6 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.fasterxml.jackson.databind.SequenceWriter;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ListMultimap;
@@ -51,40 +52,53 @@ public final class CompareResultsDsvExporter {
 	
 	private static final int PARTITION_SIZE = 10_000;
 	
-	private final String repositoryUuid;
-	private final String baseBranch;
-	private final String compareBranch;
+	private final Map<String, String> repositoryUuids;
+	private final Map<String, String> baseBranches;
+	private final Map<String, String> compareBranches;
 	private final Path outputPath;
-	private final BranchCompareResult compareResults;
-	private final BiFunction<Short, Collection<String>, RevisionIndexRequestBuilder<CollectionResource<IComponent>>> fetcherFunction;
-	private final Function<IComponent, String> labelResolver;
-	private final BiFunction<IComponent, IComponent, Collection<CompareData>> getCompareResultsOfComponent;
+	private final Map<String, BranchCompareResult> compareResultsProvider;
+	private final Map<String, BiFunction<Short, Collection<String>, RevisionIndexRequestBuilder<CollectionResource<IComponent>>>> fetcherProvider;
+	private final Map<String, Function<IComponent, String>> labelResolvers;
+	private final Map<String, BiFunction<IComponent, IComponent, Collection<CompareData>>> componentCompareResultProviders;
 	private final char delimiter;
 	
 	public CompareResultsDsvExporter(
-			String repositoryUuid,
-			String baseBranch,
-			String compareBranch,
+			Map<String, String> repositoryUuids,
+			Map<String, String> baseBranches,
+			Map<String, String> compareBranch,
 			Path outputPath,
-			BranchCompareResult compareResults, 
-			BiFunction<Short, Collection<String>, RevisionIndexRequestBuilder<CollectionResource<IComponent>>> fetcherFunction,
-			Function<IComponent, String> labelResolver,
-			BiFunction<IComponent, IComponent, Collection<CompareData>> getCompareResultsOfComponent,
+			Map<String, BranchCompareResult> compareResults,
+			Map<String, BiFunction<Short, Collection<String>, RevisionIndexRequestBuilder<CollectionResource<IComponent>>>> fetcherFunction,
+			Map<String, Function<IComponent, String>> labelResolver,
+			Map<String, BiFunction<IComponent, IComponent, Collection<CompareData>>> componentCompareResultProviders,
 			char delimiter
 		) {
-			this.repositoryUuid = repositoryUuid;
-			this.baseBranch = baseBranch;
-			this.compareBranch = compareBranch;
+			this.repositoryUuids = repositoryUuids;
+			this.baseBranches = baseBranches;
+			this.compareBranches = compareBranch;
 			this.outputPath = outputPath;
-			this.compareResults = compareResults;
-			this.fetcherFunction = fetcherFunction;
-			this.labelResolver = labelResolver;
-			this.getCompareResultsOfComponent = getCompareResultsOfComponent;
+			this.compareResultsProvider = compareResults;
+			this.fetcherProvider = fetcherFunction;
+			this.labelResolvers = labelResolver;
+			this.componentCompareResultProviders = componentCompareResultProviders;
 			this.delimiter = delimiter;
 		}
 	
-	public File export(IProgressMonitor monitor) throws IOException {
+	private int totalWork() {
+		int totalNew = 0;
+		int totalChanged = 0;
+		int totalDeleted = 0;
 		
+		for (BranchCompareResult compareResult : compareResultsProvider.values()) {
+			totalNew += compareResult.getTotalNew();
+			totalChanged += compareResult.getTotalChanged();
+			totalDeleted += compareResult.getTotalDeleted();
+		}
+		
+		return totalNew + totalChanged + totalDeleted;
+	}
+	
+	public File export(IProgressMonitor monitor) throws IOException {
 		CsvMapper mapper = new CsvMapper();
 		CsvSchema schema = mapper.schemaFor(CompareData.class)
 			.withColumnSeparator(delimiter)
@@ -92,8 +106,27 @@ public final class CompareResultsDsvExporter {
 			.sortedBy("componentType", "componentId", "componentType", "label", "changeKind", "attribute", "from", "to");
 		
 		try (SequenceWriter writer = mapper.writer(schema).writeValues(outputPath.toFile())) {
-			monitor.beginTask("Exporting compare results to DSV", compareResults.getTotalNew() + compareResults.getTotalChanged() + compareResults.getTotalDeleted());
+			monitor.beginTask("Exporting compare results to DSV", totalWork());
+			for (String codeSystem : repositoryUuids.keySet()) {
+				exportCodeSystem(codeSystem, writer, monitor);
+			}
 			
+		} finally {
+			monitor.done();
+		}
+		
+		return outputPath.toFile();
+	}
+			
+	private void exportCodeSystem(final String codeSystem, SequenceWriter writer, IProgressMonitor monitor) {
+		BranchCompareResult compareResults = compareResultsProvider.get(codeSystem);
+		BiFunction<Short, Collection<String>, RevisionIndexRequestBuilder<CollectionResource<IComponent>>> fetcherFunction = fetcherProvider.get(codeSystem);
+		String repositoryUuid = repositoryUuids.get(codeSystem);
+		String compareBranch = compareBranches.get(codeSystem);
+		String baseBranch = baseBranches.get(codeSystem);
+		BiFunction<IComponent, IComponent, Collection<CompareData>> getCompareResultsOfComponent = componentCompareResultProviders.get(codeSystem);
+		
+		try {
 			ListMultimap<Short, ComponentIdentifier> newComponentIdentifiers = Multimaps.index(compareResults.getNewComponents(), ComponentIdentifier::getTerminologyComponentId);
 			ListMultimap<Short, String> newComponentIds = ImmutableListMultimap.copyOf(Multimaps.transformValues(newComponentIdentifiers, ComponentIdentifier::getComponentId));
 			
@@ -111,13 +144,13 @@ public final class CompareResultsDsvExporter {
 						.getSync();
 					
 					for (IComponent component : components) {
-						writer.write(new CompareData(component, ChangeKind.ADDED));
+						writer.write(added(codeSystem, component));
 					}
 					
 					monitor.worked(components.getItems().size());
 				}
 			}
-
+			
 			ListMultimap<Short, ComponentIdentifier> changedComponentIdentifiers = Multimaps.index(compareResults.getChangedComponents(), ComponentIdentifier::getTerminologyComponentId);
 			ListMultimap<Short, String> changedComponentIds = ImmutableListMultimap.copyOf(Multimaps.transformValues(changedComponentIdentifiers, ComponentIdentifier::getComponentId));
 			ListMultimap<String, IComponent> componentPairs = ArrayListMultimap.create(PARTITION_SIZE, 2);
@@ -146,9 +179,9 @@ public final class CompareResultsDsvExporter {
 					for (Entry<String, List<IComponent>> entry : Multimaps.asMap(componentPairs).entrySet()) {
 						IComponent baseComponent = entry.getValue().get(0);
 						IComponent compareComponent = entry.getValue().get(1);
-						Collection<CompareData> compareResults = getCompareResultsOfComponent.apply(baseComponent, compareComponent);
+						Collection<CompareData> compareData = getCompareResultsOfComponent.apply(baseComponent, compareComponent);
 						
-						for (CompareData d : compareResults) {
+						for (CompareData d : compareData) {
 							writer.write(d);
 						}
 					}
@@ -174,57 +207,60 @@ public final class CompareResultsDsvExporter {
 						.getSync();
 					
 					for (IComponent component : components) {
-						writer.write(new CompareData(component, ChangeKind.DELETED));
+						writer.write(removed(codeSystem, component));
 					}
 					
 					monitor.worked(components.getItems().size());
 				}
 			}
-			
-		} finally {
-			monitor.done();
+		} catch (IOException e) {
+			throw new SnowowlRuntimeException(e);
 		}
-		
-		return outputPath.toFile();
 	}
+			
 	
 	/**
 	 * XXX: Convenience factory method for (non static) {@link CompareData} for groovy scripting. 
 	 * 
 	 * @see http://groovy-lang.org/differences.html#_creating_instances_of_non_static_inner_classes 
 	 */
-	public CompareData createCompareData(IComponent component, String attribute, String from, String to) {
-		return new CompareData(component, attribute, from, to);
+	public CompareData changed(String codeSystem, IComponent component, String attribute, String from, String to) {
+		return new CompareData(ChangeKind.UPDATED, component, labelResolvers.get(codeSystem).apply(component), attribute, from, to);
+	}
+	
+	public CompareData removed(String codeSystem, IComponent component) {
+		return new CompareData(ChangeKind.DELETED, component, labelResolvers.get(codeSystem).apply(component), null, null, null);
+	}
+	
+	public CompareData added(String codeSystem, IComponent component) {
+		return new CompareData(ChangeKind.ADDED, component, labelResolvers.get(codeSystem).apply(component), null, null, null);
 	}
 	
 	public class CompareData {
 		
 		private final ChangeKind changeKind;
+		
+		private final String componentType;
 		private final IComponent component;
 		private final String label;
-		private String attribute;
-		private String from;
-		private String to;
-		private final String componentType;
 		
-		public CompareData(IComponent component, String attribute, String from, String to) {
+		private final String attribute;
+		private final String from;
+		private final String to;
+		
+		private CompareData(ChangeKind changeKind, 
+				IComponent component,
+				String label,
+				String attribute, 
+				String from, 
+				String to) {
+			this.changeKind = changeKind;
 			this.component = component;
+			this.label = label;
 			this.componentType = TerminologyRegistry.INSTANCE.getTerminologyComponentByShortId(component.getTerminologyComponentId()).name();
-			this.label = labelResolver.apply(component);
-			this.changeKind = ChangeKind.UPDATED;
 			this.attribute = attribute;
 			this.from = from;
 			this.to = to;
-		}
-		
-		private CompareData(IComponent component, ChangeKind changeKind) {
-			Preconditions.checkArgument(changeKind == ChangeKind.ADDED || changeKind == ChangeKind.DELETED);
-			
-			this.changeKind = changeKind;
-			this.component = component;
-			this.componentType = TerminologyRegistry.INSTANCE.getTerminologyComponentByShortId(component.getTerminologyComponentId()).name();
-			this.label = labelResolver.apply(component);
-			
 		}
 		
 		public ChangeKind getChangeKind() {

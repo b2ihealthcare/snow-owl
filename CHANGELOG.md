@@ -1,6 +1,45 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 7.11.0
+
+### Core
+- New, configurable term search API (#701)
+- Added `stop-word` search to Generic Concept Search API (65cc672, #701)
+- Improved Concept Map Compare API and algorithm (#702, #703, #704)
+  * Support equivalence configuration, supported values are, `codeSystem`, `code`, `term`
+
+### SNOMED CT
+- Support `effectiveTime` force updates on concept/description/relationship REST API (2dfbe7c)
+- Added `stop-word` search to SNOMED CT Description Search API (65cc672, #701)
+
+### Bugs/Improvements
+- [index] use Elasticsearch auto-generated IDs for revision documents to increase indexing perf (bab9cc0)
+- [core] support file names when executing groovy scripts (f56cfc8)
+- [snomed] fix potential StackOverflowError when evaluating large OR'd ID ECL/QL expressions (6c666a5)
+- [classification] cache computed direct/indirect destination edges to speed up classification process by ~80% (#700)
+
+## 7.10.1
+
+### Core
+- Add `minTermMatch` and `fuzzy` search support to Generic Concept Search API (#684)
+- Expose `squash` property for advanced branch merge scenarios (#686)
+- New configuration keys to configure index bulk commit sizes (#690, 38bc1bd):
+  * `repository.index.bulkActionSize` - the number of bulk action requests to send in a single batch to the configured Elasticsearch cluster, defaults to `10.000`.
+  * `repository.index.bulkActionSizeInMb` - the maximum bulk request size (in megabytes) to send to the configured Elasticsearch cluster, defaults to `9MB`.
+
+### Bugs/Improvements
+- [index] reduce the number of edge_ngram prefixes generated to `2-12` (#684)
+- [index] fix potential branch rebase issue when there were no actual tracked changes on both branches (#696)
+- [index] remove deprecated `_hash` field (#691)
+- [core] always render SNOMED CT Metadata concepts with their preferred synonym (PT) (#685) 
+- [snomed] fix RF2 FULL export issue when exporting SNOMED CT Extensions in a deep branching scenario (#689, 57f1fdf)
+- [releng] improve test code coverage numbers, clean up unused functionality, types, libraries (#694)
+
+### Dependencies
+- Bump Elasticsearch to 7.9.2 (#682)
+- Bump Hibernate validator to 5.3.6 (#644)
+
 ## 7.10.0
 
 ### Core

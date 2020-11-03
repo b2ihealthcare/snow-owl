@@ -19,7 +19,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.Map;
 
-import com.b2international.commons.extension.ClassPathScanner;
+import com.b2international.snowowl.core.id.IDs;
+import com.b2international.snowowl.core.plugin.ClassPathScanner;
 import com.google.common.collect.Maps;
 
 /**
@@ -45,11 +46,15 @@ public interface ScriptEngine {
 		
 	}
 	
-	<T> T run(ClassLoader ctx, String script, Map<String, Object> arguments);
+	<T> T run(ClassLoader ctx, ScriptSource script, Map<String, Object> arguments);
 	
 	String getExtension();
 
 	static <T> T run(String extension, ClassLoader classLoader, String script, Map<String, Object> arguments) {
+		return run(extension, classLoader, new ScriptSource(IDs.sha1(script), script), arguments);
+	}
+	
+	static <T> T run(String extension, ClassLoader classLoader, ScriptSource script, Map<String, Object> arguments) {
 		return Registry.INSTANCE.getEngine(extension).run(classLoader, script, arguments);
 	}
 	

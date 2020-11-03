@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.b2international.commons.functions.LongToStringFunction;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -346,13 +345,12 @@ final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedC
 		
 		final Multimap<String, String> ancestorsByDescendant = TreeMultimap.create();
 		
-		final LongToStringFunction toString = new LongToStringFunction();
 		for (SnomedConcept concept : results) {
 			final long[] parentIds = stated ? concept.getStatedParentIds() : concept.getParentIds();
 			if (parentIds != null) {
 				for (long parent : parentIds) {
 					if (IComponent.ROOT_IDL != parent) {
-						ancestorsByDescendant.put(concept.getId(), toString.apply(parent));
+						ancestorsByDescendant.put(concept.getId(), Long.toString(parent));
 					}
 				}
 			}
@@ -361,7 +359,7 @@ final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedC
 				if (ancestorIds != null) {
 					for (long ancestor : ancestorIds) {
 						if (IComponent.ROOT_IDL != ancestor) {
-							ancestorsByDescendant.put(concept.getId(), toString.apply(ancestor));
+							ancestorsByDescendant.put(concept.getId(), Long.toString(ancestor));
 						}
 					}
 				}

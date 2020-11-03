@@ -62,7 +62,7 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 		/**
 		 * Sort result by the specified sort fields.
 		 */
-		SORT_BY;
+		SORT_BY,
 	}
 
 	public static abstract class Sort implements Serializable {
@@ -322,7 +322,7 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 	public final B execute(C context) {
 		try {
 			// process the options for special option expressions and map them as options on their own
-			setOptions(processSpecialOptionKey(options, getSpecialOptionKey()));
+			setOptions(processSpecialOptionKey(options, getSpecialOptionKey(), this::extractSpecialOptionValue));
 			return doExecute(context);
 		} catch (NoResultException e) {
 			return createEmptyResult(limit);
@@ -331,11 +331,27 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 		}
 	}
 	
+	/**
+	 * Subclasses may override this method to extract the special option key value if it is not stored as a String in the {@link Options}.
+	 * 
+	 * @param options
+	 * @param specialOptionKey
+	 * @return
+	 */
+	protected String extractSpecialOptionValue(final Options options, final Enum<?> specialOptionKey) {
+		return options.getString(specialOptionKey);
+	}
+	
 	@VisibleForTesting
 	static Options processSpecialOptionKey(Options options, Enum<?> specialOptionKey) {
+		return processSpecialOptionKey(options, specialOptionKey, Options::getString);
+	}
+	
+	@VisibleForTesting
+	static Options processSpecialOptionKey(Options options, Enum<?> specialOptionKey, BiFunction<Options, Enum<?>, String> extractSpecialOption) {
 		if (specialOptionKey != null && options.containsKey(specialOptionKey)) {
 			// this will throw a CCE if non-String value is encountered in the option key and that is okay
-			String specialOption = options.getString(specialOptionKey);
+			String specialOption = extractSpecialOption.apply(options, specialOptionKey);
 			if (specialOption.startsWith(SPECIAL_OPTION_CHARACTER) && specialOption.endsWith(")")) {
 				// strip of the leading and trailing characters so we end up with a field(value expression that can be split on the first occurence of
 				// the ( character

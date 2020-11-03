@@ -248,8 +248,7 @@ public final class SnomedReferenceSetMember extends SnomedComponent {
 		final Map<String, Object> changes = newHashMap(getProperties());
 		changes.put(SnomedRf2Headers.FIELD_ACTIVE, isActive());
 		changes.put(SnomedRf2Headers.FIELD_MODULE_ID, getModuleId());
-		return SnomedRequests.prepareUpdateMember()
-				.setMemberId(getId())
+		return SnomedRequests.prepareUpdateMember(getId())
 				.setSource(changes)
 				.build();
 	}

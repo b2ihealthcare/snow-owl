@@ -89,9 +89,10 @@ public final class SnomedRelationshipUpdateRequest extends SnomedComponentUpdate
 		changed |= updateModifier(modifierId, relationship, updatedRelationship, context);
 		changed |= updateDestinationId(context, relationship, updatedRelationship);
 		changed |= updateTypeId(context, relationship, updatedRelationship);
+		changed |= updateEffectiveTime(relationship, updatedRelationship);
 
 		if (changed) {
-			if (relationship.getEffectiveTime() != EffectiveTimes.UNSET_EFFECTIVE_TIME) {
+			if (!isEffectiveTimeUpdate() && relationship.getEffectiveTime() != EffectiveTimes.UNSET_EFFECTIVE_TIME) {
 				updatedRelationship.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME);
 			}
 			context.update(relationship, updatedRelationship.build());

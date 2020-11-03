@@ -66,9 +66,6 @@ public final class RevisionCompare {
 						} else {
 							details = Collections.singletonList(
 									RevisionCompareDetail.propertyChange(
-											commit.getAuthor(), 
-											commit.getTimestamp(), 
-											commit.getComment(), 
 											detail.getOp(), 
 											objectId, 
 											detail.getProp(), 
@@ -78,7 +75,7 @@ public final class RevisionCompare {
 						details = detail.getComponents()
 								.get(i)
 								.stream()
-								.map(component -> RevisionCompareDetail.componentChange(commit.getAuthor(), commit.getTimestamp(), commit.getComment(), detail.getOp(), objectId, ObjectId.of(detail.getComponentType(), component)))
+								.map(component -> RevisionCompareDetail.componentChange(detail.getOp(), objectId, ObjectId.of(detail.getComponentType(), component)))
 								.collect(Collectors.toList());
 					}
 					

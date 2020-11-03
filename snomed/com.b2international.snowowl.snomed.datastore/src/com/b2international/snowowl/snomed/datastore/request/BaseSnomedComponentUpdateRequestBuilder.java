@@ -17,27 +17,21 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
-import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.events.BaseRequestBuilder;
-import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.snomed.core.domain.InactivationProperties;
 
 /**
  * @since 4.5
  */
 public abstract class BaseSnomedComponentUpdateRequestBuilder<B extends BaseSnomedComponentUpdateRequestBuilder<B, R>, R extends SnomedComponentUpdateRequest> 
-		extends BaseRequestBuilder<B, TransactionContext, Boolean>
-		implements SnomedTransactionalRequestBuilder<Boolean> {
+		extends SnomedComponentUpdateRequestBuilderBase<B, R> {
 
-	private final String componentId;
-	
 	private InactivationProperties inactivationProperties; 
 	private String moduleId;
 	private Boolean active;
+	private String effectiveTime;
 
 	protected BaseSnomedComponentUpdateRequestBuilder(String componentId) {
-		super();
-		this.componentId = componentId;
+		super(componentId);
 	}
 	
 	public final B setActive(Boolean active) {
@@ -50,25 +44,25 @@ public abstract class BaseSnomedComponentUpdateRequestBuilder<B extends BaseSnom
 		return getSelf();
 	}
 	
+	public final B setEffectiveTime(String effectiveTime) {
+		this.effectiveTime = effectiveTime;
+		return getSelf();
+	}
+	
 	public final B setInactivationProperties(InactivationProperties inactivationProperties) {
 		this.inactivationProperties = inactivationProperties;
 		return getSelf();
 	}
 	
-	@Override
-	protected final Request<TransactionContext, Boolean> doBuild() {
-		final R req = create(componentId);
-		init(req);
-		return req;
-	}
-
 	@OverridingMethodsMustInvokeSuper
+	@Override
 	protected void init(R req) {
+		super.init(req);
 		req.setActive(active);
 		req.setModuleId(moduleId);
 		req.setInactivationProperties(inactivationProperties);
+		req.setEffectiveTime(effectiveTime);
 	}
 
-	protected abstract R create(String componentId);
 	
 }

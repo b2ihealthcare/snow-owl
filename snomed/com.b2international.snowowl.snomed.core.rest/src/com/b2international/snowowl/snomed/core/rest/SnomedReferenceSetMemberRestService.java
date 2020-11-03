@@ -277,8 +277,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 		final String commitComment = body.getCommitComment();
 		final String defaultModuleId = body.getDefaultModuleId();
 		
-		SnomedRequests.prepareUpdateMember()
-			.setMemberId(memberId)
+		SnomedRequests.prepareUpdateMember(memberId)
 			.setSource(update.getSource())
 			.force(force)
 			.build(repositoryId, branchPath, author, commitComment, defaultModuleId)

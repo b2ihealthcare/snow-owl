@@ -15,59 +15,32 @@
  */
 package com.b2international.snowowl.core.compare;
 
-import static java.util.stream.Collectors.toList;
-
-import java.io.Serializable;
 import java.util.List;
 
-import com.b2international.snowowl.core.domain.ConceptMapMapping;
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.ImmutableMultimap.Builder;
-import com.google.common.collect.Multimap;
+import com.b2international.snowowl.core.domain.CollectionResource;
 /**
  * @since 7.8
  */
-public final class ConceptMapCompareResult implements Serializable {
+public final class ConceptMapCompareResult extends CollectionResource<ConceptMapCompareResultItem> {
 	
 	private static final long serialVersionUID = 1L;
+	
+	private final int limit;
 	
 	private final int totalAdded;
 	private final int totalRemoved;
 	private final int totalChanged;
-	private final int limit;
-	
-	private final List<ConceptMapMapping> addedMembers;
-	private final List<ConceptMapMapping> removedMembers;
-	private final Multimap<ConceptMapMapping, ConceptMapMapping> changedMembers;
-	
-	public ConceptMapCompareResult(List<ConceptMapMapping> addedMembers, List<ConceptMapMapping> removedMembers, Multimap<ConceptMapMapping, ConceptMapMapping> changedMembers, int limit) {
-		
-		this.addedMembers = addedMembers.stream().limit(limit).collect(toList());
-		this.removedMembers = removedMembers.stream().limit(limit).collect(toList());
-		
-		Builder<ConceptMapMapping, ConceptMapMapping> limitedMembers = ImmutableMultimap.builder();
-		changedMembers.entries().stream().limit(limit).forEach(limitedMembers::put);
-		this.changedMembers = limitedMembers.build();
-		
-		this.totalAdded = addedMembers.size();
-		this.totalRemoved = removedMembers.size();
-		this.totalChanged = changedMembers.values().size();
+	private final int totalUnchanged;
+
+	public ConceptMapCompareResult(List<ConceptMapCompareResultItem> items, int totalAdded, int totalRemoved, int totalChanged, int totalUnchanged, int limit) {
+		super(items);
+		this.totalAdded = totalAdded;
+		this.totalRemoved = totalRemoved;
+		this.totalChanged = totalChanged;
+		this.totalUnchanged = totalUnchanged;
 		this.limit = limit;
-		
 	}
-	
-	public List<ConceptMapMapping> getAddedMembers() {
-		return addedMembers;
-	}
-	
-	public List<ConceptMapMapping> getRemovedMembers() {
-		return removedMembers;
-	}
-	
-	public Multimap<ConceptMapMapping, ConceptMapMapping> getChangedMembers() {
-		return changedMembers;
-	}
-	
+
 	public int getTotalAdded() {
 		return totalAdded;
 	}
@@ -78,6 +51,10 @@ public final class ConceptMapCompareResult implements Serializable {
 	
 	public int getTotalChanged() {
 		return totalChanged;
+	}
+	
+	public int getTotalUnchanged() {
+		return totalUnchanged;
 	}
 	
 	public int getLimit() {

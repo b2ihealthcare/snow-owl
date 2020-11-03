@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import com.b2international.collections.PrimitiveMaps;
 import com.b2international.collections.PrimitiveSets;
+import com.b2international.collections.ints.IntKeyMap;
 import com.b2international.collections.ints.IntSet;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.collect.LongSets;
@@ -94,10 +96,16 @@ public final class InternalIdEdges {
 
 	private final InternalIdMap internalIdMap;
 	private final int[][] edges;
+	
+	// direct and indirect destinationCaches loaded on demand
+	private final IntKeyMap<LongSet> directDestinationIdsCache;
+	private final IntKeyMap<LongSet> indirectDestinationIdsCache;
 
 	private InternalIdEdges(final InternalIdMap internalIdMap, final int[][] edges) {
 		this.internalIdMap = internalIdMap;
 		this.edges = edges;
+		this.directDestinationIdsCache = PrimitiveMaps.newIntKeyOpenHashMapWithExpectedSize(internalIdMap.size());
+		this.indirectDestinationIdsCache = PrimitiveMaps.newIntKeyOpenHashMapWithExpectedSize(internalIdMap.size());
 	}
 
 	public Set<String> getDestinations(final String source, final boolean direct) {
@@ -107,22 +115,28 @@ public final class InternalIdEdges {
 	public LongSet getDestinations(final long key, final boolean direct) {
 		final int internalId = internalIdMap.getInternalId(key);
 		if (internalId == InternalIdMap.NO_INTERNAL_ID) {
-			return PrimitiveSets.newLongOpenHashSet();
+			return PrimitiveSets.emptyLongSet();
 		}
 
 		if (direct) {
-			final int[] destinations = edges[internalId];
-			return toSctIds(destinations);
+			if (!directDestinationIdsCache.containsKey(internalId)) {
+				final int[] destinations = edges[internalId];
+				directDestinationIdsCache.put(internalId, toSctIds(destinations));
+			}
+			return directDestinationIdsCache.get(internalId);
 		} else {
-			final BitSet destinations = new BitSet(internalIdMap.size());
-			collectIndirectDestinations(internalId, destinations);
-			return toSctIds(destinations);
+			if (!indirectDestinationIdsCache.containsKey(internalId)) {
+				final BitSet destinations = new BitSet(internalIdMap.size());
+				collectIndirectDestinations(internalId, destinations);
+				indirectDestinationIdsCache.put(internalId, toSctIds(destinations));
+			}
+			return indirectDestinationIdsCache.get(internalId);
 		}
 	}
 
 	private LongSet toSctIds(final int[] destinations) {
 		if (destinations == null) {
-			return PrimitiveSets.newLongOpenHashSet();
+			return PrimitiveSets.emptyLongSet();
 		}
 
 		final LongSet sctIds = PrimitiveSets.newLongOpenHashSetWithExpectedSize(destinations.length); 

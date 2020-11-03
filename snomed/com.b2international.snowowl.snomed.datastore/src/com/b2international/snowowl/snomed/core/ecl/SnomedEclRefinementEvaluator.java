@@ -28,7 +28,6 @@ import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -52,7 +51,6 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.refset.DataType;
@@ -61,10 +59,8 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetM
 import com.b2international.snowowl.snomed.core.tree.Trees;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.ecl.Ecl;
 import com.b2international.snowowl.snomed.ecl.ecl.*;
 import com.google.common.base.Function;
 import com.google.common.collect.ArrayListMultimap;
@@ -355,7 +351,7 @@ final class SnomedEclRefinementEvaluator {
 		}
 		final Function<Property, Object> idProvider = refinement.isReversed() ? Property::getValue : Property::getObjectId;
 		final Promise<Set<String>> focusConceptIdsPromise = focusConcepts.isAnyExpression() 
-				? Promise.immediate(Collections.singleton(Ecl.ANY)) // XXX send ANY expression to evalStatements, to indicate that any source can match
+				? Promise.immediate(null) // XXX send null collection to skip filtering by source concepts/referenced components
 				: grouped ? focusConcepts.resolveToConceptsWithGroups(context).then(Multimap::keySet) : focusConcepts.resolve(context);
 		return focusConceptIdsPromise
 				.thenWith(focusConceptIds -> evalRefinement(context, refinement, grouped, focusConceptIds))
@@ -368,14 +364,13 @@ final class SnomedEclRefinementEvaluator {
 	 */
 	private Promise<Collection<Property>> evalRefinement(final BranchContext context, final AttributeConstraint refinement, final boolean grouped, final Set<String> focusConceptIds) {
 		final Comparison comparison = refinement.getComparison();
-		final EclSerializer serializer = context.service(EclSerializer.class);
-		final Collection<String> typeConceptFilter = Collections.singleton(serializer.serializeWithoutTerms(refinement.getAttribute()));
+		final Collection<String> typeConceptFilter = evalToConceptIds(context, refinement.getAttribute(), expressionForm).getSync(1, TimeUnit.MINUTES);
 		
 		if (comparison instanceof AttributeComparison) {
 			// resolve non-* focusConcept ECLs to IDs, so we can filter relationships by source/destination
 			// filterByType and filterByDestination accepts ECL expressions as well, so serialize them into ECL and pass as String when required
 			// if reversed refinement, then we are interested in the destinationIds otherwise we need the sourceIds
-			final Collection<String> destinationConceptFilter = Collections.singleton(serializer.serializeWithoutTerms(((AttributeComparison) comparison).getConstraint()));
+			final Collection<String> destinationConceptFilter = evalToConceptIds(context, ((AttributeComparison) comparison).getConstraint(), expressionForm).getSync(1, TimeUnit.MINUTES);
 			final Collection<String> focusConceptFilter = refinement.isReversed() ? destinationConceptFilter : focusConceptIds;
 			final Collection<String> valueConceptFilter = refinement.isReversed() ? focusConceptIds : destinationConceptFilter;
 			return evalStatements(context, focusConceptFilter, typeConceptFilter, valueConceptFilter, grouped, expressionForm);
@@ -487,21 +482,18 @@ final class SnomedEclRefinementEvaluator {
 				.put(SnomedRf2Headers.FIELD_VALUE, value)
 				.put(SearchResourceRequest.operator(SnomedRf2Headers.FIELD_VALUE), operator)
 				.build();
+
+		// TODO: does this request need to support filtering by group?
 		
-		SnomedRefSetMemberSearchRequestBuilder requestBuilder = SnomedRequests.prepareSearchMember()
+		return SnomedRequests.prepareSearchMember()
 				.all()
 				.filterByActive(true)
 				.filterByRefSetType(SnomedRefSetType.CONCRETE_DATA_TYPE)
+				.filterByReferencedComponent(focusConceptIds)
 				.filterByProps(propFilter)
-				.setEclExpressionForm(expressionForm);
-		if (!focusConceptIds.contains(Ecl.ANY)) {
-			requestBuilder.filterByReferencedComponent(focusConceptIds);
-		}
-		
-		// TODO: does this request need to support filtering by group?
-		return requestBuilder
-			.build(context.id(), context.path())
-			.execute(context.service(IEventBus.class));
+				.setEclExpressionForm(expressionForm)
+				.build(context.id(), context.path())
+				.execute(context.service(IEventBus.class));
 	}
 
 	/*package*/ static Function<Collection<Property>, Collection<Property>> filterByCardinality(final boolean grouped, final Range<Long> groupCardinality, final Range<Long> cardinality, final Function<Property, Object> idProvider) {
@@ -580,16 +572,12 @@ final class SnomedEclRefinementEvaluator {
 			fieldsToLoad.add(GROUP);
 		}
 		
-		final Collection<String> sourceIds = evalToConceptIds(context, sourceFilter, expressionForm);
-		final Collection<String> typeIds = evalToConceptIds(context, typeFilter, expressionForm);
-		final Collection<String> destinationIds = evalToConceptIds(context, destinationFilter, expressionForm);
-		
 		final SnomedRelationshipSearchRequestBuilder searchRelationships = SnomedRequests.prepareSearchRelationship()
 				.all()
 				.filterByActive(true) 
-				.filterBySource(sourceIds)
-				.filterByType(typeIds)
-				.filterByDestination(destinationIds)
+				.filterBySource(sourceFilter)
+				.filterByType(typeFilter)
+				.filterByDestination(destinationFilter)
 				.filterByCharacteristicTypes(getCharacteristicTypes(expressionForm))
 				.setEclExpressionForm(expressionForm)
 				.setFields(fieldsToLoad.build());
@@ -604,7 +592,7 @@ final class SnomedEclRefinementEvaluator {
 			.then(input -> input.stream().map(r -> new Property(r.getSourceId(), r.getTypeId(), r.getDestinationId(), r.getGroup())).collect(Collectors.toSet()));
 		
 		if (Trees.STATED_FORM.equals(expressionForm)) {
-			final Set<Property> axiomStatements = evalAxiomStatements(context, groupedRelationshipsOnly, sourceIds, typeIds, destinationIds);
+			final Set<Property> axiomStatements = evalAxiomStatements(context, groupedRelationshipsOnly, sourceFilter, typeFilter, destinationFilter);
 			return relationshipSearch.then(relationshipStatements -> ImmutableSet.<Property>builder().addAll(relationshipStatements).addAll(axiomStatements).build());
 		} else {
 			return relationshipSearch;
@@ -612,23 +600,14 @@ final class SnomedEclRefinementEvaluator {
 		
 	}
 
-	private static Collection<String> evalToConceptIds(final BranchContext context, final Collection<String> idFilter, final String expressionForm) {
-		if (idFilter.size() == 1) {
-			// if only a single item is available in the idFilter
-			final String expression = Iterables.getOnlyElement(idFilter);
-			if (!SnomedIdentifiers.isConceptIdentifier(expression)) {
-				// and it's not a CONCEPT_ID, then evaluate via EclExpression
-
-				// unless it is an Any ECL expression, which allows any value
-				if (Ecl.ANY.equals(expression)) {
-					return null;
-				}
-				
-				// TODO replace sync call to concept search with async promise
-				return EclExpression.of(expression, expressionForm).resolve(context).getSync(1, TimeUnit.MINUTES);
-			}
+	static Promise<Set<String>> evalToConceptIds(final BranchContext context, final ExpressionConstraint expressionConstraint, final String expressionForm) {
+		if (expressionConstraint instanceof EclConceptReference) {
+			return Promise.immediate(Set.of(((EclConceptReference) expressionConstraint).getId()));
+		} else if (expressionConstraint instanceof Any) {
+			return Promise.immediate(null);
+		} else {
+			return EclExpression.of(expressionConstraint, expressionForm).resolve(context);
 		}
-		return idFilter;
 	}
 
 	static Set<Property> evalAxiomStatements(final BranchContext context, final boolean groupedRelationshipsOnly, final Collection<String> sourceIds, final Collection<String> typeIds, final Collection<String> destinationIds) {

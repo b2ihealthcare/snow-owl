@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>commons-parent</artifactId>
-		<version>7.10.0</version>
+		<version>7.11.0</version>
 	</parent>
 	<artifactId>com.b2international.mapdb</artifactId>
 	<packaging>eclipse-plugin</packaging>
@@ -46,12 +46,6 @@
 			<version>13.0</version>
 			<scope>provided</scope>
 		</dependency>
-		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
-			<version>20.0</version>
-			<scope>provided</scope>
-		</dependency>
 	</dependencies>
 
 	<build>
@@ -75,7 +69,6 @@
 								eclipse-collections-api,
 								eclipse-collections-forkjoin,
 								elsa,
-								guava,
 								lz4,
 								mapdb
 							</includeArtifactIds>

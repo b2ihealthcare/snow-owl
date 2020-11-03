@@ -34,7 +34,7 @@ public class RefSetMemberRequestResolver implements RequestResolver<TransactionC
 		switch (Action.get(action)) {
 		case CREATE: return SnomedRequests.prepareNewMember().setSource(source).build();
 		case UPDATE: {
-			final SnomedRefSetMemberUpdateRequestBuilder req = SnomedRequests.prepareUpdateMember().setSource(source);
+			final SnomedRefSetMemberUpdateRequestBuilder req = SnomedRequests.prepareUpdateMember(null).setSource(source);
 			final Object forceValue = source.get("force");
 			if (forceValue instanceof Boolean) {
 				req.force((Boolean) forceValue);
