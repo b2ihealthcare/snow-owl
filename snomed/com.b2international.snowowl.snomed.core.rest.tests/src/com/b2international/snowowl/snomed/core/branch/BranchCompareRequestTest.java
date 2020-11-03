@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,10 @@ import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRe
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewConcept;
 import static com.google.common.collect.Sets.newHashSet;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -38,6 +39,7 @@ import com.b2international.snowowl.core.jobs.JobRequests;
 import com.b2international.snowowl.core.jobs.RemoteJobEntry;
 import com.b2international.snowowl.core.repository.JsonSupport;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
+import com.b2international.snowowl.core.request.CommitResult;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
@@ -113,7 +115,7 @@ public class BranchCompareRequestTest {
 		
 		SnomedRequests.prepareUpdateConcept(concept.getId())
 			.setModuleId(Concepts.MODULE_SCT_MODEL_COMPONENT)
-			.build(REPOSITORY_ID, taskBranchPath, "info@b2international.com", "Change module ID")
+			.build(REPOSITORY_ID, taskBranchPath, RestExtensions.USER, "Change module ID")
 			.execute(bus)
 			.getSync();
 		
@@ -136,7 +138,7 @@ public class BranchCompareRequestTest {
 				.get();
 		
 		SnomedRequests.prepareDeleteConcept(concept.getComponentId())
-			.build(REPOSITORY_ID, taskBranchPath, "info@b2international.com", "Delete concept on task branch")
+			.build(REPOSITORY_ID, taskBranchPath, RestExtensions.USER, "Delete concept on task branch")
 			.execute(bus)
 			.getSync();
 		
@@ -163,6 +165,37 @@ public class BranchCompareRequestTest {
 			.getSync()
 			.first()
 			.isEmpty());
+	}
+	
+	@Test
+	public void compareBranchWithNewComponentOnExistingComponent() throws Exception {
+		final Set<ComponentIdentifier> componentsOnParentBranch = prepareBranchWithNewChanges(branchPath);
+		
+		final String taskBranchPath = createBranch(branchPath, "taskBranch");
+		
+		final ComponentIdentifier concept = componentsOnParentBranch.stream()
+				.filter(ci -> ci.getTerminologyComponentId() == SnomedTerminologyComponentConstants.CONCEPT_NUMBER)
+				.findFirst()
+				.get();
+		
+		final String newDescriptionId = SnomedRequests.prepareNewDescription()
+				.setIdFromNamespace(null)
+				.setConceptId(concept.getComponentId())
+				.setTerm("New Description")
+				.setModuleId(Concepts.MODULE_SCT_CORE)
+				.setLanguageCode("en")
+				.setTypeId(Concepts.FULLY_SPECIFIED_NAME)
+				.build(REPOSITORY_ID, taskBranchPath, RestExtensions.USER, "Create new Description on Concept: " + concept.getComponentId())
+				.execute(bus)
+				.getSync(1, TimeUnit.MINUTES)
+				.getResultAs(String.class);
+		final ComponentIdentifier newDescription = ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, newDescriptionId);
+		
+		final BranchCompareResult compareResult = compare(branchPath, taskBranchPath);
+		
+		assertThat(compareResult.getNewComponents()).containsOnly(newDescription);
+		assertThat(compareResult.getChangedComponents()).isEmpty();
+		assertThat(compareResult.getDeletedComponents()).isEmpty();
 	}
 	
 	@Test
