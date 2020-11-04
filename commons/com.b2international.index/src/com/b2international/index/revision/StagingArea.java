@@ -354,83 +354,89 @@ public final class StagingArea {
 			writer.setRevised(type, ImmutableSet.copyOf(revisionsToReviseOnMergeSource.get(type)), mergeFromBranchRef);
 		}
 		
-		final List<CommitDetail> details = newArrayList();
+		// register detail changes only if this is a regular commit, or is it a squash merge commit 
+		final List<CommitDetail> details;
 		
-		// collect property changes
-		revisionsByChange.asMap().forEach((change, objects) -> {
-			final String prop = change.get("path").asText().substring(1); // XXX removes the forward slash from the beginning
-			final String from;
-			if (change.has("fromValue")) {
-				from = serializeToCommitDetailValue(change.get("fromValue"));
-			} else  {
-				from = "";
-			}
-			final String to = serializeToCommitDetailValue(change.get("value"));
-			ListMultimap<String, String> objectIdsByType = ArrayListMultimap.create();
-			objects.forEach(objectId -> objectIdsByType.put(objectId.type(), objectId.id()));
-			// split by object type
-			objectIdsByType.keySet().forEach(type -> {
-				details.add(CommitDetail.changedProperty(prop, from, to, type, objectIdsByType.get(type)));
-			});
-		});
-
-		final List<Pair<Multimap<ObjectId, ObjectId>, BiFunction<String, String, CommitDetail.Builder>>> maps = ImmutableList.of(
-			Pair.of(newComponentsByContainer, CommitDetail::added),
-			Pair.of(changedComponentsByContainer, CommitDetail::changed),
-			Pair.of(removedComponentsByContainer, CommitDetail::removed)
-		);
-		for (Pair<Multimap<ObjectId, ObjectId>, BiFunction<String, String, CommitDetail.Builder>> entry : maps) {
-			final Multimap<ObjectId, ObjectId> multimap = entry.getA();
-			if (!multimap.isEmpty()) {
-				BiFunction<String, String, CommitDetail.Builder> builderFactory = entry.getB();
-				Map<Pair<String, String>, CommitDetail.Builder> buildersByRelationship = newHashMap();
-				// collect hierarchical changes and register them by container ID
-				multimap.asMap().forEach((container, components) -> {
-					Multimap<String, String> componentsByType = HashMultimap.create();
-					components.forEach(c -> componentsByType.put(c.type(), c.id()));
-					componentsByType.asMap().forEach((componentType, componentIds) -> {
-						final Pair<String, String> typeKey = Pair.identicalPairOf(container.type(), componentType);
-						if (!buildersByRelationship.containsKey(typeKey)) {
-							buildersByRelationship.put(typeKey, builderFactory.apply(typeKey.getA(), typeKey.getB()));
-						}
-						buildersByRelationship.get(typeKey).putObjects(container.id(), componentIds);
-					});
+		if (!isMerge() || squashMerge) {
+			details = Lists.newArrayList();
+			// collect property changes
+			revisionsByChange.asMap().forEach((change, objects) -> {
+				final String prop = change.get("path").asText().substring(1); // XXX removes the forward slash from the beginning
+				final String from;
+				if (change.has("fromValue")) {
+					from = serializeToCommitDetailValue(change.get("fromValue"));
+				} else  {
+					from = "";
+				}
+				final String to = serializeToCommitDetailValue(change.get("value"));
+				ListMultimap<String, String> objectIdsByType = ArrayListMultimap.create();
+				objects.forEach(objectId -> objectIdsByType.put(objectId.type(), objectId.id()));
+				// split by object type
+				objectIdsByType.keySet().forEach(type -> {
+					details.add(CommitDetail.changedProperty(prop, from, to, type, objectIdsByType.get(type)));
 				});
-				buildersByRelationship.values()
+			});
+			
+			final List<Pair<Multimap<ObjectId, ObjectId>, BiFunction<String, String, CommitDetail.Builder>>> maps = ImmutableList.of(
+					Pair.of(newComponentsByContainer, CommitDetail::added),
+					Pair.of(changedComponentsByContainer, CommitDetail::changed),
+					Pair.of(removedComponentsByContainer, CommitDetail::removed)
+					);
+			for (Pair<Multimap<ObjectId, ObjectId>, BiFunction<String, String, CommitDetail.Builder>> entry : maps) {
+				final Multimap<ObjectId, ObjectId> multimap = entry.getA();
+				if (!multimap.isEmpty()) {
+					BiFunction<String, String, CommitDetail.Builder> builderFactory = entry.getB();
+					Map<Pair<String, String>, CommitDetail.Builder> buildersByRelationship = newHashMap();
+					// collect hierarchical changes and register them by container ID
+					multimap.asMap().forEach((container, components) -> {
+						Multimap<String, String> componentsByType = HashMultimap.create();
+						components.forEach(c -> componentsByType.put(c.type(), c.id()));
+						componentsByType.asMap().forEach((componentType, componentIds) -> {
+							final Pair<String, String> typeKey = Pair.identicalPairOf(container.type(), componentType);
+							if (!buildersByRelationship.containsKey(typeKey)) {
+								buildersByRelationship.put(typeKey, builderFactory.apply(typeKey.getA(), typeKey.getB()));
+							}
+							buildersByRelationship.get(typeKey).putObjects(container.id(), componentIds);
+						});
+					});
+					buildersByRelationship.values()
 					.stream()
 					.map(CommitDetail.Builder::build)
 					.forEach(details::add);
-			}
-		}
-		
-		// add non-revision components as new/changed/removed as well
-		getFilteredStagedObjects().entrySet().forEach( entry -> {
-			ObjectId key = entry.getKey();
-			StagedObject value = entry.getValue();
-			if (!(value.getObject() instanceof Revision)) {
-				String componentType = key.type();
-				switch (value.stageKind) {
-				case ADDED:
-					details.add(CommitDetail.added(componentType, componentType)
-							.objects(ObjectId.ROOT)
-							.components(Collections.singleton(key.id()))
-							.build());
-					break;
-				case CHANGED:
-					details.add(CommitDetail.changed(componentType, componentType)
-							.objects(ObjectId.ROOT)
-							.components(Collections.singleton(key.id()))
-							.build());
-					break;
-				case REMOVED:
-					details.add(CommitDetail.removed(componentType, componentType)
-							.objects(ObjectId.ROOT)
-							.components(Collections.singleton(key.id()))
-							.build());
-					break;
 				}
 			}
-		});
+			
+			// add non-revision components as new/changed/removed as well
+			getFilteredStagedObjects().entrySet().forEach( entry -> {
+				ObjectId key = entry.getKey();
+				StagedObject value = entry.getValue();
+				if (!(value.getObject() instanceof Revision)) {
+					String componentType = key.type();
+					switch (value.stageKind) {
+					case ADDED:
+						details.add(CommitDetail.added(componentType, componentType)
+								.objects(ObjectId.ROOT)
+								.components(Collections.singleton(key.id()))
+								.build());
+						break;
+					case CHANGED:
+						details.add(CommitDetail.changed(componentType, componentType)
+								.objects(ObjectId.ROOT)
+								.components(Collections.singleton(key.id()))
+								.build());
+						break;
+					case REMOVED:
+						details.add(CommitDetail.removed(componentType, componentType)
+								.objects(ObjectId.ROOT)
+								.components(Collections.singleton(key.id()))
+								.build());
+						break;
+					}
+				}
+			});
+		} else {
+			details = Collections.emptyList();
+		}
 		
 		// free up memory before committing 
 		reset();
