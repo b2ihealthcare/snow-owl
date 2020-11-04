@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 7.11.1
+
+### Bugs/Improvements
+- Fix rare branch rebase conflict due to multiple changes on the same property (#706) 
+
 ## 7.11.0
 
 ### Core
