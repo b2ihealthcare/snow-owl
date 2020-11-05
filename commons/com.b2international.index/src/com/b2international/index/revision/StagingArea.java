@@ -358,6 +358,7 @@ public final class StagingArea {
 		
 		// collect property changes
 		revisionsByChange.asMap().forEach((change, objects) -> {
+			
 			final String prop = change.get("path").asText().substring(1); // XXX removes the forward slash from the beginning
 			final String from;
 			if (change.has("fromValue")) {
@@ -368,9 +369,22 @@ public final class StagingArea {
 			final String to = serializeToCommitDetailValue(change.get("value"));
 			ListMultimap<String, String> objectIdsByType = ArrayListMultimap.create();
 			objects.forEach(objectId -> objectIdsByType.put(objectId.type(), objectId.id()));
+
 			// split by object type
+			final String operation = change.get("op").asText();
 			objectIdsByType.keySet().forEach(type -> {
-				details.add(CommitDetail.changedProperty(prop, from, to, type, objectIdsByType.get(type)));
+				switch (operation) {
+				case "add":
+					details.add(CommitDetail.changedProperty(prop, from, to, type, objectIdsByType.get(type)));
+					break;
+				case "remove":
+					details.add(CommitDetail.changedProperty(prop, to, from, type, objectIdsByType.get(type)));
+					break;
+				//replace/move/copy - https://tools.ietf.org/html/rfc6902
+				default:
+					details.add(CommitDetail.changedProperty(prop, from, to, type, objectIdsByType.get(type)));
+					break;
+				}
 			});
 		});
 

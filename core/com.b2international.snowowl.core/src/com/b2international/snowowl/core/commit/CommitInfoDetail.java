@@ -138,4 +138,12 @@ public final class CommitInfoDetail implements Serializable {
 	public String getValue() {
 		return value;
 	}
+
+	@Override
+	public String toString() {
+		return "CommitInfoDetail [changeKind=" + changeKind + ", objectType=" + objectType + ", object=" + object
+				+ ", property=" + property + ", fromValue=" + fromValue + ", valueType=" + valueType + ", value="
+				+ value + "]";
+	}
+	
 }
