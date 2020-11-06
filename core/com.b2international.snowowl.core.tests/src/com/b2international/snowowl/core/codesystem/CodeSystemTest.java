@@ -36,16 +36,6 @@ public class CodeSystemTest {
 	}
 	
 	@Test
-	public void codeSystemToURI() throws Exception {
-		CodeSystem cs = CodeSystem.builder()
-				.shortName("SNOMEDCT")
-				.branchPath("MAIN")
-				.build();
-		CodeSystemURI uri = cs.getCodeSystemURI();
-		assertThat(uri).isEqualTo(new CodeSystemURI("SNOMEDCT/HEAD"));
-	}
-	
-	@Test
 	public void codeSystemChildBranchToURI() throws Exception {
 		CodeSystem cs = CodeSystem.builder()
 				.shortName("SNOMEDCT")
@@ -62,7 +52,7 @@ public class CodeSystemTest {
 				.branchPath("MAIN")
 				.build();
 		CodeSystemURI uri = cs.getCodeSystemURI("MAIN");
-		assertThat(uri).isEqualTo(new CodeSystemURI("SNOMEDCT/HEAD"));
+		assertThat(uri).isEqualTo(new CodeSystemURI("SNOMEDCT"));
 	}
 	
 	@Test
