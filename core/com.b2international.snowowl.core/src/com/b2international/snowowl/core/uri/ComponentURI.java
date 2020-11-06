@@ -113,6 +113,10 @@ public final class ComponentURI implements Serializable {
 		this.identifier = identifier;
 	}
 	
+	public static ComponentURI of(CodeSystemURI codeSystemURI, short terminologyComponentId, String identifier) {
+		return new ComponentURI(codeSystemURI, terminologyComponentId, Strings.nullToEmpty(identifier));
+	}
+	
 	@JsonCreator
 	public static ComponentURI of(String codeSystem, short terminologyComponentId, String identifier) {
 		return getOrCache(new ComponentURI(new CodeSystemURI(codeSystem), terminologyComponentId, Strings.nullToEmpty(identifier)));
@@ -137,8 +141,13 @@ public final class ComponentURI implements Serializable {
 			return ComponentURI.UNSPECIFIED;
 		}
 		final List<String> parts = SLASH_SPLITTER.splitToList(uri);
-		checkArgument(parts.size() == 3, "A component uri consists of three parts (codeSystem/componentType/componentId). Arg was: %s", uri);
-		return of(parts.get(0), Short.valueOf(parts.get(1)), parts.get(2));
+		checkArgument(parts.size() >= 3, "A component uri consists of three parts (codeSystemURI/componentType/componentId). Arg was: %s", uri);
+		int terminologyComponentTypeIndex = parts.size()-2;
+		int componentIdIndex = parts.size()-1;
+		CodeSystemURI codeSystemURI = new CodeSystemURI(SLASH_JOINER.join(parts.subList(0, terminologyComponentTypeIndex)));
+		Short terminologyComponentId = Short.valueOf(parts.get(terminologyComponentTypeIndex));
+		String componentId = parts.get(componentIdIndex);
+		return new ComponentURI(codeSystemURI, terminologyComponentId, componentId);
 	}
 
 	@JsonValue
