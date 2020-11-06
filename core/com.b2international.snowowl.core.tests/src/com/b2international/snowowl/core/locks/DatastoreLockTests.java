@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,11 +27,6 @@ import com.b2international.snowowl.core.internal.locks.DatastoreLockContext;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockTarget;
 import com.b2international.snowowl.core.internal.locks.Slf4jOperationLockTargetListener;
-import com.b2international.snowowl.core.locks.DatastoreLockIndexEntry;
-import com.b2international.snowowl.core.locks.DatastoreOperationLockManager;
-import com.b2international.snowowl.core.locks.OperationLock;
-import com.b2international.snowowl.core.locks.OperationLockException;
-import com.b2international.snowowl.core.locks.OperationLockInfo;
 import com.b2international.snowowl.core.repository.JsonSupport;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -42,7 +37,7 @@ public class DatastoreLockTests {
 
 	private static final long TIMEOUT = 10_000L;
 
-	private static final String USER = "info@b2international.com";
+		private static final String USER = "snowowl";
 	
 	private DatastoreOperationLockManager manager;
 

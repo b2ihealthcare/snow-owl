@@ -214,4 +214,22 @@ public class RevisionBranchMergeConflictTest extends BaseRevisionIndexTest {
 		assertDocEquals(newDataWithUpdatedDerivedField, getRevision(branchA, RevisionData.class, NEW_DATA.getId()));
 	}
 	
+	@Test
+	public void rebaseResolvableChangesShouldNotCauseConflictOnSecondRebase() throws Exception {
+		indexRevision(MAIN, NEW_DATA);
+		final String branchA = createBranch(MAIN, "a");
+		
+		indexChange(MAIN, NEW_DATA, NEW_DATA.toBuilder().field1("field1Changed").build());
+		indexChange(branchA, NEW_DATA, NEW_DATA.toBuilder().field2("field2Changed").build());
+		
+		// rebase branch the first time should make it through
+		branching().prepareMerge(MAIN, branchA).merge();
+		
+		// trigger another change on the same property on the parent branch 
+		indexChange(MAIN, NEW_DATA, NEW_DATA.toBuilder().field1("field1Changed_2").build());
+		
+		// trigger second rebase causes issues in 7.11.0, but with patch it's not
+		branching().prepareMerge(MAIN, branchA).merge(); // throws BranchMergeConflictException in 7.11.0 and earlier versions
+	}
+	
 }

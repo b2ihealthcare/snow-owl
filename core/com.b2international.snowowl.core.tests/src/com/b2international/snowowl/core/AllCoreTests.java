@@ -21,14 +21,20 @@ import org.junit.runners.Suite.SuiteClasses;
 
 import com.b2international.snowowl.core.attachments.AttachmentRegistryTest;
 import com.b2international.snowowl.core.branch.review.ReviewSerializationTest;
+import com.b2international.snowowl.core.codesystem.CodeSystemTest;
 import com.b2international.snowowl.core.events.NotificationsTest;
 import com.b2international.snowowl.core.events.util.PromiseTest;
 import com.b2international.snowowl.core.events.util.RequestTest;
 import com.b2international.snowowl.core.identity.PermissionTest;
 import com.b2international.snowowl.core.jobs.JobRequestsTest;
+import com.b2international.snowowl.core.locks.DatastoreLockTests;
+import com.b2international.snowowl.core.locks.LockIndexTests;
 import com.b2international.snowowl.core.merge.MergeConflictSerializationTest;
+import com.b2international.snowowl.core.monitoring.ConsoleProgressMonitorTest;
 import com.b2international.snowowl.core.request.SearchResourceRequestTest;
 import com.b2international.snowowl.core.request.SortParserTest;
+import com.b2international.snowowl.core.scripts.GroovyScriptEngineTest;
+import com.b2international.snowowl.core.uri.CodeSystemURITest;
 import com.b2international.snowowl.core.validation.ValidationIssueApiTest;
 import com.b2international.snowowl.core.validation.ValidationRuleApiTest;
 import com.b2international.snowowl.core.validation.ValidationThreadPoolTest;
@@ -42,17 +48,25 @@ import com.b2international.snowowl.core.validation.ValidationWhiteListApiTest;
 	NotificationsTest.class,
 	PromiseTest.class,
 	RequestTest.class,
+	AttachmentRegistryTest.class,
+	SortParserTest.class,
+	JobRequestsTest.class,
+	MergeConflictSerializationTest.class,
+	ReviewSerializationTest.class,
+	PermissionTest.class,
+	DatastoreLockTests.class,
+	CodeSystemTest.class,
+	LockIndexTests.class,
+	ConsoleProgressMonitorTest.class,
+	GroovyScriptEngineTest.class,
+	CodeSystemURITest.class,
+	SearchResourceRequestTest.class,
 	ValidationIssueApiTest.class,
 	ValidationRuleApiTest.class,
 	ValidationThreadPoolTest.class,
 	ValidationWhiteListApiTest.class,
-	AttachmentRegistryTest.class,
-	SortParserTest.class,
-	SearchResourceRequestTest.class,
-	JobRequestsTest.class,
-	MergeConflictSerializationTest.class,
-	ReviewSerializationTest.class,
-	PermissionTest.class
+	
+	
 })
 public class AllCoreTests {
 

@@ -44,6 +44,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetM
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.test.commons.Services;
+import com.b2international.snowowl.test.commons.rest.RestExtensions;
 import com.google.common.collect.ImmutableMap;
 
 import io.restassured.http.ContentType;
@@ -123,7 +124,7 @@ public class SnomedCompareRestRequestTest extends AbstractSnomedApiTest {
 		
 		SnomedRequests.prepareUpdateConcept(concept.getId())
 			.setModuleId(Concepts.MODULE_SCT_MODEL_COMPONENT)
-			.build(repositoryUuid, childBranchPath, "info@b2international.com", "Change module ID")
+			.build(repositoryUuid, childBranchPath, RestExtensions.USER, "Change module ID")
 			.execute(bus)
 			.getSync();
 		
@@ -147,7 +148,7 @@ public class SnomedCompareRestRequestTest extends AbstractSnomedApiTest {
 				.get();
 		
 		SnomedRequests.prepareDeleteConcept(concept.getComponentId())
-			.build(repositoryUuid, childBranchPath, "info@b2international.com", "Delete concept on child branch")
+			.build(repositoryUuid, childBranchPath, RestExtensions.USER, "Delete concept on child branch")
 			.execute(bus)
 			.getSync();
 		
