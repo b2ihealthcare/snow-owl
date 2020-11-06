@@ -73,15 +73,17 @@ public class SnomedDescriptionRestUpdate extends AbstractSnomedComponentRestUpda
 	}
 
 	public SnomedDescriptionUpdateRequestBuilder toRequestBuilder(final String descriptionId) {
-		return SnomedRequests.prepareUpdateDescription(descriptionId)
-			.setActive(isActive())
-			.setModuleId(getModuleId())
-			.setInactivationProperties(getInactivationProperties())
-			.setCaseSignificanceId(getCaseSignificanceId())
-			.setAcceptability(getAcceptability())
-			.setTypeId(getTypeId())
-			.setTerm(getTerm())
-			.setLanguageCode(getLanguageCode());
+		return SnomedRequests
+				.prepareUpdateDescription(descriptionId)
+				.setActive(isActive())
+				.setEffectiveTime(getEffectiveTime())
+				.setModuleId(getModuleId())
+				.setInactivationProperties(getInactivationProperties())
+				.setCaseSignificanceId(getCaseSignificanceId())
+				.setAcceptability(getAcceptability())
+				.setTypeId(getTypeId())
+				.setTerm(getTerm())
+				.setLanguageCode(getLanguageCode());
 	}
 
 }

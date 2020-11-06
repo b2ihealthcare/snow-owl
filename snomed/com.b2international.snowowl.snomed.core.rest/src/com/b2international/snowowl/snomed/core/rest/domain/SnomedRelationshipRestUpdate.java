@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.snomed.core.rest.domain;
 
+import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipUpdateRequestBuilder;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+
 /**
  * @since 1.0
  */
@@ -73,6 +76,20 @@ public class SnomedRelationshipRestUpdate extends AbstractSnomedComponentRestUpd
 	
 	public void setTypeId(String typeId) {
 		this.typeId = typeId;
+	}
+
+	public SnomedRelationshipUpdateRequestBuilder toRequestBuilder(String relationshipId) {
+		return SnomedRequests
+				.prepareUpdateRelationship(relationshipId)
+				.setActive(isActive())
+				.setEffectiveTime(getEffectiveTime())
+				.setModuleId(getModuleId())
+				.setCharacteristicTypeId(getCharacteristicTypeId())
+				.setGroup(getGroup())
+				.setUnionGroup(getUnionGroup())
+				.setModifierId(getModifierId())
+				.setTypeId(getTypeId())
+				.setDestinationId(getDestinationId());
 	}
 
 }

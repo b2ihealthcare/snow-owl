@@ -15,7 +15,10 @@
  */
 package com.b2international.snowowl.snomed.core.rest.domain;
 
+import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.snomed.core.domain.InactivationProperties;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 
 /**
  * @since 4.0
@@ -25,6 +28,7 @@ public abstract class AbstractSnomedComponentRestUpdate {
 	private String moduleId;
 	private Boolean active;
 	private InactivationProperties inactivationProperties;
+	private String effectiveTime;
 	
 	public Boolean isActive() {
 		return active;
@@ -48,6 +52,15 @@ public abstract class AbstractSnomedComponentRestUpdate {
 
 	public void setInactivationProperties(InactivationProperties inactivationProperties) {
 		this.inactivationProperties = inactivationProperties;
+	}
+	
+	@JsonFormat(shape=Shape.STRING, pattern = DateFormats.SHORT, timezone="UTC")
+	public void setEffectiveTime(String effectiveTime) {
+		this.effectiveTime = effectiveTime;
+	}
+	
+	public String getEffectiveTime() {
+		return effectiveTime;
 	}
 
 }
