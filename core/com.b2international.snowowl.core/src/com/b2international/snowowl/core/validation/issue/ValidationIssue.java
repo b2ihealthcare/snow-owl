@@ -29,6 +29,7 @@ import com.b2international.index.Keyword;
 import com.b2international.index.Script;
 import com.b2international.index.Text;
 import com.b2international.snowowl.core.ComponentIdentifier;
+import com.b2international.snowowl.core.uri.ComponentURI;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -44,10 +45,13 @@ import com.google.common.base.MoreObjects;
 @Script(name="normalizeWithOffset", script="(_score / (_score + 1.0f)) + params.offset")
 public final class ValidationIssue implements Serializable {
 
+	private static final long serialVersionUID = -230548830784505794L;
+
 	public static class Fields {
 		public static final String ID = "id";
 		public static final String RULE_ID = "ruleId";
 		public static final String BRANCH_PATH = "branchPath";
+		public static final String COMPONENT_URI = "componentURI";
 		public static final String AFFECTED_COMPONENT_ID = "affectedComponentId";
 		public static final String AFFECTED_COMPONENT_TYPE = "affectedComponentType";
 		public static final String AFFECTED_COMPONENT_LABELS = "affectedComponentLabels";
@@ -63,9 +67,15 @@ public final class ValidationIssue implements Serializable {
 	
 	private final String id;
 	private final String ruleId;
+	
+	@Deprecated
 	private final String branchPath;
+	@Deprecated
 	private final String affectedComponentId;
+	@Deprecated
 	private final short affectedComponentType;
+	
+	private final ComponentURI componentURI;
 	private final boolean whitelisted;
 	
 	@Text(analyzer = Analyzers.TOKENIZED)
@@ -83,7 +93,15 @@ public final class ValidationIssue implements Serializable {
 			final String branchPath, 
 			final ComponentIdentifier affectedComponent,
 			final boolean whitelisted) {
-		this(id, ruleId, branchPath, affectedComponent.getTerminologyComponentId(), affectedComponent.getComponentId(), whitelisted);
+		this(id, ruleId, branchPath, ComponentURI.UNSPECIFIED, affectedComponent.getTerminologyComponentId(), affectedComponent.getComponentId(), whitelisted);
+	}
+	
+	public ValidationIssue(
+			final String id,
+			final String ruleId, 
+			final ComponentURI componentURI, 
+			final boolean whitelisted) {
+		this(id, ruleId, componentURI.codeSystemUri().getPath(), componentURI, componentURI.terminologyComponentId(), componentURI.identifier(), whitelisted);
 	}
 	
 	@JsonCreator
@@ -91,6 +109,7 @@ public final class ValidationIssue implements Serializable {
 			@JsonProperty("id") final String id,
 			@JsonProperty("ruleId") final String ruleId, 
 			@JsonProperty("branchPath") final String branchPath, 
+			@JsonProperty("componentURI") final ComponentURI componentURI,
 			@JsonProperty("affectedComponentType") final short affectedComponentType,
 			@JsonProperty("affectedComponentId") final String affectedComponentId,
 			@JsonProperty("whitelisted") final boolean whitelisted) {
@@ -99,6 +118,7 @@ public final class ValidationIssue implements Serializable {
 		this.branchPath = branchPath;
 		this.affectedComponentId = affectedComponentId;
 		this.affectedComponentType = affectedComponentType;
+		this.componentURI = componentURI;
 		this.whitelisted = whitelisted;
 	}
 	
@@ -126,6 +146,10 @@ public final class ValidationIssue implements Serializable {
 	
 	public String getBranchPath() {
 		return branchPath;
+	}
+	
+	public ComponentURI getComponentURI() {
+		return componentURI;
 	}
 	
 	public String getRuleId() {
