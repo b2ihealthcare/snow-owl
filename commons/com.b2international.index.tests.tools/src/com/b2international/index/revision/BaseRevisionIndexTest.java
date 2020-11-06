@@ -129,7 +129,7 @@ public abstract class BaseRevisionIndexTest {
 		commit(branchPath, Arrays.asList(revisions));
 	}
 	
-	protected final Commit indexChange(final String branchPath, final Revision oldRevision, final Revision newRevision) {
+	protected final <T extends Revision> Commit indexChange(final String branchPath, final T oldRevision, final T newRevision) {
 		final long commitTimestamp = currentTime();
 		return index().prepareCommit(branchPath)
 			.stageChange(oldRevision, newRevision)

@@ -27,6 +27,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 
+import com.b2international.collections.PrimitiveCollection;
 import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
 import com.b2international.index.Keyword;
@@ -192,17 +193,17 @@ public final class DocumentMapping {
 		return nestedType;
 	}
 	
-	public Field getField(String name) {
-		checkArgument(fieldMap.containsKey(name), "Missing field '%s' on mapping of '%s'", name, type);
-		return fieldMap.get(name);
+	public Field getField(String field) {
+		checkArgument(fieldMap.containsKey(field), "Missing field '%s' on mapping of '%s'", field, type);
+		return fieldMap.get(field);
 	}
 	
-	public Class<?> getFieldType(String key) {
+	public Class<?> getFieldType(String field) {
 		// XXX: _id can be retrieved via field selection, but has no corresponding entry in the mapping
-		if (DocumentMapping._ID.equals(key)) {
+		if (DocumentMapping._ID.equals(field)) {
 			return String.class;
 		}
-		return getField(key).getType();
+		return getField(field).getType();
 	}
 	
 	public Collection<Field> getFields() {
@@ -215,6 +216,11 @@ public final class DocumentMapping {
 	
 	public boolean isKeyword(String field) {
 		return keywordFields.containsKey(field);
+	}
+	
+	public boolean isCollection(String field) {
+		Class<?> fieldType = getFieldType(field);
+		return Iterable.class.isAssignableFrom(fieldType) || PrimitiveCollection.class.isAssignableFrom(fieldType) || fieldType.getClass().isArray();
 	}
 	
 	public Map<String, Text> getTextFields() {

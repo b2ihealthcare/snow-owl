@@ -57,7 +57,6 @@ import org.elasticsearch.search.sort.ScriptSortBuilder.ScriptSortType;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 
-import com.b2international.collections.PrimitiveCollection;
 import com.b2international.commons.exceptions.FormattedRuntimeException;
 import com.b2international.index.Hits;
 import com.b2international.index.IndexClientFactory;
@@ -255,13 +254,7 @@ public class EsDocumentSearcher implements Searcher {
 	private boolean requiresDocumentSourceField(DocumentMapping mapping, List<String> fields) {
 		return fields
 			.stream()
-			.filter(field -> {
-				Class<?> fieldType = mapping.getFieldType(field);
-				return mapping.isText(field)
-						|| Iterable.class.isAssignableFrom(fieldType) 
-						|| PrimitiveCollection.class.isAssignableFrom(fieldType) 
-						|| fieldType.getClass().isArray();
-			})
+			.filter(field -> mapping.isText(field) || mapping.isCollection(field))
 			.findFirst()
 			.isPresent();
 	}
