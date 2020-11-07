@@ -479,7 +479,6 @@ public final class StagingArea {
 			new BulkUpdate<>(
 				RevisionBranch.class, 
 				DocumentMapping.matchId(branchPath), 
-				DocumentMapping._ID, 
 				RevisionBranch.Scripts.COMMIT,
 				toBranchUpdateParams.build()
 			)
