@@ -44,6 +44,9 @@ import com.google.common.base.MoreObjects.ToStringHelper;
 @JsonIgnoreProperties(value = { "_hash" }) // XXX keep _hash field ignored for backward compatibility, remove in 8.0
 public abstract class Revision {
 	
+	/**
+	 * @since 4.7
+	 */
 	public static class Fields {
 		public static final String ID = "id";
 		public static final String CREATED = "created";
@@ -91,19 +94,10 @@ public abstract class Revision {
 	 * returns a {@link #ROOT} object ID therefore this object is a ROOT component in a given hierarchy.
 	 * 
 	 * @return the container identifier
-	 * @see #isRoot()
 	 */
 	@JsonIgnore
 	protected ObjectId getContainerId() {
 		return ObjectId.rootOf(DocumentMapping.getType(getClass()));
-	}
-	
-	/**
-	 * @return whether this component is a root component in a hierarchy or a subcomponent of another component. By default returns <code>true</code>.
-	 */
-	@JsonIgnore
-	final boolean isRoot() {
-		return ObjectId.rootOf(DocumentMapping.getType(getClass())).equals(getContainerId());
 	}
 	
 	@Override
