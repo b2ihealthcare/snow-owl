@@ -147,8 +147,7 @@ public class RevisionFixtures {
 			return Objects.hash(field1, field2, terms);
 		}
 		
-		@Override
-		protected Builder toBuilder() {
+		public Builder toBuilder() {
 			return new Builder(this);
 		}
 	}

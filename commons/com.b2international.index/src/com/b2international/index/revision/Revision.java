@@ -57,7 +57,7 @@ public abstract class Revision {
 	
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	private RevisionBranchPoint created;
-	
+
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	private List<RevisionBranchPoint> revised = Collections.emptyList();
 
@@ -71,10 +71,6 @@ public abstract class Revision {
 	
 	final void setCreated(RevisionBranchPoint created) {
 		this.created = created;
-	}
-	
-	final void setRevised(List<RevisionBranchPoint> revised) {
-		this.revised = revised;
 	}
 	
 	final RevisionBranchPoint getCreated() {
@@ -120,15 +116,6 @@ public abstract class Revision {
 				.add(Revision.Fields.ID, id)
 				.add(Revision.Fields.CREATED, created)
 				.add(Revision.Fields.REVISED, revised);
-	}
-	
-	/**
-	 * Converts an immutable object into a mutable builder with the usual prefixless setter methods.
-	 * 
-	 * @return
-	 */
-	protected Builder<?, ? extends Revision> toBuilder() {
-		throw new UnsupportedOperationException();
 	}
 	
 	/**
