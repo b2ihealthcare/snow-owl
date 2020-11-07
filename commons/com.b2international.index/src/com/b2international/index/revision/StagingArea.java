@@ -239,7 +239,7 @@ public final class StagingArea {
 	 * @return
 	 */
 	public Commit commit(String commitGroupId, long timestamp, String author, String commitComment) {
-		if (!isDirty()) {
+		if (!isDirty() && !isMerge()) {
 			return null;
 		}
 		// run pre-commit hooks
