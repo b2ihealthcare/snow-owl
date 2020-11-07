@@ -239,6 +239,9 @@ public final class StagingArea {
 	 * @return
 	 */
 	public Commit commit(String commitGroupId, long timestamp, String author, String commitComment) {
+		if (!isDirty()) {
+			return null;
+		}
 		// run pre-commit hooks
 		final List<Hook> hooks = index.getHooks(); // get a snapshot of the current hooks so we use the same hooks before and after commit
 		hooks.stream()

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,6 +72,8 @@ public final class Commit implements WithScore {
 			return new BulkUpdate<>(Commit.class, Commit.Expressions.branches(currentBranch), DocumentMapping._ID, Commit.Scripts.UPDATE_BRANCH, ImmutableMap.of("branch", newBranch));
 		}
 	}
+
+	public static final Long NO_COMMIT_TIMESTAMP = -1L;
 
 	static Builder builder() {
 		return new Builder();
