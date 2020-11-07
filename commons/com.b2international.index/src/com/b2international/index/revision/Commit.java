@@ -34,9 +34,7 @@ import java.util.Set;
 
 import com.b2international.commons.collections.Collections3;
 import com.b2international.index.Analyzers;
-import com.b2international.index.BulkUpdate;
 import com.b2international.index.Doc;
-import com.b2international.index.Script;
 import com.b2international.index.Text;
 import com.b2international.index.WithScore;
 import com.b2international.index.mapping.DocumentMapping;
@@ -45,7 +43,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 
@@ -54,24 +51,7 @@ import com.google.common.collect.Multimap;
  */
 @Doc
 @JsonDeserialize(builder = Commit.Builder.class)
-@Script(name=Commit.Scripts.UPDATE_BRANCH, script="ctx._source.branch = params.branch")
 public final class Commit implements WithScore {
-
-	/**
-	 * @since 7.0
-	 */
-	public static final class Scripts {
-		public static final String UPDATE_BRANCH = "updateBranch";
-	}
-
-	/**
-	 * @since 7.0
-	 */
-	public static final class Update {
-		public static BulkUpdate<Commit> branch(final String currentBranch, final String newBranch) {
-			return new BulkUpdate<>(Commit.class, Commit.Expressions.branches(currentBranch), DocumentMapping._ID, Commit.Scripts.UPDATE_BRANCH, ImmutableMap.of("branch", newBranch));
-		}
-	}
 
 	public static final Long NO_COMMIT_TIMESTAMP = -1L;
 
