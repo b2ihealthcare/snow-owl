@@ -25,10 +25,10 @@ import org.junit.Test;
 public class CodeSystemURITest {
 
 	@Test
-	public void latestReleasedImplicit() throws Exception {
+	public void headImplicit() throws Exception {
 		final CodeSystemURI uri = new CodeSystemURI("SNOMEDCT");
 		assertEquals("SNOMEDCT", uri.getCodeSystem());
-		assertEquals(CodeSystemURI.LATEST, uri.getPath());
+		assertEquals(CodeSystemURI.HEAD, uri.getPath());
 	}
 	
 	@Test

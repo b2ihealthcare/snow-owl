@@ -63,6 +63,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedOWLRelationshipDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.test.commons.Services;
+import com.b2international.snowowl.test.commons.rest.RestExtensions;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -944,7 +945,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 			.setModuleId(Concepts.MODULE_SCT_CORE)
 			.setReferenceSetId(simpleRefSetId)
 			.setReferencedComponentId(simpleRefSetId)
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath(), "info@b2international.com", "Creating refset member")
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath(), RestExtensions.USER, "Creating refset member")
 			.execute(getBus())
 			.getSync();
 		
@@ -956,7 +957,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 			.setModuleId(Concepts.MODULE_SCT_CORE)
 			.setReferenceSetId(simpleRefSetId)
 			.setReferencedComponentId(simpleRefSetId)
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath(), "info@b2international.com", "Creating refset member")
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath(), RestExtensions.USER, "Creating refset member")
 			.execute(getBus())
 			.getSync();	
 	}

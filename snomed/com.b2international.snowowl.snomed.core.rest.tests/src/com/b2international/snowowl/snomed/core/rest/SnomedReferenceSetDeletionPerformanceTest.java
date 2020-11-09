@@ -43,6 +43,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionCre
 import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.test.commons.rest.RestExtensions;
 import com.google.common.collect.Sets;
 
 /**
@@ -89,7 +90,7 @@ public class SnomedReferenceSetDeletionPerformanceTest extends AbstractSnomedApi
 		
 		assertEquals(refsetMemberSizeAfterCreation, membersIds.size());
 		SnomedRequests.prepareDeleteReferenceSet(refSetId, false)
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath(), "info@b2international.com", "Deleting large refset")
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath(), RestExtensions.USER, "Deleting large refset")
 			.execute(getBus())
 			.getSync();
 		

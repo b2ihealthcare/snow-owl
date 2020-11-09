@@ -82,6 +82,7 @@ import com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.test.commons.rest.RestExtensions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
@@ -1010,7 +1011,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 			
 		SnomedRequests.prepareUpdateConcept(conceptId)
 			.setDescriptions(descriptions)
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath(), "info@b2international.com", "Update concept inactivation indicator and its descriptions indicator")
+			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath(), RestExtensions.USER, "Update concept inactivation indicator and its descriptions indicator")
 			.execute(getBus())
 			.getSync();
 		
