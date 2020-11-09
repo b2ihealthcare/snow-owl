@@ -47,6 +47,14 @@ public final class CodeSystemSearchRequestBuilder
 	public CodeSystemSearchRequestBuilder filterByNameExact(String term) {
 		return addOption(OptionKey.NAME_EXACT, term);
 	}
+	
+	public CodeSystemSearchRequestBuilder filterByOid(String oid) {
+		return addOption(OptionKey.OID, oid);
+	}
+
+	public CodeSystemSearchRequestBuilder filterByOids(Iterable<String> oids) {
+		return addOption(OptionKey.OID, oids);
+	}
 
 	@Override
 	protected SearchResourceRequest<RepositoryContext, CodeSystems> createSearch() {
