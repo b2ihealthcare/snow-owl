@@ -44,6 +44,7 @@ import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.request.rf2.SnomedRf2Requests;
+import com.b2international.snowowl.test.commons.rest.RestExtensions;
 
 /**
  * JUnit test rule to import SNOMED CT content during automated tests.
@@ -139,7 +140,7 @@ public class SnomedContentRule extends ExternalResource {
 				.setRepositoryId(SnomedDatastoreActivator.REPOSITORY_UUID)
 				.setShortName(codeSystemShortName)
 				.setTerminologyId(SnomedTerminologyComponentConstants.TERMINOLOGY_ID)
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, Branch.MAIN_PATH, "info@b2international.com", String.format("Create code system %s", codeSystemShortName))
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, Branch.MAIN_PATH, RestExtensions.USER, String.format("Create code system %s", codeSystemShortName))
 				.execute(eventBus)
 				.getSync();
 		}

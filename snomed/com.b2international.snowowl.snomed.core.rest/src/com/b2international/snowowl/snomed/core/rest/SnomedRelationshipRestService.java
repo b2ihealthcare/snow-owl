@@ -218,16 +218,7 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 		final SnomedRelationshipRestUpdate update = body.getChange();
 		final String defaultModuleId = body.getDefaultModuleId();
 
-		SnomedRequests
-			.prepareUpdateRelationship(relationshipId)
-			.setActive(update.isActive())
-			.setModuleId(update.getModuleId())
-			.setCharacteristicTypeId(update.getCharacteristicTypeId())
-			.setGroup(update.getGroup())
-			.setUnionGroup(update.getUnionGroup())
-			.setModifierId(update.getModifierId())
-			.setTypeId(update.getTypeId())
-			.setDestinationId(update.getDestinationId())
+		update.toRequestBuilder(relationshipId)
 			.force(force)
 			.build(repositoryId, branchPath, author, commitComment, defaultModuleId)
 			.execute(getBus())
