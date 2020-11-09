@@ -157,14 +157,12 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 	}
 
 	private Optional<CodeSystemVersionEntry> checkCodeSystem(final TransactionContext context) {
-		
-		//OID must be unique if defined
-		if (!StringUtils.isEmpty(oid)) {
-			if (codeSystemExists(oid, context)) {
-				throw new AlreadyExistsException("Code system", oid);
-			}
+		// OID must be unique if defined
+		if (!StringUtils.isEmpty(oid) && codeSystemExists(oid, context)) {
+			throw new AlreadyExistsException("Code system", oid);
 		}
-		
+
+		// Short name is always checked against existing code systems
 		if (codeSystemExists(shortName, context)) {
 			throw new AlreadyExistsException("Code system", shortName);
 		}
