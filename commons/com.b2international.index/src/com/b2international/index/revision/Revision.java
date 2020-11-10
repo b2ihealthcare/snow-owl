@@ -135,4 +135,13 @@ public abstract class Revision {
 		
 	}
 
+	/**
+	 * @param field - the field to test
+	 * @return <code>true</code> if the given field is a property that is being used by the revision system and it is not part of the document's schema, <code>false</code> otherwise.
+	 */
+	public static boolean isRevisionField(String field) {
+		return Fields.CREATED.equals(field) 
+				|| Revision.Fields.REVISED.equals(field);
+	}
+
 }

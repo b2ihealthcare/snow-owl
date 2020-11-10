@@ -868,7 +868,7 @@ public final class StagingArea {
 					ObjectNode change = ClassUtils.checkAndCast(elements.next(), ObjectNode.class);
 					final String property = getChangeRootProperty(change);
 					
-					if (fieldsToSkip != null && fieldsToSkip.contains(property)) {
+					if (fieldsToSkip != null && (fieldsToSkip.contains(property) || Revision.isRevisionField(property))) {
 						continue;
 					}
 					
@@ -883,10 +883,7 @@ public final class StagingArea {
 						fieldsToSkip.add(property);
 					}
 					
-					// Remove administrative revision fields from diff, but keep all other ones
-					if (!Revision.Fields.CREATED.equals(property) && !Revision.Fields.REVISED.equals(property)) {
-						filteredRawDiff.add(change);
-					}
+					filteredRawDiff.add(change);
 				}
 				this.rawDiff = filteredRawDiff;
 			}
