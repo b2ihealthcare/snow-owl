@@ -46,6 +46,7 @@ public final class ConceptMapMapping implements Serializable {
 				.mappingCorrelation(from.getMappingCorrelation())
 				.mapPriority(from.getMapPriority())
 				.mapRule(from.getMapRule())
+				.comments(from.getComments())
 				.sourceComponentURI(from.getSourceComponentURI())
 				.sourceIconId(from.getSourceIconId())
 				.sourceTerm(from.getSourceTerm())
@@ -77,6 +78,7 @@ public final class ConceptMapMapping implements Serializable {
 		private Integer mapPriority = 0;
 		private String mapRule = "";
 		private String mapAdvice = "";
+		private String comments = "";
 		
 		public Builder uri(ComponentURI uri) {
 			this.uri = uri;
@@ -158,6 +160,11 @@ public final class ConceptMapMapping implements Serializable {
 			return this;
 		}
 		
+		public Builder comments(final String comments) {
+			this.comments = Strings.nullToEmpty(comments);
+			return this;
+		}
+		
 		public ConceptMapMapping build() {
 			return new ConceptMapMapping(
 					uri,
@@ -165,7 +172,7 @@ public final class ConceptMapMapping implements Serializable {
 					sourceIconId, sourceTerm, sourceComponentURI, 
 					targetIconId, targetTerm, targetComponentURI, 
 					active, 
-					mappingCorrelation, mapGroup, mapPriority, mapRule, mapAdvice);
+					mappingCorrelation, mapGroup, mapPriority, mapRule, mapAdvice, comments);
 		}
 	
 	}
@@ -191,6 +198,7 @@ public final class ConceptMapMapping implements Serializable {
 	private final Integer mapPriority;
 	private final String mapRule;
 	private final String mapAdvice;
+	private final String comments;
 	
 	ConceptMapMapping(
 			ComponentURI uri,
@@ -208,7 +216,8 @@ public final class ConceptMapMapping implements Serializable {
 			Integer mapGroup,
 			Integer mapPriority, 
 			String mapRule, 
-			String mapAdvice) {
+			String mapAdvice,
+			String comments) {
 		this.uri = uri; 
 		this.containerIconId = containerIconId;
 		this.containerTerm = containerTerm;
@@ -225,6 +234,7 @@ public final class ConceptMapMapping implements Serializable {
 		this.mapPriority = mapPriority;
 		this.mapRule = mapRule;
 		this.mapAdvice = mapAdvice;
+		this.comments = comments;
 	}
 
 	public String getId() {
@@ -295,6 +305,10 @@ public final class ConceptMapMapping implements Serializable {
 		return mapRule;
 	}
 	
+	public String getComments() {
+		return comments;
+	}
+	
 	@Override
 	public String toString() {
 		return MoreObjects.toStringHelper(getClass())
@@ -314,6 +328,7 @@ public final class ConceptMapMapping implements Serializable {
 				.add("mapPriority", mapPriority)
 				.add("mapRule", mapRule)
 				.add("mapAdvice", mapAdvice)
+				.add("comment", comments)
 				.toString();
 	}
 
@@ -331,7 +346,8 @@ public final class ConceptMapMapping implements Serializable {
 			mapGroup, 
 			mapPriority, 
 			mapRule, 
-			mapAdvice
+			mapAdvice,
+			comments
 		);
 	}
 	
@@ -352,7 +368,8 @@ public final class ConceptMapMapping implements Serializable {
 				&& Objects.equals(mapGroup, other.mapGroup)
 				&& Objects.equals(mapPriority, other.mapPriority)
 				&& Objects.equals(mapRule, other.mapRule)
-				&& Objects.equals(mapAdvice, other.mapAdvice);
+				&& Objects.equals(mapAdvice, other.mapAdvice)
+				&& Objects.equals(comments, other.comments);
 	}
 
 	public Builder toBuilder() {
