@@ -100,6 +100,9 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 	
 	@JsonProperty
 	private boolean createVersions = true;
+	
+	@JsonProperty
+	private boolean dryRun = false;
 
 	SnomedRf2ImportRequest(UUID rf2ArchiveId) {
 		this.rf2ArchiveId = rf2ArchiveId;
@@ -111,6 +114,10 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 	
 	void setCreateVersions(boolean createVersions) {
 		this.createVersions = createVersions;
+	}
+	
+	void setDryRun(boolean dryRun) {
+		this.dryRun = dryRun;
 	}
 	
 	@Override
@@ -187,12 +194,16 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 			// Import effective time slices in chronological order
 			final ImmutableSet.Builder<ComponentURI> visitedComponents = ImmutableSet.builder(); 
 			
-			for (Rf2EffectiveTimeSlice slice : orderedEffectiveTimeSlices) {
-				slice.doImport(context, codeSystem, importconfig, visitedComponents);
+			// if not a dryRun, perform import
+			if (!dryRun) {
+				// Import effective time slices in chronological order
+				for (Rf2EffectiveTimeSlice slice : orderedEffectiveTimeSlices) {
+					slice.doImport(context, codeSystem, importconfig, visitedComponents);
+				}
+					
+			    // Update locales registered on the code system
+				updateLocales(context, codeSystem);
 			}
-			
-			// Update locales registered on the code system
-			updateLocales(context, codeSystem);
 			
 			return ImportResponse.success(visitedComponents.build(), reporter.getDefects());
 		}
