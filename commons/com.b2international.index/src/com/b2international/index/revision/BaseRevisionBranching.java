@@ -439,7 +439,7 @@ public abstract class BaseRevisionBranching {
 	
 	protected final IndexWrite<Void> update(final String path, final String script, final Map<String, Object> params) {
 		return index -> {
-			index.bulkUpdate(new BulkUpdate<>(RevisionBranch.class, DocumentMapping.matchId(path), DocumentMapping._ID, script, params));
+			index.bulkUpdate(new BulkUpdate<>(RevisionBranch.class, DocumentMapping.matchId(path), script, params));
 			return null;
 		};
 	}

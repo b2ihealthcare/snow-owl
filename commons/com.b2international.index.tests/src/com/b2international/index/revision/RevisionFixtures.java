@@ -147,8 +147,7 @@ public class RevisionFixtures {
 			return Objects.hash(field1, field2, terms);
 		}
 		
-		@Override
-		protected Builder toBuilder() {
+		public Builder toBuilder() {
 			return new Builder(this);
 		}
 	}
@@ -386,6 +385,45 @@ public class RevisionFixtures {
 		
 		public String getProperty() {
 			return property;
+		}
+		
+	}
+	
+	@Doc(revisionHash = { "items" })
+	public static final class ObjectArrayPropertyData extends Revision {
+
+		private final List<ObjectArrayPropertyItem> items;
+
+		@JsonCreator
+		public ObjectArrayPropertyData(@JsonProperty("id") String id, @JsonProperty("items") List<ObjectArrayPropertyItem> items) {
+			super(id);
+			this.items = items;
+		}
+		
+		public List<ObjectArrayPropertyItem> getItems() {
+			return items;
+		}
+		
+	}
+	
+	@Doc
+	public static final class ObjectArrayPropertyItem {
+		
+		private final String field1;
+		private final String field2;
+		
+		@JsonCreator
+		public ObjectArrayPropertyItem(@JsonProperty("field1") String field1, @JsonProperty("field2") String field2) {
+			this.field1 = field1;
+			this.field2 = field2;
+		}
+		
+		public String getField1() {
+			return field1;
+		}
+		
+		public String getField2() {
+			return field2;
 		}
 		
 	}

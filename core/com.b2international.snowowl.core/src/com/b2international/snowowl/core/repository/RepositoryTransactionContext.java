@@ -268,7 +268,7 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 	@Override
 	public Long commit(String author, String commitComment, String parentLockContext) {
 		if (!isDirty()) {
-			return -1L;
+			return Commit.NO_COMMIT_TIMESTAMP;
 		}
 		final DatastoreLockContext lockContext = createLockContext(service(User.class).getUsername(), parentLockContext);
 		final DatastoreLockTarget lockTarget = createLockTarget(id(), path());
@@ -280,7 +280,7 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 			log().info("Persisting changes to {}@{}", path(), timestamp);
 			commit = staging.commit(null, timestamp, author, commitComment);
 			log().info("Changes have been successfully persisted to {}@{}.", path(), timestamp);
-			return commit == null ? null : commit.getTimestamp();
+			return commit == null ? Commit.NO_COMMIT_TIMESTAMP : commit.getTimestamp();
 		} catch (final IndexException e) {
 			Throwable rootCause = Throwables.getRootCause(e);
 			if (rootCause instanceof CycleDetectedException) {

@@ -58,6 +58,9 @@ import com.google.common.collect.*;
  */
 public final class StagingArea {
 
+	/**
+	 * Important DIFF flags required to produce the JSON patch needed for proper compare and branch merge operation behavior
+	 */
 	private static final EnumSet<DiffFlags> DIFF_FLAGS = EnumSet.of(DiffFlags.ADD_ORIGINAL_VALUE_ON_REPLACE, DiffFlags.OMIT_COPY_OPERATION, DiffFlags.OMIT_MOVE_OPERATION);
 	
 	private final DefaultRevisionIndex index;
@@ -236,6 +239,9 @@ public final class StagingArea {
 	 * @return
 	 */
 	public Commit commit(String commitGroupId, long timestamp, String author, String commitComment) {
+		if (!isDirty() && !isMerge()) {
+			return null;
+		}
 		// run pre-commit hooks
 		final List<Hook> hooks = index.getHooks(); // get a snapshot of the current hooks so we use the same hooks before and after commit
 		hooks.stream()
@@ -361,14 +367,9 @@ public final class StagingArea {
 			details = Lists.newArrayList();
 			// collect property changes
 			revisionsByChange.asMap().forEach((change, objects) -> {
-				final String prop = change.get("path").asText().substring(1); // XXX removes the forward slash from the beginning
-				final String from;
-				if (change.has("fromValue")) {
-					from = serializeToCommitDetailValue(change.get("fromValue"));
-				} else  {
-					from = "";
-				}
-				final String to = serializeToCommitDetailValue(change.get("value"));
+				final String prop = getChangeProperty(change);
+				final String from = getChangeFromValue(change);
+				final String to = getChangeValue(change);
 				ListMultimap<String, String> objectIdsByType = ArrayListMultimap.create();
 				objects.forEach(objectId -> objectIdsByType.put(objectId.type(), objectId.id()));
 				// split by object type
@@ -478,7 +479,6 @@ public final class StagingArea {
 			new BulkUpdate<>(
 				RevisionBranch.class, 
 				DocumentMapping.matchId(branchPath), 
-				DocumentMapping._ID, 
 				RevisionBranch.Scripts.COMMIT,
 				toBranchUpdateParams.build()
 			)
@@ -490,16 +490,6 @@ public final class StagingArea {
 		mergeSources = null;
 		
 		return commitDoc;
-	}
-
-	private String serializeToCommitDetailValue(JsonNode value) {
-		if (value.isNull()) {
-			return null;
-		} else if (value.isArray() || value.isObject()) {
-			return value.toString();
-		} else {
-			return value.asText();
-		}
 	}
 
 	/**
@@ -859,24 +849,41 @@ public final class StagingArea {
 		public boolean hasChanges() {
 			return rawDiff().size() > 0;
 		}
+		
+		public DocumentMapping getMapping() {
+			return index.admin().mappings().getMapping(newRevision.getClass());
+		}
 
 		private ArrayNode rawDiff() {
 			if (rawDiff == null) {
+				final DocumentMapping mapping = getMapping();
 				ObjectNode oldRevisionSource = mapper.valueToTree(oldRevision);
 				ObjectNode newRevisionSource = mapper.valueToTree(newRevision);
 				final JsonNode diff = JsonDiff.asJson(oldRevisionSource, newRevisionSource, DIFF_FLAGS);
 				final ArrayNode rawDiff = ClassUtils.checkAndCast(diff, ArrayNode.class);
 				final ArrayNode filteredRawDiff = mapper.createArrayNode();
 				final Iterator<JsonNode> elements = rawDiff.elements();
+				Set<String> fieldsToSkip = null; 
 				while (elements.hasNext()) {
-					JsonNode node = elements.next();
-					final ObjectNode change = ClassUtils.checkAndCast(node, ObjectNode.class);
-					final String property = change.get("path").asText().substring(1);
+					ObjectNode change = ClassUtils.checkAndCast(elements.next(), ObjectNode.class);
+					final String property = getChangeRootProperty(change);
 					
-					// Remove administrative revision fields from diff, but keep all other ones
-					if (!Revision.Fields.CREATED.equals(property) && !Revision.Fields.REVISED.equals(property)) {
-						filteredRawDiff.add(change);
+					if (Revision.isRevisionField(property) || (fieldsToSkip != null && fieldsToSkip.contains(property))) {
+						continue;
 					}
+					
+					// in case of a collection-like tracked property, convert the first diff to a full prop diff and ignore the rest of the prop changes on the same property
+					if (mapping.getRevisionFields().contains(property) && mapping.isCollection(property)) {
+						// construct a replacement JSON array patch node
+						change = new RevisionPropertyDiff(property, serializeToCommitDetailValue(oldRevisionSource, property), serializeToCommitDetailValue(newRevisionSource, property))
+								.asPatch(mapper, oldRevisionSource, true /* includeFromValue */);
+						if (fieldsToSkip == null) {
+							fieldsToSkip = Sets.newHashSetWithExpectedSize(1); // expect a single array like property per type
+						}
+						fieldsToSkip.add(property);
+					}
+					
+					filteredRawDiff.add(change);
 				}
 				this.rawDiff = filteredRawDiff;
 			}
@@ -885,7 +892,7 @@ public final class StagingArea {
 		
 		public ArrayNode diff() {
 			if (diff == null) {
-				final DocumentMapping mapping = index.admin().mappings().getMapping(newRevision.getClass());
+				final DocumentMapping mapping = getMapping();
 				final Set<String> revisionFields = mapping.getRevisionFields();
 				if (revisionFields.isEmpty()) {
 					return null; // in case of no fields to revision control, do NOT try to compute the diff
@@ -898,11 +905,7 @@ public final class StagingArea {
 					final ObjectNode change = ClassUtils.checkAndCast(node, ObjectNode.class);
 					
 					// Remove trailing segments in nested property paths (we are only interested in the top property)
-					String property = change.get("path").asText().substring(1);
-					final int nextSegmentIdx = property.indexOf("/");
-					if (nextSegmentIdx >= 0) {
-						property = property.substring(0, nextSegmentIdx);
-					}
+					String property = getChangeRootProperty(change);
 
 					// Keep revision fields only
 					if (revisionFields.contains(property)) {
@@ -919,10 +922,10 @@ public final class StagingArea {
 				propertyChanges = newHashMapWithExpectedSize(2);
 			}
 			for (ObjectNode change : Iterables.filter(diff(), ObjectNode.class)) {
-				String prop = change.get("path").asText().substring(1);
+				String prop = getChangeProperty(change);
 				if (property.equals(prop)) {
-					final String from = change.get("fromValue").asText();
-					final String to = change.get("value").asText();
+					final String from = getChangeFromValue(change);
+					final String to = getChangeValue(change);
 					propertyChanges.put(property, new RevisionPropertyDiff(property, from, to));
 				}
 			}
@@ -967,22 +970,37 @@ public final class StagingArea {
 			return new RevisionPropertyDiff(property, processor.convertPropertyValue(property, oldValue), processor.convertPropertyValue(property, newValue));
 		}
 
-		public JsonNode asPatch(ObjectMapper mapper, JsonNode objectToUpdate) {
+		public ObjectNode asPatch(ObjectMapper mapper, JsonNode objectToUpdate) {
+			return asPatch(mapper, objectToUpdate, false);
+		}
+		
+		public ObjectNode asPatch(ObjectMapper mapper, JsonNode objectToUpdate, boolean includeFromValue) {
 			ObjectNode patch = mapper.createObjectNode();
 			patch.set("op", mapper.valueToTree(objectToUpdate.path(property).isMissingNode() ? "add" : "replace"));
 			patch.set("path", mapper.valueToTree("/".concat(property)));
-			try {
-				patch.set("value", mapper.readTree(newValue));
-				// if it is unable to convert the newValue to a JSON value, then it is either an array or object, read it as tree
-			} catch (JsonProcessingException e) {
-				try {
-					patch.set("value", mapper.valueToTree(newValue));
-				} catch (IllegalArgumentException ex) {
-					ex.addSuppressed(e);
-					throw new IndexException("Unable to read value to JSON. Value: " + newValue, ex);
-				}
+			setField(mapper, patch, "value", newValue);
+			if (includeFromValue) {
+				setField(mapper, patch, "fromValue", oldValue);
 			}
 			return patch; 
+		}
+
+		private static void setField(ObjectMapper mapper, ObjectNode patch, String property, String value) {
+			if (value == null) {
+				patch.set(property, mapper.nullNode());
+			} else {
+				try {
+					patch.set(property, mapper.readTree(value));
+					// if it is unable to convert the newValue to a JSON value, then it is either an array or object, read it as tree
+				} catch (JsonProcessingException e) {
+					try {
+						patch.set(property, mapper.valueToTree(value));
+					} catch (IllegalArgumentException ex) {
+						ex.addSuppressed(e);
+						throw new IndexException("Unable to read value to JSON. Value: " + value, ex);
+					}
+				}
+			}
 		}
 		
 		@Override
@@ -1058,6 +1076,55 @@ public final class StagingArea {
 	
 	private Map<ObjectId, StagedObject> getFilteredStagedObjects() {
 		return Maps.filterEntries(stagedObjects, entry -> !exclusions.contains(entry.getKey().id()));
+	}
+	
+	/**
+	 * Returns the top/root level property that has been changed.
+	 * Ignores array indexes and nested property paths.
+	 * 
+	 * @param change - the change to extract the root level prop name from 
+	 * @return the root property name that has been changed
+	 */
+	private static String getChangeRootProperty(ObjectNode change) {
+		String property = getChangeProperty(change);
+		final int nextSegmentIdx = property.indexOf("/");
+		if (nextSegmentIdx >= 0) {
+			property = property.substring(0, nextSegmentIdx);
+		}
+		return property;
+	}
+
+	/**
+	 * Returns the actual property that has been changed, be it nested or an array index
+	 * 
+	 * @param change - the change to extract the prop name from 
+	 * @return the property name that has been changed
+	 */
+	private static String getChangeProperty(ObjectNode change) {
+		return change.get("path").asText().substring(1);
+	}
+	
+	private static String getChangeFromValue(ObjectNode change) {
+		return serializeToCommitDetailValue(change, "fromValue");
+	}
+	
+	private static String getChangeValue(ObjectNode change) {
+		return serializeToCommitDetailValue(change, "value");
+	}
+	
+	private static String serializeToCommitDetailValue(ObjectNode object, String property) {
+		if (object.has(property)) {
+			JsonNode value = object.get(property);
+			if (value.isNull()) {
+				return null;
+			} else if (value.isArray() || value.isObject()) {
+				return value.toString();
+			} else {
+				return value.asText();
+			}
+		} else  {
+			return "";
+		}
 	}
 
 }
