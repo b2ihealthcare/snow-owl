@@ -58,9 +58,18 @@ public abstract class Revision {
 
 	private String id;
 	
+	/**
+	 * Created branch point that represents both time and space when this revision has been created. It is a read-only field after revision creation,
+	 * the only time when this field is set is during the first commit via {@link #setCreated(RevisionBranchPoint)} by the {@link RevisionWriter}.
+	 */
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	private RevisionBranchPoint created;
 
+	/**
+	 * List of revised branch points. These represent both time and space from where this revision is no longer available and should be skipped when
+	 * searching revision documents. The field is read-only, non-null and it is always initialized with an empty list. The actual values are
+	 * maintained by the {@link RevisionWriter} during commit via the {@link #UPDATE_REVISED} script.
+	 */
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	private List<RevisionBranchPoint> revised = Collections.emptyList();
 
