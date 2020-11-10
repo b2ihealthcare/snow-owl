@@ -868,7 +868,7 @@ public final class StagingArea {
 					ObjectNode change = ClassUtils.checkAndCast(elements.next(), ObjectNode.class);
 					final String property = getChangeRootProperty(change);
 					
-					if (fieldsToSkip != null && (fieldsToSkip.contains(property) || Revision.isRevisionField(property))) {
+					if (Revision.isRevisionField(property) || (fieldsToSkip != null && fieldsToSkip.contains(property))) {
 						continue;
 					}
 					
