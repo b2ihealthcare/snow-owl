@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,24 +25,17 @@ import com.b2international.index.query.Expression;
  */
 public final class BulkUpdate<T> extends BulkOperation<T> implements ScriptExpression {
 	
-	private final String idField;
-	
 	private final String script;
 	private final Map<String, Object> params;
 	
-	public BulkUpdate(Class<? extends T> type, Expression filter, String idField, String script) {
-		this(type, filter, idField, script, Collections.emptyMap());
+	public BulkUpdate(Class<? extends T> type, Expression filter, String script) {
+		this(type, filter, script, Collections.emptyMap());
 	}
 	
-	public BulkUpdate(Class<? extends T> type, Expression filter, String idField, String script, Map<String, Object> params) {
+	public BulkUpdate(Class<? extends T> type, Expression filter, String script, Map<String, Object> params) {
 		super(type, filter);
-		this.idField = idField;
 		this.script = script;
 		this.params = params;
-	}
-	
-	public String getIdField() {
-		return idField;
 	}
 	
 	@Override

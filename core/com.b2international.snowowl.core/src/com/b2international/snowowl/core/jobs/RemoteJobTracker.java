@@ -114,7 +114,6 @@ public final class RemoteJobTracker implements IDisposableService {
 			final BulkUpdate<RemoteJobEntry> update = new BulkUpdate<>(
 				RemoteJobEntry.class, 
 				filter, 
-				RemoteJobEntry.Fields.ID, 
 				RemoteJobEntry.WITH_DONE,
 				ImmutableMap.of("state", RemoteJobState.FAILED.name(), "finishDate", System.currentTimeMillis())
 			);
@@ -190,7 +189,7 @@ public final class RemoteJobTracker implements IDisposableService {
 			writer.removeAll(ImmutableMap.of(RemoteJobEntry.class, remoteJobsToDelete));
 			if (!remoteJobsToCancel.isEmpty()) {
 				LOG.trace("Marking deletable jobs {}", remoteJobsToCancel);
-				writer.bulkUpdate(new BulkUpdate<>(RemoteJobEntry.class, Expressions.matchAny(DocumentMapping._ID, remoteJobsToCancel), RemoteJobEntry.Fields.ID, RemoteJobEntry.WITH_DELETED));
+				writer.bulkUpdate(new BulkUpdate<>(RemoteJobEntry.class, Expressions.matchAny(DocumentMapping._ID, remoteJobsToCancel), RemoteJobEntry.WITH_DELETED));
 			}
 			writer.commit();
 			return null;
@@ -211,7 +210,7 @@ public final class RemoteJobTracker implements IDisposableService {
 	
 	private void update(String jobId, String script, Map<String, Object> params) {
 		index.write(writer -> {
-			writer.bulkUpdate(new BulkUpdate<>(RemoteJobEntry.class, DocumentMapping.matchId(jobId), RemoteJobEntry.Fields.ID, script, params));
+			writer.bulkUpdate(new BulkUpdate<>(RemoteJobEntry.class, DocumentMapping.matchId(jobId), script, params));
 			writer.commit();
 			return null;
 		});

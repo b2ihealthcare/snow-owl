@@ -138,5 +138,14 @@ public abstract class RevisionDocument extends Revision implements IComponent<St
 				.add("iconId", iconId)
 				.add("score", score);
 	}
+	
+	/**
+	 * Converts an immutable object into a mutable builder with the usual prefixless setter methods.
+	 * 
+	 * @return
+	 */
+	protected Builder<?, ? extends Revision> toBuilder() {
+		throw new UnsupportedOperationException();
+	}
 
 }

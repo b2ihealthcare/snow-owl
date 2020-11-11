@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -96,7 +96,7 @@ public final class ValidationRepositoryContext extends DelegatingContext {
 							.filter(Expressions.matchAny(ValidationIssue.Fields.AFFECTED_COMPONENT_ID, addToWhitelist.get(ruleId).stream().map(ComponentIdentifier::getComponentId).collect(Collectors.toSet())))
 							.build());
 					}
-					writer.bulkUpdate(new BulkUpdate<>(ValidationIssue.class, filter.build(), ValidationIssue.Fields.ID, ValidationIssue.Scripts.WHITELIST, ImmutableMap.of("whitelisted", true)));
+					writer.bulkUpdate(new BulkUpdate<>(ValidationIssue.class, filter.build(), ValidationIssue.Scripts.WHITELIST, ImmutableMap.of("whitelisted", true)));
 				}
 				
 				final Multimap<String, ComponentIdentifier> removeFromWhitelist = HashMultimap.create();
@@ -116,7 +116,7 @@ public final class ValidationRepositoryContext extends DelegatingContext {
 							.filter(Expressions.matchAny(ValidationIssue.Fields.AFFECTED_COMPONENT_ID, removeFromWhitelist.get(ruleId).stream().map(ComponentIdentifier::getComponentId).collect(Collectors.toSet())))
 							.build());
 					}
-					writer.bulkUpdate(new BulkUpdate<>(ValidationIssue.class, filter.build(), ValidationIssue.Fields.ID, ValidationIssue.Scripts.WHITELIST, ImmutableMap.of("whitelisted", false)));
+					writer.bulkUpdate(new BulkUpdate<>(ValidationIssue.class, filter.build(), ValidationIssue.Scripts.WHITELIST, ImmutableMap.of("whitelisted", false)));
 				}
 				
 				final Map<Class<?>, Set<String>> docsToDelete = newHashMap();
