@@ -80,6 +80,11 @@ public interface ConceptSearchRequestEvaluator {
 		 * Set the preferred display type to return
 		 */
 		DISPLAY,
+		
+		/**
+		 * Filters descriptions by their Description Type.
+		 */
+		DESCRIPTION_TYPE,
 	}
 
 	/**
