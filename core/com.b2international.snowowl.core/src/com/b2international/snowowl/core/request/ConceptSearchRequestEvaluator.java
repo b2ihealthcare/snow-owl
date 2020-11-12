@@ -101,12 +101,13 @@ public interface ConceptSearchRequestEvaluator {
 	 */
 	Concepts evaluate(CodeSystemURI uri, BranchContext context, Options search);
 
-	default Concept toConcept(CodeSystemURI codeSystem, IComponent concept, String iconId, String term) {
+	default Concept toConcept(CodeSystemURI codeSystem, IComponent concept, String iconId, String term, Float score) {
 		Concept result = new Concept(codeSystem.toString(), concept.getTerminologyComponentId());
 		result.setId(concept.getId());
 		result.setReleased(concept.isReleased());
 		result.setIconId(iconId);
 		result.setTerm(term);
+		result.setScore(score);
 		return result;
 	}
 
