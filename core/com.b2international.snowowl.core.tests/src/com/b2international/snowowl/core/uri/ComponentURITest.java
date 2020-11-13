@@ -65,4 +65,10 @@ public class ComponentURITest {
 		ComponentURI.of(uri);
 	}
 	
+	@Test(expected = IllegalArgumentException.class)
+	public void incorrectIdTest() {
+		final String uri = "LCS1/750/";
+		ComponentURI.of(uri);
+	}
+	
 }

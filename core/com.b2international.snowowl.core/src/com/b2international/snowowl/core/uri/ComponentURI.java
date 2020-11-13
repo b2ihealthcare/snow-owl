@@ -104,11 +104,13 @@ public final class ComponentURI implements Serializable {
 		return ComponentIdentifier.of(terminologyComponentId(), identifier());
 	}
 
-	private ComponentURI(CodeSystemURI codeSystem, short terminologyComponentId, String identifier) {
-		checkNotNull(codeSystem, "Codesystem argument should not be null.");
+	private ComponentURI(CodeSystemURI codeSystemURI, short terminologyComponentId, String identifier) {
+		checkNotNull(codeSystemURI, "Codesystem argument should not be null.");
 		checkArgument(terminologyComponentId >= TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT,
 				"Terminology component id should be either unspecified (-1) or greater than zero. Got: '%s'.", terminologyComponentId);
-		this.codeSystemUri = codeSystem;
+		boolean isUnspecified = codeSystemURI.getCodeSystem().equals(TerminologyRegistry.UNSPECIFIED);
+		checkArgument(isUnspecified || !Strings.isNullOrEmpty(identifier), "Identifier should not be null or empty.");
+		this.codeSystemUri = codeSystemURI;
 		this.terminologyComponentId = terminologyComponentId;
 		this.identifier = identifier;
 	}
