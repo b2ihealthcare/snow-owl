@@ -115,6 +115,10 @@ public final class ComponentURI implements Serializable {
 		this.identifier = identifier;
 	}
 	
+	public static ComponentURI of(CodeSystemURI codeSystemURI, ComponentIdentifier componentIdentifier) {
+		return new ComponentURI(codeSystemURI, componentIdentifier.getTerminologyComponentId(), componentIdentifier.getComponentId());
+	}
+	
 	public static ComponentURI of(CodeSystemURI codeSystemURI, short terminologyComponentId, String identifier) {
 		return new ComponentURI(codeSystemURI, terminologyComponentId, Strings.nullToEmpty(identifier));
 	}
