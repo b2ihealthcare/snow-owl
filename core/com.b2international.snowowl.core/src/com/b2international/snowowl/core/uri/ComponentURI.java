@@ -118,8 +118,8 @@ public final class ComponentURI implements Serializable {
 	}
 	
 	@JsonCreator
-	public static ComponentURI of(String codeSystem, short terminologyComponentId, String identifier) {
-		return getOrCache(new ComponentURI(new CodeSystemURI(codeSystem), terminologyComponentId, Strings.nullToEmpty(identifier)));
+	public static ComponentURI of(String codeSystemUri, short terminologyComponentId, String identifier) {
+		return getOrCache(new ComponentURI(new CodeSystemURI(codeSystemUri), terminologyComponentId, Strings.nullToEmpty(identifier)));
 	}
 	
 	private static ComponentURI getOrCache(final ComponentURI componentURI) {
