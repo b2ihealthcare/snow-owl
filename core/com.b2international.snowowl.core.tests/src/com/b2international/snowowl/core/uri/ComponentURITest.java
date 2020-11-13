@@ -19,6 +19,8 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
+import com.b2international.commons.exceptions.BadRequestException;
+
 /**
  * @since 7.12.0
  */
@@ -41,8 +43,32 @@ public class ComponentURITest {
 		final String uri = "LCS1/1542/750/SO";
 		ComponentURI componentURI = ComponentURI.of(uri);
 		assertEquals(componentURI.codeSystem(), "LCS1");
-		assertEquals(componentURI.terminologyComponentId(), "750");
+		assertEquals(componentURI.terminologyComponentId(), 750);
 		assertEquals(componentURI.identifier(), "SO");
+	}
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void numberOfPartsTest() {
+		final String incompleteURI = "LCS1/1542";
+		ComponentURI.of(incompleteURI); //Attempt to parse incomplete component URI
+	}
+	
+	@Test(expected = BadRequestException.class)
+	public void missingCodeSystemTest() {
+		final String malformedURI = "/750/1542";
+		ComponentURI.of(malformedURI);
+	}
+	
+	@Test(expected = NumberFormatException.class)
+	public void incorrectTerminologyComponentIdTest() {
+		final String uri = "LCS1/xyz/1542";
+		ComponentURI.of(uri);
+	}
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void incorrectIdTest() {
+		final String uri = "LCS1/750/";
+		ComponentURI.of(uri);
 	}
 	
 }
