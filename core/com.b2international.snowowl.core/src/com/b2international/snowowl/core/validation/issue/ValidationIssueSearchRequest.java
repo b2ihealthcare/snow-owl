@@ -45,7 +45,10 @@ import com.google.common.collect.Sets.SetView;
  */
 final class ValidationIssueSearchRequest 
 		extends SearchIndexResourceRequest<ServiceProvider, ValidationIssues, ValidationIssue> {
-
+	
+	
+	private static final long serialVersionUID = 8763370532712025424L;
+	
 	public enum OptionKey {
 		/**
 		 * Filter matches by rule identifier.
@@ -61,6 +64,11 @@ final class ValidationIssueSearchRequest
 		 * Filter matches by their rule's tooling ID field.
 		 */
 		TOOLING_ID,
+		
+		/**
+		 * Filter matches by their rule's tooling ID field.
+		 */
+		CODESYSTEM_URI,
 		
 		/**
 		 * Filter matches by affected component identifier(s).
@@ -109,6 +117,10 @@ final class ValidationIssueSearchRequest
 		
 		if (containsKey(OptionKey.BRANCH_PATH)) {
 			queryBuilder.filter(Expressions.matchAny(ValidationIssue.Fields.BRANCH_PATH, getCollection(OptionKey.BRANCH_PATH, String.class)));
+		}
+		
+		if (containsKey(OptionKey.CODESYSTEM_URI)) {
+			queryBuilder.filter(Expressions.exactMatch(ValidationIssue.Fields.CODESYSTEM_URI, getString(OptionKey.CODESYSTEM_URI)));
 		}
 		
 		Set<String> filterByRuleIds = null;

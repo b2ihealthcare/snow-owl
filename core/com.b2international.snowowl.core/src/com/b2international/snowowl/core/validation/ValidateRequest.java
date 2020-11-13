@@ -133,7 +133,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult>,
 						final String ruleId = ruleIssues.ruleId;
 						final List<ValidationIssue> existingRuleIssues = ValidationRequests.issues().prepareSearch()
 								.all()
-								.filterByBranchPath(branchPath)
+								.filterByCodeSystemUri(codeSystemURI)
 								.filterByRule(ruleId)
 								.build()
 								.execute(context)

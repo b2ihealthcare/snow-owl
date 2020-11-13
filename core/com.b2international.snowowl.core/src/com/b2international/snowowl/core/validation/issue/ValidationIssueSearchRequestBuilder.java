@@ -22,6 +22,7 @@ import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
 import com.b2international.snowowl.core.request.SystemRequestBuilder;
+import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.core.validation.issue.ValidationIssueSearchRequest.OptionKey;
 
 /**
@@ -51,6 +52,10 @@ public final class ValidationIssueSearchRequestBuilder
 	
 	public ValidationIssueSearchRequestBuilder filterByTooling(String toolingId) {
 		return addOption(OptionKey.TOOLING_ID, toolingId);
+	}
+	
+	public ValidationIssueSearchRequestBuilder filterByCodeSystemUri(CodeSystemURI codeSystemURI) {
+		return addOption(OptionKey.CODESYSTEM_URI, codeSystemURI.toString());
 	}
 	
 	public ValidationIssueSearchRequestBuilder filterByTooling(Iterable<String> toolingIds) {

@@ -40,13 +40,13 @@ final class ValidationIssueDeleteRequest implements Request<ServiceProvider, Boo
 	private static final long serialVersionUID = 1L;
 	
 	@JsonProperty
-	private final String branch;
+	private final String codeSystemURI;
 
 	@JsonProperty
 	private String toolingId;
 	
-	ValidationIssueDeleteRequest(String branch, String toolingId) {
-		this.branch = branch;
+	ValidationIssueDeleteRequest(String codeSystemURI, String toolingId) {
+		this.codeSystemURI = codeSystemURI;
 		this.toolingId = toolingId;
 	}
 	
@@ -54,8 +54,8 @@ final class ValidationIssueDeleteRequest implements Request<ServiceProvider, Boo
 	public Boolean execute(ServiceProvider context) {
 		ExpressionBuilder query = Expressions.builder();
 		
-		if (!Strings.isNullOrEmpty(branch)) {
-			query.filter(Expressions.exactMatch(ValidationIssue.Fields.BRANCH_PATH, branch));
+		if (!Strings.isNullOrEmpty(codeSystemURI)) {
+			query.filter(Expressions.exactMatch(ValidationIssue.Fields.CODESYSTEM_URI, codeSystemURI));
 		}
 		
 		if (!Strings.isNullOrEmpty(toolingId)) {
@@ -75,7 +75,7 @@ final class ValidationIssueDeleteRequest implements Request<ServiceProvider, Boo
 			writer.bulkDelete(new BulkDelete<>(ValidationIssue.class, query.build()));
 			writer.commit();
 			
-			new ValidationDeleteNotification(branch, toolingId).publish(context.service(IEventBus.class));
+			new ValidationDeleteNotification(codeSystemURI, toolingId).publish(context.service(IEventBus.class));
 			
 			return Boolean.TRUE;
 		});

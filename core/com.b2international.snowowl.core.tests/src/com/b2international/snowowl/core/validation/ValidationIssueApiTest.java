@@ -17,11 +17,7 @@ package com.b2international.snowowl.core.validation;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.junit.After;
@@ -35,12 +31,14 @@ import com.b2international.index.Indexes;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
-import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
 import com.b2international.snowowl.core.repository.JsonSupport;
+import com.b2international.snowowl.core.terminology.TerminologyRegistry;
+import com.b2international.snowowl.core.uri.CodeSystemURI;
+import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.core.validation.issue.ValidationIssue;
 import com.b2international.snowowl.core.validation.issue.ValidationIssueDetailExtension;
 import com.b2international.snowowl.core.validation.issue.ValidationIssueDetailExtensionProvider;
@@ -220,7 +218,10 @@ public class ValidationIssueApiTest {
 				issueId,
 				ruleId,
 				branchPath,
-				ComponentIdentifier.of(terminologyShort, componentId),
+				ComponentURI.UNSPECIFIED,
+				new CodeSystemURI(TerminologyRegistry.UNSPECIFIED),
+				terminologyShort,
+				componentId,
 				false);
 		
 		if (!CompareUtils.isEmpty(details)) {

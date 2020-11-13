@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,18 +23,11 @@ import java.util.List;
 import java.util.Map;
 
 import com.b2international.commons.collections.Collections3;
-import com.b2international.index.Analyzers;
-import com.b2international.index.Doc;
-import com.b2international.index.Keyword;
-import com.b2international.index.Script;
-import com.b2international.index.Text;
+import com.b2international.index.*;
 import com.b2international.snowowl.core.ComponentIdentifier;
+import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.core.uri.ComponentURI;
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.*;
 import com.google.common.base.MoreObjects;
 
 /**
@@ -52,6 +45,7 @@ public final class ValidationIssue implements Serializable {
 		public static final String RULE_ID = "ruleId";
 		public static final String BRANCH_PATH = "branchPath";
 		public static final String COMPONENT_URI = "componentURI";
+		public static final String CODESYSTEM_URI = "codeSystemURI";
 		public static final String AFFECTED_COMPONENT_ID = "affectedComponentId";
 		public static final String AFFECTED_COMPONENT_TYPE = "affectedComponentType";
 		public static final String AFFECTED_COMPONENT_LABELS = "affectedComponentLabels";
@@ -76,6 +70,7 @@ public final class ValidationIssue implements Serializable {
 	private final short affectedComponentType;
 	
 	private final ComponentURI componentURI;
+	private final CodeSystemURI codeSystemURI;
 	private final boolean whitelisted;
 	
 	@Text(analyzer = Analyzers.TOKENIZED)
@@ -86,23 +81,6 @@ public final class ValidationIssue implements Serializable {
 	private Map<String, Object> details = null;
 	
 	private transient ComponentIdentifier affectedComponent;
-
-	public ValidationIssue(
-			final String id,
-			final String ruleId, 
-			final String branchPath, 
-			final ComponentIdentifier affectedComponent,
-			final boolean whitelisted) {
-		this(id, ruleId, branchPath, ComponentURI.UNSPECIFIED, affectedComponent.getTerminologyComponentId(), affectedComponent.getComponentId(), whitelisted);
-	}
-	
-	public ValidationIssue(
-			final String id,
-			final String ruleId, 
-			final ComponentURI componentURI, 
-			final boolean whitelisted) {
-		this(id, ruleId, componentURI.codeSystemUri().getPath(), componentURI, componentURI.terminologyComponentId(), componentURI.identifier(), whitelisted);
-	}
 	
 	@JsonCreator
 	public ValidationIssue(
@@ -110,6 +88,7 @@ public final class ValidationIssue implements Serializable {
 			@JsonProperty("ruleId") final String ruleId, 
 			@JsonProperty("branchPath") final String branchPath, 
 			@JsonProperty("componentURI") final ComponentURI componentURI,
+			@JsonProperty("codeSystemURI") final CodeSystemURI codeSystemURI,
 			@JsonProperty("affectedComponentType") final short affectedComponentType,
 			@JsonProperty("affectedComponentId") final String affectedComponentId,
 			@JsonProperty("whitelisted") final boolean whitelisted) {
@@ -119,7 +98,16 @@ public final class ValidationIssue implements Serializable {
 		this.affectedComponentId = affectedComponentId;
 		this.affectedComponentType = affectedComponentType;
 		this.componentURI = componentURI;
+		this.codeSystemURI = codeSystemURI;
 		this.whitelisted = whitelisted;
+	}
+	
+	public ValidationIssue(
+			final String id,
+			final String ruleId, 
+			final ComponentURI componentURI, 
+			final boolean whitelisted) {
+		this(id, ruleId, componentURI.codeSystemUri().getPath(), componentURI, componentURI.codeSystemUri(), componentURI.terminologyComponentId(), componentURI.identifier(), whitelisted);
 	}
 	
 	public String getId() {
@@ -150,6 +138,10 @@ public final class ValidationIssue implements Serializable {
 	
 	public ComponentURI getComponentURI() {
 		return componentURI;
+	}
+	
+	public CodeSystemURI getCodeSystemURI() {
+		return codeSystemURI;
 	}
 	
 	public String getRuleId() {

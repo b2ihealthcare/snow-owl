@@ -108,7 +108,8 @@ public final class ComponentURI implements Serializable {
 		checkNotNull(codeSystemURI, "Codesystem argument should not be null.");
 		checkArgument(terminologyComponentId >= TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT,
 				"Terminology component id should be either unspecified (-1) or greater than zero. Got: '%s'.", terminologyComponentId);
-		boolean isUnspecified = codeSystemURI.getCodeSystem().equals(TerminologyRegistry.UNSPECIFIED);
+		boolean isUnspecified = codeSystemURI.getCodeSystem().equals(TerminologyRegistry.UNSPECIFIED) 
+				|| TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT == terminologyComponentId;
 		checkArgument(isUnspecified || !Strings.isNullOrEmpty(identifier), "Identifier should not be null or empty.");
 		this.codeSystemUri = codeSystemURI;
 		this.terminologyComponentId = terminologyComponentId;
