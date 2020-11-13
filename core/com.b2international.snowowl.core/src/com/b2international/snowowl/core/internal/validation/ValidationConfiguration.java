@@ -29,8 +29,6 @@ public class ValidationConfiguration {
 	public static final String IS_UNPUBLISHED_ONLY = "isUnpublishedOnly";
 	public static final String USE_FSN = "useFsn";
 	public static final String LOCALES = "extendedLocales";
-	public static final String CODE_SYSTEMS = "codeSystems";
-	public static final String CODE_SYSTEM = "codeSystem";
 	private static final int DEFAULT_MAX_CONCURRENT_EXPENSIVE_JOBS = 1;
 	private static final int DEFAULT_MAX_CONCURRENT_NORMAL_JOBS = 4;
 	
