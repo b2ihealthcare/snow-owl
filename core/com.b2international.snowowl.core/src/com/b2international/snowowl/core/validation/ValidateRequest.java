@@ -162,16 +162,14 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult>,
 								validationIssue = new ValidationIssue(
 										UUID.randomUUID().toString(),
 										ruleId,
-										ComponentURI.of(codeSystemURI, componentIdentifier.getTerminologyComponentId(), componentIdentifier.getComponentId()),
+										ComponentURI.of(codeSystemURI, componentIdentifier),
 										ruleWhiteListEntries.contains(componentIdentifier));
 							} else {
 								final ValidationIssue issueToCopy = existingIsssuesByComponentIdentifier.get(componentIdentifier);
 								validationIssue = new ValidationIssue(
 									issueToCopy.getId(),
 									issueToCopy.getRuleId(),
-									ComponentURI.of(codeSystemURI, 
-											issueToCopy.getAffectedComponent().getTerminologyComponentId(),
-											issueToCopy.getAffectedComponent().getComponentId()),
+									ComponentURI.of(codeSystemURI, issueToCopy.getAffectedComponent()),
 									ruleWhiteListEntries.contains(issueToCopy.getAffectedComponent()));	
 								existingIsssuesByComponentIdentifier.remove(componentIdentifier);
 							}
