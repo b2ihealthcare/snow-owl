@@ -85,7 +85,8 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 				.stream()
 				.collect(Collectors.toMap(SnomedConcept::getId, concept -> concept));
 		
-		final Map<String, ComponentURI> targetComponentsByRefSetId = getTargetComponentsByRefSetId(context, refSetsById);
+		final ComponentURI componentUri = search.containsKey(OptionKey.COMPONENT_URI) ? search.get(OptionKey.COMPONENT_URI, ComponentURI.class) : null;
+		final Map<String, ComponentURI> targetComponentsByRefSetId = getTargetComponentsByRefSetId(context, refSetsById, componentUri.codeSystemUri());
 		
 		List<ConceptMapMapping> mappings = referenceSetMembers.stream()
 				.filter(m -> SnomedTerminologyComponentConstants.CONCEPT_NUMBER == m.getReferencedComponent().getTerminologyComponentId())
@@ -120,7 +121,7 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 			
 			mappings = mappings.stream().map(mapping -> {
 				final String mapTargetId = mapping.getTargetComponentURI().identifier();
-				if (conceptsById.containsKey(mapTargetId)) {
+				if (conceptsById.containsKey(mapTargetId) && !mapping.getTargetComponentURI().isUnspecified()) {
 					final Concept concept = conceptsById.get(mapTargetId);
 					return mapping.toBuilder()
 							.targetTerm(concept.getTerm())
@@ -140,7 +141,7 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 		);
 	}
 
-	private Map<String, ComponentURI> getTargetComponentsByRefSetId(BranchContext context, Map<String, SnomedConcept> refSetsById) {
+	private Map<String, ComponentURI> getTargetComponentsByRefSetId(BranchContext context, Map<String, SnomedConcept> refSetsById, CodeSystemURI codeSystemURI) {
 		final List<CodeSystem> codeSystemList = CodeSystemRequests.getAllCodeSystems(context)
 				.stream()
 				.collect(Collectors.toList());
@@ -152,7 +153,7 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 						entry -> {
 							final SnomedReferenceSet refSet = entry.getValue().getReferenceSet();
 							String mapTargetComponentType = refSet.getMapTargetComponentType();
-							if (mapTargetComponentType == null) {
+							if (mapTargetComponentType == null || codeSystemURI == null) {
 								return ComponentURI.UNSPECIFIED;
 							}
 							
@@ -167,6 +168,7 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 							} else {
 								final Optional<CodeSystem> codeSystemOptional = codeSystemList.stream()
 										.filter(cs -> cs.getTerminologyId().equals(sourceTerminology.getId()))
+										.filter(cs -> cs.getShortName().equals(codeSystemURI.getCodeSystem()))
 										.findFirst();
 								if (codeSystemOptional.isPresent()) {
 									return ComponentURI.of(codeSystemOptional.get().getShortName(), sourceTerminologyComponent.shortId(), refSet.getId());
