@@ -26,6 +26,7 @@ import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
+import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.core.validation.ValidationDeleteNotification;
 import com.b2international.snowowl.core.validation.ValidationRequests;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
@@ -75,7 +76,7 @@ final class ValidationIssueDeleteRequest implements Request<ServiceProvider, Boo
 			writer.bulkDelete(new BulkDelete<>(ValidationIssue.class, query.build()));
 			writer.commit();
 			
-			new ValidationDeleteNotification(codeSystemURI, toolingId).publish(context.service(IEventBus.class));
+			new ValidationDeleteNotification(new CodeSystemURI(codeSystemURI), toolingId).publish(context.service(IEventBus.class));
 			
 			return Boolean.TRUE;
 		});
