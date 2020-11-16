@@ -27,6 +27,7 @@ import org.junit.Test;
 
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.domain.SetMembers;
+import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.snomed.common.SnomedConstants;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -96,9 +97,11 @@ public class ValueSetMemberSearchSnomedReferenceSetTest {
 		createSimpleMapTypeRefSetMember(refSetId, Concepts.IS_A, filteredId);
 		createSimpleMapTypeRefSetMember(refSetId, Concepts.IS_A, Concepts.IS_A);
 		
+		final ComponentURI uri = ComponentURI.of(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, filteredId);
+		
 		final SnomedReferenceSetMembers refSetMembers = SnomedRequests.prepareSearchMember()
 			.filterByRefSet(refSetId)
-			.filterByComponentId(filteredId)
+			.filterByComponentUri(uri)
 			.build(CODESYSTEM)
 			.execute(Services.bus())
 			.getSync();

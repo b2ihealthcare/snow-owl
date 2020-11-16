@@ -33,6 +33,7 @@ import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.repository.RevisionDocument;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
+import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.refset.DataType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
@@ -40,6 +41,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetM
 import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 
 /**
@@ -81,7 +83,7 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 		/**
 		 * Matches reference set members where either the referenced component or map target matches the given value.
 		 */
-		COMPONENT
+		COMPONENT_URI
 	}
 
 	SnomedRefSetMemberSearchRequest() {}
@@ -278,12 +280,12 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 	}
 	
 	private void addComponentClause(ExpressionBuilder builder) {
-		if (containsKey(OptionKey.COMPONENT)) {
-			final Collection<String> componentIds = getCollection(OptionKey.COMPONENT, String.class);
+		if (containsKey(OptionKey.COMPONENT_URI)) {
+			final ComponentURI uri = get(OptionKey.COMPONENT_URI, ComponentURI.class);
 			builder.filter(
 				Expressions.builder()
-					.should(referencedComponentIds(componentIds))
-					.should(mapTargets(componentIds))
+					.should(referencedComponentIds(ImmutableSet.of(uri.identifier())))
+					.should(mapTargets(ImmutableSet.of(uri.toString(), uri.identifier())))
 				.build()
 			);
 		}

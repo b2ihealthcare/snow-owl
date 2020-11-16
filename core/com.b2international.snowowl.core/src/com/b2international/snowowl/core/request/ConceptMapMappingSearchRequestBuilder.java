@@ -18,6 +18,7 @@ package com.b2international.snowowl.core.request;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.ConceptMapMappings;
 import com.b2international.snowowl.core.request.SetSearchRequestEvaluator.OptionKey;
+import com.b2international.snowowl.core.uri.ComponentURI;
 
 /**
 * @since 7.8
@@ -53,12 +54,8 @@ public final class ConceptMapMappingSearchRequestBuilder extends SearchResourceR
 		return addOption(OptionKey.MAP_TARGET, mapTargets);
 	}
 	
-	public ConceptMapMappingSearchRequestBuilder filterByComponentId(String componentId) {
-		return addOption(OptionKey.COMPONENT, componentId);
-	}
-	
-	public ConceptMapMappingSearchRequestBuilder filterByComponentIds(Iterable<String> componentIds) {
-		return addOption(OptionKey.COMPONENT, componentIds);
+	public ConceptMapMappingSearchRequestBuilder filterByComponentUri(ComponentURI uri) {
+		return addOption(OptionKey.COMPONENT_URI, uri);
 	}
 	
 	public ConceptMapMappingSearchRequestBuilder setPreferredDisplay(String displayType) {

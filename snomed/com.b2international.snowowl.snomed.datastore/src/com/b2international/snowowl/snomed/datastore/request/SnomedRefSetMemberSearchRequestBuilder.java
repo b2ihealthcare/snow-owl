@@ -20,6 +20,7 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.RevisionIndexRequestBuilder;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
+import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberSearchRequest.OptionKey;
@@ -93,12 +94,8 @@ public final class SnomedRefSetMemberSearchRequestBuilder
 	/**
 	 * Matches reference set members where either the referenced component or map target matches the given value.
 	 */
-	public SnomedRefSetMemberSearchRequestBuilder filterByComponentId(String componentId) {
-		return addOption(OptionKey.COMPONENT, componentId);
-	}
-	
-	public SnomedRefSetMemberSearchRequestBuilder filterByComponentIds(Iterable<String> componentIds) {
-		return addOption(OptionKey.COMPONENT, componentIds);
+	public SnomedRefSetMemberSearchRequestBuilder filterByComponentUri(ComponentURI uri) {
+		return addOption(OptionKey.COMPONENT_URI, uri);
 	}
 
 }

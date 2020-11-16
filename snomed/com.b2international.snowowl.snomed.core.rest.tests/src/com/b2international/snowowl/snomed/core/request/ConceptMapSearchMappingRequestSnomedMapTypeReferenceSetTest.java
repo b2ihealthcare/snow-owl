@@ -27,6 +27,7 @@ import org.junit.rules.TestName;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.domain.ConceptMapMapping;
 import com.b2international.snowowl.core.domain.ConceptMapMappings;
+import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.snomed.common.SnomedConstants;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -101,8 +102,10 @@ public class ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest {
 		createSimpleMapTypeRefSetMember(refSetId, Concepts.IS_A, REFERENCED_COMPONENT);
 		createSimpleMapTypeRefSetMember(refSetId, Concepts.IS_A, Concepts.IS_A);
 		
+		final ComponentURI uri = ComponentURI.of(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, REFERENCED_COMPONENT);
+		
 		final ConceptMapMappings conceptMaps = CodeSystemRequests.prepareSearchConceptMapMappings()
-			.filterByComponentId(REFERENCED_COMPONENT)
+			.filterByComponentUri(uri)
 			.setLocales("en")
 			.build(CODESYSTEM)
 			.execute(Services.bus())
@@ -110,8 +113,8 @@ public class ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest {
 
 		assertTrue(!conceptMaps.isEmpty());
 		conceptMaps.forEach(concepMap -> assertTrue(
-				REFERENCED_COMPONENT.equals(concepMap.getSourceComponentURI().identifier()) || 
-				REFERENCED_COMPONENT.equals(concepMap.getTargetComponentURI().identifier())));
+				uri.equals(concepMap.getSourceComponentURI()) || 
+				uri.equals(concepMap.getTargetComponentURI())));
 	}
 	
 	@Test
