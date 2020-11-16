@@ -25,19 +25,19 @@ import org.hibernate.validator.constraints.NotEmpty;
 public class ValidationRestInput {
 
 	@NotEmpty
-	private String branchPath;
+	private String codeSystemURI;
 	
 	@NotEmpty
 	private Set<String> ruleIds;
 	
 	private boolean unpublishedOnly = true;
-
-	public String getBranchPath() {
-		return branchPath;
+	
+	public String getCodeSystemURI() {
+		return codeSystemURI;
 	}
-
-	public void setBranch(String branchPath) {
-		this.branchPath = branchPath;
+	
+	public void setCodeSystemURI(String codeSystemURI) {
+		this.codeSystemURI = codeSystemURI;
 	}
 	
 	public Set<String> getRuleIds() {
@@ -59,8 +59,8 @@ public class ValidationRestInput {
 	@Override
 	public String toString() {
 		final StringBuilder builder = new StringBuilder();
-		builder.append("ValidationRestInput [branch=");
-		builder.append(branchPath);
+		builder.append("ValidationRestInput [codeSystemURI=");
+		builder.append(codeSystemURI);
 		builder.append(", ruleIds=");
 		builder.append(ruleIds);
 		builder.append(", unpublishedOnly=");
