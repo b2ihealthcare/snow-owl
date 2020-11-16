@@ -70,8 +70,8 @@ public final class SnomedConceptSearchRequestEvaluator implements ConceptSearchR
 			req.filterByActive(search.getBoolean(OptionKey.ACTIVE));
 		}
 		
-		if (search.containsKey(OptionKey.DESCRIPTION_TYPE)) {
-			req.filterByDescriptionType(search.getString(OptionKey.DESCRIPTION_TYPE));
+		if (search.containsKey(OptionKey.TERM_TYPE)) {
+			req.filterByDescriptionType(search.getString(OptionKey.TERM_TYPE));
 		}
 		
 		if (search.containsKey(OptionKey.QUERY) || search.containsKey(OptionKey.MUST_NOT_QUERY)) {

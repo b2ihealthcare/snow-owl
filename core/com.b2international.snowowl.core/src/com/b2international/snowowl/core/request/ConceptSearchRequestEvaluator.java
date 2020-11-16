@@ -82,9 +82,9 @@ public interface ConceptSearchRequestEvaluator {
 		DISPLAY,
 		
 		/**
-		 * Filters descriptions by their Description Type.
+		 * Filters terms by their type.
 		 */
-		DESCRIPTION_TYPE,
+		TERM_TYPE,
 	}
 
 	/**

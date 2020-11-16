@@ -89,14 +89,14 @@ public final class ConceptSearchRequestBuilder extends SearchResourceRequestBuil
 	}
 	
 	/**
-	 * Filters descriptions by their Description Type.
+	 * Filters terms by their type.
 	 * 
-	 * @param descriptionType
-	 *            - String representation of the description type filtering
+	 * @param termType
+	 *            - String representation of the term type filtering
 	 * @return
 	 */
-	public ConceptSearchRequestBuilder filterByDescriptionType(String descriptionType) {
-		return addOption(OptionKey.DESCRIPTION_TYPE, descriptionType);
+	public ConceptSearchRequestBuilder filterByTermType(String termType) {
+		return addOption(OptionKey.TERM_TYPE, termType);
 	}
 	
 	/**
