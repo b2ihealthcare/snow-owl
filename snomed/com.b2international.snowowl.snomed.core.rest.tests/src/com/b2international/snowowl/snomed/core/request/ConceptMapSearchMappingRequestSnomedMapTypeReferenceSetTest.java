@@ -97,12 +97,12 @@ public class ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest {
 	@Test
 	public void filterByComponent() {
 		final String refSetId = createSimpleMapTypeRefSet();
-		createSimpleMapTypeRefSetMember(refSetId, REFERENCED_COMPONENT, Concepts.IS_A);
-		createSimpleMapTypeRefSetMember(refSetId, REFERENCED_COMPONENT, Concepts.IS_A);
-		createSimpleMapTypeRefSetMember(refSetId, Concepts.IS_A, REFERENCED_COMPONENT);
-		createSimpleMapTypeRefSetMember(refSetId, Concepts.IS_A, Concepts.IS_A);
+		final String filterId = "12345";
+		final ComponentURI uri = ComponentURI.of(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, filterId);
 		
-		final ComponentURI uri = ComponentURI.of(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, REFERENCED_COMPONENT);
+		createSimpleMapTypeRefSetMember(refSetId, REFERENCED_COMPONENT, filterId);
+		createSimpleMapTypeRefSetMember(refSetId, REFERENCED_COMPONENT, "Random map target");
+		createSimpleMapTypeRefSetMember(refSetId, REFERENCED_COMPONENT, uri.toString());
 		
 		final ConceptMapMappings conceptMaps = CodeSystemRequests.prepareSearchConceptMapMappings()
 			.filterByComponentUri(uri)
@@ -113,8 +113,8 @@ public class ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest {
 
 		assertTrue(!conceptMaps.isEmpty());
 		conceptMaps.forEach(concepMap -> assertTrue(
-				uri.equals(concepMap.getSourceComponentURI()) || 
-				uri.equals(concepMap.getTargetComponentURI())));
+				uri.equals(concepMap.getSourceComponentURI()) ||
+				uri.identifier().equals(concepMap.getTargetComponentURI().identifier())));
 	}
 	
 	@Test
