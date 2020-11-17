@@ -87,7 +87,8 @@ public final class TermFilter implements Serializable {
 				.minShouldMatch(termFilter.getMinShouldMatch())
 				.fuzzy(termFilter.isFuzzy())
 				.exact(termFilter.isExact())
-				.parsed(termFilter.isParsed());
+				.parsed(termFilter.isParsed())
+				.ignoreStopwords(termFilter.isIgnoreStopwords());
 	}
 	
 	/**
