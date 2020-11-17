@@ -19,8 +19,10 @@ import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRef
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.IllegalQueryParameterException;
@@ -281,11 +283,14 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 	
 	private void addComponentClause(ExpressionBuilder builder) {
 		if (containsKey(OptionKey.COMPONENT_URI)) {
-			final ComponentURI uri = get(OptionKey.COMPONENT_URI, ComponentURI.class);
+			final List<ComponentURI> uris = getList(OptionKey.COMPONENT_URI, ComponentURI.class);
+			final Set<String> ids = uris.stream().map(ComponentURI::identifier).collect(Collectors.toSet());
+			final Set<String> uriStrings = uris.stream().map(ComponentURI::toString).collect(Collectors.toSet());
+			
 			builder.filter(
 				Expressions.builder()
-					.should(referencedComponentIds(ImmutableSet.of(uri.identifier())))
-					.should(mapTargets(ImmutableSet.of(uri.toString(), uri.identifier())))
+					.should(referencedComponentIds(ids))
+					.should(mapTargets(ImmutableSet.<String>builder().addAll(ids).addAll(uriStrings).build()))
 				.build()
 			);
 		}

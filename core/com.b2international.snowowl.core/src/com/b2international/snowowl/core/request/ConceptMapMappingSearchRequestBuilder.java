@@ -19,6 +19,7 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.ConceptMapMappings;
 import com.b2international.snowowl.core.request.SetSearchRequestEvaluator.OptionKey;
 import com.b2international.snowowl.core.uri.ComponentURI;
+import com.google.common.collect.ImmutableSet;
 
 /**
 * @since 7.8
@@ -53,9 +54,17 @@ public final class ConceptMapMappingSearchRequestBuilder extends SearchResourceR
 	public ConceptMapMappingSearchRequestBuilder filterByMapTargets(Iterable<String> mapTargets) {
 		return addOption(OptionKey.MAP_TARGET, mapTargets);
 	}
+
+	public ConceptMapMappingSearchRequestBuilder filterByComponentUri(String uri) {
+		return filterByComponentUris(ImmutableSet.of(ComponentURI.of(uri)));
+	}
 	
 	public ConceptMapMappingSearchRequestBuilder filterByComponentUri(ComponentURI uri) {
-		return addOption(OptionKey.COMPONENT_URI, uri);
+		return filterByComponentUris(ImmutableSet.of(uri));
+	}
+
+	public ConceptMapMappingSearchRequestBuilder filterByComponentUris(Iterable<ComponentURI> uris) {
+		return addOption(OptionKey.COMPONENT_URI, uris);
 	}
 	
 	public ConceptMapMappingSearchRequestBuilder setPreferredDisplay(String displayType) {
