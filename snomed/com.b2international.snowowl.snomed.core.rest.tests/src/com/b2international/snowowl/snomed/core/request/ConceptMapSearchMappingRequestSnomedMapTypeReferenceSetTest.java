@@ -122,7 +122,7 @@ public class ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest {
 				.execute(Services.bus())
 				.getSync(1, TimeUnit.MINUTES);
 
-		assertTrue(conceptMaps.getTotal() == 2);
+		assertEquals(2, conceptMaps.getTotal());
 		Set<ComponentURI> componentUris = getComponentUris(conceptMaps);
 		assertThat(componentUris).containsOnly(sourceUri, uri, ComponentURI.of(TerminologyRegistry.UNSPECIFIED, TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT, filterId));
 	}
@@ -148,7 +148,7 @@ public class ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest {
 				.execute(Services.bus())
 				.getSync(1, TimeUnit.MINUTES);
 
-		assertTrue(conceptMaps.getTotal() == 2);
+		assertEquals(2, conceptMaps.getTotal());
 		Set<ComponentURI> componentUris = getComponentUris(conceptMaps);
 		assertThat(componentUris).containsOnly(sourceUri, uri, uri2);
 	}
