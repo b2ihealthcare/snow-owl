@@ -19,7 +19,6 @@ import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRef
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -283,7 +282,7 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 	
 	private void addComponentClause(ExpressionBuilder builder) {
 		if (containsKey(OptionKey.COMPONENT_URI)) {
-			final List<ComponentURI> uris = getList(OptionKey.COMPONENT_URI, ComponentURI.class);
+			final Collection<ComponentURI> uris = getCollection(OptionKey.COMPONENT_URI, ComponentURI.class);
 			final Set<String> ids = uris.stream().map(ComponentURI::identifier).collect(Collectors.toSet());
 			final Set<String> uriStrings = uris.stream().map(ComponentURI::toString).collect(Collectors.toSet());
 			
