@@ -116,11 +116,11 @@ public final class ComponentURI implements Serializable {
 	}
 	
 	public static ComponentURI of(CodeSystemURI codeSystemURI, ComponentIdentifier componentIdentifier) {
-		return new ComponentURI(codeSystemURI, componentIdentifier.getTerminologyComponentId(), componentIdentifier.getComponentId());
+		return getOrCache(new ComponentURI(codeSystemURI, componentIdentifier.getTerminologyComponentId(), componentIdentifier.getComponentId()));
 	}
 	
 	public static ComponentURI of(CodeSystemURI codeSystemURI, short terminologyComponentId, String identifier) {
-		return new ComponentURI(codeSystemURI, terminologyComponentId, Strings.nullToEmpty(identifier));
+		return getOrCache(new ComponentURI(codeSystemURI, terminologyComponentId, Strings.nullToEmpty(identifier)));
 	}
 	
 	@JsonCreator
