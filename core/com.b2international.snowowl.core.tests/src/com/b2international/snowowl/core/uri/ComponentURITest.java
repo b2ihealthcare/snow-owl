@@ -16,6 +16,7 @@
 package com.b2international.snowowl.core.uri;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 
 import org.junit.Test;
 
@@ -25,7 +26,7 @@ import com.b2international.commons.exceptions.BadRequestException;
  * @since 7.12.0
  */
 public class ComponentURITest {
-
+	
 	@Test
 	public void constructorTest() {
 		final String branchPath = "SNOMEDCT/2019-09-30/SNOMEDCT-SE/2020-07-30/SNOMEDCT-EXT";
@@ -59,10 +60,17 @@ public class ComponentURITest {
 		ComponentURI.of(malformedURI);
 	}
 	
-	@Test(expected = NumberFormatException.class)
+	@Test
 	public void incorrectTerminologyComponentIdTest() {
 		final String uri = "LCS1/xyz/1542";
-		ComponentURI.of(uri);
+		
+		assertThrows(NumberFormatException.class, () -> {
+			ComponentURI.of(uri);
+	    });
+		
+		assertThrows(IllegalArgumentException.class, () -> {
+			ComponentURI.of(uri);
+		});
 	}
 	
 	@Test(expected = IllegalArgumentException.class)
