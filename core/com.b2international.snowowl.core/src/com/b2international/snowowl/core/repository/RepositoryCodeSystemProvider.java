@@ -17,7 +17,6 @@ package com.b2international.snowowl.core.repository;
 
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
-import com.b2international.snowowl.core.codesystem.CodeSystem;
 
 /**
  * @since 7.5
