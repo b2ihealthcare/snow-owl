@@ -58,7 +58,7 @@ import springfox.documentation.annotations.ApiIgnore;
  * 
  * @since 6.13
  */
-@Api(value = "Validations", description="Validations", tags = { "validations" })
+@Api(value = "Validations", description = "Validations", tags = { "validations" })
 @RequestMapping(value = "/validations", produces={ AbstractRestService.JSON_MEDIA_TYPE })
 public abstract class RepositoryValidationRestService extends AbstractRestService {
 	
@@ -110,7 +110,7 @@ public abstract class RepositoryValidationRestService extends AbstractRestServic
 			@RequestBody 
 			final ValidationRestInput validationInput) {
 
-		final String uniqueJobId = ValidationRequests.createUniqueValidationJobKey(validationInput.getCodeSystemURI());
+		final String uniqueJobId = ValidationRequests.createUniqueValidationJobKey(validationInput.getPath());
 		
 		final String jobId = ValidationRequests
 				.prepareValidate()
@@ -118,8 +118,8 @@ public abstract class RepositoryValidationRestService extends AbstractRestServic
 					ValidationConfiguration.IS_UNPUBLISHED_ONLY, validationInput.isUnpublishedOnly()
 				))
 				.setRuleIds(validationInput.getRuleIds())
-				.build(new CodeSystemURI(validationInput.getCodeSystemURI()))
-				.runAsJobWithRestart(uniqueJobId, String.format("Validating '%s'", validationInput.getCodeSystemURI()))
+				.build(repositoryId, validationInput.getPath())
+				.runAsJobWithRestart(uniqueJobId, String.format("Validating '%s'", validationInput.getPath()))
 				.execute(getBus())
 				.getSync(1, TimeUnit.MINUTES);
 		
