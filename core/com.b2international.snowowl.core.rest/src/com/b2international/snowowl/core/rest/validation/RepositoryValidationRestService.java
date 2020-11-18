@@ -173,7 +173,7 @@ public abstract class RepositoryValidationRestService extends AbstractRestServic
 				return ValidationRequests.issues().prepareSearch()
 						.isWhitelisted(false)
 						.all()
-						.filterByCodeSystemUri(codeSystemURI)
+						.filterByResourceUri(codeSystemURI)
 						.sortBy(SortField.ascending(ValidationIssue.Fields.RULE_ID))
 						.buildAsync()
 						.execute(bus)
@@ -203,7 +203,7 @@ public abstract class RepositoryValidationRestService extends AbstractRestServic
 						.isWhitelisted(false)
 						.setLimit(limit)
 						.setSearchAfter(searchAfter)
-						.filterByCodeSystemUri(codeSystemURI )
+						.filterByResourceUri(codeSystemURI )
 						.buildAsync()
 						.execute(bus)
 						.then(issues -> issues.getItems().stream().collect(Collectors.toList()));

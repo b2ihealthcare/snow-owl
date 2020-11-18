@@ -66,9 +66,9 @@ final class ValidationIssueSearchRequest
 		TOOLING_ID,
 		
 		/**
-		 * Filter matches by their rule's tooling ID field.
+		 * Filter matches by their rule's resourceURI field.
 		 */
-		CODESYSTEM_URI,
+		RESOURCE_URI,
 		
 		/**
 		 * Filter matches by affected component identifier(s).
@@ -119,8 +119,8 @@ final class ValidationIssueSearchRequest
 			queryBuilder.filter(Expressions.matchAny(ValidationIssue.Fields.BRANCH_PATH, getCollection(OptionKey.BRANCH_PATH, String.class)));
 		}
 		
-		if (containsKey(OptionKey.CODESYSTEM_URI)) {
-			queryBuilder.filter(Expressions.exactMatch(ValidationIssue.Fields.CODESYSTEM_URI, getString(OptionKey.CODESYSTEM_URI)));
+		if (containsKey(OptionKey.RESOURCE_URI)) {
+			queryBuilder.filter(Expressions.exactMatch(ValidationIssue.Fields.RESOURCE_URI, getString(OptionKey.RESOURCE_URI)));
 		}
 		
 		Set<String> filterByRuleIds = null;

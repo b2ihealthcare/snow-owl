@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,20 +42,26 @@ public final class ValidationIssueSearchRequestBuilder
 		return addOption(OptionKey.RULE_ID, ruleIds);
 	}
 	
+	@Deprecated
 	public ValidationIssueSearchRequestBuilder filterByBranchPath(final String branchPath) {
 		return addOption(OptionKey.BRANCH_PATH, branchPath);
 	}
 	
+	@Deprecated
 	public ValidationIssueSearchRequestBuilder filterByBranchPaths(final Iterable<? extends String> branchPaths) {
 		return addOption(OptionKey.BRANCH_PATH, branchPaths);
 	}
 	
-	public ValidationIssueSearchRequestBuilder filterByTooling(String toolingId) {
-		return addOption(OptionKey.TOOLING_ID, toolingId);
+	public ValidationIssueSearchRequestBuilder filterByResourceUri(String resourceURI) {
+		return addOption(OptionKey.RESOURCE_URI, resourceURI);
 	}
 	
-	public ValidationIssueSearchRequestBuilder filterByCodeSystemUri(CodeSystemURI codeSystemURI) {
-		return addOption(OptionKey.CODESYSTEM_URI, codeSystemURI.toString());
+	public ValidationIssueSearchRequestBuilder filterByResourceUri(CodeSystemURI resourceURI) {
+		return addOption(OptionKey.RESOURCE_URI, resourceURI.toString());
+	}
+	
+	public ValidationIssueSearchRequestBuilder filterByTooling(String toolingId) {
+		return addOption(OptionKey.TOOLING_ID, toolingId);
 	}
 	
 	public ValidationIssueSearchRequestBuilder filterByTooling(Iterable<String> toolingIds) {

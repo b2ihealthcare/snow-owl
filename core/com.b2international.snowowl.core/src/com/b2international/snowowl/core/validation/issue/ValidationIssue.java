@@ -45,7 +45,7 @@ public final class ValidationIssue implements Serializable {
 		public static final String RULE_ID = "ruleId";
 		public static final String BRANCH_PATH = "branchPath";
 		public static final String COMPONENT_URI = "componentURI";
-		public static final String CODESYSTEM_URI = "codeSystemURI";
+		public static final String RESOURCE_URI = "resourceURI";
 		public static final String AFFECTED_COMPONENT_ID = "affectedComponentId";
 		public static final String AFFECTED_COMPONENT_TYPE = "affectedComponentType";
 		public static final String AFFECTED_COMPONENT_LABELS = "affectedComponentLabels";
@@ -70,7 +70,7 @@ public final class ValidationIssue implements Serializable {
 	private final short affectedComponentType;
 	
 	private final ComponentURI componentURI;
-	private final CodeSystemURI codeSystemURI;
+	private final CodeSystemURI resourceURI;
 	private final boolean whitelisted;
 	
 	@Text(analyzer = Analyzers.TOKENIZED)
@@ -88,7 +88,7 @@ public final class ValidationIssue implements Serializable {
 			@JsonProperty("ruleId") final String ruleId, 
 			@JsonProperty("branchPath") final String branchPath, 
 			@JsonProperty("componentURI") final ComponentURI componentURI,
-			@JsonProperty("codeSystemURI") final CodeSystemURI codeSystemURI,
+			@JsonProperty("codeSystemURI") final CodeSystemURI resourceURI,
 			@JsonProperty("affectedComponentType") final short affectedComponentType,
 			@JsonProperty("affectedComponentId") final String affectedComponentId,
 			@JsonProperty("whitelisted") final boolean whitelisted) {
@@ -98,7 +98,7 @@ public final class ValidationIssue implements Serializable {
 		this.affectedComponentId = affectedComponentId;
 		this.affectedComponentType = affectedComponentType;
 		this.componentURI = componentURI;
-		this.codeSystemURI = codeSystemURI;
+		this.resourceURI = resourceURI;
 		this.whitelisted = whitelisted;
 	}
 	
@@ -140,8 +140,8 @@ public final class ValidationIssue implements Serializable {
 		return componentURI;
 	}
 	
-	public CodeSystemURI getCodeSystemURI() {
-		return codeSystemURI;
+	public CodeSystemURI getResourceURI() {
+		return resourceURI;
 	}
 	
 	public String getRuleId() {
