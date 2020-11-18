@@ -73,7 +73,7 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		indexRevision(MAIN, relationship);
 
 		ValidationIssues issues = validate(ruleId);
-		ComponentURI componentURI = issues.stream().map(issue -> issue.getComponentURI()).findFirst().get();
+		ComponentURI componentURI = issues.stream().map(issue -> issue.getAffectedComponentURI()).findFirst().get();
 		assertThat(componentURI.equals(ComponentURI.of(CODESYSTEM, SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship.getId())));
 	}
 

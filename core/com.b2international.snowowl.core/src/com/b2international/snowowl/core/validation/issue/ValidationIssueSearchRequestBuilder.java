@@ -76,14 +76,6 @@ public final class ValidationIssueSearchRequestBuilder
 		return addOption(OptionKey.AFFECTED_COMPONENT_ID, affectedComponentIds);
 	}
 	
-	public ValidationIssueSearchRequestBuilder filterByAffectedComponentType(short affectedComponentType) {
-		return addOption(OptionKey.AFFECTED_COMPONENT_TYPE, affectedComponentType);
-	}
-	
-	public ValidationIssueSearchRequestBuilder filterByAffectedComponentType(Iterable<Short> affectedComponentTypes) {
-		return addOption(OptionKey.AFFECTED_COMPONENT_TYPE, affectedComponentTypes);
-	}
-	
 	public ValidationIssueSearchRequestBuilder filterByAffectedComponentLabel(String affectedComponentLabel) {
 		return addOption(OptionKey.AFFECTED_COMPONENT_LABEL, affectedComponentLabel);
 	}

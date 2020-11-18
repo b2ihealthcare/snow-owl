@@ -76,11 +76,6 @@ final class ValidationIssueSearchRequest
 		AFFECTED_COMPONENT_ID,
 		
 		/**
-		 * Filter matches by affected component type(s).
-		 */
-		AFFECTED_COMPONENT_TYPE,
-		
-		/**
 		 * Filter matches by a single value of affected component label.
 		 */
 		AFFECTED_COMPONENT_LABEL,
@@ -114,10 +109,6 @@ final class ValidationIssueSearchRequest
 		final ExpressionBuilder queryBuilder = Expressions.builder();
 
 		addIdFilter(queryBuilder, ids -> Expressions.matchAny(ValidationIssue.Fields.ID, ids));
-		
-		if (containsKey(OptionKey.BRANCH_PATH)) {
-			queryBuilder.filter(Expressions.matchAny(ValidationIssue.Fields.BRANCH_PATH, getCollection(OptionKey.BRANCH_PATH, String.class)));
-		}
 		
 		if (containsKey(OptionKey.RESOURCE_URI)) {
 			queryBuilder.filter(Expressions.exactMatch(ValidationIssue.Fields.RESOURCE_URI, getString(OptionKey.RESOURCE_URI)));
@@ -165,11 +156,6 @@ final class ValidationIssueSearchRequest
 		if (containsKey(OptionKey.AFFECTED_COMPONENT_ID)) {
 			Collection<String> affectedComponentIds = getCollection(OptionKey.AFFECTED_COMPONENT_ID, String.class);
 			queryBuilder.filter(Expressions.matchAny(ValidationIssue.Fields.AFFECTED_COMPONENT_ID, affectedComponentIds));
-		}
-		
-		if (containsKey(OptionKey.AFFECTED_COMPONENT_TYPE)) {
-			Collection<Integer> affectedComponentTypes = getCollection(OptionKey.AFFECTED_COMPONENT_TYPE, Short.class).stream().map(Integer::valueOf).collect(Collectors.toSet());
-			queryBuilder.filter(Expressions.matchAnyInt(ValidationIssue.Fields.AFFECTED_COMPONENT_TYPE, affectedComponentTypes));
 		}
 		
 		if (containsKey(OptionKey.AFFECTED_COMPONENT_LABEL)) {
