@@ -40,9 +40,11 @@ import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.ComponentIdentifier;
+import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
 import com.b2international.snowowl.core.internal.validation.ValidationThreadPool;
+import com.b2international.snowowl.core.repository.RepositoryCodeSystemProvider;
 import com.b2international.snowowl.core.request.RevisionIndexReadRequest;
 import com.b2international.snowowl.core.validation.ValidationRequests;
 import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
@@ -59,6 +61,7 @@ import com.b2international.snowowl.snomed.core.ecl.DefaultEclParser;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclSerializer;
 import com.b2international.snowowl.snomed.core.ecl.EclParser;
 import com.b2international.snowowl.snomed.core.ecl.EclSerializer;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.ecl.EclStandaloneSetup;
@@ -123,6 +126,15 @@ public class SnomedQueryValidationRuleEvaluatorTest extends BaseRevisionIndexTes
 				.with(ObjectMapper.class, getMapper())
 				.with(EclParser.class, new DefaultEclParser(INJECTOR.getInstance(IParser.class), INJECTOR.getInstance(IResourceValidator.class)))
 				.with(EclSerializer.class, new DefaultEclSerializer(INJECTOR.getInstance(ISerializer.class)))
+				.with(RepositoryCodeSystemProvider.class, (referenceBranch) -> {
+					return CodeSystem.builder()
+							.shortName(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME)
+							.repositoryId(SnomedDatastoreActivator.REPOSITORY_UUID)
+							.name("SNOMED CT")
+							.terminologyId(SnomedTerminologyComponentConstants.TERMINOLOGY_ID)
+							.branchPath(MAIN)
+							.build();
+				})
 				.with(Index.class, rawIndex())
 				.with(RevisionIndex.class, index())
 				.with(ValidationThreadPool.class, new ValidationThreadPool(1, 1, 1))

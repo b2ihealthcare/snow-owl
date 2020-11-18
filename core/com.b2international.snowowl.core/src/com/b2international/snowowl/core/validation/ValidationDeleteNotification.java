@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package com.b2international.snowowl.core.validation;
 
 import com.b2international.snowowl.core.events.SystemNotification;
+import com.b2international.snowowl.core.uri.CodeSystemURI;
 
 /**
  * @since 6.20.0
@@ -24,16 +25,16 @@ final public class ValidationDeleteNotification extends SystemNotification {
 
 	private static final long serialVersionUID = 1L;
 	
-	final private String branch;
+	final private CodeSystemURI codeSystemURI;
 	final private String toolingId;
 
-	public ValidationDeleteNotification(String branch, String toolingId) {
-		this.branch = branch;
+	public ValidationDeleteNotification(CodeSystemURI codeSystemURI, String toolingId) {
+		this.codeSystemURI = codeSystemURI;
 		this.toolingId = toolingId;
 	}
 	
-	public String getBranch() {
-		return branch;
+	public CodeSystemURI getCodeSystemURI() {
+		return codeSystemURI;
 	}
 	
 	public String getToolingId() {

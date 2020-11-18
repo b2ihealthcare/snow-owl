@@ -121,7 +121,7 @@ public final class ComponentURI implements Serializable {
 		return of(codeSystemURI, componentIdentifier.getTerminologyComponentId(), componentIdentifier.getComponentId());
 	}
 	
-		public static ComponentURI of(String codeSystemUri, short terminologyComponentId, String identifier) {
+	public static ComponentURI of(String codeSystemUri, short terminologyComponentId, String identifier) {
 		return of(new CodeSystemURI(codeSystemUri), terminologyComponentId, identifier);
 	}
 	

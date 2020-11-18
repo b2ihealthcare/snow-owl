@@ -87,4 +87,28 @@ public class ComponentURITest {
 		assertFalse(ComponentURI.isValid("SNOMEDCT/100/"));
 	}
 	
+	@Test(expected = IllegalArgumentException.class)
+	public void numberOfPartsTest() {
+		final String incompleteURI = "LCS1/1542";
+		ComponentURI.of(incompleteURI); //Attempt to parse incomplete component URI
+	}
+	
+	@Test(expected = BadRequestException.class)
+	public void missingCodeSystemTest() {
+		final String malformedURI = "/750/1542";
+		ComponentURI.of(malformedURI);
+	}
+	
+	@Test(expected = NumberFormatException.class)
+	public void incorrectTerminologyComponentIdTest() {
+		final String uri = "LCS1/xyz/1542";
+		ComponentURI.of(uri);
+	}
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void incorrectIdTest() {
+		final String uri = "LCS1/750/";
+		ComponentURI.of(uri);
+	}
+	
 }
