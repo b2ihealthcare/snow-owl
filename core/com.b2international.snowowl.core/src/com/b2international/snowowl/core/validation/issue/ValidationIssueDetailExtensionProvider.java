@@ -25,14 +25,12 @@ import com.google.common.collect.Lists;
 /**
  * @since 6.4
  */
-public enum ValidationIssueDetailExtensionProvider {
+public final class ValidationIssueDetailExtensionProvider {
 
-	INSTANCE;
-	
 	private final Collection<ValidationIssueDetailExtension> extensions = Lists.newArrayList();
 	
-	private ValidationIssueDetailExtensionProvider() {
-		ClassPathScanner.INSTANCE.getComponentsByInterface(ValidationIssueDetailExtension.class).forEach(this::addExtension);
+	public ValidationIssueDetailExtensionProvider(ClassPathScanner scanner) {
+		scanner.getComponentsByInterface(ValidationIssueDetailExtension.class).forEach(this::addExtension);
 	}
 	
 	public ValidationIssueDetailExtension getExtensions(String toolingId) {

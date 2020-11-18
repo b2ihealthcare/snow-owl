@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.snowowl.core.config.IndexSettings;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
+import com.b2international.snowowl.core.plugin.ClassPathScanner;
 import com.b2international.snowowl.core.plugin.Component;
 import com.b2international.snowowl.core.setup.ConfigurationRegistry;
 import com.b2international.snowowl.core.setup.Environment;
@@ -43,6 +44,7 @@ import com.b2international.snowowl.core.validation.ValidationRequests;
 import com.b2international.snowowl.core.validation.eval.GroovyScriptValidationRuleEvaluator;
 import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
 import com.b2international.snowowl.core.validation.issue.ValidationIssue;
+import com.b2international.snowowl.core.validation.issue.ValidationIssueDetailExtensionProvider;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
 import com.b2international.snowowl.core.validation.whitelist.ValidationWhiteList;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -91,7 +93,7 @@ public final class ValidationPlugin extends Plugin {
 			
 			env.services().registerService(ValidationConfiguration.class, validationConfig);
 			env.services().registerService(ValidationThreadPool.class, new ValidationThreadPool(numberOfValidationThreads, maxConcurrentExpensiveJobs, maxConcurrentNormalJobs));
-
+			env.services().registerService(ValidationIssueDetailExtensionProvider.class, new ValidationIssueDetailExtensionProvider(env.service(ClassPathScanner.class)));
 			
 			final List<File> listOfFiles = Arrays.asList(env.getConfigPath().toFile().listFiles());
 			final Set<File> validationRuleFiles = Sets.newHashSet();
