@@ -93,9 +93,9 @@ public final class IdentityPlugin extends Plugin {
 		return providers;
 	}
 
-	static Collection<Class<? extends IdentityProviderConfig>> getAvailableConfigClasses() {
+	static Collection<Class<? extends IdentityProviderConfig>> getAvailableConfigClasses(ClassPathScanner scanner) {
 		final ImmutableList.Builder<Class<? extends IdentityProviderConfig>> configs = ImmutableList.builder();
-		final Iterator<IdentityProviderFactory> it = ClassPathScanner.INSTANCE.getComponentsByInterface(IdentityProviderFactory.class).iterator();
+		final Iterator<IdentityProviderFactory> it = scanner.getComponentsByInterface(IdentityProviderFactory.class).iterator();
 		while (it.hasNext()) {
 			configs.add(it.next().getConfigType());
 		}
