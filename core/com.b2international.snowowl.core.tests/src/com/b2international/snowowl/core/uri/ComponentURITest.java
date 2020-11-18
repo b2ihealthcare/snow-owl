@@ -15,36 +15,76 @@
  */
 package com.b2international.snowowl.core.uri;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import org.junit.Test;
 
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.snowowl.core.ComponentIdentifier;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * @since 7.12.0
  */
 public class ComponentURITest {
-
-	@Test
-	public void constructorTest() {
-		final String branchPath = "SNOMEDCT/2019-09-30/SNOMEDCT-SE/2020-07-30/SNOMEDCT-EXT";
-		final CodeSystemURI uri = new CodeSystemURI(branchPath);
-		short terminologyComponentId = 150;
-		final String componentId = "123456789";
-		ComponentURI componentURI = ComponentURI.of(uri, terminologyComponentId, componentId);
-		assertEquals(componentURI.codeSystem(), ComponentURI.SLASH_SPLITTER.split(branchPath).iterator().next());
-		assertEquals(componentURI.terminologyComponentId(), terminologyComponentId);
-		assertEquals(componentURI.identifier(), componentId);
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void missingParts() {
+		ComponentURI.of("LCS1/1542");
+	}
+	
+	@Test(expected = BadRequestException.class)
+	public void malformedCodeSystemURIPart() {
+		ComponentURI.of("/750/1542");
+	}
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void nonNumberTerminologyComponentIdPart() {
+		ComponentURI.of("LCS1/xyz/1542");
+	}
+	
+	@Test(expected = IllegalArgumentException.class)
+	public void malformedIdentifierPart() {
+		ComponentURI.of("LCS1/750/");
 	}
 	
 	@Test
-	public void serializationTest() {
-		final String uri = "LCS1/1542/750/SO";
-		ComponentURI componentURI = ComponentURI.of(uri);
-		assertEquals(componentURI.codeSystem(), "LCS1");
-		assertEquals(componentURI.terminologyComponentId(), 750);
-		assertEquals(componentURI.identifier(), "SO");
+	public void unspecified() throws Exception {
+		assertTrue(ComponentURI.of("").isUnspecified());
+	}
+	
+	@Test
+	public void create() {
+		final CodeSystemURI codeSystemURI = new CodeSystemURI("SNOMEDCT/2019-09-30");
+		final short terminologyComponentId = 150;
+		final String identifier = "123456789";
+		ComponentURI componentURI = ComponentURI.of(codeSystemURI, terminologyComponentId, identifier);
+		assertEquals("SNOMEDCT", componentURI.codeSystem());
+		assertEquals("SNOMEDCT/2019-09-30", componentURI.codeSystemUri().toString());
+		assertEquals(150, componentURI.terminologyComponentId());
+		assertEquals(identifier, componentURI.identifier());
+		assertEquals(ComponentIdentifier.of(terminologyComponentId, identifier), componentURI.toComponentIdentifier());
+		
+		// verify interner
+		assertTrue(componentURI == ComponentURI.of(codeSystemURI, ComponentIdentifier.of(terminologyComponentId, identifier)));
+		assertTrue(componentURI == ComponentURI.of(codeSystemURI.toString(), terminologyComponentId, identifier));
+	}
+	
+	@Test
+	public void serialization() throws Exception {
+		final String uri = "CODESYSTEM/100/1";
+		assertEquals("\""+uri+"\"", new ObjectMapper().writeValueAsString(ComponentURI.of(uri)));
+	}
+	
+	@Test
+	public void deserialization() throws Exception {
+		assertEquals(ComponentURI.of("CODESYSTEM/100/1"), new ObjectMapper().readValue("\"CODESYSTEM/100/1\"", ComponentURI.class));
+	}
+	
+	@Test
+	public void isValid() throws Exception {
+		assertTrue(ComponentURI.isValid("SNOMEDCT/100/1"));
+		assertFalse(ComponentURI.isValid("SNOMEDCT/100/"));
 	}
 	
 	@Test(expected = IllegalArgumentException.class)

@@ -36,6 +36,8 @@ public final class Concept extends BaseComponent {
 	private String iconId;
 	private SortedSet<String> alternativeTerms;
 	
+	private Float score;
+	
 	public Concept(String codeSystem, short terminologyComponentId) {
 		this.codeSystem = codeSystem;
 		this.terminologyComponentId = terminologyComponentId;
@@ -65,8 +67,16 @@ public final class Concept extends BaseComponent {
 		this.alternativeTerms = alternativeTerms;
 	}
 	
+	public void setScore(Float score) {
+		this.score = score;
+	}
+	
 	public SortedSet<String> getAlternativeTerms() {
 		return alternativeTerms;
+	}
+	
+	public Float getScore() {
+		return score;
 	}
 	
 	@Override

@@ -31,14 +31,6 @@ public final class Scroll<T> {
 	private final String keepAlive;
 	private final List<String> fields;
 
-	public Scroll(Class<T> select, List<String> fields, String scrollId) {
-		this(select, select, fields, scrollId);
-	}
-	
-	public Scroll(Class<T> select, Class<?> from, List<String> fields, String scrollId) {
-		this(select, from, fields, scrollId, null);
-	}
-	
 	public Scroll(Class<T> select, Class<?> from, List<String> fields, String scrollId, String keepAlive) {
 		this.select = select;
 		this.from = from;

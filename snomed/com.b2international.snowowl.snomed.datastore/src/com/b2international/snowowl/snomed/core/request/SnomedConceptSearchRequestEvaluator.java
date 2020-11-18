@@ -40,7 +40,7 @@ import com.google.common.collect.FluentIterable;
 public final class SnomedConceptSearchRequestEvaluator implements ConceptSearchRequestEvaluator {
 
 	private Concept toConcept(CodeSystemURI codeSystem, SnomedConcept snomedConcept, String term) {
-		final Concept concept = toConcept(codeSystem, snomedConcept, snomedConcept.getIconId(), term);
+		final Concept concept = toConcept(codeSystem, snomedConcept, snomedConcept.getIconId(), term, snomedConcept.getScore());
 		concept.setAlternativeTerms(FluentIterable.from(snomedConcept.getPreferredDescriptions())
 				.transform(pd -> pd.getTerm())
 				.toSortedSet(Comparator.naturalOrder()));
@@ -68,6 +68,10 @@ public final class SnomedConceptSearchRequestEvaluator implements ConceptSearchR
 		
 		if (search.containsKey(OptionKey.ACTIVE)) {
 			req.filterByActive(search.getBoolean(OptionKey.ACTIVE));
+		}
+		
+		if (search.containsKey(OptionKey.TERM_TYPE)) {
+			req.filterByDescriptionType(search.getString(OptionKey.TERM_TYPE));
 		}
 		
 		if (search.containsKey(OptionKey.QUERY) || search.containsKey(OptionKey.MUST_NOT_QUERY)) {

@@ -134,6 +134,30 @@ public class RevisionBranchMergeConflictTest extends BaseRevisionIndexTest {
 	}
 	
 	@Test
+	public void rebaseResolvableConflictMultiValuedPropertyNonNullFromValue() throws Exception {
+		final List<String> terms = List.of("term1", "term2");
+		
+		indexRevision(MAIN, NEW_DATA.toBuilder().terms(List.of()).build());
+		final String branchA = createBranch(MAIN, "a");
+		
+		RevisionData newDataWithUpdatedTerms = NEW_DATA.toBuilder().terms(terms).build();
+		indexChange(MAIN, NEW_DATA, newDataWithUpdatedTerms);
+		indexChange(branchA, NEW_DATA, newDataWithUpdatedTerms);
+		
+		branching().prepareMerge(MAIN, branchA).merge();
+		RevisionData mainRevision = getRevision(MAIN, RevisionData.class, NEW_DATA.getId());
+		assertDocEquals(newDataWithUpdatedTerms, mainRevision);
+		RevisionData branchARevision = getRevision(branchA, RevisionData.class, NEW_DATA.getId());
+		assertDocEquals(newDataWithUpdatedTerms, branchARevision);
+		
+		branching().prepareMerge(branchA, MAIN).squash(true).merge();
+		mainRevision = getRevision(MAIN, RevisionData.class, NEW_DATA.getId());
+		assertDocEquals(newDataWithUpdatedTerms, mainRevision);
+		branchARevision = getRevision(branchA, RevisionData.class, NEW_DATA.getId());
+		assertDocEquals(newDataWithUpdatedTerms, branchARevision);
+	}
+	
+	@Test
 	public void rebaseResolvableNestedRevisionDataChanges_NestedObjectChange() throws Exception {
 		final Data nestedData = new Data();
 		nestedData.setField1("field1_1");
@@ -212,6 +236,24 @@ public class RevisionBranchMergeConflictTest extends BaseRevisionIndexTest {
 		
 		// this would fail with multiple entries exception if the rebase could not resolve the two existing revisions
 		assertDocEquals(newDataWithUpdatedDerivedField, getRevision(branchA, RevisionData.class, NEW_DATA.getId()));
+	}
+	
+	@Test
+	public void rebaseResolvableChangesShouldNotCauseConflictOnSecondRebase() throws Exception {
+		indexRevision(MAIN, NEW_DATA);
+		final String branchA = createBranch(MAIN, "a");
+		
+		indexChange(MAIN, NEW_DATA, NEW_DATA.toBuilder().field1("field1Changed").build());
+		indexChange(branchA, NEW_DATA, NEW_DATA.toBuilder().field2("field2Changed").build());
+		
+		// rebase branch the first time should make it through
+		branching().prepareMerge(MAIN, branchA).merge();
+		
+		// trigger another change on the same property on the parent branch 
+		indexChange(MAIN, NEW_DATA, NEW_DATA.toBuilder().field1("field1Changed_2").build());
+		
+		// trigger second rebase causes issues in 7.11.0, but with patch it's not
+		branching().prepareMerge(MAIN, branchA).merge(); // throws BranchMergeConflictException in 7.11.0 and earlier versions
 	}
 	
 }

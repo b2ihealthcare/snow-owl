@@ -25,7 +25,6 @@ import java.util.Objects;
 
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.core.JsonParser;
@@ -105,28 +104,25 @@ public final class ComponentURI implements Serializable {
 	}
 
 	private ComponentURI(CodeSystemURI codeSystemURI, short terminologyComponentId, String identifier) {
-		checkNotNull(codeSystemURI, "Codesystem argument should not be null.");
-		checkArgument(terminologyComponentId >= TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT,
-				"Terminology component id should be either unspecified (-1) or greater than zero. Got: '%s'.", terminologyComponentId);
-		boolean isUnspecified = codeSystemURI.getCodeSystem().equals(TerminologyRegistry.UNSPECIFIED) 
-				|| TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT == terminologyComponentId;
-		checkArgument(isUnspecified || !Strings.isNullOrEmpty(identifier), "Identifier should not be null or empty.");
+		checkNotNull(codeSystemURI, "CodeSystemURI argument should not be null.");
+		checkArgument(terminologyComponentId >= TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT, 
+				"TerminologyComponentId should be either unspecified (-1) or greater than zero. Got: '%s'.", terminologyComponentId);
+		checkArgument(TerminologyRegistry.UNSPECIFIED.equals(codeSystemURI.getCodeSystem()) || !Strings.isNullOrEmpty(identifier), "Identifier should not be null or empty.");
 		this.codeSystemUri = codeSystemURI;
 		this.terminologyComponentId = terminologyComponentId;
-		this.identifier = identifier;
-	}
-	
-	public static ComponentURI of(CodeSystemURI codeSystemURI, ComponentIdentifier componentIdentifier) {
-		return new ComponentURI(codeSystemURI, componentIdentifier.getTerminologyComponentId(), componentIdentifier.getComponentId());
+		this.identifier = Strings.nullToEmpty(identifier);
 	}
 	
 	public static ComponentURI of(CodeSystemURI codeSystemURI, short terminologyComponentId, String identifier) {
-		return new ComponentURI(codeSystemURI, terminologyComponentId, Strings.nullToEmpty(identifier));
+		return getOrCache(new ComponentURI(codeSystemURI, terminologyComponentId, identifier));
 	}
 	
-	@JsonCreator
+	public static ComponentURI of(CodeSystemURI codeSystemURI, ComponentIdentifier componentIdentifier) {
+		return of(codeSystemURI, componentIdentifier.getTerminologyComponentId(), componentIdentifier.getComponentId());
+	}
+	
 	public static ComponentURI of(String codeSystemUri, short terminologyComponentId, String identifier) {
-		return getOrCache(new ComponentURI(new CodeSystemURI(codeSystemUri), terminologyComponentId, Strings.nullToEmpty(identifier)));
+		return of(new CodeSystemURI(codeSystemUri), terminologyComponentId, identifier);
 	}
 	
 	private static ComponentURI getOrCache(final ComponentURI componentURI) {
@@ -136,11 +132,10 @@ public final class ComponentURI implements Serializable {
 	public static boolean isValid(String uriString) {
 		try {
 			of(uriString);
+			return true;
 		} catch (Exception e) {
 			return false;
 		}
-		return true;
-		
 	}
 	
 	public static ComponentURI of(String uri) {

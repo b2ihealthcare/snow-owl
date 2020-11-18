@@ -29,6 +29,7 @@ import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.test.commons.rest.RestExtensions;
 import com.google.common.collect.ImmutableMap;
 /**
  * @since 6.5
@@ -57,7 +58,7 @@ public class Issue3019FixDeletionOfReferringMembersTest extends AbstractSnomedAp
 		.build(
 				SnomedDatastoreActivator.REPOSITORY_UUID,
 				branchPath.getPath(),
-				"info@b2international.com", 
+				RestExtensions.USER, 
 				"Deleted reference set which was member of query type refset"
 			  )
 		.execute(getBus())

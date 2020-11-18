@@ -50,6 +50,8 @@ final class CodeSystemSearchRequest
 		NAME,
 		/** Exact match for code system name */
 		NAME_EXACT,
+		/** HL7 registry OID **/
+		OID
 	}
 	
 	@Override
@@ -69,6 +71,7 @@ final class CodeSystemSearchRequest
 		addToolingIdFilter(queryBuilder);
 		addNameFilter(queryBuilder);
 		addNameExactFilter(queryBuilder);
+		addOidFilter(queryBuilder);
 		
 		return queryBuilder.build();
 	}
@@ -97,6 +100,12 @@ final class CodeSystemSearchRequest
 		if (containsKey(OptionKey.NAME_EXACT)) {
 			queryBuilder.must(CodeSystemEntry.Expressions.matchNameOriginal(getString(OptionKey.NAME_EXACT)));
 		}		
+	}
+	
+	private void addOidFilter(final ExpressionBuilder queryBuilder) {
+		if (containsKey(OptionKey.OID)) {
+			queryBuilder.filter(CodeSystemEntry.Expressions.oids(getCollection(OptionKey.OID, String.class)));
+		}
 	}
 	
 	@Override
