@@ -33,6 +33,7 @@ import com.b2international.snowowl.core.merge.MergeConflictSerializationTest;
 import com.b2international.snowowl.core.monitoring.ConsoleProgressMonitorTest;
 import com.b2international.snowowl.core.request.SearchResourceRequestTest;
 import com.b2international.snowowl.core.request.SortParserTest;
+import com.b2international.snowowl.core.uri.ComponentURITest;
 import com.b2international.snowowl.core.scripts.GroovyScriptEngineTest;
 import com.b2international.snowowl.core.uri.CodeSystemURITest;
 import com.b2international.snowowl.core.validation.ValidationIssueApiTest;
@@ -54,6 +55,7 @@ import com.b2international.snowowl.core.validation.ValidationWhiteListApiTest;
 	MergeConflictSerializationTest.class,
 	ReviewSerializationTest.class,
 	PermissionTest.class,
+	ComponentURITest.class,
 	DatastoreLockTests.class,
 	CodeSystemTest.class,
 	LockIndexTests.class,
@@ -65,8 +67,6 @@ import com.b2international.snowowl.core.validation.ValidationWhiteListApiTest;
 	ValidationRuleApiTest.class,
 	ValidationThreadPoolTest.class,
 	ValidationWhiteListApiTest.class,
-	
-	
 })
 public class AllCoreTests {
 

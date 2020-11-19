@@ -19,11 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.InputStream;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.eclipse.xtext.parser.IParser;
@@ -38,11 +34,13 @@ import com.b2international.index.Index;
 import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.ComponentIdentifier;
+import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.internal.validation.ValidationConfiguration;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
 import com.b2international.snowowl.core.internal.validation.ValidationThreadPool;
+import com.b2international.snowowl.core.repository.RepositoryCodeSystemProvider;
 import com.b2international.snowowl.core.request.RevisionIndexReadRequest;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.core.validation.ValidateRequestBuilder;
@@ -57,11 +55,7 @@ import com.b2international.snowowl.snomed.core.ecl.DefaultEclParser;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclSerializer;
 import com.b2international.snowowl.snomed.core.ecl.EclParser;
 import com.b2international.snowowl.snomed.core.ecl.EclSerializer;
-import com.b2international.snowowl.snomed.datastore.index.constraint.ConceptSetDefinitionFragment;
-import com.b2international.snowowl.snomed.datastore.index.constraint.HierarchyDefinitionFragment;
-import com.b2international.snowowl.snomed.datastore.index.constraint.PredicateFragment;
-import com.b2international.snowowl.snomed.datastore.index.constraint.RelationshipPredicateFragment;
-import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
+import com.b2international.snowowl.snomed.datastore.index.constraint.*;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
@@ -83,6 +77,8 @@ import com.google.inject.Injector;
 public abstract class BaseGenericValidationRuleTest extends BaseRevisionIndexTest {
 
 	private static final Injector ECL_INJECTOR = new EclStandaloneSetup().createInjectorAndDoEMFRegistration();
+	
+	protected static final String CODESYSTEM = "SNOMEDCT-TEST";
 	
 	private static final String ATTRIBUTE = "246061005";
 	private static final Long ATTRIBUTEL = Long.parseLong(ATTRIBUTE);
@@ -113,6 +109,7 @@ public abstract class BaseGenericValidationRuleTest extends BaseRevisionIndexTes
 				.with(ValidationRepository.class, new ValidationRepository(rawIndex()))
 				.with(ClassLoader.class, getClass().getClassLoader())
 				.with(TerminologyRegistry.class, TerminologyRegistry.INSTANCE)
+				.with(RepositoryCodeSystemProvider.class, branchPath -> CodeSystem.builder().branchPath(branchPath).shortName(CODESYSTEM).build())
 				.with(ValidationThreadPool.class, new ValidationThreadPool(1, 1, 1)).build();
 		
 		// index common required SNOMED CT Concepts

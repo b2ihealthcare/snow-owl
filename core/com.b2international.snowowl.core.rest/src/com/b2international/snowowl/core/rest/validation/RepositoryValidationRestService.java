@@ -36,6 +36,7 @@ import com.b2international.snowowl.core.jobs.RemoteJobs;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
+import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.core.validation.ValidationRequests;
 import com.b2international.snowowl.core.validation.issue.ValidationIssue;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
@@ -57,7 +58,7 @@ import springfox.documentation.annotations.ApiIgnore;
  * 
  * @since 6.13
  */
-@Api(value = "Validations", description="Validations", tags = { "validations" })
+@Api(value = "Validations", description = "Validations", tags = { "validations" })
 @RequestMapping(value = "/validations", produces={ AbstractRestService.JSON_MEDIA_TYPE })
 public abstract class RepositoryValidationRestService extends AbstractRestService {
 	
@@ -109,7 +110,7 @@ public abstract class RepositoryValidationRestService extends AbstractRestServic
 			@RequestBody 
 			final ValidationRestInput validationInput) {
 
-		final String uniqueJobId = ValidationRequests.createUniqueValidationJobKey(repositoryId, validationInput.getBranchPath());
+		final String uniqueJobId = ValidationRequests.createUniqueValidationJobKey(validationInput.getPath());
 		
 		final String jobId = ValidationRequests
 				.prepareValidate()
@@ -117,8 +118,8 @@ public abstract class RepositoryValidationRestService extends AbstractRestServic
 					ValidationConfiguration.IS_UNPUBLISHED_ONLY, validationInput.isUnpublishedOnly()
 				))
 				.setRuleIds(validationInput.getRuleIds())
-				.build(repositoryId, validationInput.getBranchPath())
-				.runAsJobWithRestart(uniqueJobId, String.format("Validating branch '%s'", validationInput.getBranchPath()))
+				.build(repositoryId, validationInput.getPath())
+				.runAsJobWithRestart(uniqueJobId, String.format("Validating '%s'", validationInput.getPath()))
 				.execute(getBus())
 				.getSync(1, TimeUnit.MINUTES);
 		
@@ -167,12 +168,12 @@ public abstract class RepositoryValidationRestService extends AbstractRestServic
 		final IEventBus bus = getBus();
 		
 		return getValidationRun(validationId).thenWith(validationJob -> {
+			final CodeSystemURI codeSystemURI = getCodeSystemURIFromJob(validationJob);
 			if (AbstractRestService.CSV_MEDIA_TYPE.equals(contentType)) {
-				final String branchPath = getBranchFromJob(validationJob);
 				return ValidationRequests.issues().prepareSearch()
 						.isWhitelisted(false)
 						.all()
-						.filterByBranchPath(branchPath)
+						.filterByResourceUri(codeSystemURI)
 						.sortBy(SortField.ascending(ValidationIssue.Fields.RULE_ID))
 						.buildAsync()
 						.execute(bus)
@@ -198,13 +199,11 @@ public abstract class RepositoryValidationRestService extends AbstractRestServic
 							}).collect(Collectors.toList());
 						});
 			} else {
-				final String branchPath = getBranchFromJob(validationJob);
-
 				return ValidationRequests.issues().prepareSearch()
 						.isWhitelisted(false)
 						.setLimit(limit)
 						.setSearchAfter(searchAfter)
-						.filterByBranchPath(branchPath)
+						.filterByResourceUri(codeSystemURI )
 						.buildAsync()
 						.execute(bus)
 						.then(issues -> issues.getItems().stream().collect(Collectors.toList()));
@@ -213,8 +212,8 @@ public abstract class RepositoryValidationRestService extends AbstractRestServic
 		});
 	}
 	
-	private String getBranchFromJob(final RemoteJobEntry validationJob) {
-		return (String) validationJob.getParameters(objectMapper).get("branchPath");
+	private CodeSystemURI getCodeSystemURIFromJob(final RemoteJobEntry validationJob) {
+		return new CodeSystemURI((String) validationJob.getParameters(objectMapper).get("uri"));
 	}
 	
 }

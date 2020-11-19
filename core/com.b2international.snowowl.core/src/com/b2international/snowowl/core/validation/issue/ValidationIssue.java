@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,10 +29,12 @@ import com.b2international.index.Keyword;
 import com.b2international.index.Script;
 import com.b2international.index.Text;
 import com.b2international.snowowl.core.ComponentIdentifier;
+import com.b2international.snowowl.core.uri.CodeSystemURI;
+import com.b2international.snowowl.core.uri.ComponentURI;
+import com.b2international.snowowl.core.validation.whitelist.ValidationWhiteList;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 
@@ -44,12 +46,17 @@ import com.google.common.base.MoreObjects;
 @Script(name="normalizeWithOffset", script="(_score / (_score + 1.0f)) + params.offset")
 public final class ValidationIssue implements Serializable {
 
+	private static final long serialVersionUID = 5674287017882543560L;
+
+	/**
+	 * @since 6.0
+	 */
 	public static class Fields {
 		public static final String ID = "id";
 		public static final String RULE_ID = "ruleId";
-		public static final String BRANCH_PATH = "branchPath";
+		public static final String RESOURCE_URI = "resourceURI";
 		public static final String AFFECTED_COMPONENT_ID = "affectedComponentId";
-		public static final String AFFECTED_COMPONENT_TYPE = "affectedComponentType";
+		public static final String AFFECTED_COMPONENT_URI = "affectedComponentURI";
 		public static final String AFFECTED_COMPONENT_LABELS = "affectedComponentLabels";
 		public static final String AFFECTED_COMPONENT_LABELS_PREFIX = AFFECTED_COMPONENT_LABELS + ".prefix";
 		public static final String AFFECTED_COMPONENT_LABELS_ORIGINAL= AFFECTED_COMPONENT_LABELS + ".original";
@@ -57,16 +64,32 @@ public final class ValidationIssue implements Serializable {
 		public static final String DETAILS = "details";
 	}
 
+	/**
+	 * @since 6.0
+	 */
 	public static class Scripts {
 		public static final String WHITELIST = "whitelist";
 	}
 	
 	private final String id;
 	private final String ruleId;
-	private final String branchPath;
-	private final String affectedComponentId;
-	private final short affectedComponentType;
+	private final ComponentURI affectedComponentURI;
+	private final CodeSystemURI resourceURI;
 	private final boolean whitelisted;
+	
+	
+	private final String affectedComponentId;
+	
+	/**
+	 * @deprecated - kept only to support clear migration path for older indices, will be removed in 8.0
+	 */
+	private final String branchPath;
+	
+	/**
+	 * @deprecated - kept only to support clear migration path for older indices, will be removed in 8.0
+	 */
+	private final short affectedComponentType;
+	
 	
 	@Text(analyzer = Analyzers.TOKENIZED)
 	@Text(alias="prefix", analyzer = Analyzers.PREFIX, searchAnalyzer = Analyzers.TOKENIZED)
@@ -75,67 +98,100 @@ public final class ValidationIssue implements Serializable {
 	
 	private Map<String, Object> details = null;
 	
-	private transient ComponentIdentifier affectedComponent;
-
-	public ValidationIssue(
-			final String id,
-			final String ruleId, 
-			final String branchPath, 
-			final ComponentIdentifier affectedComponent,
-			final boolean whitelisted) {
-		this(id, ruleId, branchPath, affectedComponent.getTerminologyComponentId(), affectedComponent.getComponentId(), whitelisted);
-	}
-	
 	@JsonCreator
-	public ValidationIssue(
+	private ValidationIssue(
 			@JsonProperty("id") final String id,
 			@JsonProperty("ruleId") final String ruleId, 
 			@JsonProperty("branchPath") final String branchPath, 
+			@JsonProperty("affectedComponentURI") final ComponentURI affectedComponentURI,
+			@JsonProperty("resourceURI") final CodeSystemURI resourceURI,
 			@JsonProperty("affectedComponentType") final short affectedComponentType,
 			@JsonProperty("affectedComponentId") final String affectedComponentId,
 			@JsonProperty("whitelisted") final boolean whitelisted) {
 		this.id = id;
 		this.ruleId = ruleId;
-		this.branchPath = branchPath;
 		this.affectedComponentId = affectedComponentId;
-		this.affectedComponentType = affectedComponentType;
+		this.affectedComponentURI = affectedComponentURI;
+		this.resourceURI = resourceURI;
 		this.whitelisted = whitelisted;
+		this.branchPath = branchPath;
+		this.affectedComponentType = affectedComponentType;
+	}
+	
+	public ValidationIssue(
+			final String id,
+			final String ruleId, 
+			final ComponentURI componentURI, 
+			final boolean whitelisted) {
+		this(id, ruleId, componentURI.codeSystemUri().getPath(), componentURI, componentURI.codeSystemUri(), componentURI.terminologyComponentId(), componentURI.identifier(), whitelisted);
 	}
 	
 	public String getId() {
 		return id;
 	}
 	
-	@JsonIgnore
-	public ComponentIdentifier getAffectedComponent() {
-		if (affectedComponent == null) {
-			affectedComponent = ComponentIdentifier.of(affectedComponentType, affectedComponentId);
-		}
-		return affectedComponent;
+	/**
+	 * @deprecated - kept only to support clear migration path for older indices, will be removed in 8.0
+	 */
+	@JsonProperty
+	String getBranchPath() {
+		return branchPath;
 	}
 	
+	/**
+	 * @return the component identifier that has been flagged by this issue, never <code>null</code>.
+	 */
 	@JsonProperty
-	String getAffectedComponentId() {
+	/*package*/ String getAffectedComponentId() {
 		return affectedComponentId;
 	}
 	
+	/**
+	 * @deprecated - kept only to support clear migration path for older indices, will be removed in 8.0
+	 */
 	@JsonProperty
 	short getAffectedComponentType() {
 		return affectedComponentType;
 	}
 	
-	public String getBranchPath() {
-		return branchPath;
+	/**
+	 * @return the {@link ComponentIdentifier} part from the {@link ComponentURI}, never <code>null</code>.
+	 */
+	public ComponentIdentifier getAffectedComponent() {
+		return getAffectedComponentURI().toComponentIdentifier();
 	}
 	
+	/**
+	 * @return the full URI of the component that has been flagged by this issue, never <code>null</code>.
+	 */
+	public ComponentURI getAffectedComponentURI() {
+		return affectedComponentURI;
+	}
+	
+	/**
+	 * @return the resourceURI (currently only {@link CodeSystemURI} is supported) that marks the location of this issue, never <code>null</code>.
+	 */
+	public CodeSystemURI getResourceURI() {
+		return resourceURI;
+	}
+	
+	/**
+	 * @return the rule that has created this issue 
+	 */
 	public String getRuleId() {
 		return ruleId;
 	}
 	
+	/**
+	 * @return <code>true</code> if this issue has been marked as whitelisted and has a corresponding {@link ValidationWhiteList} entry, <code>false</code> if there is no such entry. 
+	 */
 	public boolean isWhitelisted() {
 		return whitelisted;
 	}
 	
+	/**
+	 * @return all the labels that are associated with this validation issue to support looking up the issue by searching via relevant terms
+	 */
 	public List<String> getAffectedComponentLabels() {
 		return affectedComponentLabels;
 	}
@@ -144,6 +200,9 @@ public final class ValidationIssue implements Serializable {
 		this.affectedComponentLabels = Collections3.toImmutableList(affectedComponentLabels);
 	}
 	
+	/**
+	 * @return any additional details that help the resolution of the issue
+	 */
 	@JsonAnyGetter
 	public Map<String, Object> getDetails() {
 		return details;
@@ -166,8 +225,8 @@ public final class ValidationIssue implements Serializable {
 		return MoreObjects.toStringHelper(getClass())
 				.add("id", id)
 				.add("ruleId", ruleId)
-				.add("branchPath", branchPath)
-				.add("affectedComponent", getAffectedComponent())
+				.add("resourceURI", resourceURI)
+				.add("affectedComponentURI", affectedComponentURI)
 				.add("details", getDetails())
 				.toString();
 	}

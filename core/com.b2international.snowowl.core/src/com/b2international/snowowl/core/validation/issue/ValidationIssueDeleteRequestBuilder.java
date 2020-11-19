@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.SystemRequestBuilder;
+import com.b2international.snowowl.core.uri.CodeSystemURI;
 
 /**
  * @since 6.20.0
@@ -27,13 +28,13 @@ public final class ValidationIssueDeleteRequestBuilder
 	extends BaseRequestBuilder<ValidationIssueDeleteRequestBuilder, ServiceProvider, Boolean>
 	implements SystemRequestBuilder<Boolean> {
 	
-	private String branch;
+	private String codeSystemURI;
 	private String toolingId;
 	
 	ValidationIssueDeleteRequestBuilder() {}
 	
-	public ValidationIssueDeleteRequestBuilder setBranch(String branch) {
-		this.branch = branch;
+	public ValidationIssueDeleteRequestBuilder setCodeSystemURI(CodeSystemURI codeSystemURI) {
+		this.codeSystemURI = codeSystemURI.toString();
 		return getSelf();
 	}
 	
@@ -44,7 +45,7 @@ public final class ValidationIssueDeleteRequestBuilder
 	
 	@Override
 	protected Request<ServiceProvider, Boolean> doBuild() {
-		return new ValidationIssueDeleteRequest(branch, toolingId);
+		return new ValidationIssueDeleteRequest(codeSystemURI, toolingId);
 	}
 	
 }
