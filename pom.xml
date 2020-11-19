@@ -27,7 +27,7 @@
 		<protege.version>5.0.5-b2i</protege.version>
 		<owlapi.version>4.5.24</owlapi.version>
 		<elk.version>0.4.3</elk.version>
-		<jetty.version>9.4.27.v20200227</jetty.version>
+		<jetty.version>9.4.34.v20201102</jetty.version>
 		<classgraph.version>4.8.90</classgraph.version>
 		<jbcrypt.version>0.4.1</jbcrypt.version>
 		<typetools.version>0.6.1</typetools.version>
