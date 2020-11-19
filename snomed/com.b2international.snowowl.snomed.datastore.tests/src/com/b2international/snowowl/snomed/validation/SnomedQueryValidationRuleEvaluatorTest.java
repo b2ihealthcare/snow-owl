@@ -23,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.eclipse.xtext.parser.IParser;
 import org.eclipse.xtext.serializer.ISerializer;
@@ -40,6 +41,7 @@ import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.ComponentIdentifier;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
@@ -47,6 +49,7 @@ import com.b2international.snowowl.core.internal.validation.ValidationThreadPool
 import com.b2international.snowowl.core.plugin.ClassPathScanner;
 import com.b2international.snowowl.core.repository.RepositoryCodeSystemProvider;
 import com.b2international.snowowl.core.request.RevisionIndexReadRequest;
+import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
 import com.b2international.snowowl.core.validation.ValidationRequests;
 import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
 import com.b2international.snowowl.core.validation.issue.ValidationIssue;
@@ -143,6 +146,17 @@ public class SnomedQueryValidationRuleEvaluatorTest extends BaseRevisionIndexTes
 				.with(ValidationRepository.class, repository)
 				.with(ClassPathScanner.class, scanner)
 				.with(ValidationIssueDetailExtensionProvider.class, new ValidationIssueDetailExtensionProvider(scanner))
+				.with(ResourceURIPathResolver.class, (context, uris) -> {
+					return uris.stream()
+							.map(uri -> {
+								// simulating CodeSystemURI -> BranchPath calculation without searching for any docs
+								if ("SNOMEDCT".equals(uri.getCodeSystem())) {
+									return String.join(Branch.SEPARATOR, Branch.MAIN_PATH, uri.getPath());
+								} else {
+									throw new UnsupportedOperationException("Unrecognized CodeSystemURI: " + uri);
+								}
+							}).collect(Collectors.toList());
+				})
 				.build();
 		evaluator = new SnomedQueryValidationRuleEvaluator();
 		if (!ValidationRuleEvaluator.Registry.types().contains(evaluator.type())) {
