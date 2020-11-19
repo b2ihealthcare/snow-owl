@@ -42,9 +42,12 @@ import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
 import com.b2international.snowowl.core.internal.validation.ValidationThreadPool;
 import com.b2international.snowowl.core.request.RevisionIndexReadRequest;
+import com.b2international.snowowl.core.uri.CodeSystemURI;
+import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.core.validation.ValidationRequests;
 import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
 import com.b2international.snowowl.core.validation.issue.ValidationIssue;
@@ -217,13 +220,12 @@ public class SnomedValidationIssueDetailTest extends BaseRevisionIndexTest {
 	}
 	
 	private ValidationIssue createIssue(String componentId, Map<String, Object> details) {
-		final short terminologyShort = 100;
 		final ValidationIssue issue = new ValidationIssue(
-			UUID.randomUUID().toString(),
+			IDs.base64UUID(),
 			TEST_RULE_ID,
-			MAIN,
-			ComponentIdentifier.of(terminologyShort, componentId),
-			false);
+			ComponentURI.of(new CodeSystemURI(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME), ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, componentId)),
+			false
+		);
 		
 		if (!CompareUtils.isEmpty(details)) {
 			issue.setDetails(details);

@@ -26,6 +26,7 @@ import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
+import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.core.validation.ValidationDeleteNotification;
 import com.b2international.snowowl.core.validation.ValidationRequests;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
@@ -40,13 +41,13 @@ final class ValidationIssueDeleteRequest implements Request<ServiceProvider, Boo
 	private static final long serialVersionUID = 1L;
 	
 	@JsonProperty
-	private final String branch;
+	private final String resourceURI;
 
 	@JsonProperty
 	private String toolingId;
 	
-	ValidationIssueDeleteRequest(String branch, String toolingId) {
-		this.branch = branch;
+	ValidationIssueDeleteRequest(String resourceURI, String toolingId) {
+		this.resourceURI = resourceURI;
 		this.toolingId = toolingId;
 	}
 	
@@ -54,8 +55,8 @@ final class ValidationIssueDeleteRequest implements Request<ServiceProvider, Boo
 	public Boolean execute(ServiceProvider context) {
 		ExpressionBuilder query = Expressions.builder();
 		
-		if (!Strings.isNullOrEmpty(branch)) {
-			query.filter(Expressions.exactMatch(ValidationIssue.Fields.BRANCH_PATH, branch));
+		if (!Strings.isNullOrEmpty(resourceURI)) {
+			query.filter(Expressions.exactMatch(ValidationIssue.Fields.RESOURCE_URI, resourceURI));
 		}
 		
 		if (!Strings.isNullOrEmpty(toolingId)) {
@@ -75,7 +76,7 @@ final class ValidationIssueDeleteRequest implements Request<ServiceProvider, Boo
 			writer.bulkDelete(new BulkDelete<>(ValidationIssue.class, query.build()));
 			writer.commit();
 			
-			new ValidationDeleteNotification(branch, toolingId).publish(context.service(IEventBus.class));
+			new ValidationDeleteNotification(new CodeSystemURI(resourceURI), toolingId).publish(context.service(IEventBus.class));
 			
 			return Boolean.TRUE;
 		});

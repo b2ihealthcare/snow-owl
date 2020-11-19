@@ -32,6 +32,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import com.b2international.snowowl.core.ComponentIdentifier;
+import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.core.validation.issue.ValidationIssue;
 import com.b2international.snowowl.core.validation.issue.ValidationIssues;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
@@ -58,6 +59,24 @@ import com.google.common.collect.Lists;
  */
 @RunWith(Parameterized.class)
 public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
+	
+	@Test
+	public void codeSystemURITest() throws Exception {
+		final String ruleId = "45a";
+		indexRule(ruleId);
+
+		// index invalid hierarchical relationship to group 1
+		final SnomedRelationshipIndexEntry relationship = relationship(Concepts.FINDING_SITE, Concepts.IS_A, Concepts.MODULE_SCT_MODEL_COMPONENT)
+				.group(1)
+				.build();
+		
+		indexRevision(MAIN, relationship);
+
+		ValidationIssues issues = validate(ruleId);
+		ComponentURI componentURI = issues.stream().map(issue -> issue.getAffectedComponentURI()).findFirst().get();
+		assertThat(componentURI.equals(ComponentURI.of(CODESYSTEM, SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship.getId())));
+	}
+
 	
 	@Test
 	public void rule34() throws Exception {
