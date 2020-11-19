@@ -34,6 +34,7 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
 import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
 import com.fasterxml.jackson.databind.type.TypeFactory;
+import com.google.common.base.Suppliers;
 
 /**
  * @since 5.11
@@ -52,11 +53,11 @@ public interface IdentityProviderConfig {
 		private JavaType baseType;
 
 		public IdentityProviderTypeIdResolver() throws IOException {
-			this.subTypeCache = () -> {
+			this.subTypeCache = Suppliers.memoize(() -> {
 				return IdentityPlugin.getAvailableConfigClasses(ApplicationContext.getInstance().getServiceChecked(ClassPathScanner.class)).stream() 
 					.filter(this::isValid)
 					.collect(Collectors.toMap(this::getType, Function.identity()));	
-			};
+			});
 		}
 		
 		@Override
