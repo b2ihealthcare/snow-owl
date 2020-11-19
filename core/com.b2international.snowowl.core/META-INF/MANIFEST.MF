@@ -26,7 +26,7 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  com.b2international.collections.jackson,
  org.apache.commons.codec;bundle-version="1.10.0",
  org.apache.commons.io;bundle-version="2.6.0",
- io.github.classgraph.classgraph;bundle-version="4.8.78"
+ io.github.classgraph.classgraph;bundle-version="4.8.90"
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ActivationPolicy: lazy
 Export-Package: com.auth0.jwt,
