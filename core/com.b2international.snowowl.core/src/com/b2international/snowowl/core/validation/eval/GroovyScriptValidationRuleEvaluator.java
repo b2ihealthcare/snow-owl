@@ -60,7 +60,7 @@ public final class GroovyScriptValidationRuleEvaluator implements ValidationRule
 				paramsBuilder.putAll(filterParams);
 			}
 			
-			return ScriptEngine.run(
+			return context.service(ScriptEngine.Registry.class).run(
 				"groovy", 
 				context.service(ClassLoader.class), 
 				new ScriptSource(validationRuleFilePath.getFileName().toString(), script),

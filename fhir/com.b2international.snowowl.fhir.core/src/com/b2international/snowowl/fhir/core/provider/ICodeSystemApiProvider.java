@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,18 +44,16 @@ public interface ICodeSystemApiProvider extends IFhirApiProvider {
 	 * 
 	 * @since 6.4
 	 */
-	enum Registry {
-		
-		INSTANCE;
+	final class Registry {
 		
 		private final Collection<ICodeSystemApiProvider.Factory> providers;
 		
-		private Registry() {
-			this.providers = ClassPathScanner.INSTANCE.getComponentsByInterface(ICodeSystemApiProvider.Factory.class);
+		public Registry(ClassPathScanner scanner) {
+			this.providers = scanner.getComponentsByInterface(ICodeSystemApiProvider.Factory.class);
 		}
 		
-		public static Collection<ICodeSystemApiProvider> getProviders(IEventBus bus, List<ExtendedLocale> locales) {
-			return INSTANCE.providers.stream().map(factory -> factory.create(bus, locales)).collect(Collectors.toUnmodifiableList());
+		public Collection<ICodeSystemApiProvider> getProviders(IEventBus bus, List<ExtendedLocale> locales) {
+			return providers.stream().map(factory -> factory.create(bus, locales)).collect(Collectors.toUnmodifiableList());
 		}
 		
 		/**
@@ -66,7 +64,7 @@ public interface ICodeSystemApiProvider extends IFhirApiProvider {
 		 * @return FHIR code system provider
 		 * @throws com.b2international.snowowl.fhir.core.exceptions.BadRequestException - if provider is not found with the given path
 		 */
-		public static ICodeSystemApiProvider getCodeSystemProvider(IEventBus bus, List<ExtendedLocale> locales, LogicalId logicalId) {
+		public ICodeSystemApiProvider getCodeSystemProvider(IEventBus bus, List<ExtendedLocale> locales, LogicalId logicalId) {
 			return getProviders(bus, locales).stream()
 				.filter(provider -> provider.isSupported(logicalId))
 				.findFirst()
@@ -80,7 +78,7 @@ public interface ICodeSystemApiProvider extends IFhirApiProvider {
 		 * @param uriValue
 		 * @return FHIR code system provider
 		 */
-		public static ICodeSystemApiProvider getCodeSystemProvider(IEventBus bus, List<ExtendedLocale> locales, String uriValue) {
+		public ICodeSystemApiProvider getCodeSystemProvider(IEventBus bus, List<ExtendedLocale> locales, String uriValue) {
 			return getProviders(bus, locales).stream()
 				.filter(provider -> provider.isSupported(uriValue))
 				.findFirst()

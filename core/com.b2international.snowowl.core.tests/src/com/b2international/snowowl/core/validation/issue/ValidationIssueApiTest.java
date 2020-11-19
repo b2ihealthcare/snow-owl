@@ -41,6 +41,7 @@ import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
+import com.b2international.snowowl.core.plugin.ClassPathScanner;
 import com.b2international.snowowl.core.repository.JsonSupport;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.core.uri.ComponentURI;
@@ -92,8 +93,11 @@ public class ValidationIssueApiTest {
 		final Index index = Indexes.createIndex(UUID.randomUUID().toString(), mapper, new Mappings(ValidationIssue.class, ValidationRule.class));
 		index.admin().create();
 		final ValidationRepository repository = new ValidationRepository(index);
+		final ClassPathScanner scanner = new ClassPathScanner("com.b2international");
 		context = ServiceProvider.EMPTY.inject()
+				.bind(ClassPathScanner.class, scanner)
 				.bind(ValidationRepository.class, repository)
+				.bind(ValidationIssueDetailExtensionProvider.class, new ValidationIssueDetailExtensionProvider(scanner))
 				.bind(ResourceURIPathResolver.class, (context, uris) -> {
 					return uris.stream()
 							.map(uri -> {
@@ -107,9 +111,7 @@ public class ValidationIssueApiTest {
 				})
 				.build();
 		
-		ValidationIssueDetailExtensionProvider extensionProvider = ValidationIssueDetailExtensionProvider.INSTANCE;
-		extensionProvider.addExtension(new TestValidationDetailExtension());
-		
+		context.service(ValidationIssueDetailExtensionProvider.class).addExtension(new TestValidationDetailExtension());
 	}
 	
 	@After

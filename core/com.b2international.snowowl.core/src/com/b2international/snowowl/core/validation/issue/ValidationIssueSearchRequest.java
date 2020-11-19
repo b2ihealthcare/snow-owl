@@ -189,8 +189,9 @@ final class ValidationIssueSearchRequest
 			final Collection<String> toolingIds = getCollection(OptionKey.TOOLING_ID, String.class);
 			final Options options = getOptions(OptionKey.DETAILS);
 			final ExpressionBuilder toolingQuery = Expressions.builder();
+			final Collection<ValidationIssueDetailExtension> extensions = context.service(ValidationIssueDetailExtensionProvider.class).getExtensions();
 			for (String toolingId : toolingIds) {
-				ValidationIssueDetailExtensionProvider.INSTANCE.getExtensions()
+				extensions
 						.stream()
 						.filter(ext -> toolingId.equals(ext.getToolingId()))
 						.findFirst()

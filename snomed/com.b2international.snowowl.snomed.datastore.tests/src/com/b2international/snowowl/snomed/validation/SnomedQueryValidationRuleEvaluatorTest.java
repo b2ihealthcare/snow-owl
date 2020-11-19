@@ -46,6 +46,7 @@ import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
 import com.b2international.snowowl.core.internal.validation.ValidationThreadPool;
+import com.b2international.snowowl.core.plugin.ClassPathScanner;
 import com.b2international.snowowl.core.repository.RepositoryCodeSystemProvider;
 import com.b2international.snowowl.core.request.RevisionIndexReadRequest;
 import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
@@ -125,6 +126,7 @@ public class SnomedQueryValidationRuleEvaluatorTest extends BaseRevisionIndexTes
 	public void setup() {
 		final Index index = Indexes.createIndex(UUID.randomUUID().toString(), getMapper(), new Mappings(ValidationRule.class, ValidationIssue.class, ValidationWhiteList.class));
 		repository = new ValidationRepository(index);
+		ClassPathScanner scanner = new ClassPathScanner("com.b2international");
 		context = TestBranchContext.on(MAIN)
 				.with(ObjectMapper.class, getMapper())
 				.with(EclParser.class, new DefaultEclParser(INJECTOR.getInstance(IParser.class), INJECTOR.getInstance(IResourceValidator.class)))
@@ -142,6 +144,8 @@ public class SnomedQueryValidationRuleEvaluatorTest extends BaseRevisionIndexTes
 				.with(RevisionIndex.class, index())
 				.with(ValidationThreadPool.class, new ValidationThreadPool(1, 1, 1))
 				.with(ValidationRepository.class, repository)
+				.with(ClassPathScanner.class, scanner)
+				.with(ValidationIssueDetailExtensionProvider.class, new ValidationIssueDetailExtensionProvider(scanner))
 				.with(ResourceURIPathResolver.class, (context, uris) -> {
 					return uris.stream()
 							.map(uri -> {
@@ -159,8 +163,7 @@ public class SnomedQueryValidationRuleEvaluatorTest extends BaseRevisionIndexTes
 			ValidationRuleEvaluator.Registry.register(evaluator);
 		}
 		
-		ValidationIssueDetailExtensionProvider extensionProvider = ValidationIssueDetailExtensionProvider.INSTANCE;
-		extensionProvider.addExtension(new TestValidationDetailExtension());
+		context.service(ValidationIssueDetailExtensionProvider.class).addExtension(new TestValidationDetailExtension());
 		
 	}
 	
