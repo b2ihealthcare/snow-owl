@@ -98,17 +98,7 @@ public class ValidationIssueApiTest {
 				.bind(ClassPathScanner.class, scanner)
 				.bind(ValidationRepository.class, repository)
 				.bind(ValidationIssueDetailExtensionProvider.class, new ValidationIssueDetailExtensionProvider(scanner))
-				.bind(ResourceURIPathResolver.class, (context, uris) -> {
-					return uris.stream()
-							.map(uri -> {
-								// simulating CodeSystemURI -> BranchPath calculation without searching for any docs
-								if ("SNOMEDCT".equals(uri.getCodeSystem())) {
-									return String.join(Branch.SEPARATOR, Branch.MAIN_PATH, uri.getPath());
-								} else {
-									throw new UnsupportedOperationException("Unrecognized CodeSystemURI: " + uri);
-								}
-							}).collect(Collectors.toList());
-				})
+				.bind(ResourceURIPathResolver.class, ResourceURIPathResolver.fromMap(Map.of("SNOMEDCT", Branch.MAIN_PATH)))
 				.build();
 		
 		context.service(ValidationIssueDetailExtensionProvider.class).addExtension(new TestValidationDetailExtension());

@@ -23,7 +23,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.eclipse.xtext.parser.IParser;
 import org.eclipse.xtext.serializer.ISerializer;
@@ -146,17 +145,7 @@ public class SnomedQueryValidationRuleEvaluatorTest extends BaseRevisionIndexTes
 				.with(ValidationRepository.class, repository)
 				.with(ClassPathScanner.class, scanner)
 				.with(ValidationIssueDetailExtensionProvider.class, new ValidationIssueDetailExtensionProvider(scanner))
-				.with(ResourceURIPathResolver.class, (context, uris) -> {
-					return uris.stream()
-							.map(uri -> {
-								// simulating CodeSystemURI -> BranchPath calculation without searching for any docs
-								if ("SNOMEDCT".equals(uri.getCodeSystem())) {
-									return String.join(Branch.SEPARATOR, Branch.MAIN_PATH, uri.getPath());
-								} else {
-									throw new UnsupportedOperationException("Unrecognized CodeSystemURI: " + uri);
-								}
-							}).collect(Collectors.toList());
-				})
+				.with(ResourceURIPathResolver.class, ResourceURIPathResolver.fromMap(Map.of("SNOMEDCT", Branch.MAIN_PATH)))
 				.build();
 		evaluator = new SnomedQueryValidationRuleEvaluator();
 		if (!ValidationRuleEvaluator.Registry.types().contains(evaluator.type())) {

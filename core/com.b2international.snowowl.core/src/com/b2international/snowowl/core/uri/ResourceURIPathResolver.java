@@ -16,8 +16,12 @@
 package com.b2international.snowowl.core.uri;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.branch.Branch;
+import com.google.common.annotations.VisibleForTesting;
 
 /**
  * @since 7.12
@@ -33,5 +37,25 @@ public interface ResourceURIPathResolver {
 	 * @return a list of branch paths that reference the content of the {@link CodeSystemURI} instances, never <code>null</code>
 	 */
 	List<String> resolve(ServiceProvider context, List<CodeSystemURI> codeSystemURIs);
+
+	/**
+	 * Basic resource URI to branch path resolver, which uses a CodeSystem ShortName to BranchPath Map to provide branch paths for CodeSystems.
+	 * 
+	 * @param codeSystemsToBranches
+	 * @return
+	 */
+	@VisibleForTesting
+	static ResourceURIPathResolver fromMap(Map<String, String> codeSystemsToBranches) {
+		return (context, uris) -> {
+			return uris.stream()
+					.map(uri -> {
+						if (codeSystemsToBranches.containsKey(uri.getCodeSystem())) {
+							return String.join(Branch.SEPARATOR, codeSystemsToBranches.get(uri.getCodeSystem()), uri.getPath());
+						} else {
+							throw new UnsupportedOperationException("Unrecognized CodeSystemURI: " + uri);
+						}
+					}).collect(Collectors.toList());
+		};
+	}
 
 }
