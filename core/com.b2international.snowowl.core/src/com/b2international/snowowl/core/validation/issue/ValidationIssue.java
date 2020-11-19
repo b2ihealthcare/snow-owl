@@ -139,7 +139,7 @@ public final class ValidationIssue implements Serializable {
 	 * @deprecated - kept only to support clear migration path for older indices, will be removed in 8.0
 	 */
 	@JsonProperty
-	String getBranchPath() {
+	public String getBranchPath() {
 		return branchPath;
 	}
 	
