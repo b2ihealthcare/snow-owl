@@ -42,16 +42,6 @@ public final class ValidationIssueSearchRequestBuilder
 		return addOption(OptionKey.RULE_ID, ruleIds);
 	}
 	
-	@Deprecated
-	public ValidationIssueSearchRequestBuilder filterByBranchPath(final String branchPath) {
-		return addOption(OptionKey.BRANCH_PATH, branchPath);
-	}
-	
-	@Deprecated
-	public ValidationIssueSearchRequestBuilder filterByBranchPaths(final Iterable<? extends String> branchPaths) {
-		return addOption(OptionKey.BRANCH_PATH, branchPaths);
-	}
-	
 	public ValidationIssueSearchRequestBuilder filterByResourceUri(String resourceURI) {
 		return addOption(OptionKey.RESOURCE_URI, resourceURI);
 	}

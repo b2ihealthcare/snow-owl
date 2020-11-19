@@ -16,7 +16,6 @@
 package com.b2international.snowowl.core.codesystem;
 
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.exceptions.NotFoundException;
@@ -24,7 +23,6 @@ import com.b2international.snowowl.core.Repositories;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.codesystem.version.CodeSystemVersionCreateRequestBuilder;
 import com.b2international.snowowl.core.codesystem.version.CodeSystemVersionSearchRequestBuilder;
-import com.b2international.snowowl.core.compare.ConceptMapCompareConfigurationProperties;
 import com.b2international.snowowl.core.jobs.RemoteJobEntry;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.ConceptMapCompareRequestBuilder;
