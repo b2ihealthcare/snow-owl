@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.validation;
+package com.b2international.snowowl.core.validation.issue;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -38,15 +38,14 @@ import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
 import com.b2international.snowowl.core.repository.JsonSupport;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.core.uri.ComponentURI;
-import com.b2international.snowowl.core.validation.issue.ValidationIssue;
-import com.b2international.snowowl.core.validation.issue.ValidationIssueDetailExtension;
-import com.b2international.snowowl.core.validation.issue.ValidationIssueDetailExtensionProvider;
-import com.b2international.snowowl.core.validation.issue.ValidationIssues;
+import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
+import com.b2international.snowowl.core.validation.ValidationRequests;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
 import com.b2international.snowowl.core.validation.rule.ValidationRule.Severity;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -95,6 +94,17 @@ public class ValidationIssueApiTest {
 		final ValidationRepository repository = new ValidationRepository(index);
 		context = ServiceProvider.EMPTY.inject()
 				.bind(ValidationRepository.class, repository)
+				.bind(ResourceURIPathResolver.class, (context, uris) -> {
+					return uris.stream()
+							.map(uri -> {
+								// simulating CodeSystemURI -> BranchPath calculation without searching for any docs
+								if ("SNOMEDCT".equals(uri.getCodeSystem())) {
+									return String.join(Branch.SEPARATOR, Branch.MAIN_PATH, uri.getPath());
+								} else {
+									throw new UnsupportedOperationException("Unrecognized CodeSystemURI: " + uri);
+								}
+							}).collect(Collectors.toList());
+				})
 				.build();
 		
 		ValidationIssueDetailExtensionProvider extensionProvider = ValidationIssueDetailExtensionProvider.INSTANCE;
@@ -208,6 +218,71 @@ public class ValidationIssueApiTest {
 		assertThat(issues.stream().map(ValidationIssue::getId).collect(Collectors.toSet())).containsOnly(issueA);
 	}
 
+	@Test
+	public void backwardCompatibility_7_11_7_12() throws Exception {
+		// register old and new issue
+		final ValidationIssue oldIssue = new ValidationIssue(
+			UUID.randomUUID().toString(),
+			"testRuleId",
+			"MAIN/22",
+			null,
+			null,
+			(short) 100,
+			"1",
+			false
+		);
+		final ValidationIssue oldIssueOtherBranch = new ValidationIssue(
+			UUID.randomUUID().toString(),
+			"testRuleId",
+			"MAIN/23",
+			null,
+			null,
+			(short) 100,
+			"1",
+			false
+		);
+		
+		final ValidationIssue newIssue = new ValidationIssue(
+			UUID.randomUUID().toString(),
+			"testRuleId",
+			null,
+			ComponentURI.of(CodeSystemURI.branch("SNOMEDCT", "22"), ComponentIdentifier.of((short) 100, "1")),
+			CodeSystemURI.branch("SNOMEDCT", "22"),
+			(short) 100,
+			"1",
+			false
+		);
+		
+		final ValidationIssue newIssueOtherBranch = new ValidationIssue(
+			UUID.randomUUID().toString(),
+			"testRuleId",
+			null,
+			ComponentURI.of(CodeSystemURI.branch("SNOMEDCT", "23"), ComponentIdentifier.of((short) 100, "1")),
+			CodeSystemURI.branch("SNOMEDCT", "23"),
+			(short) 100,
+			"1",
+			false
+		);
+		
+		context.service(ValidationRepository.class).write(index -> {
+			index.put(oldIssue.getId(), oldIssue);
+			index.put(oldIssueOtherBranch.getId(), oldIssueOtherBranch);
+			index.put(newIssue.getId(), newIssue);
+			index.put(newIssueOtherBranch.getId(), newIssueOtherBranch);
+			index.commit();
+			return null;
+		});
+		
+		final ValidationIssues issues = ValidationRequests.issues().prepareSearch()
+				.all()
+				.filterByResourceUri("SNOMEDCT/22")
+				.buildAsync()
+				.getRequest()
+				.execute(context);
+		
+		assertThat(issues).hasSize(2);
+	}
+	
 	private String createIssue(Map<String, Object> details, String...labels) {
 		return createIssue("testRuleId", details, labels);
 	}
