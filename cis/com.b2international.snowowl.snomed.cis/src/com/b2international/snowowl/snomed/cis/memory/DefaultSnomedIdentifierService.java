@@ -76,7 +76,12 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 	 */
 	@VisibleForTesting
 	public DefaultSnomedIdentifierService(final Provider<Index> store, final ItemIdGenerationStrategy generationStrategy) {
-		this(store.get(), generationStrategy, new SnomedIdentifierReservationServiceImpl(), new SnomedIdentifierConfiguration());
+		this(store, generationStrategy, new SnomedIdentifierConfiguration());
+	}
+	
+	@VisibleForTesting
+	public DefaultSnomedIdentifierService(final Provider<Index> store, final ItemIdGenerationStrategy generationStrategy, SnomedIdentifierConfiguration config) {
+		this(store.get(), generationStrategy, new SnomedIdentifierReservationServiceImpl(), config);
 	}
 	
 	public DefaultSnomedIdentifierService(final Index store, final ItemIdGenerationStrategy generationStrategy,
