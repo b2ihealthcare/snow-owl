@@ -262,7 +262,7 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 		final String searchAfter = search.get(OptionKey.AFTER, String.class);
 		final List<ExtendedLocale> locales = search.getList(OptionKey.LOCALES, ExtendedLocale.class);
 		final Collection<String> referencedComponentIds = search.containsKey(OptionKey.REFERENCED_COMPONENT) ? search.getCollection(OptionKey.REFERENCED_COMPONENT, String.class) : null;
-		final Set<ComponentURI> componentUris = search.containsKey(OptionKey.COMPONENT_URI) ? search.getSet(OptionKey.COMPONENT_URI, ComponentURI.class) : null;
+		final Collection<String> componentIds = search.containsKey(OptionKey.COMPONENT) ? search.getCollection(OptionKey.COMPONENT, String.class) : null;
 		final Collection<String> mapTargetIds = search.containsKey(OptionKey.MAP_TARGET) ? search.getCollection(OptionKey.MAP_TARGET, String.class) : null;
 
 		SnomedRefSetMemberSearchRequestBuilder requestBuilder = SnomedRequests.prepareSearchMember();
@@ -276,7 +276,7 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 				.filterByActive(true)
 				.filterByRefSetType(SnomedRefSetUtil.getMapTypeRefSets())
 				.filterByReferencedComponent(referencedComponentIds)
-				.filterByComponentUris(componentUris)
+				.filterByComponentIds(componentIds)
 				.filterByProps(OptionsBuilder.newBuilder().put(SnomedRf2Headers.FIELD_MAP_TARGET, mapTargetIds).build())
 				.setLocales(locales)
 				.setExpand(String.format("referencedComponent(%s)", !Strings.isNullOrEmpty(snomedDisplayTermType.getExpand()) ? "expand(" + snomedDisplayTermType.getExpand() + ")" : ""))

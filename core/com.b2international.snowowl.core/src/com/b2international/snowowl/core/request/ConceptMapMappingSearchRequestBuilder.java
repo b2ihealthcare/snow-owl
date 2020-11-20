@@ -55,16 +55,16 @@ public final class ConceptMapMappingSearchRequestBuilder extends SearchResourceR
 		return addOption(OptionKey.MAP_TARGET, mapTargets);
 	}
 
-	public ConceptMapMappingSearchRequestBuilder filterByComponentUri(String uri) {
-		return filterByComponentUris(ImmutableSet.of(ComponentURI.of(uri)));
+	public ConceptMapMappingSearchRequestBuilder filterByComponentId(String id) {
+		return filterByComponentIds(ImmutableSet.of(id));
 	}
 	
-	public ConceptMapMappingSearchRequestBuilder filterByComponentUri(ComponentURI uri) {
-		return filterByComponentUris(ImmutableSet.of(uri));
+	public ConceptMapMappingSearchRequestBuilder filterByComponentId(ComponentURI id) {
+		return filterByComponentIds(ImmutableSet.of(id.toString()));
 	}
 
-	public ConceptMapMappingSearchRequestBuilder filterByComponentUris(Iterable<ComponentURI> uris) {
-		return addOption(OptionKey.COMPONENT_URI, uris);
+	public ConceptMapMappingSearchRequestBuilder filterByComponentIds(Iterable<String> ids) {
+		return addOption(OptionKey.COMPONENT, ids);
 	}
 	
 	public ConceptMapMappingSearchRequestBuilder setPreferredDisplay(String displayType) {

@@ -101,7 +101,7 @@ public class ValueSetMemberSearchSnomedReferenceSetTest {
 		
 		final SnomedReferenceSetMembers refSetMembers = SnomedRequests.prepareSearchMember()
 			.filterByRefSet(refSetId)
-			.filterByComponentUri(uri)
+			.filterByComponentId(uri)
 			.build(CODESYSTEM)
 			.execute(Services.bus())
 			.getSync();

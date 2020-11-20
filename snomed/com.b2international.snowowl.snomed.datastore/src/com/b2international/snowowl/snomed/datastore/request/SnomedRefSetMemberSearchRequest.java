@@ -84,7 +84,7 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 		/**
 		 * Matches reference set members where either the referenced component or map target matches the given value.
 		 */
-		COMPONENT_URI
+		COMPONENT
 	}
 
 	SnomedRefSetMemberSearchRequest() {}
@@ -281,15 +281,17 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 	}
 	
 	private void addComponentClause(ExpressionBuilder builder) {
-		if (containsKey(OptionKey.COMPONENT_URI)) {
-			final Collection<ComponentURI> uris = getCollection(OptionKey.COMPONENT_URI, ComponentURI.class);
-			final Set<String> ids = uris.stream().map(ComponentURI::identifier).collect(Collectors.toSet());
-			final Set<String> uriStrings = uris.stream().map(ComponentURI::toString).collect(Collectors.toSet());
+		if (containsKey(OptionKey.COMPONENT)) {
+			final Collection<String> referencedComponentIds = getCollection(OptionKey.COMPONENT, String.class);
+			final Set<String> ids = referencedComponentIds.stream()
+					.map(ComponentURI::of)
+					.map(ComponentURI::identifier)
+					.collect(Collectors.toSet());
 			
 			builder.filter(
 				Expressions.builder()
-					.should(referencedComponentIds(ids))
-					.should(mapTargets(ImmutableSet.<String>builder().addAll(ids).addAll(uriStrings).build()))
+					.should(referencedComponentIds(referencedComponentIds))
+					.should(mapTargets(ImmutableSet.<String>builder().addAll(referencedComponentIds).addAll(ids).build()))
 				.build()
 			);
 		}

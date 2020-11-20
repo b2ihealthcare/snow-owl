@@ -66,7 +66,7 @@ public interface SetSearchRequestEvaluator<R> {
 		/**
 		 * Matches concept map mappings where either the source or target component uri matches the given value.
 		 */
-		COMPONENT_URI,
+		COMPONENT,
 		
 		/**
 		 * Set the preferred display type to return
