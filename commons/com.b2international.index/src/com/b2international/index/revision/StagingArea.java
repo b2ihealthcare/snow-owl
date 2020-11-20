@@ -34,6 +34,7 @@ import com.b2international.commons.CompareUtils;
 import com.b2international.commons.Pair;
 import com.b2international.index.BulkUpdate;
 import com.b2international.index.IndexException;
+import com.b2international.index.es.admin.EsIndexAdmin;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
@@ -45,7 +46,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.flipkart.zjsonpatch.DiffFlags;
 import com.flipkart.zjsonpatch.JsonDiff;
 import com.flipkart.zjsonpatch.JsonPatch;
 import com.google.common.collect.*;
@@ -58,11 +58,6 @@ import com.google.common.collect.*;
  */
 public final class StagingArea {
 
-	/**
-	 * Important DIFF flags required to produce the JSON patch needed for proper compare and branch merge operation behavior
-	 */
-	private static final EnumSet<DiffFlags> DIFF_FLAGS = EnumSet.of(DiffFlags.ADD_ORIGINAL_VALUE_ON_REPLACE, DiffFlags.OMIT_COPY_OPERATION, DiffFlags.OMIT_MOVE_OPERATION);
-	
 	private final DefaultRevisionIndex index;
 	private final String branchPath;
 	private final ObjectMapper mapper;
@@ -859,7 +854,7 @@ public final class StagingArea {
 				final DocumentMapping mapping = getMapping();
 				ObjectNode oldRevisionSource = mapper.valueToTree(oldRevision);
 				ObjectNode newRevisionSource = mapper.valueToTree(newRevision);
-				final JsonNode diff = JsonDiff.asJson(oldRevisionSource, newRevisionSource, DIFF_FLAGS);
+				final JsonNode diff = JsonDiff.asJson(oldRevisionSource, newRevisionSource, EsIndexAdmin.DIFF_FLAGS);
 				final ArrayNode rawDiff = ClassUtils.checkAndCast(diff, ArrayNode.class);
 				final ArrayNode filteredRawDiff = mapper.createArrayNode();
 				final Iterator<JsonNode> elements = rawDiff.elements();
