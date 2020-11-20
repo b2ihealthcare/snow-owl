@@ -15,30 +15,31 @@
  */
 package com.b2international.snowowl.core.validation;
 
+import java.util.Set;
+
 import com.b2international.snowowl.core.events.SystemNotification;
-import com.b2international.snowowl.core.uri.CodeSystemURI;
 
 /**
  * @since 6.20.0
  */
-final public class ValidationDeleteNotification extends SystemNotification {
+public final class ValidationDeleteNotification extends SystemNotification {
 
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 	
-	final private CodeSystemURI codeSystemURI;
-	final private String toolingId;
+	private final Set<String> resourceURIs;
+	private final Set<String> toolingIds;
 
-	public ValidationDeleteNotification(CodeSystemURI codeSystemURI, String toolingId) {
-		this.codeSystemURI = codeSystemURI;
-		this.toolingId = toolingId;
+	public ValidationDeleteNotification(Set<String> resourceURIs, Set<String> toolingIds) {
+		this.resourceURIs = resourceURIs;
+		this.toolingIds = toolingIds;
+	}
+
+	public Set<String> getResourceURIs() {
+		return resourceURIs;
 	}
 	
-	public CodeSystemURI getCodeSystemURI() {
-		return codeSystemURI;
-	}
-	
-	public String getToolingId() {
-		return toolingId;
+	public Set<String> getToolingIds() {
+		return toolingIds;
 	}
 	
 }

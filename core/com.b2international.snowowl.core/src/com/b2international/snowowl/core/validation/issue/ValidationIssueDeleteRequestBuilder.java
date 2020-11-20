@@ -15,11 +15,13 @@
  */
 package com.b2international.snowowl.core.validation.issue;
 
+import java.util.Set;
+
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.SystemRequestBuilder;
-import com.b2international.snowowl.core.uri.CodeSystemURI;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 6.20.0
@@ -28,24 +30,24 @@ public final class ValidationIssueDeleteRequestBuilder
 	extends BaseRequestBuilder<ValidationIssueDeleteRequestBuilder, ServiceProvider, Boolean>
 	implements SystemRequestBuilder<Boolean> {
 	
-	private String codeSystemURI;
-	private String toolingId;
+	private Set<String> codeSystemURIs;
+	private Set<String> toolingIds;
 	
 	ValidationIssueDeleteRequestBuilder() {}
 	
-	public ValidationIssueDeleteRequestBuilder setCodeSystemURI(CodeSystemURI codeSystemURI) {
-		this.codeSystemURI = codeSystemURI.toString();
+	public ValidationIssueDeleteRequestBuilder setCodeSystemURIs(Iterable<String> codeSystemURIs) {
+		this.codeSystemURIs = codeSystemURIs == null ? null : ImmutableSet.copyOf(codeSystemURIs);
 		return getSelf();
 	}
 	
-	public ValidationIssueDeleteRequestBuilder setToolingId(String toolingId) {
-		this.toolingId = toolingId;
+	public ValidationIssueDeleteRequestBuilder setToolingIds(Iterable<String> toolingIds) {
+		this.toolingIds = toolingIds == null ? null : ImmutableSet.copyOf(toolingIds);
 		return getSelf();
 	}
 	
 	@Override
 	protected Request<ServiceProvider, Boolean> doBuild() {
-		return new ValidationIssueDeleteRequest(codeSystemURI, toolingId);
+		return new ValidationIssueDeleteRequest(codeSystemURIs, toolingIds);
 	}
 	
 }
