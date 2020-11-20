@@ -92,8 +92,8 @@ public final class SnomedRefSetMemberSearchRequestBuilder
 		return addOption(OptionKey.REFERENCED_COMPONENT_TYPE, referencedComponentTypes);
 	}
 	
-	public SnomedRefSetMemberSearchRequestBuilder filterByComponentId(ComponentURI componentId) {
-		return filterByComponentIds(ImmutableSet.of(componentId.toString()));
+	public SnomedRefSetMemberSearchRequestBuilder filterByComponentId(ComponentURI uri) {
+		return filterByComponentIds(ImmutableSet.of(uri.toString(), uri.identifier()));
 	}
 	
 	/**
