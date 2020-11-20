@@ -18,6 +18,7 @@ package com.b2international.index.revision;
 import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -38,10 +39,10 @@ public final class RevisionBranchChangeSet {
 	private final Multimap<Class<? extends Revision>, String> removedRevisionIdsByType = HashMultimap.create();
 	private final Map<ObjectId, ObjectId> containersRequiredForNewAndChangedRevisions = newHashMap();
 	
-	RevisionBranchChangeSet(DefaultRevisionIndex index, RevisionBranchRef ref, RevisionCompare compare) {
+	RevisionBranchChangeSet(DefaultRevisionIndex index, RevisionBranchRef ref, List<RevisionCompareDetail> compareDetails) {
 		this.index = index;
 		this.ref = ref;
-		compare.getDetails().forEach(detail -> {
+		compareDetails.forEach(detail -> {
 			// add all objects to the tx
 			if (detail.isAdd()) {
 				Class<?> revType = DocumentMapping.getClass(detail.getComponent().type());

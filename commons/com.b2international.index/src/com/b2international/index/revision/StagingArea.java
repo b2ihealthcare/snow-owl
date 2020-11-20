@@ -68,7 +68,6 @@ public final class StagingArea {
 	private final ObjectMapper mapper;
 
 	private Map<ObjectId, StagedObject> stagedObjects;
-	private Set<String> exclusions;
 
 	private SortedSet<RevisionBranchPoint> mergeSources;
 	private RevisionBranchRef mergeFromBranchRef;
@@ -80,7 +79,6 @@ public final class StagingArea {
 		this.index = index;
 		this.branchPath = branchPath;
 		this.mapper = mapper;
-		this.exclusions = Collections.emptySet();
 		reset();
 	}
 	
@@ -269,7 +267,7 @@ public final class StagingArea {
 		final Multimap<ObjectId, ObjectId> removedComponentsByContainer = HashMultimap.create();
 		final Multimap<Class<?>, String> deletedIdsByType = HashMultimap.create();
 
-		getFilteredStagedObjects().entrySet().forEach( entry -> {
+		stagedObjects.entrySet().forEach( entry -> {
 			ObjectId key = entry.getKey();
 			StagedObject value = entry.getValue();
 			
@@ -295,7 +293,7 @@ public final class StagingArea {
 		}
 		
 		// then new documents and revisions
-		getFilteredStagedObjects().entrySet().forEach( entry -> {
+		stagedObjects.entrySet().forEach( entry -> {
 			ObjectId key = entry.getKey();
 			StagedObject value = entry.getValue();
 			if (value.isAdded() && value.isCommit()) {
@@ -315,7 +313,7 @@ public final class StagingArea {
 		
 		// and changed documents/revisions
 		final Multimap<ObjectNode, ObjectId> revisionsByChange = HashMultimap.create();
-		getFilteredStagedObjects().entrySet().forEach( entry -> {
+		stagedObjects.entrySet().forEach( entry -> {
 			ObjectId key = entry.getKey();
 			StagedObject value = entry.getValue();
 			if (value.isChanged() && value.isCommit()) {
@@ -408,7 +406,7 @@ public final class StagingArea {
 			}
 			
 			// add non-revision components as new/changed/removed as well
-			getFilteredStagedObjects().entrySet().forEach( entry -> {
+			stagedObjects.entrySet().forEach( entry -> {
 				ObjectId key = entry.getKey();
 				StagedObject value = entry.getValue();
 				if (!(value.getObject() instanceof Revision)) {
@@ -512,7 +510,6 @@ public final class StagingArea {
 	 */
 	private void reset() {
 		stagedObjects = newHashMap();
-		exclusions = Sets.newHashSet();
 		revisionsToReviseOnMergeSource = HashMultimap.create();
 	}
 
@@ -605,13 +602,21 @@ public final class StagingArea {
 				.map(RevisionSegment::getEndPoint)
 				.collect(Collectors.toCollection(TreeSet::new));
 		this.squashMerge = squash;
-		if (exclusions != null) {
-			this.exclusions.addAll(exclusions);
-		}
 		
 		final RevisionCompare fromChanges = index.compare(toRef, fromRef, Integer.MAX_VALUE);
+		final List<RevisionCompareDetail> fromChangeDetails;
 		
-		final List<RevisionCompareDetail> fromChangeDetails = fromChanges.getDetails();
+		if (exclusions == null) {
+			fromChangeDetails = fromChanges.getDetails();
+		} else {
+			// Exclude items from change details of the "from" branch, so they do not participate in conflict processing
+			fromChangeDetails = fromChanges.getDetails()
+				.stream()
+				.filter(d -> !exclusions.contains(d.isPropertyChange() 
+						? d.getObject().id() 
+						: d.getComponent().id()))
+				.collect(Collectors.toList());
+		}
 		
 		// in case of nothing to merge, then just proceed to commit
 		if (fromChangeDetails.isEmpty()) {
@@ -627,8 +632,8 @@ public final class StagingArea {
 			return;
 		}
 		
-		final RevisionBranchChangeSet fromChangeSet = new RevisionBranchChangeSet(index, fromRef, fromChanges);
-		final RevisionBranchChangeSet toChangeSet = new RevisionBranchChangeSet(index, toRef, toChanges);
+		final RevisionBranchChangeSet fromChangeSet = new RevisionBranchChangeSet(index, fromRef, fromChangeDetails);
+		final RevisionBranchChangeSet toChangeSet = new RevisionBranchChangeSet(index, toRef, toChangeDetails);
 		
 		List<Conflict> conflicts = newArrayList();
 		
@@ -1072,10 +1077,6 @@ public final class StagingArea {
 
 	public StagedObject removed(Object object, RevisionDiff diff, boolean commit) {
 		return new StagedObject(StageKind.REMOVED, object, diff, commit);
-	}
-	
-	private Map<ObjectId, StagedObject> getFilteredStagedObjects() {
-		return Maps.filterEntries(stagedObjects, entry -> !exclusions.contains(entry.getKey().id()));
 	}
 	
 	/**
