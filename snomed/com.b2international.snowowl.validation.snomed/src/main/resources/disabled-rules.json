@@ -1,0 +1,9 @@
+  {
+  	"id": "669",
+    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "messageTemplate": "Members must not duplicate each other.",
+    "severity": "ERROR",
+    "checkType": "EXPENSIVE",
+    "type": "script-groovy",
+    "implementation": "scripts/rule669.groovy"
+  }
