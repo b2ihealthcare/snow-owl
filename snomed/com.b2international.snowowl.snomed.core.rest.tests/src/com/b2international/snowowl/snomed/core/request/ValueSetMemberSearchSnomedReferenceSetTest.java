@@ -44,6 +44,7 @@ import com.b2international.snowowl.test.commons.Services;
 import com.b2international.snowowl.test.commons.rest.RestExtensions;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 7.7
@@ -102,7 +103,7 @@ public class ValueSetMemberSearchSnomedReferenceSetTest {
 		
 		final SnomedReferenceSetMembers refSetMembers = SnomedRequests.prepareSearchMember()
 			.filterByRefSet(refSetId)
-			.filterByComponentId(uri)
+			.filterByComponentIds(ImmutableSet.of(uri.toString(), uri.identifier()))
 			.build(CODESYSTEM)
 			.execute(Services.bus())
 			.getSync(1, TimeUnit.MINUTES);

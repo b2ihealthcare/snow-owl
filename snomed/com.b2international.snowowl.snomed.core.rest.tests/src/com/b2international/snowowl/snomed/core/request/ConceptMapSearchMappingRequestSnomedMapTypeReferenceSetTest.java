@@ -115,7 +115,7 @@ public class ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest {
 		
 		final ConceptMapMappings conceptMaps = CodeSystemRequests.prepareSearchConceptMapMappings()
 				.all()
-				.filterByComponentId(uri)
+				.filterByComponentIds(ImmutableSet.of(uri.toString(), uri.identifier()))
 				.filterByConceptMap(refSetId)
 				.setLocales("en")
 				.build(CODESYSTEM)
