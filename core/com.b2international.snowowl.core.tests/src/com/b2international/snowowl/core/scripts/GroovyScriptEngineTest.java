@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,10 @@ import static org.junit.Assert.assertNull;
 
 import java.util.Collections;
 
+import org.junit.Before;
 import org.junit.Test;
 
+import com.b2international.snowowl.core.plugin.ClassPathScanner;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -29,17 +31,24 @@ import com.google.common.collect.ImmutableMap;
  */
 public class GroovyScriptEngineTest {
 
+	private ScriptEngine.Registry engines;
+	
+	@Before
+	public void setup() {
+		engines = new ScriptEngine.Registry(new ClassPathScanner("com.b2international"));
+	}
+	
 	@Test
 	public void emptyScript() throws Exception {
 		final String script = "";
-		Object rv = ScriptEngine.run("groovy", getClass().getClassLoader(), script, Collections.emptyMap());
+		Object rv = engines.run("groovy", getClass().getClassLoader(), script, Collections.emptyMap());
 		assertNull(rv);
 	}
 	
 	@Test
 	public void addTwoNumbers() throws Exception {
 		final String script = "a + b";
-		int rv = ScriptEngine.run("groovy", getClass().getClassLoader(), script, ImmutableMap.of("a", 1, "b", 2));
+		int rv = engines.run("groovy", getClass().getClassLoader(), script, ImmutableMap.of("a", 1, "b", 2));
 		assertEquals(3, rv);
 	}
 	

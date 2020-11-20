@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,18 +42,16 @@ public interface IValueSetApiProvider extends IFhirApiProvider {
 	 * 
 	 * @since 6.4
 	 */
-	enum Registry {
-		
-		INSTANCE;
+	final class Registry {
 		
 		private final Collection<IValueSetApiProvider.Factory> providers;
 		
-		private Registry() {
-			this.providers = ClassPathScanner.INSTANCE.getComponentsByInterface(IValueSetApiProvider.Factory.class);
+		public Registry(ClassPathScanner scanner) {
+			this.providers = scanner.getComponentsByInterface(IValueSetApiProvider.Factory.class);
 		}
 		
-		public static Collection<IValueSetApiProvider> getProviders(IEventBus bus, List<ExtendedLocale> locales) {
-			return INSTANCE.providers.stream().map(factory -> factory.create(bus, locales)).collect(Collectors.toUnmodifiableList());
+		public Collection<IValueSetApiProvider> getProviders(IEventBus bus, List<ExtendedLocale> locales) {
+			return providers.stream().map(factory -> factory.create(bus, locales)).collect(Collectors.toUnmodifiableList());
 		}
 		
 		/**
@@ -64,7 +62,7 @@ public interface IValueSetApiProvider extends IFhirApiProvider {
 		 * @return FHIR value set provider
 		 * @throws com.b2international.snowowl.fhir.core.exceptions.BadRequestException - if provider is not found with the given path
 		 */
-		public static IValueSetApiProvider getValueSetProvider(IEventBus bus, List<ExtendedLocale> locales, LogicalId logicalId) {
+		public IValueSetApiProvider getValueSetProvider(IEventBus bus, List<ExtendedLocale> locales, LogicalId logicalId) {
 			return getProviders(bus, locales).stream()
 				.filter(provider -> provider.isSupported(logicalId))
 				.findFirst()
@@ -78,7 +76,7 @@ public interface IValueSetApiProvider extends IFhirApiProvider {
 		 * @param uriValue
 		 * @return FHIR value setprovider
 		 */
-		public static IValueSetApiProvider getValueSetProvider(IEventBus bus, List<ExtendedLocale> locales, String uriValue) {
+		public IValueSetApiProvider getValueSetProvider(IEventBus bus, List<ExtendedLocale> locales, String uriValue) {
 			return getProviders(bus, locales).stream()
 				.filter(provider -> provider.isSupported(uriValue))
 				.findFirst()

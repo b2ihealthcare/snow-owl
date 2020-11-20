@@ -28,14 +28,14 @@
 		<owlapi.version>4.5.24</owlapi.version>
 		<elk.version>0.4.3</elk.version>
 		<jetty.version>9.4.27.v20200227</jetty.version>
-		<classgraph.version>4.8.78</classgraph.version>
+		<classgraph.version>4.8.90</classgraph.version>
 		<jbcrypt.version>0.4.1</jbcrypt.version>
 		<typetools.version>0.6.1</typetools.version>
 		<hdrhistogram.version>2.1.10</hdrhistogram.version>
 		<fastutil.version>8.3.1</fastutil.version>
 		<jaxb.api.version>2.3.0</jaxb.api.version>
 		<javax.activation.version>1.2.0</javax.activation.version>
-		<snomed.owl.toolkit.version>2.6.0</snomed.owl.toolkit.version>
+		<snomed.owl.toolkit.version>2.9.1</snomed.owl.toolkit.version>
 		<failsafe.version>2.3.1</failsafe.version>
 		<!-- Build tool/compiler versions -->
 		<tycho.version>1.7.0</tycho.version>
@@ -92,8 +92,7 @@
 		</repository>
 		<repository>
 			<id>snomed-international-releases</id>
-			<url>https://maven.ihtsdotools.org/content/repositories/releases/
-			</url>
+			<url>https://nexus3.ihtsdotools.org/repository/maven-releases/</url>
 			<releases>
 				<enabled>true</enabled>
 			</releases>

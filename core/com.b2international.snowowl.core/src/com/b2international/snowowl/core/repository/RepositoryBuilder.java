@@ -126,7 +126,7 @@ public final class RepositoryBuilder {
 	
 	public Repository build(Environment env) {
 		// get all repository configuration plugins and apply them to customize the repository
-		List<TerminologyRepositoryConfigurer> repositoryConfigurers = ClassPathScanner.INSTANCE.getComponentsByInterface(TerminologyRepositoryConfigurer.class)
+		List<TerminologyRepositoryConfigurer> repositoryConfigurers = env.service(ClassPathScanner.class).getComponentsByInterface(TerminologyRepositoryConfigurer.class)
 			.stream()
 			.filter(configurer -> repositoryId.equals(configurer.getRepositoryId()))
 			.collect(Collectors.toList());

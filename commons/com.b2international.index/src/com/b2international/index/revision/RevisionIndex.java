@@ -167,6 +167,18 @@ public interface RevisionIndex extends Administrable<RevisionIndexAdmin> {
 	}
 	
 	/**
+	 * Returns a branch expression String that represents the branch at the given timestamp.
+	 * 
+	 * @param branchPath
+	 * @param timestamp
+	 * @return
+	 */
+	static String toBranchAtPath(String branchPath, long timestamp) {
+		checkArgument(!isBranchAtPath(branchPath), "BranchPath '%s' is already in the form of branch@timestamp.", branchPath);
+		return String.join(AT_CHAR, branchPath, Long.toString(timestamp));
+	}
+	
+	/**
 	 * Extracts the branch paths from the given revision range path expression.
 	 * @param revisionRangePath
 	 * @return

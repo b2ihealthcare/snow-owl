@@ -15,17 +15,18 @@
  */
 package com.b2international.snowowl.core.request;
 
-import com.b2international.commons.exceptions.BadRequestException;
+import java.util.List;
+
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
-import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
-import com.b2international.snowowl.core.codesystem.version.CodeSystemVersionSearchRequestBuilder;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
+import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.Iterables;
 
 /**
  * @since 7.5
@@ -70,39 +71,7 @@ public final class CodeSystemResourceRequest<R> extends DelegatingRequest<Servic
 	
 	public String getBranchPath(ServiceProvider context) {
 		if (branchPath == null) {
-			
-			if (uri.isHead()) {
-				// use code system working branch directly when HEAD is specified
-				branchPath = codeSystem.getBranchPath();
-			} else {
-				CodeSystemVersionSearchRequestBuilder versionSearch = CodeSystemRequests.prepareSearchCodeSystemVersion()
-						.one()
-						.filterByCodeSystemShortName(codeSystem.getShortName());
-				
-				if (uri.isLatest()) {
-					// fetch the latest code system version if LATEST is specified in the URI
-					versionSearch.sortBy(SearchResourceRequest.SortField.descending(CodeSystemVersionEntry.Fields.EFFECTIVE_DATE));
-				} else {
-					// try to fetch the path as exact version if not the special LATEST is specified in the URI
-					versionSearch.filterByVersionId(uri.getPath());
-				}
-				// determine the final branch path, if based on the version search we find a version, then use that, otherwise use the defined path as relative branch of the code system working branch
-				branchPath = versionSearch
-						.build(codeSystem.getRepositoryId())
-						.getRequest()
-						.execute(context)
-						.stream()
-						.findFirst()
-						.map(CodeSystemVersionEntry::getPath)
-						.orElseGet(() -> {
-							if (uri.isLatest()) {
-								throw new BadRequestException("No CodeSystem version is present in '%s'. Explicit '%s/HEAD' can be used to retrieve the latest work in progress version of the CodeSystem.", codeSystem.getShortName(), codeSystem.getShortName());
-							} else {
-								return codeSystem.getRelativeBranchPath(uri.getPath()); 
-							}
-						});
-			}
-			
+			branchPath = Iterables.getOnlyElement(context.service(ResourceURIPathResolver.class).resolve(context, List.of(uri)));
 		}
 		return branchPath;
 	}
