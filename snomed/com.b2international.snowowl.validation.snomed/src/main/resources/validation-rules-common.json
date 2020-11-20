@@ -153,15 +153,6 @@
     "implementation": "scripts/rule_mrcm_constraint_type.groovy"
   },
   {
-  	"id": "669",
-    "toolingId": "com.b2international.snowowl.terminology.snomed",
-    "messageTemplate": "Members must not duplicate each other.",
-    "severity": "ERROR",
-    "checkType": "EXPENSIVE",
-    "type": "script-groovy",
-    "implementation": "scripts/rule669.groovy"
-  },
-  {
   	"id": "670",
     "toolingId": "com.b2international.snowowl.terminology.snomed",
     "messageTemplate": "Association type reference set members must not duplicate each other.",
