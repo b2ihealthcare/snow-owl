@@ -160,9 +160,9 @@ public interface IndexClientFactory {
 	int DEFAULT_SOCKET_TIMEOUT = 30_000;
 
 	/**
-	 * The default timeout for waiting until yellow cluster health is reached is 5 minutes
+	 * The default timeout for waiting until yellow cluster health is reached is 30s
 	 */
-	int DEFAULT_CLUSTER_HEALTH_TIMEOUT = 300_000;
+	int DEFAULT_CLUSTER_HEALTH_TIMEOUT = 30_000;
 	
 	/**
 	 * The default cluster.name value for embedded nodes and tcp based clients.

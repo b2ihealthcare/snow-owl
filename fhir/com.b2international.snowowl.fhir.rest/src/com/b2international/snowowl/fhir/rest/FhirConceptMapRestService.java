@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -69,6 +70,9 @@ import io.swagger.annotations.ApiResponses;
 @RequestMapping(value="/ConceptMap", produces = { BaseFhirResourceRestService.APPLICATION_FHIR_JSON })
 public class FhirConceptMapRestService extends BaseFhirResourceRestService<ConceptMap> {
 	
+	@Autowired
+	private IConceptMapApiProvider.Registry conceptMapProviderRegistry;
+	
 	/**
 	 * ConceptMaps
 	 * @param parameters - request parameters
@@ -94,7 +98,7 @@ public class FhirConceptMapRestService extends BaseFhirResourceRestService<Conce
 			.addLink(uri);
 		
 		int total = 0;
-		for (IConceptMapApiProvider fhirProvider : IConceptMapApiProvider.Registry.getProviders(getBus(), locales)) {
+		for (IConceptMapApiProvider fhirProvider : conceptMapProviderRegistry.getProviders(getBus(), locales)) {
 			Collection<ConceptMap> conceptMaps = fhirProvider.getConceptMaps();
 			for (ConceptMap conceptMap : conceptMaps) {
 				applyResponseContentFilter(conceptMap, requestParameters);
@@ -133,10 +137,7 @@ public class FhirConceptMapRestService extends BaseFhirResourceRestService<Conce
 		SearchRequestParameters requestParameters = new SearchRequestParameters(multiMap);
 		
 		LogicalId logicalId = LogicalId.fromIdString(conceptMapId);
-		ConceptMap conceptMap = IConceptMapApiProvider.Registry
-			.getConceptMapProvider(getBus(), locales, logicalId) 
-			.getConceptMap(logicalId);
-
+		ConceptMap conceptMap = conceptMapProviderRegistry.getConceptMapProvider(getBus(), locales, logicalId).getConceptMap(logicalId);
 		return applyResponseContentFilter(conceptMap, requestParameters);
 	}
 	
@@ -301,7 +302,7 @@ public class FhirConceptMapRestService extends BaseFhirResourceRestService<Conce
 	private TranslateResult doTranslate(String conceptMapId, TranslateRequest translateRequest) {
 		
 		LogicalId logicalId = LogicalId.fromIdString(conceptMapId);
-		IConceptMapApiProvider conceptMapApiProvider = IConceptMapApiProvider.Registry.getConceptMapProvider(getBus(), locales, logicalId);
+		IConceptMapApiProvider conceptMapApiProvider = conceptMapProviderRegistry.getConceptMapProvider(getBus(), locales, logicalId);
 		TranslateResult translateResult = conceptMapApiProvider.translate(logicalId, translateRequest);
 		return translateResult;
 	}
@@ -315,7 +316,7 @@ public class FhirConceptMapRestService extends BaseFhirResourceRestService<Conce
 		
 		int totalMatch = 0;
 		
-		Collection<IConceptMapApiProvider> providers = IConceptMapApiProvider.Registry.getProviders(getBus(), locales);
+		Collection<IConceptMapApiProvider> providers = conceptMapProviderRegistry.getProviders(getBus(), locales);
 		
 		for (IConceptMapApiProvider provider : providers) {
 			Collection<Match> matches = provider.translate(translateRequest);

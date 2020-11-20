@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.InputStream;
 import java.net.URL;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Random;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.eclipse.xtext.parser.IParser;
@@ -34,18 +38,23 @@ import com.b2international.index.Index;
 import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.ComponentIdentifier;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.internal.validation.ValidationConfiguration;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
 import com.b2international.snowowl.core.internal.validation.ValidationThreadPool;
+import com.b2international.snowowl.core.plugin.ClassPathScanner;
 import com.b2international.snowowl.core.repository.RepositoryCodeSystemProvider;
 import com.b2international.snowowl.core.request.RevisionIndexReadRequest;
+import com.b2international.snowowl.core.scripts.ScriptEngine;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
+import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
 import com.b2international.snowowl.core.validation.ValidateRequestBuilder;
 import com.b2international.snowowl.core.validation.ValidationRequests;
 import com.b2international.snowowl.core.validation.issue.ValidationIssue;
+import com.b2international.snowowl.core.validation.issue.ValidationIssueDetailExtensionProvider;
 import com.b2international.snowowl.core.validation.issue.ValidationIssues;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
 import com.b2international.snowowl.core.validation.whitelist.ValidationWhiteList;
@@ -55,7 +64,11 @@ import com.b2international.snowowl.snomed.core.ecl.DefaultEclParser;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclSerializer;
 import com.b2international.snowowl.snomed.core.ecl.EclParser;
 import com.b2international.snowowl.snomed.core.ecl.EclSerializer;
-import com.b2international.snowowl.snomed.datastore.index.constraint.*;
+import com.b2international.snowowl.snomed.datastore.index.constraint.ConceptSetDefinitionFragment;
+import com.b2international.snowowl.snomed.datastore.index.constraint.HierarchyDefinitionFragment;
+import com.b2international.snowowl.snomed.datastore.index.constraint.PredicateFragment;
+import com.b2international.snowowl.snomed.datastore.index.constraint.RelationshipPredicateFragment;
+import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
@@ -78,7 +91,7 @@ public abstract class BaseGenericValidationRuleTest extends BaseRevisionIndexTes
 
 	private static final Injector ECL_INJECTOR = new EclStandaloneSetup().createInjectorAndDoEMFRegistration();
 	
-	protected static final String CODESYSTEM = "SNOMEDCT-TEST";
+	protected static final String CODESYSTEM = "SNOMEDCT";
 	
 	private static final String ATTRIBUTE = "246061005";
 	private static final Long ATTRIBUTEL = Long.parseLong(ATTRIBUTE);
@@ -102,7 +115,9 @@ public abstract class BaseGenericValidationRuleTest extends BaseRevisionIndexTes
 	
 	@Before
 	public void setup() {
+		final ClassPathScanner scanner = new ClassPathScanner("com.b2international");
 		context = TestBranchContext.on(MAIN)
+				.with(ClassPathScanner.class, scanner)
 				.with(EclParser.class, new DefaultEclParser(ECL_INJECTOR.getInstance(IParser.class), ECL_INJECTOR.getInstance(IResourceValidator.class)))
 				.with(EclSerializer.class, new DefaultEclSerializer(ECL_INJECTOR.getInstance(ISerializer.class))).with(Index.class, rawIndex())
 				.with(RevisionIndex.class, index()).with(ObjectMapper.class, getMapper())
@@ -110,7 +125,11 @@ public abstract class BaseGenericValidationRuleTest extends BaseRevisionIndexTes
 				.with(ClassLoader.class, getClass().getClassLoader())
 				.with(TerminologyRegistry.class, TerminologyRegistry.INSTANCE)
 				.with(RepositoryCodeSystemProvider.class, branchPath -> CodeSystem.builder().branchPath(branchPath).shortName(CODESYSTEM).build())
-				.with(ValidationThreadPool.class, new ValidationThreadPool(1, 1, 1)).build();
+				.with(ValidationThreadPool.class, new ValidationThreadPool(1, 1, 1))
+				.with(ResourceURIPathResolver.class, ResourceURIPathResolver.fromMap(Map.of(CODESYSTEM, Branch.MAIN_PATH)))
+				.with(ScriptEngine.Registry.class, new ScriptEngine.Registry(scanner))
+				.with(ValidationIssueDetailExtensionProvider.class, new ValidationIssueDetailExtensionProvider(scanner))
+				.build();
 		
 		// index common required SNOMED CT Concepts
 

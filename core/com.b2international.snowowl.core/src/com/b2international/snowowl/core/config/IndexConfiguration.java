@@ -52,7 +52,7 @@ public class IndexConfiguration {
 	@Min(1_000)
 	private int socketTimeout = IndexClientFactory.DEFAULT_SOCKET_TIMEOUT;
 	@Min(2_001)
-	private int clusterHealthTimeout = IndexClientFactory.DEFAULT_CLUSTER_HEALTH_TIMEOUT;
+	private int clusterHealthTimeout = 300_000; // Snow Owl defaults to 5m cluster health timeout
 	
 	private int maxTermsCount = IndexClientFactory.DEFAULT_MAX_TERMS_COUNT;
 	

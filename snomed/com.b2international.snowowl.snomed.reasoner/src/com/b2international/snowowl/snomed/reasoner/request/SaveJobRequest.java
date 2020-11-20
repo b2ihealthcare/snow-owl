@@ -587,7 +587,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 			selectedType = configuration.getNamespaceModuleAssigner();
 		}
 		
-		final SnomedNamespaceAndModuleAssigner assigner = SnomedNamespaceAndModuleAssigner.create(selectedType, moduleId, namespace);
+		final SnomedNamespaceAndModuleAssigner assigner = SnomedNamespaceAndModuleAssigner.create(context, selectedType, moduleId, namespace);
 
 		LOG.info("Reasoner service will use {} for relationship/concrete domain namespace and module assignment.", assigner);
 		return assigner;

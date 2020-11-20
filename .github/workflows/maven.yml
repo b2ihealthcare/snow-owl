@@ -34,7 +34,7 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-npm-:
     - name: Build with Maven
-      run: mvn clean verify
+      run: mvn -ntp clean verify
     - name: Upload Codecov
       uses: codecov/codecov-action@v1.0.13
       with:

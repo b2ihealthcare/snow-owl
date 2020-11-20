@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,11 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.io.IOException;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.plugin.ClassPathScanner;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
@@ -31,6 +34,7 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
 import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
 import com.fasterxml.jackson.databind.type.TypeFactory;
+import com.google.common.base.Suppliers;
 
 /**
  * @since 5.11
@@ -44,14 +48,16 @@ public interface IdentityProviderConfig {
 	 */
 	final class IdentityProviderTypeIdResolver implements TypeIdResolver {
 		
-		private final Map<String, Class<?>> subTypeCache;
+		private final Supplier<Map<String, Class<?>>> subTypeCache;
 		
 		private JavaType baseType;
 
 		public IdentityProviderTypeIdResolver() throws IOException {
-			this.subTypeCache = IdentityPlugin.getAvailableConfigClasses().stream() 
-				.filter(this::isValid)
-				.collect(Collectors.toMap(this::getType, Function.identity()));
+			this.subTypeCache = Suppliers.memoize(() -> {
+				return IdentityPlugin.getAvailableConfigClasses(ApplicationContext.getInstance().getServiceChecked(ClassPathScanner.class)).stream() 
+					.filter(this::isValid)
+					.collect(Collectors.toMap(this::getType, Function.identity()));	
+			});
 		}
 		
 		@Override
@@ -84,13 +90,14 @@ public interface IdentityProviderConfig {
 
 	    @Override
 		public JavaType typeFromId(DatabindContext context, String type) {
-	    	checkArgument(subTypeCache.containsKey(type), "Cannot resolve configuration object type: " + type);
+	    	Map<String, Class<?>> subTypeCache = this.subTypeCache.get();
+			checkArgument(subTypeCache.containsKey(type), "Cannot resolve configuration object type: " + type);
 	    	return TypeFactory.defaultInstance().constructSpecializedType(baseType, subTypeCache.get(type));
 	    }
 
 	    @Override
 	    public String getDescForKnownTypeIds() {
-	    	return subTypeCache.keySet().stream().collect(Collectors.joining(","));
+	    	return this.subTypeCache.get().keySet().stream().collect(Collectors.joining(","));
 	    }
 	    
 		private boolean isValid(Class<?> clazz) {
