@@ -27,6 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.stream.Collectors;
 
 import org.assertj.core.api.Assertions;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -740,6 +741,7 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 					ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship5.getId()));
 	}
 	
+	@Ignore("Disabled as it needs refactor to improve unpublished performance and memory usage")
 	@Test
 	public void rule669() throws Exception {
 		final String ruleId = "669";
