@@ -59,8 +59,8 @@ public final class ConceptMapMappingSearchRequestBuilder extends SearchResourceR
 		return filterByComponentIds(ImmutableSet.of(componentId));
 	}
 	
-	public ConceptMapMappingSearchRequestBuilder filterByComponentId(ComponentURI componentId) {
-		return filterByComponentIds(ImmutableSet.of(componentId.toString()));
+	public ConceptMapMappingSearchRequestBuilder filterByComponentId(ComponentURI uri) {
+		return filterByComponentIds(ImmutableSet.of(uri.identifier(), uri.toString()));
 	}
 
 	public ConceptMapMappingSearchRequestBuilder filterByComponentIds(Iterable<String> componentIds) {

@@ -282,16 +282,12 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 	
 	private void addComponentClause(ExpressionBuilder builder) {
 		if (containsKey(OptionKey.COMPONENT)) {
-			final Collection<String> referencedComponentIds = getCollection(OptionKey.COMPONENT, String.class);
-			final Set<String> ids = referencedComponentIds.stream()
-					.map(ComponentURI::of)
-					.map(ComponentURI::identifier)
-					.collect(Collectors.toSet());
+			final Collection<String> componentIds = getCollection(OptionKey.COMPONENT, String.class);
 			
 			builder.filter(
 				Expressions.builder()
-					.should(referencedComponentIds(referencedComponentIds))
-					.should(mapTargets(ImmutableSet.<String>builder().addAll(referencedComponentIds).addAll(ids).build()))
+					.should(referencedComponentIds(componentIds))
+					.should(mapTargets(ImmutableSet.<String>builder().addAll(componentIds).build()))
 				.build()
 			);
 		}
