@@ -92,19 +92,19 @@ public final class SnomedRefSetMemberSearchRequestBuilder
 		return addOption(OptionKey.REFERENCED_COMPONENT_TYPE, referencedComponentTypes);
 	}
 	
-	public SnomedRefSetMemberSearchRequestBuilder filterByComponentId(String uri) {
-		return filterByComponentIds(ImmutableSet.of(uri));
+	public SnomedRefSetMemberSearchRequestBuilder filterByComponentId(ComponentURI componentId) {
+		return filterByComponentIds(ImmutableSet.of(componentId.toString()));
 	}
 	
 	/**
 	 * Matches reference set members where either the referenced component or map target matches the given value.
 	 */
-	public SnomedRefSetMemberSearchRequestBuilder filterByComponentId(ComponentURI uri) {
-		return filterByComponentIds(ImmutableSet.of(uri.toString()));
+	public SnomedRefSetMemberSearchRequestBuilder filterByComponentId(String componentId) {
+		return filterByComponentIds(ImmutableSet.of(componentId));
 	}
 
-	public SnomedRefSetMemberSearchRequestBuilder filterByComponentIds(Iterable<String> uris) {
-		return addOption(OptionKey.COMPONENT, uris);
+	public SnomedRefSetMemberSearchRequestBuilder filterByComponentIds(Iterable<String> componentIds) {
+		return addOption(OptionKey.COMPONENT, componentIds);
 	}
 
 }
