@@ -21,7 +21,6 @@ import static com.google.common.collect.Sets.newHashSet;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.IllegalQueryParameterException;
@@ -34,7 +33,6 @@ import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.repository.RevisionDocument;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
-import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.refset.DataType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
@@ -42,7 +40,6 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetM
 import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 
 /**
@@ -287,7 +284,7 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 			builder.filter(
 				Expressions.builder()
 					.should(referencedComponentIds(componentIds))
-					.should(mapTargets(ImmutableSet.<String>builder().addAll(componentIds).build()))
+					.should(mapTargets(componentIds))
 				.build()
 			);
 		}
