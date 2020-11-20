@@ -280,7 +280,6 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 	private void addComponentClause(ExpressionBuilder builder) {
 		if (containsKey(OptionKey.COMPONENT)) {
 			final Collection<String> componentIds = getCollection(OptionKey.COMPONENT, String.class);
-			
 			builder.filter(
 				Expressions.builder()
 					.should(referencedComponentIds(componentIds))
