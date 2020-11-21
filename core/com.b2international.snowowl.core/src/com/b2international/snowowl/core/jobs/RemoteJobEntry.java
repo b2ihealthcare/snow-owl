@@ -40,6 +40,7 @@ import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
@@ -362,7 +363,7 @@ public final class RemoteJobEntry implements Serializable {
 	 */
 	public <T> T getParametersAs(ObjectMapper mapper, Class<T> type) {
 		try {
-			return mapper.readValue(getParameters(), type);
+			return mapper.readerFor(type).without(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES).readValue(getParameters());
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException(e);
 		}
@@ -396,7 +397,7 @@ public final class RemoteJobEntry implements Serializable {
 			if (CompareUtils.isEmpty(getResult())) {
 				return null;
 			}
-			return mapper.readValue(getResult(), type);
+			return mapper.readerFor(type).without(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES).readValue(getResult());
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException(e);
 		}
