@@ -9,11 +9,14 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  org.mockito;bundle-version="2.13.0";visibility:=reexport,
  org.apache.commons.lang;bundle-version="2.6.0",
  com.b2international.restassured-all;bundle-version="[3.2.2,3.2.3)";visibility:=reexport,
+ com.b2international.index.tests.tools,
  com.b2international.snowowl.core.rest,
+ com.b2international.collections.jackson,
  com.b2international.snowowl.test.dependencies;visibility:=reexport,
  com.b2international.snowowl.snomed.common;visibility:=reexport,
  com.b2international.snowowl.snomed.datastore,
- org.eclipse.xtext.xbase.lib;bundle-version="[2.21.0,2.22.0)"
+ org.eclipse.xtext.xbase.lib;bundle-version="[2.21.0,2.22.0)",
+ assertj-core;bundle-version="3.16.1";visibility:=reexport
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ActivationPolicy: lazy
 Import-Package: org.slf4j;version="1.7.25"
@@ -21,4 +24,5 @@ Export-Package: com.b2international.snowowl.test.commons,
  com.b2international.snowowl.test.commons.inject,
  com.b2international.snowowl.test.commons.json,
  com.b2international.snowowl.test.commons.rest,
- com.b2international.snowowl.test.commons.snomed
+ com.b2international.snowowl.test.commons.snomed,
+ com.b2international.snowowl.test.commons.validation

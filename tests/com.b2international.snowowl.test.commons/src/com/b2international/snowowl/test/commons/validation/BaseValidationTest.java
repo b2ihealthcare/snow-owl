@@ -1,0 +1,157 @@
+/*
+ * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.b2international.snowowl.test.commons.validation;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.io.InputStream;
+import java.net.URL;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+
+import org.junit.Before;
+
+import com.b2international.collections.PrimitiveCollectionModule;
+import com.b2international.index.Index;
+import com.b2international.index.IndexClientFactory;
+import com.b2international.index.revision.BaseRevisionIndexTest;
+import com.b2international.index.revision.RevisionIndex;
+import com.b2international.snowowl.core.ComponentIdentifier;
+import com.b2international.snowowl.core.codesystem.CodeSystem;
+import com.b2international.snowowl.core.config.IndexConfiguration;
+import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.internal.validation.ValidationRepository;
+import com.b2international.snowowl.core.internal.validation.ValidationThreadPool;
+import com.b2international.snowowl.core.plugin.ClassPathScanner;
+import com.b2international.snowowl.core.repository.RepositoryCodeSystemProvider;
+import com.b2international.snowowl.core.request.RevisionIndexReadRequest;
+import com.b2international.snowowl.core.scripts.ScriptEngine;
+import com.b2international.snowowl.core.terminology.TerminologyRegistry;
+import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
+import com.b2international.snowowl.core.validation.ValidateRequestBuilder;
+import com.b2international.snowowl.core.validation.ValidationRequests;
+import com.b2international.snowowl.core.validation.issue.ValidationIssue;
+import com.b2international.snowowl.core.validation.issue.ValidationIssueDetailExtensionProvider;
+import com.b2international.snowowl.core.validation.issue.ValidationIssues;
+import com.b2international.snowowl.core.validation.rule.ValidationRule;
+import com.b2international.snowowl.test.commons.snomed.TestBranchContext;
+import com.b2international.snowowl.test.commons.snomed.TestBranchContext.Builder;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.MappingIterator;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Preconditions;
+
+/**
+ * @since 7.12
+ */
+public abstract class BaseValidationTest extends BaseRevisionIndexTest {
+
+	private final String rulesJsonFile;
+	
+	private BranchContext context;
+
+	public BaseValidationTest(String rulesJsonFile) {
+		this.rulesJsonFile = rulesJsonFile;
+	}
+	
+	@Before
+	public final void setup() {
+		final ClassPathScanner scanner = new ClassPathScanner("com.b2international");
+		Builder context = TestBranchContext.on(MAIN)
+				.with(ClassLoader.class, getClass().getClassLoader())
+				.with(ClassPathScanner.class, scanner)
+				.with(Index.class, rawIndex())
+				.with(RevisionIndex.class, index()).with(ObjectMapper.class, getMapper())
+				.with(ValidationRepository.class, new ValidationRepository(rawIndex()))
+				.with(ValidationThreadPool.class, new ValidationThreadPool(1, 1, 1))
+				.with(ValidationIssueDetailExtensionProvider.class, new ValidationIssueDetailExtensionProvider(scanner))
+				.with(TerminologyRegistry.class, TerminologyRegistry.INSTANCE)
+				.with(RepositoryCodeSystemProvider.class, branchPath -> {
+					final Map<String, String> registry = getTestCodeSystemPathMap();
+					Preconditions.checkArgument(registry.containsValue(branchPath), "Missing branchPath '%s' from CodeSystem registry", branchPath);
+					for (String codeSystem : registry.keySet()) {
+						if (registry.get(codeSystem).equals(branchPath)) {
+							return CodeSystem.builder().branchPath(branchPath).shortName(codeSystem).build();
+						}
+					}
+					return null; // should not happen
+				})
+				.with(ResourceURIPathResolver.class, ResourceURIPathResolver.fromMap(getTestCodeSystemPathMap()))
+				.with(ScriptEngine.Registry.class, new ScriptEngine.Registry(scanner));
+		configureContext(context);
+		this.context = context.build();
+		initializeData();
+	}
+	
+	protected void initializeData() {
+	}
+
+	protected final BranchContext context() {
+		return context;
+	}
+	
+	protected void configureContext(Builder context) {
+	}
+
+	protected abstract Map<String, String> getTestCodeSystemPathMap();
+	
+	protected final void assertAffectedComponents(ValidationIssues issues, ComponentIdentifier... expectedComponentIdentifiers) {
+		assertThat(issues).hasSize(expectedComponentIdentifiers.length);
+		assertThat(issues.stream().map(ValidationIssue::getAffectedComponent).collect(Collectors.toSet())).containsOnly(expectedComponentIdentifiers);
+	}
+
+	protected final ValidationIssues validate(String ruleId) {
+		final ValidateRequestBuilder req = ValidationRequests.prepareValidate();
+		configureValidationRequest(req);
+		new RevisionIndexReadRequest<>(req.build()).execute(context);
+		return ValidationRequests.issues().prepareSearch().all().filterByRule(ruleId).build().execute(context);
+	}
+	
+	protected void configureValidationRequest(ValidateRequestBuilder req) {
+	}
+
+	protected final void indexRule(String ruleId) throws Exception {
+		URL rulesJson = getClass().getClassLoader().getResource(rulesJsonFile);
+		try (InputStream in = rulesJson.openStream()) {
+			MappingIterator<ValidationRule> it = context.service(ObjectMapper.class).readerFor(ValidationRule.class).readValues(in);
+			while (it.hasNext()) {
+				final ValidationRule rule = it.next();
+				if (ruleId.equals(rule.getId())) {
+					indexDocument(ruleId, rule);
+					return;
+				}
+			}
+		}
+	}
+	
+	@Override
+	@OverridingMethodsMustInvokeSuper
+	protected void configureMapper(ObjectMapper mapper) {
+		super.configureMapper(mapper);
+		mapper.setSerializationInclusion(Include.NON_NULL);
+		mapper.registerModule(new PrimitiveCollectionModule());
+	}
+
+	@Override
+	protected final Map<String, Object> getIndexSettings() {
+		return Map.<String, Object>of(
+			IndexClientFactory.RESULT_WINDOW_KEY, ""+IndexConfiguration.DEFAULT_RESULT_WINDOW
+		);
+	}
+	
+}
