@@ -99,8 +99,9 @@ public final class EsIndexAdmin implements IndexAdmin {
 	private final EsClient client;
 	private final ObjectMapper mapper;
 	private final String name;
-	private final Mappings mappings;
 	private final Map<String, Object> settings;
+	
+	private Mappings mappings;
 	
 	private final Logger log;
 	private final String prefix;
@@ -486,10 +487,20 @@ public final class EsIndexAdmin implements IndexAdmin {
 	public Map<String, Object> settings() {
 		return settings;
 	}
+	
+	@Override
+	public void updateSettings(Map<String, Object> newSettings) {
+		settings.putAll(newSettings);
+	}
 
 	@Override
 	public Mappings mappings() {
 		return mappings;
+	}
+	
+	@Override
+	public void updateMappings(Mappings mappings) {
+		this.mappings = mappings;
 	}
 
 	@Override
