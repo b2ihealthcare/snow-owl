@@ -26,9 +26,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.stream.Collectors;
 
 import org.assertj.core.api.Assertions;
+import org.junit.FixMethodOrder;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.MethodSorters;
 import org.junit.runners.Parameterized;
 
 import com.b2international.snowowl.core.ComponentIdentifier;
@@ -56,11 +58,12 @@ import com.google.common.collect.Lists;
 /**
  * @since 6.4
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @RunWith(Parameterized.class)
 public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 	
 	@Test
-	public void codeSystemURITest() throws Exception {
+	public void affectedComponentURI() throws Exception {
 		final String ruleId = "45a";
 		indexRule(ruleId);
 
@@ -72,8 +75,9 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		indexRevision(MAIN, relationship);
 
 		ValidationIssues issues = validate(ruleId);
-		ComponentURI componentURI = issues.stream().map(issue -> issue.getAffectedComponentURI()).findFirst().get();
-		assertThat(componentURI.equals(ComponentURI.of(CODESYSTEM, SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship.getId())));
+		ComponentURI componentURI = issues.stream().map(issue -> issue.getAffectedComponentURI()).findFirst().orElse(null);
+		assertThat(componentURI)
+			.isEqualTo(ComponentURI.of(CODESYSTEM, SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship.getId()));
 	}
 
 	
@@ -562,12 +566,6 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 				ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, c2.getId()));
 	}
 
-	private SnomedRefSetMemberIndexEntry createLanguageRefsetMember(SnomedDescriptionIndexEntry description) {
-			return member(description.getId(), DESCRIPTION_NUMBER, Concepts.REFSET_LANGUAGE_TYPE_ES)
-					.referenceSetType(SnomedRefSetType.LANGUAGE)
-					.build();
-	}
-	
 	@Test
 	public void rule667() throws Exception {
 		final String ruleId = "667";
@@ -847,6 +845,12 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		assertAffectedComponents(issues, 
 				ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, pt2.getId()),
 				ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, pt3.getId()));
+	}
+	
+	private SnomedRefSetMemberIndexEntry createLanguageRefsetMember(SnomedDescriptionIndexEntry description) {
+		return member(description.getId(), DESCRIPTION_NUMBER, Concepts.REFSET_LANGUAGE_TYPE_ES)
+				.referenceSetType(SnomedRefSetType.LANGUAGE)
+				.build();
 	}
 	
 }

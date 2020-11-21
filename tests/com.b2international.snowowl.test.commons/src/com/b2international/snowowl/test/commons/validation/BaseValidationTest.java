@@ -19,6 +19,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -49,12 +51,15 @@ import com.b2international.snowowl.core.validation.issue.ValidationIssue;
 import com.b2international.snowowl.core.validation.issue.ValidationIssueDetailExtensionProvider;
 import com.b2international.snowowl.core.validation.issue.ValidationIssues;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
+import com.b2international.snowowl.core.validation.whitelist.ValidationWhiteList;
 import com.b2international.snowowl.test.commons.snomed.TestBranchContext;
 import com.b2international.snowowl.test.commons.snomed.TestBranchContext.Builder;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 
 /**
  * @since 7.12
@@ -65,6 +70,10 @@ public abstract class BaseValidationTest extends BaseRevisionIndexTest {
 	
 	private BranchContext context;
 
+	public BaseValidationTest() {
+		this("");
+	}
+	
 	public BaseValidationTest(String rulesJsonFile) {
 		this.rulesJsonFile = rulesJsonFile;
 	}
@@ -126,6 +135,7 @@ public abstract class BaseValidationTest extends BaseRevisionIndexTest {
 	}
 
 	protected final void indexRule(String ruleId) throws Exception {
+		Preconditions.checkArgument(!Strings.isNullOrEmpty(rulesJsonFile), "validation-rules.json file path must be specified to use this method");
 		URL rulesJson = getClass().getClassLoader().getResource(rulesJsonFile);
 		try (InputStream in = rulesJson.openStream()) {
 			MappingIterator<ValidationRule> it = context.service(ObjectMapper.class).readerFor(ValidationRule.class).readValues(in);
@@ -152,6 +162,22 @@ public abstract class BaseValidationTest extends BaseRevisionIndexTest {
 		return Map.<String, Object>of(
 			IndexClientFactory.RESULT_WINDOW_KEY, ""+IndexConfiguration.DEFAULT_RESULT_WINDOW
 		);
+	}
+	
+	@Override
+	protected final Collection<Class<?>> getTypes() {
+		return ImmutableList.<Class<?>>builder()
+				.add(ValidationRule.class, ValidationIssue.class, ValidationWhiteList.class)
+				.addAll(getAdditionalTypes())
+				.build();
+	}
+
+	/**
+	 * Subclasses may override to provide additional types on top of the must have validation types.
+	 * @return
+	 */
+	protected Collection<Class<?>> getAdditionalTypes() {
+		return Collections.emptyList();
 	}
 	
 }

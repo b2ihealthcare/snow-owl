@@ -17,6 +17,7 @@ package com.b2international.snowowl.validation.snomed;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
@@ -31,9 +32,6 @@ import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.internal.validation.ValidationConfiguration;
 import com.b2international.snowowl.core.validation.ValidateRequestBuilder;
-import com.b2international.snowowl.core.validation.issue.ValidationIssue;
-import com.b2international.snowowl.core.validation.rule.ValidationRule;
-import com.b2international.snowowl.core.validation.whitelist.ValidationWhiteList;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.constraint.HierarchyInclusionType;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclParser;
@@ -53,8 +51,6 @@ import com.b2international.snowowl.snomed.ecl.EclStandaloneSetup;
 import com.b2international.snowowl.test.commons.snomed.DocumentBuilders;
 import com.b2international.snowowl.test.commons.snomed.TestBranchContext.Builder;
 import com.b2international.snowowl.test.commons.validation.BaseValidationTest;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.inject.Injector;
 
 /**
@@ -82,7 +78,7 @@ public abstract class BaseGenericValidationRuleTest extends BaseValidationTest {
 	
 	@Parameters(name = "EffectiveTime: {0}")
 	public static Iterable<? extends Object> data() {
-	    return Arrays.asList(-1, 1);
+	    return Arrays.asList(EffectiveTimes.UNSET_EFFECTIVE_TIME, 1);
 	}
 	
 	public BaseGenericValidationRuleTest() {
@@ -222,23 +218,19 @@ public abstract class BaseGenericValidationRuleTest extends BaseValidationTest {
 
 	@Override
 	protected void configureValidationRequest(ValidateRequestBuilder req) {
-		if (effectiveTime == EffectiveTimes.UNSET_EFFECTIVE_TIME) {
-			final Map<String, Object> filterOptions = ImmutableMap.of(ValidationConfiguration.IS_UNPUBLISHED_ONLY, Boolean.TRUE);
-			req.setRuleParameters(filterOptions);
-		}
+		req.setRuleParameters(Map.of(
+			ValidationConfiguration.IS_UNPUBLISHED_ONLY, effectiveTime == EffectiveTimes.UNSET_EFFECTIVE_TIME
+		));
 	}
 	
 	@Override
-	protected Collection<Class<?>> getTypes() {
-		return ImmutableList.of(
+	protected Collection<Class<?>> getAdditionalTypes() {
+		return List.of(
 			SnomedConceptDocument.class, 
 			SnomedConstraintDocument.class, 
 			SnomedRelationshipIndexEntry.class, 
 			SnomedDescriptionIndexEntry.class,
-			SnomedRefSetMemberIndexEntry.class, 
-			ValidationRule.class, 
-			ValidationIssue.class, 
-			ValidationWhiteList.class
+			SnomedRefSetMemberIndexEntry.class
 		);
 	}
 
