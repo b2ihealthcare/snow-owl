@@ -63,8 +63,6 @@ public final class DocumentMapping {
 	
 	public static final String _DOC = "_doc";
 	public static final String _ID = "_id";
-	public static final String _UID = "_uid";
-	public static final String _TYPE = "_type";
 
 	private static final Function<? super Field, String> GET_NAME = Field::getName;
 	
@@ -242,14 +240,6 @@ public final class DocumentMapping {
 	
 	public String typeAsString() {
 		return typeAsString;
-	}
-	
-	public Expression matchType() {
-		return Expressions.exactMatch(_TYPE, typeAsString);
-	}
-	
-	public String toUid(String key) {
-		return String.join("#", typeAsString, key);
 	}
 	
 	@Override
