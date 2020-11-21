@@ -514,6 +514,8 @@ public final class EsIndexAdmin implements IndexAdmin {
 				}
 			}
 		}
+		
+		settings.putAll(newSettings);
 	}
 
 	@Override

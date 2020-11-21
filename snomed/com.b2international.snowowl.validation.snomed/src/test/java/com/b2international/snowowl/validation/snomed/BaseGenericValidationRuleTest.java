@@ -98,6 +98,24 @@ public abstract class BaseGenericValidationRuleTest extends BaseValidationTest {
 	}
 	
 	@Override
+	protected void configureValidationRequest(ValidateRequestBuilder req) {
+		req.setRuleParameters(Map.of(
+			ValidationConfiguration.IS_UNPUBLISHED_ONLY, effectiveTime == EffectiveTimes.UNSET_EFFECTIVE_TIME
+		));
+	}
+	
+	@Override
+	protected Collection<Class<?>> getAdditionalTypes() {
+		return List.of(
+			SnomedConceptDocument.class, 
+			SnomedConstraintDocument.class, 
+			SnomedRelationshipIndexEntry.class, 
+			SnomedDescriptionIndexEntry.class,
+			SnomedRefSetMemberIndexEntry.class
+		);
+	}
+	
+	@Override
 	protected void initializeData() {
 		// index common required SNOMED CT Concepts
 		index()
@@ -215,24 +233,5 @@ public abstract class BaseGenericValidationRuleTest extends BaseValidationTest {
 		
 		return randomEffectiveTime > 500 ? EffectiveTimes.UNSET_EFFECTIVE_TIME : randomEffectiveTime;
 	}
-
-	@Override
-	protected void configureValidationRequest(ValidateRequestBuilder req) {
-		req.setRuleParameters(Map.of(
-			ValidationConfiguration.IS_UNPUBLISHED_ONLY, effectiveTime == EffectiveTimes.UNSET_EFFECTIVE_TIME
-		));
-	}
-	
-	@Override
-	protected Collection<Class<?>> getAdditionalTypes() {
-		return List.of(
-			SnomedConceptDocument.class, 
-			SnomedConstraintDocument.class, 
-			SnomedRelationshipIndexEntry.class, 
-			SnomedDescriptionIndexEntry.class,
-			SnomedRefSetMemberIndexEntry.class
-		);
-	}
-
 
 }
