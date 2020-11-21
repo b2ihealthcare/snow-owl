@@ -73,7 +73,9 @@ public abstract class BaseRevisionIndexTest {
 	protected void configureMapper(ObjectMapper mapper) {
 	}
 	
-	protected abstract Map<String, Object> getIndexSettings();
+	protected Map<String, Object> getIndexSettings() {
+		return Collections.emptyMap();
+	}
 	
 	protected final String nextId() {
 		return Long.toString(storageKeys.getAndIncrement());
