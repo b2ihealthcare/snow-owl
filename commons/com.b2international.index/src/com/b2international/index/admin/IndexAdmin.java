@@ -71,8 +71,6 @@ public interface IndexAdmin {
 	/**
 	 * Updates the dynamic settings of the underlying indices. NOTE: this currently supports only a few parameters, like the max_result_window.
 	 * 
-	 * NOTE: keep in mind that these won't affect existing indices, only client-side configuration settings and new index settings will be affected
-	 * 
 	 * @param newSettings
 	 */
 	void updateSettings(Map<String, Object> newSettings);

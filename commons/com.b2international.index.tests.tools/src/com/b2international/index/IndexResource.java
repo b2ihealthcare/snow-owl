@@ -66,16 +66,16 @@ public final class IndexResource extends ExternalResource {
 			revisionIndex = new DefaultRevisionIndex(index, new TimestampProvider.Default(), mapper);
 		}
 		
-		// apply mapper changes
+		// apply mapper changes first
 		objectMapperConfigurator.accept(mapper);
 		
-		// apply settings changes between tests
-		revisionIndex.admin().updateSettings(indexSettings.get());
-		
-		// update mapping before executing tests
+		// then mapping changes
 		revisionIndex.admin().updateMappings(new Mappings(types));
 		
-		// make sure we have all indexes ready for consumption
+		// then settings changes
+		revisionIndex.admin().updateSettings(indexSettings.get());
+		
+		// then make sure we have all indexes ready for tests
 		revisionIndex.admin().create();
 	}
 	
