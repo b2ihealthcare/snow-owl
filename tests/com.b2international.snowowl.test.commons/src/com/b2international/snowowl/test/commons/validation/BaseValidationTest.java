@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.junit.Before;
+import org.junit.Rule;
 
 import com.b2international.collections.PrimitiveCollectionModule;
 import com.b2international.index.Index;
@@ -52,6 +53,7 @@ import com.b2international.snowowl.core.validation.issue.ValidationIssueDetailEx
 import com.b2international.snowowl.core.validation.issue.ValidationIssues;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
 import com.b2international.snowowl.core.validation.whitelist.ValidationWhiteList;
+import com.b2international.snowowl.test.commons.TestMethodNameRule;
 import com.b2international.snowowl.test.commons.snomed.TestBranchContext;
 import com.b2international.snowowl.test.commons.snomed.TestBranchContext.Builder;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -60,12 +62,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 
 /**
  * @since 7.12
  */
 public abstract class BaseValidationTest extends BaseRevisionIndexTest {
 
+	@Rule
+	public final TestMethodNameRule nameRule = new TestMethodNameRule();
+	
 	private final String rulesJsonFile;
 	
 	private BranchContext context;
@@ -123,6 +129,11 @@ public abstract class BaseValidationTest extends BaseRevisionIndexTest {
 		assertThat(issues).hasSize(expectedComponentIdentifiers.length);
 		assertThat(issues.stream().map(ValidationIssue::getAffectedComponent).collect(Collectors.toSet())).containsOnly(expectedComponentIdentifiers);
 	}
+	
+	protected final void assertAffectedComponents(ValidationIssues issues, Iterable<ComponentIdentifier> expectedAffectedComponentIdentifiers) {
+		assertThat(issues).hasSize(Iterables.size(expectedAffectedComponentIdentifiers));
+		assertThat(issues.stream().map(ValidationIssue::getAffectedComponent).collect(Collectors.toSet())).containsOnlyElementsOf(expectedAffectedComponentIdentifiers);
+	}
 
 	protected final ValidationIssues validate(String ruleId) {
 		final ValidateRequestBuilder req = ValidationRequests.prepareValidate();
@@ -134,6 +145,7 @@ public abstract class BaseValidationTest extends BaseRevisionIndexTest {
 	protected void configureValidationRequest(ValidateRequestBuilder req) {
 	}
 
+	/* Looks up the rule in the validation-rules.json file and indexes it */
 	protected final void indexRule(String ruleId) throws Exception {
 		Preconditions.checkArgument(!Strings.isNullOrEmpty(rulesJsonFile), "validation-rules.json file path must be specified to use this method");
 		URL rulesJson = getClass().getClassLoader().getResource(rulesJsonFile);
