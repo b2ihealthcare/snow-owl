@@ -33,6 +33,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -502,11 +503,25 @@ public final class EsIndexAdmin implements IndexAdmin {
 			throw new IndexException(String.format("Settings [%s] are not dynamically updateable settings.", unsupportedDynamicSettings), null);
 		}
 		
+		boolean shouldUpdate = false;
+		for (String settingKey : newSettings.keySet()) {
+			Object currentValue = settings.get(settingKey);
+			Object newValue = newSettings.get(settingKey);
+			if (!Objects.equals(currentValue, newValue)) {
+				shouldUpdate = true;
+			}
+		}
+		
+		if (!shouldUpdate) {
+			return;
+		}
+		
 		for (DocumentMapping mapping : mappings.getMappings()) {
 			final String index = getTypeIndex(mapping);
 			// if any index exists, then update the settings based on the new settings
 			if (exists(mapping)) {
 				try {
+					log.info("Applying settings '{}' changes in index {}...", newSettings, index);
 					AcknowledgedResponse response = client.indices().updateSettings(new UpdateSettingsRequest().indices(index).settings(newSettings));
 					checkState(response.isAcknowledged(), "Failed to update index settings '%s'.", index);
 				} catch (IOException e) {
