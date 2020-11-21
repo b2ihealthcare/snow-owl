@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.b2international.index;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 
 import org.junit.Rule;
@@ -35,7 +36,7 @@ public abstract class BaseIndexTest {
 	protected static final String KEY2 = "key2";
 
 	@Rule
-	public final IndexResource index = IndexResource.create(getTypes(), this::configureMapper);
+	public final IndexResource index = IndexResource.create(getTypes(), this::configureMapper, this::getIndexSettings);
 
 	/**
 	 * @return the document types used by this test case
@@ -45,6 +46,10 @@ public abstract class BaseIndexTest {
 	
 	protected void configureMapper(ObjectMapper mapper) {
 		
+	}
+	
+	protected Map<String, Object> getIndexSettings() {
+		return Collections.emptyMap();
 	}
 	
 	protected final ObjectMapper getMapper() {
