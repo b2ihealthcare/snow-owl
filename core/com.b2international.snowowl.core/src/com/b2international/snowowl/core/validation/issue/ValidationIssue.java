@@ -35,6 +35,7 @@ import com.b2international.snowowl.core.validation.whitelist.ValidationWhiteList
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 
@@ -162,6 +163,7 @@ public final class ValidationIssue implements Serializable {
 	/**
 	 * @return the {@link ComponentIdentifier} part from the {@link ComponentURI}, never <code>null</code>.
 	 */
+	@JsonIgnore
 	public ComponentIdentifier getAffectedComponent() {
 		if (getAffectedComponentURI() == null) {
 			return ComponentIdentifier.of(affectedComponentType, affectedComponentId);
