@@ -397,8 +397,8 @@ public class EsDocumentSearcher implements Searcher {
 					// XXX: default order for scores is *descending*
 					reqSource.sort(SortBuilders.scoreSort().order(sortOrder)); 
 					break;
-				case DocumentMapping._ID: //$FALL-THROUGH$
-					field = DocumentMapping._ID;
+				case DocumentMapping._DOC: //$FALL-THROUGH$
+					field = DocumentMapping._DOC;
 				default:
 					reqSource.sort(SortBuilders.fieldSort(field).order(sortOrder));
 				}
@@ -426,15 +426,15 @@ public class EsDocumentSearcher implements Searcher {
 			items.add(sortBy);
 		}
 
-		Optional<SortByField> existingDocIdSort = items.stream()
+		Optional<SortByField> existingDocSort = items.stream()
 			.filter(SortByField.class::isInstance)
 			.map(SortByField.class::cast)
-			.filter(field -> DocumentMapping._ID.equals(field.getField()))
+			.filter(field -> DocumentMapping._DOC.equals(field.getField()))
 			.findFirst();
 		
-		if (!existingDocIdSort.isPresent()) {
-			// add _id field as tiebreaker if not defined in the original SortBy
-			items.add(SortBy.field(DocumentMapping._ID, Order.DESC));
+		if (!existingDocSort.isPresent()) {
+			// add _doc field as tiebreaker if not defined in the original SortBy
+			items.add(SortBy.field(DocumentMapping._DOC, Order.DESC));
 		}
 		
 		return Iterables.filter(items, SortBy.class);
