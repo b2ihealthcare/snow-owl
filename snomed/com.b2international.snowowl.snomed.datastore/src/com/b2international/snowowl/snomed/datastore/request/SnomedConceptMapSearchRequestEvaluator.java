@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.datastore.request;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -165,14 +164,14 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 							if (Strings.isNullOrEmpty(mapTargetComponentType)) {
 								return ComponentURI.UNSPECIFIED;
 							} else {
-								final Optional<CodeSystem> codeSystemOptional = codeSystemList.stream()
+								// XXX while this is clearly not the right solution, for now it is the only we can do, since based on just the ID in a SNOMED CT Map Type RefSet, there is no guarantee that we get the right CodeSystem
+								return codeSystemList.stream()
 										.filter(cs -> cs.getTerminologyId().equals(sourceTerminology.getId()))
-										.findFirst();
-								if (codeSystemOptional.isPresent()) {
-									return ComponentURI.of(codeSystemOptional.get().getShortName(), sourceTerminologyComponent.shortId(), refSet.getId());
-								} else {
-									return ComponentURI.UNSPECIFIED;
-								}
+										.map(CodeSystem::getShortName) 
+										.sorted()
+										.findFirst()
+										.map(codeSystem -> ComponentURI.of(codeSystem, sourceTerminologyComponent.shortId(), refSet.getId()))
+										.orElse(ComponentURI.UNSPECIFIED);
 							}
 				}));
 	}
