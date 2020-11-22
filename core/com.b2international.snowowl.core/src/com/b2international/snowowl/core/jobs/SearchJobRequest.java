@@ -15,8 +15,8 @@
  */
 package com.b2international.snowowl.core.jobs;
 
+import static com.b2international.snowowl.core.jobs.RemoteJobEntry.Expressions.states;
 import static com.b2international.snowowl.core.jobs.RemoteJobEntry.Expressions.users;
-import static com.b2international.snowowl.core.jobs.RemoteJobEntry.Fields.USER;
 
 import java.util.Collections;
 
@@ -44,9 +44,19 @@ final class SearchJobRequest extends SearchIndexResourceRequest<ServiceProvider,
 		KEY,
 		
 		/**
-		 * Filter matches by description, status, user and created/started/finished date
+		 * Filter matches by description, status, user and created/started/finished date.
 		 */
-		TERM
+		TERM,
+		
+		/**
+		 * Filter matches by user name value.
+		 */
+		USER,
+		
+		/**
+		 * Filter matches by current state value. 
+		 */
+		STATE,
 	}
 
 	@Override
@@ -70,8 +80,12 @@ final class SearchJobRequest extends SearchIndexResourceRequest<ServiceProvider,
 			);
 		}
 		
-		if (options().containsKey(USER)) {
-			queryBuilder.filter(users(options().getCollection(USER, String.class)));
+		if (containsKey(OptionKey.USER)) {
+			queryBuilder.filter(users(getCollection(OptionKey.USER, String.class)));
+		}
+		
+		if (containsKey(OptionKey.STATE)) {
+			queryBuilder.filter(states(getCollection(OptionKey.STATE, RemoteJobState.class)));
 		}
 		
 		if (options().containsKey("type")) {

@@ -67,6 +67,10 @@ public class JobRestService extends AbstractRestService {
 			@RequestParam(value = "user", required = false) 
 			final String[] users,
 
+			@ApiParam(value = "The job state values to match (accepted values: 'scheduled', 'running', 'finished', 'failed', 'cancel_requested', 'canceled')")
+			@RequestParam(value = "state", required = false)
+			final String[] state,
+			
 			@ApiParam(value="The search key to use for retrieving the next page of results")
 			@RequestParam(value="searchAfter", required=false) 
 			final String searchAfter,
@@ -81,6 +85,7 @@ public class JobRestService extends AbstractRestService {
 		return JobRequests.prepareSearch()
 				.filterByIds(ids)
 				.filterByUsers(users == null ? null : Collections3.toImmutableSet(users))
+				.filterByState(state == null ? null : Collections3.toImmutableSet(state))
 				.setSearchAfter(searchAfter)
 				.setLimit(limit)
 				.sortBy(extractSortFields(sort))

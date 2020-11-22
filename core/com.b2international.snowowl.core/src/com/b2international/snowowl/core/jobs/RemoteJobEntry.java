@@ -124,14 +124,14 @@ public final class RemoteJobEntry implements Serializable {
 		}
 
 		public static Expression done() {
-			return state(DONE_STATES);
+			return states(DONE_STATES);
 		}
 		
 		public static Expression state(RemoteJobState state) {
-			return state(Collections.singleton(state));
+			return states(Collections.singleton(state));
 		}
 		
-		public static Expression state(Iterable<RemoteJobState> states) {
+		public static Expression states(Iterable<RemoteJobState> states) {
 			return matchAny(Fields.STATE, FluentIterable.from(states).transform(Enum::name).toSet());
 		}
 

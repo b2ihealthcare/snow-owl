@@ -20,6 +20,7 @@ import com.b2international.snowowl.core.jobs.SearchJobRequest.OptionKey;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
 import com.b2international.snowowl.core.request.SystemRequestBuilder;
+import com.google.common.collect.Iterables;
 
 /**
  * A request builder that builds a request to search/list {@link RemoteJob job entries}.
@@ -37,7 +38,7 @@ public final class SearchJobRequestBuilder extends SearchResourceRequestBuilder<
 	 * @return
 	 */
 	public SearchJobRequestBuilder filterByUser(String user) {
-		return addOption(RemoteJobEntry.Fields.USER, user);
+		return addOption(OptionKey.USER, user);
 	}
 	
 	/**
@@ -46,7 +47,23 @@ public final class SearchJobRequestBuilder extends SearchResourceRequestBuilder<
 	 * @return
 	 */
 	public SearchJobRequestBuilder filterByUsers(Iterable<String> users) {
-		return addOption(RemoteJobEntry.Fields.USER, users);
+		return addOption(OptionKey.USER, users);
+	}
+	
+	public SearchJobRequestBuilder filterByState(String state) {
+		return filterByState(RemoteJobState.valueOfIgnoreCase(state));
+	}
+	
+	public SearchJobRequestBuilder filterByState(Iterable<String> states) {
+		return filterByStates(Iterables.transform(states, RemoteJobState::valueOfIgnoreCase));
+	}
+	
+	public SearchJobRequestBuilder filterByState(RemoteJobState state) {
+		return addOption(OptionKey.STATE, state);
+	}
+	
+	public SearchJobRequestBuilder filterByStates(Iterable<RemoteJobState> states) {
+		return addOption(OptionKey.STATE, states);
 	}
 	
 	/**

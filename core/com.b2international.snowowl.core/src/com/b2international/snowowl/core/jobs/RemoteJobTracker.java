@@ -50,9 +50,7 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
 /**
@@ -84,7 +82,7 @@ public final class RemoteJobTracker implements IDisposableService {
 							.build());
 					if (hits.getTotal() > 0) {
 						LOG.trace("Purging job entries {}", hits.getHits());
-						writer.remove(RemoteJobEntry.class, ImmutableSet.copyOf(hits.getHits()));
+						writer.remove(RemoteJobEntry.class, Set.copyOf(hits.getHits()));
 						writer.commit();
 					}
 					return null;
@@ -110,7 +108,7 @@ public final class RemoteJobTracker implements IDisposableService {
 		
 		// query all existing remote job entries and set their status to FAILED if they are either in SCHEDULED/RUNNING/CANCEL_REQUESTED state
 		this.index.write(writer -> {
-			final Expression filter = RemoteJobEntry.Expressions.state(ImmutableSet.of(RemoteJobState.SCHEDULED, RemoteJobState.RUNNING, RemoteJobState.CANCEL_REQUESTED));
+			final Expression filter = RemoteJobEntry.Expressions.states(Set.of(RemoteJobState.SCHEDULED, RemoteJobState.RUNNING, RemoteJobState.CANCEL_REQUESTED));
 			final BulkUpdate<RemoteJobEntry> update = new BulkUpdate<>(
 				RemoteJobEntry.class, 
 				filter, 
@@ -129,7 +127,7 @@ public final class RemoteJobTracker implements IDisposableService {
 	}
 	
 	public RemoteJobs search(Expression query, int limit) {
-		return search(query, ImmutableList.of(), SortBy.DOC, limit); 
+		return search(query, List.of(), SortBy.DOC, limit); 
 	}
 	
 	private RemoteJobs search(Expression query, List<String> fields, SortBy sortBy, int limit) {
