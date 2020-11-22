@@ -15,8 +15,9 @@
  */
 package com.b2international.commons.exceptions;
 
-import java.util.Collections;
 import java.util.Map;
+
+import com.google.common.collect.Maps;
 
 /**
  * Represents a high-level API call exception. This exception should be thrown in all cases when a service would like to indicate problems with the
@@ -29,6 +30,8 @@ public abstract class ApiException extends FormattedRuntimeException {
 	private static final long serialVersionUID = 960919521211109447L;
 	
 	private String developerMessage;
+	
+	private Map<String, Object> additionalInfo;
 
 	public ApiException(String template, Object... args) {
 		super(template, args);
@@ -51,15 +54,12 @@ public abstract class ApiException extends FormattedRuntimeException {
 	}
 
 	/**
-	 * Returns the HTTP status code associated with this exception.
-	 * @return
+	 * @return the HTTP status code associated with this exception, or 0 if the HTTP status code is not supported.
 	 */
 	protected abstract Integer getStatus();
 	
 	/**
-	 * Returns the custom application specific code for {@link ApiError} conversion. Subclasses may override.
-	 * 
-	 * @return
+	 * @return the custom application specific code for {@link ApiError} conversion. Subclasses may override.
 	 */
 	protected Integer getCode() {
 		return 0;
@@ -73,20 +73,50 @@ public abstract class ApiException extends FormattedRuntimeException {
 	}
 	
 	/**
-	 * Set the developer message associated with this exception.
-	 * @param developerMessage
+	 * @return additional information about the {@link ApiException}
 	 */
-	public final void setDeveloperMessage(String developerMessage) {
+	public final Map<String, Object> getAdditionalInfo() {
+		return additionalInfo;
+	}
+	
+	/**
+	 * Set the developer message associated with this exception.
+	 * 
+	 * @param developerMessage
+	 * @return this instance for method chaining
+	 */
+	public final ApiException withDeveloperMessage(String developerMessage) {
 		this.developerMessage = developerMessage;
+		return this;
 	}
 
 	/**
-	 * Returns additional information about the {@link ApiException}.
+	 * Supply additional information next to the error message.
 	 * 
+	 * @param key
+	 * @param value
 	 * @return
 	 */
-	protected Map<String, Object> getAdditionalInfo() {
-		return Collections.emptyMap();
+	public ApiException withAdditionalInfo(String key, Object value) {
+		if (additionalInfo == null) {
+			additionalInfo = Maps.newHashMap();
+		}
+		additionalInfo.put(key, value);
+		return this;
+	}
+	
+	/**
+	 * Supply additional information next to the error message.
+	 * 
+	 * @param additionalInfo
+	 * @return
+	 */
+	public ApiException withAdditionalInfo(Map<String, Object> additionalInfo) {
+		if (additionalInfo == null) {
+			additionalInfo = Maps.newHashMap();
+		}
+		additionalInfo.putAll(additionalInfo);
+		return this;
 	}
 
 }
