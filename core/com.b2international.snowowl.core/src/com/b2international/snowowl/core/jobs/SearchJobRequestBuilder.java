@@ -41,6 +41,15 @@ public final class SearchJobRequestBuilder extends SearchResourceRequestBuilder<
 	}
 	
 	/**
+	 * Filter {@link RemoteJob job entries} by the assigned users.
+	 * @param user
+	 * @return
+	 */
+	public SearchJobRequestBuilder filterByUsers(Iterable<String> users) {
+		return addOption(RemoteJobEntry.Fields.USER, users);
+	}
+	
+	/**
 	 * Filter {@link RemoteJob job entries} by parameter name and values.
 	 * @param parameter
 	 * @param values

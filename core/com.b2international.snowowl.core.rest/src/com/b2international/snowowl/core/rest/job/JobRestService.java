@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.b2international.commons.collections.Collections3;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.jobs.JobRequests;
 import com.b2international.snowowl.core.jobs.RemoteJobEntry;
@@ -64,8 +65,8 @@ public class JobRestService extends AbstractRestService {
 			
 			@ApiParam(value = "The usernames to match")
 			@RequestParam(value = "user", required = false) 
-			final String user,
-			
+			final String[] users,
+
 			@ApiParam(value="The search key to use for retrieving the next page of results")
 			@RequestParam(value="searchAfter", required=false) 
 			final String searchAfter,
@@ -79,7 +80,7 @@ public class JobRestService extends AbstractRestService {
 			final List<String> sort) {
 		return JobRequests.prepareSearch()
 				.filterByIds(ids)
-				.filterByUser(user)
+				.filterByUsers(users == null ? null : Collections3.toImmutableSet(users))
 				.setSearchAfter(searchAfter)
 				.setLimit(limit)
 				.sortBy(extractSortFields(sort))

@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.core.jobs;
 
-import static com.b2international.snowowl.core.jobs.RemoteJobEntry.Expressions.user;
+import static com.b2international.snowowl.core.jobs.RemoteJobEntry.Expressions.users;
 import static com.b2international.snowowl.core.jobs.RemoteJobEntry.Fields.USER;
 
 import java.util.Collections;
@@ -71,7 +71,7 @@ final class SearchJobRequest extends SearchIndexResourceRequest<ServiceProvider,
 		}
 		
 		if (options().containsKey(USER)) {
-			queryBuilder.filter(user(options().getString(USER)));
+			queryBuilder.filter(users(options().getCollection(USER, String.class)));
 		}
 		
 		if (options().containsKey("type")) {

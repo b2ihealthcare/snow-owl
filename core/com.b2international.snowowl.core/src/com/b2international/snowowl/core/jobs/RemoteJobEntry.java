@@ -94,6 +94,7 @@ public final class RemoteJobEntry implements Serializable {
 	}
 	
 	public static class Expressions {
+
 		public static Expression id(String id) {
 			return DocumentMapping.matchId(id);
 		}
@@ -118,8 +119,8 @@ public final class RemoteJobEntry implements Serializable {
 			return match(Fields.DELETED, deleted);
 		}
 		
-		public static Expression user(String user) {
-			return exactMatch(Fields.USER, user);
+		public static Expression users(Iterable<String> users) {
+			return matchAny(Fields.USER, users);
 		}
 
 		public static Expression done() {
