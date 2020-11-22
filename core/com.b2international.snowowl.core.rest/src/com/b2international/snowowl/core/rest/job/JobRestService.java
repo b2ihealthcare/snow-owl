@@ -18,10 +18,13 @@ package com.b2international.snowowl.core.rest.job;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.b2international.commons.collections.Collections3;
@@ -110,5 +113,22 @@ public class JobRestService extends AbstractRestService {
 				.buildAsync()
 				.execute(getBus());
 	}
+	
+	@ApiOperation(
+		value="Deletes a single asynchronous job",
+		notes="Cancel the operation of a scheduled/running job and then delete it."
+	)
+	@ApiResponses({
+		@ApiResponse(code = 204, message = "No Content"),
+	})
+	@DeleteMapping(value = "/{id}")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void delete(		
+			@ApiParam(value = "Job identifier", required = true)
+			@PathVariable(value = "id", required = true) 
+			final String id) {
+		JobRequests.prepareDelete(id).buildAsync().execute(getBus());
+	}
+	
 	
 }
