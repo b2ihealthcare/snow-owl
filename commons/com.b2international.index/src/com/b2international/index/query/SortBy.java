@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ public abstract class SortBy {
 	/**
 	 * Singleton representing document sort based on their natural occurrence. 
 	 */
-	public static final SortBy DOC_ID = SortBy.field(DocumentMapping._ID, Order.ASC);
+	public static final SortBy DOC = SortBy.field(DocumentMapping._DOC, Order.ASC);
 	
 	/**
 	 * Singleton representing document sort based on their score in decreasing order (higher score first).
@@ -199,7 +199,7 @@ public abstract class SortBy {
 		
 		public SortBy build() {
 			if (sorts.isEmpty()) {
-				return DOC_ID;
+				return DOC;
 			} else if (sorts.size() == 1) {
 				return Iterables.getOnlyElement(sorts);
 			} else {

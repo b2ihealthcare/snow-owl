@@ -128,9 +128,10 @@ public interface IndexClientFactory {
 	String DEFAULT_TRANSLOG_SYNC_INTERVAL = "5s";
 
 	/**
-	 * The default result window (~100k items)
+	 * The default max result window (from Elasticsearch default),
+	 * <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/index-modules.html#dynamic-index-settings">more details</a>
 	 */
-	int DEFAULT_RESULT_WINDOW = 100_099;
+	int DEFAULT_RESULT_WINDOW = 10_000;
 	
 	/**
 	 * The default max terms count (from Elasticsearch default), 

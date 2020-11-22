@@ -113,8 +113,8 @@ public class RevisionBranchMergeDerivedDataTest extends BaseRevisionIndexTest {
 	}
 
 	@Before
-	public void before() throws Exception {
-		index().hooks().addHook(derivedDataHook());
+	public void setup() throws Exception {
+		withHook(derivedDataHook());
 	}
 	
 	@Test

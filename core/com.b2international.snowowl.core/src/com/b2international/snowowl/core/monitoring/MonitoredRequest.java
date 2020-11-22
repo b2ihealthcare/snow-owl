@@ -21,11 +21,12 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tags;
@@ -53,7 +54,7 @@ public final class MonitoredRequest<R> extends DelegatingRequest<ServiceProvider
 			final Tags tags = Tags.of("context", getContextId());
 			tags.and("context", DEFAULT_CONTEXT_ID);
 			final long responseTime = responseTimeSample.stop(registry.timer("response_time", tags));
-			final Map<String, Object> additionalInfo = ImmutableMap.of("metrics", ImmutableMap.of("responseTime", TimeUnit.NANOSECONDS.toMillis(responseTime)));
+			final Map<String, Object> additionalInfo = Map.of("metrics", Map.of("responseTime", TimeUnit.NANOSECONDS.toMillis(responseTime)));
 			LOG.info(getMessage(context, additionalInfo));
 		}
 	}
@@ -63,10 +64,23 @@ public final class MonitoredRequest<R> extends DelegatingRequest<ServiceProvider
 			final ObjectMapper mapper = context.service(ObjectMapper.class);
 			final Map<String, Object> body = mapper.convertValue(next(), Map.class);
 			body.putAll(additionalInfo);
-			return mapper.writeValueAsString(body);
+			return mapper.writeValueAsString(truncateArrays(body));
 		} catch (Throwable e) {
 			return "Unable to get request description: " + e.getMessage();
 		}
+	}
+
+	private Map<String, Object> truncateArrays(Map<String, Object> json) {
+		return Maps.transformValues(json, propertyValue -> {
+			if (propertyValue instanceof Map<?, ?>) {
+				return truncateArrays((Map<String, Object>) propertyValue);
+			} else if (propertyValue instanceof Iterable<?>) {
+				// TODO support arrays
+				return StringUtils.limitedToString((Iterable<?>) propertyValue, 10);
+			} else {
+				return propertyValue;
+			}
+		});
 	}
 	
 }

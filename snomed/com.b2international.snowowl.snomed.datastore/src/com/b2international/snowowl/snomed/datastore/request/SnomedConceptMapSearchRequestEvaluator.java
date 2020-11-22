@@ -51,7 +51,6 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetM
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.google.common.base.Strings;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimaps;
 
 /**
@@ -162,16 +161,14 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 							
 							TerminologyComponent mapTargetTerminologyComponent = terminologyRegistry.getTerminologyComponentById(mapTargetComponentType);
 							
-							final Set<CodeSystem> codeSystems = codeSystemList.stream()
+							// XXX while this is clearly not the right solution, for now it is the only we can do, since based on just the ID in a SNOMED CT Map Type RefSet, there is no guarantee that we get the right CodeSystem
+							return codeSystemList.stream()
 									.filter(cs -> cs.getTerminologyId().equals(mapTargetTerminology.getId()))
-									.collect(Collectors.toSet());
-							
-							if (!codeSystems.isEmpty() && codeSystems.size() == 1) {
-								final CodeSystem cs = Iterables.getOnlyElement(codeSystems);
-								return ComponentURI.of(cs.getShortName(), mapTargetTerminologyComponent.shortId(), refSet.getId());
-							} else {
-								return ComponentURI.UNSPECIFIED;
-							}
+									.map(CodeSystem::getShortName) 
+									.sorted()
+									.findFirst()
+									.map(codeSystem -> ComponentURI.of(codeSystem, mapTargetTerminologyComponent.shortId(), refSet.getId()))
+									.orElse(ComponentURI.UNSPECIFIED);
 				}));
 	}
 

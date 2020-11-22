@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,13 +67,25 @@ public interface IndexAdmin {
 	 * @return
 	 */
 	Map<String, Object> settings();
+	
+	/**
+	 * Updates the dynamic settings of the underlying indices. NOTE: this currently supports only a few parameters, like the max_result_window.
+	 * 
+	 * @param newSettings
+	 */
+	void updateSettings(Map<String, Object> newSettings);
 
 	/**
-	 * Returns the mappings defined for this index.
-	 * 
-	 * @return
+	 * @return all the mappings available for the underlying indices to work with.
 	 */
 	Mappings mappings();
+	
+	/**
+	 * Updates the mappings available for the underlying indices to work with.
+	 * 
+	 * NOTE: keep in mind that these won't affect existing indices and operations on this class might not run on all previously created indices. 
+	 */
+	void updateMappings(Mappings mappings);
 
 	/**
 	 * Returns the index name prefix which will be used to identify all indexes that managed by this {@link IndexAdmin}.
@@ -118,4 +130,5 @@ public interface IndexAdmin {
 				.distinct()
 				.toArray(String[]::new);
 	}
+
 }

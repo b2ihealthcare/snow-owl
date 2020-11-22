@@ -80,6 +80,11 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	SnomedRefSetMemberParameterizedTest.class,
 	SnomedRefSetMemberApiTest.class,
 	SnomedRefSetBulkApiTest.class,
+	// Generic API
+	ConceptSearchRequestSnomedTest.class,
+	ValueSetMemberSearchSnomedReferenceSetTest.class,
+	ConceptMapCompareSnomedMapTypeReferenceSetTest.class,
+	ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest.class,
 	// Merge, Review test cases
 	SnomedMergeApiTest.class,
 	SnomedMergeConflictTest.class,
@@ -99,14 +104,9 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 //	SnomedExtensionVersioningTest.class,
 	// MRCM export/importF
 	MrcmImportExportTest.class,
-	// Performance test cases
+	// Performance test cases, should be the last tests to perform
 	SnomedConceptCreatePerformanceTest.class,
 	SnomedMergePerformanceTest.class,
-	// Generic API
-	ConceptSearchRequestSnomedTest.class,
-	ValueSetMemberSearchSnomedReferenceSetTest.class,
-	ConceptMapCompareSnomedMapTypeReferenceSetTest.class,
-	ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest.class
 })
 public class AllSnomedApiTests {
 

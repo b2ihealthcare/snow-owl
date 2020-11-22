@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,6 +46,19 @@ public class ScrollTest extends BaseIndexTest {
 	@Override
 	protected Collection<Class<?>> getTypes() {
 		return ImmutableList.of(Data.class);
+	}
+
+	@Test
+	public void localScroll() throws Exception {
+		indexDocs(20_000);
+
+		Stopwatch w = Stopwatch.createStarted();
+		Hits<Data> hits = search(Query.select(Data.class)
+				.where(Expressions.matchAll())
+				.limit(Integer.MAX_VALUE)
+				.build());
+		System.err.println("ReturnAllHitsWithLocalScroll took " + w);
+		assertThat(hits).hasSize(20_000);
 	}
 	
 	@Test
@@ -110,7 +123,7 @@ public class ScrollTest extends BaseIndexTest {
 	@Test(expected = SearchContextMissingException.class)
 	@Ignore("slows down test suite; scroll context invalidation is non-deterministic")
 	public void scrollTimeout() throws Exception {
-		indexDocs(10_000);
+		indexDocs(NUM_DOCS);
 		
 		Iterable<Hits<Data>> scroll = scroll(Query.select(Data.class)
 				.where(Expressions.matchAll())

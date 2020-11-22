@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -54,7 +55,7 @@ public abstract class BaseRevisionIndexTest {
 	private final Collection<Hooks.Hook> hooks = newArrayListWithCapacity(2);
 	
 	@Rule
-	public final IndexResource index = IndexResource.create(getTypes(), this::configureMapper);
+	public final IndexResource index = IndexResource.create(getTypes(), this::configureMapper, this::getIndexSettings);
 
 	@After
 	public void after() {
@@ -70,6 +71,10 @@ public abstract class BaseRevisionIndexTest {
 	}
 	
 	protected void configureMapper(ObjectMapper mapper) {
+	}
+	
+	protected Map<String, Object> getIndexSettings() {
+		return Collections.emptyMap();
 	}
 	
 	protected final String nextId() {

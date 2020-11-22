@@ -104,7 +104,7 @@ public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B, D
 			}
 			return sortBuilder.build();
 		}		
-		return SortBy.DOC_ID;
+		return SortBy.DOC;
 	}
 	
 	/**

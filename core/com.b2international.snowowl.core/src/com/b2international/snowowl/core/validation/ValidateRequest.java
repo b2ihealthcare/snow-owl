@@ -107,7 +107,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult>,
 						// TODO report successfully executed validation rule
 					} catch (Exception e) {
 						// TODO report failed validation rule
-						LOG.info("Execution of rule '{}' failed after '{}'.", rule.getId(), w, e);
+						LOG.error("Execution of rule '{}' failed after '{}'.", rule.getId(), w, e);
 					}
 				}));
 			}

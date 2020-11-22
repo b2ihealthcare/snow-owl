@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,32 +15,22 @@
  */
 package com.b2international.snowowl.snomed.reasoner.exceptions;
 
-import java.util.Map;
-
 import com.b2international.commons.exceptions.ApiException;
-import com.google.common.collect.ImmutableMap;
 
 /**
  * @since 7.0
  */
 public final class ReasonerApiException extends ApiException {
 
+	private static final long serialVersionUID = 1L;
+
 	public ReasonerApiException(final String template, final Object... args) {
 		super(template, args);
+		if (getCause() != null) {
+			withAdditionalInfo("cause", getCause().getMessage());
+		}
 	}
 	
-	@Override
-	protected Map<String, Object> getAdditionalInfo() {
-		final ImmutableMap.Builder<String, Object> additionalInfoBuilder = ImmutableMap.<String, Object>builder()
-				.putAll(super.getAdditionalInfo());
-		
-		if (getCause() != null) {
-			additionalInfoBuilder.put("cause", getCause().getMessage());
-		}
-		
-		return additionalInfoBuilder.build();
-	}
-
 	@Override
 	protected Integer getStatus() {
 		return 500;
