@@ -33,6 +33,7 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.internal.validation.ValidationConfiguration;
 import com.b2international.snowowl.core.validation.ValidateRequestBuilder;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.constraint.HierarchyInclusionType;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclParser;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclSerializer;
@@ -178,12 +179,12 @@ public abstract class BaseGenericValidationRuleTest extends BaseValidationTest {
 		return DocumentBuilders.relationship(source, type, destination, characteristicTypeId).effectiveTime(effectiveTime);
 	}
 	
-	protected final SnomedRefSetMemberIndexEntry.Builder member(String referencedComponentId, short referencedComponentType, String referenceSetId) {
-		return member(UUID.randomUUID().toString(), referencedComponentId, referencedComponentType, referenceSetId);
+	protected final SnomedRefSetMemberIndexEntry.Builder member(String referencedComponentId, String referenceSetId) {
+		return member(UUID.randomUUID().toString(), referencedComponentId, referenceSetId);
 	}
 	
-	protected final SnomedRefSetMemberIndexEntry.Builder member(final String id, String referencedComponentId, short referencedComponentType, String referenceSetId) {
-		return DocumentBuilders.member(id, referencedComponentId, referencedComponentType, referenceSetId).effectiveTime(effectiveTime);
+	protected final SnomedRefSetMemberIndexEntry.Builder member(final String id, String referencedComponentId, String referenceSetId) {
+		return DocumentBuilders.member(id, referencedComponentId, SnomedTerminologyComponentConstants.getTerminologyComponentIdValue(referencedComponentId), referenceSetId).effectiveTime(effectiveTime);
 	}
 	
 	protected final HierarchyDefinitionFragment hierarchyConceptSetDefinition(final String focusConceptId, HierarchyInclusionType inclusionType) {
