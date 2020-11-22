@@ -18,6 +18,8 @@ package com.b2international.snowowl.core.request;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.ConceptMapMappings;
 import com.b2international.snowowl.core.request.SetSearchRequestEvaluator.OptionKey;
+import com.b2international.snowowl.core.uri.ComponentURI;
+import com.google.common.collect.ImmutableSet;
 
 /**
 * @since 7.8
@@ -52,11 +54,15 @@ public final class ConceptMapMappingSearchRequestBuilder extends SearchResourceR
 	public ConceptMapMappingSearchRequestBuilder filterByMapTargets(Iterable<String> mapTargets) {
 		return addOption(OptionKey.MAP_TARGET, mapTargets);
 	}
-	
+
 	public ConceptMapMappingSearchRequestBuilder filterByComponentId(String componentId) {
-		return addOption(OptionKey.COMPONENT, componentId);
+		return filterByComponentIds(ImmutableSet.of(componentId));
 	}
 	
+	public ConceptMapMappingSearchRequestBuilder filterByComponentId(ComponentURI uri) {
+		return filterByComponentIds(ImmutableSet.of(uri.toString()));
+	}
+
 	public ConceptMapMappingSearchRequestBuilder filterByComponentIds(Iterable<String> componentIds) {
 		return addOption(OptionKey.COMPONENT, componentIds);
 	}
