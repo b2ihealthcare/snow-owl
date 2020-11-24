@@ -48,6 +48,7 @@ import com.google.common.base.MoreObjects.ToStringHelper;
 		SnomedDocument.Fields.ACTIVE, 
 		SnomedDocument.Fields.EFFECTIVE_TIME, 
 		SnomedDocument.Fields.MODULE_ID, 
+		SnomedDocument.Fields.RELEASED,
 		SnomedRelationshipIndexEntry.Fields.GROUP,
 		SnomedRelationshipIndexEntry.Fields.UNION_GROUP,
 		SnomedRelationshipIndexEntry.Fields.CHARACTERISTIC_TYPE_ID,
