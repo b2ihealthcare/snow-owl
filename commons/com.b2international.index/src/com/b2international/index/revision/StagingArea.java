@@ -601,7 +601,7 @@ public final class StagingArea {
 		final RevisionCompare fromChanges = index.compare(toRef, fromRef, Integer.MAX_VALUE);
 		final List<RevisionCompareDetail> fromChangeDetails;
 		
-		if (CompareUtils.isEmpty(exclusions)) {
+		if (exclusions == null) {
 			fromChangeDetails = fromChanges.getDetails();
 		} else {
 			// Exclude items from change details of the "from" branch, so they do not participate in conflict processing

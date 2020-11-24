@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,7 +67,7 @@ public final class SnomedComponentRevisionConflictProcessor extends ComponentRev
 	public Conflict handleChangedInSourceDetachedInTarget(ObjectId objectId, List<RevisionPropertyDiff> sourceChanges) {
 		boolean conflicting = false;
 		for (RevisionPropertyDiff sourceChange : sourceChanges) {
-			if (SnomedDocument.Fields.EFFECTIVE_TIME.equals(sourceChange.getProperty())) {
+			if (SnomedDocument.Fields.RELEASED.equals(sourceChange.getProperty())) {
 				conflicting = true;
 			}
 		}

@@ -190,10 +190,10 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 				.value(nextEffectiveTimeAsString)
 				.build());
 
-		expectedAttributes.put("effectiveTime", ConflictingAttributeImpl.builder()
-				.property("effectiveTime")
-				.oldValue(null)
-				.value(nextEffectiveTimeAsString)
+		expectedAttributes.put("released", ConflictingAttributeImpl.builder()
+				.property("released")
+				.oldValue("false")
+				.value("true")
 				.build());
 
 		for (ConflictingAttribute attribute : conflict.getConflictingAttributes()) {
