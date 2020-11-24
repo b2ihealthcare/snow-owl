@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,17 @@
 package com.b2international.snowowl.core.commit;
 
 import java.io.Serializable;
+import java.util.Collections;
+import java.util.List;
+
+import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.ChangeKind;
+import com.fasterxml.jackson.databind.MappingIterator;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.google.common.collect.ImmutableList;
 
 /**
  * @since 6.6
@@ -27,6 +34,8 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 @JsonDeserialize(builder=CommitInfoDetail.Builder.class)
 public final class CommitInfoDetail implements Serializable {
 	
+	private static final long serialVersionUID = -7281465496715002676L;
+
 	public static Builder builder() {
 		return new Builder();
 	}
@@ -137,5 +146,27 @@ public final class CommitInfoDetail implements Serializable {
 	
 	public String getValue() {
 		return value;
+	}
+	
+	public <T> List<T> parseFromValue(ObjectMapper mapper, Class<T> type) {
+		return parseJsonValues(mapper, type, fromValue);
+	}
+	
+	public <T> List<T> parseValue(ObjectMapper mapper, Class<T> type) {
+		return parseJsonValues(mapper, type, value);
+	}
+
+	private <T> List<T> parseJsonValues(ObjectMapper mapper, Class<T> type, String json) {
+		try {
+			final ImmutableList.Builder<T> values = ImmutableList.builder();
+			MappingIterator<T> it = mapper.readerFor(type).readValues(json);
+			while (it.hasNext()) {
+				values.add(it.next());
+			}
+			return values.build();
+		} catch (Exception e) {
+			LoggerFactory.getLogger(getClass()).error("Couldn't parse fromValue to type " + type.getName(), e);
+			return Collections.emptyList();
+		}
 	}
 }
