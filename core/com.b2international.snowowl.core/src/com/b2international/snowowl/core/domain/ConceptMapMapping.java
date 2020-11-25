@@ -104,7 +104,7 @@ public final class ConceptMapMapping implements Serializable {
 		}
 		
 		public Builder sourceIconId(final String sourceIconId) {
-			this.sourceIconId = sourceIconId;
+			this.sourceIconId = sourceIconId == null ? IComponent.ROOT_ID : sourceIconId;
 			return this;
 		}
 		
@@ -114,7 +114,7 @@ public final class ConceptMapMapping implements Serializable {
 		}
 		
 		public Builder targetIconId(final String targetIconId) {
-			this.targetIconId = targetIconId;
+			this.targetIconId = targetIconId == null ? IComponent.ROOT_ID : targetIconId;
 			return this;
 		}
 		
