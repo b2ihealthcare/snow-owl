@@ -35,6 +35,7 @@ public class RepositoryCommitRequestBuilder extends BaseRequestBuilder<Repositor
 	private Request<TransactionContext, ?> body;
 	private long preparationTime = -1L;
 	private String parentContextDescription = DatastoreLockContextDescriptions.ROOT;
+	private boolean notify = true;
 
 	public final RepositoryCommitRequestBuilder setAuthor(String author) {
 		this.author = author;
@@ -80,10 +81,20 @@ public class RepositoryCommitRequestBuilder extends BaseRequestBuilder<Repositor
 		this.parentContextDescription = parentContextDescription;
 		return getSelf();
 	}
+	
+	/**
+	 * Whether to notify third party listeners or not. Default is <code>true</code>.
+	 * @param notify
+	 * @return this builder for chaining
+	 */
+	public final RepositoryCommitRequestBuilder setNotify(boolean notify) {
+		this.notify = notify;
+		return getSelf();
+	}
 
 	@Override
 	protected final Request<BranchContext, CommitResult> doBuild() {
-		return new TransactionalRequest(author, commitComment, getBody(), preparationTime, parentContextDescription);
+		return new TransactionalRequest(author, commitComment, getBody(), preparationTime, parentContextDescription, notify);
 	}
 	
 	@Override

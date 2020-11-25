@@ -290,7 +290,7 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 		} finally {
 			locks.unlock(lockContext, lockTarget);
 			// send a commit notification
-			if (commit != null) {
+			if (commit != null && isNotificationEnabled()) {
 				new RepositoryCommitNotification(id(),
 						commit.getId(),						
 						commit.getGroupId(),
