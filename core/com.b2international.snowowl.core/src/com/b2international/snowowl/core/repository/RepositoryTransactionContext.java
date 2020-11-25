@@ -110,7 +110,8 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 		return !Strings.isNullOrEmpty(author) ? author : service(User.class).getUsername();
 	}
 	
-	public String getLockContext() {
+	@Override
+	public String parentLock() {
 		return parentLockContext;
 	}
 	

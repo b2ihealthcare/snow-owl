@@ -178,6 +178,11 @@ public final class Rf2TransactionContext extends DelegatingBranchContext impleme
 	}
 	
 	@Override
+	public String parentLock() {
+		return getDelegate().parentLock();
+	}
+	
+	@Override
 	public <T> T lookup(String componentId, Class<T> type) throws ComponentNotFoundException {
 		if (newComponents.containsKey(componentId)) {
 			return type.cast(newComponents.get(componentId));
