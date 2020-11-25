@@ -24,6 +24,7 @@ import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.CommitResult;
 import com.b2international.snowowl.core.request.RepositoryCommitRequestBuilder;
+import com.b2international.snowowl.core.uri.CodeSystemURI;
 
 /**
  * @since 7.12
@@ -51,6 +52,17 @@ public abstract class ImportRequestBuilder<T extends ImportRequestBuilder<T>>
 	}
 
 	protected abstract ImportRequest create();
+	
+	public AsyncRequest<CommitResult> build(String codeSystemUri) {
+		return build(new CodeSystemURI(codeSystemUri));
+	}
+	
+	public AsyncRequest<CommitResult> build(CodeSystemURI codeSystemUri) {
+		return new RepositoryCommitRequestBuilder()
+				.setBody(build())
+				.setCommitComment(String.format("Imported components from source file '%s'", attachment.getFileName()))
+				.build(codeSystemUri);
+	}
 	
 	public AsyncRequest<CommitResult> build(String repositoryId, String branch) {
 		return new RepositoryCommitRequestBuilder()
