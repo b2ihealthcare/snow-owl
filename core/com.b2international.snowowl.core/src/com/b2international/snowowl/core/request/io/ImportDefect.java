@@ -15,13 +15,17 @@
  */
 package com.b2international.snowowl.core.request.io;
 
+import java.io.Serializable;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 7.12
  */
-public final class ImportDefect {
+public final class ImportDefect implements Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 	public enum ImportDefectType {
 		ERROR,
