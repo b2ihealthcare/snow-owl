@@ -16,7 +16,6 @@
 package com.b2international.snowowl.core.request.io;
 
 import java.io.File;
-import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -92,31 +91,13 @@ public abstract class ImportRequest extends LockRequest<TransactionContext, Impo
 		}
 	}
 
-//	/**
-//	 * Logs the import activity with the given message.
-//	 * 
-//	 * @param message the message to be logged.
-//	 */
-//	protected void logImportActivity(final String message) {
-//		LogUtils.logImportActivity(context.log(), context.author(), context.path(), message);
-//	}
-//	
-//	/**
-//	 * Logs the import warning with the given message.
-//	 * 
-//	 * @param message the message to be logged.
-//	 */
-//	protected void logImportWarning(final String message) {
-//		LogUtils.logImportWarning(context.log(), context.author(), context.path(), message);
-//	}
-	
 	/**
 	 * Subclasses optionally provider validation functionality to verify the integrity of the attachment before proceeding to the actual import in {@link #doImport(File, IProgressMonitor)}.
+	 * 
 	 * @param context - the context to run the validation on
 	 * @param attachment - the file attachment to validate
 	 * @param defectsAcceptor - the acceptor that collects {@link ImportDefect}s through a few helper methods
 	 * @param monitor - the monitor that can be used to track progress
-	 * @return a {@link List} of {@link ImportDefect} instances that can aid the user pinpoint and resolve the errors/issues
 	 * @throws Exception
 	 */
 	protected void doValidate(TransactionContext context, File attachment, ImportDefectAcceptor defectsAcceptor, IProgressMonitor monitor) throws Exception {
@@ -129,7 +110,6 @@ public abstract class ImportRequest extends LockRequest<TransactionContext, Impo
 	 * @param attachment - the attachment file to import
 	 * @param visitor - visitor that accepts visited component URIs
 	 * @param monitor - the monitor that can be used to track progress
-	 * @return
 	 * @throws Exception
 	 */
 	protected abstract void doImport(TransactionContext context, File attachment, Consumer<ComponentURI> visitor, IProgressMonitor monitor) throws Exception;
