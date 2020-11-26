@@ -18,6 +18,7 @@ package com.b2international.index.revision;
 import static com.b2international.index.query.Expressions.exactMatch;
 import static com.b2international.index.query.Expressions.match;
 import static com.b2international.index.query.Expressions.matchAny;
+import static com.b2international.index.query.Expressions.matchAnyLong;
 import static com.b2international.index.query.Expressions.matchRange;
 import static com.b2international.index.query.Expressions.matchTextAll;
 import static com.b2international.index.query.Expressions.matchTextPhrase;
@@ -163,6 +164,10 @@ public final class Commit implements WithScore {
 		
 		public static Expression timestamp(final long timeStamp) {
 			return exactMatch(Fields.TIMESTAMP, timeStamp);
+		}
+
+		public static Expression timestamps(final Iterable<Long> timeStamps) {
+			return matchAnyLong(Fields.TIMESTAMP, timeStamps);
 		}
 		
 		public static Expression timestampRange(final long from, final long to) {
