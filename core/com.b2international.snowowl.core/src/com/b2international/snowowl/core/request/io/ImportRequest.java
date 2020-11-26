@@ -24,6 +24,7 @@ import javax.validation.constraints.NotNull;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 import com.b2international.commons.exceptions.ApiException;
+import com.b2international.commons.exceptions.LockedException;
 import com.b2international.snowowl.core.attachments.Attachment;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.attachments.InternalAttachmentRegistry;
@@ -31,6 +32,7 @@ import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
+import com.b2international.snowowl.core.locks.OperationLockException;
 import com.b2international.snowowl.core.request.LockRequest;
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.google.common.collect.Sets;
@@ -65,6 +67,7 @@ public abstract class ImportRequest extends LockRequest<TransactionContext, Impo
 	public final ImportResponse doExecute(TransactionContext context) {
 		context.log().info("Importing components from source file '{}'.", this.attachment.getFileName());
 		try {
+
 			InternalAttachmentRegistry iar = (InternalAttachmentRegistry) context.service(AttachmentRegistry.class);
 			File attachment = iar.getAttachment(this.attachment.getAttachmentId());
 			
@@ -77,17 +80,18 @@ public abstract class ImportRequest extends LockRequest<TransactionContext, Impo
 			} else {
 				final Set<ComponentURI> visitedComponents = Sets.newHashSet();
 				doImport(context, attachment, visitedComponents::add, context.service(IProgressMonitor.class));
+				context.log().info("Finished importing components from source file '{}'.", this.attachment.getFileName());
 				return ImportResponse.success(visitedComponents, validationResponse.getDefects());
 			}
-			
+
 		} catch (ApiException e) {
 			throw e;
+		} catch (OperationLockException e) {
+			throw new LockedException(e.getMessage());
 		} catch (Exception e) {
 			String error = "Unexpected error happened during the import of the source file: " + attachment.getFileName();
 			context.log().error(error, e);
 			return ImportResponse.error(error);
-		} finally {
-			context.log().info("Finished importing components from source file '{}'.", this.attachment.getFileName());
 		}
 	}
 
