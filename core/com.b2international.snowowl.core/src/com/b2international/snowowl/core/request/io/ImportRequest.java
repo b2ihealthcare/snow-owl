@@ -63,7 +63,7 @@ public abstract class ImportRequest extends LockRequest<TransactionContext, Impo
 	
 	@Override
 	public final ImportResponse doExecute(TransactionContext context) {
-		context.log().info("Importing components from source file '%s'.", this.attachment.getFileName());
+		context.log().info("Importing components from source file '{}'.", this.attachment.getFileName());
 		try {
 			InternalAttachmentRegistry iar = (InternalAttachmentRegistry) context.service(AttachmentRegistry.class);
 			File attachment = iar.getAttachment(this.attachment.getAttachmentId());
