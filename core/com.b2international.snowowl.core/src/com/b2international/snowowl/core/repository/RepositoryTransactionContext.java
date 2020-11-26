@@ -64,6 +64,7 @@ import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescr
 import com.b2international.snowowl.core.internal.locks.DatastoreLockTarget;
 import com.b2international.snowowl.core.internal.locks.DatastoreOperationLockException;
 import com.b2international.snowowl.core.locks.IOperationLockManager;
+import com.b2international.snowowl.core.locks.Locks;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -270,6 +271,12 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 	public Long commit(String author, String commitComment, String parentLockContext) {
 		if (!isDirty()) {
 			return Commit.NO_COMMIT_TIMESTAMP;
+		}
+		
+		// XXX it would be great to use Locks.on(...) here as well
+		// fall back to the current lock context or ROOT if none is present
+		if (Strings.isNullOrEmpty(parentLockContext)) {
+			parentLockContext = optionalService(Locks.class).map(Locks::lockContext).orElse(DatastoreLockContextDescriptions.ROOT);
 		}
 		final DatastoreLockContext lockContext = createLockContext(service(User.class).getUsername(), parentLockContext);
 		final DatastoreLockTarget lockTarget = createLockTarget(id(), path());

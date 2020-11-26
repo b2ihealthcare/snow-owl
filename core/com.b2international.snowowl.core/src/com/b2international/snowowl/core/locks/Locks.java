@@ -89,7 +89,6 @@ public final class Locks implements AutoCloseable {
 	private final IOperationLockManager lockManager;
 	private final DatastoreLockContext lockContext;
 	private final Map<String, DatastoreLockTarget> lockTargets;
-
 	
 	private Locks(RepositoryContext context, String userId, String description, String parentLockContext, List<String> branchesToLock) throws OperationLockException {
 		this.repositoryId = context.id();
@@ -106,6 +105,10 @@ public final class Locks implements AutoCloseable {
 		} catch (InterruptedException e) {
 			throw new SnowowlRuntimeException(e);
 		}
+	}
+	
+	public String lockContext() {
+		return lockContext.getDescription();
 	}
 
 	private void lock() throws OperationLockException, InterruptedException {
