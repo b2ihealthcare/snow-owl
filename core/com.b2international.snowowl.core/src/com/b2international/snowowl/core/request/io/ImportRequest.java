@@ -87,7 +87,7 @@ public abstract class ImportRequest extends LockRequest<TransactionContext, Impo
 			context.log().error(error, e);
 			return ImportResponse.error(error);
 		} finally {
-			context.log().info("Finished importing components from source file '%s'.", this.attachment.getFileName());
+			context.log().info("Finished importing components from source file '{}'.", this.attachment.getFileName());
 		}
 	}
 
