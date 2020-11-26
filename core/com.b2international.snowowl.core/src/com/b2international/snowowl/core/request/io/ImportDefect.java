@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.core.request.io;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * @since 7.12
  */
@@ -26,12 +29,29 @@ public final class ImportDefect {
 		INFO
 	}
 	
-	private String source;
-	private String message;
-	private ImportDefectType type;
+	private final String file;
+	private final String location;
+	private final String message;
+	private final ImportDefectType type;
 	
-	public String getSource() {
-		return source;
+	@JsonCreator
+	public ImportDefect(
+			@JsonProperty("file") final String file, 
+			@JsonProperty("location") final String location, 
+			@JsonProperty("message") final String message, 
+			@JsonProperty("type") final ImportDefectType type) {
+		this.file = file;
+		this.location = location;
+		this.message = message;
+		this.type = type;
+	}
+	
+	public String getFile() {
+		return file;
+	}
+	
+	public String getLocation() {
+		return location;
 	}
 	
 	public String getMessage() {
@@ -40,6 +60,30 @@ public final class ImportDefect {
 	
 	public ImportDefectType getType() {
 		return type;
+	}
+	
+	public boolean isError() {
+		return type == ImportDefectType.ERROR;
+	}
+	
+	public boolean isWarning() {
+		return type == ImportDefectType.WARNING;
+	}
+	
+	public boolean isInfo() {
+		return type == ImportDefectType.INFO;
+	}
+
+	public static ImportDefect error(String file, String location, String message) {
+		return new ImportDefect(file, location, message, ImportDefectType.ERROR);
+	}
+	
+	public static ImportDefect warn(String file, String location, String message) {
+		return new ImportDefect(file, location, message, ImportDefectType.WARNING);
+	}
+	
+	public static ImportDefect info(String file, String location, String message) {
+		return new ImportDefect(file, location, message, ImportDefectType.INFO);
 	}
 	
 }

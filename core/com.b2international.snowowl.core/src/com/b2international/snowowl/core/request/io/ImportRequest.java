@@ -70,7 +70,7 @@ public abstract class ImportRequest extends LockRequest<TransactionContext, Impo
 			InternalAttachmentRegistry iar = (InternalAttachmentRegistry) context.service(AttachmentRegistry.class);
 			File attachment = iar.getAttachment(this.attachment.getAttachmentId());
 			
-			ImportDefectAcceptor defectsAcceptor = new ImportDefectAcceptor();
+			ImportDefectAcceptor defectsAcceptor = new ImportDefectAcceptor(this.attachment.getFileName());
 			doValidate(context, attachment, defectsAcceptor, context.service(IProgressMonitor.class));
 			
 			final List<ImportDefect> defects = defectsAcceptor.getDefects();

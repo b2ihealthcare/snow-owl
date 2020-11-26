@@ -18,9 +18,12 @@ package com.b2international.snowowl.core.request.io;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import com.b2international.commons.collections.Collections3;
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
@@ -50,9 +53,27 @@ public final class ImportResponse implements Serializable {
 	public boolean isSuccess() {
 		return Strings.isNullOrEmpty(error);
 	}
-	
+
+	/**
+	 * @return all defects registered in this response
+	 */
 	public List<ImportDefect> getDefects() {
 		return defects;
+	}
+	
+	@JsonIgnore
+	public List<ImportDefect> getErrors() {
+		return Collections3.toImmutableList(getDefects()).stream().filter(ImportDefect::isError).collect(Collectors.toList());
+	}
+	
+	@JsonIgnore
+	public List<ImportDefect> getWarnings() {
+		return Collections3.toImmutableList(getDefects()).stream().filter(ImportDefect::isWarning).collect(Collectors.toList());
+	}
+	
+	@JsonIgnore
+	public List<ImportDefect> getInfos() {
+		return Collections3.toImmutableList(getDefects()).stream().filter(ImportDefect::isInfo).collect(Collectors.toList());
 	}
 	
 	public String getError() {
@@ -74,5 +95,5 @@ public final class ImportResponse implements Serializable {
 	public static ImportResponse defects(List<ImportDefect> defects) {
 		return new ImportResponse(String.format("There are '%s' issues with the import file.", defects.size()), Set.of(), defects);
 	}
-	
+
 }
