@@ -24,7 +24,6 @@ import javax.validation.constraints.NotNull;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 
-import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.ApiException;
 import com.b2international.snowowl.core.attachments.Attachment;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
@@ -73,13 +72,13 @@ public abstract class ImportRequest extends LockRequest<TransactionContext, Impo
 			ImportDefectAcceptor defectsAcceptor = new ImportDefectAcceptor(this.attachment.getFileName());
 			doValidate(context, attachment, defectsAcceptor, context.service(IProgressMonitor.class));
 			
-			final List<ImportDefect> defects = defectsAcceptor.getDefects();
-			if (!CompareUtils.isEmpty(defects)) {
-				return ImportResponse.defects(defects);
+			final ImportResponse validationResponse = ImportResponse.defects(defectsAcceptor.getDefects());
+			if (!validationResponse.getErrors().isEmpty()) {
+				return validationResponse;
 			} else {
 				final Set<ComponentURI> visitedComponents = Sets.newHashSet();
 				doImport(context, attachment, visitedComponents::add, context.service(IProgressMonitor.class));
-				return ImportResponse.success(visitedComponents);
+				return ImportResponse.success(visitedComponents, validationResponse.getDefects());
 			}
 			
 		} catch (ApiException e) {

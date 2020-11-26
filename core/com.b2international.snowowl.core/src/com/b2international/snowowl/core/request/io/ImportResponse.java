@@ -89,7 +89,11 @@ public final class ImportResponse implements Serializable {
 	}
 
 	public static ImportResponse success(Set<ComponentURI> visitedComponents) {
-		return new ImportResponse(null, visitedComponents, List.of());
+		return success(visitedComponents, List.of());
+	}
+	
+	public static ImportResponse success(Set<ComponentURI> visitedComponents, List<ImportDefect> defects) {
+		return new ImportResponse(null, visitedComponents, defects);
 	}
 	
 	public static ImportResponse defects(List<ImportDefect> defects) {
