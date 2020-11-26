@@ -92,7 +92,7 @@ public abstract class ImportRequest extends LockRequest<TransactionContext, Impo
 	}
 
 	/**
-	 * Subclasses optionally provider validation functionality to verify the integrity of the attachment before proceeding to the actual import in {@link #doImport(File, IProgressMonitor)}.
+	 * Subclasses can optionally provide validation functionality to verify the integrity of the attachment before proceeding to the actual import in {@link #doImport(File, IProgressMonitor)}.
 	 * 
 	 * @param context - the context to run the validation on
 	 * @param attachment - the file attachment to validate
