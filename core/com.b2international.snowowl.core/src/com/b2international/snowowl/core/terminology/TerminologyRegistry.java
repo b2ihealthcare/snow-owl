@@ -161,7 +161,13 @@ public enum TerminologyRegistry {
 		if (primaryComponents.size() > 1) {
 			throw new SnowowlRuntimeException("There is more than one primary terminology component registered for " + terminologyId);
 		} else if (primaryComponents.isEmpty()) {
-			throw new SnowowlRuntimeException("There are multiple terminology components available, but no primary terminology component registered for " + terminologyId);
+			// check for the first SET category before throwing an exception
+			primaryComponents = terminologyComponents.stream()
+					.filter(t -> t.componentCategory() == ComponentCategory.SET)
+					.collect(Collectors.toSet());
+			if (primaryComponents.isEmpty()) {
+				throw new SnowowlRuntimeException("There is no primary terminology component (either CONCEPT or SET) registered for " + terminologyId);
+			}
 		}
 		return primaryComponents.iterator().next().shortId();
 	}
