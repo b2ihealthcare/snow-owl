@@ -396,7 +396,7 @@ public class EsDocumentSearcher implements Searcher {
 					// XXX: default order for scores is *descending*
 					reqSource.sort(SortBuilders.scoreSort().order(sortOrder)); 
 					break;
-				case "_default":
+				case "_default": //$FALL-THROUGH$
 					if (liveScroll) {
 						// for live scrolls use the document ID field as tiebreaker
 						field = mapping.getIdField();
