@@ -36,9 +36,9 @@ import java.util.Set;
 import com.b2international.commons.collections.Collections3;
 import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
+import com.b2international.index.ID;
 import com.b2international.index.Text;
 import com.b2international.index.WithScore;
-import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expression;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -135,11 +135,11 @@ public final class Commit implements WithScore {
 		private Expressions() {}
 		
 		public static final Expression id(String id) {
-			return DocumentMapping.matchId(id);
+			return exactMatch(Fields.ID, id);
 		}
 		
 		public static final Expression ids(Collection<String> ids) {
-			return matchAny(DocumentMapping._ID, ids);
+			return matchAny(Fields.ID, ids);
 		}
 		
 		public static Expression branches(final String...branchPaths) {
@@ -194,6 +194,7 @@ public final class Commit implements WithScore {
 	 * @since 7.0
 	 */
 	public static final class Fields {
+		public static final String ID = "id";
 		public static final String BRANCH = "branch";
 		public static final String AUTHOR = "author";
 		public static final String COMMENT = "comment";
@@ -206,6 +207,7 @@ public final class Commit implements WithScore {
 		public static final Set<String> ALL = ImmutableSet.of(BRANCH, AUTHOR, TIMESTAMP);
 	}
 
+	@ID
 	private final String id;
 	private final String branch;
 	private final String author;

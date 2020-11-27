@@ -26,10 +26,12 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import com.b2international.collections.PrimitiveCollection;
 import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
+import com.b2international.index.ID;
 import com.b2international.index.Keyword;
 import com.b2international.index.Script;
 import com.b2international.index.Text;
@@ -48,6 +50,7 @@ import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 
 /**
@@ -61,7 +64,6 @@ public final class DocumentMapping {
 	public static final String DELIMITER = ".";
 	private static final Joiner DELIMITER_JOINER = Joiner.on(DELIMITER);
 	
-	public static final String _DOC = "_doc";
 	public static final String _ID = "_id";
 
 	private static final Function<? super Field, String> GET_NAME = Field::getName;
@@ -75,6 +77,7 @@ public final class DocumentMapping {
 	private final DocumentMapping parent;
 	private final Map<String, Script> scripts;
 	private final Set<String> hashedFields;
+	private final String idField;
 
 	public DocumentMapping(Class<?> type) {
 		this(null, type);
@@ -86,6 +89,19 @@ public final class DocumentMapping {
 		final String typeAsString = getType(type);
 		this.typeAsString = parent == null ? typeAsString : parent.typeAsString() + DELIMITER + typeAsString;
 		this.fieldMap = FluentIterable.from(Reflections.getFields(type)).filter(DocumentMapping::isValidField).uniqueIndex(GET_NAME);
+
+		final Collection<Field> idFields = fieldMap.values().stream()
+				.filter(f -> f.isAnnotationPresent(ID.class))
+				.collect(Collectors.toList());
+		
+		if (idFields.size() > 1) {
+			throw new IllegalArgumentException("Document classes require a single field to be annotated with the ID annotation: " + type.getName());
+		} else if (idFields.size() == 1) {
+			this.idField = Iterables.getOnlyElement(idFields).getName();
+		} else {
+			this.idField = _ID;
+		}
+		
 		
 		final Builder<String, Text> textFields = ImmutableSortedMap.naturalOrder();
 		final Builder<String, Keyword> keywordFields = ImmutableSortedMap.naturalOrder();
@@ -240,6 +256,10 @@ public final class DocumentMapping {
 	
 	public String typeAsString() {
 		return typeAsString;
+	}
+	
+	public String getIdField() {
+		return idField;
 	}
 	
 	@Override
