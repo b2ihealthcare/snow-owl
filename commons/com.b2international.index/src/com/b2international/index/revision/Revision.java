@@ -20,6 +20,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.Collections;
 import java.util.List;
 
+import com.b2international.index.ID;
 import com.b2international.index.Script;
 import com.b2international.index.mapping.DocumentMapping;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -56,6 +57,7 @@ public abstract class Revision {
 	// scripts
 	public static final String UPDATE_REVISED = "updateRevised";
 
+	@ID
 	private String id;
 	
 	/**

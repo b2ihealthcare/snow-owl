@@ -23,6 +23,7 @@ import java.util.Collection;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.index.Doc;
+import com.b2international.index.ID;
 import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
@@ -62,6 +63,7 @@ public class SctId implements Serializable {
 		}
 	}
 	
+	@ID
 	private String sctid;
 
 	private long sequence;

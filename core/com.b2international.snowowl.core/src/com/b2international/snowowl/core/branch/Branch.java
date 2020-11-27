@@ -145,7 +145,7 @@ public final class Branch implements MetadataHolder, Serializable {
 	 */
 	@JsonProperty
 	public String path() {
-		return Strings.isNullOrEmpty(parentPath) ? name : parentPath + Branch.SEPARATOR + name;
+		return Strings.isNullOrEmpty(parentPath) ? name : String.join(Branch.SEPARATOR, parentPath, name);
 	}
 
 	/**

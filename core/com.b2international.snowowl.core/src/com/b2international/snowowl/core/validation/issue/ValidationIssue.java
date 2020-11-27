@@ -25,6 +25,7 @@ import java.util.Map;
 import com.b2international.commons.collections.Collections3;
 import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
+import com.b2international.index.ID;
 import com.b2international.index.Keyword;
 import com.b2international.index.Script;
 import com.b2international.index.Text;
@@ -77,6 +78,7 @@ public final class ValidationIssue implements Serializable {
 		public static final String WHITELIST = "whitelist";
 	}
 	
+	@ID
 	private final String id;
 	private final String ruleId;
 	private final ComponentURI affectedComponentURI;

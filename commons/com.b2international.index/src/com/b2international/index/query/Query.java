@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -114,7 +114,7 @@ public final class Query<T> {
 	private Class<T> select;
 	private Class<?> from;
 	private Expression where;
-	private SortBy sortBy = SortBy.DOC;
+	private SortBy sortBy = SortBy.DEFAULT;
 	private Class<?> parentType;
 	private boolean withScores;
 	private List<String> fields;
@@ -207,7 +207,7 @@ public final class Query<T> {
 		sb.append("SELECT " + getSelectString());
 		sb.append(" FROM " + DocumentMapping.getType(from));
 		sb.append(" WHERE " + where);
-		if (!SortBy.DOC.equals(sortBy)) {
+		if (!SortBy.DEFAULT.equals(sortBy)) {
 			sb.append(" SORT BY " + sortBy);
 		}
 		sb.append(" LIMIT " + limit);
