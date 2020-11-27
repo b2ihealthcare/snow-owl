@@ -98,7 +98,6 @@ public final class DatastoreLockIndexEntry implements Serializable {
 	@JsonPOJOBuilder(withPrefix="")
 	public static class Builder {
 		
-		@ID
 		private String id;
 		private String userId;
 		private String description;
@@ -146,6 +145,7 @@ public final class DatastoreLockIndexEntry implements Serializable {
 		}
 	}
 	
+	@ID
 	private final String id;
 	private final String userId;
 	private final String description;

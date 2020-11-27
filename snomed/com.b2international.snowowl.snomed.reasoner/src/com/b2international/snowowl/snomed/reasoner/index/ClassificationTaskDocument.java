@@ -24,6 +24,7 @@ import static com.b2international.index.query.Expressions.matchRange;
 import java.util.Date;
 
 import com.b2international.index.Doc;
+import com.b2international.index.ID;
 import com.b2international.index.Script;
 import com.b2international.index.query.Expression;
 import com.b2international.snowowl.snomed.reasoner.domain.ClassificationStatus;
@@ -237,6 +238,7 @@ public final class ClassificationTaskDocument {
 		}
 	}
 
+	@ID
 	private final String id;
 	private final boolean deleted;
 	private final String userId;

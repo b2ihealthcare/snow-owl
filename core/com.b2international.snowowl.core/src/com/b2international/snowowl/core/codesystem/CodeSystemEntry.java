@@ -30,6 +30,7 @@ import java.util.Optional;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
+import com.b2international.index.ID;
 import com.b2international.index.Normalizers;
 import com.b2international.index.Text;
 import com.b2international.index.query.Expression;
@@ -257,6 +258,7 @@ public final class CodeSystemEntry implements Serializable {
 	@com.b2international.index.Text(alias="analyzed") // Analyzed text appears as a field alias
 	private final String name; 
 
+	@ID
 	private final String shortName; 
 	private final String orgLink; 
 	private final String language; 

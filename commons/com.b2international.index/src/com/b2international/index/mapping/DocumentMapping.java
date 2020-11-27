@@ -28,6 +28,9 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.b2international.collections.PrimitiveCollection;
 import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
@@ -58,6 +61,8 @@ import com.google.common.collect.Maps;
  */
 public final class DocumentMapping {
 
+	private static final Logger LOG = LoggerFactory.getLogger(DocumentMapping.class);
+	
 	private static final BiMap<Class<?>, String> DOC_TYPE_CACHE = HashBiMap.create();
 	
 	// type path delimiter to differentiate between same nested types in different contexts
@@ -99,6 +104,7 @@ public final class DocumentMapping {
 		} else if (idFields.size() == 1) {
 			this.idField = Iterables.getOnlyElement(idFields).getName();
 		} else {
+			LOG.warn("'{}' does not define an ID annotated field, falling back to the deprecated '_id', but keep in mind that support will be removed in 8.0", type.getName());
 			this.idField = _ID;
 		}
 		

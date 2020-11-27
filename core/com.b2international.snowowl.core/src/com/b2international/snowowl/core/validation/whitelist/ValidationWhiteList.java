@@ -21,6 +21,7 @@ import java.util.List;
 import com.b2international.commons.collections.Collections3;
 import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
+import com.b2international.index.ID;
 import com.b2international.index.Keyword;
 import com.b2international.index.Script;
 import com.b2international.index.Text;
@@ -52,6 +53,7 @@ public final class ValidationWhiteList implements Serializable {
 		public static final String CREATED_AT = "createdAt";
 	}
 	
+	@ID
 	private final String id;
 	private final String ruleId;
 	private final String reporter;

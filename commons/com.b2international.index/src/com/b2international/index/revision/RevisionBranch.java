@@ -31,6 +31,7 @@ import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.options.Metadata;
 import com.b2international.commons.options.MetadataHolderImpl;
 import com.b2international.index.Doc;
+import com.b2international.index.ID;
 import com.b2international.index.Script;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -249,6 +250,8 @@ public final class RevisionBranch extends MetadataHolderImpl {
 	private final long id;
 	private final String name;
     private final String parentPath;
+    
+    @ID
     private final String path;
     private final boolean deleted;
 	private final SortedSet<RevisionSegment> segments;
