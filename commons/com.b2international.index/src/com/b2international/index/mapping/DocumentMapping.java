@@ -69,6 +69,9 @@ public final class DocumentMapping {
 	public static final String DELIMITER = ".";
 	private static final Joiner DELIMITER_JOINER = Joiner.on(DELIMITER);
 	
+	/**
+	 * @deprecated - use an explicit {@link ID} field instead of relying on the default _id metadata field
+	 */
 	public static final String _ID = "_id";
 
 	private static final Function<? super Field, String> GET_NAME = Field::getName;
@@ -284,6 +287,11 @@ public final class DocumentMapping {
 	
 	// static helpers
 	
+	/**
+	 * @param id
+	 * @return
+	 * @deprecated - use an explicit {@link ID} field instead of relying on the default _id
+	 */
 	public static Expression matchId(String id) {
 		return Expressions.exactMatch(_ID, id);
 	}
