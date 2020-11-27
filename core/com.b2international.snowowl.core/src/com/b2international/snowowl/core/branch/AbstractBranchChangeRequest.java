@@ -25,15 +25,7 @@ import com.b2international.commons.exceptions.ApiError;
 import com.b2international.commons.exceptions.ApiException;
 import com.b2international.commons.exceptions.ConflictException;
 import com.b2international.commons.exceptions.NotFoundException;
-import com.b2international.index.revision.AddedInSourceAndDetachedInTargetConflict;
-import com.b2international.index.revision.AddedInSourceAndTargetConflict;
-import com.b2international.index.revision.AddedInTargetAndDetachedInSourceConflict;
-import com.b2international.index.revision.BranchMergeConflictException;
-import com.b2international.index.revision.ChangedInSourceAndDetachedInTargetConflict;
-import com.b2international.index.revision.ChangedInSourceAndTargetConflict;
-import com.b2international.index.revision.Conflict;
-import com.b2international.index.revision.ObjectId;
-import com.b2international.index.revision.Revision;
+import com.b2international.index.revision.*;
 import com.b2international.index.revision.StagingArea.RevisionPropertyDiff;
 import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.branch.review.BranchState;
@@ -48,6 +40,7 @@ import com.b2international.snowowl.core.merge.ConflictingAttributeImpl;
 import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.core.merge.MergeConflict;
 import com.b2international.snowowl.core.merge.MergeConflict.ConflictType;
+import com.b2international.snowowl.core.repository.RepositoryCommitNotificationSender;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
@@ -59,6 +52,8 @@ import com.google.common.collect.Multimaps;
  * @since 4.6
  */
 public abstract class AbstractBranchChangeRequest implements Request<RepositoryContext, Merge>, RepositoryAccessControl {
+
+	private static final long serialVersionUID = 1L;
 
 	@JsonProperty
 	@NotEmpty
@@ -118,7 +113,10 @@ public abstract class AbstractBranchChangeRequest implements Request<RepositoryC
 					.build();
 			
 			try {
-				applyChanges(context, source, target);
+				Commit commit = applyChanges(context, source, target);
+				if (commit != null) {
+					context.service(RepositoryCommitNotificationSender.class).publish(context, commit);
+				}
 				return merge.completed();
 			} catch (BranchMergeConflictException e) {
 				return merge.failedWithConflicts(e.getMessage(), toMergeConflicts(e.getConflicts()));
@@ -138,7 +136,7 @@ public abstract class AbstractBranchChangeRequest implements Request<RepositoryC
 		return !Strings.isNullOrEmpty(userId) ? userId : context.service(User.class).getUsername();
 	}
 
-	protected abstract void applyChanges(RepositoryContext context, Branch source, Branch target);
+	protected abstract Commit applyChanges(RepositoryContext context, Branch source, Branch target);
 	
 	private Collection<MergeConflict> toMergeConflicts(List<Conflict> conflicts) {
 		final Multimap<ObjectId, Conflict> conflictsByObjectId = Multimaps.index(conflicts, Conflict::getObjectId);

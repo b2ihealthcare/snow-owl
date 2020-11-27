@@ -25,7 +25,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.xtext.util.Pair;
@@ -44,13 +43,11 @@ import com.b2international.index.mapping.Mappings;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.Commit;
-import com.b2international.index.revision.CommitDetail;
 import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.StagingArea;
 import com.b2international.index.revision.TimestampProvider;
-import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.codesystem.CodeSystemEntry;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
@@ -64,8 +61,6 @@ import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescr
 import com.b2international.snowowl.core.internal.locks.DatastoreLockTarget;
 import com.b2international.snowowl.core.internal.locks.DatastoreOperationLockException;
 import com.b2international.snowowl.core.locks.IOperationLockManager;
-import com.b2international.snowowl.core.terminology.TerminologyRegistry;
-import com.b2international.snowowl.eventbus.IEventBus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
@@ -289,64 +284,13 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 			throw new SnowowlRuntimeException(e.getMessage(), e);
 		} finally {
 			locks.unlock(lockContext, lockTarget);
-			// send a commit notification
 			if (commit != null && isNotificationEnabled()) {
-				new RepositoryCommitNotification(id(),
-						commit.getId(),						
-						commit.getGroupId(),
-						commit.getBranch(),
-						commit.getTimestamp(),
-						commit.getAuthor(),
-						commit.getComment(),
-						getNewObjects(commit),
-						getChangedObjects(commit),
-						getRemovedObjects(commit),
-						commit.getMergeSource())
-				.publish(service(IEventBus.class));
+				service(RepositoryCommitNotificationSender.class).publish(this, commit);
 			}
 			clear();
 		}
 	}
-
-	private Collection<ComponentIdentifier> getNewObjects(Commit commit) {
-		return commit.getDetails().stream()
-			.filter(CommitDetail::isAdd)
-			.flatMap(detail -> {
-				final short terminologyComponentId = getTerminologyComponentId(detail.getComponentType());
-				return detail.getComponents().stream().flatMap(Set::stream).map(id -> ComponentIdentifier.of(terminologyComponentId, id));
-			})
-			.collect(Collectors.toSet());
-	}
-
-	/* From all commit detail object, extract both component level changes and container related add/change/remove and mark them as CHANGED components */
-	private Collection<ComponentIdentifier> getChangedObjects(Commit commit) {
-		return commit.getDetails().stream()
-			.flatMap(detail -> {
-				final short terminologyComponentId = getTerminologyComponentId(detail.getObjectType());
-				return detail.getObjects().stream().map(id -> ComponentIdentifier.of(terminologyComponentId, id)); 
-			})
-			.collect(Collectors.toSet());
-	}
 	
-	private Collection<ComponentIdentifier> getRemovedObjects(Commit commit) {
-		return commit.getDetails().stream()
-			.filter(CommitDetail::isRemove)
-			.flatMap(detail -> {
-				final short terminologyComponentId = getTerminologyComponentId(detail.getComponentType());
-				return detail.getComponents().stream().flatMap(Set::stream).map(id -> ComponentIdentifier.of(terminologyComponentId, id));
-			})
-			.collect(Collectors.toSet());
-	}
-	
-	private short getTerminologyComponentId(String componentType) {
-		try {
-			return service(TerminologyComponents.class).getTerminologyComponentId(DocumentMapping.getClass(componentType));
-		} catch (IllegalArgumentException e) {
-			// return unspecified terminology component for each unknown components committed to the repo
-			return TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT;
-		}
-	}
-
 	private void clear() {
 		resolvedObjectsById.clear();
 	}
