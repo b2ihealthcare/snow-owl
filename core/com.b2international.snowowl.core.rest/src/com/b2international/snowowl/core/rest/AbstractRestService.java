@@ -93,7 +93,6 @@ public abstract class AbstractRestService {
 	public AbstractRestService(Set<String> sortFields) {
 		final Set<String> allowedSortFields = ImmutableSet.<String>builder()
 			.addAll(Collections3.toImmutableSet(sortFields))
-			.add(SearchIndexResourceRequest.DOC_ID.getField())
 			.add(SearchIndexResourceRequest.SCORE.getField())
 			.build();
 		this.sortKeyPattern = Pattern.compile("^(" + String.join("|", allowedSortFields) + ")(?:[:](asc|desc))?$");

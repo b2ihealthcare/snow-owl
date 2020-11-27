@@ -32,10 +32,10 @@ import java.util.Set;
 import com.b2international.commons.CompareUtils;
 import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
+import com.b2international.index.ID;
 import com.b2international.index.Keyword;
 import com.b2international.index.Script;
 import com.b2international.index.Text;
-import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -96,15 +96,15 @@ public final class RemoteJobEntry implements Serializable {
 	public static class Expressions {
 
 		public static Expression id(String id) {
-			return DocumentMapping.matchId(id);
+			return exactMatch(Fields.ID, id);
 		}
 
 		public static Expression ids(Collection<String> ids) {
-			return matchAny(DocumentMapping._ID, ids);
+			return matchAny(Fields.ID, ids);
 		}
 		
 		public static Expression idPrefix(String id) {
-			return prefixMatch(DocumentMapping._ID, id);
+			return prefixMatch(Fields.ID, id);
 		}
 		
 		public static Expression key(String key) {
@@ -251,7 +251,7 @@ public final class RemoteJobEntry implements Serializable {
 		
 	}
 	
-
+	@ID
 	private final String id;
 	private final String key;
 	
