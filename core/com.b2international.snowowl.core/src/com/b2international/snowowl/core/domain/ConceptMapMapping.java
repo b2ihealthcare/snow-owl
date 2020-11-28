@@ -51,7 +51,8 @@ public final class ConceptMapMapping implements Serializable {
 				.sourceTerm(from.getSourceTerm())
 				.targetIconId(from.getTargetIconId())
 				.targetComponentURI(from.getTargetComponentURI())
-				.targetTerm(from.getTargetTerm());
+				.targetTerm(from.getTargetTerm())
+				.approximate(from.isApproximate());
 	}
 	
 	public final static class Builder {
@@ -77,6 +78,8 @@ public final class ConceptMapMapping implements Serializable {
 		private Integer mapPriority = 0;
 		private String mapRule = "";
 		private String mapAdvice = "";
+		
+		private boolean approximate;
 		
 		public Builder uri(ComponentURI uri) {
 			this.uri = uri;
@@ -158,6 +161,11 @@ public final class ConceptMapMapping implements Serializable {
 			return this;
 		}
 		
+		public Builder approximate(final boolean approximate) {
+			this.approximate = approximate;
+			return this;
+		}
+		
 		public ConceptMapMapping build() {
 			return new ConceptMapMapping(
 					uri,
@@ -165,7 +173,8 @@ public final class ConceptMapMapping implements Serializable {
 					sourceIconId, sourceTerm, sourceComponentURI, 
 					targetIconId, targetTerm, targetComponentURI, 
 					active, 
-					mappingCorrelation, mapGroup, mapPriority, mapRule, mapAdvice);
+					mappingCorrelation, mapGroup, mapPriority, mapRule, mapAdvice,
+					approximate);
 		}
 	
 	}
@@ -192,6 +201,8 @@ public final class ConceptMapMapping implements Serializable {
 	private final String mapRule;
 	private final String mapAdvice;
 	
+	private final boolean approximate;
+	
 	ConceptMapMapping(
 			ComponentURI uri,
 			String containerIconId,
@@ -208,7 +219,9 @@ public final class ConceptMapMapping implements Serializable {
 			Integer mapGroup,
 			Integer mapPriority, 
 			String mapRule, 
-			String mapAdvice) {
+			String mapAdvice,
+			boolean approximate) {
+		
 		this.uri = uri; 
 		this.containerIconId = containerIconId;
 		this.containerTerm = containerTerm;
@@ -225,6 +238,7 @@ public final class ConceptMapMapping implements Serializable {
 		this.mapPriority = mapPriority;
 		this.mapRule = mapRule;
 		this.mapAdvice = mapAdvice;
+		this.approximate = approximate;
 	}
 
 	public String getId() {
@@ -295,6 +309,10 @@ public final class ConceptMapMapping implements Serializable {
 		return mapRule;
 	}
 	
+	public boolean isApproximate() {
+		return approximate;
+	}
+	
 	@Override
 	public String toString() {
 		return MoreObjects.toStringHelper(getClass())
@@ -314,6 +332,7 @@ public final class ConceptMapMapping implements Serializable {
 				.add("mapPriority", mapPriority)
 				.add("mapRule", mapRule)
 				.add("mapAdvice", mapAdvice)
+				.add("approximate", approximate)
 				.toString();
 	}
 
@@ -331,7 +350,8 @@ public final class ConceptMapMapping implements Serializable {
 			mapGroup, 
 			mapPriority, 
 			mapRule, 
-			mapAdvice
+			mapAdvice,
+			approximate
 		);
 	}
 	
@@ -352,7 +372,8 @@ public final class ConceptMapMapping implements Serializable {
 				&& Objects.equals(mapGroup, other.mapGroup)
 				&& Objects.equals(mapPriority, other.mapPriority)
 				&& Objects.equals(mapRule, other.mapRule)
-				&& Objects.equals(mapAdvice, other.mapAdvice);
+				&& Objects.equals(mapAdvice, other.mapAdvice)
+				&& Objects.equals(approximate, other.approximate);
 	}
 
 	public Builder toBuilder() {
