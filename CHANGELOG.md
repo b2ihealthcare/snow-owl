@@ -1,6 +1,48 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 7.12.0
+
+### Core
+- CodeSystems
+  * Support filtering Code Systems by their HL7 OID (#710)
+  * Make OID optional in Code System Create API (#710)
+- Validation
+  * Support `resourceURI` instead of just `branchPath` on validation issues (#707, #708)  
+- Jobs
+  * Support filtering jobs by multiple user values (8c307db)
+  * Support filtering jobs by their state value in `GET /jobs` (8db3fa6)
+  * Add `DELETE /jobs/:id` endpoint to delete jobs (853299b)
+- Commits
+  * Add support for searching for commits by timestamps (#722)
+
+### Bugs/Improvements
+- [index] clean up and remove unused logic from index module (493cd47, 6d53e5b, 57232cb, 2aa99f5, 07d09ed, fdb64ad)
+- [index] support array property tracking properly (#709)
+- [index] omit copy and move operations to properly migrate index schema (2595716)
+- [index] exclude items from the "from" change set early to prevent invalid conflicts (#718)
+- [index] fix potential resource leak when performing multiple searches with Integer.MAX_VALUE (aka `all()`) limit without explicit pagination (860be3a)
+- [index] replace `_id` based sorting with `_doc` when sorting documents by default (44d4218, 2249b3c, bbd2497, 115153c)
+- [index] use default `node.roles` instead of deprecated `node.master=true` in embedded EsNode (28ca645)
+- [index] dynamic string values will be mapped to `keyword` by default (fe51c28)
+- [core] fetch only one CodeSystem in CodeSystemService (5299092)
+- [core] support SETs as primary components in certain toolings (58536b5)
+- [core] make sure we send out commit notifications about merge/rebase commits (f429ac7)
+- [core] Add property to ConceptMapMapping for indicating if a match is approximate (#724)
+- [validation] apply unpublished effective time filter in snomed-query validation rules only if the `isUnpublishedOnly` rule parameter is set to `true` (12ce787)
+- [validation] increase minimum number of validation threads to `4` (405010f)
+- [validation] remove aggregation from rule669 to improve its performance (1675105) 
+- [api] add configuration to return all matches at once in Concept Map Search API (0cbccfc)
+- [api] support filter by description type in generic concept search API (de3777d, #714)
+- [api] support scores in generic concept search API (ee3f55c, #714)
+- [performance] speed up classpath scanning by restricting packages to `com.b2international` (#717)
+- [log] truncate collection request parameters to the first 10 items and remaining count (df069b0)
+
+### Dependencies
+* Bump Elasticsearch to 7.10.0 (#719, #721)
+* Bump classgraph to 4.8.90 (f14336d)
+* Bump owl-toolkit to 2.9.1 (c0f2c23)
+
 ## 7.11.1
 
 ### Bugs/Improvements
