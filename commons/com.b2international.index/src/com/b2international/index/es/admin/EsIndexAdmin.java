@@ -164,6 +164,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 			final Map<String, Object> typeMapping = ImmutableMap.<String, Object>builder()
 					.put("date_detection", false)
 					.put("numeric_detection", false)
+					.put("dynamic_templates", List.of(stringsAsKeywords()))
 					.putAll(toProperties(mapping))
 					.build();
 			
@@ -234,6 +235,17 @@ public final class EsIndexAdmin implements IndexAdmin {
 		// wait until the cluster processes each index create request
 		waitForYellowHealth(indices());
 		log.info("'{}' indexes are ready.", name);
+	}
+
+	private Map<String, Object> stringsAsKeywords() {
+		return Map.of(
+			"strings_as_keywords", Map.of(
+				"match_mapping_type", "string",
+				"mapping", Map.of(
+					"type", "keyword"
+				)
+			)
+		);
 	}
 
 	private Map<String, Object> createIndexSettings() throws IOException {
