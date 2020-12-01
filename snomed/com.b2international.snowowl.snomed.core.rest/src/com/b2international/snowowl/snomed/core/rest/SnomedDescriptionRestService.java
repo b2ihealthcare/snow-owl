@@ -28,7 +28,6 @@ import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequest.Sort;
-import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
@@ -81,11 +80,8 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 		
 		List<Sort> sorts = extractSortFields(params.getSort());
 		
-		if (sorts.isEmpty()) {
-			final SortField sortField = StringUtils.isEmpty(params.getTerm()) 
-					? SearchIndexResourceRequest.DOC_ID 
-					: SearchIndexResourceRequest.SCORE;
-			sorts = Collections.singletonList(sortField);
+		if (sorts.isEmpty() && !StringUtils.isEmpty(params.getTerm())) {
+			sorts = Collections.singletonList(SearchIndexResourceRequest.SCORE);
 		}
 		
 		return SnomedRequests

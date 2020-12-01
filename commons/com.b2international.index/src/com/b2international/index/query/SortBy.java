@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.Objects;
 
 import com.b2international.index.ScriptExpression;
-import com.b2international.index.mapping.DocumentMapping;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
@@ -44,9 +43,9 @@ public abstract class SortBy {
 	public static final String FIELD_SCORE = "_score";
 	
 	/**
-	 * Singleton representing document sort based on their natural occurrence. 
+	 * Singleton representing document sort based on their default sort field (usually the ID, but in case of scroll we can use _doc to speed things up) in ascending order.
 	 */
-	public static final SortBy DOC = SortBy.field(DocumentMapping._DOC, Order.ASC);
+	public static final SortByField DEFAULT = SortBy.field("_default", Order.ASC);
 	
 	/**
 	 * Singleton representing document sort based on their score in decreasing order (higher score first).
@@ -199,7 +198,7 @@ public abstract class SortBy {
 		
 		public SortBy build() {
 			if (sorts.isEmpty()) {
-				return DOC;
+				return DEFAULT;
 			} else if (sorts.size() == 1) {
 				return Iterables.getOnlyElement(sorts);
 			} else {
@@ -214,7 +213,7 @@ public abstract class SortBy {
 	 * @param order - the order to use when sorting matches
 	 * @return
 	 */
-	public static SortBy field(String field, Order order) {
+	public static SortByField field(String field, Order order) {
 		return new SortByField(field, order);
 	}
 	

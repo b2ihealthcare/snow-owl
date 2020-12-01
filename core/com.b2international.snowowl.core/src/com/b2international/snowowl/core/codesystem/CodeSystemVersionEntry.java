@@ -28,6 +28,7 @@ import java.util.Objects;
 import java.util.function.Function;
 
 import com.b2international.index.Doc;
+import com.b2international.index.ID;
 import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.Branch;
@@ -206,6 +207,7 @@ public final class CodeSystemVersionEntry implements Serializable {
 		
 	}
 	
+	@ID
 	private final String id;
 	private final long importDate;
 	private final long effectiveDate;

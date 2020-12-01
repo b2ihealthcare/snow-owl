@@ -90,6 +90,7 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 					.bind(QueryOptimizer.class, getQueryOptimizer())
 					.bind(ContentAvailabilityInfoProvider.class, getContentAvailabilityInfoProvider())
 					.bind(ContextConfigurer.class, getRequestConfigurer())
+					.bind(RepositoryCommitNotificationSender.class, new RepositoryCommitNotificationSender())
 					.bind(RepositoryCodeSystemProvider.class, (referenceBranch) -> {
 						final IBranchPath referencePath = BranchPathUtils.createPath(referenceBranch);
 						return CodeSystemRequests.getAllCodeSystems(env)

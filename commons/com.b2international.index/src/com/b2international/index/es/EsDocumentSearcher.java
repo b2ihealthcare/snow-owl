@@ -76,7 +76,6 @@ import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.query.SortBy;
 import com.b2international.index.query.SortBy.MultiSortBy;
-import com.b2international.index.query.SortBy.Order;
 import com.b2international.index.query.SortBy.SortByField;
 import com.b2international.index.query.SortBy.SortByScript;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -123,7 +122,8 @@ public class EsDocumentSearcher implements Searcher {
 	
 	@Override
 	public <T> Iterable<T> get(Class<T> type, Iterable<String> keys) throws IOException {
-		return search(Query.select(type).where(Expressions.matchAny(DocumentMapping._ID, keys)).limit(Iterables.size(keys)).build());
+		final DocumentMapping mapping = admin.mappings().getMapping(type);
+		return search(Query.select(type).where(Expressions.matchAny(mapping.getIdField(), keys)).limit(Iterables.size(keys)).build());
 	}
 
 	@Override
@@ -158,10 +158,7 @@ public class EsDocumentSearcher implements Searcher {
 			reqSource.storedFields(STORED_FIELDS_NONE);
 		}
 		
-		// sorting
-		addSort(mapping, reqSource, query.getSortBy());
-		
-		// scrolling
+		// scroll config
 		final boolean isLocalScroll = limit > resultWindow;
 		final boolean isScrolled = !Strings.isNullOrEmpty(query.getScrollKeepAlive());
 		final boolean isLiveScrolled = !Strings.isNullOrEmpty(query.getSearchAfter());
@@ -179,6 +176,8 @@ public class EsDocumentSearcher implements Searcher {
 			reqSource.searchAfter(fromSearchAfterToken(query.getSearchAfter()));
 		}
 		
+		// sorting config with a default sort field based on scroll config
+		addSort(mapping, reqSource, query.getSortBy(), !isScrolled && !isLocalScroll);
 		// disable explain explicitly, just in case
 		reqSource.explain(false);
 		// disable version field explicitly, just in case
@@ -384,7 +383,7 @@ public class EsDocumentSearcher implements Searcher {
 		}
 	}
 
-	private void addSort(DocumentMapping mapping, SearchSourceBuilder reqSource, SortBy sortBy) {
+	private void addSort(DocumentMapping mapping, SearchSourceBuilder reqSource, SortBy sortBy, boolean liveScroll) {
 		for (final SortBy item : getSortFields(sortBy)) {
 			if (item instanceof SortByField) {
 				SortByField sortByField = (SortByField) item;
@@ -397,8 +396,14 @@ public class EsDocumentSearcher implements Searcher {
 					// XXX: default order for scores is *descending*
 					reqSource.sort(SortBuilders.scoreSort().order(sortOrder)); 
 					break;
-				case DocumentMapping._DOC: //$FALL-THROUGH$
-					field = DocumentMapping._DOC;
+				case "_default": //$FALL-THROUGH$
+					if (liveScroll) {
+						// for live scrolls use the document ID field as tiebreaker
+						field = mapping.getIdField();
+					} else {
+						// for snapshot scrolls use the "_doc" field as tiebreaker
+						field = "_doc";
+					}
 				default:
 					reqSource.sort(SortBuilders.fieldSort(field).order(sortOrder));
 				}
@@ -426,15 +431,15 @@ public class EsDocumentSearcher implements Searcher {
 			items.add(sortBy);
 		}
 
-		Optional<SortByField> existingDocSort = items.stream()
-			.filter(SortByField.class::isInstance)
-			.map(SortByField.class::cast)
-			.filter(field -> DocumentMapping._DOC.equals(field.getField()))
-			.findFirst();
+		Optional<SortByField> existingDefaultSort = items.stream()
+				.filter(SortByField.class::isInstance)
+				.map(SortByField.class::cast)
+				.filter(field -> SortBy.DEFAULT.getField().equals(field.getField()))
+				.findFirst();
 		
-		if (!existingDocSort.isPresent()) {
-			// add _doc field as tiebreaker if not defined in the original SortBy
-			items.add(SortBy.field(DocumentMapping._DOC, Order.DESC));
+		if (!existingDefaultSort.isPresent()) {
+			// add the default field (either _doc or ID field) as tie breaker
+			items.add(SortBy.DEFAULT);
 		}
 		
 		return Iterables.filter(items, SortBy.class);

@@ -40,7 +40,6 @@ import com.b2international.index.Scroll;
 import com.b2international.index.Searcher;
 import com.b2international.index.aggregations.Aggregation;
 import com.b2international.index.aggregations.AggregationBuilder;
-import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
@@ -127,7 +126,7 @@ public final class RemoteJobTracker implements IDisposableService {
 	}
 	
 	public RemoteJobs search(Expression query, int limit) {
-		return search(query, List.of(), SortBy.DOC, limit); 
+		return search(query, List.of(), SortBy.DEFAULT, limit); 
 	}
 	
 	private RemoteJobs search(Expression query, List<String> fields, SortBy sortBy, int limit) {
@@ -167,7 +166,7 @@ public final class RemoteJobTracker implements IDisposableService {
 	}
 	
 	public void requestDeletes(Collection<String> jobIds) {
-		final RemoteJobs jobEntries = search(Expressions.matchAny(DocumentMapping._ID, jobIds), jobIds.size());
+		final RemoteJobs jobEntries = search(RemoteJobEntry.Expressions.ids(jobIds), jobIds.size());
 		final Set<String> existingJobIds = FluentIterable.from(jobEntries).transform(RemoteJobEntry::getId).toSet();
 		Job[] existingJobs = Job.getJobManager().find(SingleRemoteJobFamily.create(existingJobIds));
 		// mark existing jobs as deleted and cancel them
@@ -187,7 +186,7 @@ public final class RemoteJobTracker implements IDisposableService {
 			writer.removeAll(ImmutableMap.of(RemoteJobEntry.class, remoteJobsToDelete));
 			if (!remoteJobsToCancel.isEmpty()) {
 				LOG.trace("Marking deletable jobs {}", remoteJobsToCancel);
-				writer.bulkUpdate(new BulkUpdate<>(RemoteJobEntry.class, Expressions.matchAny(DocumentMapping._ID, remoteJobsToCancel), RemoteJobEntry.WITH_DELETED));
+				writer.bulkUpdate(new BulkUpdate<>(RemoteJobEntry.class, RemoteJobEntry.Expressions.ids(remoteJobsToCancel), RemoteJobEntry.WITH_DELETED));
 			}
 			writer.commit();
 			return null;
@@ -208,7 +207,7 @@ public final class RemoteJobTracker implements IDisposableService {
 	
 	private void update(String jobId, String script, Map<String, Object> params) {
 		index.write(writer -> {
-			writer.bulkUpdate(new BulkUpdate<>(RemoteJobEntry.class, DocumentMapping.matchId(jobId), script, params));
+			writer.bulkUpdate(new BulkUpdate<>(RemoteJobEntry.class, RemoteJobEntry.Expressions.id(jobId), script, params));
 			writer.commit();
 			return null;
 		});

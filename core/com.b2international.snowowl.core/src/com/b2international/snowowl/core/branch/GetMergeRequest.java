@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package com.b2international.snowowl.core.branch;
 
 import com.b2international.commons.exceptions.NotFoundException;
-import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
@@ -42,7 +41,7 @@ public class GetMergeRequest implements Request<RepositoryContext, Merge>, Repos
 
 	@Override
 	public Merge execute(RepositoryContext context) {
-		final RemoteJobEntry job = Iterables.getOnlyElement(context.service(RemoteJobTracker.class).search(DocumentMapping.matchId(id), 1), null);
+		final RemoteJobEntry job = Iterables.getOnlyElement(context.service(RemoteJobTracker.class).search(RemoteJobEntry.Expressions.id(id), 1), null);
 		if (job == null) {
 			throw new NotFoundException("Merge", id);
 		}
