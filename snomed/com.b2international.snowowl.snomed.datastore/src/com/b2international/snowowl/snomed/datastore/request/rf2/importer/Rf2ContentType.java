@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,16 @@
 package com.b2international.snowowl.snomed.datastore.request.rf2.importer;
 
 import java.util.Arrays;
-import java.util.List;
 
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.BooleanUtils;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.request.io.ImportDefectAcceptor.ImportDefectBuilder;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationDefects;
-import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationIssueReporter;
 import com.google.common.base.Strings;
 
 /**
@@ -36,9 +35,10 @@ import com.google.common.base.Strings;
  */
 public interface Rf2ContentType<T extends SnomedComponent> {
 
-	default void register(String[] values, Rf2EffectiveTimeSlice slice, Rf2ValidationIssueReporter reporter) {
+	default void register(String[] values, Rf2EffectiveTimeSlice slice, ImportDefectBuilder defectBuilder) {
+		
 		final String containerId = getContainerId(values);
-		slice.register(containerId, this, values, reporter);
+		slice.register(containerId, this, values, defectBuilder);
 		slice.registerDependencies(getDependentComponentId(values), getDependencies(values));
 	}
 
@@ -67,49 +67,48 @@ public interface Rf2ContentType<T extends SnomedComponent> {
 		return Arrays.equals(getHeaderColumns(), header);
 	}
 	
-	default void validate(Rf2ValidationIssueReporter reporter, String[] values) {
+	default void validate(ImportDefectBuilder defectBuilder, String[] values) {
 		final String isActive = values[2];
 		final String moduleId = values[3];
 		
-		if (values.length != getHeaderColumns().length) {
-			reporter.error(Rf2ValidationDefects.INCORRECT_COLUMN_NUMBER.getLabel());
-		}
+		defectBuilder
+			.whenNotEqual(values.length, getHeaderColumns().length)
+			.error(Rf2ValidationDefects.INCORRECT_COLUMN_NUMBER.getLabel());
 		
-		if (Strings.isNullOrEmpty(isActive)) {
-			reporter.error(Rf2ValidationDefects.MISSING_ACTIVE_FLAG.getLabel());
-		}
+		defectBuilder
+			.whenBlank(isActive)
+			.error(Rf2ValidationDefects.MISSING_ACTIVE_FLAG.getLabel());
 		
-		validateConceptIds(reporter, moduleId);
-		validateByContentType(reporter, values);
+		validateConceptIds(defectBuilder, moduleId);
+		validateByContentType(defectBuilder, values);
 	}
 	
-	default void validateConceptIds(Rf2ValidationIssueReporter reporter, String...idsToValidate) {
-		final List<String> ids = Arrays.asList(idsToValidate);
-		for (String id : ids) {
-			try {
-				validateByComponentCategory(id, reporter, ComponentCategory.CONCEPT);
-			} catch (IllegalArgumentException e) {
-				reporter.error("%s %s", id, Rf2ValidationDefects.INVALID_ID);
-				// ignore exception
-			}
+	default void validateConceptIds(ImportDefectBuilder defectBuilder, String... idsToValidate) {
+		for (String id : idsToValidate) {
+			validateByComponentCategory(defectBuilder, id, ComponentCategory.CONCEPT);
 		}
 	}
 	
-	default void validateByComponentCategory(String id, Rf2ValidationIssueReporter reporter, ComponentCategory expectedCategory) {
-		validateId(id, reporter);
-		final ComponentCategory componentCategory = SnomedIdentifiers.getComponentCategory(id);
-		if (componentCategory != expectedCategory) {
-			reporter.error(Rf2ValidationDefects.UNEXPECTED_COMPONENT_CATEGORY.getLabel());
-		}
+	default void validateByComponentCategory(ImportDefectBuilder defectBuilder, String id, ComponentCategory expectedCategory) {
+		validateId(defectBuilder, id);
+		
+		final ComponentCategory componentCategory[] = new ComponentCategory[1];
+		defectBuilder
+			.whenThrows(() -> { componentCategory[0] = SnomedIdentifiers.getComponentCategory(id); })
+			.error("%s %s", id, Rf2ValidationDefects.INVALID_ID);
+		
+		defectBuilder
+			.whenNotEqual(componentCategory[0], expectedCategory)
+			.error(Rf2ValidationDefects.UNEXPECTED_COMPONENT_CATEGORY.getLabel());
 	}
 	
-	default void validateId(String id, Rf2ValidationIssueReporter reporter) {
-		try {
-			SnomedIdentifiers.validate(id);
-		} catch (IllegalArgumentException e) {
-			reporter.error("%s %s", id, Rf2ValidationDefects.INVALID_ID);
-		}
+	default void validateId(ImportDefectBuilder defectBuilder, String id) {
+		defectBuilder
+			.whenThrows(() -> SnomedIdentifiers.validate(id))
+			.error("%s %s", id, Rf2ValidationDefects.INVALID_ID);
 	}
+	
+	void validateByContentType(ImportDefectBuilder defectBuilder, String[] values);
 	
 	LongSet getDependencies(String[] values);
 	
@@ -118,8 +117,6 @@ public interface Rf2ContentType<T extends SnomedComponent> {
 	String getContainerId(String[] values);
 
 	void resolve(T component, String[] values);
-	
-	void validateByContentType(Rf2ValidationIssueReporter reporter, String[] values);
 
 	T create();
 

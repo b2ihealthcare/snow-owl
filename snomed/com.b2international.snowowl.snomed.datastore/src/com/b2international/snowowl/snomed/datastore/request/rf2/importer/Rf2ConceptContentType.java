@@ -18,10 +18,10 @@ package com.b2international.snowowl.snomed.datastore.request.rf2.importer;
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.snowowl.core.domain.IComponent;
+import com.b2international.snowowl.core.request.io.ImportDefectAcceptor.ImportDefectBuilder;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
-import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationIssueReporter;
 
 /**
  * @since 6.0.0
@@ -60,10 +60,10 @@ final class Rf2ConceptContentType implements Rf2ContentType<SnomedConcept> {
 	}
 
 	@Override
-	public void validateByContentType(Rf2ValidationIssueReporter reporter, String[] values) {
+	public void validateByContentType(ImportDefectBuilder defectBuilder, String[] values) {
 		final String conceptId = values[0];
 		final String definitionStatusId = values[4];
-		validateConceptIds(reporter, conceptId, definitionStatusId);
+		
+		validateConceptIds(defectBuilder, conceptId, definitionStatusId);
 	}
-
 }

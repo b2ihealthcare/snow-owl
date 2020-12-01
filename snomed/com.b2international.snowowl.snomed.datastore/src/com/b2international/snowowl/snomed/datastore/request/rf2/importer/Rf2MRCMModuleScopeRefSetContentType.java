@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,10 +20,10 @@ import static com.b2international.snowowl.snomed.common.SnomedRf2Headers.MRCM_MO
 
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
+import com.b2international.snowowl.core.request.io.ImportDefectAcceptor.ImportDefectBuilder;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
-import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationIssueReporter;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -61,10 +61,9 @@ final class Rf2MRCMModuleScopeRefSetContentType implements Rf2RefSetContentType 
 	}
 
 	@Override
-	public void validateMembersByReferenceSetContentType(Rf2ValidationIssueReporter reporter, String[] values) {
+	public void validateMembersByReferenceSetContentType(ImportDefectBuilder defectBuilder, String[] values) {
 		final String mrcmRuleRefsetId = values[6];
 		
-		validateConceptIds(reporter, mrcmRuleRefsetId);
+		validateConceptIds(defectBuilder, mrcmRuleRefsetId);
 	}
-	
 }
