@@ -1,56 +1,103 @@
 package scripts;
 
+import java.util.stream.Collectors
+
 import com.b2international.index.Hits
 import com.b2international.index.query.Expressions
 import com.b2international.index.query.Query
-import com.b2international.index.query.Expressions.ExpressionBuilder
 import com.b2international.index.revision.RevisionSearcher
 import com.b2international.snowowl.core.ComponentIdentifier
 import com.b2international.snowowl.core.date.EffectiveTimes
-import com.b2international.snowowl.core.domain.BranchContext
-import com.b2international.snowowl.snomed.common.SnomedRf2Headers
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry
-import com.google.common.collect.Lists
+import com.google.common.collect.HashMultimap
+import com.google.common.collect.ImmutableSet
+import com.google.common.collect.Multimap
 
-RevisionSearcher searcher = ctx.service(RevisionSearcher.class)
+def RevisionSearcher searcher = ctx.service(RevisionSearcher.class)
+def Set<String> relationshipIdsToReport = []
 
-Iterable<Hits<String>> inactiveConceptBatches = searcher.scroll(Query.select(String.class)
+if (params.isUnpublishedOnly) {
+	// unpublished only
+	searcher
+		.scroll(Query.select(String[].class)
+		.from(SnomedRelationshipIndexEntry.class)
+		.fields(SnomedRelationshipIndexEntry.Fields.ID, SnomedRelationshipIndexEntry.Fields.SOURCE_ID, SnomedRelationshipIndexEntry.Fields.TYPE_ID, SnomedRelationshipIndexEntry.Fields.DESTINATION_ID)
+		.where(
+			Expressions.builder()
+				.filter(SnomedRelationshipIndexEntry.Expressions.active())
+				.filter(SnomedRelationshipIndexEntry.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
+			.build()
+		)
+		.limit(10_000)
+		.build())
+		.each { Hits<String[]> relationships ->
+			
+			def Multimap<String, String> relationshipsBySource = HashMultimap.create() 
+			def Multimap<String, String> relationshipsByType = HashMultimap.create()
+			def Multimap<String, String> relationshipsByDestination = HashMultimap.create()
+			
+			relationships.each { relationship -> 
+				relationshipsBySource.put(relationship[1], relationship[0])
+				relationshipsByType.put(relationship[2], relationship[0])
+				relationshipsByDestination.put(relationship[3], relationship[0])
+			}
+			
+			def Set<String> ids = []
+			ids.addAll(relationshipsBySource.keySet())
+			ids.addAll(relationshipsByType.keySet())
+			ids.addAll(relationshipsByDestination.keySet())
+			
+			searcher
+				.search(Query.select(String.class)
+					.from(SnomedConceptDocument.class)
+					.fields(SnomedConceptDocument.Fields.ID)
+					.where(
+						Expressions.builder()
+							.filter(SnomedConceptDocument.Expressions.ids(ids))
+							.filter(SnomedConceptDocument.Expressions.inactive())
+						.build()
+					)
+					.limit(ids.size())
+					.build()
+				)
+				.each { inactiveConceptId ->
+					relationshipIdsToReport.addAll(relationshipsBySource.get(inactiveConceptId))
+					relationshipIdsToReport.addAll(relationshipsByType.get(inactiveConceptId))
+					relationshipIdsToReport.addAll(relationshipsByDestination.get(inactiveConceptId))
+				}
+		}
+} else {
+	// published + unpublished
+	searcher
+		.scroll(Query.select(String.class)
 		.from(SnomedConceptDocument.class)
 		.fields(SnomedConceptDocument.Fields.ID)
 		.where(SnomedConceptDocument.Expressions.inactive())
-		.limit(10_000)
+		.limit(30_000)
 		.build())
-
-List<ComponentIdentifier> issues = Lists.newArrayList()
-
-inactiveConceptBatches.each({ conceptBatch ->
-	List<String> inactiveConceptIds = conceptBatch.getHits()
-	
-	ExpressionBuilder invalidRelationshipExpression = Expressions.builder()
-			.filter(SnomedRelationshipIndexEntry.Expressions.active())
-			.should(SnomedRelationshipIndexEntry.Expressions.sourceIds(inactiveConceptIds))
-			.should(SnomedRelationshipIndexEntry.Expressions.typeIds(inactiveConceptIds))
-			.should(SnomedRelationshipIndexEntry.Expressions.destinationIds(inactiveConceptIds))
+		.each { Hits<String> conceptBatch ->
+			def inactiveConceptIds = ImmutableSet.copyOf(conceptBatch.getHits())
 			
-	if (params.isUnpublishedOnly) {
-		invalidRelationshipExpression.filter(SnomedRelationshipIndexEntry.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
-	}
-	
-	Iterable<Hits<String>> invalidRelationshipBatches = searcher.scroll(Query.select(String.class)
-			.from(SnomedRelationshipIndexEntry.class)
-			.fields(SnomedRelationshipIndexEntry.Fields.ID)
-			.where(invalidRelationshipExpression.build())
-			.limit(10_000)
-			.build())
+			searcher
+				.scroll(Query.select(String.class)
+				.from(SnomedRelationshipIndexEntry.class)
+				.fields(SnomedRelationshipIndexEntry.Fields.ID)
+				.where(
+					Expressions.builder()
+						.filter(SnomedRelationshipIndexEntry.Expressions.active())
+						.should(SnomedRelationshipIndexEntry.Expressions.sourceIds(inactiveConceptIds))
+						.should(SnomedRelationshipIndexEntry.Expressions.typeIds(inactiveConceptIds))
+						.should(SnomedRelationshipIndexEntry.Expressions.destinationIds(inactiveConceptIds))
+					.build()
+				)
+				.limit(10_000)
+				.build())
+				.each { Hits<String> relationshipBatch ->
+					relationshipIdsToReport.addAll(relationshipBatch.getHits())
+				}
+		}
+}
 
-	invalidRelationshipBatches.each({ relationshipBatch ->
-		relationshipBatch.each({ id ->
-			issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, id))
-		})
-	})
-})
-
-return issues
+return relationshipIdsToReport.stream().map({id -> ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, id)}).collect(Collectors.toList())
