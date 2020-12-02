@@ -16,9 +16,9 @@
 package com.b2international.snowowl.core.compare;
 
 import static com.b2international.snowowl.core.compare.ConceptMapCompareChangeKind.DIFFERENT_TARGET;
+import static com.b2international.snowowl.core.compare.ConceptMapCompareChangeKind.MISSING;
 import static com.b2international.snowowl.core.compare.ConceptMapCompareChangeKind.PRESENT;
 import static com.b2international.snowowl.core.compare.ConceptMapCompareChangeKind.SAME;
-import static com.b2international.snowowl.core.compare.ConceptMapCompareChangeKind.MISSING;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -42,11 +42,11 @@ import com.google.common.collect.ImmutableSet;
  */
 public class ConceptMapCompareDsvExportTest {
 	
-	private static final List<ConceptMapCompareChangeKind> ALL = ImmutableList.copyOf(ConceptMapCompareChangeKind.values());
+	private static final Set<ConceptMapCompareChangeKind> ALL = ImmutableSet.copyOf(ConceptMapCompareChangeKind.values());
 
-	private static final Set<String> COLUMNS = ImmutableSet.of(
-			"Explanation", "Mapping Set", 
-			"Source Code System", "Source code", "Source term", 
+	private static final List<String> HEADERS = ImmutableList.of(
+			"Explanation", "Mapping Set",
+			"Source Code System", "Source code", "Source term",
 			"Target Code System", "Target code", "Target term");
 	
 	private static final List<ConceptMapCompareResultItem> ITEMS = ImmutableList.of(
@@ -61,14 +61,14 @@ public class ConceptMapCompareDsvExportTest {
 	
 	@Test
 	public void testExport() throws IOException {
-		final File file = ConceptMapCompareDsvExporter.export(ITEMS, ALL, COLUMNS);
+		final File file = ConceptMapCompareDsvExporter.export(ITEMS, ALL, HEADERS);
 		assertNotNull(file);
 		assertFile(file, ITEMS);
 	}
 
 	@Test
 	public void testFilteredExport() throws IOException {
-		final File file = ConceptMapCompareDsvExporter.export(ITEMS, ImmutableList.of(DIFFERENT_TARGET, MISSING), COLUMNS);
+		final File file = ConceptMapCompareDsvExporter.export(ITEMS, ImmutableSet.of(DIFFERENT_TARGET, MISSING), HEADERS);
 		assertNotNull(file);
 		assertFile(file, ImmutableList.of(
 				createItem(DIFFERENT_TARGET, "A", "123037004", "Body structure", "H00-H59", "Chapter VII - Diseases of the eye and adnexa"),
@@ -78,15 +78,16 @@ public class ConceptMapCompareDsvExportTest {
 	
 	@Test
 	public void testExportEmptyList() throws IOException {
-		final File file = ConceptMapCompareDsvExporter.export(Collections.emptyList(), ALL, COLUMNS);
+		final File file = ConceptMapCompareDsvExporter.export(Collections.emptyList(), ALL, HEADERS);
 		assertNotNull(file);
 		assertFile(file, Collections.emptyList());
 	}
 	
 	private void assertFile(final File file, final List<ConceptMapCompareResultItem> excpectedItems) throws IOException {
 		try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-			//Read header
-			reader.readLine();
+			
+			String header = reader.readLine();
+			assertEquals(String.join(";", HEADERS), header);
 			
 			String line = reader.readLine();
 			int itemIndex = 0;
