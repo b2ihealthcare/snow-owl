@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
 import com.google.common.primitives.Ints;
 import com.google.common.primitives.Primitives;
 
@@ -91,8 +92,9 @@ public interface HitConverter<T> {
 		
 		@Override
 		public T convert(SearchHit hit) {
-			final Map<String, Object> val = newHashMapWithExpectedSize(hit.getFields().size());
-			hit.getFields().forEach((field, docField) -> {
+			final Map<String, DocumentField> fields = hit.getFields();
+			final Map<String, Object> val = newHashMapWithExpectedSize(fields.size());
+			fields.forEach((field, docField) -> {
 				val.put(field, docField.getValue());
 			});
 			return select.cast(val);
@@ -135,10 +137,11 @@ public interface HitConverter<T> {
 		
 		@Override
 		public T convert(SearchHit hit) {
+			Map<String, DocumentField> hitFields = hit.getFields();
 			final String[] val = new String[fields.size()];
 			for (int i = 0; i < fields.size(); i++) {
 				String field = fields.get(i);
-				DocumentField docField = hit.getFields().get(field);
+				DocumentField docField = hitFields.get(field);
 				if (docField != null) {
 					Object fieldValue = docField.getValue();
 					val[i] = String.valueOf(fieldValue);
@@ -179,11 +182,7 @@ public interface HitConverter<T> {
 		
 		@Override
 		public T convert(SearchHit hit) {
-			final Map<String, Object> val = newHashMapWithExpectedSize(hit.getFields().size());
-			hit.getFields().forEach((field, docField) -> {
-				val.put(field, docField.getValue());
-			});
-			return mapper.convertValue(val, select);
+			return mapper.convertValue(Maps.transformValues(hit.getFields(), DocumentField::getValue), select);
 		}
 		
 	}
