@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.repository.RevisionDocument;
+import com.b2international.snowowl.core.request.io.ImportDefectAcceptor;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
@@ -56,7 +57,10 @@ public class Rf2GlobalValidator {
 		this.log = log;
 	}
 	
-	public void validateTerminologyComponents(Iterable<Rf2EffectiveTimeSlice> slices, Rf2ValidationIssueReporter reporter, BranchContext context) {
+	public void validateTerminologyComponents(
+			final Iterable<Rf2EffectiveTimeSlice> slices, 
+			final ImportDefectAcceptor globalDefectAcceptor, 
+			final BranchContext context) {
 		
 		List<Rf2EffectiveTimeSlice> slicesToCheck = Lists.newArrayListWithExpectedSize(Iterables.size(slices)); 
 		
@@ -158,7 +162,7 @@ public class Rf2GlobalValidator {
 			
 			if (!missingConceptIds.isEmpty()) {
 				missingConceptIds.forEach(id -> {
-					reportMissingComponent(reporter, id, missingDependenciesInEffectiveTime.get(id), "concept");
+					reportMissingComponent(globalDefectAcceptor, id, missingDependenciesInEffectiveTime.get(id), "concept");
 				});
 			}
 			
@@ -168,7 +172,7 @@ public class Rf2GlobalValidator {
 
 			if (!missingDescriptionIds.isEmpty()) {
 				missingDescriptionIds.forEach(id -> {
-					reportMissingComponent(reporter, id, missingDependenciesInEffectiveTime.get(id), "description");
+					reportMissingComponent(globalDefectAcceptor, id, missingDependenciesInEffectiveTime.get(id), "description");
 				});
 			}
 			
@@ -178,16 +182,16 @@ public class Rf2GlobalValidator {
 
 			if (!missingRelationshipIds.isEmpty()) {
 				missingRelationshipIds.forEach(id -> {
-					reportMissingComponent(reporter, id, missingDependenciesInEffectiveTime.get(id), "relationship");
+					reportMissingComponent(globalDefectAcceptor, id, missingDependenciesInEffectiveTime.get(id), "relationship");
 				});
 			}
 			
 		}
 	}
 
-	private void reportMissingComponent(Rf2ValidationIssueReporter reporter, String id, String effectiveTime, String componentTypeLabel) {
+	private void reportMissingComponent(ImportDefectAcceptor globalDefectAcceptor, String id, String effectiveTime, String componentTypeLabel) {
 		String effectiveTimeLabel = Rf2EffectiveTimeSlice.SNAPSHOT_SLICE.equals(effectiveTime) ? "" : String.format(" in effective time '%s'", effectiveTime);
-		reporter.error("%s %s with id '%s'%s", Rf2ValidationDefects.MISSING_DEPENDANT_ID, componentTypeLabel, id, effectiveTimeLabel);
+		globalDefectAcceptor.error(String.format("%s %s with id '%s'%s", Rf2ValidationDefects.MISSING_DEPENDANT_ID, componentTypeLabel, id, effectiveTimeLabel));
 	}
 
 	private <T extends SnomedComponentDocument> Set<String> fetchComponentIds(BranchContext context, final Set<String> componentIdsToFetch, Class<T> clazz) {

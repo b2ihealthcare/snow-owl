@@ -53,7 +53,10 @@ import com.b2international.snowowl.core.locks.Locks;
 import com.b2international.snowowl.core.repository.ContentAvailabilityInfoProvider;
 import com.b2international.snowowl.core.repository.RepositoryCodeSystemProvider;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
-import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration.ImportStatus;
+import com.b2international.snowowl.core.request.io.ImportDefectAcceptor;
+import com.b2international.snowowl.core.request.io.ImportDefectAcceptor.ImportDefectBuilder;
+import com.b2international.snowowl.core.request.io.ImportResponse;
+import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
@@ -74,11 +77,12 @@ import com.fasterxml.jackson.dataformat.csv.CsvParser;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 6.0.0
  */
-final class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportResponse>, BranchAccessControl {
+final class SnomedRf2ImportRequest implements Request<BranchContext, ImportResponse>, BranchAccessControl {
 
 	private static final long serialVersionUID = 1L;
 
@@ -110,7 +114,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportRe
 	}
 	
 	@Override
-	public Rf2ImportResponse execute(BranchContext context) {
+	public ImportResponse execute(BranchContext context) {
 		validate(context);
 		final InternalAttachmentRegistry fileReg = (InternalAttachmentRegistry) context.service(AttachmentRegistry.class);
 		final File rf2Archive = fileReg.getAttachment(rf2ArchiveId);
@@ -143,10 +147,9 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportRe
 		}
 	}
 
-	Rf2ImportResponse doImport(final BranchContext context, final File rf2Archive, final Rf2ImportConfiguration importconfig) throws Exception {
+	ImportResponse doImport(final BranchContext context, final File rf2Archive, final Rf2ImportConfiguration importconfig) throws Exception {
 		final String codeSystem = context.service(RepositoryCodeSystemProvider.class).get(context.branch().path()).getShortName();
 		final Rf2ValidationIssueReporter reporter = new Rf2ValidationIssueReporter();
-		final Rf2ImportResponse response = new Rf2ImportResponse();
 		
 		try (final DB db = createDb()) {
 
@@ -158,42 +161,57 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportRe
 			w.reset().start();
 			
 			// Log issues with rows from the import files
-			logValidationIssues(reporter, response);
-			if (response.getStatus().equals(ImportStatus.FAILED)) {
-				return response;
+			logValidationIssues(reporter);
+			if (reporter.hasErrors()) {
+				return ImportResponse.defects(reporter.getDefects());
 			}
 			
 			// Run validation that takes current terminology content into account
 			final Iterable<Rf2EffectiveTimeSlice> orderedEffectiveTimeSlices = effectiveTimeSlices.consumeInOrder();
 			final Rf2GlobalValidator globalValidator = new Rf2GlobalValidator(LOG);
-			globalValidator.validateTerminologyComponents(orderedEffectiveTimeSlices, reporter, context);
-//			globalValidator.validateMembers(orderedEffectiveTimeSlices, reporter, context);
 			
-			// Log validation issues
-			logValidationIssues(reporter, response);
-			if (response.getStatus().equals(ImportStatus.FAILED)) {
-				return response;
+			/* 
+			 * TODO: Use Attachment to get the release file name and/or track file and line number sources for each row 
+			 * so that they can be referenced in this stage as well
+			 */
+			final ImportDefectAcceptor globalDefectAcceptor = reporter.getDefectAcceptor("RF2 release");
+			globalValidator.validateTerminologyComponents(orderedEffectiveTimeSlices, globalDefectAcceptor, context);
+//			globalValidator.validateMembers(orderedEffectiveTimeSlices, globalDefectAcceptor, context);
+			
+			// Log validation issues (but just the ones found during global validation)
+			logValidationIssues(globalDefectAcceptor);
+			if (reporter.hasErrors()) {
+				return ImportResponse.defects(reporter.getDefects());
 			}
 			
 			// Import effective time slices in chronological order
+			final ImmutableSet.Builder<ComponentURI> visitedComponents = ImmutableSet.builder(); 
+			
 			for (Rf2EffectiveTimeSlice slice : orderedEffectiveTimeSlices) {
-				slice.doImport(context, codeSystem, importconfig);
+				slice.doImport(context, codeSystem, importconfig, visitedComponents);
 			}
 			
 			// Update locales registered on the code system
 			updateLocales(context, codeSystem);
+			
+			return ImportResponse.success(visitedComponents.build(), reporter.getDefects());
 		}
-		
-		return response;
 	}
 
-	private void logValidationIssues(final Rf2ValidationIssueReporter reporter, Rf2ImportResponse response) {
+	private void logValidationIssues(final Rf2ValidationIssueReporter reporter) {
 		reporter.logWarnings(LOG);
-		response.setIssues(reporter.getIssues());
-		if (reporter.getNumberOfErrors() > 0) {
-			response.setStatus(ImportStatus.FAILED);
-			reporter.logErrors(LOG);
-		}
+		reporter.logErrors(LOG);
+	}
+	
+	private void logValidationIssues(final ImportDefectAcceptor defectAcceptor) {
+		defectAcceptor.getDefects()
+			.forEach(defect -> {
+				if (defect.isError()) {
+					LOG.error(defect.getMessage());
+				} else if (defect.isWarning()) {
+					LOG.warn(defect.getMessage());
+				}
+			});
 	}
 	
 	private boolean isLoadOnDemandEnabled() {
@@ -232,8 +250,13 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportRe
 
 	private void readFile(ZipEntry entry, final InputStream in, final ObjectReader oReader, Rf2EffectiveTimeSlices effectiveTimeSlices, Rf2ValidationIssueReporter reporter)
 			throws IOException, JsonProcessingException {
+		
+		final String entryName = entry.getName();
+		final ImportDefectAcceptor defectAcceptor = reporter.getDefectAcceptor(entryName);
+		
 		boolean header = true;
 		Rf2ContentType<?> resolver = null;
+		int lineNumber = 1;
 		
 		MappingIterator<String[]> mi = oReader.readValues(in);
 		while (mi.hasNext()) {
@@ -248,23 +271,32 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, Rf2ImportRe
 				}
 
 				if (resolver == null) {
-					LOG.warn("Unrecognized RF2 file: {}", entry.getName());
+					LOG.warn("Unrecognized RF2 file: {}", entryName);
 					break;
 				}
 				
 				header = false;
 			} else {
-				if (Rf2ReleaseType.SNAPSHOT == releaseType) {
-					final String effectiveTime = Strings.isNullOrEmpty(line[1]) ? EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL : Rf2EffectiveTimeSlice.SNAPSHOT_SLICE;
-					resolver.register(line, effectiveTimeSlices.getOrCreate(effectiveTime), reporter);
-				} else {
-					final String effectiveTime = Strings.isNullOrEmpty(line[1]) ? EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL : line[1];
-					resolver.register(line, effectiveTimeSlices.getOrCreate(effectiveTime), reporter);
-				}
+				final String effectiveTimeKey = getEffectiveTimeKey(line[1]);
+				final ImportDefectBuilder defectBuilder = defectAcceptor.on(Integer.toString(lineNumber));
+				resolver.register(line, effectiveTimeSlices.getOrCreate(effectiveTimeKey), defectBuilder);
 			}
 
+			lineNumber++;
 		}
+	}
 
+	private String getEffectiveTimeKey(final String effectiveTime) {
+		if (Strings.isNullOrEmpty(effectiveTime)) {
+			// Unset effective time rows are getting their own time slice in all import modes 
+			return EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL;
+		} else if (Rf2ReleaseType.SNAPSHOT == releaseType) {
+			// All other rows are imported in a single run in snapshot mode
+			return Rf2EffectiveTimeSlice.SNAPSHOT_SLICE;
+		} else {
+			// Delta and full modes, however, import each "chronological layer" in order 
+			return effectiveTime;
+		}
 	}
 
 	private DB createDb() {

@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore.request.rf2.importer;
 
+import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.getTerminologyComponentIdValue;
+
 import static com.google.common.collect.Lists.newArrayListWithExpectedSize;
 import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
 import static com.google.common.collect.Sets.newHashSet;
@@ -48,8 +50,11 @@ import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
+import com.b2international.snowowl.core.request.io.ImportDefectAcceptor.ImportDefectBuilder;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
@@ -58,9 +63,9 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDoc
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
-import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationIssueReporter;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 
 /**
@@ -127,7 +132,8 @@ public final class Rf2EffectiveTimeSlice {
 		throw new IllegalArgumentException("Unrecognized RF2 component: " + componentId + " - " + Arrays.toString(valuesWithType));
 	}
 	
-	public void register(String containerId, Rf2ContentType<?> type, String[] values, Rf2ValidationIssueReporter reporter) {
+	public void register(String containerId, Rf2ContentType<?> type, String[] values, ImportDefectBuilder defectBuilder) {
+		
 		String[] valuesWithType = new String[values.length + 1];
 		valuesWithType[0] = type.getType();
 		System.arraycopy(values, 0, valuesWithType, 1, values.length);
@@ -148,7 +154,7 @@ public final class Rf2EffectiveTimeSlice {
 			}
 		}
 		
-		type.validate(reporter, values);
+		type.validate(defectBuilder, values);
 		
 		tmpComponentsById.put(componentId, valuesWithType);
 		if (tmpComponentsById.size() >= BATCH_SIZE) {
@@ -183,7 +189,12 @@ public final class Rf2EffectiveTimeSlice {
 		return new LongTarjan(60000, dependenciesByComponent::get).run(dependenciesByComponent.keySet());
 	}
 	
-	public void doImport(final BranchContext context, final String codeSystem, Rf2ImportConfiguration importConfig) throws Exception {
+	public void doImport(
+			final BranchContext context, 
+			final String codeSystem, 
+			final Rf2ImportConfiguration importConfig, 
+			final ImmutableSet.Builder<ComponentURI> visitedComponents) throws Exception {
+		
 		final Stopwatch w = Stopwatch.createStarted();
 		final String importingMessage = isUnpublishedSlice() ? "Importing unpublished components" : String.format("Importing components from %s", effectiveTime);
 		final String commitMessage = isUnpublishedSlice() ? "Imported unpublished components" : String.format("Imported components from %s", effectiveTime);
@@ -202,6 +213,10 @@ public final class Rf2EffectiveTimeSlice {
 					final SnomedComponent component = getComponent(componentToImport);
 					if (component != null) {
 						componentsToImport.add(component);
+						
+						final short terminologyComponentId = getTerminologyComponentIdValue(componentToImport);
+						final ComponentURI componentURI = ComponentURI.of(codeSystem, terminologyComponentId, componentToImport);
+						visitedComponents.add(componentURI);
 					}
 					// add all members of this component to this batch as well
 					final Set<String> containerComponents = membersByReferencedComponent.remove(componentToImportL);
@@ -210,6 +225,10 @@ public final class Rf2EffectiveTimeSlice {
 							SnomedReferenceSetMember containedComponent = getComponent(containedComponentId);
 							if (containedComponent != null) {
 								componentsToImport.add(containedComponent);
+								
+								final ComponentURI refSetURI = ComponentURI.of(codeSystem, SnomedTerminologyComponentConstants.REFSET_NUMBER, containedComponent.getReferenceSetId());
+								final ComponentURI memberURI = ComponentURI.of(codeSystem, SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, containedComponentId);
+								visitedComponents.add(refSetURI, memberURI);
 							}
 						}
 					}

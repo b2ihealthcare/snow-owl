@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,61 +15,77 @@
  */
 package com.b2international.snowowl.snomed.datastore.request.rf2.validation;
 
-import java.util.Collection;
+import static com.google.common.collect.Maps.newHashMap;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Multimap;
+import com.b2international.snowowl.core.request.io.ImportDefect;
+import com.b2international.snowowl.core.request.io.ImportDefectAcceptor;
+import com.google.common.primitives.Ints;
 
 /**
  * @since 7.0
  */
 public final class Rf2ValidationIssueReporter {
 	
-	private static final int MAX_NUMBER_OF_VALIDATION_PROBLEMS = 100;
+	public static final int MAX_DEFECTS = 100;
 	
-	private Multimap<Rf2ValidationType, String> validationProblems = ArrayListMultimap.create(2, MAX_NUMBER_OF_VALIDATION_PROBLEMS);
+	private final Map<String, ImportDefectAcceptor> defectsByFile = newHashMap();
 	
-	public void error(String message, Object...args) {
-		if (getNumberOfErrors() < MAX_NUMBER_OF_VALIDATION_PROBLEMS) {
-			validationProblems.put(Rf2ValidationType.ERROR, String.format(message, args));
-		}
+	public ImportDefectAcceptor getDefectAcceptor(final String file) {
+		return defectsByFile.computeIfAbsent(file, key -> new ImportDefectAcceptor(key, MAX_DEFECTS));
 	}
 	
-	public void warning(String message, Object...args) {
-		if (getNumberOfWarnings() < MAX_NUMBER_OF_VALIDATION_PROBLEMS) {
-			validationProblems.put(Rf2ValidationType.WARNING, String.format(message, args));
-		}
+	public Stream<ImportDefect> allDefects() {
+		return defectsByFile.values()
+			.stream()
+			.flatMap(acceptor -> acceptor.getDefects().stream());
 	}
 	
+	private Stream<ImportDefect> allErrors() {
+		return allDefects().filter(ImportDefect::isError);
+	}
+
+	private Stream<ImportDefect> allWarnings() {
+		return allDefects().filter(ImportDefect::isWarning);
+	}
+
 	public int getNumberOfErrors() {
-		return getErrors().size();
+		return Ints.checkedCast(allErrors().count());
 	}
 	
 	public int getNumberOfWarnings() {
-		return getWarnings().size();
+		return Ints.checkedCast(allWarnings().count());
 	}
 	
-	public Collection<String> getErrors() {
-		return ImmutableList.copyOf(validationProblems.get(Rf2ValidationType.ERROR));
+	public List<ImportDefect> getErrors() {
+		return allErrors().collect(Collectors.toUnmodifiableList());
 	}
 	
-	public Collection<String> getWarnings() {
-		return ImmutableList.copyOf(validationProblems.get(Rf2ValidationType.WARNING));
+	public List<ImportDefect> getWarnings() {
+		return allWarnings().collect(Collectors.toUnmodifiableList());
 	}
 	
-	public Collection<String> getIssues() {
-		return ImmutableList.copyOf(validationProblems.values());
+	public List<ImportDefect> getDefects() {
+		return allDefects().collect(Collectors.toUnmodifiableList());
 	}
 
 	public void logWarnings(Logger log) {
-		getWarnings().forEach(log::warn);
+		allWarnings().forEachOrdered(defect -> log.warn(defect.getMessage()));
 	}
 	
 	public void logErrors(Logger log) {
-		getErrors().forEach(log::error);
+		allErrors().forEachOrdered(defect -> log.error(defect.getMessage()));
 	}
-	
+
+	public boolean hasErrors() {
+		return allErrors()
+			.findAny()
+			.isPresent();
+	}
 }
