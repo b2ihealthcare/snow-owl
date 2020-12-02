@@ -31,12 +31,12 @@ public final class ConceptMapCompareDsvExporter {
 	
 	private static final String DELIMITER = ";";
 	
-	public static File export(final List<ConceptMapCompareResultItem> items, final List<ConceptMapCompareChangeKind> changeKinds, final Set<String> columns) throws IOException {
+	public static File export(final List<ConceptMapCompareResultItem> items, final Set<ConceptMapCompareChangeKind> changeKinds, final List<String> headers) throws IOException {
 		final File file = File.createTempFile("conceptMapCompare-", ".txt");
 		try (FileWriter writer = new FileWriter(file)) {
 			
-			if (columns != null && !columns.isEmpty()) {
-				writer.write(header(columns));
+			if (headers != null && !headers.isEmpty()) {
+				writer.write(header(headers));
 				writer.write("\n");
 			}
 			
@@ -53,29 +53,21 @@ public final class ConceptMapCompareDsvExporter {
 		return file;
 	}
 	
-	private static String header(final Set<String> columns) {
-		final StringBuilder builder = new StringBuilder();
-		
-		columns.forEach(column -> {
-			builder.append(column).append(DELIMITER);
-		});
-		
-		return builder.toString();
+	private static String header(final List<String> headers) {
+		return String.join(DELIMITER, headers);
 	}
 	
 	public static String line(final ConceptMapCompareResultItem item) {
 		final ConceptMapMapping mapping = item.getMapping();
-		
-		return new StringBuilder()
-				.append(item.getChangeKind()).append(DELIMITER)
-				.append(ConceptMapCompareChangeKind.SAME.equals(item.getChangeKind()) ? "Both" : mapping.getContainerTerm()).append(DELIMITER)
-				.append(mapping.getSourceComponentURI().codeSystem()).append(DELIMITER)
-				.append(mapping.getSourceComponentURI().identifier()).append(DELIMITER)
-				.append(mapping.getSourceTerm()).append(DELIMITER)
-				.append(mapping.getTargetComponentURI().codeSystem()).append(DELIMITER)
-				.append(mapping.getTargetComponentURI().identifier()).append(DELIMITER)
-				.append(mapping.getTargetTerm()).append(DELIMITER)
-				.toString();
+		return String.join(DELIMITER,
+				item.getChangeKind().toString(),
+				ConceptMapCompareChangeKind.SAME.equals(item.getChangeKind()) ? "Both" : mapping.getContainerTerm(),
+				mapping.getSourceComponentURI().codeSystem(),
+				mapping.getSourceComponentURI().identifier(),
+				mapping.getSourceTerm(),
+				mapping.getTargetComponentURI().codeSystem(),
+				mapping.getTargetComponentURI().identifier(),
+				mapping.getTargetTerm());
 	}
 	
 }

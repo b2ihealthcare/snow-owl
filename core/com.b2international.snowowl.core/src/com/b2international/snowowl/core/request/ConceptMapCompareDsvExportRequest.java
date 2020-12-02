@@ -33,20 +33,19 @@ final class ConceptMapCompareDsvExportRequest extends ExportRequest<ServiceProvi
 	private static final long serialVersionUID = 1L;
 	
 	private List<ConceptMapCompareResultItem> items;
-	private List<ConceptMapCompareChangeKind> changeKinds;
-	private Set<String> columns;
+	private Set<ConceptMapCompareChangeKind> changeKinds;
+	private List<String> headers;
 	
 	ConceptMapCompareDsvExportRequest() {
 	}
 
 	@Override
 	protected File doExport(ServiceProvider context) throws IOException {
-		return ConceptMapCompareDsvExporter.export(items, changeKinds, columns);
+		return ConceptMapCompareDsvExporter.export(items, changeKinds, headers);
 	}
 
 	@Override
 	public String getResource(ServiceProvider context) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 	
@@ -54,11 +53,11 @@ final class ConceptMapCompareDsvExportRequest extends ExportRequest<ServiceProvi
 		this.items = items;
 	}
 	
-	public void setChangeKinds(List<ConceptMapCompareChangeKind> changeKinds) {
+	public void setChangeKinds(Set<ConceptMapCompareChangeKind> changeKinds) {
 		this.changeKinds = changeKinds;
 	}
 
-	public void setColumns(Set<String> columns) {
-		this.columns = columns;
+	public void setHeaders(List<String> headers) {
+		this.headers = headers;
 	}
 }

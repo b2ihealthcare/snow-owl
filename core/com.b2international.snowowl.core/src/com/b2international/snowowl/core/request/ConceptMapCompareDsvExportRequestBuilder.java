@@ -34,22 +34,22 @@ public final class ConceptMapCompareDsvExportRequestBuilder extends ExportReques
 	private List<ConceptMapCompareResultItem> items;
 	
 	@NotNull
-	private List<ConceptMapCompareChangeKind> changeKinds;
+	private Set<ConceptMapCompareChangeKind> changeKinds;
 
 	@Nullable
-	private Set<String> columns;
+	private List<String> headers;
 
 	public ConceptMapCompareDsvExportRequestBuilder(final List<ConceptMapCompareResultItem> items) {
 		this.items = items;
 	}
 	
-	public ConceptMapCompareDsvExportRequestBuilder changeKinds(final List<ConceptMapCompareChangeKind> changeKinds) {
+	public ConceptMapCompareDsvExportRequestBuilder changeKinds(final Set<ConceptMapCompareChangeKind> changeKinds) {
 		this.changeKinds = changeKinds;
 		return this;
 	}
 
-	public ConceptMapCompareDsvExportRequestBuilder changeKinds(final Set<String> columns) {
-		this.columns = columns;
+	public ConceptMapCompareDsvExportRequestBuilder headers(final List<String> headers) {
+		this.headers = headers;
 		return this;
 	}
 
@@ -58,7 +58,7 @@ public final class ConceptMapCompareDsvExportRequestBuilder extends ExportReques
 		final ConceptMapCompareDsvExportRequest request = new ConceptMapCompareDsvExportRequest();
 		request.setItems(items);
 		request.setChangeKinds(changeKinds);
-		request.setColumns(columns);
+		request.setHeaders(headers);
 		return request;
 	}
 }
