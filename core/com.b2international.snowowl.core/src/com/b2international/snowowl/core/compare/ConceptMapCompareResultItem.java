@@ -19,7 +19,6 @@ import java.io.Serializable;
 import java.util.Objects;
 
 import com.b2international.snowowl.core.domain.ConceptMapMapping;
-import com.google.common.base.MoreObjects;
 import com.google.common.collect.ComparisonChain;
 
 /**
