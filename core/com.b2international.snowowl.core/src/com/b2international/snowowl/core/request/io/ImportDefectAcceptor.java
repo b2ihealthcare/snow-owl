@@ -31,15 +31,21 @@ import com.google.common.collect.Lists;
  */
 public final class ImportDefectAcceptor {
 
+	private static final int DEFAULT_MAX_DEFECTS = 100_000;
+	
 	private final String file;
 	private final List<ImportDefect> defects = Lists.newArrayList();
 
 	public ImportDefectAcceptor(String file) {
-		this.file = file;
+		this(file, DEFAULT_MAX_DEFECTS);
 	}
 	
+	public ImportDefectAcceptor(String file, int maxDefects) {
+		this.file = file;
+	}
+
 	public List<ImportDefect> getDefects() {
-		return defects;
+		return List.copyOf(defects);
 	}
 	
 	public void error(String message) {
@@ -134,9 +140,12 @@ public final class ImportDefectAcceptor {
 		private void build(String message, ImportDefectType type) {
 			if (when != null && when.get()) {
 				defects.add(new ImportDefect(file, location, message, type));
+
+				// Remove the earliest defect on overflow
+				if (defects.size() > DEFAULT_MAX_DEFECTS) {
+					defects.remove(0);
+				}
 			}
 		}
-
 	}
-	
 }
