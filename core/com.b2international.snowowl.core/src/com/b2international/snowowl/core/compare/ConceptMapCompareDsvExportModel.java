@@ -104,4 +104,9 @@ final class ConceptMapCompareDsvExportModel {
 				Objects.equals(targetCode, other.targetCode) &&
 				Objects.equals(targetTerm, other.targetTerm);
 	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(changeKind, conceptMap, sourceCodeSystem, sourceCode, sourceTerm, targetCodeSystem, targetCode, targetTerm);
+	}
 }
