@@ -24,7 +24,6 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 
-import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.index.query.Query;
@@ -58,91 +57,60 @@ public class Rf2GlobalValidator {
 	}
 	
 	public void validateTerminologyComponents(
-			final Iterable<Rf2EffectiveTimeSlice> slices, 
+			final List<Rf2EffectiveTimeSlice> slices, 
 			final ImportDefectAcceptor globalDefectAcceptor, 
 			final BranchContext context) {
 		
-		List<Rf2EffectiveTimeSlice> slicesToCheck = Lists.newArrayListWithExpectedSize(Iterables.size(slices)); 
+		// Keys are component IDs waiting to be resolved, values are the earliest effective time "mention" of the component
+		final Map<String, String> dependenciesByEffectiveTime = Maps.newHashMap();
 		
-		final Map<String, String> missingDependenciesInEffectiveTime = Maps.newHashMap();
-		final LongSet checkedDependencies = PrimitiveSets.newLongOpenHashSet();
-		
-		// check the slices first for missing dependencies
-		for (Rf2EffectiveTimeSlice slice : slices) {
-			
-			String effectiveTimeLabel = Rf2EffectiveTimeSlice.SNAPSHOT_SLICE.equals(slice.getEffectiveTime()) ? "..."
+		// Check the slices in reverse order for missing dependencies
+		for (Rf2EffectiveTimeSlice slice : Lists.reverse(slices)) {
+			final String effectiveTimeLabel = Rf2EffectiveTimeSlice.SNAPSHOT_SLICE.equals(slice.getEffectiveTime()) 
+					? "..."
 					: String.format(" in effective time '%s'", slice.getEffectiveTime());
 			
 			log.info("Validating component consistency{}", effectiveTimeLabel);
+
+			// Resolve pending dependencies with the current slice content
+			final Set<String> contentInSlice = slice.getContent().keySet();
+			dependenciesByEffectiveTime.keySet().removeAll(contentInSlice);
 			
-			slicesToCheck.add(slice);
-			
-			// first check all currently registered dependencies in the current effective time slice and collect all missing components
-			// then if there is at least one missing component from the current slice, search them in the SNOMED CT repository
-			// report any that is missing in the current slice
-			
-			for (LongSet componentDependencies : slice.getDependenciesByComponent().values()) {
-				
+			// Core component dependencies
+			for (final LongSet componentDependencies : slice.getDependenciesByComponent().values()) {
 				final LongIterator it = componentDependencies.iterator();
 				
-				depCheck: while (it.hasNext()) {
-					
+				while (it.hasNext()) {
 					final long dependencyId = it.next();
-					
-					if (checkedDependencies.contains(dependencyId)) {
-						continue depCheck;
-					}
-					
 					final String stringDependencyId = Long.toString(dependencyId);
-					
-					// if this component is available in any of the current or previous slices then all is well
-					for (Rf2EffectiveTimeSlice sliceToCheck : slicesToCheck) {
-						if (sliceToCheck.getContent().containsKey(stringDependencyId)) {
-							checkedDependencies.add(dependencyId);
-							continue depCheck;
-						}
+
+					// Insert or update any entry with the current slice key, unless the current slice has the component
+					if (!contentInSlice.contains(stringDependencyId)) {
+						dependenciesByEffectiveTime.put(stringDependencyId, slice.getEffectiveTime());
 					}
-					
-					missingDependenciesInEffectiveTime.put(stringDependencyId, slice.getEffectiveTime());
 				}
-				
 			}
 			
-			// validate existence of referenced component IDs
-			
-			LongIterator referencedComponentIds = slice.getMembersByReferencedComponent().keySet().iterator();
-			
-			refCheck: while (referencedComponentIds.hasNext()) {
-				
-				long referencedComponentId = referencedComponentIds.next();
-				
-				if (checkedDependencies.contains(referencedComponentId)) {
-					continue refCheck;
-				}
-				
+			// Dependencies of reference set members includes the reference component ID, check them separately
+			final LongIterator referencedComponentIds = slice.getMembersByReferencedComponent().keySet().iterator();
+			while (referencedComponentIds.hasNext()) {
+				final long referencedComponentId = referencedComponentIds.next();
 				final String stringReferencedComponentId = Long.toString(referencedComponentId);
 				
-				// if this component is available in any of the current or previous slices then all is well
-				for (Rf2EffectiveTimeSlice sliceToCheck : slicesToCheck) {
-					if (sliceToCheck.getContent().containsKey(stringReferencedComponentId)) {
-						checkedDependencies.add(referencedComponentId);
-						continue refCheck;
-					}
+				if (!contentInSlice.contains(stringReferencedComponentId)) {
+					dependenciesByEffectiveTime.put(stringReferencedComponentId, slice.getEffectiveTime());
 				}
-				
-				missingDependenciesInEffectiveTime.put(stringReferencedComponentId, slice.getEffectiveTime());
-				
 			}
-			
 		}
-		
-		if (!missingDependenciesInEffectiveTime.isEmpty()) {
+
+		// Anything that remains is not resolved by the imported data; check if it is in Snow Owl
+		if (!dependenciesByEffectiveTime.isEmpty()) {
 			
 			Set<String> conceptIds = newHashSet();
 			Set<String> descriptionIds = newHashSet();
 			Set<String> relationshipIds = newHashSet();
 			
-			missingDependenciesInEffectiveTime.keySet().stream()
+			dependenciesByEffectiveTime.keySet().stream()
 				.forEach(id -> {
 					switch (SnomedIdentifiers.getComponentCategory(id)) {
 						case CONCEPT: conceptIds.add(id);
@@ -162,7 +130,7 @@ public class Rf2GlobalValidator {
 			
 			if (!missingConceptIds.isEmpty()) {
 				missingConceptIds.forEach(id -> {
-					reportMissingComponent(globalDefectAcceptor, id, missingDependenciesInEffectiveTime.get(id), "concept");
+					reportMissingComponent(globalDefectAcceptor, id, dependenciesByEffectiveTime.get(id), "concept");
 				});
 			}
 			
@@ -172,7 +140,7 @@ public class Rf2GlobalValidator {
 
 			if (!missingDescriptionIds.isEmpty()) {
 				missingDescriptionIds.forEach(id -> {
-					reportMissingComponent(globalDefectAcceptor, id, missingDependenciesInEffectiveTime.get(id), "description");
+					reportMissingComponent(globalDefectAcceptor, id, dependenciesByEffectiveTime.get(id), "description");
 				});
 			}
 			
@@ -182,7 +150,7 @@ public class Rf2GlobalValidator {
 
 			if (!missingRelationshipIds.isEmpty()) {
 				missingRelationshipIds.forEach(id -> {
-					reportMissingComponent(globalDefectAcceptor, id, missingDependenciesInEffectiveTime.get(id), "relationship");
+					reportMissingComponent(globalDefectAcceptor, id, dependenciesByEffectiveTime.get(id), "relationship");
 				});
 			}
 			
