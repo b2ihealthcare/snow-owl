@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,52 +16,60 @@
 package com.b2international.snowowl.core.compare;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.domain.ConceptMapMapping;
+import com.fasterxml.jackson.dataformat.csv.CsvMapper;
+import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 
 /**
  * @since 7.13
  */
 public final class ConceptMapCompareDsvExporter {
 	
-	private static final String DELIMITER = ";";
+	private static final char DELIMITER = ';';
 	
-	public static File export(final List<ConceptMapCompareResultItem> items, final Set<ConceptMapCompareChangeKind> changeKinds, final List<String> headers) throws IOException {
-		final File file = File.createTempFile("conceptMapCompare-", ".txt");
-		try (FileWriter writer = new FileWriter(file)) {
-			
-			if (headers != null && !headers.isEmpty()) {
-				writer.write(header(headers));
-				writer.write("\n");
-			}
-			
-			final List<ConceptMapCompareResultItem> consideredItems = items.stream().filter(item -> changeKinds.contains(item.getChangeKind())).collect(Collectors.toList());
-			
-			for (final ConceptMapCompareResultItem item : consideredItems) {
-				writer.write(line(item));
-				writer.write("\n");
-			}
+	public static File export(List<ConceptMapCompareResultItem> items, Set<ConceptMapCompareChangeKind> changeKinds) throws IOException {
+		final String filePath = Paths.get(System.getProperty("user.home"), String.format("concept-map-compare-results-%s.txt", Dates.now())).toString();
+		return export(items, changeKinds, filePath);
+	}
+	
+	public static File export(final List<ConceptMapCompareResultItem> items, final Set<ConceptMapCompareChangeKind> changeKinds, final String filePath) throws IOException {
+		
+		 final List<ConceptMapCompareDsvExportModel> resultsToExport = items.stream()
+				.filter(item -> changeKinds.contains(item.getChangeKind()))
+				.sorted((i1, i2) -> i1.getChangeKind().compareTo(i2.getChangeKind()))
+				.map(item -> toExportModel(item))
+				.collect(Collectors.toList());
+		
+		final CsvMapper mapper = new CsvMapper();
+		final CsvSchema schema = mapper.schemaFor(ConceptMapCompareDsvExportModel.class)
+				.withHeader()
+				.withColumnSeparator(DELIMITER)
+				.withNullValue("");
+		
+		try (OutputStream newOutputStream = Files.newOutputStream(Paths.get(filePath), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
+			mapper.writer(schema).writeValue(newOutputStream, resultsToExport);
 		} catch (Exception e) {
 			throw e;
 		}
 		
-		return file;
+		return Paths.get(filePath).toFile();
 	}
 	
-	private static String header(final List<String> headers) {
-		return String.join(DELIMITER, headers);
-	}
-	
-	public static String line(final ConceptMapCompareResultItem item) {
+	public static ConceptMapCompareDsvExportModel toExportModel(final ConceptMapCompareResultItem item) {
 		final ConceptMapMapping mapping = item.getMapping();
-		return String.join(DELIMITER,
+		return new ConceptMapCompareDsvExportModel(
 				item.getChangeKind().toString(),
-				ConceptMapCompareChangeKind.SAME.equals(item.getChangeKind()) ? "Both" : mapping.getContainerTerm(),
+				ConceptMapCompareChangeKind.SAME.equals(item.getChangeKind()) ? "Both" : mapping .getContainerTerm(),
 				mapping.getSourceComponentURI().codeSystem(),
 				mapping.getSourceComponentURI().identifier(),
 				mapping.getSourceTerm(),
