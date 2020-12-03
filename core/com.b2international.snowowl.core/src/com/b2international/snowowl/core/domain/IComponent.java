@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.domain;
 
 import java.io.Serializable;
 
+import com.b2international.index.revision.ObjectId;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -28,7 +29,7 @@ public interface IComponent extends Serializable {
 	/**
 	 * Unique terminology independent node identifier to make actual root elements searchable.
 	 */
-	String ROOT_ID = "-1";
+	String ROOT_ID = ObjectId.ROOT;
 	
 	/**
 	 * Unique terminology independent node identifier to make actual root elements searchable (a {@link Long} value).

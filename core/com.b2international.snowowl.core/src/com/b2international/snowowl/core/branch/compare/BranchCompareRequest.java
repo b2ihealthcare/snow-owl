@@ -99,9 +99,11 @@ final class BranchCompareRequest implements Request<RepositoryContext, BranchCom
 			final ObjectId affectedId;
 			if (detail.isComponentChange()) {
 				affectedId = detail.getComponent();
-				final short containerTerminologyComponentId = context.service(TerminologyComponents.class).getTerminologyComponentId(DocumentMapping.getClass(detail.getObject().type()));
-				if (CodeSystemEntry.TERMINOLOGY_COMPONENT_ID != containerTerminologyComponentId && CodeSystemVersionEntry.TERMINOLOGY_COMPONENT_ID != containerTerminologyComponentId) {
-					changedContainers.add(ComponentIdentifier.of(containerTerminologyComponentId, detail.getObject().id()));
+				if (!detail.getObject().isRoot()) {
+					final short containerTerminologyComponentId = context.service(TerminologyComponents.class).getTerminologyComponentId(DocumentMapping.getClass(detail.getObject().type()));
+					if (CodeSystemEntry.TERMINOLOGY_COMPONENT_ID != containerTerminologyComponentId && CodeSystemVersionEntry.TERMINOLOGY_COMPONENT_ID != containerTerminologyComponentId) {
+						changedContainers.add(ComponentIdentifier.of(containerTerminologyComponentId, detail.getObject().id()));
+					}
 				}
 			} else {
 				affectedId = detail.getObject();
