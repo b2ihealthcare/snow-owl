@@ -101,6 +101,8 @@ public class SnomedCoreConfiguration {
 	private List<SnomedLanguageConfig> languages = Collections.emptyList();
 	private ListMultimap<String, String> languageMap;
 	
+	private boolean copyDescriptionFromReference = false;
+	
 	/**
 	 * @return the number of reasoners that are permitted to run simultaneously.
 	 */
@@ -183,6 +185,16 @@ public class SnomedCoreConfiguration {
 	@JsonProperty("showReasonerUsageWarning")
 	public void setShowReasonerUsageWarningEnabled(boolean showReasonerUsageWarning) {
 		this.showReasonerUsageWarning = showReasonerUsageWarning;
+	}
+	
+	@JsonProperty("copyDescriptionFromReference")
+	public boolean isCopyDescriptionFromReference() {
+		return copyDescriptionFromReference;
+	}
+	
+	@JsonProperty("copyDescriptionFromReference")
+	public void setCopyDescriptionFromReference(boolean copyDescriptionFromReference) {
+		this.copyDescriptionFromReference = copyDescriptionFromReference;
 	}
 	
 	@JsonProperty("inferredEditingEnabled")
