@@ -73,7 +73,7 @@ public class Rf2GlobalValidator {
 			log.info("Validating component consistency{}", effectiveTimeLabel);
 
 			// Resolve pending dependencies with the current slice content
-			final Set<String> contentInSlice = slice.getContent().keySet();
+			final Set<String> contentInSlice = Set.copyOf(slice.getContent().keySet());
 			dependenciesByEffectiveTime.keySet().removeAll(contentInSlice);
 			
 			// Core component dependencies
