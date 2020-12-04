@@ -69,7 +69,7 @@ public final class ImportDefectAcceptor {
 	 */
 	public final class ImportDefectBuilder {
 		
-		private String location;
+		private String location = "";
 		private Supplier<Boolean> when;
 
 		public ImportDefectBuilder on(String location) {
