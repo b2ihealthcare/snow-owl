@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.request.rf2.importer;
 
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.getTerminologyComponentIdValue;
-
 import static com.google.common.collect.Lists.newArrayListWithExpectedSize;
 import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
 import static com.google.common.collect.Sets.newHashSet;
@@ -56,7 +54,10 @@ import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
@@ -214,9 +215,9 @@ public final class Rf2EffectiveTimeSlice {
 					if (component != null) {
 						componentsToImport.add(component);
 						
-						final short terminologyComponentId = getTerminologyComponentIdValue(componentToImport);
-						final ComponentURI componentURI = ComponentURI.of(codeSystem, terminologyComponentId, componentToImport);
-						visitedComponents.add(componentURI);
+						// Register container concept as visited component 
+						final String conceptId = getConceptId(codeSystem, component); 
+						visitedComponents.add(ComponentURI.of(codeSystem, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, conceptId));
 					}
 					// add all members of this component to this batch as well
 					final Set<String> containerComponents = membersByReferencedComponent.remove(componentToImportL);
@@ -226,9 +227,9 @@ public final class Rf2EffectiveTimeSlice {
 							if (containedComponent != null) {
 								componentsToImport.add(containedComponent);
 								
-								final ComponentURI refSetURI = ComponentURI.of(codeSystem, SnomedTerminologyComponentConstants.REFSET_NUMBER, containedComponent.getReferenceSetId());
-								final ComponentURI memberURI = ComponentURI.of(codeSystem, SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, containedComponentId);
-								visitedComponents.add(refSetURI, memberURI);
+								// Register reference set as visited component
+								final String refSetId = containedComponent.getReferenceSetId();
+								visitedComponents.add(ComponentURI.of(codeSystem, SnomedTerminologyComponentConstants.REFSET_NUMBER, refSetId));
 							}
 						}
 					}
@@ -264,6 +265,18 @@ public final class Rf2EffectiveTimeSlice {
 			}
 		}
 		LOG.info("{} in {}", commitMessage, w);
+	}
+
+	private String getConceptId(final String codeSystem, SnomedComponent component) {
+		if (component instanceof SnomedConcept) {
+			return component.getId();
+		} else if (component instanceof SnomedDescription) {
+			return ((SnomedDescription) component).getConceptId();
+		} else if (component instanceof SnomedRelationship) {
+			return ((SnomedRelationship) component).getSourceId();
+		}
+		
+		return null;
 	}
 	
 	private boolean isUnpublishedSlice() {
