@@ -85,6 +85,11 @@ public interface ConceptSearchRequestEvaluator {
 		 * Filters terms by their type.
 		 */
 		TERM_TYPE,
+
+		/**
+		 * Filters concepts by their type.
+		 */
+		TYPE,
 	}
 
 	/**

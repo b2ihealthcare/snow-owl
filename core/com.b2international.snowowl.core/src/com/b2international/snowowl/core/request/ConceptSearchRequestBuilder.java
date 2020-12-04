@@ -98,6 +98,17 @@ public final class ConceptSearchRequestBuilder extends SearchResourceRequestBuil
 	public ConceptSearchRequestBuilder filterByTermType(String termType) {
 		return addOption(OptionKey.TERM_TYPE, termType);
 	}
+
+	/**
+	 * Filters concepts by their type.
+	 * 
+	 * @param type
+	 *            - String representation of the concept type filtering
+	 * @return
+	 */
+	public ConceptSearchRequestBuilder filterByType(String type) {
+		return addOption(OptionKey.TYPE, type);
+	}
 	
 	/**
 	 * Sets the preferred display term to return for every code system
