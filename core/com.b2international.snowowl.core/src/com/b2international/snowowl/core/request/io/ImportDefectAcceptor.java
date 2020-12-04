@@ -138,7 +138,7 @@ public final class ImportDefectAcceptor {
 		}
 		
 		private void build(String message, ImportDefectType type) {
-			if (when != null && when.get()) {
+			if (when == null || when.get()) {
 				defects.add(new ImportDefect(file, location, message, type));
 
 				// Remove the earliest defect on overflow
