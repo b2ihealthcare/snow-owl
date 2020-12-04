@@ -20,6 +20,8 @@ package com.b2international.snowowl.core;
  */
 public enum CodeType {
 
+	CHAPTER("chapter"),
+	BLOCK("block"),
 	CATEGORY("category"),
 	CODE("code");
 	
