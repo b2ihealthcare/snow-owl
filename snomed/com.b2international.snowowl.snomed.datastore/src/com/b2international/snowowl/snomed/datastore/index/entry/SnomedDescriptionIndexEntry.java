@@ -200,6 +200,10 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 			return exactMatch(Fields.TERM_ORIGINAL, term);
 		}
 		
+		public static Expression matchTermOriginal(Iterable<String> terms) {
+			return matchAny(Fields.TERM_ORIGINAL, terms);
+		}
+		
 		public static Expression matchTermRegex(String regex) {
 			return regexp(Fields.TERM_ORIGINAL, regex);
 		}
