@@ -13,10 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.compare;
+package com.b2international.snowowl.core.request;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -25,57 +24,68 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.b2international.snowowl.core.date.Dates;
-import com.b2international.snowowl.core.domain.ConceptMapMapping;
+import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.compare.ConceptMapCompareChangeKind;
+import com.b2international.snowowl.core.compare.ConceptMapCompareDsvExportModel;
+import com.b2international.snowowl.core.compare.ConceptMapCompareResultItem;
+import com.b2international.snowowl.core.events.Request;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.google.common.base.Throwables;
 
 /**
  * @since 7.13
  */
-public final class ConceptMapCompareDsvExporter {
+final class ConceptMapCompareDsvExportRequest implements Request<ServiceProvider, File> {
+
+	private static final long serialVersionUID = 1L;
 	
-	private static final char DELIMITER = ';';
-	
-	public static File export(List<ConceptMapCompareResultItem> items, Set<ConceptMapCompareChangeKind> changeKinds) throws IOException {
-		final String filePath = Paths.get(System.getProperty("user.home"), String.format("concept-map-compare-results-%s.txt", Dates.now())).toString();
-		return export(items, changeKinds, filePath);
+	private Character delimiter;
+	private String filePath;
+	private Set<ConceptMapCompareChangeKind> changeKinds;
+	private List<ConceptMapCompareResultItem> items;
+
+	ConceptMapCompareDsvExportRequest() {
 	}
 	
-	public static File export(final List<ConceptMapCompareResultItem> items, final Set<ConceptMapCompareChangeKind> changeKinds, final String filePath) throws IOException {
-		
-		 final List<ConceptMapCompareDsvExportModel> resultsToExport = items.stream()
+	public void setDelimiter(Character delimiter) {
+		this.delimiter = delimiter;
+	}
+	
+	public void setChangeKinds(Set<ConceptMapCompareChangeKind> changeKinds) {
+		this.changeKinds = changeKinds;
+	}
+	
+	public void setFilePath(String filePath) {
+		this.filePath = filePath;
+	}
+	
+	public void setItems(List<ConceptMapCompareResultItem> items) {
+		this.items = items;
+	}
+	
+	@Override
+	public File execute(ServiceProvider context) {
+	 final List<ConceptMapCompareDsvExportModel> resultsToExport = items.stream()
 				.filter(item -> changeKinds.contains(item.getChangeKind()))
 				.sorted((i1, i2) -> i1.getChangeKind().compareTo(i2.getChangeKind()))
-				.map(item -> toExportModel(item))
+				.map(ConceptMapCompareResultItem::toExportModel)
 				.collect(Collectors.toList());
 		
 		final CsvMapper mapper = new CsvMapper();
 		final CsvSchema schema = mapper.schemaFor(ConceptMapCompareDsvExportModel.class)
 				.withHeader()
-				.withColumnSeparator(DELIMITER)
+				.withColumnSeparator(delimiter)
 				.withNullValue("");
 		
 		try (OutputStream newOutputStream = Files.newOutputStream(Paths.get(filePath), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
 			mapper.writer(schema).writeValue(newOutputStream, resultsToExport);
 		} catch (Exception e) {
-			throw e;
+			throw new BadRequestException("An error occured durin Concept Map Compare DSV export: %s", Throwables.getRootCause(e).getMessage());
 		}
 		
 		return Paths.get(filePath).toFile();
 	}
-	
-	public static ConceptMapCompareDsvExportModel toExportModel(final ConceptMapCompareResultItem item) {
-		final ConceptMapMapping mapping = item.getMapping();
-		return new ConceptMapCompareDsvExportModel(
-				item.getChangeKind().toString(),
-				ConceptMapCompareChangeKind.SAME.equals(item.getChangeKind()) ? "Both" : mapping .getContainerTerm(),
-				mapping.getSourceComponentURI().codeSystem(),
-				mapping.getSourceComponentURI().identifier(),
-				mapping.getSourceTerm(),
-				mapping.getTargetComponentURI().codeSystem(),
-				mapping.getTargetComponentURI().identifier(),
-				mapping.getTargetTerm());
-	}
-	
+
 }

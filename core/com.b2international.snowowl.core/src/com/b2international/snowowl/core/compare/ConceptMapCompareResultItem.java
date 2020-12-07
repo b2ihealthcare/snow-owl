@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.Objects;
 
 import com.b2international.snowowl.core.domain.ConceptMapMapping;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ComparisonChain;
 
 /**
@@ -47,6 +48,19 @@ public final class ConceptMapCompareResultItem implements Serializable, Comparab
 	@Override
 	public int hashCode() {
 		return Objects.hash(changeKind, mapping);
+	}
+	
+	@JsonIgnore
+	public ConceptMapCompareDsvExportModel toExportModel() {
+		return new ConceptMapCompareDsvExportModel(
+				changeKind.toString(),
+				ConceptMapCompareChangeKind.SAME.equals(changeKind) ? "Both" : mapping .getContainerTerm(),
+				mapping.getSourceComponentURI().codeSystem(),
+				mapping.getSourceComponentURI().identifier(),
+				mapping.getSourceTerm(),
+				mapping.getTargetComponentURI().codeSystem(),
+				mapping.getTargetComponentURI().identifier(),
+				mapping.getTargetTerm());
 	}
 	
 	@Override

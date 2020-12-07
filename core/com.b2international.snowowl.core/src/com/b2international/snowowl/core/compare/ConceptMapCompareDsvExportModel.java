@@ -23,7 +23,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  * @since 7.13
  */
 @JsonPropertyOrder(value = { "changeKind", "conceptMap", "sourceCodeSystem", "sourceCode", "sourceTerm", "targetCodeSystem", "targetCode", "targetTerm" })
-final class ConceptMapCompareDsvExportModel {
+public final class ConceptMapCompareDsvExportModel {
 	
 	private String changeKind;
 	private String conceptMap;
@@ -36,7 +36,7 @@ final class ConceptMapCompareDsvExportModel {
 	
 	ConceptMapCompareDsvExportModel() { }
 
-	ConceptMapCompareDsvExportModel(
+	public ConceptMapCompareDsvExportModel(
 			String changeKind,
 			String conceptMap,
 			String sourceCodeSystem,
