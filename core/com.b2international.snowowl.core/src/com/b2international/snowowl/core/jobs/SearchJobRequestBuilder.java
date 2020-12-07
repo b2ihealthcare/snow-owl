@@ -55,7 +55,7 @@ public final class SearchJobRequestBuilder extends SearchResourceRequestBuilder<
 	}
 	
 	public SearchJobRequestBuilder filterByState(Iterable<String> states) {
-		return filterByStates(Iterables.transform(states, RemoteJobState::valueOfIgnoreCase));
+		return filterByStates(states == null ? null : Iterables.transform(states, RemoteJobState::valueOfIgnoreCase));
 	}
 	
 	public SearchJobRequestBuilder filterByState(RemoteJobState state) {
