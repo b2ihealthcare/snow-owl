@@ -19,31 +19,7 @@ package com.b2international.snowowl.core;
  * @since 7.13
  */
 public enum CodeType {
-
-	CATEGORY("category"),
-	CODE("code");
-	
-	private final String name;
-	
-	private CodeType(final String name) {
-		this.name = name;
-	}
-	
-	public static CodeType getByName(final String name) {
-		final CodeType[] values = values();
-		for (int i = 0; i < values.length; i++) {
-			final CodeType codeType = values[i];
-			if (codeType.getName().equals(name)) {
-				return codeType;
-			}
-			
-		}
-		
-		return null;
-	}
-	
-	public String getName() {
-		return name;
-	}
+	CATEGORY,
+	CODE;
 	
 }
