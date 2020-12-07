@@ -20,8 +20,6 @@ package com.b2international.snowowl.core;
  */
 public enum CodeType {
 
-	CHAPTER("chapter"),
-	BLOCK("block"),
 	CATEGORY("category"),
 	CODE("code");
 	
@@ -34,9 +32,9 @@ public enum CodeType {
 	public static CodeType getByName(final String name) {
 		final CodeType[] values = values();
 		for (int i = 0; i < values.length; i++) {
-			final CodeType classKind = values[i];
-			if (classKind.getName().equals(name)) {
-				return classKind;
+			final CodeType codeType = values[i];
+			if (codeType.getName().equals(name)) {
+				return codeType;
 			}
 			
 		}
