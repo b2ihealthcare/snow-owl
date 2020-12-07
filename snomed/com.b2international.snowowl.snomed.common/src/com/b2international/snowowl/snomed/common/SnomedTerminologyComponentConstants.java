@@ -81,6 +81,7 @@ public abstract class SnomedTerminologyComponentConstants {
 	// configuration keys for managing Module and Namespace configuration in CodeSystem entries
 	public static final String CODESYSTEM_MODULES_CONFIG_KEY = "moduleIds";
 	public static final String CODESYSTEM_NAMESPACE_CONFIG_KEY = "namespace";
+	public static final String CODESYSTEM_DESCRIPTION_COPY_POLICY_CONFIG_KEY = "descriptionCopyPolicy";
 	
 	public static short getTerminologyComponentIdValue(final String referencedComponentId) {
 		final short s = getTerminologyComponentIdValueSafe(referencedComponentId);
