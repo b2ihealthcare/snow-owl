@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.compare;
+package com.b2international.snowowl.snomed.core.rest;
 
 import static com.b2international.snowowl.core.compare.ConceptMapCompareChangeKind.DIFFERENT_TARGET;
 import static com.b2international.snowowl.core.compare.ConceptMapCompareChangeKind.MISSING;
@@ -36,8 +36,14 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
+import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
+import com.b2international.snowowl.core.compare.ConceptMapCompareChangeKind;
+import com.b2international.snowowl.core.compare.ConceptMapCompareDsvExportModel;
+import com.b2international.snowowl.core.compare.ConceptMapCompareResultItem;
+import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.domain.ConceptMapMapping;
 import com.b2international.snowowl.core.uri.ComponentURI;
+import com.b2international.snowowl.test.commons.Services;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
@@ -48,7 +54,6 @@ import com.google.common.collect.ImmutableSet;
  * @since 7.13
  */
 public class ConceptMapCompareDsvExportTest {
-	
 	private static final Set<ConceptMapCompareChangeKind> ALL = ImmutableSet.copyOf(ConceptMapCompareChangeKind.values());
 
 	private static final List<ConceptMapCompareResultItem> ITEMS = ImmutableList.of(
@@ -63,14 +68,24 @@ public class ConceptMapCompareDsvExportTest {
 	
 	@Test
 	public void testExport() throws IOException {
-		final File file = ConceptMapCompareDsvExporter.export(ITEMS, ALL);
+		final File file = CodeSystemRequests.prepareConceptMapCompareDsvExport(ITEMS, Paths.get(System.getProperty("user.home"), String.format("concept-map-compare-results-%s.txt", Dates.now())).toString())
+				.delimiter(';')
+				.changeKids(ALL)
+				.build()
+				.execute(Services.context());
+		
 		assertNotNull(file);
 		assertFile(file, ITEMS);
 	}
 
 	@Test
 	public void testFilteredExport() throws IOException {
-		final File file = ConceptMapCompareDsvExporter.export(ITEMS, ImmutableSet.of(DIFFERENT_TARGET, MISSING));
+		final File file = CodeSystemRequests.prepareConceptMapCompareDsvExport(ITEMS, Paths.get(System.getProperty("user.home"), String.format("concept-map-compare-results-%s.txt", Dates.now())).toString())
+				.delimiter(';')
+				.changeKids(ImmutableSet.of(DIFFERENT_TARGET, MISSING))
+				.build()
+				.execute(Services.context());
+		
 		assertNotNull(file);
 		assertFile(file, ImmutableList.of(
 				createItem(DIFFERENT_TARGET, "A", "123037004", "Body structure", "H00-H59", "Chapter VII - Diseases of the eye and adnexa"),
@@ -80,7 +95,12 @@ public class ConceptMapCompareDsvExportTest {
 	
 	@Test
 	public void testExportEmptyList() throws IOException {
-		final File file = ConceptMapCompareDsvExporter.export(Collections.emptyList(), ALL);
+		final File file = CodeSystemRequests.prepareConceptMapCompareDsvExport(Collections.emptyList(), Paths.get(System.getProperty("user.home"), String.format("concept-map-compare-results-%s.txt", Dates.now())).toString())
+				.delimiter(';')
+				.changeKids(ALL)
+				.build()
+				.execute(Services.context());
+		
 		assertNotNull(file);
 		assertFile(file, Collections.emptyList());
 	}
@@ -91,7 +111,7 @@ public class ConceptMapCompareDsvExportTest {
 				.withHeader()
 				.withColumnSeparator(';');
 		
-		final List<ConceptMapCompareDsvExportModel> convertedItems = expectedItems.stream().map(ConceptMapCompareDsvExporter::toExportModel).collect(Collectors.toList());
+		final List<ConceptMapCompareDsvExportModel> convertedItems = expectedItems.stream().map(ConceptMapCompareResultItem::toExportModel).collect(Collectors.toList());
 
 		try (InputStream in = Files.newInputStream(Paths.get(file.getPath()), StandardOpenOption.READ)) {
 			

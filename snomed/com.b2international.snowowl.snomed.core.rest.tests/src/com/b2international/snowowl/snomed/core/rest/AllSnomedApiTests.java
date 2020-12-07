@@ -107,6 +107,7 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	// Performance test cases, should be the last tests to perform
 	SnomedConceptCreatePerformanceTest.class,
 	SnomedMergePerformanceTest.class,
+	ConceptMapCompareDsvExportTest.class,
 })
 public class AllSnomedApiTests {
 

@@ -22,7 +22,6 @@ import org.junit.runners.Suite.SuiteClasses;
 import com.b2international.snowowl.core.attachments.AttachmentRegistryTest;
 import com.b2international.snowowl.core.branch.review.ReviewSerializationTest;
 import com.b2international.snowowl.core.codesystem.CodeSystemTest;
-import com.b2international.snowowl.core.compare.ConceptMapCompareDsvExportTest;
 import com.b2international.snowowl.core.events.NotificationsTest;
 import com.b2international.snowowl.core.events.util.PromiseTest;
 import com.b2international.snowowl.core.events.util.RequestTest;
@@ -34,9 +33,9 @@ import com.b2international.snowowl.core.merge.MergeConflictSerializationTest;
 import com.b2international.snowowl.core.monitoring.ConsoleProgressMonitorTest;
 import com.b2international.snowowl.core.request.SearchResourceRequestTest;
 import com.b2international.snowowl.core.request.SortParserTest;
-import com.b2international.snowowl.core.uri.ComponentURITest;
 import com.b2international.snowowl.core.scripts.GroovyScriptEngineTest;
 import com.b2international.snowowl.core.uri.CodeSystemURITest;
+import com.b2international.snowowl.core.uri.ComponentURITest;
 import com.b2international.snowowl.core.validation.ValidationRuleApiTest;
 import com.b2international.snowowl.core.validation.ValidationThreadPoolTest;
 import com.b2international.snowowl.core.validation.ValidationWhiteListApiTest;
@@ -68,7 +67,6 @@ import com.b2international.snowowl.core.validation.issue.ValidationIssueApiTest;
 	ValidationRuleApiTest.class,
 	ValidationThreadPoolTest.class,
 	ValidationWhiteListApiTest.class,
-	ConceptMapCompareDsvExportTest.class,
 })
 public class AllCoreTests {
 
