@@ -15,10 +15,13 @@
  */
 package com.b2international.snowowl.core.request;
 
+import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.snowowl.core.CodeType;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.Concepts;
 import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator.OptionKey;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 7.5
@@ -107,8 +110,21 @@ public final class ConceptSearchRequestBuilder extends SearchResourceRequestBuil
 	 * @return
 	 */
 	public ConceptSearchRequestBuilder filterByType(String type) {
-		return addOption(OptionKey.TYPE, type);
+		try {
+			return filterByTypes(ImmutableSet.of(CodeType.valueOf(type)));
+		} catch (Exception e) {
+			throw new BadRequestException("%s is not a valid CodeType enum.", type);
+		}
 	}
+
+	public ConceptSearchRequestBuilder filterByType(CodeType type) {
+		return filterByTypes(ImmutableSet.of(type));
+	}
+
+	public ConceptSearchRequestBuilder filterByTypes(Iterable<CodeType> types) {
+		return addOption(OptionKey.TYPE, types);
+	}
+	
 	
 	/**
 	 * Sets the preferred display term to return for every code system
