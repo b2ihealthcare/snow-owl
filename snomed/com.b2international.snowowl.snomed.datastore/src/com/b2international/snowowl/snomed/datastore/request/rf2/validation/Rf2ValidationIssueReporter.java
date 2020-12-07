@@ -33,12 +33,10 @@ import com.google.common.primitives.Ints;
  */
 public final class Rf2ValidationIssueReporter {
 	
-	public static final int MAX_DEFECTS = 100;
-	
 	private final Map<String, ImportDefectAcceptor> defectsByFile = newHashMap();
 	
 	public ImportDefectAcceptor getDefectAcceptor(final String file) {
-		return defectsByFile.computeIfAbsent(file, key -> new ImportDefectAcceptor(key, MAX_DEFECTS));
+		return defectsByFile.computeIfAbsent(file, key -> new ImportDefectAcceptor(key));
 	}
 	
 	public Stream<ImportDefect> allDefects() {
