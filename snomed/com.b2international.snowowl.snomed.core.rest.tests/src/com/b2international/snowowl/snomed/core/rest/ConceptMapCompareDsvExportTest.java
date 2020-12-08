@@ -19,34 +19,29 @@ import static com.b2international.snowowl.core.compare.ConceptMapCompareChangeKi
 import static com.b2international.snowowl.core.compare.ConceptMapCompareChangeKind.MISSING;
 import static com.b2international.snowowl.core.compare.ConceptMapCompareChangeKind.PRESENT;
 import static com.b2international.snowowl.core.compare.ConceptMapCompareChangeKind.SAME;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
+import org.eclipse.xtext.util.Strings;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.compare.ConceptMapCompareChangeKind;
-import com.b2international.snowowl.core.compare.ConceptMapCompareDsvExportModel;
 import com.b2international.snowowl.core.compare.ConceptMapCompareResultItem;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.domain.ConceptMapMapping;
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.test.commons.Services;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.dataformat.csv.CsvMapper;
-import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -106,31 +101,41 @@ public class ConceptMapCompareDsvExportTest {
 	}
 	
 	private void assertFile(final File file, final List<ConceptMapCompareResultItem> expectedItems) throws IOException {
-		final CsvMapper mapper = new CsvMapper();
-		final CsvSchema schema = mapper.schemaFor(ConceptMapCompareDsvExportModel.class)
-				.withHeader()
-				.withColumnSeparator(';');
+		int i = 0;
 		
-		final List<ConceptMapCompareDsvExportModel> convertedItems = expectedItems.stream().map(ConceptMapCompareResultItem::toExportModel).collect(Collectors.toList());
+		try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+			//Read header
+			String line = reader.readLine();
 
-		try (InputStream in = Files.newInputStream(Paths.get(file.getPath()), StandardOpenOption.READ)) {
-			
-			final ObjectReader reader = mapper.readerFor(ConceptMapCompareDsvExportModel.class).with(schema);
-			final List<Object> items = reader.readValues(in).readAll();
-			
-			assertEquals(expectedItems.size(), items.size());
-			
-			for (Object obj : items) {
-				assertTrue(convertedItems.contains(obj));
+			line = reader.readLine();
+			while (line != null) {
+				final List<String> fields = Strings.split(line, ';');
+				final ConceptMapCompareResultItem item = expectedItems.get(i);
+				assertThat(fields).containsOnly(toFieldsArray(item));
+				
+				i++;
+				line = reader.readLine();
 			}
 			
-		} catch (IOException e) {
+			assertEquals(expectedItems.size(), i);
+		} catch (Exception e) {
 			throw e;
-		} finally {
-			Files.delete(Paths.get(file.getPath()));
 		}
 	}
 	
+	private String[] toFieldsArray(ConceptMapCompareResultItem item) {
+		final ConceptMapMapping mapping = item.getMapping();
+		return new String[] {
+				item.getChangeKind().name(),
+				ConceptMapCompareChangeKind.SAME.equals(item.getChangeKind()) ? "Both" : mapping .getContainerTerm(),
+				mapping.getSourceComponentURI().codeSystem(),
+				mapping.getSourceComponentURI().identifier(),
+				mapping.getSourceTerm(),
+				mapping.getTargetComponentURI().codeSystem(),
+				mapping.getTargetComponentURI().identifier(),
+				mapping.getTargetTerm()};
+	}
+
 	private static ConceptMapCompareResultItem createItemUnspecifiedTarget(ConceptMapCompareChangeKind changeKind, String containerTerm, String sourceId, String sourceTerm) {
 		ConceptMapMapping mapping = ConceptMapMapping.builder()
 				.containerTerm(containerTerm)

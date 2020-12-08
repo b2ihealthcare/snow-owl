@@ -19,12 +19,15 @@ import java.io.Serializable;
 import java.util.Objects;
 
 import com.b2international.snowowl.core.domain.ConceptMapMapping;
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.google.common.collect.ComparisonChain;
 
 /**
  * @since 7.11
  */
+@JsonPropertyOrder(value = { "changeKind", "conceptMap", "sourceCodeSystem", "sourceCode", "sourceTerm", "targetCodeSystem", "targetCode", "targetTerm" })
 public final class ConceptMapCompareResultItem implements Serializable, Comparable<ConceptMapCompareResultItem> {
 
 	private static final long serialVersionUID = 1L;
@@ -37,6 +40,42 @@ public final class ConceptMapCompareResultItem implements Serializable, Comparab
 		this.mapping = mapping;
 	}
 	
+	@JsonGetter(value = "conceptMap")
+	public String conceptMap() {
+		return ConceptMapCompareChangeKind.SAME.equals(changeKind) ? "Both" : mapping .getContainerTerm();
+	}
+	
+	@JsonGetter(value = "sourceCodeSystem")
+	public String sourceCodeSystem() {
+		return mapping.getSourceComponentURI().codeSystem();
+	}
+	
+	@JsonGetter(value = "sourceCode")
+	public String sourceCode() {
+		return mapping.getSourceComponentURI().identifier();
+	}
+	
+	@JsonGetter(value = "sourceTerm")
+	public String sourceTerm() {
+		return mapping.getSourceTerm();
+	}
+	
+	@JsonGetter(value = "targetCodeSystem")
+	public String targetCodeSystem() {
+		return mapping.getTargetComponentURI().codeSystem();
+	}
+	
+	@JsonGetter(value = "targetCode")
+	public String targetCode() {
+		return mapping.getTargetComponentURI().identifier();
+	}
+	
+	@JsonGetter(value = "targetTerm")
+	public String targetTerm() {
+		return mapping.getTargetTerm();
+	}
+	
+	@JsonIgnore
 	public ConceptMapMapping getMapping() {
 		return mapping;
 	}
@@ -48,19 +87,6 @@ public final class ConceptMapCompareResultItem implements Serializable, Comparab
 	@Override
 	public int hashCode() {
 		return Objects.hash(changeKind, mapping);
-	}
-	
-	@JsonIgnore
-	public ConceptMapCompareDsvExportModel toExportModel() {
-		return new ConceptMapCompareDsvExportModel(
-				changeKind.toString(),
-				ConceptMapCompareChangeKind.SAME.equals(changeKind) ? "Both" : mapping .getContainerTerm(),
-				mapping.getSourceComponentURI().codeSystem(),
-				mapping.getSourceComponentURI().identifier(),
-				mapping.getSourceTerm(),
-				mapping.getTargetComponentURI().codeSystem(),
-				mapping.getTargetComponentURI().identifier(),
-				mapping.getTargetTerm());
 	}
 	
 	@Override

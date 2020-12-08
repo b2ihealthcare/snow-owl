@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.compare.ConceptMapCompareChangeKind;
-import com.b2international.snowowl.core.compare.ConceptMapCompareDsvExportModel;
 import com.b2international.snowowl.core.compare.ConceptMapCompareResultItem;
 import com.b2international.snowowl.core.events.Request;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
@@ -67,14 +66,12 @@ final class ConceptMapCompareDsvExportRequest implements Request<ServiceProvider
 	
 	@Override
 	public File execute(ServiceProvider context) {
-	 final List<ConceptMapCompareDsvExportModel> resultsToExport = items.stream()
+	 final List<ConceptMapCompareResultItem> resultsToExport = items.stream()
 				.filter(item -> changeKinds.contains(item.getChangeKind()))
-				.sorted((i1, i2) -> i1.getChangeKind().compareTo(i2.getChangeKind()))
-				.map(ConceptMapCompareResultItem::toExportModel)
 				.collect(Collectors.toList());
 		
 		final CsvMapper mapper = new CsvMapper();
-		final CsvSchema schema = mapper.schemaFor(ConceptMapCompareDsvExportModel.class)
+		final CsvSchema schema = mapper.schemaFor(ConceptMapCompareResultItem.class)
 				.withHeader()
 				.withColumnSeparator(delimiter)
 				.withNullValue("");
