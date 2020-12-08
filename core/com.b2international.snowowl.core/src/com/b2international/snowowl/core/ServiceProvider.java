@@ -56,7 +56,7 @@ public interface ServiceProvider {
 	 * @return an {@link Optional}
 	 */
 	default <T> Optional<T> optionalService(Class<T> type) {
-		throw new UnsupportedOperationException(String.format("Optional Service injection for type '%s' is not available in provider '%s'", type.getClass(), getClass().getSimpleName()));
+		return Optional.empty();
 	}
 
 	/**

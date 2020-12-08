@@ -29,12 +29,11 @@ import com.b2international.snowowl.core.console.CommandLineStream;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.plugin.Component;
+import com.b2international.snowowl.core.request.io.ImportResponse;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.core.domain.ISnomedImportConfiguration.ImportStatus;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.datastore.request.rf2.Rf2ImportResponse;
 
 import picocli.CommandLine;
 import picocli.CommandLine.HelpCommand;
@@ -110,7 +109,7 @@ public final class SnomedCommand extends Command {
 				return;
 			}
 			
-			final Rf2ImportResponse response = SnomedRequests.rf2().prepareImport()
+			final ImportResponse response = SnomedRequests.rf2().prepareImport()
 					.setCreateVersions(createVersions)
 					.setRf2ArchiveId(rf2ArchiveId)
 					.setReleaseType(rf2ReleaseType)
@@ -118,20 +117,11 @@ public final class SnomedCommand extends Command {
 					.execute(getBus())
 					.getSync();
 			
-			if (response.getStatus() == ImportStatus.COMPLETED) {
-				out.println("Successfully imported SNOMED CT content from file: %s", path);
+			if (response.isSuccess()) {
+				out.println("Successfully imported SNOMED CT content from file '%s'.", path);
 			} else {
-				if (!response.getIssues().isEmpty()) {
-					out.println("There are %s validation errors in the provided '%s' file.", response.getIssues().size(), path);
-				} else {
-					out.println("Failed to import SNOMED CT content from file: %s", path);
-				}
+				out.println("Failed to import SNOMED CT content from file '%s'. %s", path, response.getError());
 			}
-			
 		}
-		
 	}
- 	
-	
-
 }
