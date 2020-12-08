@@ -78,6 +78,11 @@ public final class ImportDefect implements Serializable {
 		return type == ImportDefectType.INFO;
 	}
 
+	@Override
+	public String toString() {
+		return String.join(" - ", type.toString(), file, location, message);
+	}
+	
 	public static ImportDefect error(String file, String location, String message) {
 		return new ImportDefect(file, location, message, ImportDefectType.ERROR);
 	}
@@ -89,5 +94,4 @@ public final class ImportDefect implements Serializable {
 	public static ImportDefect info(String file, String location, String message) {
 		return new ImportDefect(file, location, message, ImportDefectType.INFO);
 	}
-	
 }
