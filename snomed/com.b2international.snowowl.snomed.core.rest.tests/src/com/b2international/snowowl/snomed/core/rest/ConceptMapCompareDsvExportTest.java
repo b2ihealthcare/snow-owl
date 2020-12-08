@@ -32,7 +32,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import org.eclipse.xtext.util.Strings;
+import org.assertj.core.util.Files;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
@@ -101,15 +101,14 @@ public class ConceptMapCompareDsvExportTest {
 	}
 	
 	private void assertFile(final File file, final List<ConceptMapCompareResultItem> expectedItems) throws IOException {
-		int i = 0;
-		
 		try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+			int i = 0;
 			//Read header
 			String line = reader.readLine();
 
 			line = reader.readLine();
 			while (line != null) {
-				final List<String> fields = Strings.split(line, ';');
+				final String[] fields = line.split(";", -1);
 				final ConceptMapCompareResultItem item = expectedItems.get(i);
 				assertThat(fields).containsOnly(toFieldsArray(item));
 				
@@ -120,6 +119,8 @@ public class ConceptMapCompareDsvExportTest {
 			assertEquals(expectedItems.size(), i);
 		} catch (Exception e) {
 			throw e;
+		} finally {
+			Files.delete(file);
 		}
 	}
 	

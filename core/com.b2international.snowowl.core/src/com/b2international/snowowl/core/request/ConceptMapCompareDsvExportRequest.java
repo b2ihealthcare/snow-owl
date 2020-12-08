@@ -73,6 +73,7 @@ final class ConceptMapCompareDsvExportRequest implements Request<ServiceProvider
 		final CsvMapper mapper = new CsvMapper();
 		final CsvSchema schema = mapper.schemaFor(ConceptMapCompareResultItem.class)
 				.withHeader()
+				.withoutQuoteChar()
 				.withColumnSeparator(delimiter)
 				.withNullValue("");
 		
