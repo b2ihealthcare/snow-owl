@@ -15,10 +15,12 @@
  */
 package com.b2international.snowowl.core.request;
 
+import com.b2international.snowowl.core.CodeType;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.Concepts;
 import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator.OptionKey;
+import com.google.common.collect.FluentIterable;
 
 /**
  * @since 7.5
@@ -98,6 +100,53 @@ public final class ConceptSearchRequestBuilder extends SearchResourceRequestBuil
 	public ConceptSearchRequestBuilder filterByTermType(String termType) {
 		return addOption(OptionKey.TERM_TYPE, termType);
 	}
+
+	/**
+	 * Filters concepts by their type. Allowed values are: 'code', 'category'.
+	 * 
+	 * @param type
+	 *            - String representation of the {@link CodeType} enum
+	 * @return
+	 * @see CodeType
+	 */
+	public ConceptSearchRequestBuilder filterByCodeType(String type) {
+		return filterByCodeType(CodeType.valueOfIgnoreCase(type));
+	}
+	
+	/**
+	 * Filters concepts by their type. Allowed values are: 'code', 'category'.
+	 * 
+	 * @param types
+	 *            - String representations of the {@link CodeType} enum
+	 * @return
+	 * @see CodeType
+	 */
+	public ConceptSearchRequestBuilder filterByCodeType(Iterable<String> types) {
+		return filterByCodeTypes(types == null ? null : FluentIterable.from(types).transform(CodeType::valueOfIgnoreCase).toSet());
+	}
+
+	/**
+	 * Filters concepts by their type. Allowed values are: 'code', 'category'.
+	 * 
+	 * @param type
+	 * @return
+	 * @see CodeType
+	 */
+	public ConceptSearchRequestBuilder filterByCodeType(CodeType type) {
+		return addOption(OptionKey.TYPE, type);
+	}
+
+	/**
+	 * Filters concepts by their type. Allowed values are: 'code', 'category'.
+	 * 
+	 * @param types
+	 * @return
+	 * @see CodeType
+	 */
+	public ConceptSearchRequestBuilder filterByCodeTypes(Iterable<CodeType> types) {
+		return addOption(OptionKey.TYPE, types);
+	}
+	
 	
 	/**
 	 * Sets the preferred display term to return for every code system
