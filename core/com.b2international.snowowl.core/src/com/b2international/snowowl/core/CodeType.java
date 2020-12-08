@@ -15,11 +15,30 @@
  */
 package com.b2international.snowowl.core;
 
+import com.b2international.commons.exceptions.BadRequestException;
+
 /**
+ * Represents the type of the Code in a given CodeSystem. Generally speaking this is usually takes two forms:
+ * <ul>
+ *  <li>code - the actual code that represents a clinical meaning, concept or term</li>
+ *  <li>category - a non-complete code, that represents some kind of categorization in the given code system (eg. blocks, categories, sections, chapters, etc.)</li>
+ * </ul>
+ * 
  * @since 7.13
  */
 public enum CodeType {
+	
 	CATEGORY,
+	
 	CODE;
+
+	public static CodeType valueOfIgnoreCase(String value) {
+		for (CodeType codeType : values()) {
+			if (codeType.name().equalsIgnoreCase(value)) {
+				return codeType;
+			}
+		}
+		throw new BadRequestException("Unrecognized CodeType value: '%s'. Allowed values are: 'code', 'category'.", value);
+	}
 	
 }
