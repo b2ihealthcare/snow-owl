@@ -20,7 +20,6 @@ import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.RequestBuilder;
-import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
 
 /**
  * Repository Commit Request builder. Repository commit requests should always be executed in async mode.
@@ -34,7 +33,7 @@ public class RepositoryCommitRequestBuilder extends BaseRequestBuilder<Repositor
 	private String commitComment = "";
 	private Request<TransactionContext, ?> body;
 	private long preparationTime = -1L;
-	private String parentContextDescription = DatastoreLockContextDescriptions.ROOT;
+	private String parentContextDescription;
 	private boolean notify = true;
 
 	public final RepositoryCommitRequestBuilder setAuthor(String author) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,11 @@ package com.b2international.snowowl.snomed.datastore.request.rf2.importer;
 
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
+import com.b2international.snowowl.core.request.io.ImportDefectAcceptor.ImportDefectBuilder;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
-import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationIssueReporter;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -62,18 +61,15 @@ final class Rf2DescriptionTypeRefSetContentType implements Rf2RefSetContentType 
 	}
 
 	@Override
-	public void validateMembersByReferenceSetContentType(Rf2ValidationIssueReporter reporter, String[] values) {
-		final String descriptionFormat = values[6];
-		
-		validateConceptIds(reporter, descriptionFormat);
-		
+	public void validateMembersByReferenceSetContentType(ImportDefectBuilder defectBuilder, String[] values) {
 		final String memberId = values[0];
+		final String descriptionFormat = values[6];
 		final String descriptionLength = values[7];
-		if (Strings.isNullOrEmpty(descriptionLength)) {
-			reporter.warning("Reference set member '%s' description length property is empty.", memberId);
-		}
 		
+		validateConceptIds(defectBuilder, descriptionFormat);
+
+		defectBuilder
+			.whenBlank(descriptionLength)
+			.warn("Reference set member '%s' description length property is empty.", memberId);
 	}
-	
-	
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,11 +26,10 @@ import static com.b2international.snowowl.snomed.common.SnomedRf2Headers.MRCM_DO
 
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
+import com.b2international.snowowl.core.request.io.ImportDefectAcceptor.ImportDefectBuilder;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
-import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationIssueReporter;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -77,7 +76,7 @@ final class Rf2MRCMDomainRefSetContentType implements Rf2RefSetContentType {
 	}
 
 	@Override
-	public void validateMembersByReferenceSetContentType(Rf2ValidationIssueReporter reporter, String[] values) {
+	public void validateMembersByReferenceSetContentType(ImportDefectBuilder defectBuilder, String[] values) {
 		final String memberId = values[0];
 		final String domainConstraint = values[6];
 		final String proximalPrimitiveConstraint = values[8];
@@ -85,24 +84,24 @@ final class Rf2MRCMDomainRefSetContentType implements Rf2RefSetContentType {
 		final String domainTemplateForPostcoordination = values[11];
 		final String guideURL = values[12];
 
-		if (Strings.isNullOrEmpty(domainConstraint)) {
-			reporter.error("Domain constraint field was empty for '%s'", memberId);
-		}
+		defectBuilder
+			.whenBlank(domainConstraint)
+			.error("Domain constraint field was empty for '%s'", memberId);
 
-		if (Strings.isNullOrEmpty(proximalPrimitiveConstraint)) {
-			reporter.error("Proximal primitive constraint field was empty for '%s'", memberId);
-		}
-		if (Strings.isNullOrEmpty(domainTemplateForPrecoordination)) {
-			reporter.error("Domain template for precoordination was empty for '%s'", memberId);
-		}
+		defectBuilder
+			.whenBlank(proximalPrimitiveConstraint)
+			.error("Proximal primitive constraint field was empty for '%s'", memberId);
+		
+		defectBuilder
+			.whenBlank(domainTemplateForPrecoordination)
+			.error("Domain template for precoordination was empty for '%s'", memberId);
 
-		if (Strings.isNullOrEmpty(domainTemplateForPostcoordination)) {
-			reporter.error("Domain template for postcoordination field was empty for '%s'", memberId);
-		}
+		defectBuilder
+			.whenBlank(domainTemplateForPostcoordination)
+			.error("Domain template for postcoordination field was empty for '%s'", memberId);
 
-		if (Strings.isNullOrEmpty(guideURL)) {
-			reporter.warning("GuideURL field was empty for '%s'", memberId);
-		}
+		defectBuilder
+			.whenBlank(guideURL)
+			.warn("GuideURL field was empty for '%s'", memberId);
 	}
-
 }

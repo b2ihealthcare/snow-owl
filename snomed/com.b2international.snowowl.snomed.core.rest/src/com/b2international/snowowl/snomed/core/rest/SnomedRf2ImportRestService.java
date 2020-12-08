@@ -93,6 +93,10 @@ public class SnomedRf2ImportRestService extends AbstractSnomedRestService {
 			@RequestParam(name = "createVersions", defaultValue = "true")
 			final Boolean createVersions,
 			
+			@ApiParam(value = "Enable to run the import content integrity validations without pushing any changes", defaultValue = "false")
+			@RequestParam(name = "dryRun", defaultValue = "false")
+			final Boolean dryRun,
+			
 			@ApiParam(value = "Import file", required = true)
 			@RequestPart("file") 
 			final MultipartFile file) throws IOException {
@@ -106,6 +110,7 @@ public class SnomedRf2ImportRestService extends AbstractSnomedRestService {
 			.setRf2ArchiveId(rf2ArchiveId)
 			.setReleaseType(Rf2ReleaseType.getByNameIgnoreCase(type))
 			.setCreateVersions(createVersions)
+			.setDryRun(dryRun)
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
 			.runAsJobWithRestart(importJobId, String.format("Importing SNOMED CT RF2 file '%s'", file.getOriginalFilename()))
 			.execute(getBus())

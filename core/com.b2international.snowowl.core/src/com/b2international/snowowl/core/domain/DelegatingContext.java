@@ -112,7 +112,11 @@ public class DelegatingContext implements ServiceProvider, Bindable, IDisposable
 	
 	@Override
 	public <T> Optional<T> optionalService(Class<T> type) {
-		return Optional.ofNullable(type.cast(bindings.get(type)));
+		if (bindings.containsKey(type)) {
+			return Optional.ofNullable(type.cast(bindings.get(type)));
+		} else {
+			return delegate.optionalService(type);
+		} 
 	}
 
 	@Override

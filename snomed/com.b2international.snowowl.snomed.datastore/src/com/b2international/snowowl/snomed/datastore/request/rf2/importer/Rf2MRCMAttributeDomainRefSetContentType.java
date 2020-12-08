@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,11 +26,10 @@ import static com.b2international.snowowl.snomed.common.SnomedRf2Headers.MRCM_AT
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.BooleanUtils;
+import com.b2international.snowowl.core.request.io.ImportDefectAcceptor.ImportDefectBuilder;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
-import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationIssueReporter;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -79,7 +78,7 @@ final class Rf2MRCMAttributeDomainRefSetContentType implements Rf2RefSetContentT
 	}
 
 	@Override
-	public void validateMembersByReferenceSetContentType(Rf2ValidationIssueReporter reporter, String[] values) {
+	public void validateMembersByReferenceSetContentType(ImportDefectBuilder defectBuilder, String[] values) {
 		final String memberId = values[0];
 		final String grouped = values[7];
 		final String domainId = values[6];
@@ -88,19 +87,18 @@ final class Rf2MRCMAttributeDomainRefSetContentType implements Rf2RefSetContentT
 		final String ruleStrenghtId = values[10];
 		final String contentTypeId = values[11];
 		
-		if (Strings.isNullOrEmpty(grouped)) {
-			reporter.error("Grouped field was empty for membwder '%s'", memberId);
-		}
+		defectBuilder
+			.whenBlank(grouped)
+			.error("Grouped field was empty for membwder '%s'", memberId);
 		
-		if (Strings.isNullOrEmpty(attributeCardinality)) {
-			reporter.error("AttributeCardinality field was empty for member '%s'", memberId);
-		}
+		defectBuilder
+			.whenBlank(attributeCardinality)
+			.error("AttributeCardinality field was empty for member '%s'", memberId);
 		
-		if (Strings.isNullOrEmpty(attributeInGroupCardinality)) {
-			reporter.error("AttributeInGroupCardinality field was empty for member '%s'", memberId);
-		}
+		defectBuilder
+			.whenBlank(attributeInGroupCardinality)
+			.error("AttributeInGroupCardinality field was empty for member '%s'", memberId);
 		
-		validateConceptIds(reporter, domainId, ruleStrenghtId, contentTypeId);
+		validateConceptIds(defectBuilder, domainId, ruleStrenghtId, contentTypeId);
 	}
-
 }

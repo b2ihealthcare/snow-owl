@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,6 +66,10 @@ public final class ApiRequestHandler implements IHandler<IMessage> {
 					)
 				)
 			).execute(executionContext);
+			
+			if (body == null) {
+				LoggerFactory.getLogger(ApiRequestHandler.class).error("No response was returned from request: " + req.getClass());
+			}
 					
 			message.reply(body, responseHeaders.headers());
 		} catch (WrappedException e) {
