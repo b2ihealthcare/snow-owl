@@ -40,37 +40,37 @@ public final class ConceptMapCompareResultItem implements Serializable, Comparab
 		this.mapping = mapping;
 	}
 	
-	@JsonGetter(value = "conceptMap")
+	@JsonGetter
 	public String conceptMap() {
 		return ConceptMapCompareChangeKind.SAME.equals(changeKind) ? "Both" : mapping .getContainerTerm();
 	}
 	
-	@JsonGetter(value = "sourceCodeSystem")
+	@JsonGetter
 	public String sourceCodeSystem() {
 		return mapping.getSourceComponentURI().codeSystem();
 	}
 	
-	@JsonGetter(value = "sourceCode")
+	@JsonGetter
 	public String sourceCode() {
 		return mapping.getSourceComponentURI().identifier();
 	}
 	
-	@JsonGetter(value = "sourceTerm")
+	@JsonGetter
 	public String sourceTerm() {
 		return mapping.getSourceTerm();
 	}
 	
-	@JsonGetter(value = "targetCodeSystem")
+	@JsonGetter
 	public String targetCodeSystem() {
 		return mapping.getTargetComponentURI().codeSystem();
 	}
 	
-	@JsonGetter(value = "targetCode")
+	@JsonGetter
 	public String targetCode() {
 		return mapping.getTargetComponentURI().identifier();
 	}
 	
-	@JsonGetter(value = "targetTerm")
+	@JsonGetter
 	public String targetTerm() {
 		return mapping.getTargetTerm();
 	}
