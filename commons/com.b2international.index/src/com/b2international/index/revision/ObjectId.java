@@ -29,7 +29,7 @@ public final class ObjectId {
 
 	private static final String SEPARATOR = "/";
 
-	static final String ROOT = "-1";
+	public static final String ROOT = "-1";
 	
 	private final String objectId;
 	private final String type;
