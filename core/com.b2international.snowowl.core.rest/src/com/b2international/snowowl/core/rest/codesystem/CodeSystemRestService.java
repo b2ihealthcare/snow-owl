@@ -190,6 +190,10 @@ public class CodeSystemRestService extends AbstractRestService {
 		
 		final String commitComment = String.format("Created new Code System %s", codeSystem.getShortName());
 		
+		if (codeSystem.getUpgradeOf() != null) {
+			throw new BadRequestException("'upgradeOf' property cannot be set through code system create API");
+		}
+		
 		final String shortName = CodeSystemRequests
 				.prepareNewCodeSystem()
 				.setBranchPath(codeSystem.getBranchPath())
@@ -237,6 +241,10 @@ public class CodeSystemRestService extends AbstractRestService {
 			final String author) {
 		validateUpdateInput(shortNameOrOId, codeSystem.getRepositoryId());
 		final String commitComment = String.format("Updated Code System %s", shortNameOrOId);
+		
+		if (codeSystem.getUpgradeOf() != null) {
+			throw new BadRequestException("'upgradeOf' property cannot be set through code system update API");
+		}
 		
 		CodeSystemRequests
 				.prepareUpdateCodeSystem(shortNameOrOId)
