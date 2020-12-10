@@ -41,6 +41,7 @@ public final class CodeSystemCreateRequestBuilder extends BaseRequestBuilder<Cod
 	private String shortName;
 	private String terminologyId;
 	private CodeSystemURI extensionOf;
+	private CodeSystemURI upgradeOf;
 	private List<ExtendedLocale> locales;
 	private Map<String, Object> additionalProperties;
 
@@ -101,6 +102,11 @@ public final class CodeSystemCreateRequestBuilder extends BaseRequestBuilder<Cod
 		return getSelf();
 	}
 	
+	public CodeSystemCreateRequestBuilder setUpgradeOf(final CodeSystemURI upgradeOf) {
+		this.upgradeOf = upgradeOf;
+		return getSelf();
+	}
+	
 	public CodeSystemCreateRequestBuilder setLocales(final List<ExtendedLocale> locales) {
 		this.locales = locales;
 		return getSelf();
@@ -125,6 +131,7 @@ public final class CodeSystemCreateRequestBuilder extends BaseRequestBuilder<Cod
 		req.setShortName(shortName);
 		req.setTerminologyId(terminologyId);
 		req.setExtensionOf(extensionOf);
+		req.setUpgradeOf(upgradeOf);
 		req.setLocales(locales);
 		req.setAdditionalProperties(additionalProperties);
 		return req;

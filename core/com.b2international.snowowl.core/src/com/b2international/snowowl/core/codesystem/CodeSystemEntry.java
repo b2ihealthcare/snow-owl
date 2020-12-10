@@ -48,6 +48,8 @@ import com.google.common.collect.ImmutableMap;
 @JsonDeserialize(builder = CodeSystemEntry.Builder.class)
 public final class CodeSystemEntry implements Serializable {
 
+	private static final long serialVersionUID = 1L;
+
 	/**
 	 * Unique terminology component identifier for code systems.
 	 */
@@ -130,6 +132,7 @@ public final class CodeSystemEntry implements Serializable {
 				.repositoryId(codeSystem.getRepositoryId())
 				.branchPath(codeSystem.getBranchPath())
 				.extensionOf(codeSystem.getExtensionOf())
+				.upgradeOf(codeSystem.getUpgradeOf())
 				.locales(codeSystem.getLocales())
 				.additionalProperties(codeSystem.getAdditionalProperties());
 	}
@@ -148,6 +151,7 @@ public final class CodeSystemEntry implements Serializable {
 		private String repositoryId;
 		private String branchPath;
 		private CodeSystemURI extensionOf;
+		private CodeSystemURI upgradeOf;
 		private List<ExtendedLocale> locales;
 		private Map<String, Object> additionalProperties;
 		
@@ -216,6 +220,11 @@ public final class CodeSystemEntry implements Serializable {
 			this.extensionOf = extensionOf;
 			return this;
 		}
+		
+		public Builder upgradeOf(final CodeSystemURI upgradeOf) {
+			this.upgradeOf = upgradeOf;
+			return this;
+		}
 
 		public Builder locales(final List<ExtendedLocale> locales) {
 			this.locales = Optional.ofNullable(locales)
@@ -245,6 +254,7 @@ public final class CodeSystemEntry implements Serializable {
 					repositoryId, 
 					branchPath, 
 					extensionOf,
+					upgradeOf,
 					locales,
 					additionalProperties);
 		}
@@ -270,6 +280,7 @@ public final class CodeSystemEntry implements Serializable {
 	private final String repositoryId;
 	private final String branchPath;
 	private final CodeSystemURI extensionOf;
+	private final CodeSystemURI upgradeOf;
 	private final List<ExtendedLocale> locales;
 	private final Map<String, Object> additionalProperties;
 	
@@ -284,6 +295,7 @@ public final class CodeSystemEntry implements Serializable {
 			final String repositoryId, 
 			final String branchPath, 
 			final CodeSystemURI extensionOf,
+			final CodeSystemURI upgradeOf,
 			final List<ExtendedLocale> locales,
 			final Map<String, Object> additionalProperties) {
 
@@ -299,6 +311,7 @@ public final class CodeSystemEntry implements Serializable {
 		this.repositoryUuid = repositoryId;
 		this.branchPath = branchPath;
 		this.extensionOf = extensionOf;
+		this.upgradeOf = upgradeOf;
 		this.locales = locales;
 		this.additionalProperties = additionalProperties;
 	}
@@ -383,11 +396,17 @@ public final class CodeSystemEntry implements Serializable {
 	}
 
 	/**
-	 * @return the URI of the code system version this code system is based upon
-	 *         (can be {@code null} if this is a stand-alone code system).
+	 * @return the URI of the code system version this code system is based upon (can be {@code null} if this is a stand-alone code system).
 	 */
 	public CodeSystemURI getExtensionOf() {
 		return extensionOf;
+	}
+	
+	/**
+	 * @return the URI of the code system version this code system is the upgrade of, (can be {@code null} if this is a non-upgrade code system).
+	 */
+	public CodeSystemURI getUpgradeOf() {
+		return upgradeOf;
 	}
 	
 	/**

@@ -51,6 +51,7 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 	private String shortName;
 	private String terminologyId;
 	private CodeSystemURI extensionOf;
+	private CodeSystemURI upgradeOf;
 	private List<ExtendedLocale> locales;
 	private Map<String, Object> additionalProperties;
 
@@ -103,6 +104,10 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 
 	void setExtensionOf(final CodeSystemURI extensionOf) {
 		this.extensionOf = extensionOf;
+	}
+	
+	void setUpgradeOf(CodeSystemURI upgradeOf) {
+		this.upgradeOf = upgradeOf;
 	}
 	
 	void setLocales(final List<ExtendedLocale> locales) {
@@ -261,6 +266,7 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 				.terminologyComponentId(terminologyId)
 				.repositoryId(repositoryId)
 				.extensionOf(extensionOf)
+				.upgradeOf(upgradeOf)
 				.locales(locales)
 				.additionalProperties(additionalProperties)
 				.build();
