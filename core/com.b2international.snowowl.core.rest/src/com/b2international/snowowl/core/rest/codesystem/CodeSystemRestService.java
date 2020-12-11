@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -243,7 +244,7 @@ public class CodeSystemRestService extends AbstractRestService {
 		final String commitComment = String.format("Updated Code System %s", shortNameOrOId);
 		
 		if (codeSystem.getUpgradeOf() != null) {
-			throw new BadRequestException("'upgradeOf' property cannot be set through code system update API");
+			LoggerFactory.getLogger(getClass()).warn("'upgradeOf' property update support will be dropped in 8.0. It is only present in 7.x version for backward compatibility to let pre-8 datasets migrate their custom made upgrade CodeSystems work as upgrades.");
 		}
 		
 		CodeSystemRequests
