@@ -65,10 +65,14 @@ public abstract class ImportRequest extends LockRequest<TransactionContext, Impo
 	
 	@Override
 	public final ImportResponse doExecute(TransactionContext context) {
+		
 		context.log().info("Importing components from source file '{}'.", this.attachment.getFileName());
+		
+		InternalAttachmentRegistry iar = null;
+		
 		try {
 
-			InternalAttachmentRegistry iar = (InternalAttachmentRegistry) context.service(AttachmentRegistry.class);
+			iar = (InternalAttachmentRegistry) context.service(AttachmentRegistry.class);
 			File attachment = iar.getAttachment(this.attachment.getAttachmentId());
 			
 			ImportDefectAcceptor defectsAcceptor = new ImportDefectAcceptor(this.attachment.getFileName());
@@ -92,6 +96,10 @@ public abstract class ImportRequest extends LockRequest<TransactionContext, Impo
 			String error = "Unexpected error happened during the import of the source file: " + attachment.getFileName();
 			context.log().error(error, e);
 			return ImportResponse.error(error);
+		} finally {
+			if (attachment != null && iar != null) {
+				iar.delete(attachment.getAttachmentId());
+			}
 		}
 	}
 
