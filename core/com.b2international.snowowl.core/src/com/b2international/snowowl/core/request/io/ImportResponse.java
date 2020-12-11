@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.request.io;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -100,4 +101,25 @@ public final class ImportResponse implements Serializable {
 		return new ImportResponse(String.format("There are '%s' issues with the import file.", defects.size()), Set.of(), defects);
 	}
 
+	@Override
+	public int hashCode() {
+		return Objects.hash(defects, error, visitedComponents);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		ImportResponse other = (ImportResponse) obj;
+		return Objects.equals(defects, other.defects) && Objects.equals(error, other.error)
+				&& Objects.equals(visitedComponents, other.visitedComponents);
+	}
+	
 }
