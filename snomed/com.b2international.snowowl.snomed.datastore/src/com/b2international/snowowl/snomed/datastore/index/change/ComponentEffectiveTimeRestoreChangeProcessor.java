@@ -16,13 +16,10 @@
 package com.b2international.snowowl.snomed.datastore.index.change;
 
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -34,32 +31,24 @@ import com.b2international.commons.ClassUtils;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.StagingArea;
-import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
-import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
-import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
-import com.b2international.snowowl.core.codesystem.CodeSystems;
-import com.b2international.snowowl.core.codesystem.version.CodeSystemVersionSearchRequestBuilder;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.repository.ChangeSetProcessorBase;
-import com.b2international.snowowl.core.request.SearchResourceRequest;
-import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.core.repository.RepositoryCodeSystemProvider;
+import com.b2international.snowowl.core.uri.CodeSystemURI;
+import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
-import com.google.common.base.Strings;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
-import com.google.common.primitives.Longs;
 
 /**
  * @since 7.1
@@ -88,8 +77,8 @@ public final class ComponentEffectiveTimeRestoreChangeProcessor extends ChangeSe
 			return;
 		}
 		
-		final IEventBus bus = ClassUtils.checkAndCast(staging.getContext(), ServiceProvider.class).service(IEventBus.class);
-		final List<String> branchesForPreviousVersion = getAvailableVersionPaths(bus, staging.getBranchPath());
+		final RepositoryContext context = ClassUtils.checkAndCast(staging.getContext(), RepositoryContext.class);
+		final List<String> branchesForPreviousVersion = getAvailableVersionPaths(context, staging.getBranchPath());
 		if (branchesForPreviousVersion.isEmpty()) {
 			return;
 		}
@@ -201,85 +190,29 @@ public final class ComponentEffectiveTimeRestoreChangeProcessor extends ChangeSe
 		return true;
 	}
 	
-	private List<String> getAvailableVersionPaths(IEventBus bus, String branchPath) {
-		final CodeSystems codeSystems = CodeSystemRequests.prepareSearchCodeSystem()
-				.all()
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
-				.execute(bus)
-				.getSync(1, TimeUnit.MINUTES);
-
-		final Map<String, CodeSystem> codeSystemsByMainBranch = Maps.uniqueIndex(codeSystems, CodeSystem::getBranchPath);
-
-		final List<CodeSystem> relativeCodeSystems = Lists.newArrayList();
-
-		final Iterator<IBranchPath> bottomToTop = BranchPathUtils.bottomToTopIterator(BranchPathUtils.createPath(branchPath));
-
-		while (bottomToTop.hasNext()) {
-			final IBranchPath candidate = bottomToTop.next();
-			if (codeSystemsByMainBranch.containsKey(candidate.getPath())) {
-				relativeCodeSystems.add(codeSystemsByMainBranch.get(candidate.getPath()));
+	private List<String> getAvailableVersionPaths(RepositoryContext context, String branchPath) {
+		final List<CodeSystemURI> codeSystemsToCheck = Lists.newArrayList();
+		
+		CodeSystem relativeCodeSystem = context.service(RepositoryCodeSystemProvider.class).get(branchPath);
+		
+		// in case of an upgrade CodeSystem check the original CodeSystem as well
+		if (relativeCodeSystem.getUpgradeOf() != null) {
+			codeSystemsToCheck.add(CodeSystemURI.latest(relativeCodeSystem.getUpgradeOf().getCodeSystem()));
+		} else {
+			// in case of regular CodeSystem check that
+			codeSystemsToCheck.add(CodeSystemURI.latest(relativeCodeSystem.getCodeSystemURI().getCodeSystem()));
+		}
+		
+		// always check the direct extensionOf (aka parent) CodeSystem
+		if (relativeCodeSystem.getExtensionOf() != null) {
+			if (relativeCodeSystem.getExtensionOf().isHead()) {
+				codeSystemsToCheck.add(CodeSystemURI.latest(relativeCodeSystem.getExtensionOf().getCodeSystem()));
+			} else {
+				codeSystemsToCheck.add(relativeCodeSystem.getExtensionOf());
 			}
 		}
-		if (relativeCodeSystems.isEmpty()) {
-			throw new IllegalStateException("No relative code system has been found for branch '" + branchPath + "'");
-		}
-
-		// the first code system in the list is the working codesystem
-		final CodeSystem workingCodeSystem = relativeCodeSystems.stream().findFirst().get();
-
-		CodeSystemVersionSearchRequestBuilder versionSearch = CodeSystemRequests.prepareSearchCodeSystemVersion()
-				.one()
-				.filterByCodeSystemShortName(workingCodeSystem.getShortName())
-				.sortBy(SearchResourceRequest.SortField.descending(CodeSystemVersionEntry.Fields.EFFECTIVE_DATE));
 		
-		// if specified and not restoring effective time on the Code System Working Branch then filter by created at up until the specified branch base timestamp
-		if (branchBaseTimestamp > 0L && !branchPath.equals(workingCodeSystem.getBranchPath())) {
-			versionSearch.filterByCreatedAt(0L, branchBaseTimestamp);
-		}
-		
-		final Optional<CodeSystemVersionEntry> workingCodeSystemVersion = versionSearch
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
-				.execute(bus)
-				.getSync()
-				.first();
-
-		final List<CodeSystemVersionEntry> relativeCodeSystemVersions = Lists.newArrayList();
-
-		if (workingCodeSystemVersion.isPresent() && !Strings.isNullOrEmpty(workingCodeSystemVersion.get().getPath())) {
-			relativeCodeSystemVersions.add(workingCodeSystemVersion.get());
-		}
-
-		if (relativeCodeSystems.size() > 1) {
-
-			relativeCodeSystems.stream().skip(1).forEach(codeSystem -> {
-
-				final Map<String, CodeSystemVersionEntry> pathToVersionMap = CodeSystemRequests.prepareSearchCodeSystemVersion()
-						.all()
-						.filterByCodeSystemShortName(codeSystem.getShortName())
-						.build(SnomedDatastoreActivator.REPOSITORY_UUID)
-						.execute(bus)
-						.getSync(1, TimeUnit.MINUTES)
-						.stream()
-						.collect(Collectors.toMap(version -> version.getPath(), v -> v));
-
-				final Iterator<IBranchPath> branchPathIterator = BranchPathUtils.bottomToTopIterator(BranchPathUtils.createPath(branchPath));
-
-				while (branchPathIterator.hasNext()) {
-					final IBranchPath candidate = branchPathIterator.next();
-					if (pathToVersionMap.containsKey(candidate.getPath())) {
-						relativeCodeSystemVersions.add(pathToVersionMap.get(candidate.getPath()));
-						break;
-					}
-				}
-
-			});
-
-		}
-
-		return relativeCodeSystemVersions.stream()
-				// sort versions by effective date in reversed order
-				.sorted((v1, v2) -> Longs.compare(v2.getEffectiveDate(), v1.getEffectiveDate()))
-				.map(CodeSystemVersionEntry::getPath).collect(Collectors.toList());
+		return context.service(ResourceURIPathResolver.class).resolve(context, codeSystemsToCheck);
 	}
 	
 	private Iterable<? extends SnomedDocument> fetchPreviousVersions(RevisionIndex index, String branch, Class<? extends SnomedDocument> componentType, Set<String> ids) {

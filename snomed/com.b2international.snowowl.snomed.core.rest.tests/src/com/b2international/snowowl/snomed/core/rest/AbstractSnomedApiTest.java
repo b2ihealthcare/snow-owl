@@ -15,12 +15,16 @@
  */
 package com.b2international.snowowl.snomed.core.rest;
 
+import static com.b2international.snowowl.test.commons.rest.RestExtensions.*;
 import java.util.Map;
 
+import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.test.commons.rest.AbstractApiTest;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 
 import io.restassured.response.ValidatableResponse;
 
@@ -68,7 +72,11 @@ public abstract class AbstractSnomedApiTest extends AbstractApiTest {
 	}
 	
 	protected final ValidatableResponse assertUpdateConcept(final String conceptId, Map<String, Object> update) {
-		return SnomedComponentRestRequests.updateComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, update);
+		final Map<String, Object> request = Maps.newHashMap(update);
+		if (!request.containsKey("commitComment")) {
+			request.put("commitComment", "Update Concept");
+		}
+		return SnomedComponentRestRequests.updateComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, request);
 	}
 	
 	protected final void updateConcept(final String conceptId, Map<String, Object> update) {
@@ -89,6 +97,22 @@ public abstract class AbstractSnomedApiTest extends AbstractApiTest {
 	
 	protected final void updateRelationship(final String relationshipId, Map<String, Object> update) {
 		assertUpdateRelationship(relationshipId, update).statusCode(204);
+	}
+	
+	protected final String createConcept(IBranchPath branchPath, ImmutableMap.Builder<String, Object> body) {
+		return lastPathSegment(assertCreateConcept(branchPath, body)
+					.assertThat()
+					.statusCode(201)
+					.extract()
+					.header("Location"));
+	}
+	
+	protected final ValidatableResponse assertCreateConcept(IBranchPath branchPath, ImmutableMap.Builder<String, Object> body) {
+		final Map<String, Object> request = Maps.newHashMap(body.build());
+		if (!request.containsKey("commitComment")) {
+			request.put("commitComment", "New Concept");
+		}
+		return SnomedComponentRestRequests.createComponent(branchPath, SnomedComponentType.CONCEPT, request);
 	}
 	
 }

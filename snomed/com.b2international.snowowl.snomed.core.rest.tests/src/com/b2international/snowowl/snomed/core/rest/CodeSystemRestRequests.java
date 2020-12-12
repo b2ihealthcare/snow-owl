@@ -20,6 +20,7 @@ import static com.b2international.snowowl.test.commons.rest.RestExtensions.given
 import java.util.Map;
 
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.google.common.collect.ImmutableMap;
@@ -31,9 +32,13 @@ import io.restassured.response.ValidatableResponse;
  * @since 4.7
  */
 public abstract class CodeSystemRestRequests {
-
+	
 	public static ValidatableResponse createCodeSystem(IBranchPath branchPath, String shortName) {
-		Map<?,?> requestBody = ImmutableMap.builder()
+		return createCodeSystem(branchPath, shortName, null);
+	}
+
+	public static ValidatableResponse createCodeSystem(IBranchPath branchPath, String shortName, CodeSystemURI extensionOf) {
+		ImmutableMap.Builder<String, Object> requestBody = ImmutableMap.<String, Object>builder()
 				.put("name", shortName)
 				.put("branchPath", branchPath.getPath())
 				.put("shortName", shortName)
@@ -43,12 +48,15 @@ public abstract class CodeSystemRestRequests {
 				.put("terminologyId", SnomedTerminologyComponentConstants.TERMINOLOGY_ID)
 				.put("oid", "oid_" + shortName)
 				.put("primaryLanguage", "primaryLanguage")
-				.put("organizationLink", "organizationLink")
-				.build();
-
+				.put("organizationLink", "organizationLink");
+		
+		if (extensionOf != null) {
+			requestBody.put("extensionOf", extensionOf);
+		}
+		
 		return givenAuthenticatedRequest(SnomedApiTestConstants.ADMIN_API)
 				.contentType(ContentType.JSON)
-				.body(requestBody)
+				.body(requestBody.build())
 				.post("/codesystems")
 				.then();
 	}
