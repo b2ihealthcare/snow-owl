@@ -82,11 +82,12 @@ public abstract class ApiException extends FormattedRuntimeException {
 	/**
 	 * Set the developer message associated with this exception.
 	 * 
-	 * @param developerMessage
+	 * @param message
+	 * @param args
 	 * @return this instance for method chaining
 	 */
-	public final ApiException withDeveloperMessage(String developerMessage) {
-		this.developerMessage = developerMessage;
+	public final ApiException withDeveloperMessage(String message, Object...args) {
+		this.developerMessage = String.format(message, args);
 		return this;
 	}
 
