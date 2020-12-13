@@ -69,22 +69,34 @@ public abstract class SnomedComponentRestRequests {
 	}
 	
 	public static ValidatableResponse createComponent(IBranchPath branchPath, SnomedComponentType type, Map<?, ?> requestBody) {
+		return createComponent(branchPath.getPath(), type, requestBody);
+	}
+	
+	public static ValidatableResponse createComponent(String path, SnomedComponentType type, Map<?, ?> requestBody) {
 		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 				.contentType(JSON_UTF8)
 				.body(requestBody)
-				.post("/{path}/{componentType}", branchPath.getPath(), type.toLowerCasePlural())
+				.post("/{path}/{componentType}", path, type.toLowerCasePlural())
 				.then();
 	}
 	
 	public static ValidatableResponse searchComponent(IBranchPath branchPath, SnomedComponentType type, Map<String, Object> params) {
+		return searchComponent(branchPath.getPath(), type, params);
+	}
+	
+	public static ValidatableResponse searchComponent(String path, SnomedComponentType type, Map<String, Object> params) {
 		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 				.contentType(JSON_UTF8)
 				.queryParams(params)
-				.get("/{path}/{componentType}", branchPath.getPath(), type.toLowerCasePlural())
+				.get("/{path}/{componentType}", path, type.toLowerCasePlural())
 				.then();
 	}
 
 	public static ValidatableResponse getComponent(IBranchPath branchPath, SnomedComponentType type, String id, String... expand) {
+		return getComponent(branchPath.getPath(), type, id, expand);
+	}
+	
+	public static ValidatableResponse getComponent(String path, SnomedComponentType type, String id, String... expand) {
 		assertNotNull(id);
 
 		final String url;
@@ -95,22 +107,30 @@ public abstract class SnomedComponentRestRequests {
 		}
 
 		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
-				.get(url, branchPath.getPath(), type.toLowerCasePlural(), id)
+				.get(url, path, type.toLowerCasePlural(), id)
 				.then();
 	}
 
 	public static ValidatableResponse updateComponent(IBranchPath branchPath, SnomedComponentType type, String id, Map<?, ?> requestBody) {
+		return updateComponent(branchPath.getPath(), type, id, requestBody);
+	}
+	
+	public static ValidatableResponse updateComponent(String path, SnomedComponentType type, String id, Map<?, ?> requestBody) {
 		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 				.contentType(JSON_UTF8)
 				.body(requestBody)
-				.post("/{path}/{componentType}/{id}/updates", branchPath.getPath(), type.toLowerCasePlural(), id)
+				.post("/{path}/{componentType}/{id}/updates", path, type.toLowerCasePlural(), id)
 				.then();
 	}
 
 	public static ValidatableResponse deleteComponent(IBranchPath branchPath, SnomedComponentType componentType, String id, boolean force) {
+		return deleteComponent(branchPath.getPath(), componentType, id, force);
+	}
+	
+	public static ValidatableResponse deleteComponent(String path, SnomedComponentType componentType, String id, boolean force) {
 		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 				.queryParam("force", force)
-				.delete("/{path}/{componentType}/{id}", branchPath.getPath(), componentType.toLowerCasePlural(), id)
+				.delete("/{path}/{componentType}/{id}", path, componentType.toLowerCasePlural(), id)
 				.then();
 	}
 

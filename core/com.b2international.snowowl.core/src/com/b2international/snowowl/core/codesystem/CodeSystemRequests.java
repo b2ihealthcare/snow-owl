@@ -33,6 +33,7 @@ import com.b2international.snowowl.core.request.ConceptSearchRequestBuilder;
 import com.b2international.snowowl.core.request.ConceptSuggestionRequestBuilder;
 import com.b2international.snowowl.core.request.MemberSearchRequestBuilder;
 import com.b2international.snowowl.core.request.QueryOptimizeRequestBuilder;
+import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.core.uri.ComponentURI;
 
 /**
@@ -67,6 +68,14 @@ public class CodeSystemRequests {
 	public static CodeSystemVersionCreateRequestBuilder prepareNewCodeSystemVersion() {
 		return new CodeSystemVersionCreateRequestBuilder();
 	}
+	
+	// Upgrade API
+	
+	public static CodeSystemUpgradeRequestBuilder prepareUpgrade(CodeSystemURI codeSystem, CodeSystemURI extensionOf) {
+		return new CodeSystemUpgradeRequestBuilder(codeSystem, extensionOf);
+	}
+	
+	// Generic Content Search APIs
 	
 	/**
 	 * Creates a new generic concept search request builder.

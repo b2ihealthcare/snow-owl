@@ -34,13 +34,16 @@ import io.restassured.response.ValidatableResponse;
 public abstract class CodeSystemRestRequests {
 	
 	public static ValidatableResponse createCodeSystem(IBranchPath branchPath, String shortName) {
-		return createCodeSystem(branchPath, shortName, null);
+		return createCodeSystem(null, branchPath, shortName);
 	}
 
-	public static ValidatableResponse createCodeSystem(IBranchPath branchPath, String shortName, CodeSystemURI extensionOf) {
+	public static ValidatableResponse createCodeSystem(CodeSystemURI extensionOf, String shortName) {
+		return createCodeSystem(extensionOf, null, shortName);
+	}
+	
+	private static ValidatableResponse createCodeSystem(CodeSystemURI extensionOf, IBranchPath branchPath, String shortName) {
 		ImmutableMap.Builder<String, Object> requestBody = ImmutableMap.<String, Object>builder()
 				.put("name", shortName)
-				.put("branchPath", branchPath.getPath())
 				.put("shortName", shortName)
 				.put("citation", "citation")
 				.put("iconPath", "iconPath")
@@ -52,6 +55,8 @@ public abstract class CodeSystemRestRequests {
 		
 		if (extensionOf != null) {
 			requestBody.put("extensionOf", extensionOf);
+		} else if (branchPath != null) {
+			requestBody.put("branchPath", branchPath.getPath());
 		}
 		
 		return givenAuthenticatedRequest(SnomedApiTestConstants.ADMIN_API)
