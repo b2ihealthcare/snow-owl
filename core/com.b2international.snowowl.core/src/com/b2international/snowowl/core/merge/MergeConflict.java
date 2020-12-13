@@ -131,6 +131,11 @@ public final class MergeConflict {
 	public String getMessage() {
 		return message;
 	}
+	
+	@Override
+	public String toString() {
+		return message;
+	}
 
 	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder {
