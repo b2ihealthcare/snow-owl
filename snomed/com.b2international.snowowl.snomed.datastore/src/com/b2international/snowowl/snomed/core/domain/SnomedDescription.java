@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.core.domain;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import com.b2international.commons.http.ExtendedLocale;
@@ -27,9 +26,9 @@ import com.b2international.snowowl.core.request.IndexResourceRequestBuilder;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.core.terminology.MapTargetTypes;
 import com.b2international.snowowl.core.terminology.TerminologyComponent;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
@@ -241,17 +240,11 @@ public final class SnomedDescription extends SnomedCoreComponent {
 					}
 				}
 			}
+			
+			return false;
 		} else {
-			for (ExtendedLocale locale: locales) {
-				for (Entry<String, Acceptability> entry : acceptabilityMap.entrySet()) {
-					if (entry.getKey().equals(locale.getLanguageRefSetId()) && Acceptability.PREFERRED.equals(entry.getValue())) {
-						return true;
-					}
-				}
-			}
+			return locales.stream().anyMatch(locale -> Acceptability.PREFERRED == acceptabilityMap.get(locale.getLanguageRefSetId()));
 		}
-		
-		return false;
 	}
 	
 	@JsonIgnore
