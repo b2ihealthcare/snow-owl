@@ -1,6 +1,32 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 7.13.0
+
+### Core
+- Support filtering CodeSystem codes by their kind (aka CodeType) in the Generic Concept Search API (#727)
+- Support simple DSV export for Concept Map Compare (not exposed over REST yet) (#725)
+
+### SNOMED CT
+- New `response` property in `GET /:path/import/:id` RF2 Import API return value (#720, #699)
+  * `response.success` - `true` if the import successfully completed, `false` otherwise  
+  * `response.error` - has a non-empty String value if the import can not be performed due validation errors or due to other errors 
+  * `response.defects` - lists all defects encountered during the RF2 Import Validation phase
+  * `response.visitedComponents` - lists all components that have been updated during the RF2 import
+- Support `dryRun` in RF2 import API, `POST /:path/import` (8d3c9ac, #699)
+  * If set to `true` the importer validates the incoming RF2 archive against the current data and reports any defects. Default value is `false`. 
+
+### Bugs/Improvements
+- [index] fix minor performance issue when collecting search hits to field maps (b4728f7) 
+- [core] include changed containers in changedComponents as well in branch compare (a7ea7df)
+- [core] filter out ROOT object IDs from compare result (15249f5)
+- [validation] improve unpublished performance of rule 663 (368542d)
+- [validation] improve unpublished performance of rule 664 (e149a4d)
+- [validation] improve unpublished performance of rule 668 (245c1c7)
+- [validation] improve unpublished performance of rule 671 (79c3e9f)
+- [snomed] validate effective time slices in reverse chronological order to improve import performance (6384209)
+- [api] fix possible NPE when searching jobs via REST (cc704a8)
+
 ## 7.12.0
 
 ### Core

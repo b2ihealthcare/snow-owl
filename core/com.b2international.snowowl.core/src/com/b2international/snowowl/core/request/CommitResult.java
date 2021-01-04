@@ -19,6 +19,8 @@ import java.io.Serializable;
 
 import com.b2international.commons.ClassUtils;
 import com.b2international.index.revision.Commit;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 4.5
@@ -30,7 +32,8 @@ public final class CommitResult implements Serializable {
 	private final long commitTimestamp;
 	private final Object result;
 
-	CommitResult(long commitTimestamp, Object result) {
+	@JsonCreator
+	CommitResult(@JsonProperty("commitTimestamp") long commitTimestamp, @JsonProperty("result") Object result) {
 		this.commitTimestamp = commitTimestamp;
 		this.result = result;
 	}

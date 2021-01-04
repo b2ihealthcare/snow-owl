@@ -16,8 +16,10 @@
 package com.b2international.snowowl.core.request.io;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -66,14 +68,17 @@ public final class ImportDefect implements Serializable {
 		return type;
 	}
 	
+	@JsonIgnore
 	public boolean isError() {
 		return type == ImportDefectType.ERROR;
 	}
 	
+	@JsonIgnore
 	public boolean isWarning() {
 		return type == ImportDefectType.WARNING;
 	}
 	
+	@JsonIgnore
 	public boolean isInfo() {
 		return type == ImportDefectType.INFO;
 	}
@@ -94,4 +99,26 @@ public final class ImportDefect implements Serializable {
 	public static ImportDefect info(String file, String location, String message) {
 		return new ImportDefect(file, location, message, ImportDefectType.INFO);
 	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(file, location, message, type);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		ImportDefect other = (ImportDefect) obj;
+		return Objects.equals(file, other.file) && Objects.equals(location, other.location) && Objects.equals(message, other.message)
+				&& type == other.type;
+	}
+	
 }
