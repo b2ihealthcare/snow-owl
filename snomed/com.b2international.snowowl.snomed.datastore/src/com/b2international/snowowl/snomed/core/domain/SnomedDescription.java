@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.core.domain;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import com.b2international.commons.http.ExtendedLocale;
@@ -231,11 +232,21 @@ public final class SnomedDescription extends SnomedCoreComponent {
 	
 	@JsonIgnore
 	public boolean isPreferredInLocales(final List<ExtendedLocale> locales) {
-		for (ExtendedLocale locale: locales) {
-			for (AcceptabilityMembership membership: acceptabilities) {
-				if (membership.getLanguageRefSetId().equals(locale.getLanguageRefSetId()) &&
-						Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED.equals(membership.getAcceptabilityId())) {
-					return true;
+		if (acceptabilities != null) {
+			for (ExtendedLocale locale: locales) {
+				for (AcceptabilityMembership membership: acceptabilities) {
+					if (membership.getLanguageRefSetId().equals(locale.getLanguageRefSetId()) &&
+							Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED.equals(membership.getAcceptabilityId())) {
+						return true;
+					}
+				}
+			}
+		} else {
+			for (ExtendedLocale locale: locales) {
+				for (Entry<String, Acceptability> entry : acceptabilityMap.entrySet()) {
+					if (entry.getKey().equals(locale.getLanguageRefSetId()) && Acceptability.PREFERRED.equals(entry.getValue())) {
+						return true;
+					}
 				}
 			}
 		}
