@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,7 +72,11 @@ public interface IdentityProvider {
 		public String getInfo() {
 			return "unprotected";
 		}
-		
+
+		@Override
+		public void validateSettings() {
+			// Nothing to do
+		}
 	};
 	
 	
@@ -157,4 +161,10 @@ public interface IdentityProvider {
 	 */
 	String getInfo();
 	
+	/**
+	 * Performs startup-time checks to ensure that the provided parameters are correct.
+	 * @throws Exception if a configuration value is invalid, or the
+	 *         identity provider can not work correctly under the currently given conditions
+	 */
+	void validateSettings() throws Exception;
 }

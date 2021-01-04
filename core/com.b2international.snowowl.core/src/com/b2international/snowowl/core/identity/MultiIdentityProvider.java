@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,4 +74,11 @@ final class MultiIdentityProvider implements IdentityProvider, IdentityWriter {
 		return String.format("multi[%s]", providers.stream().map(IdentityProvider::getInfo).collect(Collectors.joining(",")));
 	}
 
+	@Override
+	public void validateSettings() throws Exception {
+		// Throws exception at the first failing provider
+		for (final IdentityProvider provider : providers) {
+			provider.validateSettings();
+		}
+	}
 }
