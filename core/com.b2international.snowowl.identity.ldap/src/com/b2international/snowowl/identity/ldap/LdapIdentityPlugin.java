@@ -29,9 +29,7 @@ public final class LdapIdentityPlugin extends Plugin implements IdentityProvider
 
 	@Override
 	public IdentityProvider create(Environment env, LdapIdentityProviderConfig configuration) throws Exception {
-		final LdapIdentityProvider identityProvider = new LdapIdentityProvider(configuration);
-		identityProvider.testLdapSettings();
-		return identityProvider;
+		return new LdapIdentityProvider(configuration);
 	}
 
 	@Override

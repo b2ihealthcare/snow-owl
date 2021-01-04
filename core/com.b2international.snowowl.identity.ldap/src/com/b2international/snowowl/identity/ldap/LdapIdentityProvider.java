@@ -129,7 +129,8 @@ final class LdapIdentityProvider implements IdentityProvider {
 		LOG.info("Configured LDAP identity provider with the following options: {}", options);
 	}
 	
-	public void testLdapSettings() throws Exception {
+	@Override
+	public void validateSettings() throws Exception {
 		InitialLdapContext systemContext = null;
 		try {
 			systemContext = createLdapContext();
