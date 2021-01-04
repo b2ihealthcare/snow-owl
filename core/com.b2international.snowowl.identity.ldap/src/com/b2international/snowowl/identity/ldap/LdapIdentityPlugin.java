@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,12 +29,13 @@ public final class LdapIdentityPlugin extends Plugin implements IdentityProvider
 
 	@Override
 	public IdentityProvider create(Environment env, LdapIdentityProviderConfig configuration) throws Exception {
-		return new LdapIdentityProvider(configuration);
+		final LdapIdentityProvider identityProvider = new LdapIdentityProvider(configuration);
+		identityProvider.testLdapSettings();
+		return identityProvider;
 	}
 
 	@Override
 	public Class<LdapIdentityProviderConfig> getConfigType() {
 		return LdapIdentityProviderConfig.class;
 	}
-
 }

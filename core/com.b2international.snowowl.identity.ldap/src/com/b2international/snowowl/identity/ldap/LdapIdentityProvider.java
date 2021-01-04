@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -29,6 +30,7 @@ import java.util.stream.Collectors;
 import javax.naming.Context;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
+import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.SearchControls;
@@ -73,6 +75,35 @@ import com.google.common.collect.Iterators;
  */
 final class LdapIdentityProvider implements IdentityProvider {
 
+	private enum EmptyNamingEnumeration implements NamingEnumeration<Object> {
+		INSTANCE;
+
+		@Override
+		public boolean hasMore() throws NamingException {
+			return hasMoreElements();
+		}
+
+		@Override
+		public Object next() throws NamingException {
+			return nextElement();
+		}
+		
+		@Override
+		public void close() throws NamingException {
+			// Nothing to do on close
+		}
+		
+		@Override
+		public boolean hasMoreElements() {
+			return false;
+		}
+		
+		@Override
+		public Object nextElement() {
+			throw new NoSuchElementException();
+		}
+	}
+
 	static final String TYPE = "ldap";
 	private static final String LDAP_CTX_FACTORY = "com.sun.jndi.ldap.LdapCtxFactory";
 	private static final String LDAP_CONNECTION_POOL = "com.sun.jndi.ldap.connect.pool";
@@ -96,6 +127,18 @@ final class LdapIdentityProvider implements IdentityProvider {
 		options.put("memberProperty", conf.getMemberProperty());
 		options.put("permissionProperty", conf.getPermissionProperty());
 		LOG.info("Configured LDAP identity provider with the following options: {}", options);
+	}
+	
+	public void testLdapSettings() throws Exception {
+		InitialLdapContext systemContext = null;
+		try {
+			systemContext = createLdapContext();
+			getAllLdapRoles(systemContext);
+		} catch (final NamingException e) {
+			throw new SnowowlRuntimeException("Check LDAP identity provider settings, one or more parameters are invalid.", e);
+		} finally {
+			closeLdapContext(systemContext);
+		}
 	}
 	
 	@Override
@@ -161,7 +204,6 @@ final class LdapIdentityProvider implements IdentityProvider {
 	@Override
 	public Promise<Users> searchUsers(Collection<String> usernames, int limit) {
 		final ImmutableList.Builder<User> resultBuilder = ImmutableList.builder();
-
 		final String uidProp = conf.getUserIdProperty();
 		
 		InitialLdapContext context = null;
@@ -206,7 +248,10 @@ final class LdapIdentityProvider implements IdentityProvider {
 		NamingEnumeration<SearchResult> enumeration = null;
 		try {
 			final ImmutableList.Builder<LdapRole> results = ImmutableList.builder();
-			enumeration = context.search(conf.getRoleBaseDn(), conf.getRoleFilter(), createSearchControls(ATTR_CN, conf.getPermissionProperty(), conf.getMemberProperty()));
+			final String permissionProperty = conf.getPermissionProperty();
+			final String memberProperty = conf.getMemberProperty();
+			
+			enumeration = context.search(conf.getRoleBaseDn(), conf.getRoleFilter(), createSearchControls(ATTR_CN, permissionProperty, memberProperty));
 			
 			NamingEnumeration<?> permissionEnumeration = null;
 			NamingEnumeration<?> uniqueMemberEnumeration = null;
@@ -219,8 +264,8 @@ final class LdapIdentityProvider implements IdentityProvider {
 				final ImmutableList.Builder<Permission> permissions = ImmutableList.builder();
 				
 				try {
-					permissionEnumeration = attributes.get(conf.getPermissionProperty()).getAll();
-					uniqueMemberEnumeration = attributes.get(conf.getMemberProperty()).getAll();
+					permissionEnumeration = getNamingEnumeration(attributes, permissionProperty);
+					uniqueMemberEnumeration = getNamingEnumeration(attributes, memberProperty);
 					
 					// process permissions
 					for (final Object permission : ImmutableList.copyOf(Iterators.forEnumeration(permissionEnumeration))) {
@@ -247,7 +292,7 @@ final class LdapIdentityProvider implements IdentityProvider {
 			closeNamingEnumeration(enumeration);
 		}
 	}
-	
+
 	/**
 	 * Sets up a {@link Hashtable}, needed for {@link InitialLdapContext} creation.
 	 * 
@@ -329,6 +374,27 @@ final class LdapIdentityProvider implements IdentityProvider {
 			} catch (final NamingException e) {
 				throw new SnowowlRuntimeException(e);
 			}
+		}
+	}
+
+	/**
+	 * Extracts attribute values from a collection; returns an empty {@link NamingEnumeration} if the attribute is not present
+	 * or has no values set (it is not possible to distinguish the two cases here unfortunately). 
+	 * 
+	 * @param attributes the attribute collection
+	 * @param attributeId the attribute identifier
+	 * @return an enumeration holding attribute values
+	 * @throws NamingException - if attribute value retrieval from the LDAP server fails for some reason
+	 */
+	private static NamingEnumeration<?> getNamingEnumeration(
+			final Attributes attributes, 
+			final String attributeId) throws NamingException {
+		
+		final Attribute attribute = attributes.get(attributeId);
+		if (attribute == null) {
+			return EmptyNamingEnumeration.INSTANCE;
+		} else {		
+			return attribute.getAll();
 		}
 	}
 
