@@ -109,7 +109,7 @@ final class CodeSystemUpgradeRequest implements Request<RepositoryContext, Strin
 			.setSquash(false)
 			.build()
 			.execute(context);
-		if (merge.getStatus() == Merge.Status.COMPLETED) {
+		if (merge.getStatus() != Merge.Status.COMPLETED) {
 			context.log().error("Failed to sync source CodeSystem content to upgrade CodeSystem. Error: {}. Conflicts: {}", merge.getApiError(), merge.getConflicts());
 			throw new BadRequestException("Upgrade can not be performed due to content synchronization errors, see error logs.");
 		}
