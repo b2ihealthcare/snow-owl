@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,23 +19,18 @@ import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
-import org.apache.lucene.index.MergeTrigger;
-
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.User;
-import com.b2international.snowowl.core.jobs.JobRequests;
-import com.b2international.snowowl.core.jobs.RemoteJobEntry;
 import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
-import com.b2international.snowowl.eventbus.IEventBus;
 
 /**
- * @since 7.13.0 
+ * @since 7.14.0 
  */
 final class CodeSystemUpgradeRequest implements Request<RepositoryContext, String> {
 
@@ -105,7 +100,7 @@ final class CodeSystemUpgradeRequest implements Request<RepositoryContext, Strin
 		// merge branch content from the current code system to the new upgradeBranch
 		Merge merge = RepositoryRequests.merging().prepareCreate()
 			.setSource(currentCodeSystem.getBranchPath())
-			.setTarget(parentBranch)
+			.setTarget(upgradeBranch)
 			.setSquash(false)
 			.build()
 			.execute(context);
