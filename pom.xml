@@ -72,7 +72,7 @@
 		</repository>
 		<repository>
         	<id>snomed-international-releases</id>
-        	<url>https://maven.ihtsdotools.org/content/repositories/releases/</url>
+			<url>https://nexus3.ihtsdotools.org/repository/maven-releases/</url>
         	<releases>
            		<enabled>true</enabled>
         	</releases>
