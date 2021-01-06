@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,12 +31,9 @@ import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.cr
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewRelationship;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createRefSetMemberRequestBody;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createRelationshipRequestBody;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.inactivateConcept;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.reactivateConcept;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.reserveComponentId;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.CoreMatchers.endsWith;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -129,7 +126,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void createConceptWithoutCommitComment() {
-		assertCreateConcept(branchPath, createConceptRequestBody(Concepts.ROOT_CONCEPT))
+		assertCreateConcept(branchPath, createConceptRequestBody(Concepts.ROOT_CONCEPT).put("commitComment", ""))
 			.statusCode(400);
 	}
 	
