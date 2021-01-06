@@ -92,6 +92,10 @@ public abstract class SnomedRestFixtures {
 	public static Builder<String, Object> createConceptRequestBody(String parentConceptId) {
 		return createConceptRequestBody(parentConceptId, Concepts.MODULE_SCT_CORE, SnomedApiTestConstants.UK_PREFERRED_MAP);
 	}
+	
+	public static Builder<String, Object> createConceptRequestBody(String parentConceptId, String moduleId) {
+		return createConceptRequestBody(parentConceptId, moduleId, SnomedApiTestConstants.UK_PREFERRED_MAP);
+	}
 
 	public static Builder<String, Object> createConceptRequestBody(String parentConceptId, String moduleId, Map<String, Acceptability> acceptabilityMap) {
 		return createConceptRequestBody(parentConceptId, moduleId, acceptabilityMap, true);

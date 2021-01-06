@@ -19,7 +19,7 @@ import static com.b2international.snowowl.snomed.core.rest.CodeSystemRestRequest
 import static com.b2international.snowowl.snomed.core.rest.CodeSystemVersionRestRequests.createVersion;
 import static com.b2international.snowowl.snomed.core.rest.CodeSystemVersionRestRequests.getNextAvailableEffectiveDateAsString;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.getComponent;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.childUnderRootWithDefaults;
+import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createConceptRequestBody;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewConcept;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.inactivateConcept;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.reactivateConcept;
@@ -31,13 +31,14 @@ import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
+import com.b2international.snowowl.snomed.cis.domain.SctId;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
@@ -45,10 +46,11 @@ import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.CodeSystemRestRequests;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.test.commons.Services;
 
 /**
- * @since 7.13
+ * @since 7.14
  */
 public class SnomedComponentEffectiveTimeRestoreTest extends AbstractSnomedApiTest {
 
@@ -97,24 +99,24 @@ public class SnomedComponentEffectiveTimeRestoreTest extends AbstractSnomedApiTe
 	public void restoreExtensionEffectiveTimeOnExtension() throws Exception {
 		// create extension on the base SI VERSION
 		final CodeSystem extension = createExtension(baseInternationalCodeSystem, branchPath.lastSegment());
-		// create a concept on the extension
-		String conceptId = createConcept(extension.getCodeSystemURI(), childUnderRootWithDefaults());
+		// create the module to represent the extension
+		String moduleId = createModule(extension);
 		// create an extension version, concept receives effective time
 		createVersion(extension.getShortName(), EXT_VERSION, "20191031") // TODO support yyyy-MM-dd effective dates
 			.statusCode(201);
-		SnomedConcept concept = getConcept(extension.getCodeSystemURI(), conceptId);
+		SnomedConcept concept = getConcept(extension.getCodeSystemURI(), moduleId);
 		assertEquals(EffectiveTimes.parse(EXT_VERSION), concept.getEffectiveTime());
-		// create a change on the concept, like change the module
-		updateConcept(extension.getCodeSystemURI(), conceptId, Map.of(
-			"moduleId", Concepts.MODULE_SCT_MODEL_COMPONENT
+		// create a change on the concept, like change the definition status
+		updateConcept(extension.getCodeSystemURI(), moduleId, Map.of(
+			"definitionStatusId", Concepts.FULLY_DEFINED
 		));
-		concept = getConcept(extension.getCodeSystemURI(), conceptId);
+		concept = getConcept(extension.getCodeSystemURI(), moduleId);
 		assertEquals(null, concept.getEffectiveTime());
 		// revert the change, so it reverts the effective time to the EXT_VER effective time
-		updateConcept(extension.getCodeSystemURI(), conceptId, Map.of(
-			"moduleId", Concepts.MODULE_SCT_CORE
+		updateConcept(extension.getCodeSystemURI(), moduleId, Map.of(
+			"definitionStatusId", Concepts.PRIMITIVE
 		));
-		concept = getConcept(extension.getCodeSystemURI(), conceptId);
+		concept = getConcept(extension.getCodeSystemURI(), moduleId);
 		assertEquals(EffectiveTimes.parse(EXT_VERSION), concept.getEffectiveTime());
 	}
 	
@@ -126,15 +128,15 @@ public class SnomedComponentEffectiveTimeRestoreTest extends AbstractSnomedApiTe
 		SnomedConcept concept = searchConcept(baseInternationalCodeSystem, Map.of("module", Concepts.MODULE_SCT_CORE), 1).stream().findFirst().get();
 		Date lastReleasedEffectiveTime = concept.getEffectiveTime();
 		String conceptId = concept.getId();
-		// create a change on the concept, like change the module
+		// create a change on the concept, like change the definition status
 		updateConcept(extension.getCodeSystemURI(), concept.getId(), Map.of(
-			"moduleId", Concepts.MODULE_SCT_MODEL_COMPONENT
+			"definitionStatusId", Concepts.FULLY_DEFINED
 		));
 		concept = getConcept(extension.getCodeSystemURI(), conceptId);
 		assertEquals(null, concept.getEffectiveTime());
 		// revert the change, so it reverts the effective time to the EXT_VER effective time
 		updateConcept(extension.getCodeSystemURI(), conceptId, Map.of(
-			"moduleId", Concepts.MODULE_SCT_CORE
+			"definitionStatusId", Concepts.PRIMITIVE
 		));
 		concept = getConcept(extension.getCodeSystemURI(), conceptId);
 		assertEquals(lastReleasedEffectiveTime, concept.getEffectiveTime());
@@ -151,7 +153,7 @@ public class SnomedComponentEffectiveTimeRestoreTest extends AbstractSnomedApiTe
 		Date lastReleasedEffectiveTime = concept.getEffectiveTime();
 		String conceptId = concept.getId();
 		
-		// create a change on the concept, like change the module
+		// create a change on the concept, like change the definition status
 		updateConcept(upgradeCodeSystem.getCodeSystemURI(), concept.getId(), Map.of(
 			"moduleId", Concepts.MODULE_SCT_MODEL_COMPONENT
 		));
@@ -165,36 +167,53 @@ public class SnomedComponentEffectiveTimeRestoreTest extends AbstractSnomedApiTe
 		assertEquals(lastReleasedEffectiveTime, concept.getEffectiveTime());
 	}
 	
-	@Ignore("TODO Fix conflicting upgrade branch issue")
 	@Test
 	public void restoreExtensionEffectiveTimeOnExtensionUpgrade() throws Exception {
 		// create extension on the base SI VERSION
 		final CodeSystem extension = createExtension(baseInternationalCodeSystem, branchPath.lastSegment());
-		// create a concept on the extension
-		String conceptId = createConcept(extension.getCodeSystemURI(), childUnderRootWithDefaults());
+		// create the module concept to represent the extension
+		String moduleId = createModule(extension);
 		// create an extension version, concept receives effective time
 		createVersion(extension.getShortName(), EXT_VERSION, "20191031") // TODO support yyyy-MM-dd effective dates
 			.statusCode(201);
-		SnomedConcept concept = getConcept(extension.getCodeSystemURI(), conceptId);
+		SnomedConcept concept = getConcept(extension.getCodeSystemURI(), moduleId);
 		assertEquals(EffectiveTimes.parse(EXT_VERSION), concept.getEffectiveTime());
 		
 		// start the extension upgrade process
 		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getCodeSystemURI(), upgradeInternationalCodeSystem);
 		
-		// create a change on the concept, like change the module
+		// create a change on the concept, like change the definition status
 		updateConcept(upgradeCodeSystem.getCodeSystemURI(), concept.getId(), Map.of(
-			"moduleId", Concepts.MODULE_SCT_MODEL_COMPONENT
+			"definitionStatusId", Concepts.FULLY_DEFINED
 		));
-		concept = getConcept(upgradeCodeSystem.getCodeSystemURI(), conceptId);
+		concept = getConcept(upgradeCodeSystem.getCodeSystemURI(), moduleId);
 		assertEquals(null, concept.getEffectiveTime());
 		// revert the change, so it reverts the effective time to the EXT_VER effective time
-		updateConcept(upgradeCodeSystem.getCodeSystemURI(), conceptId, Map.of(
-			"moduleId", Concepts.MODULE_SCT_CORE
+		updateConcept(upgradeCodeSystem.getCodeSystemURI(), moduleId, Map.of(
+			"definitionStatusId", Concepts.PRIMITIVE
 		));
-		concept = getConcept(upgradeCodeSystem.getCodeSystemURI(), conceptId);
+		concept = getConcept(upgradeCodeSystem.getCodeSystemURI(), moduleId);
 		assertEquals(EffectiveTimes.parse(EXT_VERSION), concept.getEffectiveTime());
 	}
 	
+	private String createModule(CodeSystem extension) {
+		// generate ID for the module first
+		String moduleId = SnomedRequests.identifiers().prepareGenerate()
+				.setCategory(ComponentCategory.CONCEPT)
+				.setNamespace(Concepts.B2I_NAMESPACE)
+				.setQuantity(1)
+				.buildAsync()
+				.execute(getBus())
+				.getSync(1, TimeUnit.MINUTES)
+				.first().map(SctId::getSctid).orElseThrow();
+		// then create the module concept
+		return createConcept(
+			extension.getCodeSystemURI(), 
+			createConceptRequestBody(Concepts.MODULE_ROOT, moduleId)
+				.put("id", moduleId)
+		);
+	}
+
 	// branch have been already created by the outer rules, so we are just reusing it to create an extension branch
 	private CodeSystem createExtension(CodeSystemURI extensionOf, String codeSystemId) {
 		CodeSystemRestRequests.createCodeSystem(extensionOf, codeSystemId)
