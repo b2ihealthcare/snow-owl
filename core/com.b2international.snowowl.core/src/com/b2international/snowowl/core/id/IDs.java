@@ -31,10 +31,18 @@ public class IDs {
 	 * Generates a time-based UUID (similar to Flake IDs), which is preferred when generating an ID to be indexed into a Lucene index as primary key.
 	 * 
 	 * @return
-	 * @see UUIDs
+	 * @see UUIDs#base64UUID()
 	 */
 	public static final String base64UUID() {
 		return UUIDs.base64UUID();
+	}
+	
+	/**
+	 * @return a Base64 encoded version of a Version 4.0 compatible UUID as defined here: http://www.ietf.org/rfc/rfc4122.txt, using a private SecureRandom instance
+	 * @see UUIDs#randomBase64UUID()
+	 */
+	public static final String randomBase64UUID() {
+		return UUIDs.randomBase64UUID();
 	}
 
 	/**
