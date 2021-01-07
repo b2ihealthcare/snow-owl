@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,6 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.codesystem.CodeSystem;
-import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
@@ -45,9 +44,8 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.CodeSystemRestRequests;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.test.commons.Services;
+import com.b2international.snowowl.test.commons.rest.RestExtensions;
 
 /**
  * @since 7.14
@@ -223,10 +221,7 @@ public class SnomedComponentEffectiveTimeRestoreTest extends AbstractSnomedApiTe
 	}
 	
 	private CodeSystem createExtensionUpgrade(CodeSystemURI upgradeOf, CodeSystemURI extensionOf) {
-		final String upgradeCodeSystemId = CodeSystemRequests.prepareUpgrade(upgradeOf, extensionOf)
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID)
-			.execute(Services.bus())
-			.getSync(1, TimeUnit.MINUTES);
+		final String upgradeCodeSystemId = RestExtensions.lastPathSegment(CodeSystemRestRequests.upgrade(upgradeOf, extensionOf).assertThat().statusCode(201).extract().header("Location"));
 		return CodeSystemRestRequests.getCodeSystem(upgradeCodeSystemId).extract().as(CodeSystem.class);
 	}
 	

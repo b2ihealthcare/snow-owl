@@ -35,9 +35,11 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.commons.validation.ApiValidation;
 import com.b2international.snowowl.core.Repositories;
 import com.b2international.snowowl.core.RepositoryInfo;
@@ -261,6 +263,41 @@ public class CodeSystemRestService extends AbstractRestService {
 				.build(codeSystem.getRepositoryId(), IBranchPath.MAIN_BRANCH, author, commitComment)
 				.execute(getBus())
 				.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);
+	}
+	
+	@ApiOperation(
+		value="Start a Code System dependency upgrade",
+		notes="Starts the upgrade process of a Code System to a newer extensionOf Code System dependency than the current extensionOf."
+	)
+	@ApiResponses({
+		@ApiResponse(code = 204, message = "Upgrade ", response = Void.class),
+		@ApiResponse(code = 400, message = "Code System cannot be upgraded", response = RestApiError.class)
+	})
+	@PostMapping(value = "/{codeSystemId}/upgrades", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
+	@ResponseStatus(HttpStatus.CREATED)
+	public Promise<ResponseEntity<Void>> upgrade(
+			@ApiParam(value="The code system identifier (short name only (OID is not supported))")
+			@PathVariable(value="codeSystemId") 
+			final String codeSystemId,
+			
+			@RequestBody
+			final CodeSystemUpdateRestInput body) {
+		final CodeSystem codeSystem = CodeSystemRequests.prepareSearchAllCodeSystems()
+			.filterById(codeSystemId)
+			.buildAsync()
+			.execute(getBus())
+			.getSync(1, TimeUnit.MINUTES)
+			.first()
+			.orElseThrow(() -> new NotFoundException("Code System", codeSystemId));
+			
+		final UriComponentsBuilder uriBuilder = createURIBuilder();
+		
+		return CodeSystemRequests.prepareUpgrade(codeSystem.getCodeSystemURI(), body.getExtensionOf())
+				.build(codeSystem.getRepositoryId())
+				.execute(getBus())
+				.then(upgradeCodeSystemId -> {
+					return ResponseEntity.created(uriBuilder.pathSegment(upgradeCodeSystemId).build().toUri()).build();
+				});
 	}
 
 	private void validateUpdateInput(final String shortNameOrOId, final String repositoryUuid) {

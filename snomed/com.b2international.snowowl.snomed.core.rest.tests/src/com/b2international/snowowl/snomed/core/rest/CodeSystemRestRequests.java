@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,8 +79,19 @@ public abstract class CodeSystemRestRequests {
 				.put("codesystems/{id}", id)
 				.then();
 	}
+	
+	public static ValidatableResponse upgrade(CodeSystemURI codeSystem, CodeSystemURI extensionOf) {
+		return givenAuthenticatedRequest(SnomedApiTestConstants.ADMIN_API)
+				.contentType(ContentType.JSON)
+				.body(Map.of(
+					"extensionOf", extensionOf.toString()
+				))
+				.post("codesystems/{id}/upgrades", codeSystem.toString())
+				.then();
+	}
 
 	private CodeSystemRestRequests() {
 		throw new UnsupportedOperationException("This class is not supposed to be instantiated.");
 	}
+
 }
