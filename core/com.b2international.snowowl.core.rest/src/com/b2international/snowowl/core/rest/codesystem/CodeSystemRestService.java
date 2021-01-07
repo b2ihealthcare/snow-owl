@@ -246,7 +246,7 @@ public class CodeSystemRestService extends AbstractRestService {
 		final String commitComment = String.format("Updated Code System %s", shortNameOrOId);
 		
 		if (codeSystem.getUpgradeOf() != null) {
-			LoggerFactory.getLogger(getClass()).warn("'upgradeOf' property update support will be dropped in 8.0. It is only present in 7.x version for backward compatibility to let pre-8 datasets migrate their custom made upgrade CodeSystems work as upgrades.");
+LoggerFactory.getLogger(getClass()).warn("'upgradeOf' property update support is only present in version 7.x and will be dropped with version 8.0.");
 		}
 		
 		CodeSystemRequests
