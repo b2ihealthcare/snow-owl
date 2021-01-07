@@ -39,7 +39,7 @@ public class NotFoundException extends ApiException {
 		super("%s with identifier '%s' could not be found.", type, key);
 		this.type = type;
 		this.key = key;
-		withDeveloperMessage(String.format("The requested instance resource (id = '%s', type = '%s') does not exist and/or not yet created.", key, type));
+		withDeveloperMessage("The requested instance resource (id = '%s', type = '%s') does not exist and/or not yet created.", key, type);
 	}
 
 	/**
