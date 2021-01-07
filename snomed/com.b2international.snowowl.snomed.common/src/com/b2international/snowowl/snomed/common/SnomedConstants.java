@@ -356,8 +356,6 @@ public abstract class SnomedConstants {
 		public static final String HAS_COMPONENT = "246093002";
 		public static final String HAS_SDD_CLASS = "8921000132109";
 
-		public static final String DEFAULT_UNIT = "258666001";
-		
 		public static final String NAMESPACE_ROOT = "370136006";
 		
 		public static final String ACCEPTABILITY = "900000000000511003";
