@@ -28,6 +28,7 @@ import com.b2international.snowowl.core.branch.Branch;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.base.Preconditions;
 
 /**
  * @since 7.5
@@ -113,6 +114,7 @@ public final class CodeSystemURI implements Serializable {
 	}
 
 	public static CodeSystemURI branch(String codeSystem, String path) {
+		Preconditions.checkArgument(!codeSystem.contains(Branch.SEPARATOR), "CodeSystem ID should not be an URI already. Got: %s", codeSystem);
 		StringBuilder uri = new StringBuilder(codeSystem);
 		if (!Strings.isNullOrEmpty(path)) {
 			uri.append(Branch.SEPARATOR);
@@ -120,5 +122,10 @@ public final class CodeSystemURI implements Serializable {
 		}
 		return new CodeSystemURI(uri.toString());
 	}
-	
+
+	public static CodeSystemURI latest(String codeSystem) {
+		Preconditions.checkArgument(!codeSystem.contains(Branch.SEPARATOR), "CodeSystem ID should not be an URI already. Got: %s", codeSystem);
+		return new CodeSystemURI(String.join(Branch.SEPARATOR, codeSystem, LATEST));
+	}
+
 }

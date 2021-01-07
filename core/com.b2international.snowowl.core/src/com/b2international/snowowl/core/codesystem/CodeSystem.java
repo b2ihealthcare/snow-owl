@@ -74,6 +74,7 @@ public class CodeSystem implements Serializable {
 				.terminologyId(input.getTerminologyComponentId())
 				.repositoryId(input.getRepositoryId())
 				.extensionOf(input.getExtensionOf())
+				.upgradeOf(input.getUpgradeOf())
 				.locales(input.getLocales())
 				.additionalProperties(input.getAdditionalProperties());
 	}
@@ -92,6 +93,7 @@ public class CodeSystem implements Serializable {
 		private String terminologyId;
 		private String repositoryId;
 		private CodeSystemURI extensionOf;
+		private CodeSystemURI upgradeOf;
 		private List<ExtendedLocale> locales;
 		private Map<String, Object> additionalProperties;
 		
@@ -153,6 +155,11 @@ public class CodeSystem implements Serializable {
 			return getSelf();
 		}
 		
+		public Builder upgradeOf(final CodeSystemURI upgradeOf) {
+			this.upgradeOf = upgradeOf;
+			return getSelf();
+		}
+		
 		public Builder locales(final List<ExtendedLocale> locales) {
 			this.locales = Optional.ofNullable(locales)
 					.map(Lists::newArrayList)
@@ -182,6 +189,7 @@ public class CodeSystem implements Serializable {
 					terminologyId, 
 					repositoryId,
 					extensionOf,
+					upgradeOf,
 					locales,
 					additionalProperties);
 		}
@@ -190,6 +198,24 @@ public class CodeSystem implements Serializable {
 			return this;
 		}
 	}
+	
+	private String oid;
+	private @NotEmpty String name;
+	private @NotEmpty String shortName;
+	private String organizationLink;
+	private @NotEmpty String primaryLanguage;
+	private @NotEmpty String citation;
+	private String branchPath;
+	private @NotEmpty String iconPath;
+	private @NotEmpty String terminologyId;
+	private @NotEmpty String repositoryId;
+	private List<ExtendedLocale> locales;
+	private Map<String, Object> additionalProperties;
+	private List<CodeSystemURI> availableUpgrades;
+	
+	// extension related fields
+	private CodeSystemURI extensionOf;
+	private CodeSystemURI upgradeOf;
 	
 	private CodeSystem(final String oid, 
 			final String name, 
@@ -201,7 +227,8 @@ public class CodeSystem implements Serializable {
 			final String iconPath, 
 			final String terminologyId, 
 			final String repositoryId,
-			final CodeSystemURI extensionOf, 
+			final CodeSystemURI extensionOf,
+			final CodeSystemURI upgradeOf, 
 			final List<ExtendedLocale> locales,
 			final Map<String, Object> additionalProperties) {
 
@@ -216,28 +243,13 @@ public class CodeSystem implements Serializable {
 		this.terminologyId = terminologyId;
 		this.repositoryId = repositoryId;
 		this.extensionOf = extensionOf;
+		this.upgradeOf = upgradeOf;
 		this.locales = locales;
 		this.additionalProperties = additionalProperties;
 	}
 
-	private String oid;
-	private @NotEmpty String name;
-	private @NotEmpty String shortName;
-	private String organizationLink;
-	private @NotEmpty String primaryLanguage;
-	private @NotEmpty String citation;
-	private String branchPath;
-	private @NotEmpty String iconPath;
-	private @NotEmpty String terminologyId;
-	private @NotEmpty String repositoryId;
-	private CodeSystemURI extensionOf;
-	private List<ExtendedLocale> locales;
-	private Map<String, Object> additionalProperties;
-	private List<CodeSystemURI> availableUpgrades;
-
 	/**
-	 * @return the assigned object identifier (OID) of this code system, eg.
-	 *         "{@code 3.4.5.6.10000}" (can be {@code null})
+	 * @return the assigned object identifier (OID) of this code system, eg. "{@code 3.4.5.6.10000}" (can be {@code null})
 	 */
 	public String getOid() {
 		return oid;
@@ -251,16 +263,14 @@ public class CodeSystem implements Serializable {
 	}
 
 	/**
-	 * @return the short name of this code system, usually an abbreviation of the
-	 *         name; eg. "{@code SNOMEDCT}"
+	 * @return the short name of this code system, usually an abbreviation of the name; eg. "{@code SNOMEDCT}"
 	 */
 	public String getShortName() {
 		return shortName;
 	}
 
 	/**
-	 * @return the URL of the maintaining organization, eg.
-	 *         "{@code http://example.com/}" (can be {@code null})
+	 * @return the URL of the maintaining organization, eg. "{@code http://example.com/}" (can be {@code null})
 	 */
 	public String getOrganizationLink() {
 		return organizationLink;
@@ -268,7 +278,6 @@ public class CodeSystem implements Serializable {
 
 	/**
 	 * @return the primary language tag, eg. "en_US"
-	 * 
 	 * @deprecated Clients should access language information via {@link #getLocales()} instead. 
 	 */
 	@Deprecated
@@ -300,8 +309,7 @@ public class CodeSystem implements Serializable {
 	}
 
 	/**
-	 * @return the terminology (tooling) ID, used to associate the code system with
-	 *         specific application features
+	 * @return the terminology (tooling) ID, used to associate the code system with specific application features
 	 */
 	public String getTerminologyId() {
 		return terminologyId;
@@ -315,24 +323,28 @@ public class CodeSystem implements Serializable {
 	}
 
 	/**
-	 * @return the URI of the code system version this code system is based upon
-	 *         (can be {@code null} if this is a stand-alone code system).
+	 * @return the URI of the code system version this code system is based upon (can be {@code null} if this is a stand-alone code system).
 	 */
 	public CodeSystemURI getExtensionOf() {
 		return extensionOf;
 	}
 	
 	/**
-	 * @return the list of {@link ExtendedLocale} instances representing the language
-	 *         content this code system carries (can be {@code null})
+	 * @return the URI of the code system version this code system is an upgrade of or <code>null</code> if this is a non-upgrade code system.
+	 */
+	public CodeSystemURI getUpgradeOf() {
+		return upgradeOf;
+	}
+	
+	/**
+	 * @return the list of {@link ExtendedLocale} instances representing the language content this code system carries (can be {@code null})
 	 */
 	public List<ExtendedLocale> getLocales() {
 		return locales;
 	}
 	
 	/**
-	 * @return a map storing metadata key-value pairs specific to this code system
-	 *         (can be {@code null}). Interpretation of values is
+	 * @return a map storing metadata key-value pairs specific to this code system (can be {@code null}). Interpretation of values is
 	 *         implementation-dependent.
 	 */
 	public Map<String, Object> getAdditionalProperties() {
@@ -340,9 +352,8 @@ public class CodeSystem implements Serializable {
 	}
 	
 	/**
-	 * @return a list of {@link CodeSystemURI}s pointing to code system versions that have 
-	 *         been created after the current {@code extensionOf} version on the parent
-	 *         code system (can be {@code null} if not requested as part of an expand() option) 
+	 * @return a list of {@link CodeSystemURI}s pointing to code system versions that have been created after the current {@code extensionOf} version
+	 *         on the parent code system (can be {@code null} if not requested as part of an expand() option)
 	 */
 	public List<CodeSystemURI> getAvailableUpgrades() {
 		return availableUpgrades;
@@ -391,6 +402,10 @@ public class CodeSystem implements Serializable {
 	
 	public void setExtensionOf(final CodeSystemURI extensionOf) {
 		this.extensionOf = extensionOf;
+	}
+	
+	public void setUpgradeOf(CodeSystemURI upgradeOf) {
+		this.upgradeOf = upgradeOf;
 	}
 	
 	public void setLocales(final List<ExtendedLocale> locales) {
@@ -478,6 +493,8 @@ public class CodeSystem implements Serializable {
 		builder.append(repositoryId);
 		builder.append(", extensionOf=");
 		builder.append(extensionOf);
+		builder.append(", upgradeOf=");
+		builder.append(upgradeOf);
 		builder.append(", locales=");
 		builder.append(locales);
 		builder.append(", additionalProperties=");

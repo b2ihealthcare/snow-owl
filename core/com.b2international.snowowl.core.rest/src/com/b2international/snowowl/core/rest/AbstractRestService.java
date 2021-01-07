@@ -25,6 +25,7 @@ import java.util.regex.Pattern;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.collections.Collections3;
@@ -124,14 +125,22 @@ public abstract class AbstractRestService {
 	}
 
 	/**
+	 * Creates a Location header URI builder from this controller class.
+	 * @return an {@link UriComponentsBuilder} instance using this class as base
+	 */
+	protected final UriComponentsBuilder createURIBuilder() {
+		return MvcUriComponentsBuilder.fromController(getClass());
+	}
+	
+	/**
 	 * Creates a Location header URI that should be returned from all POST resource create endpoints.
 	 * @param resourceId - the identifier of the resource
 	 * @return a URI to be added as Location header value
 	 */
 	protected final URI getResourceLocationURI(String resourceId) {
-		return MvcUriComponentsBuilder.fromController(getClass()).pathSegment(resourceId).build().toUri();
+		return createURIBuilder().pathSegment(resourceId).build().toUri();
 	}
-	
+
 	/**
 	 * Creates a Location header URI that should be returned from all POST resource create endpoints.
 	 * @param branch - the branch where the resource has been created
@@ -139,7 +148,7 @@ public abstract class AbstractRestService {
 	 * @return a URI to be added as Location header value
 	 */
 	protected final URI getResourceLocationURI(String branch, String resourceId) {
-		return MvcUriComponentsBuilder.fromController(getClass()).pathSegment(resourceId).build(branch);
+		return createURIBuilder().pathSegment(resourceId).build(branch);
 	}
 
 }
