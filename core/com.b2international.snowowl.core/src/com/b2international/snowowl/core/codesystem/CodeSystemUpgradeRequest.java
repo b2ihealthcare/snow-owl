@@ -65,6 +65,11 @@ final class CodeSystemUpgradeRequest implements Request<RepositoryContext, Strin
 				.setExpand(CodeSystem.Expand.AVAILABLE_UPGRADES + "()")
 				.build()
 				.execute(context);
+		
+		if (currentCodeSystem.getUpgradeOf() != null) {
+			throw new BadRequestException("Upgrade can not be started on an existing Code System Upgrade");
+		}
+		
 		final List<CodeSystemURI> availableUpgrades = currentCodeSystem.getAvailableUpgrades();
 		// report bad request if there are no upgrades available
 		if (availableUpgrades.isEmpty()) {
