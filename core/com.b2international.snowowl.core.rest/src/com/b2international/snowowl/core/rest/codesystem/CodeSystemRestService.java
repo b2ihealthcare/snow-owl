@@ -266,7 +266,7 @@ LoggerFactory.getLogger(getClass()).warn("'upgradeOf' property update support is
 	}
 	
 	@ApiOperation(
-		value="Start a Code System dependency upgrade",
+		value="Start a Code System dependency upgrade (EXPERIMENTAL)",
 		notes="Starts the upgrade process of a Code System to a newer extensionOf Code System dependency than the current extensionOf."
 	)
 	@ApiResponses({
