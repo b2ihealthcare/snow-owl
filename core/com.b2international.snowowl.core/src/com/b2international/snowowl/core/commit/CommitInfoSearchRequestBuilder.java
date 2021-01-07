@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package com.b2international.snowowl.core.commit;
 import static com.b2international.snowowl.core.commit.CommitInfoSearchRequest.OptionKey.AFFECTED_COMPONENT_ID;
 import static com.b2international.snowowl.core.commit.CommitInfoSearchRequest.OptionKey.AUTHOR;
 import static com.b2international.snowowl.core.commit.CommitInfoSearchRequest.OptionKey.BRANCH;
+import static com.b2international.snowowl.core.commit.CommitInfoSearchRequest.OptionKey.BRANCH_PREFIX;
 import static com.b2international.snowowl.core.commit.CommitInfoSearchRequest.OptionKey.COMMENT;
 import static com.b2international.snowowl.core.commit.CommitInfoSearchRequest.OptionKey.TIME_STAMP;
 import static com.b2international.snowowl.core.commit.CommitInfoSearchRequest.OptionKey.TIME_STAMP_FROM;
@@ -43,6 +44,10 @@ public final class CommitInfoSearchRequestBuilder
 	
 	public CommitInfoSearchRequestBuilder filterByBranches(final Iterable<String> branchPaths) {
 		return addOption(BRANCH, branchPaths);
+	}
+	
+	public CommitInfoSearchRequestBuilder filterByBranchPrefix(final String branchPathPrefix) {
+		return addOption(BRANCH_PREFIX, branchPathPrefix);
 	}
 
 	public CommitInfoSearchRequestBuilder filterByAuthor(final String author) {

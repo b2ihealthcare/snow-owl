@@ -22,6 +22,7 @@ import static com.b2international.index.query.Expressions.matchAnyLong;
 import static com.b2international.index.query.Expressions.matchRange;
 import static com.b2international.index.query.Expressions.matchTextAll;
 import static com.b2international.index.query.Expressions.matchTextPhrase;
+import static com.b2international.index.query.Expressions.prefixMatch;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 
@@ -140,6 +141,10 @@ public final class Commit implements WithScore {
 		
 		public static final Expression ids(Collection<String> ids) {
 			return matchAny(Fields.ID, ids);
+		}
+		
+		public static Expression branchPrefix(final String branchPathPrefix) {
+			return prefixMatch(Fields.BRANCH, branchPathPrefix);
 		}
 		
 		public static Expression branches(final String...branchPaths) {
