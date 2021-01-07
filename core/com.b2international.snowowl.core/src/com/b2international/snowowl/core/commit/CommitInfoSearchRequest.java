@@ -18,6 +18,7 @@ package com.b2international.snowowl.core.commit;
 import static com.b2international.index.revision.Commit.Expressions.affectedObject;
 import static com.b2international.index.revision.Commit.Expressions.allCommentPrefixesPresent;
 import static com.b2international.index.revision.Commit.Expressions.author;
+import static com.b2international.index.revision.Commit.Expressions.branchPrefix;
 import static com.b2international.index.revision.Commit.Expressions.branches;
 import static com.b2international.index.revision.Commit.Expressions.exactComment;
 import static com.b2international.index.revision.Commit.Expressions.timestampRange;
@@ -47,6 +48,7 @@ final class CommitInfoSearchRequest extends SearchIndexResourceRequest<Repositor
 	enum OptionKey {
 		
 		BRANCH,
+		BRANCH_PREFIX,
 		AUTHOR,
 		COMMENT,
 		TIME_STAMP_FROM,
@@ -68,6 +70,7 @@ final class CommitInfoSearchRequest extends SearchIndexResourceRequest<Repositor
 		ExpressionBuilder queryBuilder = Expressions.builder();
 		addIdFilter(queryBuilder, Commit.Expressions::ids);
 		addBranchClause(queryBuilder);
+		addBranchPrefixClause(queryBuilder);
 		addUserIdClause(queryBuilder);
 		addCommentClause(queryBuilder);
 		addTimeStampClause(queryBuilder);
@@ -140,6 +143,13 @@ final class CommitInfoSearchRequest extends SearchIndexResourceRequest<Repositor
 		if (containsKey(OptionKey.AFFECTED_COMPONENT_ID)) {
 			final String affectedComponentId = getString(OptionKey.AFFECTED_COMPONENT_ID);
 			builder.filter(affectedObject(affectedComponentId));
+		}
+	}
+	
+	private void addBranchPrefixClause(ExpressionBuilder queryBuilder) {
+		if (containsKey(OptionKey.BRANCH_PREFIX)) {
+			final String branchPrefix = getString(OptionKey.BRANCH_PREFIX);
+			queryBuilder.filter(branchPrefix(branchPrefix));
 		}
 	}
 
