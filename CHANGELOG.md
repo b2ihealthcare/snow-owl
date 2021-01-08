@@ -1,6 +1,20 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 7.14.0
+
+### Core
+- Code System Upgrade (experimental preview version) (#735)
+  * Upgrades to newer Code System dependencies now can be started from the new `POST /codesystems/:id/upgrades` endpoint
+  * The full upgrade flow is not available yet, it is scheduled for release 7.15.0
+  
+### Bugs/Improvements
+- [core] validate LDAP settings during boot (#731)
+- [core] support truly random Base64 IDs (not just time-based random Base64 IDs) (#733)
+- [core] support filtering commits by branch prefix (Java API only) (#734)
+- [snomed] properly restore effective time on Code System upgrade branches using both the dependency version and the previous extension version (#735)
+- [snomed] disable validation of map target field during RF2 import (075a575)
+
 ## 7.13.0
 
 ### Core
