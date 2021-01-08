@@ -83,7 +83,6 @@ final class Rf2ExtendedMapRefSetContentType implements Rf2RefSetContentType {
 		final String mapPriority = values[7];
 		final String mapRule = values[8];
 		final String mapAdvice = values[9];
-		final String mapTarget = values[10];
 		final String correlationId = values[11];
 		final String mapCategoryId = values[12];
 		
@@ -102,10 +101,6 @@ final class Rf2ExtendedMapRefSetContentType implements Rf2RefSetContentType {
 		defectBuilder
 			.whenBlank(mapAdvice)
 			.error("Extended Map advice field was empty for '%s'", memberId);
-		
-		defectBuilder
-			.whenBlank(mapTarget)
-			.warn("Extended Map target field was empty for '%s'", memberId);
 				
 		validateConceptIds(defectBuilder, correlationId, mapCategoryId);
 	}
