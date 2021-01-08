@@ -14,6 +14,7 @@ All notable changes to this project will be documented in this file.
 - [core] support filtering commits by branch prefix (Java API only) (#734)
 - [snomed] properly restore effective time on Code System upgrade branches using both the dependency version and the previous extension version (#735)
 - [snomed] disable validation of map target field during RF2 import (075a575)
+- [api] fix concept search issue when searching by `semanticTag` without a non-empty `term` filter (1f77112)
 
 ## 7.13.0
 
