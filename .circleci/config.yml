@@ -26,7 +26,7 @@ env: &env
   working_directory: ~/project
   resource_class: large
   docker:
-    - image: docker:19.03.6-git
+    - image: docker:19.03.14-git
       environment:
         JAVA_HOME: /usr/lib/jvm/java-11-openjdk
   environment:
