@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,11 @@ package com.b2international.index.revision;
 import static com.b2international.index.query.Expressions.exactMatch;
 import static com.b2international.index.query.Expressions.match;
 import static com.b2international.index.query.Expressions.matchAny;
+import static com.b2international.index.query.Expressions.matchAnyLong;
 import static com.b2international.index.query.Expressions.matchRange;
 import static com.b2international.index.query.Expressions.matchTextAll;
 import static com.b2international.index.query.Expressions.matchTextPhrase;
+import static com.b2international.index.query.Expressions.prefixMatch;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 
@@ -34,18 +36,15 @@ import java.util.Set;
 
 import com.b2international.commons.collections.Collections3;
 import com.b2international.index.Analyzers;
-import com.b2international.index.BulkUpdate;
 import com.b2international.index.Doc;
-import com.b2international.index.Script;
+import com.b2international.index.ID;
 import com.b2international.index.Text;
 import com.b2international.index.WithScore;
-import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expression;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 
@@ -54,24 +53,9 @@ import com.google.common.collect.Multimap;
  */
 @Doc
 @JsonDeserialize(builder = Commit.Builder.class)
-@Script(name=Commit.Scripts.UPDATE_BRANCH, script="ctx._source.branch = params.branch")
 public final class Commit implements WithScore {
 
-	/**
-	 * @since 7.0
-	 */
-	public static final class Scripts {
-		public static final String UPDATE_BRANCH = "updateBranch";
-	}
-
-	/**
-	 * @since 7.0
-	 */
-	public static final class Update {
-		public static BulkUpdate<Commit> branch(final String currentBranch, final String newBranch) {
-			return new BulkUpdate<>(Commit.class, Commit.Expressions.branches(currentBranch), DocumentMapping._ID, Commit.Scripts.UPDATE_BRANCH, ImmutableMap.of("branch", newBranch));
-		}
-	}
+	public static final Long NO_COMMIT_TIMESTAMP = -1L;
 
 	static Builder builder() {
 		return new Builder();
@@ -152,11 +136,15 @@ public final class Commit implements WithScore {
 		private Expressions() {}
 		
 		public static final Expression id(String id) {
-			return DocumentMapping.matchId(id);
+			return exactMatch(Fields.ID, id);
 		}
 		
 		public static final Expression ids(Collection<String> ids) {
-			return matchAny(DocumentMapping._ID, ids);
+			return matchAny(Fields.ID, ids);
+		}
+		
+		public static Expression branchPrefix(final String branchPathPrefix) {
+			return prefixMatch(Fields.BRANCH, branchPathPrefix);
 		}
 		
 		public static Expression branches(final String...branchPaths) {
@@ -181,6 +169,10 @@ public final class Commit implements WithScore {
 		
 		public static Expression timestamp(final long timeStamp) {
 			return exactMatch(Fields.TIMESTAMP, timeStamp);
+		}
+
+		public static Expression timestamps(final Iterable<Long> timeStamps) {
+			return matchAnyLong(Fields.TIMESTAMP, timeStamps);
 		}
 		
 		public static Expression timestampRange(final long from, final long to) {
@@ -207,6 +199,7 @@ public final class Commit implements WithScore {
 	 * @since 7.0
 	 */
 	public static final class Fields {
+		public static final String ID = "id";
 		public static final String BRANCH = "branch";
 		public static final String AUTHOR = "author";
 		public static final String COMMENT = "comment";
@@ -219,6 +212,7 @@ public final class Commit implements WithScore {
 		public static final Set<String> ALL = ImmutableSet.of(BRANCH, AUTHOR, TIMESTAMP);
 	}
 
+	@ID
 	private final String id;
 	private final String branch;
 	private final String author;

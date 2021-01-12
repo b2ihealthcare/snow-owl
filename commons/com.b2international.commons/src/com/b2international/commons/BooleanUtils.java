@@ -23,6 +23,8 @@ public final class BooleanUtils {
 
 	public static final String YES = "yes";
 	public static final String NO = "no";
+	public static final String Y = "y";
+	public static final String N = "n";
 	
 	/**
 	 * Converts a primitive integer to boolean by assuming 0 is false and everything else (1) is true.
@@ -90,9 +92,9 @@ public final class BooleanUtils {
 			return null;
 		}
 		
-		if ("1".equals(value) || YES.equalsIgnoreCase(value)) {
+		if ("1".equals(value) || YES.equalsIgnoreCase(value) || Y.equalsIgnoreCase(value)) {
 			return Boolean.TRUE;
-		} else if ("0".equals(value) || NO.equalsIgnoreCase(value)) {
+		} else if ("0".equals(value) || NO.equalsIgnoreCase(value) || N.equalsIgnoreCase(value)) {
 			return Boolean.FALSE;
 		}
 		

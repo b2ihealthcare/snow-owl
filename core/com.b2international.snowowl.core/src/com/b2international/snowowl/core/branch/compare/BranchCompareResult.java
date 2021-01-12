@@ -17,16 +17,20 @@ package com.b2international.snowowl.core.branch.compare;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Set;
 
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 
 /**
  * @since 5.9
  */
 public final class BranchCompareResult implements Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 	public static final class Builder {
 		
@@ -77,12 +81,22 @@ public final class BranchCompareResult implements Serializable {
 		}
 		
 		public BranchCompareResult build() {
+			return build(Set.of());
+		}
+		
+		public BranchCompareResult build(Set<ComponentIdentifier> changedContainers) {
+			final Set<ComponentIdentifier> newComponents = this.newComponents.build();
+			final Set<ComponentIdentifier> deletedComponents = this.deletedComponents.build();
+			final Set<ComponentIdentifier> changedComponents = Sets.newHashSet(this.changedComponents.build());
+			changedComponents.addAll(changedContainers);
+			changedComponents.removeAll(newComponents);
+			changedComponents.removeAll(deletedComponents);
 			return new BranchCompareResult(baseBranch, 
 					compareBranch, 
 					compareHeadTimestamp, 
-					newComponents.build(), 
-					changedComponents.build(), 
-					deletedComponents.build(),
+					newComponents, 
+					changedComponents, 
+					deletedComponents,
 					totalNew,
 					totalChanged,
 					totalDeleted);

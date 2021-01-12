@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,13 @@ package com.b2international.snowowl.snomed.datastore.request.rf2.importer;
 
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
-import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.request.io.ImportDefectAcceptor.ImportDefectBuilder;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
-import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationIssueReporter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 
@@ -67,30 +66,29 @@ final class Rf2ModuleDependencyRefSetContentType implements Rf2RefSetContentType
 	}
 
 	@Override
-	public void validateMembersByReferenceSetContentType(Rf2ValidationIssueReporter reporter, String[] values) {
+	public void validateMembersByReferenceSetContentType(ImportDefectBuilder defectBuilder, String[] values) {
 		final String memberId = values[0];
 		final String sourceEffectiveTime = values[6];
 		final String targetEffectiveTime = values[7];
-		validateEffectiveTimeFields(memberId, sourceEffectiveTime, targetEffectiveTime, reporter);
-	}
 
-	private void validateEffectiveTimeFields(String memberId, String sourceEffectiveTime, String targetEffectiveTime, Rf2ValidationIssueReporter reporter) {
+		defectBuilder
+			.when(Strings.isNullOrEmpty(sourceEffectiveTime))
+			.error("Source effective time field was empty for '%s'", memberId);
+
+		defectBuilder
+			.when(Strings.isNullOrEmpty(targetEffectiveTime))
+			.error("Target effective time field was empty for '%s'", memberId);
+
 		if (Strings.isNullOrEmpty(sourceEffectiveTime) || Strings.isNullOrEmpty(targetEffectiveTime)) {
-			reporter.error("Source or target effective time field was empty for '%s'", memberId);
 			return;
 		}
 		
-		try {
-			EffectiveTimes.parse(sourceEffectiveTime, EXPECTED_DATE_FORMAT);
-		} catch (SnowowlRuntimeException e) {
-			reporter.error("Incorrect source effective time field format for '%s'. Expecting '%s' format.", memberId, EXPECTED_DATE_FORMAT);
-		}
-		
-		try {
-			EffectiveTimes.parse(targetEffectiveTime, EXPECTED_DATE_FORMAT);
-		} catch (SnowowlRuntimeException e) {
-			reporter.error("Incorrect target effective time field format for '%s'. Expecting '%s' format.", memberId, EXPECTED_DATE_FORMAT);
-		}
+		defectBuilder
+			.whenThrows(() -> EffectiveTimes.parse(sourceEffectiveTime, EXPECTED_DATE_FORMAT))
+			.error("Incorrect source effective time field format for '%s'. Expecting '%s' format.", memberId, EXPECTED_DATE_FORMAT);
+
+		defectBuilder
+			.whenThrows(() -> EffectiveTimes.parse(targetEffectiveTime, EXPECTED_DATE_FORMAT))
+			.error("Incorrect target effective time field format for '%s'. Expecting '%s' format.", memberId, EXPECTED_DATE_FORMAT);
 	}
-	
 }

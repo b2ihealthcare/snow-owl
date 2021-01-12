@@ -20,6 +20,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.Collections;
 import java.util.List;
 
+import com.b2international.index.ID;
 import com.b2international.index.Script;
 import com.b2international.index.mapping.DocumentMapping;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -44,6 +45,9 @@ import com.google.common.base.MoreObjects.ToStringHelper;
 @JsonIgnoreProperties(value = { "_hash" }) // XXX keep _hash field ignored for backward compatibility, remove in 8.0
 public abstract class Revision {
 	
+	/**
+	 * @since 4.7
+	 */
 	public static class Fields {
 		public static final String ID = "id";
 		public static final String CREATED = "created";
@@ -53,11 +57,21 @@ public abstract class Revision {
 	// scripts
 	public static final String UPDATE_REVISED = "updateRevised";
 
+	@ID
 	private String id;
 	
+	/**
+	 * Created branch point that represents both time and space when this revision has been created. It is a read-only field after revision creation,
+	 * the only time when this field is set is during the first commit via {@link #setCreated(RevisionBranchPoint)} by the {@link RevisionWriter}.
+	 */
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	private RevisionBranchPoint created;
-	
+
+	/**
+	 * List of revised branch points. These represent both time and space from where this revision is no longer available and should be skipped when
+	 * searching revision documents. The field is read-only, non-null and it is always initialized with an empty list. The actual values are
+	 * maintained by the {@link RevisionWriter} during commit via the {@link #UPDATE_REVISED} script.
+	 */
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	private List<RevisionBranchPoint> revised = Collections.emptyList();
 
@@ -71,10 +85,6 @@ public abstract class Revision {
 	
 	final void setCreated(RevisionBranchPoint created) {
 		this.created = created;
-	}
-	
-	final void setRevised(List<RevisionBranchPoint> revised) {
-		this.revised = revised;
 	}
 	
 	final RevisionBranchPoint getCreated() {
@@ -95,19 +105,10 @@ public abstract class Revision {
 	 * returns a {@link #ROOT} object ID therefore this object is a ROOT component in a given hierarchy.
 	 * 
 	 * @return the container identifier
-	 * @see #isRoot()
 	 */
 	@JsonIgnore
 	protected ObjectId getContainerId() {
 		return ObjectId.rootOf(DocumentMapping.getType(getClass()));
-	}
-	
-	/**
-	 * @return whether this component is a root component in a hierarchy or a subcomponent of another component. By default returns <code>true</code>.
-	 */
-	@JsonIgnore
-	final boolean isRoot() {
-		return ObjectId.rootOf(DocumentMapping.getType(getClass())).equals(getContainerId());
 	}
 	
 	@Override
@@ -123,15 +124,6 @@ public abstract class Revision {
 	}
 	
 	/**
-	 * Converts an immutable object into a mutable builder with the usual prefixless setter methods.
-	 * 
-	 * @return
-	 */
-	protected Builder<?, ? extends Revision> toBuilder() {
-		throw new UnsupportedOperationException();
-	}
-	
-	/**
 	 * @since 7.0
 	 * @param <B>
 	 * @param <T>
@@ -143,6 +135,15 @@ public abstract class Revision {
 		
 		public abstract T build();
 		
+	}
+
+	/**
+	 * @param field - the field to test
+	 * @return <code>true</code> if the given field is a property that is being used by the revision system and it is not part of the document's schema, <code>false</code> otherwise.
+	 */
+	public static boolean isRevisionField(String field) {
+		return Fields.CREATED.equals(field) 
+				|| Revision.Fields.REVISED.equals(field);
 	}
 
 }

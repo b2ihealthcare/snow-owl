@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,9 +26,15 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.b2international.collections.PrimitiveCollection;
 import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
+import com.b2international.index.ID;
 import com.b2international.index.Keyword;
 import com.b2international.index.Script;
 import com.b2international.index.Text;
@@ -47,6 +53,7 @@ import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 
 /**
@@ -54,15 +61,18 @@ import com.google.common.collect.Maps;
  */
 public final class DocumentMapping {
 
+	private static final Logger LOG = LoggerFactory.getLogger(DocumentMapping.class);
+	
 	private static final BiMap<Class<?>, String> DOC_TYPE_CACHE = HashBiMap.create();
 	
 	// type path delimiter to differentiate between same nested types in different contexts
 	public static final String DELIMITER = ".";
 	private static final Joiner DELIMITER_JOINER = Joiner.on(DELIMITER);
 	
+	/**
+	 * @deprecated - use an explicit {@link ID} field instead of relying on the default _id metadata field
+	 */
 	public static final String _ID = "_id";
-	public static final String _UID = "_uid";
-	public static final String _TYPE = "_type";
 
 	private static final Function<? super Field, String> GET_NAME = Field::getName;
 	
@@ -75,6 +85,7 @@ public final class DocumentMapping {
 	private final DocumentMapping parent;
 	private final Map<String, Script> scripts;
 	private final Set<String> hashedFields;
+	private final String idField;
 
 	public DocumentMapping(Class<?> type) {
 		this(null, type);
@@ -86,6 +97,20 @@ public final class DocumentMapping {
 		final String typeAsString = getType(type);
 		this.typeAsString = parent == null ? typeAsString : parent.typeAsString() + DELIMITER + typeAsString;
 		this.fieldMap = FluentIterable.from(Reflections.getFields(type)).filter(DocumentMapping::isValidField).uniqueIndex(GET_NAME);
+
+		final Collection<Field> idFields = fieldMap.values().stream()
+				.filter(f -> f.isAnnotationPresent(ID.class))
+				.collect(Collectors.toList());
+		
+		if (idFields.size() > 1) {
+			throw new IllegalArgumentException("Document classes require a single field to be annotated with the ID annotation: " + type.getName());
+		} else if (idFields.size() == 1) {
+			this.idField = Iterables.getOnlyElement(idFields).getName();
+		} else {
+			LOG.warn("'{}' does not define an ID annotated field, falling back to the deprecated '_id', but keep in mind that support will be removed in 8.0", type.getName());
+			this.idField = _ID;
+		}
+		
 		
 		final Builder<String, Text> textFields = ImmutableSortedMap.naturalOrder();
 		final Builder<String, Keyword> keywordFields = ImmutableSortedMap.naturalOrder();
@@ -192,17 +217,17 @@ public final class DocumentMapping {
 		return nestedType;
 	}
 	
-	public Field getField(String name) {
-		checkArgument(fieldMap.containsKey(name), "Missing field '%s' on mapping of '%s'", name, type);
-		return fieldMap.get(name);
+	public Field getField(String field) {
+		checkArgument(fieldMap.containsKey(field), "Missing field '%s' on mapping of '%s'", field, type);
+		return fieldMap.get(field);
 	}
 	
-	public Class<?> getFieldType(String key) {
+	public Class<?> getFieldType(String field) {
 		// XXX: _id can be retrieved via field selection, but has no corresponding entry in the mapping
-		if (DocumentMapping._ID.equals(key)) {
+		if (DocumentMapping._ID.equals(field)) {
 			return String.class;
 		}
-		return getField(key).getType();
+		return getField(field).getType();
 	}
 	
 	public Collection<Field> getFields() {
@@ -215,6 +240,11 @@ public final class DocumentMapping {
 	
 	public boolean isKeyword(String field) {
 		return keywordFields.containsKey(field);
+	}
+	
+	public boolean isCollection(String field) {
+		Class<?> fieldType = getFieldType(field);
+		return Iterable.class.isAssignableFrom(fieldType) || PrimitiveCollection.class.isAssignableFrom(fieldType) || fieldType.getClass().isArray();
 	}
 	
 	public Map<String, Text> getTextFields() {
@@ -237,12 +267,8 @@ public final class DocumentMapping {
 		return typeAsString;
 	}
 	
-	public Expression matchType() {
-		return Expressions.exactMatch(_TYPE, typeAsString);
-	}
-	
-	public String toUid(String key) {
-		return String.join("#", typeAsString, key);
+	public String getIdField() {
+		return idField;
 	}
 	
 	@Override
@@ -261,6 +287,11 @@ public final class DocumentMapping {
 	
 	// static helpers
 	
+	/**
+	 * @param id
+	 * @return
+	 * @deprecated - use an explicit {@link ID} field instead of relying on the default _id
+	 */
 	public static Expression matchId(String id) {
 		return Expressions.exactMatch(_ID, id);
 	}

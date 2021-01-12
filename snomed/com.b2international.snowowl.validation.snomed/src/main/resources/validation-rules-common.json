@@ -90,20 +90,11 @@
     "implementation": "scripts/rule663.groovy"
   },
   {
-  	"id": "668",
-    "toolingId": "com.b2international.snowowl.terminology.snomed",
-    "messageTemplate": "OWL axiom relationships must not refer to inactive concepts as their type or destination.",
-    "severity": "ERROR",
-    "checkType": "FAST",
-    "type": "script-groovy",
-    "implementation": "scripts/rule668.groovy"
-  },
-  {
   	"id": "664",
     "toolingId": "com.b2international.snowowl.terminology.snomed",
     "messageTemplate": "Fully-specified names of active concepts should be unique.",
     "severity": "WARNING",
-    "checkType": "NORMAL",
+    "checkType": "EXPENSIVE",
     "type": "script-groovy",
     "implementation": "scripts/rule664.groovy"
   },
@@ -135,6 +126,42 @@
     "implementation": "scripts/rule667.groovy"
   },
   {
+  	"id": "668",
+    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "messageTemplate": "OWL axiom relationships must not refer to inactive concepts as their type or destination.",
+    "severity": "ERROR",
+    "checkType": "FAST",
+    "type": "script-groovy",
+    "implementation": "scripts/rule668.groovy"
+  },
+  {
+  	"id": "669",
+    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "messageTemplate": "Active Simple/Language/Attribute Value Reference Set Members must not reference the same component.",
+    "severity": "ERROR",
+    "checkType": "NORMAL",
+    "type": "script-groovy",
+    "implementation": "scripts/rule669.groovy"
+  },
+  {
+  	"id": "670",
+    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "messageTemplate": "Association type reference set members must not duplicate each other.",
+    "severity": "ERROR",
+    "checkType": "EXPENSIVE",
+    "type": "script-groovy",
+    "implementation": "scripts/rule670.groovy"
+  },
+  {
+  	"id": "671",
+    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "messageTemplate": "All active SNOMED CT Descriptions on inactive SNOMED CT Concepts should have a single inactivation indicator with either Concept non-current, Pending Move, or Limited value in the Description Inactivation Indicator Reference Set.",
+    "severity": "WARNING",
+    "checkType": "FAST",
+    "type": "script-groovy",
+    "implementation": "scripts/rule671.groovy"
+  },
+  {
   	"id": "rule_mrcm_constraint",
     "toolingId": "com.b2international.snowowl.terminology.snomed",
     "messageTemplate": "Relationship target values must be consistent with MRCM.",
@@ -151,32 +178,5 @@
     "checkType": "EXPENSIVE",
     "type": "script-groovy",
     "implementation": "scripts/rule_mrcm_constraint_type.groovy"
-  },
-  {
-  	"id": "669",
-    "toolingId": "com.b2international.snowowl.terminology.snomed",
-    "messageTemplate": "Members must not duplicate each other.",
-    "severity": "ERROR",
-    "checkType": "FAST",
-    "type": "script-groovy",
-    "implementation": "scripts/rule669.groovy"
-  },
-  {
-  	"id": "670",
-    "toolingId": "com.b2international.snowowl.terminology.snomed",
-    "messageTemplate": "Association type reference set members must not duplicate each other.",
-    "severity": "ERROR",
-    "checkType": "FAST",
-    "type": "script-groovy",
-    "implementation": "scripts/rule670.groovy"
-  },
-  {
-  	"id": "671",
-    "toolingId": "com.b2international.snowowl.terminology.snomed",
-    "messageTemplate": "All active SNOMED CT Descriptions on inactive SNOMED CT Concepts should have a single inactivation indicator with either Concept non-current, Pending Move, or Limited value in the Description Inactivation Indicator Reference Set.",
-    "severity": "WARNING",
-    "checkType": "FAST",
-    "type": "script-groovy",
-    "implementation": "scripts/rule671.groovy"
   }
 ]

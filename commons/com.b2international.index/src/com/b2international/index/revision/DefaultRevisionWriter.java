@@ -132,7 +132,7 @@ public class DefaultRevisionWriter implements RevisionWriter {
 						.filter(Expressions.matchAny(Revision.Fields.ID, keysToUpdate))
 						.filter(branchToUpdate.toRevisionFilter())
 						.build();
-				final BulkUpdate<Revision> update = new BulkUpdate<Revision>((Class<? extends Revision>) type, filter, DocumentMapping._ID, Revision.UPDATE_REVISED, ImmutableMap.of("oldRevised", oldRevised, "newRevised", newRevised));
+				final BulkUpdate<Revision> update = new BulkUpdate<Revision>((Class<? extends Revision>) type, filter, Revision.UPDATE_REVISED, ImmutableMap.of("oldRevised", oldRevised, "newRevised", newRevised));
 				index.bulkUpdate(update);
 			}
 		} else {

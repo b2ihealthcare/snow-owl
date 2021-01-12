@@ -33,6 +33,8 @@ import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
 import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
+import com.b2international.snowowl.core.uri.CodeSystemURI;
+import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
 import com.b2international.snowowl.core.validation.ValidationRequests;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
 import com.google.common.collect.ImmutableMap;
@@ -45,7 +47,10 @@ import com.google.common.collect.Sets.SetView;
  */
 final class ValidationIssueSearchRequest 
 		extends SearchIndexResourceRequest<ServiceProvider, ValidationIssues, ValidationIssue> {
-
+	
+	
+	private static final long serialVersionUID = 8763370532712025424L;
+	
 	public enum OptionKey {
 		/**
 		 * Filter matches by rule identifier.
@@ -53,24 +58,19 @@ final class ValidationIssueSearchRequest
 		RULE_ID,
 		
 		/**
-		 * Filter matches by branch path field.
-		 */
-		BRANCH_PATH, 
-		
-		/**
 		 * Filter matches by their rule's tooling ID field.
 		 */
 		TOOLING_ID,
 		
 		/**
+		 * Filter matches by their rule's resourceURI field.
+		 */
+		RESOURCE_URI,
+		
+		/**
 		 * Filter matches by affected component identifier(s).
 		 */
 		AFFECTED_COMPONENT_ID,
-		
-		/**
-		 * Filter matches by affected component type(s).
-		 */
-		AFFECTED_COMPONENT_TYPE,
 		
 		/**
 		 * Filter matches by a single value of affected component label.
@@ -107,8 +107,13 @@ final class ValidationIssueSearchRequest
 
 		addIdFilter(queryBuilder, ids -> Expressions.matchAny(ValidationIssue.Fields.ID, ids));
 		
-		if (containsKey(OptionKey.BRANCH_PATH)) {
-			queryBuilder.filter(Expressions.matchAny(ValidationIssue.Fields.BRANCH_PATH, getCollection(OptionKey.BRANCH_PATH, String.class)));
+		if (containsKey(OptionKey.RESOURCE_URI)) {
+			// lookup CodeSystem branch paths from registry and apply as an alternative search expression, so issues from pre-7.12 will be properly returned
+			final List<String> branchPathFilter = getCodeSystemBranchPaths(context);
+			queryBuilder.filter(Expressions.builder()
+					.should(Expressions.matchAny(ValidationIssue.Fields.RESOURCE_URI, getCollection(OptionKey.RESOURCE_URI, String.class)))
+					.should(Expressions.matchAny(ValidationIssue.Fields.BRANCH_PATH, branchPathFilter))
+					.build());
 		}
 		
 		Set<String> filterByRuleIds = null;
@@ -155,11 +160,6 @@ final class ValidationIssueSearchRequest
 			queryBuilder.filter(Expressions.matchAny(ValidationIssue.Fields.AFFECTED_COMPONENT_ID, affectedComponentIds));
 		}
 		
-		if (containsKey(OptionKey.AFFECTED_COMPONENT_TYPE)) {
-			Collection<Integer> affectedComponentTypes = getCollection(OptionKey.AFFECTED_COMPONENT_TYPE, Short.class).stream().map(Integer::valueOf).collect(Collectors.toSet());
-			queryBuilder.filter(Expressions.matchAnyInt(ValidationIssue.Fields.AFFECTED_COMPONENT_TYPE, affectedComponentTypes));
-		}
-		
 		if (containsKey(OptionKey.AFFECTED_COMPONENT_LABEL)) {
 			final String searchTerm = getString(OptionKey.AFFECTED_COMPONENT_LABEL);
 			if (containsKey(OptionKey.AFFECTED_COMPONENT_ID)) {
@@ -189,8 +189,9 @@ final class ValidationIssueSearchRequest
 			final Collection<String> toolingIds = getCollection(OptionKey.TOOLING_ID, String.class);
 			final Options options = getOptions(OptionKey.DETAILS);
 			final ExpressionBuilder toolingQuery = Expressions.builder();
+			final Collection<ValidationIssueDetailExtension> extensions = context.service(ValidationIssueDetailExtensionProvider.class).getExtensions();
 			for (String toolingId : toolingIds) {
-				ValidationIssueDetailExtensionProvider.INSTANCE.getExtensions()
+				extensions
 						.stream()
 						.filter(ext -> toolingId.equals(ext.getToolingId()))
 						.findFirst()
@@ -206,6 +207,16 @@ final class ValidationIssueSearchRequest
 		}
 		
 		return queryBuilder.build();
+	}
+
+	private List<String> getCodeSystemBranchPaths(ServiceProvider context) {
+		if (containsKey(OptionKey.RESOURCE_URI)) {
+			final List<CodeSystemURI> resourceURIs = getCollection(OptionKey.RESOURCE_URI, String.class).stream()
+					.map(CodeSystemURI::new)
+					.collect(Collectors.toList());
+			return context.service(ResourceURIPathResolver.class).resolve(context, resourceURIs);
+		}
+		return null;
 	}
 
 	@Override

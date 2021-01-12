@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -164,7 +164,6 @@ public final class ClassificationTracker implements IDisposableService {
 				writer.bulkUpdate(new BulkUpdate<>(
 						ClassificationTaskDocument.class, 
 						ClassificationTaskDocument.Expressions.ids(markedIds), 
-						ClassificationTaskDocument.Fields.ID, 
 						ClassificationTaskDocument.Scripts.DELETED));
 			}
 		}
@@ -208,7 +207,6 @@ public final class ClassificationTracker implements IDisposableService {
 		writer.bulkUpdate(new BulkUpdate<>(
 				ClassificationTaskDocument.class, 
 				ClassificationTaskDocument.Expressions.statuses(statuses), 
-				ClassificationTaskDocument.Fields.ID, 
 				script,
 				scriptArgs));
 	}
@@ -247,7 +245,6 @@ public final class ClassificationTracker implements IDisposableService {
 			writer.bulkUpdate(new BulkUpdate<>(
 					ClassificationTaskDocument.class, 
 					ClassificationTaskDocument.Expressions.id(classificationId), 
-					ClassificationTaskDocument.Fields.ID, 
 					ClassificationTaskDocument.Scripts.RUNNING, 
 					ImmutableMap.of("timestamp", timestamp)));
 			writer.commit();
@@ -277,7 +274,6 @@ public final class ClassificationTracker implements IDisposableService {
 			
 			writer.bulkUpdate(new BulkUpdate<>(ClassificationTaskDocument.class, 
 					ClassificationTaskDocument.Expressions.id(classificationId), 
-					ClassificationTaskDocument.Fields.ID, 
 					ClassificationTaskDocument.Scripts.COMPLETED, 
 					ImmutableMap.of("completionDate", System.currentTimeMillis(),
 							"hasEquivalentConcepts", hasEquivalentConcepts,
@@ -294,7 +290,6 @@ public final class ClassificationTracker implements IDisposableService {
 			writer.bulkUpdate(new BulkUpdate<>(
 					ClassificationTaskDocument.class, 
 					ClassificationTaskDocument.Expressions.id(classificationId), 
-					ClassificationTaskDocument.Fields.ID, 
 					ClassificationTaskDocument.Scripts.SAVING_IN_PROGRESS, 
 					ImmutableMap.of()));
 			writer.commit();
@@ -307,7 +302,6 @@ public final class ClassificationTracker implements IDisposableService {
 			writer.bulkUpdate(new BulkUpdate<>(
 					ClassificationTaskDocument.class, 
 					ClassificationTaskDocument.Expressions.id(classificationId), 
-					ClassificationTaskDocument.Fields.ID, 
 					ClassificationTaskDocument.Scripts.SAVED, 
 					ImmutableMap.of("saveDate", commitTimestamp)));
 			writer.commit();
@@ -320,7 +314,6 @@ public final class ClassificationTracker implements IDisposableService {
 			writer.bulkUpdate(new BulkUpdate<>(
 					ClassificationTaskDocument.class, 
 					ClassificationTaskDocument.Expressions.id(classificationId), 
-					ClassificationTaskDocument.Fields.ID, 
 					ClassificationTaskDocument.Scripts.SAVE_FAILED, 
 					ImmutableMap.of()));
 			writer.commit();
@@ -369,7 +362,6 @@ public final class ClassificationTracker implements IDisposableService {
 		index.write(writer -> {
 			writer.bulkUpdate(new BulkUpdate<>(ClassificationTaskDocument.class, 
 					ClassificationTaskDocument.Expressions.id(classificationId), 
-					ClassificationTaskDocument.Fields.ID, 
 					ClassificationTaskDocument.Scripts.FAILED, 
 					ImmutableMap.of("completionDate", System.currentTimeMillis())));
 			writer.commit();
@@ -381,7 +373,6 @@ public final class ClassificationTracker implements IDisposableService {
 		index.write(writer -> {
 			writer.bulkUpdate(new BulkUpdate<>(ClassificationTaskDocument.class, 
 					ClassificationTaskDocument.Expressions.id(classificationId), 
-					ClassificationTaskDocument.Fields.ID, 
 					ClassificationTaskDocument.Scripts.CANCELED, ImmutableMap.of()));
 			writer.commit();
 			return null;
@@ -397,7 +388,6 @@ public final class ClassificationTracker implements IDisposableService {
 			writer.bulkUpdate(new BulkUpdate<>(
 					ClassificationTaskDocument.class, 
 					ClassificationTaskDocument.Expressions.id(classificationId), 
-					ClassificationTaskDocument.Fields.ID, 
 					ClassificationTaskDocument.Scripts.DELETED));
 
 			writer.commit();

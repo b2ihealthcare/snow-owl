@@ -19,11 +19,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Collection;
 
+import org.elasticsearch.common.collect.List;
 import org.junit.Test;
 
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.revision.RevisionFixtures.ComponentRevisionData;
 import com.b2international.index.revision.RevisionFixtures.ContainerRevisionData;
+import com.b2international.index.revision.RevisionFixtures.ObjectArrayPropertyData;
 import com.b2international.index.revision.RevisionFixtures.RevisionData;
 import com.google.common.collect.ImmutableSet;
 
@@ -37,7 +39,7 @@ public class RevisionCompareTest extends BaseRevisionIndexTest {
 	
 	@Override
 	protected Collection<Class<?>> getTypes() {
-		return ImmutableSet.<Class<?>>of(RevisionData.class, ContainerRevisionData.class, ComponentRevisionData.class);
+		return ImmutableSet.<Class<?>>of(RevisionData.class, ContainerRevisionData.class, ComponentRevisionData.class, ObjectArrayPropertyData.class);
 	}
 	
 	@Test
@@ -236,6 +238,43 @@ public class RevisionCompareTest extends BaseRevisionIndexTest {
 		assertThat(compare.getTotalAdded()).isEqualTo(0);
 		assertThat(compare.getTotalChanged()).isEqualTo(0);
 		assertThat(compare.getTotalRemoved()).isEqualTo(2);
+	}
+	
+	@Test
+	public void compareBranchWithStringArrayPropertyChange() throws Exception {
+		RevisionData data = new RevisionData(STORAGE_KEY1, null, null, List.of(), null);
+		indexRevision(MAIN, data);
+		
+		String branch = createBranch(MAIN, "a");
+		
+		RevisionData updatedData = new RevisionData(STORAGE_KEY1, null, null, List.of("1", "2"), null);
+		indexChange(branch, data, updatedData);
+		
+		RevisionCompare compare = index().compare(MAIN, branch);
+		assertThat(compare.getDetails()).containsOnly(
+			RevisionCompareDetail.componentChange(Operation.CHANGE, data.getContainerId(), data.getObjectId()),
+			RevisionCompareDetail.propertyChange(Operation.CHANGE, data.getObjectId(), "terms", "[]", "[\"1\",\"2\"]")
+		);
+	}
+	
+	@Test
+	public void compareBranchWithObjectArrayPropertyChange() throws Exception {
+		ObjectArrayPropertyData data = new ObjectArrayPropertyData(STORAGE_KEY1, List.of());
+		indexRevision(MAIN, data);
+		
+		String branch = createBranch(MAIN, "a");
+		
+		ObjectArrayPropertyData updatedData = new ObjectArrayPropertyData(STORAGE_KEY1, List.of(
+			new RevisionFixtures.ObjectArrayPropertyItem("field1", "field2"),
+			new RevisionFixtures.ObjectArrayPropertyItem("field3", "field4")
+		));
+		indexChange(branch, data, updatedData);
+		
+		RevisionCompare compare = index().compare(MAIN, branch);
+		assertThat(compare.getDetails()).containsOnly(
+			RevisionCompareDetail.componentChange(Operation.CHANGE, data.getContainerId(), data.getObjectId()),
+			RevisionCompareDetail.propertyChange(Operation.CHANGE, data.getObjectId(), "items", "[]", "[{\"field1\":\"field1\",\"field2\":\"field2\"},{\"field1\":\"field3\",\"field2\":\"field4\"}]")
+		);
 	}
 	
 }

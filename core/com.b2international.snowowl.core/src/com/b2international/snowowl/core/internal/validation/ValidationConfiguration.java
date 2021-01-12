@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,10 +25,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class ValidationConfiguration {
 
-	public static final int DEFAULT_NUMBER_OF_VALIDATION_THREADS = Math.max(2, Runtime.getRuntime().availableProcessors() / 2); 
+	// configuration keys
 	public static final String IS_UNPUBLISHED_ONLY = "isUnpublishedOnly";
 	public static final String USE_FSN = "useFsn";
 	public static final String LOCALES = "extendedLocales";
+	
+	// default values for thread management
+	private static final int DEFAULT_NUMBER_OF_VALIDATION_THREADS = Math.max(4, Runtime.getRuntime().availableProcessors() / 2); 
 	private static final int DEFAULT_MAX_CONCURRENT_EXPENSIVE_JOBS = 1;
 	private static final int DEFAULT_MAX_CONCURRENT_NORMAL_JOBS = 4;
 	
@@ -39,7 +42,6 @@ public class ValidationConfiguration {
 	@Min(1)
 	@Max(5)
 	private int maxConcurrentExpensiveJobs = DEFAULT_MAX_CONCURRENT_EXPENSIVE_JOBS;
-	
 	
 	@Min(1)
 	@Max(5)

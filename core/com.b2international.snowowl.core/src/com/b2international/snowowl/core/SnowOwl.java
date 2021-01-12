@@ -104,8 +104,13 @@ public final class SnowOwl {
 		}
 		System.setProperty("org.eclipse.jetty.util.log.class", "org.eclipse.jetty.util.log.Slf4jLog");
 		
+		// FIXME support reading packagesToScan from snowowl.yml configuration file
+		// register classpath scanner as the first item in the context so other services will be discovered properly
+		final ClassPathScanner scanner = new ClassPathScanner("com.b2international");
+		ApplicationContext.getInstance().registerService(ClassPathScanner.class, scanner);
+		
 		List<Plugin> plugins = ImmutableList.<Plugin>builder()
-			.addAll(ClassPathScanner.INSTANCE.getComponentsBySuperclass(Plugin.class))
+			.addAll(scanner.getComponentsBySuperclass(Plugin.class))
 			.add(additionalPlugins != null ? additionalPlugins : new Plugin[]{})
 			.build();
 		this.plugins = new Plugins(plugins);

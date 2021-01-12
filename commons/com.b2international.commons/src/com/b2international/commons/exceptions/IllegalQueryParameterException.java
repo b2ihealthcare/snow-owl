@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ public class IllegalQueryParameterException extends BadRequestException {
 	 */
 	public IllegalQueryParameterException(final String message, Object...args) {
 		super(message, args);
-		setDeveloperMessage("One or more supplied query parameters were invalid. Check input values.");
+		withDeveloperMessage("One or more supplied query parameters were invalid. Check input values.");
 	}
 	
 }

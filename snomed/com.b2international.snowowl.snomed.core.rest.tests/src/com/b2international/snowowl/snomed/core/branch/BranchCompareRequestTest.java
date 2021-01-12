@@ -194,7 +194,7 @@ public class BranchCompareRequestTest {
 		final BranchCompareResult compareResult = compare(branchPath, taskBranchPath);
 		
 		assertThat(compareResult.getNewComponents()).containsOnly(newDescription);
-		assertThat(compareResult.getChangedComponents()).isEmpty();
+		assertThat(compareResult.getChangedComponents()).containsOnly(concept);
 		assertThat(compareResult.getDeletedComponents()).isEmpty();
 	}
 	

@@ -24,8 +24,8 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.index.Hits;
+import com.b2international.index.ID;
 import com.b2international.index.Searcher;
-import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
@@ -46,11 +46,6 @@ import com.b2international.snowowl.core.domain.CollectionResource;
  */
 public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B, D> extends SearchResourceRequest<C, B> {
 
-	/**
-	 * Special field name for sorting based on the document's natural occurrence (document order). 
-	 */
-	public static final SortField DOC_ID = SortField.ascending(DocumentMapping._ID);
-	
 	/**
 	 * Special field name for sorting based on the document score (relevance).
 	 */
@@ -93,7 +88,7 @@ public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B, D
 	}
 	
 	/**
-	 * @return the currently set {@link SortBy} search option or if sort is not present in the request, the default sort which is by <code>_id</code> document id.
+	 * @return the currently set {@link SortBy} search option or if sort is not present in the request, the default sort which is by the configured {@link ID} document field.
 	 */
 	protected final SortBy querySortBy(C context) {
 		List<Sort> sortBy = sortBy();
@@ -104,7 +99,7 @@ public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B, D
 			}
 			return sortBuilder.build();
 		}		
-		return SortBy.DOC_ID;
+		return SortBy.DEFAULT;
 	}
 	
 	/**

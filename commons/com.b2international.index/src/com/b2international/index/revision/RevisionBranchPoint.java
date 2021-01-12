@@ -64,7 +64,7 @@ public final class RevisionBranchPoint implements Comparable<RevisionBranchPoint
 	
 	@Override
 	public String toString() {
-		return String.format("%s@%s", branchId, timestamp);
+		return String.join("@", Long.toString(branchId), Long.toString(timestamp));
 	}
 	
 	@JsonValue

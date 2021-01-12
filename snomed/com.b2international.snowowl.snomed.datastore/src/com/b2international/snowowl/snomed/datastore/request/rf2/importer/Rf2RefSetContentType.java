@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,9 @@ package com.b2international.snowowl.snomed.datastore.request.rf2.importer;
 
 import java.util.UUID;
 
+import com.b2international.snowowl.core.request.io.ImportDefectAcceptor.ImportDefectBuilder;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationDefects;
-import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationIssueReporter;
 
 /**
  * @since 6.0.0
@@ -43,22 +43,19 @@ interface Rf2RefSetContentType extends Rf2ContentType<SnomedReferenceSetMember> 
 	}
 	
 	@Override
-	default void validateByContentType(Rf2ValidationIssueReporter reporter, String[] values) {
+	default void validateByContentType(ImportDefectBuilder defectBuilder, String[] values) {
 		final String memberId = values[0];
 		final String referenceSetId = values[4];
 		final String referencedComponentId = values[5];
 		
-		try {
-			UUID.fromString(memberId);
-		} catch (IllegalArgumentException e) {
-			reporter.error("%s %s", Rf2ValidationDefects.INVALID_UUID, memberId);
-		}
+		defectBuilder
+			.whenThrows(() -> UUID.fromString(memberId))
+			.error("%s %s", Rf2ValidationDefects.INVALID_UUID, memberId);
 		
-		validateId(referencedComponentId, reporter);
-		validateConceptIds(reporter, referenceSetId);
-		validateMembersByReferenceSetContentType(reporter, values);
+		validateId(defectBuilder, referencedComponentId);
+		validateConceptIds(defectBuilder, referenceSetId);
+		validateMembersByReferenceSetContentType(defectBuilder, values);
 	}
 	
-	void validateMembersByReferenceSetContentType(Rf2ValidationIssueReporter reporter, String[] values);
-	
+	void validateMembersByReferenceSetContentType(ImportDefectBuilder defectBuilder, String[] values);
 }

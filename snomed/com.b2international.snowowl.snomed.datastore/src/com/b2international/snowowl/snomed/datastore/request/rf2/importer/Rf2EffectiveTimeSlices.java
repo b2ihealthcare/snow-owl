@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.datastore.request.rf2.importer;
 
 import static com.google.common.collect.Maps.newHashMap;
 
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -31,6 +32,16 @@ import com.google.common.collect.Ordering;
  */
 public final class Rf2EffectiveTimeSlices {
 
+	private static final Ordering<Rf2EffectiveTimeSlice> UNSET_EFFECTIVE_TIME_LAST = Ordering.<String>from((effectiveTime1, effectiveTime2) -> {
+		if (EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL.equals(effectiveTime1)) {
+			return 1;
+		} else if(EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL.equals(effectiveTime2)) {
+			return -1;
+		} else  {
+			return effectiveTime1.compareTo(effectiveTime2);
+		}
+	}).onResultOf(Rf2EffectiveTimeSlice::getEffectiveTime);
+	
 	private final DB db;
 	private final Map<String, Rf2EffectiveTimeSlice> slices = newHashMap();
 	private final boolean loadOnDemand;
@@ -55,16 +66,10 @@ public final class Rf2EffectiveTimeSlices {
 		slices().forEach(Rf2EffectiveTimeSlice::flush);		
 	}
 
-	public Iterable<Rf2EffectiveTimeSlice> consumeInOrder() {
-		return Ordering.<String>from((effectiveTime1, effectiveTime2) -> {
-			if (EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL.equals(effectiveTime1)) {
-				return 1;
-			} else if(EffectiveTimes.UNSET_EFFECTIVE_TIME_LABEL.equals(effectiveTime2)) {
-				return -1;
-			} else  {
-				return effectiveTime1.compareTo(effectiveTime2);
-			}
-		}).immutableSortedCopy(slices.keySet()).stream().map(slices::get).collect(Collectors.toList());
+	public List<Rf2EffectiveTimeSlice> consumeInOrder() {
+		return slices.values()
+			.stream()
+			.sorted(UNSET_EFFECTIVE_TIME_LAST)
+			.collect(Collectors.toList());
 	}
-	
 }

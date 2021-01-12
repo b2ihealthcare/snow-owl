@@ -1,6 +1,89 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 7.14.0
+
+### Core
+- Code System Upgrade (experimental preview version) (#735)
+  * Upgrades to newer Code System dependencies now can be started from the new `POST /codesystems/:id/upgrades` endpoint
+  * The full upgrade flow is not available yet, it is scheduled for release 7.15.0
+  
+### Bugs/Improvements
+- [core] validate LDAP settings during boot (#731)
+- [core] support truly random Base64 IDs (not just time-based random Base64 IDs) (#733)
+- [core] support filtering commits by branch prefix (Java API only) (#734)
+- [snomed] properly restore effective time on Code System upgrade branches using both the dependency version and the previous extension version (#735)
+- [snomed] disable validation of map target field during RF2 import (075a575)
+- [api] fix concept search issue when searching by `semanticTag` without a non-empty `term` filter (1f77112)
+
+## 7.13.0
+
+### Core
+- Support filtering CodeSystem codes by their kind (aka CodeType) in the Generic Concept Search API (#727)
+- Support simple DSV export for Concept Map Compare (not exposed over REST yet) (#725)
+
+### SNOMED CT
+- New `response` property in `GET /:path/import/:id` RF2 Import API return value (#720, #699)
+  * `response.success` - `true` if the import successfully completed, `false` otherwise  
+  * `response.error` - has a non-empty String value if the import can not be performed due validation errors or due to other errors 
+  * `response.defects` - lists all defects encountered during the RF2 Import Validation phase
+  * `response.visitedComponents` - lists all components that have been updated during the RF2 import
+- Support `dryRun` in RF2 import API, `POST /:path/import` (8d3c9ac, #699)
+  * If set to `true` the importer validates the incoming RF2 archive against the current data and reports any defects. Default value is `false`. 
+
+### Bugs/Improvements
+- [index] fix minor performance issue when collecting search hits to field maps (b4728f7) 
+- [core] include changed containers in changedComponents as well in branch compare (a7ea7df)
+- [core] filter out ROOT object IDs from compare result (15249f5)
+- [validation] improve unpublished performance of rule 663 (368542d)
+- [validation] improve unpublished performance of rule 664 (e149a4d)
+- [validation] improve unpublished performance of rule 668 (245c1c7)
+- [validation] improve unpublished performance of rule 671 (79c3e9f)
+- [snomed] validate effective time slices in reverse chronological order to improve import performance (6384209)
+- [api] fix possible NPE when searching jobs via REST (cc704a8)
+
+## 7.12.0
+
+### Core
+- CodeSystems
+  * Support filtering Code Systems by their HL7 OID (#710)
+  * Make OID optional in Code System Create API (#710)
+- Validation
+  * Support `resourceURI` instead of just `branchPath` on validation issues (#707, #708)  
+- Jobs
+  * Support filtering jobs by multiple user values (8c307db)
+  * Support filtering jobs by their state value in `GET /jobs` (8db3fa6)
+  * Add `DELETE /jobs/:id` endpoint to delete jobs (853299b)
+- Commits
+  * Add support for searching for commits by timestamps (#722)
+
+### Bugs/Improvements
+- [index] clean up and remove unused logic from index module (493cd47, 6d53e5b, 57232cb, 2aa99f5, 07d09ed, fdb64ad)
+- [index] support array property tracking properly (#709)
+- [index] omit copy and move operations to properly migrate index schema (2595716)
+- [index] exclude items from the "from" change set early to prevent invalid conflicts (#718)
+- [index] fix potential resource leak when performing multiple searches with Integer.MAX_VALUE (aka `all()`) limit without explicit pagination (860be3a)
+- [index] replace `_id` based sorting with `_doc` when sorting documents by default (44d4218, 2249b3c, bbd2497, 115153c)
+- [index] use default `node.roles` instead of deprecated `node.master=true` in embedded EsNode (28ca645)
+- [index] dynamic string values will be mapped to `keyword` by default (fe51c28)
+- [core] fetch only one CodeSystem in CodeSystemService (5299092)
+- [core] support SETs as primary components in certain toolings (58536b5)
+- [core] make sure we send out commit notifications about merge/rebase commits (f429ac7)
+- [core] Add property to ConceptMapMapping for indicating if a match is approximate (#724)
+- [validation] apply unpublished effective time filter in snomed-query validation rules only if the `isUnpublishedOnly` rule parameter is set to `true` (12ce787)
+- [validation] increase minimum number of validation threads to `4` (405010f)
+- [validation] remove aggregation from rule669 to improve its performance (1675105) 
+- [api] add configuration to return all matches at once in Concept Map Search API (0cbccfc)
+- [api] support filter by description type in generic concept search API (de3777d, #714)
+- [api] support scores in generic concept search API (ee3f55c, #714)
+- [performance] speed up classpath scanning by restricting packages to `com.b2international` (#717)
+- [log] truncate collection request parameters to the first 10 items and remaining count (df069b0)
+
+### Dependencies
+* Bump Elasticsearch to 7.10.0 (#719, #721)
+* Bump classgraph to 4.8.90 (f14336d)
+* Bump owl-toolkit to 2.9.1 (c0f2c23)
+
 ## 7.11.1
 
 ### Bugs/Improvements

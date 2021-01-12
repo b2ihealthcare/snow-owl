@@ -48,7 +48,7 @@ import com.google.common.base.MoreObjects.ToStringHelper;
 		SnomedDocument.Fields.ACTIVE, 
 		SnomedDocument.Fields.EFFECTIVE_TIME, 
 		SnomedDocument.Fields.MODULE_ID, 
-		SnomedDocument.Fields.RELEASED,
+		SnomedDocument.Fields.RELEASED, // XXX required for SnomedComponentRevisionConflictProcessor CHANGED vs. DELETED detection
 		SnomedRelationshipIndexEntry.Fields.GROUP,
 		SnomedRelationshipIndexEntry.Fields.UNION_GROUP,
 		SnomedRelationshipIndexEntry.Fields.CHARACTERISTIC_TYPE_ID,

@@ -199,7 +199,7 @@ public class ConceptMapCompareSnomedMapTypeReferenceSetTest extends AbstractCore
 			.setActive(true)
 			.setModuleId(Concepts.MODULE_SCT_CORE)
 			.setProperties(Map.of(
-				SnomedRf2Headers.FIELD_MAP_TARGET, targetCode
+				SnomedRf2Headers.FIELD_MAP_TARGET, ComponentURI.of(codeSystemURI.getCodeSystem(), SnomedTerminologyComponentConstants.CONCEPT_NUMBER, targetCode).toString()
 			))
 			.build(codeSystemURI.toString(), RestExtensions.USER, "New Member")
 			.execute(getBus())

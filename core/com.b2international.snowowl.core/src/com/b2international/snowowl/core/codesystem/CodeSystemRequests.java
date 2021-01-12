@@ -16,7 +16,6 @@
 package com.b2international.snowowl.core.codesystem;
 
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.exceptions.NotFoundException;
@@ -24,15 +23,17 @@ import com.b2international.snowowl.core.Repositories;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.codesystem.version.CodeSystemVersionCreateRequestBuilder;
 import com.b2international.snowowl.core.codesystem.version.CodeSystemVersionSearchRequestBuilder;
-import com.b2international.snowowl.core.compare.ConceptMapCompareConfigurationProperties;
+import com.b2international.snowowl.core.compare.ConceptMapCompareResultItem;
 import com.b2international.snowowl.core.jobs.RemoteJobEntry;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
+import com.b2international.snowowl.core.request.ConceptMapCompareDsvExportRequestBuilder;
 import com.b2international.snowowl.core.request.ConceptMapCompareRequestBuilder;
 import com.b2international.snowowl.core.request.ConceptMapMappingSearchRequestBuilder;
 import com.b2international.snowowl.core.request.ConceptSearchRequestBuilder;
 import com.b2international.snowowl.core.request.ConceptSuggestionRequestBuilder;
 import com.b2international.snowowl.core.request.MemberSearchRequestBuilder;
 import com.b2international.snowowl.core.request.QueryOptimizeRequestBuilder;
+import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.core.uri.ComponentURI;
 
 /**
@@ -67,6 +68,14 @@ public class CodeSystemRequests {
 	public static CodeSystemVersionCreateRequestBuilder prepareNewCodeSystemVersion() {
 		return new CodeSystemVersionCreateRequestBuilder();
 	}
+	
+	// Upgrade API
+	
+	public static CodeSystemUpgradeRequestBuilder prepareUpgrade(CodeSystemURI codeSystem, CodeSystemURI extensionOf) {
+		return new CodeSystemUpgradeRequestBuilder(codeSystem, extensionOf);
+	}
+	
+	// Generic Content Search APIs
 	
 	/**
 	 * Creates a new generic concept search request builder.
@@ -109,6 +118,10 @@ public class CodeSystemRequests {
 	
 	public static ConceptMapCompareRequestBuilder prepareConceptMapCompare(ComponentURI baseConceptMapURI, ComponentURI compareConceptMapURI){
 		return new ConceptMapCompareRequestBuilder(baseConceptMapURI, compareConceptMapURI);
+	}
+
+	public static ConceptMapCompareDsvExportRequestBuilder prepareConceptMapCompareDsvExport(final List<ConceptMapCompareResultItem> items, final String filePath){
+		return new ConceptMapCompareDsvExportRequestBuilder(items, filePath);
 	}
 
 	/**

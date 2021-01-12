@@ -57,7 +57,6 @@ import org.elasticsearch.search.sort.ScriptSortBuilder.ScriptSortType;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 
-import com.b2international.collections.PrimitiveCollection;
 import com.b2international.commons.exceptions.FormattedRuntimeException;
 import com.b2international.index.Hits;
 import com.b2international.index.IndexClientFactory;
@@ -77,7 +76,6 @@ import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.query.SortBy;
 import com.b2international.index.query.SortBy.MultiSortBy;
-import com.b2international.index.query.SortBy.Order;
 import com.b2international.index.query.SortBy.SortByField;
 import com.b2international.index.query.SortBy.SortByScript;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -124,7 +122,8 @@ public class EsDocumentSearcher implements Searcher {
 	
 	@Override
 	public <T> Iterable<T> get(Class<T> type, Iterable<String> keys) throws IOException {
-		return search(Query.select(type).where(Expressions.matchAny(DocumentMapping._ID, keys)).limit(Iterables.size(keys)).build());
+		final DocumentMapping mapping = admin.mappings().getMapping(type);
+		return search(Query.select(type).where(Expressions.matchAny(mapping.getIdField(), keys)).limit(Iterables.size(keys)).build());
 	}
 
 	@Override
@@ -159,18 +158,16 @@ public class EsDocumentSearcher implements Searcher {
 			reqSource.storedFields(STORED_FIELDS_NONE);
 		}
 		
-		// sorting
-		addSort(mapping, reqSource, query.getSortBy());
-		
-		// scrolling
-		final TimeValue scrollTime = TimeValue.timeValueSeconds(60);
+		// scroll config
 		final boolean isLocalScroll = limit > resultWindow;
 		final boolean isScrolled = !Strings.isNullOrEmpty(query.getScrollKeepAlive());
 		final boolean isLiveScrolled = !Strings.isNullOrEmpty(query.getSearchAfter());
 		if (isLocalScroll) {
 			checkArgument(!isScrolled, "Cannot fetch more than '%s' items when scrolling is specified. You requested '%s' items.", resultWindow, limit);
 			checkArgument(!isLiveScrolled, "Cannot use search after when requesting more number of items (%s) than the max result window (%s).", limit, resultWindow);
-			req.scroll(scrollTime);
+			// do NOT start a scroll on the first request, just validate the search request state here
+			// XXX commented row kept for historical reasons
+//			req.scroll(scrollTime);
 		} else if (isScrolled) {
 			checkArgument(!isLiveScrolled, "Cannot scroll and live scroll at the same time");
 			req.scroll(query.getScrollKeepAlive());
@@ -179,12 +176,14 @@ public class EsDocumentSearcher implements Searcher {
 			reqSource.searchAfter(fromSearchAfterToken(query.getSearchAfter()));
 		}
 		
+		// sorting config with a default sort field based on scroll config
+		addSort(mapping, reqSource, query.getSortBy(), !isScrolled && !isLocalScroll);
 		// disable explain explicitly, just in case
 		reqSource.explain(false);
 		// disable version field explicitly, just in case
 		reqSource.version(false);
 		
-		// fetch phase
+		// perform search
 		SearchResponse response = null; 
 		try {
 			response = client.search(req);
@@ -192,35 +191,55 @@ public class EsDocumentSearcher implements Searcher {
 			admin.log().error("Couldn't execute query", e);
 			throw new IndexException("Couldn't execute query: " + e.getMessage(), null);
 		}
-		
+
 		TotalHits totalHits = response.getHits().getTotalHits();
 		checkState(totalHits.relation == Relation.EQUAL_TO, "Searches should always track total hits accurately");
 		final int totalHitCount = (int) totalHits.value;
-		int numDocsToFetch = Math.min(limit, totalHitCount) - response.getHits().getHits().length;
-		
 		final ImmutableList.Builder<SearchHit> allHits = ImmutableList.builder();
-		allHits.add(response.getHits().getHits());
+		int numDocsToFetch = Math.min(limit, totalHitCount) - response.getHits().getHits().length;
 
-		while (isLocalScroll && numDocsToFetch > 0) {
-			final SearchScrollRequest searchScrollRequest = new SearchScrollRequest(response.getScrollId())
-					.scroll(scrollTime);
-			
-			response = client.scroll(searchScrollRequest);
-			int fetchedDocs = response.getHits().getHits().length;
-			if (fetchedDocs == 0) {
-				break;
+		// if the client requested all data at once and there are more data in the index
+		// throw away the first batch and perform a local scroll
+		if (isLocalScroll && numDocsToFetch > 0) {
+			// WARN the caller that this might not be the most efficient way of fetching the data, consider using SearchAfter API or explicit Scroll API
+			admin.log().warn("Returning all matches (totalHits: '{}') larger than the currently configured result_window ('{}') might not be the most efficient way of getting the data. Consider using the index pagination APIs (searchAfter or explicit scroll) instead.", totalHitCount, resultWindow);
+
+			// perform search again with a default 60s scroll enabled
+			final TimeValue scrollTime = TimeValue.timeValueSeconds(60);
+			try {
+				response = client.search(req.scroll(scrollTime));
+			} catch (Exception e) {
+				admin.log().error("Couldn't execute query", e);
+				throw new IndexException("Couldn't execute query: " + e.getMessage(), null);
 			}
-			numDocsToFetch -= fetchedDocs;
+
+			// recalc if there were index changes in the middle
+			numDocsToFetch = Math.min(limit, totalHitCount) - response.getHits().getHits().length;
+			// register all hits
 			allHits.add(response.getHits().getHits());
-		}
-		
-		// clear the custom local scroll
-		if (isLocalScroll) {
+
+			// then continue scroll
+			while (numDocsToFetch > 0) {
+				final SearchScrollRequest searchScrollRequest = new SearchScrollRequest(response.getScrollId())
+						.scroll(scrollTime);
+
+				response = client.scroll(searchScrollRequest);
+				int fetchedDocs = response.getHits().getHits().length;
+				if (fetchedDocs == 0) {
+					break;
+				}
+				numDocsToFetch -= fetchedDocs;
+				allHits.add(response.getHits().getHits());
+			}
+			
+			// clear the custom local scroll
 			final ClearScrollRequest clearScrollRequest = new ClearScrollRequest();
 			clearScrollRequest.addScrollId(response.getScrollId());
 			client.clearScroll(clearScrollRequest);
+		} else {
+			allHits.add(response.getHits().getHits());
 		}
-		
+
 		final Class<T> select = query.getSelect();
 		final Class<?> from = query.getFrom();
 		
@@ -255,13 +274,7 @@ public class EsDocumentSearcher implements Searcher {
 	private boolean requiresDocumentSourceField(DocumentMapping mapping, List<String> fields) {
 		return fields
 			.stream()
-			.filter(field -> {
-				Class<?> fieldType = mapping.getFieldType(field);
-				return mapping.isText(field)
-						|| Iterable.class.isAssignableFrom(fieldType) 
-						|| PrimitiveCollection.class.isAssignableFrom(fieldType) 
-						|| fieldType.getClass().isArray();
-			})
+			.filter(field -> mapping.isText(field) || mapping.isCollection(field))
 			.findFirst()
 			.isPresent();
 	}
@@ -370,7 +383,7 @@ public class EsDocumentSearcher implements Searcher {
 		}
 	}
 
-	private void addSort(DocumentMapping mapping, SearchSourceBuilder reqSource, SortBy sortBy) {
+	private void addSort(DocumentMapping mapping, SearchSourceBuilder reqSource, SortBy sortBy, boolean liveScroll) {
 		for (final SortBy item : getSortFields(sortBy)) {
 			if (item instanceof SortByField) {
 				SortByField sortByField = (SortByField) item;
@@ -383,8 +396,14 @@ public class EsDocumentSearcher implements Searcher {
 					// XXX: default order for scores is *descending*
 					reqSource.sort(SortBuilders.scoreSort().order(sortOrder)); 
 					break;
-				case DocumentMapping._ID: //$FALL-THROUGH$
-					field = DocumentMapping._ID;
+				case "_default": //$FALL-THROUGH$
+					if (liveScroll) {
+						// for live scrolls use the document ID field as tiebreaker
+						field = mapping.getIdField();
+					} else {
+						// for snapshot scrolls use the "_doc" field as tiebreaker
+						field = "_doc";
+					}
 				default:
 					reqSource.sort(SortBuilders.fieldSort(field).order(sortOrder));
 				}
@@ -412,15 +431,15 @@ public class EsDocumentSearcher implements Searcher {
 			items.add(sortBy);
 		}
 
-		Optional<SortByField> existingDocIdSort = items.stream()
-			.filter(SortByField.class::isInstance)
-			.map(SortByField.class::cast)
-			.filter(field -> DocumentMapping._ID.equals(field.getField()))
-			.findFirst();
+		Optional<SortByField> existingDefaultSort = items.stream()
+				.filter(SortByField.class::isInstance)
+				.map(SortByField.class::cast)
+				.filter(field -> SortBy.DEFAULT.getField().equals(field.getField()))
+				.findFirst();
 		
-		if (!existingDocIdSort.isPresent()) {
-			// add _id field as tiebreaker if not defined in the original SortBy
-			items.add(SortBy.field(DocumentMapping._ID, Order.DESC));
+		if (!existingDefaultSort.isPresent()) {
+			// add the default field (either _doc or ID field) as tie breaker
+			items.add(SortBy.DEFAULT);
 		}
 		
 		return Iterables.filter(items, SortBy.class);

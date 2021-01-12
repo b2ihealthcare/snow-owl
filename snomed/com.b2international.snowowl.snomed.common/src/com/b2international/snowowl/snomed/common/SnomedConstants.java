@@ -251,6 +251,19 @@ public abstract class SnomedConstants {
 		public static final String REFSET_SIMILAR_TO_ASSOCIATION = "900000000000529008";
 		public static final String REFSET_WAS_A_ASSOCIATION = "900000000000528000";
 		
+		public static final Set<String> HISTORICAL_ASSOCIATION_REFSETS = ImmutableSet.of(
+				REFSET_HISTORICAL_ASSOCIATION, 
+				REFSET_ALTERNATIVE_ASSOCIATION,
+				REFSET_MOVED_FROM_ASSOCIATION,
+				REFSET_MOVED_TO_ASSOCIATION,
+				REFSET_POSSIBLY_EQUIVALENT_TO_ASSOCIATION,
+				REFSET_REFERS_TO_ASSOCIATION,
+				REFSET_REPLACED_BY_ASSOCIATION,
+				REFSET_SAME_AS_ASSOCIATION,
+				REFSET_SIMILAR_TO_ASSOCIATION,
+				REFSET_WAS_A_ASSOCIATION);
+		
+		
 		//	simple map type refsets
 		public static final String CTV3_SIMPLE_MAP_TYPE_REFERENCE_SET_ID = "900000000000497000";
 		public static final String SNOMED_RT_SIMPLE_MAP_TYPE_REFERENCE_SET_ID = "900000000000498005";
@@ -343,8 +356,6 @@ public abstract class SnomedConstants {
 		public static final String HAS_COMPONENT = "246093002";
 		public static final String HAS_SDD_CLASS = "8921000132109";
 
-		public static final String DEFAULT_UNIT = "258666001";
-		
 		public static final String NAMESPACE_ROOT = "370136006";
 		
 		public static final String ACCEPTABILITY = "900000000000511003";

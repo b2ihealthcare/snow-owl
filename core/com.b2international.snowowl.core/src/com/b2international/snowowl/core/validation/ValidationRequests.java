@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.core.validation;
 
-import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.jobs.RemoteJobEntry;
 import com.b2international.snowowl.core.validation.issue.ValidationIssueRequests;
 import com.b2international.snowowl.core.validation.rule.ValidationRuleRequests;
@@ -50,12 +49,12 @@ public final class ValidationRequests {
 	 * Creates a unique validation id for the given codesystem on the given branch.
 	 * 
 	 * @param shortName
-	 * @param branch
+	 * @param codeSystemURI
 	 * 
 	 * @return the unique id.
 	 */
-	public static String createUniqueValidationJobKey(String shortName, String branch) {
-		return String.format("%s%s%s%s", VALIDATION_JOB_ID_PREFIX, shortName, Branch.SEPARATOR, branch);
+	public static String createUniqueValidationJobKey(String codeSystemURI) {
+		return String.format("%s%s", VALIDATION_JOB_ID_PREFIX, codeSystemURI);
 	}
 	
 	public static boolean isValidationJob(RemoteJobEntry job) {

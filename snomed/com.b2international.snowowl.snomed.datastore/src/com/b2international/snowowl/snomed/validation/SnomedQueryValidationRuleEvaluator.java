@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import java.util.regex.Pattern;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import com.b2international.index.Hits;
+import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.Query;
@@ -92,14 +93,18 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 		
 		final ExpressionBuilder expressionBuilder = Expressions.builder().filter(searchReq.toRawQuery(context));
 
-		if (params != null && params.containsKey(ValidationConfiguration.IS_UNPUBLISHED_ONLY)) {
+		if (params != null && params.containsKey(ValidationConfiguration.IS_UNPUBLISHED_ONLY) && Boolean.TRUE.equals(params.get(ValidationConfiguration.IS_UNPUBLISHED_ONLY))) {
 			expressionBuilder.filter(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME));
 		}
+		
+		Expression where = expressionBuilder.build();
+		
+		// TODO check if the expression contains only the ID list, then skip scrolling and just report them
 		
 		Iterable<Hits<String>> pages = context.service(RevisionSearcher.class).scroll(Query.select(String.class)
 				.from(validationQuery.getDocType())
 				.fields(SnomedDocument.Fields.ID)
-				.where(expressionBuilder.build())
+				.where(where)
 				.limit(RULE_LIMIT)
 				.withScores(false)
 				.build());

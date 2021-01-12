@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,11 @@
 package com.b2international.index;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.junit.rules.ExternalResource;
 
@@ -46,10 +48,12 @@ public final class IndexResource extends ExternalResource {
 
 	private final Collection<Class<?>> types;
 	private final Consumer<ObjectMapper> objectMapperConfigurator;
+	private final Supplier<Map<String, Object>> indexSettings;
 	
-	private IndexResource(Collection<Class<?>> types, Consumer<ObjectMapper> objectMapperConfigurator) {
+	private IndexResource(Collection<Class<?>> types, Consumer<ObjectMapper> objectMapperConfigurator, Supplier<Map<String, Object>> indexSettings) {
 		this.types = types;
 		this.objectMapperConfigurator = objectMapperConfigurator;
+		this.indexSettings = indexSettings;
 	}
 	
 	@Override
@@ -57,17 +61,21 @@ public final class IndexResource extends ExternalResource {
 		if (INIT.compareAndSet(false, true)) {
 			mapper = new ObjectMapper();
 			mapper.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
-			client = Indexes.createIndexClient(UUID.randomUUID().toString(), mapper, new Mappings());
+			client = Indexes.createIndexClient(UUID.randomUUID().toString(), mapper, new Mappings(), indexSettings.get());
 			index = new DefaultIndex(client);
 			revisionIndex = new DefaultRevisionIndex(index, new TimestampProvider.Default(), mapper);
 		}
 		
+		// apply mapper changes first
 		objectMapperConfigurator.accept(mapper);
 		
-		// update mapping before executing tests
-		types.forEach(index.admin().mappings()::putMapping);
+		// then mapping changes
+		revisionIndex.admin().updateMappings(new Mappings(types));
 		
-		// make sure we have all indexes ready for consumption
+		// then settings changes
+		revisionIndex.admin().updateSettings(indexSettings.get());
+		
+		// then make sure we have all indexes ready for tests
 		revisionIndex.admin().create();
 	}
 	
@@ -97,8 +105,8 @@ public final class IndexResource extends ExternalResource {
 		return mapper;
 	}
 	
-	public static IndexResource create(Collection<Class<?>> types, Consumer<ObjectMapper> objectMapperConfigurator) {
-		return new IndexResource(types, objectMapperConfigurator);
+	public static IndexResource create(Collection<Class<?>> types, Consumer<ObjectMapper> objectMapperConfigurator, Supplier<Map<String, Object>> indexSettings) {
+		return new IndexResource(types, objectMapperConfigurator, indexSettings);
 	}
 
 }

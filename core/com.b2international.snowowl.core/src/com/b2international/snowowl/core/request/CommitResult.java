@@ -18,6 +18,9 @@ package com.b2international.snowowl.core.request;
 import java.io.Serializable;
 
 import com.b2international.commons.ClassUtils;
+import com.b2international.index.revision.Commit;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 4.5
@@ -26,15 +29,16 @@ public final class CommitResult implements Serializable {
 
 	private static final long serialVersionUID = -7479022976959306232L;
 	
-	private final Long commitTimestamp;
+	private final long commitTimestamp;
 	private final Object result;
 
-	CommitResult(Long commitTimestamp, Object result) {
+	@JsonCreator
+	CommitResult(@JsonProperty("commitTimestamp") long commitTimestamp, @JsonProperty("result") Object result) {
 		this.commitTimestamp = commitTimestamp;
 		this.result = result;
 	}
 	
-	public Long getCommitTimestamp() {
+	public long getCommitTimestamp() {
 		return commitTimestamp;
 	}
 	
@@ -44,6 +48,10 @@ public final class CommitResult implements Serializable {
 
 	public <T> T getResultAs(Class<T> type) {
 		return ClassUtils.checkAndCast(result, type);
+	}
+
+	public boolean hasChanges() {
+		return Commit.NO_COMMIT_TIMESTAMP != commitTimestamp;
 	}
 	
 }

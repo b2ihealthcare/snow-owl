@@ -17,12 +17,10 @@ package com.b2international.snowowl.snomed.datastore.request.rf2.importer;
 
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
+import com.b2international.snowowl.core.request.io.ImportDefectAcceptor.ImportDefectBuilder;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
-import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationDefects;
-import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationIssueReporter;
 
 /**
  * @since 6.0.0
@@ -70,23 +68,13 @@ final class Rf2DescriptionContentType implements Rf2ContentType<SnomedDescriptio
 	}
 
 	@Override
-	public void validateByContentType(Rf2ValidationIssueReporter reporter, String[] values) {
+	public void validateByContentType(ImportDefectBuilder defectBuilder, String[] values) {
 		final String descriptionId = values[0];
 		final String conceptId = values[4];
 		final String typeId = values[6];
 		final String caseSignificanceId = values[8];
 		
-		try {
-			SnomedIdentifiers.validate(descriptionId);
-			validateByComponentCategory(descriptionId, reporter, ComponentCategory.DESCRIPTION);
-		} catch (IllegalArgumentException e) {
-			reporter.error(String.format("%s %s", descriptionId, Rf2ValidationDefects.INVALID_ID.getLabel()));
-		}
-		
-		validateConceptIds(reporter, conceptId, typeId, caseSignificanceId);
-		
+		validateByComponentCategory(defectBuilder, descriptionId, ComponentCategory.DESCRIPTION);
+		validateConceptIds(defectBuilder, conceptId, typeId, caseSignificanceId);
 	}
-	
-	
-	
 }

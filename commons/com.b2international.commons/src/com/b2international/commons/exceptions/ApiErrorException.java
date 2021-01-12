@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
  */
 package com.b2international.commons.exceptions;
 
-import java.util.Map;
-
 /**
  * @since 6.4
  */
@@ -28,7 +26,8 @@ public final class ApiErrorException extends ApiException {
 
 	public ApiErrorException(ApiError error) {
 		super(error.getMessage());
-		setDeveloperMessage(error.getDeveloperMessage());
+		withDeveloperMessage(error.getDeveloperMessage());
+		withAdditionalInfo(error.getAdditionalInfo());
 		this.error = error;
 	}
 	
@@ -42,9 +41,4 @@ public final class ApiErrorException extends ApiException {
 		return error.getCode();
 	}
 	
-	@Override
-	protected Map<String, Object> getAdditionalInfo() {
-		return error.getAdditionalInfo();
-	}
-
 }

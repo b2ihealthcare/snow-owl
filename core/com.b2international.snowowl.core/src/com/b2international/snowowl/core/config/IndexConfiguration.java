@@ -15,18 +15,23 @@
  */
 package com.b2international.snowowl.core.config;
 
+import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.index.IndexClientFactory;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableMap.Builder;
 
 /**
  * @since 5.0
  */
 public class IndexConfiguration {
 
+	public static final int DEFAULT_CLUSTER_HEALTH_TIMEOUT = 300_000; // Snow Owl defaults to 5m cluster health timeout
+	public static final int DEFAULT_RESULT_WINDOW = 100_099; // Snow Owl defaults to slightly more than 100k max result window
+	
 	@NotEmpty
 	private String commitInterval = IndexClientFactory.DEFAULT_TRANSLOG_SYNC_INTERVAL;
 	@Min(1)
@@ -52,11 +57,12 @@ public class IndexConfiguration {
 	@Min(1_000)
 	private int socketTimeout = IndexClientFactory.DEFAULT_SOCKET_TIMEOUT;
 	@Min(2_001)
-	private int clusterHealthTimeout = IndexClientFactory.DEFAULT_CLUSTER_HEALTH_TIMEOUT;
+	private int clusterHealthTimeout = DEFAULT_CLUSTER_HEALTH_TIMEOUT;
 	
 	private int maxTermsCount = IndexClientFactory.DEFAULT_MAX_TERMS_COUNT;
 	
-	private int resultWindow = IndexClientFactory.DEFAULT_RESULT_WINDOW;
+	@Min(IndexClientFactory.DEFAULT_RESULT_WINDOW)
+	private int resultWindow = DEFAULT_RESULT_WINDOW;
 
 	@JsonProperty
 	public String getCommitInterval() {
@@ -188,6 +194,36 @@ public class IndexConfiguration {
 	
 	public void setBulkActionSizeInMb(int bulkActionSizeInMb) {
 		this.bulkActionSizeInMb = bulkActionSizeInMb;
+	}
+
+	public void configure(Builder<String, Object> settings) {
+		if (getClusterHealthTimeout() <= getSocketTimeout()) {
+			throw new IllegalStateException(String.format("Cluster health timeout (%s ms) must be greater than the socket timeout (%s ms).", 
+					getClusterHealthTimeout(),
+					getSocketTimeout()));
+		}
+		
+		settings.put(IndexClientFactory.CLUSTER_NAME, getClusterName());
+		// configure cluster configuration
+		if (getClusterUrl() != null) {
+			settings.put(IndexClientFactory.CLUSTER_URL, getClusterUrl());
+			if (getClusterUsername() != null) {
+				settings.put(IndexClientFactory.CLUSTER_USERNAME, getClusterUsername());
+			}
+			if (getClusterPassword() != null) {
+				settings.put(IndexClientFactory.CLUSTER_PASSWORD, getClusterPassword());
+			}
+		}
+		
+		settings.put(IndexClientFactory.RESULT_WINDOW_KEY, ""+getResultWindow());
+		settings.put(IndexClientFactory.MAX_TERMS_COUNT_KEY, ""+getMaxTermsCount());
+		settings.put(IndexClientFactory.TRANSLOG_SYNC_INTERVAL_KEY, getCommitInterval());
+		settings.put(IndexClientFactory.COMMIT_CONCURRENCY_LEVEL, getCommitConcurrencyLevel());
+		settings.put(IndexClientFactory.CONNECT_TIMEOUT, getConnectTimeout());
+		settings.put(IndexClientFactory.SOCKET_TIMEOUT, getSocketTimeout());
+		settings.put(IndexClientFactory.CLUSTER_HEALTH_TIMEOUT, getClusterHealthTimeout());
+		settings.put(IndexClientFactory.BULK_ACTIONS_SIZE, getBulkActionSize());
+		settings.put(IndexClientFactory.BULK_ACTIONS_SIZE_IN_MB, getBulkActionSizeInMb());		
 	}
 	
 }

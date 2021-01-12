@@ -134,6 +134,30 @@ public class RevisionBranchMergeConflictTest extends BaseRevisionIndexTest {
 	}
 	
 	@Test
+	public void rebaseResolvableConflictMultiValuedPropertyNonNullFromValue() throws Exception {
+		final List<String> terms = List.of("term1", "term2");
+		
+		indexRevision(MAIN, NEW_DATA.toBuilder().terms(List.of()).build());
+		final String branchA = createBranch(MAIN, "a");
+		
+		RevisionData newDataWithUpdatedTerms = NEW_DATA.toBuilder().terms(terms).build();
+		indexChange(MAIN, NEW_DATA, newDataWithUpdatedTerms);
+		indexChange(branchA, NEW_DATA, newDataWithUpdatedTerms);
+		
+		branching().prepareMerge(MAIN, branchA).merge();
+		RevisionData mainRevision = getRevision(MAIN, RevisionData.class, NEW_DATA.getId());
+		assertDocEquals(newDataWithUpdatedTerms, mainRevision);
+		RevisionData branchARevision = getRevision(branchA, RevisionData.class, NEW_DATA.getId());
+		assertDocEquals(newDataWithUpdatedTerms, branchARevision);
+		
+		branching().prepareMerge(branchA, MAIN).squash(true).merge();
+		mainRevision = getRevision(MAIN, RevisionData.class, NEW_DATA.getId());
+		assertDocEquals(newDataWithUpdatedTerms, mainRevision);
+		branchARevision = getRevision(branchA, RevisionData.class, NEW_DATA.getId());
+		assertDocEquals(newDataWithUpdatedTerms, branchARevision);
+	}
+	
+	@Test
 	public void rebaseResolvableNestedRevisionDataChanges_NestedObjectChange() throws Exception {
 		final Data nestedData = new Data();
 		nestedData.setField1("field1_1");

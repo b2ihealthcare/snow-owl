@@ -74,7 +74,7 @@ public final class SearchResourceRequestIterator<
 		// Update searchAfter and visited counter
 		searchAfter = hits.getSearchAfter();
 		visited += hits.getItems().size();
-
+		
 		return hits;
 	}
 }

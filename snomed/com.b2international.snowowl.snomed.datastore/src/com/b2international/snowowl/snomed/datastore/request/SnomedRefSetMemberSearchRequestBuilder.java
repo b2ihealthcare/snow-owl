@@ -20,9 +20,11 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.RevisionIndexRequestBuilder;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
+import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberSearchRequest.OptionKey;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * <i>Builder</i> class to build requests responsible for searching SNOMED CT reference set members.
@@ -90,13 +92,17 @@ public final class SnomedRefSetMemberSearchRequestBuilder
 		return addOption(OptionKey.REFERENCED_COMPONENT_TYPE, referencedComponentTypes);
 	}
 	
+	public SnomedRefSetMemberSearchRequestBuilder filterByComponentId(ComponentURI uri) {
+		return filterByComponentIds(ImmutableSet.of(uri.toString(), uri.identifier()));
+	}
+	
 	/**
 	 * Matches reference set members where either the referenced component or map target matches the given value.
 	 */
 	public SnomedRefSetMemberSearchRequestBuilder filterByComponentId(String componentId) {
-		return addOption(OptionKey.COMPONENT, componentId);
+		return filterByComponentIds(ImmutableSet.of(componentId));
 	}
-	
+
 	public SnomedRefSetMemberSearchRequestBuilder filterByComponentIds(Iterable<String> componentIds) {
 		return addOption(OptionKey.COMPONENT, componentIds);
 	}

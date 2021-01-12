@@ -173,9 +173,14 @@ public interface TransactionContext extends BranchContext, AutoCloseable {
 	 */
 	boolean isDirty();
 
+	/**
+	 * @return the parent lock context for any commits that made outside of the current context 
+	 */
+	String parentLock();
+	
 	@Override
 	default Builder<? extends TransactionContext> inject() {
 		return new DelegatingContext.Builder<TransactionContext>(TransactionContext.class, this);
 	}
-	
+
 }

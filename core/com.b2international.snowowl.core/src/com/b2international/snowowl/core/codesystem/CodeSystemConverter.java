@@ -89,12 +89,15 @@ public final class CodeSystemConverter extends BaseResourceConverter<CodeSystemE
 			final CodeSystemURI extensionOf = result.getExtensionOf();
 			
 			if (extensionOf == null) {
+				// always set the field if user expands it
+				result.setAvailableUpgrades(List.of());
 				continue;
 			}
 			
 			final String shortName = extensionOf.getCodeSystem();
-			final NavigableSet<CodeSystemVersionEntry> candidates = versionsByShortName.get(shortName);
 			final String versionId = extensionOf.getPath();
+			
+			final NavigableSet<CodeSystemVersionEntry> candidates = versionsByShortName.get(shortName);
 			
 			final Optional<CodeSystemVersionEntry> currentExtensionVersion = candidates.stream()
 					.filter(v -> v.getVersionId().equals(versionId))

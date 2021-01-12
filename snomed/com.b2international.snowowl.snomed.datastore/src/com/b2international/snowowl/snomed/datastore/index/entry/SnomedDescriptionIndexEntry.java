@@ -72,7 +72,7 @@ import com.google.common.collect.Sets;
 		SnomedDocument.Fields.ACTIVE, 
 		SnomedDocument.Fields.EFFECTIVE_TIME, 
 		SnomedDocument.Fields.MODULE_ID, 
-		SnomedDocument.Fields.RELEASED,
+		SnomedDocument.Fields.RELEASED, // XXX required for SnomedComponentRevisionConflictProcessor CHANGED vs. DELETED detection
 		SnomedDescriptionIndexEntry.Fields.TYPE_ID,
 		SnomedDescriptionIndexEntry.Fields.TERM,
 		SnomedDescriptionIndexEntry.Fields.CASE_SIGNIFICANCE_ID
@@ -198,6 +198,10 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		
 		public static Expression matchTermOriginal(String term) {
 			return exactMatch(Fields.TERM_ORIGINAL, term);
+		}
+		
+		public static Expression matchTermOriginal(Iterable<String> terms) {
+			return matchAny(Fields.TERM_ORIGINAL, terms);
 		}
 		
 		public static Expression matchTermRegex(String regex) {

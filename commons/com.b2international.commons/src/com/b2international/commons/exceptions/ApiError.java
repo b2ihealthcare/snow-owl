@@ -112,7 +112,9 @@ public interface ApiError extends Serializable {
 
 		@JsonProperty("additionalInfo")
 		public Builder addInfos(Map<String, Object> additionalInformation) {
-			this.additionalInfo.putAll(additionalInformation);
+			if (additionalInformation != null) {
+				this.additionalInfo.putAll(additionalInformation);
+			}
 			return this;
 		}
 		

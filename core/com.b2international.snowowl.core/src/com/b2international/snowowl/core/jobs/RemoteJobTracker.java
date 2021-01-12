@@ -40,7 +40,6 @@ import com.b2international.index.Scroll;
 import com.b2international.index.Searcher;
 import com.b2international.index.aggregations.Aggregation;
 import com.b2international.index.aggregations.AggregationBuilder;
-import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
@@ -50,9 +49,7 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
 /**
@@ -84,7 +81,7 @@ public final class RemoteJobTracker implements IDisposableService {
 							.build());
 					if (hits.getTotal() > 0) {
 						LOG.trace("Purging job entries {}", hits.getHits());
-						writer.remove(RemoteJobEntry.class, ImmutableSet.copyOf(hits.getHits()));
+						writer.remove(RemoteJobEntry.class, Set.copyOf(hits.getHits()));
 						writer.commit();
 					}
 					return null;
@@ -110,11 +107,10 @@ public final class RemoteJobTracker implements IDisposableService {
 		
 		// query all existing remote job entries and set their status to FAILED if they are either in SCHEDULED/RUNNING/CANCEL_REQUESTED state
 		this.index.write(writer -> {
-			final Expression filter = RemoteJobEntry.Expressions.state(ImmutableSet.of(RemoteJobState.SCHEDULED, RemoteJobState.RUNNING, RemoteJobState.CANCEL_REQUESTED));
+			final Expression filter = RemoteJobEntry.Expressions.states(Set.of(RemoteJobState.SCHEDULED, RemoteJobState.RUNNING, RemoteJobState.CANCEL_REQUESTED));
 			final BulkUpdate<RemoteJobEntry> update = new BulkUpdate<>(
 				RemoteJobEntry.class, 
 				filter, 
-				RemoteJobEntry.Fields.ID, 
 				RemoteJobEntry.WITH_DONE,
 				ImmutableMap.of("state", RemoteJobState.FAILED.name(), "finishDate", System.currentTimeMillis())
 			);
@@ -130,7 +126,7 @@ public final class RemoteJobTracker implements IDisposableService {
 	}
 	
 	public RemoteJobs search(Expression query, int limit) {
-		return search(query, ImmutableList.of(), SortBy.DOC_ID, limit); 
+		return search(query, List.of(), SortBy.DEFAULT, limit); 
 	}
 	
 	private RemoteJobs search(Expression query, List<String> fields, SortBy sortBy, int limit) {
@@ -170,7 +166,7 @@ public final class RemoteJobTracker implements IDisposableService {
 	}
 	
 	public void requestDeletes(Collection<String> jobIds) {
-		final RemoteJobs jobEntries = search(Expressions.matchAny(DocumentMapping._ID, jobIds), jobIds.size());
+		final RemoteJobs jobEntries = search(RemoteJobEntry.Expressions.ids(jobIds), jobIds.size());
 		final Set<String> existingJobIds = FluentIterable.from(jobEntries).transform(RemoteJobEntry::getId).toSet();
 		Job[] existingJobs = Job.getJobManager().find(SingleRemoteJobFamily.create(existingJobIds));
 		// mark existing jobs as deleted and cancel them
@@ -190,7 +186,7 @@ public final class RemoteJobTracker implements IDisposableService {
 			writer.removeAll(ImmutableMap.of(RemoteJobEntry.class, remoteJobsToDelete));
 			if (!remoteJobsToCancel.isEmpty()) {
 				LOG.trace("Marking deletable jobs {}", remoteJobsToCancel);
-				writer.bulkUpdate(new BulkUpdate<>(RemoteJobEntry.class, Expressions.matchAny(DocumentMapping._ID, remoteJobsToCancel), RemoteJobEntry.Fields.ID, RemoteJobEntry.WITH_DELETED));
+				writer.bulkUpdate(new BulkUpdate<>(RemoteJobEntry.class, RemoteJobEntry.Expressions.ids(remoteJobsToCancel), RemoteJobEntry.WITH_DELETED));
 			}
 			writer.commit();
 			return null;
@@ -211,7 +207,7 @@ public final class RemoteJobTracker implements IDisposableService {
 	
 	private void update(String jobId, String script, Map<String, Object> params) {
 		index.write(writer -> {
-			writer.bulkUpdate(new BulkUpdate<>(RemoteJobEntry.class, DocumentMapping.matchId(jobId), RemoteJobEntry.Fields.ID, script, params));
+			writer.bulkUpdate(new BulkUpdate<>(RemoteJobEntry.class, RemoteJobEntry.Expressions.id(jobId), script, params));
 			writer.commit();
 			return null;
 		});

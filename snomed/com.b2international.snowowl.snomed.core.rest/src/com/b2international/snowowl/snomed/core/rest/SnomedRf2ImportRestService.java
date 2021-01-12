@@ -41,6 +41,7 @@ import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.jobs.JobRequests;
 import com.b2international.snowowl.core.jobs.RemoteJobEntry;
 import com.b2international.snowowl.core.jobs.RemoteJobState;
+import com.b2international.snowowl.core.request.io.ImportResponse;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
@@ -93,6 +94,10 @@ public class SnomedRf2ImportRestService extends AbstractSnomedRestService {
 			@RequestParam(name = "createVersions", defaultValue = "true")
 			final Boolean createVersions,
 			
+			@ApiParam(value = "Enable to run the import content integrity validations without pushing any changes", defaultValue = "false")
+			@RequestParam(name = "dryRun", defaultValue = "false")
+			final Boolean dryRun,
+			
 			@ApiParam(value = "Import file", required = true)
 			@RequestPart("file") 
 			final MultipartFile file) throws IOException {
@@ -106,6 +111,7 @@ public class SnomedRf2ImportRestService extends AbstractSnomedRestService {
 			.setRf2ArchiveId(rf2ArchiveId)
 			.setReleaseType(Rf2ReleaseType.getByNameIgnoreCase(type))
 			.setCreateVersions(createVersions)
+			.setDryRun(dryRun)
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
 			.runAsJobWithRestart(importJobId, String.format("Importing SNOMED CT RF2 file '%s'", file.getOriginalFilename()))
 			.execute(getBus())
@@ -154,10 +160,14 @@ public class SnomedRf2ImportRestService extends AbstractSnomedRestService {
 	
 	private SnomedRf2ImportConfiguration toRf2ImportConfiguration(RemoteJobEntry job) {
 		ApiError error = null;
-		if (job.getState() == RemoteJobState.FAILED) {
-			error = job.getResultAs(ApplicationContext.getServiceForClass(ObjectMapper.class), ApiError.class);
+		ImportResponse response = null;
+		ObjectMapper mapper = ApplicationContext.getServiceForClass(ObjectMapper.class);
+		if (RemoteJobState.FAILED == job.getState()) {
+			error = job.getResultAs(mapper, ApiError.class);
+		} else if (job.isSuccessful()) {
+			response = job.getResultAs(mapper, ImportResponse.class);
 		}
-		return new SnomedRf2ImportConfiguration(IDs.sha1(job.getId()), job.getState(), error);
+		return new SnomedRf2ImportConfiguration(IDs.sha1(job.getId()), job.getState(), error, response);
 	}
 	
 }

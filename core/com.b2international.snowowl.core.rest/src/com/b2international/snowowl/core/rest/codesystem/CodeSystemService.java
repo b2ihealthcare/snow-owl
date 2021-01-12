@@ -60,7 +60,7 @@ public final class CodeSystemService {
 		final List<Promise<CodeSystems>> getAllCodeSystems = newArrayList();
 		for (String repositoryId : getRepositoryIds()) {
 			getAllCodeSystems.add(CodeSystemRequests.prepareSearchCodeSystem()
-					.all()
+					.one()
 					.filterById(shortNameOrOid)
 					.build(repositoryId)
 					.execute(bus.get()));

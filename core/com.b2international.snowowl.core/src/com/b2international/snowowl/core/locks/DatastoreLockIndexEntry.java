@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import java.util.Collection;
 import java.util.Objects;
 
 import com.b2international.index.Doc;
-import com.b2international.index.mapping.DocumentMapping;
+import com.b2international.index.ID;
 import com.b2international.index.query.Expression;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -50,12 +50,13 @@ public final class DatastoreLockIndexEntry implements Serializable {
 	}
 	
 	public static class Expressions {
+
 		public static Expression id(final String id) {
-			return DocumentMapping.matchId(id);
+			return exactMatch(Fields.ID, id);
 		}
 		
 		public static Expression ids(final Collection<String> ids) {
-			return matchAny(DocumentMapping._ID, ids);
+			return matchAny(Fields.ID, ids);
 		}
 		
 		public static Expression userId(final String userId) {
@@ -144,6 +145,7 @@ public final class DatastoreLockIndexEntry implements Serializable {
 		}
 	}
 	
+	@ID
 	private final String id;
 	private final String userId;
 	private final String description;

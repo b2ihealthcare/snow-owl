@@ -28,20 +28,25 @@ import com.google.common.collect.Maps;
  */
 public interface ScriptEngine {
 	
-	enum Registry {
-		
-		INSTANCE;
-		
+	final class Registry {
 		
 		private final Map<String, ScriptEngine> engines;
 		
-		private Registry() {
-			engines = Maps.uniqueIndex(ClassPathScanner.INSTANCE.getComponentsByInterface(ScriptEngine.class), ScriptEngine::getExtension);
+		public Registry(ClassPathScanner scanner) {
+			engines = Maps.uniqueIndex(scanner.getComponentsByInterface(ScriptEngine.class), ScriptEngine::getExtension);
 		}
 		
 		public ScriptEngine getEngine(String extension) {
 			checkArgument(engines.containsKey(extension), "Missing script engine '%s'.", extension);
 			return engines.get(extension);
+		}
+		
+		public <T> T run(String extension, ClassLoader classLoader, String script, Map<String, Object> arguments) {
+			return run(extension, classLoader, new ScriptSource(IDs.sha1(script), script), arguments);
+		}
+		
+		public <T> T run(String extension, ClassLoader classLoader, ScriptSource script, Map<String, Object> arguments) {
+			return getEngine(extension).run(classLoader, script, arguments);
 		}
 		
 	}
@@ -50,12 +55,4 @@ public interface ScriptEngine {
 	
 	String getExtension();
 
-	static <T> T run(String extension, ClassLoader classLoader, String script, Map<String, Object> arguments) {
-		return run(extension, classLoader, new ScriptSource(IDs.sha1(script), script), arguments);
-	}
-	
-	static <T> T run(String extension, ClassLoader classLoader, ScriptSource script, Map<String, Object> arguments) {
-		return Registry.INSTANCE.getEngine(extension).run(classLoader, script, arguments);
-	}
-	
 }

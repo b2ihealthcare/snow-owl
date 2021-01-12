@@ -35,6 +35,8 @@ import com.google.common.collect.ImmutableList;
  */
 public final class TransactionalRequest implements Request<BranchContext, CommitResult> {
 
+	private static final long serialVersionUID = 1L;
+
 	@JsonProperty
 	@NotEmpty
 	private final String commitComment;
@@ -48,12 +50,19 @@ public final class TransactionalRequest implements Request<BranchContext, Commit
 	
 	private final String parentLockContext;
 
+	private final boolean notify;
+
 	public TransactionalRequest(String author, String commitComment, Request<TransactionContext, ?> next, long preRequestPreparationTime, String parentLockContext) {
+		this(author, commitComment, next, preRequestPreparationTime, parentLockContext, true);
+	}
+	
+	public TransactionalRequest(String author, String commitComment, Request<TransactionContext, ?> next, long preRequestPreparationTime, String parentLockContext, boolean notify) {
 		this.next = checkNotNull(next, "next");
 		this.author = author;
 		this.commitComment = commitComment;
 		this.preRequestPreparationTime = preRequestPreparationTime;
 		this.parentLockContext = parentLockContext;
+		this.notify = notify;
 	}
 	
 	@Override
@@ -61,6 +70,7 @@ public final class TransactionalRequest implements Request<BranchContext, Commit
 //		final Metrics metrics = context.service(Metrics.class);
 //		metrics.setExternalValue("preRequest", preRequestPreparationTime);
 		try (final TransactionContext transaction = context.openTransaction(context, author, commitComment, parentLockContext)) {
+			transaction.setNotificationEnabled(notify);
 			final Object body = executeNext(transaction);
 			return commit(transaction, body);
 		} catch (ApiException e) {

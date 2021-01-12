@@ -18,12 +18,16 @@ package com.b2international.snowowl.core.rest.job;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.b2international.commons.collections.Collections3;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.jobs.JobRequests;
 import com.b2international.snowowl.core.jobs.RemoteJobEntry;
@@ -64,7 +68,11 @@ public class JobRestService extends AbstractRestService {
 			
 			@ApiParam(value = "The usernames to match")
 			@RequestParam(value = "user", required = false) 
-			final String user,
+			final String[] users,
+
+			@ApiParam(value = "The job state values to match (accepted values: 'scheduled', 'running', 'finished', 'failed', 'cancel_requested', 'canceled')")
+			@RequestParam(value = "state", required = false)
+			final String[] state,
 			
 			@ApiParam(value="The search key to use for retrieving the next page of results")
 			@RequestParam(value="searchAfter", required=false) 
@@ -79,7 +87,8 @@ public class JobRestService extends AbstractRestService {
 			final List<String> sort) {
 		return JobRequests.prepareSearch()
 				.filterByIds(ids)
-				.filterByUser(user)
+				.filterByUsers(users == null ? null : Collections3.toImmutableSet(users))
+				.filterByState(state == null ? null : Collections3.toImmutableSet(state))
 				.setSearchAfter(searchAfter)
 				.setLimit(limit)
 				.sortBy(extractSortFields(sort))
@@ -104,5 +113,22 @@ public class JobRestService extends AbstractRestService {
 				.buildAsync()
 				.execute(getBus());
 	}
+	
+	@ApiOperation(
+		value="Deletes a single asynchronous job",
+		notes="Cancel the operation of a scheduled/running job and then delete it."
+	)
+	@ApiResponses({
+		@ApiResponse(code = 204, message = "No Content"),
+	})
+	@DeleteMapping(value = "/{id}")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void delete(		
+			@ApiParam(value = "Job identifier", required = true)
+			@PathVariable(value = "id", required = true) 
+			final String id) {
+		JobRequests.prepareDelete(id).buildAsync().execute(getBus());
+	}
+	
 	
 }

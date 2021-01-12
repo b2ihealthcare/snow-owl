@@ -36,14 +36,12 @@ import io.github.classgraph.ScanResult;
 /**
  * @since 7.0
  */
-public enum ClassPathScanner {
+public final class ClassPathScanner {
 	
-	INSTANCE;
-
 	private static final long SYSTEM_BUNDLE_ID = 0L;
 	private final ScanResult registry;
 
-	private ClassPathScanner() {
+	public ClassPathScanner(String...packagesToScan) {
 		List<ClassLoader> classLoaders = newArrayList();
 		for (Bundle bundle : CoreActivator.getContext().getBundles()) {
 			if (SYSTEM_BUNDLE_ID  == bundle.getBundleId()) {
@@ -63,10 +61,10 @@ public enum ClassPathScanner {
 				.enableClassInfo()
 				.overrideClassLoaders(classLoaders.toArray(new ClassLoader[classLoaders.size()]))
 				.ignoreParentClassLoaders()
+				.acceptPackages(packagesToScan)
 				.disableRuntimeInvisibleAnnotations()
 				.disableNestedJarScanning()
 				.scan();
-		
 	}
 	
 	/**

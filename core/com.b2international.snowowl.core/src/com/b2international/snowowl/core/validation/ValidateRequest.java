@@ -19,13 +19,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Lists.newArrayList;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.stream.Collectors;
 
@@ -37,12 +31,16 @@ import com.b2international.index.Writer;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.authorization.BranchAccessControl;
+import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
 import com.b2international.snowowl.core.internal.validation.ValidationThreadPool;
+import com.b2international.snowowl.core.repository.RepositoryCodeSystemProvider;
+import com.b2international.snowowl.core.uri.CodeSystemURI;
+import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
 import com.b2international.snowowl.core.validation.issue.ValidationIssue;
 import com.b2international.snowowl.core.validation.issue.ValidationIssueDetailExtension;
@@ -52,12 +50,7 @@ import com.b2international.snowowl.core.validation.rule.ValidationRuleSearchRequ
 import com.b2international.snowowl.core.validation.rule.ValidationRules;
 import com.b2international.snowowl.core.validation.whitelist.ValidationWhiteListSearchRequestBuilder;
 import com.google.common.base.Stopwatch;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Queues;
-import com.google.common.collect.Sets;
+import com.google.common.collect.*;
 
 /**
  * @since 6.0
@@ -82,7 +75,10 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult>,
 	private ValidationResult doValidate(BranchContext context, Writer index) throws IOException {
 		final String branchPath = context.path();
 		ValidationRuleSearchRequestBuilder req = ValidationRequests.rules().prepareSearch();
-
+		
+		CodeSystem codeSystem = context.service(RepositoryCodeSystemProvider.class).get(branchPath);
+		CodeSystemURI codeSystemURI = codeSystem.getCodeSystemURI(branchPath);
+		
 		if (!CompareUtils.isEmpty(ruleIds)) {
 			req.filterByIds(ruleIds);
 		}
@@ -111,7 +107,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult>,
 						// TODO report successfully executed validation rule
 					} catch (Exception e) {
 						// TODO report failed validation rule
-						LOG.info("Execution of rule '{}' failed after '{}'.", rule.getId(), w, e);
+						LOG.error("Execution of rule '{}' failed after '{}'.", rule.getId(), w, e);
 					}
 				}));
 			}
@@ -137,7 +133,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult>,
 						final String ruleId = ruleIssues.ruleId;
 						final List<ValidationIssue> existingRuleIssues = ValidationRequests.issues().prepareSearch()
 								.all()
-								.filterByBranchPath(branchPath)
+								.filterByResourceUri(codeSystemURI)
 								.filterByRule(ruleId)
 								.build()
 								.execute(context)
@@ -159,34 +155,27 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult>,
 						final Collection<ComponentIdentifier> ruleWhiteListEntries = whiteListedEntries.removeAll(ruleId);
 						final String toolingId = rules.stream().filter(rule -> ruleId.equals(rule.getId())).findFirst().get().getToolingId();
 						for (ValidationIssueDetails issueDetails : ruleIssues.issueDetails) {
+							final ValidationIssue validationIssue;
 							ComponentIdentifier componentIdentifier = issueDetails.affectedComponentId;
 							
 							if (!existingIsssuesByComponentIdentifier.containsKey(componentIdentifier)) {
-								final ValidationIssue validationIssue = new ValidationIssue(
+								validationIssue = new ValidationIssue(
 										UUID.randomUUID().toString(),
 										ruleId,
-										branchPath,
-										componentIdentifier,
+										ComponentURI.of(codeSystemURI, componentIdentifier),
 										ruleWhiteListEntries.contains(componentIdentifier));
-								
-								validationIssue.setDetails(ValidationIssueDetails.HIGHLIGHT_DETAILS, issueDetails.stylingDetails);
-								issuesToExtendWithDetailsByToolingId.put(toolingId, validationIssue);
-								persistedIssues++; 
 							} else {
 								final ValidationIssue issueToCopy = existingIsssuesByComponentIdentifier.get(componentIdentifier);
-								
-								final ValidationIssue validationIssue = new ValidationIssue(
+								validationIssue = new ValidationIssue(
 									issueToCopy.getId(),
 									issueToCopy.getRuleId(),
-									issueToCopy.getBranchPath(),
-									issueToCopy.getAffectedComponent(),
-									ruleWhiteListEntries.contains(issueToCopy.getAffectedComponent()));
-								
-								validationIssue.setDetails(ValidationIssueDetails.HIGHLIGHT_DETAILS, issueDetails.stylingDetails);
-								issuesToExtendWithDetailsByToolingId.put(toolingId, validationIssue);
-								persistedIssues++; 
+									ComponentURI.of(codeSystemURI, issueToCopy.getAffectedComponent()),
+									ruleWhiteListEntries.contains(issueToCopy.getAffectedComponent()));	
 								existingIsssuesByComponentIdentifier.remove(componentIdentifier);
 							}
+							validationIssue.setDetails(ValidationIssueDetails.HIGHLIGHT_DETAILS, issueDetails.stylingDetails);
+							issuesToExtendWithDetailsByToolingId.put(toolingId, validationIssue);
+							persistedIssues++; 
 						}
 						
 						existingRuleIssues
@@ -201,7 +190,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult>,
 					}
 					
 					for (String toolingId : issuesToExtendWithDetailsByToolingId.keySet()) {
-						final ValidationIssueDetailExtension extensions = ValidationIssueDetailExtensionProvider.INSTANCE.getExtensions(toolingId);
+						final ValidationIssueDetailExtension extensions = context.service(ValidationIssueDetailExtensionProvider.class).getExtensions(toolingId);
 						final Collection<ValidationIssue> issues = issuesToExtendWithDetailsByToolingId.removeAll(toolingId);
 						extensions.extendIssues(context, issues, ruleParameters);
 						for (ValidationIssue issue : issues) {
