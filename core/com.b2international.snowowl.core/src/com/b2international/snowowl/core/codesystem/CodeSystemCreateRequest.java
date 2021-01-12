@@ -51,6 +51,7 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 	private String shortName;
 	private String terminologyId;
 	private CodeSystemURI extensionOf;
+	private CodeSystemURI upgradeOf;
 	private List<ExtendedLocale> locales;
 	private Map<String, Object> additionalProperties;
 
@@ -105,6 +106,10 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 		this.extensionOf = extensionOf;
 	}
 	
+	void setUpgradeOf(CodeSystemURI upgradeOf) {
+		this.upgradeOf = upgradeOf;
+	}
+	
 	void setLocales(final List<ExtendedLocale> locales) {
 		this.locales = locales;
 	}
@@ -157,10 +162,12 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 	}
 
 	private Optional<CodeSystemVersionEntry> checkCodeSystem(final TransactionContext context) {
-		if (codeSystemExists(oid, context)) {
+		// OID must be unique if defined
+		if (!StringUtils.isEmpty(oid) && codeSystemExists(oid, context)) {
 			throw new AlreadyExistsException("Code system", oid);
 		}
-		
+
+		// Short name is always checked against existing code systems
 		if (codeSystemExists(shortName, context)) {
 			throw new AlreadyExistsException("Code system", shortName);
 		}
@@ -190,7 +197,8 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 			// The working branch prefix is determined by the extensionOf code system version's path
 			final String newCodeSystemPath = extensionOfVersion.get().getPath() + IBranchPath.SEPARATOR + shortName;
 			
-			if (!createBranch && !branchPath.equals(newCodeSystemPath)) {
+			// CodeSystem Upgrade branches are managed by CodeSystemUpgradeRequest and they can have different paths than the usual extension branch paths, skip check
+			if (upgradeOf == null && !createBranch && !branchPath.equals(newCodeSystemPath)) {
 				throw new BadRequestException("Branch path is inconsistent with extensionOf URI ('%s' given, should be '%s').",
 						branchPath, newCodeSystemPath);
 			}
@@ -259,6 +267,7 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 				.terminologyComponentId(terminologyId)
 				.repositoryId(repositoryId)
 				.extensionOf(extensionOf)
+				.upgradeOf(upgradeOf)
 				.locales(locales)
 				.additionalProperties(additionalProperties)
 				.build();

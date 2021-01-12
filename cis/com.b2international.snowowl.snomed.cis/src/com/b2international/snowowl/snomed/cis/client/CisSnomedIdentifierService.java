@@ -320,7 +320,7 @@ public class CisSnomedIdentifierService extends AbstractSnomedIdentifierService 
 				SctId::isDeprecated))));
 		
 		if (!problemSctIds.isEmpty()) {
-			throw new SctIdStatusException("Cannot deprecate %s component IDs because they are not assigned, published, or already deprecated.", problemSctIds);
+			throw new SctIdStatusException("Cannot deprecate '%s' component IDs because they are not assigned, published, or already deprecated.", problemSctIds);
 		}
 
 		final Map<String, SctId> assignedOrPublishedSctIds = ImmutableMap.copyOf(Maps.filterValues(sctIds, Predicates.or(

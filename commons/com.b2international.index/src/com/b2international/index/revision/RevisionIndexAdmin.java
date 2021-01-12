@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,10 +75,23 @@ public final class RevisionIndexAdmin implements IndexAdmin {
 	public Map<String, Object> settings() {
 		return rawIndexAdmin.settings();
 	}
+	
+	@Override
+	public void updateSettings(Map<String, Object> newSettings) {
+		rawIndexAdmin.updateSettings(newSettings);
+	}
 
 	@Override
 	public Mappings mappings() {
 		return rawIndexAdmin.mappings();
+	}
+	
+	@Override
+	public void updateMappings(Mappings mappings) {
+		// ensure we have the necessary Mappings all the times
+		mappings.putMapping(RevisionBranch.class);
+		mappings.putMapping(Commit.class);
+		rawIndexAdmin.updateMappings(mappings);
 	}
 
 	@Override

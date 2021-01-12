@@ -32,14 +32,15 @@ import java.util.Set;
 import com.b2international.commons.CompareUtils;
 import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
+import com.b2international.index.ID;
 import com.b2international.index.Keyword;
 import com.b2international.index.Script;
 import com.b2international.index.Text;
-import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
@@ -93,16 +94,17 @@ public final class RemoteJobEntry implements Serializable {
 	}
 	
 	public static class Expressions {
+
 		public static Expression id(String id) {
-			return DocumentMapping.matchId(id);
+			return exactMatch(Fields.ID, id);
 		}
 
 		public static Expression ids(Collection<String> ids) {
-			return matchAny(DocumentMapping._ID, ids);
+			return matchAny(Fields.ID, ids);
 		}
 		
 		public static Expression idPrefix(String id) {
-			return prefixMatch(DocumentMapping._ID, id);
+			return prefixMatch(Fields.ID, id);
 		}
 		
 		public static Expression key(String key) {
@@ -117,19 +119,19 @@ public final class RemoteJobEntry implements Serializable {
 			return match(Fields.DELETED, deleted);
 		}
 		
-		public static Expression user(String user) {
-			return exactMatch(Fields.USER, user);
+		public static Expression users(Iterable<String> users) {
+			return matchAny(Fields.USER, users);
 		}
 
 		public static Expression done() {
-			return state(DONE_STATES);
+			return states(DONE_STATES);
 		}
 		
 		public static Expression state(RemoteJobState state) {
-			return state(Collections.singleton(state));
+			return states(Collections.singleton(state));
 		}
 		
-		public static Expression state(Iterable<RemoteJobState> states) {
+		public static Expression states(Iterable<RemoteJobState> states) {
 			return matchAny(Fields.STATE, FluentIterable.from(states).transform(Enum::name).toSet());
 		}
 
@@ -249,7 +251,7 @@ public final class RemoteJobEntry implements Serializable {
 		
 	}
 	
-
+	@ID
 	private final String id;
 	private final String key;
 	
@@ -362,7 +364,7 @@ public final class RemoteJobEntry implements Serializable {
 	 */
 	public <T> T getParametersAs(ObjectMapper mapper, Class<T> type) {
 		try {
-			return mapper.readValue(getParameters(), type);
+			return mapper.readerFor(type).without(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES).readValue(getParameters());
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException(e);
 		}
@@ -396,7 +398,7 @@ public final class RemoteJobEntry implements Serializable {
 			if (CompareUtils.isEmpty(getResult())) {
 				return null;
 			}
-			return mapper.readValue(getResult(), type);
+			return mapper.readerFor(type).without(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES).readValue(getResult());
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException(e);
 		}

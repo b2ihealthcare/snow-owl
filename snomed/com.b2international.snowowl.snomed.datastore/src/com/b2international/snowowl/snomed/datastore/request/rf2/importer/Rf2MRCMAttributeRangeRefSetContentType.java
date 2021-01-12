@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,11 +23,10 @@ import static com.b2international.snowowl.snomed.common.SnomedRf2Headers.MRCM_AT
 
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
+import com.b2international.snowowl.core.request.io.ImportDefectAcceptor.ImportDefectBuilder;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
-import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationIssueReporter;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -73,22 +72,21 @@ final class Rf2MRCMAttributeRangeRefSetContentType implements Rf2RefSetContentTy
 	}
 
 	@Override
-	public void validateMembersByReferenceSetContentType(Rf2ValidationIssueReporter reporter, String[] values) {
+	public void validateMembersByReferenceSetContentType(ImportDefectBuilder defectBuilder, String[] values) {
 		final String memberId = values[0];
 		final String rangeConstraint = values[6];
 		final String attributeRule = values[7];
 		final String ruleStrenghtId = values[8];
 		final String contentTypeId = values[9];
 		
-		if (Strings.isNullOrEmpty(rangeConstraint)) {
-			reporter.error("Range constraint field was empty for '%s'", memberId);
-		}
+		defectBuilder
+			.whenBlank(rangeConstraint)
+			.error("Range constraint field was empty for '%s'", memberId);
 		
-		if (Strings.isNullOrEmpty(attributeRule)) {
-			reporter.warning("Attribute Rule field was empty for '%s'", memberId);
-		}
+		defectBuilder
+			.whenBlank(attributeRule)
+			.warn("Attribute Rule field was empty for '%s'", memberId);
 		
-		validateConceptIds(reporter, ruleStrenghtId, contentTypeId);
+		validateConceptIds(defectBuilder, ruleStrenghtId, contentTypeId);
 	}
-
 }

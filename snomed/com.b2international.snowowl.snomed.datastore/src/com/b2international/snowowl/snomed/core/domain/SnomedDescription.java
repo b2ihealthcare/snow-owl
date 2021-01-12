@@ -19,12 +19,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.IndexResourceRequestBuilder;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.core.terminology.MapTargetTypes;
 import com.b2international.snowowl.core.terminology.TerminologyComponent;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
@@ -225,6 +227,24 @@ public final class SnomedDescription extends SnomedCoreComponent {
 	 */
 	public List<AcceptabilityMembership> getAcceptabilities() {
 		return acceptabilities;
+	}
+	
+	@JsonIgnore
+	public boolean isPreferredInLocales(final List<ExtendedLocale> locales) {
+		if (acceptabilities != null) {
+			for (ExtendedLocale locale: locales) {
+				for (AcceptabilityMembership membership: acceptabilities) {
+					if (membership.getLanguageRefSetId().equals(locale.getLanguageRefSetId()) &&
+							Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED.equals(membership.getAcceptabilityId())) {
+						return true;
+					}
+				}
+			}
+			
+			return false;
+		} else {
+			return locales.stream().anyMatch(locale -> Acceptability.PREFERRED == acceptabilityMap.get(locale.getLanguageRefSetId()));
+		}
 	}
 	
 	@JsonIgnore

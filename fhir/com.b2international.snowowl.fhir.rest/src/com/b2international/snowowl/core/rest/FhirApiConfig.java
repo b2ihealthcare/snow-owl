@@ -19,6 +19,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.fhir.core.provider.ICodeSystemApiProvider;
+import com.b2international.snowowl.fhir.core.provider.IConceptMapApiProvider;
+import com.b2international.snowowl.fhir.core.provider.IValueSetApiProvider;
+
 import springfox.documentation.spring.web.plugins.Docket;
 
 /**
@@ -50,6 +55,21 @@ public class FhirApiConfig extends BaseApiConfig {
 			"Detailed documentation is available at the [official documentation site](https://docs.b2i.sg/snow-owl/api/fhir)."
 		);
 
+	}
+	
+	@Bean
+	public ICodeSystemApiProvider.Registry codeSystemProviderRegistry() {
+		return ApplicationContext.getServiceForClass(ICodeSystemApiProvider.Registry.class);
+	}
+	
+	@Bean
+	public IConceptMapApiProvider.Registry conceptMapProviderRegistry() {
+		return ApplicationContext.getServiceForClass(IConceptMapApiProvider.Registry.class);
+	}
+	
+	@Bean
+	public IValueSetApiProvider.Registry valueSetProviderRegistry() {
+		return ApplicationContext.getServiceForClass(IValueSetApiProvider.Registry.class);
 	}
 	
 //	/*

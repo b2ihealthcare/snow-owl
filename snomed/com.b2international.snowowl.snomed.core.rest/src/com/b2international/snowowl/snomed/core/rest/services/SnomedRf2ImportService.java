@@ -116,8 +116,12 @@ public class SnomedRf2ImportService implements ISnomedRf2ImportService {
 			.setReleaseType(configuration.getRf2ReleaseType())
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID, configuration.getBranchPath())
 			.execute(bus.get())
-			.then(result -> {
-				((SnomedImportConfiguration) configuration).setStatus(result.getStatus());
+			.then(response -> {
+				final ImportStatus importStatus = response.isSuccess() 
+						? ImportStatus.COMPLETED
+						: ImportStatus.FAILED;
+				
+				((SnomedImportConfiguration) configuration).setStatus(importStatus);
 				return null;
 			})
 			.fail(e -> {

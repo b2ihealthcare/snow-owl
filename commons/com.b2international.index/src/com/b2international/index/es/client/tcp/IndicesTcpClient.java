@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
 import org.elasticsearch.action.admin.indices.settings.get.GetSettingsRequest;
 import org.elasticsearch.action.admin.indices.settings.get.GetSettingsResponse;
+import org.elasticsearch.action.admin.indices.settings.put.UpdateSettingsRequest;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.client.IndicesAdminClient;
 
@@ -76,6 +77,11 @@ public final class IndicesTcpClient implements IndicesClient {
 	@Override
 	public GetSettingsResponse settings(GetSettingsRequest req) throws IOException {
 		return EsTcpClient.execute(client.getSettings(req));
+	}
+	
+	@Override
+	public AcknowledgedResponse updateSettings(UpdateSettingsRequest req) throws IOException {
+		return EsTcpClient.execute(client.updateSettings(req));
 	}
 
 }

@@ -25,12 +25,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.plugin.Component;
 import com.b2international.snowowl.core.scripts.ScriptEngine;
-import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.Plugins;
-import com.b2international.snowowl.eventbus.IEventBus;
 
 import picocli.CommandLine;
 import picocli.CommandLine.HelpCommand;
@@ -73,16 +70,10 @@ public class ScriptsCommand extends Command {
 				final String script = lines.collect(Collectors.joining(System.getProperty("line.separator")));
 				final ClassLoader classLoader = ApplicationContext.getServiceForClass(Plugins.class).getCompositeClassLoader();
 				
-				// Include the CLI-authorized IEventBus when running scripts
-				final ServiceProvider context = ApplicationContext.getServiceForClass(Environment.class)
-						.inject()
-						.bind(IEventBus.class, getBus())
-						.build();
-				
 				final Map<String, Object> binding = newHashMap();
-				binding.put("ctx", context);
-				ScriptEngine.run("groovy", classLoader, script, binding);
-				
+				binding.put("ctx", getContext());
+				getContext().service(ScriptEngine.Registry.class).run("groovy", classLoader, script, binding);
+
 			} catch (Exception e) {
 				e.printStackTrace();
 				out.println(e.getMessage());

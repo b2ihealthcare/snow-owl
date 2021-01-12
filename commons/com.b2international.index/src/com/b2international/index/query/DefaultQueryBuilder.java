@@ -40,7 +40,7 @@ class DefaultQueryBuilder<T> implements QueryBuilder<T>, AfterWhereBuilder<T> {
 	private String searchAfter;
 	private int limit = DEFAULT_LIMIT;
 	private Expression where;
-	private SortBy sortBy = SortBy.DOC_ID;
+	private SortBy sortBy = SortBy.DEFAULT;
 	private boolean withScores = false;
 
 	private List<String> fields = Collections.emptyList();

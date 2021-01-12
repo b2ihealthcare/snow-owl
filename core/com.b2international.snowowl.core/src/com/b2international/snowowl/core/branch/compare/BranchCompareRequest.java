@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 package com.b2international.snowowl.core.branch.compare;
+
+import java.util.Set;
 
 import javax.validation.constraints.Min;
 
@@ -35,11 +37,14 @@ import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.repository.TerminologyComponents;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.Sets;
 
 /**
  * @since 5.9
  */
 final class BranchCompareRequest implements Request<RepositoryContext, BranchCompareResult>, RepositoryAccessControl {
+
+	private static final long serialVersionUID = 1L;
 
 	@JsonProperty
 	private String base;
@@ -88,10 +93,18 @@ final class BranchCompareRequest implements Request<RepositoryContext, BranchCom
 				.totalChanged(compareResult.getTotalChanged())
 				.totalDeleted(compareResult.getTotalRemoved());
 		
+		final Set<ComponentIdentifier> changedContainers = Sets.newHashSet(); 
+		
 		for (RevisionCompareDetail detail : compareResult.getDetails()) {
 			final ObjectId affectedId;
 			if (detail.isComponentChange()) {
 				affectedId = detail.getComponent();
+				if (!detail.getObject().isRoot()) {
+					final short containerTerminologyComponentId = context.service(TerminologyComponents.class).getTerminologyComponentId(DocumentMapping.getClass(detail.getObject().type()));
+					if (CodeSystemEntry.TERMINOLOGY_COMPONENT_ID != containerTerminologyComponentId && CodeSystemVersionEntry.TERMINOLOGY_COMPONENT_ID != containerTerminologyComponentId) {
+						changedContainers.add(ComponentIdentifier.of(containerTerminologyComponentId, detail.getObject().id()));
+					}
+				}
 			} else {
 				affectedId = detail.getObject();
 			}
@@ -115,7 +128,7 @@ final class BranchCompareRequest implements Request<RepositoryContext, BranchCom
 			}
 		}
 		
-		return result.build();
+		return result.build(changedContainers);
 	}
 	
 	@Override

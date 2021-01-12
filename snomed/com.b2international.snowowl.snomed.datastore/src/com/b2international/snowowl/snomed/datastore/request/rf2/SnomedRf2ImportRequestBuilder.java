@@ -21,18 +21,20 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.RevisionIndexRequestBuilder;
+import com.b2international.snowowl.core.request.io.ImportResponse;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 
 /**
  * @since 6.0.0
  */
 public final class SnomedRf2ImportRequestBuilder 
-		extends BaseRequestBuilder<SnomedRf2ImportRequestBuilder, BranchContext, Rf2ImportResponse> 
-		implements RevisionIndexRequestBuilder<Rf2ImportResponse> {
+		extends BaseRequestBuilder<SnomedRf2ImportRequestBuilder, BranchContext, ImportResponse> 
+		implements RevisionIndexRequestBuilder<ImportResponse> {
 
 	private UUID rf2ArchiveId;
 	private Rf2ReleaseType releaseType = Rf2ReleaseType.DELTA;
 	private boolean createVersions = true;
+	private boolean dryRun = false;
 	
 	SnomedRf2ImportRequestBuilder() {
 	}
@@ -52,11 +54,17 @@ public final class SnomedRf2ImportRequestBuilder
 		return getSelf();
 	}
 	
+	public SnomedRf2ImportRequestBuilder setDryRun(boolean dryRun) {
+		this.dryRun = dryRun;
+		return getSelf();
+	}
+	
 	@Override
-	protected Request<BranchContext, Rf2ImportResponse> doBuild() {
+	protected Request<BranchContext, ImportResponse> doBuild() {
 		final SnomedRf2ImportRequest req = new SnomedRf2ImportRequest(rf2ArchiveId);
 		req.setReleaseType(releaseType);
 		req.setCreateVersions(createVersions);
+		req.setDryRun(dryRun);
 		return req;
 	}
 

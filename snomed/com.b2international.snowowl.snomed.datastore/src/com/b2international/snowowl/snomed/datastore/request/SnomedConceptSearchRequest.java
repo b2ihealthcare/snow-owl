@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -215,22 +215,24 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 		
 		final Expression queryExpression;
 		
-		if (containsKey(OptionKey.TERM)) {
+		if (containsKey(OptionKey.TERM) || containsKey(OptionKey.DESCRIPTION_SEMANTIC_TAG)) {
 			final ExpressionBuilder bq = Expressions.builder();
 			// nest current query
 			bq.filter(queryBuilder.build());
 			queryBuilder = bq;
 			
-			final TermFilter termFilter = get(OptionKey.TERM, TermFilter.class);
+			final TermFilter termFilter = containsKey(OptionKey.TERM) ? get(OptionKey.TERM, TermFilter.class) : null;
 			final Map<String, Float> conceptScoreMap = executeDescriptionSearch(context, termFilter);
 			
-			try {
-				final ComponentCategory category = SnomedIdentifiers.getComponentCategory(termFilter.getTerm());
-				if (category == ComponentCategory.CONCEPT) {
-					conceptScoreMap.put(termFilter.getTerm(), Float.MAX_VALUE);
+			if (termFilter != null) {
+				try {
+					final ComponentCategory category = SnomedIdentifiers.getComponentCategory(termFilter.getTerm());
+					if (category == ComponentCategory.CONCEPT) {
+						conceptScoreMap.put(termFilter.getTerm(), Float.MAX_VALUE);
+					}
+				} catch (IllegalArgumentException e) {
+					// ignored
 				}
-			} catch (IllegalArgumentException e) {
-				// ignored
 			}
 			
 			if (conceptScoreMap.isEmpty()) {
@@ -304,7 +306,6 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 		final SnomedDescriptionSearchRequestBuilder requestBuilder = SnomedRequests.prepareSearchDescription()
 			.all()
 			.filterByActive(true)
-			.filterByTerm(termFilter)
 			.setFields(SnomedDescriptionIndexEntry.Fields.ID, SnomedDescriptionIndexEntry.Fields.CONCEPT_ID)
 			.sortBy(SCORE);
 		
@@ -322,6 +323,10 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 		if (containsKey(OptionKey.DESCRIPTION_SEMANTIC_TAG)) {
 			final Collection<String> semanticTags = getCollection(OptionKey.DESCRIPTION_SEMANTIC_TAG, String.class);
 			requestBuilder.filterBySemanticTags(semanticTags);
+		}
+		
+		if (termFilter != null) {
+			requestBuilder.filterByTerm(termFilter);
 		}
 		
 		final Collection<SnomedDescription> items = requestBuilder

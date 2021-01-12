@@ -19,6 +19,7 @@ import java.util.Date;
 import java.util.Set;
 
 import com.b2international.index.Doc;
+import com.b2international.index.ID;
 import com.b2international.snowowl.core.branch.Branch;
 import com.fasterxml.jackson.databind.util.ISO8601Utils;
 import com.google.common.collect.ImmutableSet;
@@ -38,6 +39,7 @@ public final class Review {
 		public static final Set<String> ALL = ImmutableSet.of(ID, LAST_UPDATED, STATUS);
 	}
 	
+	@ID
 	private final String id;
 	private final String lastUpdated;
 	private final ReviewStatus status;

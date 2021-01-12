@@ -40,6 +40,7 @@ import com.b2international.snowowl.snomed.core.rest.branches.SnomedReviewApiTest
 import com.b2international.snowowl.snomed.core.rest.classification.SnomedClassificationApiTest;
 import com.b2international.snowowl.snomed.core.rest.compare.ConceptMapCompareSnomedMapTypeReferenceSetTest;
 import com.b2international.snowowl.snomed.core.rest.components.*;
+import com.b2international.snowowl.snomed.core.rest.ext.SnomedComponentEffectiveTimeRestoreTest;
 import com.b2international.snowowl.snomed.core.rest.io.SnomedExportApiTest;
 import com.b2international.snowowl.snomed.core.rest.io.SnomedImportApiTest;
 import com.b2international.snowowl.snomed.core.rest.io.SnomedImportRowValidatorTest;
@@ -80,6 +81,11 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	SnomedRefSetMemberParameterizedTest.class,
 	SnomedRefSetMemberApiTest.class,
 	SnomedRefSetBulkApiTest.class,
+	// Generic API
+	ConceptSearchRequestSnomedTest.class,
+	ValueSetMemberSearchSnomedReferenceSetTest.class,
+	ConceptMapCompareSnomedMapTypeReferenceSetTest.class,
+	ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest.class,
 	// Merge, Review test cases
 	SnomedMergeApiTest.class,
 	SnomedMergeConflictTest.class,
@@ -99,14 +105,11 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 //	SnomedExtensionVersioningTest.class,
 	// MRCM export/importF
 	MrcmImportExportTest.class,
-	// Performance test cases
+	// Performance test cases, should be the last tests to perform
 	SnomedConceptCreatePerformanceTest.class,
 	SnomedMergePerformanceTest.class,
-	// Generic API
-	ConceptSearchRequestSnomedTest.class,
-	ValueSetMemberSearchSnomedReferenceSetTest.class,
-	ConceptMapCompareSnomedMapTypeReferenceSetTest.class,
-	ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest.class
+	ConceptMapCompareDsvExportTest.class,
+	SnomedComponentEffectiveTimeRestoreTest.class
 })
 public class AllSnomedApiTests {
 

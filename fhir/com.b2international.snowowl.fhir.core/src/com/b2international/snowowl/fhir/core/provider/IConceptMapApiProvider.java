@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,18 +43,16 @@ public interface IConceptMapApiProvider extends IFhirApiProvider {
 	 * 
 	 * @since 6.9
 	 */
-	enum Registry {
-		
-		INSTANCE;
+	final class Registry {
 		
 		private final Collection<IConceptMapApiProvider.Factory> providers;
 		
-		private Registry() {
-			this.providers = ImmutableList.copyOf(ClassPathScanner.INSTANCE.getComponentsByInterface(IConceptMapApiProvider.Factory.class));
+		public Registry(ClassPathScanner scanner) {
+			this.providers = ImmutableList.copyOf(scanner.getComponentsByInterface(IConceptMapApiProvider.Factory.class));
 		}
 		
-		public static Collection<IConceptMapApiProvider> getProviders(IEventBus bus, List<ExtendedLocale> locales) {
-			return INSTANCE.providers.stream().map(factory -> factory.create(bus, locales)).collect(Collectors.toUnmodifiableList());
+		public Collection<IConceptMapApiProvider> getProviders(IEventBus bus, List<ExtendedLocale> locales) {
+			return providers.stream().map(factory -> factory.create(bus, locales)).collect(Collectors.toUnmodifiableList());
 		}
 		
 		/**
@@ -65,7 +63,7 @@ public interface IConceptMapApiProvider extends IFhirApiProvider {
 		 * @return FHIR concept map provider
 		 * @throws com.b2international.snowowl.fhir.core.exceptions.BadRequestException - if provider is not found with the given path
 		 */
-		public static IConceptMapApiProvider getConceptMapProvider(IEventBus bus, List<ExtendedLocale> locales, LogicalId logicalId) {
+		public IConceptMapApiProvider getConceptMapProvider(IEventBus bus, List<ExtendedLocale> locales, LogicalId logicalId) {
 			return getProviders(bus, locales).stream()
 				.filter(provider -> provider.isSupported(logicalId))
 				.findFirst()
@@ -79,7 +77,7 @@ public interface IConceptMapApiProvider extends IFhirApiProvider {
 		 * @param uriValue
 		 * @return FHIR value set provider
 		 */
-		public static IConceptMapApiProvider getConceptMapProvider(IEventBus bus, List<ExtendedLocale> locales, String uriValue) {
+		public IConceptMapApiProvider getConceptMapProvider(IEventBus bus, List<ExtendedLocale> locales, String uriValue) {
 			return getProviders(bus, locales).stream()
 				.filter(provider -> provider.isSupported(uriValue))
 				.findFirst()

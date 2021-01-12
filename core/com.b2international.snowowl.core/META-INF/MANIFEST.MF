@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Snow Owl Core
 Bundle-SymbolicName: com.b2international.snowowl.core;singleton:=true
-Bundle-Version: 7.11.1
+Bundle-Version: 7.14.0
 Bundle-Activator: com.b2international.snowowl.core.CoreActivator
 Bundle-Vendor: B2i Healthcare
 Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
@@ -25,7 +25,8 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  com.b2international.snowowl.eventbus;visibility:=reexport,
  com.b2international.collections.jackson,
  org.apache.commons.codec;bundle-version="1.10.0",
- org.apache.commons.io;bundle-version="2.6.0"
+ org.apache.commons.io;bundle-version="2.6.0",
+ io.github.classgraph.classgraph;bundle-version="4.8.90"
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ActivationPolicy: lazy
 Export-Package: com.auth0.jwt,
@@ -74,6 +75,7 @@ Export-Package: com.auth0.jwt,
  com.b2international.snowowl.core.rate,
  com.b2international.snowowl.core.repository,
  com.b2international.snowowl.core.request,
+ com.b2international.snowowl.core.request.io,
  com.b2international.snowowl.core.scripts,
  com.b2international.snowowl.core.setup,
  com.b2international.snowowl.core.status,

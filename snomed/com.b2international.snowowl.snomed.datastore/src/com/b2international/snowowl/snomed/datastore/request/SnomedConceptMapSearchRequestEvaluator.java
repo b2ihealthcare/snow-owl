@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.datastore.request;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -76,12 +75,13 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 				.collect(Collectors.toSet());
 		
 		final Map<String, SnomedConcept> refSetsById = SnomedRequests.prepareSearchConcept()
+				.all()
 				.filterByIds(refSetsToFetch)
 				.setLocales(search.getList(OptionKey.LOCALES, ExtendedLocale.class))
 				.setExpand("pt(),referenceSet()")
 				.build(uri)
 				.execute(context.service(IEventBus.class))
-				.getSync()
+				.getSync(1, TimeUnit.MINUTES)
 				.stream()
 				.collect(Collectors.toMap(SnomedConcept::getId, concept -> concept));
 		
@@ -95,18 +95,17 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 				.collect(Collectors.toList());
 		
 		if (!mappings.isEmpty()) {
-			final Map<String, Concept> conceptsById = Multimaps.index(mappings, mapping -> targetComponentsByRefSetId.get(mapping.getContainerSetURI().identifier()))
+			final Map<String, Concept> conceptsById = Multimaps.index(mappings, mapping -> mapping.getTargetComponentURI().codeSystemUri())
 					.asMap()
 					.entrySet()
 					.stream()
-					.filter(entry -> !entry.getKey().isUnspecified())
+					.filter(entry -> !TerminologyRegistry.UNSPECIFIED.equals(entry.getKey().getCodeSystem()))
 					.map(entry -> {
-								final CodeSystemURI cs = entry.getKey().codeSystemUri();
 								final Set<String> idsToFetch = entry.getValue().stream().map(map -> map.getTargetComponentURI().identifier()).collect(Collectors.toSet());
 								return CodeSystemRequests.prepareSearchConcepts()
 										.all()
 										.filterByIds(idsToFetch)
-										.build(cs)
+										.build(entry.getKey())
 										.execute(context.service(IEventBus.class))
 										.getSync(5, TimeUnit.MINUTES)
 										.stream()
@@ -120,7 +119,7 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 			
 			mappings = mappings.stream().map(mapping -> {
 				final String mapTargetId = mapping.getTargetComponentURI().identifier();
-				if (conceptsById.containsKey(mapTargetId)) {
+				if (conceptsById.containsKey(mapTargetId) && !mapping.getTargetComponentURI().isUnspecified()) {
 					final Concept concept = conceptsById.get(mapTargetId);
 					return mapping.toBuilder()
 							.targetTerm(concept.getTerm())
@@ -152,28 +151,24 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 						entry -> {
 							final SnomedReferenceSet refSet = entry.getValue().getReferenceSet();
 							String mapTargetComponentType = refSet.getMapTargetComponentType();
-							if (mapTargetComponentType == null) {
+							if (Strings.isNullOrEmpty(mapTargetComponentType)) {
 								return ComponentURI.UNSPECIFIED;
 							}
 							
 							TerminologyRegistry terminologyRegistry = TerminologyRegistry.INSTANCE;
 							
-							Terminology sourceTerminology = terminologyRegistry.getTerminologyByTerminologyComponentId(mapTargetComponentType);
+							Terminology mapTargetTerminology = terminologyRegistry.getTerminologyByTerminologyComponentId(mapTargetComponentType);
 							
-							TerminologyComponent sourceTerminologyComponent = terminologyRegistry.getTerminologyComponentById(mapTargetComponentType);
+							TerminologyComponent mapTargetTerminologyComponent = terminologyRegistry.getTerminologyComponentById(mapTargetComponentType);
 							
-							if (Strings.isNullOrEmpty(mapTargetComponentType)) {
-								return ComponentURI.UNSPECIFIED;
-							} else {
-								final Optional<CodeSystem> codeSystemOptional = codeSystemList.stream()
-										.filter(cs -> cs.getTerminologyId().equals(sourceTerminology.getId()))
-										.findFirst();
-								if (codeSystemOptional.isPresent()) {
-									return ComponentURI.of(codeSystemOptional.get().getShortName(), sourceTerminologyComponent.shortId(), refSet.getId());
-								} else {
-									return ComponentURI.UNSPECIFIED;
-								}
-							}
+							// XXX while this is clearly not the right solution, for now it is the only we can do, since based on just the ID in a SNOMED CT Map Type RefSet, there is no guarantee that we get the right CodeSystem
+							return codeSystemList.stream()
+									.filter(cs -> cs.getTerminologyId().equals(mapTargetTerminology.getId()))
+									.map(CodeSystem::getShortName) 
+									.sorted()
+									.findFirst()
+									.map(codeSystem -> ComponentURI.of(codeSystem, mapTargetTerminologyComponent.shortId(), refSet.getId()))
+									.orElse(ComponentURI.UNSPECIFIED);
 				}));
 	}
 

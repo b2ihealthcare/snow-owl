@@ -122,8 +122,8 @@ public final class EsNode extends Node {
 		putSettingIfAbsent(esSettings, "cluster.name", clusterName);
 		putSettingIfAbsent(esSettings, "node.name", clusterName);
 		
-		// this node is always the master node
-		putSettingIfAbsent(esSettings, "node.master", true);
+		// node.master is no longer supported, node.roles can be set here, but the default for the embedded mode is good enough
+		// see https://www.elastic.co/guide/en/elasticsearch/reference/current/modules-node.html
 		putSettingIfAbsent(esSettings, "http.type", "netty4");
 		putSettingIfAbsent(esSettings, "http.cors.enabled", true);
 		putSettingIfAbsent(esSettings, "http.cors.allow-origin", "/https?:\\/\\/localhost(:[0-9]+)?/");

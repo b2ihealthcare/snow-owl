@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import com.google.common.base.Preconditions;
 /**
  * @since 6.6
  */
-public class ValidationJob extends Job {
+public final class ValidationJob extends Job {
 
 	private static final String VALIDATION_JOB_NAME = "validationJob";
 	

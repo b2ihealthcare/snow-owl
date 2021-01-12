@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.datastore.id.assigner;
 import java.util.Set;
 
 import com.b2international.commons.exceptions.FormattedRuntimeException;
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.plugin.ClassPathScanner;
 
@@ -92,13 +93,14 @@ public interface SnomedNamespaceAndModuleAssigner {
 	/**
 	 * Instantiate a namespace and module assigner instance based on the given type.
 	 * 
+	 * @param context
 	 * @param assignerType
 	 * @param moduleId
 	 * @param namespace
 	 * @return
 	 */
-	static SnomedNamespaceAndModuleAssigner create(String assignerType, String moduleId, String namespace) {
-		SnomedNamespaceAndModuleAssigner assigner = ClassPathScanner.INSTANCE.getComponentsByInterface(SnomedNamespaceAndModuleAssigner.class)
+	static SnomedNamespaceAndModuleAssigner create(ServiceProvider context, String assignerType, String moduleId, String namespace) {
+		SnomedNamespaceAndModuleAssigner assigner = context.service(ClassPathScanner.class).getComponentsByInterface(SnomedNamespaceAndModuleAssigner.class)
 				.stream()
 				.filter(a -> assignerType.equals(a.getName()))
 				.findFirst()

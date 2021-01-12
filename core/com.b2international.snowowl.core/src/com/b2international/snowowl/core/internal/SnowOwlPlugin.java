@@ -28,6 +28,8 @@ import com.b2international.snowowl.core.setup.ConfigurationRegistry;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.Plugin;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
+import com.b2international.snowowl.core.uri.DefaultResourceURIPathResolver;
+import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
@@ -52,6 +54,7 @@ public final class SnowOwlPlugin extends Plugin {
 	@Override
 	public void init(SnowOwlConfiguration configuration, Environment env) {
 		env.services().registerService(TerminologyRegistry.class, TerminologyRegistry.INSTANCE);
+		env.services().registerService(ResourceURIPathResolver.class, new DefaultResourceURIPathResolver());
 		
 		final MonitoringConfiguration monitoringConfig = configuration.getModuleConfig(MonitoringConfiguration.class);
 		if (monitoringConfig.isEnabled()) {

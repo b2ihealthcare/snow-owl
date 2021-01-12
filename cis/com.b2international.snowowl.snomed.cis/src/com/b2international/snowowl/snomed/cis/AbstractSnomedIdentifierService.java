@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.cis.domain.SctId;
 import com.b2international.snowowl.snomed.cis.reservations.ISnomedIdentifierReservationService;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
 /**
@@ -34,17 +33,13 @@ public abstract class AbstractSnomedIdentifierService implements ISnomedIdentifi
 
 	public static final class SctIdStatusException extends BadRequestException {
 		
-		private final Map<String, Object> additionalInfo;
+		private static final long serialVersionUID = 1L;
 
 		public SctIdStatusException(String message, Map<String, SctId> problemSctIds) {
 			super(message, problemSctIds.size());
-			this.additionalInfo = ImmutableMap.copyOf(Maps.transformValues(problemSctIds, SctId::getStatus));
+			withAdditionalInfo(Map.copyOf(Maps.transformValues(problemSctIds, SctId::getStatus)));
 		}
 
-		@Override
-		protected Map<String, Object> getAdditionalInfo() {
-			return additionalInfo;
-		}
 	}
 
 	protected static void checkCategory(ComponentCategory category) {

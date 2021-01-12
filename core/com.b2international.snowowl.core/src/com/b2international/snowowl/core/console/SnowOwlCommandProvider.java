@@ -23,6 +23,7 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;
+import java.util.function.Supplier;
 
 import org.eclipse.osgi.framework.console.CommandInterpreter;
 import org.eclipse.osgi.framework.console.CommandProvider;
@@ -37,6 +38,7 @@ import com.b2international.snowowl.core.plugin.ClassPathScanner;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Ordering;
@@ -51,15 +53,17 @@ import picocli.CommandLine.Option;
 public final class SnowOwlCommandProvider implements CommandProvider {
 
 	private static final int USAGE_WIDTH = 150;
-	private final String usage;
+	private final Supplier<String> usage;
 
 	public SnowOwlCommandProvider() {
-		this.usage = getHelp(cli());
+		this.usage = Suppliers.memoize(() -> {
+			return getHelp(cli(ApplicationContext.getServiceForClass(Environment.class)));
+		});
 	}
 	
 	@Override
 	public String getHelp() {
-		return String.format("---Snow Owl Commands---\n%s", usage);
+		return String.format("---Snow Owl Commands---\n%s", usage.get());
 	}
 
 	public void _snowowl(CommandInterpreter interpreter) throws Exception {
@@ -69,7 +73,9 @@ public final class SnowOwlCommandProvider implements CommandProvider {
 		while ((arg = interpreter.nextArgument()) != null) {
 			args.add(arg);
 		}
-		final List<CommandLine> commands = cli().parse(args.toArray(new String[]{}));
+		
+		final Environment env = ApplicationContext.getServiceForClass(Environment.class);
+		final List<CommandLine> commands = cli(env).parse(args.toArray(new String[]{}));
 		
 		try (InterpreterStream out = new InterpreterStream(interpreter)) {
 			// print help if requested for any command
@@ -85,7 +91,7 @@ public final class SnowOwlCommandProvider implements CommandProvider {
 			// we should get an executable Snow Owl Command, so execute it
 			BaseCommand cmd = (BaseCommand) cli.getCommand();
 			final String authorizationToken = ApplicationContext.getServiceForClass(JWTGenerator.class).generate(User.SYSTEM);
-			final ServiceProvider context = ApplicationContext.getServiceForClass(Environment.class)
+			final ServiceProvider context = env
 					.inject()
 					.bind(IEventBus.class, new AuthorizedEventBus(ApplicationContext.getServiceForClass(IEventBus.class), ImmutableMap.of(AuthorizedRequest.AUTHORIZATION_HEADER, authorizationToken)))
 					.build();
@@ -107,11 +113,11 @@ public final class SnowOwlCommandProvider implements CommandProvider {
 		}
 	}
 	
-	private CommandLine cli() {
+	private CommandLine cli(ServiceProvider context) {
 		final CommandLine cli = new CommandLine(new SnowOwlCommand());
 		cli.setUsageHelpWidth(USAGE_WIDTH);
 		cli.addSubcommand("help", new CommandLine.HelpCommand());
-		ClassPathScanner.INSTANCE.getComponentsBySuperclass(Command.class)
+		context.service(ClassPathScanner.class).getComponentsBySuperclass(Command.class)
 			.stream()
 			.sorted(Ordering.natural().onResultOf(Command::getCommand))
 			.forEach(cmd -> {
@@ -137,7 +143,7 @@ public final class SnowOwlCommandProvider implements CommandProvider {
 		
 		@Override
 		public void run(CommandLineStream out) {
-			out.println(usage);
+			out.println(usage.get());
 		}
 		
 	}

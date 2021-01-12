@@ -19,6 +19,7 @@ import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.ConflictException;
 import com.b2international.index.revision.BaseRevisionBranching;
 import com.b2international.index.revision.BranchMergeException;
+import com.b2international.index.revision.Commit;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.core.locks.Locks;
@@ -53,7 +54,7 @@ public final class BranchRebaseRequest extends AbstractBranchChangeRequest {
 	}
 	
 	@Override
-	protected void applyChanges(RepositoryContext context, Branch source, Branch target) {
+	protected Commit applyChanges(RepositoryContext context, Branch source, Branch target) {
 		if (!target.parentPath().equals(source.path())) {
 			throw new BadRequestException("Cannot rebase target '%s' on source '%s'; source is not the direct parent of target.", target.path(), source.path());
 		}
@@ -64,7 +65,7 @@ public final class BranchRebaseRequest extends AbstractBranchChangeRequest {
 				.branches(source.path(), target.path())
 				.user(author)
 				.lock(DatastoreLockContextDescriptions.SYNCHRONIZE, parentLockContext)) {
-			context.service(BaseRevisionBranching.class)
+			return context.service(BaseRevisionBranching.class)
 				.prepareMerge(source.path(), target.path())
 				.author(author)
 				.commitMessage(commitMessage)

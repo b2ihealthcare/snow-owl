@@ -77,6 +77,7 @@ public class SnomedConceptRestUpdate extends AbstractSnomedComponentRestUpdate {
 		return SnomedRequests
 				.prepareUpdateConcept(conceptId)
 				.setActive(isActive())
+				.setEffectiveTime(getEffectiveTime())
 				.setModuleId(getModuleId())
 				.setDefinitionStatusId(getDefinitionStatusId())
 				.setSubclassDefinitionStatus(getSubclassDefinitionStatus())

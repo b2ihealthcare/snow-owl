@@ -384,7 +384,7 @@ public final class DatastoreOperationLockManager implements IOperationLockManage
 	}
 	
 	private DatastoreLocks search(Expression query, int limit) {
-		return search(query, ImmutableList.of(), SortBy.DOC_ID, limit); 
+		return search(query, ImmutableList.of(), SortBy.DEFAULT, limit); 
 	}
 	
 	private DatastoreLocks search(Expression query, List<String> fields, SortBy sortBy, int limit) {

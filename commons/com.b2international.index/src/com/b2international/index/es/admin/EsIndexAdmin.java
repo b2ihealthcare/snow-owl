@@ -33,6 +33,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -47,6 +48,7 @@ import org.elasticsearch.action.admin.indices.mapping.get.GetMappingsRequest;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
+import org.elasticsearch.action.admin.indices.settings.put.UpdateSettingsRequest;
 import org.elasticsearch.action.bulk.BulkItemResponse.Failure;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.cluster.metadata.MappingMetadata;
@@ -80,6 +82,7 @@ import com.flipkart.zjsonpatch.DiffFlags;
 import com.flipkart.zjsonpatch.JsonDiff;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
 import com.google.common.primitives.Primitives;
 
 /**
@@ -87,15 +90,23 @@ import com.google.common.primitives.Primitives;
  */
 public final class EsIndexAdmin implements IndexAdmin {
 
-	private static final EnumSet<DiffFlags> DIFF_FLAGS = EnumSet.of(DiffFlags.ADD_ORIGINAL_VALUE_ON_REPLACE);
+	private static final Set<String> DYNAMIC_SETTINGS = Set.of(IndexClientFactory.RESULT_WINDOW_KEY);
+	
+	/**
+	 * Important DIFF flags required to produce the JSON patch needed for proper compare and branch merge operation behavior, for proper index schema migration, and so on.
+	 * Should be used by default when using jsonpatch.
+	 */
+	public static final EnumSet<DiffFlags> DIFF_FLAGS = EnumSet.of(DiffFlags.ADD_ORIGINAL_VALUE_ON_REPLACE, DiffFlags.OMIT_COPY_OPERATION, DiffFlags.OMIT_MOVE_OPERATION);
+	
 	private static final int DEFAULT_MAX_NUMBER_OF_VERSION_CONFLICT_RETRIES = 5;
 	
 	private final Random random = new Random();
 	private final EsClient client;
 	private final ObjectMapper mapper;
 	private final String name;
-	private final Mappings mappings;
 	private final Map<String, Object> settings;
+	
+	private Mappings mappings;
 	
 	private final Logger log;
 	private final String prefix;
@@ -153,6 +164,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 			final Map<String, Object> typeMapping = ImmutableMap.<String, Object>builder()
 					.put("date_detection", false)
 					.put("numeric_detection", false)
+					.put("dynamic_templates", List.of(stringsAsKeywords()))
 					.putAll(toProperties(mapping))
 					.build();
 			
@@ -223,6 +235,17 @@ public final class EsIndexAdmin implements IndexAdmin {
 		// wait until the cluster processes each index create request
 		waitForYellowHealth(indices());
 		log.info("'{}' indexes are ready.", name);
+	}
+
+	private Map<String, Object> stringsAsKeywords() {
+		return Map.of(
+			"strings_as_keywords", Map.of(
+				"match_mapping_type", "string",
+				"mapping", Map.of(
+					"type", "keyword"
+				)
+			)
+		);
 	}
 
 	private Map<String, Object> createIndexSettings() throws IOException {
@@ -481,10 +504,55 @@ public final class EsIndexAdmin implements IndexAdmin {
 	public Map<String, Object> settings() {
 		return settings;
 	}
+	
+	@Override
+	public void updateSettings(Map<String, Object> newSettings) {
+		if (CompareUtils.isEmpty(newSettings)) {
+			return;
+		}
+		final Set<String> unsupportedDynamicSettings = Sets.difference(newSettings.keySet(), DYNAMIC_SETTINGS);
+		if (!unsupportedDynamicSettings.isEmpty()) {
+			throw new IndexException(String.format("Settings [%s] are not dynamically updateable settings.", unsupportedDynamicSettings), null);
+		}
+		
+		boolean shouldUpdate = false;
+		for (String settingKey : newSettings.keySet()) {
+			Object currentValue = settings.get(settingKey);
+			Object newValue = newSettings.get(settingKey);
+			if (!Objects.equals(currentValue, newValue)) {
+				shouldUpdate = true;
+			}
+		}
+		
+		if (!shouldUpdate) {
+			return;
+		}
+		
+		for (DocumentMapping mapping : mappings.getMappings()) {
+			final String index = getTypeIndex(mapping);
+			// if any index exists, then update the settings based on the new settings
+			if (exists(mapping)) {
+				try {
+					log.info("Applying settings '{}' changes in index {}...", newSettings, index);
+					AcknowledgedResponse response = client.indices().updateSettings(new UpdateSettingsRequest().indices(index).settings(newSettings));
+					checkState(response.isAcknowledged(), "Failed to update index settings '%s'.", index);
+				} catch (IOException e) {
+					throw new IndexException(String.format("Couldn't update settings of index '%s'", index), e);
+				}
+			}
+		}
+		
+		settings.putAll(newSettings);
+	}
 
 	@Override
 	public Mappings mappings() {
 		return mappings;
+	}
+	
+	@Override
+	public void updateMappings(Mappings mappings) {
+		this.mappings = mappings;
 	}
 
 	@Override

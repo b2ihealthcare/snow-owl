@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,6 +63,8 @@ public final class IdentityPlugin extends Plugin {
 		if (conf.isAdminParty()) {
 			identityProvider = new AdminPartyIdentityProvider(identityProvider);
 		}
+		
+		identityProvider.validateSettings();
 		IdentityProvider.LOG.info("Configured identity providers [{}]", identityProvider.getInfo());
 		env.services().registerService(IdentityProvider.class, identityProvider);
 		
@@ -93,9 +95,9 @@ public final class IdentityPlugin extends Plugin {
 		return providers;
 	}
 
-	static Collection<Class<? extends IdentityProviderConfig>> getAvailableConfigClasses() {
+	static Collection<Class<? extends IdentityProviderConfig>> getAvailableConfigClasses(ClassPathScanner scanner) {
 		final ImmutableList.Builder<Class<? extends IdentityProviderConfig>> configs = ImmutableList.builder();
-		final Iterator<IdentityProviderFactory> it = ClassPathScanner.INSTANCE.getComponentsByInterface(IdentityProviderFactory.class).iterator();
+		final Iterator<IdentityProviderFactory> it = scanner.getComponentsByInterface(IdentityProviderFactory.class).iterator();
 		while (it.hasNext()) {
 			configs.add(it.next().getConfigType());
 		}

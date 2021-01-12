@@ -151,9 +151,8 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 		}
 		
 		if (!unresolvedRefSetTypes.isEmpty()) {
-			BadRequestException e = new BadRequestException("Unknown reference set types: %s", unresolvedRefSetTypes);
-			e.setDeveloperMessage("Available reference set types are: " + SnomedRefSetType.VALUES);
-			throw e;
+			throw new BadRequestException("Unknown reference set types: '%s'", unresolvedRefSetTypes)
+				.withDeveloperMessage("Available reference set types are: " + SnomedRefSetType.VALUES);
 		}
 		
 		return resolvedRefSetTypes;

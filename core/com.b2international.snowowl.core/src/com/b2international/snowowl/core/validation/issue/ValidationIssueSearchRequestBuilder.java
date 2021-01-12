@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
 import com.b2international.snowowl.core.request.SystemRequestBuilder;
+import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.core.validation.issue.ValidationIssueSearchRequest.OptionKey;
 
 /**
@@ -41,12 +42,12 @@ public final class ValidationIssueSearchRequestBuilder
 		return addOption(OptionKey.RULE_ID, ruleIds);
 	}
 	
-	public ValidationIssueSearchRequestBuilder filterByBranchPath(final String branchPath) {
-		return addOption(OptionKey.BRANCH_PATH, branchPath);
+	public ValidationIssueSearchRequestBuilder filterByResourceUri(String resourceURI) {
+		return addOption(OptionKey.RESOURCE_URI, resourceURI);
 	}
 	
-	public ValidationIssueSearchRequestBuilder filterByBranchPaths(final Iterable<? extends String> branchPaths) {
-		return addOption(OptionKey.BRANCH_PATH, branchPaths);
+	public ValidationIssueSearchRequestBuilder filterByResourceUri(CodeSystemURI resourceURI) {
+		return addOption(OptionKey.RESOURCE_URI, resourceURI.toString());
 	}
 	
 	public ValidationIssueSearchRequestBuilder filterByTooling(String toolingId) {
@@ -63,14 +64,6 @@ public final class ValidationIssueSearchRequestBuilder
 	
 	public ValidationIssueSearchRequestBuilder filterByAffectedComponentId(Iterable<String> affectedComponentIds) {
 		return addOption(OptionKey.AFFECTED_COMPONENT_ID, affectedComponentIds);
-	}
-	
-	public ValidationIssueSearchRequestBuilder filterByAffectedComponentType(short affectedComponentType) {
-		return addOption(OptionKey.AFFECTED_COMPONENT_TYPE, affectedComponentType);
-	}
-	
-	public ValidationIssueSearchRequestBuilder filterByAffectedComponentType(Iterable<Short> affectedComponentTypes) {
-		return addOption(OptionKey.AFFECTED_COMPONENT_TYPE, affectedComponentTypes);
 	}
 	
 	public ValidationIssueSearchRequestBuilder filterByAffectedComponentLabel(String affectedComponentLabel) {

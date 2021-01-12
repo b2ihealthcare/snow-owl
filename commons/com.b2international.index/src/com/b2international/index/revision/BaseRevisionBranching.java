@@ -36,7 +36,6 @@ import com.b2international.index.BulkUpdate;
 import com.b2international.index.Hits;
 import com.b2international.index.Index;
 import com.b2international.index.IndexWrite;
-import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.query.Query.AfterWhereBuilder;
@@ -439,7 +438,7 @@ public abstract class BaseRevisionBranching {
 	
 	protected final IndexWrite<Void> update(final String path, final String script, final Map<String, Object> params) {
 		return index -> {
-			index.bulkUpdate(new BulkUpdate<>(RevisionBranch.class, DocumentMapping.matchId(path), DocumentMapping._ID, script, params));
+			index.bulkUpdate(new BulkUpdate<>(RevisionBranch.class, Expressions.exactMatch(RevisionBranch.Fields.PATH, path), script, params));
 			return null;
 		};
 	}

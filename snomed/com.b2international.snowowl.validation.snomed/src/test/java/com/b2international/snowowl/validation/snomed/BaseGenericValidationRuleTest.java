@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,43 +15,25 @@
  */
 package com.b2international.snowowl.validation.snomed;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.io.InputStream;
-import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.eclipse.xtext.parser.IParser;
 import org.eclipse.xtext.serializer.ISerializer;
 import org.eclipse.xtext.validation.IResourceValidator;
-import org.junit.Before;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
-import com.b2international.collections.PrimitiveCollectionModule;
-import com.b2international.index.Index;
-import com.b2international.index.revision.BaseRevisionIndexTest;
-import com.b2international.index.revision.RevisionIndex;
-import com.b2international.snowowl.core.ComponentIdentifier;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.internal.validation.ValidationConfiguration;
-import com.b2international.snowowl.core.internal.validation.ValidationRepository;
-import com.b2international.snowowl.core.internal.validation.ValidationThreadPool;
-import com.b2international.snowowl.core.request.RevisionIndexReadRequest;
-import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.core.validation.ValidateRequestBuilder;
-import com.b2international.snowowl.core.validation.ValidationRequests;
-import com.b2international.snowowl.core.validation.issue.ValidationIssue;
-import com.b2international.snowowl.core.validation.issue.ValidationIssues;
-import com.b2international.snowowl.core.validation.rule.ValidationRule;
-import com.b2international.snowowl.core.validation.whitelist.ValidationWhiteList;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.constraint.HierarchyInclusionType;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclParser;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclSerializer;
@@ -68,21 +50,19 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemb
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.ecl.EclStandaloneSetup;
 import com.b2international.snowowl.test.commons.snomed.DocumentBuilders;
-import com.b2international.snowowl.test.commons.snomed.TestBranchContext;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.databind.MappingIterator;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
+import com.b2international.snowowl.test.commons.snomed.TestBranchContext.Builder;
+import com.b2international.snowowl.test.commons.validation.BaseValidationTest;
 import com.google.inject.Injector;
 
 /**
  * 
  * @since 6.4
  */
-public abstract class BaseGenericValidationRuleTest extends BaseRevisionIndexTest {
+public abstract class BaseGenericValidationRuleTest extends BaseValidationTest {
 
 	private static final Injector ECL_INJECTOR = new EclStandaloneSetup().createInjectorAndDoEMFRegistration();
+	
+	protected static final String CODESYSTEM = "SNOMEDCT";
 	
 	private static final String ATTRIBUTE = "246061005";
 	private static final Long ATTRIBUTEL = Long.parseLong(ATTRIBUTE);
@@ -94,29 +74,51 @@ public abstract class BaseGenericValidationRuleTest extends BaseRevisionIndexTes
 	private static final Long CONCEPT_MODEL_ATTRIBUTEL = Long.parseLong(Concepts.CONCEPT_MODEL_ATTRIBUTE);
 	private static final Long REFSET_ROOTL = Long.parseLong(Concepts.REFSET_ROOT_CONCEPT);
 
-	private BranchContext context;
-
 	@Parameter
 	public long effectiveTime;
 	
 	@Parameters(name = "EffectiveTime: {0}")
 	public static Iterable<? extends Object> data() {
-	    return Arrays.asList(-1, 1);
+	    return Arrays.asList(EffectiveTimes.UNSET_EFFECTIVE_TIME, 1);
 	}
 	
-	@Before
-	public void setup() {
-		context = TestBranchContext.on(MAIN)
-				.with(EclParser.class, new DefaultEclParser(ECL_INJECTOR.getInstance(IParser.class), ECL_INJECTOR.getInstance(IResourceValidator.class)))
-				.with(EclSerializer.class, new DefaultEclSerializer(ECL_INJECTOR.getInstance(ISerializer.class))).with(Index.class, rawIndex())
-				.with(RevisionIndex.class, index()).with(ObjectMapper.class, getMapper())
-				.with(ValidationRepository.class, new ValidationRepository(rawIndex()))
-				.with(ClassLoader.class, getClass().getClassLoader())
-				.with(TerminologyRegistry.class, TerminologyRegistry.INSTANCE)
-				.with(ValidationThreadPool.class, new ValidationThreadPool(1, 1, 1)).build();
-		
+	public BaseGenericValidationRuleTest() {
+		super("validation-rules-common.json");
+	}
+	
+	@Override
+	protected Map<String, String> getTestCodeSystemPathMap() {
+		return Map.of(CODESYSTEM, Branch.MAIN_PATH);
+	}
+	
+	@Override
+	protected void configureContext(Builder context) {
+		context
+			.with(EclParser.class, new DefaultEclParser(ECL_INJECTOR.getInstance(IParser.class), ECL_INJECTOR.getInstance(IResourceValidator.class)))
+			.with(EclSerializer.class, new DefaultEclSerializer(ECL_INJECTOR.getInstance(ISerializer.class)));
+	}
+	
+	@Override
+	protected void configureValidationRequest(ValidateRequestBuilder req) {
+		req.setRuleParameters(Map.of(
+			ValidationConfiguration.IS_UNPUBLISHED_ONLY, effectiveTime == EffectiveTimes.UNSET_EFFECTIVE_TIME
+		));
+	}
+	
+	@Override
+	protected Collection<Class<?>> getAdditionalTypes() {
+		return List.of(
+			SnomedConceptDocument.class, 
+			SnomedConstraintDocument.class, 
+			SnomedRelationshipIndexEntry.class, 
+			SnomedDescriptionIndexEntry.class,
+			SnomedRefSetMemberIndexEntry.class
+		);
+	}
+	
+	@Override
+	protected void initializeData() {
 		// index common required SNOMED CT Concepts
-
 		index()
 			.prepareCommit(MAIN)
 			.stageNew(concept(Concepts.ROOT_CONCEPT).build())
@@ -177,12 +179,12 @@ public abstract class BaseGenericValidationRuleTest extends BaseRevisionIndexTes
 		return DocumentBuilders.relationship(source, type, destination, characteristicTypeId).effectiveTime(effectiveTime);
 	}
 	
-	protected final SnomedRefSetMemberIndexEntry.Builder member(String referencedComponentId, short referencedComponentType, String referenceSetId) {
-		return member(UUID.randomUUID().toString(), referencedComponentId, referencedComponentType, referenceSetId);
+	protected final SnomedRefSetMemberIndexEntry.Builder member(String referencedComponentId, String referenceSetId) {
+		return member(UUID.randomUUID().toString(), referencedComponentId, referenceSetId);
 	}
 	
-	protected final SnomedRefSetMemberIndexEntry.Builder member(final String id, String referencedComponentId, short referencedComponentType, String referenceSetId) {
-		return DocumentBuilders.member(id, referencedComponentId, referencedComponentType, referenceSetId).effectiveTime(effectiveTime);
+	protected final SnomedRefSetMemberIndexEntry.Builder member(final String id, String referencedComponentId, String referenceSetId) {
+		return DocumentBuilders.member(id, referencedComponentId, SnomedTerminologyComponentConstants.getTerminologyComponentIdValue(referencedComponentId), referenceSetId).effectiveTime(effectiveTime);
 	}
 	
 	protected final HierarchyDefinitionFragment hierarchyConceptSetDefinition(final String focusConceptId, HierarchyInclusionType inclusionType) {
@@ -198,49 +200,6 @@ public abstract class BaseGenericValidationRuleTest extends BaseRevisionIndexTes
 				.domain(conceptSetDefinition)
 				.predicate(conceptModelPredicate)
 				.build();
-	}
-	
-	@Override
-	protected void configureMapper(ObjectMapper mapper) {
-		super.configureMapper(mapper);
-		mapper.setSerializationInclusion(Include.NON_NULL);
-		mapper.registerModule(new PrimitiveCollectionModule());
-	}
-
-	protected final void assertAffectedComponents(ValidationIssues issues, ComponentIdentifier... expectedComponentIdentifiers) {
-		assertThat(issues).hasSize(expectedComponentIdentifiers.length);
-		assertThat(issues.stream().map(ValidationIssue::getAffectedComponent).collect(Collectors.toSet())).containsOnly(expectedComponentIdentifiers);
-	}
-
-	protected final ValidationIssues validate(String ruleId) {
-		final ValidateRequestBuilder validateRequestBuilder = ValidationRequests.prepareValidate();
-		if (effectiveTime == EffectiveTimes.UNSET_EFFECTIVE_TIME) {
-			final Map<String, Object> filterOptions = ImmutableMap.of(ValidationConfiguration.IS_UNPUBLISHED_ONLY, Boolean.TRUE);
-			validateRequestBuilder.setRuleParameters(filterOptions);
-		}
-		
-		new RevisionIndexReadRequest<>(validateRequestBuilder.build()).execute(context);
-		return ValidationRequests.issues().prepareSearch().all().filterByRule(ruleId).build().execute(context);
-	}
-
-	@Override
-	protected Collection<Class<?>> getTypes() {
-		return ImmutableList.of(SnomedConceptDocument.class, SnomedConstraintDocument.class, SnomedRelationshipIndexEntry.class, SnomedDescriptionIndexEntry.class,
-				SnomedRefSetMemberIndexEntry.class, ValidationRule.class, ValidationIssue.class, ValidationWhiteList.class);
-	}
-
-	protected final void indexRule(String ruleId) throws Exception {
-		URL rulesJson = getClass().getClassLoader().getResource("validation-rules-common.json");
-		try (InputStream in = rulesJson.openStream()) {
-			MappingIterator<ValidationRule> it = context.service(ObjectMapper.class).readerFor(ValidationRule.class).readValues(in);
-			while (it.hasNext()) {
-				final ValidationRule rule = it.next();
-				if (ruleId.equals(rule.getId())) {
-					indexDocument(ruleId, rule);
-					return;
-				}
-			}
-		}
 	}
 	
 	protected final String generateTermOfLength(int length) {
@@ -275,6 +234,5 @@ public abstract class BaseGenericValidationRuleTest extends BaseRevisionIndexTes
 		
 		return randomEffectiveTime > 500 ? EffectiveTimes.UNSET_EFFECTIVE_TIME : randomEffectiveTime;
 	}
-
 
 }

@@ -20,6 +20,7 @@ import java.util.Set;
 import com.b2international.commons.exceptions.ConflictException;
 import com.b2international.index.revision.BaseRevisionBranching;
 import com.b2international.index.revision.BranchMergeException;
+import com.b2international.index.revision.Commit;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.core.internal.locks.DatastoreOperationLockException;
@@ -52,14 +53,14 @@ public final class BranchMergeRequest extends AbstractBranchChangeRequest {
 	}
 	
 	@Override
-	protected void applyChanges(RepositoryContext context, Branch source, Branch target) {
+	protected Commit applyChanges(RepositoryContext context, Branch source, Branch target) {
 		final String author = userId(context);
 		try (Locks locks = Locks
 				.on(context)
 				.branches(source.path(), target.path())
 				.user(author)
 				.lock(DatastoreLockContextDescriptions.SYNCHRONIZE, parentLockContext)) {
-			context.service(BaseRevisionBranching.class)
+			return context.service(BaseRevisionBranching.class)
 				.prepareMerge(source.path(), target.path())
 				.exclude(exclusions)
 				.author(author)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -105,7 +105,9 @@ public class DefaultSnomedIdentifierServiceRegressionTest {
 	public void issue_SO_1945_testItemIdPoolExhausted() throws Exception {
 		final Provider<Index> storeProvider = Providers.of(store);
 		final ItemIdGenerationStrategy idGenerationStrategy = new CyclingItemIdGenerationStrategy("1000", "1001");
-		final ISnomedIdentifierService identifiers = new DefaultSnomedIdentifierService(storeProvider, idGenerationStrategy);
+		final SnomedIdentifierConfiguration config = new SnomedIdentifierConfiguration();
+		config.setMaxIdGenerationAttempts(10);
+		final ISnomedIdentifierService identifiers = new DefaultSnomedIdentifierService(storeProvider, idGenerationStrategy, config);
 
 		final String first = Iterables.getOnlyElement(identifiers.generate(INT_NAMESPACE, ComponentCategory.CONCEPT, 1));
 		assertThat(first).startsWith("1000");
@@ -122,7 +124,7 @@ public class DefaultSnomedIdentifierServiceRegressionTest {
 			identifiers.generate(INT_NAMESPACE, ComponentCategory.CONCEPT, 1);
 		} catch (final BadRequestException e) {
 			assertThat(e.getMessage()).isEqualTo(String.format("Couldn't generate 1 identifiers [CONCEPT, INT] in maximum (%s) number of attempts",
-					SnomedIdentifierConfiguration.DEFAULT_ID_GENERATION_ATTEMPTS));
+					config.getMaxIdGenerationAttempts()));
 		}
 	}
 

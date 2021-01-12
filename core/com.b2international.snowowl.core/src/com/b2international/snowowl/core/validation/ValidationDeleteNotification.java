@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,29 +15,31 @@
  */
 package com.b2international.snowowl.core.validation;
 
+import java.util.Set;
+
 import com.b2international.snowowl.core.events.SystemNotification;
 
 /**
  * @since 6.20.0
  */
-final public class ValidationDeleteNotification extends SystemNotification {
+public final class ValidationDeleteNotification extends SystemNotification {
 
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 	
-	final private String branch;
-	final private String toolingId;
+	private final Set<String> resourceURIs;
+	private final Set<String> toolingIds;
 
-	public ValidationDeleteNotification(String branch, String toolingId) {
-		this.branch = branch;
-		this.toolingId = toolingId;
+	public ValidationDeleteNotification(Set<String> resourceURIs, Set<String> toolingIds) {
+		this.resourceURIs = resourceURIs;
+		this.toolingIds = toolingIds;
+	}
+
+	public Set<String> getResourceURIs() {
+		return resourceURIs;
 	}
 	
-	public String getBranch() {
-		return branch;
-	}
-	
-	public String getToolingId() {
-		return toolingId;
+	public Set<String> getToolingIds() {
+		return toolingIds;
 	}
 	
 }

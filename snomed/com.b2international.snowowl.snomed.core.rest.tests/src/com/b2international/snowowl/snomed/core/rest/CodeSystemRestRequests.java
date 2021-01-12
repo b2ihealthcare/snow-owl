@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import static com.b2international.snowowl.test.commons.rest.RestExtensions.given
 import java.util.Map;
 
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.google.common.collect.ImmutableMap;
@@ -31,11 +32,18 @@ import io.restassured.response.ValidatableResponse;
  * @since 4.7
  */
 public abstract class CodeSystemRestRequests {
-
+	
 	public static ValidatableResponse createCodeSystem(IBranchPath branchPath, String shortName) {
-		Map<?,?> requestBody = ImmutableMap.builder()
+		return createCodeSystem(null, branchPath, shortName);
+	}
+
+	public static ValidatableResponse createCodeSystem(CodeSystemURI extensionOf, String shortName) {
+		return createCodeSystem(extensionOf, null, shortName);
+	}
+	
+	private static ValidatableResponse createCodeSystem(CodeSystemURI extensionOf, IBranchPath branchPath, String shortName) {
+		ImmutableMap.Builder<String, Object> requestBody = ImmutableMap.<String, Object>builder()
 				.put("name", shortName)
-				.put("branchPath", branchPath.getPath())
 				.put("shortName", shortName)
 				.put("citation", "citation")
 				.put("iconPath", "iconPath")
@@ -43,12 +51,17 @@ public abstract class CodeSystemRestRequests {
 				.put("terminologyId", SnomedTerminologyComponentConstants.TERMINOLOGY_ID)
 				.put("oid", "oid_" + shortName)
 				.put("primaryLanguage", "primaryLanguage")
-				.put("organizationLink", "organizationLink")
-				.build();
-
+				.put("organizationLink", "organizationLink");
+		
+		if (extensionOf != null) {
+			requestBody.put("extensionOf", extensionOf);
+		} else if (branchPath != null) {
+			requestBody.put("branchPath", branchPath.getPath());
+		}
+		
 		return givenAuthenticatedRequest(SnomedApiTestConstants.ADMIN_API)
 				.contentType(ContentType.JSON)
-				.body(requestBody)
+				.body(requestBody.build())
 				.post("/codesystems")
 				.then();
 	}
@@ -66,8 +79,19 @@ public abstract class CodeSystemRestRequests {
 				.put("codesystems/{id}", id)
 				.then();
 	}
+	
+	public static ValidatableResponse upgrade(CodeSystemURI codeSystem, CodeSystemURI extensionOf) {
+		return givenAuthenticatedRequest(SnomedApiTestConstants.ADMIN_API)
+				.contentType(ContentType.JSON)
+				.body(Map.of(
+					"extensionOf", extensionOf.toString()
+				))
+				.post("codesystems/{id}/upgrades", codeSystem.toString())
+				.then();
+	}
 
 	private CodeSystemRestRequests() {
 		throw new UnsupportedOperationException("This class is not supposed to be instantiated.");
 	}
+
 }

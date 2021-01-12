@@ -28,7 +28,6 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import com.b2international.commons.CompareUtils;
-import com.b2international.commons.StringUtils;
 import com.b2international.commons.options.Options;
 import com.b2international.commons.options.OptionsBuilder;
 import com.b2international.snowowl.core.ServiceProvider;
@@ -259,18 +258,11 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 		return options;
 	}
 	
+	@JsonProperty
 	protected final Set<String> componentIds() {
 		return componentIds;
 	}
 
-	/**
-	 * @return
-	 */
-	@JsonProperty("componentIds")
-	String getTruncatedComponentIdValues() {
-		return componentIds == null ? null : StringUtils.limitedToString(componentIds, 10);
-	}
-	
 	protected final boolean containsKey(Enum<?> key) {
 		return options.containsKey(key.name());
 	}

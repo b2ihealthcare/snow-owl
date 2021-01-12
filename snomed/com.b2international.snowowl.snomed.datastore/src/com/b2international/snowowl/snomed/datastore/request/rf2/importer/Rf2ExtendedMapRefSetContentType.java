@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,11 +26,10 @@ import static com.b2international.snowowl.snomed.common.SnomedRf2Headers.FIELD_M
 
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSet;
+import com.b2international.snowowl.core.request.io.ImportDefectAcceptor.ImportDefectBuilder;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
-import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationIssueReporter;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -78,38 +77,31 @@ final class Rf2ExtendedMapRefSetContentType implements Rf2RefSetContentType {
 	}
 
 	@Override
-	public void validateMembersByReferenceSetContentType(Rf2ValidationIssueReporter reporter, String[] values) {
+	public void validateMembersByReferenceSetContentType(ImportDefectBuilder defectBuilder, String[] values) {
 		final String memberId = values[0];
 		final String mapGroup = values[6];
 		final String mapPriority = values[7];
 		final String mapRule = values[8];
 		final String mapAdvice = values[9];
-		final String mapTarget = values[10];
 		final String correlationId = values[11];
 		final String mapCategoryId = values[12];
 		
-		if (Strings.isNullOrEmpty(mapGroup)) {
-			reporter.error("Extended Map group field was empty for '%s'", memberId);
-		}
+		defectBuilder
+			.whenBlank(mapGroup)
+			.error("Extended Map group field was empty for '%s'", memberId);
 		
-		if (Strings.isNullOrEmpty(mapPriority)) {
-			reporter.error("Extended Map priority field was empty for '%s'", memberId);
-		}
+		defectBuilder
+			.whenBlank(mapPriority)
+			.error("Extended Map priority field was empty for '%s'", memberId);
 		
-		if (Strings.isNullOrEmpty(mapRule)) {
-			reporter.error("Extended Map rule field was empty for '%s'", memberId);
-		}
+		defectBuilder
+			.whenBlank(mapRule)
+			.error("Extended Map rule field was empty for '%s'", memberId);
 		
-		if (Strings.isNullOrEmpty(mapAdvice)) {
-			reporter.error("Extended Map advice field was empty for '%s'", memberId);
-		}
-		
-		if (Strings.isNullOrEmpty(mapTarget)) {
-			reporter.warning("Extended Map target field was empty for '%s'", memberId);
-		}
+		defectBuilder
+			.whenBlank(mapAdvice)
+			.error("Extended Map advice field was empty for '%s'", memberId);
 				
-		validateConceptIds(reporter, correlationId, mapCategoryId);
+		validateConceptIds(defectBuilder, correlationId, mapCategoryId);
 	}
-	
-	
 }

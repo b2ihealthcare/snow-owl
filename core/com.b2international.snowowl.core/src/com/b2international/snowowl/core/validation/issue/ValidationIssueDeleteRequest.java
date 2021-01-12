@@ -15,17 +15,19 @@
  */
 package com.b2international.snowowl.core.validation.issue;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.elasticsearch.common.Strings;
-
+import com.b2international.commons.CompareUtils;
 import com.b2international.index.BulkDelete;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
+import com.b2international.snowowl.core.uri.CodeSystemURI;
+import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
 import com.b2international.snowowl.core.validation.ValidationDeleteNotification;
 import com.b2international.snowowl.core.validation.ValidationRequests;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
@@ -37,31 +39,37 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 final class ValidationIssueDeleteRequest implements Request<ServiceProvider, Boolean> {
 
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 	
 	@JsonProperty
-	private final String branch;
+	private final Set<String> resourceURIs;
 
 	@JsonProperty
-	private String toolingId;
+	private final Set<String> toolingIds;
 	
-	ValidationIssueDeleteRequest(String branch, String toolingId) {
-		this.branch = branch;
-		this.toolingId = toolingId;
+	ValidationIssueDeleteRequest(Set<String> resourceURIs, Set<String> toolingIds) {
+		this.resourceURIs = resourceURIs;
+		this.toolingIds = toolingIds;
 	}
 	
 	@Override
 	public Boolean execute(ServiceProvider context) {
 		ExpressionBuilder query = Expressions.builder();
 		
-		if (!Strings.isNullOrEmpty(branch)) {
-			query.filter(Expressions.exactMatch(ValidationIssue.Fields.BRANCH_PATH, branch));
+		if (!CompareUtils.isEmpty(resourceURIs)) {
+			List<String> branchPaths = context.service(ResourceURIPathResolver.class).resolve(context, resourceURIs.stream().map(CodeSystemURI::new).collect(Collectors.toList()));
+			query.filter(
+				Expressions.builder()
+					.should(Expressions.matchAny(ValidationIssue.Fields.RESOURCE_URI, resourceURIs))
+					.should(Expressions.matchAny(ValidationIssue.Fields.BRANCH_PATH, branchPaths))
+					.build()
+			);
 		}
 		
-		if (!Strings.isNullOrEmpty(toolingId)) {
+		if (!CompareUtils.isEmpty(toolingIds)) {
 			final Set<String> rulesToDelete = ValidationRequests.rules().prepareSearch()
 				.all()
-				.filterByTooling(toolingId)
+				.filterByToolings(toolingIds)
 				.build()
 				.execute(context)
 				.stream()
@@ -75,7 +83,7 @@ final class ValidationIssueDeleteRequest implements Request<ServiceProvider, Boo
 			writer.bulkDelete(new BulkDelete<>(ValidationIssue.class, query.build()));
 			writer.commit();
 			
-			new ValidationDeleteNotification(branch, toolingId).publish(context.service(IEventBus.class));
+			new ValidationDeleteNotification(resourceURIs, toolingIds).publish(context.service(IEventBus.class));
 			
 			return Boolean.TRUE;
 		});

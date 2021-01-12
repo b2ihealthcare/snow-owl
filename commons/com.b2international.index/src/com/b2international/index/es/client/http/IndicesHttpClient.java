@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
 import org.elasticsearch.action.admin.indices.settings.get.GetSettingsRequest;
 import org.elasticsearch.action.admin.indices.settings.get.GetSettingsResponse;
+import org.elasticsearch.action.admin.indices.settings.put.UpdateSettingsRequest;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
@@ -116,6 +117,16 @@ public final class IndicesHttpClient implements IndicesClient {
 			return esClient.indices().getSettings(req, RequestOptions.DEFAULT);
 		} catch (IOException e) {
 			throw new IndexException(String.format("Failed to get settings for index '%s'.", Arrays.toString(req.indices())), e);
+		}
+	}
+	
+	@Override
+	public AcknowledgedResponse updateSettings(UpdateSettingsRequest req) throws IOException {
+		client.checkAvailable();
+		try {
+			return esClient.indices().putSettings(req, RequestOptions.DEFAULT);
+		} catch (IOException e) {
+			throw new IndexException(String.format("Failed to update settings for index '%s'.", Arrays.toString(req.indices())), e);
 		}
 	}
 	

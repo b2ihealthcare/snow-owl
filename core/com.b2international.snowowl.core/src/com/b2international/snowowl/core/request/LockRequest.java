@@ -46,9 +46,9 @@ public abstract class LockRequest<C extends RepositoryContext, R> implements Req
 	}
 	
 	@Override
-	public R execute(C context) {
+	public final R execute(C context) {
 		try (Locks locks = Locks.on(context).lock(lockContext(), parentLockContext)) {
-			return doExecute(context);
+			return doExecute((C) context.inject().bind(Locks.class, locks).build());
 		} catch (Exception e) {
 			if (e instanceof ApiException) {
 				throw (ApiException) e;

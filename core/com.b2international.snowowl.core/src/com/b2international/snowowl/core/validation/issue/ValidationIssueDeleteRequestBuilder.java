@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,13 @@
  */
 package com.b2international.snowowl.core.validation.issue;
 
+import java.util.Set;
+
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.SystemRequestBuilder;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 6.20.0
@@ -27,24 +30,24 @@ public final class ValidationIssueDeleteRequestBuilder
 	extends BaseRequestBuilder<ValidationIssueDeleteRequestBuilder, ServiceProvider, Boolean>
 	implements SystemRequestBuilder<Boolean> {
 	
-	private String branch;
-	private String toolingId;
+	private Set<String> codeSystemURIs;
+	private Set<String> toolingIds;
 	
 	ValidationIssueDeleteRequestBuilder() {}
 	
-	public ValidationIssueDeleteRequestBuilder setBranch(String branch) {
-		this.branch = branch;
+	public ValidationIssueDeleteRequestBuilder setCodeSystemURIs(Iterable<String> codeSystemURIs) {
+		this.codeSystemURIs = codeSystemURIs == null ? null : ImmutableSet.copyOf(codeSystemURIs);
 		return getSelf();
 	}
 	
-	public ValidationIssueDeleteRequestBuilder setToolingId(String toolingId) {
-		this.toolingId = toolingId;
+	public ValidationIssueDeleteRequestBuilder setToolingIds(Iterable<String> toolingIds) {
+		this.toolingIds = toolingIds == null ? null : ImmutableSet.copyOf(toolingIds);
 		return getSelf();
 	}
 	
 	@Override
 	protected Request<ServiceProvider, Boolean> doBuild() {
-		return new ValidationIssueDeleteRequest(branch, toolingId);
+		return new ValidationIssueDeleteRequest(codeSystemURIs, toolingIds);
 	}
 	
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,12 +31,9 @@ import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.cr
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewRelationship;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createRefSetMemberRequestBody;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createRelationshipRequestBody;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.inactivateConcept;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.reactivateConcept;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.reserveComponentId;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.CoreMatchers.endsWith;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -50,6 +47,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.junit.Test;
@@ -96,103 +94,48 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void createConceptNonExistentBranch() {
-		Map<?, ?> requestBody = createConceptRequestBody(Concepts.ROOT_CONCEPT)
-				.put("commitComment", "Created new concept in non-existent branch")
-				.build();
-
-		createComponent(BranchPathUtils.createPath("MAIN/x/y/z"), SnomedComponentType.CONCEPT, requestBody).statusCode(404);
+		assertCreateConcept(BranchPathUtils.createPath("MAIN/x/y/z"), createConceptRequestBody(Concepts.ROOT_CONCEPT))
+			.statusCode(404);
 	}
 
 	@Test
 	public void createConceptEmptyParent() {
-		Map<?, ?> requestBody = createConceptRequestBody("")
-				.put("commitComment", "Created new concept with empty parentConceptId")
-				.build();
-
-		createComponent(branchPath, SnomedComponentType.CONCEPT, requestBody).statusCode(400)
-		.body("message", equalTo("1 validation error"))
-		.body("violations", hasItem("'destinationId' may not be empty (was '')"));
+		assertCreateConcept(branchPath, createConceptRequestBody(""))
+			.statusCode(400)
+			.body("message", equalTo("1 validation error"))
+			.body("violations", hasItem("'destinationId' may not be empty (was '')"));
 	}
 
 	@Test
 	public void createConceptInvalidParent() {
-		Map<?, ?> requestBody = createConceptRequestBody("11110000")
-				.put("commitComment", "Created new concept with invalid parentConceptId")
-				.build();
-
-		createComponent(branchPath, SnomedComponentType.CONCEPT, requestBody).statusCode(400);
+		assertCreateConcept(branchPath, createConceptRequestBody("11110000"))
+			.statusCode(400);
 	}
 
 	@Test
 	public void createConceptInvalidLanguageRefSet() {
-		Map<?, ?> requestBody = createConceptRequestBody(Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE, SnomedApiTestConstants.INVALID_PREFERRED_MAP)
-				.put("commitComment", "Created new concept with invalid acceptability maps")
-				.build();
-
-		createComponent(branchPath, SnomedComponentType.CONCEPT, requestBody).statusCode(400);
+		assertCreateConcept(branchPath, createConceptRequestBody(Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE, SnomedApiTestConstants.INVALID_PREFERRED_MAP))
+			.statusCode(400);
 	}
 
 	@Test
 	public void createConceptInvalidModule() {
-		Map<?, ?> requestBody = createConceptRequestBody(Concepts.ROOT_CONCEPT, "11110000", SnomedApiTestConstants.INVALID_PREFERRED_MAP)
-				.put("commitComment", "Created new concept with invalid moduleId")
-				.build();
-
-		createComponent(branchPath, SnomedComponentType.CONCEPT, requestBody).statusCode(400);
+		assertCreateConcept(branchPath, createConceptRequestBody(Concepts.ROOT_CONCEPT, "11110000", SnomedApiTestConstants.INVALID_PREFERRED_MAP))
+			.statusCode(400);
 	}
 
 	@Test
 	public void createConceptWithoutCommitComment() {
-		Map<?, ?> requestBody = createConceptRequestBody(Concepts.ROOT_CONCEPT).build();
-		createComponent(branchPath, SnomedComponentType.CONCEPT, requestBody).statusCode(400);
+		assertCreateConcept(branchPath, createConceptRequestBody(Concepts.ROOT_CONCEPT).put("commitComment", ""))
+			.statusCode(400);
 	}
-
-	@Test
-	public void createConcept() {
-		Map<?, ?> requestBody = createConceptRequestBody(Concepts.ROOT_CONCEPT)
-				.put("commitComment", "Created new concept")
-				.build();
-
-		final String locationHeader = createComponent(branchPath, SnomedComponentType.CONCEPT, requestBody).statusCode(201).extract().header("Location");
-		final String conceptId = lastPathSegment(locationHeader);
-		final SnomedConcept concept = getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, "statedAncestors(direct:true),ancestors(direct:true)").extract().as(SnomedConcept.class);
-		assertEquals(1, concept.getStatedAncestors().getTotal());
-		assertEquals(0, concept.getAncestors().getTotal());
-	}
-
-	@Test
-	public void createConceptWithReservedId() {
-		ISnomedIdentifierService identifierService = ApplicationContext.getServiceForClass(ISnomedIdentifierService.class);
-		String conceptId = Iterables.getOnlyElement(identifierService.reserve(null, ComponentCategory.CONCEPT, 1));
-
-		Map<?, ?> requestBody = createConceptRequestBody(Concepts.ROOT_CONCEPT)
-				.put("id", conceptId)
-				.put("commitComment", "Created new concept with reserved identifier")
-				.build();
-
-		createComponent(branchPath, SnomedComponentType.CONCEPT, requestBody).statusCode(201)
-		.header("Location", endsWith("/" + conceptId));
-		
-		SctId conceptSctId = SnomedRequests.identifiers().prepareGet()
-			.setComponentId(conceptId)
-			.buildAsync()
-			.execute(getBus())
-			.getSync()
-			.first()
-			.get();
-		
-		assertEquals(IdentifierStatus.ASSIGNED.getSerializedName(), conceptSctId.getStatus());
-	}
-
+	
 	@Test
 	public void createConceptOnDeletedBranch() {
 		branching.deleteBranch(branchPath);
 
-		Map<?, ?> requestBody = createConceptRequestBody(Concepts.ROOT_CONCEPT)
-				.put("commitComment", "Created new concept on deleted branch")
-				.build();
-
-		createComponent(branchPath, SnomedComponentType.CONCEPT, requestBody).statusCode(400);
+		assertCreateConcept(branchPath, createConceptRequestBody(Concepts.ROOT_CONCEPT))
+			.statusCode(400);
 	}
 
 	@Test
@@ -207,6 +150,34 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 
 		createComponent(branchPath, SnomedComponentType.RELATIONSHIP, requestBody).statusCode(400);
 	}
+	
+	@Test
+	public void createConcept() {
+		final String conceptId = createConcept(branchPath, createConceptRequestBody(Concepts.ROOT_CONCEPT));
+		final SnomedConcept concept = getConcept(conceptId, "statedAncestors(direct:true),ancestors(direct:true)");
+		assertEquals(1, concept.getStatedAncestors().getTotal());
+		assertEquals(0, concept.getAncestors().getTotal());
+	}
+	
+	@Test
+	public void createConceptWithReservedId() {
+		ISnomedIdentifierService identifierService = ApplicationContext.getServiceForClass(ISnomedIdentifierService.class);
+		String conceptId = Iterables.getOnlyElement(identifierService.reserve(null, ComponentCategory.CONCEPT, 1));
+
+		String createConceptId = createConcept(branchPath, createConceptRequestBody(Concepts.ROOT_CONCEPT).put("id", conceptId));
+		
+		assertEquals(conceptId, createConceptId);
+		
+		SctId conceptSctId = SnomedRequests.identifiers().prepareGet()
+			.setComponentId(conceptId)
+			.buildAsync()
+			.execute(getBus())
+			.getSync(1, TimeUnit.MINUTES)
+			.first()
+			.get();
+		
+		assertEquals(IdentifierStatus.ASSIGNED.getSerializedName(), conceptSctId.getStatus());
+	}
 
 	@Test
 	public void createLongIsACycle() throws Exception {
@@ -220,38 +191,6 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 				.build();
 
 		createComponent(branchPath, SnomedComponentType.RELATIONSHIP, requestBody).statusCode(400);
-	}
-
-	@Test
-	public void restoreEffectiveTimeOnReleasedConcept() throws Exception {
-		String conceptId = createNewConcept(branchPath);
-
-		String shortName = "SNOMEDCT-CON-1";
-		createCodeSystem(branchPath, shortName).statusCode(201);
-		String effectiveDate = getNextAvailableEffectiveDateAsString(shortName);
-		createVersion(shortName, "v1", effectiveDate).statusCode(201);
-
-		// After versioning, the concept should be released and have an effective time set on it
-		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId).statusCode(200)
-		.body("active", equalTo(true))
-		.body("released", equalTo(true))
-		.body("effectiveTime", equalTo(effectiveDate));
-
-		inactivateConcept(branchPath, conceptId);
-
-		// An inactivation should unset the effective time field
-		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId).statusCode(200)
-		.body("active", equalTo(false))
-		.body("released", equalTo(true))
- 		.body("effectiveTime", nullValue());
-
-		reactivateConcept(branchPath, conceptId);
-
-		// Getting the concept back to its originally released state should restore the effective time
-		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId).statusCode(200)
-		.body("active", equalTo(true))
-		.body("released", equalTo(true))
-		.body("effectiveTime", equalTo(effectiveDate));
 	}
 
 	@Test
