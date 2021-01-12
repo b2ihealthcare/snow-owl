@@ -72,7 +72,7 @@ jobs:
           name: Build prerequisites
           command: |
             docker login -u "$DOCKER_USER" -p "$DOCKER_PASS" quay.io
-            apk add --no-cache make=4.2.1-r2 nodejs npm curl openjdk11 --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
+            apk add --no-cache make nodejs npm curl openjdk11 --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
       - run:
           name: Build and push docker image
           command: |
