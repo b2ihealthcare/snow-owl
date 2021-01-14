@@ -47,13 +47,22 @@ final class NormalFormGroupSet extends AbstractSet<NormalFormGroup> {
 	public boolean add(final NormalFormGroup e) {
 		final List<NormalFormGroup> redundant = newArrayList();
 
+		if (!e.isAdditional()) {
 			for (final NormalFormGroup existingGroup : groups) {
-			if (existingGroup.isSameOrStrongerThan(e)) {
+				if (existingGroup.isAdditional()) {
+					continue;
+				}
+				
+				// Existing item should be strictly stronger, same is not good enough
+				if (existingGroup.isSameOrStrongerThan(e) && !e.isSameOrStrongerThan(existingGroup)) {
 					return false;
-				} else if (e.isSameOrStrongerThan(existingGroup)) {
+				}
+				
+				if (e.isSameOrStrongerThan(existingGroup)) {
 					redundant.add(existingGroup);
 				}
 			}
+		}
 
 		groups.removeAll(redundant);
 		groups.add(e);

@@ -443,14 +443,23 @@ public final class NormalFormGenerator implements INormalFormGenerator {
 			redundant.clear();
 			boolean found = false;
 
+			if (!comparable.isAdditional()) {
 				for (final T candidate : candidates) {
-				if (candidate.isSameOrStrongerThan(comparable)) {
+					if (candidate.isAdditional()) {
+						continue;
+					}
+					
+					// Existing item should be strictly stronger, same is not good enough
+					if (candidate.isSameOrStrongerThan(comparable) && !comparable.isSameOrStrongerThan(candidate)) {
 						found = true;
 						break;
-				} else if (comparable.isSameOrStrongerThan(candidate)) {
+					} 
+					
+					if (comparable.isSameOrStrongerThan(candidate)) {
 						redundant.add(candidate);
 					}
 				}
+			}
 			
 			if (!found) {
 				candidates.removeAll(redundant);
