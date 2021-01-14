@@ -28,11 +28,16 @@ public class MrcmExporterImpl implements MrcmExporter {
 	@Override
 	public void doExport(String user, OutputStream content, MrcmExportFormat exportFormat) {
 		switch (exportFormat) {
-		case CSV: new CsvMrcmExporter().doExport(user, content);
-		case XMI: new XMIMrcmExporter().doExport(user, content);
-		case JSON: new JsonMrcmExporter().doExport(user, content);
-		default: throw new UnsupportedOperationException("No exporter is registered for " + exportFormat); 
-		
+			case CSV:
+				new CsvMrcmExporter().doExport(user, content);
+				break;
+			case XMI:
+				new XMIMrcmExporter().doExport(user, content);
+				break;
+			case JSON:
+				new JsonMrcmExporter().doExport(user, content);
+				break;
+			default: throw new UnsupportedOperationException("No exporter is registered for " + exportFormat); 
 		}
 	}
 
