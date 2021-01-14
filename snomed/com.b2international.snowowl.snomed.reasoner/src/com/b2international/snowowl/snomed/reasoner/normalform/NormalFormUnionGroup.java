@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2013-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,7 +59,7 @@ final class NormalFormUnionGroup implements NormalFormProperty {
 	public NormalFormUnionGroup(final Iterable<NormalFormProperty> properties) {
 		checkNotNull(properties, "properties");
 		this.properties = ImmutableList.copyOf(properties);
-		this.unionGroupNumber = UNKOWN_GROUP;
+		this.unionGroupNumber = UNKNOWN_GROUP;
 	}
 
 	public List<NormalFormProperty> getProperties() {
@@ -71,7 +71,7 @@ final class NormalFormUnionGroup implements NormalFormProperty {
 	}
 
 	public void setUnionGroupNumber(final int unionGroupNumber) {
-		checkState(this.unionGroupNumber == UNKOWN_GROUP, "Union group number is already set.");
+		checkState(this.unionGroupNumber == UNKNOWN_GROUP, "Union group number is already set.");
 		checkArgument(unionGroupNumber > 0, "Illegal union group number '%s'.", unionGroupNumber);
 		this.unionGroupNumber = unionGroupNumber;
 	}
@@ -96,11 +96,20 @@ final class NormalFormUnionGroup implements NormalFormProperty {
 		 */
 		return this.properties
 			.stream()
+			.filter(ourProperty -> !ourProperty.isAdditional())
 			.allMatch(ourProperty -> other.properties
 				.stream()
+				.filter(otherProperty -> !otherProperty.isAdditional())
 				.anyMatch(otherProperty -> ourProperty.isSameOrStrongerThan(otherProperty)));
 	}
 
+	@Override
+	public boolean isAdditional() {
+		// Union groups should be considered "additional" if they have no non-additional properties
+		return properties.stream()
+			.allMatch(NormalFormProperty::isAdditional);
+	}
+	
 	@Override
 	public int hashCode() {
 		return Objects.hash(properties);

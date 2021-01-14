@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2013-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,13 +47,13 @@ final class NormalFormGroupSet extends AbstractSet<NormalFormGroup> {
 	public boolean add(final NormalFormGroup e) {
 		final List<NormalFormGroup> redundant = newArrayList();
 
-		for (final NormalFormGroup existingGroup : groups) {
+			for (final NormalFormGroup existingGroup : groups) {
 			if (existingGroup.isSameOrStrongerThan(e)) {
-				return false;
-			} else if (e.isSameOrStrongerThan(existingGroup)) {
-				redundant.add(existingGroup);
+					return false;
+				} else if (e.isSameOrStrongerThan(existingGroup)) {
+					redundant.add(existingGroup);
+				}
 			}
-		}
 
 		groups.removeAll(redundant);
 		groups.add(e);
@@ -96,7 +96,7 @@ final class NormalFormGroupSet extends AbstractSet<NormalFormGroup> {
 			.sorted(Comparator.comparingInt(otherGroup -> otherGroup.getGroupNumber()))
 			.forEachOrdered(otherGroup -> this.groups
 				.stream()
-				.filter(group -> group.getGroupNumber() == NormalFormGroup.UNKOWN_GROUP && group.equals(otherGroup))
+				.filter(group -> group.getGroupNumber() == NormalFormGroup.UNKNOWN_GROUP && group.equals(otherGroup))
 				.findFirst()
 				.ifPresent(group -> {
 					group.adjustOrder(otherGroup);
@@ -115,7 +115,7 @@ final class NormalFormGroupSet extends AbstractSet<NormalFormGroup> {
 		int groupNumber = 1;
 
 		for (final NormalFormGroup group : groups) {
-			if (group.getGroupNumber() == NormalFormGroup.UNKOWN_GROUP) {
+			if (group.getGroupNumber() == NormalFormGroup.UNKNOWN_GROUP) {
 				while (numbersUsed.contains(groupNumber)) {
 					groupNumber++;
 				}
