@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -99,7 +99,8 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	// Module dependecy test cases - they modify the MAIN branch so should be executed after tests that rely on MAIN branch stuff
 	SnomedModuleDependencyRefsetTest.class,
 	SnomedVersioningApiTest.class,
-	// Extension test cases - 7.0.preview version currently does not support extension upgrade
+	SnomedComponentEffectiveTimeRestoreTest.class,
+	// Extension test cases - 7.x versions are currently not supported
 //	SnomedExtensionUpgradeTest.class, 
 //	SnomedExtensionDowngradeTest.class,
 //	SnomedExtensionVersioningTest.class,
@@ -109,7 +110,6 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	SnomedConceptCreatePerformanceTest.class,
 	SnomedMergePerformanceTest.class,
 	ConceptMapCompareDsvExportTest.class,
-	SnomedComponentEffectiveTimeRestoreTest.class
 })
 public class AllSnomedApiTests {
 
