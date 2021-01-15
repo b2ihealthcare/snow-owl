@@ -36,8 +36,8 @@ final class NormalFormGroupSet extends AbstractSet<NormalFormGroup> {
 	 * Adds the specified group to this set if it is not already present.
 	 * <p>
 	 * More formally, adds the specified group e to this set if no group e2 exists
-	 * where e2.isSameOrStrongerThan(e) applies. If this set already contains such
-	 * group, the call leaves the set unchanged and returns <code>false</code>.
+	 * where e2 is "strictly stronger" than e. If this set already contains such 
+	 * a group, the call leaves the set unchanged and returns <code>false</code>.
 	 * <p>
 	 * If no current group can be matched this way to group e, the call removes all
 	 * current e(i) members from the set where e.isSameOrStrongerThan(e(i)) applies,
@@ -54,12 +54,10 @@ final class NormalFormGroupSet extends AbstractSet<NormalFormGroup> {
 				}
 				
 				// Existing item should be strictly stronger, same is not good enough
-				if (existingGroup.isSameOrStrongerThan(e) && !e.isSameOrStrongerThan(existingGroup)) {
-					return false;
-				}
-				
 				if (e.isSameOrStrongerThan(existingGroup)) {
 					redundant.add(existingGroup);
+				} else if (existingGroup.isSameOrStrongerThan(e)) {
+					return false;
 				}
 			}
 		}

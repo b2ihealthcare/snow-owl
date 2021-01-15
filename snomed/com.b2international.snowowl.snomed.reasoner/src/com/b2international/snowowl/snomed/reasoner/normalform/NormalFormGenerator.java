@@ -450,14 +450,12 @@ public final class NormalFormGenerator implements INormalFormGenerator {
 					}
 					
 					// Existing item should be strictly stronger, same is not good enough
-					if (candidate.isSameOrStrongerThan(comparable) && !comparable.isSameOrStrongerThan(candidate)) {
+					if (comparable.isSameOrStrongerThan(candidate)) {
+						redundant.add(candidate);
+					} else if (candidate.isSameOrStrongerThan(comparable)) {
 						found = true;
 						break;
 					} 
-					
-					if (comparable.isSameOrStrongerThan(candidate)) {
-						redundant.add(candidate);
-					}
 				}
 			}
 			
