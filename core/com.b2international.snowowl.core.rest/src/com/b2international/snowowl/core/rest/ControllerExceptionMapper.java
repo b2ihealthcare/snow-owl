@@ -68,9 +68,9 @@ public class ControllerExceptionMapper {
 	}
 	
 	@ExceptionHandler
-	@ResponseStatus(HttpStatus.REQUEST_TIMEOUT)
+	@ResponseStatus(HttpStatus.GATEWAY_TIMEOUT)
 	public RestApiError handle(final AsyncRequestTimeoutException e) {
-		return RestApiError.of(ApiError.builder(e.getMessage()).build()).build(HttpStatus.REQUEST_TIMEOUT.value());
+		return RestApiError.of(ApiError.builder("Request is taking longer than expected to complete. Retry again in a few minutes.").build()).build(HttpStatus.GATEWAY_TIMEOUT.value());
 	}
 	
 	@ExceptionHandler
