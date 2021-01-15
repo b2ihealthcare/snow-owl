@@ -29,6 +29,7 @@ import org.springframework.web.bind.MissingPathVariableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.async.AsyncRequestTimeoutException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartException;
@@ -64,6 +65,12 @@ public class ControllerExceptionMapper {
     		LOG.error("Exception during request processing", ex);
 	    	return RestApiError.of(ApiError.builder(GENERIC_USER_MESSAGE).build()).build(HttpStatus.INTERNAL_SERVER_ERROR.value());
 	    }
+	}
+	
+	@ExceptionHandler
+	@ResponseStatus(HttpStatus.REQUEST_TIMEOUT)
+	public RestApiError handle(final AsyncRequestTimeoutException e) {
+		return RestApiError.of(ApiError.builder(e.getMessage()).build()).build(HttpStatus.REQUEST_TIMEOUT.value());
 	}
 	
 	@ExceptionHandler
