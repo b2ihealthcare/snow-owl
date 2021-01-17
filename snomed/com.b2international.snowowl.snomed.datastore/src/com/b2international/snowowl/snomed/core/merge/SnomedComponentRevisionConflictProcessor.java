@@ -30,6 +30,7 @@ import com.b2international.index.revision.AddedInSourceAndDetachedInTargetConfli
 import com.b2international.index.revision.AddedInSourceAndTargetConflict;
 import com.b2international.index.revision.AddedInTargetAndDetachedInSourceConflict;
 import com.b2international.index.revision.ChangedInSourceAndDetachedInTargetConflict;
+import com.b2international.index.revision.ChangedInSourceAndTargetConflict;
 import com.b2international.index.revision.Conflict;
 import com.b2international.index.revision.ObjectId;
 import com.b2international.index.revision.Revision;
@@ -44,6 +45,7 @@ import com.b2international.snowowl.core.merge.ComponentRevisionConflictProcessor
 import com.b2international.snowowl.core.merge.IMergeConflictRule;
 import com.b2international.snowowl.core.repository.RepositoryCodeSystemProvider;
 import com.b2international.snowowl.core.repository.RevisionDocument;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
@@ -166,11 +168,17 @@ public final class SnomedComponentRevisionConflictProcessor extends ComponentRev
 		
 		// collect components from known donation conflicts
 		for (Conflict conflict : conflicts) {
+			ObjectId objectId = conflict.getObjectId();
 			// - components that have been added on both paths are potential donation candidates (due to centralized ID management (CIS), ID collision should not happen under normal circumstances, so this is certainly a donated content)
 			if (conflict instanceof AddedInSourceAndTargetConflict) {
-				AddedInSourceAndTargetConflict addedInSourceAndTargetConflict = (AddedInSourceAndTargetConflict) conflict;
-				ObjectId objectId = addedInSourceAndTargetConflict.getObjectId();
 				donatedComponentsByType.put(DocumentMapping.getClass(objectId.type()), objectId.id());
+			} else if (conflict instanceof ChangedInSourceAndTargetConflict) {
+				// always ignore effective time and module differences
+				ChangedInSourceAndTargetConflict changedInSourceAndTarget = (ChangedInSourceAndTargetConflict) conflict;
+				if (SnomedRf2Headers.FIELD_EFFECTIVE_TIME.equals(changedInSourceAndTarget.getSourceChange().getProperty()) 
+						|| SnomedRf2Headers.FIELD_MODULE_ID.equals(changedInSourceAndTarget.getSourceChange().getProperty())) {
+					donatedComponentsByType.put(DocumentMapping.getClass(objectId.type()), objectId.id());
+				}
 			}
 		}
 		

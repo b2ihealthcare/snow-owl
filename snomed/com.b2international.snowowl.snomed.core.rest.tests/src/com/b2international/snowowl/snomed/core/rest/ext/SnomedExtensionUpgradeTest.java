@@ -28,6 +28,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -37,6 +40,7 @@ import com.b2international.commons.json.Json;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -293,274 +297,171 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 
 	@Test
 	public void upgrade08WithBackAndForthDonatedConcept() {
-//		// create new version on MAIN with core module and initial char case insensitive case significance
-//		
-//		String descriptionTerm = "Description term";
-//		
-//		Map<?, ?> requestBody = ImmutableMap.builder()
-//				.put("conceptId", Concepts.ROOT_CONCEPT)
-//				.put("moduleId", Concepts.MODULE_SCT_CORE)
-//				.put("typeId", Concepts.SYNONYM)
-//				.put("term", descriptionTerm)
-//				.put("languageCode", DEFAULT_LANGUAGE_CODE)
-//				.put("acceptability", SnomedApiTestConstants.UK_ACCEPTABLE_MAP)
-//				.put("caseSignificanceId", Concepts.ONLY_INITIAL_CHARACTER_CASE_INSENSITIVE)
-//				.put("commitComment", "Created new synonym")
-//				.build();
-//
-//		String descriptionId = lastPathSegment(createComponent(BranchPathUtils.createMainPath(), SnomedComponentType.DESCRIPTION, requestBody)
-//				.statusCode(201)
-//				.extract().header("Location"));
-//		
-//		// version new description
-//		
-//		String effectiveDate = getNextAvailableEffectiveDateAsString(SNOMEDCT);
-//		String versionId = "v10";
-//		createVersion(SNOMEDCT, versionId, effectiveDate).statusCode(201);
-//		
-//		getComponent(BranchPathUtils.createMainPath(), SnomedComponentType.DESCRIPTION, descriptionId)
-//			.statusCode(200)
-//			.body("released", equalTo(true))
-//			.body("effectiveTime", equalTo(effectiveDate))
-//			.body("moduleId", equalTo(Concepts.MODULE_SCT_CORE))
-//			.body("caseSignificanceId", equalTo(Concepts.ONLY_INITIAL_CHARACTER_CASE_INSENSITIVE));
-//		
-//		// upgrade extension to latest INT version
-//		
-//		IBranchPath targetPath = BranchPathUtils.createPath(PATH_JOINER.join(
-//				Branch.MAIN_PATH, 
-//				versionId, 
-//				SnomedTerminologyComponentConstants.SNOMED_B2I_SHORT_NAME));
-//
-//		branching.createBranch(targetPath).statusCode(201);
-//		
-//		merge(branchPath, targetPath, "Upgraded B2i extension to v10").body("status", equalTo(Merge.Status.COMPLETED.name()));
-//
-//		Map<?, ?> updateRequest = ImmutableMap.builder()
-//				.put("repositoryId", SnomedDatastoreActivator.REPOSITORY_UUID)
-//				.put("branchPath", targetPath.getPath())
-//				.build();
-//
-//		updateCodeSystem(SnomedTerminologyComponentConstants.SNOMED_B2I_SHORT_NAME, updateRequest).statusCode(204);
-//		getCodeSystem(SnomedTerminologyComponentConstants.SNOMED_B2I_SHORT_NAME).statusCode(200).body("branchPath", equalTo(targetPath.getPath()));
-//		
-//		// update description on extension, change module and case significance
-//		
-//		Map<?, ?> descriptionUpdateRequest = ImmutableMap.builder()
-//				.put("caseSignificanceId", Concepts.ENTIRE_TERM_CASE_SENSITIVE)
-//				.put("moduleId", Concepts.MODULE_B2I_EXTENSION)
-//				.put("commitComment", "Changed case significance on description")
-//				.build();
-//
-//		updateComponent(targetPath, SnomedComponentType.DESCRIPTION, descriptionId, descriptionUpdateRequest).statusCode(204);
-//		
-//		getComponent(targetPath, SnomedComponentType.DESCRIPTION, descriptionId)
-//				.statusCode(200)
-//				.body("released", equalTo(true))
-//				.body("effectiveTime", nullValue())
-//				.body("moduleId", equalTo(Concepts.MODULE_B2I_EXTENSION))
-//				.body("caseSignificanceId", equalTo(Concepts.ENTIRE_TERM_CASE_SENSITIVE));
-//		
-//		// version extension
-//		
-//		String extensionEffectiveDate = getNextAvailableEffectiveDateAsString(SNOMED_B2I_SHORT_NAME);
-//		String extensionVersionId = "ev2";
-//
-//		createVersion(SNOMED_B2I_SHORT_NAME, extensionVersionId, extensionEffectiveDate).statusCode(201);
-//		
-//		getComponent(targetPath, SnomedComponentType.DESCRIPTION, descriptionId)
-//			.statusCode(200)
-//			.body("released", equalTo(true))
-//			.body("effectiveTime", equalTo(extensionEffectiveDate));
-//		
-//		// update description on MAIN ("take" extension changes and apply it in INT) 
-//		
-//		Map<?, ?> intDescriptionUpdateRequest = ImmutableMap.builder()
-//				.put("caseSignificanceId", Concepts.ENTIRE_TERM_CASE_SENSITIVE)
-//				.put("commitComment", "Changed case significance on description on MAIN")
-//				.build();
-//
-//		updateComponent(BranchPathUtils.createMainPath(), SnomedComponentType.DESCRIPTION, descriptionId, intDescriptionUpdateRequest).statusCode(204);
-//		
-//		// version INT on MAIN
-//		
-//		String newIntEffectiveDate = getNextAvailableEffectiveDateAsString(SNOMEDCT);
-//		String newIntversionId = "v11";
-//		createVersion(SNOMEDCT, newIntversionId, newIntEffectiveDate).statusCode(201);
-//		
-//		getComponent(BranchPathUtils.createMainPath(), SnomedComponentType.DESCRIPTION, descriptionId)
-//				.statusCode(200)
-//				.body("released", equalTo(true))
-//				.body("effectiveTime", equalTo(newIntEffectiveDate))
-//				.body("moduleId", equalTo(Concepts.MODULE_SCT_CORE))
-//				.body("caseSignificanceId", equalTo(Concepts.ENTIRE_TERM_CASE_SENSITIVE));
-//		
-//		// upgrade extension to new INT version
-//		
-//		IBranchPath newTargetPath = BranchPathUtils.createPath(PATH_JOINER.join(
-//				Branch.MAIN_PATH, 
-//				newIntversionId, 
-//				SnomedTerminologyComponentConstants.SNOMED_B2I_SHORT_NAME));
-//
-//		branching.createBranch(newTargetPath).statusCode(201);
-//		
-//		merge(targetPath, newTargetPath, "Upgraded B2i extension to v11").body("status", equalTo(Merge.Status.COMPLETED.name()));
-//
-//		Map<?, ?> newUpdateRequest = ImmutableMap.builder()
-//				.put("repositoryId", SnomedDatastoreActivator.REPOSITORY_UUID)
-//				.put("branchPath", newTargetPath.getPath())
-//				.build();
-//
-//		updateCodeSystem(SnomedTerminologyComponentConstants.SNOMED_B2I_SHORT_NAME, newUpdateRequest).statusCode(204);
-//		getCodeSystem(SnomedTerminologyComponentConstants.SNOMED_B2I_SHORT_NAME).statusCode(200).body("branchPath", equalTo(newTargetPath.getPath()));
-//		
-//		getComponent(newTargetPath, SnomedComponentType.DESCRIPTION, descriptionId)
-//			.statusCode(200)
-//			.body("released", equalTo(true))
-//			.body("effectiveTime", equalTo(newIntEffectiveDate))
-//			.body("moduleId", equalTo(Concepts.MODULE_SCT_CORE))
-//			.body("caseSignificanceId", equalTo(Concepts.ENTIRE_TERM_CASE_SENSITIVE));
+		// create new version on INT with core module and initial char case insensitive case significance
+		String descriptionTerm = "Description term";
+		
+		Json initialInternationalDescriptionRequest = Json.object(
+			"conceptId", Concepts.ROOT_CONCEPT,
+			"moduleId", Concepts.MODULE_SCT_CORE,
+			"typeId", Concepts.SYNONYM,
+			"term", descriptionTerm,
+			"languageCode", DEFAULT_LANGUAGE_CODE,
+			"acceptability", SnomedApiTestConstants.UK_ACCEPTABLE_MAP,
+			"caseSignificanceId", Concepts.ONLY_INITIAL_CHARACTER_CASE_INSENSITIVE,
+			"commitComment", "Created new synonym"
+		);
+		
+		String internationalDescriptionId = createDescription(new CodeSystemURI(SNOMEDCT), initialInternationalDescriptionRequest);
+		
+		String effectiveDate = getNextAvailableEffectiveDateAsString(SNOMEDCT);
+		createVersion(SNOMEDCT, effectiveDate, effectiveDate).statusCode(201);
+		
+		// create extension on the latest SI VERSION
+		CodeSystem extension = createExtension(CodeSystemURI.branch(SNOMEDCT, effectiveDate), branchPath.lastSegment());
+		String extensionModuleId = createModule(extension);
+		
+		// update international description on extension, changing module and case significance
+		
+		Json extensionDescriptionUpdateRequest = Json.object(
+			"moduleId", extensionModuleId,
+			"caseSignificanceId", Concepts.ENTIRE_TERM_CASE_SENSITIVE,
+			"commitComment", "Changed case significance on description"
+		);
+		
+		updateDescription(extension.getCodeSystemURI(), internationalDescriptionId, extensionDescriptionUpdateRequest);
+		
+		SnomedDescription updatedInternationalDescription = getDescription(extension.getCodeSystemURI(), internationalDescriptionId);
+		assertEquals(true, updatedInternationalDescription.isReleased());
+		assertEquals(null, updatedInternationalDescription.getEffectiveTime());
+		assertEquals(extensionModuleId, updatedInternationalDescription.getModuleId());
+		assertEquals(Concepts.ENTIRE_TERM_CASE_SENSITIVE, updatedInternationalDescription.getCaseSignificanceId());
+
+		// create new extension version
+		createVersion(extension.getShortName(), "v1", Dates.now(DateFormats.SHORT)).statusCode(201);
+		
+		// donate extension changes to international via RF2 update simulation 
+		Json descriptionDonateRequest = Json.object(
+			"caseSignificanceId", Concepts.ENTIRE_TERM_CASE_SENSITIVE,
+			"commitComment", "Changed case significance on description"
+		);
+		updateDescription(new CodeSystemURI(SNOMEDCT), internationalDescriptionId, descriptionDonateRequest);
+		String donationEffectiveDate = getNextAvailableEffectiveDateAsString(SNOMEDCT);
+		createVersion(SNOMEDCT, donationEffectiveDate, donationEffectiveDate).statusCode(201);
+		
+		// upgrade extension to new INT version with donations
+
+		// start upgrade to the new available upgrade version
+		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getCodeSystemURI(), CodeSystemURI.branch(SNOMEDCT, donationEffectiveDate));
+
+		SnomedDescription updatedInternationalDescriptionOnUpgrade = getDescription(upgradeCodeSystem.getCodeSystemURI(), internationalDescriptionId);
+		assertEquals(true, updatedInternationalDescriptionOnUpgrade.isReleased());
+		assertEquals(EffectiveTimes.parse(donationEffectiveDate, DateFormats.SHORT), updatedInternationalDescriptionOnUpgrade.getEffectiveTime());
+		assertEquals(Concepts.MODULE_SCT_CORE, updatedInternationalDescriptionOnUpgrade.getModuleId());
+		assertEquals(Concepts.ENTIRE_TERM_CASE_SENSITIVE, updatedInternationalDescriptionOnUpgrade.getCaseSignificanceId());
 	}
 	
 	@Test
 	public void upgrade09DonatedConceptAndDescriptions() {
-//		// create extension concept on extension's current branch
-//		
-//		String extensionFsnTerm = "FSN of concept";
-//		String extensionPtTerm = "PT of concept";
-//		String extensionSynonymTerm = "Synonym of extension concept";
-//		
-//		Map<String, Object> fsnRequestBody = createDescriptionRequestBody(Concepts.B2I_NAMESPACE, Concepts.MODULE_B2I_EXTENSION,
-//				Concepts.FULLY_SPECIFIED_NAME, extensionFsnTerm, SnomedApiTestConstants.UK_PREFERRED_MAP);
-//		Map<String, Object> ptRequestBody = createDescriptionRequestBody(Concepts.B2I_NAMESPACE, Concepts.MODULE_B2I_EXTENSION,
-//				Concepts.SYNONYM, extensionPtTerm, SnomedApiTestConstants.UK_PREFERRED_MAP);
-//		Map<String, Object> synonymRequestBody = createDescriptionRequestBody(Concepts.B2I_NAMESPACE, Concepts.MODULE_B2I_EXTENSION, 
-//				Concepts.SYNONYM, extensionSynonymTerm, SnomedApiTestConstants.UK_ACCEPTABLE_MAP);
-//	
-//		Map<String, Object> statedIsaRequestBody = createRelationshipRequestBody(Concepts.B2I_NAMESPACE, Concepts.MODULE_B2I_EXTENSION, 
-//				Concepts.IS_A, Concepts.ROOT_CONCEPT, Concepts.STATED_RELATIONSHIP);
-//		Map<String, Object> inferredIsaRequestBody = createRelationshipRequestBody(Concepts.B2I_NAMESPACE, Concepts.MODULE_B2I_EXTENSION,
-//				Concepts.IS_A, Concepts.ROOT_CONCEPT, Concepts.INFERRED_RELATIONSHIP);
-//	
-//		Map<String, Object> extensionConceptRequestBody = createConceptRequestBody(Concepts.B2I_NAMESPACE, Concepts.MODULE_B2I_EXTENSION,
-//				ImmutableList.of(statedIsaRequestBody, inferredIsaRequestBody), 
-//				ImmutableList.of(fsnRequestBody, ptRequestBody, synonymRequestBody));
-//		
-//		String extensionConceptId = lastPathSegment(createComponent(branchPath, SnomedComponentType.CONCEPT, extensionConceptRequestBody)
-//				.statusCode(201)
-//				.extract().header("Location"));
-//		
-//		SnomedConcept extensionConcept = getComponent(branchPath, SnomedComponentType.CONCEPT, extensionConceptId, "descriptions(), relationships()")
-//				.statusCode(200)
-//				.extract()
-//				.as(SnomedConcept.class);
-//		
-//		String extensionFsnId = extensionConcept.getDescriptions().getItems().stream().filter(d -> d.getTerm().equals(extensionFsnTerm)).findFirst()
-//				.get().getId();
-//		String extensionPtId = extensionConcept.getDescriptions().getItems().stream().filter(d -> d.getTerm().equals(extensionPtTerm)).findFirst()
-//				.get().getId();
-//		String extensionSynonymId = extensionConcept.getDescriptions().getItems().stream().filter(d -> d.getTerm().equals(extensionSynonymTerm))
-//				.findFirst().get().getId();
-//	
-//		String extensionStatedIsaId = getFirstRelationshipId(extensionConcept, Concepts.STATED_RELATIONSHIP);
-//		String extensionInferredIsaId = getFirstRelationshipId(extensionConcept, Concepts.INFERRED_RELATIONSHIP);
-//	
-//		// create new version on MAIN
-//		
-//		String effectiveDate = getNextAvailableEffectiveDateAsString(SNOMEDCT);
-//		String versionId = "v7";
-//		createVersion(SNOMEDCT, versionId, effectiveDate).statusCode(201);
-//		
-//		IBranchPath targetPath = BranchPathUtils.createPath(PATH_JOINER.join(
-//				Branch.MAIN_PATH, 
-//				versionId, 
-//				SnomedTerminologyComponentConstants.SNOMED_B2I_SHORT_NAME));
-//	
-//		branching.createBranch(targetPath).statusCode(201);
-//		
-//		// create INT concept with same ID but different description and relationship IDs on version branch
-//		
-//		Map<String, Object> intFsnRequestBody = createDescriptionRequestBody(extensionFsnId, "", Concepts.MODULE_SCT_CORE,
-//				Concepts.FULLY_SPECIFIED_NAME, extensionFsnTerm, SnomedApiTestConstants.UK_PREFERRED_MAP);
-//		Map<String, Object> intPtRequestBody = createDescriptionRequestBody(extensionPtId, "", Concepts.MODULE_SCT_CORE,
-//				Concepts.SYNONYM, extensionPtTerm, SnomedApiTestConstants.UK_PREFERRED_MAP);
-//	
-//		Map<String, Object> intStatedIsaRequestBody = createRelationshipRequestBody("", Concepts.MODULE_SCT_CORE, 
-//				Concepts.IS_A, Concepts.ROOT_CONCEPT, Concepts.STATED_RELATIONSHIP);
-//		Map<String, Object> intInferredIsaRequestBody = createRelationshipRequestBody("", Concepts.MODULE_SCT_CORE,
-//				Concepts.IS_A, Concepts.ROOT_CONCEPT, Concepts.INFERRED_RELATIONSHIP);
-//		
-//		Map<String, Object> intConceptRequestBody = createConceptRequestBody(extensionConceptId, "", Concepts.MODULE_SCT_CORE,
-//				ImmutableList.of(intStatedIsaRequestBody, intInferredIsaRequestBody), 
-//				ImmutableList.of(intFsnRequestBody, intPtRequestBody));
-//		
-//		String intConceptId = lastPathSegment(createComponent(targetPath, SnomedComponentType.CONCEPT, intConceptRequestBody)
-//				.statusCode(201)
-//				.body(equalTo(""))
-//				.extract().header("Location"));
-//		
-//		SnomedConcept intConcept = getComponent(targetPath, SnomedComponentType.CONCEPT, intConceptId,
-//				"descriptions(), relationships()")
-//				.statusCode(200)
-//				.extract().as(SnomedConcept.class);
-//		
-//		String intFsnId = intConcept.getDescriptions().getItems().stream().filter(d -> d.getTerm().equals(extensionFsnTerm)).findFirst().get()
-//				.getId();
-//		String intPtId = intConcept.getDescriptions().getItems().stream().filter(d -> d.getTerm().equals(extensionPtTerm)).findFirst().get().getId();
-//	
-//		String intStatedIsaId = getFirstRelationshipId(intConcept, Concepts.STATED_RELATIONSHIP);
-//		String intInferredIsaId = getFirstRelationshipId(intConcept, Concepts.INFERRED_RELATIONSHIP);
-//	
-//		assertEquals(intConceptId, extensionConceptId);
-//		assertNotEquals(intConcept.getModuleId(), extensionConcept.getModuleId());
-//		
-//		assertEquals(intFsnId, extensionFsnId);
-//		assertEquals(intPtId, extensionPtId);
-//		assertNotEquals(intStatedIsaId, extensionStatedIsaId);
-//		assertNotEquals(intInferredIsaId, extensionInferredIsaId);
-//				
-//		// upgrade extension to new INT version
-//		
-//		merge(branchPath, targetPath, "Upgraded B2i extension to v7").body("status", equalTo(Merge.Status.COMPLETED.name()));
-//	
-//		Map<?, ?> updateRequest = ImmutableMap.builder()
-//				.put("repositoryId", SnomedDatastoreActivator.REPOSITORY_UUID)
-//				.put("branchPath", targetPath.getPath())
-//				.build();
-//	
-//		updateCodeSystem(SnomedTerminologyComponentConstants.SNOMED_B2I_SHORT_NAME, updateRequest).statusCode(204);
-//		getCodeSystem(SnomedTerminologyComponentConstants.SNOMED_B2I_SHORT_NAME).statusCode(200).body("branchPath", equalTo(targetPath.getPath()));
-//	
-//		SnomedConcept donatedConceptInExtension = getComponent(targetPath, SnomedComponentType.CONCEPT, extensionConceptId,
-//				"descriptions(), relationships()")
-//				.statusCode(200)
-//				.extract().as(SnomedConcept.class);
-//		
-//		// validate components of donated concept on extension branch
-//		
-//		List<SnomedDescription> donatedFsns = donatedConceptInExtension.getDescriptions().getItems().stream().filter(d -> d.getTerm().equals(extensionFsnTerm)).collect(toList());
-//		
-//		assertEquals(1, donatedFsns.size());
-//		SnomedDescription donatedFsn = Iterables.getOnlyElement(donatedFsns);
-//		
-//		assertEquals(Concepts.MODULE_SCT_CORE, donatedFsn.getModuleId());
-//		
-//		List<SnomedDescription> donatedPts = donatedConceptInExtension.getDescriptions().getItems().stream().filter(d -> d.getTerm().equals(extensionPtTerm)).collect(toList());
-//	
-//		assertEquals(1, donatedPts.size());
-//		SnomedDescription donatedPt = Iterables.getOnlyElement(donatedPts);
-//		
-//		assertEquals(Concepts.MODULE_SCT_CORE, donatedPt.getModuleId());
-//		
-//		Set<String> descriptionIds = donatedConceptInExtension.getDescriptions().getItems().stream().map(SnomedDescription::getId).collect(toSet());
-//		assertTrue(descriptionIds.contains(extensionSynonymId));
-//		
-//		Set<String> relationshipIds = donatedConceptInExtension.getRelationships().getItems().stream().map(SnomedRelationship::getId).collect(toSet());
-//		
-//		assertTrue(relationshipIds.contains(intStatedIsaId));
-//		assertTrue(relationshipIds.contains(intInferredIsaId));
-//		assertTrue(relationshipIds.contains(extensionStatedIsaId));
-//		assertTrue(relationshipIds.contains(extensionInferredIsaId));
+		// create extension on the latest SI VERSION
+		CodeSystem extension = createExtension(latestInternationalVersion, branchPath.lastSegment());
+		String extensionModuleId = createModule(extension);
+		
+		String extensionFsnTerm = "FSN of concept";
+		String extensionPtTerm = "PT of concept";
+		String extensionSynonymTerm = "Synonym of extension concept";
+		
+		Json fsnRequestBody = Json.object(
+			"typeId", Concepts.FULLY_SPECIFIED_NAME,
+			"term", extensionFsnTerm,
+			"languageCode", DEFAULT_LANGUAGE_CODE,
+			"acceptability", SnomedApiTestConstants.UK_PREFERRED_MAP
+		);
+		Json ptRequestBody = Json.object(
+			"typeId", Concepts.SYNONYM,
+			"term", extensionPtTerm,
+			"languageCode", DEFAULT_LANGUAGE_CODE,
+			"acceptability", SnomedApiTestConstants.UK_PREFERRED_MAP
+		);
+		Json synonymRequestBody = Json.object(
+			"typeId", Concepts.SYNONYM,
+			"term", extensionSynonymTerm,
+			"languageCode", DEFAULT_LANGUAGE_CODE,
+			"acceptability", SnomedApiTestConstants.UK_ACCEPTABLE_MAP
+		); 
+		Json statedIsa = Json.object(
+			"typeId", Concepts.IS_A,
+			"destinationId", Concepts.ROOT_CONCEPT,
+			"characteristicTypeId", Concepts.STATED_RELATIONSHIP
+		);
+		Json inferredIsa = Json.object(
+			"typeId", Concepts.IS_A,
+			"destinationId", Concepts.ROOT_CONCEPT,
+			"characteristicTypeId", Concepts.INFERRED_RELATIONSHIP
+		);
+		Json extensionConceptRequestBody = Json.object(
+			"namespaceId", Concepts.B2I_NAMESPACE,
+			"moduleId", extensionModuleId,
+			"descriptions", Json.array(fsnRequestBody, ptRequestBody, synonymRequestBody),
+			"relationships", Json.array(statedIsa, inferredIsa)
+		);
+		
+		String extensionConceptId = createConcept(extension.getCodeSystemURI(), extensionConceptRequestBody);
+		
+		// create new extension version
+		createVersion(extension.getShortName(), "v1", Dates.now(DateFormats.SHORT)).statusCode(201);
+		
+		SnomedConcept extensionConcept = getConcept(extension.getCodeSystemURI(), extensionConceptId, "descriptions()", "relationships()");
+
+		String extensionFsnId = getFirstMatchingDescription(extensionConcept, extensionFsnTerm).getId();
+		String extensionPtId = getFirstMatchingDescription(extensionConcept, extensionPtTerm).getId();
+		String extensionSynonymId = getFirstMatchingDescription(extensionConcept, extensionSynonymTerm).getId();
+		String extensionStatedIsaId = getFirstRelationshipId(extensionConcept, Concepts.STATED_RELATIONSHIP);
+		String extensionInferredIsaId = getFirstRelationshipId(extensionConcept, Concepts.INFERRED_RELATIONSHIP);
+
+		// simulate donation via concept create and versioning
+		// create INT concept with same ID and with same description and relationship IDs
+		String intConceptId = createConcept(new CodeSystemURI(SNOMEDCT), Json.object(
+			"id", extensionConceptId,
+			"moduleId", Concepts.MODULE_SCT_CORE,
+			"descriptions", Json.array(
+				fsnRequestBody.with("id", extensionFsnId), 
+				ptRequestBody.with("id", extensionPtId)
+			),
+			"relationships", Json.array(
+				statedIsa, 
+				inferredIsa
+			)
+		));
+		
+		String effectiveDate = getNextAvailableEffectiveDateAsString(SNOMEDCT);
+		createVersion(SNOMEDCT, effectiveDate, effectiveDate).statusCode(201);
+		
+		// start upgrade to the new available upgrade version
+		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getCodeSystemURI(), CodeSystemURI.branch(SNOMEDCT, effectiveDate));
+
+		SnomedConcept donatedConceptInExtension = getConcept(upgradeCodeSystem.getCodeSystemURI(), intConceptId, "descriptions()", "relationships()");
+		
+		// validate components of donated concept on extension branch
+		// same ID, different module
+		assertNotEquals(donatedConceptInExtension.getModuleId(), extensionConcept.getModuleId());
+		
+		SnomedDescription donatedFsn = getFirstMatchingDescription(donatedConceptInExtension, extensionFsnTerm);
+		assertEquals(extensionFsnId, donatedFsn.getId());
+		assertEquals(Concepts.MODULE_SCT_CORE, donatedFsn.getModuleId());
+		
+		SnomedDescription donatedPt = getFirstMatchingDescription(donatedConceptInExtension, extensionPtTerm);
+		assertEquals(extensionPtId, donatedPt.getId());
+		assertEquals(Concepts.MODULE_SCT_CORE, donatedPt.getModuleId());
+		
+		Set<String> descriptionIds = donatedConceptInExtension.getDescriptions().getItems().stream().map(SnomedDescription::getId).collect(Collectors.toSet());
+		assertThat(descriptionIds)
+			.hasSize(3)
+			.contains(extensionSynonymId);
+
+		Set<String> relationshipIds = donatedConceptInExtension.getRelationships().getItems().stream().map(SnomedRelationship::getId).collect(Collectors.toSet());
+		assertThat(relationshipIds)
+			.hasSize(4)
+			.contains(extensionStatedIsaId, extensionInferredIsaId);
 	}
 	
 	@Test
@@ -1362,6 +1263,10 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 //	
 	private String getFirstRelationshipId(SnomedConcept concept, String characteristicTypeId) {
 		return concept.getRelationships().getItems().stream().filter(r -> characteristicTypeId.equals(r.getCharacteristicTypeId())).findFirst().get().getId();
+	}
+	
+	private SnomedDescription getFirstMatchingDescription(SnomedConcept extensionConcept, String extensionFsnTerm) {
+		return extensionConcept.getDescriptions().getItems().stream().filter(d -> d.getTerm().equals(extensionFsnTerm)).findFirst().get();
 	}
 	
 }

@@ -782,6 +782,10 @@ public final class StagingArea {
 				for (JsonNode objectToUpdate : objectsToUpdate) {
 					// read into revision object first
 					Revision oldRevision = mapper.convertValue(objectToUpdate, type);
+					// if already marked as revised due to donation, or already applied, then skip
+					if (revisionsToReviseOnMergeSource.containsEntry(type, oldRevision.getId())) {
+						continue;
+					}
 					
 					// apply the JSON patch from the updates in place on the same JSON tree
 					ArrayNode patch = mapper.createArrayNode();
