@@ -48,6 +48,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.flipkart.zjsonpatch.JsonDiff;
 import com.flipkart.zjsonpatch.JsonPatch;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.*;
 
 /**
@@ -108,6 +109,18 @@ public final class StagingArea {
 	 */
 	public <T> T read(RevisionIndexRead<T> read) {
 		return index.read(branchPath, read);
+	}
+	
+	/**
+	 * Reads from the underlying index using the branch that is currently being merged into this {@link StagingArea}'s branch.
+	 * 
+	 * @param read
+	 * @return
+	 * @throws IllegalStateException - if the method is called during standard commits
+	 */
+	public <T> T readFromMergeSource(RevisionIndexRead<T> read) {
+		Preconditions.checkState(isMerge(), "Cannot read revisions from mergeSource branch in non-merge scenarios. Perform a merge() before calling this method.");
+		return index.read(mergeFromBranchRef, read);
 	}
 	
 	/**
@@ -349,8 +362,10 @@ public final class StagingArea {
 		});
 		
 		// apply revised flag on merge source branch
-		for (Class<?> type : revisionsToReviseOnMergeSource.keySet()) {
-			writer.setRevised(type, ImmutableSet.copyOf(revisionsToReviseOnMergeSource.get(type)), mergeFromBranchRef);
+		if (isMerge()) {
+			for (Class<?> type : revisionsToReviseOnMergeSource.keySet()) {
+				writer.setRevised(type, ImmutableSet.copyOf(revisionsToReviseOnMergeSource.get(type)), mergeFromBranchRef);
+			}
 		}
 		
 		// register detail changes only if this is a regular commit, or is it a squash merge commit 
@@ -501,6 +516,15 @@ public final class StagingArea {
 	}
 	
 	/**
+	 * @return the branch path that's content is currently being merged into this {@link StagingArea}'s branch path.
+	 * @throws IllegalStateException - if trying to get the branch in non-merge scenarios
+	 */
+	public String getMergeFromBranchPath() {
+		Preconditions.checkState(isMerge(), "Cannot get merge from branch path in non-merge scenarios. Start a merge() before calling this method.");
+		return mergeFromBranchRef.path();
+	}
+	
+	/**
 	 * Reset staging area to empty.
 	 */
 	private void reset() {
@@ -551,17 +575,6 @@ public final class StagingArea {
 		return this;
 	}
 	
-	public StagingArea stageChange(String key, Object changed) {
-		checkArgument(!(changed instanceof Revision), "Use the other stageChange method properly track changes for revision documents.");
-		ObjectId id = toObjectId(changed, key);
-		if (stagedObjects.containsKey(id)) {
-			stagedObjects.put(id, stagedObjects.get(id).withObject(changed, true));
-		} else {
-			stagedObjects.put(id, changed(changed, null, true));
-		}
-		return this;
-	}
-	
 	public StagingArea stageRemove(Revision removedRevision) {
 		return stageRemove(removedRevision, true);
 	}
@@ -577,6 +590,10 @@ public final class StagingArea {
 	public StagingArea stageRemove(String key, Object removed, boolean commit) {
 		stagedObjects.put(toObjectId(removed, key), removed(removed, null, commit));
 		return this;
+	}
+	
+	public void reviseOnMergeSource(Class<?> type, String id) {
+		revisionsToReviseOnMergeSource.put(type, id);
 	}
 	
 	private ObjectId toObjectId(Object obj, String id) {
@@ -789,6 +806,10 @@ public final class StagingArea {
 			final Map<String, ? extends Revision> oldRevisionsById = FluentIterable.from(oldRevisions).uniqueIndex(Revision::getId);
 			
 			newRevisions.forEach(rev -> {
+				// skip new objects that are already marked as revised on merge source, content that is present on target should take place instead
+				if (revisionsToReviseOnMergeSource.containsEntry(rev.getClass(), rev.getId())) {
+					return;
+				}
 				if (oldRevisionsById.containsKey(rev.getId())) {
 					stageChange(oldRevisionsById.get(rev.getId()), rev, squash);
 				} else {

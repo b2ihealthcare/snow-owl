@@ -41,6 +41,7 @@ import com.b2international.snowowl.snomed.core.rest.classification.SnomedClassif
 import com.b2international.snowowl.snomed.core.rest.compare.ConceptMapCompareSnomedMapTypeReferenceSetTest;
 import com.b2international.snowowl.snomed.core.rest.components.*;
 import com.b2international.snowowl.snomed.core.rest.ext.SnomedComponentEffectiveTimeRestoreTest;
+import com.b2international.snowowl.snomed.core.rest.ext.SnomedExtensionUpgradeTest;
 import com.b2international.snowowl.snomed.core.rest.io.SnomedExportApiTest;
 import com.b2international.snowowl.snomed.core.rest.io.SnomedImportApiTest;
 import com.b2international.snowowl.snomed.core.rest.io.SnomedImportRowValidatorTest;
@@ -101,7 +102,7 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	SnomedVersioningApiTest.class,
 	SnomedComponentEffectiveTimeRestoreTest.class,
 	// Extension test cases - 7.x versions are currently not supported
-//	SnomedExtensionUpgradeTest.class, 
+	SnomedExtensionUpgradeTest.class, 
 //	SnomedExtensionDowngradeTest.class,
 //	SnomedExtensionVersioningTest.class,
 	// MRCM export/importF
@@ -119,7 +120,6 @@ public class AllSnomedApiTests {
 			.around(new BundleStartRule("org.eclipse.jetty.osgi.boot"))
 			.around(new BundleStartRule("com.b2international.snowowl.core.rest"))
 			.around(new SnomedContentRule(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, Branch.MAIN_PATH, Resources.Snomed.MINI_RF2_INT, Rf2ReleaseType.FULL))
-			.around(new SnomedContentRule(SnomedTerminologyComponentConstants.SNOMED_B2I_SHORT_NAME, SnomedApiTestConstants.EXTENSION_PATH, Resources.Snomed.MINI_RF2_EXT, Rf2ReleaseType.DELTA))
 			.around(new SnomedContentRule(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, Branch.MAIN_PATH, Resources.Snomed.MINI_RF2_COMPLEX_BLOCK_MAP, Rf2ReleaseType.DELTA));
 
 }

@@ -62,6 +62,17 @@ public abstract class AbstractSnomedApiTest extends AbstractApiTest {
 				.as(SnomedConcept.class);
 	}
 	
+	protected final SnomedDescription getDescription(CodeSystemURI codeSystemURI, String descriptionId, String...expand) {
+		return assertGetDescription(codeSystemURI, descriptionId, expand)
+				.statusCode(200)
+				.extract()
+				.as(SnomedDescription.class);
+	}
+	
+	protected final ValidatableResponse assertGetDescription(CodeSystemURI codeSystemURI, String descriptionId, String...expand) {
+		return SnomedComponentRestRequests.getComponent(codeSystemURI.toString(), SnomedComponentType.DESCRIPTION, descriptionId, expand);
+	}
+	
 	protected final ValidatableResponse assertGetDescription(String descriptionId, String...expand) {
 		return SnomedComponentRestRequests.getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, expand);
 	}
@@ -71,6 +82,17 @@ public abstract class AbstractSnomedApiTest extends AbstractApiTest {
 				.statusCode(200)
 				.extract()
 				.as(SnomedDescription.class);
+	}
+	
+	protected final SnomedRelationship getRelationship(CodeSystemURI codeSystemURI, String relationshipId, String...expand) {
+		return assertGetRelationship(codeSystemURI, relationshipId, expand)
+				.statusCode(200)
+				.extract()
+				.as(SnomedRelationship.class);
+	}
+	
+	protected final ValidatableResponse assertGetRelationship(CodeSystemURI codeSystemURI, String relationshipId, String...expand) {
+		return SnomedComponentRestRequests.getComponent(codeSystemURI.toString(), SnomedComponentType.RELATIONSHIP, relationshipId, expand);
 	}
 	
 	protected final ValidatableResponse assertGetRelationship(String relationshipId, String...expand) {
@@ -166,6 +188,10 @@ public abstract class AbstractSnomedApiTest extends AbstractApiTest {
 				.as(SnomedConcepts.class);
 	}
 	
+	protected final String createDescription(CodeSystemURI codeSystemURI, Map<String, Object> body) {
+		return assertCreated(assertCreateDescription(codeSystemURI, body));
+	}
+	
 	protected final ValidatableResponse assertCreateDescription(CodeSystemURI codeSystemURI, Map<String, Object> body) {
 		return SnomedComponentRestRequests.createComponent(
 			codeSystemURI.toString(), 
@@ -177,6 +203,10 @@ public abstract class AbstractSnomedApiTest extends AbstractApiTest {
 		);
 	}
 	
+	protected final String createRelationship(CodeSystemURI codeSystemURI, Map<String, Object> body) {
+		return assertCreated(assertCreateRelationship(codeSystemURI, body));
+	}
+	
 	protected final ValidatableResponse assertCreateRelationship(CodeSystemURI codeSystemURI, Map<String, Object> body) {
 		return SnomedComponentRestRequests.createComponent(
 			codeSystemURI.toString(), 
@@ -186,6 +216,10 @@ public abstract class AbstractSnomedApiTest extends AbstractApiTest {
 				body
 			)
 		);
+	}
+	
+	protected final String createMember(CodeSystemURI codeSystemURI, Map<String, Object> body) {
+		return assertCreated(assertCreateMember(codeSystemURI, body));
 	}
 	
 	protected final ValidatableResponse assertCreateMember(CodeSystemURI codeSystemURI, Map<String, Object> body) {
