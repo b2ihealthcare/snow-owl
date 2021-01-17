@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.cr
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewRefSetMember;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewRelationship;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createRefSetMemberRequestBody;
-import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
+import static com.b2international.snowowl.test.commons.rest.RestExtensions.assertCreated;
 import static com.google.common.collect.Sets.newHashSet;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertEquals;
@@ -64,6 +64,7 @@ import org.junit.Test;
 
 import com.b2international.commons.Pair;
 import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.commons.json.Json;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.attachments.Attachment;
@@ -88,7 +89,6 @@ import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
@@ -99,7 +99,7 @@ import com.google.common.collect.Sets;
 public class SnomedExportApiTest extends AbstractSnomedApiTest {
 
 	private static final Joiner TAB_JOINER = Joiner.on('\t');
-	private static final List<ExtendedLocale> LOCALES = ImmutableList.of(ExtendedLocale.valueOf("en-gb"), ExtendedLocale.valueOf("en-us"));
+	private static final List<ExtendedLocale> LOCALES = List.of(ExtendedLocale.valueOf("en-gb"), ExtendedLocale.valueOf("en-us"));
 	
 	private static void assertArchiveContainsLines(File exportArchive, Multimap<String, Pair<Boolean, String>> fileToLinesMap) throws Exception {
 		
@@ -516,10 +516,10 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 			
 		final File exportArchive = doExport(taskBranch, config);
 		
-		String refsetMemberLine = getComponentLine(ImmutableList.<String>of(memberId, newEffectiveTime, "1", MODULE_SCT_CORE, createdRefSetId, createdConceptId));
-		String invalidRefsetMemberLine = getComponentLine(ImmutableList.<String>of(memberId, versionEffectiveTime, "1", MODULE_SCT_CORE, createdRefSetId, createdConceptId));
+		String refsetMemberLine = getComponentLine(List.<String>of(memberId, newEffectiveTime, "1", MODULE_SCT_CORE, createdRefSetId, createdConceptId));
+		String invalidRefsetMemberLine = getComponentLine(List.<String>of(memberId, versionEffectiveTime, "1", MODULE_SCT_CORE, createdRefSetId, createdConceptId));
 		
-		String newRefsetMemberLine = getComponentLine(ImmutableList.<String>of(unpublishedMemberId, versionEffectiveTime, "1", MODULE_SCT_CORE, createdRefSetId, createdConceptId));
+		String newRefsetMemberLine = getComponentLine(List.<String>of(unpublishedMemberId, versionEffectiveTime, "1", MODULE_SCT_CORE, createdRefSetId, createdConceptId));
 		
 		final Multimap<String, Pair<Boolean, String>> fileToLinesMap = ArrayListMultimap.<String, Pair<Boolean, String>>create();
 		
@@ -578,10 +578,10 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 			
 		final File exportArchive = doExport(taskBranch, config);
 		
-		String refsetMemberLine = getComponentLine(ImmutableList.<String>of(memberId, versionEffectiveTime, "0", MODULE_SCT_CORE, createdRefSetId, createdConceptId));
-		String invalidRefsetMemberLine = getComponentLine(ImmutableList.<String>of(memberId, versionEffectiveTime, "1", MODULE_SCT_CORE, createdRefSetId, createdConceptId));
+		String refsetMemberLine = getComponentLine(List.<String>of(memberId, versionEffectiveTime, "0", MODULE_SCT_CORE, createdRefSetId, createdConceptId));
+		String invalidRefsetMemberLine = getComponentLine(List.<String>of(memberId, versionEffectiveTime, "1", MODULE_SCT_CORE, createdRefSetId, createdConceptId));
 		
-		String newRefsetMemberLine = getComponentLine(ImmutableList.<String>of(newMemberId, versionEffectiveTime, "1", MODULE_SCT_CORE, createdRefSetId, createdConceptId));
+		String newRefsetMemberLine = getComponentLine(List.<String>of(newMemberId, versionEffectiveTime, "1", MODULE_SCT_CORE, createdRefSetId, createdConceptId));
 		
 		final Multimap<String, Pair<Boolean, String>> fileToLinesMap = ArrayListMultimap.<String, Pair<Boolean, String>>create();
 		
@@ -622,10 +622,10 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 			
 		final File exportArchive = doExport(branchPath, config);
 		
-		String textDefinitionLine = getComponentLine(ImmutableList.<String> of(textDefinitionId, versionEffectiveTime, "1", MODULE_SCT_CORE, conceptId, "en",
+		String textDefinitionLine = getComponentLine(List.<String> of(textDefinitionId, versionEffectiveTime, "1", MODULE_SCT_CORE, conceptId, "en",
 				Concepts.TEXT_DEFINITION, "Description term", Concepts.ONLY_INITIAL_CHARACTER_CASE_INSENSITIVE));
 		
-		String unpublishedTextDefinitionLine = getComponentLine(ImmutableList.<String> of(unpublishedTextDefinitionId, "", "1", MODULE_SCT_CORE, conceptId, "en",
+		String unpublishedTextDefinitionLine = getComponentLine(List.<String> of(unpublishedTextDefinitionId, "", "1", MODULE_SCT_CORE, conceptId, "en",
 				Concepts.TEXT_DEFINITION, "Description term", Concepts.ONLY_INITIAL_CHARACTER_CASE_INSENSITIVE));
 
 		final Multimap<String, Pair<Boolean, String>> fileToLinesMap = ArrayListMultimap.<String, Pair<Boolean, String>>create();
@@ -1001,15 +1001,11 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		
 		String owlExpression = "";
 		
-		Map<?, ?> memberRequestBody = createRefSetMemberRequestBody(Concepts.REFSET_OWL_AXIOM, Concepts.ROOT_CONCEPT)
-				.put("owlExpression", owlExpression)
-				.put("commitComment", "Created new OWL axiom reference set member")
-				.build();
+		Json memberRequestBody = createRefSetMemberRequestBody(Concepts.REFSET_OWL_AXIOM, Concepts.ROOT_CONCEPT)
+				.with("owlExpression", owlExpression)
+				.with("commitComment", "Created new OWL axiom reference set member");
 
-		String memberId = lastPathSegment(createComponent(branchPath, SnomedComponentType.MEMBER, memberRequestBody)
-			.statusCode(201)
-			.body(equalTo(""))
-			.extract().header("Location"));
+		String memberId = assertCreated(createComponent(branchPath, SnomedComponentType.MEMBER, memberRequestBody));
 		
 		// export delta rf2
 		final Map<String, Object> config = ImmutableMap.<String, Object>builder()
@@ -1063,59 +1059,51 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void exportUnpublishedMRCMReferenceSetMembers() throws Exception {
 		
-		Map<?, ?> mrcmDomainRequestBody = createRefSetMemberRequestBody(Concepts.REFSET_MRCM_DOMAIN_INTERNATIONAL, Concepts.ROOT_CONCEPT)
-				.put(SnomedRf2Headers.FIELD_MRCM_DOMAIN_CONSTRAINT, "domainConstraint")
-				.put(SnomedRf2Headers.FIELD_MRCM_PARENT_DOMAIN, "parentDomain")
-				.put(SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_CONSTRAINT, "proximalPrimitiveConstraint")
-				.put(SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_REFINEMENT, "proximalPrimitiveRefinement")
-				.put(SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION, "domainTemplateForPrecoordination")
-				.put(SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION, "domainTemplateForPostcoordination")
-				.put(SnomedRf2Headers.FIELD_MRCM_EDITORIAL_GUIDE_REFERENCE, "editorialGuideReference")
-				.put("commitComment", "Created new MRCM domain reference set member")
-				.build();
+		Json mrcmDomainRequestBody = createRefSetMemberRequestBody(Concepts.REFSET_MRCM_DOMAIN_INTERNATIONAL, Concepts.ROOT_CONCEPT)
+				.with(Json.object(
+					SnomedRf2Headers.FIELD_MRCM_DOMAIN_CONSTRAINT, "domainConstraint",
+					SnomedRf2Headers.FIELD_MRCM_PARENT_DOMAIN, "parentDomain",
+					SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_CONSTRAINT, "proximalPrimitiveConstraint",
+					SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_REFINEMENT, "proximalPrimitiveRefinement",
+					SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION, "domainTemplateForPrecoordination",
+					SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION, "domainTemplateForPostcoordination",
+					SnomedRf2Headers.FIELD_MRCM_EDITORIAL_GUIDE_REFERENCE, "editorialGuideReference",
+					"commitComment", "Created new MRCM domain reference set member"
+				));
 
-		String mrcmDomainRefsetMemberId = lastPathSegment(createComponent(branchPath, SnomedComponentType.MEMBER, mrcmDomainRequestBody)
-				.statusCode(201)
-				.extract().header("Location"));
+		String mrcmDomainRefsetMemberId = assertCreated(createComponent(branchPath, SnomedComponentType.MEMBER, mrcmDomainRequestBody));
 		
 		Map<?, ?> mrcmAttributeDomainRequestBody = createRefSetMemberRequestBody(Concepts.REFSET_MRCM_ATTRIBUTE_DOMAIN_INTERNATIONAL, Concepts.ROOT_CONCEPT)
-				.put(SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID, Concepts.ROOT_CONCEPT)
-				.put(SnomedRf2Headers.FIELD_MRCM_GROUPED, Boolean.TRUE)
-				.put(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_CARDINALITY, "attributeCardinality")
-				.put(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_IN_GROUP_CARDINALITY, "attributeInGroupCardinality")
-				.put(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID, Concepts.ROOT_CONCEPT)
-				.put(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID, Concepts.ROOT_CONCEPT)
-				.put("commitComment", "Created new MRCM attribute domain reference set member")
-				.build();
+				.with(Json.object(
+					SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID, Concepts.ROOT_CONCEPT,
+					SnomedRf2Headers.FIELD_MRCM_GROUPED, Boolean.TRUE,
+					SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_CARDINALITY, "attributeCardinality",
+					SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_IN_GROUP_CARDINALITY, "attributeInGroupCardinality",
+					SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID, Concepts.ROOT_CONCEPT,
+					SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID, Concepts.ROOT_CONCEPT,
+					"commitComment", "Created new MRCM attribute domain reference set member"
+				));
 
-		String mrcmAttributeDomainRefsetMemberId = lastPathSegment(createComponent(branchPath, SnomedComponentType.MEMBER, mrcmAttributeDomainRequestBody)
-				.statusCode(201)
-				.extract().header("Location"));
+		String mrcmAttributeDomainRefsetMemberId = assertCreated(createComponent(branchPath, SnomedComponentType.MEMBER, mrcmAttributeDomainRequestBody));
 		
 		Map<?, ?> mrcmAttributeRangeRequestBody = createRefSetMemberRequestBody(Concepts.REFSET_MRCM_ATTRIBUTE_RANGE_INTERNATIONAL, Concepts.ROOT_CONCEPT)
-				.put(SnomedRf2Headers.FIELD_MRCM_RANGE_CONSTRAINT, "rangeConstraint")
-				.put(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_RULE, "attributeRule")
-				.put(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID, Concepts.ROOT_CONCEPT)
-				.put(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID, Concepts.ROOT_CONCEPT)
-				.put("commitComment", "Created new MRCM attribute range reference set member")
-				.build();
+				.with(Json.object(
+					SnomedRf2Headers.FIELD_MRCM_RANGE_CONSTRAINT, "rangeConstraint",
+					SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_RULE, "attributeRule",
+					SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID, Concepts.ROOT_CONCEPT,
+					SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID, Concepts.ROOT_CONCEPT,
+					"commitComment", "Created new MRCM attribute range reference set member"
+				));
 
-		String mrcmAttributeRangeRefsetMemberId = lastPathSegment(createComponent(branchPath, SnomedComponentType.MEMBER, mrcmAttributeRangeRequestBody)
-				.statusCode(201)
-				.extract().header("Location"));
+		String mrcmAttributeRangeRefsetMemberId = assertCreated(createComponent(branchPath, SnomedComponentType.MEMBER, mrcmAttributeRangeRequestBody));
 		
-		Map<?, ?> mrcmModuleScopeRequestBody = createRefSetMemberRequestBody(Concepts.REFSET_MRCM_MODULE_SCOPE, Concepts.ROOT_CONCEPT)
-				.put(SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID, Concepts.ROOT_CONCEPT)
-				.put("commitComment", "Created new MRCM module scope reference set member")
-				.build();
+		Json mrcmModuleScopeRequestBody = createRefSetMemberRequestBody(Concepts.REFSET_MRCM_MODULE_SCOPE, Concepts.ROOT_CONCEPT)
+				.with(SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID, Concepts.ROOT_CONCEPT)
+				.with("commitComment", "Created new MRCM module scope reference set member");
 
-		String mrcmModuleScopeRefsetMemberId = lastPathSegment(createComponent(branchPath, SnomedComponentType.MEMBER, mrcmModuleScopeRequestBody)
-				.statusCode(201)
-				.extract().header("Location"));
+		String mrcmModuleScopeRefsetMemberId = assertCreated(createComponent(branchPath, SnomedComponentType.MEMBER, mrcmModuleScopeRequestBody));
 
-		Map<String, ?> config = ImmutableMap.<String, Object>builder()
-				.put("type", Rf2ReleaseType.DELTA.name())
-				.build();
+		Json config = Json.object("type", Rf2ReleaseType.DELTA.name());
 
 		File exportArchive = doExport(branchPath, config);
 
@@ -1187,29 +1175,19 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void exportUnpublishedOWLExpressionRefsetMembers() throws Exception {
 		
-		Map<?, ?> owlOntologyRequestBody = createRefSetMemberRequestBody(Concepts.REFSET_OWL_ONTOLOGY, Concepts.ROOT_CONCEPT)
-				.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, SnomedApiTestConstants.OWL_ONTOLOGY_1)
-				.put("commitComment", "Created new OWL Ontology reference set member")
-				.build();
+		Json owlOntologyRequestBody = createRefSetMemberRequestBody(Concepts.REFSET_OWL_ONTOLOGY, Concepts.ROOT_CONCEPT)
+				.with(SnomedRf2Headers.FIELD_OWL_EXPRESSION, SnomedApiTestConstants.OWL_ONTOLOGY_1)
+				.with("commitComment", "Created new OWL Ontology reference set member");
 
-		String owlOntologyRefsetMemberId = lastPathSegment(createComponent(branchPath, SnomedComponentType.MEMBER, owlOntologyRequestBody)
-				.statusCode(201)
-				.extract().header("Location"));
+		String owlOntologyRefsetMemberId = assertCreated(createComponent(branchPath, SnomedComponentType.MEMBER, owlOntologyRequestBody));
 		
-		Map<?, ?> owlAxiomRequestBody = createRefSetMemberRequestBody(Concepts.REFSET_OWL_AXIOM, Concepts.ROOT_CONCEPT)
-				.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, SnomedApiTestConstants.owlAxiom1(Concepts.ROOT_CONCEPT))
-				.put("commitComment", "Created new OWL Axiom reference set member")
-				.build();
+		Json owlAxiomRequestBody = createRefSetMemberRequestBody(Concepts.REFSET_OWL_AXIOM, Concepts.ROOT_CONCEPT)
+				.with(SnomedRf2Headers.FIELD_OWL_EXPRESSION, SnomedApiTestConstants.owlAxiom1(Concepts.ROOT_CONCEPT))
+				.with("commitComment", "Created new OWL Axiom reference set member");
 
-		String owlAxiomRefsetMemberId = lastPathSegment(createComponent(branchPath, SnomedComponentType.MEMBER, owlAxiomRequestBody)
-				.statusCode(201)
-				.extract().header("Location"));
+		String owlAxiomRefsetMemberId = assertCreated(createComponent(branchPath, SnomedComponentType.MEMBER, owlAxiomRequestBody));
 		
-		Map<String, Object> config = ImmutableMap.<String, Object>builder()
-				.put("type", Rf2ReleaseType.DELTA.name())
-				.build();
-
-		File exportArchive = doExport(branchPath, config);
+		File exportArchive = doExport(branchPath, Json.object("type", Rf2ReleaseType.DELTA.name()));
 
 		String owlOntologyMemberLine = TAB_JOINER.join(owlOntologyRefsetMemberId, 
 				"", 
@@ -1252,11 +1230,11 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 	}
 	
 	private static String createDescriptionLine(String id, String effectiveTime, String conceptId, String languageCode, String type, String term, String caseSignificance) {
-		return getComponentLine(ImmutableList.<String> of(id, effectiveTime, "1", MODULE_SCT_CORE, conceptId, languageCode, type, term, caseSignificance));
+		return getComponentLine(List.of(id, effectiveTime, "1", MODULE_SCT_CORE, conceptId, languageCode, type, term, caseSignificance));
 	}
 	
 	private static String createLanguageRefsetMemberLine(IBranchPath branchPath, String descriptionId, String effectiveTime, String languageRefsetId, String acceptabilityId) {
-		return getComponentLine(ImmutableList.<String> of(getLanguageRefsetMemberId(branchPath, descriptionId, languageRefsetId), effectiveTime, "1", MODULE_SCT_CORE, languageRefsetId, descriptionId,
+		return getComponentLine(List.of(getLanguageRefsetMemberId(branchPath, descriptionId, languageRefsetId), effectiveTime, "1", MODULE_SCT_CORE, languageRefsetId, descriptionId,
 				acceptabilityId));
 	}
 	

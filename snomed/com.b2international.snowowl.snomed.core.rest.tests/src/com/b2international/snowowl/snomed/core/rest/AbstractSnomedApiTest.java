@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,11 @@
  */
 package com.b2international.snowowl.snomed.core.rest;
 
-import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
+import static com.b2international.snowowl.test.commons.rest.RestExtensions.assertCreated;
 
 import java.util.Map;
 
+import com.b2international.commons.json.Json;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
@@ -26,8 +27,6 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.test.commons.rest.AbstractApiTest;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 
 import io.restassured.response.ValidatableResponse;
 
@@ -86,11 +85,15 @@ public abstract class AbstractSnomedApiTest extends AbstractApiTest {
 	}
 	
 	protected final ValidatableResponse assertUpdateConcept(final String path, final String conceptId, Map<String, Object> update) {
-		final Map<String, Object> request = Maps.newHashMap(update);
-		if (!request.containsKey("commitComment")) {
-			request.put("commitComment", "Update Concept");
-		}
-		return SnomedComponentRestRequests.updateComponent(path, SnomedComponentType.CONCEPT, conceptId, request);
+		return SnomedComponentRestRequests.updateComponent(
+			path, 
+			SnomedComponentType.CONCEPT, 
+			conceptId, 
+			Json.assign(
+				Json.object("commitComment", "Update Concept"), 
+				update
+			)
+		);
 	}
 	
 	protected final void updateConcept(final String conceptId, Map<String, Object> update) {
@@ -125,45 +128,75 @@ public abstract class AbstractSnomedApiTest extends AbstractApiTest {
 		assertUpdateRelationship(relationshipId, update).statusCode(204);
 	}
 	
-	protected final String createConcept(CodeSystemURI codeSystemURI, ImmutableMap.Builder<String, Object> body) {
-		return lastPathSegment(assertCreateConcept(codeSystemURI, body)
-					.assertThat()
-					.statusCode(201)
-					.extract()
-					.header("Location"));
+	protected final String createConcept(CodeSystemURI codeSystemURI, Map<String, Object> body) {
+		return assertCreated(assertCreateConcept(codeSystemURI, body));
 	}
 	
-	protected final String createConcept(IBranchPath branchPath, ImmutableMap.Builder<String, Object> body) {
-		return lastPathSegment(assertCreateConcept(branchPath, body)
-					.assertThat()
-					.statusCode(201)
-					.extract()
-					.header("Location"));
+	protected final String createConcept(IBranchPath branchPath, Map<String, Object> body) {
+		return assertCreated(assertCreateConcept(branchPath, body));
 	}
 	
-	protected final ValidatableResponse assertCreateConcept(CodeSystemURI codeSystemURI, ImmutableMap.Builder<String, Object> body) {
-		final Map<String, Object> request = Maps.newHashMap(body.build());
-		if (!request.containsKey("commitComment")) {
-			request.put("commitComment", "New Concept");
-		}
-		return SnomedComponentRestRequests.createComponent(codeSystemURI.toString(), SnomedComponentType.CONCEPT, request);
+	protected final ValidatableResponse assertCreateConcept(CodeSystemURI codeSystemURI, Map<String, Object> body) {
+		return SnomedComponentRestRequests.createComponent(
+			codeSystemURI.toString(), 
+			SnomedComponentType.CONCEPT, 
+			Json.assign(
+				Json.object("commitComment", "New Concept"),
+				body
+			)
+		);
 	}
 	
-	protected final ValidatableResponse assertCreateConcept(IBranchPath branchPath, ImmutableMap.Builder<String, Object> body) {
-		final Map<String, Object> request = Maps.newHashMap(body.build());
-		if (!request.containsKey("commitComment")) {
-			request.put("commitComment", "New Concept");
-		}
-		return SnomedComponentRestRequests.createComponent(branchPath, SnomedComponentType.CONCEPT, request);
+	protected final ValidatableResponse assertCreateConcept(IBranchPath branchPath, Map<String, Object> body) {
+		return SnomedComponentRestRequests.createComponent(
+			branchPath, 
+			SnomedComponentType.CONCEPT, 
+			Json.assign(
+				Json.object("commitComment", "New Concept"),
+				body
+			)
+		);
 	}
 	
 	protected final SnomedConcepts searchConcept(CodeSystemURI codeSystem, Map<String, Object> filters, int limit) {
-		final Map<String, Object> params = ImmutableMap.<String, Object>builder().putAll(filters).put("limit", limit).build();
-		return SnomedComponentRestRequests.searchComponent(codeSystem.getUri(), SnomedComponentType.CONCEPT, params)
+		return SnomedComponentRestRequests.searchComponent(codeSystem.getUri(), SnomedComponentType.CONCEPT, Json.assign(filters, Json.object("limit", limit)))
 				.assertThat()
 				.statusCode(200)
 				.extract()
 				.as(SnomedConcepts.class);
+	}
+	
+	protected final ValidatableResponse assertCreateDescription(CodeSystemURI codeSystemURI, Map<String, Object> body) {
+		return SnomedComponentRestRequests.createComponent(
+			codeSystemURI.toString(), 
+			SnomedComponentType.DESCRIPTION, 
+			Json.assign(
+				Json.object("commitComment", "New Description"),
+				body
+			)
+		);
+	}
+	
+	protected final ValidatableResponse assertCreateRelationship(CodeSystemURI codeSystemURI, Map<String, Object> body) {
+		return SnomedComponentRestRequests.createComponent(
+			codeSystemURI.toString(), 
+			SnomedComponentType.RELATIONSHIP, 
+			Json.assign(
+				Json.object("commitComment", "New Relationship"),
+				body
+			)
+		);
+	}
+	
+	protected final ValidatableResponse assertCreateMember(CodeSystemURI codeSystemURI, Map<String, Object> body) {
+		return SnomedComponentRestRequests.createComponent(
+			codeSystemURI.toString(), 
+			SnomedComponentType.MEMBER, 
+			Json.assign(
+				Json.object("commitComment", "New Member"),
+				body
+			)	
+		);
 	}
 	
 }

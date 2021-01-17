@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,18 +22,20 @@ import static com.b2international.snowowl.snomed.core.rest.CodeSystemVersionRest
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.createComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.getComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createConceptRequestBody;
-import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
+import static com.b2international.snowowl.test.commons.rest.RestExtensions.assertCreated;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Date;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.xtext.util.Pair;
 import org.eclipse.xtext.util.Tuples;
 import org.junit.Test;
 
+import com.b2international.commons.json.Json;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.b2international.snowowl.core.date.DateFormats;
@@ -49,7 +51,6 @@ import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
 public class SnomedModuleDependencyRefsetTest extends AbstractSnomedApiTest {
@@ -62,15 +63,11 @@ public class SnomedModuleDependencyRefsetTest extends AbstractSnomedApiTest {
 
 		IBranchPath mainPath = BranchPathUtils.createMainPath();
 
-		Map<?, ?> conceptRequestBody = createConceptRequestBody(Concepts.MODULE_ROOT, Concepts.MODULE_SCT_CORE, // it must belong to the core module
+		Json conceptRequestBody = createConceptRequestBody(Concepts.MODULE_ROOT, Concepts.MODULE_SCT_CORE, // it must belong to the core module
 				SnomedApiTestConstants.UK_PREFERRED_MAP)
-				.put("commitComment", "Created concept with INT core module")
-				.build();
+				.with("commitComment", "Created concept with INT core module");
 
-		String conceptId = lastPathSegment(createComponent(mainPath, SnomedComponentType.CONCEPT, conceptRequestBody)
-				.statusCode(201)
-				.body(equalTo(""))
-				.extract().header("Location"));
+		String conceptId = assertCreated(createComponent(mainPath, SnomedComponentType.CONCEPT, conceptRequestBody));
 
 		getComponent(mainPath, SnomedComponentType.CONCEPT, conceptId)
 			.statusCode(200)
@@ -111,7 +108,7 @@ public class SnomedModuleDependencyRefsetTest extends AbstractSnomedApiTest {
 		final String shortName = "SNOMEDCT-MODULEDEPENDENCY";
 		createCodeSystem(branchPath, shortName).statusCode(201);
 
-		ImmutableSet<String> INT_MODULE_IDS = ImmutableSet.of(Concepts.MODULE_SCT_MODEL_COMPONENT, Concepts.MODULE_SCT_CORE, ICD_10_MAPPING_MODULE);
+		Set<String> INT_MODULE_IDS = Set.of(Concepts.MODULE_SCT_MODEL_COMPONENT, Concepts.MODULE_SCT_CORE, ICD_10_MAPPING_MODULE);
 		Map<Pair<String, String>, Date> moduleToReferencedComponentAndEffectiveDateMap = Maps.newHashMap();
 
 		SnomedReferenceSetMembers intModuleDependencyMembers = SnomedRequests.prepareSearchMember()
@@ -133,20 +130,19 @@ public class SnomedModuleDependencyRefsetTest extends AbstractSnomedApiTest {
 		});
 		
 		// create Norwegian module
-		Map<?, ?> norwegianModuleRequestBody = createConceptRequestBody(Concepts.MODULE_ROOT, NORWEGIAN_MODULE_CONCEPT_ID, SnomedApiTestConstants.UK_PREFERRED_MAP)
-				.put("id", NORWEGIAN_MODULE_CONCEPT_ID)
-				.put("commitComment", "Created norwegian module concept")
-				.build();
+		Json norwegianModuleRequestBody = createConceptRequestBody(Concepts.MODULE_ROOT, NORWEGIAN_MODULE_CONCEPT_ID, SnomedApiTestConstants.UK_PREFERRED_MAP)
+				.with("id", NORWEGIAN_MODULE_CONCEPT_ID)
+				.with("commitComment", "Created norwegian module concept");
 		createComponent(branchPath, SnomedComponentType.CONCEPT, norwegianModuleRequestBody).statusCode(201);
 		
 		// create both inferred and stated relationships
-		Map<?, ?> inferredRelationshipRequestBody = SnomedRestFixtures
+		Json inferredRelationshipRequestBody = SnomedRestFixtures
 				.createRelationshipRequestBody(NORWEGIAN_MODULE_CONCEPT_ID, Concepts.IS_A, Concepts.MODULE_ROOT, NORWEGIAN_MODULE_CONCEPT_ID, Concepts.INFERRED_RELATIONSHIP, 0)
-				.put("commitComment", "Created inferred is_a from the norwegian module concept to SCT_MODULE_CORE").build();
+				.with("commitComment", "Created inferred is_a from the norwegian module concept to SCT_MODULE_CORE");
 		
-		Map<?, ?> statedRelationshipRequestBody = SnomedRestFixtures
+		Json statedRelationshipRequestBody = SnomedRestFixtures
 				.createRelationshipRequestBody(NORWEGIAN_MODULE_CONCEPT_ID, Concepts.IS_A, Concepts.MODULE_ROOT, NORWEGIAN_MODULE_CONCEPT_ID, Concepts.STATED_RELATIONSHIP, 0)
-				.put("commitComment", "Created state is_a from the norwegian module concept to SCT_MODULE_CORE").build();
+				.with("commitComment", "Created state is_a from the norwegian module concept to SCT_MODULE_CORE");
 
 		createComponent(branchPath, SnomedComponentType.RELATIONSHIP, inferredRelationshipRequestBody).statusCode(201);
 		createComponent(branchPath, SnomedComponentType.RELATIONSHIP, statedRelationshipRequestBody).statusCode(201);
