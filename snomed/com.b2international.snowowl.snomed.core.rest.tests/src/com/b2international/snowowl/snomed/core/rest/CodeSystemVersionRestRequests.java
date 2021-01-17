@@ -113,6 +113,12 @@ public abstract class CodeSystemVersionRestRequests {
 
 		if (!effectiveDates.isEmpty()) {
 			Date latestEffectiveDate = Dates.parse(effectiveDates.last(), DateFormats.SHORT);
+			// XXX make sure we always use today or later dates, so all versions created in chronological order, even if some of the pre-imported content we are relying on are still in the past
+			// and adding one day to that historical version would mean a historical effective time version, which is unfortunate and can lead to inconsistencies in tests
+			Date todayEffectiveTime = Dates.todayGmt();
+			if (latestEffectiveDate.before(todayEffectiveTime)) {
+				latestEffectiveDate = todayEffectiveTime;
+			}
 			calendar.setTime(latestEffectiveDate);
 		}
 
