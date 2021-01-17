@@ -747,8 +747,11 @@ public final class StagingArea {
 		// after generic conflict processing execute domain specific merge rules via conflict processor
 		conflictProcessor.checkConflicts(this, fromChangeSet, toChangeSet).forEach(conflicts::add);
 		
-		if (!conflicts.isEmpty()) {
-			throw new BranchMergeConflictException(conflicts.stream().map(conflictProcessor::convertConflict).collect(Collectors.toList()));
+		// handle domain-specific conflict filtering, like donated content, etc.
+		final List<Conflict> conflictsToReport = conflictProcessor.filterConflicts(this, conflicts);
+		
+		if (!conflictsToReport.isEmpty()) {
+			throw new BranchMergeConflictException(conflictsToReport.stream().map(conflictProcessor::convertConflict).collect(Collectors.toList()));
 		}
 		
 		// apply property changes, conflicts in all cases, so merge commits will have the actual conflict resolutions
