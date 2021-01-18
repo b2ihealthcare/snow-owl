@@ -221,7 +221,7 @@ public final class StagingArea {
 				.filter(entry -> entry.getValue().isChanged())
 				.map(entry -> entry.getValue().getDiff())
 				.filter(diff -> type.isAssignableFrom(diff.newRevision.getClass()))
-				.filter(diff -> changedPropertyNames.stream().filter(diff::hasRevisionPropertyDiff).findFirst().isPresent());
+				.filter(diff -> diff.hasRevisionPropertyChanges(changedPropertyNames));
 	}
 	
 	/**
@@ -979,22 +979,30 @@ public final class StagingArea {
 		}
 
 		public RevisionPropertyDiff getRevisionPropertyDiff(String property) {
+			return getRevisionPropertyDiffs().get(property);
+		}
+
+		private Map<String, RevisionPropertyDiff> getRevisionPropertyDiffs() {
 			if (propertyChanges == null) {
 				propertyChanges = newHashMapWithExpectedSize(2);
-			}
-			for (ObjectNode change : Iterables.filter(diff(), ObjectNode.class)) {
-				String prop = getChangeProperty(change);
-				if (property.equals(prop)) {
+				for (ObjectNode change : Iterables.filter(diff(), ObjectNode.class)) {
+					String prop = getChangeProperty(change);
 					final String from = getChangeFromValue(change);
 					final String to = getChangeValue(change);
-					propertyChanges.put(property, new RevisionPropertyDiff(property, from, to));
+					propertyChanges.put(prop, new RevisionPropertyDiff(prop, from, to));
 				}
 			}
-			return propertyChanges.get(property);
+			return propertyChanges;
 		}
 		
-		public boolean hasRevisionPropertyDiff(String property) {
-			return getRevisionPropertyDiff(property) != null;
+		public boolean hasRevisionPropertyChanges(String property) {
+			return hasRevisionPropertyChanges(Set.of(property));
+		}
+		
+		public boolean hasRevisionPropertyChanges(Set<String> propertyNames) {
+			if (CompareUtils.isEmpty(propertyNames)) return false;
+			final Set<String> knownPropertyDiffs = getRevisionPropertyDiffs().keySet();
+			return propertyNames.stream().filter(knownPropertyDiffs::contains).findFirst().isPresent();
 		}
 		
 	}
