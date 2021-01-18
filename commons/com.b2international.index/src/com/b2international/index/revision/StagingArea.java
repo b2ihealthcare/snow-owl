@@ -69,6 +69,7 @@ public final class StagingArea {
 	private RevisionBranchRef mergeFromBranchRef;
 	private boolean squashMerge;
 	private Multimap<Class<?>, String> revisionsToReviseOnMergeSource;
+	private Multimap<Class<?>, String> externalRevisionsToReviseOnMergeSource;
 	private Object context;
 
 	StagingArea(DefaultRevisionIndex index, String branchPath, ObjectMapper mapper) {
@@ -530,6 +531,7 @@ public final class StagingArea {
 	private void reset() {
 		stagedObjects = newHashMap();
 		revisionsToReviseOnMergeSource = HashMultimap.create();
+		externalRevisionsToReviseOnMergeSource = HashMultimap.create();
 	}
 
 	public StagingArea stageNew(Revision newRevision) {
@@ -593,7 +595,7 @@ public final class StagingArea {
 	}
 	
 	public void reviseOnMergeSource(Class<?> type, String id) {
-		revisionsToReviseOnMergeSource.put(type, id);
+		externalRevisionsToReviseOnMergeSource.put(type, id);
 	}
 	
 	private ObjectId toObjectId(Object obj, String id) {
@@ -782,8 +784,8 @@ public final class StagingArea {
 				for (JsonNode objectToUpdate : objectsToUpdate) {
 					// read into revision object first
 					Revision oldRevision = mapper.convertValue(objectToUpdate, type);
-					// if already marked as revised due to donation, or already applied, then skip
-					if (revisionsToReviseOnMergeSource.containsEntry(type, oldRevision.getId())) {
+					// if already marked as revised due to donation, skip it
+					if (externalRevisionsToReviseOnMergeSource.containsEntry(type, oldRevision.getId())) {
 						continue;
 					}
 					
@@ -811,7 +813,7 @@ public final class StagingArea {
 			
 			newRevisions.forEach(rev -> {
 				// skip new objects that are already marked as revised on merge source, content that is present on target should take place instead
-				if (revisionsToReviseOnMergeSource.containsEntry(rev.getClass(), rev.getId())) {
+				if (externalRevisionsToReviseOnMergeSource.containsEntry(rev.getClass(), rev.getId())) {
 					return;
 				}
 				if (oldRevisionsById.containsKey(rev.getId())) {
@@ -844,6 +846,9 @@ public final class StagingArea {
 			final Collection<String> removedRevisionIds = fromChangeSet.getRemovedIds(type);
 			index.read(toRef, searcher -> searcher.get(type, removedRevisionIds)).forEach(this::stageRemove);
 		}
+		
+		// any externally marked revised revisions should be applied here
+		revisionsToReviseOnMergeSource.putAll(externalRevisionsToReviseOnMergeSource);
 	}
 	
 	private Map<String, Map<String, RevisionCompareDetail>> indexPropertyChangesByObject(List<RevisionCompareDetail> changeDetails) {
