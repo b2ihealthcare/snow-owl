@@ -313,7 +313,7 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 			.refSetType(newOrDirtyRevision != null ? newOrDirtyRevision.getRefSetType() : cleanRevision.getRefSetType())
 			.referencedComponentType(newOrDirtyRevision != null ? newOrDirtyRevision.getReferencedComponentType() : cleanRevision.getReferencedComponentType())
 			.mapTargetComponentType(newOrDirtyRevision != null ? newOrDirtyRevision.getMapTargetComponentType() : cleanRevision.getMapTargetComponentType())
-			.doi(doiData.getDoiScore(id));
+			.doi(doiData.getDoiScore(idLong));
 		
 		final boolean inStated = statedTaxonomy.getNewTaxonomy().containsNode(idLong);
 		final boolean inInferred = inferredTaxonomy.getNewTaxonomy().containsNode(idLong);
