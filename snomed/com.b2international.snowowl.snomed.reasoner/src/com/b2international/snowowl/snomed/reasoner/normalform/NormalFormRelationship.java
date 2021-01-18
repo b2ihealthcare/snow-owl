@@ -267,11 +267,11 @@ final class NormalFormRelationship implements NormalFormProperty {
 
 	@Override
 	public String toString() {
-		return String.format("%s: %s%s.%s%s", 
+		return String.format("%s: %s %s.%s%s", 
 			getStatementId() > 0L ? getStatementId() : "<?>",
-			isUniversal() ? "\u2200" : "\u2203",
+			isUniversal() ? "ALL" : "SOME",
 			getTypeId(),
-			isDestinationNegated() ? "\u00ac" : "",
+			isDestinationNegated() ? "NOT " : "",
 			getDestinationId());
 	}
 }
