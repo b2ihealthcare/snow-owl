@@ -147,7 +147,7 @@ public class CodeSystemVersionService {
 				.execute(bus.get())
 				.getSync(1, TimeUnit.MINUTES);
 		
-		RemoteJobEntry job = JobRequests.waitForJob(bus.get(), jobId, 1000);
+		RemoteJobEntry job = JobRequests.waitForJob(bus.get(), jobId, 500);
 		
 		if (job.isSuccessful()) {
 			return getCodeSystemVersionById(shortName, properties.getVersion());

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.ch
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewConcept;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewRelationship;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createRelationshipRequestBody;
-import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
+import static com.b2international.snowowl.test.commons.rest.RestExtensions.assertCreated;
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertEquals;
@@ -242,13 +242,9 @@ public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 		Map<?, ?> relationshipRequestBody = createRelationshipRequestBody(
 				childConceptId, Concepts.IS_A, Concepts.ROOT_CONCEPT,
 				Concepts.MODULE_SCT_MODEL_COMPONENT, Concepts.INFERRED_RELATIONSHIP, 0)
-				.put("commitComment", "Created new relationship")
-				.build();
+				.with("commitComment", "Created new relationship");
 
-		String redundantRelationshipId = lastPathSegment(createComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipRequestBody)
-				.statusCode(201)
-				.body(equalTo(""))
-				.extract().header("Location"));
+		String redundantRelationshipId = assertCreated(createComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipRequestBody));
 		
 		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, redundantRelationshipId)
 			.statusCode(200)

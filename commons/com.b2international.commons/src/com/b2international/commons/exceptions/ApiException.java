@@ -113,10 +113,10 @@ public abstract class ApiException extends FormattedRuntimeException {
 	 * @return
 	 */
 	public ApiException withAdditionalInfo(Map<String, Object> additionalInfo) {
-		if (additionalInfo == null) {
-			additionalInfo = Maps.newHashMap();
+		if (this.additionalInfo == null) {
+			this.additionalInfo = Maps.newHashMap();
 		}
-		additionalInfo.putAll(additionalInfo);
+		this.additionalInfo.putAll(additionalInfo);
 		return this;
 	}
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Iterables;
 
 import io.restassured.http.ContentType;
 import io.restassured.response.ValidatableResponse;
@@ -39,6 +40,13 @@ import io.restassured.response.ValidatableResponse;
  */
 public abstract class CodeSystemVersionRestRequests {
 
+	public static String getLatestVersion(String codeSystemId) {
+		// TODO add proper version API to control version searches
+		Map<?, ?> versions = getVersions(codeSystemId).extract().as(Map.class);
+		List<Map<?, ?>> items = (List<Map<?, ?>>) versions.get("items");
+		return (String) Iterables.getLast(items).get("version");
+	}
+	
 	public static ValidatableResponse getVersion(String shortName, String version) {
 		return givenAuthenticatedRequest(SnomedApiTestConstants.ADMIN_API)
 				.get("/codesystems/{shortName}/versions/{id}", shortName, version)
@@ -76,7 +84,8 @@ public abstract class CodeSystemVersionRestRequests {
 	public static ValidatableResponse getVersions(String shortName) {
 		return givenAuthenticatedRequest(SnomedApiTestConstants.ADMIN_API)
 				.and().contentType(ContentType.JSON)
-				.when().get("/codesystems/{shortName}/versions", shortName)
+				.when()
+				.get("/codesystems/{shortName}/versions", shortName)
 				.then();
 	}
 
@@ -104,6 +113,12 @@ public abstract class CodeSystemVersionRestRequests {
 
 		if (!effectiveDates.isEmpty()) {
 			Date latestEffectiveDate = Dates.parse(effectiveDates.last(), DateFormats.SHORT);
+			// XXX make sure we always use today or later dates, so all versions created in chronological order, even if some of the pre-imported content we are relying on are still in the past
+			// and adding one day to that historical version would mean a historical effective time version, which is unfortunate and can lead to inconsistencies in tests
+			Date todayEffectiveTime = Dates.todayGmt();
+			if (latestEffectiveDate.before(todayEffectiveTime)) {
+				latestEffectiveDate = todayEffectiveTime;
+			}
 			calendar.setTime(latestEffectiveDate);
 		}
 
