@@ -68,8 +68,8 @@ public final class StagingArea {
 	private SortedSet<RevisionBranchPoint> mergeSources;
 	private RevisionBranchRef mergeFromBranchRef;
 	private boolean squashMerge;
-	private Multimap<Class<?>, String> revisionsToReviseOnMergeSource;
-	private Multimap<Class<?>, String> externalRevisionsToReviseOnMergeSource;
+	private SetMultimap<Class<?>, String> revisionsToReviseOnMergeSource;
+	private SetMultimap<Class<?>, String> externalRevisionsToReviseOnMergeSource;
 	private Object context;
 
 	StagingArea(DefaultRevisionIndex index, String branchPath, ObjectMapper mapper) {
@@ -778,16 +778,14 @@ public final class StagingArea {
 			for (Entry<Class<? extends Revision>, Multimap<String, RevisionPropertyDiff>> entry : propertyUpdatesToApply.entrySet()) {
 				final Class<? extends Revision> type = entry.getKey();
 				final Multimap<String, RevisionPropertyDiff> propertyUpdatesByObject = entry.getValue();
+				// if already marked as revised due to donation, skip loading it and handling it
+				final Set<String> updatedIds = Sets.difference(propertyUpdatesByObject.keySet(), externalRevisionsToReviseOnMergeSource.get(type));
 				final Iterable<JsonNode> objectsToUpdate = index.read(toRef, searcher -> {
-					return searcher.search(Query.select(JsonNode.class).from(type).where(Expressions.matchAny(Revision.Fields.ID, propertyUpdatesByObject.keySet())).limit(propertyUpdatesByObject.keySet().size()).build());
+					return searcher.search(Query.select(JsonNode.class).from(type).where(Expressions.matchAny(Revision.Fields.ID, updatedIds)).limit(updatedIds.size()).build());
 				});
 				for (JsonNode objectToUpdate : objectsToUpdate) {
 					// read into revision object first
 					Revision oldRevision = mapper.convertValue(objectToUpdate, type);
-					// if already marked as revised due to donation, skip it
-					if (externalRevisionsToReviseOnMergeSource.containsEntry(type, oldRevision.getId())) {
-						continue;
-					}
 					
 					// apply the JSON patch from the updates in place on the same JSON tree
 					ArrayNode patch = mapper.createArrayNode();
@@ -806,16 +804,14 @@ public final class StagingArea {
 		
 		// apply new objects
 		for (Class<? extends Revision> type : fromChangeSet.getAddedTypes()) {
-			final Collection<String> newRevisionIds = fromChangeSet.getAddedIds(type);
+			final Set<String> addedIds = fromChangeSet.getAddedIds(type);
+			// skip new objects that are already marked as revised on merge source, content that is present on target should take place instead
+			final Set<String> newRevisionIds = Sets.difference(addedIds, externalRevisionsToReviseOnMergeSource.get(type));
 			final Iterable<? extends Revision> oldRevisions = index.read(toRef, searcher -> searcher.get(type, newRevisionIds));
 			final Iterable<? extends Revision> newRevisions = index.read(fromRef, searcher -> searcher.get(type, newRevisionIds));
 			final Map<String, ? extends Revision> oldRevisionsById = FluentIterable.from(oldRevisions).uniqueIndex(Revision::getId);
 			
 			newRevisions.forEach(rev -> {
-				// skip new objects that are already marked as revised on merge source, content that is present on target should take place instead
-				if (externalRevisionsToReviseOnMergeSource.containsEntry(rev.getClass(), rev.getId())) {
-					return;
-				}
 				if (oldRevisionsById.containsKey(rev.getId())) {
 					stageChange(oldRevisionsById.get(rev.getId()), rev, squash);
 				} else {
