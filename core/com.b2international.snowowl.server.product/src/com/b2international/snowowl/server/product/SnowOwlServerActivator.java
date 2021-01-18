@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.server.product;
 
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.launch.Framework;
@@ -49,19 +50,19 @@ public class SnowOwlServerActivator implements BundleActivator {
 		try {
 			SnowOwlServerActivator.bundleContext = context;
 			snowowl = SnowOwl.create().bootstrap().run();
-			Thread hook = new Thread() {
-	            @Override
-	            public void run() {
-	                try {
-	                    Framework systemBundle = context.getBundle(0).adapt(Framework.class);
-	                    systemBundle.stop();
-	                    systemBundle.waitForStop(60000);
-	                } catch (Exception e) {
-	                    System.err.println("Failed to cleanly shutdown OSGi Framework: " + e.getMessage());
-	                    e.printStackTrace();
-	                }
-	            }
-	        };
+			
+			final Bundle systemBundle = context.getBundle(0);
+			final Framework framework = systemBundle.adapt(Framework.class);
+			final Thread hook = new Thread(() -> {
+                try {
+                    framework.stop();
+                    framework.waitForStop(60000);
+                } catch (Exception e) {
+                    System.err.println("Failed to cleanly shutdown OSGi Framework: " + e.getMessage());
+                    e.printStackTrace();
+                }
+	        });
+	        
 	        Runtime.getRuntime().addShutdownHook(hook);
 		} catch (Throwable e) {
 			LoggerFactory.getLogger("snowowl").error(e.getMessage(), e);
@@ -79,5 +80,4 @@ public class SnowOwlServerActivator implements BundleActivator {
 		snowowl.shutdown();
 		SnowOwlServerActivator.bundleContext = null;
 	}
-
 }
