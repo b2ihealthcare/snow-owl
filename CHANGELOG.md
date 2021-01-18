@@ -1,6 +1,22 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 7.14.2
+
+### Bugs/Improvements
+- [index] improve commit performance by reducing number of terms in ID queries and increase batch size during bulk updates (6700c4f, b02ae99, eee60a7, 8cd6723)
+
+## 7.14.1
+
+### Bugs/Improvements
+- [core] fix NPE in shutdown hook (#741)
+- [snomed] fix a potential exception in component effective time restore (4cd52c7)
+- [api] add elapsedTime to Job API representation (e8069b1)
+- [api] add missing async request timeout handler to exception mapping, HTTP 504 (3ebf813, dfa9a72)
+- [api] increase default request timeout to `300s` (be258f9)
+- [api] support custom `codeSystemId` when upgrading (52a521a)
+- [api] add initial support for content donation during upgrades, migrated from 6.x (#739)
+
 ## 7.14.0
 
 ### Core
