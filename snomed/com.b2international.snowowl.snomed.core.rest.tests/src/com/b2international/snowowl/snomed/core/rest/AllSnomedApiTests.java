@@ -87,6 +87,7 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	ValueSetMemberSearchSnomedReferenceSetTest.class,
 	ConceptMapCompareSnomedMapTypeReferenceSetTest.class,
 	ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest.class,
+	ConceptMapCompareDsvExportTest.class,
 	// Merge, Review test cases
 	SnomedMergeApiTest.class,
 	SnomedMergeConflictTest.class,
@@ -100,17 +101,14 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	// Module dependecy test cases - they modify the MAIN branch so should be executed after tests that rely on MAIN branch stuff
 	SnomedModuleDependencyRefsetTest.class,
 	SnomedVersioningApiTest.class,
+	// Extension test cases
 	SnomedComponentEffectiveTimeRestoreTest.class,
-	// Extension test cases - 7.x versions are currently not supported
 	SnomedExtensionUpgradeTest.class, 
-//	SnomedExtensionDowngradeTest.class,
-//	SnomedExtensionVersioningTest.class,
-	// MRCM export/importF
+	// MRCM export/import
 	MrcmImportExportTest.class,
 	// Performance test cases, should be the last tests to perform
 	SnomedConceptCreatePerformanceTest.class,
 	SnomedMergePerformanceTest.class,
-	ConceptMapCompareDsvExportTest.class,
 })
 public class AllSnomedApiTests {
 
