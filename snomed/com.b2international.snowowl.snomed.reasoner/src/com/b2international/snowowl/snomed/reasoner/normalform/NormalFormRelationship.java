@@ -1,6 +1,6 @@
 /*
  * Copyright 2009-2017 International Health Terminology Standards Development Organisation
- * Copyright 2013-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2013-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ package com.b2international.snowowl.snomed.reasoner.normalform;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.text.MessageFormat;
 import java.util.Map;
 import java.util.Objects;
 
@@ -234,6 +233,11 @@ final class NormalFormRelationship implements NormalFormProperty {
 	private boolean isExhaustive(final long conceptId) {
 		return reasonerTaxonomy.getExhaustiveConcepts().contains(conceptId);
 	}
+	
+	@Override
+	public boolean isAdditional() {
+		return fragment.isAdditional();
+	}
 
 	@Override
 	public boolean equals(final Object obj) {
@@ -242,6 +246,7 @@ final class NormalFormRelationship implements NormalFormProperty {
 
 		final NormalFormRelationship other = (NormalFormRelationship) obj;
 
+		if (isAdditional() != other.isAdditional()) { return false; }
 		if (isUniversal() != other.isUniversal()) { return false; }
 		if (isDestinationNegated() != other.isDestinationNegated()) { return false; }
 		if (getTypeId() != other.getTypeId()) { return false; }
@@ -252,11 +257,21 @@ final class NormalFormRelationship implements NormalFormProperty {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(isUniversal(), isDestinationNegated(), getTypeId(), getDestinationId());
+		return Objects.hash(
+			isAdditional(), 
+			isUniversal(), 
+			isDestinationNegated(), 
+			getTypeId(), 
+			getDestinationId());
 	}
 
 	@Override
 	public String toString() {
-		return MessageFormat.format("{0,number,#} : {1}{2,number,#} ({3})", getTypeId(), (isDestinationNegated() ? "NOT" : ""), getDestinationId(), isUniversal());
+		return String.format("%s: %s %s.%s%s", 
+			getStatementId() > 0L ? getStatementId() : "<?>",
+			isUniversal() ? "ALL" : "SOME",
+			getTypeId(),
+			isDestinationNegated() ? "NOT " : "",
+			getDestinationId());
 	}
 }

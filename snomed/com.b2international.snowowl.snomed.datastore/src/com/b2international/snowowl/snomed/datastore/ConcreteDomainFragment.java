@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,13 +31,15 @@ public class ConcreteDomainFragment implements Serializable {
 	private final String serializedValue;
 	private final long typeId;
 	private final boolean released;
+	private final boolean additional;
 
 	public ConcreteDomainFragment(final String memberId, 
 			final long refSetId, 
 			final int group, 
 			final String serializedValue, 
 			final long typeId, 
-			final boolean released) {
+			final boolean released,
+			final boolean additional) {
 		
 		this.memberId = memberId;
 		this.refSetId = refSetId;
@@ -45,6 +47,7 @@ public class ConcreteDomainFragment implements Serializable {
 		this.serializedValue = serializedValue;
 		this.typeId = typeId;
 		this.released = released;
+		this.additional = additional;
 	}
 
 	public String getMemberId() {
@@ -70,10 +73,14 @@ public class ConcreteDomainFragment implements Serializable {
 	public boolean isReleased() {
 		return released;
 	}
+	
+	public boolean isAdditional() {
+		return additional;
+	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(refSetId, group, serializedValue, typeId);
+		return Objects.hash(refSetId, group, serializedValue, typeId, additional);
 	}
 
 	@Override
@@ -88,7 +95,8 @@ public class ConcreteDomainFragment implements Serializable {
 		if (group != other.group) { return false; }
 		if (!Objects.equals(serializedValue, other.serializedValue)) { return false; }
 		if (typeId != other.typeId) { return false; }
-
+		if (additional != other.additional) { return false; }
+		
 		return true;
 	}
 }

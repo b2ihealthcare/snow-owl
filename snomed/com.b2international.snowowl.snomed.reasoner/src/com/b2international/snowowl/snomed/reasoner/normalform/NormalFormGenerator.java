@@ -1,6 +1,6 @@
 /*
  * Copyright 2009-2017 International Health Terminology Standards Development Organisation
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -163,7 +163,7 @@ public final class NormalFormGenerator implements INormalFormGenerator {
 					currentLayer = PrimitiveSets.newLongOpenHashSet();
 					continue;
 				}
-
+				
 				// Run costly comparison of property chain hierarchies only if there are any
 				precomputeProperties(conceptId, propertyChainsPresent);
 
@@ -285,7 +285,7 @@ public final class NormalFormGenerator implements INormalFormGenerator {
 
 			Iterables.addAll(targetGroupSet, otherGroups);
 		}
-
+		
 		// Finally, add the (stated) information from the concept itself
 		final Iterable<NormalFormGroup> ownGroups = toGroups(false,
 				candidateNonIsAFragments.get(conceptId),
@@ -443,15 +443,22 @@ public final class NormalFormGenerator implements INormalFormGenerator {
 			redundant.clear();
 			boolean found = false;
 
-			for (final T candidate : candidates) {
-				if (candidate.isSameOrStrongerThan(comparable)) {
-					found = true;
-					break;
-				} else if (comparable.isSameOrStrongerThan(candidate)) {
-					redundant.add(candidate);
+			if (!comparable.isAdditional()) {
+				for (final T candidate : candidates) {
+					if (candidate.isAdditional()) {
+						continue;
+					}
+					
+					// Existing item should be strictly stronger, same is not good enough
+					if (comparable.isSameOrStrongerThan(candidate)) {
+						redundant.add(candidate);
+					} else if (candidate.isSameOrStrongerThan(comparable)) {
+						found = true;
+						break;
+					} 
 				}
 			}
-
+			
 			if (!found) {
 				candidates.removeAll(redundant);
 				candidates.add(comparable);
@@ -487,6 +494,7 @@ public final class NormalFormGenerator implements INormalFormGenerator {
 						groupNumber,
 						unionGroupNumber,
 						property.isUniversal(),
+						property.isAdditional(),
 						property.getStatementId(),
 						property.isReleased(),
 						property.hasStatedPair()));
@@ -514,7 +522,8 @@ public final class NormalFormGenerator implements INormalFormGenerator {
 						groupNumber,
 						property.getSerializedValue(),
 						property.getTypeId(),
-						property.isReleased()));
+						property.isReleased(),
+						property.isAdditional()));
 	}
 
 	private Collection<StatementFragment> getTargetRelationships(final long conceptId) {
