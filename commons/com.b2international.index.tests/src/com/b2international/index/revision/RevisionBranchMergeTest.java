@@ -464,6 +464,9 @@ public class RevisionBranchMergeTest extends BaseRevisionIndexTest {
 		// NEW_DATA should be visible from child branch of B
 		final String branchC = createBranch(branchB, "c");
 		assertNotNull(getRevision(branchC, RevisionData.class, STORAGE_KEY1));
+		
+		// accessing branchC base data via ^ should also return the object
+		assertNotNull(getRevision(RevisionIndex.toBaseRef(branchC), RevisionData.class, STORAGE_KEY1));
 	}
 	
 	private void assertState(String branchPath, String compareWith, BranchState expectedState) {
