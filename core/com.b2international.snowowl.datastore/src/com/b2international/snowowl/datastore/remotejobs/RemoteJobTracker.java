@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -298,7 +298,7 @@ public final class RemoteJobTracker implements IDisposableService {
 				final RemoteJobState newState;
 				if (result == null) {
 					newState = RemoteJobState.CANCELED;
-				} else if (result.isOK()) {
+				} else if (result.isOK() || result.matches(IStatus.INFO)) {
 					newState = RemoteJobState.FINISHED;
 				} else if (result.matches(IStatus.CANCEL)) {
 					newState = RemoteJobState.CANCELED;
