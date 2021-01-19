@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 7.14.3
+
+### Bugs/Improvements
+- [index] fix content visibility issues when creating branch from parent with non-squash merge sources (b442723, 0cf45c6)
+
 ## 7.14.2
 
 ### Bugs/Improvements
