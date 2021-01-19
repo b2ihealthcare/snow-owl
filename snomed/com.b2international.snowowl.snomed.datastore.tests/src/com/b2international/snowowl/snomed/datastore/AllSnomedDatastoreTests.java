@@ -77,10 +77,11 @@ import com.b2international.snowowl.snomed.validation.SnomedQueryValidationRuleEv
 	SnomedEclRewriterTest.class,
 	// QL test cases
 	SnomedQueryEvaluationRequestTest.class,
-	SnomedQueryValidationRuleEvaluatorTest.class,
 	SnomedQueryLabelerRequestTest.class,
 	SnomedEclShortcutTest.class,
-	SnomedDescriptionUtilsTest.class
+	SnomedDescriptionUtilsTest.class,
+	// Validate Rule Evaluators
+	SnomedQueryValidationRuleEvaluatorTest.class,
 })
 public class AllSnomedDatastoreTests {
 
