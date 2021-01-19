@@ -444,6 +444,28 @@ public class RevisionBranchMergeTest extends BaseRevisionIndexTest {
 		}
 	}
 	
+	@Test
+	public void createBranchFromAnotherWithNonSquashMergeSources() throws Exception {
+		final String branchA = createBranch(MAIN, "a");
+		final String branchB = createBranch(MAIN, "b");
+		
+		// create commit to branchA 
+		indexRevision(branchA, NEW_DATA);
+		
+		// before merge NEW_DATA should not be visible from branch B 
+		assertNull(getRevision(branchB, RevisionData.class, STORAGE_KEY1));
+		
+		// merge A content to branch B
+		branching().prepareMerge(branchA, branchB).squash(false).merge();
+		
+		// NEW_DATA should be visible from branch B
+		assertNotNull(getRevision(branchB, RevisionData.class, STORAGE_KEY1));
+		
+		// NEW_DATA should be visible from child branch of B
+		final String branchC = createBranch(branchB, "c");
+		assertNotNull(getRevision(branchC, RevisionData.class, STORAGE_KEY1));
+	}
+	
 	private void assertState(String branchPath, String compareWith, BranchState expectedState) {
 		assertEquals(expectedState, branching().getBranchState(branchPath, compareWith));
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -422,11 +422,11 @@ public final class RevisionBranch extends MetadataHolderImpl {
 		return MAIN_PATH.equals(path);
 	}
     
-	RevisionBranchPoint getLatestMergeSource(long branchToFind, boolean withSquashMerges) {
+	/*package*/ RevisionBranchPoint getLatestMergeSource(long branchToFind, boolean withSquashMerges) {
 		return getLatestMergeSources(withSquashMerges).get(branchToFind);
 	}
 
-	private Map<Long, RevisionBranchPoint> getLatestMergeSources(boolean withSquashMerges) {
+	/*package*/ Map<Long, RevisionBranchPoint> getLatestMergeSources(boolean withSquashMerges) {
 		final Map<Long, RevisionBranchPoint> latestMergeSources = newHashMap();
 		getMergeSources()
 			.stream()
