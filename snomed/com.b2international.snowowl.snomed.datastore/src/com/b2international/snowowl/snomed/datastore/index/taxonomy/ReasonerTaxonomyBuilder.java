@@ -99,6 +99,9 @@ public final class ReasonerTaxonomyBuilder {
 			Concepts.STATED_RELATIONSHIP, 
 			Concepts.INFERRED_RELATIONSHIP);
 	
+	private static final Set<String> CD_STATED_ONLY_TYPE_ID = ImmutableSet.of(
+			Concepts.STATED_RELATIONSHIP);
+	
 	private static final Set<String> CD_CHARACTERISTIC_TYPE_IDS = ImmutableSet.of(
 			Concepts.STATED_RELATIONSHIP, 
 			Concepts.ADDITIONAL_RELATIONSHIP,
@@ -108,6 +111,7 @@ public final class ReasonerTaxonomyBuilder {
 
 	private final Stopwatch stopwatch;
 	private final Set<String> excludedModuleIds;
+	private final boolean equivalenceCheckOnly;
 	
 	private InternalIdMap.Builder conceptMap;
 	private InternalIdMap.Builder definedConceptMap;
@@ -135,14 +139,13 @@ public final class ReasonerTaxonomyBuilder {
 
 	private ImmutableSet.Builder<PropertyChain> propertyChains;
 
-
-	public ReasonerTaxonomyBuilder() {
-		this(ImmutableSet.<String>of());
-	}
-	
-	public ReasonerTaxonomyBuilder(final Set<String> excludedModuleIds) {
+	public ReasonerTaxonomyBuilder(
+			final Set<String> excludedModuleIds, 
+			final boolean equivalenceCheckOnly) {
+		
 		this.stopwatch = Stopwatch.createStarted();
 		this.excludedModuleIds = ImmutableSet.copyOf(checkNotNull(excludedModuleIds, "excludedModuleIds"));
+		this.equivalenceCheckOnly = equivalenceCheckOnly;
 		
 		// This is the only builder that can be initialized in the constructor
 		this.conceptMap = InternalIdMap.builder();
@@ -962,13 +965,19 @@ public final class ReasonerTaxonomyBuilder {
 		leaving("Registering 'never grouped' type IDs using revision searcher");
 		return this;
 	}
+	
 	public ReasonerTaxonomyBuilder addActiveConcreteDomainMembers(final RevisionSearcher searcher) {
 		entering("Registering active concrete domain members using revision searcher");
+
+		// Don't collect inferred and additional (grouped) CD members for equivalence checks
+		final Set<String> characteristicTypeIds = equivalenceCheckOnly
+				? CD_STATED_ONLY_TYPE_ID
+				: CD_CHARACTERISTIC_TYPE_IDS;
 
 		final ExpressionBuilder whereExpressionBuilder = Expressions.builder()
 				.filter(active())
 				.filter(refSetTypes(Collections.singleton(SnomedRefSetType.CONCRETE_DATA_TYPE)))
-				.filter(characteristicTypeIds(CD_CHARACTERISTIC_TYPE_IDS));
+				.filter(characteristicTypeIds(characteristicTypeIds));
 		
 		if (!excludedModuleIds.isEmpty()) {
 			whereExpressionBuilder.mustNot(modules(excludedModuleIds));
@@ -1063,9 +1072,14 @@ public final class ReasonerTaxonomyBuilder {
 			for (final SnomedReferenceSetMember member : chunk) {
 				final String characteristicTypeId = (String) member.getProperties().get(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID);
 
+				// Don't collect inferred and additional (grouped) CD members for equivalence checks
+				final Set<String> characteristicTypeIds = equivalenceCheckOnly
+						? CD_STATED_ONLY_TYPE_ID
+						: CD_CHARACTERISTIC_TYPE_IDS;
+				
 				if (member.isActive() 
 						&& SnomedRefSetUtil.getConcreteDomainRefSetMap().containsValue(member.getReferenceSetId())
-						&& CD_CHARACTERISTIC_TYPE_IDS.contains(characteristicTypeId)
+						&& characteristicTypeIds.contains(characteristicTypeId)
 						&& !excludedModuleIds.contains(member.getModuleId())) {
 
 					final String referencedComponentId = member.getReferencedComponent().getId();

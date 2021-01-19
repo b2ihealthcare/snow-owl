@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -160,8 +160,9 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean> 
 	}
 
 	private ReasonerTaxonomy buildTaxonomy(final RevisionSearcher revisionSearcher, final Set<String> excludedModuleIds, final boolean concreteDomainSupported) {
-		final ReasonerTaxonomyBuilder taxonomyBuilder = new ReasonerTaxonomyBuilder(excludedModuleIds);
+		final ReasonerTaxonomyBuilder taxonomyBuilder = new ReasonerTaxonomyBuilder(excludedModuleIds, equivalenceCheckOnly);
 		
+		// Add both existing and extra concept IDs first - this is needed for internal ID (int)-keyed maps below.
 		taxonomyBuilder.addActiveConceptIds(revisionSearcher);
 		taxonomyBuilder.addActiveConceptIds(additionalConcepts.stream());
 		taxonomyBuilder.finishConcepts();
@@ -170,6 +171,7 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean> 
 		taxonomyBuilder.addActiveStatedEdges(revisionSearcher);
 		taxonomyBuilder.addActiveStatedNonIsARelationships(revisionSearcher);
 		
+		// Skip when equivalence checking is enabled
 		if (!equivalenceCheckOnly) {
 			taxonomyBuilder.addActiveInferredRelationships(revisionSearcher);
 			taxonomyBuilder.addActiveAdditionalGroupedRelationships(revisionSearcher);
@@ -177,7 +179,9 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean> 
 		
 		taxonomyBuilder.addNeverGroupedTypeIds(revisionSearcher);
 		taxonomyBuilder.addActiveAxioms(revisionSearcher);
-
+		
+		// Inferred and grouped additional CD members are skipped within the method when equivalence checking is enabled;
+		// Skip entirely when concrete domain support is disabled.
 		if (concreteDomainSupported) {
 			taxonomyBuilder.addActiveConcreteDomainMembers(revisionSearcher);
 		}
@@ -191,15 +195,18 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean> 
 		taxonomyBuilder.addActiveStatedEdges(relationshipSupplier.get());
 		taxonomyBuilder.addActiveStatedNonIsARelationships(relationshipSupplier.get());
 		
+		// Skip when equivalence checking is enabled
 		if (!equivalenceCheckOnly) {
 			taxonomyBuilder.addActiveInferredRelationships(relationshipSupplier.get());
 			taxonomyBuilder.addActiveAdditionalGroupedRelationships(relationshipSupplier.get());
 		}
 
+		// Inferred and grouped additional CD members are skipped within the method when equivalence checking is enabled;
+		// Skip entirely when concrete domain support is disabled.
 		if (concreteDomainSupported) {
 			final Stream<SnomedReferenceSetMember> conceptMembers = additionalConcepts.stream()
-				.flatMap(c -> c.getMembers().stream());
-			
+					.flatMap(c -> c.getMembers().stream());
+		
 			taxonomyBuilder.addActiveConcreteDomainMembers(conceptMembers);
 		}
 		
