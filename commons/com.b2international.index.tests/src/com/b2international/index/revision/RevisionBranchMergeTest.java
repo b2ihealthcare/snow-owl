@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -132,12 +132,12 @@ public class RevisionBranchMergeTest extends BaseRevisionIndexTest {
 		// 1. MAIN falls behind compared to the child
 		assertState(MAIN, child, BranchState.FORWARD);
 		
-		// 2. Child should be UP_TO_DATE state compared to the MAIN
+		// 2. Child should be BEHIND state compared to the MAIN
 		assertState(child, MAIN, BranchState.BEHIND);
 		
 		// 3. one revision should be visible from MAIN branch, excluded one should not
-		assertNotNull(getRevision(MAIN, RevisionData.class, STORAGE_KEY2));
-		assertEquals(getRevision(MAIN, RevisionData.class, STORAGE_KEY1), NEW_DATA);
+		assertDocEquals(getRevision(MAIN, RevisionData.class, STORAGE_KEY1), NEW_DATA);
+		assertDocEquals(getRevision(MAIN, RevisionData.class, STORAGE_KEY2), NEW_DATA2);
 	}
 	
 	@Test
