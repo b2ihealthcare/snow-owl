@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -255,6 +255,35 @@ public final class ClassificationTracker implements IDisposableService {
 		});
 	}
 
+	// For equivalence checks only; no inferences will be made
+	public void classificationCompleted(final String classificationId, 
+			final IReasonerTaxonomy inferredTaxonomy) {
+
+		index.write(writer -> {
+
+			indexUnsatisfiableConcepts(writer, classificationId, inferredTaxonomy.getUnsatisfiableConcepts());
+			indexEquivalentConcepts(writer, classificationId, inferredTaxonomy.getEquivalentConcepts());
+
+			final boolean hasEquivalentConcepts = !inferredTaxonomy.getUnsatisfiableConcepts().isEmpty()
+					|| !inferredTaxonomy.getEquivalentConcepts().isEmpty();
+			
+			writer.bulkUpdate(new BulkUpdate<>(ClassificationTaskDocument.class, 
+					ClassificationTaskDocument.Expressions.id(classificationId), 
+					ClassificationTaskDocument.Fields.ID, 
+					ClassificationTaskDocument.Scripts.COMPLETED, 
+					ImmutableMap.of("completionDate", System.currentTimeMillis(),
+							"hasEquivalentConcepts", hasEquivalentConcepts,
+							"hasInferredChanges", false,
+							"hasRedundantStatedChanges", false)));
+
+			writer.commit();
+			return null;
+		});
+		
+		
+	}
+
+	// For equivalence checks and normal form generation
 	public void classificationCompleted(final String classificationId, 
 			final IReasonerTaxonomy inferredTaxonomy, 
 			final INormalFormGenerator normalFormGenerator) {

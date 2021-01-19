@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,6 +70,8 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean> 
 	@NotNull
 	private String parentLockContext;
 
+	private boolean equivalenceCheckOnly;
+
 	ClassificationJobRequest() {}
 
 	void setReasonerId(final String reasonerId) {
@@ -84,6 +86,10 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean> 
 		this.parentLockContext = parentLockContext;
 	}
 
+	void setEquivalenceCheckOnly(boolean equivalenceCheckOnly) {
+		this.equivalenceCheckOnly = equivalenceCheckOnly;
+	}
+	
 	@Override
 	public Boolean execute(final BranchContext context) {
 		final RemoteJob job = context.service(RemoteJob.class);
@@ -118,10 +124,11 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean> 
 		final RevisionSearcher revisionSearcher = context.service(RevisionSearcher.class);
 		final SnomedCoreConfiguration configuration = context.service(SnomedCoreConfiguration.class);
 		final boolean concreteDomainSupported = configuration.isConcreteDomainSupported();
+		final Set<String> excludedModuleIds = configuration.getReasonerExcludedModuleIds();
 
 		final ReasonerTaxonomy taxonomy;
 		try (Locks locks = new Locks(context, userId, DatastoreLockContextDescriptions.CLASSIFY, parentLockContext, branch)) {
-			taxonomy = buildTaxonomy(revisionSearcher, context.service(SnomedCoreConfiguration.class).getReasonerExcludedModuleIds(), concreteDomainSupported);
+			taxonomy = buildTaxonomy(revisionSearcher, excludedModuleIds, concreteDomainSupported);
 		} catch (final OperationLockException e) {
 			throw new ReasonerApiException("Couldn't acquire exclusive access to terminology store for classification; %s", e.getMessage(), e);
 		} catch (final InterruptedException e) {
@@ -137,9 +144,13 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean> 
 			final DelegateOntology ontology = (DelegateOntology) ontologyManager.createOntology(ontologyIRI);
 			final ReasonerTaxonomyInferrer inferrer = new ReasonerTaxonomyInferrer(reasonerId, ontology, context);
 			final ReasonerTaxonomy inferredTaxonomy = inferrer.addInferences(taxonomy);
-			final NormalFormGenerator normalFormGenerator = new NormalFormGenerator(inferredTaxonomy);
-			
-			tracker.classificationCompleted(classificationId, inferredTaxonomy, normalFormGenerator);
+
+			if (equivalenceCheckOnly) {
+				tracker.classificationCompleted(classificationId, inferredTaxonomy);
+			} else {
+				final NormalFormGenerator normalFormGenerator = new NormalFormGenerator(inferredTaxonomy);
+				tracker.classificationCompleted(classificationId, inferredTaxonomy, normalFormGenerator);
+			}
 
 		} catch (final OWLOntologyCreationException e) {
 			throw new ReasonerApiException("Exception caught while creating ontology instance.", e);
@@ -149,8 +160,9 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean> 
 	}
 
 	private ReasonerTaxonomy buildTaxonomy(final RevisionSearcher revisionSearcher, final Set<String> excludedModuleIds, final boolean concreteDomainSupported) {
-		final ReasonerTaxonomyBuilder taxonomyBuilder = new ReasonerTaxonomyBuilder(excludedModuleIds);
+		final ReasonerTaxonomyBuilder taxonomyBuilder = new ReasonerTaxonomyBuilder(excludedModuleIds, equivalenceCheckOnly);
 		
+		// Add both existing and extra concept IDs first - this is needed for internal ID (int)-keyed maps below.
 		taxonomyBuilder.addActiveConceptIds(revisionSearcher);
 		taxonomyBuilder.addActiveConceptIds(additionalConcepts.stream());
 		taxonomyBuilder.finishConcepts();
@@ -158,32 +170,46 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean> 
 		taxonomyBuilder.addConceptFlags(revisionSearcher);
 		taxonomyBuilder.addActiveStatedEdges(revisionSearcher);
 		taxonomyBuilder.addActiveStatedNonIsARelationships(revisionSearcher);
-		taxonomyBuilder.addActiveInferredRelationships(revisionSearcher);
-		taxonomyBuilder.addActiveAdditionalGroupedRelationships(revisionSearcher);
+		
+		// Skip when equivalence checking is enabled
+		if (!equivalenceCheckOnly) {
+			taxonomyBuilder.addActiveInferredRelationships(revisionSearcher);
+			taxonomyBuilder.addActiveAdditionalGroupedRelationships(revisionSearcher);
+		}
 		
 		taxonomyBuilder.addNeverGroupedTypeIds(revisionSearcher);
 		taxonomyBuilder.addActiveAxioms(revisionSearcher);
-
+		
+		// Inferred and grouped additional CD members are skipped within the method when equivalence checking is enabled;
+		// Skip entirely when concrete domain support is disabled.
 		if (concreteDomainSupported) {
 			taxonomyBuilder.addActiveConcreteDomainMembers(revisionSearcher);
 		}
 
-		// Add the extra definitions
-		taxonomyBuilder.addConceptFlags(additionalConcepts.stream());
-
-		final Supplier<Stream<SnomedRelationship>> relationshipSupplier = () -> additionalConcepts.stream()
-				.flatMap(c -> c.getRelationships().stream());
-		
-		taxonomyBuilder.addActiveStatedEdges(relationshipSupplier.get());
-		taxonomyBuilder.addActiveStatedNonIsARelationships(relationshipSupplier.get());
-		taxonomyBuilder.addActiveInferredRelationships(relationshipSupplier.get());
-		taxonomyBuilder.addActiveAdditionalGroupedRelationships(relationshipSupplier.get());
-
-		if (concreteDomainSupported) {
-			final Stream<SnomedReferenceSetMember> conceptMembers = additionalConcepts.stream()
-				.flatMap(c -> c.getMembers().stream());
+		// Add the extra definitions, if any
+		if (!additionalConcepts.isEmpty()) {
+			taxonomyBuilder.addConceptFlags(additionalConcepts.stream());
+	
+			final Supplier<Stream<SnomedRelationship>> relationshipSupplier = () -> additionalConcepts.stream()
+					.flatMap(c -> c.getRelationships().stream());
 			
-			taxonomyBuilder.addActiveConcreteDomainMembers(conceptMembers);
+			taxonomyBuilder.addActiveStatedEdges(relationshipSupplier.get());
+			taxonomyBuilder.addActiveStatedNonIsARelationships(relationshipSupplier.get());
+			
+			// Skip when equivalence checking is enabled
+			if (!equivalenceCheckOnly) {
+				taxonomyBuilder.addActiveInferredRelationships(relationshipSupplier.get());
+				taxonomyBuilder.addActiveAdditionalGroupedRelationships(relationshipSupplier.get());
+			}
+	
+			// Inferred and grouped additional CD members are skipped within the method when equivalence checking is enabled;
+			// Skip entirely when concrete domain support is disabled.
+			if (concreteDomainSupported) {
+				final Stream<SnomedReferenceSetMember> conceptMembers = additionalConcepts.stream()
+						.flatMap(c -> c.getMembers().stream());
+			
+				taxonomyBuilder.addActiveConcreteDomainMembers(conceptMembers);
+			}
 		}
 		
 		return taxonomyBuilder.build();

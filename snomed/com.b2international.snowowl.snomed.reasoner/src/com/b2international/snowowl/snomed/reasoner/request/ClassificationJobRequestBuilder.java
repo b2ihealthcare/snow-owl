@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ public final class ClassificationJobRequestBuilder
 	private String reasonerId;
 	private final List<SnomedConcept> additionalConcepts = newArrayList();
 	private String parentLockContext = DatastoreLockContextDescriptions.ROOT;
+	private boolean equivalenceCheckOnly = false;
 
 	ClassificationJobRequestBuilder() {}
 
@@ -53,6 +54,11 @@ public final class ClassificationJobRequestBuilder
 		this.parentLockContext = parentLockContext;
 		return this;
 	}
+	
+	public ClassificationJobRequestBuilder setEquivalenceCheckOnly(boolean equivalenceCheckOnly) {
+		this.equivalenceCheckOnly = equivalenceCheckOnly;
+		return this;
+	}
 
 	@Override
 	protected Request<BranchContext, Boolean> doBuild() {
@@ -60,6 +66,7 @@ public final class ClassificationJobRequestBuilder
 		request.setReasonerId(reasonerId);
 		request.setAdditionalConcepts(additionalConcepts);
 		request.setParentLockContext(parentLockContext);
+		request.setEquivalenceCheckOnly(equivalenceCheckOnly);
 		return request;
 	}
 }

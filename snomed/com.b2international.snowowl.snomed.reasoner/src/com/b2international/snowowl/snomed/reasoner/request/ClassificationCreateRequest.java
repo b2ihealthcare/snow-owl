@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,6 +57,8 @@ final class ClassificationCreateRequest implements Request<BranchContext, String
 	@NotNull
 	private String parentLockContext;
 
+	private boolean equivalenceCheckOnly;
+
 	ClassificationCreateRequest() {}
 
 	void setClassificationId(final String classificationId) {
@@ -79,6 +81,10 @@ final class ClassificationCreateRequest implements Request<BranchContext, String
 		this.parentLockContext = parentLockContext;
 	}
 
+	void setEquivalenceCheckOnly(final boolean equivalenceCheckOnly) {
+		this.equivalenceCheckOnly = equivalenceCheckOnly;
+	}
+
 	@Override
 	public String execute(final BranchContext context) {
 		final String repositoryId = context.id();
@@ -91,6 +97,7 @@ final class ClassificationCreateRequest implements Request<BranchContext, String
 		final AsyncRequest<Boolean> jobRequest = new ClassificationJobRequestBuilder()
 				.setReasonerId(reasonerId)
 				.setParentLockContext(parentLockContext)
+				.setEquivalenceCheckOnly(equivalenceCheckOnly)
 				.addAllConcepts(additionalConcepts)
 				.build(repositoryId, branch.path());
 		

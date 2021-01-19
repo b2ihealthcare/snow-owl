@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,7 +78,8 @@ final class OntologyExportRequest implements Request<BranchContext, String> {
 		final RevisionSearcher revisionSearcher = context.service(RevisionSearcher.class);
 		final boolean concreteDomainSupportEnabled = config.isConcreteDomainSupported();
 		
-		final ReasonerTaxonomyBuilder taxonomyBuilder = new ReasonerTaxonomyBuilder(config.getReasonerExcludedModuleIds());
+		// Setting equivalenceCheckOnly to true, as we only need stated information for OWL export
+		final ReasonerTaxonomyBuilder taxonomyBuilder = new ReasonerTaxonomyBuilder(config.getReasonerExcludedModuleIds(), true);
 		
 		taxonomyBuilder.addActiveConceptIds(revisionSearcher);
 		taxonomyBuilder.finishConcepts();

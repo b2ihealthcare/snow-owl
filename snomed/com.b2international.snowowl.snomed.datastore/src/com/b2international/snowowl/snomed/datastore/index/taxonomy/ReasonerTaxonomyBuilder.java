@@ -62,9 +62,6 @@ import com.b2international.index.query.SortBy.Order;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
-import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
-import com.b2international.snowowl.snomed.core.domain.RelationshipModifier;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
@@ -99,6 +96,9 @@ public final class ReasonerTaxonomyBuilder {
 			Concepts.STATED_RELATIONSHIP, 
 			Concepts.INFERRED_RELATIONSHIP);
 	
+	private static final Set<String> CD_STATED_ONLY_TYPE_ID = ImmutableSet.of(
+			Concepts.STATED_RELATIONSHIP);
+	
 	private static final Set<String> CD_CHARACTERISTIC_TYPE_IDS = ImmutableSet.of(
 			Concepts.STATED_RELATIONSHIP, 
 			Concepts.ADDITIONAL_RELATIONSHIP,
@@ -108,6 +108,7 @@ public final class ReasonerTaxonomyBuilder {
 
 	private final Stopwatch stopwatch;
 	private final Set<String> excludedModuleIds;
+	private final boolean equivalenceCheckOnly;
 	
 	private InternalIdMap.Builder conceptMap;
 	private InternalIdMap.Builder definedConceptMap;
@@ -135,14 +136,13 @@ public final class ReasonerTaxonomyBuilder {
 
 	private ImmutableSet.Builder<PropertyChain> propertyChains;
 
-
-	public ReasonerTaxonomyBuilder() {
-		this(ImmutableSet.<String>of());
-	}
-	
-	public ReasonerTaxonomyBuilder(final Set<String> excludedModuleIds) {
+	public ReasonerTaxonomyBuilder(
+			final Set<String> excludedModuleIds, 
+			final boolean equivalenceCheckOnly) {
+		
 		this.stopwatch = Stopwatch.createStarted();
 		this.excludedModuleIds = ImmutableSet.copyOf(checkNotNull(excludedModuleIds, "excludedModuleIds"));
+		this.equivalenceCheckOnly = equivalenceCheckOnly;
 		
 		// This is the only builder that can be initialized in the constructor
 		this.conceptMap = InternalIdMap.builder();
@@ -205,7 +205,7 @@ public final class ReasonerTaxonomyBuilder {
 			final Collection<String> definedConceptIds = newArrayListWithCapacity(chunk.size());
 			for (SnomedConcept concept : chunk) {
 				conceptIds.add(concept.getId());
-				if (!concept.getDefinitionStatus().isPrimitive()) {
+				if (Concepts.FULLY_DEFINED.equals(concept.getDefinitionStatusId())) {
 					definedConceptIds.add(concept.getId());
 				}
 			}
@@ -347,7 +347,7 @@ public final class ReasonerTaxonomyBuilder {
 
 		Stream<SnomedRelationship> filteredRelationships = relationships.filter(r -> r.isActive() 
 				&& Concepts.IS_A.equals(r.getTypeId())
-				&& CharacteristicType.STATED_RELATIONSHIP.equals(r.getCharacteristicType())
+				&& Concepts.STATED_RELATIONSHIP.equals(r.getCharacteristicTypeId())
 				&& !excludedModuleIds.contains(r.getModuleId()));
 		
 		final List<String> sourceIds = newArrayListWithExpectedSize(SCROLL_LIMIT);
@@ -415,7 +415,7 @@ public final class ReasonerTaxonomyBuilder {
 		entering("Registering active concept flags (exhaustive, fully defined) using concept ID stream");
 
 		Stream<SnomedConcept> filteredConcepts = concepts.filter(c -> {
-			final boolean fullyDefined = DefinitionStatus.FULLY_DEFINED.equals(c.getDefinitionStatus());
+			final boolean fullyDefined = Concepts.FULLY_DEFINED.equals(c.getDefinitionStatusId());
 			final boolean exhaustive = SubclassDefinitionStatus.DISJOINT_SUBCLASSES.equals(c.getSubclassDefinitionStatus());
 			return c.isActive() 
 					&& (fullyDefined || exhaustive)
@@ -462,7 +462,7 @@ public final class ReasonerTaxonomyBuilder {
 		entering("Registering active stated non-IS A relationships using relationship stream");
 	
 		Predicate<SnomedRelationship> predicate = relationship -> relationship.isActive() 
-				&& CharacteristicType.STATED_RELATIONSHIP.equals(relationship.getCharacteristicType())
+				&& Concepts.STATED_RELATIONSHIP.equals(relationship.getCharacteristicTypeId())
 				&& !Concepts.IS_A.equals(relationship.getTypeId())
 				&& !excludedModuleIds.contains(relationship.getModuleId());
 		
@@ -504,7 +504,7 @@ public final class ReasonerTaxonomyBuilder {
 		entering("Registering active additional grouped relationships using relationship stream");
 	
 		Predicate<SnomedRelationship> predicate = relationship -> relationship.isActive() 
-				&& CharacteristicType.ADDITIONAL_RELATIONSHIP.equals(relationship.getCharacteristicType())
+				&& Concepts.ADDITIONAL_RELATIONSHIP.equals(relationship.getCharacteristicTypeId())
 				&& relationship.getGroup() > 0
 				&& !excludedModuleIds.contains(relationship.getModuleId());
 		
@@ -632,7 +632,7 @@ public final class ReasonerTaxonomyBuilder {
 		entering("Registering active inferred relationships using relationship stream");
 		
 		final Predicate<SnomedRelationship> predicate = relationship -> relationship.isActive() 
-				&& CharacteristicType.INFERRED_RELATIONSHIP.equals(relationship.getCharacteristicType())
+				&& Concepts.INFERRED_RELATIONSHIP.equals(relationship.getCharacteristicTypeId())
 				&& !excludedModuleIds.contains(relationship.getModuleId());
 		
 		// Inferred relationships only
@@ -764,7 +764,7 @@ public final class ReasonerTaxonomyBuilder {
 				final boolean destinationNegated = relationship.isDestinationNegated();
 				final int group = relationship.getGroup();
 				final int unionGroup = relationship.getUnionGroup();
-				final boolean universal = RelationshipModifier.UNIVERSAL.equals(relationship.getModifier());
+				final boolean universal = Concepts.UNIVERSAL_RESTRICTION_MODIFIER.equals(relationship.getModifierId());
 
 				final StatementFragment statement = new StatementFragment(
 						typeId,
@@ -962,13 +962,19 @@ public final class ReasonerTaxonomyBuilder {
 		leaving("Registering 'never grouped' type IDs using revision searcher");
 		return this;
 	}
+	
 	public ReasonerTaxonomyBuilder addActiveConcreteDomainMembers(final RevisionSearcher searcher) {
 		entering("Registering active concrete domain members using revision searcher");
+
+		// Don't collect inferred and additional (grouped) CD members for equivalence checks
+		final Set<String> characteristicTypeIds = equivalenceCheckOnly
+				? CD_STATED_ONLY_TYPE_ID
+				: CD_CHARACTERISTIC_TYPE_IDS;
 
 		final ExpressionBuilder whereExpressionBuilder = Expressions.builder()
 				.filter(active())
 				.filter(refSetTypes(Collections.singleton(SnomedRefSetType.CONCRETE_DATA_TYPE)))
-				.filter(characteristicTypeIds(CD_CHARACTERISTIC_TYPE_IDS));
+				.filter(characteristicTypeIds(characteristicTypeIds));
 		
 		if (!excludedModuleIds.isEmpty()) {
 			whereExpressionBuilder.mustNot(modules(excludedModuleIds));
@@ -1063,9 +1069,14 @@ public final class ReasonerTaxonomyBuilder {
 			for (final SnomedReferenceSetMember member : chunk) {
 				final String characteristicTypeId = (String) member.getProperties().get(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID);
 
+				// Don't collect inferred and additional (grouped) CD members for equivalence checks
+				final Set<String> characteristicTypeIds = equivalenceCheckOnly
+						? CD_STATED_ONLY_TYPE_ID
+						: CD_CHARACTERISTIC_TYPE_IDS;
+				
 				if (member.isActive() 
 						&& SnomedRefSetUtil.getConcreteDomainRefSetMap().containsValue(member.getReferenceSetId())
-						&& CD_CHARACTERISTIC_TYPE_IDS.contains(characteristicTypeId)
+						&& characteristicTypeIds.contains(characteristicTypeId)
 						&& !excludedModuleIds.contains(member.getModuleId())) {
 
 					final String referencedComponentId = member.getReferencedComponent().getId();

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ import org.eclipse.core.runtime.OperationCanceledException;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.events.Notifications;
-import com.b2international.snowowl.datastore.oplock.impl.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobEntry;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobNotification;
 import com.b2international.snowowl.datastore.remotejobs.RemoteJobs;
@@ -59,27 +58,15 @@ public abstract class ClassifyOperation<T> {
 	protected final String repositoryId;
 	protected final String branch;
 	protected final String parentLockContext;
+	protected final boolean equivalenceCheckOnly;
 
 	public ClassifyOperation(final String reasonerId, 
 			final String userId, 
 			final List<SnomedConcept> additionalConcepts,
 			final String repositoryId, 
-			final String branch) {
-		
-		this(reasonerId, 
-				userId, 
-				additionalConcepts, 
-				repositoryId, 
-				branch, 
-				DatastoreLockContextDescriptions.CLASSIFY_WITH_REVIEW);
-	}
-	
-	public ClassifyOperation(final String reasonerId, 
-			final String userId, 
-			final List<SnomedConcept> additionalConcepts,
-			final String repositoryId, 
 			final String branch,
-			final String parentLockContext) {	
+			final String parentLockContext,
+			final boolean equivalenceCheckOnly) {	
 
 		this.reasonerId = reasonerId;
 		this.userId = userId;
@@ -87,6 +74,7 @@ public abstract class ClassifyOperation<T> {
 		this.repositoryId = repositoryId;
 		this.branch = branch;
 		this.parentLockContext = parentLockContext;
+		this.equivalenceCheckOnly = equivalenceCheckOnly;
 	}
 
 	/**
@@ -142,6 +130,7 @@ public abstract class ClassifyOperation<T> {
 				.setUserId(userId)
 				.addAllConcepts(additionalConcepts)
 				.setParentLockContext(parentLockContext)
+				.setEquivalenceCheckOnly(equivalenceCheckOnly)
 				.build(repositoryId, branch)
 				.get();
 
