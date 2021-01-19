@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.entry;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 import com.b2international.index.Doc;
@@ -29,7 +30,7 @@ import com.google.common.base.MoreObjects;
  * @since 6.14
  */
 @Doc(type = "owlRelationship", nested = true)
-public final class SnomedOWLRelationshipDocument {
+public final class SnomedOWLRelationshipDocument implements Serializable {
 
 	private final String typeId;
 	private final String destinationId;
@@ -63,8 +64,24 @@ public final class SnomedOWLRelationshipDocument {
 	}
 
 	@JsonIgnore
-	public StatementFragment toStatementFragment() {
-		return new StatementFragment(Long.parseLong(typeId), Long.parseLong(destinationId), false, group, 0, false, -1L, false, false);
+	public StatementFragment toStatementFragment(final int groupOffset) {
+		final int adjustedGroup;
+		if (group == 0) {
+			adjustedGroup = group;
+		} else {
+			adjustedGroup = group + groupOffset;
+		}
+		
+		return new StatementFragment(Long.parseLong(typeId), // typeId 
+				Long.parseLong(destinationId),               // destinationId
+				false,                                       // destinationNegated
+				adjustedGroup,                               // group
+				0,                                           // unionGroup
+				false,                                       // universal
+				false,                                       // additional: OWL member produces stated relationship fragments 
+				-1L,                                         // statementId
+				false,                                       // released
+				false);                                      // hasStatedPair
 	}
 	
 	@Override

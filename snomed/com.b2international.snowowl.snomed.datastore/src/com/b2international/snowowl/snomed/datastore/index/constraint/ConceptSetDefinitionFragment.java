@@ -24,6 +24,7 @@ import com.b2international.snowowl.snomed.mrcm.EnumeratedConceptSetDefinition;
 import com.b2international.snowowl.snomed.mrcm.HierarchyConceptSetDefinition;
 import com.b2international.snowowl.snomed.mrcm.ReferenceSetConceptSetDefinition;
 import com.b2international.snowowl.snomed.mrcm.RelationshipConceptSetDefinition;
+import com.b2international.snowowl.snomed.mrcm.SingletonConceptSetDefinition;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -39,6 +40,7 @@ import com.google.common.collect.ImmutableSet;
 @JsonSubTypes({ 
 	@Type(value = CompositeDefinitionFragment.class, name = "composite"), 
 	@Type(value = EnumeratedDefinitionFragment.class, name = "enumerated"), 
+	@Type(value = SingletonDefinitionFragment.class, name = "singleton"), 
 	@Type(value = HierarchyDefinitionFragment.class, name = "hierarchy"), 
 	@Type(value = ReferenceSetDefinitionFragment.class, name = "referenceSet"), 
 	@Type(value = RelationshipDefinitionFragment.class, name = "relationship"), 
@@ -79,7 +81,12 @@ public abstract class ConceptSetDefinitionFragment extends ConceptModelComponent
 					definition.getAuthor(),
 					((HierarchyConceptSetDefinition) definition).getConceptId(),
 					((HierarchyConceptSetDefinition) definition).getInclusionType());
-
+		} else if (definition instanceof SingletonConceptSetDefinition) {
+			return new SingletonDefinitionFragment(definition.getUuid(), 
+					definition.isActive(), 
+					EffectiveTimes.getEffectiveTime(definition.getEffectiveTime()),
+					definition.getAuthor(),
+					((SingletonConceptSetDefinition) definition).getConceptId());
 		} else if (definition instanceof ReferenceSetConceptSetDefinition) {
 			return new ReferenceSetDefinitionFragment(definition.getUuid(), 
 					definition.isActive(), 

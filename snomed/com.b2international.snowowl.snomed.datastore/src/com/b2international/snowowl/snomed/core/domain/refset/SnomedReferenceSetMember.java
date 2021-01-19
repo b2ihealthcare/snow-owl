@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.core.domain.refset;
 import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -32,6 +33,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedOWLRelationshipDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
@@ -98,6 +100,9 @@ public final class SnomedReferenceSetMember extends SnomedComponent {
 	private SnomedCoreComponent referencedComponent;
 	private String referenceSetId;
 	private Map<String, Object> properties = newHashMap();
+	private List<SnomedOWLRelationshipDocument> equivalentOWLRelationships;
+	private List<SnomedOWLRelationshipDocument> classOWLRelationships;
+	private List<SnomedOWLRelationshipDocument> gciOWLRelationships;
 
 	@Override
 	public short getTerminologyComponentId() {
@@ -162,6 +167,30 @@ public final class SnomedReferenceSetMember extends SnomedComponent {
 	
 	public void setProperties(Map<String, Object> properties) {
 		this.properties = properties;
+	}
+	
+	public List<SnomedOWLRelationshipDocument> getEquivalentOWLRelationships() {
+		return equivalentOWLRelationships;
+	}
+	
+	public void setEquivalentOWLRelationships(List<SnomedOWLRelationshipDocument> equivalentOWLRelationships) {
+		this.equivalentOWLRelationships = equivalentOWLRelationships;
+	}
+	
+	public List<SnomedOWLRelationshipDocument> getClassOWLRelationships() {
+		return classOWLRelationships;
+	}
+	
+	public void setClassOWLRelationships(List<SnomedOWLRelationshipDocument> classOWLRelationships) {
+		this.classOWLRelationships = classOWLRelationships;
+	}
+	
+	public List<SnomedOWLRelationshipDocument> getGciOWLRelationships() {
+		return gciOWLRelationships;
+	}
+	
+	public void setGciOWLRelationships(List<SnomedOWLRelationshipDocument> gciOWLRelationships) {
+		this.gciOWLRelationships = gciOWLRelationships;
 	}
 	
 	@JsonAnySetter

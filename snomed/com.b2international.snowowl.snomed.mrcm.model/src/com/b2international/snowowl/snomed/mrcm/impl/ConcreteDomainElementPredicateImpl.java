@@ -62,6 +62,7 @@ public class ConcreteDomainElementPredicateImpl extends ConceptModelPredicateImp
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public ConceptSetDefinition getAttribute() {
 		return (ConceptSetDefinition)eGet(MrcmPackage.Literals.CONCRETE_DOMAIN_ELEMENT_PREDICATE__ATTRIBUTE, true);
 	}
@@ -71,6 +72,7 @@ public class ConcreteDomainElementPredicateImpl extends ConceptModelPredicateImp
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setAttribute(ConceptSetDefinition newAttribute) {
 		eSet(MrcmPackage.Literals.CONCRETE_DOMAIN_ELEMENT_PREDICATE__ATTRIBUTE, newAttribute);
 	}
@@ -80,6 +82,7 @@ public class ConcreteDomainElementPredicateImpl extends ConceptModelPredicateImp
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public DataType getRange() {
 		return (DataType)eGet(MrcmPackage.Literals.CONCRETE_DOMAIN_ELEMENT_PREDICATE__RANGE, true);
 	}
@@ -89,6 +92,7 @@ public class ConcreteDomainElementPredicateImpl extends ConceptModelPredicateImp
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setRange(DataType newRange) {
 		eSet(MrcmPackage.Literals.CONCRETE_DOMAIN_ELEMENT_PREDICATE__RANGE, newRange);
 	}
@@ -98,6 +102,7 @@ public class ConcreteDomainElementPredicateImpl extends ConceptModelPredicateImp
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public String getCharacteristicTypeConceptId() {
 		return (String)eGet(MrcmPackage.Literals.CONCRETE_DOMAIN_ELEMENT_PREDICATE__CHARACTERISTIC_TYPE_CONCEPT_ID, true);
 	}
@@ -107,6 +112,7 @@ public class ConcreteDomainElementPredicateImpl extends ConceptModelPredicateImp
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setCharacteristicTypeConceptId(String newCharacteristicTypeConceptId) {
 		eSet(MrcmPackage.Literals.CONCRETE_DOMAIN_ELEMENT_PREDICATE__CHARACTERISTIC_TYPE_CONCEPT_ID, newCharacteristicTypeConceptId);
 	}

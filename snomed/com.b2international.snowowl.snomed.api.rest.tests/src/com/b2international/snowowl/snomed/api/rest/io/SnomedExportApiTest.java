@@ -69,6 +69,7 @@ import com.b2international.commons.Pair;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.domain.ExportResult;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.file.FileRegistry;
@@ -82,7 +83,6 @@ import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.CaseSignificance;
 import com.b2international.snowowl.snomed.core.domain.CharacteristicType;
 import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
-import com.b2international.snowowl.snomed.core.domain.Rf2ExportResult;
 import com.b2international.snowowl.snomed.core.domain.Rf2RefSetExportLayout;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
@@ -297,7 +297,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void executeMultipleExportsAtTheSameTime() throws Exception {
 		
-		Promise<Rf2ExportResult> first = SnomedRequests.rf2().prepareExport()
+		Promise<ExportResult> first = SnomedRequests.rf2().prepareExport()
 			.setUserId("System")
 			.setCodeSystem("SNOMEDCT")
 			.setReleaseType(Rf2ReleaseType.FULL)
@@ -308,7 +308,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID)
 			.execute(ApplicationContext.getServiceForClass(IEventBus.class));
 		
-		Promise<Rf2ExportResult> second = SnomedRequests.rf2().prepareExport()
+		Promise<ExportResult> second = SnomedRequests.rf2().prepareExport()
 			.setUserId("System")
 			.setCodeSystem("SNOMEDCT")
 			.setCountryNamespaceElement("INT")
@@ -324,8 +324,8 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 				@Override
 				public String apply(List<Object> input) {
 					
-					Rf2ExportResult firstResult = (Rf2ExportResult) input.get(0);
-					Rf2ExportResult secondResult = (Rf2ExportResult) input.get(1);
+					ExportResult firstResult = (ExportResult) input.get(0);
+					ExportResult secondResult = (ExportResult) input.get(1);
 					
 					InternalFileRegistry fileRegistry = (InternalFileRegistry) ApplicationContext.getServiceForClass(FileRegistry.class);
 					

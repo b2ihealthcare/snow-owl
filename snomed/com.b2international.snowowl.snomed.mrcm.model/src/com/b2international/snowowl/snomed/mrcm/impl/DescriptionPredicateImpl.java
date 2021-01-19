@@ -57,6 +57,7 @@ public class DescriptionPredicateImpl extends ConceptModelPredicateImpl implemen
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public String getTypeId() {
 		return (String)eGet(MrcmPackage.Literals.DESCRIPTION_PREDICATE__TYPE_ID, true);
 	}
@@ -66,6 +67,7 @@ public class DescriptionPredicateImpl extends ConceptModelPredicateImpl implemen
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public void setTypeId(String newTypeId) {
 		eSet(MrcmPackage.Literals.DESCRIPTION_PREDICATE__TYPE_ID, newTypeId);
 	}

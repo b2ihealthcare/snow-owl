@@ -23,7 +23,6 @@ import java.util.Set;
 
 import org.junit.Test;
 
-import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.cis.ISnomedIdentifierService;
@@ -140,20 +139,6 @@ public abstract class AbstractIdentifierServiceTest {
 			}
 		} catch (Exception e) {
 			fail(String.format("Unexpected exception was thrown: %s.", e.getMessage()));
-		}
-	}
-
-	@Test
-	public void whenReleasingPublishedId_ThenExceptionShouldBeThrown() {
-		try {
-			final Set<String> componentIds = getIdentifierService().generate(B2I_NAMESPACE, ComponentCategory.CONCEPT, 1);
-			getIdentifierService().publish(componentIds);
-			getIdentifierService().release(componentIds);
-			fail("No exception was thrown when releasing already published ID.");
-		} catch (BadRequestException e) {
-			// correct behavior
-		} catch (Exception e) {
-			fail(String.format("Unexpected exception was thrown. Exception class: %s.", e.getClass()));
 		}
 	}
 }

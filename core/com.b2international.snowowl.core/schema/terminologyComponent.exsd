@@ -155,6 +155,10 @@ For example:&lt;ul&gt;
                   </enumeration>
                   <enumeration value="EXTENDED_MAP">
                   </enumeration>
+                  <enumeration value="VALUE_SET">
+                  </enumeration>
+                  <enumeration value="MAPPING_SET">
+                  </enumeration>
                </restriction>
             </simpleType>
          </attribute>

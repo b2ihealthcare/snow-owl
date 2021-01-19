@@ -48,6 +48,7 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
+import com.b2international.snowowl.core.domain.ExportResult;
 import com.b2international.snowowl.core.exceptions.ApiValidation;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.file.FileRegistry;
@@ -59,7 +60,6 @@ import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedExportRestConfiguration;
 import com.b2international.snowowl.snomed.api.rest.domain.SnomedExportRestRun;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
-import com.b2international.snowowl.snomed.core.domain.Rf2ExportResult;
 import com.b2international.snowowl.snomed.core.domain.Rf2RefSetExportLayout;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
@@ -247,7 +247,7 @@ public class SnomedExportRestService extends AbstractRestService {
 		
 		final Rf2RefSetExportLayout refSetExportLayout = ApplicationContext.getServiceForClass(SnomedCoreConfiguration.class).getExport().getRefSetExportLayout();
 		
-		final Rf2ExportResult exportedFile = SnomedRequests.rf2().prepareExport()
+		final ExportResult exportedFile = SnomedRequests.rf2().prepareExport()
 			.setUserId(principal.getName())
 			.setReleaseType(export.getType())
 			.setCodeSystem(export.getCodeSystemShortName())

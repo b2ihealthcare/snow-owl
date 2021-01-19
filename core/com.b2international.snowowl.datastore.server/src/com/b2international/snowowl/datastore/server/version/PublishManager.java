@@ -69,7 +69,8 @@ public abstract class PublishManager implements IPublishManager {
 	protected static final Logger LOGGER = getLogger(PublishManager.class);
 	
 	private static final String NEW_VERSION_COMMIT_COMMENT_TEMPLATE = "Created new version '%s' for %s.";
-	private static final String ADJUST_EFFECTIVE_TIME_COMMIT_COMMENT_TEMPLATE = "Adjusted effective time to '%s' for %s version '%s'.";
+	
+	// private static final String ADJUST_EFFECTIVE_TIME_COMMIT_COMMENT_TEMPLATE = "Adjusted effective time to '%s' for %s version '%s'.";
 
 	@Override
 	public final void publish(final PublishOperationConfiguration configuration, final IProgressMonitor monitor) throws SnowowlServiceException {
@@ -147,7 +148,7 @@ public abstract class PublishManager implements IPublishManager {
 	 * <li>Sets the released flag on the component (if supported).</li>
 	 * </ul>
 	 */
-	protected void adjustComponentForPublication(final CDOEditingContext context, final CDORevision revision, final Object effectiveTime) {
+	protected InternalCDORevisionDelta adjustComponentForPublication(final CDOEditingContext context, final CDORevision revision, final Object effectiveTime) {
 		// mark components as changed
 		final CDOID cdoId = revision.getID();
 		final Map<CDOID, CDORevisionDelta> revisionDeltas = context.getTransaction().getLastSavepoint().getRevisionDeltas();
@@ -160,6 +161,7 @@ public abstract class PublishManager implements IPublishManager {
 		// adjust values by creating featured deltas for the revision delta
 		setEffectiveTimeOnComponent(revisionDelta, effectiveTime);
 		setReleased(revisionDelta);
+		return revisionDelta;
 	}
 
 	/**
@@ -288,7 +290,7 @@ public abstract class PublishManager implements IPublishManager {
 	}
 
 	@SuppressWarnings("restriction")
-	private CDOSetFeatureDelta createSetFeatureDelta(final EStructuralFeature feature, final int index, final Object value) {
+	protected CDOSetFeatureDelta createSetFeatureDelta(final EStructuralFeature feature, final int index, final Object value) {
 		return new org.eclipse.emf.cdo.internal.common.revision.delta.CDOSetFeatureDeltaImpl(feature, NO_INDEX, value);
 	}
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.api.rest.domain;
 import java.util.Collections;
 import java.util.List;
 
+import com.b2international.snowowl.snomed.core.domain.DefinitionStatus;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
@@ -26,6 +27,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
  */
 public class SnomedConceptRestInput extends AbstractSnomedComponentRestInput<SnomedConceptCreateRequestBuilder> {
 
+	private DefinitionStatus definitionStatus = DefinitionStatus.PRIMITIVE;
 	private List<SnomedDescriptionRestInput> descriptions = Collections.emptyList();
 	private List<SnomedRelationshipRestInput> relationships = Collections.emptyList();
 	private List<SnomedRefSetMemberRestInput> members = Collections.emptyList();
@@ -41,6 +43,10 @@ public class SnomedConceptRestInput extends AbstractSnomedComponentRestInput<Sno
 	public List<SnomedRefSetMemberRestInput> getMembers() {
 		return members;
 	}
+	
+	public DefinitionStatus getDefinitionStatus() {
+		return definitionStatus;
+	}
 
 	public void setDescriptions(List<SnomedDescriptionRestInput> descriptions) {
 		this.descriptions = descriptions;
@@ -53,10 +59,15 @@ public class SnomedConceptRestInput extends AbstractSnomedComponentRestInput<Sno
 	public void setMembers(List<SnomedRefSetMemberRestInput> members) {
 		this.members = members;
 	}
+	
+	public void setDefinitionStatus(DefinitionStatus definitionStatus) {
+		this.definitionStatus = definitionStatus;
+	}
 
 	@Override
 	protected SnomedConceptCreateRequestBuilder createRequestBuilder() {
-		return SnomedRequests.prepareNewConcept();
+		return SnomedRequests.prepareNewConcept()
+				.setDefinitionStatus(definitionStatus);
 	}
 	
 	@Override

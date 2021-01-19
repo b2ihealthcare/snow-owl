@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -114,14 +114,6 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 		LOGGER.debug("Registering {} component IDs.", componentIds.size());
 
 		final Map<String, SctId> sctIds = getSctIds(componentIds);
-		final Map<String, SctId> problemSctIds = ImmutableMap.copyOf(Maps.filterValues(sctIds, Predicates.<SctId>not(Predicates.or(
-				SctId::isAvailable, 
-				SctId::isReserved, 
-				SctId::isAssigned))));
-		
-		if (!problemSctIds.isEmpty()) {
-			throw new SctIdStatusException("Cannot register %s component IDs because they are not available, reserved, or already assigned.", problemSctIds);
-		}
 
 		final Map<String, SctId> availableOrReservedSctIds = ImmutableMap.copyOf(Maps.filterValues(sctIds, Predicates.or(
 				SctId::isAvailable, 
@@ -160,14 +152,6 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 		LOGGER.debug("Releasing {} component IDs.", componentIds.size());
 
 		final Map<String, SctId> sctIds = newHashMap(getSctIds(componentIds));
-		final Map<String, SctId> problemSctIds = ImmutableMap.copyOf(Maps.filterValues(sctIds, Predicates.<SctId>not(Predicates.or(
-				SctId::isAssigned, 
-				SctId::isReserved, 
-				SctId::isAvailable))));
-
-		if (!problemSctIds.isEmpty()) {
-			throw new SctIdStatusException("Cannot release %s component IDs because they are not assigned, reserved, or already available.", problemSctIds);
-		}
 
 		final Map<String, SctId> assignedOrReservedSctIds = ImmutableMap.copyOf(Maps.filterValues(sctIds, Predicates.or(
 				SctId::isAssigned, 
@@ -184,14 +168,6 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 		LOGGER.debug("Deprecating {} component IDs.", componentIds.size());
 
 		final Map<String, SctId> sctIds = getSctIds(componentIds);
-		final Map<String, SctId> problemSctIds = ImmutableMap.copyOf(Maps.filterValues(sctIds, Predicates.<SctId>not(Predicates.or(
-				SctId::isAssigned, 
-				SctId::isPublished, 
-				SctId::isDeprecated))));
-		
-		if (!problemSctIds.isEmpty()) {
-			throw new SctIdStatusException("Cannot deprecate %s component IDs because they are not assigned, published, or already deprecated.", problemSctIds);
-		}
 
 		final Map<String, SctId> assignedOrPublishedSctIds = ImmutableMap.copyOf(Maps.filterValues(sctIds, Predicates.or(
 				SctId::isAssigned, 
@@ -211,21 +187,14 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 		LOGGER.debug("Publishing {} component IDs.", componentIds.size());
 		
 		final Map<String, SctId> sctIds = getSctIds(componentIds);
-		final Map<String, SctId> problemSctIds = ImmutableMap.copyOf(Maps.filterValues(sctIds, Predicates.<SctId>not(Predicates.or(
-				SctId::isAssigned, 
-				SctId::isPublished))));
 		
-		final Map<String, SctId> assignedSctIds = ImmutableMap.copyOf(Maps.filterValues(sctIds, SctId::isAssigned));
+		final Map<String, SctId> sctIdsToPublish = ImmutableMap.copyOf(Maps.filterValues(sctIds, Predicates.not(SctId::isPublished)));
 		
-		for (final SctId sctId : assignedSctIds.values()) {
+		for (final SctId sctId : sctIdsToPublish.values()) {
 			sctId.setStatus(IdentifierStatus.PUBLISHED.getSerializedName());
 		}
 		
-		putSctIds(assignedSctIds);
-		
-		if (!problemSctIds.isEmpty()) {
-			LOGGER.warn("Cannot publish the following component IDs because they are not assigned or already published: {}", problemSctIds);
-		}
+		putSctIds(sctIdsToPublish);
 		
 		return ImmutableMap.copyOf(sctIds);
 	}

@@ -96,10 +96,7 @@ enum LexicalSearchType:
 	MATCH="match" | REGEX="regex" | EXACT="exact";
 
 enum Domain:
-	CONCEPT="Concept" | DESCRIPTION="Description";
-
-Boolean returns ecore::EBoolean:
-	'true' | 'false'; 
+	CONCEPT="Concept" | DESCRIPTION="Description"; 
 
 terminal OPEN_DOUBLE_BRACES:
 	'{{';

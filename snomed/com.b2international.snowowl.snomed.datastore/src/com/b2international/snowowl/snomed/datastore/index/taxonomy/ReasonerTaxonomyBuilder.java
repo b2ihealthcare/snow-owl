@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,8 +45,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.collections.PrimitiveLists;
+import com.b2international.collections.PrimitiveMaps;
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongCollections;
+import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.collections.longs.LongList;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.CompareUtils;
@@ -71,6 +73,7 @@ import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedOWLRelationshipDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
@@ -87,6 +90,8 @@ import com.google.common.collect.Iterables;
  * @since
  */
 public final class ReasonerTaxonomyBuilder {
+
+	private static final int AXIOM_GROUP_BASE = 10_000;
 
 	private static final Logger LOGGER = LoggerFactory.getLogger("reasoner-taxonomy");
 
@@ -109,6 +114,7 @@ public final class ReasonerTaxonomyBuilder {
 
 	private InternalIdEdges.Builder statedAncestors;
 	private InternalIdEdges.Builder statedDescendants;
+	private LongKeyMap<String> fullySpecifiedNames;
 
 	private InternalSctIdSet.Builder exhaustiveConcepts;
 
@@ -128,6 +134,7 @@ public final class ReasonerTaxonomyBuilder {
 	private InternalIdMap builtDefinedConceptMap;
 
 	private ImmutableSet.Builder<PropertyChain> propertyChains;
+
 
 	public ReasonerTaxonomyBuilder() {
 		this(ImmutableSet.<String>of());
@@ -237,6 +244,55 @@ public final class ReasonerTaxonomyBuilder {
 
 		this.propertyChains = ImmutableSet.builder();
 		
+		return this;
+	}
+	
+	public ReasonerTaxonomyBuilder addFullySpecifiedNames(final RevisionSearcher searcher) {
+		entering("Registering fully specified names using revision searcher");
+		
+		if (fullySpecifiedNames == null) {
+			fullySpecifiedNames = PrimitiveMaps.newLongKeyOpenHashMapWithExpectedSize(builtConceptMap.size());
+		}
+		
+		final ExpressionBuilder whereExpressionBuilder = Expressions.builder()
+				.filter(SnomedDescriptionIndexEntry.Expressions.active())
+				.filter(SnomedDescriptionIndexEntry.Expressions.type(Concepts.FULLY_SPECIFIED_NAME));
+		
+		if (!excludedModuleIds.isEmpty()) {
+			whereExpressionBuilder.mustNot(modules(excludedModuleIds));
+		}
+		
+		final Query<String[]> query = Query.select(String[].class)
+				.from(SnomedDescriptionIndexEntry.class)
+				.fields(SnomedDescriptionIndexEntry.Fields.CONCEPT_ID, // 0
+						SnomedDescriptionIndexEntry.Fields.TERM) // 1
+				.where(whereExpressionBuilder.build())
+				.limit(SCROLL_LIMIT)
+				.build();
+		
+		final Iterable<Hits<String[]>> scrolledHits = searcher.scroll(query);
+		final List<String> conceptIds = newArrayListWithExpectedSize(SCROLL_LIMIT);
+		final List<String> terms = newArrayListWithExpectedSize(SCROLL_LIMIT);
+
+		for (final Hits<String[]> hits : scrolledHits) {
+			for (final String[] description : hits) {
+				if (builtConceptMap.containsKey(description[0])) {
+					conceptIds.add(description[0]);
+					terms.add(description[1]);
+				} else {
+					LOGGER.debug("Not registering FSN as its concept {} is inactive.", description[0]);
+				}
+			}
+
+			for (int i = 0; i < conceptIds.size(); i++) {
+				fullySpecifiedNames.put(Long.parseLong(conceptIds.get(i)), terms.get(i));
+			}
+			
+			conceptIds.clear();
+			terms.clear();
+		}
+		
+		leaving("Registering fully specified names using revision searcher");
 		return this;
 	}
 
@@ -393,7 +449,10 @@ public final class ReasonerTaxonomyBuilder {
 			whereExpressionBuilder.mustNot(modules(excludedModuleIds));
 		}
 		
-		addRelationships(searcher, whereExpressionBuilder, conceptId -> builtDefinedConceptMap.containsKey(conceptId) ? equivalentStatements : subclassOfStatements);
+		addRelationships(searcher, 
+				whereExpressionBuilder, 
+				false, // Stated relationships only
+				conceptId -> builtDefinedConceptMap.containsKey(conceptId) ? equivalentStatements : subclassOfStatements);
 
 		leaving("Registering active stated non-IS A relationships using revision searcher");
 		return this;
@@ -407,7 +466,8 @@ public final class ReasonerTaxonomyBuilder {
 				&& !Concepts.IS_A.equals(relationship.getTypeId())
 				&& !excludedModuleIds.contains(relationship.getModuleId());
 		
-		addRelationships(sortedRelationships.filter(predicate), (sourceId, fragments) -> {
+		// Stated relationships only
+		addRelationships(sortedRelationships.filter(predicate), false, (sourceId, fragments) -> {
 			if (builtDefinedConceptMap.containsKey(sourceId)) {
 				equivalentStatements.putAll(sourceId, fragments);
 			} else {
@@ -431,7 +491,10 @@ public final class ReasonerTaxonomyBuilder {
 			whereExpressionBuilder.mustNot(modules(excludedModuleIds));
 		}
 		
-		addRelationships(searcher, whereExpressionBuilder, conceptId -> additionalGroupedRelationships);
+		addRelationships(searcher, 
+				whereExpressionBuilder, 
+				true, // Additional relationships only
+				conceptId -> additionalGroupedRelationships);
 	
 		leaving("Registering active additional grouped relationships using revision searcher");
 		return this;
@@ -445,7 +508,8 @@ public final class ReasonerTaxonomyBuilder {
 				&& relationship.getGroup() > 0
 				&& !excludedModuleIds.contains(relationship.getModuleId());
 		
-		addRelationships(sortedRelationships.filter(predicate), additionalGroupedRelationships::putAll);
+		// Additional relationships only
+		addRelationships(sortedRelationships.filter(predicate), true, additionalGroupedRelationships::putAll);
 	
 		leaving("Registering active additional grouped relationships using relationship stream");
 		return this;
@@ -540,6 +604,7 @@ public final class ReasonerTaxonomyBuilder {
 						group,
 						unionGroup,
 						universal,
+						false, // Stated and inferred relationships only
 						statementId,
 						released,
 						hasStatedPair);
@@ -570,13 +635,18 @@ public final class ReasonerTaxonomyBuilder {
 				&& CharacteristicType.INFERRED_RELATIONSHIP.equals(relationship.getCharacteristicType())
 				&& !excludedModuleIds.contains(relationship.getModuleId());
 		
-		addRelationships(sortedRelationships.filter(predicate), existingInferredRelationships::putAll);
+		// Inferred relationships only
+		addRelationships(sortedRelationships.filter(predicate), false, existingInferredRelationships::putAll);
 		
 		leaving("Registering active inferred relationships using relationship stream");
 		return this;
 	}
 
-	private void addRelationships(final RevisionSearcher searcher, final ExpressionBuilder whereExpressionBuilder, final Function<String, Builder<StatementFragment>> fragmentBuilder) {
+	private void addRelationships(
+			final RevisionSearcher searcher, 
+			final ExpressionBuilder whereExpressionBuilder, 
+			final boolean additional,
+			final Function<String, Builder<StatementFragment>> fragmentBuilder) {
 		
 		final Query<String[]> query = Query.select(String[].class)
 				.from(SnomedRelationshipIndexEntry.class)
@@ -639,6 +709,7 @@ public final class ReasonerTaxonomyBuilder {
 						group,
 						unionGroup,
 						universal,
+						additional,
 						statementId,
 						released,
 						false); // Relationships added through this method have no stated pair
@@ -663,6 +734,7 @@ public final class ReasonerTaxonomyBuilder {
 	 * XXX: sortedRelationships should be sorted by source ID; we can not verify this in advance
 	 */
 	private void addRelationships(final Stream<SnomedRelationship> sortedRelationships,
+			final boolean additional,
 			final BiConsumer<String, List<StatementFragment>> consumer) {
 		
 		final List<StatementFragment> fragments = newArrayListWithExpectedSize(SCROLL_LIMIT);
@@ -701,6 +773,7 @@ public final class ReasonerTaxonomyBuilder {
 						group,
 						unionGroup,
 						universal,
+						additional,
 						statementId,
 						false,  // XXX: "injected" concepts will not set these flags correctly, but they should
 						false);  // only be used for equivalence checks
@@ -750,6 +823,7 @@ public final class ReasonerTaxonomyBuilder {
 		final List<StatementFragment> equivalentFragments = newArrayListWithExpectedSize(SCROLL_LIMIT);
 		final List<String> additionalAxioms = newArrayListWithExpectedSize(SCROLL_LIMIT);
 		String lastReferencedComponentId = "";
+		int groupOffset = AXIOM_GROUP_BASE;
 		
 		for (final Hits<SnomedRefSetMemberIndexEntry> hits : scrolledHits) {
 			for (final SnomedRefSetMemberIndexEntry member : hits) {
@@ -772,7 +846,9 @@ public final class ReasonerTaxonomyBuilder {
 					sourceIds.clear();
 					destinationIds.clear();
 					additionalAxioms.clear();
+					
 					lastReferencedComponentId = referencedComponentId;
+					groupOffset = AXIOM_GROUP_BASE;
 				}
 
 				// if not a class axiom then process it as owl axiom member
@@ -815,7 +891,7 @@ public final class ReasonerTaxonomyBuilder {
 								sourceIds.add(referencedComponentId);
 								destinationIds.add(relationship.getDestinationId());
 							} else {
-								fragments.add(relationship.toStatementFragment());
+								fragments.add(relationship.toStatementFragment(groupOffset));
 							}
 						} else {
 							LOGGER.debug(
@@ -828,6 +904,7 @@ public final class ReasonerTaxonomyBuilder {
 					additionalAxioms.add(expression);
 				}
 				
+				groupOffset += AXIOM_GROUP_BASE;
 			}
 		}
 		
@@ -938,17 +1015,19 @@ public final class ReasonerTaxonomyBuilder {
 				final Integer group = member.getRelationshipGroup();
 				final long typeId = Long.parseLong(member.getTypeId());
 				final boolean released = member.isReleased();
+				final boolean additional = Concepts.ADDITIONAL_RELATIONSHIP.equals(member.getCharacteristicTypeId()); 
 
 				final ConcreteDomainFragment fragment = new ConcreteDomainFragment(memberId, 
 						refsetId,
 						group,
 						serializedValue,
 						typeId,
-						released);
+						released,
+						additional);
 
 				if (Concepts.STATED_RELATIONSHIP.equals(member.getCharacteristicTypeId())) {
 					statedFragments.add(fragment);
-				} else if (Concepts.ADDITIONAL_RELATIONSHIP.equals(member.getCharacteristicTypeId()) && member.getRelationshipGroup() > 0) {
+				} else if (additional && member.getRelationshipGroup() > 0) {
 					additionalGroupedFragments.add(fragment);
 				} else if (Concepts.INFERRED_RELATIONSHIP.equals(member.getCharacteristicTypeId())) {
 					inferredFragments.add(fragment);
@@ -1008,17 +1087,19 @@ public final class ReasonerTaxonomyBuilder {
 					final String serializedValue = (String) member.getProperties().get(SnomedRf2Headers.FIELD_VALUE);
 					final Integer group = (Integer) member.getProperties().get(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP);
 					final long typeId = Long.parseLong((String) member.getProperties().get(SnomedRf2Headers.FIELD_TYPE_ID));
+					final boolean additional = Concepts.ADDITIONAL_RELATIONSHIP.equals(characteristicTypeId);
 
 					final ConcreteDomainFragment fragment = new ConcreteDomainFragment(memberId,
 							refsetId,
 							group,
 							serializedValue,
 							typeId,
-							false); // XXX: "injected" CD members will not set this flag correctly, but they should only be used in equivalence checks
+							false, // XXX: "injected" CD members will not set this flag correctly, but they should only be used in equivalence checks
+							additional); 
 
 					if (Concepts.STATED_RELATIONSHIP.equals(characteristicTypeId)) {
 						statedFragments.add(fragment);
-					} else if (Concepts.ADDITIONAL_RELATIONSHIP.equals(characteristicTypeId) && group > 0) {
+					} else if (additional && group > 0) {
 						additionalGroupedFragments.add(fragment);
 					} else if (Concepts.INFERRED_RELATIONSHIP.equals(characteristicTypeId)) {
 						inferredFragments.add(fragment);
@@ -1042,10 +1123,12 @@ public final class ReasonerTaxonomyBuilder {
 
 	public ReasonerTaxonomy build() {
 		checkState(builtConceptMap != null, "finishConcepts() method was not called on taxonomy builder.");
-
+		
 		return new ReasonerTaxonomy(
 				builtConceptMap, 
 				builtDefinedConceptMap,
+				fullySpecifiedNames,
+				
 				statedAncestors.build(),
 				statedDescendants.build(),
 				

@@ -772,25 +772,6 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 		//STRING
 		public RuleCall getLanguageCodeSTRINGTerminalRuleCall_2_0() { return cLanguageCodeSTRINGTerminalRuleCall_2_0; }
 	}
-	public class BooleanElements extends AbstractParserRuleElementFinder {
-		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.Boolean");
-		private final Alternatives cAlternatives = (Alternatives)rule.eContents().get(1);
-		private final Keyword cTrueKeyword_0 = (Keyword)cAlternatives.eContents().get(0);
-		private final Keyword cFalseKeyword_1 = (Keyword)cAlternatives.eContents().get(1);
-		
-		//Boolean ecore::EBoolean:
-		//	'true' | 'false';
-		@Override public ParserRule getRule() { return rule; }
-		
-		//'true' | 'false'
-		public Alternatives getAlternatives() { return cAlternatives; }
-		
-		//'true'
-		public Keyword getTrueKeyword_0() { return cTrueKeyword_0; }
-		
-		//'false'
-		public Keyword getFalseKeyword_1() { return cFalseKeyword_1; }
-	}
 	
 	public class LexicalSearchTypeElements extends AbstractEnumRuleElementFinder {
 		private final EnumRule rule = (EnumRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.LexicalSearchType");
@@ -880,7 +861,6 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 	private final LanguageCodeFilterElements pLanguageCodeFilter;
 	private final LexicalSearchTypeElements eLexicalSearchType;
 	private final DomainElements eDomain;
-	private final BooleanElements pBoolean;
 	private final TerminalRule tOPEN_DOUBLE_BRACES;
 	private final TerminalRule tCLOSE_DOUBLE_BRACES;
 	
@@ -918,7 +898,6 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 		this.pLanguageCodeFilter = new LanguageCodeFilterElements();
 		this.eLexicalSearchType = new LexicalSearchTypeElements();
 		this.eDomain = new DomainElements();
-		this.pBoolean = new BooleanElements();
 		this.tOPEN_DOUBLE_BRACES = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.OPEN_DOUBLE_BRACES");
 		this.tCLOSE_DOUBLE_BRACES = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.CLOSE_DOUBLE_BRACES");
 	}
@@ -1202,16 +1181,6 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 	
 	public EnumRule getDomainRule() {
 		return getDomainAccess().getRule();
-	}
-	
-	//Boolean ecore::EBoolean:
-	//	'true' | 'false';
-	public BooleanElements getBooleanAccess() {
-		return pBoolean;
-	}
-	
-	public ParserRule getBooleanRule() {
-		return getBooleanAccess().getRule();
 	}
 	
 	//terminal OPEN_DOUBLE_BRACES:
@@ -1558,7 +1527,9 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//DataTypeComparison:
-	//	StringValueEquals
+	//	BooleanValueEquals
+	//	| BooleanValueNotEquals
+	//	| StringValueEquals
 	//	| StringValueNotEquals
 	//	| IntegerValueEquals
 	//	| IntegerValueNotEquals
@@ -1598,6 +1569,26 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 	
 	public ParserRule getAttributeValueNotEqualsRule() {
 		return getAttributeValueNotEqualsAccess().getRule();
+	}
+	
+	//BooleanValueEquals:
+	//	EQUAL value=Boolean;
+	public EclGrammarAccess.BooleanValueEqualsElements getBooleanValueEqualsAccess() {
+		return gaEcl.getBooleanValueEqualsAccess();
+	}
+	
+	public ParserRule getBooleanValueEqualsRule() {
+		return getBooleanValueEqualsAccess().getRule();
+	}
+	
+	//BooleanValueNotEquals:
+	//	NOT_EQUAL value=Boolean;
+	public EclGrammarAccess.BooleanValueNotEqualsElements getBooleanValueNotEqualsAccess() {
+		return gaEcl.getBooleanValueNotEqualsAccess();
+	}
+	
+	public ParserRule getBooleanValueNotEqualsRule() {
+		return getBooleanValueNotEqualsAccess().getRule();
 	}
 	
 	//StringValueEquals:
@@ -1810,6 +1801,16 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 	
 	public ParserRule getNonNegativeDecimalRule() {
 		return getNonNegativeDecimalAccess().getRule();
+	}
+	
+	//Boolean ecore::EBoolean hidden():
+	//	'true' | 'false';
+	public EclGrammarAccess.BooleanElements getBooleanAccess() {
+		return gaEcl.getBooleanAccess();
+	}
+	
+	public ParserRule getBooleanRule() {
+		return getBooleanAccess().getRule();
 	}
 	
 	//terminal TERM_STRING:

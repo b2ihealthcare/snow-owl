@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.common.lucene.search.function.CombineFunction;
 import org.elasticsearch.common.unit.Fuzziness;
 import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.BoostingQueryBuilder;
 import org.elasticsearch.index.query.DisMaxQueryBuilder;
 import org.elasticsearch.index.query.Operator;
 import org.elasticsearch.index.query.QueryBuilder;
@@ -57,6 +56,7 @@ import com.b2international.index.query.NestedPredicate;
 import com.b2international.index.query.Predicate;
 import com.b2international.index.query.PrefixPredicate;
 import com.b2international.index.query.RangePredicate;
+import com.b2international.index.query.ScriptQueryExpression;
 import com.b2international.index.query.ScriptScoreExpression;
 import com.b2international.index.query.SetPredicate;
 import com.b2international.index.query.SingleArgumentPredicate;
@@ -165,9 +165,15 @@ public final class EsQueryBuilder {
 			visit((DecimalRangePredicate) expression);
 		} else if (expression instanceof DecimalSetPredicate) {
 			visit((DecimalSetPredicate) expression);
+		} else if (expression instanceof ScriptQueryExpression){
+			visit((ScriptQueryExpression)expression);
 		} else {
 			throw new IllegalArgumentException("Unexpected expression: " + expression);
 		}
+	}
+
+	private void visit(ScriptQueryExpression expression) {
+		deque.push(QueryBuilders.scriptQuery(expression.toEsScript(mapping)));
 	}
 	
 	private void visit(ScriptScoreExpression expression) {
@@ -329,9 +335,7 @@ public final class EsQueryBuilder {
 	private void visit(BoostPredicate boost) {
 		visit(boost.expression());
 		QueryBuilder qb = deque.pop();
-		if (qb instanceof BoostingQueryBuilder) {
-			((BoostingQueryBuilder) qb).boost(boost.boost());
-		}
+		qb.boost(boost.boost());
 		deque.push(qb);
 	}
 	

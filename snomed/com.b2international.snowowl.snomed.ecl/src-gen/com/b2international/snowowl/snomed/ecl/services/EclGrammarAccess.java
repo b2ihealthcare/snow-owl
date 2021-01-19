@@ -978,23 +978,27 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	public class DataTypeComparisonElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.DataTypeComparison");
 		private final Alternatives cAlternatives = (Alternatives)rule.eContents().get(1);
-		private final RuleCall cStringValueEqualsParserRuleCall_0 = (RuleCall)cAlternatives.eContents().get(0);
-		private final RuleCall cStringValueNotEqualsParserRuleCall_1 = (RuleCall)cAlternatives.eContents().get(1);
-		private final RuleCall cIntegerValueEqualsParserRuleCall_2 = (RuleCall)cAlternatives.eContents().get(2);
-		private final RuleCall cIntegerValueNotEqualsParserRuleCall_3 = (RuleCall)cAlternatives.eContents().get(3);
-		private final RuleCall cIntegerValueGreaterThanParserRuleCall_4 = (RuleCall)cAlternatives.eContents().get(4);
-		private final RuleCall cIntegerValueGreaterThanEqualsParserRuleCall_5 = (RuleCall)cAlternatives.eContents().get(5);
-		private final RuleCall cIntegerValueLessThanParserRuleCall_6 = (RuleCall)cAlternatives.eContents().get(6);
-		private final RuleCall cIntegerValueLessThanEqualsParserRuleCall_7 = (RuleCall)cAlternatives.eContents().get(7);
-		private final RuleCall cDecimalValueEqualsParserRuleCall_8 = (RuleCall)cAlternatives.eContents().get(8);
-		private final RuleCall cDecimalValueNotEqualsParserRuleCall_9 = (RuleCall)cAlternatives.eContents().get(9);
-		private final RuleCall cDecimalValueGreaterThanParserRuleCall_10 = (RuleCall)cAlternatives.eContents().get(10);
-		private final RuleCall cDecimalValueGreaterThanEqualsParserRuleCall_11 = (RuleCall)cAlternatives.eContents().get(11);
-		private final RuleCall cDecimalValueLessThanParserRuleCall_12 = (RuleCall)cAlternatives.eContents().get(12);
-		private final RuleCall cDecimalValueLessThanEqualsParserRuleCall_13 = (RuleCall)cAlternatives.eContents().get(13);
+		private final RuleCall cBooleanValueEqualsParserRuleCall_0 = (RuleCall)cAlternatives.eContents().get(0);
+		private final RuleCall cBooleanValueNotEqualsParserRuleCall_1 = (RuleCall)cAlternatives.eContents().get(1);
+		private final RuleCall cStringValueEqualsParserRuleCall_2 = (RuleCall)cAlternatives.eContents().get(2);
+		private final RuleCall cStringValueNotEqualsParserRuleCall_3 = (RuleCall)cAlternatives.eContents().get(3);
+		private final RuleCall cIntegerValueEqualsParserRuleCall_4 = (RuleCall)cAlternatives.eContents().get(4);
+		private final RuleCall cIntegerValueNotEqualsParserRuleCall_5 = (RuleCall)cAlternatives.eContents().get(5);
+		private final RuleCall cIntegerValueGreaterThanParserRuleCall_6 = (RuleCall)cAlternatives.eContents().get(6);
+		private final RuleCall cIntegerValueGreaterThanEqualsParserRuleCall_7 = (RuleCall)cAlternatives.eContents().get(7);
+		private final RuleCall cIntegerValueLessThanParserRuleCall_8 = (RuleCall)cAlternatives.eContents().get(8);
+		private final RuleCall cIntegerValueLessThanEqualsParserRuleCall_9 = (RuleCall)cAlternatives.eContents().get(9);
+		private final RuleCall cDecimalValueEqualsParserRuleCall_10 = (RuleCall)cAlternatives.eContents().get(10);
+		private final RuleCall cDecimalValueNotEqualsParserRuleCall_11 = (RuleCall)cAlternatives.eContents().get(11);
+		private final RuleCall cDecimalValueGreaterThanParserRuleCall_12 = (RuleCall)cAlternatives.eContents().get(12);
+		private final RuleCall cDecimalValueGreaterThanEqualsParserRuleCall_13 = (RuleCall)cAlternatives.eContents().get(13);
+		private final RuleCall cDecimalValueLessThanParserRuleCall_14 = (RuleCall)cAlternatives.eContents().get(14);
+		private final RuleCall cDecimalValueLessThanEqualsParserRuleCall_15 = (RuleCall)cAlternatives.eContents().get(15);
 		
 		//DataTypeComparison:
-		//	StringValueEquals
+		//	BooleanValueEquals
+		//	| BooleanValueNotEquals
+		//	| StringValueEquals
 		//	| StringValueNotEquals
 		//	| IntegerValueEquals
 		//	| IntegerValueNotEquals
@@ -1010,53 +1014,59 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		//	| DecimalValueLessThanEquals;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//StringValueEquals | StringValueNotEquals | IntegerValueEquals | IntegerValueNotEquals | IntegerValueGreaterThan |
-		//IntegerValueGreaterThanEquals | IntegerValueLessThan | IntegerValueLessThanEquals | DecimalValueEquals |
-		//DecimalValueNotEquals | DecimalValueGreaterThan | DecimalValueGreaterThanEquals | DecimalValueLessThan |
-		//DecimalValueLessThanEquals
+		//BooleanValueEquals | BooleanValueNotEquals | StringValueEquals | StringValueNotEquals | IntegerValueEquals |
+		//IntegerValueNotEquals | IntegerValueGreaterThan | IntegerValueGreaterThanEquals | IntegerValueLessThan |
+		//IntegerValueLessThanEquals | DecimalValueEquals | DecimalValueNotEquals | DecimalValueGreaterThan |
+		//DecimalValueGreaterThanEquals | DecimalValueLessThan | DecimalValueLessThanEquals
 		public Alternatives getAlternatives() { return cAlternatives; }
 		
+		//BooleanValueEquals
+		public RuleCall getBooleanValueEqualsParserRuleCall_0() { return cBooleanValueEqualsParserRuleCall_0; }
+		
+		//BooleanValueNotEquals
+		public RuleCall getBooleanValueNotEqualsParserRuleCall_1() { return cBooleanValueNotEqualsParserRuleCall_1; }
+		
 		//StringValueEquals
-		public RuleCall getStringValueEqualsParserRuleCall_0() { return cStringValueEqualsParserRuleCall_0; }
+		public RuleCall getStringValueEqualsParserRuleCall_2() { return cStringValueEqualsParserRuleCall_2; }
 		
 		//StringValueNotEquals
-		public RuleCall getStringValueNotEqualsParserRuleCall_1() { return cStringValueNotEqualsParserRuleCall_1; }
+		public RuleCall getStringValueNotEqualsParserRuleCall_3() { return cStringValueNotEqualsParserRuleCall_3; }
 		
 		//IntegerValueEquals
-		public RuleCall getIntegerValueEqualsParserRuleCall_2() { return cIntegerValueEqualsParserRuleCall_2; }
+		public RuleCall getIntegerValueEqualsParserRuleCall_4() { return cIntegerValueEqualsParserRuleCall_4; }
 		
 		//IntegerValueNotEquals
-		public RuleCall getIntegerValueNotEqualsParserRuleCall_3() { return cIntegerValueNotEqualsParserRuleCall_3; }
+		public RuleCall getIntegerValueNotEqualsParserRuleCall_5() { return cIntegerValueNotEqualsParserRuleCall_5; }
 		
 		//IntegerValueGreaterThan
-		public RuleCall getIntegerValueGreaterThanParserRuleCall_4() { return cIntegerValueGreaterThanParserRuleCall_4; }
+		public RuleCall getIntegerValueGreaterThanParserRuleCall_6() { return cIntegerValueGreaterThanParserRuleCall_6; }
 		
 		//IntegerValueGreaterThanEquals
-		public RuleCall getIntegerValueGreaterThanEqualsParserRuleCall_5() { return cIntegerValueGreaterThanEqualsParserRuleCall_5; }
+		public RuleCall getIntegerValueGreaterThanEqualsParserRuleCall_7() { return cIntegerValueGreaterThanEqualsParserRuleCall_7; }
 		
 		//IntegerValueLessThan
-		public RuleCall getIntegerValueLessThanParserRuleCall_6() { return cIntegerValueLessThanParserRuleCall_6; }
+		public RuleCall getIntegerValueLessThanParserRuleCall_8() { return cIntegerValueLessThanParserRuleCall_8; }
 		
 		//IntegerValueLessThanEquals
-		public RuleCall getIntegerValueLessThanEqualsParserRuleCall_7() { return cIntegerValueLessThanEqualsParserRuleCall_7; }
+		public RuleCall getIntegerValueLessThanEqualsParserRuleCall_9() { return cIntegerValueLessThanEqualsParserRuleCall_9; }
 		
 		//DecimalValueEquals
-		public RuleCall getDecimalValueEqualsParserRuleCall_8() { return cDecimalValueEqualsParserRuleCall_8; }
+		public RuleCall getDecimalValueEqualsParserRuleCall_10() { return cDecimalValueEqualsParserRuleCall_10; }
 		
 		//DecimalValueNotEquals
-		public RuleCall getDecimalValueNotEqualsParserRuleCall_9() { return cDecimalValueNotEqualsParserRuleCall_9; }
+		public RuleCall getDecimalValueNotEqualsParserRuleCall_11() { return cDecimalValueNotEqualsParserRuleCall_11; }
 		
 		//DecimalValueGreaterThan
-		public RuleCall getDecimalValueGreaterThanParserRuleCall_10() { return cDecimalValueGreaterThanParserRuleCall_10; }
+		public RuleCall getDecimalValueGreaterThanParserRuleCall_12() { return cDecimalValueGreaterThanParserRuleCall_12; }
 		
 		//DecimalValueGreaterThanEquals
-		public RuleCall getDecimalValueGreaterThanEqualsParserRuleCall_11() { return cDecimalValueGreaterThanEqualsParserRuleCall_11; }
+		public RuleCall getDecimalValueGreaterThanEqualsParserRuleCall_13() { return cDecimalValueGreaterThanEqualsParserRuleCall_13; }
 		
 		//DecimalValueLessThan
-		public RuleCall getDecimalValueLessThanParserRuleCall_12() { return cDecimalValueLessThanParserRuleCall_12; }
+		public RuleCall getDecimalValueLessThanParserRuleCall_14() { return cDecimalValueLessThanParserRuleCall_14; }
 		
 		//DecimalValueLessThanEquals
-		public RuleCall getDecimalValueLessThanEqualsParserRuleCall_13() { return cDecimalValueLessThanEqualsParserRuleCall_13; }
+		public RuleCall getDecimalValueLessThanEqualsParserRuleCall_15() { return cDecimalValueLessThanEqualsParserRuleCall_15; }
 	}
 	public class AttributeValueEqualsElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.AttributeValueEquals");
@@ -1103,6 +1113,52 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		
 		//SubExpressionConstraint
 		public RuleCall getConstraintSubExpressionConstraintParserRuleCall_1_0() { return cConstraintSubExpressionConstraintParserRuleCall_1_0; }
+	}
+	public class BooleanValueEqualsElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.BooleanValueEquals");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final RuleCall cEQUALTerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final Assignment cValueAssignment_1 = (Assignment)cGroup.eContents().get(1);
+		private final RuleCall cValueBooleanParserRuleCall_1_0 = (RuleCall)cValueAssignment_1.eContents().get(0);
+		
+		//BooleanValueEquals:
+		//	EQUAL value=Boolean;
+		@Override public ParserRule getRule() { return rule; }
+		
+		//EQUAL value=Boolean
+		public Group getGroup() { return cGroup; }
+		
+		//EQUAL
+		public RuleCall getEQUALTerminalRuleCall_0() { return cEQUALTerminalRuleCall_0; }
+		
+		//value=Boolean
+		public Assignment getValueAssignment_1() { return cValueAssignment_1; }
+		
+		//Boolean
+		public RuleCall getValueBooleanParserRuleCall_1_0() { return cValueBooleanParserRuleCall_1_0; }
+	}
+	public class BooleanValueNotEqualsElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.BooleanValueNotEquals");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final RuleCall cNOT_EQUALTerminalRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final Assignment cValueAssignment_1 = (Assignment)cGroup.eContents().get(1);
+		private final RuleCall cValueBooleanParserRuleCall_1_0 = (RuleCall)cValueAssignment_1.eContents().get(0);
+		
+		//BooleanValueNotEquals:
+		//	NOT_EQUAL value=Boolean;
+		@Override public ParserRule getRule() { return rule; }
+		
+		//NOT_EQUAL value=Boolean
+		public Group getGroup() { return cGroup; }
+		
+		//NOT_EQUAL
+		public RuleCall getNOT_EQUALTerminalRuleCall_0() { return cNOT_EQUALTerminalRuleCall_0; }
+		
+		//value=Boolean
+		public Assignment getValueAssignment_1() { return cValueAssignment_1; }
+		
+		//Boolean
+		public RuleCall getValueBooleanParserRuleCall_1_0() { return cValueBooleanParserRuleCall_1_0; }
 	}
 	public class StringValueEqualsElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.StringValueEquals");
@@ -1718,6 +1774,25 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		//ZERO
 		public RuleCall getZEROTerminalRuleCall_2_1() { return cZEROTerminalRuleCall_2_1; }
 	}
+	public class BooleanElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.Boolean");
+		private final Alternatives cAlternatives = (Alternatives)rule.eContents().get(1);
+		private final Keyword cTrueKeyword_0 = (Keyword)cAlternatives.eContents().get(0);
+		private final Keyword cFalseKeyword_1 = (Keyword)cAlternatives.eContents().get(1);
+		
+		//Boolean ecore::EBoolean hidden():
+		//	'true' | 'false';
+		@Override public ParserRule getRule() { return rule; }
+		
+		//'true' | 'false'
+		public Alternatives getAlternatives() { return cAlternatives; }
+		
+		//'true'
+		public Keyword getTrueKeyword_0() { return cTrueKeyword_0; }
+		
+		//'false'
+		public Keyword getFalseKeyword_1() { return cFalseKeyword_1; }
+	}
 	
 	
 	private final ScriptElements pScript;
@@ -1756,6 +1831,8 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	private final DataTypeComparisonElements pDataTypeComparison;
 	private final AttributeValueEqualsElements pAttributeValueEquals;
 	private final AttributeValueNotEqualsElements pAttributeValueNotEquals;
+	private final BooleanValueEqualsElements pBooleanValueEquals;
+	private final BooleanValueNotEqualsElements pBooleanValueNotEquals;
 	private final StringValueEqualsElements pStringValueEquals;
 	private final StringValueNotEqualsElements pStringValueNotEquals;
 	private final IntegerValueEqualsElements pIntegerValueEquals;
@@ -1777,6 +1854,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	private final IntegerElements pInteger;
 	private final DecimalElements pDecimal;
 	private final NonNegativeDecimalElements pNonNegativeDecimal;
+	private final BooleanElements pBoolean;
 	private final TerminalRule tTERM_STRING;
 	private final TerminalRule tREVERSED;
 	private final TerminalRule tTO;
@@ -1852,6 +1930,8 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		this.pDataTypeComparison = new DataTypeComparisonElements();
 		this.pAttributeValueEquals = new AttributeValueEqualsElements();
 		this.pAttributeValueNotEquals = new AttributeValueNotEqualsElements();
+		this.pBooleanValueEquals = new BooleanValueEqualsElements();
+		this.pBooleanValueNotEquals = new BooleanValueNotEqualsElements();
 		this.pStringValueEquals = new StringValueEqualsElements();
 		this.pStringValueNotEquals = new StringValueNotEqualsElements();
 		this.pIntegerValueEquals = new IntegerValueEqualsElements();
@@ -1873,6 +1953,7 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 		this.pInteger = new IntegerElements();
 		this.pDecimal = new DecimalElements();
 		this.pNonNegativeDecimal = new NonNegativeDecimalElements();
+		this.pBoolean = new BooleanElements();
 		this.tTERM_STRING = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.TERM_STRING");
 		this.tREVERSED = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.REVERSED");
 		this.tTO = (TerminalRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ecl.Ecl.TO");
@@ -2263,7 +2344,9 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//DataTypeComparison:
-	//	StringValueEquals
+	//	BooleanValueEquals
+	//	| BooleanValueNotEquals
+	//	| StringValueEquals
 	//	| StringValueNotEquals
 	//	| IntegerValueEquals
 	//	| IntegerValueNotEquals
@@ -2303,6 +2386,26 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	
 	public ParserRule getAttributeValueNotEqualsRule() {
 		return getAttributeValueNotEqualsAccess().getRule();
+	}
+	
+	//BooleanValueEquals:
+	//	EQUAL value=Boolean;
+	public BooleanValueEqualsElements getBooleanValueEqualsAccess() {
+		return pBooleanValueEquals;
+	}
+	
+	public ParserRule getBooleanValueEqualsRule() {
+		return getBooleanValueEqualsAccess().getRule();
+	}
+	
+	//BooleanValueNotEquals:
+	//	NOT_EQUAL value=Boolean;
+	public BooleanValueNotEqualsElements getBooleanValueNotEqualsAccess() {
+		return pBooleanValueNotEquals;
+	}
+	
+	public ParserRule getBooleanValueNotEqualsRule() {
+		return getBooleanValueNotEqualsAccess().getRule();
 	}
 	
 	//StringValueEquals:
@@ -2515,6 +2618,16 @@ public class EclGrammarAccess extends AbstractGrammarElementFinder {
 	
 	public ParserRule getNonNegativeDecimalRule() {
 		return getNonNegativeDecimalAccess().getRule();
+	}
+	
+	//Boolean ecore::EBoolean hidden():
+	//	'true' | 'false';
+	public BooleanElements getBooleanAccess() {
+		return pBoolean;
+	}
+	
+	public ParserRule getBooleanRule() {
+		return getBooleanAccess().getRule();
 	}
 	
 	//terminal TERM_STRING:

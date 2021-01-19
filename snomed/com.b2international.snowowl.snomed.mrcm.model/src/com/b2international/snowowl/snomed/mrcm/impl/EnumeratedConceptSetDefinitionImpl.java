@@ -60,6 +60,7 @@ public class EnumeratedConceptSetDefinitionImpl extends ConceptSetDefinitionImpl
 	 * @generated
 	 */
 	@SuppressWarnings("unchecked")
+	@Override
 	public EList<String> getConceptIds() {
 		return (EList<String>)eGet(MrcmPackage.Literals.ENUMERATED_CONCEPT_SET_DEFINITION__CONCEPT_IDS, true);
 	}

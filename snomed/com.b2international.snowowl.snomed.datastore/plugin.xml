@@ -35,6 +35,8 @@
          <!-- Map targets -->
          <supportedMapTargetType type="SIMPLE_MAP" />
          <supportedMapTargetType type="SIMPLE_MAP_WITH_DESCRIPTION" />
+         <supportedRefSetType type="VALUE_SET" />
+   		 <supportedRefSetType type="MAPPING_SET" />
       </terminologyComponent>
       <terminologyComponent
             decorator="icons/snomed_description_decorator.png"

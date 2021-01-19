@@ -61,6 +61,7 @@ public class CompositeConceptSetDefinitionImpl extends ConceptSetDefinitionImpl 
 	 * @generated
 	 */
 	@SuppressWarnings("unchecked")
+	@Override
 	public EList<ConceptSetDefinition> getChildren() {
 		return (EList<ConceptSetDefinition>)eGet(MrcmPackage.Literals.COMPOSITE_CONCEPT_SET_DEFINITION__CHILDREN, true);
 	}

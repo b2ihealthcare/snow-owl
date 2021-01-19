@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.b2international.snowowl</groupId>
 	<artifactId>snowowl-parent</artifactId>
-	<version>6.20.0-SNAPSHOT</version>
+	<version>6.27.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<properties>
@@ -35,7 +35,7 @@
 		<fastutil.version>8.2.2</fastutil.version>
 		<jaxb.api.version>2.3.0</jaxb.api.version>
 		<javax.activation.version>1.2.0</javax.activation.version>
-		<snomed.owl.toolkit.version>2.6.0</snomed.owl.toolkit.version>
+		<snomed.owl.toolkit.version>2.7.0</snomed.owl.toolkit.version>
 		<!-- Build tool/compiler versions -->
 		<tycho.version>1.2.0</tycho.version>
 		<tycho-extras.version>1.2.0</tycho-extras.version>
@@ -72,7 +72,7 @@
 		</repository>
 		<repository>
         	<id>snomed-international-releases</id>
-        	<url>https://maven.ihtsdotools.org/content/repositories/releases/</url>
+			<url>https://nexus3.ihtsdotools.org/repository/maven-releases/</url>
         	<releases>
            		<enabled>true</enabled>
         	</releases>

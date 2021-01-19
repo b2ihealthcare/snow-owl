@@ -32,6 +32,7 @@ public final class AwaitPendingTasks {
 	
 	public static final void await(Client client, Logger log) {
 		int pendingTaskCount = 0;
+		int lastPendingTaskCount = 0;
 		do {
 			List<PendingClusterTask> pendingTasks = client.admin()
 					.cluster()
@@ -40,7 +41,10 @@ public final class AwaitPendingTasks {
 					.getPendingTasks();
 			pendingTaskCount = pendingTasks.size();
 			if (pendingTaskCount > 0) {
-				log.info("Waiting for pending cluster tasks to finish.");
+				if (lastPendingTaskCount != pendingTaskCount) {
+					log.info("Waiting for pending cluster tasks to finish ({} remaining).", pendingTaskCount);
+					lastPendingTaskCount = pendingTaskCount;
+				}
 				try {
 					Thread.sleep(PENDING_CLUSTER_TASKS_RETRY_INTERVAL);
 				} catch (InterruptedException e) {

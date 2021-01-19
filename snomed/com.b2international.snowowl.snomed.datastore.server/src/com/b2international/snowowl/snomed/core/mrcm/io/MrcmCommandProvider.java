@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -144,13 +144,8 @@ public class MrcmCommandProvider implements CommandProvider {
 		final Path exportPath = outputFolder.resolve("mrcm_" + Dates.now() + "." + selectedFormat.name().toLowerCase());
 		
 		try (final OutputStream stream = Files.newOutputStream(exportPath, StandardOpenOption.CREATE)) {
-			if (selectedFormat == MrcmExportFormat.XMI) {
-				new XMIMrcmExporter().doExport(username, stream);
-			} else if (selectedFormat == MrcmExportFormat.CSV) {
-				new CsvMrcmExporter().doExport(username, stream);
-			}
-			interpreter.println("Exported MRCM rules to " + exportPath + " in " 
-			+ selectedFormat.name() + " format.");
+			new MrcmExporterImpl().doExport(username, stream, selectedFormat);
+			interpreter.println("Exported MRCM rules to " + exportPath + " in " + selectedFormat.name() + " format.");
 		} catch (IOException e) {
 			interpreter.printStackTrace(e);
 		}

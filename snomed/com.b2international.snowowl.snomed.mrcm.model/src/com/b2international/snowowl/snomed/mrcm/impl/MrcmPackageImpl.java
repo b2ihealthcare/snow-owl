@@ -38,6 +38,7 @@ import com.b2international.snowowl.snomed.mrcm.ReferenceSetConceptSetDefinition;
 import com.b2international.snowowl.snomed.mrcm.RelationshipConceptSetDefinition;
 import com.b2international.snowowl.snomed.mrcm.RelationshipPredicate;
 
+import com.b2international.snowowl.snomed.mrcm.SingletonConceptSetDefinition;
 import com.b2international.snowowl.snomed.snomedrefset.DataType;
 
 import org.eclipse.emf.ecore.EAttribute;
@@ -174,6 +175,13 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	private EClass singletonConceptSetDefinitionEClass = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	private EEnum groupRuleEEnum = null;
 
 	/**
@@ -277,6 +285,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EClass getConceptModel() {
 		return conceptModelEClass;
 	}
@@ -286,6 +295,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EReference getConceptModel_Constraints() {
 		return (EReference)conceptModelEClass.getEStructuralFeatures().get(0);
 	}
@@ -295,6 +305,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EClass getConceptModelComponent() {
 		return conceptModelComponentEClass;
 	}
@@ -304,6 +315,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getConceptModelComponent_Uuid() {
 		return (EAttribute)conceptModelComponentEClass.getEStructuralFeatures().get(0);
 	}
@@ -313,6 +325,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getConceptModelComponent_Active() {
 		return (EAttribute)conceptModelComponentEClass.getEStructuralFeatures().get(1);
 	}
@@ -322,6 +335,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getConceptModelComponent_EffectiveTime() {
 		return (EAttribute)conceptModelComponentEClass.getEStructuralFeatures().get(2);
 	}
@@ -331,6 +345,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getConceptModelComponent_Author() {
 		return (EAttribute)conceptModelComponentEClass.getEStructuralFeatures().get(3);
 	}
@@ -340,6 +355,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EClass getConceptModelPredicate() {
 		return conceptModelPredicateEClass;
 	}
@@ -349,6 +365,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EClass getCardinalityPredicate() {
 		return cardinalityPredicateEClass;
 	}
@@ -358,6 +375,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getCardinalityPredicate_MinCardinality() {
 		return (EAttribute)cardinalityPredicateEClass.getEStructuralFeatures().get(0);
 	}
@@ -367,6 +385,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getCardinalityPredicate_MaxCardinality() {
 		return (EAttribute)cardinalityPredicateEClass.getEStructuralFeatures().get(1);
 	}
@@ -376,6 +395,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getCardinalityPredicate_GroupRule() {
 		return (EAttribute)cardinalityPredicateEClass.getEStructuralFeatures().get(2);
 	}
@@ -385,6 +405,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EReference getCardinalityPredicate_Predicate() {
 		return (EReference)cardinalityPredicateEClass.getEStructuralFeatures().get(3);
 	}
@@ -394,6 +415,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EClass getConcreteDomainElementPredicate() {
 		return concreteDomainElementPredicateEClass;
 	}
@@ -403,6 +425,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EReference getConcreteDomainElementPredicate_Attribute() {
 		return (EReference)concreteDomainElementPredicateEClass.getEStructuralFeatures().get(0);
 	}
@@ -412,6 +435,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getConcreteDomainElementPredicate_Range() {
 		return (EAttribute)concreteDomainElementPredicateEClass.getEStructuralFeatures().get(1);
 	}
@@ -421,6 +445,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getConcreteDomainElementPredicate_CharacteristicTypeConceptId() {
 		return (EAttribute)concreteDomainElementPredicateEClass.getEStructuralFeatures().get(2);
 	}
@@ -430,6 +455,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EClass getDependencyPredicate() {
 		return dependencyPredicateEClass;
 	}
@@ -439,6 +465,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EReference getDependencyPredicate_Children() {
 		return (EReference)dependencyPredicateEClass.getEStructuralFeatures().get(0);
 	}
@@ -448,6 +475,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getDependencyPredicate_Operator() {
 		return (EAttribute)dependencyPredicateEClass.getEStructuralFeatures().get(1);
 	}
@@ -457,6 +485,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getDependencyPredicate_GroupRule() {
 		return (EAttribute)dependencyPredicateEClass.getEStructuralFeatures().get(2);
 	}
@@ -466,6 +495,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EClass getDescriptionPredicate() {
 		return descriptionPredicateEClass;
 	}
@@ -475,6 +505,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getDescriptionPredicate_TypeId() {
 		return (EAttribute)descriptionPredicateEClass.getEStructuralFeatures().get(0);
 	}
@@ -484,6 +515,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EClass getRelationshipPredicate() {
 		return relationshipPredicateEClass;
 	}
@@ -493,6 +525,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EReference getRelationshipPredicate_Attribute() {
 		return (EReference)relationshipPredicateEClass.getEStructuralFeatures().get(0);
 	}
@@ -502,6 +535,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EReference getRelationshipPredicate_Range() {
 		return (EReference)relationshipPredicateEClass.getEStructuralFeatures().get(1);
 	}
@@ -511,6 +545,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getRelationshipPredicate_CharacteristicTypeConceptId() {
 		return (EAttribute)relationshipPredicateEClass.getEStructuralFeatures().get(2);
 	}
@@ -520,6 +555,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EClass getConceptSetDefinition() {
 		return conceptSetDefinitionEClass;
 	}
@@ -529,6 +565,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EClass getCompositeConceptSetDefinition() {
 		return compositeConceptSetDefinitionEClass;
 	}
@@ -538,6 +575,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EReference getCompositeConceptSetDefinition_Children() {
 		return (EReference)compositeConceptSetDefinitionEClass.getEStructuralFeatures().get(0);
 	}
@@ -547,6 +585,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EClass getEnumeratedConceptSetDefinition() {
 		return enumeratedConceptSetDefinitionEClass;
 	}
@@ -556,6 +595,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getEnumeratedConceptSetDefinition_ConceptIds() {
 		return (EAttribute)enumeratedConceptSetDefinitionEClass.getEStructuralFeatures().get(0);
 	}
@@ -565,6 +605,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EClass getHierarchyConceptSetDefinition() {
 		return hierarchyConceptSetDefinitionEClass;
 	}
@@ -574,6 +615,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getHierarchyConceptSetDefinition_ConceptId() {
 		return (EAttribute)hierarchyConceptSetDefinitionEClass.getEStructuralFeatures().get(0);
 	}
@@ -583,6 +625,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getHierarchyConceptSetDefinition_InclusionType() {
 		return (EAttribute)hierarchyConceptSetDefinitionEClass.getEStructuralFeatures().get(1);
 	}
@@ -592,6 +635,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EClass getReferenceSetConceptSetDefinition() {
 		return referenceSetConceptSetDefinitionEClass;
 	}
@@ -601,6 +645,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getReferenceSetConceptSetDefinition_RefSetIdentifierConceptId() {
 		return (EAttribute)referenceSetConceptSetDefinitionEClass.getEStructuralFeatures().get(0);
 	}
@@ -610,6 +655,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EClass getRelationshipConceptSetDefinition() {
 		return relationshipConceptSetDefinitionEClass;
 	}
@@ -619,6 +665,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getRelationshipConceptSetDefinition_TypeConceptId() {
 		return (EAttribute)relationshipConceptSetDefinitionEClass.getEStructuralFeatures().get(0);
 	}
@@ -628,6 +675,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getRelationshipConceptSetDefinition_DestinationConceptId() {
 		return (EAttribute)relationshipConceptSetDefinitionEClass.getEStructuralFeatures().get(1);
 	}
@@ -637,6 +685,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EClass getConstraintBase() {
 		return constraintBaseEClass;
 	}
@@ -646,6 +695,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getConstraintBase_Strength() {
 		return (EAttribute)constraintBaseEClass.getEStructuralFeatures().get(0);
 	}
@@ -655,6 +705,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getConstraintBase_ValidationMessage() {
 		return (EAttribute)constraintBaseEClass.getEStructuralFeatures().get(1);
 	}
@@ -664,6 +715,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getConstraintBase_Description() {
 		return (EAttribute)constraintBaseEClass.getEStructuralFeatures().get(2);
 	}
@@ -673,6 +725,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EClass getAttributeConstraint() {
 		return attributeConstraintEClass;
 	}
@@ -682,6 +735,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EAttribute getAttributeConstraint_Form() {
 		return (EAttribute)attributeConstraintEClass.getEStructuralFeatures().get(0);
 	}
@@ -691,6 +745,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EReference getAttributeConstraint_Domain() {
 		return (EReference)attributeConstraintEClass.getEStructuralFeatures().get(1);
 	}
@@ -700,6 +755,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EReference getAttributeConstraint_Predicate() {
 		return (EReference)attributeConstraintEClass.getEStructuralFeatures().get(2);
 	}
@@ -709,6 +765,27 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
+	public EClass getSingletonConceptSetDefinition() {
+		return singletonConceptSetDefinitionEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	@Override
+	public EAttribute getSingletonConceptSetDefinition_ConceptId() {
+		return (EAttribute)singletonConceptSetDefinitionEClass.getEStructuralFeatures().get(0);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	@Override
 	public EEnum getGroupRule() {
 		return groupRuleEEnum;
 	}
@@ -718,6 +795,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EEnum getDependencyOperator() {
 		return dependencyOperatorEEnum;
 	}
@@ -727,6 +805,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EEnum getHierarchyInclusionType() {
 		return hierarchyInclusionTypeEEnum;
 	}
@@ -736,6 +815,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EEnum getConstraintStrength() {
 		return constraintStrengthEEnum;
 	}
@@ -745,6 +825,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EEnum getConstraintForm() {
 		return constraintFormEEnum;
 	}
@@ -754,6 +835,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public EDataType getDataType() {
 		return dataTypeEDataType;
 	}
@@ -763,6 +845,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	@Override
 	public MrcmFactory getMrcmFactory() {
 		return (MrcmFactory)getEFactoryInstance();
 	}
@@ -850,6 +933,9 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 		createEReference(attributeConstraintEClass, ATTRIBUTE_CONSTRAINT__DOMAIN);
 		createEReference(attributeConstraintEClass, ATTRIBUTE_CONSTRAINT__PREDICATE);
 
+		singletonConceptSetDefinitionEClass = createEClass(SINGLETON_CONCEPT_SET_DEFINITION);
+		createEAttribute(singletonConceptSetDefinitionEClass, SINGLETON_CONCEPT_SET_DEFINITION__CONCEPT_ID);
+
 		// Create enums
 		groupRuleEEnum = createEEnum(GROUP_RULE);
 		dependencyOperatorEEnum = createEEnum(DEPENDENCY_OPERATOR);
@@ -903,6 +989,7 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 		relationshipConceptSetDefinitionEClass.getESuperTypes().add(this.getConceptSetDefinition());
 		constraintBaseEClass.getESuperTypes().add(this.getConceptModelComponent());
 		attributeConstraintEClass.getESuperTypes().add(this.getConstraintBase());
+		singletonConceptSetDefinitionEClass.getESuperTypes().add(this.getConceptSetDefinition());
 
 		// Initialize classes and features; add operations and parameters
 		initEClass(conceptModelEClass, ConceptModel.class, "ConceptModel", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
@@ -976,6 +1063,9 @@ public class MrcmPackageImpl extends EPackageImpl implements MrcmPackage {
 		initEAttribute(getAttributeConstraint_Form(), this.getConstraintForm(), "form", null, 1, 1, AttributeConstraint.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEReference(getAttributeConstraint_Domain(), this.getConceptSetDefinition(), null, "domain", null, 1, 1, AttributeConstraint.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 		initEReference(getAttributeConstraint_Predicate(), this.getConceptModelPredicate(), null, "predicate", null, 1, 1, AttributeConstraint.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+		initEClass(singletonConceptSetDefinitionEClass, SingletonConceptSetDefinition.class, "SingletonConceptSetDefinition", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+		initEAttribute(getSingletonConceptSetDefinition_ConceptId(), ecorePackage.getEString(), "conceptId", null, 1, 1, SingletonConceptSetDefinition.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
 		// Initialize enums and add enum literals
 		initEEnum(groupRuleEEnum, GroupRule.class, "GroupRule");

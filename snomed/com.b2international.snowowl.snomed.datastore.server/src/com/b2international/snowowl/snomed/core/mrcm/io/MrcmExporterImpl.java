@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,12 +27,17 @@ public class MrcmExporterImpl implements MrcmExporter {
 
 	@Override
 	public void doExport(String user, OutputStream content, MrcmExportFormat exportFormat) {
-		if (exportFormat == MrcmExportFormat.XMI) {
-			new XMIMrcmExporter().doExport(user, content);
-		} else if (exportFormat == MrcmExportFormat.CSV) {
-			new CsvMrcmExporter().doExport(user, content);
-		} else {
-			throw new UnsupportedOperationException("No exporter is registered for " + exportFormat);
+		switch (exportFormat) {
+			case CSV:
+				new CsvMrcmExporter().doExport(user, content);
+				break;
+			case XMI:
+				new XMIMrcmExporter().doExport(user, content);
+				break;
+			case JSON:
+				new JsonMrcmExporter().doExport(user, content);
+				break;
+			default: throw new UnsupportedOperationException("No exporter is registered for " + exportFormat); 
 		}
 	}
 

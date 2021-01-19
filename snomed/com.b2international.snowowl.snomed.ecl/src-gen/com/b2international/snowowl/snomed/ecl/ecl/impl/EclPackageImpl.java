@@ -25,6 +25,8 @@ import com.b2international.snowowl.snomed.ecl.ecl.AttributeConstraint;
 import com.b2international.snowowl.snomed.ecl.ecl.AttributeGroup;
 import com.b2international.snowowl.snomed.ecl.ecl.AttributeValueEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.AttributeValueNotEquals;
+import com.b2international.snowowl.snomed.ecl.ecl.BooleanValueEquals;
+import com.b2international.snowowl.snomed.ecl.ecl.BooleanValueNotEquals;
 import com.b2international.snowowl.snomed.ecl.ecl.Cardinality;
 import com.b2international.snowowl.snomed.ecl.ecl.ChildOf;
 import com.b2international.snowowl.snomed.ecl.ecl.Comparison;
@@ -222,6 +224,20 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
    * @generated
    */
   private EClass attributeValueNotEqualsEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass booleanValueEqualsEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass booleanValueNotEqualsEClass = null;
 
   /**
    * <!-- begin-user-doc -->
@@ -855,6 +871,46 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  public EClass getBooleanValueEquals()
+  {
+    return booleanValueEqualsEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EAttribute getBooleanValueEquals_Value()
+  {
+    return (EAttribute)booleanValueEqualsEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EClass getBooleanValueNotEquals()
+  {
+    return booleanValueNotEqualsEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  public EAttribute getBooleanValueNotEquals_Value()
+  {
+    return (EAttribute)booleanValueNotEqualsEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
   public EClass getStringValueEquals()
   {
     return stringValueEqualsEClass;
@@ -1452,6 +1508,12 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
 
     attributeValueNotEqualsEClass = createEClass(ATTRIBUTE_VALUE_NOT_EQUALS);
 
+    booleanValueEqualsEClass = createEClass(BOOLEAN_VALUE_EQUALS);
+    createEAttribute(booleanValueEqualsEClass, BOOLEAN_VALUE_EQUALS__VALUE);
+
+    booleanValueNotEqualsEClass = createEClass(BOOLEAN_VALUE_NOT_EQUALS);
+    createEAttribute(booleanValueNotEqualsEClass, BOOLEAN_VALUE_NOT_EQUALS__VALUE);
+
     stringValueEqualsEClass = createEClass(STRING_VALUE_EQUALS);
     createEAttribute(stringValueEqualsEClass, STRING_VALUE_EQUALS__VALUE);
 
@@ -1571,6 +1633,8 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
     dataTypeComparisonEClass.getESuperTypes().add(this.getComparison());
     attributeValueEqualsEClass.getESuperTypes().add(this.getAttributeComparison());
     attributeValueNotEqualsEClass.getESuperTypes().add(this.getAttributeComparison());
+    booleanValueEqualsEClass.getESuperTypes().add(this.getDataTypeComparison());
+    booleanValueNotEqualsEClass.getESuperTypes().add(this.getDataTypeComparison());
     stringValueEqualsEClass.getESuperTypes().add(this.getDataTypeComparison());
     stringValueNotEqualsEClass.getESuperTypes().add(this.getDataTypeComparison());
     integerValueEqualsEClass.getESuperTypes().add(this.getDataTypeComparison());
@@ -1656,6 +1720,12 @@ public class EclPackageImpl extends EPackageImpl implements EclPackage
     initEClass(attributeValueEqualsEClass, AttributeValueEquals.class, "AttributeValueEquals", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
     initEClass(attributeValueNotEqualsEClass, AttributeValueNotEquals.class, "AttributeValueNotEquals", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+
+    initEClass(booleanValueEqualsEClass, BooleanValueEquals.class, "BooleanValueEquals", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEAttribute(getBooleanValueEquals_Value(), ecorePackage.getEBoolean(), "value", null, 0, 1, BooleanValueEquals.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+    initEClass(booleanValueNotEqualsEClass, BooleanValueNotEquals.class, "BooleanValueNotEquals", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEAttribute(getBooleanValueNotEquals_Value(), ecorePackage.getEBoolean(), "value", null, 0, 1, BooleanValueNotEquals.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(stringValueEqualsEClass, StringValueEquals.class, "StringValueEquals", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEAttribute(getStringValueEquals_Value(), ecorePackage.getEString(), "value", null, 0, 1, StringValueEquals.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);

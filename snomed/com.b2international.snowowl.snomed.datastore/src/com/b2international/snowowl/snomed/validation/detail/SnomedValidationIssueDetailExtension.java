@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,17 +24,15 @@ import static com.b2international.snowowl.snomed.validation.detail.SnomedValidat
 import static com.b2international.snowowl.snomed.validation.detail.SnomedValidationIssueDetailExtension.SnomedIssueDetailFilterFields.COMPONENT_MODULE_ID;
 import static com.b2international.snowowl.snomed.validation.detail.SnomedValidationIssueDetailExtension.SnomedIssueDetailFilterFields.COMPONENT_STATUS;
 import static com.b2international.snowowl.snomed.validation.detail.SnomedValidationIssueDetailExtension.SnomedIssueDetailFilterFields.CONCEPT_STATUS;
+import static com.b2international.snowowl.snomed.validation.detail.SnomedValidationIssueDetailExtension.SnomedIssueDetailFilterFields.CONTENT_TYPE;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import javax.swing.SortOrder;
 
 import com.b2international.commons.options.Options;
 import com.b2international.index.Hits;
@@ -46,6 +44,7 @@ import com.b2international.index.query.Query.QueryBuilder;
 import com.b2international.index.query.SortBy;
 import com.b2international.index.query.SortBy.Order;
 import com.b2international.index.revision.RevisionSearcher;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.core.validation.issue.ValidationIssue;
@@ -56,11 +55,14 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Strings;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableMultimap.Builder;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
@@ -82,6 +84,7 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 		public static final String COMPONENT_EFFECTIVE_TIME_START = "effectiveTimeStart";
 		public static final String COMPONENT_EFFECTIVE_TIME_END = "effectiveTimeEnd";
 		public static final String CONCEPT_STATUS = "conceptStatus";
+		public static final String CONTENT_TYPE = "contentType";
 		
 	}
 	
@@ -104,18 +107,31 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 			queryBuilder.filter(Expressions.match(CONCEPT_STATUS, isConceptActive));
 		}
 		
-		if (options.containsKey(COMPONENT_EFFECTIVE_TIME_START) || options.containsKey(COMPONENT_EFFECTIVE_TIME_END)) {
-			final Long start = options.get(COMPONENT_EFFECTIVE_TIME_START, Long.class);
-			final Long end = options.get(COMPONENT_EFFECTIVE_TIME_END, Long.class);
+		if (options.containsKey(CONTENT_TYPE)) {
+			final Boolean contentTypeFilter = options.get(CONTENT_TYPE, Boolean.class);
+			if (contentTypeFilter != null && contentTypeFilter) {
+				// published only
+				if (options.containsKey(COMPONENT_EFFECTIVE_TIME_START) || options.containsKey(COMPONENT_EFFECTIVE_TIME_END)) {
+					final Long start = options.get(COMPONENT_EFFECTIVE_TIME_START, Long.class);
+					final Long end = options.get(COMPONENT_EFFECTIVE_TIME_END, Long.class);
 
-			final Expression effectiveTimeExpression = Expressions.matchRange(SnomedDocument.Fields.EFFECTIVE_TIME,
-				start == null ? 0L : start,
-				end == null ? Long.MAX_VALUE : end
-			);
-			
-			queryBuilder.filter(effectiveTimeExpression);
+					final Expression effectiveTimeExpression = Expressions.matchRange(SnomedDocument.Fields.EFFECTIVE_TIME,
+						start == null ? 0L : start,
+						end == null ? Long.MAX_VALUE : end
+					);
+					
+					queryBuilder.filter(effectiveTimeExpression);
+				} else {
+					queryBuilder.filter(SnomedDocument.Expressions.effectiveTime(0L, Long.MAX_VALUE));
+				}
+
+			} else if (contentTypeFilter != null && !contentTypeFilter) {
+				// unpublished only 
+				queryBuilder.filter(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME));
+			}
+			// Both
 		}
-
+		
 	}
 	
 	@Override
@@ -153,7 +169,7 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 							validationIssue.setDetails(CONCEPT_STATUS, status);
 							validationIssue.setDetails(SnomedDocument.Fields.EFFECTIVE_TIME, Long.parseLong(hit[3]));
 							alreadyFetchedConceptIds.add(id);
-						} else if (DESCRIPTION == category || RELATIONSHIP == category) {
+						} else if (DESCRIPTION == category || RELATIONSHIP == category || SET_MEMBER == category) {
 							validationIssue.setDetails(SnomedDocument.Fields.EFFECTIVE_TIME, Long.parseLong(hit[3]));
 							final String containerConceptId = hit[4];
 							if (!Strings.isNullOrEmpty(containerConceptId) && (!issueIdsByConceptIds.containsKey(containerConceptId) || !alreadyFetchedConceptIds.contains(containerConceptId))) {
@@ -194,12 +210,36 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 		final List<ValidationIssue> conceptIssues = issues.stream()
 				.filter(issue -> SnomedTerminologyComponentConstants.CONCEPT_NUMBER == issue.getAffectedComponent().getTerminologyComponentId())
 				.collect(Collectors.toList());
+
+		final Map<String, ValidationIssue> memberIssues = issues.stream()
+				.filter(issue ->  SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER == issue.getAffectedComponent().getTerminologyComponentId())
+				.collect(Collectors.toMap(issue -> issue.getAffectedComponent().getComponentId(), issue -> issue, (issue1, issue2) -> issue1));
 		
-		if (conceptIssues.isEmpty()) {
+		if (conceptIssues.isEmpty() && memberIssues.isEmpty()) {
 			return;
 		}
 		
-		final Multimap<String, ValidationIssue> issuesByConceptId = Multimaps.index(conceptIssues, issue -> issue.getAffectedComponent().getComponentId());
+		final Builder<String, ValidationIssue> issuesByConceptId = ImmutableMultimap.builder();
+		conceptIssues.forEach(issue -> issuesByConceptId.put(issue.getAffectedComponent().getComponentId(), issue));
+		
+		searcher.scroll(Query.select(String[].class)
+				.from(SnomedRefSetMemberIndexEntry.class)
+				.fields(SnomedRefSetMemberIndexEntry.Fields.ID,
+						SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID)
+				.where(Expressions.builder()
+					.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
+					.filter(SnomedRefSetMemberIndexEntry.Expressions.ids(memberIssues.keySet()))
+					.build())
+				.limit(SCROLL_SIZE)
+				.build())
+				.forEach(hits -> {
+					for (String[] hit : hits) {
+						final String memberId = hit[0];
+						final String containerConcpetId = hit[1];
+						issuesByConceptId.put(containerConcpetId, memberIssues.get(memberId));
+					}
+				});
+		final Multimap<String, ValidationIssue> issuesByConceptMap = issuesByConceptId.build();
 
 		final Set<String> synonymIds = SnomedRequests.prepareGetSynonyms().build().execute(context).stream().map(SnomedConcept::getId).collect(Collectors.toSet());
 		
@@ -210,7 +250,7 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 			.fields(SnomedDescriptionIndexEntry.Fields.CONCEPT_ID, SnomedDescriptionIndexEntry.Fields.TERM)
 			.where(Expressions.builder()
 				.filter(SnomedDescriptionIndexEntry.Expressions.active())
-				.filter(SnomedDescriptionIndexEntry.Expressions.concepts(issuesByConceptId.keySet()))
+				.filter(SnomedDescriptionIndexEntry.Expressions.concepts(issuesByConceptMap.keySet()))
 				.filter(SnomedDescriptionIndexEntry.Expressions.types(ImmutableSet.<String>builder()
 						.add(Concepts.FULLY_SPECIFIED_NAME)
 						.addAll(synonymIds)
@@ -226,9 +266,12 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 			});
 
 		if (!affectedComponentLabelsByConcept.isEmpty()) {
-			issuesByConceptId.values().forEach(issue -> {
-				final Collection<String> labels = affectedComponentLabelsByConcept.get(issue.getAffectedComponent().getComponentId());
-				issue.setAffectedComponentLabels(ImmutableList.copyOf(labels));
+			issuesByConceptMap.keySet().forEach(conceptId -> {
+				issuesByConceptMap.get(conceptId).forEach(issue -> {
+					final Collection<String> labels = affectedComponentLabelsByConcept.get(conceptId);
+					issue.setAffectedComponentLabels(ImmutableList.copyOf(labels));
+				});
+				
 			});
 		}
 	}
@@ -338,8 +381,17 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 					SnomedRelationshipIndexEntry.Fields.SOURCE_ID
 			);
 			break;
-		default:
+		case SET_MEMBER:
+			queryBuilder.from(SnomedRefSetMemberIndexEntry.class).fields(
+					SnomedRefSetMemberIndexEntry.Fields.ID,
+					SnomedRefSetMemberIndexEntry.Fields.ACTIVE,
+					SnomedRefSetMemberIndexEntry.Fields.MODULE_ID,
+					SnomedRefSetMemberIndexEntry.Fields.EFFECTIVE_TIME,
+					SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID
+					);
 			break;
+		default:
+			throw new UnsupportedOperationException();
 		}
 		return queryBuilder.where(SnomedDocument.Expressions.ids(issueIds)).limit(SCROLL_SIZE).build();
 	}
@@ -347,6 +399,8 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 	private ComponentCategory getComponentCategory(short terminologyComponentId) {
 		if (SnomedTerminologyComponentConstants.CONCEPT_NUMBER == terminologyComponentId) {
 			return CONCEPT;
+		} else if (SnomedTerminologyComponentConstants.REFSET_NUMBER == terminologyComponentId) {
+				return CONCEPT;
 		} else if (SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER == terminologyComponentId) {
 			return DESCRIPTION;
 		} else if (SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER == terminologyComponentId) {

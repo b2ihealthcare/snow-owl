@@ -44,6 +44,7 @@ import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.CoreTerminologyBroker;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.datastore.cdo.CDOIDUtils;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
@@ -55,7 +56,23 @@ import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
-import com.b2international.snowowl.snomed.snomedrefset.*;
+import com.b2international.snowowl.snomed.snomedrefset.DataType;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedAssociationRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedAttributeValueRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedComplexMapRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedConcreteDataTypeRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedDescriptionTypeRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedLanguageRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMAttributeDomainRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMAttributeRangeRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMDomainRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedMRCMModuleScopeRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedModuleDependencyRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedOWLExpressionRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedQueryRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetMember;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.snomedrefset.SnomedSimpleMapRefSetMember;
 import com.b2international.snowowl.snomed.snomedrefset.util.SnomedRefSetSwitch;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -66,6 +83,7 @@ import com.google.common.base.Objects.ToStringHelper;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 
 /**
  * Lightweight representation of a SNOMED CT reference set member.
@@ -214,6 +232,8 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 				.referenceSetId(source.getReferenceSetId())
 				.referenceSetType(source.getReferenceSetType())
 				.released(source.isReleased())
+				.gciAxiomRelationships(source.getGciAxiomRelationships())
+				.classAxiomRelationships(source.getClassAxiomRelationships())
 				.fields(source.getAdditionalFields());
 	}
 	
@@ -237,6 +257,14 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			builder.referencedComponentType(RELATIONSHIP_NUMBER);
 		} else {
 			builder.referencedComponentType(CoreTerminologyBroker.UNSPECIFIED_NUMBER_SHORT);
+		}
+		
+		if (input.getEquivalentOWLRelationships() != null) {
+			builder.classAxiomRelationships(input.getEquivalentOWLRelationships());
+		} else if (input.getClassOWLRelationships() != null) {
+			builder.classAxiomRelationships(input.getClassOWLRelationships());
+		} else if (input.getGciOWLRelationships() != null) {
+			builder.gciAxiomRelationships(input.getGciOWLRelationships());
 		}
 		
 		for (Entry<String, Object> entry : input.getProperties().entrySet()) {
@@ -421,6 +449,14 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		public static Expression mapTargetDescriptions(Collection<String> mapTargetDescriptions) {
 			return matchAny(Fields.MAP_TARGET_DESCRIPTION, mapTargetDescriptions);
 		}
+		
+		public static Expression mapGroups(Collection<Integer> mapGroups) {
+			return matchAnyInt(Fields.MAP_GROUP, mapGroups);
+		}
+		
+		public static Expression mapPriority(Collection<Integer> mapPriorities) {
+			return matchAnyInt(Fields.MAP_PRIORITY, mapPriorities);
+		}
 
 		public static Expression referencedComponentTypes(Collection<Short> referencedComponentTypes) {
 			return matchAnyInt(Fields.REFERENCED_COMPONENT_TYPE, referencedComponentTypes.stream().map(Short::intValue).collect(Collectors.toSet()));
@@ -484,6 +520,11 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		
 		public static Expression values(DataType type, Collection<? extends Object> values) {
 			switch (type) {
+			case BOOLEAN:
+				if (values.size() > 1) {
+					throw new BadRequestException("Only one boolean filter value (either true or false) is allowed. Got: %s", values);
+				}
+				return match(Fields.BOOLEAN_VALUE, (Boolean) Iterables.getOnlyElement(values));
 			case STRING: 
 				return matchAny(Fields.STRING_VALUE, FluentIterable.from(values).filter(String.class).toSet());
 			case INTEGER:

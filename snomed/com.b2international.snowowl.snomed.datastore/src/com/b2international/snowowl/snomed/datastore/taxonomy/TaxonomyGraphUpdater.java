@@ -15,8 +15,11 @@
  */
 package com.b2international.snowowl.snomed.datastore.taxonomy;
 
+import static com.google.common.collect.Sets.newHashSet;
+
 import java.io.IOException;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta;
@@ -28,6 +31,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.CompareUtils;
+import com.b2international.index.Hits;
+import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.datastore.CDOCommitChangeSet;
@@ -87,7 +93,7 @@ public class TaxonomyGraphUpdater {
 		this.characteristicTypeId = characteristicTypeId;
 	}
 	
-	public TaxonomyGraphStatus update(final TaxonomyGraph graphToUpdate) {
+	public TaxonomyGraphStatus update(final TaxonomyGraph graphToUpdate) throws IOException {
 		LOGGER.trace("Processing changes taxonomic information.");
 		
 		//here we have to consider changes triggered by repository state revert
@@ -117,9 +123,12 @@ public class TaxonomyGraphUpdater {
 		for (final Relationship newRelationship : newRelationships) {
 			updateEdge(newRelationship, graphToUpdate);
 		}
+
+		final Set<String> relationshipsToExcludeFromReactivatedConcepts = newHashSet();
 		
 		for (final Relationship dirtyRelationship : dirtyRelationships) {
 			updateEdge(dirtyRelationship, graphToUpdate);
+			relationshipsToExcludeFromReactivatedConcepts.add(dirtyRelationship.getId());
 		}
 		
 		// lookup all deleted relationship documents
@@ -131,10 +140,11 @@ public class TaxonomyGraphUpdater {
 		}
 		
 		for (final SnomedRelationshipIndexEntry relationship : deletedRelationshipEntries) {
-			final String relationshipId = relationship.getId();
+			final String deletedRelationshipId = relationship.getId();
+			relationshipsToExcludeFromReactivatedConcepts.add(deletedRelationshipId);
 			//same relationship as new and detached
-			if (_newRelationships.containsKey(relationshipId)) {
-				final Relationship newRelationship = _newRelationships.get(relationshipId);
+			if (_newRelationships.containsKey(deletedRelationshipId)) {
+				final Relationship newRelationship = _newRelationships.get(deletedRelationshipId);
 				final String typeId = newRelationship.getType().getId();
 				//ignore everything but IS_As
 				if (Concepts.IS_A.equals(typeId)) {
@@ -198,6 +208,7 @@ public class TaxonomyGraphUpdater {
 			throw new SnowowlRuntimeException(e);
 		}
 		
+		final Set<String> conceptWithPossibleMissingRelationships = newHashSet();
 		for (final Concept dirtyConcept : dirtyConcepts) {
 			final CDORevisionDelta revisionDelta = commitChangeSet.getRevisionDeltas().get(dirtyConcept.cdoID());
 			if (revisionDelta == null) {
@@ -218,9 +229,32 @@ public class TaxonomyGraphUpdater {
 				if (Boolean.FALSE == oldValue && Boolean.TRUE == newValue) {
 					// make sure the node is part of the new tree
 					graphToUpdate.addNode(dirtyConcept.getId());
+					conceptWithPossibleMissingRelationships.add(dirtyConcept.getId());
 				}
 			}
 		}
+		
+		if (!conceptWithPossibleMissingRelationships.isEmpty()) {
+			Hits<String[]> possibleMissingRelationships = searcher.search(Query.select(String[].class)
+					.from(SnomedRelationshipIndexEntry.class)
+					.fields(SnomedRelationshipIndexEntry.Fields.ID, SnomedRelationshipIndexEntry.Fields.SOURCE_ID, SnomedRelationshipIndexEntry.Fields.DESTINATION_ID)
+					.where(Expressions.builder()
+							.filter(SnomedRelationshipIndexEntry.Expressions.active())
+							.filter(SnomedRelationshipIndexEntry.Expressions.characteristicTypeId(characteristicTypeId))
+							.filter(SnomedRelationshipIndexEntry.Expressions.typeId(Concepts.IS_A))
+							.filter(SnomedRelationshipIndexEntry.Expressions.sourceIds(conceptWithPossibleMissingRelationships))
+							.mustNot(SnomedRelationshipIndexEntry.Expressions.ids(relationshipsToExcludeFromReactivatedConcepts))
+							.build()
+					)
+					.limit(Integer.MAX_VALUE)
+					.build());
+			
+			for (String[] relationship : possibleMissingRelationships) {
+				graphToUpdate.addNode(relationship[2]);
+				graphToUpdate.addEdge(relationship[0], Long.parseLong(relationship[1]), new long[] { Long.parseLong(relationship[2]) });
+			}
+		}
+		
 		LOGGER.trace("Rebuilding taxonomic information based on the changes.");
 		return graphToUpdate.update();
 	}

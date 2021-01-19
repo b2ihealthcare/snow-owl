@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,9 +27,11 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 
+import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
 import com.b2international.index.Keyword;
 import com.b2international.index.Script;
+import com.b2international.index.Text;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
@@ -72,6 +74,7 @@ public final class RemoteJobEntry implements Serializable {
 		public static final String DELETED = "deleted";
 		public static final String USER = "user";
 		public static final String STATE = "state";
+		public static final String DESCRIPTION = "description";
 	}
 	
 	public static class Expressions {
@@ -206,7 +209,11 @@ public final class RemoteJobEntry implements Serializable {
 	
 
 	private final String id;
-	private final String description;
+	
+	@Text(analyzer = Analyzers.TOKENIZED)
+	@Text(alias="prefix", analyzer = Analyzers.PREFIX, searchAnalyzer = Analyzers.TOKENIZED)
+	@Keyword(alias="original")
+	private final String description;	
 	private final String user;
 	private final Date scheduleDate;
 	private final Date startDate;

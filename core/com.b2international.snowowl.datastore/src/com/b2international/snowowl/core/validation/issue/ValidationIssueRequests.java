@@ -30,4 +30,8 @@ public enum ValidationIssueRequests {
 		return new ValidationIssueSearchRequestBuilder();
 	}
 	
+	public ValidationIssueDeleteRequestBuilder prepareDelete() {
+		return new ValidationIssueDeleteRequestBuilder();
+	}
+	
 }

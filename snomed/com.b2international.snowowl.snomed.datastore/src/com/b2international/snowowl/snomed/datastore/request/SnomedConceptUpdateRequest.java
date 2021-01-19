@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.datastore.request;
 
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -242,6 +241,9 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 			inactivateConcept(context, concept);
 			updateInactivationIndicator(context, newIndicator);
 			updateAssociationTargets(context, newAssociationTargets);
+			// automatically set concept to primitive when inactivating it, unless the user decided to use a different definition status ID 
+			// https://confluence.ihtsdotools.org/display/DOCEXTPG/5.4.2.3+Inactivate+Concept+in+an+Extension
+			concept.setDefinitionStatus(context.lookup(definitionStatus == null ? Concepts.PRIMITIVE : definitionStatus.getConceptId(), Concept.class));
 			return true;
 			
 		} else if (!currentStatus && newStatus) {

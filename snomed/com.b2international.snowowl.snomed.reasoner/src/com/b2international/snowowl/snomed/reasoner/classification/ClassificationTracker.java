@@ -24,6 +24,11 @@ import java.util.TimerTask;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.ISchedulingRule;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,6 +49,7 @@ import com.b2international.index.query.SortBy;
 import com.b2international.index.query.SortBy.Order;
 import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
+import com.b2international.snowowl.datastore.remotejobs.RemoteJob;
 import com.b2international.snowowl.snomed.datastore.index.taxonomy.IInternalSctIdMultimap;
 import com.b2international.snowowl.snomed.datastore.index.taxonomy.IInternalSctIdSet;
 import com.b2international.snowowl.snomed.datastore.index.taxonomy.IReasonerTaxonomy;
@@ -166,6 +172,7 @@ public final class ClassificationTracker implements IDisposableService {
 
 	private final AtomicBoolean disposed = new AtomicBoolean(false);
 	private final Index index;
+	private final ClassificationJobListener listener;
 	private final CleanUpTask cleanUp;
 
 	public ClassificationTracker(final Index index, final int maximumReasonerRuns, final long cleanUpInterval) {
@@ -186,7 +193,9 @@ public final class ClassificationTracker implements IDisposableService {
 			writer.commit();
 			return null;
 		});
-
+		
+		this.listener = new ClassificationJobListener();
+		Job.getJobManager().addJobChangeListener(listener);
 		this.cleanUp = new CleanUpTask(maximumReasonerRuns);
 		Holder.CLEANUP_TIMER.schedule(cleanUp, cleanUpInterval, cleanUpInterval);
 	}
@@ -396,6 +405,17 @@ public final class ClassificationTracker implements IDisposableService {
 			return null;
 		});
 	}
+	
+	private void classificationCancelled(final String classificationId) {
+		index.write(writer -> {
+			writer.bulkUpdate(new BulkUpdate<>(ClassificationTaskDocument.class, 
+					ClassificationTaskDocument.Expressions.id(classificationId), 
+					ClassificationTaskDocument.Fields.ID, 
+					ClassificationTaskDocument.Scripts.CANCELED, ImmutableMap.of()));
+			writer.commit();
+			return null;
+		});
+	}
 
 	public void classificationDeleted(final String classificationId) {
 		index.write(writer -> {
@@ -425,6 +445,30 @@ public final class ClassificationTracker implements IDisposableService {
 
 		} catch (final IOException e) {
 			throw new FormattedRuntimeException("Failed to retrieve classification document for ID '%s'.", classificationId, e);
+		}
+	}
+	
+	private final class ClassificationJobListener extends JobChangeAdapter {
+		
+		@Override
+		public void done(IJobChangeEvent event) {
+			// Cancelled && failed
+			if (event.getJob() instanceof RemoteJob) {
+				final RemoteJob job = (RemoteJob) event.getJob();
+				final ISchedulingRule rule = job.getRule();
+				final boolean isClassifyJob = rule != null && rule instanceof ClassificationSchedulingRule || job.getName().contains("classifying");
+				if (isClassifyJob) {
+					final IStatus result = job.getResult();
+					if (result == null) {
+						classificationCancelled(job.getId());
+					}
+				}
+			}
+		}
+		
+		@Override
+		public void running(IJobChangeEvent event) {
+			super.running(event);
 		}
 	}
 }

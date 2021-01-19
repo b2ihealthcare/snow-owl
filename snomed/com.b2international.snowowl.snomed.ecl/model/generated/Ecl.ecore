@@ -72,6 +72,12 @@
   <eClassifiers xsi:type="ecore:EClass" name="DataTypeComparison" eSuperTypes="#//Comparison"/>
   <eClassifiers xsi:type="ecore:EClass" name="AttributeValueEquals" eSuperTypes="#//AttributeComparison"/>
   <eClassifiers xsi:type="ecore:EClass" name="AttributeValueNotEquals" eSuperTypes="#//AttributeComparison"/>
+  <eClassifiers xsi:type="ecore:EClass" name="BooleanValueEquals" eSuperTypes="#//DataTypeComparison">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="BooleanValueNotEquals" eSuperTypes="#//DataTypeComparison">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="StringValueEquals" eSuperTypes="#//DataTypeComparison">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>

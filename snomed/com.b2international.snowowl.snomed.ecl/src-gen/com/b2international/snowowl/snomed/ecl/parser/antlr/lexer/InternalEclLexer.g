@@ -25,6 +25,10 @@ import org.eclipse.xtext.parser.antlr.Lexer;
 
 MINUS : ('M'|'m')('I'|'i')('N'|'n')('U'|'u')('S'|'s');
 
+False : ('F'|'f')('A'|'a')('L'|'l')('S'|'s')('E'|'e');
+
+True : ('T'|'t')('R'|'r')('U'|'u')('E'|'e');
+
 AND : ('A'|'a')('N'|'n')('D'|'d');
 
 OR : ('O'|'o')('R'|'r');

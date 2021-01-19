@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -133,14 +133,14 @@ public final class RemoteJobTracker implements IDisposableService {
 	}
 	
 	private RemoteJobs search(Expression query, List<String> fields, SortBy sortBy, int limit) {
-		final Hits<RemoteJobEntry> hits = searchHits(query, fields, sortBy, limit);
+		final Hits<RemoteJobEntry> hits = searchHits(RemoteJobEntry.class, query, fields, sortBy, limit);
 		return new RemoteJobs(hits.getHits(), null, null, hits.getLimit(), hits.getTotal());
 	}
 	
-	private Hits<RemoteJobEntry> searchHits(Expression query, List<String> fields, SortBy sortBy, int limit) {
+	private <T> Hits<T> searchHits(Class<T> select, Expression query, List<String> fields, SortBy sortBy, int limit) {
 		return index.read(searcher -> {
 			return searcher.search(
-					Query.select(RemoteJobEntry.class)
+					Query.select(select)
 					.fields(fields)
 					.where(Expressions.builder()
 							.filter(RemoteJobEntry.Expressions.deleted(false))
@@ -296,7 +296,9 @@ public final class RemoteJobTracker implements IDisposableService {
 				final IStatus result = job.getResult();
 				final String response = job.getResponse();
 				final RemoteJobState newState;
-				if (result.isOK()) {
+				if (result == null) {
+					newState = RemoteJobState.CANCELED;
+				} else if (result.isOK() || result.matches(IStatus.INFO)) {
 					newState = RemoteJobState.FINISHED;
 				} else if (result.matches(IStatus.CANCEL)) {
 					newState = RemoteJobState.CANCELED;
@@ -320,7 +322,7 @@ public final class RemoteJobTracker implements IDisposableService {
 		return new Searcher() {
 			@Override
 			public <T> Hits<T> search(Query<T> query) throws IOException {
-				return (Hits<T>) searchHits(query.getWhere(), query.getFields(), query.getSortBy(), query.getLimit());
+				return searchHits(query.getSelect(), query.getWhere(), query.getFields(), query.getSortBy(), query.getLimit());
 			}
 			
 			@Override

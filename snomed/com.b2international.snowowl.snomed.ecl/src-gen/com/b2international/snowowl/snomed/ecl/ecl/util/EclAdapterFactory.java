@@ -193,6 +193,16 @@ public class EclAdapterFactory extends AdapterFactoryImpl
         return createAttributeValueNotEqualsAdapter();
       }
       @Override
+      public Adapter caseBooleanValueEquals(BooleanValueEquals object)
+      {
+        return createBooleanValueEqualsAdapter();
+      }
+      @Override
+      public Adapter caseBooleanValueNotEquals(BooleanValueNotEquals object)
+      {
+        return createBooleanValueNotEqualsAdapter();
+      }
+      @Override
       public Adapter caseStringValueEquals(StringValueEquals object)
       {
         return createStringValueEqualsAdapter();
@@ -635,6 +645,36 @@ public class EclAdapterFactory extends AdapterFactoryImpl
    * @generated
    */
   public Adapter createAttributeValueNotEqualsAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.BooleanValueEquals <em>Boolean Value Equals</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.BooleanValueEquals
+   * @generated
+   */
+  public Adapter createBooleanValueEqualsAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link com.b2international.snowowl.snomed.ecl.ecl.BooleanValueNotEquals <em>Boolean Value Not Equals</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see com.b2international.snowowl.snomed.ecl.ecl.BooleanValueNotEquals
+   * @generated
+   */
+  public Adapter createBooleanValueNotEqualsAdapter()
   {
     return null;
   }

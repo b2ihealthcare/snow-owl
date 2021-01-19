@@ -1,6 +1,105 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 6.25.1
+
+### Bugs/Improvements
+- [snomed] fix NPE when expanding `owlExpressions()` on inactive concept (3b79cbb6c308e33cb020410350cd1f8b8be8005d)
+- [cis] decrease default bulk request size to 10.000 ids (797af884b22bcb61ea3c06dbe142cb049acd8e8a)
+- [cis] remove status check from CisClient Register call (25f48375ca80aed95f62d02e95ac58e012be04c0)
+
+## 6.25.0
+
+### API
+- Support `definitionStatusId` in `POST /concepts` endpoint (8552b99)
+- Set definitionStatus to primitive automatically when inactivating a concept (8552b99) 
+
+### Bugs/Improvements
+- [cis] allow ID registration of already published IDs (ccc225d)
+- [cis] do not report unauthorized and forbidden errors in the log (28ac77a)
+- [cis] add CIS SCTID status update bash script (96776cc, f78ea65)
+
+## 6.24.0
+
+### API
+- Support filtering refset members by `mapPriority` (a0bff3d)
+
+### Bugs/Improvements
+- [index] Log the number of pending cluster tasks (959a088)
+- [index] fix query boosting issue (2de4841)
+- [core] Allow customization of component adjustment during publication (a0e6820)
+- [history] Ignore many-valued features altogether in HistoryInfoProvider (526d3e7)
+- [snomed] Fix incorrectly categorized query refset evaluation changes (#467)
+- [snomed] Fix incorrect parentage values when reactivating concept's relationships first then the concept in two different commits (5298252)
+- [cis] accept all SNOMED CT ID statuses when publishing them (c914c05)
+- [mrcm] Handle ECL expressions in attributes' concept set definitions in MRCM validation rules (0cc7b61)
+- [export] Create general ExportResult class (filename, UUID pair) (8265617)
+
+## 6.23.0
+
+### API
+- Support OWL Axiom (`owlRelationships()`) expansion on OWL Reference Set Members
+
+### Validation
+- Support OWL Axiom Members in certain SNOMED CT Validation Rules (#455) 
+
+### Bugs/Improvements
+- [reasoner] multiple changes to SNOMED to OWL conversion (28f6615)
+- [reasoner] fix group numbering issue in classification (8678901)
+- [validation] handle no result when evaluating query based validation rules (1cedb3b)
+
+## 6.22.0
+
+### Bugs/Improvements
+- [api] add filter by `mapGroup` member property (76560db)
+- [api] Add proper throws declarations for attachments api methods (adc2ed7)
+- [ecl] support BooleanValueEquals and NotEquals data comparisons in concrete domain member refinements (3399d33)
+- [validation] duplicate reference set member validation rule (#420)
+- [classification] cancel classification task properly after cancelling the corresponding remote job (05bf99b)
+- [jobs] Fix NPE for canceled but scheduled jobs (173fcb6)
+
+## 6.21.0
+
+### API
+- Support filtering refset members by OWL expression (#407)
+
+### MRCM
+- Add new concept set definition type (#408)
+
+### Jobs
+- Improve job filtering API (#411)
+- Add auto cleanup option to job schedule (#406)
+
+### Validation
+- Rename common validation rules (#410)
+
+### Bugs/improvements
+- Fix refset member duplication issue (#412)
+- Allow adding inactive query refset members (#414)
+
+## 6.20.0
+
+### API
+- Expose special member property based filtering over REST API (5fde911)
+
+### CIS
+- Add data synchronization script and migration guide to CIS product (d645ce1, 5f01750)
+
+### Scripts
+- New auto RF2 import script to automatically import RF2 files via REST API (#398)
+
+### Validation
+- Supporting deletion of validation issues by tooling and branch (db9b492)
+- Add published/unpublished filtering to validation issues (#391) 
+- Properly filter unpublished members in rule `snomed-common-4` (#394)
+- Add new description character length validation rule (#400)
+- Handle reference sets properly in validation issue detail expansion (#402)
+
+### Bugs/Improvements
+- Revert fix `[api] inactivate all language members when inactivating a SNOMED CT Description`
+- Allow duplicate relationships in DSV export (#393)
+- Handle descriptions during equivalent concept merging during classification (#392)
+
 ## 6.19.0
 
 ### Bugs/Improvements

@@ -66,6 +66,15 @@ EXPORT_UUID=""
 # The input data for the export config
 EXPORT_CONFIG_POST_INPUT=""
 
+# Effective time lower bound
+EFFECTIVE_TIME_START=""
+
+# Effective time upper bound
+EFFECTIVE_TIME_END=""
+
+# Include pre-release content
+INCLUDE_UNPUBLISHED=true
+
 usage() {
 
 	cat <<EOF
@@ -94,6 +103,12 @@ NAME:
         Branch from Snow Owl to initiate the export on
     -r
         Snomed CT reference set IDs to include in the export RF2
+    -f
+        Effective time range lower bound, in yyyyMMdd format
+    -g
+        Effective time range upper bound, in yyyyMMdd format
+    -i
+    	Include pre-release content
     -a
         REST API URL of the Snow Owl server, defaults to '/snowowl/snomed-ct/v3'
 
@@ -146,8 +161,16 @@ initiate_export() {
 	# The address where the export config endpoint can be found
 	EXPORTS_POST_ENDPOINT="${SNOW_OWL_API_URL}/exports"
 
-	EXPORT_CONFIG_POST_INPUT='{"branchPath": "'"${BRANCH_TO_EXPORT}"'", "type": "'"${EXPORT_TYPE}"'", "codeSystemShortName": "SNOMEDCT"'
+	EXPORT_CONFIG_POST_INPUT='{"branchPath": "'"${BRANCH_TO_EXPORT}"'", "type": "'"${EXPORT_TYPE}"'", "codeSystemShortName": "SNOMEDCT", "includeUnpublished": "'"${INCLUDE_UNPUBLISHED}"'"'
 
+	if [ -n "$EFFECTIVE_TIME_START" ]; then
+		EXPORT_CONFIG_POST_INPUT+=', "startEffectiveTime": "'"${EFFECTIVE_TIME_START}"'"'
+	fi
+	
+	if [ -n "$EFFECTIVE_TIME_END" ]; then
+		EXPORT_CONFIG_POST_INPUT+=', "endEffectiveTime": "'"${EFFECTIVE_TIME_END}"'"'
+	fi
+	
 	if ((${#REFSETS_TO_EXPORT[@]})); then
 		# Append refsets to config
 		REFSETS_JSON_ARRAY="["
@@ -225,7 +248,7 @@ execute() {
 	exit 0
 }
 
-while getopts ":hu:p:t:e:b:a:s:m:r:" option; do
+while getopts ":hu:p:t:e:b:a:s:m:r:f:g:i:" option; do
 	case "${option}" in
 	h)
 		usage
@@ -251,6 +274,15 @@ while getopts ":hu:p:t:e:b:a:s:m:r:" option; do
 		;;
 	s)
 		BRANCH_TO_EXPORT=${OPTARG}
+		;;
+	f)
+		EFFECTIVE_TIME_START=${OPTARG}
+		;;
+	g)
+		EFFECTIVE_TIME_END=${OPTARG}
+		;;
+	i)
+		INCLUDE_UNPUBLISHED=${OPTARG}
 		;;
 	m)
 		MODULES_TO_EXPORT+=("${OPTARG}")
