@@ -15,13 +15,15 @@
  */
 package com.b2international.snowowl.core.merge;
 
+import java.io.Serializable;
+
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 /**
  * @since 4.7
  */
 @JsonDeserialize(as = ConflictingAttributeImpl.class)
-public interface ConflictingAttribute {
+public interface ConflictingAttribute extends Serializable {
 
 	/**
 	 * String representation of the attribute that induced - or was involved in - the conflict

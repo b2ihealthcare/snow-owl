@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.merge;
 
 import static com.google.common.collect.Lists.newArrayList;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 
@@ -33,7 +34,7 @@ import com.google.common.collect.FluentIterable;
  * @since 4.7
  */
 @JsonDeserialize(builder = MergeConflict.Builder.class)
-public final class MergeConflict {
+public final class MergeConflict implements Serializable {
 
 	public static enum ConflictType {
 		CONFLICTING_CHANGE,
