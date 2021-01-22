@@ -349,6 +349,13 @@
 			<artifactId>owlapi-osgidistribution</artifactId>
 			<version>${owlapi.version}</version>
 			<scope>provided</scope>
+			<exclusions>
+				<!-- Exclude All transitive dependencies (it is already built into the bundle, or replaced by something else) -->
+		        <exclusion>
+		            <groupId>*</groupId>
+		            <artifactId>*</artifactId>
+		        </exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.semanticweb.elk</groupId>
@@ -356,20 +363,11 @@
 			<version>${elk.version}</version>
 			<scope>provided</scope>
 			<exclusions>
-				<!-- We use log4j-over-slf4j to delegate all log events to slf4j -->
-				<exclusion>
-					<groupId>log4j</groupId>
-  					<artifactId>log4j</artifactId>
-				</exclusion>
-				<!-- Using customized Protege bundles -->
-				<exclusion>
-          			<groupId>org.protege</groupId>
-          			<artifactId>protege-editor-core-application</artifactId>
-        		</exclusion>
-				<exclusion>
-          			<groupId>org.protege</groupId>
-          			<artifactId>protege-editor-owl</artifactId>
-        		</exclusion>
+				<!-- Exclude All transitive dependencies (it is already built into the bundle, or replaced by something else) -->
+		        <exclusion>
+		            <groupId>*</groupId>
+		            <artifactId>*</artifactId>
+		        </exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
@@ -564,19 +562,11 @@
 			<classifier>bundle</classifier>
 			<scope>provided</scope>
 			<exclusions>
-				<!-- Exclude Guice 4.0 transitive dependencies -->
-				<exclusion>
-          			<groupId>com.google.inject</groupId>
-          			<artifactId>guice</artifactId>
-        		</exclusion>
-        		<exclusion>
-          			<groupId>com.google.inject.extensions</groupId>
-          			<artifactId>guice-assistedinject</artifactId>
-        		</exclusion>
-        		<exclusion>
-          			<groupId>com.google.inject.extensions</groupId>
-          			<artifactId>guice-multibindings</artifactId>
-        		</exclusion>
+				<!-- Exclude All transitive dependencies (it is already built into the bundle, or replaced by something else) -->
+		        <exclusion>
+		            <groupId>*</groupId>
+		            <artifactId>*</artifactId>
+		        </exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
