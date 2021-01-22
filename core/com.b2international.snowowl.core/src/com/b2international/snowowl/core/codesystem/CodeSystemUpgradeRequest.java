@@ -53,6 +53,9 @@ final class CodeSystemUpgradeRequest implements Request<RepositoryContext, Strin
 	@JsonProperty
 	private String codeSystemId;
 	
+	@JsonProperty
+	private boolean force = true;
+	
 	public CodeSystemUpgradeRequest(CodeSystemURI codeSystem, CodeSystemURI extensionOf) {
 		this.codeSystem = codeSystem;
 		this.extensionOf = extensionOf;
@@ -60,6 +63,10 @@ final class CodeSystemUpgradeRequest implements Request<RepositoryContext, Strin
 	
 	void setCodeSystemId(String codeSystemId) {
 		this.codeSystemId = codeSystemId;
+	}
+	
+	void setForce(boolean force) {
+		this.force = force;
 	}
 	
 	@Override
@@ -149,5 +156,4 @@ final class CodeSystemUpgradeRequest implements Request<RepositoryContext, Strin
 					.getResultAs(String.class);
 	}
 	
-
 }

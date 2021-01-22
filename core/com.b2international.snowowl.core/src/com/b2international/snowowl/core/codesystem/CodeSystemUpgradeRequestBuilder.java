@@ -30,6 +30,7 @@ public final class CodeSystemUpgradeRequestBuilder extends BaseRequestBuilder<Co
 	private final CodeSystemURI extensionOf;
 	
 	private String codeSystemId;
+	private boolean force;
 
 	CodeSystemUpgradeRequestBuilder(CodeSystemURI codeSystem, CodeSystemURI extensionOf) {
 		this.codeSystem = codeSystem;
@@ -47,10 +48,22 @@ public final class CodeSystemUpgradeRequestBuilder extends BaseRequestBuilder<Co
 		return getSelf();
 	}
 	
+	/**
+	 * Optionally set the force flag to force recreation of version if it already exists
+	 * 
+	 * @param force
+	 * @return
+	 */
+	public CodeSystemUpgradeRequestBuilder setForce(boolean force) {
+		this.force = force;
+		return getSelf();
+	}
+	
 	@Override
 	protected Request<RepositoryContext, String> doBuild() {
 		final CodeSystemUpgradeRequest req = new CodeSystemUpgradeRequest(codeSystem, extensionOf);
 		req.setCodeSystemId(codeSystemId);
+		req.setForce(force);
 		return req;
 	}
 

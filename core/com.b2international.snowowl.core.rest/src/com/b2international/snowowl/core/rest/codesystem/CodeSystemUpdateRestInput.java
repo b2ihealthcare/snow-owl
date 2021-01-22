@@ -21,9 +21,10 @@ import com.b2international.snowowl.core.uri.CodeSystemURI;
  * @since 7.14
  */
 public class CodeSystemUpdateRestInput {
-
+	
 	private CodeSystemURI extensionOf;
 	private String codeSystemId;
+	private Boolean force = Boolean.FALSE;
 	
 	public CodeSystemURI getExtensionOf() {
 		return extensionOf;
@@ -32,13 +33,21 @@ public class CodeSystemUpdateRestInput {
 	public void setExtensionOf(CodeSystemURI extensionOf) {
 		this.extensionOf = extensionOf;
 	}
-
+	
 	public String getCodeSystemId() {
 		return codeSystemId;
 	}
 	
 	public void setCodeSystemId(String codeSystemId) {
 		this.codeSystemId = codeSystemId;
+	}
+	
+	public Boolean isForce() {
+		return force;
+	}
+	
+	public void setForce(Boolean force) {
+		this.force = force;
 	}
 	
 }

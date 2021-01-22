@@ -294,6 +294,7 @@ LoggerFactory.getLogger(getClass()).warn("'upgradeOf' property update support is
 		
 		return CodeSystemRequests.prepareUpgrade(codeSystem.getCodeSystemURI(), body.getExtensionOf())
 				.setCodeSystemId(body.getCodeSystemId())
+				.setForce(body.isForce())
 				.build(codeSystem.getRepositoryId())
 				.execute(getBus())
 				.then(upgradeCodeSystemId -> {
