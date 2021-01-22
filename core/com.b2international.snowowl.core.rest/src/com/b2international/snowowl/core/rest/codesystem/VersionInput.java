@@ -31,6 +31,7 @@ public class VersionInput implements CodeSystemVersionProperties {
 	@NotEmpty
 	private String version;
 	private String description = "";
+	private Boolean force = Boolean.FALSE;
 	
 	@NotNull
 	private Date effectiveDate;
@@ -60,6 +61,10 @@ public class VersionInput implements CodeSystemVersionProperties {
 	
 	public void setVersion(String version) {
 		this.version = version;
+	}
+
+	public Boolean isForce() {
+		return force;
 	}
 	
 }

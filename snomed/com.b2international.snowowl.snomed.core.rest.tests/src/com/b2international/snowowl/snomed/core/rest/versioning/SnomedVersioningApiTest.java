@@ -54,5 +54,12 @@ public class SnomedVersioningApiTest extends AbstractSnomedApiTest {
 	public void createVersionWithSameNameAsBranch() {
 		createVersion(SNOMED_SHORT_NAME, "SnomedVersioningApiTest", getNextAvailableEffectiveDateAsString(SNOMED_SHORT_NAME)).statusCode(409);
 	}
+	
+	@Test
+	public void createForcedVersionWithSameNameAsBranch() {
+		createVersion(SNOMED_SHORT_NAME, "SnomedVersioningApiTest", getNextAvailableEffectiveDateAsString(SNOMED_SHORT_NAME), true).statusCode(201);
+	}
+	
+	
 
 }

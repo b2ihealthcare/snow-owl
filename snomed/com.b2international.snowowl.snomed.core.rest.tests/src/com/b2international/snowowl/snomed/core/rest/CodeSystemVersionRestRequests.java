@@ -54,10 +54,15 @@ public abstract class CodeSystemVersionRestRequests {
 	}
 
 	public static ValidatableResponse createVersion(String shortName, String version, String effectiveDate) {
+		return createVersion(shortName, version, effectiveDate, false);
+	}
+	
+	public static ValidatableResponse createVersion(String shortName, String version, String effectiveDate, boolean force) {
 		Map<?, ?> requestBody = ImmutableMap.builder()
 				.put("version", version)
 				.put("description", version)
 				.put("effectiveDate", effectiveDate)
+				.put("force", force)
 				.build();
 
 		return givenAuthenticatedRequest(SnomedApiTestConstants.ADMIN_API)

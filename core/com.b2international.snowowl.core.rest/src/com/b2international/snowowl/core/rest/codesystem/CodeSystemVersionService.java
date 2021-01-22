@@ -136,12 +136,13 @@ public class CodeSystemVersionService {
 	 * 
 	 * @return the newly created code system version, as returned by {@link #getCodeSystemVersionById(String, String)}
 	 */
-	public CodeSystemVersion createVersion(String shortName, CodeSystemVersionProperties properties) {
+	public CodeSystemVersion createVersion(String shortName, CodeSystemVersionProperties properties, boolean force) {
 		String jobId = CodeSystemRequests.prepareNewCodeSystemVersion()
 				.setCodeSystemShortName(shortName)
 				.setVersionId(properties.getVersion())
 				.setDescription(properties.getDescription())
 				.setEffectiveTime(properties.getEffectiveDate())
+				.setForce(force)
 				.buildAsync()
 				.runAsJobWithRestart(CodeSystemRequests.versionJobKey(shortName), String.format("Creating version '%s/%s'", shortName, properties.getVersion()))
 				.execute(bus.get())

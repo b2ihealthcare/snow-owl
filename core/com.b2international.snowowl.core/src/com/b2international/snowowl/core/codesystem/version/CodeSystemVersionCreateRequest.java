@@ -89,6 +89,9 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 	@JsonProperty
 	String codeSystemShortName;
 	
+	@JsonProperty
+	Boolean force;
+	
 	// local execution variables
 	private transient Multimap<DatastoreLockContext, DatastoreLockTarget> lockTargetsByContext;
 	private transient Map<String, CodeSystem> codeSystemsByShortName;
@@ -107,31 +110,35 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 			throw new CodeSystemNotFoundException(codeSystemShortName);
 		}
 		
-		// check that the new versionId does not conflict with any other currently available branch
-		final String newVersionPath = String.join(Branch.SEPARATOR, codeSystem.getBranchPath(), versionId);
-		final String repositoryId = codeSystem.getRepositoryId();
-		
 		// validate new path
 		RevisionBranch.BranchNameValidator.DEFAULT.checkName(versionId);
 		
-		try {
-			Branch branch = RepositoryRequests.branching()
-				.prepareGet(newVersionPath)
-				.build(repositoryId)
-				.execute(context.service(IEventBus.class))
-				.getSync(1, TimeUnit.MINUTES);
-			// allow deleted version branches to be reused for versioning
-			if (!branch.isDeleted()) {
-				throw new ConflictException("An existing branch with path '%s' conflicts with the specified version identifier.", newVersionPath);
-			}
-		} catch (NotFoundException e) {
-			// ignore
-		}
-		
 		final List<CodeSystem> codeSystemsToVersion = codeSystem.getDependenciesAndSelf()
-			.stream()
-			.map(codeSystemsByShortName::get)
-			.collect(Collectors.toList());
+				.stream()
+				.map(codeSystemsByShortName::get)
+				.collect(Collectors.toList());
+		
+		for (CodeSystem cs : codeSystemsToVersion) {
+			// check that the new versionId does not conflict with any other currently available branch
+			final String newVersionPath = String.join(Branch.SEPARATOR, cs.getBranchPath(), versionId);
+			final String repositoryId = cs.getRepositoryId();
+			
+			try {
+				Branch branch = RepositoryRequests.branching()
+						.prepareGet(newVersionPath)
+						.build(repositoryId)
+						.execute(context.service(IEventBus.class))
+						.getSync(1, TimeUnit.MINUTES);
+				// allow deleted version branches to be reused for versioning
+				if (!branch.isDeleted()) {
+					if (!force || !deleteBranch(branch, repositoryId, context)) {
+						throw new ConflictException("An existing branch with path '%s' conflicts with the specified version identifier.", newVersionPath);
+					}
+				}
+			} catch (NotFoundException e) {
+				// ignore
+			}
+		}
 		
 		acquireLocks(context, user, codeSystemsToVersion);
 		
@@ -141,7 +148,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 			codeSystemsToVersion.forEach(codeSystemToVersion -> {
 				// check that the specified effective time is valid in this code system
 				validateEffectiveTime(context, codeSystem);
-				new RepositoryRequest<>(repositoryId,
+				new RepositoryRequest<>(codeSystemToVersion.getRepositoryId(),
 					new BranchRequest<>(codeSystem.getBranchPath(),
 						new RevisionIndexReadRequest<CommitResult>(
 							context.service(RepositoryManager.class).get(codeSystemToVersion.getRepositoryId())
@@ -162,6 +169,14 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 				monitor.done();
 			}
 		}
+	}
+	
+	private boolean deleteBranch(Branch branch, String repositoryId, ServiceProvider context) {
+		return RepositoryRequests.branching()
+				.prepareDelete(branch.path())
+				.build(repositoryId)
+				.execute(context.service(IEventBus.class))
+				.getSync(1, TimeUnit.MINUTES);
 	}
 	
 	private Map<String, CodeSystem> fetchAllCodeSystems(ServiceProvider context) {
