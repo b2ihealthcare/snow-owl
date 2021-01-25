@@ -39,6 +39,13 @@ public interface ConceptSearchRequestEvaluator {
 		 * Explicit ID filter to return all concepts that have any of the given IDs.
 		 */
 		ID,
+		
+
+		/**
+		 * Match concepts that have the specified parent code.
+		 */
+		PARENT,
+
 
 		/**
 		 * Match concepts that have the specified active status. Accepts a boolean <code>true</code> or <code>false</code> value.

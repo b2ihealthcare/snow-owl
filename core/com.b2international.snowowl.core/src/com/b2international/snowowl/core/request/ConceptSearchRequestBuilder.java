@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.request;
 
+import java.util.Collection;
+
 import com.b2international.snowowl.core.CodeType;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.Concepts;
@@ -28,6 +30,27 @@ import com.google.common.collect.FluentIterable;
 public final class ConceptSearchRequestBuilder extends SearchResourceRequestBuilder<ConceptSearchRequestBuilder, BranchContext, Concepts>
 		implements RevisionIndexRequestBuilder<Concepts>, TermFilterSupport<ConceptSearchRequestBuilder> {
 
+	
+	/**
+	 * Filters matches by the parent code.
+	 * Parent code is not included in the results
+	 * @param parentId
+	 * @return
+	 */
+	public ConceptSearchRequestBuilder filterByParent(final String parentId) {
+		return addOption(OptionKey.PARENT, parentId);
+	}
+
+	/**
+	 * Filters matches by the parent codes.
+	 * Parent codes is not included in the results
+	 * @param parentId
+	 * @return
+	 */
+	public ConceptSearchRequestBuilder filterByParents(final Collection<String> parentIds) {
+		return addOption(OptionKey.PARENT, parentIds);
+	}
+	
 	/**
 	 * Filters matches by their active/inactive status. 
 	 * 

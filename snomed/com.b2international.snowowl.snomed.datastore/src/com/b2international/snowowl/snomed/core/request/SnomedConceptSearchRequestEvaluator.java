@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.core.request;
 
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.stream.Collectors;
 
@@ -59,19 +60,24 @@ public final class SnomedConceptSearchRequestEvaluator implements ConceptSearchR
 			displayTermType = SnomedDisplayTermType.PT;
 		}
 		
-		final SnomedConceptSearchRequestBuilder req = SnomedRequests.prepareSearchConcept();
-		evaluateTermFilterOptions(req, search);
+		final SnomedConceptSearchRequestBuilder requestBuilder = SnomedRequests.prepareSearchConcept();
+		evaluateTermFilterOptions(requestBuilder, search);
 		
 		if (search.containsKey(OptionKey.ID)) {
-			req.filterByIds(search.getCollection(OptionKey.ID, String.class));
+			requestBuilder.filterByIds(search.getCollection(OptionKey.ID, String.class));
 		}
 		
 		if (search.containsKey(OptionKey.ACTIVE)) {
-			req.filterByActive(search.getBoolean(OptionKey.ACTIVE));
+			requestBuilder.filterByActive(search.getBoolean(OptionKey.ACTIVE));
+		}
+		
+		if (search.containsKey(OptionKey.PARENT)) {
+			Collection<String> parentIds = search.getCollection(OptionKey.PARENT, String.class);
+			requestBuilder.filterByParents(parentIds);
 		}
 		
 		if (search.containsKey(OptionKey.TERM_TYPE)) {
-			req.filterByDescriptionType(search.getString(OptionKey.TERM_TYPE));
+			requestBuilder.filterByDescriptionType(search.getString(OptionKey.TERM_TYPE));
 		}
 		
 		if (search.containsKey(OptionKey.QUERY) || search.containsKey(OptionKey.MUST_NOT_QUERY)) {
@@ -93,10 +99,10 @@ public final class SnomedConceptSearchRequestEvaluator implements ConceptSearchR
 					.append(")");
 			}
 			
-			req.filterByQuery(query.toString());
+			requestBuilder.filterByQuery(query.toString());
 		}
 		
-		SnomedConcepts matches = req
+		SnomedConcepts matches = requestBuilder
 				.setLocales(search.getList(OptionKey.LOCALES, ExtendedLocale.class))
 				.setSearchAfter(search.getString(OptionKey.AFTER))
 				.setLimit(search.get(OptionKey.LIMIT, Integer.class))
