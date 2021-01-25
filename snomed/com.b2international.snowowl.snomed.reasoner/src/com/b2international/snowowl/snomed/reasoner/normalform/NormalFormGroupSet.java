@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2013-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,8 +36,8 @@ final class NormalFormGroupSet extends AbstractSet<NormalFormGroup> {
 	 * Adds the specified group to this set if it is not already present.
 	 * <p>
 	 * More formally, adds the specified group e to this set if no group e2 exists
-	 * where e2 is "strictly stronger" than e. If this set already contains such 
-	 * a group, the call leaves the set unchanged and returns <code>false</code>.
+	 * where e2.isSameOrStrongerThan(e) applies. If this set already contains such
+	 * group, the call leaves the set unchanged and returns <code>false</code>.
 	 * <p>
 	 * If no current group can be matched this way to group e, the call removes all
 	 * current e(i) members from the set where e.isSameOrStrongerThan(e(i)) applies,
@@ -47,18 +47,11 @@ final class NormalFormGroupSet extends AbstractSet<NormalFormGroup> {
 	public boolean add(final NormalFormGroup e) {
 		final List<NormalFormGroup> redundant = newArrayList();
 
-		if (!e.isAdditional()) {
-			for (final NormalFormGroup existingGroup : groups) {
-				if (existingGroup.isAdditional()) {
-					continue;
-				}
-				
-				// Existing item should be strictly stronger, same is not good enough
-				if (e.isSameOrStrongerThan(existingGroup)) {
-					redundant.add(existingGroup);
-				} else if (existingGroup.isSameOrStrongerThan(e)) {
-					return false;
-				}
+		for (final NormalFormGroup existingGroup : groups) {
+			if (existingGroup.isSameOrStrongerThan(e)) {
+				return false;
+			} else if (e.isSameOrStrongerThan(existingGroup)) {
+				redundant.add(existingGroup);
 			}
 		}
 
@@ -103,7 +96,7 @@ final class NormalFormGroupSet extends AbstractSet<NormalFormGroup> {
 			.sorted(Comparator.comparingInt(otherGroup -> otherGroup.getGroupNumber()))
 			.forEachOrdered(otherGroup -> this.groups
 				.stream()
-				.filter(group -> group.getGroupNumber() == NormalFormGroup.UNKNOWN_GROUP && group.equals(otherGroup))
+				.filter(group -> group.getGroupNumber() == NormalFormGroup.UNKOWN_GROUP && group.equals(otherGroup))
 				.findFirst()
 				.ifPresent(group -> {
 					group.adjustOrder(otherGroup);
@@ -122,7 +115,7 @@ final class NormalFormGroupSet extends AbstractSet<NormalFormGroup> {
 		int groupNumber = 1;
 
 		for (final NormalFormGroup group : groups) {
-			if (group.getGroupNumber() == NormalFormGroup.UNKNOWN_GROUP) {
+			if (group.getGroupNumber() == NormalFormGroup.UNKOWN_GROUP) {
 				while (numbersUsed.contains(groupNumber)) {
 					groupNumber++;
 				}

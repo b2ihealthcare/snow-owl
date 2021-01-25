@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.reasoner.normalform;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.text.MessageFormat;
 import java.util.Objects;
 
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
@@ -64,11 +65,6 @@ final class NormalFormValue implements NormalFormProperty {
 	public boolean isReleased() {
 		return fragment.isReleased();
 	}
-	
-	@Override
-	public boolean isAdditional() {
-		return fragment.isAdditional();
-	}
 
 	@Override
 	public boolean isSameOrStrongerThan(final NormalFormProperty property) {
@@ -99,7 +95,6 @@ final class NormalFormValue implements NormalFormProperty {
 
 		final NormalFormValue other = (NormalFormValue) obj;
 
-		if (isAdditional() != other.isAdditional()) { return false; }
 		if (getRefSetId() != other.getRefSetId()) { return false; }
 		if (getTypeId() != other.getTypeId()) { return false; }
 		if (!getSerializedValue().equals(other.getSerializedValue())) { return false; }
@@ -109,22 +104,13 @@ final class NormalFormValue implements NormalFormProperty {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(
-			isAdditional(),
-			getRefSetId(), 
-			getTypeId(),
-			getSerializedValue());
+		return Objects.hash(getSerializedValue(), getRefSetId(), getTypeId());
 	}
 
 	@Override
 	public String toString() {
 		final String refSetId = Long.toString(getRefSetId());
 		final DataType dataType = SnomedRefSetUtil.getDataType(refSetId);
-		
-		return String.format("%s: %s=%s [%s]", 
-			getMemberId(),
-			getTypeId(),
-			getSerializedValue(),
-			dataType);
+		return MessageFormat.format("{0,number,#} : {1} [{2}]", getTypeId(), getSerializedValue(), dataType);
 	}
 }

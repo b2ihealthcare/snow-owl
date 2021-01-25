@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -449,10 +449,7 @@ public final class ReasonerTaxonomyBuilder {
 			whereExpressionBuilder.mustNot(modules(excludedModuleIds));
 		}
 		
-		addRelationships(searcher, 
-				whereExpressionBuilder, 
-				false, // Stated relationships only
-				conceptId -> builtDefinedConceptMap.containsKey(conceptId) ? equivalentStatements : subclassOfStatements);
+		addRelationships(searcher, whereExpressionBuilder, conceptId -> builtDefinedConceptMap.containsKey(conceptId) ? equivalentStatements : subclassOfStatements);
 
 		leaving("Registering active stated non-IS A relationships using revision searcher");
 		return this;
@@ -466,8 +463,7 @@ public final class ReasonerTaxonomyBuilder {
 				&& !Concepts.IS_A.equals(relationship.getTypeId())
 				&& !excludedModuleIds.contains(relationship.getModuleId());
 		
-		// Stated relationships only
-		addRelationships(sortedRelationships.filter(predicate), false, (sourceId, fragments) -> {
+		addRelationships(sortedRelationships.filter(predicate), (sourceId, fragments) -> {
 			if (builtDefinedConceptMap.containsKey(sourceId)) {
 				equivalentStatements.putAll(sourceId, fragments);
 			} else {
@@ -491,10 +487,7 @@ public final class ReasonerTaxonomyBuilder {
 			whereExpressionBuilder.mustNot(modules(excludedModuleIds));
 		}
 		
-		addRelationships(searcher, 
-				whereExpressionBuilder, 
-				true, // Additional relationships only
-				conceptId -> additionalGroupedRelationships);
+		addRelationships(searcher, whereExpressionBuilder, conceptId -> additionalGroupedRelationships);
 	
 		leaving("Registering active additional grouped relationships using revision searcher");
 		return this;
@@ -508,8 +501,7 @@ public final class ReasonerTaxonomyBuilder {
 				&& relationship.getGroup() > 0
 				&& !excludedModuleIds.contains(relationship.getModuleId());
 		
-		// Additional relationships only
-		addRelationships(sortedRelationships.filter(predicate), true, additionalGroupedRelationships::putAll);
+		addRelationships(sortedRelationships.filter(predicate), additionalGroupedRelationships::putAll);
 	
 		leaving("Registering active additional grouped relationships using relationship stream");
 		return this;
@@ -604,7 +596,6 @@ public final class ReasonerTaxonomyBuilder {
 						group,
 						unionGroup,
 						universal,
-						false, // Stated and inferred relationships only
 						statementId,
 						released,
 						hasStatedPair);
@@ -635,18 +626,13 @@ public final class ReasonerTaxonomyBuilder {
 				&& Concepts.INFERRED_RELATIONSHIP.equals(relationship.getCharacteristicTypeId())
 				&& !excludedModuleIds.contains(relationship.getModuleId());
 		
-		// Inferred relationships only
-		addRelationships(sortedRelationships.filter(predicate), false, existingInferredRelationships::putAll);
+		addRelationships(sortedRelationships.filter(predicate), existingInferredRelationships::putAll);
 		
 		leaving("Registering active inferred relationships using relationship stream");
 		return this;
 	}
 
-	private void addRelationships(
-			final RevisionSearcher searcher, 
-			final ExpressionBuilder whereExpressionBuilder, 
-			final boolean additional,
-			final Function<String, Builder<StatementFragment>> fragmentBuilder) {
+	private void addRelationships(final RevisionSearcher searcher, final ExpressionBuilder whereExpressionBuilder, final Function<String, Builder<StatementFragment>> fragmentBuilder) {
 		
 		final Query<String[]> query = Query.select(String[].class)
 				.from(SnomedRelationshipIndexEntry.class)
@@ -709,7 +695,6 @@ public final class ReasonerTaxonomyBuilder {
 						group,
 						unionGroup,
 						universal,
-						additional,
 						statementId,
 						released,
 						false); // Relationships added through this method have no stated pair
@@ -734,7 +719,6 @@ public final class ReasonerTaxonomyBuilder {
 	 * XXX: sortedRelationships should be sorted by source ID; we can not verify this in advance
 	 */
 	private void addRelationships(final Stream<SnomedRelationship> sortedRelationships,
-			final boolean additional,
 			final BiConsumer<String, List<StatementFragment>> consumer) {
 		
 		final List<StatementFragment> fragments = newArrayListWithExpectedSize(SCROLL_LIMIT);
@@ -773,7 +757,6 @@ public final class ReasonerTaxonomyBuilder {
 						group,
 						unionGroup,
 						universal,
-						additional,
 						statementId,
 						false,  // XXX: "injected" concepts will not set these flags correctly, but they should
 						false);  // only be used for equivalence checks
@@ -1021,19 +1004,17 @@ public final class ReasonerTaxonomyBuilder {
 				final Integer group = member.getRelationshipGroup();
 				final long typeId = Long.parseLong(member.getTypeId());
 				final boolean released = member.isReleased();
-				final boolean additional = Concepts.ADDITIONAL_RELATIONSHIP.equals(member.getCharacteristicTypeId()); 
 
 				final ConcreteDomainFragment fragment = new ConcreteDomainFragment(memberId, 
 						refsetId,
 						group,
 						serializedValue,
 						typeId,
-						released,
-						additional);
+						released);
 
 				if (Concepts.STATED_RELATIONSHIP.equals(member.getCharacteristicTypeId())) {
 					statedFragments.add(fragment);
-				} else if (additional && member.getRelationshipGroup() > 0) {
+				} else if (Concepts.ADDITIONAL_RELATIONSHIP.equals(member.getCharacteristicTypeId()) && member.getRelationshipGroup() > 0) {
 					additionalGroupedFragments.add(fragment);
 				} else if (Concepts.INFERRED_RELATIONSHIP.equals(member.getCharacteristicTypeId())) {
 					inferredFragments.add(fragment);
@@ -1098,19 +1079,17 @@ public final class ReasonerTaxonomyBuilder {
 					final String serializedValue = (String) member.getProperties().get(SnomedRf2Headers.FIELD_VALUE);
 					final Integer group = (Integer) member.getProperties().get(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP);
 					final long typeId = Long.parseLong((String) member.getProperties().get(SnomedRf2Headers.FIELD_TYPE_ID));
-					final boolean additional = Concepts.ADDITIONAL_RELATIONSHIP.equals(characteristicTypeId);
 
 					final ConcreteDomainFragment fragment = new ConcreteDomainFragment(memberId,
 							refsetId,
 							group,
 							serializedValue,
 							typeId,
-							false, // XXX: "injected" CD members will not set this flag correctly, but they should only be used in equivalence checks
-							additional); 
+							false); // XXX: "injected" CD members will not set this flag correctly, but they should only be used in equivalence checks
 
 					if (Concepts.STATED_RELATIONSHIP.equals(characteristicTypeId)) {
 						statedFragments.add(fragment);
-					} else if (additional && group > 0) {
+					} else if (Concepts.ADDITIONAL_RELATIONSHIP.equals(characteristicTypeId) && group > 0) {
 						additionalGroupedFragments.add(fragment);
 					} else if (Concepts.INFERRED_RELATIONSHIP.equals(characteristicTypeId)) {
 						inferredFragments.add(fragment);

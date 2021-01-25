@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2013-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ interface NormalFormProperty {
 	 * should be used when the fragments in this group/union group are converted into
 	 * relationships.
 	 */
-	static final int UNKNOWN_GROUP = -1;
+	static final int UNKOWN_GROUP = -1;
 	
 	static final int ZERO_GROUP = 0;
 
@@ -41,11 +41,5 @@ interface NormalFormProperty {
 	 *         description when compared to the other item, <code>false</code>
 	 *         otherwise
 	 */
-	public boolean isSameOrStrongerThan(NormalFormProperty property);
-	
-	/**
-	 * @return <code>true</code> if this property should not participate in 
-	 *         "is same or stronger" comparisons, <code>false</code> otherwise
-	 */
-	public boolean isAdditional();
+	public boolean isSameOrStrongerThan (NormalFormProperty property);
 }

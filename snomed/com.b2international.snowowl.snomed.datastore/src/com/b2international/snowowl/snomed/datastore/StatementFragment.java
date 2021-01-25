@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,6 @@ public final class StatementFragment implements Serializable {
 	private final int group;
 	private final int unionGroup;
 	private final boolean universal;
-	private final boolean additional;
 
 	// Only stored if the original relationship is known
 	private final long statementId;
@@ -40,9 +39,8 @@ public final class StatementFragment implements Serializable {
 
 	private boolean hasStatedPair;
 
-
 	public StatementFragment(final long typeId, final long destinationId) {
-		this(typeId, destinationId, false, 0, 0, false, false, -1L, false, false);
+		this(typeId, destinationId, false, 0, 0, false, -1L, false, false);
 	}
 
 	public StatementFragment(final long typeId,
@@ -51,7 +49,6 @@ public final class StatementFragment implements Serializable {
 			final int group,
 			final int unionGroup,
 			final boolean universal,
-			final boolean additional,
 			final long statementId,
 			final boolean released,
 			final boolean hasStatedPair) {
@@ -62,7 +59,6 @@ public final class StatementFragment implements Serializable {
 		this.group = group;
 		this.unionGroup = unionGroup;
 		this.universal = universal;
-		this.additional = additional;
 
 		this.statementId = statementId;
 		this.released = released;
@@ -105,10 +101,6 @@ public final class StatementFragment implements Serializable {
 		return hasStatedPair;
 	}
 	
-	public boolean isAdditional() {
-		return additional;
-	}
-
 	@Override
 	public String toString() {
 		final StringBuilder builder = new StringBuilder();

@@ -1,6 +1,6 @@
 /*
  * Copyright 2009 International Health Terminology Standards Development Organisation
- * Copyright 2013-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2013-2018 B2i Healthcare Pte Ltd, http://b2i.sg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,7 +66,7 @@ final class NormalFormGroup implements NormalFormProperty {
 	public NormalFormGroup(final Iterable<NormalFormUnionGroup> unionGroups) {
 		checkNotNull(unionGroups, "unionGroups");
 		this.unionGroups = ImmutableList.copyOf(unionGroups);
-		this.groupNumber = UNKNOWN_GROUP;
+		this.groupNumber = UNKOWN_GROUP;
 	}
 
 	public List<NormalFormUnionGroup> getUnionGroups() {
@@ -78,7 +78,7 @@ final class NormalFormGroup implements NormalFormProperty {
 	}
 
 	public void setGroupNumber(final int groupNumber) {
-		checkState(this.groupNumber == UNKNOWN_GROUP, "Group number is already set.");
+		checkState(this.groupNumber == UNKOWN_GROUP, "Group number is already set.");
 		checkArgument(groupNumber > 0, "Illegal group number '%s'.", groupNumber);
 		this.groupNumber = groupNumber;
 	}
@@ -102,20 +102,11 @@ final class NormalFormGroup implements NormalFormProperty {
 		 */
 		return other.unionGroups
 			.stream()
-			.filter(otherUnionGroup -> !otherUnionGroup.isAdditional())
 			.allMatch(otherUnionGroup -> this.unionGroups
 				.stream()
-				.filter(ourUnionGroup -> !ourUnionGroup.isAdditional())
 				.anyMatch(ourUnionGroup -> ourUnionGroup.isSameOrStrongerThan(otherUnionGroup)));
 	}
 
-	@Override
-	public boolean isAdditional() {
-		// Groups should be considered "additional" if they have no non-additional union groups
-		return unionGroups.stream()
-			.allMatch(NormalFormProperty::isAdditional);
-	}
-	
 	@Override
 	public int hashCode() {
 		return Objects.hash(unionGroups);
@@ -149,7 +140,7 @@ final class NormalFormGroup implements NormalFormProperty {
 			.sorted(Comparator.comparingInt(otherUnionGroup -> otherUnionGroup.getUnionGroupNumber()))
 			.forEachOrdered(otherUnionGroup -> this.unionGroups
 				.stream()
-				.filter(unionGroup -> unionGroup.getUnionGroupNumber() == NormalFormUnionGroup.UNKNOWN_GROUP && unionGroup.equals(otherUnionGroup))
+				.filter(unionGroup -> unionGroup.getUnionGroupNumber() == NormalFormUnionGroup.UNKOWN_GROUP && unionGroup.equals(otherUnionGroup))
 				.findFirst()
 				.ifPresent(unionGroup -> {
 					unionGroup.setUnionGroupNumber(otherUnionGroup.getUnionGroupNumber());
@@ -167,7 +158,7 @@ final class NormalFormGroup implements NormalFormProperty {
 		int unionGroupNumber = 1;
 
 		for (final NormalFormUnionGroup unionGroup : unionGroups) {
-			if (unionGroup.getUnionGroupNumber() == NormalFormUnionGroup.UNKNOWN_GROUP) {
+			if (unionGroup.getUnionGroupNumber() == NormalFormUnionGroup.UNKOWN_GROUP) {
 				while (numbersUsed.contains(unionGroupNumber)) {
 					unionGroupNumber++;
 				}
