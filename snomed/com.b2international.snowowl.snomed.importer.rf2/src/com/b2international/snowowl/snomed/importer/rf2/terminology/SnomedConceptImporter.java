@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,9 +48,19 @@ public class SnomedConceptImporter extends AbstractSnomedTerminologyImporter<Con
 			.build();
 
 	public static final List<IndexConfiguration> INDEXES = ImmutableList.<IndexConfiguration>builder()
-			.add(new IndexConfiguration("SNOMED_CONCEPT_IDX1000", "SNOMED_CONCEPT", "ID", "CDO_BRANCH", "CDO_REVISED", "CDO_VERSION"))
-			.add(new IndexConfiguration("SNOMED_CONCEPT_IDX1001", "SNOMED_CONCEPT", "ID", "CDO_BRANCH", "CDO_VERSION"))
-			.add(new IndexConfiguration("SNOMED_CONCEPT_IDX1002", "SNOMED_CONCEPT", "CDO_CREATED"))
+			.add(new IndexConfiguration("SNOMED_CONCEPT_IDX1000", 
+					"SNOMED_CONCEPT", 
+					"ID", "CDO_BRANCH", "CDO_REVISED", "CDO_VERSION"))
+			.add(new IndexConfiguration("SNOMED_CONCEPT_IDX1001", 
+					"SNOMED_CONCEPT", 
+					"ID", "CDO_BRANCH", "CDO_VERSION"))
+			.add(new IndexConfiguration("SNOMED_CONCEPT_IDX1002", 
+					"SNOMED_CONCEPT", 
+					"CDO_CREATED"))
+			// Index for list mapping table of concrete domain members that reference concepts 
+			.add(new IndexConfiguration("SNOMED_CONCEPT_CONCRETEDOMAINREFSETMEMBERS_LIST_IDX1000",
+					"SNOMED_CONCEPT_CONCRETEDOMAINREFSETMEMBERS_LIST", 
+					"CDO_SOURCE", "CDO_BRANCH", "CDO_VERSION_ADDED", "CDO_IDX"))
 			.build();
 	
 	private static final SnomedImportConfiguration<ConceptRow> IMPORT_CONFIGURATION = new SnomedImportConfiguration<ConceptRow>(
