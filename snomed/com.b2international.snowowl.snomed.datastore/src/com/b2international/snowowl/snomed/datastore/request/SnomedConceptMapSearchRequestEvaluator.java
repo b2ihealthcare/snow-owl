@@ -223,7 +223,7 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 
 		SnomedRefSetType snomedRefSetType = mappingSetMember.type();
 
-		if (snomedRefSetType == SnomedRefSetType.SIMPLE_MAP) {
+		if (snomedRefSetType == SnomedRefSetType.SIMPLE_MAP || snomedRefSetType == SnomedRefSetType.SIMPLE_MAP_WITH_DESCRIPTION) {
 			return MappingCorrelation.EXACT_MATCH; //probably true
 		}
 
@@ -233,7 +233,7 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 			return MappingCorrelation.NOT_SPECIFIED; 
 		}
 
-		String correlationId = (String) properties.get(SnomedRf2Headers.FIELD_CORRELATION_ID);
+		String correlationId = (String) properties.getOrDefault(SnomedRf2Headers.FIELD_CORRELATION_ID, "");
 
 		switch (correlationId) {
 		case Concepts.MAP_CORRELATION_EXACT_MATCH:
