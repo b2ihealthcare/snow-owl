@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.junit.Test;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.jobs.JobRequests;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 
@@ -44,7 +45,7 @@ public class IssueSO2503RemoteJobDynamicMappingFix extends AbstractSnomedApiTest
 			.setCodeSystemShortName(codeSystemShortName)
 			// XXX use default format, ES will likely try to convert this to a date field, unless we disable it in the mapping
 			.setVersionId(Dates.formatByGmt(getNextAvailableEffectiveDate(codeSystemShortName), DateFormats.DEFAULT))
-			.setEffectiveTime(new Date())
+			.setEffectiveTime(EffectiveTimes.format(new Date(), DateFormats.SHORT))
 			.buildAsync()
 			.runAsJob("Creating version with datelike versionId")
 			.execute(getBus())
@@ -54,7 +55,7 @@ public class IssueSO2503RemoteJobDynamicMappingFix extends AbstractSnomedApiTest
 				return CodeSystemRequests.prepareNewCodeSystemVersion()
 					.setCodeSystemShortName(codeSystemShortName)
 					.setVersionId("xx-" + Dates.formatByGmt(getNextAvailableEffectiveDate(codeSystemShortName), DateFormats.DEFAULT))
-					.setEffectiveTime(new Date())
+					.setEffectiveTime(EffectiveTimes.format(new Date(), DateFormats.SHORT))
 					.buildAsync()
 					.runAsJob("Creating version with non-datelike versionId")
 					.execute(getBus());

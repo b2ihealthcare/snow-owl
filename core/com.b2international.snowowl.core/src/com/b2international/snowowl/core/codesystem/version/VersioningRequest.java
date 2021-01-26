@@ -99,7 +99,7 @@ public class VersioningRequest implements Request<TransactionContext, Boolean>, 
 		return CodeSystemVersionEntry.builder()
 				.id(IDs.base64UUID())
 				.description(config.getDescription())
-				.effectiveDate(config.getEffectiveTime().getTime())
+				.effectiveDate(config.getEffectiveTime())
 				.importDate(new Date().getTime())
 				.parentBranchPath(context.path())
 				.versionId(config.getVersionId())
