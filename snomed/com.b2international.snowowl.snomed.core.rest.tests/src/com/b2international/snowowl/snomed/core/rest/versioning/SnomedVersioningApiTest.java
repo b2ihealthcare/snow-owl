@@ -57,7 +57,13 @@ public class SnomedVersioningApiTest extends AbstractSnomedApiTest {
 	
 	@Test
 	public void createForcedVersionWithSameNameAsBranch() {
-		createVersion(SNOMED_SHORT_NAME, "SnomedVersioningApiTest", getNextAvailableEffectiveDateAsString(SNOMED_SHORT_NAME), true).statusCode(201);
+		createVersion(SNOMED_SHORT_NAME, "VersionToRecreate", getNextAvailableEffectiveDateAsString(SNOMED_SHORT_NAME)).statusCode(201);
+		
+		//Should fail to recreate version without the force flag
+		createVersion(SNOMED_SHORT_NAME, "VersionToRecreate", getNextAvailableEffectiveDateAsString(SNOMED_SHORT_NAME)).statusCode(409);
+		
+		//Should succeed to recreate version with the force flag set
+		createVersion(SNOMED_SHORT_NAME, "VersionToRecreate", getNextAvailableEffectiveDateAsString(SNOMED_SHORT_NAME), true).statusCode(201);
 	}
 	
 	

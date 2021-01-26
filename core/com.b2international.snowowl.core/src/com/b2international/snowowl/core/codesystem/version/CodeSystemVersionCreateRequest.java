@@ -131,7 +131,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 						.getSync(1, TimeUnit.MINUTES);
 				// allow deleted version branches to be reused for versioning
 				if (!branch.isDeleted()) {
-					if (!force || !deleteBranch(branch, repositoryId, context)) {
+					if (!force || !deleteBranch(context, branch, repositoryId)) {
 						throw new ConflictException("An existing branch with path '%s' conflicts with the specified version identifier.", newVersionPath);
 					}
 				}
@@ -153,7 +153,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 						new RevisionIndexReadRequest<CommitResult>(
 							context.service(RepositoryManager.class).get(codeSystemToVersion.getRepositoryId())
 								.service(VersioningRequestBuilder.class)
-								.build(new VersioningConfiguration(user, codeSystemToVersion.getShortName(), versionId, description, effectiveTime))
+								.build(new VersioningConfiguration(user, codeSystemToVersion.getShortName(), versionId, description, effectiveTime, force))
 						)
 					)
 				).execute(context);
@@ -171,7 +171,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 		}
 	}
 	
-	private boolean deleteBranch(Branch branch, String repositoryId, ServiceProvider context) {
+	private boolean deleteBranch(ServiceProvider context, Branch branch, String repositoryId) {
 		return RepositoryRequests.branching()
 				.prepareDelete(branch.path())
 				.build(repositoryId)
