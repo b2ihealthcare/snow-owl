@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,10 @@ package com.b2international.snowowl.snomed.core.rest;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
+import com.b2international.snowowl.test.commons.ApiTestConstants;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -28,12 +29,7 @@ import com.google.common.collect.ImmutableMap;
  * 
  * @since 2.0
  */
-public abstract class SnomedApiTestConstants {
-
-	/**
-	 * The context-relative base URL for the administrative controller. 
-	 */
-	public static final String ADMIN_API = "/admin";
+public abstract class SnomedApiTestConstants implements ApiTestConstants {
 
 	/**
 	 * The context-relative base URL for SNOMED CT-related controllers.
