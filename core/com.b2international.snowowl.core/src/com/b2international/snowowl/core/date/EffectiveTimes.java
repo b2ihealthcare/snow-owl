@@ -157,7 +157,7 @@ public abstract class EffectiveTimes {
 			return UNSET_EFFECTIVE_TIME;
 		}
 		return effectiveTime.toInstant()
-			      .atZone(ZoneId.of("GMT"))
+			      .atZone(ZoneOffset.UTC)
 			      .toLocalDate()
 			      .atStartOfDay()
 			      .toInstant(ZoneOffset.UTC)
