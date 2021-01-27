@@ -191,21 +191,6 @@ public abstract class Dates {
 		return TimeZone.getTimeZone("GMT");
 	}
 	
-	/**
-	 *@return the {@link Date} instance for the beginning of the current day in the local timezone.
-	 */
-	public static Date todayLocal() {
-		final Calendar todayInLocalTime = Calendar.getInstance();
-
-		final int year = todayInLocalTime.get(Calendar.YEAR);
-		final int month = todayInLocalTime.get(Calendar.MONTH);
-		final int date = todayInLocalTime.get(Calendar.DATE);
-
-		todayInLocalTime.clear();
-		todayInLocalTime.set(year, month, date);
-		return todayInLocalTime.getTime();
-	}
-
 	private static Object convert(Object date) {
 		if (date instanceof Long) {
 			return new Date(((Long) date).longValue());
