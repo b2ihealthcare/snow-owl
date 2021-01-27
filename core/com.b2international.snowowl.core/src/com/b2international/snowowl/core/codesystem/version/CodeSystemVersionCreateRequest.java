@@ -51,10 +51,8 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContext;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockTarget;
-import com.b2international.snowowl.core.internal.locks.DatastoreOperationLockException;
 import com.b2international.snowowl.core.jobs.RemoteJob;
 import com.b2international.snowowl.core.locks.IOperationLockManager;
-import com.b2international.snowowl.core.locks.OperationLockException;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.BranchRequest;
 import com.b2international.snowowl.core.request.CommitResult;
@@ -223,13 +221,6 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 				context.service(IOperationLockManager.class).lock(lockContext, IOperationLockManager.IMMEDIATE, lockTarget);
 
 				lockTargetsByContext.put(lockContext, lockTarget);
-			}
-			
-		} catch (final OperationLockException e) {
-			if (e instanceof DatastoreOperationLockException) {
-				throw new DatastoreOperationLockException(String.format("Failed to acquire locks for versioning because %s.", e.getMessage())); 
-			} else {
-				throw new DatastoreOperationLockException("Error while trying to acquire lock on repository for versioning.");
 			}
 		} catch (final InterruptedException e) {
 			throw new SnowowlRuntimeException(e);

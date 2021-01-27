@@ -59,9 +59,9 @@ import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContext;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockTarget;
-import com.b2international.snowowl.core.internal.locks.DatastoreOperationLockException;
 import com.b2international.snowowl.core.locks.IOperationLockManager;
 import com.b2international.snowowl.core.locks.Locks;
+import com.b2international.snowowl.core.locks.OperationLockException;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
@@ -277,8 +277,8 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 		final DatastoreLockTarget lockTarget = createLockTarget(id(), path());
 		IOperationLockManager locks = service(IOperationLockManager.class);
 		Commit commit = null;
+		acquireLock(locks, lockContext, lockTarget);
 		try {
-			acquireLock(locks, lockContext, lockTarget);
 			final long timestamp = service(TimestampProvider.class).getTimestamp();
 			log().info("Persisting changes to {}@{}", path(), timestamp);
 			commit = staging.commit(null, timestamp, author, commitComment);
@@ -306,13 +306,13 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 	private void acquireLock(IOperationLockManager locks, DatastoreLockContext lockContext, DatastoreLockTarget lockTarget) {
 		try {
 			locks.lock(lockContext, 1000L, lockTarget);
-		} catch (final DatastoreOperationLockException e) {
+		} catch (final OperationLockException e) {
 			final DatastoreLockContext lockOwnerContext = e.getContext(lockTarget);
 			throw new LockedException(MessageFormat.format("Write access to {0} was denied because {1} is {2}. Please try again later.", 
 					lockTarget,
 					lockOwnerContext.getUserId(), 
 					lockOwnerContext.getDescription()));
-		} catch (InterruptedException e) {
+		} catch (Exception e) {
 			throw new SnowowlRuntimeException(e);
 		}
 	}

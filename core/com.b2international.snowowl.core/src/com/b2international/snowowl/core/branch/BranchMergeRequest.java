@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,8 @@ import com.b2international.index.revision.BranchMergeException;
 import com.b2international.index.revision.Commit;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
-import com.b2international.snowowl.core.internal.locks.DatastoreOperationLockException;
 import com.b2international.snowowl.core.locks.Locks;
+import com.b2international.snowowl.core.locks.OperationLockException;
 import com.b2international.snowowl.core.merge.ComponentRevisionConflictProcessor;
 import com.google.common.base.Strings;
 
@@ -71,7 +71,7 @@ public final class BranchMergeRequest extends AbstractBranchChangeRequest {
 				.merge();
 		} catch (BranchMergeException e) {
 			throw new ConflictException(Strings.isNullOrEmpty(e.getMessage()) ? "Cannot merge source '%s' into target '%s'." : e.getMessage(), source.path(), target.path(), e);
-		} catch (DatastoreOperationLockException e) {
+		} catch (OperationLockException e) {
 			throw new ConflictException("Lock exception caught while merging source '%s' into target '%s'. %s", source.path(), target.path(), e.getMessage());
 		}
 	}

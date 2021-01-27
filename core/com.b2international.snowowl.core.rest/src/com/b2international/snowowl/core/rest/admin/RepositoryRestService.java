@@ -36,12 +36,12 @@ import com.b2international.snowowl.core.Repositories;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.core.RepositoryManager;
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContext;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockTarget;
-import com.b2international.snowowl.core.internal.locks.DatastoreOperationLockException;
 import com.b2international.snowowl.core.locks.IOperationLockManager;
 import com.b2international.snowowl.core.locks.OperationLockException;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
@@ -216,13 +216,13 @@ public class RepositoryRestService extends AbstractRestService {
 	private void doLock(final int timeoutMillis, final DatastoreLockContext context, final DatastoreLockTarget target) {
 		try {
 			getLockManager().lock(context, timeoutMillis, target);
-		} catch (final DatastoreOperationLockException e) {
+		} catch (final OperationLockException e) {
 			final DatastoreLockContext conflictingContext = e.getContext(target);
 			throw new BadRequestException("Failed to acquire lock for all repositories because %s is %s.", 
 					conflictingContext.getUserId(), 
 					conflictingContext.getDescription());
-		} catch (final OperationLockException | InterruptedException e) {
-			throw new BadRequestException(e.getMessage());
+		} catch (InterruptedException e) {
+			throw new SnowowlRuntimeException(e.getMessage());
 		}
 	}
 	

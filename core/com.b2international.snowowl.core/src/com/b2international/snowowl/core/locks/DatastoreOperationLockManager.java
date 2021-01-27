@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,6 @@ import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContext;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockTarget;
-import com.b2international.snowowl.core.internal.locks.DatastoreOperationLockException;
 import com.b2international.snowowl.core.locks.DatastoreLockIndexEntry.Builder;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
@@ -247,8 +246,7 @@ public final class DatastoreOperationLockManager implements IOperationLockManage
 	}
 
 	@OverridingMethodsMustInvokeSuper
-	protected void canContextLockTargets(final DatastoreLockContext context, final Iterable<DatastoreLockTarget> targets, final Map<DatastoreLockTarget, DatastoreLockContext> alreadyLockedTargets) 
-			throws DatastoreOperationLockException {
+	protected void canContextLockTargets(final DatastoreLockContext context, final Iterable<DatastoreLockTarget> targets, final Map<DatastoreLockTarget, DatastoreLockContext> alreadyLockedTargets) throws OperationLockException {
 		if (!isDisposed()) {
 			for (final DatastoreLockTarget newTarget : targets) {
 				for (final IOperationLock existingLock : getExistingLocks()) {
