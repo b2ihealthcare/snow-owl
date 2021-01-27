@@ -49,9 +49,9 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.Permission;
+import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContext;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockTarget;
-import com.b2international.snowowl.core.jobs.RemoteJob;
 import com.b2international.snowowl.core.locks.IOperationLockManager;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.BranchRequest;
@@ -94,8 +94,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 	
 	@Override
 	public Boolean execute(ServiceProvider context) {
-		final RemoteJob job = context.service(RemoteJob.class);
-		final String user = job.getUser();
+		final String user = context.service(User.class).getUsername();
 		
 		if (codeSystemsByShortName == null) {
 			codeSystemsByShortName = fetchAllCodeSystems(context);
