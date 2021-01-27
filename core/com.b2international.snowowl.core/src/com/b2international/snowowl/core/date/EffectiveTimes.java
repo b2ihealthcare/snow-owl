@@ -17,13 +17,14 @@ package com.b2international.snowowl.core.date;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.Date;
 
 import javax.annotation.Nullable;
 
 /**
- * Effective Times should be always in GMT time. Use this class when working with effective times in any ontology, this will ensure the proper parsing
- * and formatting of them.
+ * Effective Times should be always in GMT time. Use this class when working with effective times in any ontology, this will ensure proper parsing and formatting of them.
  * 
  * @since 3.9
  */
@@ -155,7 +156,12 @@ public abstract class EffectiveTimes {
 		if (null == effectiveTime) {
 			return UNSET_EFFECTIVE_TIME;
 		}
-		return effectiveTime.getTime();
+		return effectiveTime.toInstant()
+			      .atZone(ZoneId.of("GMT"))
+			      .toLocalDate()
+			      .atStartOfDay()
+			      .toInstant(ZoneOffset.UTC)
+			      .toEpochMilli();
 	}
 
 	/**
