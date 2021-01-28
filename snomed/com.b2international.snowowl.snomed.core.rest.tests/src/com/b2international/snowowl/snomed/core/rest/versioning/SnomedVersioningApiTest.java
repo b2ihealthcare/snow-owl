@@ -22,7 +22,11 @@ import static com.b2international.snowowl.snomed.core.rest.CodeSystemVersionRest
 
 import org.junit.Test;
 
+import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.uri.CodeSystemURI;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
+import com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures;
 
 /**
  * @since 2.0
@@ -57,15 +61,19 @@ public class SnomedVersioningApiTest extends AbstractSnomedApiTest {
 	
 	@Test
 	public void createForcedVersionWithSameNameAsBranch() {
-		createVersion(SNOMED_SHORT_NAME, "VersionToRecreate", getNextAvailableEffectiveDateAsString(SNOMED_SHORT_NAME)).statusCode(201);
+		final String versionName = "VersionToRecreate";		
+		CodeSystemURI codeSystemVersionURI = new CodeSystemURI(String.join(Branch.SEPARATOR, SNOMED_SHORT_NAME, versionName));
+		
+		createVersion(SNOMED_SHORT_NAME, versionName, getNextAvailableEffectiveDateAsString(SNOMED_SHORT_NAME)).statusCode(201);
+		String conceptId = createConcept(codeSystemVersionURI, SnomedRestFixtures.createConceptRequestBody(Concepts.ROOT_CONCEPT));
 		
 		//Should fail to recreate version without the force flag
-		createVersion(SNOMED_SHORT_NAME, "VersionToRecreate", getNextAvailableEffectiveDateAsString(SNOMED_SHORT_NAME)).statusCode(409);
+		createVersion(SNOMED_SHORT_NAME, versionName, getNextAvailableEffectiveDateAsString(SNOMED_SHORT_NAME)).statusCode(409);
+		assertGetConcept(codeSystemVersionURI, conceptId, new String[0]).statusCode(200);
 		
 		//Should succeed to recreate version with the force flag set
-		createVersion(SNOMED_SHORT_NAME, "VersionToRecreate", getNextAvailableEffectiveDateAsString(SNOMED_SHORT_NAME), true).statusCode(201);
+		createVersion(SNOMED_SHORT_NAME, versionName, getNextAvailableEffectiveDateAsString(SNOMED_SHORT_NAME), true).statusCode(201);
+		assertGetConcept(codeSystemVersionURI, conceptId, new String[0]).statusCode(404);
 	}
 	
-	
-
 }
