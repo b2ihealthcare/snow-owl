@@ -54,7 +54,7 @@ import com.google.common.collect.Maps;
  * An abstract superclass of {@link IOperationLockManager} providing common methods.
  * 
  */
-public final class DatastoreOperationLockManager implements IOperationLockManager, IDisposableService {
+public final class DefaultOperationLockManager implements IOperationLockManager, IDisposableService {
 	
 	protected static final String ACQUIRE_FAILED_MESSAGE = "Could not acquire requested lock(s).";
 
@@ -76,7 +76,7 @@ public final class DatastoreOperationLockManager implements IOperationLockManage
 	
 	private int lastAssignedId = 0;
 	
-	public DatastoreOperationLockManager(Index index) {
+	public DefaultOperationLockManager(Index index) {
 		this.index = index;
 		this.index.admin().create();
 	}

@@ -40,13 +40,13 @@ public class DatastoreLockTests {
 
 		private static final String USER = "snowowl";
 	
-	private DatastoreOperationLockManager manager;
+	private DefaultOperationLockManager manager;
 
 	@Before
 	public void setup() {
 		final ObjectMapper mapper = JsonSupport.getDefaultObjectMapper();
 		final Index index = Indexes.createIndex("locks", mapper, new Mappings(DatastoreLockIndexEntry.class));
-		manager = new DatastoreOperationLockManager(index);
+		manager = new DefaultOperationLockManager(index);
 		manager.addLockTargetListener(new Slf4jOperationLockTargetListener());
 		manager.unlockAll();
 	}

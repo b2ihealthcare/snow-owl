@@ -65,7 +65,7 @@ public final class LocksCommand extends Command {
 	@Override
 	public void run(CommandLineStream out) {
 		final IOperationLockManager lockManager = ApplicationContext.getInstance().getService(IOperationLockManager.class);
-		final List<OperationLockInfo> locks = ((DatastoreOperationLockManager) lockManager).getLocks();
+		final List<OperationLockInfo> locks = ((DefaultOperationLockManager) lockManager).getLocks();
 		
 		if (locks.isEmpty()) {
 			out.println("No locks are currently granted on this server.");
@@ -159,8 +159,8 @@ public final class LocksCommand extends Command {
 		
 	}
 
-	private static DatastoreOperationLockManager getLockManager() {
-		return (DatastoreOperationLockManager) ApplicationContext.getInstance().getService(IOperationLockManager.class);
+	private static DefaultOperationLockManager getLockManager() {
+		return (DefaultOperationLockManager) ApplicationContext.getInstance().getService(IOperationLockManager.class);
 	}
 	
 	private static DatastoreLockTarget parseLockTarget(final String lockTargetOrAll) {
