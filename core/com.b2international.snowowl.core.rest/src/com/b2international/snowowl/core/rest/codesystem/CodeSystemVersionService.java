@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,8 @@ import com.b2international.snowowl.core.codesystem.CodeSystemVersion;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersionProperties;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersions;
+import com.b2international.snowowl.core.date.DateFormats;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemVersionNotFoundException;
 import com.b2international.snowowl.core.jobs.JobRequests;
@@ -57,7 +59,7 @@ public class CodeSystemVersionService {
 	private static final Function<CodeSystemVersionEntry, CodeSystemVersion> CODE_SYSTEM_VERSION_CONVERTER = (input) -> {
 		final CodeSystemVersion result = new CodeSystemVersion();
 		result.setDescription(input.getDescription());
-		result.setEffectiveDate(toDate(input.getEffectiveDate()));
+		result.setEffectiveDate(EffectiveTimes.format(input.getEffectiveDate(), DateFormats.SHORT));
 		result.setImportDate(toDate(input.getImportDate()));
 		result.setLastModificationDate(toDate(input.getLatestUpdateDate()));
 		result.setParentBranchPath(input.getParentBranchPath());

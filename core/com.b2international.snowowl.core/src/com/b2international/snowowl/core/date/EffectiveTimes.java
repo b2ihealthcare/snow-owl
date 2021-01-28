@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,15 +17,14 @@ package com.b2international.snowowl.core.date;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.Date;
 
 import javax.annotation.Nullable;
 
-import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-
 /**
- * Effective Times should be always in GMT time. Use this class when working with effective times in any ontology, this will ensure the proper parsing
- * and formatting of them.
+ * Effective Times should be always in GMT time. Use this class when working with effective times in any ontology, this will ensure proper parsing and formatting of them.
  * 
  * @since 3.9
  */
@@ -101,7 +100,7 @@ public abstract class EffectiveTimes {
 	 * @param effectiveTime
 	 *            - the effectiveTime to parse, cannot be <code>null</code>
 	 * @return - the parsed date
-	 * @throws SnowowlRuntimeException
+	 * @throws IllegalArgumentException
 	 *             - if a {@link ParseException} is throw during execution
 	 */
 	public static Date parse(String effectiveTime) {
@@ -116,7 +115,7 @@ public abstract class EffectiveTimes {
 	 * @param datePattern
 	 *            - the pattern to use, cannot be <code>null</code>
 	 * @return - the parsed date or <code>null</code> if the given effectiveTime value equals with the value {@link #UNSET_EFFECTIVE_TIME_LABEL}.
-	 * @throws SnowowlRuntimeException
+	 * @throws IllegalArgumentException
 	 *             - if a {@link ParseException} is throw during execution
 	 * @throws NullPointerException
 	 *             - if one of the arguments was <code>null</code>
@@ -157,7 +156,12 @@ public abstract class EffectiveTimes {
 		if (null == effectiveTime) {
 			return UNSET_EFFECTIVE_TIME;
 		}
-		return effectiveTime.getTime();
+		return effectiveTime.toInstant()
+			      .atZone(ZoneOffset.UTC)
+			      .toLocalDate()
+			      .atStartOfDay()
+			      .toInstant(ZoneOffset.UTC)
+			      .toEpochMilli();
 	}
 
 	/**

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.internal.locks;
 
 import java.io.Serializable;
 import java.text.MessageFormat;
+import java.util.Objects;
 
 import com.google.common.base.Preconditions;
 
@@ -26,6 +27,8 @@ import com.google.common.base.Preconditions;
  * 
  */
 public final class DatastoreLockContext implements Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 	private final String userId;
 
@@ -78,12 +81,7 @@ public final class DatastoreLockContext implements Serializable {
 	
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + userId.hashCode();
-		result = prime * result + description.hashCode();
-		result = prime * result + parentDescription.hashCode();
-		return result;
+		return Objects.hash(userId, description, parentDescription);
 	}
 
 	@Override

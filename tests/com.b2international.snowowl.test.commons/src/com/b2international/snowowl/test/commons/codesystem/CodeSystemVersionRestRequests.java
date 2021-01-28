@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.core.rest;
+package com.b2international.snowowl.test.commons.codesystem;
 
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests.createCodeSystem;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 
 import java.util.Calendar;
@@ -25,10 +26,9 @@ import java.util.SortedSet;
 import java.util.TimeZone;
 
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
-import com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests;
+import com.b2international.snowowl.test.commons.ApiTestConstants;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
@@ -49,13 +49,23 @@ public abstract class CodeSystemVersionRestRequests {
 	}
 	
 	public static ValidatableResponse getVersion(String shortName, String version) {
-		return givenAuthenticatedRequest(SnomedApiTestConstants.ADMIN_API)
+		return givenAuthenticatedRequest(ApiTestConstants.ADMIN_API)
 				.get("/codesystems/{shortName}/versions/{id}", shortName, version)
 				.then();
 	}
 
 	public static ValidatableResponse createVersion(String shortName, String version, String effectiveDate) {
-		return createVersion(shortName, version, effectiveDate, false);
+		Map<?, ?> requestBody = ImmutableMap.builder()
+				.put("version", version)
+				.put("description", version)
+				.put("effectiveDate", effectiveDate)
+				.build();
+
+		return givenAuthenticatedRequest(ApiTestConstants.ADMIN_API)
+				.contentType(ContentType.JSON)
+				.body(requestBody)
+				.post("/codesystems/{shortNameOrOid}/versions", shortName)
+				.then();
 	}
 	
 	public static ValidatableResponse createVersion(String shortName, String version, String effectiveDate, boolean force) {
@@ -65,8 +75,8 @@ public abstract class CodeSystemVersionRestRequests {
 				.put("effectiveDate", effectiveDate)
 				.put("force", force)
 				.build();
-
-		return givenAuthenticatedRequest(SnomedApiTestConstants.ADMIN_API)
+		
+		return givenAuthenticatedRequest(ApiTestConstants.ADMIN_API)
 				.contentType(ContentType.JSON)
 				.body(requestBody)
 				.post("/codesystems/{shortNameOrOid}/versions", shortName)
@@ -80,15 +90,15 @@ public abstract class CodeSystemVersionRestRequests {
 				.put("effectiveDate", effectiveDate)
 				.build();
 
-		return givenAuthenticatedRequest(SnomedApiTestConstants.ADMIN_API)
+		return givenAuthenticatedRequest(ApiTestConstants.ADMIN_API)
 				.contentType(ContentType.JSON)
 				.body(requestBody)
 				.post("/codesystems/{shortNameOrOid}/versions", shortName)
 				.then();
 	}
-
+	
 	public static ValidatableResponse getVersions(String shortName) {
-		return givenAuthenticatedRequest(SnomedApiTestConstants.ADMIN_API)
+		return givenAuthenticatedRequest(ApiTestConstants.ADMIN_API)
 				.and().contentType(ContentType.JSON)
 				.when()
 				.get("/codesystems/{shortName}/versions", shortName)
@@ -144,7 +154,7 @@ public abstract class CodeSystemVersionRestRequests {
 	}
 	
 	public static void createCodeSystemAndVersion(final IBranchPath branchPath, String codeSystemShortName, String versionId, String effectiveTime) {
-		CodeSystemRestRequests.createCodeSystem(branchPath, codeSystemShortName).statusCode(201);
+		createCodeSystem(branchPath, codeSystemShortName).statusCode(201);
 		createVersion(codeSystemShortName, versionId, effectiveTime).statusCode(201);
 	}
 

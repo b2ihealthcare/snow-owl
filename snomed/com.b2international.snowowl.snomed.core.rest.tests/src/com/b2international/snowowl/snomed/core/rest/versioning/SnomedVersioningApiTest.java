@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,9 @@
 package com.b2international.snowowl.snomed.core.rest.versioning;
 
 import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME;
-import static com.b2international.snowowl.snomed.core.rest.CodeSystemVersionRestRequests.createVersion;
-import static com.b2international.snowowl.snomed.core.rest.CodeSystemVersionRestRequests.getNextAvailableEffectiveDateAsString;
-import static com.b2international.snowowl.snomed.core.rest.CodeSystemVersionRestRequests.getVersion;
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.createVersion;
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getNextAvailableEffectiveDateAsString;
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getVersion;
 
 import org.junit.Test;
 

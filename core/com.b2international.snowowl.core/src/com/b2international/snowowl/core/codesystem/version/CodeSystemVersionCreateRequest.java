@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,8 +27,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import javax.validation.constraints.NotNull;
-
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.hibernate.validator.constraints.NotEmpty;
@@ -40,21 +38,20 @@ import com.b2international.index.revision.RevisionBranch;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
+import com.b2international.snowowl.core.date.DateFormats;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.Permission;
+import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContext;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockTarget;
-import com.b2international.snowowl.core.internal.locks.DatastoreOperationLockException;
-import com.b2international.snowowl.core.jobs.RemoteJob;
 import com.b2international.snowowl.core.locks.IOperationLockManager;
-import com.b2international.snowowl.core.locks.OperationLockException;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.BranchRequest;
 import com.b2international.snowowl.core.request.CommitResult;
@@ -81,9 +78,9 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 	@JsonProperty
 	String description;
 	
-	@NotNull
+	@NotEmpty
 	@JsonProperty
-	Date effectiveTime;
+	String effectiveTime;
 	
 	@NotEmpty
 	@JsonProperty
@@ -95,11 +92,12 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 	// local execution variables
 	private transient Multimap<DatastoreLockContext, DatastoreLockTarget> lockTargetsByContext;
 	private transient Map<String, CodeSystem> codeSystemsByShortName;
+	private transient Date effectiveTimeDate;
 	
 	@Override
 	public Boolean execute(ServiceProvider context) {
-		final RemoteJob job = context.service(RemoteJob.class);
-		final String user = job.getUser();
+		final String user = context.service(User.class).getUsername();
+		this.effectiveTimeDate = EffectiveTimes.parse(effectiveTime, DateFormats.SHORT);
 		
 		if (codeSystemsByShortName == null) {
 			codeSystemsByShortName = fetchAllCodeSystems(context);
@@ -153,7 +151,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 						new RevisionIndexReadRequest<CommitResult>(
 							context.service(RepositoryManager.class).get(codeSystemToVersion.getRepositoryId())
 								.service(VersioningRequestBuilder.class)
-								.build(new VersioningConfiguration(user, codeSystemToVersion.getShortName(), versionId, description, effectiveTime, force))
+								.build(new VersioningConfiguration(user, codeSystemToVersion.getShortName(), versionId, description, force, EffectiveTimes.getEffectiveTime(effectiveTimeDate)))
 						)
 					)
 				).execute(context);
@@ -203,7 +201,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 		}
 
 		Instant mostRecentVersionEffectiveTime = getMostRecentVersionEffectiveDateTime(context, codeSystem);
-		Instant requestEffectiveTime = effectiveTime.toInstant();
+		Instant requestEffectiveTime = effectiveTimeDate.toInstant();
 
 		if (!requestEffectiveTime.isAfter(mostRecentVersionEffectiveTime)) {
 			throw new BadRequestException("The specified '%s' effective time is invalid. Date should be after '%s'.", requestEffectiveTime, mostRecentVersionEffectiveTime);
@@ -225,26 +223,15 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 	}
 	
 	private void acquireLocks(ServiceProvider context, String user, Collection<CodeSystem> codeSystems) {
-		try {
-			this.lockTargetsByContext = HashMultimap.create();
+		this.lockTargetsByContext = HashMultimap.create();
+		
+		final DatastoreLockContext lockContext = new DatastoreLockContext(user, CREATE_VERSION);
+		for (CodeSystem codeSystem : codeSystems) {
+			final DatastoreLockTarget lockTarget = new DatastoreLockTarget(codeSystem.getRepositoryId(), codeSystem.getBranchPath());
 			
-			final DatastoreLockContext lockContext = new DatastoreLockContext(user, CREATE_VERSION);
-			for (CodeSystem codeSystem : codeSystems) {
-				final DatastoreLockTarget lockTarget = new DatastoreLockTarget(codeSystem.getRepositoryId(), codeSystem.getBranchPath());
-				
-				context.service(IOperationLockManager.class).lock(lockContext, IOperationLockManager.IMMEDIATE, lockTarget);
+			context.service(IOperationLockManager.class).lock(lockContext, IOperationLockManager.IMMEDIATE, lockTarget);
 
-				lockTargetsByContext.put(lockContext, lockTarget);
-			}
-			
-		} catch (final OperationLockException e) {
-			if (e instanceof DatastoreOperationLockException) {
-				throw new DatastoreOperationLockException(String.format("Failed to acquire locks for versioning because %s.", e.getMessage())); 
-			} else {
-				throw new DatastoreOperationLockException("Error while trying to acquire lock on repository for versioning.");
-			}
-		} catch (final InterruptedException e) {
-			throw new SnowowlRuntimeException(e);
+			lockTargetsByContext.put(lockContext, lockTarget);
 		}
 	}
 	

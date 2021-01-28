@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -32,7 +31,6 @@ import org.eclipse.xtext.util.Tuples;
 
 import com.b2international.commons.exceptions.ConflictException;
 import com.b2international.commons.exceptions.CycleDetectedException;
-import com.b2international.commons.exceptions.LockedException;
 import com.b2international.index.Hits;
 import com.b2international.index.Index;
 import com.b2international.index.IndexException;
@@ -59,7 +57,6 @@ import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContext;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockTarget;
-import com.b2international.snowowl.core.internal.locks.DatastoreOperationLockException;
 import com.b2international.snowowl.core.locks.IOperationLockManager;
 import com.b2international.snowowl.core.locks.Locks;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -278,7 +275,7 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 		IOperationLockManager locks = service(IOperationLockManager.class);
 		Commit commit = null;
 		try {
-			acquireLock(locks, lockContext, lockTarget);
+			locks.lock(lockContext, 1000L, lockTarget);
 			final long timestamp = service(TimestampProvider.class).getTimestamp();
 			log().info("Persisting changes to {}@{}", path(), timestamp);
 			commit = staging.commit(null, timestamp, author, commitComment);
@@ -301,20 +298,6 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 	
 	private void clear() {
 		resolvedObjectsById.clear();
-	}
-
-	private void acquireLock(IOperationLockManager locks, DatastoreLockContext lockContext, DatastoreLockTarget lockTarget) {
-		try {
-			locks.lock(lockContext, 1000L, lockTarget);
-		} catch (final DatastoreOperationLockException e) {
-			final DatastoreLockContext lockOwnerContext = e.getContext(lockTarget);
-			throw new LockedException(MessageFormat.format("Write access to {0} was denied because {1} is {2}. Please try again later.", 
-					lockTarget,
-					lockOwnerContext.getUserId(), 
-					lockOwnerContext.getDescription()));
-		} catch (InterruptedException e) {
-			throw new SnowowlRuntimeException(e);
-		}
 	}
 
 	@Override

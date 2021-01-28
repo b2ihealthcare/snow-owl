@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package com.b2international.snowowl.core.codesystem.version;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.index.Hits;
@@ -41,7 +40,6 @@ final class CodeSystemVersionSearchRequest
 	private static final long serialVersionUID = 2L;
 
 	private String versionId;
-	private Date effectiveDate;
 	private String parentBranchPath;
 	
 	/**
@@ -55,24 +53,30 @@ final class CodeSystemVersionSearchRequest
 		SHORT_NAME,
 		
 		/**
-		 * Filter versions by effective date starting from this value, inclusive.
+		 * Filter versions by created date starting from this value, inclusive.
 		 */
 		CREATED_AT_START,
 		
 		/**
+		 * Filter versions by created date ending with this value, inclusive.
+		 */
+		CREATED_AT_END,
+		
+		/**
+		 * Filter versions by effective date starting with this value, inclusive.
+		 */
+		EFFECTIVE_TIME_START,
+		
+		/**
 		 * Filter versions by effective date ending with this value, inclusive.
 		 */
-		CREATED_AT_END
+		EFFECTIVE_TIME_END,
 	}
 	
 	CodeSystemVersionSearchRequest() { }
 
 	void setVersionId(String versionId) {
 		this.versionId = versionId;
-	}
-	
-	void setEffectiveDate(Date effectiveDate) {
-		this.effectiveDate = effectiveDate;
 	}
 	
 	void setParentBranchPath(String parentBranchPath) {
@@ -91,9 +95,15 @@ final class CodeSystemVersionSearchRequest
 		if (!StringUtils.isEmpty(versionId)) {
 			query.filter(CodeSystemVersionEntry.Expressions.versionId(versionId));
 		}
+
+		if (containsKey(OptionKey.EFFECTIVE_TIME_START) || containsKey(OptionKey.EFFECTIVE_TIME_END)) {
+			final long from = containsKey(OptionKey.EFFECTIVE_TIME_START) ? get(OptionKey.EFFECTIVE_TIME_START, Long.class) : 0;
+			final long to = containsKey(OptionKey.EFFECTIVE_TIME_END) ? get(OptionKey.EFFECTIVE_TIME_END, Long.class) : Long.MAX_VALUE;
+			query.filter(CodeSystemVersionEntry.Expressions.effectiveDate(from, to));
+		}
 		
-		if (effectiveDate != null) {
-			query.filter(CodeSystemVersionEntry.Expressions.effectiveDate(effectiveDate));
+		if (containsKey(OptionKey.EFFECTIVE_TIME_START) || containsKey(OptionKey.EFFECTIVE_TIME_END)) {
+			
 		}
 		
 		if (!StringUtils.isEmpty(parentBranchPath)) {

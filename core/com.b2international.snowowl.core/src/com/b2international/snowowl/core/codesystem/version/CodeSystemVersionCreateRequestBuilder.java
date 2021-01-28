@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 package com.b2international.snowowl.core.codesystem.version;
-
-import java.util.Date;
 
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
@@ -32,8 +30,8 @@ public final class CodeSystemVersionCreateRequestBuilder
 	private String codeSystemShortName;
 	private String versionId;
 	private String description;
-	private Date effectiveTime;
 	private Boolean force = false;
+	private String effectiveTime;
 
 	public CodeSystemVersionCreateRequestBuilder setCodeSystemShortName(String codeSystemShortName) {
 		this.codeSystemShortName = codeSystemShortName;
@@ -45,7 +43,12 @@ public final class CodeSystemVersionCreateRequestBuilder
 		return getSelf();
 	}
 	
-	public CodeSystemVersionCreateRequestBuilder setEffectiveTime(Date effectiveTime) {
+	/**
+	 * The version effective time that the recently changed components will get during versioning. Format: yyyyMMdd.
+	 * @param effectiveTime
+	 * @return
+	 */
+	public CodeSystemVersionCreateRequestBuilder setEffectiveTime(String effectiveTime) {
 		this.effectiveTime = effectiveTime;
 		return getSelf();
 	}

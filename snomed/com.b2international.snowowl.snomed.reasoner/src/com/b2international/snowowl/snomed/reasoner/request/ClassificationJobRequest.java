@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import org.semanticweb.owlapi.reasoner.ReasonerInterruptedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.commons.exceptions.LockedException;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.branch.Branch;
@@ -41,7 +42,6 @@ import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.core.jobs.RemoteJob;
 import com.b2international.snowowl.core.locks.Locks;
-import com.b2international.snowowl.core.locks.OperationLockException;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
@@ -64,6 +64,8 @@ import com.b2international.snowowl.snomed.reasoner.ontology.DelegateOntologyFact
  * @since 5.7
  */
 final class ClassificationJobRequest implements Request<BranchContext, Boolean>, BranchAccessControl {
+
+	private static final long serialVersionUID = 1L;
 
 	private static final Logger LOGGER = LoggerFactory.getLogger("reasoner");
 	
@@ -126,7 +128,7 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean>,
 		final ReasonerTaxonomy taxonomy;
 		try (Locks locks = Locks.on(context).lock(DatastoreLockContextDescriptions.CLASSIFY, parentLockContext)) {
 			taxonomy = buildTaxonomy(revisionSearcher, context.service(SnomedCoreConfiguration.class).getReasonerExcludedModuleIds(), concreteDomainSupported);
-		} catch (final OperationLockException e) {
+		} catch (final LockedException e) {
 			throw new ReasonerApiException("Couldn't acquire exclusive access to terminology store for classification; %s", e.getMessage(), e);
 		}
 		
