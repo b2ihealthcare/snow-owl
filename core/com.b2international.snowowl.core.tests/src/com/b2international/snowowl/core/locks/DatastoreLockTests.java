@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.b2international.commons.exceptions.LockedException;
 import com.b2international.index.Index;
 import com.b2international.index.Indexes;
 import com.b2international.index.mapping.Mappings;
@@ -55,14 +56,9 @@ public class DatastoreLockTests {
 		final DatastoreLockContext context = createContext(USER, DatastoreLockContextDescriptions.MAINTENANCE);
 		final DatastoreLockTarget allLockTarget = DatastoreLockTarget.ALL;
 		
-		try {
-			manager.lock(context, TIMEOUT, allLockTarget);
-			checkIfLockExists(context, true, allLockTarget);
-			manager.unlockAll();
-		} catch (OperationLockException | InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		manager.lock(context, TIMEOUT, allLockTarget);
+		checkIfLockExists(context, true, allLockTarget);
+		manager.unlockAll();
 	}
 	
 	@Test
@@ -70,15 +66,11 @@ public class DatastoreLockTests {
 		final DatastoreLockContext context = createContext(USER, DatastoreLockContextDescriptions.MAINTENANCE);
 		final DatastoreLockTarget target = new DatastoreLockTarget("snomedStore", "MAIN");
 		
-		try {
-			manager.lock(context, TIMEOUT, target);
-			checkIfLockExists(context, true, target);
+		manager.lock(context, TIMEOUT, target);
+		checkIfLockExists(context, true, target);
 
-			manager.unlock(context, target);
-			checkIfLockExists(context, false, target);
-		} catch (OperationLockException | InterruptedException e) {
-			e.printStackTrace();
-		}
+		manager.unlock(context, target);
+		checkIfLockExists(context, false, target);
 	}
 	
 	@Test
@@ -87,45 +79,28 @@ public class DatastoreLockTests {
 		final DatastoreLockTarget target1 = new DatastoreLockTarget("snomedStore", "MAIN");
 		final DatastoreLockTarget target2 = new DatastoreLockTarget("loincStore", "MAIN");
 		
-		try {
-			manager.lock(context, TIMEOUT, target1, target2);
-			checkIfLockExists(context, true, target1, target2);
-			
-			manager.unlockAll();
-			checkIfLockExists(context, false, target1, target2);
-		} catch (OperationLockException | InterruptedException e) {
-			e.printStackTrace();
-		}
+		manager.lock(context, TIMEOUT, target1, target2);
+		checkIfLockExists(context, true, target1, target2);
+		
+		manager.unlockAll();
+		checkIfLockExists(context, false, target1, target2);
 	}
 	
-	@Test(expected = OperationLockException.class)
-	public void testLockAllNotAbleToLockAnother() throws OperationLockException {
+	@Test(expected = LockedException.class)
+	public void testLockAllNotAbleToLockAnother() {
 		final DatastoreLockContext context = createContext(USER, DatastoreLockContextDescriptions.MAINTENANCE);
 		final DatastoreLockTarget allLockTarget = DatastoreLockTarget.ALL;
 
-		try {
-			manager.lock(context, 1_000L, allLockTarget);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-
-		try {
-			manager.lock(context, 1_000L, allLockTarget);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+		manager.lock(context, 1_000L, allLockTarget);
+		manager.lock(context, 1_000L, allLockTarget);
 	}
 	
 	@Test
 	public void testLockBranchAndRepository() {
 		final DatastoreLockContext context = createContext(USER, DatastoreLockContextDescriptions.CREATE_VERSION);
 		final DatastoreLockTarget target = new DatastoreLockTarget("snomedStore", "MAIN");
-		try {
-			manager.lock(context, 10_000L, target);
-			checkIfLockExists(context, true, target);
-		} catch (OperationLockException | InterruptedException e) {
-			e.printStackTrace();
-		}
+		manager.lock(context, 10_000L, target);
+		checkIfLockExists(context, true, target);
 	}
 	
 	private DatastoreLockContext createContext(final String user, final String description) {

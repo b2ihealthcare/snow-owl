@@ -112,13 +112,8 @@ public final class LocksCommand extends Command {
 			
 			final IOperationLockManager lockManager = getLockManager();
 			final DatastoreLockContext context = new DatastoreLockContext(User.SYSTEM.getUsername(), DatastoreLockContextDescriptions.MAINTENANCE);
-			
-			try {
-				lockManager.lock(context, 3000L, target);
-				out.println("Acquired lock for %s.", target);
-			} catch (final OperationLockException | InterruptedException e) {
-				out.println(e);
-			}
+			lockManager.lock(context, 3000L, target);
+			out.println("Acquired lock for %s.", target);
 		}
 		
 	}
@@ -150,19 +145,15 @@ public final class LocksCommand extends Command {
 				}
 			}
 
-			try {
-				if (lockId != null) {
-					getLockManager().unlockById(lockId);
-					out.println("Released lock by ID '%s'.", lockId);
-				} else if (target.equals(DatastoreLockTarget.ALL)) {
-					getLockManager().unlockAll();
-					out.println("Released ALL locks.");
-				} else {
-					getLockManager().unlock(CONSOLE_CONTEXT, target);
-					out.println("Released lock previously acquired for resource '%s'.", target);
-				}
-			} catch (final OperationLockException e) {
-				out.print(e);
+			if (lockId != null) {
+				getLockManager().unlockById(lockId);
+				out.println("Released lock by ID '%s'.", lockId);
+			} else if (target.equals(DatastoreLockTarget.ALL)) {
+				getLockManager().unlockAll();
+				out.println("Released ALL locks.");
+			} else {
+				getLockManager().unlock(CONSOLE_CONTEXT, target);
+				out.println("Released lock previously acquired for resource '%s'.", target);
 			}
 		}
 		

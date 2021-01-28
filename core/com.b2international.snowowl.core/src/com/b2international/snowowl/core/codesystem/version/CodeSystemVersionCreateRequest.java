@@ -38,7 +38,6 @@ import com.b2international.index.revision.RevisionBranch;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
@@ -210,19 +209,15 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 	}
 	
 	private void acquireLocks(ServiceProvider context, String user, Collection<CodeSystem> codeSystems) {
-		try {
-			this.lockTargetsByContext = HashMultimap.create();
+		this.lockTargetsByContext = HashMultimap.create();
+		
+		final DatastoreLockContext lockContext = new DatastoreLockContext(user, CREATE_VERSION);
+		for (CodeSystem codeSystem : codeSystems) {
+			final DatastoreLockTarget lockTarget = new DatastoreLockTarget(codeSystem.getRepositoryId(), codeSystem.getBranchPath());
 			
-			final DatastoreLockContext lockContext = new DatastoreLockContext(user, CREATE_VERSION);
-			for (CodeSystem codeSystem : codeSystems) {
-				final DatastoreLockTarget lockTarget = new DatastoreLockTarget(codeSystem.getRepositoryId(), codeSystem.getBranchPath());
-				
-				context.service(IOperationLockManager.class).lock(lockContext, IOperationLockManager.IMMEDIATE, lockTarget);
+			context.service(IOperationLockManager.class).lock(lockContext, IOperationLockManager.IMMEDIATE, lockTarget);
 
-				lockTargetsByContext.put(lockContext, lockTarget);
-			}
-		} catch (final InterruptedException e) {
-			throw new SnowowlRuntimeException(e);
+			lockTargetsByContext.put(lockContext, lockTarget);
 		}
 	}
 	

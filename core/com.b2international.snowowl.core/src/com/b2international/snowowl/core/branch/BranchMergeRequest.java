@@ -24,7 +24,6 @@ import com.b2international.index.revision.Commit;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.core.locks.Locks;
-import com.b2international.snowowl.core.locks.OperationLockException;
 import com.b2international.snowowl.core.merge.ComponentRevisionConflictProcessor;
 import com.google.common.base.Strings;
 
@@ -71,8 +70,6 @@ public final class BranchMergeRequest extends AbstractBranchChangeRequest {
 				.merge();
 		} catch (BranchMergeException e) {
 			throw new ConflictException(Strings.isNullOrEmpty(e.getMessage()) ? "Cannot merge source '%s' into target '%s'." : e.getMessage(), source.path(), target.path(), e);
-		} catch (OperationLockException e) {
-			throw new ConflictException("Lock exception caught while merging source '%s' into target '%s'. %s", source.path(), target.path(), e.getMessage());
 		}
 	}
 	

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,20 +30,19 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.exceptions.LockedException;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.Repositories;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.core.RepositoryManager;
-import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContext;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockTarget;
 import com.b2international.snowowl.core.locks.IOperationLockManager;
-import com.b2international.snowowl.core.locks.OperationLockException;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
@@ -208,7 +207,7 @@ public class RepositoryRestService extends AbstractRestService {
 	private void doUnlock(final DatastoreLockContext context, final DatastoreLockTarget target) {
 		try {
 			getLockManager().unlock(context, target);
-		} catch (final OperationLockException e) {
+		} catch (final LockedException e) {
 			throw new BadRequestException(e.getMessage());
 		}
 	}
@@ -216,13 +215,8 @@ public class RepositoryRestService extends AbstractRestService {
 	private void doLock(final int timeoutMillis, final DatastoreLockContext context, final DatastoreLockTarget target) {
 		try {
 			getLockManager().lock(context, timeoutMillis, target);
-		} catch (final OperationLockException e) {
-			final DatastoreLockContext conflictingContext = e.getContext(target);
-			throw new BadRequestException("Failed to acquire lock for all repositories because %s is %s.", 
-					conflictingContext.getUserId(), 
-					conflictingContext.getDescription());
-		} catch (InterruptedException e) {
-			throw new SnowowlRuntimeException(e.getMessage());
+		} catch (final LockedException e) {
+			throw new BadRequestException(e.getMessage());
 		}
 	}
 	
