@@ -46,6 +46,9 @@ try {
 			string(name: 'extension', value: 'tar.gz'),
 			string(name: 'imageClassifier', value: 'oss'),
 			string(name: 'gitRevision', value: revision),
+			string(name: 'nexusUrl', value: 'http://nexus:8081'),
+			string(name: 'NEXUS_VERSION', value: '3'),
+			string(name: 'remote_nexus_domain', value: 'https://nexus.b2i.sg'),
 		], quietPeriod: 1, wait: false
 
 	}
