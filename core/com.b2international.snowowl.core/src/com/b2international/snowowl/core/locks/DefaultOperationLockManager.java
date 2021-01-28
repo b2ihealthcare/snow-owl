@@ -27,6 +27,8 @@ import java.util.stream.Collectors;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.eclipse.core.runtime.ListenerList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.exceptions.LockedException;
 import com.b2international.index.Hits;
@@ -56,7 +58,9 @@ import com.google.common.collect.Maps;
  */
 public final class DefaultOperationLockManager implements IOperationLockManager, IDisposableService {
 	
-	protected static final String ACQUIRE_FAILED_MESSAGE = "Could not acquire requested lock(s).";
+	private static final Logger LOG = LoggerFactory.getLogger(DefaultOperationLockManager.class);
+	
+	private static final String ACQUIRE_FAILED_MESSAGE = "Could not acquire requested lock(s)";
 
 	private static final String RELEASE_FAILED_MESSAGE = "Could not release requested lock(s).";
 
@@ -70,7 +74,7 @@ public final class DefaultOperationLockManager implements IOperationLockManager,
 	
 	private final Index index;
 
-	private final ListenerList listenerList = new ListenerList();
+	private final ListenerList<IOperationLockTargetListener> listenerList = new ListenerList<>();
 	
 	private final BitSet assignedIds = new BitSet(EXPECTED_LOCKS);
 	
@@ -115,7 +119,7 @@ public final class DefaultOperationLockManager implements IOperationLockManager,
 						final long remainingTimeoutMillis = timeoutMillis - (getCurrentTimeMillis() - startTimeMillis);
 						
 						if (remainingTimeoutMillis < 1L) {
-							throwLockedException(ACQUIRE_FAILED_MESSAGE, alreadyLockedTargets);
+							throwLockedException(ACQUIRE_FAILED_MESSAGE, context, alreadyLockedTargets);
 						} else {
 							syncObject.wait(remainingTimeoutMillis);
 						}
@@ -148,7 +152,7 @@ public final class DefaultOperationLockManager implements IOperationLockManager,
 			}
 
 			if (!notUnlockedTargets.isEmpty()) {
-				throwLockedException(RELEASE_FAILED_MESSAGE, notUnlockedTargets);
+				LOG.warn(buildMessage(RELEASE_FAILED_MESSAGE, context, notUnlockedTargets));
 			}
 
 			for (final DatastoreLockTarget targetToUnlock : targets) {
@@ -264,32 +268,33 @@ public final class DefaultOperationLockManager implements IOperationLockManager,
 			for (final DatastoreLockTarget target : targets) {
 				alreadyLockedTargets.put(target, disposedContext);
 			}
-			throwLockedException(ACQUIRE_FAILED_MESSAGE, alreadyLockedTargets);
+			throwLockedException(ACQUIRE_FAILED_MESSAGE, context, alreadyLockedTargets);
 		}
 		
 	}
 
-	private void throwLockedException(String message, final Map<DatastoreLockTarget, DatastoreLockContext> targetMap) {
+	private void throwLockedException(String message, final DatastoreLockContext requestRootContext, final Map<DatastoreLockTarget, DatastoreLockContext> targetMap) {
+		throw new LockedException(buildMessage(message, requestRootContext, targetMap));
+	}
+
+	private String buildMessage(String message, final DatastoreLockContext requestRootContext, final Map<DatastoreLockTarget, DatastoreLockContext> targetMap) {
 		final FluentIterable<DatastoreLockContext> contexts = FluentIterable.from(targetMap.values());
-		final Optional<DatastoreLockContext> rootContext = contexts.firstMatch(input -> DatastoreLockContextDescriptions.ROOT.equals(input.getParentDescription()));
 		
-		DatastoreLockContext context = null;
-		if (rootContext.isPresent()) {
-			context = rootContext.get();
+		DatastoreLockContext lockRootContext = null;
+		final Optional<DatastoreLockContext> currentLockRootContext = contexts.firstMatch(input -> DatastoreLockContextDescriptions.ROOT.equals(input.getParentDescription()));
+		if (currentLockRootContext.isPresent()) {
+			lockRootContext = currentLockRootContext.get();
 		} else {
 			if (contexts.first().isPresent()) {
-				context = contexts.first().get();
+				lockRootContext = contexts.first().get();
 			}
 		}
 		
-		final String exMessage;
-		if (context != null) {
-			exMessage = String.join(" ", message, context.getUserId(), "is", context.getDescription());
+		if (lockRootContext != null) {
+			return String.join(" ", message, "while", requestRootContext.getDescription(), "because", lockRootContext.getUserId(), "is", lockRootContext.getDescription());
 		} else {
-			exMessage = message;
+			return message;
 		}
-	
-		throw new LockedException(exMessage);
 	}
 
 	private boolean canContextLock(final DatastoreLockContext context, final IOperationLock existingLock) {
@@ -367,14 +372,12 @@ public final class DefaultOperationLockManager implements IOperationLockManager,
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	private void fireTargetAcquired(final DatastoreLockTarget target, final DatastoreLockContext context) {
 		for (final Object listener : listenerList.getListeners()) {
 			((IOperationLockTargetListener) listener).targetAcquired(target, context);
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	private void fireTargetReleased(final DatastoreLockTarget target, final DatastoreLockContext context) {
 		for (final Object listener : listenerList.getListeners()) {
 			((IOperationLockTargetListener) listener).targetReleased(target, context);
@@ -429,10 +432,6 @@ public final class DefaultOperationLockManager implements IOperationLockManager,
 					.build()
 					);
 		});
-	}
-	
-	private DatastoreLockIndexEntry get(String lockId) {
-		return index.read(searcher -> searcher.get(DatastoreLockIndexEntry.class, lockId));
 	}
 	
 	private void put(String lockId, DatastoreLockIndexEntry lock) {
