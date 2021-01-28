@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.List;
 import java.util.Map;
 
-import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.commons.exceptions.LockedException;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.identity.User;
@@ -90,7 +90,7 @@ public final class Locks implements AutoCloseable {
 	private final DatastoreLockContext lockContext;
 	private final Map<String, DatastoreLockTarget> lockTargets;
 	
-	private Locks(RepositoryContext context, String userId, String description, String parentLockContext, List<String> branchesToLock) throws OperationLockException {
+	private Locks(RepositoryContext context, String userId, String description, String parentLockContext, List<String> branchesToLock) throws LockedException {
 		this.repositoryId = context.id();
 		this.lockManager = context.service(IOperationLockManager.class);
 		this.lockContext = new DatastoreLockContext(userId, description, Strings.isNullOrEmpty(parentLockContext) ? ROOT : parentLockContext);
@@ -100,29 +100,25 @@ public final class Locks implements AutoCloseable {
 			this.lockTargets.put(branch, new DatastoreLockTarget(repositoryId, branch));	
 		}
 		
-		try {
-			lock();
-		} catch (InterruptedException e) {
-			throw new SnowowlRuntimeException(e);
-		}
+		lock();
 	}
 	
 	public String lockContext() {
 		return lockContext.getDescription();
 	}
 
-	private void lock() throws OperationLockException, InterruptedException {
+	private void lock() {
 		lockManager.lock(lockContext, IOperationLockManager.IMMEDIATE, lockTargets.values());
 	}
 	
-	public void unlock(String path) throws OperationLockException {
+	public void unlock(String path) {
 		if (lockTargets.containsKey(path)) {
 			lockManager.unlock(lockContext, lockTargets.get(path));
 			lockTargets.remove(path); // Not reached if an exception is thrown above
 		}
 	}
 
-	public void unlockAll() throws OperationLockException {
+	public void unlockAll() {
 		if (!lockTargets.isEmpty()) {
 			lockManager.unlock(lockContext, lockTargets.values());
 			lockTargets.clear(); // Not reached if an exception is thrown above
@@ -130,7 +126,7 @@ public final class Locks implements AutoCloseable {
 	}
 	
 	@Override
-	public void close() throws OperationLockException {
+	public void close() {
 		unlockAll();
 	}
 }

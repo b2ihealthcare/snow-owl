@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 package com.b2international.snowowl.core.rest.codesystem;
-
-import java.util.Date;
 
 import javax.validation.constraints.NotNull;
 
@@ -33,7 +31,7 @@ public class VersionInput implements CodeSystemVersionProperties {
 	private String description = "";
 	
 	@NotNull
-	private Date effectiveDate;
+	private String effectiveDate;
 	
 	@Override
 	public String getDescription() {
@@ -41,7 +39,7 @@ public class VersionInput implements CodeSystemVersionProperties {
 	}
 	
 	@Override
-	public Date getEffectiveDate() {
+	public String getEffectiveDate() {
 		return effectiveDate;
 	}
 	
@@ -54,7 +52,7 @@ public class VersionInput implements CodeSystemVersionProperties {
 		this.description = description;
 	}
 	
-	public void setEffectiveDate(Date effectiveDate) {
+	public void setEffectiveDate(String effectiveDate) {
 		this.effectiveDate = effectiveDate;
 	}
 	

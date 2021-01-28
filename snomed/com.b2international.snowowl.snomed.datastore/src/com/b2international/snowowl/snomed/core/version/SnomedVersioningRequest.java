@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -64,6 +63,8 @@ import com.google.common.collect.Multimap;
  * </ul>
  */
 public final class SnomedVersioningRequest extends VersioningRequest {
+
+	private static final long serialVersionUID = 1L;
 
 	private static final List<Class<? extends SnomedComponentDocument>> CORE_COMPONENT_TYPES = ImmutableList.of(
 		SnomedConceptDocument.class,
@@ -114,7 +115,7 @@ public final class SnomedVersioningRequest extends VersioningRequest {
 		final Multimap<String, String> componentIdsByReferringModule = HashMultimap.create();
 		
 		log.info("Publishing SNOMED CT components [effectiveTime: {}]...", EffectiveTimes.format(config().getEffectiveTime()));
-		long effectiveTime = EffectiveTimes.getEffectiveTime(config().getEffectiveTime());
+		long effectiveTime = config().getEffectiveTime();
 		
 		for (SnomedDocument componentToVersion : componentsToVersion) {
 			
@@ -206,7 +207,7 @@ public final class SnomedVersioningRequest extends VersioningRequest {
 		
 	}
 	
-	private void adjustDependencyRefSetMembers(TransactionContext context, Multimap<String, String> moduleDependencies, Map<String, Long> moduleToLatestEffectiveTime, Date effectiveTime) {
+	private void adjustDependencyRefSetMembers(TransactionContext context, Multimap<String, String> moduleDependencies, Map<String, Long> moduleToLatestEffectiveTime, long effectiveTime) {
 		// Update existing, add new members to moduleDependencyRefSet
 		if (!CompareUtils.isEmpty(moduleDependencies)) {
 			moduleDependencies.entries().forEach((entry) -> {
@@ -247,12 +248,12 @@ public final class SnomedVersioningRequest extends VersioningRequest {
 					updatedMember = SnomedRefSetMemberIndexEntry.builder(existingLatestMember);
 				}
 
-				final long targetEffectiveTime = moduleToLatestEffectiveTime.get(target) == EffectiveTimes.UNSET_EFFECTIVE_TIME ? effectiveTime.getTime() : moduleToLatestEffectiveTime.get(target);
+				final long targetEffectiveTime = moduleToLatestEffectiveTime.get(target) == EffectiveTimes.UNSET_EFFECTIVE_TIME ? effectiveTime : moduleToLatestEffectiveTime.get(target);
 				
 				updatedMember
 					.released(true)
-					.effectiveTime(effectiveTime.getTime())
-					.field(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME, effectiveTime.getTime())
+					.effectiveTime(effectiveTime)
+					.field(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME, effectiveTime)
 					.field(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME, targetEffectiveTime);
 				
 				if (existingLatestMember == null) {
