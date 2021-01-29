@@ -593,6 +593,7 @@ public final class ReasonerTaxonomyBuilder {
 						unionGroup,
 						universal,
 						statementId,
+						null, // moduleId is not supported here
 						released,
 						hasStatedPair);
 		
@@ -692,6 +693,7 @@ public final class ReasonerTaxonomyBuilder {
 						unionGroup,
 						universal,
 						statementId,
+						null, // moduleId is not supported here
 						released,
 						false); // Relationships added through this method have no stated pair
 				
@@ -754,6 +756,7 @@ public final class ReasonerTaxonomyBuilder {
 						unionGroup,
 						universal,
 						statementId,
+						null, // moduleId is not supported here
 						false,  // XXX: "injected" concepts will not set these flags correctly, but they should
 						false);  // only be used for equivalence checks
 
