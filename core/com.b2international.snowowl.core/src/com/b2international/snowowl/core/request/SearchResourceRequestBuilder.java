@@ -128,6 +128,7 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	/**
 	 * Sets the request to return the entire results set as a single 'page'.
 	 * @return this builder instance
+	 * @deprecated - will be removed in 8.0, keeping it for backward compatibility, use the paging API if you need all hits, not just the top N 
 	 */
 	public final B all() {
 		return setLimit(MAX_LIMIT);
