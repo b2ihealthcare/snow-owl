@@ -32,17 +32,15 @@ import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.StagingArea;
 import com.b2international.index.revision.StagingArea.RevisionDiff;
 import com.b2international.index.revision.StagingArea.RevisionPropertyDiff;
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.repository.ChangeSetProcessorBase;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.*;
+import com.b2international.snowowl.snomed.datastore.request.ModuleRequest.ModuleIdProvider;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
@@ -175,6 +173,10 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 			}
 			
 			// inactivate relationships of inactivated concepts
+			
+			ServiceProvider context = (ServiceProvider) staging.getContext();
+			ModuleIdProvider moduleIdProvider = context.service(ModuleIdProvider.class);
+			
 			final Map<ObjectId, RevisionDiff> changedRevisions = staging.getChangedRevisions();
 			for (Hits<SnomedRelationshipIndexEntry> hits : searcher.scroll(Query.select(SnomedRelationshipIndexEntry.class)
 					.where(Expressions.builder()
@@ -190,11 +192,13 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 						stageChange(relationship, SnomedRelationshipIndexEntry.builder((SnomedRelationshipIndexEntry) changedRevisions.get(relationship.getObjectId()).newRevision)
 								.active(false)
 								.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
+								.moduleId(moduleIdProvider.apply(relationship))
 								.build());
 					} else {
 						stageChange(relationship, SnomedRelationshipIndexEntry.builder(relationship)
 								.active(false)
 								.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
+								.moduleId(moduleIdProvider.apply(relationship))
 								.build());
 					}
 				});
