@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package com.b2international.snowowl.snomed.datastore.request;
 import java.io.Serializable;
 import java.util.function.Function;
 
-import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
@@ -26,7 +26,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 /**
  * @since 6.17
  */
-public final class ModuleRequest<R> extends DelegatingRequest<TransactionContext, TransactionContext, R> {
+public final class ModuleRequest<R> extends DelegatingRequest<BranchContext, BranchContext, R> {
 
 	public interface ModuleIdProvider extends Function<SnomedDocument, String>, Serializable { }
 
@@ -34,11 +34,11 @@ public final class ModuleRequest<R> extends DelegatingRequest<TransactionContext
 	
 	private final ModuleIdProvider moduleIdFunction;
 
-	public ModuleRequest(final Request<TransactionContext, R> next) {
+	public ModuleRequest(final Request<BranchContext, R> next) {
 		this(next, null);
 	}
 	
-	public ModuleRequest(final Request<TransactionContext, R> next, final String defaultModuleId) {
+	public ModuleRequest(final Request<BranchContext, R> next, final String defaultModuleId) {
 		super(next);
 		
 		// Use the component's module ID if no default value has been given
@@ -50,7 +50,7 @@ public final class ModuleRequest<R> extends DelegatingRequest<TransactionContext
 	}
 
 	@Override
-	public R execute(final TransactionContext context) {
+	public R execute(final BranchContext context) {
 		return next(context.inject()
 				.bind(ModuleIdProvider.class, moduleIdFunction)
 				.build());
