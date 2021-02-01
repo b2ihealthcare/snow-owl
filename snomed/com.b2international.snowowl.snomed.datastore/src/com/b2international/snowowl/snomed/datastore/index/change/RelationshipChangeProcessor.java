@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.b2international.index.Hits;
-import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.StagingArea;
 import com.b2international.snowowl.core.api.IComponent;
@@ -34,7 +32,6 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationsh
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Builder;
 import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberChange;
 import com.b2international.snowowl.snomed.datastore.index.update.ReferenceSetMembershipUpdater;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 
@@ -68,14 +65,8 @@ public class RelationshipChangeProcessor extends ChangeSetProcessorBase {
 		referencedRelationshipIds.removeAll(newRelationshipIds);
 		changedRelationshipIds.addAll(referencedRelationshipIds);
 		
-		final Query<SnomedRelationshipIndexEntry> query = Query.select(SnomedRelationshipIndexEntry.class)
-				.where(SnomedRelationshipIndexEntry.Expressions.ids(changedRelationshipIds))
-				.limit(changedRelationshipIds.size())
-				.build();
-		
-		final Hits<SnomedRelationshipIndexEntry> changedRelationshipHits = searcher.search(query);
-		final ImmutableMap<String, SnomedRelationshipIndexEntry> changedRelationshipRevisionsById = Maps
-				.uniqueIndex(changedRelationshipHits, IComponent::getId);
+		final Iterable<SnomedRelationshipIndexEntry> changedRelationshipHits = searcher.get(SnomedRelationshipIndexEntry.class, changedRelationshipIds);
+		final Map<String, SnomedRelationshipIndexEntry> changedRelationshipRevisionsById = Maps.uniqueIndex(changedRelationshipHits, IComponent::getId);
 		
 		for (final String id : changedRelationshipIds) {
 			final SnomedRelationshipIndexEntry currentDoc = changedRelationshipRevisionsById.get(id);

@@ -99,9 +99,12 @@ public final class ComponentEffectiveTimeRestoreChangeProcessor extends ChangeSe
 						if (canRestoreEffectiveTime(changedRevision, previousVersion)) {
 							SnomedDocument restoredRevision = toBuilder(changedRevision).effectiveTime(previousVersion.getEffectiveTime()).build();
 							stageChange(changedRevision, restoredRevision);
+							// successfully restored, remove from remaining item list
+							componentsByType.remove(componentType, changedRevision);
+						} else {
+							// register as a component that had an earlier version and can be ignored from the warning message beneath even if there were no prev versions to restore ET from
+							componentHadPreviousVersionOnAnyBranch.put(componentType, changedRevision.getId());
 						}
-						// register as component that had an earlier version and
-						componentHadPreviousVersionOnAnyBranch.put(componentType, changedRevision.getId());
 					}
 				}
 			}

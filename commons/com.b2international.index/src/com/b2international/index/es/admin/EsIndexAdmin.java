@@ -641,11 +641,12 @@ public final class EsIndexAdmin implements IndexAdmin {
 
 			try {
 				
-				final BulkByScrollResponse response; 
+				final BulkByScrollResponse response;
+				final int batchSize = Integer.parseInt((String) settings.get(IndexClientFactory.RESULT_WINDOW_KEY));
 				if ("update".equals(command)) {
-					response = client.updateByQuery(getTypeIndex(mapping), (int) settings.get(IndexClientFactory.BULK_ACTIONS_SIZE), script, getConcurrencyLevel(), query);
+					response = client.updateByQuery(getTypeIndex(mapping), batchSize, script, getConcurrencyLevel(), query);
 				} else if ("delete".equals(command)) {
-					response = client.deleteByQuery(getTypeIndex(mapping), (int) settings.get(IndexClientFactory.BULK_ACTIONS_SIZE), getConcurrencyLevel(), query);
+					response = client.deleteByQuery(getTypeIndex(mapping), batchSize, getConcurrencyLevel(), query);
 				} else {
 					throw new UnsupportedOperationException("Not implemented command: " + command);
 				}

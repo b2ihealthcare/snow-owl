@@ -72,7 +72,18 @@ public interface RevisionConflictProcessor {
 	 * @param staging - the current state of the staging area
 	 * @return - a list of additional conflicts to report or empty collection if there are no domain specific conflicts, never <code>null</code>.
 	 */
-	 List<Conflict> checkConflicts(StagingArea staging, RevisionBranchChangeSet fromChanges, RevisionBranchChangeSet toChanges);
+	List<Conflict> checkConflicts(StagingArea staging, RevisionBranchChangeSet fromChanges, RevisionBranchChangeSet toChanges);
+	
+	/**
+	 * Filters conflicts when certain conditions are met (eg. donated content is reported as a conflict, which can be resolved automatically during upgrades).
+	 * 
+	 * @param staging - the current state of the staging area
+	 * @param conflicts - the conflicts to filter
+	 * @return the remaining conflicts after detecting and/or removing automatically resolved ones
+	 */
+	default List<Conflict> filterConflicts(StagingArea staging, List<Conflict> conflicts) {
+		return conflicts;
+	}
 	
 	/**
 	 * @since 7.0

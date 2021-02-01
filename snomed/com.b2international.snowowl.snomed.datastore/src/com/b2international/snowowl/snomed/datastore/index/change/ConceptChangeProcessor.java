@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,6 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import com.b2international.commons.collect.LongSets;
-import com.b2international.index.query.Query;
 import com.b2international.index.revision.ObjectId;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.StagingArea;
@@ -146,11 +145,8 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 			final Set<String> missingCurrentConceptIds = dirtyConceptIds.stream()
 					.filter(id -> !changedRevisions.containsKey(ObjectId.of(SnomedConceptDocument.class, id)))
 					.collect(Collectors.toSet());
-			final Query<SnomedConceptDocument> query = Query.select(SnomedConceptDocument.class)
-					.where(SnomedConceptDocument.Expressions.ids(missingCurrentConceptIds))
-					.limit(missingCurrentConceptIds.size())
-					.build();
-			final Map<String, SnomedConceptDocument> currentConceptDocumentsById = newHashMap(Maps.uniqueIndex(searcher.search(query), IComponent::getId));
+
+			final Map<String, SnomedConceptDocument> currentConceptDocumentsById = newHashMap(Maps.uniqueIndex(searcher.get(SnomedConceptDocument.class, missingCurrentConceptIds), IComponent::getId));
 			dirtyConceptIds.stream()
 				.map(id -> ObjectId.of(SnomedConceptDocument.class, id))
 				.filter(changedRevisions::containsKey)
@@ -317,7 +313,7 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 			.refSetType(newOrDirtyRevision != null ? newOrDirtyRevision.getRefSetType() : cleanRevision.getRefSetType())
 			.referencedComponentType(newOrDirtyRevision != null ? newOrDirtyRevision.getReferencedComponentType() : cleanRevision.getReferencedComponentType())
 			.mapTargetComponentType(newOrDirtyRevision != null ? newOrDirtyRevision.getMapTargetComponentType() : cleanRevision.getMapTargetComponentType())
-			.doi(doiData.getDoiScore(id));
+			.doi(doiData.getDoiScore(idLong));
 		
 		final boolean inStated = statedTaxonomy.getNewTaxonomy().containsNode(idLong);
 		final boolean inInferred = inferredTaxonomy.getNewTaxonomy().containsNode(idLong);

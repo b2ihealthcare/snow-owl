@@ -293,6 +293,7 @@ LoggerFactory.getLogger(getClass()).warn("'upgradeOf' property update support is
 		final UriComponentsBuilder uriBuilder = createURIBuilder();
 		
 		return CodeSystemRequests.prepareUpgrade(codeSystem.getCodeSystemURI(), body.getExtensionOf())
+				.setCodeSystemId(body.getCodeSystemId())
 				.build(codeSystem.getRepositoryId())
 				.execute(getBus())
 				.then(upgradeCodeSystemId -> {

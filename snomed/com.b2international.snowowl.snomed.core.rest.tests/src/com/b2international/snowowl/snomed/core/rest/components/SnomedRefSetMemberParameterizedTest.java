@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,6 @@ import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.ge
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.reserveComponentId;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.nullValue;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -56,6 +55,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import com.b2international.commons.Pair;
+import com.b2international.commons.json.Json;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
@@ -68,8 +68,6 @@ import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
 import com.b2international.snowowl.test.commons.rest.BranchBase;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
 import io.restassured.response.ValidatableResponse;
@@ -81,7 +79,7 @@ import io.restassured.response.ValidatableResponse;
 @BranchBase(isolateTests = false) // run all tests on the same branch so we can reuse the same reference sets through all tests
 public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 
-	private static final List<String> REFERENCED_COMPONENT_TYPES = ImmutableList.of(CONCEPT, DESCRIPTION, RELATIONSHIP);
+	private static final List<String> REFERENCED_COMPONENT_TYPES = List.of(CONCEPT, DESCRIPTION, RELATIONSHIP);
 	
 	private static final Map<SnomedRefSetType, String> REFSET_CACHE = Maps.newHashMap();
 
@@ -124,10 +122,9 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 		String refSetId = reserveComponentId(null, ComponentCategory.CONCEPT);
 		String referencedComponentId = createReferencedComponent(branchPath, refSetType);
 
-		Map<?, ?> requestBody = createRefSetMemberRequestBody(refSetId, referencedComponentId)
-				.putAll(getValidProperties(refSetType, referencedComponentId))
-				.put("commitComment", "Created new reference set member with non-existent refSetId")
-				.build();
+		Json requestBody = createRefSetMemberRequestBody(refSetId, referencedComponentId)
+				.with(getValidProperties(refSetType, referencedComponentId))
+				.with("commitComment", "Created new reference set member with non-existent refSetId");
 
 		createComponent(branchPath, SnomedComponentType.MEMBER, requestBody).statusCode(400);
 	}
@@ -137,10 +134,9 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 		String refSetId = createNewRefSet(branchPath, refSetType);
 		String referencedComponentId = reserveComponentId(null, getFirstAllowedReferencedComponentCategory(refSetType));
 
-		Map<?, ?> requestBody = createRefSetMemberRequestBody(refSetId, referencedComponentId)
-				.putAll(getValidProperties(refSetType, referencedComponentId))
-				.put("commitComment", "Created new reference set member with non-existent referencedComponentId")
-				.build();
+		Json requestBody = createRefSetMemberRequestBody(refSetId, referencedComponentId)
+				.with(getValidProperties(refSetType, referencedComponentId))
+				.with("commitComment", "Created new reference set member with non-existent referencedComponentId");
 
 		createComponent(branchPath, SnomedComponentType.MEMBER, requestBody).statusCode(400);
 	}
@@ -154,10 +150,9 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 			if (!referencedComponentType.equals(disallowedComponentType)) {
 				String referencedComponentId = getFirstMatchingReferencedComponent(branchPath, disallowedComponentType);
 
-				Map<?, ?> requestBody = createRefSetMemberRequestBody(refSetId, referencedComponentId)
-						.putAll(getValidProperties(refSetType, referencedComponentId))
-						.put("commitComment", "Created new reference set member with mismatched referencedComponentId")
-						.build();
+				Json requestBody = createRefSetMemberRequestBody(refSetId, referencedComponentId)
+						.with(getValidProperties(refSetType, referencedComponentId))
+						.with("commitComment", "Created new reference set member with mismatched referencedComponentId");
 
 				String expectedMessage = String.format("'%s' reference set can't reference '%s | %s' component. Only '%s' components are allowed.",
 						refSetId, 
@@ -180,10 +175,9 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 		String refSetId = getOrCreateRefSet(branchPath, refSetType);
 		String componentId = createNewComponent(branchPath, getFirstAllowedReferencedComponentType(refSetType));
 
-		Map<?, ?> requestBody = createRefSetMemberRequestBody(refSetId, componentId)
-				.putAll(getInvalidProperties())
-				.put("commitComment", "Created new reference set member with invalid additional properties")
-				.build();
+		Json requestBody = createRefSetMemberRequestBody(refSetId, componentId)
+				.with(getInvalidProperties())
+				.with("commitComment", "Created new reference set member with invalid additional properties");
 
 		createComponent(branchPath, SnomedComponentType.MEMBER, requestBody).statusCode(400);
 	}
@@ -209,10 +203,10 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 		final String memberId = member.getA();
 		final String referencedComponentId = member.getB();		
 
-		Map<?, ?> updateRequest = ImmutableMap.builder()
-				.putAll(getUpdateProperties(referencedComponentId))
-				.put("commitComment", "Updated reference set member")
-				.build();
+		Json updateRequest = Json.object(
+		)
+				.with(getUpdateProperties(referencedComponentId))
+				.with("commitComment", "Updated reference set member");
 
 		updateRefSetComponent(branchPath, SnomedComponentType.MEMBER, memberId, updateRequest, false).statusCode(204);
 
@@ -227,16 +221,19 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 		final Pair<String, String> member = createRefSetMember();
 		final String memberId = member.getA();
 
-		Map<?, ?> updateRequest = ImmutableMap.builder()
-				.put("active", false)
-				.put("moduleId", Concepts.MODULE_ROOT)
-				.put("commitComment", "Inactivated reference set member and changed module")
-				.build();
+		Json updateRequest = Json.object(
+			"active", false,
+			"moduleId", Concepts.MODULE_ROOT,
+			"commitComment", "Inactivated reference set member and changed module"
+		);
 
-		updateRefSetComponent(branchPath, SnomedComponentType.MEMBER, memberId, updateRequest, false).statusCode(204);
-		getComponent(branchPath, SnomedComponentType.MEMBER, memberId).statusCode(200)
-		.body("active", equalTo(false))
-		.body("moduleId", equalTo(Concepts.MODULE_ROOT));
+		updateRefSetComponent(branchPath, SnomedComponentType.MEMBER, memberId, updateRequest, false)
+			.statusCode(204);
+		
+		getComponent(branchPath, SnomedComponentType.MEMBER, memberId)
+			.statusCode(200)
+			.body("active", equalTo(false))
+			.body("moduleId", equalTo(Concepts.MODULE_ROOT));
 	}
 
 	@Test
@@ -245,13 +242,14 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 		final String memberId = member.getA();
 		String effectiveTime = getNextAvailableEffectiveDateAsString(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME);
 
-		Map<?, ?> updateRequest = ImmutableMap.builder()
-				.put("effectiveTime", effectiveTime)
-				.put("commitComment", "Updated effective time on reference set member without force flag")
-				.build();
-
+		Json updateRequest = Json.object(
+			"effectiveTime", effectiveTime,
+			"commitComment", "Updated effective time on reference set member without force flag"
+		);
+		
 		// The update does not go through anymore, rejected with an error
-		updateRefSetComponent(branchPath, SnomedComponentType.MEMBER, memberId, updateRequest, false).statusCode(400);
+		updateRefSetComponent(branchPath, SnomedComponentType.MEMBER, memberId, updateRequest, false)
+			.statusCode(400);
 	}
 
 	@Test
@@ -313,10 +311,8 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 		createVersion(shortName, effectiveTime, effectiveTime).statusCode(201);
 
 		// update properties
-		final Map<?, ?> updateRequest = ImmutableMap.builder()
-				.putAll(ImmutableMap.<String, Object>builder().putAll(getUpdateProperties(referencedComponentId)).build())
-				.put("commitComment", "Updated reference set member")
-				.build();
+		final Json updateRequest = getUpdateProperties(referencedComponentId)
+				.with("commitComment", "Updated reference set member");
 
 		updateRefSetComponent(branchPath, SnomedComponentType.MEMBER, memberId, updateRequest, false).statusCode(204);
 
@@ -332,10 +328,8 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 		}
 
 		// revert back to original values
-		final Map<?, ?> revertUpdateRequest = ImmutableMap.builder()
-				.putAll(ImmutableMap.<String, Object>builder().putAll(getValidProperties(refSetType, referencedComponentId)).build())
-				.put("commitComment", "Reverted previous update of reference set member")
-				.build();
+		final Json revertUpdateRequest = getValidProperties(refSetType, referencedComponentId)
+				.with("commitComment", "Reverted previous update of reference set member");
 
 		updateRefSetComponent(branchPath, SnomedComponentType.MEMBER, memberId, revertUpdateRequest, false).statusCode(204);
 
@@ -367,10 +361,9 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 		String referencedComponentId = getFirstMatchingComponent(branchPath, getFirstAllowedReferencedComponentType(refSetType));
 
 		String refSetId = getOrCreateRefSet(branchPath, refSetType);
-		Map<?, ?> requestBody = createRefSetMemberRequestBody(refSetId, referencedComponentId)
-				.putAll(getValidProperties(refSetType, referencedComponentId))
-				.put("commitComment", "Created new reference set member")
-				.build();
+		Json requestBody = createRefSetMemberRequestBody(refSetId, referencedComponentId)
+				.with(getValidProperties(refSetType, referencedComponentId))
+				.with("commitComment", "Created new reference set member");
 		
 		ValidatableResponse response = createComponent(branchPath, SnomedComponentType.MEMBER, requestBody).statusCode(201);
 		
@@ -378,7 +371,7 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 	}
 
 	private String getFirstMatchingReferencedComponent(IBranchPath branchPath, String referencedComponentType) {
-		return searchComponent(branchPath, getSnomedComponentType(referencedComponentType), ImmutableMap.of("limit", 1)).extract().jsonPath().<String>getList("items.id").get(0);
+		return searchComponent(branchPath, getSnomedComponentType(referencedComponentType), Json.object("limit", 1)).extract().jsonPath().<String>getList("items.id").get(0);
 	}
 
 	private SnomedComponentType getSnomedComponentType(String referencedComponentType) {
@@ -398,108 +391,108 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 		return REFSET_CACHE.computeIfAbsent(refSetType, type -> createNewRefSet(branchPath, type));
 	}
 
-	private Map<String, Object> getUpdateProperties(String referencedComponentId) {
+	private Json getUpdateProperties(String referencedComponentId) {
 		switch (refSetType) {
 		case ASSOCIATION:
-			return ImmutableMap.<String, Object>builder()
-					.put(SnomedRf2Headers.FIELD_TARGET_COMPONENT, ImmutableMap.of("id", Concepts.NAMESPACE_ROOT))
-					.build();
+			return Json.object(
+				SnomedRf2Headers.FIELD_TARGET_COMPONENT, Json.object("id", Concepts.NAMESPACE_ROOT)
+			);
 		case ATTRIBUTE_VALUE:
-			return ImmutableMap.<String, Object>builder()
-					.put(SnomedRf2Headers.FIELD_VALUE_ID, Concepts.NAMESPACE_ROOT)
-					.build();
+			return Json.object(
+				SnomedRf2Headers.FIELD_VALUE_ID, Concepts.NAMESPACE_ROOT
+			);
 		case COMPLEX_MAP:
-			return ImmutableMap.<String, Object>builder()
-					.put(SnomedRf2Headers.FIELD_MAP_TARGET, "complexMapTarget2")
-					.put(SnomedRf2Headers.FIELD_MAP_GROUP, 1)
-					.put(SnomedRf2Headers.FIELD_MAP_PRIORITY, 1)
-					.put(SnomedRf2Headers.FIELD_MAP_RULE, "complexMapRule2")
-					.put(SnomedRf2Headers.FIELD_MAP_ADVICE, "complexMapAdvice2")
-					.put(SnomedRf2Headers.FIELD_CORRELATION_ID, Concepts.NAMESPACE_ROOT)
-					.build();
+			return Json.object(
+				SnomedRf2Headers.FIELD_MAP_TARGET, "complexMapTarget2",
+				SnomedRf2Headers.FIELD_MAP_GROUP, 1,
+				SnomedRf2Headers.FIELD_MAP_PRIORITY, 1,
+				SnomedRf2Headers.FIELD_MAP_RULE, "complexMapRule2",
+				SnomedRf2Headers.FIELD_MAP_ADVICE, "complexMapAdvice2",
+				SnomedRf2Headers.FIELD_CORRELATION_ID, Concepts.NAMESPACE_ROOT
+			);
 		case COMPLEX_BLOCK_MAP:
-			return ImmutableMap.<String, Object>builder()
-					.put(SnomedRf2Headers.FIELD_MAP_TARGET, "complexBlockMapTarget2")
-					.put(SnomedRf2Headers.FIELD_MAP_GROUP, 1)
-					.put(SnomedRf2Headers.FIELD_MAP_PRIORITY, 1)
-					.put(SnomedRf2Headers.FIELD_MAP_RULE, "complexBlockMapRule2")
-					.put(SnomedRf2Headers.FIELD_MAP_ADVICE, "complexBlockMapAdvice2")
-					.put(SnomedRf2Headers.FIELD_CORRELATION_ID, Concepts.NAMESPACE_ROOT)
-					.put(SnomedRf2Headers.FIELD_MAP_BLOCK, 2)
-					.build();
+			return Json.object(
+				SnomedRf2Headers.FIELD_MAP_TARGET, "complexBlockMapTarget2",
+				SnomedRf2Headers.FIELD_MAP_GROUP, 1,
+				SnomedRf2Headers.FIELD_MAP_PRIORITY, 1,
+				SnomedRf2Headers.FIELD_MAP_RULE, "complexBlockMapRule2",
+				SnomedRf2Headers.FIELD_MAP_ADVICE, "complexBlockMapAdvice2",
+				SnomedRf2Headers.FIELD_CORRELATION_ID, Concepts.NAMESPACE_ROOT,
+				SnomedRf2Headers.FIELD_MAP_BLOCK, 2
+			);
 		case DESCRIPTION_TYPE:
-			return ImmutableMap.<String, Object>builder()
-					.put(SnomedRf2Headers.FIELD_DESCRIPTION_FORMAT, Concepts.NAMESPACE_ROOT)
-					.put(SnomedRf2Headers.FIELD_DESCRIPTION_LENGTH, 101)
-					.build();
+			return Json.object(
+				SnomedRf2Headers.FIELD_DESCRIPTION_FORMAT, Concepts.NAMESPACE_ROOT,
+				SnomedRf2Headers.FIELD_DESCRIPTION_LENGTH, 101
+			);
 		case EXTENDED_MAP:
-			return ImmutableMap.<String, Object>builder()
-					.put(SnomedRf2Headers.FIELD_MAP_TARGET, "extendedMapTarget2")
-					.put(SnomedRf2Headers.FIELD_MAP_GROUP, 11)
-					.put(SnomedRf2Headers.FIELD_MAP_PRIORITY, 11)
-					.put(SnomedRf2Headers.FIELD_MAP_RULE, "extendedMapRule2")
-					.put(SnomedRf2Headers.FIELD_MAP_ADVICE, "extendedMapAdvice2")
-					.put(SnomedRf2Headers.FIELD_CORRELATION_ID, Concepts.NAMESPACE_ROOT)
-					.put(SnomedRf2Headers.FIELD_MAP_CATEGORY_ID, Concepts.NAMESPACE_ROOT)
-					.build();
+			return Json.object(
+				SnomedRf2Headers.FIELD_MAP_TARGET, "extendedMapTarget2",
+				SnomedRf2Headers.FIELD_MAP_GROUP, 11,
+				SnomedRf2Headers.FIELD_MAP_PRIORITY, 11,
+				SnomedRf2Headers.FIELD_MAP_RULE, "extendedMapRule2",
+				SnomedRf2Headers.FIELD_MAP_ADVICE, "extendedMapAdvice2",
+				SnomedRf2Headers.FIELD_CORRELATION_ID, Concepts.NAMESPACE_ROOT,
+				SnomedRf2Headers.FIELD_MAP_CATEGORY_ID, Concepts.NAMESPACE_ROOT
+			);
 		case LANGUAGE:
-			return ImmutableMap.<String, Object>builder()
-					.put(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID, Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED)
-					.build();
+			return Json.object(
+				SnomedRf2Headers.FIELD_ACCEPTABILITY_ID, Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED
+			);
 		case MODULE_DEPENDENCY:
-			return ImmutableMap.<String, Object>builder()
-					.put(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME, "20170224")
-					.put(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME, "20170225")
-					.build();
+			return Json.object(
+				SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME, "20170224",
+				SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME, "20170225"
+			);
 		case SIMPLE:
-			return ImmutableMap.of();
+			return Json.object();
 		case SIMPLE_MAP:
-			return ImmutableMap.<String, Object>builder()
-					.put(SnomedRf2Headers.FIELD_MAP_TARGET, "simpleMapTarget2")
-					.build();
+			return Json.object(
+				SnomedRf2Headers.FIELD_MAP_TARGET, "simpleMapTarget2"
+			);
 		case SIMPLE_MAP_WITH_DESCRIPTION:
-			return ImmutableMap.<String, Object>builder()
-					.put(SnomedRf2Headers.FIELD_MAP_TARGET, "mapTarget2")
-					.put(SnomedRf2Headers.FIELD_MAP_TARGET_DESCRIPTION, "mapTargetDescription2")
-					.build();
+			return Json.object(
+				SnomedRf2Headers.FIELD_MAP_TARGET, "mapTarget2",
+				SnomedRf2Headers.FIELD_MAP_TARGET_DESCRIPTION, "mapTargetDescription2"
+			);
 		case OWL_AXIOM:
-			return ImmutableMap.<String, Object>builder()
-					.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, SnomedApiTestConstants.owlAxiom2(referencedComponentId))
-					.build();
+			return Json.object(
+				SnomedRf2Headers.FIELD_OWL_EXPRESSION, SnomedApiTestConstants.owlAxiom2(referencedComponentId)
+			);
 		case OWL_ONTOLOGY:
-			return ImmutableMap.<String, Object>builder()
-					.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, OWL_ONTOLOGY_2)
-					.build();
+			return Json.object(
+				SnomedRf2Headers.FIELD_OWL_EXPRESSION, OWL_ONTOLOGY_2
+			);
 		case MRCM_DOMAIN:
-			return ImmutableMap.<String, Object>builder()
-					.put(SnomedRf2Headers.FIELD_MRCM_DOMAIN_CONSTRAINT, DOMAIN_CONSTRAINT_2)
-					.put(SnomedRf2Headers.FIELD_MRCM_PARENT_DOMAIN, "") // unset on purpose
-					.put(SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_CONSTRAINT, PROXIMAL_PRIMITIVE_CONSTRAINT_2)
-					.put(SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_REFINEMENT, "") // unset on purpose
-					.put(SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION, DOMAIN_TEMPLATE_FOR_PRECOORDINATION_2)
-					.put(SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION, DOMAIN_TEMPLATE_FOR_POSTCOORDINATION_2)
-					.put(SnomedRf2Headers.FIELD_MRCM_EDITORIAL_GUIDE_REFERENCE, "") // unset on purpose
-					.build();
+			return Json.object(
+				SnomedRf2Headers.FIELD_MRCM_DOMAIN_CONSTRAINT, DOMAIN_CONSTRAINT_2,
+				SnomedRf2Headers.FIELD_MRCM_PARENT_DOMAIN, "", // unset on purpose
+				SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_CONSTRAINT, PROXIMAL_PRIMITIVE_CONSTRAINT_2,
+				SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_REFINEMENT, "", // unset on purpose
+				SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION, DOMAIN_TEMPLATE_FOR_PRECOORDINATION_2,
+				SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION, DOMAIN_TEMPLATE_FOR_POSTCOORDINATION_2,
+				SnomedRf2Headers.FIELD_MRCM_EDITORIAL_GUIDE_REFERENCE, "" // unset on purpose
+			);
 		case MRCM_ATTRIBUTE_DOMAIN:
-			return ImmutableMap.<String, Object>builder()
-					.put(SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID, DOMAIN_ID_2)
-					.put(SnomedRf2Headers.FIELD_MRCM_GROUPED, Boolean.FALSE)
-					.put(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_CARDINALITY, ATTRIBUTE_CARDINALITY_2)
-					.put(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_IN_GROUP_CARDINALITY, ATTRIBUTE_IN_GROUP_CARDINALITY_2)
-					.put(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID, RULE_STRENGTH_ID_2)
-					.put(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID, CONTENT_TYPE_ID_2)
-					.build();
+			return Json.object(
+				SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID, DOMAIN_ID_2,
+				SnomedRf2Headers.FIELD_MRCM_GROUPED, Boolean.FALSE,
+				SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_CARDINALITY, ATTRIBUTE_CARDINALITY_2,
+				SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_IN_GROUP_CARDINALITY, ATTRIBUTE_IN_GROUP_CARDINALITY_2,
+				SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID, RULE_STRENGTH_ID_2,
+				SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID, CONTENT_TYPE_ID_2
+			);
 		case MRCM_ATTRIBUTE_RANGE:
-			return ImmutableMap.<String, Object>builder()
-					.put(SnomedRf2Headers.FIELD_MRCM_RANGE_CONSTRAINT, RANGE_CONSTRAINT_2)
-					.put(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_RULE, ATTRIBUTE_RULE_2)
-					.put(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID, RULE_STRENGTH_ID_2)
-					.put(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID, CONTENT_TYPE_ID_2)
-					.build();
+			return Json.object(
+				SnomedRf2Headers.FIELD_MRCM_RANGE_CONSTRAINT, RANGE_CONSTRAINT_2,
+				SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_RULE, ATTRIBUTE_RULE_2,
+				SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID, RULE_STRENGTH_ID_2,
+				SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID, CONTENT_TYPE_ID_2
+			);
 		case MRCM_MODULE_SCOPE:
-			return ImmutableMap.<String, Object>builder()
-					.put(SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID, RULE_REFSET_ID_2)
-					.build();
+			return Json.object(
+				SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID, RULE_REFSET_ID_2
+			);
 		default:
 			throw new IllegalStateException("Unexpected reference set type '" + refSetType + "'.");
 		}
@@ -508,96 +501,96 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 	private Map<String, Object> getInvalidProperties() {
 		switch (refSetType) {
 		case ASSOCIATION:
-			return ImmutableMap.<String, Object>builder()
-					.put(SnomedRf2Headers.FIELD_TARGET_COMPONENT, "")
-					.build();
+			return Json.object(
+				SnomedRf2Headers.FIELD_TARGET_COMPONENT, ""
+			);
 		case ATTRIBUTE_VALUE:
-			return ImmutableMap.<String, Object>builder()
-					.put(SnomedRf2Headers.FIELD_VALUE_ID, "")
-					.build();
+			return Json.object(
+				SnomedRf2Headers.FIELD_VALUE_ID, ""
+			);
 		case COMPLEX_MAP:
 			// Invalid because FIELD_MAP_PRIORITY is not set
-			return ImmutableMap.<String, Object>builder()
-					.put(SnomedRf2Headers.FIELD_MAP_TARGET, "complexMapTarget")
-					.put(SnomedRf2Headers.FIELD_MAP_GROUP, (byte) 0)
-					.put(SnomedRf2Headers.FIELD_MAP_RULE, "complexMapRule")
-					.put(SnomedRf2Headers.FIELD_MAP_ADVICE, "complexMapAdvice")
-					.put(SnomedRf2Headers.FIELD_CORRELATION_ID, Concepts.REFSET_CORRELATION_NOT_SPECIFIED)
-					.build();
+			return Json.object(
+				SnomedRf2Headers.FIELD_MAP_TARGET, "complexMapTarget",
+				SnomedRf2Headers.FIELD_MAP_GROUP, (byte) 0,
+				SnomedRf2Headers.FIELD_MAP_RULE, "complexMapRule",
+				SnomedRf2Headers.FIELD_MAP_ADVICE, "complexMapAdvice",
+				SnomedRf2Headers.FIELD_CORRELATION_ID, Concepts.REFSET_CORRELATION_NOT_SPECIFIED
+			);
 		case DESCRIPTION_TYPE:
-			return ImmutableMap.<String, Object>builder()
-					.put(SnomedRf2Headers.FIELD_DESCRIPTION_FORMAT, "")
-					.put(SnomedRf2Headers.FIELD_DESCRIPTION_LENGTH, 100)
-					.build();
+			return Json.object(
+				SnomedRf2Headers.FIELD_DESCRIPTION_FORMAT, "",
+				SnomedRf2Headers.FIELD_DESCRIPTION_LENGTH, 100
+			);
 		case EXTENDED_MAP:
-			return ImmutableMap.<String, Object>builder()
-					.put(SnomedRf2Headers.FIELD_MAP_TARGET, "")
-					.put(SnomedRf2Headers.FIELD_MAP_GROUP, (byte) 10)
-					.put(SnomedRf2Headers.FIELD_MAP_PRIORITY, (byte) 10)
-					.put(SnomedRf2Headers.FIELD_MAP_RULE, "extendedMapRule")
-					.put(SnomedRf2Headers.FIELD_MAP_ADVICE, "extendedMapAdvice")
-					.put(SnomedRf2Headers.FIELD_CORRELATION_ID, Concepts.REFSET_CORRELATION_NOT_SPECIFIED)
-					.put(SnomedRf2Headers.FIELD_MAP_CATEGORY_ID, Concepts.MAP_CATEGORY_NOT_CLASSIFIED)
-					.build();
+			return Json.object(
+				SnomedRf2Headers.FIELD_MAP_TARGET, "",
+				SnomedRf2Headers.FIELD_MAP_GROUP, (byte) 10,
+				SnomedRf2Headers.FIELD_MAP_PRIORITY, (byte) 10,
+				SnomedRf2Headers.FIELD_MAP_RULE, "extendedMapRule",
+				SnomedRf2Headers.FIELD_MAP_ADVICE, "extendedMapAdvice",
+				SnomedRf2Headers.FIELD_CORRELATION_ID, Concepts.REFSET_CORRELATION_NOT_SPECIFIED,
+				SnomedRf2Headers.FIELD_MAP_CATEGORY_ID, Concepts.MAP_CATEGORY_NOT_CLASSIFIED
+			);
 		case COMPLEX_BLOCK_MAP:
-			return ImmutableMap.<String, Object>builder()
-					.put(SnomedRf2Headers.FIELD_MAP_TARGET, "complexBlockMapTarget")
-					.put(SnomedRf2Headers.FIELD_MAP_GROUP, 10)
-					.put(SnomedRf2Headers.FIELD_MAP_PRIORITY, 10)
-					.put(SnomedRf2Headers.FIELD_MAP_RULE, "complexBlockMapRule")
-					.put(SnomedRf2Headers.FIELD_MAP_ADVICE, "complexBlockMapAdvice")
-					.put(SnomedRf2Headers.FIELD_CORRELATION_ID, Concepts.REFSET_CORRELATION_NOT_SPECIFIED)
-					.put(SnomedRf2Headers.FIELD_MAP_BLOCK, "not an integer")
-					.build();
+			return Json.object(
+				SnomedRf2Headers.FIELD_MAP_TARGET, "complexBlockMapTarget",
+				SnomedRf2Headers.FIELD_MAP_GROUP, 10,
+				SnomedRf2Headers.FIELD_MAP_PRIORITY, 10,
+				SnomedRf2Headers.FIELD_MAP_RULE, "complexBlockMapRule",
+				SnomedRf2Headers.FIELD_MAP_ADVICE, "complexBlockMapAdvice",
+				SnomedRf2Headers.FIELD_CORRELATION_ID, Concepts.REFSET_CORRELATION_NOT_SPECIFIED,
+				SnomedRf2Headers.FIELD_MAP_BLOCK, "not an integer"
+			);
 		case LANGUAGE:
-			return ImmutableMap.<String, Object>builder()
-					.put(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID, "")
-					.build();
+			return Json.object(
+				SnomedRf2Headers.FIELD_ACCEPTABILITY_ID, ""
+			);
 		case MODULE_DEPENDENCY:
-			return ImmutableMap.<String, Object>builder()
-					.put(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME, "abc")
-					.build();
+			return Json.object(
+				SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME, "abc"
+			);
 		case SIMPLE_MAP:
-			return ImmutableMap.<String, Object>builder()
-					.put(SnomedRf2Headers.FIELD_MAP_TARGET, "")
-					.build();
+			return Json.object(
+				SnomedRf2Headers.FIELD_MAP_TARGET, ""
+			);
 		case SIMPLE_MAP_WITH_DESCRIPTION:
-			return ImmutableMap.<String, Object>builder()
-					.put(SnomedRf2Headers.FIELD_MAP_TARGET, "")
-					.put(SnomedRf2Headers.FIELD_MAP_TARGET_DESCRIPTION, "mapTargetDescription")
-					.build();
+			return Json.object(
+				SnomedRf2Headers.FIELD_MAP_TARGET, "",
+				SnomedRf2Headers.FIELD_MAP_TARGET_DESCRIPTION, "mapTargetDescription"
+			);
 		case OWL_AXIOM: //$FALL-THROUGH$
 		case OWL_ONTOLOGY:
-			return ImmutableMap.<String, Object>builder()
-					.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, "")
-					.build();
+			return Json.object(
+				SnomedRf2Headers.FIELD_OWL_EXPRESSION, ""
+			);
 		case MRCM_DOMAIN:
-			return ImmutableMap.<String, Object>builder()
-					.put(SnomedRf2Headers.FIELD_MRCM_DOMAIN_CONSTRAINT, "")
-					.put(SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_CONSTRAINT, "")
-					.put(SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION, "")
-					.put(SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION, "")
-					.build();
+			return Json.object(
+				SnomedRf2Headers.FIELD_MRCM_DOMAIN_CONSTRAINT, "",
+				SnomedRf2Headers.FIELD_MRCM_PROXIMAL_PRIMITIVE_CONSTRAINT, "",
+				SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION, "",
+				SnomedRf2Headers.FIELD_MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION, ""
+			);
 		case MRCM_ATTRIBUTE_DOMAIN:
-			return ImmutableMap.<String, Object>builder()
-					.put(SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID, "")
-					.put(SnomedRf2Headers.FIELD_MRCM_GROUPED, "booleanValue")
-					.put(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_CARDINALITY, "")
-					.put(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_IN_GROUP_CARDINALITY, "")
-					.put(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID, "1234")
-					.put(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID, "")
-					.build();
+			return Json.object(
+				SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID, "",
+				SnomedRf2Headers.FIELD_MRCM_GROUPED, "booleanValue",
+				SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_CARDINALITY, "",
+				SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_IN_GROUP_CARDINALITY, "",
+				SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID, "1234",
+				SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID, ""
+			);
 		case MRCM_ATTRIBUTE_RANGE:
-			return ImmutableMap.<String, Object>builder()
-					.put(SnomedRf2Headers.FIELD_MRCM_RANGE_CONSTRAINT, "")
-					.put(SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_RULE, "")
-					.put(SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID, "")
-					.put(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID, "1234")
-					.build();
+			return Json.object(
+				SnomedRf2Headers.FIELD_MRCM_RANGE_CONSTRAINT, "",
+				SnomedRf2Headers.FIELD_MRCM_ATTRIBUTE_RULE, "",
+				SnomedRf2Headers.FIELD_MRCM_RULE_STRENGTH_ID, "",
+				SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID, "1234"
+			);
 		case MRCM_MODULE_SCOPE:
-			return ImmutableMap.<String, Object>builder()
-					.put(SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID, "")
-					.build();
+			return Json.object(
+				SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID, ""
+			);
 		default:
 			throw new IllegalStateException("Unexpected reference set type '" + refSetType + "'.");
 		}

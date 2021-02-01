@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import java.io.IOException;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.StagingArea;
 import com.b2international.index.revision.StagingArea.RevisionPropertyDiff;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberChange;
 import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberChange.MemberChangeKind;
@@ -72,7 +71,7 @@ final class ReferringMemberChangeProcessor {
 	}
 	
 	private boolean byReferencedComponentType(SnomedRefSetMemberIndexEntry member) {
-		return referencedComponentType == SnomedTerminologyComponentConstants.getTerminologyComponentIdValue(member.getReferencedComponentId());
+		return referencedComponentType == member.getReferencedComponentType();
 	}
 
 	private void addChange(final Multimap<String, RefSetMemberChange> memberChanges, SnomedRefSetMemberIndexEntry member, MemberChangeKind changeKind) {

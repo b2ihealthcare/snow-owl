@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.b2international.commons.CompareUtils;
+import com.b2international.commons.time.TimeUtil;
 import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
 import com.b2international.index.ID;
@@ -338,6 +339,17 @@ public final class RemoteJobEntry implements Serializable {
 
 	public boolean isDeleted() {
 		return deleted;
+	}
+	
+	/**
+	 * @return the elapsed time since this job has been scheduled for execution in human-readable format, or <code>null</code> if the job is not finished.
+	 */
+	public String getElapsedTime() {
+		if (finishDate != null && scheduleDate != null) {
+			return TimeUtil.milliToReadableString(finishDate.getTime() - scheduleDate.getTime());
+		} else {
+			return null;
+		}
 	}
 	
 	/**
