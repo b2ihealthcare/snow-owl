@@ -65,6 +65,12 @@ final class NormalFormUnionGroup implements NormalFormProperty {
 	public List<NormalFormProperty> getProperties() {
 		return properties;
 	}
+	
+	public int additionalCount() {
+		return (int) properties.stream()
+			.filter(NormalFormProperty::isAdditional)
+			.count();
+	}
 
 	public int getUnionGroupNumber() {
 		return unionGroupNumber;

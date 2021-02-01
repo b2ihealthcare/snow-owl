@@ -44,26 +44,35 @@ final class NormalFormGroupSet extends AbstractSet<NormalFormGroup> {
 	 * adds the new element, and returns <code>true</code>.
 	 */
 	@Override
-	public boolean add(final NormalFormGroup e) {
+	public boolean add(final NormalFormGroup candidate) {
 		final List<NormalFormGroup> redundant = newArrayList();
-
-		if (!e.isAdditional()) {
-			for (final NormalFormGroup existingGroup : groups) {
-				if (existingGroup.isAdditional()) {
+		
+		// If the "challenger" group is all-additional, we will allow it in
+		if (!candidate.isAdditional()) {
+			for (final NormalFormGroup existing : groups) {
+				// Per the above, this should not happen, but it does not hurt to check
+				if (existing.isAdditional()) {
 					continue;
 				}
 				
-				// Existing item should be strictly stronger, same is not good enough
-				if (e.isSameOrStrongerThan(existingGroup)) {
-					redundant.add(existingGroup);
-				} else if (existingGroup.isSameOrStrongerThan(e)) {
+				final boolean candidateSameOrStronger = candidate.isSameOrStrongerThan(existing);
+				final boolean existingSameOrStronger = existing.isSameOrStrongerThan(candidate);
+				final boolean additionalPropertyCountGreater = candidate.additionalCount() >= existing.additionalCount(); 
+				
+				/* 
+				 * Candidate displaces existing member if it is stronger OR provides (additional) 
+				 * properties in greater-or-equal numbers.
+				 */
+				if (candidateSameOrStronger && (!existingSameOrStronger || additionalPropertyCountGreater)) {
+					redundant.add(existing);
+				} else if (existingSameOrStronger) {
 					return false;
-				}
+				}		
 			}
 		}
 
 		groups.removeAll(redundant);
-		groups.add(e);
+		groups.add(candidate);
 		return true;
 	}
 

@@ -240,7 +240,7 @@ public final class NormalFormGenerator implements INormalFormGenerator {
 				.build());
 
 		final Collection<ConcreteDomainFragment> ownInferredMembers = reasonerTaxonomy.getInferredConcreteDomainMembers().get(referencedComponentId);
-
+		
 		// Remove redundancy
 		final NormalFormGroupSet targetGroupSet = getTargetGroupSet(conceptId, 
 				parentIds,
@@ -319,7 +319,7 @@ public final class NormalFormGenerator implements INormalFormGenerator {
 			final Collection<ConcreteDomainFragment> groupMembers = membersByGroupId.get(key);
 
 			final Iterable<NormalFormUnionGroup> unionGroups = toUnionGroups(preserveNumbers, groupRelationships, groupMembers, useNodeGraphs);
-			final Iterable<NormalFormUnionGroup> disjointUnionGroups = getDisjointComparables(unionGroups);
+			final Iterable<NormalFormUnionGroup> disjointUnionGroups = getDisjointUnionGroups(unionGroups);
 
 			if (key == 0) {
 				// Properties in group 0 form separate groups
@@ -414,9 +414,9 @@ public final class NormalFormGenerator implements INormalFormGenerator {
 
 
 	/**
-	 * Filters {@link NormalFormProperty}s so that the returned Iterable only
+	 * Filters {@link NormalFormUnionGroup}s so that the returned Iterable only
 	 * includes elements that are not redundant with respect to each other. The
-	 * following steps are taken to ensure that no redundant SemanticComparables
+	 * following steps are taken to ensure that no redundant union groups
 	 * remain in the output Iterable:
 	 * <p>
 	 * <ol>
@@ -431,28 +431,36 @@ public final class NormalFormGenerator implements INormalFormGenerator {
 	 * The returned Iterable is backed by a locally created Set, and supports
 	 * <code>remove()</code>.
 	 *
-	 * @param comparables the comparables to filter
-	 *
-	 * @return an {@link Iterable} that only includes the reduced comparables
+	 * @param unionGroups the union groups to filter
+	 * @return an {@link Iterable} that only includes the reduced union groups
 	 */
-	private <T extends NormalFormProperty> Iterable<T> getDisjointComparables(final Iterable<T> comparables) {
-		final Set<T> candidates = Sets.newHashSet();
-		final Set<T> redundant = Sets.newHashSet();
+	private Iterable<NormalFormUnionGroup> getDisjointUnionGroups(final Iterable<NormalFormUnionGroup> unionGroups) {
+		final Set<NormalFormUnionGroup> disjoint = Sets.newHashSet();
+		final Set<NormalFormUnionGroup> redundant = Sets.newHashSet();
 
-		for (final T comparable : comparables) {
+		for (final NormalFormUnionGroup candidate : unionGroups) {
 			redundant.clear();
 			boolean found = false;
 
-			if (!comparable.isAdditional()) {
-				for (final T candidate : candidates) {
-					if (candidate.isAdditional()) {
+			// If the "challenger" union group is all-additional, we will allow it in
+			if (!candidate.isAdditional()) {
+				for (final NormalFormUnionGroup existing : disjoint) {
+					// Per the above, this should not happen, but it does not hurt to check
+					if (existing.isAdditional()) {
 						continue;
 					}
 					
-					// Existing item should be strictly stronger, same is not good enough
-					if (comparable.isSameOrStrongerThan(candidate)) {
-						redundant.add(candidate);
-					} else if (candidate.isSameOrStrongerThan(comparable)) {
+					final boolean candidateSameOrStronger = candidate.isSameOrStrongerThan(existing);
+					final boolean existingSameOrStronger = existing.isSameOrStrongerThan(candidate);
+					final boolean additionalCountSameOrGreater = candidate.additionalCount() >= existing.additionalCount(); 
+					
+					/* 
+					 * Candidate displaces existing member if it is stronger OR provides (additional) 
+					 * properties in greater-or-equal numbers.
+					 */
+					if (candidateSameOrStronger && (!existingSameOrStronger || additionalCountSameOrGreater)) {
+						redundant.add(existing);
+					} else if (existingSameOrStronger) {
 						found = true;
 						break;
 					} 
@@ -460,12 +468,12 @@ public final class NormalFormGenerator implements INormalFormGenerator {
 			}
 			
 			if (!found) {
-				candidates.removeAll(redundant);
-				candidates.add(comparable);
+				disjoint.removeAll(redundant);
+				disjoint.add(candidate);
 			}
 		}
 
-		return candidates;
+		return disjoint;
 	}
 
 	private Iterable<StatementFragment> relationshipsFromGroupSet(final NormalFormGroupSet targetGroupSet) {
