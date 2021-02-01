@@ -26,7 +26,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 /**
  * @since 6.17
  */
-public final class ModuleRequest<R> extends DelegatingRequest<BranchContext, BranchContext, R> {
+public final class ModuleRequest<C extends BranchContext, R> extends DelegatingRequest<C, C, R> {
 
 	public interface ModuleIdProvider extends Function<SnomedDocument, String>, Serializable { }
 
@@ -34,11 +34,11 @@ public final class ModuleRequest<R> extends DelegatingRequest<BranchContext, Bra
 	
 	private final ModuleIdProvider moduleIdFunction;
 
-	public ModuleRequest(final Request<BranchContext, R> next) {
+	public ModuleRequest(final Request<C, R> next) {
 		this(next, null);
 	}
 	
-	public ModuleRequest(final Request<BranchContext, R> next, final String defaultModuleId) {
+	public ModuleRequest(final Request<C, R> next, final String defaultModuleId) {
 		super(next);
 		
 		// Use the component's module ID if no default value has been given
@@ -50,8 +50,8 @@ public final class ModuleRequest<R> extends DelegatingRequest<BranchContext, Bra
 	}
 
 	@Override
-	public R execute(final BranchContext context) {
-		return next(context.inject()
+	public R execute(final C context) {
+		return next((C) context.inject()
 				.bind(ModuleIdProvider.class, moduleIdFunction)
 				.build());
 	}
