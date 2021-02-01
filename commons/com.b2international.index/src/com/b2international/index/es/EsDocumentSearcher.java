@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -84,6 +84,7 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.common.primitives.Ints;
 
 /**
@@ -91,8 +92,8 @@ import com.google.common.primitives.Ints;
  */
 public class EsDocumentSearcher implements Searcher {
 
-	private static final List<String> STORED_FIELDS_ID_ONLY = ImmutableList.of("_id");
-	private static final List<String> STORED_FIELDS_NONE = ImmutableList.of("_none_");
+	private static final List<String> STORED_FIELDS_ID_ONLY = List.of("_id");
+	private static final List<String> STORED_FIELDS_NONE = List.of("_none_");
 
 	private final EsIndexAdmin admin;
 	private final ObjectMapper mapper;
@@ -123,7 +124,16 @@ public class EsDocumentSearcher implements Searcher {
 	@Override
 	public <T> Iterable<T> get(Class<T> type, Iterable<String> keys) throws IOException {
 		final DocumentMapping mapping = admin.mappings().getMapping(type);
-		return search(Query.select(type).where(Expressions.matchAny(mapping.getIdField(), keys)).limit(Iterables.size(keys)).build());
+		List<String> allKeys = ImmutableList.copyOf(keys);
+		if (allKeys.size() > resultWindow) {
+			List<T> results = Lists.newArrayListWithExpectedSize(allKeys.size());
+			for (List<String> currentKeys : Lists.partition(allKeys, resultWindow)) {
+				results.addAll(search(Query.select(type).where(Expressions.matchAny(mapping.getIdField(), currentKeys)).limit(currentKeys.size()).build()).getHits());
+			}
+			return results;
+		} else {
+			return search(Query.select(type).where(Expressions.matchAny(mapping.getIdField(), allKeys)).limit(allKeys.size()).build()).getHits();
+		}
 	}
 
 	@Override
@@ -567,6 +577,10 @@ public class EsDocumentSearcher implements Searcher {
 	
 	private String reverseNestedAggName(AggregationBuilder<?> aggregation) {
 		return aggregation.getName() + "-reverse-nested";
+	}
+
+	public int resultWindow() {
+		return resultWindow;
 	}
 
 }

@@ -21,6 +21,7 @@ import static com.google.common.collect.Maps.newHashMap;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -28,10 +29,11 @@ import java.util.UUID;
 import com.b2international.index.BulkDelete;
 import com.b2international.index.BulkUpdate;
 import com.b2international.index.Writer;
-import com.b2international.index.mapping.DocumentMapping;
+import com.b2international.index.es.EsDocumentSearcher;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 /**
@@ -128,12 +130,15 @@ public class DefaultRevisionWriter implements RevisionWriter {
 	private void setRevised(Class<?> type, Set<String> keysToUpdate, final String oldRevised, final String newRevised, RevisionBranchRef branchToUpdate) {
 		if (Revision.class.isAssignableFrom(type)) {
 			if (!keysToUpdate.isEmpty()) {
-				final Expression filter = Expressions.builder()
-						.filter(Expressions.matchAny(Revision.Fields.ID, keysToUpdate))
-						.filter(branchToUpdate.toRevisionFilter())
-						.build();
-				final BulkUpdate<Revision> update = new BulkUpdate<Revision>((Class<? extends Revision>) type, filter, Revision.UPDATE_REVISED, ImmutableMap.of("oldRevised", oldRevised, "newRevised", newRevised));
-				index.bulkUpdate(update);
+				final Map<String, Object> updateRevised = ImmutableMap.of("oldRevised", oldRevised, "newRevised", newRevised);
+				for (List<String> keys : Lists.partition(List.copyOf(keysToUpdate), ((EsDocumentSearcher) index.searcher()).resultWindow())) {
+					final Expression filter = Expressions.builder()
+							.filter(Expressions.matchAny(Revision.Fields.ID, keys))
+							.filter(branchToUpdate.toRevisionFilter())
+							.build();
+					final BulkUpdate<Revision> update = new BulkUpdate<Revision>((Class<? extends Revision>) type, filter, Revision.UPDATE_REVISED, updateRevised);
+					index.bulkUpdate(update);
+				}
 			}
 		} else {
 			index.remove(type, keysToUpdate);

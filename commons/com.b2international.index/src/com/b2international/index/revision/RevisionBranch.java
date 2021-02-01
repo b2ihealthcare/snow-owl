@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -363,17 +363,12 @@ public final class RevisionBranch extends MetadataHolderImpl {
 	}
     
     /**
-     * Returns the segments common with the parent branch.
-     * @return
+     * @return the segments common with the parent branch.
      */
     @JsonIgnore
     public SortedSet<RevisionSegment> getParentSegments() {
-    	return getSegments().headSet(getHead());
+    	return getSegments().headSet(getSegment(getId()));
     }
-
-	private RevisionSegment getHead() {
-		return getSegments().last();
-	}
 
     @JsonIgnore
 	public RevisionBranchRef ref() {
@@ -401,9 +396,11 @@ public final class RevisionBranch extends MetadataHolderImpl {
 
     @JsonIgnore
 	public RevisionBranchRef baseRef() {
+    	final Map<Long, RevisionBranchPoint> latestMergeSources = getLatestMergeSources(false);
+    	// extend segments with the latest merge timestamp to access all revisions
 		final SortedSet<RevisionSegment> parentSegments = getParentSegments().stream()
     			.map(segment -> {
-    				RevisionBranchPoint latestMergeSource = getLatestMergeSource(segment.branchId(), false);
+    				RevisionBranchPoint latestMergeSource = latestMergeSources.remove(segment.branchId());
     				if (latestMergeSource != null && latestMergeSource.getTimestamp() > segment.end()) {
     					return segment.withEnd(latestMergeSource.getTimestamp());
     				} else {
@@ -411,6 +408,13 @@ public final class RevisionBranch extends MetadataHolderImpl {
     				}
     			})
     			.collect(Collectors.toCollection(TreeSet::new));
+
+		// add all remaining merge sources to the visible segment list
+    	latestMergeSources.values().forEach(latestMergeSource -> {
+    		// TODO start timestamp???
+    		parentSegments.add(new RevisionSegment(latestMergeSource.getBranchId(), 0L, latestMergeSource.getTimestamp()));
+    	});
+	
 		return new RevisionBranchRef(parentSegments.last().branchId(), getParentPath(), parentSegments);
 	}
     
@@ -422,11 +426,11 @@ public final class RevisionBranch extends MetadataHolderImpl {
 		return MAIN_PATH.equals(path);
 	}
     
-	RevisionBranchPoint getLatestMergeSource(long branchToFind, boolean withSquashMerges) {
+	/*package*/ RevisionBranchPoint getLatestMergeSource(long branchToFind, boolean withSquashMerges) {
 		return getLatestMergeSources(withSquashMerges).get(branchToFind);
 	}
 
-	private Map<Long, RevisionBranchPoint> getLatestMergeSources(boolean withSquashMerges) {
+	/*package*/ Map<Long, RevisionBranchPoint> getLatestMergeSources(boolean withSquashMerges) {
 		final Map<Long, RevisionBranchPoint> latestMergeSources = newHashMap();
 		getMergeSources()
 			.stream()

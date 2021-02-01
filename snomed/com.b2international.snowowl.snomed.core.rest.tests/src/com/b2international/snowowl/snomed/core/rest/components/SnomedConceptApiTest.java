@@ -32,6 +32,7 @@ import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.cr
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createRefSetMemberRequestBody;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createRelationshipRequestBody;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.reserveComponentId;
+import static com.b2international.snowowl.test.commons.rest.RestExtensions.assertCreated;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -53,6 +54,7 @@ import java.util.stream.Collectors;
 import org.junit.Test;
 
 import com.b2international.commons.exceptions.ConflictException;
+import com.b2international.commons.json.Json;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.BranchPathUtils;
@@ -82,7 +84,6 @@ import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.test.commons.rest.RestExtensions;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 
 import io.restassured.response.ValidatableResponse;
@@ -126,7 +127,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void createConceptWithoutCommitComment() {
-		assertCreateConcept(branchPath, createConceptRequestBody(Concepts.ROOT_CONCEPT).put("commitComment", ""))
+		assertCreateConcept(branchPath, createConceptRequestBody(Concepts.ROOT_CONCEPT).with("commitComment", ""))
 			.statusCode(400);
 	}
 	
@@ -145,8 +146,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 
 		// Try creating a cycle between the two concepts
 		Map<?, ?> requestBody = createRelationshipRequestBody(concept1Id, Concepts.IS_A, concept2Id)
-				.put("commitComment", "Created an IS A cycle with two relationships")
-				.build();
+				.with("commitComment", "Created an IS A cycle with two relationships");
 
 		createComponent(branchPath, SnomedComponentType.RELATIONSHIP, requestBody).statusCode(400);
 	}
@@ -164,7 +164,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		ISnomedIdentifierService identifierService = ApplicationContext.getServiceForClass(ISnomedIdentifierService.class);
 		String conceptId = Iterables.getOnlyElement(identifierService.reserve(null, ComponentCategory.CONCEPT, 1));
 
-		String createConceptId = createConcept(branchPath, createConceptRequestBody(Concepts.ROOT_CONCEPT).put("id", conceptId));
+		String createConceptId = createConcept(branchPath, createConceptRequestBody(Concepts.ROOT_CONCEPT).with("id", conceptId));
 		
 		assertEquals(conceptId, createConceptId);
 		
@@ -187,8 +187,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 
 		// Try creating a cycle between the starting and the ending concept
 		Map<?, ?> requestBody = createRelationshipRequestBody(concept1Id, Concepts.IS_A, concept3Id)
-				.put("commitComment", "Created an IS A cycle with three relationships")
-				.build();
+				.with("commitComment", "Created an IS A cycle with three relationships");
 
 		createComponent(branchPath, SnomedComponentType.RELATIONSHIP, requestBody).statusCode(400);
 	}
@@ -203,7 +202,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		assertInactivation(
 			branchPath,
 			conceptToInactivate, 
-			new InactivationProperties(Concepts.DUPLICATE, ImmutableList.of(
+			new InactivationProperties(Concepts.DUPLICATE, List.of(
 				new AssociationTarget(Concepts.REFSET_POSSIBLY_EQUIVALENT_TO_ASSOCIATION, firstAssociationTarget)
 			))
 		);
@@ -212,7 +211,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		assertInactivation(
 			branchPath,
 			conceptToInactivate, 
-			new InactivationProperties(Concepts.AMBIGUOUS, ImmutableList.of(
+			new InactivationProperties(Concepts.AMBIGUOUS, List.of(
 				new AssociationTarget(Concepts.REFSET_REPLACED_BY_ASSOCIATION, secondAssociationTarget)
 			))
 		);
@@ -229,7 +228,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		Collection<String> memberIds = assertInactivation(
 			branchPath, 
 			conceptToInactivate, 
-			new InactivationProperties(Concepts.DUPLICATE, ImmutableList.of(
+			new InactivationProperties(Concepts.DUPLICATE, List.of(
 				new AssociationTarget(Concepts.REFSET_POSSIBLY_EQUIVALENT_TO_ASSOCIATION, firstAssociationTarget)
 			))
 		).extract().path("members.items.id");
@@ -239,7 +238,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		Collection<String> updatedMemberIds = assertInactivation(
 			branchPath,
 			conceptToInactivate, 
-			new InactivationProperties(Concepts.AMBIGUOUS, ImmutableList.of(
+			new InactivationProperties(Concepts.AMBIGUOUS, List.of(
 				new AssociationTarget(Concepts.REFSET_POSSIBLY_EQUIVALENT_TO_ASSOCIATION, firstAssociationTarget),
 				new AssociationTarget(Concepts.REFSET_REPLACED_BY_ASSOCIATION, secondAssociationTarget),
 				new AssociationTarget(Concepts.REFSET_REPLACED_BY_ASSOCIATION, thirdAssociationTarget)
@@ -261,7 +260,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		assertInactivation(
 			branchPath, 
 			conceptToInactivate, 
-			new InactivationProperties(Concepts.DUPLICATE, ImmutableList.of(
+			new InactivationProperties(Concepts.DUPLICATE, List.of(
 				new AssociationTarget(Concepts.REFSET_POSSIBLY_EQUIVALENT_TO_ASSOCIATION, firstAssociationTarget)
 			))
 		);
@@ -270,7 +269,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		final ValidatableResponse response = assertInactivation(
 			branchPath, 
 			conceptToInactivate, 
-			new InactivationProperties(Concepts.AMBIGUOUS, ImmutableList.of(
+			new InactivationProperties(Concepts.AMBIGUOUS, List.of(
 				new AssociationTarget(Concepts.REFSET_REPLACED_BY_ASSOCIATION, secondAssociationTarget)
 			)),
 			"449081005" // defaultModuleId
@@ -299,7 +298,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		assertInactivation(
 			branchPath, 
 			conceptId, 
-			new InactivationProperties(Concepts.PENDING_MOVE, ImmutableList.of())
+			new InactivationProperties(Concepts.PENDING_MOVE, List.of())
 		);
 	}
 	
@@ -307,9 +306,8 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 	public void updateInactivationIndicatorOnActiveConceptWithAssociationTargets() throws Exception {
 		String conceptId = createNewConcept(branchPath);
 		Map<?, ?> requestBody = createRefSetMemberRequestBody(Concepts.REFSET_POSSIBLY_EQUIVALENT_TO_ASSOCIATION, conceptId)
-				.put(SnomedRf2Headers.FIELD_TARGET_COMPONENT, Concepts.ROOT_CONCEPT)
-				.put("commitComment", "Created new reference set member")
-				.build();
+				.with(SnomedRf2Headers.FIELD_TARGET_COMPONENT, Concepts.ROOT_CONCEPT)
+				.with("commitComment", "Created new reference set member");
 
 		final String associationMemberId = lastPathSegment(createComponent(branchPath, SnomedComponentType.MEMBER, requestBody)
 				.statusCode(201)
@@ -319,24 +317,24 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		SnomedReferenceSetMembers currentMembers = getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, "inactivationProperties(),members()")
 			.statusCode(200)
 			.body("inactivationProperties.inactivationIndicatorId", nullValue())
-			.body("inactivationProperties.associationTargets.referenceSetId", equalTo(ImmutableList.of(Concepts.REFSET_POSSIBLY_EQUIVALENT_TO_ASSOCIATION)))
-			.body("inactivationProperties.associationTargets.targetComponentId", equalTo(ImmutableList.of(Concepts.ROOT_CONCEPT)))
+			.body("inactivationProperties.associationTargets.referenceSetId", equalTo(List.of(Concepts.REFSET_POSSIBLY_EQUIVALENT_TO_ASSOCIATION)))
+			.body("inactivationProperties.associationTargets.targetComponentId", equalTo(List.of(Concepts.ROOT_CONCEPT)))
 			.extract()
 			.jsonPath().getObject("members", SnomedReferenceSetMembers.class);
 		
-		Map<?, ?> updateReq = ImmutableMap.<String, Object>builder()
-				.put("inactivationProperties", new InactivationProperties(Concepts.PENDING_MOVE, ImmutableList.of(new AssociationTarget(Concepts.REFSET_POSSIBLY_EQUIVALENT_TO_ASSOCIATION, Concepts.ROOT_CONCEPT))))
-				// XXX also pass the current members to the update, without the fix this would cause duplicate association members
-				.put("members", currentMembers)
-				.put("commitComment", "Add a pending move indicator to an active concept")
-				.build();
+		Map<?, ?> updateReq = Json.object(
+			"inactivationProperties", new InactivationProperties(Concepts.PENDING_MOVE, List.of(new AssociationTarget(Concepts.REFSET_POSSIBLY_EQUIVALENT_TO_ASSOCIATION, Concepts.ROOT_CONCEPT))),
+			// XXX also pass the current members to the update, without the fix this would cause duplicate association members
+			"members", currentMembers,
+			"commitComment", "Add a pending move indicator to an active concept"
+		);
 		updateComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, updateReq)
 			.statusCode(204);
 		List<String> memberIds = getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, "inactivationProperties(),members()")
 			.statusCode(200)
 			.body("inactivationProperties.inactivationIndicatorId", equalTo(Concepts.PENDING_MOVE))
-			.body("inactivationProperties.associationTargets.referenceSetId", equalTo(ImmutableList.of(Concepts.REFSET_POSSIBLY_EQUIVALENT_TO_ASSOCIATION)))
-			.body("inactivationProperties.associationTargets.targetComponentId", equalTo(ImmutableList.of(Concepts.ROOT_CONCEPT)))
+			.body("inactivationProperties.associationTargets.referenceSetId", equalTo(List.of(Concepts.REFSET_POSSIBLY_EQUIVALENT_TO_ASSOCIATION)))
+			.body("inactivationProperties.associationTargets.targetComponentId", equalTo(List.of(Concepts.ROOT_CONCEPT)))
 			.extract().path("members.items.id");
 		
 		assertThat(memberIds.remove(associationMemberId)).isTrue();
@@ -349,9 +347,8 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 	public void createDuplicateConcept() throws Exception {
 		String conceptId = createNewConcept(branchPath);
 		Map<?, ?> requestBody = createConceptRequestBody(Concepts.ROOT_CONCEPT)
-				.put("id", conceptId)
-				.put("commitComment", "Created new concept with duplicate identifier")
-				.build();
+				.with("id", conceptId)
+				.with("commitComment", "Created new concept with duplicate identifier");
 
 		createComponent(branchPath, SnomedComponentType.CONCEPT, requestBody).statusCode(409);
 	}
@@ -416,22 +413,17 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 	public void createConceptWithMember() throws Exception {
 		String refSetId = createNewRefSet(branchPath);
 
-		Map<?, ?> memberRequestBody = ImmutableMap.builder()
-				.put("moduleId", Concepts.MODULE_SCT_CORE)
-				.put("referenceSetId", refSetId)
-				.build();
-
 		Map<?, ?> conceptRequestBody = createConceptRequestBody(Concepts.ROOT_CONCEPT)
-				.put("members", ImmutableList.of(memberRequestBody))
-				.put("commitComment", "Created concept with reference set member")
-				.build();
+				.with("members", Json.array(Json.object(
+					"moduleId", Concepts.MODULE_SCT_CORE,
+					"referenceSetId", refSetId
+				)))
+				.with("commitComment", "Created concept with reference set member");
 
-		String conceptId = lastPathSegment(createComponent(branchPath, SnomedComponentType.CONCEPT, conceptRequestBody)
-				.statusCode(201)
-				.extract().header("Location"));
+		String conceptId = assertCreated(createComponent(branchPath, SnomedComponentType.CONCEPT, conceptRequestBody));
 
 		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, "members()").statusCode(200)
-		.body("members.items[0].referenceSetId", equalTo(refSetId));
+			.body("members.items[0].referenceSetId", equalTo(refSetId));
 	}
 
 	@Test
@@ -459,10 +451,10 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 				.add(newTextDefinition)
 				.build();
 
-		Map<?, ?> updateRequestBody = ImmutableMap.builder()
-				.put("descriptions", SnomedDescriptions.of(changedDescriptions))
-				.put("commitComment", "Add new description via concept update")
-				.build();
+		Map<?, ?> updateRequestBody = Json.object(
+			"descriptions", SnomedDescriptions.of(changedDescriptions),
+			"commitComment", "Add new description via concept update"
+		);
 
 		updateComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, updateRequestBody).statusCode(204);
 		SnomedConcept updatedConcept = getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, "descriptions()")
@@ -498,10 +490,10 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 				.add(newRelationship)
 				.build();
 
-		final Map<?, ?> updateRequestBody = ImmutableMap.builder()
-				.put("relationships", SnomedRelationships.of(changedRelationships))
-				.put("commitComment", "Add new relationship via concept update")
-				.build();
+		final Map<?, ?> updateRequestBody = Json.object(
+			"relationships", SnomedRelationships.of(changedRelationships),
+			"commitComment", "Add new relationship via concept update"
+		);
 
 		updateComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, updateRequestBody).statusCode(204);
 		final SnomedConcept updatedConcept = getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, "relationships()")
@@ -533,10 +525,10 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 				.add(newMember)
 				.build();
 
-		final Map<?, ?> updateRequestBody = ImmutableMap.builder()
-				.put("members", SnomedReferenceSetMembers.of(changedMembers))
-				.put("commitComment", "Add new reference set member via concept update")
-				.build();
+		final Map<?, ?> updateRequestBody = Json.object(
+			"members", SnomedReferenceSetMembers.of(changedMembers),
+			"commitComment", "Add new reference set member via concept update"
+		);
 
 		updateComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, updateRequestBody).statusCode(204);
 		final SnomedConcept updatedConcept = getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, "members()")
@@ -686,17 +678,16 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		final String conceptId = ApplicationContext.getServiceForClass(ISnomedIdentifierService.class).generate(null, ComponentCategory.CONCEPT, 1).iterator().next();
 		final String owlSubclassOfExpression = String.format("SubClassOf(:%s :%s)", conceptId, Concepts.AMBIGUOUS);
 		
-		final Map<?, ?> memberRequestBody = ImmutableMap.builder()
-				.put("moduleId", Concepts.MODULE_SCT_CORE)
-				.put("referenceSetId", Concepts.REFSET_OWL_AXIOM)
-				.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, owlSubclassOfExpression)
-				.build();
-
 		final Map<?, ?> conceptRequestBody = createConceptRequestBody(Concepts.FULLY_SPECIFIED_NAME)
-				.put("id", conceptId)
-				.put("members", ImmutableList.of(memberRequestBody))
-				.put("commitComment", "Created concept with owl axiom reference set member")
-				.build();
+			.with(Json.object(
+				"id", conceptId,
+				"members", Json.array(Json.object(
+					"moduleId", Concepts.MODULE_SCT_CORE,
+					"referenceSetId", Concepts.REFSET_OWL_AXIOM,
+					SnomedRf2Headers.FIELD_OWL_EXPRESSION, owlSubclassOfExpression
+				)),
+				"commitComment", "Created concept with owl axiom reference set member"
+			));
 
 		createComponent(branchPath, SnomedComponentType.CONCEPT, conceptRequestBody)
 				.statusCode(201);
@@ -705,7 +696,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 				.setExpand("members()")
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(getBus())
-				.getSync();
+				.getSync(1, TimeUnit.MINUTES);
 		
 		assertNotNull(conceptWithAxiomMember);
 		assertEquals(1, conceptWithAxiomMember.getMembers().getTotal());
@@ -718,17 +709,16 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		
 		final String owlEquivalentClassesExpression = String.format("EquivalentClasses(:%s ObjectIntersectionOf(:%s :%s))", conceptId, Concepts.AMBIGUOUS, Concepts.NAMESPACE_ROOT);
 		
-		final Map<?, ?> memberRequestBody = ImmutableMap.builder()
-				.put("moduleId", Concepts.MODULE_SCT_CORE)
-				.put("referenceSetId", Concepts.REFSET_OWL_AXIOM)
-				.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, owlEquivalentClassesExpression)
-				.build();
-
-		final Map<?, ?> conceptRequestBody = createConceptRequestBody(Concepts.ROOT_CONCEPT)
-				.put("id", conceptId)
-				.put("members", ImmutableList.of(memberRequestBody))
-				.put("commitComment", "Created concept with owl axiom reference set member")
-				.build();
+		final Json conceptRequestBody = createConceptRequestBody(Concepts.ROOT_CONCEPT)
+				.with(Json.object(
+					"id", conceptId,
+					"members", Json.array(Json.object(
+						"moduleId", Concepts.MODULE_SCT_CORE,
+						"referenceSetId", Concepts.REFSET_OWL_AXIOM,
+						SnomedRf2Headers.FIELD_OWL_EXPRESSION, owlEquivalentClassesExpression
+					)),
+					"commitComment", "Created concept with owl axiom reference set member"
+				));
 
 		createComponent(branchPath, SnomedComponentType.CONCEPT, conceptRequestBody).statusCode(201);
 		
@@ -748,17 +738,18 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		final String conceptId = ApplicationContext.getServiceForClass(ISnomedIdentifierService.class).generate(null, ComponentCategory.CONCEPT, 1).iterator().next();
 		
 		final String owlSubClassOfExpression = "SubClassOf(ObjectIntersectionOf(:73211009 ObjectSomeValuesFrom(:609096000 ObjectSomeValuesFrom(:100106001 :100102001))) :"+conceptId+")";
-		final Map<?, ?> memberRequestBody = ImmutableMap.builder()
-				.put("moduleId", Concepts.MODULE_SCT_CORE)
-				.put("referenceSetId", Concepts.REFSET_OWL_AXIOM)
-				.put(SnomedRf2Headers.FIELD_OWL_EXPRESSION, owlSubClassOfExpression)
-				.build();
+		final Map<?, ?> memberRequestBody = Json.object(
+			"moduleId", Concepts.MODULE_SCT_CORE,
+			"referenceSetId", Concepts.REFSET_OWL_AXIOM,
+			SnomedRf2Headers.FIELD_OWL_EXPRESSION, owlSubClassOfExpression
+		);
 		
 		final Map<?, ?> conceptRequestBody = createConceptRequestBody(Concepts.ROOT_CONCEPT)
-				.put("id", conceptId)
-				.put("members", ImmutableList.of(memberRequestBody))
-				.put("commitComment", "Created concept with owl axiom reference set member")
-				.build();
+				.with(Json.object(
+					"id", conceptId,
+					"members", Json.array(memberRequestBody),
+					"commitComment", "Created concept with owl axiom reference set member"
+				));
 		
 		createComponent(branchPath, SnomedComponentType.CONCEPT, conceptRequestBody)
 				.statusCode(201);
@@ -777,12 +768,9 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void createConceptWithoutOwlAxiomMembersConceptDefinitionStatusShouldDefaultToPrimitive() throws Exception {
 		final Map<?, ?> conceptRequestBody = createConceptRequestBody(Concepts.ROOT_CONCEPT)
-				.put("commitComment", "Created concept")
-				.build();
+				.with("commitComment", "Created concept");
 		
-		final String conceptId = lastPathSegment(createComponent(branchPath, SnomedComponentType.CONCEPT, conceptRequestBody)
-				.statusCode(201)
-				.extract().header("Location"));
+		final String conceptId = assertCreated(createComponent(branchPath, SnomedComponentType.CONCEPT, conceptRequestBody));
 		
 		final SnomedConcept concept = SnomedRequests.prepareGetConcept(conceptId)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
@@ -798,10 +786,10 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		final String conceptId = createNewConcept(branchPath);
 
 		// Update the definition status on concept
-		Map<?, ?> updateRequestBody = ImmutableMap.<String, Object>builder()
-				.put("definitionStatusId", Concepts.FULLY_DEFINED)
-				.put("commitComment", "Changed definition status of concept to fully defined")
-				.build();
+		Json updateRequestBody = Json.object(
+			"definitionStatusId", Concepts.FULLY_DEFINED,
+			"commitComment", "Changed definition status of concept to fully defined"
+		);
 
 		updateComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, updateRequestBody).statusCode(204);
 
@@ -815,32 +803,29 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		final String conceptId = createNewConcept(branchPath);
 
 		// Update the definition status on concept
-		final Map<?, ?> definitionStatusUpdateRequestBody = ImmutableMap.<String, Object>builder()
-				.put("definitionStatusId", Concepts.FULLY_DEFINED)
-				.put("commitComment", "Changed definition status of concept to fully defined")
-				.build();
+		final Map<?, ?> definitionStatusUpdateRequestBody = Json.object(
+			"definitionStatusId", Concepts.FULLY_DEFINED,
+			"commitComment", "Changed definition status of concept to fully defined"
+		);
 
 		updateComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, definitionStatusUpdateRequestBody).statusCode(204);
 		
-		final Map<String, Object> properties = ImmutableMap.of(SnomedRf2Headers.FIELD_OWL_EXPRESSION, String.format("EquivalentClasses(:%s ObjectIntersectionOf(:%s :%s))", conceptId, Concepts.AMBIGUOUS, Concepts.NAMESPACE_ROOT));
 		// Add a reference set member
 		final SnomedReferenceSetMember newMember = new SnomedReferenceSetMember();
 		newMember.setId(UUID.randomUUID().toString());
 		newMember.setActive(true);
 		newMember.setReferenceSetId(Concepts.REFSET_OWL_AXIOM);
-		newMember.setProperties(properties);
+		newMember.setProperties(
+			Json.object(SnomedRf2Headers.FIELD_OWL_EXPRESSION, String.format("EquivalentClasses(:%s ObjectIntersectionOf(:%s :%s))", conceptId, Concepts.AMBIGUOUS, Concepts.NAMESPACE_ROOT))
+		);
 		newMember.setType(SnomedRefSetType.OWL_AXIOM);
 		newMember.setModuleId(Concepts.MODULE_SCT_CORE);
 
-		final List<SnomedReferenceSetMember> changedMembers = ImmutableList.<SnomedReferenceSetMember>builder()
-				.add(newMember)
-				.build();
-
-		final Map<?, ?> updateRequestBody = ImmutableMap.builder()
-				.put("members", SnomedReferenceSetMembers.of(changedMembers))
-				.put("definitionStatusId", Concepts.PRIMITIVE)
-				.put("commitComment", "Add new reference set member via concept update")
-				.build();
+		final Json updateRequestBody = Json.object(
+			"members", SnomedReferenceSetMembers.of(Json.array(newMember)),
+			"definitionStatusId", Concepts.PRIMITIVE,
+			"commitComment", "Add new reference set member via concept update"
+		);
 
 		updateComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, updateRequestBody).statusCode(204);
 		
@@ -858,24 +843,21 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 	public void testUpdateConceptDefinitionStatusWithEquivalentClassesAxiomMember() {
 		final String conceptId = createNewConcept(branchPath);
 
-		final Map<String, Object> properties = ImmutableMap.of(SnomedRf2Headers.FIELD_OWL_EXPRESSION, String.format("EquivalentClasses(:%s ObjectIntersectionOf(:%s :%s))", conceptId, Concepts.AMBIGUOUS, Concepts.NAMESPACE_ROOT));
 		// Add a reference set member
 		final SnomedReferenceSetMember newMember = new SnomedReferenceSetMember();
 		newMember.setId(UUID.randomUUID().toString());
 		newMember.setActive(true);
 		newMember.setReferenceSetId(Concepts.REFSET_OWL_AXIOM);
-		newMember.setProperties(properties);
+		newMember.setProperties(
+			Json.object(SnomedRf2Headers.FIELD_OWL_EXPRESSION, String.format("EquivalentClasses(:%s ObjectIntersectionOf(:%s :%s))", conceptId, Concepts.AMBIGUOUS, Concepts.NAMESPACE_ROOT))
+		);
 		newMember.setType(SnomedRefSetType.OWL_AXIOM);
 		newMember.setModuleId(Concepts.MODULE_SCT_CORE);
 
-		final List<SnomedReferenceSetMember> changedMembers = ImmutableList.<SnomedReferenceSetMember>builder()
-				.add(newMember)
-				.build();
-
-		final Map<?, ?> updateRequestBody = ImmutableMap.builder()
-				.put("members", SnomedReferenceSetMembers.of(changedMembers))
-				.put("commitComment", "Add new reference set member via concept update")
-				.build();
+		final Map<?, ?> updateRequestBody = Json.object(
+			"members", SnomedReferenceSetMembers.of(Json.array(newMember)),
+			"commitComment", "Add new reference set member via concept update"
+		);
 
 		updateComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, updateRequestBody).statusCode(204);
 		
@@ -894,30 +876,27 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		final String conceptId = createNewConcept(branchPath);
 
 		// Update the definition status on concept
-		final Map<?, ?> definitionStatusUpdateRequestBody = ImmutableMap.<String, Object>builder()
-				.put("definitionStatusId", Concepts.FULLY_DEFINED)
-				.put("commitComment", "Changed definition status of concept to fully defined")
-				.build();
+		final Map<?, ?> definitionStatusUpdateRequestBody = Json.object(
+			"definitionStatusId", Concepts.FULLY_DEFINED,
+			"commitComment", "Changed definition status of concept to fully defined"
+		);
 
 		updateComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, definitionStatusUpdateRequestBody).statusCode(204);
-		final Map<String, Object> properties = ImmutableMap.of(SnomedRf2Headers.FIELD_OWL_EXPRESSION, String.format("SubClassOf(:%s :%s)", conceptId, Concepts.AMBIGUOUS));
 		// Add a reference set member
 		final SnomedReferenceSetMember newMember = new SnomedReferenceSetMember();
 		newMember.setId(UUID.randomUUID().toString());
 		newMember.setActive(true);
 		newMember.setReferenceSetId(Concepts.REFSET_OWL_AXIOM);
-		newMember.setProperties(properties);
+		newMember.setProperties(
+			Json.object(SnomedRf2Headers.FIELD_OWL_EXPRESSION, String.format("SubClassOf(:%s :%s)", conceptId, Concepts.AMBIGUOUS))
+		);
 		newMember.setType(SnomedRefSetType.OWL_AXIOM);
 		newMember.setModuleId(Concepts.MODULE_SCT_CORE);
 
-		final List<SnomedReferenceSetMember> changedMembers = ImmutableList.<SnomedReferenceSetMember>builder()
-				.add(newMember)
-				.build();
-
-		final Map<?, ?> updateRequestBody = ImmutableMap.builder()
-				.put("members", SnomedReferenceSetMembers.of(changedMembers))
-				.put("commitComment", "Add new reference set member via concept update")
-				.build();
+		final Json updateRequestBody = Json.object(
+			"members", SnomedReferenceSetMembers.of(Json.array(newMember)),
+			"commitComment", "Add new reference set member via concept update"
+		);
 
 		updateComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, updateRequestBody).statusCode(204);
 		

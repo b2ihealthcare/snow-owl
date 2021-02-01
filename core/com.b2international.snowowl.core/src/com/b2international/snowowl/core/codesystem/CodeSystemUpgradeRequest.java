@@ -15,19 +15,25 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import javax.validation.constraints.NotNull;
 
+import com.b2international.commons.exceptions.ApiError;
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.exceptions.ConflictException;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.merge.Merge;
+import com.b2international.snowowl.core.merge.MergeConflict;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 7.14.0 
@@ -36,12 +42,15 @@ final class CodeSystemUpgradeRequest implements Request<RepositoryContext, Strin
 
 	private static final long serialVersionUID = 1L;
 
+	@JsonProperty
 	@NotNull
 	private final CodeSystemURI codeSystem;
 	
+	@JsonProperty
 	@NotNull
 	private final CodeSystemURI extensionOf;
 
+	@JsonProperty
 	private String codeSystemId;
 	
 	public CodeSystemUpgradeRequest(CodeSystemURI codeSystem, CodeSystemURI extensionOf) {
@@ -110,8 +119,13 @@ final class CodeSystemUpgradeRequest implements Request<RepositoryContext, Strin
 			.build()
 			.execute(context);
 		if (merge.getStatus() != Merge.Status.COMPLETED) {
-			context.log().error("Failed to sync source CodeSystem content to upgrade CodeSystem. Error: {}. Conflicts: {}", merge.getApiError(), merge.getConflicts());
-			throw new BadRequestException("Upgrade can not be performed due to content synchronization errors, see error logs.");
+			ApiError apiError = merge.getApiError();
+			Collection<MergeConflict> conflicts = merge.getConflicts();
+			context.log().error("Failed to sync source CodeSystem content to upgrade CodeSystem. Error: {}. Conflicts: {}", apiError, conflicts);
+			throw new ConflictException("Upgrade can not be performed due to content synchronization errors.")
+				.withAdditionalInfo(Map.of(
+					"conflicts", conflicts
+				));
 		}
 		
 		// and lastly create the actual CodeSystem so users will be able to browse, access and complete the upgrade

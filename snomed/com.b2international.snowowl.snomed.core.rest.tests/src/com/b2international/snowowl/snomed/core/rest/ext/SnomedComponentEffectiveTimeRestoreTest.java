@@ -19,7 +19,6 @@ import static com.b2international.snowowl.snomed.core.rest.CodeSystemRestRequest
 import static com.b2international.snowowl.snomed.core.rest.CodeSystemVersionRestRequests.createVersion;
 import static com.b2international.snowowl.snomed.core.rest.CodeSystemVersionRestRequests.getNextAvailableEffectiveDateAsString;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.getComponent;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createConceptRequestBody;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewConcept;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.inactivateConcept;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.reactivateConcept;
@@ -29,31 +28,21 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.Date;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
-import com.b2international.snowowl.snomed.cis.domain.SctId;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
-import com.b2international.snowowl.snomed.core.rest.CodeSystemRestRequests;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
-import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.test.commons.rest.RestExtensions;
 
 /**
  * @since 7.14
  */
-public class SnomedComponentEffectiveTimeRestoreTest extends AbstractSnomedApiTest {
+public class SnomedComponentEffectiveTimeRestoreTest extends AbstractSnomedExtensionApiTest {
 
-	private static final String SNOMEDCT = SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME;
-	
 	private static final String EXT_BASE_SI_VERSION = "2019-07-31";
 	private static final String EXT_UPGRADE_SI_VERSION = "2020-01-31";
 	private static final String EXT_VERSION = "2019-10-31";
@@ -192,37 +181,6 @@ public class SnomedComponentEffectiveTimeRestoreTest extends AbstractSnomedApiTe
 		));
 		concept = getConcept(upgradeCodeSystem.getCodeSystemURI(), moduleId);
 		assertEquals(EffectiveTimes.parse(EXT_VERSION), concept.getEffectiveTime());
-	}
-	
-	private String createModule(CodeSystem extension) {
-		// generate ID for the module first
-		String moduleId = SnomedRequests.identifiers().prepareGenerate()
-				.setCategory(ComponentCategory.CONCEPT)
-				.setNamespace(Concepts.B2I_NAMESPACE)
-				.setQuantity(1)
-				.buildAsync()
-				.execute(getBus())
-				.getSync(1, TimeUnit.MINUTES)
-				.first().map(SctId::getSctid).orElseThrow();
-		// then create the module concept
-		return createConcept(
-			extension.getCodeSystemURI(), 
-			createConceptRequestBody(Concepts.MODULE_ROOT, moduleId)
-				.put("id", moduleId)
-		);
-	}
-
-	// branch have been already created by the outer rules, so we are just reusing it to create an extension branch
-	private CodeSystem createExtension(CodeSystemURI extensionOf, String codeSystemId) {
-		CodeSystemRestRequests.createCodeSystem(extensionOf, codeSystemId)
-			.assertThat()
-			.statusCode(201);
-		return CodeSystemRestRequests.getCodeSystem(codeSystemId).extract().as(CodeSystem.class);
-	}
-	
-	private CodeSystem createExtensionUpgrade(CodeSystemURI upgradeOf, CodeSystemURI extensionOf) {
-		final String upgradeCodeSystemId = RestExtensions.lastPathSegment(CodeSystemRestRequests.upgrade(upgradeOf, extensionOf).assertThat().statusCode(201).extract().header("Location"));
-		return CodeSystemRestRequests.getCodeSystem(upgradeCodeSystemId).extract().as(CodeSystem.class);
 	}
 	
 }

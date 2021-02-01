@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -132,12 +132,12 @@ public class RevisionBranchMergeTest extends BaseRevisionIndexTest {
 		// 1. MAIN falls behind compared to the child
 		assertState(MAIN, child, BranchState.FORWARD);
 		
-		// 2. Child should be UP_TO_DATE state compared to the MAIN
+		// 2. Child should be BEHIND state compared to the MAIN
 		assertState(child, MAIN, BranchState.BEHIND);
 		
 		// 3. one revision should be visible from MAIN branch, excluded one should not
-		assertNotNull(getRevision(MAIN, RevisionData.class, STORAGE_KEY2));
-		assertEquals(getRevision(MAIN, RevisionData.class, STORAGE_KEY1), NEW_DATA);
+		assertDocEquals(getRevision(MAIN, RevisionData.class, STORAGE_KEY1), NEW_DATA);
+		assertDocEquals(getRevision(MAIN, RevisionData.class, STORAGE_KEY2), NEW_DATA2);
 	}
 	
 	@Test
@@ -442,6 +442,31 @@ public class RevisionBranchMergeTest extends BaseRevisionIndexTest {
 		} finally {
 			index().hooks().removeHook(hook);
 		}
+	}
+	
+	@Test
+	public void createBranchFromAnotherWithNonSquashMergeSources() throws Exception {
+		final String branchA = createBranch(MAIN, "a");
+		final String branchB = createBranch(MAIN, "b");
+		
+		// create commit to branchA 
+		indexRevision(branchA, NEW_DATA);
+		
+		// before merge NEW_DATA should not be visible from branch B 
+		assertNull(getRevision(branchB, RevisionData.class, STORAGE_KEY1));
+		
+		// merge A content to branch B
+		branching().prepareMerge(branchA, branchB).squash(false).merge();
+		
+		// NEW_DATA should be visible from branch B
+		assertNotNull(getRevision(branchB, RevisionData.class, STORAGE_KEY1));
+		
+		// NEW_DATA should be visible from child branch of B
+		final String branchC = createBranch(branchB, "c");
+		assertNotNull(getRevision(branchC, RevisionData.class, STORAGE_KEY1));
+		
+		// accessing branchC base data via ^ should also return the object
+		assertNotNull(getRevision(RevisionIndex.toBaseRef(branchC), RevisionData.class, STORAGE_KEY1));
 	}
 	
 	private void assertState(String branchPath, String compareWith, BranchState expectedState) {

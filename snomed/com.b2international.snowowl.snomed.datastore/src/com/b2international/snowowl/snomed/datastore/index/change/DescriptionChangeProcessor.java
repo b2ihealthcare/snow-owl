@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,8 +24,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.b2international.index.Hits;
-import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.StagingArea;
 import com.b2international.snowowl.core.api.IComponent;
@@ -34,7 +32,6 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Builder;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberChange;
 import com.b2international.snowowl.snomed.datastore.index.update.ReferenceSetMembershipUpdater;
 import com.google.common.collect.HashMultimap;
@@ -79,12 +76,7 @@ public class DescriptionChangeProcessor extends ChangeSetProcessorBase {
 		changedDescriptionIds.addAll(referencedDescriptionIds);
 		
 		// load the known descriptions 
-		final Query<SnomedDescriptionIndexEntry> query = Query.select(SnomedDescriptionIndexEntry.class)
-				.where(SnomedDescriptionIndexEntry.Expressions.ids(changedDescriptionIds))
-				.limit(changedDescriptionIds.size())
-				.build();
-		
-		final Hits<SnomedDescriptionIndexEntry> changedDescriptionHits = searcher.search(query);
+		final Iterable<SnomedDescriptionIndexEntry> changedDescriptionHits = searcher.get(SnomedDescriptionIndexEntry.class, changedDescriptionIds);
 		final Map<String, SnomedDescriptionIndexEntry> changedDescriptionRevisionsById = Maps.uniqueIndex(changedDescriptionHits, IComponent::getId);
 		
 		// load missing descriptions with only changed acceptability values
@@ -126,12 +118,7 @@ public class DescriptionChangeProcessor extends ChangeSetProcessorBase {
 		
 		// process cascading acceptability changes in unchanged docs
 		if (!descriptionsToBeLoaded.isEmpty()) {
-			final Query<SnomedDescriptionIndexEntry> descriptionsToBeLoadedQuery = Query
-					.select(SnomedDescriptionIndexEntry.class)
-					.where(SnomedDocument.Expressions.ids(descriptionsToBeLoaded)).limit(descriptionsToBeLoaded.size())
-					.build();
-			
-			for (SnomedDescriptionIndexEntry unchangedDescription : searcher.search(descriptionsToBeLoadedQuery)) {
+			for (SnomedDescriptionIndexEntry unchangedDescription : searcher.get(SnomedDescriptionIndexEntry.class, descriptionsToBeLoaded)) {
 				final Builder doc = SnomedDescriptionIndexEntry.builder(unchangedDescription);
 				processChanges(unchangedDescription.getId(), doc, unchangedDescription,
 						acceptabilityChangesByDescription.get(unchangedDescription.getId()),

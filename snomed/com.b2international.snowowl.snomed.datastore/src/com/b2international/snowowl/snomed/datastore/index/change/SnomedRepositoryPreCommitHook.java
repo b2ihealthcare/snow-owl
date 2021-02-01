@@ -124,12 +124,7 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 		
 		
 		if (!statedDestinationIds.isEmpty()) {
-			final Query<SnomedConceptDocument> statedDestinationConceptsQuery = Query.select(SnomedConceptDocument.class)
-					.where(SnomedDocument.Expressions.ids(statedDestinationIds))
-					.limit(statedDestinationIds.size())
-					.build();
-			
-			for (SnomedConceptDocument statedDestinationConcept : index.search(statedDestinationConceptsQuery)) {
+			for (SnomedConceptDocument statedDestinationConcept : index.get(SnomedConceptDocument.class, statedDestinationIds)) {
 				statedConceptIds.add(Long.parseLong(statedDestinationConcept.getId()));
 				if (statedDestinationConcept.getStatedParents() != null) {
 					statedConceptIds.addAll(statedDestinationConcept.getStatedParents());
@@ -141,12 +136,7 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 		}
 		
 		if (!inferredDestinationIds.isEmpty()) {
-			final Query<SnomedConceptDocument> inferredDestinationConceptsQuery = Query.select(SnomedConceptDocument.class)
-					.where(SnomedDocument.Expressions.ids(inferredDestinationIds))
-					.limit(inferredDestinationIds.size())
-					.build();
-			
-			for (SnomedConceptDocument inferredDestinationConcept : index.search(inferredDestinationConceptsQuery)) {
+			for (SnomedConceptDocument inferredDestinationConcept : index.get(SnomedConceptDocument.class, inferredDestinationIds)) {
 				inferredConceptIds.add(Long.parseLong(inferredDestinationConcept.getId()));
 				if (inferredDestinationConcept.getParents() != null) {
 					inferredConceptIds.addAll(inferredDestinationConcept.getParents());

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import org.junit.Rule;
 import com.b2international.commons.options.MetadataImpl;
 import com.b2international.index.Hits;
 import com.b2international.index.Index;
+import com.b2international.index.IndexClientFactory;
 import com.b2international.index.IndexResource;
 import com.b2international.index.WithScore;
 import com.b2international.index.mapping.DocumentMapping;
@@ -74,7 +75,11 @@ public abstract class BaseRevisionIndexTest {
 	}
 	
 	protected Map<String, Object> getIndexSettings() {
-		return Collections.emptyMap();
+		// make sure we use the default max_result_window in tests
+		// this also changes it back if a subclass has changed it for its tests
+		return Map.of(
+			IndexClientFactory.RESULT_WINDOW_KEY, ""+IndexClientFactory.DEFAULT_RESULT_WINDOW
+		);
 	}
 	
 	protected final String nextId() {
