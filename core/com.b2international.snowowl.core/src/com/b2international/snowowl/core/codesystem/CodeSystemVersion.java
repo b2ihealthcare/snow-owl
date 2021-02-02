@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import java.util.Date;
 public class CodeSystemVersion implements CodeSystemVersionProperties {
 
 	private Date importDate;
-	private Date effectiveDate;
+	private String effectiveDate;
 	private Date lastModificationDate;
 	private String description;
 	private String version;
@@ -39,7 +39,7 @@ public class CodeSystemVersion implements CodeSystemVersionProperties {
 	}
 
 	@Override
-	public Date getEffectiveDate() {
+	public String getEffectiveDate() {
 		return effectiveDate;
 	}
 
@@ -83,7 +83,7 @@ public class CodeSystemVersion implements CodeSystemVersionProperties {
 		this.importDate = importDate;
 	}
 
-	public void setEffectiveDate(final Date effectiveDate) {
+	public void setEffectiveDate(final String effectiveDate) {
 		this.effectiveDate = effectiveDate;
 	}
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import javax.validation.constraints.NotNull;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 import com.b2international.commons.exceptions.ApiException;
-import com.b2international.commons.exceptions.LockedException;
 import com.b2international.snowowl.core.attachments.Attachment;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.attachments.InternalAttachmentRegistry;
@@ -32,7 +31,6 @@ import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
-import com.b2international.snowowl.core.locks.OperationLockException;
 import com.b2international.snowowl.core.request.LockRequest;
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.google.common.collect.Sets;
@@ -90,8 +88,6 @@ public abstract class ImportRequest extends LockRequest<TransactionContext, Impo
 
 		} catch (ApiException e) {
 			throw e;
-		} catch (OperationLockException e) {
-			throw new LockedException(e.getMessage());
 		} catch (Exception e) {
 			String error = "Unexpected error happened during the import of the source file: " + attachment.getFileName();
 			context.log().error(error, e);

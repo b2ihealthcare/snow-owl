@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,11 @@ import java.io.Serializable;
 /**
  * Represents the bare minimum of a SNOMED CT relationship (without binding the source concept).
  * 
- * @since
+ * @since 1.0
  */
 public final class StatementFragment implements Serializable {
 
-	private static final long serialVersionUID = 8281299401725022928L;
+	private static final long serialVersionUID = 2L;
 
 	private final long typeId;
 	private final long destinationId;
@@ -34,13 +34,14 @@ public final class StatementFragment implements Serializable {
 	private final boolean universal;
 
 	// Only stored if the original relationship is known
+	private final String moduleId;
 	private final long statementId;
 	private final boolean released;
 
 	private boolean hasStatedPair;
 
 	public StatementFragment(final long typeId, final long destinationId) {
-		this(typeId, destinationId, false, 0, 0, false, -1L, false, false);
+		this(typeId, destinationId, false, 0, 0, false, -1L, null, false, false);
 	}
 
 	public StatementFragment(final long typeId,
@@ -50,17 +51,17 @@ public final class StatementFragment implements Serializable {
 			final int unionGroup,
 			final boolean universal,
 			final long statementId,
+			final String moduleId,
 			final boolean released,
 			final boolean hasStatedPair) {
-
 		this.typeId = typeId;
 		this.destinationId = destinationId;
 		this.destinationNegated = destinationNegated;
 		this.group = group;
 		this.unionGroup = unionGroup;
 		this.universal = universal;
-
 		this.statementId = statementId;
+		this.moduleId = moduleId;
 		this.released = released;
 		this.hasStatedPair = hasStatedPair;
 	}
@@ -88,9 +89,13 @@ public final class StatementFragment implements Serializable {
 	public boolean isUniversal() {
 		return universal;
 	}
-
+	
 	public long getStatementId() {
 		return statementId;
+	}
+	
+	public String getModuleId() {
+		return moduleId;
 	}
 
 	public boolean isReleased() {
@@ -118,6 +123,8 @@ public final class StatementFragment implements Serializable {
 		builder.append(universal);
 		builder.append(", statementId=");
 		builder.append(statementId);
+		builder.append(", moduleId=");
+		builder.append(moduleId);
 		builder.append(", released=");
 		builder.append(released);
 		builder.append(", hasStatedPair=");

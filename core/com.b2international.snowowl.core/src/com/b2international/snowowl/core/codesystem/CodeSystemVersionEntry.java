@@ -123,10 +123,10 @@ public final class CodeSystemVersionEntry implements Serializable {
 			return matchRange(Fields.IMPORT_DATE, from, to);
 		}
 		
-		public static Expression effectiveDate(Date effectiveDate) {
-			return exactMatch(Fields.EFFECTIVE_DATE, EffectiveTimes.getEffectiveTime(effectiveDate));
+		public static Expression effectiveDate(long from, long to) {
+			return matchRange(Fields.EFFECTIVE_DATE, from, to);
 		}
-
+		
 		public static Expression parentBranchPath(String parentBranchPath) {
 			return exactMatch(Fields.PARENT_BRANCH_PATH, parentBranchPath);
 		}
