@@ -952,7 +952,6 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		String sourceRelationshipId = createNewRelationship(branchPath, conceptId, Concepts.HAS_DOSE_FORM, Concepts.MODULE_SCT_MODEL_COMPONENT);
 		String destinationRelationshipId = createNewRelationship(branchPath, Concepts.MODULE_SCT_MODEL_COMPONENT, Concepts.HAS_DOSE_FORM, conceptId);
 		
-		
 		SnomedRelationship sourceRelationship = SnomedRequests.prepareGetRelationship(sourceRelationshipId)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
 				.execute(getBus())
