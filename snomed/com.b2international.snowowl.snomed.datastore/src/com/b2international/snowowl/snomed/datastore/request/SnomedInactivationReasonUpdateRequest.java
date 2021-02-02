@@ -130,7 +130,7 @@ final class SnomedInactivationReasonUpdateRequest extends BaseComponentMemberUpd
 			if (Objects.equals(existingValueId, inactivationValueId)) {
 
 				// Exact match, just make sure that the member is active
-				changed = ensureMemberActive(context, existingMember, updatedMember);
+				changed = ensureStatusChanged(context, existingMember, componentToUpdate, updatedMember);
 
 			} else if (!CLEAR.equals(inactivationValueId)) {
 				// Re-use this member, if the intention was not to remove the existing value

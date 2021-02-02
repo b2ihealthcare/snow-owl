@@ -68,6 +68,26 @@ abstract class BaseComponentMemberUpdateRequest implements Request<TransactionCo
 			
 		}
 	}
+	
+	protected final boolean ensureStatusChanged(final TransactionContext context, final SnomedReferenceSetMember existingMember, 
+			final SnomedComponentDocument componentToUpdate, final SnomedRefSetMemberIndexEntry.Builder updatedMember) {
+		if (!existingMember.isActive() && componentToUpdate.isActive()) {		
+			if (LOG.isDebugEnabled()) { LOG.debug("Reactivating {} member {}.", getMemberType(), existingMember.getId()); }
+			updatedMember.active(true);
+			updateModule(context, existingMember, updatedMember, context.service(ModuleIdProvider.class).apply(componentToUpdate));
+			unsetEffectiveTime(existingMember, updatedMember);
+			return true;
+		} else if (existingMember.isActive() && !componentToUpdate.isActive()) {
+			if (LOG.isDebugEnabled()) { LOG.debug("Inactivating {} member {}.", getMemberType(), existingMember.getId()); }
+			updatedMember.active(false);
+			updateModule(context, existingMember, updatedMember, context.service(ModuleIdProvider.class).apply(componentToUpdate));
+			unsetEffectiveTime(existingMember, updatedMember);
+			return true;
+		} else {
+			if (LOG.isDebugEnabled()) { LOG.debug("{} member {} already {}, not updating.", getMemberType(), existingMember.getId(), componentToUpdate.isActive() ? "active" : "inactive"); }
+			return false;
+		}
+	}
 
 	protected final boolean removeOrDeactivate(final TransactionContext context, final SnomedReferenceSetMember existingMember, final SnomedRefSetMemberIndexEntry.Builder updatedMember) {
 		if (!existingMember.isReleased()) {
