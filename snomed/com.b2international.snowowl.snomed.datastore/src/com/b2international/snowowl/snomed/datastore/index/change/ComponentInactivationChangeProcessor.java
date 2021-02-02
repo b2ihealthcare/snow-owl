@@ -91,12 +91,20 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 
 	private void processInactivations(StagingArea staging, RevisionSearcher searcher, Set<String> inactivatedConceptIds, Set<String> inactivatedComponentIds) throws IOException {
 		// inactivate descriptions of inactivated concepts, take current description changes into account
+		
+		ServiceProvider context = (ServiceProvider) staging.getContext();
+		ModuleIdProvider moduleIdProvider = context.service(ModuleIdProvider.class);
+		
 		if (!inactivatedConceptIds.isEmpty()) {
+			
 			
 			Multimap<String, RevisionDiff> changedMembersByReferencedComponentId = HashMultimap.create();
 			staging.getChangedRevisions(SnomedRefSetMemberIndexEntry.class).forEach(diff -> {
 				changedMembersByReferencedComponentId.put(((SnomedRefSetMemberIndexEntry) diff.newRevision).getReferencedComponentId(), diff);
 			});
+			
+			SnomedRefSetMemberIndexEntry memberForModule = staging.getChangedRevisions(SnomedRefSetMemberIndexEntry.class).findFirst().map(diff -> (SnomedRefSetMemberIndexEntry) diff.newRevision).get();
+			String moduleId = moduleIdProvider.apply(memberForModule);
 			
 			for (Hits<String[]> hits : searcher.scroll(Query.select(String[].class)
 					.from(SnomedDescriptionIndexEntry.class)
@@ -154,7 +162,7 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 								.referenceSetType(SnomedRefSetType.ATTRIBUTE_VALUE)
 								.referencedComponentId(descriptionId)
 								.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
-								.moduleId(descriptionToCheck[1])
+								.moduleId(moduleId)
 								.field(SnomedRf2Headers.FIELD_VALUE_ID, Concepts.CONCEPT_NON_CURRENT)
 								.build();
 							stageNew(inactivationMember);
@@ -164,6 +172,7 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 									.active(true) // ensure active
 									.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME) // ensure unpublished
 									.field(SnomedRf2Headers.FIELD_VALUE_ID, Concepts.CONCEPT_NON_CURRENT) // ensure non-current
+									.moduleId(moduleIdProvider.apply(existingMember))
 									.build();
 							stageChange(existingMember, updated);
 						}
@@ -174,8 +183,6 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 			
 			// inactivate relationships of inactivated concepts
 			
-			ServiceProvider context = (ServiceProvider) staging.getContext();
-			ModuleIdProvider moduleIdProvider = context.service(ModuleIdProvider.class);
 			
 			final Map<ObjectId, RevisionDiff> changedRevisions = staging.getChangedRevisions();
 			for (Hits<SnomedRelationshipIndexEntry> hits : searcher.scroll(Query.select(SnomedRelationshipIndexEntry.class)
@@ -231,6 +238,7 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 					stageChange(member, SnomedRefSetMemberIndexEntry.builder(member)
 							.active(false)
 							.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
+							.moduleId(moduleIdProvider.apply(member))
 							.build());
 				}
 			});
