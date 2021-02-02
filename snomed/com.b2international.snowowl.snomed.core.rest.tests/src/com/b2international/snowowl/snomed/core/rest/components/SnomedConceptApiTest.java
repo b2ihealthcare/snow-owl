@@ -39,6 +39,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -943,6 +944,53 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 			// Check descriptions inactivation indicator
 			assertEquals(Concepts.PENDING_MOVE, desc.getInactivationProperties().getInactivationIndicatorId());
 		});
+	}
+	
+	@Test
+	public void testConceptInactivationModuleChanges() {
+		final String conceptId = createNewConcept(branchPath);
+		String sourceRelationshipId = createNewRelationship(branchPath, conceptId, Concepts.HAS_DOSE_FORM, Concepts.MODULE_SCT_MODEL_COMPONENT);
+		String destinationRelationshipId = createNewRelationship(branchPath, Concepts.MODULE_SCT_MODEL_COMPONENT, Concepts.HAS_DOSE_FORM, conceptId);
+		
+		
+		SnomedRelationship sourceRelationship = SnomedRequests.prepareGetRelationship(sourceRelationshipId)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+				.execute(getBus())
+				.getSync();
+		
+		SnomedRelationship destinationRelationship = SnomedRequests.prepareGetRelationship(destinationRelationshipId)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+				.execute(getBus())
+				.getSync();
+
+		SnomedRequests.prepareUpdateConcept(conceptId)
+				.setActive(false)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath(), RestExtensions.USER, "commit",  Concepts.MODULE_B2I_EXTENSION)
+				.execute(getBus())
+				.getSync();
+
+		SnomedRelationship updatedSourceRelationship = SnomedRequests.prepareGetRelationship(sourceRelationshipId)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+				.execute(getBus())
+				.getSync();
+
+		SnomedRelationship updatedDestinationRelationship = SnomedRequests.prepareGetRelationship(destinationRelationshipId)
+				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+				.execute(getBus())
+				.getSync();
+
+		//Before update
+		assertTrue(sourceRelationship.isActive());
+		assertTrue(destinationRelationship.isActive());
+		assertFalse(Concepts.MODULE_B2I_EXTENSION.equals(sourceRelationship.getModuleId()));
+		assertFalse(Concepts.MODULE_B2I_EXTENSION.equals(destinationRelationship.getModuleId()));
+		
+		//After update
+		assertFalse(updatedSourceRelationship.isActive());
+		assertEquals(Concepts.MODULE_B2I_EXTENSION, updatedSourceRelationship.getModuleId());
+		assertFalse(updatedDestinationRelationship.isActive());
+		assertEquals(Concepts.MODULE_B2I_EXTENSION, updatedDestinationRelationship.getModuleId());
+
 	}
 	
 }
