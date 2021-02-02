@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.Map;
 
 import com.b2international.snowowl.core.api.IBranchPath;
@@ -63,7 +63,7 @@ public abstract class SnomedRefSetRestRequests {
 				.then();
 	}
 
-	public static void updateRefSetMemberEffectiveTime(IBranchPath memberPath, String memberId, Date effectiveTime) {
+	public static void updateRefSetMemberEffectiveTime(IBranchPath memberPath, String memberId, LocalDate effectiveTime) {
 		updateRefSetMemberEffectiveTime(memberPath, memberId, EffectiveTimes.format(effectiveTime, DateFormats.SHORT));
 	}
 

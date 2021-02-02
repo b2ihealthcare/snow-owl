@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.Objects;
 
 import javax.validation.constraints.NotNull;
@@ -56,14 +56,14 @@ public abstract class SnomedComponentUpdateRequestBase extends UpdateRequest<Tra
 			return false;
 		}
 		
-		Date newEffectiveTime = EffectiveTimes.parse(effectiveTime(), DateFormats.SHORT);
+		LocalDate newEffectiveTime = EffectiveTimes.parse(effectiveTime(), DateFormats.SHORT);
 		if (!Objects.equals(newEffectiveTime, EffectiveTimes.toDate(original.getEffectiveTime()))) {
 			if (newEffectiveTime == null) {
 				// if effective time is null, then unset the effective time but don't change the released flag
 				updated.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME);
 			} else {
 				// otherwise set the value and toggle the "relased" flag
-				updated.effectiveTime(newEffectiveTime.getTime());
+				updated.effectiveTime(EffectiveTimes.getEffectiveTime(newEffectiveTime));
 				updated.released(true);
 			}
 			return true;

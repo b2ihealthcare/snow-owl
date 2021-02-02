@@ -47,7 +47,7 @@ import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.commons.json.Json;
 import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.b2international.snowowl.core.date.DateFormats;
-import com.b2international.snowowl.core.date.Dates;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
@@ -698,8 +698,8 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 				.statusCode(200)
 				.extract().as(SnomedReferenceSetMember.class);
 		
-		assertEquals(Dates.parse("20181001", DateFormats.SHORT), member.getProperties().get(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME));
-		assertEquals(Dates.parse("20181001", DateFormats.SHORT), member.getProperties().get(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME));
+		assertEquals(EffectiveTimes.parse("20181001", DateFormats.SHORT), member.getProperties().get(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME));
+		assertEquals(EffectiveTimes.parse("20181001", DateFormats.SHORT), member.getProperties().get(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME));
 		
 		Json updateRequest = Json.object(
 			SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME, "",
@@ -747,8 +747,8 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 				.statusCode(200)
 				.extract().as(SnomedReferenceSetMember.class);
 		
-		assertEquals(Dates.parse("20181002", DateFormats.SHORT), updatedMember.getProperties().get(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME));
-		assertEquals(Dates.parse("20181002", DateFormats.SHORT), updatedMember.getProperties().get(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME));
+		assertEquals(EffectiveTimes.parse("20181002", DateFormats.SHORT), updatedMember.getProperties().get(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME));
+		assertEquals(EffectiveTimes.parse("20181002", DateFormats.SHORT), updatedMember.getProperties().get(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME));
 		
 	}
 	
@@ -779,8 +779,8 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 				.statusCode(200)
 				.extract().as(SnomedReferenceSetMember.class);
 		
-		assertEquals(Dates.parse("20181002", DateFormats.SHORT), updatedMember.getProperties().get(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME));
-		assertEquals(Dates.parse("20181002", DateFormats.SHORT), updatedMember.getProperties().get(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME));
+		assertEquals(EffectiveTimes.parse("20181002", DateFormats.SHORT), updatedMember.getProperties().get(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME));
+		assertEquals(EffectiveTimes.parse("20181002", DateFormats.SHORT), updatedMember.getProperties().get(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME));
 		
 	}
 	

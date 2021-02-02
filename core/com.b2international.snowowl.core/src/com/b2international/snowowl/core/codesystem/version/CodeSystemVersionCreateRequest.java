@@ -18,14 +18,17 @@ package com.b2international.snowowl.core.codesystem.version;
 import static com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions.CREATE_VERSION;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import javax.validation.constraints.NotNull;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
@@ -43,8 +46,6 @@ import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
-import com.b2international.snowowl.core.date.DateFormats;
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.Permission;
@@ -78,9 +79,9 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 	@JsonProperty
 	String description;
 	
-	@NotEmpty
+	@NotNull
 	@JsonProperty
-	String effectiveTime;
+	LocalDate effectiveTime;
 	
 	@NotEmpty
 	@JsonProperty
@@ -89,7 +90,6 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 	// local execution variables
 	private transient Multimap<DatastoreLockContext, DatastoreLockTarget> lockTargetsByContext;
 	private transient Map<String, CodeSystem> codeSystemsByShortName;
-	private transient Date effectiveTimeDate;
 	
 	@Override
 	public Boolean execute(ServiceProvider context) {
@@ -125,8 +125,6 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 			// ignore
 		}
 		
-		this.effectiveTimeDate = EffectiveTimes.parse(effectiveTime, DateFormats.SHORT);
-		
 		final List<CodeSystem> codeSystemsToVersion = codeSystem.getDependenciesAndSelf()
 			.stream()
 			.map(codeSystemsByShortName::get)
@@ -145,7 +143,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 						new RevisionIndexReadRequest<CommitResult>(
 							context.service(RepositoryManager.class).get(codeSystemToVersion.getRepositoryId())
 								.service(VersioningRequestBuilder.class)
-								.build(new VersioningConfiguration(user, codeSystemToVersion.getShortName(), versionId, description, EffectiveTimes.getEffectiveTime(effectiveTimeDate)))
+								.build(new VersioningConfiguration(user, codeSystemToVersion.getShortName(), versionId, description, effectiveTime))
 						)
 					)
 				).execute(context);
@@ -187,7 +185,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 		}
 
 		Instant mostRecentVersionEffectiveTime = getMostRecentVersionEffectiveDateTime(context, codeSystem);
-		Instant requestEffectiveTime = effectiveTimeDate.toInstant();
+		Instant requestEffectiveTime = effectiveTime.atStartOfDay(ZoneOffset.UTC).toInstant();
 
 		if (!requestEffectiveTime.isAfter(mostRecentVersionEffectiveTime)) {
 			throw new BadRequestException("The specified '%s' effective time is invalid. Date should be after '%s'.", requestEffectiveTime, mostRecentVersionEffectiveTime);

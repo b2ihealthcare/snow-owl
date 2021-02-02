@@ -18,16 +18,15 @@ package com.b2international.snowowl.test.commons.codesystem;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests.createCodeSystem;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 
-import java.util.Calendar;
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
-import java.util.TimeZone;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.date.DateFormats;
-import com.b2international.snowowl.core.date.Dates;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.test.commons.ApiTestConstants;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
@@ -108,34 +107,24 @@ public abstract class CodeSystemVersionRestRequests {
 		}
 	}
 
-	public static Date getNextAvailableEffectiveDate(String shortName) {
-		SortedSet<String> effectiveDates = getEffectiveDates(shortName);
-		Calendar calendar = Calendar.getInstance();
+	public static LocalDate getNextAvailableEffectiveDate(String shortName) {
+		LocalDate effectiveDate = LocalDate.now();
 
+		SortedSet<String> effectiveDates = getEffectiveDates(shortName);
 		if (!effectiveDates.isEmpty()) {
-			Date latestEffectiveDate = Dates.parse(effectiveDates.last(), DateFormats.SHORT);
+			LocalDate latestEffectiveDate = EffectiveTimes.parse(effectiveDates.last(), DateFormats.SHORT);
 			// XXX make sure we always use today or later dates, so all versions created in chronological order, even if some of the pre-imported content we are relying on are still in the past
 			// and adding one day to that historical version would mean a historical effective time version, which is unfortunate and can lead to inconsistencies in tests
-			Date todayEffectiveTime = Dates.todayGmt();
-			if (latestEffectiveDate.before(todayEffectiveTime)) {
-				latestEffectiveDate = todayEffectiveTime;
+			if (latestEffectiveDate.isAfter(effectiveDate)) {
+				effectiveDate = latestEffectiveDate;
 			}
-			calendar.setTime(latestEffectiveDate);
 		}
 
-		calendar.add(Calendar.DATE, 1);
-
-		calendar.setTimeZone(TimeZone.getTimeZone("GMT"));
-		calendar.set(Calendar.HOUR_OF_DAY, 0);
-		calendar.set(Calendar.MINUTE, 0);
-		calendar.set(Calendar.SECOND, 0);
-		calendar.set(Calendar.MILLISECOND, 0);
-		
-		return calendar.getTime();
+		return effectiveDate.plus(1, ChronoUnit.DAYS);
 	}
 
 	public static String getNextAvailableEffectiveDateAsString(String shortName) {
-		return Dates.formatByGmt(getNextAvailableEffectiveDate(shortName), DateFormats.SHORT);
+		return EffectiveTimes.format(getNextAvailableEffectiveDate(shortName), DateFormats.SHORT);
 	}
 	
 	public static void createCodeSystemAndVersion(final IBranchPath branchPath, String codeSystemShortName, String versionId, String effectiveTime) {
