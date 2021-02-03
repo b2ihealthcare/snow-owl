@@ -31,6 +31,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  */
 public class CodeSystemVersion implements CodeSystemVersionProperties {
 
+	private String id;
 	private Date importDate;
 	private String effectiveDate;
 	private Date lastModificationDate;
@@ -39,6 +40,11 @@ public class CodeSystemVersion implements CodeSystemVersionProperties {
 	private String path;
 	private CodeSystemURI uri;
 	private String repositoryId;
+	
+	@JsonIgnore
+	public String getId() {
+		return id;
+	}
 	
 	/**
 	 * Returns the date on which this code system version was imported into the server.
@@ -133,6 +139,10 @@ public class CodeSystemVersion implements CodeSystemVersionProperties {
 	
 	public void setUri(CodeSystemURI uri) {
 		this.uri = uri;
+	}
+	
+	public void setId(String id) {
+		this.id = id;
 	}
 	
 	/**

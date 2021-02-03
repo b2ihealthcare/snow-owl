@@ -327,7 +327,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 				SnomedConcept snomedConcept = SnomedRequests.prepareGetConcept(queryPart.getQueryValue())
 					.setLocales(getLocales())
 					.setExpand("pt()")
-					.build(repositoryId, codeSystemVersion.getPath())
+					.build(codeSystemVersion.getUri())
 					.execute(getBus())
 					.getSync();
 				
@@ -351,7 +351,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 				.filterByReferencedComponent(componentId)
 				.setLocales(getLocales())
 				.setExpand("referencedComponent(expand(pt()))")
-				.build(repositoryId, codeSystemVersion.getPath())
+				.build(codeSystemVersion.getUri())
 				.execute(getBus())
 				.getSync()
 				.first();
@@ -373,7 +373,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 				.filterByReferencedComponent(componentId)
 				.setLocales(getLocales())
 				.setExpand("referencedComponent(expand(pt()))")
-				.build(repositoryId, codeSystemVersion.getPath())
+				.build(codeSystemVersion.getUri())
 				.execute(getBus())
 				.getSync()
 				.first();
@@ -394,7 +394,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 				.filterByActive(true)
 				.setLocales(getLocales())
 				.setExpand("pt()")
-				.build(repositoryId, codeSystemVersion.getPath())
+				.build(codeSystemVersion.getUri())
 				.execute(getBus())
 				.getSync()
 				.first();
@@ -571,7 +571,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 			.build();
 		
 		builder.status(PublicationStatus.ACTIVE)
-			.date(new Date(codeSystemVersion.getEffectiveDate()))
+			.date(Date.from(codeSystemVersion.getEffectiveTime().atStartOfDay(ZoneOffset.UTC).toInstant()))
 			.language(getLocales().get(0).getLanguageTag())
 			.version(codeSystemVersion.getVersion())
 			.identifier(identifier)
@@ -793,7 +793,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 				.all()
 				.filterByType(SnomedRefSetType.SIMPLE)
 				.filterByReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
-				.build(repositoryId, csve.getPath())
+				.build(csve.getUri())
 				.execute(getBus())
 				.then(refsets -> {
 					return refsets.stream()
@@ -879,7 +879,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 		
 		builder
 			.status(snomedComponent.isActive() ? PublicationStatus.ACTIVE : PublicationStatus.RETIRED)
-			.date(new Date(codeSystemVersion.getEffectiveDate()))
+			.date(Date.from(codeSystemVersion.getEffectiveTime().atStartOfDay(ZoneOffset.UTC).toInstant()))
 			.language(getLocales().get(0).getLanguageTag())
 			.version(codeSystemVersion.getVersion())
 			.identifier(identifier)

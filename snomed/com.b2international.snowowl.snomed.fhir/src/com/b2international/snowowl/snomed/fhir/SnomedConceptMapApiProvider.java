@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.fhir;
 
+import java.time.ZoneOffset;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -135,7 +136,7 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 //			.setExpand("members(expand(referencedComponent(expand(pt()))), limit:" + Integer.MAX_VALUE +")")
 			.setLocales(getLocales())
 			.filterByReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
-			.build(repositoryId,logicalId.getBranchPath())
+			.build(repositoryId, logicalId.getBranchPath())
 			.execute(getBus())
 			.getSync()
 			.stream()
@@ -176,7 +177,7 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 			.filterByActive(true)
 			.filterById(logicalId.getComponentId())
 			.filterByTypes(CONCEPT_MAP_TYPES)
-			.build(repositoryId, codeSystemVersion.getPath())
+			.build(codeSystemVersion.getUri())
 			.execute(getBus())
 			.getSync()
 			.first()
@@ -226,7 +227,7 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 					.build());
 		}
 		
-		Set<Match> matches = memberSearchRequestBuilder.build(repositoryId, codeSystemVersion.getPath())
+		Set<Match> matches = memberSearchRequestBuilder.build(codeSystemVersion.getUri())
 				.execute(getBus())
 				.getSync()
 				.stream()
@@ -275,7 +276,7 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 			.filterByTypes(CONCEPT_MAP_TYPES)
 			.filterByMapTargetComponentType(terminologyComponentIdAsInt)
 			.filterByReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
-			.build(repositoryId, codeSystemVersion.getPath())
+			.build(codeSystemVersion.getUri())
 			.execute(getBus())
 			.getSync()
 			.stream()
@@ -301,7 +302,7 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 					.build());
 		}
 		
-		return memberSearchRequestBuilder.build(repositoryId, codeSystemVersion.getPath())
+		return memberSearchRequestBuilder.build(codeSystemVersion.getUri())
 				.execute(getBus())
 				.then(members -> {
 					return members.stream()
@@ -353,7 +354,7 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 		SnomedConcept refsetConcept = SnomedRequests.prepareGetConcept(referenceSetId)
 			.setExpand("pt()")
 			.setLocales(locales)
-			.build(getRepositoryId(), codeSystemVersion.getPath())
+			.build(codeSystemVersion.getUri())
 			.execute(getBus())
 			.getSync();
 			
@@ -361,7 +362,7 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 		conceptMapBuilder.name(pt)
 			.title(pt)
 			.status(snomedReferenceSet.isActive() ? PublicationStatus.ACTIVE : PublicationStatus.RETIRED)
-			.date(new Date(codeSystemVersion.getEffectiveDate()))
+			.date(Date.from(codeSystemVersion.getEffectiveTime().atStartOfDay(ZoneOffset.UTC).toInstant()))
 			.language(locales.get(0).getLanguageTag())
 			.version(codeSystemVersion.getVersion());
 	

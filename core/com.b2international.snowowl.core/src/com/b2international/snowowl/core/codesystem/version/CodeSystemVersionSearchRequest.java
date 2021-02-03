@@ -141,6 +141,7 @@ final class CodeSystemVersionSearchRequest
 	
 	private CodeSystemVersion toResource(CodeSystemVersionEntry input) {
 		CodeSystemVersion version = new CodeSystemVersion();
+		version.setId(input.getId()); // TODO replace ID with URI in 8.0
 		version.setVersion(input.getVersionId());
 		version.setDescription(input.getDescription());
 		version.setEffectiveDate(EffectiveTimes.format(input.getEffectiveDate(), DateFormats.SHORT));
