@@ -100,7 +100,7 @@ public abstract class FhirApiProvider {
 			.execute(getBus())
 			.getSync()
 			.first()
-			.orElseThrow(() -> new BadRequestException(String.format("Could not find corresponding version [%s] for logical id [%s].", logicalId.getBranchPath(), logicalId), "ValueSet.id"));
+			.orElseThrow(() -> new BadRequestException("Could not find corresponding version [%s] for logical id [%s].", logicalId.getBranchPath(), logicalId));
 	}
 	
 	/**
