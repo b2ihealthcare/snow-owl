@@ -48,6 +48,7 @@ import com.b2international.index.revision.StagingArea;
 import com.b2international.index.revision.TimestampProvider;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.codesystem.CodeSystemEntry;
+import com.b2international.snowowl.core.codesystem.CodeSystemVersion;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.DelegatingBranchContext;
@@ -155,7 +156,7 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 		if (component instanceof CodeSystemEntry) {
 			return ((CodeSystemEntry) component).getShortName();
 		} else if (component instanceof CodeSystemVersionEntry) { 
-			return ((CodeSystemVersionEntry) component).getVersionId();
+			return ((CodeSystemVersionEntry) component).getId();
 		} else if (component instanceof Revision) {
 			return ((Revision) component).getId();
 		}
@@ -221,7 +222,10 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 		if (o instanceof CodeSystemEntry) {
 			final CodeSystemEntry cs = (CodeSystemEntry) o;
 			staging.stageRemove(cs.getShortName(), cs);
-		} else if (o instanceof CodeSystemVersionEntry) { 
+		} else if (o instanceof CodeSystemVersion) {
+			final CodeSystemVersion cs = (CodeSystemVersion) o;
+			staging.stageRemove(cs.getId(), lookup(cs.getId(), CodeSystemVersionEntry.class));
+		} else if (o instanceof CodeSystemVersionEntry) {
 			final CodeSystemVersionEntry cs = (CodeSystemVersionEntry) o;
 			staging.stageRemove(cs.getId(), cs);
 		} else if (o instanceof RevisionDocument) {
