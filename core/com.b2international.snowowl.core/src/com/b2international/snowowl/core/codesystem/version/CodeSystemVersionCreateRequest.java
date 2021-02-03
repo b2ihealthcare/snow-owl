@@ -17,9 +17,7 @@ package com.b2international.snowowl.core.codesystem.version;
 
 import static com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions.CREATE_VERSION;
 
-import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneOffset;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +43,7 @@ import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
+import com.b2international.snowowl.core.codesystem.CodeSystemVersion;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
 import com.b2international.snowowl.core.events.Request;
@@ -58,6 +57,7 @@ import com.b2international.snowowl.core.request.BranchRequest;
 import com.b2international.snowowl.core.request.CommitResult;
 import com.b2international.snowowl.core.request.RepositoryRequest;
 import com.b2international.snowowl.core.request.RevisionIndexReadRequest;
+import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -184,26 +184,25 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 			return;
 		}
 
-		Instant mostRecentVersionEffectiveTime = getMostRecentVersionEffectiveDateTime(context, codeSystem);
-		Instant requestEffectiveTime = effectiveTime.atStartOfDay(ZoneOffset.UTC).toInstant();
+		LocalDate mostRecentVersionEffectiveTime = getMostRecentVersionEffectiveDateTime(context, codeSystem);
 
-		if (!requestEffectiveTime.isAfter(mostRecentVersionEffectiveTime)) {
-			throw new BadRequestException("The specified '%s' effective time is invalid. Date should be after '%s'.", requestEffectiveTime, mostRecentVersionEffectiveTime);
+		if (!effectiveTime.isAfter(mostRecentVersionEffectiveTime)) {
+			throw new BadRequestException("The specified '%s' effective time is invalid. Date should be after '%s'.", effectiveTime, mostRecentVersionEffectiveTime);
 		}
 	}
 	
-	private Instant getMostRecentVersionEffectiveDateTime(ServiceProvider context, CodeSystem codeSystem) {
+	private LocalDate getMostRecentVersionEffectiveDateTime(ServiceProvider context, CodeSystem codeSystem) {
 		return CodeSystemRequests.prepareSearchCodeSystemVersion()
 			.all()
 			.filterByCodeSystemShortName(codeSystem.getShortName())
+			.sortBy(SortField.descending(CodeSystemVersionEntry.Fields.EFFECTIVE_DATE))
 			.build(codeSystem.getRepositoryId())
 			.execute(context.service(IEventBus.class))
 			.getSync(1, TimeUnit.MINUTES)
 			.stream()
-			.max(CodeSystemVersionEntry.VERSION_EFFECTIVE_DATE_COMPARATOR)
-			.map(CodeSystemVersionEntry::getEffectiveDate)
-			.map(Instant::ofEpochMilli)
-			.orElse(Instant.EPOCH);
+			.findFirst()
+			.map(CodeSystemVersion::getEffectiveTime)
+			.orElse(LocalDate.EPOCH);
 	}
 	
 	private void acquireLocks(ServiceProvider context, String user, Collection<CodeSystem> codeSystems) {

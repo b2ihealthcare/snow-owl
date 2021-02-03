@@ -59,7 +59,9 @@ import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.Branches;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
+import com.b2international.snowowl.core.codesystem.CodeSystemVersion;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
+import com.b2international.snowowl.core.codesystem.CodeSystemVersions;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -118,10 +120,10 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 	private static final String DESCRIPTION_TYPES_EXCEPT_TEXT_DEFINITION = "<<" + Concepts.DESCRIPTION_TYPE_ROOT_CONCEPT + " MINUS " + Concepts.TEXT_DEFINITION;
 	private static final String NON_STATED_CHARACTERISTIC_TYPES = "<<" + Concepts.CHARACTERISTIC_TYPE + " MINUS " + Concepts.STATED_RELATIONSHIP;
 
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 
-	private static final Ordering<CodeSystemVersionEntry> EFFECTIVE_DATE_ORDERING = Ordering.natural()
-			.onResultOf(CodeSystemVersionEntry::getEffectiveDate);
+	private static final Ordering<CodeSystemVersion> EFFECTIVE_DATE_ORDERING = Ordering.natural()
+			.onResultOf(CodeSystemVersion::getEffectiveTime);
 
 	@JsonProperty 
 	@NotNull 
@@ -139,10 +141,10 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 	private String namespaceFilter;
 
 	@JsonProperty 
-	private Long startEffectiveTime;
+	private LocalDate startEffectiveTime;
 
 	@JsonProperty 
-	private Long endEffectiveTime;
+	private LocalDate endEffectiveTime;
 
 	@JsonProperty
 	private boolean includePreReleaseContent;
@@ -180,11 +182,11 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 		this.namespaceFilter = namespaceFilter;
 	}
 
-	void setStartEffectiveTime(final Long startEffectiveTime) {
+	void setStartEffectiveTime(final LocalDate startEffectiveTime) {
 		this.startEffectiveTime = startEffectiveTime;
 	}
 
-	void setEndEffectiveTime(final Long endEffectiveTime) {
+	void setEndEffectiveTime(final LocalDate endEffectiveTime) {
 		this.endEffectiveTime = endEffectiveTime;
 	}
 
@@ -250,7 +252,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 		final CodeSystem referenceCodeSystem = context.service(RepositoryCodeSystemProvider.class).get(referenceBranch);
 
 		// Step 2: retrieve code system versions that are visible from the reference branch
-		final TreeSet<CodeSystemVersionEntry> versionsToExport = getAllExportableCodeSystemVersions(context, referenceCodeSystem);
+		final TreeSet<CodeSystemVersion> versionsToExport = getAllExportableCodeSystemVersions(context, referenceCodeSystem);
 		
 		// Step 3: compute branches to export
 		final List<String> branchesToExport = computeBranchesToExport(referenceBranch, versionsToExport);
@@ -276,8 +278,8 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 
 			final Set<String> visitedComponentEffectiveTimes = newHashSet();
 			
-			final long effectiveTimeStart = startEffectiveTime != null ? startEffectiveTime : 0;
-			final long effectiveTimeEnd =  endEffectiveTime != null ? endEffectiveTime : Long.MAX_VALUE;
+			final long effectiveTimeStart = startEffectiveTime != null ? EffectiveTimes.getEffectiveTime(startEffectiveTime) : 0;
+			final long effectiveTimeEnd =  endEffectiveTime != null ? EffectiveTimes.getEffectiveTime(endEffectiveTime) : Long.MAX_VALUE;
 
 			// export content from the pre-computed version branches
 			for (String branch : branchesToExport) {
@@ -373,7 +375,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 		return branchToLanguageCodes;
 	}
 
-	private List<String> computeBranchesToExport(final String referenceBranch, final TreeSet<CodeSystemVersionEntry> versionsToExport) {
+	private List<String> computeBranchesToExport(final String referenceBranch, final TreeSet<CodeSystemVersion> versionsToExport) {
 		
 		final List<String> branchesToExport = newArrayList();
 		
@@ -417,9 +419,9 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 		return branchRangesToExport.build();
 	}
 
-	private LocalDateTime getArchiveEffectiveTime(final RepositoryContext context, final TreeSet<CodeSystemVersionEntry> versionsToExport) {
+	private LocalDateTime getArchiveEffectiveTime(final RepositoryContext context, final TreeSet<CodeSystemVersion> versionsToExport) {
 
-		Optional<CodeSystemVersionEntry> lastVersionToExport;
+		Optional<CodeSystemVersion> lastVersionToExport;
 		
 		if (endEffectiveTime != null) {
 			lastVersionToExport = Optional.ofNullable(getVersionBefore(versionsToExport, endEffectiveTime));
@@ -452,10 +454,10 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 		return toCurrentHourTime(LocalDate.now());
 	}
 
-	private CodeSystemVersionEntry getVersionBefore(final TreeSet<CodeSystemVersionEntry> versionsToExport, final long timestamp) {
-		CodeSystemVersionEntry versionBeforeEndEffectiveTime = null;
-		for (CodeSystemVersionEntry version : versionsToExport) {
-			if (version.getEffectiveDate() > timestamp) {
+	private CodeSystemVersion getVersionBefore(final TreeSet<CodeSystemVersion> versionsToExport, final LocalDate timestamp) {
+		CodeSystemVersion versionBeforeEndEffectiveTime = null;
+		for (CodeSystemVersion version : versionsToExport) {
+			if (version.getEffectiveTime().isAfter(timestamp)) {
 				break;
 			}
 			versionBeforeEndEffectiveTime = version;
@@ -463,7 +465,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 		return versionBeforeEndEffectiveTime;
 	}
 	
-	private Optional<LocalDate> getLatestModuleEffectiveTime(final RepositoryContext context, final CodeSystemVersionEntry version) {
+	private Optional<LocalDate> getLatestModuleEffectiveTime(final RepositoryContext context, final CodeSystemVersion version) {
 		
 		final Optional<LocalDate> sourceEffectiveTime = getLatestModuleEffectiveTime(context, version, SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME);
 		final Optional<LocalDate> targetEffectiveTime = getLatestModuleEffectiveTime(context, version, SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME);
@@ -490,7 +492,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 		}
 	}
 	
-	private Optional<LocalDate> getLatestModuleEffectiveTime(final RepositoryContext context, final CodeSystemVersionEntry version, String field) {
+	private Optional<LocalDate> getLatestModuleEffectiveTime(final RepositoryContext context, final CodeSystemVersion version, String field) {
 		SnomedRefSetMemberSearchRequestBuilder requestBuilder = SnomedRequests.prepareSearchMember()
 				.filterByRefSet(Concepts.REFSET_MODULE_DEPENDENCY_TYPE)
 				.filterByActive(true)
@@ -503,7 +505,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 			}
 			
 			final Optional<SnomedReferenceSetMember> moduleDependencyMember = requestBuilder 
-				.build(version.getCodeSystemURI())
+				.build(version.getUri())
 				.execute(context.service(IEventBus.class))
 				.getSync(1, TimeUnit.MINUTES)
 				.first();
@@ -521,24 +523,24 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 		return date.plus(1, ChronoUnit.DAYS);
 	}
 
-	private TreeSet<CodeSystemVersionEntry> getAllExportableCodeSystemVersions(final BranchContext context, final CodeSystem codeSystemEntry) {
+	private TreeSet<CodeSystemVersion> getAllExportableCodeSystemVersions(final BranchContext context, final CodeSystem codeSystemEntry) {
 		final String referenceBranch = context.path();
-		final TreeSet<CodeSystemVersionEntry> visibleVersions = newTreeSet(EFFECTIVE_DATE_ORDERING);
+		final TreeSet<CodeSystemVersion> visibleVersions = newTreeSet(EFFECTIVE_DATE_ORDERING);
 		collectExportableCodeSystemVersions(context, visibleVersions, codeSystemEntry, referenceBranch);
 		return visibleVersions;
 	}
 
-	private void collectExportableCodeSystemVersions(final RepositoryContext context, final Set<CodeSystemVersionEntry> versionsToExport, final CodeSystem codeSystemEntry,
+	private void collectExportableCodeSystemVersions(final RepositoryContext context, final Set<CodeSystemVersion> versionsToExport, final CodeSystem codeSystemEntry,
 			final String referenceBranch) {
 		
-		final Collection<CodeSystemVersionEntry> candidateVersions = newArrayList(getCodeSystemVersions(context, codeSystemEntry.getShortName()));
+		final List<CodeSystemVersion> candidateVersions = newArrayList(getCodeSystemVersions(context, codeSystemEntry.getShortName()));
 		
 		if (candidateVersions.isEmpty()) {
 			return;
 		}
 		
 		final Set<String> versionPaths = candidateVersions.stream()
-				.map(CodeSystemVersionEntry::getPath)
+				.map(CodeSystemVersion::getPath)
 				.collect(Collectors.toSet());
 
 		final Branches versionBranches = getBranches(context, versionPaths);
@@ -548,7 +550,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 		final Branch cutoffBranch = getBranch(context, referenceBranch);
 		final String latestVersionParentBranch = candidateVersions.stream()
 				.findFirst()
-				.map(CodeSystemVersionEntry::getParentBranchPath)
+				.map(CodeSystemVersion::getParentBranchPath)
 				.get();
 		final long cutoffBaseTimestamp = getCutoffBaseTimestamp(context, cutoffBranch, latestVersionParentBranch);
 
@@ -981,14 +983,13 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 		}
 	}
 
-	private static Collection<CodeSystemVersionEntry> getCodeSystemVersions(final RepositoryContext context, final String shortName) {
+	private static CodeSystemVersions getCodeSystemVersions(final RepositoryContext context, final String shortName) {
 		return CodeSystemRequests.prepareSearchCodeSystemVersion()
 				.all()
 				.filterByCodeSystemShortName(shortName)
 				.sortBy(SearchResourceRequest.SortField.descending(CodeSystemVersionEntry.Fields.EFFECTIVE_DATE))
 				.build()
-				.execute(context)
-				.getItems();
+				.execute(context);
 	}
 
 	private static Branch getBranch(final RepositoryContext context, final String path) {

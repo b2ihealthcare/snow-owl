@@ -17,6 +17,9 @@ package com.b2international.snowowl.core.codesystem.version;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.index.Hits;
@@ -24,8 +27,11 @@ import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
+import com.b2international.snowowl.core.codesystem.CodeSystemVersion;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersions;
+import com.b2international.snowowl.core.date.DateFormats;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
@@ -126,9 +132,29 @@ final class CodeSystemVersionSearchRequest
 
 	@Override
 	protected CodeSystemVersions toCollectionResource(RepositoryContext context, Hits<CodeSystemVersionEntry> hits) {
-		return new CodeSystemVersions(hits.getHits(), hits.getSearchAfter(), limit(), hits.getTotal());
+		return new CodeSystemVersions(toResource(hits), hits.getSearchAfter(), limit(), hits.getTotal());
 	}
 	
+	private List<CodeSystemVersion> toResource(Hits<CodeSystemVersionEntry> hits) {
+		return hits.stream().map(this::toResource).collect(Collectors.toList());
+	}
+	
+	private CodeSystemVersion toResource(CodeSystemVersionEntry input) {
+		CodeSystemVersion version = new CodeSystemVersion();
+		version.setVersion(input.getVersionId());
+		version.setDescription(input.getDescription());
+		version.setEffectiveDate(EffectiveTimes.format(input.getEffectiveDate(), DateFormats.SHORT));
+		version.setImportDate(toDate(input.getImportDate()));
+		version.setLastModificationDate(toDate(input.getLatestUpdateDate()));
+		version.setPath(input.getPath());
+		version.setUri(input.getCodeSystemURI());
+		return version;
+	}
+	
+	private static Date toDate(final long timeStamp) {
+		return timeStamp >= 0L ? new Date(timeStamp) : null;
+	}
+
 	@Override
 	protected CodeSystemVersions createEmptyResult(int limit) {
 		return new CodeSystemVersions(Collections.emptyList(), null, limit, 0);

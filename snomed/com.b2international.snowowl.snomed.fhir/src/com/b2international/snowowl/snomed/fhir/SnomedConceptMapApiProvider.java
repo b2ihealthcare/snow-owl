@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
-import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
+import com.b2international.snowowl.core.codesystem.CodeSystemVersion;
 import com.b2international.snowowl.core.codesystem.CodeSystems;
 import com.b2international.snowowl.core.plugin.Component;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
@@ -96,7 +96,7 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 	public Collection<ConceptMap> getConceptMaps() {
 		
 		//Collect every version on every extension
-		List<CodeSystemVersionEntry> codeSystemVersionList = collectCodeSystemVersions(repositoryId);
+		List<CodeSystemVersion> codeSystemVersionList = collectCodeSystemVersions(repositoryId);
 		
 		//might be nicer to maintain the order by version
 		List<ConceptMap> conceptMaps = codeSystemVersionList.stream()
@@ -108,7 +108,7 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 //						.setExpand("members(expand(referencedComponent(expand(pt()))), limit:"+ Integer.MAX_VALUE +")")
 						.setLocales(getLocales())
 						.filterByReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
-						.build(repositoryId, csve.getPath())
+						.build(csve.getUri())
 						.execute(getBus())
 						.getSync()
 						.stream()
@@ -125,7 +125,7 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 	@Override
 	public ConceptMap getConceptMap(LogicalId logicalId) {
 		
-		CodeSystemVersionEntry codeSystemVersion = findCodeSystemVersion(logicalId);
+		CodeSystemVersion codeSystemVersion = findCodeSystemVersion(logicalId);
 		
 		SnomedReferenceSet snomedReferenceSet = SnomedRequests.prepareSearchRefSet()
 			.all()
@@ -169,7 +169,7 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 		}
 				
 		//can we find the refset in question?
-		CodeSystemVersionEntry codeSystemVersion = findCodeSystemVersion(logicalId);
+		CodeSystemVersion codeSystemVersion = findCodeSystemVersion(logicalId);
 
 		SnomedReferenceSet referenceSet = SnomedRequests.prepareSearchRefSet()
 			.one()
@@ -266,7 +266,7 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 		
 		String locationName = "$translate.system";
 		SnomedUri snomedUri = SnomedUri.fromUriString(sourceSystem, locationName);
-		CodeSystemVersionEntry codeSystemVersion = getCodeSystemVersion(snomedUri.getVersionTag());
+		CodeSystemVersion codeSystemVersion = getCodeSystemVersion(snomedUri.getVersionTag());
 		
 		//no target code system is specified on the Map
 		Set<String> refsetIds = SnomedRequests.prepareSearchRefSet()
@@ -342,7 +342,7 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 		return builder.build();
 	}
 
-	private ConceptMap.Builder buildConceptMap(SnomedReferenceSet snomedReferenceSet, CodeSystemVersionEntry codeSystemVersion, List<ExtendedLocale> locales) {
+	private ConceptMap.Builder buildConceptMap(SnomedReferenceSet snomedReferenceSet, CodeSystemVersion codeSystemVersion, List<ExtendedLocale> locales) {
 		
 		LogicalId logicalId = new LogicalId(repositoryId, codeSystemVersion.getPath(), snomedReferenceSet.getId());
 		ConceptMap.Builder conceptMapBuilder = ConceptMap.builder(logicalId.toString());
@@ -363,7 +363,7 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 			.status(snomedReferenceSet.isActive() ? PublicationStatus.ACTIVE : PublicationStatus.RETIRED)
 			.date(new Date(codeSystemVersion.getEffectiveDate()))
 			.language(locales.get(0).getLanguageTag())
-			.version(codeSystemVersion.getVersionId());
+			.version(codeSystemVersion.getVersion());
 	
 		//ID metadata
 		SnomedUri uri = SnomedUri.builder().version(codeSystemVersion.getEffectiveDate()).build();

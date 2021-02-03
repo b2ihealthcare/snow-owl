@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
-import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.BaseResourceConverter;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
@@ -79,11 +78,11 @@ public final class CodeSystemConverter extends BaseResourceConverter<CodeSystemE
 			.build()
 			.execute(context());
 		
-		final TreeMultimap<String, CodeSystemVersionEntry> versionsByShortName = TreeMultimap.create(
+		final TreeMultimap<String, CodeSystemVersion> versionsByShortName = TreeMultimap.create(
 				Comparator.naturalOrder(), 
-				Comparator.comparing(CodeSystemVersionEntry::getEffectiveDate));
+				Comparator.comparing(CodeSystemVersion::getEffectiveDate));
 		
-		versionsByShortName.putAll(Multimaps.index(parentVersions, CodeSystemVersionEntry::getCodeSystemShortName));
+		versionsByShortName.putAll(Multimaps.index(parentVersions, CodeSystemVersion::getCodeSystem));
 		
 		for (final CodeSystem result : results) {
 			final CodeSystemURI extensionOf = result.getExtensionOf();
@@ -97,16 +96,16 @@ public final class CodeSystemConverter extends BaseResourceConverter<CodeSystemE
 			final String shortName = extensionOf.getCodeSystem();
 			final String versionId = extensionOf.getPath();
 			
-			final NavigableSet<CodeSystemVersionEntry> candidates = versionsByShortName.get(shortName);
+			final NavigableSet<CodeSystemVersion> candidates = versionsByShortName.get(shortName);
 			
-			final Optional<CodeSystemVersionEntry> currentExtensionVersion = candidates.stream()
-					.filter(v -> v.getVersionId().equals(versionId))
+			final Optional<CodeSystemVersion> currentExtensionVersion = candidates.stream()
+					.filter(v -> v.getVersion().equals(versionId))
 					.findFirst();
 			
 			final Optional<List<CodeSystemURI>> upgradeUris = currentExtensionVersion.map(currentVersion -> {
-				final SortedSet<CodeSystemVersionEntry> upgradeVersions = candidates.tailSet(currentVersion, false);
+				final SortedSet<CodeSystemVersion> upgradeVersions = candidates.tailSet(currentVersion, false);
 				return upgradeVersions.stream()
-						.map(upgradeVersion -> createCodeSystemUri(upgradeVersion))
+						.map(upgradeVersion -> upgradeVersion.getUri())
 						.collect(Collectors.toList());
 			});
 	
@@ -114,7 +113,4 @@ public final class CodeSystemConverter extends BaseResourceConverter<CodeSystemE
 		}			
 	}
 
-	private CodeSystemURI createCodeSystemUri(CodeSystemVersionEntry version) {
-		return new CodeSystemURI(String.join(Branch.SEPARATOR, version.getCodeSystemShortName(), version.getVersionId()));
-	}
 }

@@ -15,9 +15,17 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
+import java.time.LocalDate;
 import java.util.Date;
 
+import com.b2international.snowowl.core.branch.BranchPathUtils;
+import com.b2international.snowowl.core.date.DateFormats;
+import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.uri.CodeSystemURI;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
+ * @since 1.0
  */
 public class CodeSystemVersion implements CodeSystemVersionProperties {
 
@@ -26,9 +34,10 @@ public class CodeSystemVersion implements CodeSystemVersionProperties {
 	private Date lastModificationDate;
 	private String description;
 	private String version;
-	private String parentBranchPath;
-	private boolean patched;
-
+	private String path;
+	private CodeSystemURI uri;
+	private String repositoryId;
+	
 	/**
 	 * Returns the date on which this code system version was imported into the server.
 	 * 
@@ -41,6 +50,17 @@ public class CodeSystemVersion implements CodeSystemVersionProperties {
 	@Override
 	public String getEffectiveDate() {
 		return effectiveDate;
+	}
+	
+	@JsonIgnore
+	public LocalDate getEffectiveTime() {
+		return EffectiveTimes.parse(effectiveDate, DateFormats.SHORT);
+	}
+	
+	@Deprecated
+	@JsonIgnore
+	public String getParentBranchPath() {
+		return BranchPathUtils.createPath(getPath()).getParentPath();
 	}
 
 	/**
@@ -56,29 +76,30 @@ public class CodeSystemVersion implements CodeSystemVersionProperties {
 	public String getDescription() {
 		return description;
 	}
+	
+	@Deprecated
+	public String getRepositoryId() {
+		return repositoryId;
+	}
+	
+	public String getPath() {
+		return path;
+	}
 
 	@Override
 	public String getVersion() {
 		return version;
 	}
 
-	/**
-	 * Returns the parent branch path where the version branch is forked off
-	 * @return parent branch path
-	 */
-	public String getParentBranchPath() {
-		return parentBranchPath;
+	public CodeSystemURI getUri() {
+		return uri;
 	}
-
-	/**
-	 * Indicates if any modifications have been made on this code system version after releasing it.
-	 *  
-	 * @return {@code true} if this code system version includes retroactive modifications, {@code false} otherwise
-	 */
-	public boolean isPatched() {
-		return patched;
+	
+	@JsonIgnore
+	public String getCodeSystem() {
+		return getUri().getCodeSystem();
 	}
-
+	
 	public void setImportDate(final Date importDate) {
 		this.importDate = importDate;
 	}
@@ -95,36 +116,21 @@ public class CodeSystemVersion implements CodeSystemVersionProperties {
 		this.description = description;
 	}
 
+	public void setPath(String path) {
+		this.path = path;
+	}
+	
+	@Deprecated
+	public void setRepositoryId(String repositoryId) {
+		this.repositoryId = repositoryId;
+	}
+	
 	public void setVersion(final String version) {
 		this.version = version;
 	}
 	
-	public void setParentBranchPath(final String parentBranchPath) {
-		this.parentBranchPath = parentBranchPath;
+	public void setUri(CodeSystemURI uri) {
+		this.uri = uri;
 	}
 
-	public void setPatched(final boolean patched) {
-		this.patched = patched;
-	}
-
-	@Override
-	public String toString() {
-		final StringBuilder builder = new StringBuilder();
-		builder.append("CodeSystemVersion [importDate=");
-		builder.append(importDate);
-		builder.append(", effectiveDate=");
-		builder.append(effectiveDate);
-		builder.append(", lastModificationDate=");
-		builder.append(lastModificationDate);
-		builder.append(", description=");
-		builder.append(description);
-		builder.append(", version=");
-		builder.append(version);
-		builder.append(", parentBranchPath=");
-		builder.append(parentBranchPath);
-		builder.append(", patched=");
-		builder.append(patched);
-		builder.append("]");
-		return builder.toString();
-	}
 }
