@@ -165,12 +165,12 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 		final RepositoryManager repositoryManager = context.service(RepositoryManager.class);
 		final Collection<Repository> repositories = repositoryManager.repositories();
 		return repositories.stream()
-			.map(repository -> fetchCodeSystem(context, repository.id()))
+			.map(repository -> fetchCodeSystems(context, repository.id()))
 			.flatMap(Collection::stream)
 			.collect(Collectors.toMap(CodeSystem::getShortName, Function.identity()));
 	}
 	
-	private List<CodeSystem> fetchCodeSystem(ServiceProvider context, String repositoryId) {
+	private List<CodeSystem> fetchCodeSystems(ServiceProvider context, String repositoryId) {
 		return CodeSystemRequests.prepareSearchCodeSystem()
 			.all()
 			.build(repositoryId)
@@ -193,7 +193,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 	
 	private LocalDate getMostRecentVersionEffectiveDateTime(ServiceProvider context, CodeSystem codeSystem) {
 		return CodeSystemRequests.prepareSearchCodeSystemVersion()
-			.all()
+			.one()
 			.filterByCodeSystemShortName(codeSystem.getShortName())
 			.sortBy(SortField.descending(CodeSystemVersionEntry.Fields.EFFECTIVE_DATE))
 			.build(codeSystem.getRepositoryId())
