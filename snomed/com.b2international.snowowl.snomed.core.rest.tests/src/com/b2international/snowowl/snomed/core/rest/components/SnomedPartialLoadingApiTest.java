@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.core.rest.components;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
@@ -52,8 +52,8 @@ public class SnomedPartialLoadingApiTest extends AbstractSnomedApiTest {
 		)).execute(ApplicationContext.getServiceForClass(Environment.class));
 		hits.forEach(hit -> {
 			// simple assertions to parse the ID as SCT ID and effective time as short date
-			assertNotNull(SnomedIdentifiers.create(hit[0]));
-			assertNotNull(Long.valueOf(hit[1]));
+			assertTrue(SnomedIdentifiers.isValid(hit[0]));
+			Long.valueOf(hit[1]);
 		});
 	}
 	
