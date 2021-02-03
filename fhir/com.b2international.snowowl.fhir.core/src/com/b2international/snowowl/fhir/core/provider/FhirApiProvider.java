@@ -92,7 +92,7 @@ public abstract class FhirApiProvider {
 	 * @param logicalId
 	 * @return
 	 */
-	protected CodeSystemVersion findCodeSystemVersion(LogicalId logicalId) {
+	protected CodeSystemVersion findCodeSystemVersion(LogicalId logicalId, String location) {
 		return CodeSystemRequests.prepareSearchCodeSystemVersion()
 			.one()
 			.filterByBranchPath(logicalId.getBranchPath())
@@ -100,7 +100,7 @@ public abstract class FhirApiProvider {
 			.execute(getBus())
 			.getSync()
 			.first()
-			.orElseThrow(() -> new BadRequestException(String.format("Could not find corresponding version [%s] for logical id [%s].", logicalId.getBranchPath(), logicalId), "CodeSystem.system"));
+			.orElseThrow(() -> new BadRequestException(String.format("Could not find corresponding version [%s] for logical id [%s].", logicalId.getBranchPath(), logicalId), location));
 	}
 	
 	/**

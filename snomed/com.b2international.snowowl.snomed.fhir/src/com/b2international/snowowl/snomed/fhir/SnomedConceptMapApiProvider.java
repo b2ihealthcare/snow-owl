@@ -126,7 +126,7 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 	@Override
 	public ConceptMap getConceptMap(LogicalId logicalId) {
 		
-		CodeSystemVersion codeSystemVersion = findCodeSystemVersion(logicalId);
+		CodeSystemVersion codeSystemVersion = findCodeSystemVersion(logicalId, "ConceptMap.id");
 		
 		SnomedReferenceSet snomedReferenceSet = SnomedRequests.prepareSearchRefSet()
 			.all()
@@ -170,7 +170,7 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 		}
 				
 		//can we find the refset in question?
-		CodeSystemVersion codeSystemVersion = findCodeSystemVersion(logicalId);
+		CodeSystemVersion codeSystemVersion = findCodeSystemVersion(logicalId, "ConceptMap.id");
 
 		SnomedReferenceSet referenceSet = SnomedRequests.prepareSearchRefSet()
 			.one()

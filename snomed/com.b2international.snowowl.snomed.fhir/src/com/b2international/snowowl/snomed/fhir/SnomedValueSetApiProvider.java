@@ -112,7 +112,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 	@Override
 	public ValueSet getValueSet(LogicalId logicalId) {
 		
-		CodeSystemVersion codeSystemVersion = findCodeSystemVersion(logicalId);
+		CodeSystemVersion codeSystemVersion = findCodeSystemVersion(logicalId, "ValueSet.id");
 		
 		//Simple type reference set
 		if (!logicalId.isMemberId()) {
@@ -159,7 +159,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 	@Override
 	public ValueSet expandValueSet(LogicalId logicalId) {
 		
-		CodeSystemVersion codeSystemVersion = findCodeSystemVersion(logicalId);
+		CodeSystemVersion codeSystemVersion = findCodeSystemVersion(logicalId, "ValueSet.id");
 
 		if (!logicalId.isMemberId()) {
 			return buildSimpleTypeRefsetValueSet(logicalId.getComponentId(), codeSystemVersion);
@@ -414,7 +414,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 	@Override
 	public ValidateCodeResult validateCode(ValidateCodeRequest validateCodeRequest, LogicalId valueSetLogicalId) {
 		
-		CodeSystemVersion codeSystemVersion = findCodeSystemVersion(valueSetLogicalId);
+		CodeSystemVersion codeSystemVersion = findCodeSystemVersion(valueSetLogicalId, "ValueSet.id");
 		
 		//simple type reference
 		if (!valueSetLogicalId.isMemberId()) {
