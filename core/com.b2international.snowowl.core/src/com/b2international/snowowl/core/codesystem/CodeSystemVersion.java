@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.codesystem;
 
 import static com.b2international.snowowl.core.api.IBranchPath.MAIN_BRANCH;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Date;
 
@@ -29,8 +30,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 /**
  * @since 1.0
  */
-public class CodeSystemVersion implements CodeSystemVersionProperties {
+public final class CodeSystemVersion implements CodeSystemVersionProperties, Serializable {
 
+	private static final long serialVersionUID = 1L;
+	
 	private String id;
 	private Date importDate;
 	private String effectiveDate;
