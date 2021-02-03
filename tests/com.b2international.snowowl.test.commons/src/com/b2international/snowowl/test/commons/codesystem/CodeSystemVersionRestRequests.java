@@ -20,16 +20,16 @@ import static com.b2international.snowowl.test.commons.rest.RestExtensions.given
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
 import java.util.Map;
-import java.util.SortedSet;
+import java.util.Optional;
 
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.codesystem.CodeSystemVersion;
+import com.b2international.snowowl.core.codesystem.CodeSystemVersions;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.test.commons.ApiTestConstants;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 
 import io.restassured.http.ContentType;
@@ -42,18 +42,16 @@ public abstract class CodeSystemVersionRestRequests {
 
 	public static String getLatestVersion(String codeSystemId) {
 		// TODO add proper version API to control version searches
-		Map<?, ?> versions = getVersions(codeSystemId).extract().as(Map.class);
-		List<Map<?, ?>> items = (List<Map<?, ?>>) versions.get("items");
-		return (String) Iterables.getLast(items).get("version");
+		return Iterables.getLast(getVersions(codeSystemId)).getVersion();
 	}
 	
-	public static ValidatableResponse getVersion(String shortName, String version) {
+	public static ValidatableResponse getVersion(String codeSystemId, String version) {
 		return givenAuthenticatedRequest(ApiTestConstants.ADMIN_API)
-				.get("/codesystems/{shortName}/versions/{id}", shortName, version)
+				.get("/codesystems/{codeSystemId}/versions/{id}", codeSystemId, version)
 				.then();
 	}
 
-	public static ValidatableResponse createVersion(String shortName, String version, String effectiveDate) {
+	public static ValidatableResponse createVersion(String codeSystemId, String version, String effectiveDate) {
 		Map<?, ?> requestBody = ImmutableMap.builder()
 				.put("version", version)
 				.put("description", version)
@@ -63,11 +61,11 @@ public abstract class CodeSystemVersionRestRequests {
 		return givenAuthenticatedRequest(ApiTestConstants.ADMIN_API)
 				.contentType(ContentType.JSON)
 				.body(requestBody)
-				.post("/codesystems/{shortNameOrOid}/versions", shortName)
+				.post("/codesystems/{codeSystemId}/versions", codeSystemId)
 				.then();
 	}
 
-	public static ValidatableResponse createVersion(String shortName, String version, String description, String effectiveDate) {
+	public static ValidatableResponse createVersion(String codeSystemId, String version, String description, String effectiveDate) {
 		Map<?, ?> requestBody = ImmutableMap.builder()
 				.put("version", version)
 				.put("description", description)
@@ -77,59 +75,38 @@ public abstract class CodeSystemVersionRestRequests {
 		return givenAuthenticatedRequest(ApiTestConstants.ADMIN_API)
 				.contentType(ContentType.JSON)
 				.body(requestBody)
-				.post("/codesystems/{shortNameOrOid}/versions", shortName)
+				.post("/codesystems/{codeSystemId}/versions", codeSystemId)
 				.then();
 	}
 
-	public static ValidatableResponse getVersions(String shortName) {
+	public static CodeSystemVersions getVersions(String codeSystemId) {
 		return givenAuthenticatedRequest(ApiTestConstants.ADMIN_API)
 				.and().contentType(ContentType.JSON)
 				.when()
-				.get("/codesystems/{shortName}/versions", shortName)
-				.then();
+				.get("/codesystems/{codeSystemId}/versions", codeSystemId)
+				.then()
+				.extract()
+				.as(CodeSystemVersions.class);
 	}
 
-	public static SortedSet<String> getEffectiveDates(String shortName) {
-		Map<?, ?> response = getVersions(shortName).extract().as(Map.class);
-
-		if (!response.containsKey("items")) {
-			return ImmutableSortedSet.of();
-		} else {
-			ImmutableSortedSet.Builder<String> effectiveDatesBuilder = ImmutableSortedSet.naturalOrder();
-			@SuppressWarnings("unchecked")
-			List<Map<?, ?>> items = (List<Map<?, ?>>) response.get("items");
-			for (Map<?, ?> version : items) {
-				String effectiveDate = (String) version.get("effectiveDate");
-				effectiveDatesBuilder.add(effectiveDate);
-			}
-
-			return effectiveDatesBuilder.build();
-		}
+	public static LocalDate getNextAvailableEffectiveDate(String codeSystemId) {
+		// XXX make sure we always use today or later dates for versions
+		// This ensures that all versions created by tests will be in chronological order, even if some of the pre-imported content we are relying on is in the past
+		// and adding one day to that historical version would mean a historical effective time version, which is unfortunate and can lead to inconsistencies in tests
+		LocalDate today = LocalDate.now();
+		return Optional.ofNullable(Iterables.getLast(getVersions(codeSystemId), null))
+				.map(CodeSystemVersion::getEffectiveTime)
+				.map(latestVersion -> latestVersion.isBefore(today) ? today : latestVersion.plus(1, ChronoUnit.DAYS))
+				.orElse(today);
 	}
 
-	public static LocalDate getNextAvailableEffectiveDate(String shortName) {
-		LocalDate effectiveDate = LocalDate.now();
-
-		SortedSet<String> effectiveDates = getEffectiveDates(shortName);
-		if (!effectiveDates.isEmpty()) {
-			LocalDate latestEffectiveDate = EffectiveTimes.parse(effectiveDates.last(), DateFormats.SHORT);
-			// XXX make sure we always use today or later dates, so all versions created in chronological order, even if some of the pre-imported content we are relying on are still in the past
-			// and adding one day to that historical version would mean a historical effective time version, which is unfortunate and can lead to inconsistencies in tests
-			if (latestEffectiveDate.isAfter(effectiveDate)) {
-				effectiveDate = latestEffectiveDate;
-			}
-		}
-
-		return effectiveDate.plus(1, ChronoUnit.DAYS);
-	}
-
-	public static String getNextAvailableEffectiveDateAsString(String shortName) {
-		return EffectiveTimes.format(getNextAvailableEffectiveDate(shortName), DateFormats.SHORT);
+	public static String getNextAvailableEffectiveDateAsString(String codeSystemId) {
+		return EffectiveTimes.format(getNextAvailableEffectiveDate(codeSystemId), DateFormats.SHORT);
 	}
 	
-	public static void createCodeSystemAndVersion(final IBranchPath branchPath, String codeSystemShortName, String versionId, String effectiveTime) {
-		createCodeSystem(branchPath, codeSystemShortName).statusCode(201);
-		createVersion(codeSystemShortName, versionId, effectiveTime).statusCode(201);
+	public static void createCodeSystemAndVersion(final IBranchPath branchPath, String codeSystemId, String versionId, String effectiveTime) {
+		createCodeSystem(branchPath, codeSystemId).statusCode(201);
+		createVersion(codeSystemId, versionId, effectiveTime).statusCode(201);
 	}
 
 	private CodeSystemVersionRestRequests() {
