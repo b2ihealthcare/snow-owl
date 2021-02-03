@@ -79,7 +79,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 	@JsonProperty
 	String description;
 	
-	@NotEmpty
+	@NotNull
 	@JsonProperty
 	LocalDate effectiveTime;
 	
@@ -93,12 +93,10 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 	// local execution variables
 	private transient Multimap<DatastoreLockContext, DatastoreLockTarget> lockTargetsByContext;
 	private transient Map<String, CodeSystem> codeSystemsByShortName;
-	private transient Date effectiveTimeDate;
 	
 	@Override
 	public Boolean execute(ServiceProvider context) {
 		final String user = context.service(User.class).getUsername();
-		this.effectiveTimeDate = EffectiveTimes.parse(effectiveTime, DateFormats.SHORT);
 		
 		if (codeSystemsByShortName == null) {
 			codeSystemsByShortName = fetchAllCodeSystems(context);
@@ -152,7 +150,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 						new RevisionIndexReadRequest<CommitResult>(
 							context.service(RepositoryManager.class).get(codeSystemToVersion.getRepositoryId())
 								.service(VersioningRequestBuilder.class)
-								.build(new VersioningConfiguration(user, codeSystemToVersion.getShortName(), versionId, description, force, EffectiveTimes.getEffectiveTime(effectiveTimeDate)))
+								.build(new VersioningConfiguration(user, codeSystemToVersion.getShortName(), versionId, description, force, effectiveTime))
 						)
 					)
 				).execute(context);
@@ -182,12 +180,12 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 		final RepositoryManager repositoryManager = context.service(RepositoryManager.class);
 		final Collection<Repository> repositories = repositoryManager.repositories();
 		return repositories.stream()
-			.map(repository -> fetchCodeSystem(context, repository.id()))
+			.map(repository -> fetchCodeSystems(context, repository.id()))
 			.flatMap(Collection::stream)
 			.collect(Collectors.toMap(CodeSystem::getShortName, Function.identity()));
 	}
 	
-	private List<CodeSystem> fetchCodeSystem(ServiceProvider context, String repositoryId) {
+	private List<CodeSystem> fetchCodeSystems(ServiceProvider context, String repositoryId) {
 		return CodeSystemRequests.prepareSearchCodeSystem()
 			.all()
 			.build(repositoryId)
@@ -201,26 +199,25 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 			return;
 		}
 
-		Instant mostRecentVersionEffectiveTime = getMostRecentVersionEffectiveDateTime(context, codeSystem);
-		Instant requestEffectiveTime = effectiveTimeDate.toInstant();
+		LocalDate mostRecentVersionEffectiveTime = getMostRecentVersionEffectiveDateTime(context, codeSystem);
 
-		if (!requestEffectiveTime.isAfter(mostRecentVersionEffectiveTime)) {
-			throw new BadRequestException("The specified '%s' effective time is invalid. Date should be after '%s'.", requestEffectiveTime, mostRecentVersionEffectiveTime);
+		if (!effectiveTime.isAfter(mostRecentVersionEffectiveTime)) {
+			throw new BadRequestException("The specified '%s' effective time is invalid. Date should be after '%s'.", effectiveTime, mostRecentVersionEffectiveTime);
 		}
 	}
 	
-	private Instant getMostRecentVersionEffectiveDateTime(ServiceProvider context, CodeSystem codeSystem) {
+	private LocalDate getMostRecentVersionEffectiveDateTime(ServiceProvider context, CodeSystem codeSystem) {
 		return CodeSystemRequests.prepareSearchCodeSystemVersion()
-			.all()
+			.one()
 			.filterByCodeSystemShortName(codeSystem.getShortName())
+			.sortBy(SortField.descending(CodeSystemVersionEntry.Fields.EFFECTIVE_DATE))
 			.build(codeSystem.getRepositoryId())
 			.execute(context.service(IEventBus.class))
 			.getSync(1, TimeUnit.MINUTES)
 			.stream()
-			.max(CodeSystemVersionEntry.VERSION_EFFECTIVE_DATE_COMPARATOR)
-			.map(CodeSystemVersionEntry::getEffectiveDate)
-			.map(Instant::ofEpochMilli)
-			.orElse(Instant.EPOCH);
+			.findFirst()
+			.map(CodeSystemVersion::getEffectiveTime)
+			.orElse(LocalDate.EPOCH);
 	}
 	
 	private void acquireLocks(ServiceProvider context, String user, Collection<CodeSystem> codeSystems) {
