@@ -15,18 +15,18 @@
  */
 package com.b2international.snowowl.snomed.core.rest.ext;
 
-import static com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests.createCodeSystem;
-import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.createVersion;
-import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getNextAvailableEffectiveDateAsString;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.getComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewConcept;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.inactivateConcept;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.reactivateConcept;
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests.createCodeSystem;
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.createVersion;
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getNextAvailableEffectiveDateAsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertEquals;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.Map;
 
 import org.junit.Test;
@@ -113,7 +113,7 @@ public class SnomedComponentEffectiveTimeRestoreTest extends AbstractSnomedExten
 		CodeSystem extension = createExtension(baseInternationalCodeSystem, branchPath.lastSegment());
 		// get the first concept from the Base SI version
 		SnomedConcept concept = searchConcept(baseInternationalCodeSystem, Map.of("module", Concepts.MODULE_SCT_CORE), 1).stream().findFirst().get();
-		Date lastReleasedEffectiveTime = concept.getEffectiveTime();
+		LocalDate lastReleasedEffectiveTime = concept.getEffectiveTime();
 		String conceptId = concept.getId();
 		// create a change on the concept, like change the definition status
 		updateConcept(extension.getCodeSystemURI(), concept.getId(), Map.of(
@@ -137,7 +137,7 @@ public class SnomedComponentEffectiveTimeRestoreTest extends AbstractSnomedExten
 		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getCodeSystemURI(), upgradeInternationalCodeSystem);
 		// get the first concept from the Base SI version
 		SnomedConcept concept = searchConcept(upgradeInternationalCodeSystem, Map.of("module", Concepts.MODULE_SCT_CORE, "effectiveTime", "20200131"), 1).stream().findFirst().get();
-		Date lastReleasedEffectiveTime = concept.getEffectiveTime();
+		LocalDate lastReleasedEffectiveTime = concept.getEffectiveTime();
 		String conceptId = concept.getId();
 		
 		// create a change on the concept, like change the definition status

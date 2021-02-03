@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.request.rf2;
 
+import java.time.LocalDate;
 import java.util.Collection;
 
 import com.b2international.snowowl.core.attachments.Attachment;
@@ -38,8 +39,8 @@ public final class SnomedRf2ExportRequestBuilder
 	private Rf2RefSetExportLayout refSetExportLayout;
 	private String countryNamespaceElement;
 	private String namespaceFilter;
-	private Long startEffectiveTime;
-	private Long endEffectiveTime;
+	private LocalDate startEffectiveTime;
+	private LocalDate endEffectiveTime;
 	private boolean includePreReleaseContent;
 	private Collection<String> componentTypes = null;
 	private Collection<String> modules = null;
@@ -70,19 +71,19 @@ public final class SnomedRf2ExportRequestBuilder
 	}
 
 	public SnomedRf2ExportRequestBuilder setStartEffectiveTime(final String startEffectiveTime) {
-		return setStartEffectiveTime(startEffectiveTime == null ? null : EffectiveTimes.getEffectiveTime(startEffectiveTime, DateFormats.SHORT));
+		return setStartEffectiveTime(startEffectiveTime == null ? null : EffectiveTimes.parse(startEffectiveTime, DateFormats.SHORT));
 	}
 	
-	public SnomedRf2ExportRequestBuilder setStartEffectiveTime(final Long startEffectiveTime) {
+	public SnomedRf2ExportRequestBuilder setStartEffectiveTime(final LocalDate startEffectiveTime) {
 		this.startEffectiveTime = startEffectiveTime;
 		return getSelf();
 	}
 	
 	public SnomedRf2ExportRequestBuilder setEndEffectiveTime(final String endEffectiveTime) {
-		return setEndEffectiveTime(endEffectiveTime == null ? null : EffectiveTimes.getEffectiveTime(endEffectiveTime, DateFormats.SHORT));
+		return setEndEffectiveTime(endEffectiveTime == null ? null : EffectiveTimes.parse(endEffectiveTime, DateFormats.SHORT));
 	}
 	
-	public SnomedRf2ExportRequestBuilder setEndEffectiveTime(final Long endEffectiveTime) {
+	public SnomedRf2ExportRequestBuilder setEndEffectiveTime(final LocalDate endEffectiveTime) {
 		this.endEffectiveTime = endEffectiveTime;
 		return getSelf();
 	}

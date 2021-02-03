@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBui
 
 import com.b2international.commons.validation.ApiValidation;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersion;
-import com.b2international.snowowl.core.domain.CollectionResource;
+import com.b2international.snowowl.core.codesystem.CodeSystemVersions;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
 
@@ -60,11 +60,10 @@ public class CodeSystemVersionRestService extends AbstractRestService {
 		@ApiResponse(code = 404, message = "Code system not found", response = RestApiError.class)
 	})
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public CollectionResource<CodeSystemVersion> getAllCodeSystemVersionsByShortName(
+	public CodeSystemVersions getAllCodeSystemVersionsByShortName(
 			@ApiParam(value="The code system short name")
 			@PathVariable(value="shortName") final String shortName) {
-
-		return CollectionResource.of(codeSystemVersionService.getCodeSystemVersions(shortName));
+		return codeSystemVersionService.getCodeSystemVersions(shortName);
 	}
 
 	@ApiOperation(

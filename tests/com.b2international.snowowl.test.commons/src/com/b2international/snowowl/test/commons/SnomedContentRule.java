@@ -30,6 +30,7 @@ import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
+import com.b2international.snowowl.core.codesystem.CodeSystemVersion;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersions;
 import com.b2international.snowowl.core.codesystem.CodeSystems;
@@ -125,7 +126,7 @@ public class SnomedContentRule extends ExternalResource {
 				.getSync();
 				
 			final CodeSystemURI extensionOf = snomedVersions.first()
-				.map(v -> new CodeSystemURI(String.format("%s/%s", v.getCodeSystemShortName(), v.getVersionId())))
+				.map(CodeSystemVersion::getUri)
 				.orElse(null);
 				
 			CodeSystemRequests.prepareNewCodeSystem()

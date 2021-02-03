@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
+import com.b2international.snowowl.core.codesystem.CodeSystemVersion;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersions;
 import com.b2international.snowowl.core.codesystem.CodeSystems;
@@ -68,7 +69,7 @@ public abstract class FhirApiProvider {
 		} else {
 			
 			//get the last version for now
-			Optional<CodeSystemVersionEntry> latestVersion = CodeSystemRequests.prepareSearchCodeSystemVersion()
+			Optional<CodeSystemVersion> latestVersion = CodeSystemRequests.prepareSearchCodeSystemVersion()
 				.one()
 				.filterByCodeSystemShortName(getCodeSystemShortName())
 				.sortBy(SearchResourceRequest.SortField.ascending(CodeSystemVersionEntry.Fields.EFFECTIVE_DATE))
@@ -91,18 +92,15 @@ public abstract class FhirApiProvider {
 	 * @param logicalId
 	 * @return
 	 */
-	protected CodeSystemVersionEntry findCodeSystemVersion(LogicalId logicalId) {
-		
-		Optional<CodeSystemVersionEntry> codeSystemOptional = CodeSystemRequests.prepareSearchCodeSystemVersion()
+	protected CodeSystemVersion findCodeSystemVersion(LogicalId logicalId) {
+		return CodeSystemRequests.prepareSearchCodeSystemVersion()
 			.one()
 			.filterByBranchPath(logicalId.getBranchPath())
 			.build(getRepositoryId())
 			.execute(getBus())
 			.getSync()
-			.first();
-			
-		return codeSystemOptional.orElseThrow(() -> 
-			new BadRequestException(String.format("Could not find corresponding version [%s] for logical id [%s].", logicalId.getBranchPath(), logicalId), "ValueSet.id"));
+			.first()
+			.orElseThrow(() -> new BadRequestException("Could not find corresponding version [%s] for logical id [%s].", logicalId.getBranchPath(), logicalId));
 	}
 	
 	/**
@@ -110,7 +108,7 @@ public abstract class FhirApiProvider {
 	 * @param versionEffectiveDate
 	 * @return code system version with the effective date
 	 */
-	protected CodeSystemVersionEntry getCodeSystemVersion(String versionEffectiveDate) {
+	protected CodeSystemVersion getCodeSystemVersion(String versionEffectiveDate) {
 		
 		if (versionEffectiveDate == null) {
 			//get the last version
@@ -136,9 +134,9 @@ public abstract class FhirApiProvider {
 		}
 	}
 	
-	protected List<CodeSystemVersionEntry> collectCodeSystemVersions(String repositoryId) {
+	protected List<CodeSystemVersion> collectCodeSystemVersions(String repositoryId) {
 		
-		List<CodeSystemVersionEntry> codeSystemVersionList = Lists.newArrayList();
+		List<CodeSystemVersion> codeSystemVersionList = Lists.newArrayList();
 		
 		CodeSystems codeSystems = CodeSystemRequests.prepareSearchCodeSystem()
 			.all()
@@ -156,8 +154,8 @@ public abstract class FhirApiProvider {
 		
 		codeSystems.forEach(cse -> { 
 			
-			List<CodeSystemVersionEntry> versions = codeSystemVersions.stream()
-			.filter(csv -> csv.getCodeSystemShortName().equals(cse.getShortName()))
+			List<CodeSystemVersion> versions = codeSystemVersions.stream()
+			.filter(csv -> csv.getUri().getCodeSystem().equals(cse.getShortName()))
 			.collect(Collectors.toList());
 			codeSystemVersionList.addAll(versions);
 		});

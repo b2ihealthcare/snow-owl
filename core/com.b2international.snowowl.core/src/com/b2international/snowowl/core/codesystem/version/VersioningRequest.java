@@ -26,7 +26,9 @@ import com.b2international.commons.exceptions.ApiException;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
+import com.b2international.snowowl.core.codesystem.CodeSystemVersion;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.id.IDs;
@@ -56,7 +58,7 @@ public class VersioningRequest implements Request<TransactionContext, Boolean>, 
 	public final Boolean execute(TransactionContext context) {
 		final Logger log = context.log();
 		
-		CodeSystemVersionEntry version = getVersion(context);
+		CodeSystemVersion version = getVersion(context);
 		if (version != null) {
 			throw new AlreadyExistsException("Version", config.getVersionId());
 		}
@@ -83,7 +85,7 @@ public class VersioningRequest implements Request<TransactionContext, Boolean>, 
 	}
 
 	@Nullable
-	private CodeSystemVersionEntry getVersion(TransactionContext context) {
+	private CodeSystemVersion getVersion(TransactionContext context) {
 		return CodeSystemRequests
 				.prepareSearchCodeSystemVersion()
 				.setLimit(2)
@@ -99,7 +101,7 @@ public class VersioningRequest implements Request<TransactionContext, Boolean>, 
 		return CodeSystemVersionEntry.builder()
 				.id(IDs.base64UUID())
 				.description(config.getDescription())
-				.effectiveDate(config.getEffectiveTime())
+				.effectiveDate(EffectiveTimes.getEffectiveTime(config.getEffectiveTime()))
 				.importDate(new Date().getTime())
 				.parentBranchPath(context.path())
 				.versionId(config.getVersionId())
