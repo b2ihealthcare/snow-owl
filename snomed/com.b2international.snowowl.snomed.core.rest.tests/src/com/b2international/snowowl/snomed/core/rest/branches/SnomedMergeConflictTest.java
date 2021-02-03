@@ -33,8 +33,8 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.time.LocalDate;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Map;
 
 import org.junit.Test;
@@ -160,7 +160,7 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
 		branching.createBranch(a).statusCode(201);
 
-		Date nextEffectiveTime = getNextAvailableEffectiveDate(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME);
+		LocalDate nextEffectiveTime = getNextAvailableEffectiveDate(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME);
 		String nextEffectiveTimeAsString = EffectiveTimes.format(nextEffectiveTime, DateFormats.SHORT);
 
 		Map<?, ?> effectiveTimeUpdateRequest = ImmutableMap.builder()

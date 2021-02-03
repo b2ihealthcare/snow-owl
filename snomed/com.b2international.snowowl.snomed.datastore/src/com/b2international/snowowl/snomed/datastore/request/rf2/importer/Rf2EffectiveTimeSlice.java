@@ -19,6 +19,7 @@ import static com.google.common.collect.Lists.newArrayListWithExpectedSize;
 import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
 import static com.google.common.collect.Sets.newHashSet;
 
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
@@ -79,7 +80,7 @@ public final class Rf2EffectiveTimeSlice {
 
 	public static final String SNAPSHOT_SLICE = "snapshot";
 
-	private final Date effectiveDate;
+	private final LocalDate effectiveDate;
 	private final String effectiveTime;
 	
 	private final LongKeyMap<Set<String>> membersByReferencedComponent;
@@ -243,7 +244,7 @@ public final class Rf2EffectiveTimeSlice {
 							.codeSystemShortName(codeSystem)
 							.description("")
 							.parentBranchPath(context.branch().path())
-							.effectiveDate(effectiveDate.getTime())
+							.effectiveDate(EffectiveTimes.getEffectiveTime(effectiveDate))
 							.versionId(effectiveTime)
 							.importDate(new Date().getTime())
 							.repositoryUuid(SnomedDatastoreActivator.REPOSITORY_UUID)

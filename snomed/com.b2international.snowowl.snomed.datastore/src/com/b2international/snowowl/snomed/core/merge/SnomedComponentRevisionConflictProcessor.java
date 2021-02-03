@@ -15,8 +15,8 @@
  */
 package com.b2international.snowowl.snomed.core.merge;
 
+import java.time.LocalDate;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -81,9 +81,9 @@ public final class SnomedComponentRevisionConflictProcessor extends ComponentRev
 			} else if (EffectiveTimes.isUnset(targetChange.getNewValue())) {
 				return targetChange;
 			} else {
-				final Date sourceDate = EffectiveTimes.toDate(Long.parseLong(sourceChange.getNewValue()));
-				final Date targetDate = EffectiveTimes.toDate(Long.parseLong(targetChange.getNewValue()));
-				if (sourceDate.after(targetDate)) {
+				final LocalDate sourceDate = EffectiveTimes.toDate(Long.parseLong(sourceChange.getNewValue()));
+				final LocalDate targetDate = EffectiveTimes.toDate(Long.parseLong(targetChange.getNewValue()));
+				if (sourceDate.isAfter(targetDate)) {
 					return sourceChange;
 				}
 			}

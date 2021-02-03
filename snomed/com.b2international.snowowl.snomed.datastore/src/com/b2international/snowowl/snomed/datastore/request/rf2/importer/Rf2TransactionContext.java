@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,9 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.StagingArea;
 import com.b2international.snowowl.core.codesystem.CodeSystemEntry;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.DelegatingBranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.TransactionContext;
@@ -252,7 +253,7 @@ public final class Rf2TransactionContext extends DelegatingBranchContext impleme
 				} else if (existingObject instanceof SnomedDocument && rf2Component instanceof SnomedComponent) {
 					final SnomedComponent rf2Row = (SnomedComponent) rf2Component;
 					final SnomedDocument existingRow = (SnomedDocument) existingObject;
-					if (rf2Row.getEffectiveTime() == null || rf2Row.getEffectiveTime().getTime() > existingRow.getEffectiveTime()) {
+					if (rf2Row.getEffectiveTime() == null || EffectiveTimes.getEffectiveTime(rf2Row.getEffectiveTime()) > existingRow.getEffectiveTime()) {
 						componentsToImport.add(rf2Component);
 					}
 				}
@@ -490,8 +491,8 @@ public final class Rf2TransactionContext extends DelegatingBranchContext impleme
 				break;
 			case MODULE_DEPENDENCY:
 				builder = SnomedComponents.newModuleDependencyMember()
-						.withSourceEffectiveTime((Date) properties.get(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME))
-						.withTargetEffectiveTime((Date) properties.get(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME));
+						.withSourceEffectiveTime((LocalDate) properties.get(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME))
+						.withTargetEffectiveTime((LocalDate) properties.get(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME));
 				break;
 			case SIMPLE:
 				builder = SnomedComponents.newSimpleMember();

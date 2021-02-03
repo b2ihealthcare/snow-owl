@@ -17,6 +17,8 @@ package com.b2international.snowowl.core.codesystem.version;
 
 import static com.google.common.base.Strings.nullToEmpty;
 
+import java.time.LocalDate;
+
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.google.common.base.MoreObjects;
 
@@ -30,7 +32,7 @@ public final class VersioningConfiguration {
 	private final String versionId;
 	private final String description;
 	private final Boolean force;
-	private final long effectiveTime;
+	private final LocalDate effectiveTime;
 	
 	public VersioningConfiguration(
 			String user,
@@ -38,7 +40,7 @@ public final class VersioningConfiguration {
 			String versionId, 
 			String description,
 			Boolean force,
-			long effectiveTime) {
+			LocalDate effectiveTime) {
 		this.user = user;
 		this.codeSystemShortName = codeSystemShortName;
 		this.versionId = versionId;
@@ -55,7 +57,7 @@ public final class VersioningConfiguration {
 		return versionId;
 	}
 
-	public long getEffectiveTime() {
+	public LocalDate getEffectiveTime() {
 		return effectiveTime;
 	}
 

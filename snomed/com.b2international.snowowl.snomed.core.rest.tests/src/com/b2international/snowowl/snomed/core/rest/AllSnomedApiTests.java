@@ -41,6 +41,7 @@ import com.b2international.snowowl.snomed.core.rest.classification.SnomedClassif
 import com.b2international.snowowl.snomed.core.rest.compare.ConceptMapCompareSnomedMapTypeReferenceSetTest;
 import com.b2international.snowowl.snomed.core.rest.components.*;
 import com.b2international.snowowl.snomed.core.rest.ext.SnomedComponentEffectiveTimeRestoreTest;
+import com.b2international.snowowl.snomed.core.rest.ext.SnomedExtensionCreationTest;
 import com.b2international.snowowl.snomed.core.rest.ext.SnomedExtensionUpgradeTest;
 import com.b2international.snowowl.snomed.core.rest.io.SnomedExportApiTest;
 import com.b2international.snowowl.snomed.core.rest.io.SnomedImportApiTest;
@@ -103,6 +104,7 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	SnomedVersioningApiTest.class,
 	// Extension test cases
 	SnomedComponentEffectiveTimeRestoreTest.class,
+	SnomedExtensionCreationTest.class,
 	SnomedExtensionUpgradeTest.class, 
 	// MRCM export/import
 	MrcmImportExportTest.class,
