@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
+import static com.b2international.snowowl.core.api.IBranchPath.MAIN_BRANCH;
+
 import java.time.LocalDate;
 import java.util.Date;
 
@@ -131,6 +133,14 @@ public class CodeSystemVersion implements CodeSystemVersionProperties {
 	
 	public void setUri(CodeSystemURI uri) {
 		this.uri = uri;
+	}
+	
+	/**
+	 * @return {@code true} if this version represents the HEAD in the repository.
+	 */
+	@JsonIgnore
+	public boolean isLatestVersion() {
+		return MAIN_BRANCH.equals(getVersion());
 	}
 
 }
