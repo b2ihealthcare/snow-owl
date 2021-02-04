@@ -59,13 +59,18 @@ public class VersioningRequest implements Request<TransactionContext, Boolean>, 
 		final Logger log = context.log();
 		
 		CodeSystemVersion version = getVersion(context);
-		if (version != null) {
+		if (version != null && !config.isForce()) {
 			throw new AlreadyExistsException("Version", config.getVersionId());
 		}
 
 		log.info("Versioning components of '{}' codesystem...", config.getCodeSystemShortName());
 		try {
 			doVersionComponents(context);
+			
+			if (version != null && config.isForce()) {
+				context.delete(version);
+			}
+			
 			context.add(createVersion(context, config));
 		} catch (Exception e) {
 			if (e instanceof ApiException) {

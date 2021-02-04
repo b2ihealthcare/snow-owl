@@ -64,6 +64,21 @@ public abstract class CodeSystemVersionRestRequests {
 				.post("/codesystems/{codeSystemId}/versions", codeSystemId)
 				.then();
 	}
+	
+	public static ValidatableResponse createVersion(String codeSystemId, String version, String effectiveDate, boolean force) {
+		Map<?, ?> requestBody = ImmutableMap.builder()
+				.put("version", version)
+				.put("description", version)
+				.put("effectiveDate", effectiveDate)
+				.put("force", force)
+				.build();
+		
+		return givenAuthenticatedRequest(ApiTestConstants.ADMIN_API)
+				.contentType(ContentType.JSON)
+				.body(requestBody)
+				.post("/codesystems/{codeSystemId}/versions", codeSystemId)
+				.then();
+	}
 
 	public static ValidatableResponse createVersion(String codeSystemId, String version, String description, String effectiveDate) {
 		Map<?, ?> requestBody = ImmutableMap.builder()
@@ -78,7 +93,7 @@ public abstract class CodeSystemVersionRestRequests {
 				.post("/codesystems/{codeSystemId}/versions", codeSystemId)
 				.then();
 	}
-
+	
 	public static CodeSystemVersions getVersions(String codeSystemId) {
 		return givenAuthenticatedRequest(ApiTestConstants.ADMIN_API)
 				.and().contentType(ContentType.JSON)

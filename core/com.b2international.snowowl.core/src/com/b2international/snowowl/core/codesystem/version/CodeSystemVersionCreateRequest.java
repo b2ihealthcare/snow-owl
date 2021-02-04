@@ -22,6 +22,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -87,6 +89,9 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 	@JsonProperty
 	String codeSystemShortName;
 	
+	@JsonProperty
+	boolean force;
+	
 	// local execution variables
 	private transient Multimap<DatastoreLockContext, DatastoreLockTarget> lockTargetsByContext;
 	private transient Map<String, CodeSystem> codeSystemsByShortName;
@@ -104,31 +109,41 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 			throw new CodeSystemNotFoundException(codeSystemShortName);
 		}
 		
-		// check that the new versionId does not conflict with any other currently available branch
-		final String newVersionPath = String.join(Branch.SEPARATOR, codeSystem.getBranchPath(), versionId);
-		final String repositoryId = codeSystem.getRepositoryId();
-		
 		// validate new path
 		RevisionBranch.BranchNameValidator.DEFAULT.checkName(versionId);
 		
-		try {
-			Branch branch = RepositoryRequests.branching()
-				.prepareGet(newVersionPath)
-				.build(repositoryId)
-				.execute(context.service(IEventBus.class))
-				.getSync(1, TimeUnit.MINUTES);
-			// allow deleted version branches to be reused for versioning
-			if (!branch.isDeleted()) {
-				throw new ConflictException("An existing branch with path '%s' conflicts with the specified version identifier.", newVersionPath);
-			}
-		} catch (NotFoundException e) {
-			// ignore
-		}
-		
 		final List<CodeSystem> codeSystemsToVersion = codeSystem.getDependenciesAndSelf()
-			.stream()
-			.map(codeSystemsByShortName::get)
-			.collect(Collectors.toList());
+				.stream()
+				.map(codeSystemsByShortName::get)
+				.collect(Collectors.toList());
+		
+		for (CodeSystem cs : codeSystemsToVersion) {
+			// check that the new versionId does not conflict with any other currently available branch
+			final String newVersionPath = String.join(Branch.SEPARATOR, cs.getBranchPath(), versionId);
+			final String repositoryId = cs.getRepositoryId();
+			
+			if (!force) {
+				// branch needs checking in the non-force cases only
+				try {
+					
+					Branch branch = RepositoryRequests.branching()
+						.prepareGet(newVersionPath)
+						.build(repositoryId)
+						.execute(context.service(IEventBus.class))
+						.getSync(1, TimeUnit.MINUTES);
+					
+					if (!branch.isDeleted()) {
+						throw new ConflictException("An existing branch with path '%s' conflicts with the specified version identifier.", newVersionPath);
+					}
+
+				} catch (NotFoundException e) {
+					// branch does not exist, ignore
+				}
+			}
+			
+			// if there is no conflict, delete the branch (the request also ignores non-existent branches)
+			deleteBranch(context, newVersionPath, repositoryId);
+		}
 		
 		acquireLocks(context, user, codeSystemsToVersion);
 		
@@ -137,13 +152,13 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 			
 			codeSystemsToVersion.forEach(codeSystemToVersion -> {
 				// check that the specified effective time is valid in this code system
-				validateEffectiveTime(context, codeSystem);
-				new RepositoryRequest<>(repositoryId,
+				validateVersion(context, codeSystem);
+				new RepositoryRequest<>(codeSystemToVersion.getRepositoryId(),
 					new BranchRequest<>(codeSystem.getBranchPath(),
 						new RevisionIndexReadRequest<CommitResult>(
 							context.service(RepositoryManager.class).get(codeSystemToVersion.getRepositoryId())
 								.service(VersioningRequestBuilder.class)
-								.build(new VersioningConfiguration(user, codeSystemToVersion.getShortName(), versionId, description, effectiveTime))
+								.build(new VersioningConfiguration(user, codeSystemToVersion.getShortName(), versionId, description, effectiveTime, force))
 						)
 					)
 				).execute(context);
@@ -159,6 +174,14 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 				monitor.done();
 			}
 		}
+	}
+	
+	private boolean deleteBranch(ServiceProvider context, String path, String repositoryId) {
+		return RepositoryRequests.branching()
+				.prepareDelete(path)
+				.build(repositoryId)
+				.execute(context.service(IEventBus.class))
+				.getSync(1, TimeUnit.MINUTES);
 	}
 	
 	private Map<String, CodeSystem> fetchAllCodeSystems(ServiceProvider context) {
@@ -179,19 +202,35 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 			.getItems();
 	}
 	
-	private void validateEffectiveTime(ServiceProvider context, CodeSystem codeSystem) {
+	private void validateVersion(ServiceProvider context, CodeSystem codeSystem) {
 		if (!context.service(TerminologyRegistry.class).getTerminology(codeSystem.getTerminologyId()).isEffectiveTimeSupported()) {
 			return;
 		}
 
-		LocalDate mostRecentVersionEffectiveTime = getMostRecentVersionEffectiveDateTime(context, codeSystem);
+		Optional<CodeSystemVersion> mostRecentVersion = getMostRecentVersion(context, codeSystem);
 
-		if (!effectiveTime.isAfter(mostRecentVersionEffectiveTime)) {
-			throw new BadRequestException("The specified '%s' effective time is invalid. Date should be after '%s'.", effectiveTime, mostRecentVersionEffectiveTime);
-		}
+		mostRecentVersion.ifPresent(mrv -> {
+			LocalDate mostRecentVersionEffectiveTime = mostRecentVersion.map(CodeSystemVersion::getEffectiveTime).orElse(LocalDate.EPOCH);
+
+			if (force) {
+				if (!Objects.equals(versionId, mrv.getVersion())) {
+					throw new BadRequestException("Force creating version requires the same versionId ('%s') to be used", versionId);
+				}
+				
+				// force recreating an existing version should use the same or later effective date value, allow same here
+				if (effectiveTime.equals(mostRecentVersionEffectiveTime)) {
+					return;
+				}
+			}
+			
+			if (!effectiveTime.isAfter(mostRecentVersionEffectiveTime)) {
+				throw new BadRequestException("The specified '%s' effective time is invalid. Date should be after '%s'.", effectiveTime, mostRecentVersionEffectiveTime);
+			}
+		});
+		
 	}
 	
-	private LocalDate getMostRecentVersionEffectiveDateTime(ServiceProvider context, CodeSystem codeSystem) {
+	private Optional<CodeSystemVersion> getMostRecentVersion(ServiceProvider context, CodeSystem codeSystem) {
 		return CodeSystemRequests.prepareSearchCodeSystemVersion()
 			.one()
 			.filterByCodeSystemShortName(codeSystem.getShortName())
@@ -200,9 +239,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 			.execute(context.service(IEventBus.class))
 			.getSync(1, TimeUnit.MINUTES)
 			.stream()
-			.findFirst()
-			.map(CodeSystemVersion::getEffectiveTime)
-			.orElse(LocalDate.EPOCH);
+			.findFirst();
 	}
 	
 	private void acquireLocks(ServiceProvider context, String user, Collection<CodeSystem> codeSystems) {

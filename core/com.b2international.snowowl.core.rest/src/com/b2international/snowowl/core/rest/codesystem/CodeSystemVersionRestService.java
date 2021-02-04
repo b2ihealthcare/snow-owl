@@ -106,7 +106,7 @@ public class CodeSystemVersionRestService extends AbstractRestService {
 			@ApiParam(value="Version parameters")
 			@RequestBody final VersionInput input) {
 		ApiValidation.checkInput(input);
-		final CodeSystemVersion version = codeSystemVersionService.createVersion(shortName, input);
+		final CodeSystemVersion version = codeSystemVersionService.createVersion(shortName, input, input.isForce());
 		return ResponseEntity.created(getVersionURI(shortName, version.getVersion())).build();
 	}
 

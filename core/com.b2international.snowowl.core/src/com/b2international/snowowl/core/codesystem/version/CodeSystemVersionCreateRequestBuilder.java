@@ -34,6 +34,7 @@ public final class CodeSystemVersionCreateRequestBuilder
 	private String versionId;
 	private String description;
 	private LocalDate effectiveTime;
+	private boolean force = false;
 
 	public CodeSystemVersionCreateRequestBuilder setCodeSystemShortName(String codeSystemShortName) {
 		this.codeSystemShortName = codeSystemShortName;
@@ -64,6 +65,11 @@ public final class CodeSystemVersionCreateRequestBuilder
 		return getSelf();
 	}
 	
+	public CodeSystemVersionCreateRequestBuilder setForce(boolean force) {
+		this.force = force;
+		return getSelf();
+	}
+	
 	@Override
 	protected Request<ServiceProvider, Boolean> doBuild() {
 		final CodeSystemVersionCreateRequest req = new CodeSystemVersionCreateRequest();
@@ -71,6 +77,7 @@ public final class CodeSystemVersionCreateRequestBuilder
 		req.versionId = versionId;
 		req.description= description;
 		req.effectiveTime = effectiveTime;
+		req.force = force;
 		return req;
 	}
 
