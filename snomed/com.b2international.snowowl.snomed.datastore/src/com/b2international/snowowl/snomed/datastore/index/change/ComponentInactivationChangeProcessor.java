@@ -103,7 +103,7 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 				changedMembersByReferencedComponentId.put(((SnomedRefSetMemberIndexEntry) diff.newRevision).getReferencedComponentId(), diff);
 			});
 			
-			SnomedRefSetMemberIndexEntry memberForModule = staging.getChangedRevisions(SnomedRefSetMemberIndexEntry.class).findFirst().map(diff -> (SnomedRefSetMemberIndexEntry) diff.newRevision).get();
+			SnomedConceptDocument memberForModule = staging.getChangedRevisions(SnomedConceptDocument.class).findFirst().map(diff -> (SnomedConceptDocument) diff.newRevision).get();
 			String moduleId = moduleIdProvider.apply(memberForModule);
 			
 			for (Hits<String> hits : searcher.scroll(Query.select(String.class)
@@ -171,7 +171,7 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 									.active(true) // ensure active
 									.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME) // ensure unpublished
 									.field(SnomedRf2Headers.FIELD_VALUE_ID, Concepts.CONCEPT_NON_CURRENT) // ensure non-current
-									.moduleId(moduleIdProvider.apply(existingMember))
+									.moduleId(moduleId)
 									.build();
 							stageChange(existingMember, updated);
 						}
@@ -197,13 +197,13 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 						stageChange(relationship, SnomedRelationshipIndexEntry.builder((SnomedRelationshipIndexEntry) changedRevisions.get(relationship.getObjectId()).newRevision)
 								.active(false)
 								.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
-								.moduleId(moduleIdProvider.apply(relationship))
+								.moduleId(moduleId)
 								.build());
 					} else {
 						stageChange(relationship, SnomedRelationshipIndexEntry.builder(relationship)
 								.active(false)
 								.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
-								.moduleId(moduleIdProvider.apply(relationship))
+								.moduleId(moduleId)
 								.build());
 					}
 				});
@@ -213,6 +213,9 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 		if (inactivatedComponentIds.isEmpty()) {
 			return;
 		}
+		
+		SnomedComponentDocument memberForModule = staging.getChangedRevisions(SnomedComponentDocument.class).findFirst().map(diff -> (SnomedComponentDocument) diff.newRevision).get();
+		String moduleId = moduleIdProvider.apply(memberForModule);
 		
 		// inactivate referring members of all inactivated core component, and all members of inactivated refsets
 		final Map<ObjectId, RevisionDiff> changedRevisions = staging.getChangedRevisions();
@@ -236,7 +239,7 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 					stageChange(member, SnomedRefSetMemberIndexEntry.builder(member)
 							.active(false)
 							.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
-							.moduleId(moduleIdProvider.apply(member))
+							.moduleId(moduleId)
 							.build());
 				}
 			});
