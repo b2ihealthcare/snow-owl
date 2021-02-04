@@ -46,6 +46,7 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
@@ -935,21 +936,26 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		String sourceRelationshipId = createNewRelationship(branchPath, conceptId, Concepts.HAS_DOSE_FORM, Concepts.MODULE_SCT_MODEL_COMPONENT);
 		String destinationRelationshipId = createNewRelationship(branchPath, Concepts.MODULE_SCT_MODEL_COMPONENT, Concepts.HAS_DOSE_FORM, conceptId);
 		CodeSystemURI codeSystemURI = CodeSystemURI.branch(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, Strings.delete(branchPath.getPath(), "MAIN/"));
-		
+
 		SnomedRelationship sourceRelationship = SnomedRequests.prepareGetRelationship(sourceRelationshipId)
 				.build(codeSystemURI)
 				.execute(getBus())
 				.getSync();
-		
+
 		SnomedRelationship destinationRelationship = SnomedRequests.prepareGetRelationship(destinationRelationshipId)
 				.build(codeSystemURI)
 				.execute(getBus())
 				.getSync();
 
-		SnomedRequests.prepareUpdateConcept(conceptId)
+		Request<TransactionContext,Boolean> request = SnomedRequests.prepareUpdateConcept(conceptId)
 				.setActive(false)
-				.setModuleId(moduleConceptId)
-				.build(codeSystemURI, RestExtensions.USER, "commit")
+				.build();
+
+		SnomedRequests.prepareCommit()
+				.setDefaultModuleId(moduleConceptId)
+				.setBody(request)
+				.setCommitComment("commit")
+				.build(codeSystemURI)
 				.execute(getBus())
 				.getSync();
 
@@ -968,7 +974,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		assertTrue(destinationRelationship.isActive());
 		assertFalse(moduleConceptId.equals(sourceRelationship.getModuleId()));
 		assertFalse(moduleConceptId.equals(destinationRelationship.getModuleId()));
-		
+
 		//After update
 		assertFalse(updatedSourceRelationship.isActive());
 		assertEquals(moduleConceptId, updatedSourceRelationship.getModuleId());
