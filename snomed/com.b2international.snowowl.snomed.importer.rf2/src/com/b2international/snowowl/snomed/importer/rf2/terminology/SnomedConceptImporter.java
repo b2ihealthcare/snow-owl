@@ -61,6 +61,10 @@ public class SnomedConceptImporter extends AbstractSnomedTerminologyImporter<Con
 			.add(new IndexConfiguration("SNOMED_CONCEPT_CONCRETEDOMAINREFSETMEMBERS_LIST_IDX1000",
 					"SNOMED_CONCEPT_CONCRETEDOMAINREFSETMEMBERS_LIST", 
 					"CDO_SOURCE", "CDO_BRANCH", "CDO_VERSION_ADDED", "CDO_IDX"))
+			.add(new IndexConfiguration("SNOMED_CONCEPT_CONCRETEDOMAINREFSETMEMBERS_LIST_IDX1001",
+					"SNOMED_CONCEPT_CONCRETEDOMAINREFSETMEMBERS_LIST", 
+					"CDO_SOURCE", "CDO_BRANCH", "CDO_IDX", "CDO_VERSION_REMOVED"))
+			
 			.build();
 	
 	private static final SnomedImportConfiguration<ConceptRow> IMPORT_CONFIGURATION = new SnomedImportConfiguration<ConceptRow>(
