@@ -44,6 +44,7 @@ import com.b2international.snowowl.snomed.datastore.request.ModuleRequest.Module
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 
 /**
  * @since 7.0
@@ -97,7 +98,6 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 		
 		if (!inactivatedConceptIds.isEmpty()) {
 			
-			
 			Multimap<String, RevisionDiff> changedMembersByReferencedComponentId = HashMultimap.create();
 			staging.getChangedRevisions(SnomedRefSetMemberIndexEntry.class).forEach(diff -> {
 				changedMembersByReferencedComponentId.put(((SnomedRefSetMemberIndexEntry) diff.newRevision).getReferencedComponentId(), diff);
@@ -106,16 +106,16 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 			SnomedRefSetMemberIndexEntry memberForModule = staging.getChangedRevisions(SnomedRefSetMemberIndexEntry.class).findFirst().map(diff -> (SnomedRefSetMemberIndexEntry) diff.newRevision).get();
 			String moduleId = moduleIdProvider.apply(memberForModule);
 			
-			for (Hits<String[]> hits : searcher.scroll(Query.select(String[].class)
+			for (Hits<String> hits : searcher.scroll(Query.select(String.class)
 					.from(SnomedDescriptionIndexEntry.class)
-					.fields(SnomedDescriptionIndexEntry.Fields.ID, SnomedDescriptionIndexEntry.Fields.MODULE_ID)
+					.fields(SnomedDescriptionIndexEntry.Fields.ID)
 					.where(Expressions.builder()
 							.filter(SnomedDescriptionIndexEntry.Expressions.active())
 							.filter(SnomedDescriptionIndexEntry.Expressions.concepts(inactivatedConceptIds))
 							.build())
 					.limit(PAGE_SIZE)
 					.build())) {
-				final Set<String> descriptionIds = hits.stream().map(description -> description[0]).collect(Collectors.toSet());
+				final Set<String> descriptionIds = Sets.newHashSet(hits);
 				
 				// load existing indicator reference set members from index
 				final Multimap<String, SnomedRefSetMemberIndexEntry> existingIndicatorReferenceSetMembers = HashMultimap.create();
@@ -131,11 +131,10 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 						});
 				
 				// override members with the ones that present in the staging area
-				for (String[] descriptionToCheck : hits) {
-					final String descriptionId = descriptionToCheck[0];
+				for (String descriptionIdToCheck : hits) {
 					// get the persisted, existing members
 					// get the current members from the tx
-					final Collection<SnomedRefSetMemberIndexEntry> transactionMembers = changedMembersByReferencedComponentId.get(descriptionId).stream()
+					final Collection<SnomedRefSetMemberIndexEntry> transactionMembers = changedMembersByReferencedComponentId.get(descriptionIdToCheck).stream()
 							.map(diff -> diff.newRevision)
 							.map(SnomedRefSetMemberIndexEntry.class::cast)
 							.filter(member -> Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR.equals(member.getReferenceSetId()))
@@ -143,7 +142,7 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 					// if there were no registered member changes to this description
 					if (transactionMembers.isEmpty()) {
 						// apply CONCEPT_NON_CURRENT to all existing members or generate a new one 
-						final SnomedRefSetMemberIndexEntry existingMember = existingIndicatorReferenceSetMembers.get(descriptionId)
+						final SnomedRefSetMemberIndexEntry existingMember = existingIndicatorReferenceSetMembers.get(descriptionIdToCheck)
 								.stream()
 								.filter(member -> {
 									// reusable member, if it was inactivated earlier
@@ -160,7 +159,7 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 								.released(false)
 								.referenceSetId(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR)
 								.referenceSetType(SnomedRefSetType.ATTRIBUTE_VALUE)
-								.referencedComponentId(descriptionId)
+								.referencedComponentId(descriptionIdToCheck)
 								.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
 								.moduleId(moduleId)
 								.field(SnomedRf2Headers.FIELD_VALUE_ID, Concepts.CONCEPT_NON_CURRENT)
@@ -182,7 +181,6 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 			}
 			
 			// inactivate relationships of inactivated concepts
-			
 			
 			final Map<ObjectId, RevisionDiff> changedRevisions = staging.getChangedRevisions();
 			for (Hits<SnomedRelationshipIndexEntry> hits : searcher.scroll(Query.select(SnomedRelationshipIndexEntry.class)
