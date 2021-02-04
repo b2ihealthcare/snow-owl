@@ -88,7 +88,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 	String codeSystemShortName;
 	
 	@JsonProperty
-	Boolean force;
+	boolean force;
 	
 	// local execution variables
 	private transient Multimap<DatastoreLockContext, DatastoreLockTarget> lockTargetsByContext;
@@ -156,7 +156,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 						new RevisionIndexReadRequest<CommitResult>(
 							context.service(RepositoryManager.class).get(codeSystemToVersion.getRepositoryId())
 								.service(VersioningRequestBuilder.class)
-								.build(new VersioningConfiguration(user, codeSystemToVersion.getShortName(), versionId, description, force, effectiveTime))
+								.build(new VersioningConfiguration(user, codeSystemToVersion.getShortName(), versionId, description, effectiveTime, force))
 						)
 					)
 				).execute(context);

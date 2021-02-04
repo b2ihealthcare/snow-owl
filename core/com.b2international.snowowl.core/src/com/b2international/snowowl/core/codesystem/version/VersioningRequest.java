@@ -67,7 +67,7 @@ public class VersioningRequest implements Request<TransactionContext, Boolean>, 
 		try {
 			doVersionComponents(context);
 			
-			if (version !=null && config.isForce()) {
+			if (version != null && config.isForce()) {
 				context.delete(version);
 			}
 			

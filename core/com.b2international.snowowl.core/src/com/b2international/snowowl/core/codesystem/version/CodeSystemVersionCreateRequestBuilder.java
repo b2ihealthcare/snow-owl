@@ -33,8 +33,8 @@ public final class CodeSystemVersionCreateRequestBuilder
 	private String codeSystemShortName;
 	private String versionId;
 	private String description;
-	private Boolean force = false;
 	private LocalDate effectiveTime;
+	private boolean force = false;
 
 	public CodeSystemVersionCreateRequestBuilder setCodeSystemShortName(String codeSystemShortName) {
 		this.codeSystemShortName = codeSystemShortName;

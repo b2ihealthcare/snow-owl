@@ -31,16 +31,16 @@ public final class VersioningConfiguration {
 	private final String codeSystemShortName;
 	private final String versionId;
 	private final String description;
-	private final Boolean force;
 	private final LocalDate effectiveTime;
+	private final boolean force;
 	
 	public VersioningConfiguration(
 			String user,
 			String codeSystemShortName,
 			String versionId, 
 			String description,
-			Boolean force,
-			LocalDate effectiveTime) {
+			LocalDate effectiveTime,
+			boolean force) {
 		this.user = user;
 		this.codeSystemShortName = codeSystemShortName;
 		this.versionId = versionId;
@@ -69,7 +69,7 @@ public final class VersioningConfiguration {
 		return codeSystemShortName;
 	}
 	
-	public Boolean isForce() {
+	public boolean isForce() {
 		return force;
 	}
 	
