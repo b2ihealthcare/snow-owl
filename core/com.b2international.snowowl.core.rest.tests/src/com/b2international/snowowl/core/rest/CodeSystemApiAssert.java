@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import static org.junit.Assert.assertNotNull;
 import java.util.Map;
 
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.google.common.collect.ImmutableMap;
+
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import io.restassured.response.ValidatableResponse;
@@ -39,14 +39,14 @@ public abstract class CodeSystemApiAssert {
 	private static final String TERMINOLOGY_ID = SnomedTerminologyComponentConstants.TERMINOLOGY_ID;
 
 	public static ValidatableResponse assertCodeSystemExists(final String uniqueId) {
-		return assertCodeSystemReadWithStatus(uniqueId, 200);
+		return assertGetCodeSystem(uniqueId, 200);
 	}
 	
 	public static ValidatableResponse assertCodeSystemNotExists(final String uniqueId) {
-		return assertCodeSystemReadWithStatus(uniqueId, 404);
+		return assertGetCodeSystem(uniqueId, 404);
 	}
 	
-	public static ValidatableResponse assertCodeSystemReadWithStatus(final String uniqueId, final int statusCode) {
+	public static ValidatableResponse assertGetCodeSystem(final String uniqueId, final int statusCode) {
 		assertNotNull(uniqueId);
 		
 		return givenAuthenticatedRequest("/admin")
@@ -111,26 +111,26 @@ public abstract class CodeSystemApiAssert {
 	}
 	
 	public static Map<String, String> newCodeSystemRequestBody(final String shortName, final String branchPath) {
-		return ImmutableMap.<String, String>builder()
-				.put("name", "CodeSystem")
-				.put("branchPath", branchPath)
-				.put("shortName", shortName)
-				.put("citation", "citation")
-				.put("iconPath", "icons/snomed.png")
-				.put("repositoryId", REPOSITORY_ID)
-				.put("terminologyId", TERMINOLOGY_ID)
-				.put("oid", shortName)
-				.put("primaryLanguage", "ENG")
-				.put("organizationLink", "link")
-				.build();
+		return Map.of(
+			"name", "CodeSystem",
+			"branchPath", branchPath,
+			"shortName", shortName,
+			"citation", "citation",
+			"iconPath", "icons/snomed.png",
+			"repositoryId", REPOSITORY_ID,
+			"terminologyId", TERMINOLOGY_ID,
+			"oid", shortName,
+			"primaryLanguage", "ENG",
+			"organizationLink", "link"
+		);
 	}
 	
 	public static Map<String, String> newCodeSystemVersionRequestBody(final String versionId, final String effectiveDate) {
-		return ImmutableMap.<String, String>builder()
-				.put("version", versionId)
-				.put("description", versionId + " description")
-				.put("effectiveDate", effectiveDate)
-				.build();
+		return Map.of(
+			"version", versionId,
+			"description", versionId + " description",
+			"effectiveDate", effectiveDate
+		);
 	}
 
 	public static ValidatableResponse assertCodeSystemVersionCreated(final String shortName, final Map<?, ?> requestBody) {
