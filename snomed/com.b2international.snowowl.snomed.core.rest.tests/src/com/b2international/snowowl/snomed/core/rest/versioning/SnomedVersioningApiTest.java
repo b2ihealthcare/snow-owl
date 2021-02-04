@@ -15,16 +15,18 @@
  */
 package com.b2international.snowowl.snomed.core.rest.versioning;
 
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME;
+import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.INT_CODESYSTEM;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.createVersion;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getNextAvailableEffectiveDateAsString;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getVersion;
+import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.date.DateFormats;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
-import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures;
 
@@ -35,45 +37,63 @@ public class SnomedVersioningApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void getNonExistentVersion() {
-		getVersion(SNOMED_SHORT_NAME, "nonexistent-version-id").statusCode(404);
+		getVersion(INT_CODESYSTEM, "nonexistent-version-id").statusCode(404);
 	}
 
 	@Test
 	public void createVersionWithoutDescription() {
-		createVersion(SNOMED_SHORT_NAME, "", getNextAvailableEffectiveDateAsString(SNOMED_SHORT_NAME)).statusCode(400);
+		createVersion(INT_CODESYSTEM, "", getNextAvailableEffectiveDateAsString(INT_CODESYSTEM)).statusCode(400);
 	}
 
 	@Test
 	public void createVersionWithNonLatestEffectiveDate() {
-		createVersion(SNOMED_SHORT_NAME, "not-latest-effective-time", "20020101").statusCode(400);
+		createVersion(INT_CODESYSTEM, "not-latest-effective-time", "20020101").statusCode(400);
 	}
 
 	@Test
 	public void createRegularVersion() {
-		createVersion(SNOMED_SHORT_NAME, "regular-version", getNextAvailableEffectiveDateAsString(SNOMED_SHORT_NAME)).statusCode(201);
-		getVersion(SNOMED_SHORT_NAME, "regular-version").statusCode(200);
+		createVersion(INT_CODESYSTEM, "regular-version", getNextAvailableEffectiveDateAsString(INT_CODESYSTEM)).statusCode(201);
+		getVersion(INT_CODESYSTEM, "regular-version").statusCode(200);
 	}
 
 	@Test
 	public void createVersionWithSameNameAsBranch() {
-		createVersion(SNOMED_SHORT_NAME, "SnomedVersioningApiTest", getNextAvailableEffectiveDateAsString(SNOMED_SHORT_NAME)).statusCode(409);
+		createVersion(INT_CODESYSTEM, "SnomedVersioningApiTest", getNextAvailableEffectiveDateAsString(INT_CODESYSTEM)).statusCode(409);
 	}
 	
 	@Test
-	public void createForcedVersionWithSameNameAsBranch() {
-		final String versionName = "VersionToRecreate";		
-		CodeSystemURI codeSystemVersionURI = new CodeSystemURI(String.join(Branch.SEPARATOR, SNOMED_SHORT_NAME, versionName));
+	public void forceCreateVersionWithDifferentVersionId() throws Exception {
+		final String versionName = "forceCreateVersionWithDifferentVersionId";
+		String versionEffectiveDate = getNextAvailableEffectiveDateAsString(INT_CODESYSTEM);
+		createVersion(INT_CODESYSTEM, versionName, versionEffectiveDate).statusCode(201);
+		createVersion(INT_CODESYSTEM, versionName + "-force", versionEffectiveDate, true).statusCode(400);
+	}
+	
+	@Test
+	public void forceCreateVersionWithDifferentEffectiveDate() throws Exception {
+		final String versionName = "forceCreateVersionWithDifferentEffectiveDate";
+		String versionEffectiveDate = getNextAvailableEffectiveDateAsString(INT_CODESYSTEM);
+		createVersion(INT_CODESYSTEM, versionName, versionEffectiveDate).statusCode(201);
+		String nextEffectiveDate = getNextAvailableEffectiveDateAsString(INT_CODESYSTEM);
+		createVersion(INT_CODESYSTEM, versionName, nextEffectiveDate, true).statusCode(201);
+	}
+	
+	@Test
+	public void forceCreateVersionShouldUpdateEffectiveTime() {
+		final String versionName = "forceCreateVersionShouldUpdateEffectiveTime";
+		CodeSystemURI codeSystemVersionURI = CodeSystemURI.branch(INT_CODESYSTEM, versionName);
 		
-		createVersion(SNOMED_SHORT_NAME, versionName, getNextAvailableEffectiveDateAsString(SNOMED_SHORT_NAME)).statusCode(201);
-		String conceptId = createConcept(codeSystemVersionURI, SnomedRestFixtures.createConceptRequestBody(Concepts.ROOT_CONCEPT));
+		String versionEffectiveDate = getNextAvailableEffectiveDateAsString(INT_CODESYSTEM);
+		createVersion(INT_CODESYSTEM, versionName, versionEffectiveDate).statusCode(201);
+		String conceptId = createConcept(new CodeSystemURI(INT_CODESYSTEM), SnomedRestFixtures.childUnderRootWithDefaults());
 		
-		//Should fail to recreate version without the force flag
-		createVersion(SNOMED_SHORT_NAME, versionName, getNextAvailableEffectiveDateAsString(SNOMED_SHORT_NAME)).statusCode(409);
-		assertGetConcept(codeSystemVersionURI, conceptId, new String[0]).statusCode(200);
+		SnomedConcept afterFailedVersioning = getConcept(new CodeSystemURI(INT_CODESYSTEM), conceptId);
+		assertEquals(null, afterFailedVersioning.getEffectiveTime());
 		
 		//Should succeed to recreate version with the force flag set
-		createVersion(SNOMED_SHORT_NAME, versionName, getNextAvailableEffectiveDateAsString(SNOMED_SHORT_NAME), true).statusCode(201);
-		assertGetConcept(codeSystemVersionURI, conceptId, new String[0]).statusCode(404);
+		createVersion(INT_CODESYSTEM, versionName, versionEffectiveDate, true).statusCode(201);
+		SnomedConcept afterForceVersioning = getConcept(codeSystemVersionURI, conceptId);
+		assertEquals(versionEffectiveDate, EffectiveTimes.format(afterForceVersioning.getEffectiveTime(), DateFormats.SHORT));
 	}
 	
 }

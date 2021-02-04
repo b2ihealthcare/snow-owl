@@ -22,6 +22,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -150,7 +152,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 			
 			codeSystemsToVersion.forEach(codeSystemToVersion -> {
 				// check that the specified effective time is valid in this code system
-				validateEffectiveTime(context, codeSystem);
+				validateVersion(context, codeSystem);
 				new RepositoryRequest<>(codeSystemToVersion.getRepositoryId(),
 					new BranchRequest<>(codeSystem.getBranchPath(),
 						new RevisionIndexReadRequest<CommitResult>(
@@ -200,19 +202,35 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 			.getItems();
 	}
 	
-	private void validateEffectiveTime(ServiceProvider context, CodeSystem codeSystem) {
+	private void validateVersion(ServiceProvider context, CodeSystem codeSystem) {
 		if (!context.service(TerminologyRegistry.class).getTerminology(codeSystem.getTerminologyId()).isEffectiveTimeSupported()) {
 			return;
 		}
 
-		LocalDate mostRecentVersionEffectiveTime = getMostRecentVersionEffectiveDateTime(context, codeSystem);
+		Optional<CodeSystemVersion> mostRecentVersion = getMostRecentVersion(context, codeSystem);
 
-		if (!effectiveTime.isAfter(mostRecentVersionEffectiveTime)) {
-			throw new BadRequestException("The specified '%s' effective time is invalid. Date should be after '%s'.", effectiveTime, mostRecentVersionEffectiveTime);
-		}
+		mostRecentVersion.ifPresent(mrv -> {
+			LocalDate mostRecentVersionEffectiveTime = mostRecentVersion.map(CodeSystemVersion::getEffectiveTime).orElse(LocalDate.EPOCH);
+
+			if (force) {
+				if (!Objects.equals(versionId, mrv.getVersion())) {
+					throw new BadRequestException("Force creating version requires the same versionId ('%s') to be used", versionId);
+				}
+				
+				// force recreating an existing version should use the same or later effective date value, allow same here
+				if (effectiveTime.equals(mostRecentVersionEffectiveTime)) {
+					return;
+				}
+			}
+			
+			if (!effectiveTime.isAfter(mostRecentVersionEffectiveTime)) {
+				throw new BadRequestException("The specified '%s' effective time is invalid. Date should be after '%s'.", effectiveTime, mostRecentVersionEffectiveTime);
+			}
+		});
+		
 	}
 	
-	private LocalDate getMostRecentVersionEffectiveDateTime(ServiceProvider context, CodeSystem codeSystem) {
+	private Optional<CodeSystemVersion> getMostRecentVersion(ServiceProvider context, CodeSystem codeSystem) {
 		return CodeSystemRequests.prepareSearchCodeSystemVersion()
 			.one()
 			.filterByCodeSystemShortName(codeSystem.getShortName())
@@ -221,9 +239,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 			.execute(context.service(IEventBus.class))
 			.getSync(1, TimeUnit.MINUTES)
 			.stream()
-			.findFirst()
-			.map(CodeSystemVersion::getEffectiveTime)
-			.orElse(LocalDate.EPOCH);
+			.findFirst();
 	}
 	
 	private void acquireLocks(ServiceProvider context, String user, Collection<CodeSystem> codeSystems) {
