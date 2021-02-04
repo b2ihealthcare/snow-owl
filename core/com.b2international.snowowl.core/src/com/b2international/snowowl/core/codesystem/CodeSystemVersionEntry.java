@@ -21,6 +21,7 @@ import static com.b2international.index.query.Expressions.matchRange;
 import static com.b2international.snowowl.core.api.IBranchPath.MAIN_BRANCH;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
@@ -259,6 +260,15 @@ public final class CodeSystemVersionEntry implements Serializable {
 	 */
 	public long getEffectiveDate() {
 		return effectiveDate;
+	}
+	
+	/**
+	 * Returns with the point in time when the code system version has been modified as a {@link LocalDate}.
+	 * @return the effective time.
+	 */
+	@JsonIgnore
+	public LocalDate getEffectiveTime() {
+		return EffectiveTimes.toDate(effectiveDate);
 	}
 
 	/**

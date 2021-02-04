@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.StagingArea;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
+import com.b2international.snowowl.core.codesystem.CodeSystemVersion;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.RepositoryContext;
@@ -233,14 +234,14 @@ public final class ComponentEffectiveTimeRestoreChangeProcessor extends ChangeSe
 		} else {
 			// in case of regular CodeSystem check the latest available version if available, if not, then skip
 			getLatestCodeSystemVersion(context, relativeCodeSystem.getCodeSystemURI().getCodeSystem()).ifPresent(latestVersion -> {
-				codeSystemsToCheck.add(latestVersion.getCodeSystemURI());
+				codeSystemsToCheck.add(latestVersion.getUri());
 			});
 		}
 		
 		return context.service(ResourceURIPathResolver.class).resolve(context, codeSystemsToCheck);
 	}
 	
-	private Optional<CodeSystemVersionEntry> getLatestCodeSystemVersion(RepositoryContext context, String codeSystemId) {
+	private Optional<CodeSystemVersion> getLatestCodeSystemVersion(RepositoryContext context, String codeSystemId) {
 		return CodeSystemRequests.prepareSearchCodeSystemVersion()
 				.one()
 				.filterByCodeSystemShortName(codeSystemId)

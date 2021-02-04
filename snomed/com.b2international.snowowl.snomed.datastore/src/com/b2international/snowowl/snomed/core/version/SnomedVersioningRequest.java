@@ -115,7 +115,7 @@ public final class SnomedVersioningRequest extends VersioningRequest {
 		final Multimap<String, String> componentIdsByReferringModule = HashMultimap.create();
 		
 		log.info("Publishing SNOMED CT components [effectiveTime: {}]...", EffectiveTimes.format(config().getEffectiveTime()));
-		long effectiveTime = config().getEffectiveTime();
+		long effectiveTime = EffectiveTimes.getEffectiveTime(config().getEffectiveTime());
 		
 		for (SnomedDocument componentToVersion : componentsToVersion) {
 			
@@ -202,7 +202,7 @@ public final class SnomedVersioningRequest extends VersioningRequest {
 		log.info("Collecting module dependencies of changed components successfully finished.");
 		
 		log.info("Adjusting effective time changes on module dependency...");
-		adjustDependencyRefSetMembers(context, moduleDependencies, moduleToLatestEffectiveTime, config().getEffectiveTime());
+		adjustDependencyRefSetMembers(context, moduleDependencies, moduleToLatestEffectiveTime, effectiveTime);
 		log.info("Effective time adjustment successfully finished on module dependency.");
 		
 	}

@@ -17,11 +17,12 @@ package com.b2international.snowowl.core.codesystem.version;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.util.Collection;
-import java.util.Date;
 
 import com.b2international.snowowl.core.codesystem.CodeSystemVersions;
 import com.b2international.snowowl.core.codesystem.version.CodeSystemVersionSearchRequest.OptionKey;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.RepositoryRequestBuilder;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
@@ -60,13 +61,13 @@ public final class CodeSystemVersionSearchRequestBuilder
 	}
 	
 	/**
-	 * @param effectiveDate - the date's epoch time to use to match versions
+	 * @param effectiveDate - the {@link LocalDate}'s epoch time in UTC to use to match versions
 	 * @return
-	 * @deprecated - for more explicit control over the search, use {@link #filterByEffectiveDate(long, long)}
 	 */
-	public CodeSystemVersionSearchRequestBuilder filterByEffectiveDate(Date effectiveDate) {
+	public CodeSystemVersionSearchRequestBuilder filterByEffectiveDate(LocalDate effectiveDate) {
 		if (effectiveDate != null) {
-			return addOption(OptionKey.EFFECTIVE_TIME_START, effectiveDate.getTime()).addOption(OptionKey.EFFECTIVE_TIME_END, effectiveDate.getTime());
+			final long effectiveTime = EffectiveTimes.getEffectiveTime(effectiveDate);
+			return addOption(OptionKey.EFFECTIVE_TIME_START, effectiveTime).addOption(OptionKey.EFFECTIVE_TIME_END, effectiveTime);
 		} else {
 			return getSelf();
 		}

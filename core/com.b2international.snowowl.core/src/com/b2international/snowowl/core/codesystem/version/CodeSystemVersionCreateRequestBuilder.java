@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.core.codesystem.version;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
@@ -30,7 +33,8 @@ public final class CodeSystemVersionCreateRequestBuilder
 	private String codeSystemShortName;
 	private String versionId;
 	private String description;
-	private String effectiveTime;
+	private LocalDate effectiveTime;
+	private boolean force = false;
 
 	public CodeSystemVersionCreateRequestBuilder setCodeSystemShortName(String codeSystemShortName) {
 		this.codeSystemShortName = codeSystemShortName;
@@ -48,12 +52,21 @@ public final class CodeSystemVersionCreateRequestBuilder
 	 * @return
 	 */
 	public CodeSystemVersionCreateRequestBuilder setEffectiveTime(String effectiveTime) {
+		return setEffectiveTime(LocalDate.parse(effectiveTime, DateTimeFormatter.BASIC_ISO_DATE));
+	}
+	
+	public CodeSystemVersionCreateRequestBuilder setEffectiveTime(LocalDate effectiveTime) {
 		this.effectiveTime = effectiveTime;
 		return getSelf();
 	}
 	
 	public CodeSystemVersionCreateRequestBuilder setVersionId(String versionId) {
 		this.versionId = versionId;
+		return getSelf();
+	}
+	
+	public CodeSystemVersionCreateRequestBuilder setForce(boolean force) {
+		this.force = force;
 		return getSelf();
 	}
 	
@@ -64,6 +77,7 @@ public final class CodeSystemVersionCreateRequestBuilder
 		req.versionId = versionId;
 		req.description= description;
 		req.effectiveTime = effectiveTime;
+		req.force = force;
 		return req;
 	}
 

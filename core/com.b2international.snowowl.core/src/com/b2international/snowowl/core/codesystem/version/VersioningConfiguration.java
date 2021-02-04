@@ -17,6 +17,8 @@ package com.b2international.snowowl.core.codesystem.version;
 
 import static com.google.common.base.Strings.nullToEmpty;
 
+import java.time.LocalDate;
+
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.google.common.base.MoreObjects;
 
@@ -29,19 +31,22 @@ public final class VersioningConfiguration {
 	private final String codeSystemShortName;
 	private final String versionId;
 	private final String description;
-	private final long effectiveTime;
+	private final LocalDate effectiveTime;
+	private final boolean force;
 	
 	public VersioningConfiguration(
 			String user,
 			String codeSystemShortName,
 			String versionId, 
 			String description,
-			long effectiveTime) {
+			LocalDate effectiveTime,
+			boolean force) {
 		this.user = user;
 		this.codeSystemShortName = codeSystemShortName;
 		this.versionId = versionId;
 		this.description = description;
 		this.effectiveTime = effectiveTime;
+		this.force = force;
 	}
 	
 	public String getUser() {
@@ -52,7 +57,7 @@ public final class VersioningConfiguration {
 		return versionId;
 	}
 
-	public long getEffectiveTime() {
+	public LocalDate getEffectiveTime() {
 		return effectiveTime;
 	}
 
@@ -62,6 +67,10 @@ public final class VersioningConfiguration {
 	
 	public String getCodeSystemShortName() {
 		return codeSystemShortName;
+	}
+	
+	public boolean isForce() {
+		return force;
 	}
 	
 	@Override
