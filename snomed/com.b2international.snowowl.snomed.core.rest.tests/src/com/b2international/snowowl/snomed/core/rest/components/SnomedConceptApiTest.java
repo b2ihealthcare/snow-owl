@@ -37,6 +37,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import org.elasticsearch.common.Strings;
 import org.junit.Test;
 
 import com.b2international.commons.exceptions.ConflictException;
@@ -930,9 +931,10 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void testConceptInactivationModuleChanges() {
 		final String conceptId = createNewConcept(branchPath);
+		final String moduleConceptId = createNewConcept(branchPath);
 		String sourceRelationshipId = createNewRelationship(branchPath, conceptId, Concepts.HAS_DOSE_FORM, Concepts.MODULE_SCT_MODEL_COMPONENT);
 		String destinationRelationshipId = createNewRelationship(branchPath, Concepts.MODULE_SCT_MODEL_COMPONENT, Concepts.HAS_DOSE_FORM, conceptId);
-		CodeSystemURI codeSystemURI = CodeSystemURI.branch(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, branchPath.getPath());
+		CodeSystemURI codeSystemURI = CodeSystemURI.branch(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, Strings.delete(branchPath.getPath(), "MAIN/"));
 		
 		SnomedRelationship sourceRelationship = SnomedRequests.prepareGetRelationship(sourceRelationshipId)
 				.build(codeSystemURI)
@@ -946,6 +948,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 
 		SnomedRequests.prepareUpdateConcept(conceptId)
 				.setActive(false)
+				.setModuleId(moduleConceptId)
 				.build(codeSystemURI, RestExtensions.USER, "commit")
 				.execute(getBus())
 				.getSync();
@@ -963,14 +966,14 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		//Before update
 		assertTrue(sourceRelationship.isActive());
 		assertTrue(destinationRelationship.isActive());
-		assertFalse(Concepts.MODULE_B2I_EXTENSION.equals(sourceRelationship.getModuleId()));
-		assertFalse(Concepts.MODULE_B2I_EXTENSION.equals(destinationRelationship.getModuleId()));
+		assertFalse(moduleConceptId.equals(sourceRelationship.getModuleId()));
+		assertFalse(moduleConceptId.equals(destinationRelationship.getModuleId()));
 		
 		//After update
 		assertFalse(updatedSourceRelationship.isActive());
-		assertEquals(Concepts.MODULE_B2I_EXTENSION, updatedSourceRelationship.getModuleId());
+		assertEquals(moduleConceptId, updatedSourceRelationship.getModuleId());
 		assertFalse(updatedDestinationRelationship.isActive());
-		assertEquals(Concepts.MODULE_B2I_EXTENSION, updatedDestinationRelationship.getModuleId());
+		assertEquals(moduleConceptId, updatedDestinationRelationship.getModuleId());
 
 	}
 	
