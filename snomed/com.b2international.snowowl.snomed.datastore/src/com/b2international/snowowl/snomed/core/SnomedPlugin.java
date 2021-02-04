@@ -94,7 +94,6 @@ public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 	public void init(SnowOwlConfiguration configuration, Environment env) throws Exception {
 		final SnomedCoreConfiguration coreConfig = configuration.getModuleConfig(SnomedCoreConfiguration.class);
 		env.services().registerService(SnomedCoreConfiguration.class, coreConfig);
-		env.services().registerService(ModuleIdProvider.class, c -> c.getModuleId());
 		
 		final Injector injector = new EclStandaloneSetup().createInjectorAndDoEMFRegistration();
 		env.services().registerService(EclParser.class, new DefaultEclParser(injector.getInstance(IParser.class), injector.getInstance(IResourceValidator.class)));
@@ -144,6 +143,7 @@ public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 					BranchContext branchContext = (BranchContext) context;
 					return (C) branchContext.inject()
 							.bind(Synonyms.class, new Synonyms(branchContext))
+							.bind(ModuleIdProvider.class, c -> c.getModuleId())
 							.build();
 				} else {
 					return context;
