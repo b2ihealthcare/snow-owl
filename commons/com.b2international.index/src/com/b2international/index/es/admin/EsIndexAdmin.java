@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -632,7 +632,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 			final Set<DocumentMapping> mappingsToRefresh) {
 		
 		final DocumentMapping mapping = mappings().getMapping(op.getType());
-		final QueryBuilder query = new EsQueryBuilder(mapping, settings).build(op.getFilter());
+		final QueryBuilder query = new EsQueryBuilder(mapping, settings, log).build(op.getFilter());
 		
 		long versionConflicts = 0;
 		int attempts = DEFAULT_MAX_NUMBER_OF_VERSION_CONFLICT_RETRIES;

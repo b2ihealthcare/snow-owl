@@ -98,11 +98,13 @@ public class EsDocumentSearcher implements Searcher {
 	private final EsIndexAdmin admin;
 	private final ObjectMapper mapper;
 	private final int resultWindow;
+	private final int maxTermsCount;
 
 	public EsDocumentSearcher(EsIndexAdmin admin, ObjectMapper mapper) {
 		this.admin = admin;
 		this.mapper = mapper;
 		this.resultWindow = Integer.parseInt((String) admin.settings().get(IndexClientFactory.RESULT_WINDOW_KEY));
+		this.maxTermsCount = Integer.parseInt((String) admin.settings().get(IndexClientFactory.MAX_TERMS_COUNT_KEY));;
 	}
 
 	@Override
@@ -125,9 +127,9 @@ public class EsDocumentSearcher implements Searcher {
 	public <T> Iterable<T> get(Class<T> type, Iterable<String> keys) throws IOException {
 		final DocumentMapping mapping = admin.mappings().getMapping(type);
 		List<String> allKeys = ImmutableList.copyOf(keys);
-		if (allKeys.size() > resultWindow) {
+		if (allKeys.size() > maxTermsCount) {
 			List<T> results = Lists.newArrayListWithExpectedSize(allKeys.size());
-			for (List<String> currentKeys : Lists.partition(allKeys, resultWindow)) {
+			for (List<String> currentKeys : Lists.partition(allKeys, maxTermsCount)) {
 				results.addAll(search(Query.select(type).where(Expressions.matchAny(mapping.getIdField(), currentKeys)).limit(currentKeys.size()).build()).getHits());
 			}
 			return results;
@@ -145,7 +147,7 @@ public class EsDocumentSearcher implements Searcher {
 		final int limit = query.getLimit();
 		final int toRead = Ints.min(limit, resultWindow);
 		
-		final EsQueryBuilder esQueryBuilder = new EsQueryBuilder(mapping, admin.settings());
+		final EsQueryBuilder esQueryBuilder = new EsQueryBuilder(mapping, admin.settings(), admin.log());
 		final QueryBuilder esQuery = esQueryBuilder.build(query.getWhere());
 		
 		final SearchRequest req = new SearchRequest(admin.getTypeIndex(mapping));
@@ -461,7 +463,7 @@ public class EsDocumentSearcher implements Searcher {
 		final EsClient client = admin.client();
 		final DocumentMapping mapping = admin.mappings().getMapping(aggregation.getFrom());
 		
-		final EsQueryBuilder esQueryBuilder = new EsQueryBuilder(mapping, admin.settings());
+		final EsQueryBuilder esQueryBuilder = new EsQueryBuilder(mapping, admin.settings(), admin.log());
 		final QueryBuilder esQuery = esQueryBuilder.build(aggregation.getQuery());
 		
 		final SearchRequest req = new SearchRequest(admin.getTypeIndex(mapping));
@@ -581,6 +583,10 @@ public class EsDocumentSearcher implements Searcher {
 
 	public int resultWindow() {
 		return resultWindow;
+	}
+	
+	public int maxTermsCount() {
+		return maxTermsCount;
 	}
 
 }
