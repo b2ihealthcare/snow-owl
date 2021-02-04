@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.StagingArea;
@@ -34,6 +35,7 @@ import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberCha
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Streams;
 
 /**
  * @since 4.3
@@ -46,24 +48,22 @@ public class DescriptionAcceptabilityChangeProcessor {
 		final Multimap<String, RefSetMemberChange> acceptableMemberChanges = HashMultimap.create();
 		
 		// add active new and active dirty members
-		final Iterable<SnomedRefSetMemberIndexEntry> newAndDirtyMembers = Iterables.concat(
+		final Stream<SnomedRefSetMemberIndexEntry> newAndDirtyMembers = Streams.concat(
 				staging.getNewObjects(SnomedRefSetMemberIndexEntry.class)
-					.filter(member -> member.getReferenceSetType() == SnomedRefSetType.LANGUAGE)
-					.collect(Collectors.toList()),
+					.filter(member -> member.getReferenceSetType() == SnomedRefSetType.LANGUAGE),
 				staging.getChangedRevisions(SnomedRefSetMemberIndexEntry.class)
 					.map(diff -> (SnomedRefSetMemberIndexEntry) diff.newRevision)
 					.filter(member -> member.getReferenceSetType() == SnomedRefSetType.LANGUAGE)
-					.collect(Collectors.toList())
 		);
 
-		for (SnomedRefSetMemberIndexEntry member : newAndDirtyMembers) {
+		newAndDirtyMembers.forEach(member -> {
 			if (member.isActive()) {
 				final String uuid = member.getId();
 				final String refSetId = member.getReferenceSetId();
 				final RefSetMemberChange change = new RefSetMemberChange(uuid, refSetId, MemberChangeKind.ADDED, member.isActive());
 				registerChange(preferredMemberChanges, acceptableMemberChanges, member.getAcceptabilityId(), member.getReferencedComponentId(), change);
 			}
-		}
+		});
 		
 		// remove dirty inactive (and/or changed in acceptability) members
 		final List<SnomedRefSetMemberIndexEntry> dirtyMembers = staging.getChangedRevisions(SnomedRefSetMemberIndexEntry.class)

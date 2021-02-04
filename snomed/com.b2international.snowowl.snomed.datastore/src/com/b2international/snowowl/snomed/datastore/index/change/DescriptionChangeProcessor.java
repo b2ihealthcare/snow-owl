@@ -58,8 +58,7 @@ public class DescriptionChangeProcessor extends ChangeSetProcessorBase {
 		final Map<String, Multimap<Acceptability, RefSetMemberChange>> acceptabilityChangesByDescription = 
 				new DescriptionAcceptabilityChangeProcessor().process(staging, searcher);
 		
-		final Multimap<String, RefSetMemberChange> referringRefSets = HashMultimap
-				.create(memberChangeProcessor.process(staging, searcher));
+		final Multimap<String, RefSetMemberChange> referringRefSets = HashMultimap.create(memberChangeProcessor.process(staging, searcher));
 		
 		// (re)index new and dirty descriptions
 		final Map<String, SnomedDescriptionIndexEntry> newDescriptionsById = staging
@@ -153,9 +152,9 @@ public class DescriptionChangeProcessor extends ChangeSetProcessorBase {
 			doc.acceptability(acceptableLanguageRefSet, Acceptability.ACCEPTABLE);
 		}
 		
-		final Collection<String> currentMemberOf = currentRevision == null ? Collections.<String> emptySet()
+		final Collection<String> currentMemberOf = currentRevision == null ? Collections.emptySet()
 				: currentRevision.getMemberOf();
-		final Collection<String> currentActiveMemberOf = currentRevision == null ? Collections.<String> emptySet()
+		final Collection<String> currentActiveMemberOf = currentRevision == null ? Collections.emptySet()
 				: currentRevision.getActiveMemberOf();
 		new ReferenceSetMembershipUpdater(referringRefSets.removeAll(id), currentMemberOf, currentActiveMemberOf)
 				.update(doc);
