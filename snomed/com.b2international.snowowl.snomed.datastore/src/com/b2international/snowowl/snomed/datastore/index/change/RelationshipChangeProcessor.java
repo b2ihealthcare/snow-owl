@@ -51,18 +51,16 @@ public class RelationshipChangeProcessor extends ChangeSetProcessorBase {
 	public void process(StagingArea staging, RevisionSearcher searcher) throws IOException {
 		final Multimap<String, RefSetMemberChange> referringRefSets = memberChangeProcessor.process(staging, searcher);
 		
-		final Set<String> newRelationshipIds = staging
-				.getNewObjects(SnomedRelationshipIndexEntry.class)
-				.map(SnomedRelationshipIndexEntry::getId)
-				.collect(Collectors.toSet());
-		
+		final Set<String> referencedRelationshipIds = newHashSet(referringRefSets.keySet());
+		staging
+			.getNewObjects(SnomedRelationshipIndexEntry.class)
+			.map(SnomedRelationshipIndexEntry::getId)
+			.forEach(referencedRelationshipIds::remove);
+
 		final Map<String, SnomedRelationshipIndexEntry> changedRelationshipsById = staging.getChangedRevisions(SnomedRelationshipIndexEntry.class)
 				.map(diff -> (SnomedRelationshipIndexEntry) diff.newRevision)
 				.collect(Collectors.toMap(relationship -> relationship.getId(), relationship -> relationship));
-		
 		final Set<String> changedRelationshipIds = newHashSet(changedRelationshipsById.keySet());
-		final Set<String> referencedRelationshipIds = newHashSet(referringRefSets.keySet());
-		referencedRelationshipIds.removeAll(newRelationshipIds);
 		changedRelationshipIds.addAll(referencedRelationshipIds);
 		
 		final Iterable<SnomedRelationshipIndexEntry> changedRelationshipHits = searcher.get(SnomedRelationshipIndexEntry.class, changedRelationshipIds);

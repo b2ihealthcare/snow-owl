@@ -111,42 +111,50 @@ final class CodeSystemUpgradeRequest implements Request<RepositoryContext, Strin
 			.build()
 			.execute(context);
 		
-		// merge branch content from the current code system to the new upgradeBranch
-		Merge merge = RepositoryRequests.merging().prepareCreate()
-			.setSource(currentCodeSystem.getBranchPath())
-			.setTarget(upgradeBranch)
-			.setSquash(false)
-			.build()
-			.execute(context);
-		if (merge.getStatus() != Merge.Status.COMPLETED) {
-			ApiError apiError = merge.getApiError();
-			Collection<MergeConflict> conflicts = merge.getConflicts();
-			context.log().error("Failed to sync source CodeSystem content to upgrade CodeSystem. Error: {}. Conflicts: {}", apiError, conflicts);
-			throw new ConflictException("Upgrade can not be performed due to content synchronization errors.")
-				.withAdditionalInfo(Map.of(
-					"conflicts", conflicts
-				));
+		try {
+			// merge branch content from the current code system to the new upgradeBranch
+			Merge merge = RepositoryRequests.merging().prepareCreate()
+				.setSource(currentCodeSystem.getBranchPath())
+				.setTarget(upgradeBranch)
+				.setSquash(false)
+				.build()
+				.execute(context);
+			if (merge.getStatus() != Merge.Status.COMPLETED) {
+				// report conflicts
+				ApiError apiError = merge.getApiError();
+				Collection<MergeConflict> conflicts = merge.getConflicts();
+				context.log().error("Failed to sync source CodeSystem content to upgrade CodeSystem. Error: {}. Conflicts: {}", apiError.getMessage(), conflicts);
+				throw new ConflictException("Upgrade can not be performed due to content synchronization errors.")
+					.withAdditionalInfo(Map.of(
+						"conflicts", conflicts,
+						"mergeError", apiError.getMessage()
+					));
+			}
+			
+			// and lastly create the actual CodeSystem so users will be able to browse, access and complete the upgrade
+			return CodeSystemRequests.prepareNewCodeSystem()
+						.setShortName(upgradeCodeSystemId)
+						.setBranchPath(upgradeBranch)
+						// copy shared properties from the original CodeSystem
+						.setAdditionalProperties(currentCodeSystem.getAdditionalProperties())
+						.setCitation(currentCodeSystem.getCitation())
+						.setExtensionOf(extensionOf)
+						.setUpgradeOf(codeSystem)
+						.setIconPath(currentCodeSystem.getIconPath())
+						.setLocales(currentCodeSystem.getLocales())
+						.setLink(currentCodeSystem.getOrganizationLink())
+						.setName(String.format("Upgrade of '%s' to '%s'", currentCodeSystem.getName(), extensionOf))
+						.setRepositoryId(context.id())
+						.setTerminologyId(currentCodeSystem.getTerminologyId())
+						.build(context.id(), Branch.MAIN_PATH, context.service(User.class).getUsername(), String.format("Start upgrade of '%s' to '%s'", codeSystem, extensionOf))
+						.getRequest()
+						.execute(context)
+						.getResultAs(String.class);			
+		} catch (Throwable e) {
+			// delete upgrade branch if any exception have been thrown during the upgrade
+			RepositoryRequests.branching().prepareDelete(upgradeBranch).build().execute(context);
+			throw e;
 		}
-		
-		// and lastly create the actual CodeSystem so users will be able to browse, access and complete the upgrade
-		return CodeSystemRequests.prepareNewCodeSystem()
-					.setShortName(upgradeCodeSystemId)
-					.setBranchPath(upgradeBranch)
-					// copy shared properties from the original CodeSystem
-					.setAdditionalProperties(currentCodeSystem.getAdditionalProperties())
-					.setCitation(currentCodeSystem.getCitation())
-					.setExtensionOf(extensionOf)
-					.setUpgradeOf(codeSystem)
-					.setIconPath(currentCodeSystem.getIconPath())
-					.setLocales(currentCodeSystem.getLocales())
-					.setLink(currentCodeSystem.getOrganizationLink())
-					.setName(String.format("Upgrade of '%s' to '%s'", currentCodeSystem.getName(), extensionOf))
-					.setRepositoryId(context.id())
-					.setTerminologyId(currentCodeSystem.getTerminologyId())
-					.build(context.id(), Branch.MAIN_PATH, context.service(User.class).getUsername(), String.format("Start upgrade of '%s' to '%s'", codeSystem, extensionOf))
-					.getRequest()
-					.execute(context)
-					.getResultAs(String.class);
 	}
 	
 

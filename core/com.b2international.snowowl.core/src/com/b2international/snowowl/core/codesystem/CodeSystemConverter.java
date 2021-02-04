@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
-import static com.google.common.collect.Lists.newArrayList;
-
 import java.util.Comparator;
 import java.util.List;
 import java.util.NavigableSet;
@@ -80,14 +78,17 @@ public final class CodeSystemConverter extends BaseResourceConverter<CodeSystemE
 		
 		final TreeMultimap<String, CodeSystemVersion> versionsByShortName = TreeMultimap.create(
 				Comparator.naturalOrder(), 
-				Comparator.comparing(CodeSystemVersion::getEffectiveDate));
+				Comparator.comparing(CodeSystemVersion::getEffectiveTime));
 		
 		versionsByShortName.putAll(Multimaps.index(parentVersions, CodeSystemVersion::getCodeSystem));
 		
 		for (final CodeSystem result : results) {
 			final CodeSystemURI extensionOf = result.getExtensionOf();
 			
-			if (extensionOf == null) {
+			// skip if there is not dependency set in extensionOf
+			// or if this is an upgrade CodeSystem
+			// or the CodeSystem already has an upgrade
+			if (extensionOf == null || result.getUpgradeOf() != null || hasUpgrade(result, results)) {
 				// always set the field if user expands it
 				result.setAvailableUpgrades(List.of());
 				continue;
@@ -109,8 +110,26 @@ public final class CodeSystemConverter extends BaseResourceConverter<CodeSystemE
 						.collect(Collectors.toList());
 			});
 	
-			result.setAvailableUpgrades(upgradeUris.orElseGet(() -> newArrayList()));
+			result.setAvailableUpgrades(upgradeUris.orElseGet(List::of));
 		}			
+	}
+
+	private boolean hasUpgrade(CodeSystem result, List<CodeSystem> results) {
+		// first check the results
+		return results
+			.stream()
+			.filter(cs -> result.getCodeSystemURI().equals(cs.getUpgradeOf()))
+			.findFirst()
+			.or(() -> {
+				// then the index
+				return CodeSystemRequests.prepareSearchCodeSystem()
+					.one()
+					.filterByUpgradeOf(result.getCodeSystemURI())
+					.build()
+					.execute(context())
+					.first();
+			})
+			.isPresent();
 	}
 
 }

@@ -20,7 +20,7 @@ import com.b2international.snowowl.core.uri.CodeSystemURI;
 /**
  * @since 7.14
  */
-public class CodeSystemUpdateRestInput {
+public class CodeSystemUpgradeRestInput {
 
 	private CodeSystemURI extensionOf;
 	private String codeSystemId;

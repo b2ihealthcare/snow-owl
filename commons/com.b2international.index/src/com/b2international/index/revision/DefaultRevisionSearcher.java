@@ -40,12 +40,12 @@ public class DefaultRevisionSearcher implements RevisionSearcher {
 
 	private final RevisionBranchRef branch;
 	private final Searcher searcher;
-	private final int resultWindow;
+	private final int maxTermsCount;
 
 	public DefaultRevisionSearcher(RevisionBranchRef branch, Searcher searcher) {
 		this.branch = branch;
 		this.searcher = searcher;
-		this.resultWindow = ((EsDocumentSearcher) searcher).resultWindow();
+		this.maxTermsCount = ((EsDocumentSearcher) searcher).maxTermsCount();
 	}
 	
 	@Override
@@ -69,9 +69,9 @@ public class DefaultRevisionSearcher implements RevisionSearcher {
 			return Collections.emptySet();
 		} else if (Revision.class.isAssignableFrom(type)) {
 			List<String> allKeys = ImmutableList.copyOf(keys);
-			if (allKeys.size() > resultWindow) {
+			if (allKeys.size() > maxTermsCount) {
 				List<T> results = Lists.newArrayListWithExpectedSize(allKeys.size());
-				for (List<String> currentKeys : Lists.partition(allKeys, resultWindow)) {
+				for (List<String> currentKeys : Lists.partition(allKeys, maxTermsCount)) {
 					results.addAll(search(Query.select(type).where(Expressions.matchAny(Revision.Fields.ID, currentKeys)).limit(currentKeys.size()).build()).getHits());
 				}
 				return results;
