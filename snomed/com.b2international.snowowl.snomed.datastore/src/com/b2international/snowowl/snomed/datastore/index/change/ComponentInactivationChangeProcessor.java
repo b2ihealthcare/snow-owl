@@ -104,7 +104,7 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 			
 			for (Hits<SnomedDescriptionIndexEntry> hits : searcher.scroll(Query.select(SnomedDescriptionIndexEntry.class)
 					.from(SnomedDescriptionIndexEntry.class)
-					.fields(SnomedDescriptionIndexEntry.Fields.ID)
+					.fields(SnomedDescriptionIndexEntry.Fields.ID, SnomedDescriptionIndexEntry.Fields.MODULE_ID)
 					.where(Expressions.builder()
 							.filter(SnomedDescriptionIndexEntry.Expressions.active())
 							.filter(SnomedDescriptionIndexEntry.Expressions.concepts(inactivatedConceptIds))
@@ -129,9 +129,10 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 				
 				// override members with the ones that present in the staging area
 				for (SnomedDescriptionIndexEntry descriptionToCheck : hits) {
+					final String descriptionId = descriptionToCheck.getId();
 					// get the persisted, existing members
 					// get the current members from the tx
-					final Collection<SnomedRefSetMemberIndexEntry> transactionMembers = changedMembersByReferencedComponentId.get(descriptionToCheck.getId()).stream()
+					final Collection<SnomedRefSetMemberIndexEntry> transactionMembers = changedMembersByReferencedComponentId.get(descriptionId).stream()
 							.map(diff -> diff.newRevision)
 							.map(SnomedRefSetMemberIndexEntry.class::cast)
 							.filter(member -> Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR.equals(member.getReferenceSetId()))
@@ -139,7 +140,7 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 					// if there were no registered member changes to this description
 					if (transactionMembers.isEmpty()) {
 						// apply CONCEPT_NON_CURRENT to all existing members or generate a new one 
-						final SnomedRefSetMemberIndexEntry existingMember = existingIndicatorReferenceSetMembers.get(descriptionToCheck.getId())
+						final SnomedRefSetMemberIndexEntry existingMember = existingIndicatorReferenceSetMembers.get(descriptionId)
 								.stream()
 								.filter(member -> {
 									// reusable member, if it was inactivated earlier
@@ -156,7 +157,7 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 								.released(false)
 								.referenceSetId(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR)
 								.referenceSetType(SnomedRefSetType.ATTRIBUTE_VALUE)
-								.referencedComponentId(descriptionToCheck.getId())
+								.referencedComponentId(descriptionId)
 								.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
 								.moduleId(moduleIdProvider.apply(descriptionToCheck))
 								.field(SnomedRf2Headers.FIELD_VALUE_ID, Concepts.CONCEPT_NON_CURRENT)
@@ -241,6 +242,9 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 	}
 	
 	private void processReactivations(StagingArea staging, RevisionSearcher searcher, Set<String> reactivatedConceptIds, Set<String> reactivatedComponentIds) throws IOException {
+		ServiceProvider context = (ServiceProvider) staging.getContext();
+		ModuleIdProvider moduleIdProvider = context.service(ModuleIdProvider.class);
+		
 		for (Hits<String> hits : searcher.scroll(Query.select(String.class)
 				.from(SnomedDescriptionIndexEntry.class)
 				.fields(SnomedDescriptionIndexEntry.Fields.ID)
@@ -278,6 +282,7 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 				if (indicatorMember.isReleased() != null && indicatorMember.isReleased()) {
 					stageChange(indicatorMember, SnomedRefSetMemberIndexEntry.builder(indicatorMember).active(false)
 							.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
+							.moduleId(moduleIdProvider.apply(indicatorMember))
 							.build());
 				} else {
 					stageRemove(indicatorMember);

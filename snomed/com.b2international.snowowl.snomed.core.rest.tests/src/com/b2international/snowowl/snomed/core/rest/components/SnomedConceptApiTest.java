@@ -37,13 +37,13 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import org.elasticsearch.common.Strings;
 import org.junit.Test;
 
 import com.b2international.commons.exceptions.ConflictException;
 import com.b2international.commons.json.Json;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
@@ -935,7 +935,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		final String moduleConceptId = createNewConcept(branchPath);
 		String sourceRelationshipId = createNewRelationship(branchPath, conceptId, Concepts.HAS_DOSE_FORM, Concepts.MODULE_SCT_MODEL_COMPONENT);
 		String destinationRelationshipId = createNewRelationship(branchPath, Concepts.MODULE_SCT_MODEL_COMPONENT, Concepts.HAS_DOSE_FORM, conceptId);
-		CodeSystemURI codeSystemURI = CodeSystemURI.branch(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, Strings.delete(branchPath.getPath(), "MAIN/"));
+		CodeSystemURI codeSystemURI = new CodeSystemURI(branchPath.getPath().replace(Branch.MAIN_PATH, SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME));
 
 		SnomedRelationship sourceRelationship = SnomedRequests.prepareGetRelationship(sourceRelationshipId)
 				.build(codeSystemURI)
