@@ -24,6 +24,7 @@ import javax.validation.constraints.NotNull;
 import com.b2international.commons.exceptions.ApiError;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.ConflictException;
+import com.b2international.index.revision.RevisionBranch.BranchNameValidator;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
@@ -99,6 +100,7 @@ final class CodeSystemUpgradeRequest implements Request<RepositoryContext, Strin
 		} else if (codeSystemId.isBlank()) {
 			throw new BadRequestException("'codeSystemId' property should not be empty, if provided");
 		} else {
+			BranchNameValidator.DEFAULT.checkName(codeSystemId);
 			upgradeCodeSystemId = codeSystemId;
 		}
 		
