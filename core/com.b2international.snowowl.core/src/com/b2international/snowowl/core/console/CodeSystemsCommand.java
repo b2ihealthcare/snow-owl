@@ -29,6 +29,7 @@ import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersions;
 import com.b2international.snowowl.core.codesystem.CodeSystems;
 import com.b2international.snowowl.core.date.DateFormats;
+import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.plugin.Component;
@@ -164,8 +165,8 @@ public final class CodeSystemsCommand extends Command {
 		return new StringBuilder()
 			.append("\tVersion id: ").append(codeSystemVersion.getVersion()).append("\n")
 			.append("\tDescription: ").append(codeSystemVersion.getDescription()).append("\n")
-			.append("\tEffective date: ").append(EffectiveTimes.format(codeSystemVersion.getEffectiveDate(), DateFormats.DEFAULT)).append("\n")
-			.append("\tCreation date: ").append(EffectiveTimes.format(codeSystemVersion.getImportDate(), DateFormats.DEFAULT)).append("\n")
+			.append("\tEffective date: ").append(EffectiveTimes.format(codeSystemVersion.getEffectiveTime(), DateFormats.DEFAULT)).append("\n")
+			.append("\tCreation date: ").append(Dates.formatByHostTimeZone(codeSystemVersion.getImportDate(), DateFormats.DEFAULT)).append("\n")
 			.append("\tLast update: ").append(codeSystemVersion.getLastModificationDate() != null ? StdDateFormat.getDateInstance().format(codeSystemVersion.getLastModificationDate()) : "-").append("\n")
 			.append("\tVersion branch path: ").append(codeSystemVersion.getPath())
 			.toString();
