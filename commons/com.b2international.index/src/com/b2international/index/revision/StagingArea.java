@@ -629,6 +629,7 @@ public final class StagingArea {
 				.filter(d -> !exclusions.contains(d.isPropertyChange() 
 						? d.getObject().id() 
 						: d.getComponent().id()))
+				.filter(d -> !exclusions.contains(d.getObject().id()))
 				.collect(Collectors.toList());
 		}
 		
