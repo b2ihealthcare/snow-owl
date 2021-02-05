@@ -15,19 +15,21 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.NavigableSet;
-import java.util.Optional;
-import java.util.Set;
-import java.util.SortedSet;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
+import com.b2international.index.revision.BaseRevisionBranching;
+import com.b2international.index.revision.RevisionBranch;
+import com.b2international.index.revision.RevisionBranch.BranchState;
+import com.b2international.snowowl.core.branch.BranchInfo;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.BaseResourceConverter;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
+import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
+import com.google.common.base.Strings;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.TreeMultimap;
 
@@ -57,6 +59,59 @@ public final class CodeSystemConverter extends BaseResourceConverter<CodeSystemE
 		}
 		
 		expandAvailableUpgrades(results);
+		expandExtensionOfBranchState(results);
+		expandUpgradeOfBranchState(results);
+	}
+
+	private void expandExtensionOfBranchState(List<CodeSystem> results) {
+		if (!expand().containsKey(CodeSystem.Expand.EXTENSION_OF_BRANCHSTATE)) {
+			return;
+		}
+		
+		// extensionOf branches are the parent branches of the CodeSystem, so simple branch state calculation is enough
+		BaseRevisionBranching branching = context().service(BaseRevisionBranching.class);
+		for (CodeSystem result : results) {
+			RevisionBranch branch = branching.getBranch(result.getBranchPath());
+			BranchState branchState = branching.getBranchState(branch);
+			result.setExtensionOfBranchInfo(new BranchInfo(branch.getPath(), branchState, branch.getBaseTimestamp(), branch.getHeadTimestamp()));
+		}
+	}
+	
+	private void expandUpgradeOfBranchState(List<CodeSystem> results) {
+		if (!expand().containsKey(CodeSystem.Expand.UPGRADE_OF_BRANCHSTATE)) {
+			return;
+		}
+		
+		final List<CodeSystemURI> upgradeOfURIs = results.stream()
+				.filter(codeSystem -> codeSystem.getUpgradeOf() != null)
+				.map(codeSystem -> codeSystem.getUpgradeOf())
+				.collect(Collectors.toList());
+		
+		// nothing to expand, quit early
+		if (upgradeOfURIs.isEmpty()) {
+			return;
+		}
+		
+		final List<String> upgradeOfBranches = context().service(ResourceURIPathResolver.class).resolve(context(), upgradeOfURIs);
+		
+		final Map<CodeSystemURI, String> branchesByUpgradeOf = Maps.newHashMap();
+		Iterator<CodeSystemURI> uriIterator = upgradeOfURIs.iterator();
+		Iterator<String> branchIterator = upgradeOfBranches.iterator();
+		while (uriIterator.hasNext() && branchIterator.hasNext()) {
+			CodeSystemURI uri = uriIterator.next();
+			String branch = branchIterator.next();
+			branchesByUpgradeOf.put(uri, branch);
+		}
+
+		BaseRevisionBranching branching = context().service(BaseRevisionBranching.class);
+		for (CodeSystem result : results) {
+			String upgradeOfBranchPath = branchesByUpgradeOf.get(result.getUpgradeOf());
+			if (!Strings.isNullOrEmpty(upgradeOfBranchPath)) {
+				RevisionBranch branch = branching.getBranch(result.getBranchPath());
+				BranchState branchState = branching.getBranchState(result.getBranchPath(), upgradeOfBranchPath);
+				result.setUpgradeOfBranchInfo(new BranchInfo(branch.getPath(), branchState, branch.getBaseTimestamp(), branch.getHeadTimestamp()));
+			}
+		}
 	}
 
 	private void expandAvailableUpgrades(List<CodeSystem> results) {
