@@ -64,7 +64,7 @@ public final class CodeSystemConverter extends BaseResourceConverter<CodeSystemE
 	}
 
 	private void expandExtensionOfBranchState(List<CodeSystem> results) {
-		if (!expand().containsKey(CodeSystem.Expand.EXTENSION_OF_BRANCHSTATE)) {
+		if (!expand().containsKey(CodeSystem.Expand.EXTENSION_OF_BRANCH_INFO)) {
 			return;
 		}
 		
@@ -78,7 +78,7 @@ public final class CodeSystemConverter extends BaseResourceConverter<CodeSystemE
 	}
 	
 	private void expandUpgradeOfBranchState(List<CodeSystem> results) {
-		if (!expand().containsKey(CodeSystem.Expand.UPGRADE_OF_BRANCHSTATE)) {
+		if (!expand().containsKey(CodeSystem.Expand.UPGRADE_OF_BRANCH_INFO)) {
 			return;
 		}
 		

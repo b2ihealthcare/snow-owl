@@ -56,8 +56,8 @@ public class CodeSystem implements Serializable {
 	 */
 	public static final class Expand {
 		public static final String AVAILABLE_UPGRADES = "availableUpgrades";
-		public static final String EXTENSION_OF_BRANCHSTATE = "extensionOfBranchInfo";
-		public static final String UPGRADE_OF_BRANCHSTATE = "upgradeOfBranchInfo";
+		public static final String EXTENSION_OF_BRANCH_INFO = "extensionOfBranchInfo";
+		public static final String UPGRADE_OF_BRANCH_INFO = "upgradeOfBranchInfo";
 	}
 	
 	public static Builder builder() {

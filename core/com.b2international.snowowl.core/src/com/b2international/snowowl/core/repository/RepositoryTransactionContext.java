@@ -19,11 +19,7 @@ import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Stream;
 
 import org.eclipse.xtext.util.Pair;
@@ -40,13 +36,9 @@ import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
-import com.b2international.index.revision.Commit;
-import com.b2international.index.revision.Revision;
-import com.b2international.index.revision.RevisionIndex;
-import com.b2international.index.revision.RevisionSearcher;
-import com.b2international.index.revision.StagingArea;
-import com.b2international.index.revision.TimestampProvider;
+import com.b2international.index.revision.*;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemEntry;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersion;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
@@ -219,7 +211,10 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 	
 	@Override
 	public void delete(Object o, boolean force) {
-		if (o instanceof CodeSystemEntry) {
+		if (o instanceof CodeSystem) {
+			final CodeSystem cs = (CodeSystem) o;
+			staging.stageRemove(cs.getShortName(), lookup(cs.getShortName(), CodeSystemEntry.class));
+		} else if (o instanceof CodeSystemEntry) {
 			final CodeSystemEntry cs = (CodeSystemEntry) o;
 			staging.stageRemove(cs.getShortName(), cs);
 		} else if (o instanceof CodeSystemVersion) {
