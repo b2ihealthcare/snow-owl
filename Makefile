@@ -2,9 +2,6 @@ NAME=snowowl
 RELEASE_VERSION=$(shell git rev-parse HEAD)
 SEMVER_VERSION=$(shell git describe --abbrev=0 --tags)
 REPO=quay.io/babylonhealth
-DEPLOY_DEV_URL=http://dev-ai-deploy.babylontech.co.uk:5199/job/kube-deploy-dev/buildWithParameters
-DEPLOY_STAGING_URL=http://dev-ai-deploy.babylontech.co.uk:5199/job/kube-deploy-staging/buildWithParameters
-
 
 build-docker:
 	docker build ./custom_docker \
@@ -30,11 +27,7 @@ tag-semver:
 		docker push $(REPO)/$(NAME):master; \
 	fi
 
-deploy-dev:
-	@curl -vvv -XPOST "${DEPLOY_DEV_URL}?token=${JENKINS_DEV_TOKEN}&APP=snowowl&VERSION=${RELEASE_VERSION}"
-
-deploy-staging:
+publish-staging:
 	docker login -u "${DOCKER_USER}" -p "${DOCKER_PASS}" quay.io
 	make pull
 	make tag-semver
-	@curl -vvv -XPOST "${DEPLOY_STAGING_URL}?token=${JENKINS_STAGING_TOKEN}&APP=snowowl&VERSION=${SEMVER_VERSION}"

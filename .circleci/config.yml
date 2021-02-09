@@ -9,13 +9,13 @@ workflows:
             branches:
               only:
                 - 7.x
-      - deploy-service-dev:
+      - publish-service-dev:
           context: babylon
           filters:
             branches:
               only:
                 - 7.x
-      - deploy-service-staging:
+      - publish-service-staging:
           context: babylon
           filters:
             branches:
@@ -63,7 +63,7 @@ jobs:
             echo 'export PATH=$JAVA_HOME/bin:$PATH' >> $BASH_ENV
             source $BASH_ENV
             ./mvnw -s .circleci/settings.xml deploy -DskipTests -Dtycho.localArtifacts=$LOCAL_ARTIFACTS
-  deploy-service-dev:
+  publish-service-dev:
     <<: *env
     steps:
       - checkout
@@ -78,11 +78,7 @@ jobs:
           command: |
             make build-docker
             make push
-      - deploy:
-          name: Deploy dev
-          command: |
-            make deploy-dev
-  deploy-service-staging:
+  publish-service-staging:
     <<: *env
     steps:
       - checkout
@@ -92,7 +88,7 @@ jobs:
           command: |
             docker login -u "$DOCKER_USER" -p "$DOCKER_PASS" quay.io
             apk add --no-cache make nodejs npm curl openjdk11 --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
-      - deploy:
-          name: Staging Deploy
+      - run:
+          name: Staging Publish
           command: |
-            make deploy-staging
+            make publish-staging
