@@ -246,7 +246,7 @@ public class CodeSystemRestService extends AbstractRestService {
 		final String commitComment = String.format("Updated Code System %s", shortNameOrOId);
 		
 		if (codeSystem.getUpgradeOf() != null) {
-LoggerFactory.getLogger(getClass()).warn("'upgradeOf' property update support is only present in version 7.x and will be dropped with version 8.0.");
+			LoggerFactory.getLogger(getClass()).warn("'upgradeOf' property update support is only present in version 7.x and will be dropped with version 8.0.");
 		}
 		
 		CodeSystemRequests
@@ -281,7 +281,7 @@ LoggerFactory.getLogger(getClass()).warn("'upgradeOf' property update support is
 			final String codeSystemId,
 			
 			@RequestBody
-			final CodeSystemUpdateRestInput body) {
+			final CodeSystemUpgradeRestInput body) {
 		final CodeSystem codeSystem = CodeSystemRequests.prepareSearchAllCodeSystems()
 			.filterById(codeSystemId)
 			.buildAsync()

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,9 @@
  */
 package com.b2international.snowowl.snomed.core.rest.io;
 
-import static com.b2international.snowowl.snomed.core.rest.CodeSystemRestRequests.createCodeSystem;
-import static com.b2international.snowowl.snomed.core.rest.CodeSystemVersionRestRequests.createVersion;
-import static com.b2international.snowowl.snomed.core.rest.CodeSystemVersionRestRequests.getVersion;
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests.createCodeSystem;
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.createVersion;
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getVersion;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.getComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedImportRestRequests.doImport;
 import static com.b2international.snowowl.snomed.core.rest.SnomedImportRestRequests.waitForImportJob;

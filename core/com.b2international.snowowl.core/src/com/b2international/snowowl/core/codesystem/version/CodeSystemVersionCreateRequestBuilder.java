@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,8 @@
  */
 package com.b2international.snowowl.core.codesystem.version;
 
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
@@ -32,7 +33,8 @@ public final class CodeSystemVersionCreateRequestBuilder
 	private String codeSystemShortName;
 	private String versionId;
 	private String description;
-	private Date effectiveTime;
+	private LocalDate effectiveTime;
+	private boolean force = false;
 
 	public CodeSystemVersionCreateRequestBuilder setCodeSystemShortName(String codeSystemShortName) {
 		this.codeSystemShortName = codeSystemShortName;
@@ -44,13 +46,27 @@ public final class CodeSystemVersionCreateRequestBuilder
 		return getSelf();
 	}
 	
-	public CodeSystemVersionCreateRequestBuilder setEffectiveTime(Date effectiveTime) {
+	/**
+	 * The version effective time that the recently changed components will get during versioning. Format: yyyyMMdd.
+	 * @param effectiveTime
+	 * @return
+	 */
+	public CodeSystemVersionCreateRequestBuilder setEffectiveTime(String effectiveTime) {
+		return setEffectiveTime(LocalDate.parse(effectiveTime, DateTimeFormatter.BASIC_ISO_DATE));
+	}
+	
+	public CodeSystemVersionCreateRequestBuilder setEffectiveTime(LocalDate effectiveTime) {
 		this.effectiveTime = effectiveTime;
 		return getSelf();
 	}
 	
 	public CodeSystemVersionCreateRequestBuilder setVersionId(String versionId) {
 		this.versionId = versionId;
+		return getSelf();
+	}
+	
+	public CodeSystemVersionCreateRequestBuilder setForce(boolean force) {
+		this.force = force;
 		return getSelf();
 	}
 	
@@ -61,6 +77,7 @@ public final class CodeSystemVersionCreateRequestBuilder
 		req.versionId = versionId;
 		req.description= description;
 		req.effectiveTime = effectiveTime;
+		req.force = force;
 		return req;
 	}
 

@@ -16,22 +16,12 @@
 package com.b2international.snowowl.snomed.core.rest.components;
 
 import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.ROOT_CONCEPT;
-import static com.b2international.snowowl.snomed.core.rest.CodeSystemRestRequests.createCodeSystem;
-import static com.b2international.snowowl.snomed.core.rest.CodeSystemVersionRestRequests.createVersion;
-import static com.b2international.snowowl.snomed.core.rest.CodeSystemVersionRestRequests.getNextAvailableEffectiveDateAsString;
 import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.UK_ACCEPTABLE_MAP;
-import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.assertInactivation;
-import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.createComponent;
-import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.deleteComponent;
-import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.getComponent;
-import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.updateComponent;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createConceptRequestBody;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewConcept;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewRefSet;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewRelationship;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createRefSetMemberRequestBody;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createRelationshipRequestBody;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.reserveComponentId;
+import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.*;
+import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.*;
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests.createCodeSystem;
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.createVersion;
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getNextAvailableEffectiveDateAsString;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.assertCreated;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -39,15 +29,11 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -57,23 +43,21 @@ import com.b2international.commons.exceptions.ConflictException;
 import com.b2international.commons.json.Json;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.snomed.cis.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.cis.domain.IdentifierStatus;
 import com.b2international.snowowl.snomed.cis.domain.SctId;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.core.domain.AssociationTarget;
-import com.b2international.snowowl.snomed.core.domain.InactivationProperties;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.*;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
@@ -943,6 +927,60 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 			// Check descriptions inactivation indicator
 			assertEquals(Concepts.PENDING_MOVE, desc.getInactivationProperties().getInactivationIndicatorId());
 		});
+	}
+	
+	@Test
+	public void testConceptInactivationModuleChanges() {
+		final String conceptId = createNewConcept(branchPath);
+		final String moduleConceptId = createNewConcept(branchPath);
+		String sourceRelationshipId = createNewRelationship(branchPath, conceptId, Concepts.HAS_DOSE_FORM, Concepts.MODULE_SCT_MODEL_COMPONENT);
+		String destinationRelationshipId = createNewRelationship(branchPath, Concepts.MODULE_SCT_MODEL_COMPONENT, Concepts.HAS_DOSE_FORM, conceptId);
+		CodeSystemURI codeSystemURI = new CodeSystemURI(branchPath.getPath().replace(Branch.MAIN_PATH, SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME));
+
+		SnomedRelationship sourceRelationship = SnomedRequests.prepareGetRelationship(sourceRelationshipId)
+				.build(codeSystemURI)
+				.execute(getBus())
+				.getSync();
+
+		SnomedRelationship destinationRelationship = SnomedRequests.prepareGetRelationship(destinationRelationshipId)
+				.build(codeSystemURI)
+				.execute(getBus())
+				.getSync();
+
+		Request<TransactionContext,Boolean> request = SnomedRequests.prepareUpdateConcept(conceptId)
+				.setActive(false)
+				.build();
+
+		SnomedRequests.prepareCommit()
+				.setDefaultModuleId(moduleConceptId)
+				.setBody(request)
+				.setCommitComment("commit")
+				.build(codeSystemURI)
+				.execute(getBus())
+				.getSync();
+
+		SnomedRelationship updatedSourceRelationship = SnomedRequests.prepareGetRelationship(sourceRelationshipId)
+				.build(codeSystemURI)
+				.execute(getBus())
+				.getSync();
+
+		SnomedRelationship updatedDestinationRelationship = SnomedRequests.prepareGetRelationship(destinationRelationshipId)
+				.build(codeSystemURI)
+				.execute(getBus())
+				.getSync();
+
+		//Before update
+		assertTrue(sourceRelationship.isActive());
+		assertTrue(destinationRelationship.isActive());
+		assertFalse(moduleConceptId.equals(sourceRelationship.getModuleId()));
+		assertFalse(moduleConceptId.equals(destinationRelationship.getModuleId()));
+
+		//After update
+		assertFalse(updatedSourceRelationship.isActive());
+		assertEquals(moduleConceptId, updatedSourceRelationship.getModuleId());
+		assertFalse(updatedDestinationRelationship.isActive());
+		assertEquals(moduleConceptId, updatedDestinationRelationship.getModuleId());
+
 	}
 	
 }

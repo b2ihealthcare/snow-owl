@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,9 +50,9 @@ public class OperationLock extends AbstractOperationLock {
 	}
 
 	@Override
-	protected void doRelease() throws OperationLockException {
+	protected void doRelease() {
 		if (!isLocked()) {
-			throw new OperationLockException(MessageFormat.format(LOCK_NOT_HELD_MESSAGE, getTarget()));
+			throw new IllegalArgumentException(MessageFormat.format(LOCK_NOT_HELD_MESSAGE, getTarget()));
 		}
 	}
 }

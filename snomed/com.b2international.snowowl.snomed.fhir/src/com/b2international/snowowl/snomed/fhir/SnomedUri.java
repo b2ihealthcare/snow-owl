@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.fhir;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.StringTokenizer;
 
 import com.b2international.commons.StringUtils;
@@ -168,7 +168,7 @@ public class SnomedUri {
 		}
 		
 		public Builder version(final long versionMs) {
-			Date date = EffectiveTimes.toDate(versionMs);
+			LocalDate date = EffectiveTimes.toDate(versionMs);
 			this.version = EffectiveTimes.format(date, DateFormats.SHORT);
 			return this;
 		}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,10 @@ import java.util.stream.Collectors;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.eclipse.core.runtime.ListenerList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import com.b2international.commons.exceptions.LockedException;
 import com.b2international.index.Hits;
 import com.b2international.index.Index;
 import com.b2international.index.query.Expression;
@@ -35,13 +38,15 @@ import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.query.SortBy;
 import com.b2international.snowowl.core.IDisposableService;
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContext;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockTarget;
-import com.b2international.snowowl.core.internal.locks.DatastoreOperationLockException;
 import com.b2international.snowowl.core.locks.DatastoreLockIndexEntry.Builder;
+import com.google.common.base.Optional;
 import com.google.common.base.Strings;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -51,9 +56,11 @@ import com.google.common.collect.Maps;
  * An abstract superclass of {@link IOperationLockManager} providing common methods.
  * 
  */
-public final class DatastoreOperationLockManager implements IOperationLockManager, IDisposableService {
+public final class DefaultOperationLockManager implements IOperationLockManager, IDisposableService {
 	
-	protected static final String ACQUIRE_FAILED_MESSAGE = "Could not acquire requested lock(s).";
+	private static final Logger LOG = LoggerFactory.getLogger(DefaultOperationLockManager.class);
+	
+	private static final String ACQUIRE_FAILED_MESSAGE = "Could not acquire requested lock(s)";
 
 	private static final String RELEASE_FAILED_MESSAGE = "Could not release requested lock(s).";
 
@@ -67,66 +74,70 @@ public final class DatastoreOperationLockManager implements IOperationLockManage
 	
 	private final Index index;
 
-	private final ListenerList listenerList = new ListenerList();
+	private final ListenerList<IOperationLockTargetListener> listenerList = new ListenerList<>();
 	
 	private final BitSet assignedIds = new BitSet(EXPECTED_LOCKS);
 	
 	private int lastAssignedId = 0;
 	
-	public DatastoreOperationLockManager(Index index) {
+	public DefaultOperationLockManager(Index index) {
 		this.index = index;
 		this.index.admin().create();
 	}
 	
 	@Override
-	public void lock(final DatastoreLockContext context, final long timeoutMillis, final DatastoreLockTarget firstTarget, final DatastoreLockTarget... restTargets) throws OperationLockException, InterruptedException {
+	public void lock(final DatastoreLockContext context, final long timeoutMillis, final DatastoreLockTarget firstTarget, final DatastoreLockTarget... restTargets) throws LockedException {
 		lock(context, timeoutMillis, Lists.asList(firstTarget, restTargets));
 	}
 
 	@Override
-	public void lock(final DatastoreLockContext context, final long timeoutMillis, final Iterable<DatastoreLockTarget> targets) throws OperationLockException, InterruptedException {
+	public void lock(final DatastoreLockContext context, final long timeoutMillis, final Iterable<DatastoreLockTarget> targets) throws LockedException {
 
 		final Map<DatastoreLockTarget, DatastoreLockContext> alreadyLockedTargets = Maps.newHashMap();
 		final long startTimeMillis = getCurrentTimeMillis();
 		
-		synchronized (syncObject) {
-			while (true) {
-				
-				alreadyLockedTargets.clear();
-				canContextLockTargets(context, targets, alreadyLockedTargets);
-	
-				if (alreadyLockedTargets.isEmpty()) {
-					for (final DatastoreLockTarget newTarget : targets) {
-						final IOperationLock existingLock = getOrCreateLock(context, newTarget);
-						fireTargetAcquired(existingLock.getTarget(), context);
+		try {
+			synchronized (syncObject) {
+				while (true) {
+					
+					alreadyLockedTargets.clear();
+					canContextLockTargets(context, targets, alreadyLockedTargets);
+					
+					if (alreadyLockedTargets.isEmpty()) {
+						for (final DatastoreLockTarget newTarget : targets) {
+							final IOperationLock existingLock = getOrCreateLock(context, newTarget);
+							fireTargetAcquired(existingLock.getTarget(), context);
+						}
+						
+						syncObject.notifyAll();
+						return;
 					}
 					
-					syncObject.notifyAll();
-					return;
-				}
-				
-				if (NO_TIMEOUT == timeoutMillis) {
-					syncObject.wait();
-				} else {
-					final long remainingTimeoutMillis = timeoutMillis - (getCurrentTimeMillis() - startTimeMillis);
-					
-					if (remainingTimeoutMillis < 1L) {
-						throwLockException(ACQUIRE_FAILED_MESSAGE, alreadyLockedTargets);
+					if (NO_TIMEOUT == timeoutMillis) {
+						syncObject.wait();
 					} else {
-						syncObject.wait(remainingTimeoutMillis);
+						final long remainingTimeoutMillis = timeoutMillis - (getCurrentTimeMillis() - startTimeMillis);
+						
+						if (remainingTimeoutMillis < 1L) {
+							throwLockedException(ACQUIRE_FAILED_MESSAGE, context, alreadyLockedTargets);
+						} else {
+							syncObject.wait(remainingTimeoutMillis);
+						}
 					}
 				}
 			}
+		} catch (InterruptedException e) {
+			throw new SnowowlRuntimeException(e);
 		}
 	}
 	
 	@Override
-	public void unlock(final DatastoreLockContext context, final DatastoreLockTarget firstTarget, final DatastoreLockTarget... restTargets) throws OperationLockException {
+	public void unlock(final DatastoreLockContext context, final DatastoreLockTarget firstTarget, final DatastoreLockTarget... restTargets) throws IllegalArgumentException {
 		unlock(context, Lists.asList(firstTarget, restTargets));
 	}
 
 	@Override
-	public void unlock(final DatastoreLockContext context, final Iterable<DatastoreLockTarget> targets) throws OperationLockException {
+	public void unlock(final DatastoreLockContext context, final Iterable<DatastoreLockTarget> targets) throws IllegalArgumentException {
 
 		final Map<DatastoreLockTarget, DatastoreLockContext> notUnlockedTargets = Maps.newHashMap();
 
@@ -141,7 +152,7 @@ public final class DatastoreOperationLockManager implements IOperationLockManage
 			}
 
 			if (!notUnlockedTargets.isEmpty()) {
-				throwLockException(RELEASE_FAILED_MESSAGE, notUnlockedTargets);
+				LOG.warn(buildMessage(RELEASE_FAILED_MESSAGE, context, notUnlockedTargets));
 			}
 
 			for (final DatastoreLockTarget targetToUnlock : targets) {
@@ -242,13 +253,8 @@ public final class DatastoreOperationLockManager implements IOperationLockManage
 		listenerList.remove(listener);
 	}
 
-	private void throwLockException(final String message, final Map<DatastoreLockTarget, DatastoreLockContext> targets) throws OperationLockException {
-		throw new OperationLockException(message);
-	}
-
 	@OverridingMethodsMustInvokeSuper
-	protected void canContextLockTargets(final DatastoreLockContext context, final Iterable<DatastoreLockTarget> targets, final Map<DatastoreLockTarget, DatastoreLockContext> alreadyLockedTargets) 
-			throws DatastoreOperationLockException {
+	protected void canContextLockTargets(final DatastoreLockContext context, final Iterable<DatastoreLockTarget> targets, final Map<DatastoreLockTarget, DatastoreLockContext> alreadyLockedTargets) throws LockedException {
 		if (!isDisposed()) {
 			for (final DatastoreLockTarget newTarget : targets) {
 				for (final IOperationLock existingLock : getExistingLocks()) {
@@ -262,12 +268,35 @@ public final class DatastoreOperationLockManager implements IOperationLockManage
 			for (final DatastoreLockTarget target : targets) {
 				alreadyLockedTargets.put(target, disposedContext);
 			}
-			
-			throwLockException(ACQUIRE_FAILED_MESSAGE, alreadyLockedTargets);
+			throwLockedException(ACQUIRE_FAILED_MESSAGE, context, alreadyLockedTargets);
 		}
 		
 	}
-	
+
+	private void throwLockedException(String message, final DatastoreLockContext requestRootContext, final Map<DatastoreLockTarget, DatastoreLockContext> targetMap) {
+		throw new LockedException(buildMessage(message, requestRootContext, targetMap));
+	}
+
+	private String buildMessage(String message, final DatastoreLockContext requestRootContext, final Map<DatastoreLockTarget, DatastoreLockContext> targetMap) {
+		final FluentIterable<DatastoreLockContext> contexts = FluentIterable.from(targetMap.values());
+		
+		DatastoreLockContext lockRootContext = null;
+		final Optional<DatastoreLockContext> currentLockRootContext = contexts.firstMatch(input -> DatastoreLockContextDescriptions.ROOT.equals(input.getParentDescription()));
+		if (currentLockRootContext.isPresent()) {
+			lockRootContext = currentLockRootContext.get();
+		} else {
+			if (contexts.first().isPresent()) {
+				lockRootContext = contexts.first().get();
+			}
+		}
+		
+		if (lockRootContext != null) {
+			return String.join(" ", message, "while", requestRootContext.getDescription(), "because", lockRootContext.getUserId(), "is", lockRootContext.getDescription());
+		} else {
+			return message;
+		}
+	}
+
 	private boolean canContextLock(final DatastoreLockContext context, final IOperationLock existingLock) {
 		return context.isCompatible(existingLock.getContext());
 	}
@@ -343,14 +372,12 @@ public final class DatastoreOperationLockManager implements IOperationLockManage
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	private void fireTargetAcquired(final DatastoreLockTarget target, final DatastoreLockContext context) {
 		for (final Object listener : listenerList.getListeners()) {
 			((IOperationLockTargetListener) listener).targetAcquired(target, context);
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	private void fireTargetReleased(final DatastoreLockTarget target, final DatastoreLockContext context) {
 		for (final Object listener : listenerList.getListeners()) {
 			((IOperationLockTargetListener) listener).targetReleased(target, context);
@@ -405,10 +432,6 @@ public final class DatastoreOperationLockManager implements IOperationLockManage
 					.build()
 					);
 		});
-	}
-	
-	private DatastoreLockIndexEntry get(String lockId) {
-		return index.read(searcher -> searcher.get(DatastoreLockIndexEntry.class, lockId));
 	}
 	
 	private void put(String lockId, DatastoreLockIndexEntry lock) {

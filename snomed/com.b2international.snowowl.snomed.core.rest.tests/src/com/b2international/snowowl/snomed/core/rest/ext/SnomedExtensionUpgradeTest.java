@@ -15,20 +15,22 @@
  */
 package com.b2international.snowowl.snomed.core.rest.ext;
 
-import static com.b2international.snowowl.snomed.core.rest.CodeSystemVersionRestRequests.createVersion;
-import static com.b2international.snowowl.snomed.core.rest.CodeSystemVersionRestRequests.getLatestVersion;
-import static com.b2international.snowowl.snomed.core.rest.CodeSystemVersionRestRequests.getNextAvailableEffectiveDateAsString;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.getComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.DEFAULT_LANGUAGE_CODE;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createConceptRequestBody;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createDescriptionRequestBody;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createRelationshipRequestBody;
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.createVersion;
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getLatestVersion;
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getNextAvailableEffectiveDateAsString;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.junit.Before;
@@ -38,6 +40,7 @@ import org.junit.runners.MethodSorters;
 
 import com.b2international.commons.json.Json;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
+import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.date.EffectiveTimes;
@@ -50,6 +53,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
+import com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests;
 
 /**
  * @since 4.7
@@ -850,6 +854,41 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		assertThat(extensionConcept2OnUpgrade.getRelationships())
 			.extracting(SnomedRelationship::getId)
 			.containsOnly(extensionStatedIsaId2, extensionInferredIsaId2, referenceToExtensionConcept1RelationshipId);
+	}
+	
+	@Test
+	public void upgrade13CompleteUpgrade() throws Exception {
+		// create extension on the latest SI VERSION
+		CodeSystem extension = createExtension(latestInternationalVersion, branchPath.lastSegment());
+		
+		// create a new INT version without any changes
+		String effectiveDate = getNextAvailableEffectiveDateAsString(SNOMEDCT);
+		createVersion(SNOMEDCT, effectiveDate, effectiveDate).statusCode(201);
+		CodeSystemURI upgradeVersion = CodeSystemURI.branch(SNOMEDCT, effectiveDate);
+		
+		// create new extension version with one new concept, module in this case
+		String moduleId = createModule(extension);
+		createVersion(extension.getCodeSystemURI().getCodeSystem(), "v1", Dates.now(DateFormats.SHORT)).statusCode(201);
+		
+		// start upgrade to the new available upgrade version
+		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getCodeSystemURI(), upgradeVersion);
+		assertEquals(upgradeVersion, upgradeCodeSystem.getExtensionOf());
+		
+		getComponent(upgradeCodeSystem.getCodeSystemURI().toString(), SnomedComponentType.CONCEPT, moduleId).statusCode(200);
+		
+		Boolean success = CodeSystemRequests.prepareComplete(upgradeCodeSystem.getShortName())
+			.build(upgradeCodeSystem.getRepositoryId())
+			.execute(getBus())
+			.getSync(1, TimeUnit.MINUTES);
+		assertTrue(success);
+		
+		// after upgrade completion, the upgrade Code System is no longer available
+		CodeSystemRestRequests.getCodeSystem(upgradeCodeSystem.getShortName()).assertThat().statusCode(404);
+		// the extension should use the upgrade's branch
+		CodeSystemRestRequests.getCodeSystem(upgradeCodeSystem.getUpgradeOf().getCodeSystem())
+			.assertThat().statusCode(200)
+			.and().body("branchPath", is(upgradeCodeSystem.getBranchPath()))
+			.and().body("extensionOf", is(upgradeCodeSystem.getExtensionOf().toString()));
 	}
 	
 	private String getFirstRelationshipId(SnomedConcept concept, String characteristicTypeId) {

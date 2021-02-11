@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
@@ -96,6 +98,10 @@ public final class CodeSystemEntry implements Serializable {
 		public static Expression matchNameAllTermsPresent(String term) {
 			return matchTextAll(Fields.NAME_ANALYZED, term);
 		}
+
+		public static Expression upgradeOf(Collection<CodeSystemURI> upgradeOfs) {
+			return matchAny(Fields.UPGRADE_OF, Collections3.toImmutableSet(upgradeOfs).stream().map(CodeSystemURI::toString).collect(Collectors.toSet()));
+		}
 	}
 	
 	public static class Fields {
@@ -108,6 +114,8 @@ public final class CodeSystemEntry implements Serializable {
 		public static final String ICON_PATH = "iconPath"; 
 		public static final String TERMINOLOGY_COMPONENT_ID = "terminologyComponentId";
 		public static final String REPOSITORY_ID = "repositoryId";
+		public static final String EXTENSION_OF = "extensionOf";
+		public static final String UPGRADE_OF = "upgradeOf";
 		
 		// analyzed fields
 		private static final String NAME_PREFIX   = NAME + ".prefix";

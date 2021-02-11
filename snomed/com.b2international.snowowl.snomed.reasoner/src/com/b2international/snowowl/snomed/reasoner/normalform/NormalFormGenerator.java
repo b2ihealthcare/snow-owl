@@ -488,6 +488,7 @@ public final class NormalFormGenerator implements INormalFormGenerator {
 						unionGroupNumber,
 						property.isUniversal(),
 						property.getStatementId(),
+						null, /*moduleId is not supported here*/
 						property.isReleased(),
 						property.hasStatedPair()));
 	}

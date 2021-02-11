@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,13 +26,7 @@ import com.b2international.snowowl.core.codesystem.version.CodeSystemVersionSear
 import com.b2international.snowowl.core.compare.ConceptMapCompareResultItem;
 import com.b2international.snowowl.core.jobs.RemoteJobEntry;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
-import com.b2international.snowowl.core.request.ConceptMapCompareDsvExportRequestBuilder;
-import com.b2international.snowowl.core.request.ConceptMapCompareRequestBuilder;
-import com.b2international.snowowl.core.request.ConceptMapMappingSearchRequestBuilder;
-import com.b2international.snowowl.core.request.ConceptSearchRequestBuilder;
-import com.b2international.snowowl.core.request.ConceptSuggestionRequestBuilder;
-import com.b2international.snowowl.core.request.MemberSearchRequestBuilder;
-import com.b2international.snowowl.core.request.QueryOptimizeRequestBuilder;
+import com.b2international.snowowl.core.request.*;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.core.uri.ComponentURI;
 
@@ -73,6 +67,10 @@ public class CodeSystemRequests {
 	
 	public static CodeSystemUpgradeRequestBuilder prepareUpgrade(CodeSystemURI codeSystem, CodeSystemURI extensionOf) {
 		return new CodeSystemUpgradeRequestBuilder(codeSystem, extensionOf);
+	}
+	
+	public static CodeSystemCompleteUpgradeRequestBuilder prepareComplete(String codeSystemId) {
+		return new CodeSystemCompleteUpgradeRequestBuilder(codeSystemId);
 	}
 	
 	// Generic Content Search APIs
@@ -176,5 +174,5 @@ public class CodeSystemRequests {
 	public static boolean isVersionJob(RemoteJobEntry job) {
 		return job != null && job.getKey().startsWith(VERSION_JOB_KEY_PREFIX);
 	}
-
+	
 }

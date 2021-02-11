@@ -15,19 +15,19 @@
  */
 package com.b2international.snowowl.snomed.core.rest.components;
 
-import static com.b2international.snowowl.snomed.core.rest.CodeSystemRestRequests.createCodeSystem;
-import static com.b2international.snowowl.snomed.core.rest.CodeSystemVersionRestRequests.createVersion;
-import static com.b2international.snowowl.snomed.core.rest.CodeSystemVersionRestRequests.getNextAvailableEffectiveDateAsString;
-import static com.b2international.snowowl.snomed.core.rest.CodeSystemVersionRestRequests.getVersion;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.createComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.getComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createConceptRequestBody;
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests.createCodeSystem;
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.createVersion;
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getNextAvailableEffectiveDateAsString;
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getVersion;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.assertCreated;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertEquals;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.Map;
 import java.util.Set;
 
@@ -77,7 +77,7 @@ public class SnomedModuleDependencyRefsetTest extends AbstractSnomedApiTest {
 		final String versionEffectiveTime = getNextAvailableEffectiveDateAsString(
 				SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME);
 		
-		final Date versionEffectiveDate = EffectiveTimes.parse(versionEffectiveTime, DateFormats.SHORT);
+		final LocalDate	versionEffectiveDate = EffectiveTimes.parse(versionEffectiveTime, DateFormats.SHORT);
 		
 		final String versionId = "updateExistingModuleDependencyMembers";
 		createVersion(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, versionId, versionEffectiveTime).statusCode(201);
@@ -109,7 +109,7 @@ public class SnomedModuleDependencyRefsetTest extends AbstractSnomedApiTest {
 		createCodeSystem(branchPath, shortName).statusCode(201);
 
 		Set<String> INT_MODULE_IDS = Set.of(Concepts.MODULE_SCT_MODEL_COMPONENT, Concepts.MODULE_SCT_CORE, ICD_10_MAPPING_MODULE);
-		Map<Pair<String, String>, Date> moduleToReferencedComponentAndEffectiveDateMap = Maps.newHashMap();
+		Map<Pair<String, String>, LocalDate> moduleToReferencedComponentAndEffectiveDateMap = Maps.newHashMap();
 
 		SnomedReferenceSetMembers intModuleDependencyMembers = SnomedRequests.prepareSearchMember()
 				.all()
@@ -157,7 +157,7 @@ public class SnomedModuleDependencyRefsetTest extends AbstractSnomedApiTest {
 				
 		// version branch
 		final String effectiveTime = getNextAvailableEffectiveDateAsString(shortName);
-		final Date effectiveDate = EffectiveTimes.parse(effectiveTime, DateFormats.SHORT);
+		final LocalDate effectiveDate = EffectiveTimes.parse(effectiveTime, DateFormats.SHORT);
 		final String versionId = "testForModuleDependencyMembers";
 		createVersion(shortName, versionId, effectiveTime).statusCode(201);
 		getVersion(shortName, versionId).statusCode(200);
@@ -179,7 +179,7 @@ public class SnomedModuleDependencyRefsetTest extends AbstractSnomedApiTest {
 
 		moduleDependencyMembersAfterVersioning.forEach(member-> {
 			final Pair<String, String> pair = Tuples.pair(member.getModuleId(), member.getReferencedComponent().getId());
-			final Date originalMemberEffectiveTime = moduleToReferencedComponentAndEffectiveDateMap.get(pair);
+			final LocalDate originalMemberEffectiveTime = moduleToReferencedComponentAndEffectiveDateMap.get(pair);
 			if (originalMemberEffectiveTime != null) {
 				assertEquals(String.format("Effective dates on unaffected existing module dependency members shouldn't be updated after versioning. ModuleID: %s", member.getReferencedComponentId()), originalMemberEffectiveTime,  member.getEffectiveTime());
 			} else {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,7 +59,7 @@ public abstract class AbstractOperationLock implements IOperationLock {
 
 	private void removeContext(DatastoreLockContext otherContext) {
 		if (!contextStack.remove(otherContext)) {
-			throw new OperationLockException(CONTEXT_NOT_IN_STACK_MESSAGE);
+			throw new IllegalArgumentException(CONTEXT_NOT_IN_STACK_MESSAGE);
 		}
 	}
 
@@ -99,18 +99,18 @@ public abstract class AbstractOperationLock implements IOperationLock {
 	}
 	
 	@Override
-	public final void acquire(final DatastoreLockContext otherContext) throws OperationLockException {
+	public final void acquire(final DatastoreLockContext otherContext) {
 		pushContext(otherContext);
 		doAcquire();
 	}
 
 	@Override
-	public final void release(final DatastoreLockContext otherContext) throws OperationLockException {
+	public final void release(final DatastoreLockContext otherContext) {
 		doRelease();
 		removeContext(otherContext);
 	}
 
-	protected void doAcquire() throws OperationLockException { }
+	protected void doAcquire() { }
 	
-	protected void doRelease() throws OperationLockException { }
+	protected void doRelease() { }
 }

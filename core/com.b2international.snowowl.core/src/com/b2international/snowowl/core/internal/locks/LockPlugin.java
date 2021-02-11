@@ -21,7 +21,7 @@ import com.b2international.index.mapping.Mappings;
 import com.b2international.snowowl.core.config.IndexSettings;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.locks.DatastoreLockIndexEntry;
-import com.b2international.snowowl.core.locks.DatastoreOperationLockManager;
+import com.b2international.snowowl.core.locks.DefaultOperationLockManager;
 import com.b2international.snowowl.core.locks.IOperationLockManager;
 import com.b2international.snowowl.core.plugin.Component;
 import com.b2international.snowowl.core.setup.Environment;
@@ -40,13 +40,13 @@ public final class LockPlugin extends Plugin {
 	public void preRun(SnowOwlConfiguration configuration, Environment env) throws Exception {
 		if (env.isServer()) {
 			final Index locksIndex = Indexes.createIndex("locks", env.service(ObjectMapper.class), new Mappings(DatastoreLockIndexEntry.class), env.service(IndexSettings.class));
-			final DatastoreOperationLockManager lockManager = new DatastoreOperationLockManager(locksIndex);
+			final DefaultOperationLockManager lockManager = new DefaultOperationLockManager(locksIndex);
 			final RemoteLockTargetListener remoteLockTargetListener = new RemoteLockTargetListener();
 			lockManager.addLockTargetListener(new Slf4jOperationLockTargetListener());
 			lockManager.addLockTargetListener(remoteLockTargetListener);
 			env.services().registerService(IOperationLockManager.class, lockManager);
 			final RpcSession session = RpcUtil.getInitialServerSession(env.container());
-			session.registerClassLoader(IOperationLockManager.class, DatastoreOperationLockManager.class.getClassLoader());
+			session.registerClassLoader(IOperationLockManager.class, DefaultOperationLockManager.class.getClassLoader());
 		} else {
 			env.services().registerService(IOperationLockManager.class, RpcUtil.createProxy(env.container(), IOperationLockManager.class));
 		}

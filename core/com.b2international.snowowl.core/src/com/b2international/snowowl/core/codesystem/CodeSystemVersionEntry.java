@@ -21,6 +21,7 @@ import static com.b2international.index.query.Expressions.matchRange;
 import static com.b2international.snowowl.core.api.IBranchPath.MAIN_BRANCH;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
@@ -123,10 +124,10 @@ public final class CodeSystemVersionEntry implements Serializable {
 			return matchRange(Fields.IMPORT_DATE, from, to);
 		}
 		
-		public static Expression effectiveDate(Date effectiveDate) {
-			return exactMatch(Fields.EFFECTIVE_DATE, EffectiveTimes.getEffectiveTime(effectiveDate));
+		public static Expression effectiveDate(long from, long to) {
+			return matchRange(Fields.EFFECTIVE_DATE, from, to);
 		}
-
+		
 		public static Expression parentBranchPath(String parentBranchPath) {
 			return exactMatch(Fields.PARENT_BRANCH_PATH, parentBranchPath);
 		}
@@ -259,6 +260,15 @@ public final class CodeSystemVersionEntry implements Serializable {
 	 */
 	public long getEffectiveDate() {
 		return effectiveDate;
+	}
+	
+	/**
+	 * Returns with the point in time when the code system version has been modified as a {@link LocalDate}.
+	 * @return the effective time.
+	 */
+	@JsonIgnore
+	public LocalDate getEffectiveTime() {
+		return EffectiveTimes.toDate(effectiveDate);
 	}
 
 	/**

@@ -13,32 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.rest.codesystem;
-
-import com.b2international.snowowl.core.uri.CodeSystemURI;
+package com.b2international.snowowl.test.commons;
 
 /**
- * @since 7.14
+ * @since 7.15
  */
-public class CodeSystemUpdateRestInput {
+public interface ApiTestConstants {
 
-	private CodeSystemURI extensionOf;
-	private String codeSystemId;
-	
-	public CodeSystemURI getExtensionOf() {
-		return extensionOf;
-	}
-	
-	public void setExtensionOf(CodeSystemURI extensionOf) {
-		this.extensionOf = extensionOf;
-	}
-
-	public String getCodeSystemId() {
-		return codeSystemId;
-	}
-	
-	public void setCodeSystemId(String codeSystemId) {
-		this.codeSystemId = codeSystemId;
-	}
+	/**
+	 * The context-relative base URL for the administrative controller. 
+	 */
+	String ADMIN_API = "/admin";
 	
 }

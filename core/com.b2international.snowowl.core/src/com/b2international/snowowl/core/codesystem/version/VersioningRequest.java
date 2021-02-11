@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,9 @@ import com.b2international.commons.exceptions.ApiException;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
+import com.b2international.snowowl.core.codesystem.CodeSystemVersion;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.id.IDs;
@@ -56,14 +58,19 @@ public class VersioningRequest implements Request<TransactionContext, Boolean>, 
 	public final Boolean execute(TransactionContext context) {
 		final Logger log = context.log();
 		
-		CodeSystemVersionEntry version = getVersion(context);
-		if (version != null) {
+		CodeSystemVersion version = getVersion(context);
+		if (version != null && !config.isForce()) {
 			throw new AlreadyExistsException("Version", config.getVersionId());
 		}
 
 		log.info("Versioning components of '{}' codesystem...", config.getCodeSystemShortName());
 		try {
 			doVersionComponents(context);
+			
+			if (version != null && config.isForce()) {
+				context.delete(version);
+			}
+			
 			context.add(createVersion(context, config));
 		} catch (Exception e) {
 			if (e instanceof ApiException) {
@@ -83,7 +90,7 @@ public class VersioningRequest implements Request<TransactionContext, Boolean>, 
 	}
 
 	@Nullable
-	private CodeSystemVersionEntry getVersion(TransactionContext context) {
+	private CodeSystemVersion getVersion(TransactionContext context) {
 		return CodeSystemRequests
 				.prepareSearchCodeSystemVersion()
 				.setLimit(2)
@@ -99,7 +106,7 @@ public class VersioningRequest implements Request<TransactionContext, Boolean>, 
 		return CodeSystemVersionEntry.builder()
 				.id(IDs.base64UUID())
 				.description(config.getDescription())
-				.effectiveDate(config.getEffectiveTime().getTime())
+				.effectiveDate(EffectiveTimes.getEffectiveTime(config.getEffectiveTime()))
 				.importDate(new Date().getTime())
 				.parentBranchPath(context.path())
 				.versionId(config.getVersionId())

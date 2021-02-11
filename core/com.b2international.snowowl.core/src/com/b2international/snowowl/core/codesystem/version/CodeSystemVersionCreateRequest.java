@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,13 @@ package com.b2international.snowowl.core.codesystem.version;
 
 import static com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions.CREATE_VERSION;
 
-import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -40,26 +41,25 @@ import com.b2international.index.revision.RevisionBranch;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
+import com.b2international.snowowl.core.codesystem.CodeSystemVersion;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.Permission;
+import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContext;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockTarget;
-import com.b2international.snowowl.core.internal.locks.DatastoreOperationLockException;
-import com.b2international.snowowl.core.jobs.RemoteJob;
 import com.b2international.snowowl.core.locks.IOperationLockManager;
-import com.b2international.snowowl.core.locks.OperationLockException;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.BranchRequest;
 import com.b2international.snowowl.core.request.CommitResult;
 import com.b2international.snowowl.core.request.RepositoryRequest;
 import com.b2international.snowowl.core.request.RevisionIndexReadRequest;
+import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -83,11 +83,14 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 	
 	@NotNull
 	@JsonProperty
-	Date effectiveTime;
+	LocalDate effectiveTime;
 	
 	@NotEmpty
 	@JsonProperty
 	String codeSystemShortName;
+	
+	@JsonProperty
+	boolean force;
 	
 	// local execution variables
 	private transient Multimap<DatastoreLockContext, DatastoreLockTarget> lockTargetsByContext;
@@ -95,8 +98,7 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 	
 	@Override
 	public Boolean execute(ServiceProvider context) {
-		final RemoteJob job = context.service(RemoteJob.class);
-		final String user = job.getUser();
+		final String user = context.service(User.class).getUsername();
 		
 		if (codeSystemsByShortName == null) {
 			codeSystemsByShortName = fetchAllCodeSystems(context);
@@ -107,31 +109,41 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 			throw new CodeSystemNotFoundException(codeSystemShortName);
 		}
 		
-		// check that the new versionId does not conflict with any other currently available branch
-		final String newVersionPath = String.join(Branch.SEPARATOR, codeSystem.getBranchPath(), versionId);
-		final String repositoryId = codeSystem.getRepositoryId();
-		
 		// validate new path
 		RevisionBranch.BranchNameValidator.DEFAULT.checkName(versionId);
 		
-		try {
-			Branch branch = RepositoryRequests.branching()
-				.prepareGet(newVersionPath)
-				.build(repositoryId)
-				.execute(context.service(IEventBus.class))
-				.getSync(1, TimeUnit.MINUTES);
-			// allow deleted version branches to be reused for versioning
-			if (!branch.isDeleted()) {
-				throw new ConflictException("An existing branch with path '%s' conflicts with the specified version identifier.", newVersionPath);
-			}
-		} catch (NotFoundException e) {
-			// ignore
-		}
-		
 		final List<CodeSystem> codeSystemsToVersion = codeSystem.getDependenciesAndSelf()
-			.stream()
-			.map(codeSystemsByShortName::get)
-			.collect(Collectors.toList());
+				.stream()
+				.map(codeSystemsByShortName::get)
+				.collect(Collectors.toList());
+		
+		for (CodeSystem cs : codeSystemsToVersion) {
+			// check that the new versionId does not conflict with any other currently available branch
+			final String newVersionPath = String.join(Branch.SEPARATOR, cs.getBranchPath(), versionId);
+			final String repositoryId = cs.getRepositoryId();
+			
+			if (!force) {
+				// branch needs checking in the non-force cases only
+				try {
+					
+					Branch branch = RepositoryRequests.branching()
+						.prepareGet(newVersionPath)
+						.build(repositoryId)
+						.execute(context.service(IEventBus.class))
+						.getSync(1, TimeUnit.MINUTES);
+					
+					if (!branch.isDeleted()) {
+						throw new ConflictException("An existing branch with path '%s' conflicts with the specified version identifier.", newVersionPath);
+					}
+
+				} catch (NotFoundException e) {
+					// branch does not exist, ignore
+				}
+			}
+			
+			// if there is no conflict, delete the branch (the request also ignores non-existent branches)
+			deleteBranch(context, newVersionPath, repositoryId);
+		}
 		
 		acquireLocks(context, user, codeSystemsToVersion);
 		
@@ -140,13 +152,13 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 			
 			codeSystemsToVersion.forEach(codeSystemToVersion -> {
 				// check that the specified effective time is valid in this code system
-				validateEffectiveTime(context, codeSystem);
-				new RepositoryRequest<>(repositoryId,
+				validateVersion(context, codeSystem);
+				new RepositoryRequest<>(codeSystemToVersion.getRepositoryId(),
 					new BranchRequest<>(codeSystem.getBranchPath(),
 						new RevisionIndexReadRequest<CommitResult>(
 							context.service(RepositoryManager.class).get(codeSystemToVersion.getRepositoryId())
 								.service(VersioningRequestBuilder.class)
-								.build(new VersioningConfiguration(user, codeSystemToVersion.getShortName(), versionId, description, effectiveTime))
+								.build(new VersioningConfiguration(user, codeSystemToVersion.getShortName(), versionId, description, effectiveTime, force))
 						)
 					)
 				).execute(context);
@@ -164,16 +176,24 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 		}
 	}
 	
+	private boolean deleteBranch(ServiceProvider context, String path, String repositoryId) {
+		return RepositoryRequests.branching()
+				.prepareDelete(path)
+				.build(repositoryId)
+				.execute(context.service(IEventBus.class))
+				.getSync(1, TimeUnit.MINUTES);
+	}
+	
 	private Map<String, CodeSystem> fetchAllCodeSystems(ServiceProvider context) {
 		final RepositoryManager repositoryManager = context.service(RepositoryManager.class);
 		final Collection<Repository> repositories = repositoryManager.repositories();
 		return repositories.stream()
-			.map(repository -> fetchCodeSystem(context, repository.id()))
+			.map(repository -> fetchCodeSystems(context, repository.id()))
 			.flatMap(Collection::stream)
 			.collect(Collectors.toMap(CodeSystem::getShortName, Function.identity()));
 	}
 	
-	private List<CodeSystem> fetchCodeSystem(ServiceProvider context, String repositoryId) {
+	private List<CodeSystem> fetchCodeSystems(ServiceProvider context, String repositoryId) {
 		return CodeSystemRequests.prepareSearchCodeSystem()
 			.all()
 			.build(repositoryId)
@@ -182,54 +202,56 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 			.getItems();
 	}
 	
-	private void validateEffectiveTime(ServiceProvider context, CodeSystem codeSystem) {
+	private void validateVersion(ServiceProvider context, CodeSystem codeSystem) {
 		if (!context.service(TerminologyRegistry.class).getTerminology(codeSystem.getTerminologyId()).isEffectiveTimeSupported()) {
 			return;
 		}
 
-		Instant mostRecentVersionEffectiveTime = getMostRecentVersionEffectiveDateTime(context, codeSystem);
-		Instant requestEffectiveTime = effectiveTime.toInstant();
+		Optional<CodeSystemVersion> mostRecentVersion = getMostRecentVersion(context, codeSystem);
 
-		if (!requestEffectiveTime.isAfter(mostRecentVersionEffectiveTime)) {
-			throw new BadRequestException("The specified '%s' effective time is invalid. Date should be after '%s'.", requestEffectiveTime, mostRecentVersionEffectiveTime);
-		}
+		mostRecentVersion.ifPresent(mrv -> {
+			LocalDate mostRecentVersionEffectiveTime = mostRecentVersion.map(CodeSystemVersion::getEffectiveTime).orElse(LocalDate.EPOCH);
+
+			if (force) {
+				if (!Objects.equals(versionId, mrv.getVersion())) {
+					throw new BadRequestException("Force creating version requires the same versionId ('%s') to be used", versionId);
+				}
+				
+				// force recreating an existing version should use the same or later effective date value, allow same here
+				if (effectiveTime.equals(mostRecentVersionEffectiveTime)) {
+					return;
+				}
+			}
+			
+			if (!effectiveTime.isAfter(mostRecentVersionEffectiveTime)) {
+				throw new BadRequestException("The specified '%s' effective time is invalid. Date should be after '%s'.", effectiveTime, mostRecentVersionEffectiveTime);
+			}
+		});
+		
 	}
 	
-	private Instant getMostRecentVersionEffectiveDateTime(ServiceProvider context, CodeSystem codeSystem) {
+	private Optional<CodeSystemVersion> getMostRecentVersion(ServiceProvider context, CodeSystem codeSystem) {
 		return CodeSystemRequests.prepareSearchCodeSystemVersion()
-			.all()
+			.one()
 			.filterByCodeSystemShortName(codeSystem.getShortName())
+			.sortBy(SortField.descending(CodeSystemVersionEntry.Fields.EFFECTIVE_DATE))
 			.build(codeSystem.getRepositoryId())
 			.execute(context.service(IEventBus.class))
 			.getSync(1, TimeUnit.MINUTES)
 			.stream()
-			.max(CodeSystemVersionEntry.VERSION_EFFECTIVE_DATE_COMPARATOR)
-			.map(CodeSystemVersionEntry::getEffectiveDate)
-			.map(Instant::ofEpochMilli)
-			.orElse(Instant.EPOCH);
+			.findFirst();
 	}
 	
 	private void acquireLocks(ServiceProvider context, String user, Collection<CodeSystem> codeSystems) {
-		try {
-			this.lockTargetsByContext = HashMultimap.create();
+		this.lockTargetsByContext = HashMultimap.create();
+		
+		final DatastoreLockContext lockContext = new DatastoreLockContext(user, CREATE_VERSION);
+		for (CodeSystem codeSystem : codeSystems) {
+			final DatastoreLockTarget lockTarget = new DatastoreLockTarget(codeSystem.getRepositoryId(), codeSystem.getBranchPath());
 			
-			final DatastoreLockContext lockContext = new DatastoreLockContext(user, CREATE_VERSION);
-			for (CodeSystem codeSystem : codeSystems) {
-				final DatastoreLockTarget lockTarget = new DatastoreLockTarget(codeSystem.getRepositoryId(), codeSystem.getBranchPath());
-				
-				context.service(IOperationLockManager.class).lock(lockContext, IOperationLockManager.IMMEDIATE, lockTarget);
+			context.service(IOperationLockManager.class).lock(lockContext, IOperationLockManager.IMMEDIATE, lockTarget);
 
-				lockTargetsByContext.put(lockContext, lockTarget);
-			}
-			
-		} catch (final OperationLockException e) {
-			if (e instanceof DatastoreOperationLockException) {
-				throw new DatastoreOperationLockException(String.format("Failed to acquire locks for versioning because %s.", e.getMessage())); 
-			} else {
-				throw new DatastoreOperationLockException("Error while trying to acquire lock on repository for versioning.");
-			}
-		} catch (final InterruptedException e) {
-			throw new SnowowlRuntimeException(e);
+			lockTargetsByContext.put(lockContext, lockTarget);
 		}
 	}
 	

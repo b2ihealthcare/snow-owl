@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
-
-import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 
 /**
  * Useful methods when working with {@link Date} instances, especially useful in formatting and parsing to/from {@link String} values.
@@ -130,7 +128,7 @@ public abstract class Dates {
 	 * @param date
 	 *            - the date string, cannot be <code>null</code>
 	 * @return - the parse date object, never <code>null</code>
-	 * @throws SnowowlRuntimeException
+	 * @throws IllegalArgumentException
 	 *             - if a {@link ParseException} is thrown during execution
 	 * @throws NullPointerException
 	 *             - if date is <code>null</code>
@@ -148,7 +146,7 @@ public abstract class Dates {
 	 * @param datePattern
 	 *            - the date pattern for the parsing, cannot be <code>null</code>
 	 * @return the parsed date object, never <code>null</code>
-	 * @throws SnowowlRuntimeException
+	 * @throws IllegalArgumentException
 	 *             - if a {@link ParseException} is thrown during execution
 	 * @throws NullPointerException
 	 *             - if one of the arguments was <code>null</code>
@@ -193,21 +191,6 @@ public abstract class Dates {
 		return TimeZone.getTimeZone("GMT");
 	}
 	
-	/**
-	 *@return the {@link Date} instance for the beginning of the current day in the local timezone.
-	 */
-	public static Date todayLocal() {
-		final Calendar todayInLocalTime = Calendar.getInstance();
-
-		final int year = todayInLocalTime.get(Calendar.YEAR);
-		final int month = todayInLocalTime.get(Calendar.MONTH);
-		final int date = todayInLocalTime.get(Calendar.DATE);
-
-		todayInLocalTime.clear();
-		todayInLocalTime.set(year, month, date);
-		return todayInLocalTime.getTime();
-	}
-
 	private static Object convert(Object date) {
 		if (date instanceof Long) {
 			return new Date(((Long) date).longValue());

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,15 +24,18 @@ import java.util.stream.Collectors;
 import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
+import com.b2international.snowowl.core.codesystem.CodeSystemVersion;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersions;
 import com.b2international.snowowl.core.codesystem.CodeSystems;
 import com.b2international.snowowl.core.date.DateFormats;
+import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.plugin.Component;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
+import com.fasterxml.jackson.databind.util.StdDateFormat;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
@@ -158,13 +161,13 @@ public final class CodeSystemsCommand extends Command {
 				.getSync(1, TimeUnit.MINUTES);
 	}
 	
-	private String getCodeSystemVersionInformation(CodeSystemVersionEntry codeSystemVersion) {
+	private String getCodeSystemVersionInformation(CodeSystemVersion codeSystemVersion) {
 		return new StringBuilder()
-			.append("\tVersion id: ").append(codeSystemVersion.getVersionId()).append("\n")
+			.append("\tVersion id: ").append(codeSystemVersion.getVersion()).append("\n")
 			.append("\tDescription: ").append(codeSystemVersion.getDescription()).append("\n")
-			.append("\tEffective date: ").append(EffectiveTimes.format(codeSystemVersion.getEffectiveDate(), DateFormats.DEFAULT)).append("\n")
-			.append("\tCreation date: ").append(EffectiveTimes.format(codeSystemVersion.getImportDate(), DateFormats.DEFAULT)).append("\n")
-			.append("\tLast update: ").append(codeSystemVersion.getLatestUpdateDate() > 0 ? EffectiveTimes.format(codeSystemVersion.getLatestUpdateDate(), DateFormats.DEFAULT) : "-").append("\n")
+			.append("\tEffective date: ").append(EffectiveTimes.format(codeSystemVersion.getEffectiveTime(), DateFormats.DEFAULT)).append("\n")
+			.append("\tCreation date: ").append(Dates.formatByHostTimeZone(codeSystemVersion.getImportDate(), DateFormats.DEFAULT)).append("\n")
+			.append("\tLast update: ").append(codeSystemVersion.getLastModificationDate() != null ? StdDateFormat.getDateInstance().format(codeSystemVersion.getLastModificationDate()) : "-").append("\n")
 			.append("\tVersion branch path: ").append(codeSystemVersion.getPath())
 			.toString();
 	}

@@ -81,6 +81,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.util.StdDateFormat;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.base.Charsets;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
@@ -111,6 +112,7 @@ public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 	@Bean
 	public ObjectMapper objectMapper() {
 		final ObjectMapper objectMapper = new ObjectMapper();
+		objectMapper.registerModule(new JavaTimeModule());
 		objectMapper.setSerializationInclusion(Include.NON_NULL);
 		final StdDateFormat dateFormat = new StdDateFormat();
 		dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));

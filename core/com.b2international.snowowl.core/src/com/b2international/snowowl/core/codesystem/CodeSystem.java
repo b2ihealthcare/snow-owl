@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.branch.BranchInfo;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -43,7 +44,7 @@ import com.google.common.collect.Maps;
  * together make up the definition of concepts) and their corresponding unique
  * code.
  * 
- * @since 
+ * @since 1.0
  */
 @JsonDeserialize(builder=CodeSystem.Builder.class)
 public class CodeSystem implements Serializable {
@@ -55,6 +56,8 @@ public class CodeSystem implements Serializable {
 	 */
 	public static final class Expand {
 		public static final String AVAILABLE_UPGRADES = "availableUpgrades";
+		public static final String EXTENSION_OF_BRANCH_INFO = "extensionOfBranchInfo";
+		public static final String UPGRADE_OF_BRANCH_INFO = "upgradeOfBranchInfo";
 	}
 	
 	public static Builder builder() {
@@ -212,6 +215,8 @@ public class CodeSystem implements Serializable {
 	private List<ExtendedLocale> locales;
 	private Map<String, Object> additionalProperties;
 	private List<CodeSystemURI> availableUpgrades;
+	private BranchInfo extensionOfBranchInfo;
+	private BranchInfo upgradeOfBranchInfo;
 	
 	// extension related fields
 	private CodeSystemURI extensionOf;
@@ -359,6 +364,14 @@ public class CodeSystem implements Serializable {
 		return availableUpgrades;
 	}
 
+	public BranchInfo getExtensionOfBranchInfo() {
+		return extensionOfBranchInfo;
+	}
+	
+	public BranchInfo getUpgradeOfBranchInfo() {
+		return upgradeOfBranchInfo;
+	}
+
 	public void setOid(final String oid) {
 		this.oid = oid;
 	}
@@ -418,6 +431,14 @@ public class CodeSystem implements Serializable {
 	
 	public void setAvailableUpgrades(final List<CodeSystemURI> availableUpgrades) {
 		this.availableUpgrades = availableUpgrades;
+	}
+
+	public void setExtensionOfBranchInfo(BranchInfo extensionOfBranchInfo) {
+		this.extensionOfBranchInfo = extensionOfBranchInfo;
+	}
+	
+	public void setUpgradeOfBranchInfo(BranchInfo upgradeOfBranchInfo) {
+		this.upgradeOfBranchInfo = upgradeOfBranchInfo;
 	}
 	
 	/**
