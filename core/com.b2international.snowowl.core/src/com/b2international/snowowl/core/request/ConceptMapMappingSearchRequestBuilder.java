@@ -67,7 +67,7 @@ public final class ConceptMapMappingSearchRequestBuilder extends SearchResourceR
 		return addOption(OptionKey.COMPONENT, componentIds);
 	}
 	
-	public ConceptMapMappingSearchRequestBuilder filterByActive(boolean active) {
+	public ConceptMapMappingSearchRequestBuilder filterByActive(Boolean active) {
 		return addOption(OptionKey.ACTIVE, active);
 	}
 	
