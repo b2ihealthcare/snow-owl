@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,8 +27,20 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
-import java.util.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.Collection;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -47,9 +59,10 @@ import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.Branches;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
+import com.b2international.snowowl.core.codesystem.CodeSystemVersion;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
+import com.b2international.snowowl.core.codesystem.CodeSystemVersions;
 import com.b2international.snowowl.core.date.DateFormats;
-import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
@@ -107,10 +120,10 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 	private static final String DESCRIPTION_TYPES_EXCEPT_TEXT_DEFINITION = "<<" + Concepts.DESCRIPTION_TYPE_ROOT_CONCEPT + " MINUS " + Concepts.TEXT_DEFINITION;
 	private static final String NON_STATED_CHARACTERISTIC_TYPES = "<<" + Concepts.CHARACTERISTIC_TYPE + " MINUS " + Concepts.STATED_RELATIONSHIP;
 
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 
-	private static final Ordering<CodeSystemVersionEntry> EFFECTIVE_DATE_ORDERING = Ordering.natural()
-			.onResultOf(CodeSystemVersionEntry::getEffectiveDate);
+	private static final Ordering<CodeSystemVersion> EFFECTIVE_DATE_ORDERING = Ordering.natural()
+			.onResultOf(CodeSystemVersion::getEffectiveTime);
 
 	@JsonProperty 
 	@NotNull 
@@ -128,10 +141,10 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 	private String namespaceFilter;
 
 	@JsonProperty 
-	private Long startEffectiveTime;
+	private LocalDate startEffectiveTime;
 
 	@JsonProperty 
-	private Long endEffectiveTime;
+	private LocalDate endEffectiveTime;
 
 	@JsonProperty
 	private boolean includePreReleaseContent;
@@ -169,11 +182,11 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 		this.namespaceFilter = namespaceFilter;
 	}
 
-	void setStartEffectiveTime(final Long startEffectiveTime) {
+	void setStartEffectiveTime(final LocalDate startEffectiveTime) {
 		this.startEffectiveTime = startEffectiveTime;
 	}
 
-	void setEndEffectiveTime(final Long endEffectiveTime) {
+	void setEndEffectiveTime(final LocalDate endEffectiveTime) {
 		this.endEffectiveTime = endEffectiveTime;
 	}
 
@@ -216,10 +229,10 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 			this.transientEffectiveTime = "";
 		} else if ("NOW".equals(transientEffectiveTime)) {
 			// Special flag indicating "today"
-			this.transientEffectiveTime = EffectiveTimes.format(Dates.todayGmt(), DateFormats.SHORT);
+			this.transientEffectiveTime = EffectiveTimes.format(LocalDate.now(), DateFormats.SHORT);
 		} else {
 			// Otherwise, it should be a valid short date
-			Dates.parse(transientEffectiveTime, DateFormats.SHORT);
+			EffectiveTimes.parse(transientEffectiveTime, DateFormats.SHORT);
 			this.transientEffectiveTime = transientEffectiveTime;
 		}
 	}
@@ -239,7 +252,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 		final CodeSystem referenceCodeSystem = context.service(RepositoryCodeSystemProvider.class).get(referenceBranch);
 
 		// Step 2: retrieve code system versions that are visible from the reference branch
-		final TreeSet<CodeSystemVersionEntry> versionsToExport = getAllExportableCodeSystemVersions(context, referenceCodeSystem);
+		final TreeSet<CodeSystemVersion> versionsToExport = getAllExportableCodeSystemVersions(context, referenceCodeSystem);
 		
 		// Step 3: compute branches to export
 		final List<String> branchesToExport = computeBranchesToExport(referenceBranch, versionsToExport);
@@ -257,16 +270,16 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 			exportDirectory = createExportDirectory(exportId);
 
 			// get archive effective time based on latest version effective / transient effective time / current date
-			final Date archiveEffectiveDate = getArchiveEffectiveTime(context, versionsToExport);
-			final String archiveEffectiveDateShort = Dates.format(archiveEffectiveDate, TimeZone.getTimeZone("UTC"), DateFormats.SHORT);
+			final LocalDateTime archiveEffectiveDate = getArchiveEffectiveTime(context, versionsToExport);
+			final String archiveEffectiveDateShort = EffectiveTimes.format(archiveEffectiveDate.toLocalDate(), DateFormats.SHORT);
 			
 			// create main folder including release status and archive effective date
 			final Path releaseDirectory = createReleaseDirectory(exportDirectory, archiveEffectiveDate);
 
 			final Set<String> visitedComponentEffectiveTimes = newHashSet();
 			
-			final long effectiveTimeStart = startEffectiveTime != null ? startEffectiveTime : 0;
-			final long effectiveTimeEnd =  endEffectiveTime != null ? endEffectiveTime : Long.MAX_VALUE;
+			final long effectiveTimeStart = startEffectiveTime != null ? EffectiveTimes.getEffectiveTime(startEffectiveTime) : 0;
+			final long effectiveTimeEnd =  endEffectiveTime != null ? EffectiveTimes.getEffectiveTime(endEffectiveTime) : Long.MAX_VALUE;
 
 			// export content from the pre-computed version branches
 			for (String branch : branchesToExport) {
@@ -362,7 +375,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 		return branchToLanguageCodes;
 	}
 
-	private List<String> computeBranchesToExport(final String referenceBranch, final TreeSet<CodeSystemVersionEntry> versionsToExport) {
+	private List<String> computeBranchesToExport(final String referenceBranch, final TreeSet<CodeSystemVersion> versionsToExport) {
 		
 		final List<String> branchesToExport = newArrayList();
 		
@@ -406,9 +419,9 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 		return branchRangesToExport.build();
 	}
 
-	private Date getArchiveEffectiveTime(final RepositoryContext context, final TreeSet<CodeSystemVersionEntry> versionsToExport) {
+	private LocalDateTime getArchiveEffectiveTime(final RepositoryContext context, final TreeSet<CodeSystemVersion> versionsToExport) {
 
-		Optional<CodeSystemVersionEntry> lastVersionToExport;
+		Optional<CodeSystemVersion> lastVersionToExport;
 		
 		if (endEffectiveTime != null) {
 			lastVersionToExport = Optional.ofNullable(getVersionBefore(versionsToExport, endEffectiveTime));
@@ -416,35 +429,35 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 			lastVersionToExport = !versionsToExport.isEmpty() ? Optional.ofNullable(versionsToExport.last()) : Optional.empty();
 		}
 		
-		Optional<Date> latestModuleEffectiveTime = lastVersionToExport.flatMap(version -> getLatestModuleEffectiveTime(context, version));
+		Optional<LocalDate> latestModuleEffectiveTime = lastVersionToExport.flatMap(version -> getLatestModuleEffectiveTime(context, version));
 		
 		if (includePreReleaseContent) {
 			
 			if (!transientEffectiveTime.isEmpty()) {
-				return adjustCurrentHour(Dates.parse(transientEffectiveTime, DateFormats.SHORT));
+				return toCurrentHourTime(EffectiveTimes.parse(transientEffectiveTime, DateFormats.SHORT));
 			} else if (latestModuleEffectiveTime.isPresent()) {
-				return adjustCurrentHour(getNextEffectiveDate(latestModuleEffectiveTime.get().getTime()));
+				return toCurrentHourTime(getNextEffectiveDate(latestModuleEffectiveTime.get()));
 			} else if (lastVersionToExport.isPresent()) {
-				return adjustCurrentHour(getNextEffectiveDate(lastVersionToExport.get().getEffectiveDate()));
+				return toCurrentHourTime(getNextEffectiveDate(lastVersionToExport.get().getEffectiveTime()));
 			}
 			
 		} else {
 			
 			if (latestModuleEffectiveTime.isPresent()) {
-				return adjustCurrentHour(new Date(latestModuleEffectiveTime.get().getTime()));
+				return toCurrentHourTime(latestModuleEffectiveTime.get());
 			} else if (lastVersionToExport.isPresent()) {
-				return adjustCurrentHour(new Date(lastVersionToExport.get().getEffectiveDate()));
+				return toCurrentHourTime(lastVersionToExport.get().getEffectiveTime());
 			}
 			
 		}
 		
-		return adjustCurrentHour(Dates.parse(Dates.format(new Date(), TimeZone.getTimeZone("UTC"), DateFormats.DEFAULT)));
+		return toCurrentHourTime(LocalDate.now());
 	}
 
-	private CodeSystemVersionEntry getVersionBefore(final TreeSet<CodeSystemVersionEntry> versionsToExport, final long timestamp) {
-		CodeSystemVersionEntry versionBeforeEndEffectiveTime = null;
-		for (CodeSystemVersionEntry version : versionsToExport) {
-			if (version.getEffectiveDate() > timestamp) {
+	private CodeSystemVersion getVersionBefore(final TreeSet<CodeSystemVersion> versionsToExport, final LocalDate timestamp) {
+		CodeSystemVersion versionBeforeEndEffectiveTime = null;
+		for (CodeSystemVersion version : versionsToExport) {
+			if (version.getEffectiveTime().isAfter(timestamp)) {
 				break;
 			}
 			versionBeforeEndEffectiveTime = version;
@@ -452,10 +465,10 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 		return versionBeforeEndEffectiveTime;
 	}
 	
-	private Optional<Date> getLatestModuleEffectiveTime(final RepositoryContext context, final CodeSystemVersionEntry version) {
+	private Optional<LocalDate> getLatestModuleEffectiveTime(final RepositoryContext context, final CodeSystemVersion version) {
 		
-		final Optional<Date> sourceEffectiveTime = getLatestModuleEffectiveTime(context, version, SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME);
-		final Optional<Date> targetEffectiveTime = getLatestModuleEffectiveTime(context, version, SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME);
+		final Optional<LocalDate> sourceEffectiveTime = getLatestModuleEffectiveTime(context, version, SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME);
+		final Optional<LocalDate> targetEffectiveTime = getLatestModuleEffectiveTime(context, version, SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME);
 		
 		if (!sourceEffectiveTime.isPresent() && !targetEffectiveTime.isPresent()) {
 			return Optional.empty();
@@ -464,13 +477,13 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 		} else if (!targetEffectiveTime.isPresent()) {
 			return sourceEffectiveTime;
 		} else {
-			final Date sourceDate = sourceEffectiveTime.get();
-			final Date targetDate = targetEffectiveTime.get();
-			if (sourceDate.after(targetDate)) {
+			final LocalDate sourceDate = sourceEffectiveTime.get();
+			final LocalDate targetDate = targetEffectiveTime.get();
+			if (sourceDate.isAfter(targetDate)) {
 				return sourceEffectiveTime;
 			}
 			
-			if (targetDate.after(sourceDate)) {
+			if (targetDate.isAfter(sourceDate)) {
 				return targetEffectiveTime;
 			}
 			
@@ -479,7 +492,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 		}
 	}
 	
-	private Optional<Date> getLatestModuleEffectiveTime(final RepositoryContext context, final CodeSystemVersionEntry version, String field) {
+	private Optional<LocalDate> getLatestModuleEffectiveTime(final RepositoryContext context, final CodeSystemVersion version, String field) {
 		SnomedRefSetMemberSearchRequestBuilder requestBuilder = SnomedRequests.prepareSearchMember()
 				.filterByRefSet(Concepts.REFSET_MODULE_DEPENDENCY_TYPE)
 				.filterByActive(true)
@@ -492,56 +505,42 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 			}
 			
 			final Optional<SnomedReferenceSetMember> moduleDependencyMember = requestBuilder 
-				.build(version.getCodeSystemURI())
+				.build(version.getUri())
 				.execute(context.service(IEventBus.class))
 				.getSync(1, TimeUnit.MINUTES)
 				.first();
 			
 			return moduleDependencyMember.map(m -> {
-				return (Date) m.getProperties().get(field);
+				return (LocalDate) m.getProperties().get(field);
 			});
 	}
 
-	private Date adjustCurrentHour(final Date effectiveDate) {
-		
-		final Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-		
-		int currentHour = calendar.get(Calendar.HOUR_OF_DAY);
-		
-		calendar.setTimeInMillis(effectiveDate.getTime());
-		calendar.set(Calendar.HOUR_OF_DAY, currentHour);
-		calendar.set(Calendar.MINUTE, 0);
-		calendar.set(Calendar.SECOND, 0);
-		calendar.set(Calendar.MILLISECOND, 0);
-
-		return calendar.getTime();
+	private LocalDateTime toCurrentHourTime(final LocalDate effectiveDate) {
+		return LocalDateTime.of(effectiveDate, LocalTime.of(LocalTime.now().getHour(), 0));
 	}
 	
-	private Date getNextEffectiveDate(final long time) {
-		final Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-		calendar.setTimeInMillis(time);
-		calendar.roll(Calendar.DATE, true);
-		return calendar.getTime();
+	private LocalDate getNextEffectiveDate(final LocalDate date) {
+		return date.plus(1, ChronoUnit.DAYS);
 	}
 
-	private TreeSet<CodeSystemVersionEntry> getAllExportableCodeSystemVersions(final BranchContext context, final CodeSystem codeSystemEntry) {
+	private TreeSet<CodeSystemVersion> getAllExportableCodeSystemVersions(final BranchContext context, final CodeSystem codeSystemEntry) {
 		final String referenceBranch = context.path();
-		final TreeSet<CodeSystemVersionEntry> visibleVersions = newTreeSet(EFFECTIVE_DATE_ORDERING);
+		final TreeSet<CodeSystemVersion> visibleVersions = newTreeSet(EFFECTIVE_DATE_ORDERING);
 		collectExportableCodeSystemVersions(context, visibleVersions, codeSystemEntry, referenceBranch);
 		return visibleVersions;
 	}
 
-	private void collectExportableCodeSystemVersions(final RepositoryContext context, final Set<CodeSystemVersionEntry> versionsToExport, final CodeSystem codeSystemEntry,
+	private void collectExportableCodeSystemVersions(final RepositoryContext context, final Set<CodeSystemVersion> versionsToExport, final CodeSystem codeSystemEntry,
 			final String referenceBranch) {
 		
-		final Collection<CodeSystemVersionEntry> candidateVersions = newArrayList(getCodeSystemVersions(context, codeSystemEntry.getShortName()));
+		final List<CodeSystemVersion> candidateVersions = newArrayList(getCodeSystemVersions(context, codeSystemEntry.getShortName()));
 		
 		if (candidateVersions.isEmpty()) {
 			return;
 		}
 		
 		final Set<String> versionPaths = candidateVersions.stream()
-				.map(CodeSystemVersionEntry::getPath)
+				.map(CodeSystemVersion::getPath)
 				.collect(Collectors.toSet());
 
 		final Branches versionBranches = getBranches(context, versionPaths);
@@ -551,7 +550,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 		final Branch cutoffBranch = getBranch(context, referenceBranch);
 		final String latestVersionParentBranch = candidateVersions.stream()
 				.findFirst()
-				.map(CodeSystemVersionEntry::getParentBranchPath)
+				.map(CodeSystemVersion::getParentBranchPath)
 				.get();
 		final long cutoffBaseTimestamp = getCutoffBaseTimestamp(context, cutoffBranch, latestVersionParentBranch);
 
@@ -582,12 +581,9 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 		}
 	}
 
-	private Path createReleaseDirectory(final Path exportDirectory, final Date archiveEffectiveTime) {
-		
+	private Path createReleaseDirectory(final Path exportDirectory, final LocalDateTime archiveEffectiveTime) {
 		final String releaseStatus = includePreReleaseContent ? "BETA" : "PRODUCTION";
-		
-		String effectiveDate = Dates.format(archiveEffectiveTime, TimeZone.getTimeZone("UTC"), DateFormats.ISO_8601_UTC);
-		
+		final String effectiveDate = DateTimeFormatter.ofPattern(DateFormats.ISO_8601_UTC).format(archiveEffectiveTime);
 		final Path releaseDirectory = exportDirectory.resolve(String.format("SNOMEDCT_RF2_%s_%s", releaseStatus, effectiveDate));
 
 		try {
@@ -987,14 +983,13 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 		}
 	}
 
-	private static Collection<CodeSystemVersionEntry> getCodeSystemVersions(final RepositoryContext context, final String shortName) {
+	private static CodeSystemVersions getCodeSystemVersions(final RepositoryContext context, final String shortName) {
 		return CodeSystemRequests.prepareSearchCodeSystemVersion()
 				.all()
 				.filterByCodeSystemShortName(shortName)
 				.sortBy(SearchResourceRequest.SortField.descending(CodeSystemVersionEntry.Fields.EFFECTIVE_DATE))
 				.build()
-				.execute(context)
-				.getItems();
+				.execute(context);
 	}
 
 	private static Branch getBranch(final RepositoryContext context, final String path) {

@@ -19,8 +19,8 @@ import static com.google.common.collect.Lists.newArrayList;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -265,8 +265,8 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 			return ((SnomedCoreComponent) object).getId();
 		} else if (object instanceof Boolean) {
 			return BooleanUtils.toString((Boolean) object);
-		} else if (object instanceof Date) {
-			return getEffectiveTime((Date) object);
+		} else if (object instanceof LocalDate) {
+			return getEffectiveTime((LocalDate) object);
 		} else {
 			String serializedValue = String.valueOf(object);
 			if (SnomedRf2Headers.FIELD_QUERY.equals(additionalField) || SnomedRf2Headers.FIELD_OWL_EXPRESSION.equals(additionalField)) {

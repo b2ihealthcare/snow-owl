@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.core.rest;
+package com.b2international.snowowl.test.commons.codesystem;
 
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 
@@ -23,6 +23,7 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.test.commons.ApiTestConstants;
 import com.google.common.collect.ImmutableMap;
 
 import io.restassured.http.ContentType;
@@ -59,7 +60,7 @@ public abstract class CodeSystemRestRequests {
 			requestBody.put("branchPath", branchPath.getPath());
 		}
 		
-		return givenAuthenticatedRequest(SnomedApiTestConstants.ADMIN_API)
+		return givenAuthenticatedRequest(ApiTestConstants.ADMIN_API)
 				.contentType(ContentType.JSON)
 				.body(requestBody.build())
 				.post("/codesystems")
@@ -67,13 +68,13 @@ public abstract class CodeSystemRestRequests {
 	}
 
 	public static ValidatableResponse getCodeSystem(String id) {
-		return givenAuthenticatedRequest(SnomedApiTestConstants.ADMIN_API)
+		return givenAuthenticatedRequest(ApiTestConstants.ADMIN_API)
 				.get("/codesystems/{id}", id)
 				.then();
 	}
 
 	public static ValidatableResponse updateCodeSystem(String id, Map<?, ?> requestBody) {
-		return givenAuthenticatedRequest(SnomedApiTestConstants.ADMIN_API)
+		return givenAuthenticatedRequest(ApiTestConstants.ADMIN_API)
 				.contentType(ContentType.JSON)
 				.body(requestBody)
 				.put("codesystems/{id}", id)
@@ -81,7 +82,7 @@ public abstract class CodeSystemRestRequests {
 	}
 	
 	public static ValidatableResponse upgrade(CodeSystemURI codeSystem, CodeSystemURI extensionOf) {
-		return givenAuthenticatedRequest(SnomedApiTestConstants.ADMIN_API)
+		return givenAuthenticatedRequest(ApiTestConstants.ADMIN_API)
 				.contentType(ContentType.JSON)
 				.body(Map.of(
 					"extensionOf", extensionOf.toString()

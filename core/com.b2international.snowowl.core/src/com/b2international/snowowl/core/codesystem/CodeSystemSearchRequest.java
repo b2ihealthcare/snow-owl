@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.codesystem;
 
 import static com.google.common.collect.Lists.newArrayList;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -28,6 +29,7 @@ import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
+import com.b2international.snowowl.core.uri.CodeSystemURI;
 
 /**
  * @since 4.7
@@ -51,7 +53,11 @@ final class CodeSystemSearchRequest
 		/** Exact match for code system name */
 		NAME_EXACT,
 		/** HL7 registry OID **/
-		OID
+		OID, 
+		/**
+		 * Match CodeSystem by their Upgrade of property 
+		 */
+		UPGRADE_OF
 	}
 	
 	@Override
@@ -72,6 +78,7 @@ final class CodeSystemSearchRequest
 		addNameFilter(queryBuilder);
 		addNameExactFilter(queryBuilder);
 		addOidFilter(queryBuilder);
+		addUpgradeOfFilter(queryBuilder);
 		
 		return queryBuilder.build();
 	}
@@ -105,6 +112,13 @@ final class CodeSystemSearchRequest
 	private void addOidFilter(final ExpressionBuilder queryBuilder) {
 		if (containsKey(OptionKey.OID)) {
 			queryBuilder.filter(CodeSystemEntry.Expressions.oids(getCollection(OptionKey.OID, String.class)));
+		}
+	}
+	
+	private void addUpgradeOfFilter(ExpressionBuilder queryBuilder) {
+		if (containsKey(OptionKey.UPGRADE_OF)) {
+			Collection<CodeSystemURI> upgradeOfs = getCollection(OptionKey.UPGRADE_OF, CodeSystemURI.class);
+			queryBuilder.filter(CodeSystemEntry.Expressions.upgradeOf(upgradeOfs));
 		}
 	}
 	

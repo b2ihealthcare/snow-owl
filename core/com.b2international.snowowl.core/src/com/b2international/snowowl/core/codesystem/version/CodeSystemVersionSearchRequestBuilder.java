@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,12 @@ package com.b2international.snowowl.core.codesystem.version;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.util.Collection;
-import java.util.Date;
 
 import com.b2international.snowowl.core.codesystem.CodeSystemVersions;
 import com.b2international.snowowl.core.codesystem.version.CodeSystemVersionSearchRequest.OptionKey;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.RepositoryRequestBuilder;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
@@ -35,7 +36,6 @@ public final class CodeSystemVersionSearchRequestBuilder
  		implements RepositoryRequestBuilder<CodeSystemVersions> {
 
 	private String versionId;
-	private Date effectiveDate;
 	private String parentBranchPath;
 
 	public CodeSystemVersionSearchRequestBuilder() {
@@ -60,9 +60,21 @@ public final class CodeSystemVersionSearchRequestBuilder
 		return getSelf();
 	}
 	
-	public CodeSystemVersionSearchRequestBuilder filterByEffectiveDate(Date effectiveDate) {
-		this.effectiveDate = effectiveDate;
-		return getSelf();
+	/**
+	 * @param effectiveDate - the {@link LocalDate}'s epoch time in UTC to use to match versions
+	 * @return
+	 */
+	public CodeSystemVersionSearchRequestBuilder filterByEffectiveDate(LocalDate effectiveDate) {
+		if (effectiveDate != null) {
+			final long effectiveTime = EffectiveTimes.getEffectiveTime(effectiveDate);
+			return addOption(OptionKey.EFFECTIVE_TIME_START, effectiveTime).addOption(OptionKey.EFFECTIVE_TIME_END, effectiveTime);
+		} else {
+			return getSelf();
+		}
+	}
+	
+	public CodeSystemVersionSearchRequestBuilder filterByEffectiveDate(long effectiveDateStart, long effectiveDateEnd) {
+		return addOption(OptionKey.EFFECTIVE_TIME_START, effectiveDateStart).addOption(OptionKey.EFFECTIVE_TIME_END, effectiveDateEnd);
 	}
 	
 	/**
@@ -114,7 +126,6 @@ public final class CodeSystemVersionSearchRequestBuilder
 	protected SearchResourceRequest<RepositoryContext, CodeSystemVersions> createSearch() {
 		final CodeSystemVersionSearchRequest req = new CodeSystemVersionSearchRequest();
 		req.setVersionId(versionId);
-		req.setEffectiveDate(effectiveDate);
 		req.setParentBranchPath(parentBranchPath);
 		return req;
 	}

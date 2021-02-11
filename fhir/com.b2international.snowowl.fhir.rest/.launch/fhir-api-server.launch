@@ -36,6 +36,7 @@
         <setEntry value="com.fasterxml.jackson.dataformat.jackson-dataformat-smile@default:default"/>
         <setEntry value="com.fasterxml.jackson.dataformat.jackson-dataformat-yaml@default:default"/>
         <setEntry value="com.fasterxml.jackson.datatype.jackson-datatype-guava@default:default"/>
+        <setEntry value="com.fasterxml.jackson.datatype.jackson-datatype-jsr310@default:default"/>
         <setEntry value="com.fasterxml.jackson.module.jackson-module-afterburner@default:default"/>
         <setEntry value="com.google.guava@default:default"/>
         <setEntry value="com.google.inject@default:default"/>
@@ -73,6 +74,7 @@
         <setEntry value="org.antlr.runtime@default:default"/>
         <setEntry value="org.apache.ant@default:default"/>
         <setEntry value="org.apache.commons.codec@default:default"/>
+        <setEntry value="org.apache.commons.io@default:default"/>
         <setEntry value="org.apache.commons.lang@default:default"/>
         <setEntry value="org.apache.felix.gogo.command@default:default"/>
         <setEntry value="org.apache.felix.gogo.runtime@default:default"/>
@@ -177,7 +179,7 @@
         <setEntry value="org.sat4j.pb@default:default"/>
         <setEntry value="org.semanticweb.owl.owlapi@default:default"/>
         <setEntry value="org.snomed.otf.snomed-owl-toolkit@default:default"/>
-        <setEntry value="org.tukaani.xz*1.6.0@default:default"/>
+        <setEntry value="org.tukaani.xz@default:default"/>
         <setEntry value="org.yaml.snakeyaml@default:default"/>
         <setEntry value="slf4j.api@default:default"/>
         <setEntry value="stax2-api@default:default"/>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,15 @@
  */
 package com.b2international.snowowl.core.merge;
 
+import java.io.Serializable;
+
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 /**
  * @since 4.7
  */
 @JsonDeserialize(as = ConflictingAttributeImpl.class)
-public interface ConflictingAttribute {
+public interface ConflictingAttribute extends Serializable {
 
 	/**
 	 * String representation of the attribute that induced - or was involved in - the conflict

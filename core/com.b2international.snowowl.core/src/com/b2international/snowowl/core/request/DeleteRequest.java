@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import javax.validation.constraints.NotNull;
 import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.repository.RevisionDocument;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -28,6 +29,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @since 4.5
  */
 public final class DeleteRequest implements Request<TransactionContext, Boolean>, BranchAccessControl {
+
+	private static final long serialVersionUID = 1L;
 
 	@JsonProperty
 	@NotNull
@@ -47,7 +50,11 @@ public final class DeleteRequest implements Request<TransactionContext, Boolean>
 	
 	@Override
 	public Boolean execute(TransactionContext context) {
-		context.delete(context.lookup(componentId, type), force);
+		try {
+			context.delete(context.lookup(componentId, type), force);
+		} catch (ComponentNotFoundException e) {
+			// ignore, probably already deleted
+		}
 		return Boolean.TRUE;
 	}
 

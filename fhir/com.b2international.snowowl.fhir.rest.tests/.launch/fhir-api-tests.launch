@@ -49,6 +49,7 @@
         <setEntry value="com.fasterxml.jackson.dataformat.jackson-dataformat-smile@default:default"/>
         <setEntry value="com.fasterxml.jackson.dataformat.jackson-dataformat-xml@default:default"/>
         <setEntry value="com.fasterxml.jackson.dataformat.jackson-dataformat-yaml@default:default"/>
+        <setEntry value="com.fasterxml.jackson.datatype.jackson-datatype-jsr310@default:default"/>
         <setEntry value="com.fasterxml.jackson.module.jackson-module-afterburner@default:default"/>
         <setEntry value="com.fasterxml.jackson.module.jackson-module-jaxb-annotations@default:default"/>
         <setEntry value="com.google.guava@default:default"/>
@@ -202,6 +203,7 @@
         <setEntry value="com.b2international.collections.fastutil@default:false"/>
         <setEntry value="com.b2international.collections.jackson@default:default"/>
         <setEntry value="com.b2international.commons@default:default"/>
+        <setEntry value="com.b2international.index.tests.tools@default:default"/>
         <setEntry value="com.b2international.index@default:default"/>
         <setEntry value="com.b2international.mapdb@default:default"/>
         <setEntry value="com.b2international.restassured-all@default:default"/>

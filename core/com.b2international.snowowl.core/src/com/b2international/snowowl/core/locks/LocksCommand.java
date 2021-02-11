@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,7 +65,7 @@ public final class LocksCommand extends Command {
 	@Override
 	public void run(CommandLineStream out) {
 		final IOperationLockManager lockManager = ApplicationContext.getInstance().getService(IOperationLockManager.class);
-		final List<OperationLockInfo> locks = ((DatastoreOperationLockManager) lockManager).getLocks();
+		final List<OperationLockInfo> locks = ((DefaultOperationLockManager) lockManager).getLocks();
 		
 		if (locks.isEmpty()) {
 			out.println("No locks are currently granted on this server.");
@@ -112,13 +112,8 @@ public final class LocksCommand extends Command {
 			
 			final IOperationLockManager lockManager = getLockManager();
 			final DatastoreLockContext context = new DatastoreLockContext(User.SYSTEM.getUsername(), DatastoreLockContextDescriptions.MAINTENANCE);
-			
-			try {
-				lockManager.lock(context, 3000L, target);
-				out.println("Acquired lock for %s.", target);
-			} catch (final OperationLockException | InterruptedException e) {
-				out.println(e);
-			}
+			lockManager.lock(context, 3000L, target);
+			out.println("Acquired lock for %s.", target);
 		}
 		
 	}
@@ -150,26 +145,22 @@ public final class LocksCommand extends Command {
 				}
 			}
 
-			try {
-				if (lockId != null) {
-					getLockManager().unlockById(lockId);
-					out.println("Released lock by ID '%s'.", lockId);
-				} else if (target.equals(DatastoreLockTarget.ALL)) {
-					getLockManager().unlockAll();
-					out.println("Released ALL locks.");
-				} else {
-					getLockManager().unlock(CONSOLE_CONTEXT, target);
-					out.println("Released lock previously acquired for resource '%s'.", target);
-				}
-			} catch (final OperationLockException e) {
-				out.print(e);
+			if (lockId != null) {
+				getLockManager().unlockById(lockId);
+				out.println("Released lock by ID '%s'.", lockId);
+			} else if (target.equals(DatastoreLockTarget.ALL)) {
+				getLockManager().unlockAll();
+				out.println("Released ALL locks.");
+			} else {
+				getLockManager().unlock(CONSOLE_CONTEXT, target);
+				out.println("Released lock previously acquired for resource '%s'.", target);
 			}
 		}
 		
 	}
 
-	private static DatastoreOperationLockManager getLockManager() {
-		return (DatastoreOperationLockManager) ApplicationContext.getInstance().getService(IOperationLockManager.class);
+	private static DefaultOperationLockManager getLockManager() {
+		return (DefaultOperationLockManager) ApplicationContext.getInstance().getService(IOperationLockManager.class);
 	}
 	
 	private static DatastoreLockTarget parseLockTarget(final String lockTargetOrAll) {

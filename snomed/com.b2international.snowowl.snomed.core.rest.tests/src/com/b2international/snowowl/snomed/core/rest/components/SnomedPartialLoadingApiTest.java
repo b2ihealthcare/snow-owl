@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,11 @@
  */
 package com.b2international.snowowl.snomed.core.rest.components;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.date.DateFormats;
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.request.CodeSystemResourceRequest;
 import com.b2international.snowowl.core.request.RevisionIndexReadRequest;
@@ -54,8 +52,8 @@ public class SnomedPartialLoadingApiTest extends AbstractSnomedApiTest {
 		)).execute(ApplicationContext.getServiceForClass(Environment.class));
 		hits.forEach(hit -> {
 			// simple assertions to parse the ID as SCT ID and effective time as short date
-			assertNotNull(SnomedIdentifiers.create(hit[0]));
-			assertNotNull(EffectiveTimes.parse(hit[1], DateFormats.SHORT));
+			assertTrue(SnomedIdentifiers.isValid(hit[0]));
+			Long.valueOf(hit[1]);
 		});
 	}
 	

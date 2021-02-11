@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,15 +17,18 @@ package com.b2international.snowowl.core.date;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 import javax.annotation.Nullable;
 
-import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.commons.exceptions.BadRequestException;
 
 /**
- * Effective Times should be always in GMT time. Use this class when working with effective times in any ontology, this will ensure the proper parsing
- * and formatting of them.
+ * Effective Times should be always in GMT time. Use this class when working with effective times in any ontology, this will ensure proper parsing and formatting of them.
  * 
  * @since 3.9
  */
@@ -90,42 +93,49 @@ public abstract class EffectiveTimes {
 			if (((long) effectiveTime) == UNSET_EFFECTIVE_TIME) {
 				return unsetEffectiveTimeLabel;
 			}
-			return Dates.formatByGmt(toDate((Long) effectiveTime), datePattern);
+			return DateTimeFormatter.ofPattern(datePattern).format(toDate((long) effectiveTime));
+		} else if (effectiveTime instanceof LocalDate) {
+			return DateTimeFormatter.ofPattern(datePattern).format((LocalDate) effectiveTime);
+		} else {
+			throw new IllegalArgumentException(String.format("Unsupported effectiveTime representation to format to String. Got: %s. Acceptable types are: java.lang.Long and java.time.LocalDate.", effectiveTime.getClass()));
 		}
-		return Dates.formatByGmt(effectiveTime, datePattern);
 	}
 
 	/**
-	 * Parses the given effectiveTime with the {@value DateFormats#DEFAULT} format and returns the parsed {@link Date}.
+	 * Parses the given effectiveTime with the {@value DateFormats#DEFAULT} format and returns the parsed {@link LocalDate}.
 	 * 
 	 * @param effectiveTime
 	 *            - the effectiveTime to parse, cannot be <code>null</code>
 	 * @return - the parsed date
-	 * @throws SnowowlRuntimeException
+	 * @throws IllegalArgumentException
 	 *             - if a {@link ParseException} is throw during execution
 	 */
-	public static Date parse(String effectiveTime) {
+	public static LocalDate parse(String effectiveTime) {
 		return parse(effectiveTime, DateFormats.DEFAULT);
 	}
 
 	/**
-	 * Parses the given effectiveTime with the given datePattern and returns the parsed {@link Date}.
+	 * Parses the given effectiveTime with the given datePattern and returns the parsed {@link LocalDate}.
 	 * 
 	 * @param effectiveTime
 	 *            - the effectiveTime to parse, cannot be <code>null</code>
 	 * @param datePattern
 	 *            - the pattern to use, cannot be <code>null</code>
 	 * @return - the parsed date or <code>null</code> if the given effectiveTime value equals with the value {@link #UNSET_EFFECTIVE_TIME_LABEL}.
-	 * @throws SnowowlRuntimeException
+	 * @throws IllegalArgumentException
 	 *             - if a {@link ParseException} is throw during execution
 	 * @throws NullPointerException
 	 *             - if one of the arguments was <code>null</code>
 	 */
-	public static Date parse(String effectiveTime, String datePattern) {
+	public static LocalDate parse(String effectiveTime, String datePattern) {
 		if (UNSET_EFFECTIVE_TIME_LABEL.equals(effectiveTime)) {
 			return null;
 		}
-		return Dates.parse(effectiveTime, datePattern);
+		try {
+			return LocalDate.parse(effectiveTime, DateTimeFormatter.ofPattern(datePattern));
+		} catch (DateTimeParseException e) {
+			throw new BadRequestException(String.format("'%s' cannot be parsed into date with format '%s'", effectiveTime, datePattern));
+		}
 	}
 
 	/**
@@ -138,39 +148,41 @@ public abstract class EffectiveTimes {
 	 *            - a valid {@link SimpleDateFormat} date pattern
 	 * @return the number of milliseconds from the effective time String
 	 * @see DateFormats
-	 * @see #getEffectiveTime(Date)
+	 * @see #getEffectiveTime(LocalDate)
 	 */
 	public static final long getEffectiveTime(@Nullable String effectiveTime, String datePattern) {
 		return getEffectiveTime(parse(effectiveTime, datePattern));
 	}
 
 	/**
-	 * Returns the milliseconds representation of an effective time Date. If the effectiveTime is <code>null</code> it returns the
-	 * {@value #UNSET_EFFECTIVE_TIME} value.
+	 * Returns the milliseconds representation of an effective time {@link LocalDate} in UTC. 
+	 * If the effectiveTime is <code>null</code> it returns the {@value #UNSET_EFFECTIVE_TIME} value.
 	 * 
 	 * @param effectiveTime
 	 *            - to extract time from
-	 * @return the number of milliseconds from the date object
-	 * @see #getEffectiveTime(String, String)
+	 * @return the number of milliseconds from the {@link LocalDate} object at UTC
 	 */
-	public static final long getEffectiveTime(@Nullable Date effectiveTime) {
+	public static final long getEffectiveTime(@Nullable LocalDate effectiveTime) {
 		if (null == effectiveTime) {
 			return UNSET_EFFECTIVE_TIME;
 		}
-		return effectiveTime.getTime();
+		return effectiveTime
+					.atStartOfDay(ZoneOffset.UTC)
+					.toInstant()
+					.toEpochMilli();
 	}
 
 	/**
-	 * Converts the given effectiveTime timestamp to a {@link Date} if it is not equals to {@link #UNSET_EFFECTIVE_TIME}, in this case return
+	 * Converts the given effectiveTime timestamp to a {@link LocalDate} if it is not equals to {@link #UNSET_EFFECTIVE_TIME}, in this case return
 	 * <code>null</code>.
 	 * 
 	 * @param effectiveTime
 	 *            - the effectiveTime to convert
-	 * @return - the converted date, can be <code>null</code>
+	 * @return - the converted {@link LocalDate}, can be <code>null</code>
 	 */
 	@Nullable
-	public static Date toDate(long effectiveTime) {
-		return UNSET_EFFECTIVE_TIME == effectiveTime ? null : new Date(effectiveTime);
+	public static LocalDate toDate(long effectiveTime) {
+		return UNSET_EFFECTIVE_TIME == effectiveTime ? null : Instant.ofEpochMilli(effectiveTime).atZone(ZoneOffset.UTC).toLocalDate();
 	}
 
 	/**

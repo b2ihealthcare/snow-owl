@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 package com.b2international.snowowl.core.codesystem;
-
-import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
@@ -47,6 +45,6 @@ public interface CodeSystemVersionProperties {
 	 * @return the effective date of this code system version (can be {@code null})
 	 */
 	@JsonFormat(shape=Shape.STRING, pattern="yyyyMMdd")
-	Date getEffectiveDate();
+	String getEffectiveDate();
 	
 }

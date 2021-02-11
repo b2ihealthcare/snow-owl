@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.Objects;
 
 import com.b2international.snowowl.core.date.DateFormats;
@@ -41,8 +41,8 @@ final class SnomedModuleDependencyMemberUpdateDelegate extends SnomedRefSetMembe
 
 		if (hasProperty(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME)) {
 			String sourceEffectiveTime = getProperty(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME);
-			Date newSourceEffectiveTime = Strings.isNullOrEmpty(sourceEffectiveTime) ? null : EffectiveTimes.parse(sourceEffectiveTime, DateFormats.SHORT);
-			Date currentSourceEffectiveTime = EffectiveTimes.toDate(original.getSourceEffectiveTime());
+			LocalDate newSourceEffectiveTime = Strings.isNullOrEmpty(sourceEffectiveTime) ? null : EffectiveTimes.parse(sourceEffectiveTime, DateFormats.SHORT);
+			LocalDate currentSourceEffectiveTime = EffectiveTimes.toDate(original.getSourceEffectiveTime());
 			if (!Objects.equals(newSourceEffectiveTime, currentSourceEffectiveTime)) {
 				member.field(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME, EffectiveTimes.getEffectiveTime(newSourceEffectiveTime));
 				changed |= true;
@@ -51,8 +51,8 @@ final class SnomedModuleDependencyMemberUpdateDelegate extends SnomedRefSetMembe
 
 		if (hasProperty(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME)) {
 			String targetEffectiveTime = getProperty(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME);
-			Date newTargetEffectiveTime = Strings.isNullOrEmpty(targetEffectiveTime) ? null : EffectiveTimes.parse(targetEffectiveTime, DateFormats.SHORT);
-			Date currentTargetEffectiveTime = EffectiveTimes.toDate(original.getTargetEffectiveTime());
+			LocalDate newTargetEffectiveTime = Strings.isNullOrEmpty(targetEffectiveTime) ? null : EffectiveTimes.parse(targetEffectiveTime, DateFormats.SHORT);
+			LocalDate currentTargetEffectiveTime = EffectiveTimes.toDate(original.getTargetEffectiveTime());
 			if (!Objects.equals(newTargetEffectiveTime, currentTargetEffectiveTime)) {
 				member.field(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME, EffectiveTimes.getEffectiveTime(newTargetEffectiveTime));
 				changed |= true;

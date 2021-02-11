@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.RepositoryRequestBuilder;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
+import com.b2international.snowowl.core.uri.CodeSystemURI;
 
 /**
  * @since 4.7
@@ -55,9 +56,18 @@ public final class CodeSystemSearchRequestBuilder
 	public CodeSystemSearchRequestBuilder filterByOids(Iterable<String> oids) {
 		return addOption(OptionKey.OID, oids);
 	}
+	
+	public CodeSystemSearchRequestBuilder filterByUpgradeOf(CodeSystemURI upgradeOf) {
+		return addOption(OptionKey.UPGRADE_OF, upgradeOf);
+	}
+	
+	public CodeSystemSearchRequestBuilder filterByUpgradeOf(Iterable<CodeSystemURI> upgradeOfs) {
+		return addOption(OptionKey.UPGRADE_OF, upgradeOfs);
+	}
 
 	@Override
 	protected SearchResourceRequest<RepositoryContext, CodeSystems> createSearch() {
 		return new CodeSystemSearchRequest();
 	}
+
 }
