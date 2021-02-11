@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -209,7 +209,6 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 				.containerIconId(referenceSet.getIconId())
 				.containerTerm(referenceSet.getPt().getTerm())
 				.containerSetURI(ComponentURI.of(codeSystemURI.getCodeSystem(), SnomedTerminologyComponentConstants.REFSET_NUMBER, member.getReferenceSetId()))
-				.active(true)
 				.sourceIconId(iconId)
 				.sourceTerm(term)
 				.sourceComponentURI(ComponentURI.of(codeSystemURI.getCodeSystem(), terminologyComponentId, member.getReferencedComponentId()))
@@ -268,9 +267,12 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 			final Collection<String> refsetId = search.getCollection(OptionKey.SET, String.class);
 			requestBuilder.filterByRefSet(refsetId);
 		}
+		
+		if (search.containsKey(OptionKey.ACTIVE)) {
+			requestBuilder.filterByActive(search.getBoolean(OptionKey.ACTIVE));
+		}
 
 		return requestBuilder
-				.filterByActive(true)
 				.filterByRefSetType(SnomedRefSetUtil.getMapTypeRefSets())
 				.filterByReferencedComponent(referencedComponentIds)
 				.filterByComponentIds(componentIds)
