@@ -15,21 +15,18 @@
  */
 package com.b2international.snowowl.snomed.etl.etl.impl;
 
-import com.b2international.snowowl.snomed.etl.etl.EtlPackage;
-import com.b2international.snowowl.snomed.etl.etl.IntegerReplacementSlot;
-import com.b2international.snowowl.snomed.etl.etl.SlotInteger;
-
 import java.util.Collection;
 
 import org.eclipse.emf.common.notify.NotificationChain;
-
 import org.eclipse.emf.common.util.EList;
-
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.InternalEObject;
-
 import org.eclipse.emf.ecore.util.EObjectContainmentEList;
 import org.eclipse.emf.ecore.util.InternalEList;
+
+import com.b2international.snowowl.snomed.etl.etl.EtlPackage;
+import com.b2international.snowowl.snomed.etl.etl.IntegerReplacementSlot;
+import com.b2international.snowowl.snomed.etl.etl.SlotInteger;
 
 /**
  * <!-- begin-user-doc -->

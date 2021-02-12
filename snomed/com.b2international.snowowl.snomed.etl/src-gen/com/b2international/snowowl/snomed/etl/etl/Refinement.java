@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.etl.etl;
 
 import org.eclipse.emf.common.util.EList;
-
 import org.eclipse.emf.ecore.EObject;
 
 /**

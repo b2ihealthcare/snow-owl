@@ -15,11 +15,12 @@
  */
 package com.b2international.snowowl.snomed.etl.parser.antlr;
 
+import org.eclipse.xtext.parser.antlr.AbstractAntlrParser;
+import org.eclipse.xtext.parser.antlr.XtextTokenStream;
+
 import com.b2international.snowowl.snomed.etl.parser.antlr.internal.InternalEtlParser;
 import com.b2international.snowowl.snomed.etl.services.EtlGrammarAccess;
 import com.google.inject.Inject;
-import org.eclipse.xtext.parser.antlr.AbstractAntlrParser;
-import org.eclipse.xtext.parser.antlr.XtextTokenStream;
 
 public class EtlParser extends AbstractAntlrParser {
 

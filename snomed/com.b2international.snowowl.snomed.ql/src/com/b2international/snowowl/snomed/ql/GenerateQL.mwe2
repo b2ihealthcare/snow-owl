@@ -90,7 +90,7 @@ Workflow {
 	 bean = org.eclipse.emf.mwe.utils.StandaloneSetup {
     	scanClassPath = true
     	platformUri = "${rootPath}/.."
-    	registerGeneratedEPackage = "com.b2international.snowowl.snomed.ecl.ecl.EclPackage"
-    	registerGenModelFile = "platform:/resource/com.b2international.snowowl.snomed.ecl/model/generated/Ecl.genmodel"
+    	registerGeneratedEPackage = "com.b2international.snomed.ecl.ecl.EclPackage"
+    	registerGenModelFile = "platform:/resource/com.b2international.snomed.ecl/model/generated/Ecl.genmodel"
     }
 }

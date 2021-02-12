@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.etl.parser.antlr;
 
 import java.io.InputStream;
+
 import org.eclipse.xtext.parser.antlr.IAntlrTokenFileProvider;
 
 public class EtlAntlrTokenFileProvider implements IAntlrTokenFileProvider {

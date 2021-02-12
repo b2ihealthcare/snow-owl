@@ -15,18 +15,16 @@
  */
 package com.b2international.snowowl.snomed.etl.etl.impl;
 
+import org.eclipse.emf.common.notify.Notification;
+import org.eclipse.emf.common.notify.NotificationChain;
+import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.InternalEObject;
+import org.eclipse.emf.ecore.impl.ENotificationImpl;
+
 import com.b2international.snowowl.snomed.etl.etl.EtlPackage;
 import com.b2international.snowowl.snomed.etl.etl.SlotIntegerMaximumValue;
 import com.b2international.snowowl.snomed.etl.etl.SlotIntegerMinimumValue;
 import com.b2international.snowowl.snomed.etl.etl.SlotIntegerRange;
-
-import org.eclipse.emf.common.notify.Notification;
-import org.eclipse.emf.common.notify.NotificationChain;
-
-import org.eclipse.emf.ecore.EClass;
-import org.eclipse.emf.ecore.InternalEObject;
-
-import org.eclipse.emf.ecore.impl.ENotificationImpl;
 
 /**
  * <!-- begin-user-doc -->

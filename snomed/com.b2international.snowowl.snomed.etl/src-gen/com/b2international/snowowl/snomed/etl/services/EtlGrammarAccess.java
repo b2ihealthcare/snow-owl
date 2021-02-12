@@ -15,21 +15,15 @@
  */
 package com.b2international.snowowl.snomed.etl.services;
 
-import com.b2international.snowowl.snomed.ecl.services.EclGrammarAccess;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
 import java.util.List;
-import org.eclipse.xtext.Action;
-import org.eclipse.xtext.Alternatives;
-import org.eclipse.xtext.Assignment;
-import org.eclipse.xtext.Grammar;
-import org.eclipse.xtext.GrammarUtil;
-import org.eclipse.xtext.Group;
-import org.eclipse.xtext.ParserRule;
-import org.eclipse.xtext.RuleCall;
-import org.eclipse.xtext.TerminalRule;
+
+import org.eclipse.xtext.*;
 import org.eclipse.xtext.service.AbstractElementFinder.AbstractGrammarElementFinder;
 import org.eclipse.xtext.service.GrammarProvider;
+
+import com.b2international.snomed.ecl.services.EclGrammarAccess;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 
 @Singleton
 public class EtlGrammarAccess extends AbstractGrammarElementFinder {

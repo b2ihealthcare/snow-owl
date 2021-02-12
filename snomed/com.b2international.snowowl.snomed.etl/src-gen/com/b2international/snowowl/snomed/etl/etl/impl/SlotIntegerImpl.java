@@ -15,12 +15,11 @@
  */
 package com.b2international.snowowl.snomed.etl.etl.impl;
 
+import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
+
 import com.b2international.snowowl.snomed.etl.etl.EtlPackage;
 import com.b2international.snowowl.snomed.etl.etl.SlotInteger;
-
-import org.eclipse.emf.ecore.EClass;
-
-import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
 
 /**
  * <!-- begin-user-doc -->

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,71 +15,8 @@
  */
 package com.b2international.snowowl.snomed.ql.serializer;
 
-import com.b2international.snowowl.snomed.ecl.ecl.AncestorOf;
-import com.b2international.snowowl.snomed.ecl.ecl.AncestorOrSelfOf;
-import com.b2international.snowowl.snomed.ecl.ecl.AndExpressionConstraint;
-import com.b2international.snowowl.snomed.ecl.ecl.AndRefinement;
-import com.b2international.snowowl.snomed.ecl.ecl.Any;
-import com.b2international.snowowl.snomed.ecl.ecl.AttributeConstraint;
-import com.b2international.snowowl.snomed.ecl.ecl.AttributeValueEquals;
-import com.b2international.snowowl.snomed.ecl.ecl.AttributeValueNotEquals;
-import com.b2international.snowowl.snomed.ecl.ecl.BooleanValueEquals;
-import com.b2international.snowowl.snomed.ecl.ecl.BooleanValueNotEquals;
-import com.b2international.snowowl.snomed.ecl.ecl.Cardinality;
-import com.b2international.snowowl.snomed.ecl.ecl.ChildOf;
-import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueEquals;
-import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueGreaterThan;
-import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueGreaterThanEquals;
-import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueLessThan;
-import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueLessThanEquals;
-import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueNotEquals;
-import com.b2international.snowowl.snomed.ecl.ecl.DescendantOf;
-import com.b2international.snowowl.snomed.ecl.ecl.DescendantOrSelfOf;
-import com.b2international.snowowl.snomed.ecl.ecl.DottedExpressionConstraint;
-import com.b2international.snowowl.snomed.ecl.ecl.EclAttributeGroup;
-import com.b2international.snowowl.snomed.ecl.ecl.EclConceptReference;
-import com.b2international.snowowl.snomed.ecl.ecl.EclPackage;
-import com.b2international.snowowl.snomed.ecl.ecl.ExclusionExpressionConstraint;
-import com.b2international.snowowl.snomed.ecl.ecl.IntegerValueEquals;
-import com.b2international.snowowl.snomed.ecl.ecl.IntegerValueGreaterThan;
-import com.b2international.snowowl.snomed.ecl.ecl.IntegerValueGreaterThanEquals;
-import com.b2international.snowowl.snomed.ecl.ecl.IntegerValueLessThan;
-import com.b2international.snowowl.snomed.ecl.ecl.IntegerValueLessThanEquals;
-import com.b2international.snowowl.snomed.ecl.ecl.IntegerValueNotEquals;
-import com.b2international.snowowl.snomed.ecl.ecl.MemberOf;
-import com.b2international.snowowl.snomed.ecl.ecl.NestedExpression;
-import com.b2international.snowowl.snomed.ecl.ecl.NestedRefinement;
-import com.b2international.snowowl.snomed.ecl.ecl.OrExpressionConstraint;
-import com.b2international.snowowl.snomed.ecl.ecl.OrRefinement;
-import com.b2international.snowowl.snomed.ecl.ecl.ParentOf;
-import com.b2international.snowowl.snomed.ecl.ecl.RefinedExpressionConstraint;
-import com.b2international.snowowl.snomed.ecl.ecl.Script;
-import com.b2international.snowowl.snomed.ecl.ecl.StringValueEquals;
-import com.b2international.snowowl.snomed.ecl.ecl.StringValueNotEquals;
-import com.b2international.snowowl.snomed.ecl.serializer.EclSemanticSequencer;
-import com.b2international.snowowl.snomed.ql.ql.AcceptableInFilter;
-import com.b2international.snowowl.snomed.ql.ql.ActiveFilter;
-import com.b2international.snowowl.snomed.ql.ql.CaseSignificanceFilter;
-import com.b2international.snowowl.snomed.ql.ql.ConjunctionFilter;
-import com.b2international.snowowl.snomed.ql.ql.DisjunctionFilter;
-import com.b2international.snowowl.snomed.ql.ql.DomainQuery;
-import com.b2international.snowowl.snomed.ql.ql.ExclusionFilter;
-import com.b2international.snowowl.snomed.ql.ql.LanguageCodeFilter;
-import com.b2international.snowowl.snomed.ql.ql.LanguageRefSetFilter;
-import com.b2international.snowowl.snomed.ql.ql.ModuleFilter;
-import com.b2international.snowowl.snomed.ql.ql.NestedFilter;
-import com.b2international.snowowl.snomed.ql.ql.NestedQuery;
-import com.b2international.snowowl.snomed.ql.ql.PreferredInFilter;
-import com.b2international.snowowl.snomed.ql.ql.QlPackage;
-import com.b2international.snowowl.snomed.ql.ql.Query;
-import com.b2international.snowowl.snomed.ql.ql.QueryConjunction;
-import com.b2international.snowowl.snomed.ql.ql.QueryDisjunction;
-import com.b2international.snowowl.snomed.ql.ql.QueryExclusion;
-import com.b2international.snowowl.snomed.ql.ql.TermFilter;
-import com.b2international.snowowl.snomed.ql.ql.TypeFilter;
-import com.b2international.snowowl.snomed.ql.services.QLGrammarAccess;
-import com.google.inject.Inject;
 import java.util.Set;
+
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.xtext.Action;
@@ -88,6 +25,12 @@ import org.eclipse.xtext.ParserRule;
 import org.eclipse.xtext.serializer.ISerializationContext;
 import org.eclipse.xtext.serializer.acceptor.SequenceFeeder;
 import org.eclipse.xtext.serializer.sequencer.ITransientValueService.ValueTransient;
+
+import com.b2international.snomed.ecl.ecl.*;
+import com.b2international.snomed.ecl.serializer.EclSemanticSequencer;
+import com.b2international.snowowl.snomed.ql.ql.*;
+import com.b2international.snowowl.snomed.ql.services.QLGrammarAccess;
+import com.google.inject.Inject;
 
 @SuppressWarnings("all")
 public class QLSemanticSequencer extends EclSemanticSequencer {

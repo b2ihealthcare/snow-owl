@@ -15,14 +15,12 @@
  */
 package com.b2international.snowowl.snomed.etl.etl.impl;
 
+import org.eclipse.emf.common.notify.Notification;
+import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.impl.ENotificationImpl;
+
 import com.b2international.snowowl.snomed.etl.etl.ConcreteValueReplacementSlot;
 import com.b2international.snowowl.snomed.etl.etl.EtlPackage;
-
-import org.eclipse.emf.common.notify.Notification;
-
-import org.eclipse.emf.ecore.EClass;
-
-import org.eclipse.emf.ecore.impl.ENotificationImpl;
 
 /**
  * <!-- begin-user-doc -->

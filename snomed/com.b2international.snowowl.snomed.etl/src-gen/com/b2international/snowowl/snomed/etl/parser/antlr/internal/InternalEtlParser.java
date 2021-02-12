@@ -1,24 +1,13 @@
 package com.b2international.snowowl.snomed.etl.parser.antlr.internal;
 
-import org.eclipse.xtext.*;
-import org.eclipse.xtext.parser.*;
-import org.eclipse.xtext.parser.impl.*;
-import org.eclipse.emf.ecore.util.EcoreUtil;
+import org.antlr.runtime.*;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.parser.antlr.AbstractInternalAntlrParser;
+import org.eclipse.xtext.parser.antlr.AntlrDatatypeRuleToken;
 import org.eclipse.xtext.parser.antlr.XtextTokenStream;
 import org.eclipse.xtext.parser.antlr.XtextTokenStream.HiddenTokens;
-import org.eclipse.xtext.parser.antlr.AntlrDatatypeRuleToken;
+
 import com.b2international.snowowl.snomed.etl.services.EtlGrammarAccess;
-
-
-
-import org.antlr.runtime.*;
-import java.util.Stack;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
 @SuppressWarnings("all")
 public class InternalEtlParser extends AbstractInternalAntlrParser {
     public static final String[] tokenNames = new String[] {
@@ -2034,7 +2023,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
                       							current,
                       							"constraint",
                       							lv_constraint_5_0,
-                      							"com.b2international.snowowl.snomed.ecl.Ecl.ExpressionConstraint");
+                      							"com.b2international.snomed.ecl.Ecl.ExpressionConstraint");
                       						afterParserOrEnumRuleCall();
                       					
                     }
@@ -2287,7 +2276,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
                       							current,
                       							"constraint",
                       							lv_constraint_5_0,
-                      							"com.b2international.snowowl.snomed.ecl.Ecl.ExpressionConstraint");
+                      							"com.b2international.snomed.ecl.Ecl.ExpressionConstraint");
                       						afterParserOrEnumRuleCall();
                       					
                     }
@@ -3225,7 +3214,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
                       							current,
                       							"values",
                       							lv_values_5_0,
-                      							"com.b2international.snowowl.snomed.ecl.Ecl.STRING");
+                      							"com.b2international.snomed.ecl.Ecl.STRING");
                       					
                     }
 
@@ -3267,7 +3256,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
                     	      							current,
                     	      							"values",
                     	      							lv_values_6_0,
-                    	      							"com.b2international.snowowl.snomed.ecl.Ecl.STRING");
+                    	      							"com.b2international.snomed.ecl.Ecl.STRING");
                     	      					
                     	    }
 
@@ -4057,7 +4046,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
               						current,
               						"min",
               						lv_min_1_0,
-              						"com.b2international.snowowl.snomed.ecl.Ecl.NonNegativeInteger");
+              						"com.b2international.snomed.ecl.Ecl.NonNegativeInteger");
               					afterParserOrEnumRuleCall();
               				
             }
@@ -4098,7 +4087,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
               						current,
               						"max",
               						lv_max_3_0,
-              						"com.b2international.snowowl.snomed.ecl.Ecl.MaxValue");
+              						"com.b2international.snomed.ecl.Ecl.MaxValue");
               					afterParserOrEnumRuleCall();
               				
             }
@@ -4455,7 +4444,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
                       							current,
                       							"id",
                       							lv_id_1_0,
-                      							"com.b2international.snowowl.snomed.ecl.Ecl.SnomedIdentifier");
+                      							"com.b2international.snomed.ecl.Ecl.SnomedIdentifier");
                       						afterParserOrEnumRuleCall();
                       					
                     }
@@ -4494,7 +4483,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
                               							current,
                               							"term",
                               							lv_term_2_0,
-                              							"com.b2international.snowowl.snomed.ecl.Ecl.TERM_STRING");
+                              							"com.b2international.snomed.ecl.Ecl.TERM_STRING");
                               					
                             }
 
@@ -5114,7 +5103,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
               					current,
               					"value",
               					lv_value_0_0,
-              					"com.b2international.snowowl.snomed.ecl.Ecl.STRING");
+              					"com.b2international.snomed.ecl.Ecl.STRING");
               			
             }
 
@@ -5234,7 +5223,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
               						current,
               						"value",
               						lv_value_1_0,
-              						"com.b2international.snowowl.snomed.ecl.Ecl.Integer");
+              						"com.b2international.snomed.ecl.Ecl.Integer");
               					afterParserOrEnumRuleCall();
               				
             }
@@ -5358,7 +5347,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
               						current,
               						"value",
               						lv_value_1_0,
-              						"com.b2international.snowowl.snomed.ecl.Ecl.Decimal");
+              						"com.b2international.snomed.ecl.Ecl.Decimal");
               					afterParserOrEnumRuleCall();
               				
             }
@@ -5621,7 +5610,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
               						current,
               						"value",
               						lv_value_1_0,
-              						"com.b2international.snowowl.snomed.ecl.Ecl.NonNegativeInteger");
+              						"com.b2international.snomed.ecl.Ecl.NonNegativeInteger");
               					afterParserOrEnumRuleCall();
               				
             }
@@ -6017,7 +6006,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
                       						current,
                       						"exclusive",
                       						true,
-                      						"com.b2international.snowowl.snomed.ecl.Ecl.GT");
+                      						"com.b2international.snomed.ecl.Ecl.GT");
                       				
                     }
 
@@ -6060,7 +6049,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
               						current,
               						"value",
               						lv_value_2_0,
-              						"com.b2international.snowowl.snomed.ecl.Ecl.NonNegativeInteger");
+              						"com.b2international.snomed.ecl.Ecl.NonNegativeInteger");
               					afterParserOrEnumRuleCall();
               				
             }
@@ -6183,7 +6172,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
                       						current,
                       						"exclusive",
                       						true,
-                      						"com.b2international.snowowl.snomed.ecl.Ecl.LT");
+                      						"com.b2international.snomed.ecl.Ecl.LT");
                       				
                     }
 
@@ -6226,7 +6215,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
               						current,
               						"value",
               						lv_value_2_0,
-              						"com.b2international.snowowl.snomed.ecl.Ecl.NonNegativeInteger");
+              						"com.b2international.snomed.ecl.Ecl.NonNegativeInteger");
               					afterParserOrEnumRuleCall();
               				
             }
@@ -6489,7 +6478,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
               						current,
               						"value",
               						lv_value_1_0,
-              						"com.b2international.snowowl.snomed.ecl.Ecl.NonNegativeDecimal");
+              						"com.b2international.snomed.ecl.Ecl.NonNegativeDecimal");
               					afterParserOrEnumRuleCall();
               				
             }
@@ -6863,7 +6852,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
                       						current,
                       						"exclusive",
                       						true,
-                      						"com.b2international.snowowl.snomed.ecl.Ecl.GT");
+                      						"com.b2international.snomed.ecl.Ecl.GT");
                       				
                     }
 
@@ -6906,7 +6895,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
               						current,
               						"value",
               						lv_value_2_0,
-              						"com.b2international.snowowl.snomed.ecl.Ecl.NonNegativeDecimal");
+              						"com.b2international.snomed.ecl.Ecl.NonNegativeDecimal");
               					afterParserOrEnumRuleCall();
               				
             }
@@ -7029,7 +7018,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
                       						current,
                       						"exclusive",
                       						true,
-                      						"com.b2international.snowowl.snomed.ecl.Ecl.LT");
+                      						"com.b2international.snomed.ecl.Ecl.LT");
                       				
                     }
 
@@ -7072,7 +7061,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
               						current,
               						"value",
               						lv_value_2_0,
-              						"com.b2international.snowowl.snomed.ecl.Ecl.NonNegativeDecimal");
+              						"com.b2international.snomed.ecl.Ecl.NonNegativeDecimal");
               					afterParserOrEnumRuleCall();
               				
             }
@@ -7349,7 +7338,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
             	      							current,
             	      							"right",
             	      							lv_right_3_0,
-            	      							"com.b2international.snowowl.snomed.ecl.Ecl.AndExpressionConstraint");
+            	      							"com.b2international.snomed.ecl.Ecl.AndExpressionConstraint");
             	      						afterParserOrEnumRuleCall();
             	      					
             	    }
@@ -7578,7 +7567,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
             	      							current,
             	      							"right",
             	      							lv_right_4_0,
-            	      							"com.b2international.snowowl.snomed.ecl.Ecl.ExclusionExpressionConstraint");
+            	      							"com.b2international.snomed.ecl.Ecl.ExclusionExpressionConstraint");
             	      						afterParserOrEnumRuleCall();
             	      					
             	    }
@@ -7763,7 +7752,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
                       							current,
                       							"right",
                       							lv_right_3_0,
-                      							"com.b2international.snowowl.snomed.ecl.Ecl.RefinedExpressionConstraint");
+                      							"com.b2international.snomed.ecl.Ecl.RefinedExpressionConstraint");
                       						afterParserOrEnumRuleCall();
                       					
                     }
@@ -7945,7 +7934,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
                       							current,
                       							"refinement",
                       							lv_refinement_3_0,
-                      							"com.b2international.snowowl.snomed.ecl.Ecl.EclRefinement");
+                      							"com.b2international.snomed.ecl.Ecl.EclRefinement");
                       						afterParserOrEnumRuleCall();
                       					
                     }
@@ -8131,7 +8120,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
             	      							current,
             	      							"attribute",
             	      							lv_attribute_3_0,
-            	      							"com.b2international.snowowl.snomed.ecl.Ecl.SubExpressionConstraint");
+            	      							"com.b2international.snomed.ecl.Ecl.SubExpressionConstraint");
             	      						afterParserOrEnumRuleCall();
             	      					
             	    }
@@ -8819,7 +8808,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
               						current,
               						"constraint",
               						lv_constraint_1_0,
-              						"com.b2international.snowowl.snomed.ecl.Ecl.EclFocusConcept");
+              						"com.b2international.snomed.ecl.Ecl.EclFocusConcept");
               					afterParserOrEnumRuleCall();
               				
             }
@@ -8943,7 +8932,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
               						current,
               						"constraint",
               						lv_constraint_1_0,
-              						"com.b2international.snowowl.snomed.ecl.Ecl.EclFocusConcept");
+              						"com.b2international.snomed.ecl.Ecl.EclFocusConcept");
               					afterParserOrEnumRuleCall();
               				
             }
@@ -9067,7 +9056,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
               						current,
               						"constraint",
               						lv_constraint_1_0,
-              						"com.b2international.snowowl.snomed.ecl.Ecl.EclFocusConcept");
+              						"com.b2international.snomed.ecl.Ecl.EclFocusConcept");
               					afterParserOrEnumRuleCall();
               				
             }
@@ -9191,7 +9180,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
               						current,
               						"constraint",
               						lv_constraint_1_0,
-              						"com.b2international.snowowl.snomed.ecl.Ecl.EclFocusConcept");
+              						"com.b2international.snomed.ecl.Ecl.EclFocusConcept");
               					afterParserOrEnumRuleCall();
               				
             }
@@ -9315,7 +9304,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
               						current,
               						"constraint",
               						lv_constraint_1_0,
-              						"com.b2international.snowowl.snomed.ecl.Ecl.EclFocusConcept");
+              						"com.b2international.snomed.ecl.Ecl.EclFocusConcept");
               					afterParserOrEnumRuleCall();
               				
             }
@@ -9439,7 +9428,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
               						current,
               						"constraint",
               						lv_constraint_1_0,
-              						"com.b2international.snowowl.snomed.ecl.Ecl.EclFocusConcept");
+              						"com.b2international.snomed.ecl.Ecl.EclFocusConcept");
               					afterParserOrEnumRuleCall();
               				
             }
@@ -9597,7 +9586,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
                       							current,
                       							"constraint",
                       							lv_constraint_1_1,
-                      							"com.b2international.snowowl.snomed.ecl.Ecl.EclConceptReference");
+                      							"com.b2international.snomed.ecl.Ecl.EclConceptReference");
                       						afterParserOrEnumRuleCall();
                       					
                     }
@@ -9626,7 +9615,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
                       							current,
                       							"constraint",
                       							lv_constraint_1_2,
-                      							"com.b2international.snowowl.snomed.ecl.Ecl.Any");
+                      							"com.b2international.snomed.ecl.Ecl.Any");
                       						afterParserOrEnumRuleCall();
                       					
                     }
@@ -9655,7 +9644,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
                       							current,
                       							"constraint",
                       							lv_constraint_1_3,
-                      							"com.b2international.snowowl.snomed.ecl.Ecl.NestedExpression");
+                      							"com.b2international.snomed.ecl.Ecl.NestedExpression");
                       						afterParserOrEnumRuleCall();
                       					
                     }
@@ -9779,7 +9768,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
               						current,
               						"id",
               						lv_id_0_0,
-              						"com.b2international.snowowl.snomed.ecl.Ecl.SnomedIdentifier");
+              						"com.b2international.snomed.ecl.Ecl.SnomedIdentifier");
               					afterParserOrEnumRuleCall();
               				
             }
@@ -9818,7 +9807,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
                       						current,
                       						"term",
                       						lv_term_1_0,
-                      						"com.b2international.snowowl.snomed.ecl.Ecl.TERM_STRING");
+                      						"com.b2international.snomed.ecl.Ecl.TERM_STRING");
                       				
                     }
 
@@ -10211,7 +10200,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
             	      								current,
             	      								"right",
             	      								lv_right_3_0,
-            	      								"com.b2international.snowowl.snomed.ecl.Ecl.AndRefinement");
+            	      								"com.b2international.snomed.ecl.Ecl.AndRefinement");
             	      							afterParserOrEnumRuleCall();
             	      						
             	    }
@@ -10461,7 +10450,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
             	      								current,
             	      								"right",
             	      								lv_right_4_0,
-            	      								"com.b2international.snowowl.snomed.ecl.Ecl.SubRefinement");
+            	      								"com.b2international.snomed.ecl.Ecl.SubRefinement");
             	      							afterParserOrEnumRuleCall();
             	      						
             	    }
@@ -10766,7 +10755,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
               						current,
               						"nested",
               						lv_nested_1_0,
-              						"com.b2international.snowowl.snomed.ecl.Ecl.EclRefinement");
+              						"com.b2international.snomed.ecl.Ecl.EclRefinement");
               					afterParserOrEnumRuleCall();
               				
             }
@@ -10901,7 +10890,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
                       						current,
                       						"cardinality",
                       						lv_cardinality_0_0,
-                      						"com.b2international.snowowl.snomed.ecl.Ecl.Cardinality");
+                      						"com.b2international.snomed.ecl.Ecl.Cardinality");
                       					afterParserOrEnumRuleCall();
                       				
                     }
@@ -10945,7 +10934,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
               						current,
               						"refinement",
               						lv_refinement_2_0,
-              						"com.b2international.snowowl.snomed.ecl.Ecl.EclAttributeSet");
+              						"com.b2international.snomed.ecl.Ecl.EclAttributeSet");
               					afterParserOrEnumRuleCall();
               				
             }
@@ -11228,7 +11217,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
             	      							current,
             	      							"right",
             	      							lv_right_3_0,
-            	      							"com.b2international.snowowl.snomed.ecl.Ecl.AndAttributeSet");
+            	      							"com.b2international.snomed.ecl.Ecl.AndAttributeSet");
             	      						afterParserOrEnumRuleCall();
             	      					
             	    }
@@ -11457,7 +11446,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
             	      							current,
             	      							"right",
             	      							lv_right_4_0,
-            	      							"com.b2international.snowowl.snomed.ecl.Ecl.SubAttributeSet");
+            	      							"com.b2international.snomed.ecl.Ecl.SubAttributeSet");
             	      						afterParserOrEnumRuleCall();
             	      					
             	    }
@@ -11730,7 +11719,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
               						current,
               						"nested",
               						lv_nested_1_0,
-              						"com.b2international.snowowl.snomed.ecl.Ecl.EclAttributeSet");
+              						"com.b2international.snomed.ecl.Ecl.EclAttributeSet");
               					afterParserOrEnumRuleCall();
               				
             }
@@ -11866,7 +11855,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
                       						current,
                       						"cardinality",
                       						lv_cardinality_0_0,
-                      						"com.b2international.snowowl.snomed.ecl.Ecl.Cardinality");
+                      						"com.b2international.snomed.ecl.Ecl.Cardinality");
                       					afterParserOrEnumRuleCall();
                       				
                     }
@@ -11908,7 +11897,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
                       						current,
                       						"reversed",
                       						true,
-                      						"com.b2international.snowowl.snomed.ecl.Ecl.REVERSED");
+                      						"com.b2international.snomed.ecl.Ecl.REVERSED");
                       				
                     }
 
@@ -11945,7 +11934,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
               						current,
               						"attribute",
               						lv_attribute_2_0,
-              						"com.b2international.snowowl.snomed.ecl.Ecl.SubExpressionConstraint");
+              						"com.b2international.snomed.ecl.Ecl.SubExpressionConstraint");
               					afterParserOrEnumRuleCall();
               				
             }
@@ -11980,7 +11969,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
               						current,
               						"comparison",
               						lv_comparison_3_0,
-              						"com.b2international.snowowl.snomed.ecl.Ecl.Comparison");
+              						"com.b2international.snomed.ecl.Ecl.Comparison");
               					afterParserOrEnumRuleCall();
               				
             }
@@ -12108,7 +12097,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
               						current,
               						"min",
               						lv_min_1_0,
-              						"com.b2international.snowowl.snomed.ecl.Ecl.NonNegativeInteger");
+              						"com.b2international.snomed.ecl.Ecl.NonNegativeInteger");
               					afterParserOrEnumRuleCall();
               				
             }
@@ -12149,7 +12138,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
               						current,
               						"max",
               						lv_max_3_0,
-              						"com.b2international.snowowl.snomed.ecl.Ecl.MaxValue");
+              						"com.b2international.snomed.ecl.Ecl.MaxValue");
               					afterParserOrEnumRuleCall();
               				
             }
@@ -13170,7 +13159,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
               						current,
               						"constraint",
               						lv_constraint_1_0,
-              						"com.b2international.snowowl.snomed.ecl.Ecl.SubExpressionConstraint");
+              						"com.b2international.snomed.ecl.Ecl.SubExpressionConstraint");
               					afterParserOrEnumRuleCall();
               				
             }
@@ -13294,7 +13283,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
               						current,
               						"constraint",
               						lv_constraint_1_0,
-              						"com.b2international.snowowl.snomed.ecl.Ecl.SubExpressionConstraint");
+              						"com.b2international.snomed.ecl.Ecl.SubExpressionConstraint");
               					afterParserOrEnumRuleCall();
               				
             }
@@ -13418,7 +13407,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
               						current,
               						"value",
               						lv_value_1_0,
-              						"com.b2international.snowowl.snomed.ecl.Ecl.Boolean");
+              						"com.b2international.snomed.ecl.Ecl.Boolean");
               					afterParserOrEnumRuleCall();
               				
             }
@@ -13542,7 +13531,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
               						current,
               						"value",
               						lv_value_1_0,
-              						"com.b2international.snowowl.snomed.ecl.Ecl.Boolean");
+              						"com.b2international.snomed.ecl.Ecl.Boolean");
               					afterParserOrEnumRuleCall();
               				
             }
@@ -13661,7 +13650,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
               						current,
               						"value",
               						lv_value_1_0,
-              						"com.b2international.snowowl.snomed.ecl.Ecl.STRING");
+              						"com.b2international.snomed.ecl.Ecl.STRING");
               				
             }
 
@@ -13779,7 +13768,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
               						current,
               						"value",
               						lv_value_1_0,
-              						"com.b2international.snowowl.snomed.ecl.Ecl.STRING");
+              						"com.b2international.snomed.ecl.Ecl.STRING");
               				
             }
 
@@ -13909,7 +13898,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
               						current,
               						"value",
               						lv_value_2_0,
-              						"com.b2international.snowowl.snomed.ecl.Ecl.Integer");
+              						"com.b2international.snomed.ecl.Ecl.Integer");
               					afterParserOrEnumRuleCall();
               				
             }
@@ -14040,7 +14029,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
               						current,
               						"value",
               						lv_value_2_0,
-              						"com.b2international.snowowl.snomed.ecl.Ecl.Integer");
+              						"com.b2international.snomed.ecl.Ecl.Integer");
               					afterParserOrEnumRuleCall();
               				
             }
@@ -14171,7 +14160,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
               						current,
               						"value",
               						lv_value_2_0,
-              						"com.b2international.snowowl.snomed.ecl.Ecl.Integer");
+              						"com.b2international.snomed.ecl.Ecl.Integer");
               					afterParserOrEnumRuleCall();
               				
             }
@@ -14302,7 +14291,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
               						current,
               						"value",
               						lv_value_2_0,
-              						"com.b2international.snowowl.snomed.ecl.Ecl.Integer");
+              						"com.b2international.snomed.ecl.Ecl.Integer");
               					afterParserOrEnumRuleCall();
               				
             }
@@ -14433,7 +14422,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
               						current,
               						"value",
               						lv_value_2_0,
-              						"com.b2international.snowowl.snomed.ecl.Ecl.Integer");
+              						"com.b2international.snomed.ecl.Ecl.Integer");
               					afterParserOrEnumRuleCall();
               				
             }
@@ -14564,7 +14553,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
               						current,
               						"value",
               						lv_value_2_0,
-              						"com.b2international.snowowl.snomed.ecl.Ecl.Integer");
+              						"com.b2international.snomed.ecl.Ecl.Integer");
               					afterParserOrEnumRuleCall();
               				
             }
@@ -14695,7 +14684,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
               						current,
               						"value",
               						lv_value_2_0,
-              						"com.b2international.snowowl.snomed.ecl.Ecl.Decimal");
+              						"com.b2international.snomed.ecl.Ecl.Decimal");
               					afterParserOrEnumRuleCall();
               				
             }
@@ -14826,7 +14815,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
               						current,
               						"value",
               						lv_value_2_0,
-              						"com.b2international.snowowl.snomed.ecl.Ecl.Decimal");
+              						"com.b2international.snomed.ecl.Ecl.Decimal");
               					afterParserOrEnumRuleCall();
               				
             }
@@ -14957,7 +14946,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
               						current,
               						"value",
               						lv_value_2_0,
-              						"com.b2international.snowowl.snomed.ecl.Ecl.Decimal");
+              						"com.b2international.snomed.ecl.Ecl.Decimal");
               					afterParserOrEnumRuleCall();
               				
             }
@@ -15088,7 +15077,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
               						current,
               						"value",
               						lv_value_2_0,
-              						"com.b2international.snowowl.snomed.ecl.Ecl.Decimal");
+              						"com.b2international.snomed.ecl.Ecl.Decimal");
               					afterParserOrEnumRuleCall();
               				
             }
@@ -15219,7 +15208,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
               						current,
               						"value",
               						lv_value_2_0,
-              						"com.b2international.snowowl.snomed.ecl.Ecl.Decimal");
+              						"com.b2international.snomed.ecl.Ecl.Decimal");
               					afterParserOrEnumRuleCall();
               				
             }
@@ -15350,7 +15339,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
               						current,
               						"value",
               						lv_value_2_0,
-              						"com.b2international.snowowl.snomed.ecl.Ecl.Decimal");
+              						"com.b2international.snomed.ecl.Ecl.Decimal");
               					afterParserOrEnumRuleCall();
               				
             }
@@ -15475,7 +15464,7 @@ public class InternalEtlParser extends AbstractInternalAntlrParser {
               						current,
               						"nested",
               						lv_nested_1_0,
-              						"com.b2international.snowowl.snomed.ecl.Ecl.ExpressionConstraint");
+              						"com.b2international.snomed.ecl.Ecl.ExpressionConstraint");
               					afterParserOrEnumRuleCall();
               				
             }

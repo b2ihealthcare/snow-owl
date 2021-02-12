@@ -15,15 +15,13 @@
  */
 package com.b2international.snowowl.snomed.etl.etl.impl;
 
-import com.b2international.snowowl.snomed.etl.etl.*;
-
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
-
 import org.eclipse.emf.ecore.impl.EFactoryImpl;
-
 import org.eclipse.emf.ecore.plugin.EcorePlugin;
+
+import com.b2international.snowowl.snomed.etl.etl.*;
 
 /**
  * <!-- begin-user-doc -->

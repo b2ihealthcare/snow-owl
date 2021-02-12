@@ -15,16 +15,14 @@
  */
 package com.b2international.snowowl.snomed.etl.etl.impl;
 
-import com.b2international.snowowl.snomed.etl.etl.DecimalValue;
-import com.b2international.snowowl.snomed.etl.etl.EtlPackage;
-
 import java.math.BigDecimal;
 
 import org.eclipse.emf.common.notify.Notification;
-
 import org.eclipse.emf.ecore.EClass;
-
 import org.eclipse.emf.ecore.impl.ENotificationImpl;
+
+import com.b2international.snowowl.snomed.etl.etl.DecimalValue;
+import com.b2international.snowowl.snomed.etl.etl.EtlPackage;
 
 /**
  * <!-- begin-user-doc -->

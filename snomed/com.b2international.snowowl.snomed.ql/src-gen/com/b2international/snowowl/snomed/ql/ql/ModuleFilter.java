@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.ql.ql;
 
-import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
+import com.b2international.snomed.ecl.ecl.ExpressionConstraint;
 
 /**
  * <!-- begin-user-doc -->

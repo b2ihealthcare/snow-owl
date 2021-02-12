@@ -15,18 +15,15 @@
  */
 package com.b2international.snowowl.snomed.ql.ql.impl;
 
-import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
-
-import com.b2international.snowowl.snomed.ql.ql.QlPackage;
-import com.b2international.snowowl.snomed.ql.ql.TypeFilter;
-
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.NotificationChain;
-
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.InternalEObject;
-
 import org.eclipse.emf.ecore.impl.ENotificationImpl;
+
+import com.b2international.snomed.ecl.ecl.ExpressionConstraint;
+import com.b2international.snowowl.snomed.ql.ql.QlPackage;
+import com.b2international.snowowl.snomed.ql.ql.TypeFilter;
 
 /**
  * <!-- begin-user-doc -->

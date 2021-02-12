@@ -17,7 +17,7 @@ package com.b2international.snowowl.snomed.core.ecl;
 
 import org.eclipse.emf.ecore.EObject;
 
-import com.b2international.snowowl.snomed.ecl.ecl.*;
+import com.b2international.snomed.ecl.ecl.*;
 
 /** 
  * @since 5.4

@@ -15,9 +15,9 @@
  */
 package com.b2international.snowowl.snomed.etl.etl;
 
-import com.b2international.snowowl.snomed.ecl.ecl.ExpressionConstraint;
-
 import org.eclipse.emf.ecore.EObject;
+
+import com.b2international.snomed.ecl.ecl.ExpressionConstraint;
 
 /**
  * <!-- begin-user-doc -->

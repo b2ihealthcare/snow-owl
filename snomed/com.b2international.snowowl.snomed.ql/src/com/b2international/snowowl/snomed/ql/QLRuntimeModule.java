@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,22 +17,8 @@ package com.b2international.snowowl.snomed.ql;
 
 import org.eclipse.xtext.conversion.IValueConverterService;
 
-import com.b2international.snowowl.snomed.ecl.converter.EclValueConverterService;
-import com.b2international.snowowl.snomed.ql.ql.AcceptableInFilter;
-import com.b2international.snowowl.snomed.ql.ql.ActiveFilter;
-import com.b2international.snowowl.snomed.ql.ql.CaseSignificanceFilter;
-import com.b2international.snowowl.snomed.ql.ql.ConjunctionFilter;
-import com.b2international.snowowl.snomed.ql.ql.DisjunctionFilter;
-import com.b2international.snowowl.snomed.ql.ql.Domain;
-import com.b2international.snowowl.snomed.ql.ql.ExclusionFilter;
-import com.b2international.snowowl.snomed.ql.ql.Filter;
-import com.b2international.snowowl.snomed.ql.ql.LanguageCodeFilter;
-import com.b2international.snowowl.snomed.ql.ql.LanguageRefSetFilter;
-import com.b2international.snowowl.snomed.ql.ql.ModuleFilter;
-import com.b2international.snowowl.snomed.ql.ql.NestedFilter;
-import com.b2international.snowowl.snomed.ql.ql.PreferredInFilter;
-import com.b2international.snowowl.snomed.ql.ql.TermFilter;
-import com.b2international.snowowl.snomed.ql.ql.TypeFilter;
+import com.b2international.snomed.ecl.converter.EclValueConverterService;
+import com.b2international.snowowl.snomed.ql.ql.*;
 
 /**
  * Use this class to register components to be used at runtime / without the Equinox extension registry.

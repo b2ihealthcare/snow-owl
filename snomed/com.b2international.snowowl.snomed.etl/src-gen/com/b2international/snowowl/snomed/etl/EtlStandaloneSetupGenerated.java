@@ -15,15 +15,16 @@
  */
 package com.b2international.snowowl.snomed.etl;
 
-import com.b2international.snowowl.snomed.ecl.EclStandaloneSetup;
-import com.b2international.snowowl.snomed.etl.etl.EtlPackage;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.xtext.ISetup;
 import org.eclipse.xtext.resource.IResourceFactory;
 import org.eclipse.xtext.resource.IResourceServiceProvider;
+
+import com.b2international.snomed.ecl.EclStandaloneSetup;
+import com.b2international.snowowl.snomed.etl.etl.EtlPackage;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 
 @SuppressWarnings("all")
 public class EtlStandaloneSetupGenerated implements ISetup {

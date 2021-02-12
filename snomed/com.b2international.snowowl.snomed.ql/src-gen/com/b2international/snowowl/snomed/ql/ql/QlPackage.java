@@ -15,11 +15,7 @@
  */
 package com.b2international.snowowl.snomed.ql.ql;
 
-import org.eclipse.emf.ecore.EAttribute;
-import org.eclipse.emf.ecore.EClass;
-import org.eclipse.emf.ecore.EEnum;
-import org.eclipse.emf.ecore.EPackage;
-import org.eclipse.emf.ecore.EReference;
+import org.eclipse.emf.ecore.*;
 
 /**
  * <!-- begin-user-doc -->

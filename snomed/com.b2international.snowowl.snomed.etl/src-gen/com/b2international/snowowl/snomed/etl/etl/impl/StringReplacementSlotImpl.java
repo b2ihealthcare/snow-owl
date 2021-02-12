@@ -15,16 +15,14 @@
  */
 package com.b2international.snowowl.snomed.etl.etl.impl;
 
-import com.b2international.snowowl.snomed.etl.etl.EtlPackage;
-import com.b2international.snowowl.snomed.etl.etl.StringReplacementSlot;
-
 import java.util.Collection;
 
 import org.eclipse.emf.common.util.EList;
-
 import org.eclipse.emf.ecore.EClass;
-
 import org.eclipse.emf.ecore.util.EDataTypeEList;
+
+import com.b2international.snowowl.snomed.etl.etl.EtlPackage;
+import com.b2international.snowowl.snomed.etl.etl.StringReplacementSlot;
 
 /**
  * <!-- begin-user-doc -->

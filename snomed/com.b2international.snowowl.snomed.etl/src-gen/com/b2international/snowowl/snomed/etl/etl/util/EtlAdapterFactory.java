@@ -15,14 +15,12 @@
  */
 package com.b2international.snowowl.snomed.etl.etl.util;
 
-import com.b2international.snowowl.snomed.etl.etl.*;
-
 import org.eclipse.emf.common.notify.Adapter;
 import org.eclipse.emf.common.notify.Notifier;
-
 import org.eclipse.emf.common.notify.impl.AdapterFactoryImpl;
-
 import org.eclipse.emf.ecore.EObject;
+
+import com.b2international.snowowl.snomed.etl.etl.*;
 
 /**
  * <!-- begin-user-doc -->

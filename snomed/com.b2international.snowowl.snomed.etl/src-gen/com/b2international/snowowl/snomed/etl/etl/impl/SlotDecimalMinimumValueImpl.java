@@ -15,17 +15,15 @@
  */
 package com.b2international.snowowl.snomed.etl.etl.impl;
 
-import com.b2international.snowowl.snomed.etl.etl.EtlPackage;
-import com.b2international.snowowl.snomed.etl.etl.SlotDecimalMinimumValue;
-
 import java.math.BigDecimal;
 
 import org.eclipse.emf.common.notify.Notification;
-
 import org.eclipse.emf.ecore.EClass;
-
 import org.eclipse.emf.ecore.impl.ENotificationImpl;
 import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
+
+import com.b2international.snowowl.snomed.etl.etl.EtlPackage;
+import com.b2international.snowowl.snomed.etl.etl.SlotDecimalMinimumValue;
 
 /**
  * <!-- begin-user-doc -->

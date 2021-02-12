@@ -15,12 +15,11 @@
  */
 package com.b2international.snowowl.snomed.etl.etl.util;
 
-import com.b2international.snowowl.snomed.etl.etl.*;
-
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
-
 import org.eclipse.emf.ecore.util.Switch;
+
+import com.b2international.snowowl.snomed.etl.etl.*;
 
 /**
  * <!-- begin-user-doc -->

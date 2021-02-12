@@ -15,10 +15,10 @@
  */
 package com.b2international.snowowl.snomed.ql.ql.impl;
 
+import org.eclipse.emf.ecore.EClass;
+
 import com.b2international.snowowl.snomed.ql.ql.QlPackage;
 import com.b2international.snowowl.snomed.ql.ql.SubQuery;
-
-import org.eclipse.emf.ecore.EClass;
 
 /**
  * <!-- begin-user-doc -->

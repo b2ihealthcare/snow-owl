@@ -15,10 +15,10 @@
  */
 package com.b2international.snowowl.snomed.etl.etl.impl;
 
+import org.eclipse.emf.ecore.EClass;
+
 import com.b2international.snowowl.snomed.etl.etl.ConceptIdReplacementSlot;
 import com.b2international.snowowl.snomed.etl.etl.EtlPackage;
-
-import org.eclipse.emf.ecore.EClass;
 
 /**
  * <!-- begin-user-doc -->
