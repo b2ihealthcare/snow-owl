@@ -201,6 +201,7 @@
         <setEntry value="com.b2international.index@default:default"/>
         <setEntry value="com.b2international.mapdb@default:default"/>
         <setEntry value="com.b2international.restassured-all@default:default"/>
+        <setEntry value="com.b2international.snomed.ecl@default:default"/>
         <setEntry value="com.b2international.snowowl.core.rest@default:default"/>
         <setEntry value="com.b2international.snowowl.core@default:default"/>
         <setEntry value="com.b2international.snowowl.eventbus@default:default"/>
@@ -211,7 +212,6 @@
         <setEntry value="com.b2international.snowowl.snomed.core.rest.tests@default:default"/>
         <setEntry value="com.b2international.snowowl.snomed.core.rest@default:false"/>
         <setEntry value="com.b2international.snowowl.snomed.datastore@default:default"/>
-        <setEntry value="com.b2international.snowowl.snomed.ecl@default:default"/>
         <setEntry value="com.b2international.snowowl.snomed.icons@default:default"/>
         <setEntry value="com.b2international.snowowl.snomed.ql@default:default"/>
         <setEntry value="com.b2international.snowowl.snomed.reasoner@default:default"/>

@@ -48,6 +48,7 @@
         <setEntry value="com.fasterxml.jackson.dataformat.jackson-dataformat-csv@default:default"/>
         <setEntry value="com.fasterxml.jackson.dataformat.jackson-dataformat-smile@default:default"/>
         <setEntry value="com.fasterxml.jackson.dataformat.jackson-dataformat-yaml@default:default"/>
+        <setEntry value="com.fasterxml.jackson.datatype.jackson-datatype-jsr310@default:default"/>
         <setEntry value="com.fasterxml.jackson.module.jackson-module-afterburner@default:default"/>
         <setEntry value="com.fasterxml.jackson.module.jackson-module-jaxb-annotations@default:default"/>
         <setEntry value="com.google.guava@default:default"/>
@@ -97,7 +98,6 @@
         <setEntry value="org.apache.httpcomponents.httpclient*4.5.3@default:default"/>
         <setEntry value="org.apache.httpcomponents.httpcore*4.4.10@default:default"/>
         <setEntry value="org.apache.lucene.core@default:default"/>
-        <setEntry value="org.apache.servicemix.bundles.javax-inject@default:default"/>
         <setEntry value="org.ccil.cowan.tagsoup@default:default"/>
         <setEntry value="org.codehaus.groovy@default:default"/>
         <setEntry value="org.eclipse.ant.core@default:default"/>
@@ -206,6 +206,7 @@
         <setEntry value="com.b2international.index@default:default"/>
         <setEntry value="com.b2international.mapdb@default:default"/>
         <setEntry value="com.b2international.restassured-all@default:default"/>
+        <setEntry value="com.b2international.snomed.ecl@default:default"/>
         <setEntry value="com.b2international.snowowl.core.rest.tests@default:default"/>
         <setEntry value="com.b2international.snowowl.core.rest@default:default"/>
         <setEntry value="com.b2international.snowowl.core.tests@default:false"/>
@@ -219,7 +220,6 @@
         <setEntry value="com.b2international.snowowl.snomed.common@default:default"/>
         <setEntry value="com.b2international.snowowl.snomed.datastore.tests@default:false"/>
         <setEntry value="com.b2international.snowowl.snomed.datastore@default:default"/>
-        <setEntry value="com.b2international.snowowl.snomed.ecl@default:default"/>
         <setEntry value="com.b2international.snowowl.snomed.icons@default:default"/>
         <setEntry value="com.b2international.snowowl.snomed.ql@default:default"/>
         <setEntry value="com.b2international.snowowl.snomed.reasoner.tests@default:false"/>
