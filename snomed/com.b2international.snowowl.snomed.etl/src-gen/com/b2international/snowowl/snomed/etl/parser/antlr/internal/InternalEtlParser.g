@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -754,7 +754,7 @@ ruleConceptIdReplacementSlot returns [EObject current=null]
 							$current,
 							"constraint",
 							lv_constraint_5_0,
-							"com.b2international.snowowl.snomed.ecl.Ecl.ExpressionConstraint");
+							"com.b2international.snomed.ecl.Ecl.ExpressionConstraint");
 						afterParserOrEnumRuleCall();
 					}
 				)
@@ -848,7 +848,7 @@ ruleExpressionReplacementSlot returns [EObject current=null]
 							$current,
 							"constraint",
 							lv_constraint_5_0,
-							"com.b2international.snowowl.snomed.ecl.Ecl.ExpressionConstraint");
+							"com.b2international.snomed.ecl.Ecl.ExpressionConstraint");
 						afterParserOrEnumRuleCall();
 					}
 				)
@@ -1179,7 +1179,7 @@ ruleStringReplacementSlot returns [EObject current=null]
 							$current,
 							"values",
 							lv_values_5_0,
-							"com.b2international.snowowl.snomed.ecl.Ecl.STRING");
+							"com.b2international.snomed.ecl.Ecl.STRING");
 					}
 				)
 			)
@@ -1197,7 +1197,7 @@ ruleStringReplacementSlot returns [EObject current=null]
 							$current,
 							"values",
 							lv_values_6_0,
-							"com.b2international.snowowl.snomed.ecl.Ecl.STRING");
+							"com.b2international.snomed.ecl.Ecl.STRING");
 					}
 				)
 			)*
@@ -1489,7 +1489,7 @@ ruleEtlCardinality returns [EObject current=null]
 						$current,
 						"min",
 						lv_min_1_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.NonNegativeInteger");
+						"com.b2international.snomed.ecl.Ecl.NonNegativeInteger");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -1512,7 +1512,7 @@ ruleEtlCardinality returns [EObject current=null]
 						$current,
 						"max",
 						lv_max_3_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.MaxValue");
+						"com.b2international.snomed.ecl.Ecl.MaxValue");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -1613,7 +1613,7 @@ ruleConceptReference returns [EObject current=null]
 							$current,
 							"id",
 							lv_id_1_0,
-							"com.b2international.snowowl.snomed.ecl.Ecl.SnomedIdentifier");
+							"com.b2international.snomed.ecl.Ecl.SnomedIdentifier");
 						afterParserOrEnumRuleCall();
 					}
 				)
@@ -1632,7 +1632,7 @@ ruleConceptReference returns [EObject current=null]
 							$current,
 							"term",
 							lv_term_2_0,
-							"com.b2international.snowowl.snomed.ecl.Ecl.TERM_STRING");
+							"com.b2international.snomed.ecl.Ecl.TERM_STRING");
 					}
 				)
 			)?
@@ -1831,7 +1831,7 @@ ruleStringValue returns [EObject current=null]
 					$current,
 					"value",
 					lv_value_0_0,
-					"com.b2international.snowowl.snomed.ecl.Ecl.STRING");
+					"com.b2international.snomed.ecl.Ecl.STRING");
 			}
 		)
 	)
@@ -1871,7 +1871,7 @@ ruleIntegerValue returns [EObject current=null]
 						$current,
 						"value",
 						lv_value_1_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.Integer");
+						"com.b2international.snomed.ecl.Ecl.Integer");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -1913,7 +1913,7 @@ ruleDecimalValue returns [EObject current=null]
 						$current,
 						"value",
 						lv_value_1_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.Decimal");
+						"com.b2international.snomed.ecl.Ecl.Decimal");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -1997,7 +1997,7 @@ ruleSlotIntegerValue returns [EObject current=null]
 						$current,
 						"value",
 						lv_value_1_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.NonNegativeInteger");
+						"com.b2international.snomed.ecl.Ecl.NonNegativeInteger");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -2124,7 +2124,7 @@ ruleSlotIntegerMinimumValue returns [EObject current=null]
 						$current,
 						"exclusive",
 						true,
-						"com.b2international.snowowl.snomed.ecl.Ecl.GT");
+						"com.b2international.snomed.ecl.Ecl.GT");
 				}
 			)
 		)?
@@ -2146,7 +2146,7 @@ ruleSlotIntegerMinimumValue returns [EObject current=null]
 						$current,
 						"value",
 						lv_value_2_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.NonNegativeInteger");
+						"com.b2international.snomed.ecl.Ecl.NonNegativeInteger");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -2184,7 +2184,7 @@ ruleSlotIntegerMaximumValue returns [EObject current=null]
 						$current,
 						"exclusive",
 						true,
-						"com.b2international.snowowl.snomed.ecl.Ecl.LT");
+						"com.b2international.snomed.ecl.Ecl.LT");
 				}
 			)
 		)?
@@ -2206,7 +2206,7 @@ ruleSlotIntegerMaximumValue returns [EObject current=null]
 						$current,
 						"value",
 						lv_value_2_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.NonNegativeInteger");
+						"com.b2international.snomed.ecl.Ecl.NonNegativeInteger");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -2290,7 +2290,7 @@ ruleSlotDecimalValue returns [EObject current=null]
 						$current,
 						"value",
 						lv_value_1_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.NonNegativeDecimal");
+						"com.b2international.snomed.ecl.Ecl.NonNegativeDecimal");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -2417,7 +2417,7 @@ ruleSlotDecimalMinimumValue returns [EObject current=null]
 						$current,
 						"exclusive",
 						true,
-						"com.b2international.snowowl.snomed.ecl.Ecl.GT");
+						"com.b2international.snomed.ecl.Ecl.GT");
 				}
 			)
 		)?
@@ -2439,7 +2439,7 @@ ruleSlotDecimalMinimumValue returns [EObject current=null]
 						$current,
 						"value",
 						lv_value_2_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.NonNegativeDecimal");
+						"com.b2international.snomed.ecl.Ecl.NonNegativeDecimal");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -2477,7 +2477,7 @@ ruleSlotDecimalMaximumValue returns [EObject current=null]
 						$current,
 						"exclusive",
 						true,
-						"com.b2international.snowowl.snomed.ecl.Ecl.LT");
+						"com.b2international.snomed.ecl.Ecl.LT");
 				}
 			)
 		)?
@@ -2499,7 +2499,7 @@ ruleSlotDecimalMaximumValue returns [EObject current=null]
 						$current,
 						"value",
 						lv_value_2_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.NonNegativeDecimal");
+						"com.b2international.snomed.ecl.Ecl.NonNegativeDecimal");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -2591,7 +2591,7 @@ ruleOrExpressionConstraint returns [EObject current=null]
 							$current,
 							"right",
 							lv_right_3_0,
-							"com.b2international.snowowl.snomed.ecl.Ecl.AndExpressionConstraint");
+							"com.b2international.snomed.ecl.Ecl.AndExpressionConstraint");
 						afterParserOrEnumRuleCall();
 					}
 				)
@@ -2663,7 +2663,7 @@ ruleAndExpressionConstraint returns [EObject current=null]
 							$current,
 							"right",
 							lv_right_4_0,
-							"com.b2international.snowowl.snomed.ecl.Ecl.ExclusionExpressionConstraint");
+							"com.b2international.snomed.ecl.Ecl.ExclusionExpressionConstraint");
 						afterParserOrEnumRuleCall();
 					}
 				)
@@ -2728,7 +2728,7 @@ ruleExclusionExpressionConstraint returns [EObject current=null]
 							$current,
 							"right",
 							lv_right_3_0,
-							"com.b2international.snowowl.snomed.ecl.Ecl.RefinedExpressionConstraint");
+							"com.b2international.snomed.ecl.Ecl.RefinedExpressionConstraint");
 						afterParserOrEnumRuleCall();
 					}
 				)
@@ -2793,7 +2793,7 @@ ruleRefinedExpressionConstraint returns [EObject current=null]
 							$current,
 							"refinement",
 							lv_refinement_3_0,
-							"com.b2international.snowowl.snomed.ecl.Ecl.EclRefinement");
+							"com.b2international.snomed.ecl.Ecl.EclRefinement");
 						afterParserOrEnumRuleCall();
 					}
 				)
@@ -2858,7 +2858,7 @@ ruleDottedExpressionConstraint returns [EObject current=null]
 							$current,
 							"attribute",
 							lv_attribute_3_0,
-							"com.b2international.snowowl.snomed.ecl.Ecl.SubExpressionConstraint");
+							"com.b2international.snomed.ecl.Ecl.SubExpressionConstraint");
 						afterParserOrEnumRuleCall();
 					}
 				)
@@ -3069,7 +3069,7 @@ ruleChildOf returns [EObject current=null]
 						$current,
 						"constraint",
 						lv_constraint_1_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.EclFocusConcept");
+						"com.b2international.snomed.ecl.Ecl.EclFocusConcept");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -3111,7 +3111,7 @@ ruleDescendantOf returns [EObject current=null]
 						$current,
 						"constraint",
 						lv_constraint_1_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.EclFocusConcept");
+						"com.b2international.snomed.ecl.Ecl.EclFocusConcept");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -3153,7 +3153,7 @@ ruleDescendantOrSelfOf returns [EObject current=null]
 						$current,
 						"constraint",
 						lv_constraint_1_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.EclFocusConcept");
+						"com.b2international.snomed.ecl.Ecl.EclFocusConcept");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -3195,7 +3195,7 @@ ruleParentOf returns [EObject current=null]
 						$current,
 						"constraint",
 						lv_constraint_1_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.EclFocusConcept");
+						"com.b2international.snomed.ecl.Ecl.EclFocusConcept");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -3237,7 +3237,7 @@ ruleAncestorOf returns [EObject current=null]
 						$current,
 						"constraint",
 						lv_constraint_1_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.EclFocusConcept");
+						"com.b2international.snomed.ecl.Ecl.EclFocusConcept");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -3279,7 +3279,7 @@ ruleAncestorOrSelfOf returns [EObject current=null]
 						$current,
 						"constraint",
 						lv_constraint_1_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.EclFocusConcept");
+						"com.b2international.snomed.ecl.Ecl.EclFocusConcept");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -3322,7 +3322,7 @@ ruleMemberOf returns [EObject current=null]
 							$current,
 							"constraint",
 							lv_constraint_1_1,
-							"com.b2international.snowowl.snomed.ecl.Ecl.EclConceptReference");
+							"com.b2international.snomed.ecl.Ecl.EclConceptReference");
 						afterParserOrEnumRuleCall();
 					}
 					    |
@@ -3338,7 +3338,7 @@ ruleMemberOf returns [EObject current=null]
 							$current,
 							"constraint",
 							lv_constraint_1_2,
-							"com.b2international.snowowl.snomed.ecl.Ecl.Any");
+							"com.b2international.snomed.ecl.Ecl.Any");
 						afterParserOrEnumRuleCall();
 					}
 					    |
@@ -3354,7 +3354,7 @@ ruleMemberOf returns [EObject current=null]
 							$current,
 							"constraint",
 							lv_constraint_1_3,
-							"com.b2international.snowowl.snomed.ecl.Ecl.NestedExpression");
+							"com.b2international.snomed.ecl.Ecl.NestedExpression");
 						afterParserOrEnumRuleCall();
 					}
 				)
@@ -3393,7 +3393,7 @@ ruleEclConceptReference returns [EObject current=null]
 						$current,
 						"id",
 						lv_id_0_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.SnomedIdentifier");
+						"com.b2international.snomed.ecl.Ecl.SnomedIdentifier");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -3412,7 +3412,7 @@ ruleEclConceptReference returns [EObject current=null]
 						$current,
 						"term",
 						lv_term_1_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.TERM_STRING");
+						"com.b2international.snomed.ecl.Ecl.TERM_STRING");
 				}
 			)
 		)?
@@ -3538,7 +3538,7 @@ ruleOrRefinement returns [EObject current=null]
 								$current,
 								"right",
 								lv_right_3_0,
-								"com.b2international.snowowl.snomed.ecl.Ecl.AndRefinement");
+								"com.b2international.snomed.ecl.Ecl.AndRefinement");
 							afterParserOrEnumRuleCall();
 						}
 					)
@@ -3613,7 +3613,7 @@ ruleAndRefinement returns [EObject current=null]
 								$current,
 								"right",
 								lv_right_4_0,
-								"com.b2international.snowowl.snomed.ecl.Ecl.SubRefinement");
+								"com.b2international.snomed.ecl.Ecl.SubRefinement");
 							afterParserOrEnumRuleCall();
 						}
 					)
@@ -3711,7 +3711,7 @@ ruleNestedRefinement returns [EObject current=null]
 						$current,
 						"nested",
 						lv_nested_1_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.EclRefinement");
+						"com.b2international.snomed.ecl.Ecl.EclRefinement");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -3753,7 +3753,7 @@ ruleEclAttributeGroup returns [EObject current=null]
 						$current,
 						"cardinality",
 						lv_cardinality_0_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.Cardinality");
+						"com.b2international.snomed.ecl.Ecl.Cardinality");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -3776,7 +3776,7 @@ ruleEclAttributeGroup returns [EObject current=null]
 						$current,
 						"refinement",
 						lv_refinement_2_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.EclAttributeSet");
+						"com.b2international.snomed.ecl.Ecl.EclAttributeSet");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -3872,7 +3872,7 @@ ruleOrAttributeSet returns [EObject current=null]
 							$current,
 							"right",
 							lv_right_3_0,
-							"com.b2international.snowowl.snomed.ecl.Ecl.AndAttributeSet");
+							"com.b2international.snomed.ecl.Ecl.AndAttributeSet");
 						afterParserOrEnumRuleCall();
 					}
 				)
@@ -3944,7 +3944,7 @@ ruleAndAttributeSet returns [EObject current=null]
 							$current,
 							"right",
 							lv_right_4_0,
-							"com.b2international.snowowl.snomed.ecl.Ecl.SubAttributeSet");
+							"com.b2international.snomed.ecl.Ecl.SubAttributeSet");
 						afterParserOrEnumRuleCall();
 					}
 				)
@@ -4029,7 +4029,7 @@ ruleNestedAttributeSet returns [EObject current=null]
 						$current,
 						"nested",
 						lv_nested_1_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.EclAttributeSet");
+						"com.b2international.snomed.ecl.Ecl.EclAttributeSet");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -4071,7 +4071,7 @@ ruleAttributeConstraint returns [EObject current=null]
 						$current,
 						"cardinality",
 						lv_cardinality_0_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.Cardinality");
+						"com.b2international.snomed.ecl.Ecl.Cardinality");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -4090,7 +4090,7 @@ ruleAttributeConstraint returns [EObject current=null]
 						$current,
 						"reversed",
 						true,
-						"com.b2international.snowowl.snomed.ecl.Ecl.REVERSED");
+						"com.b2international.snomed.ecl.Ecl.REVERSED");
 				}
 			)
 		)?
@@ -4108,7 +4108,7 @@ ruleAttributeConstraint returns [EObject current=null]
 						$current,
 						"attribute",
 						lv_attribute_2_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.SubExpressionConstraint");
+						"com.b2international.snomed.ecl.Ecl.SubExpressionConstraint");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -4127,7 +4127,7 @@ ruleAttributeConstraint returns [EObject current=null]
 						$current,
 						"comparison",
 						lv_comparison_3_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.Comparison");
+						"com.b2international.snomed.ecl.Ecl.Comparison");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -4169,7 +4169,7 @@ ruleCardinality returns [EObject current=null]
 						$current,
 						"min",
 						lv_min_1_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.NonNegativeInteger");
+						"com.b2international.snomed.ecl.Ecl.NonNegativeInteger");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -4192,7 +4192,7 @@ ruleCardinality returns [EObject current=null]
 						$current,
 						"max",
 						lv_max_3_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.MaxValue");
+						"com.b2international.snomed.ecl.Ecl.MaxValue");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -4532,7 +4532,7 @@ ruleAttributeValueEquals returns [EObject current=null]
 						$current,
 						"constraint",
 						lv_constraint_1_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.SubExpressionConstraint");
+						"com.b2international.snomed.ecl.Ecl.SubExpressionConstraint");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -4574,7 +4574,7 @@ ruleAttributeValueNotEquals returns [EObject current=null]
 						$current,
 						"constraint",
 						lv_constraint_1_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.SubExpressionConstraint");
+						"com.b2international.snomed.ecl.Ecl.SubExpressionConstraint");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -4616,7 +4616,7 @@ ruleBooleanValueEquals returns [EObject current=null]
 						$current,
 						"value",
 						lv_value_1_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.Boolean");
+						"com.b2international.snomed.ecl.Ecl.Boolean");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -4658,7 +4658,7 @@ ruleBooleanValueNotEquals returns [EObject current=null]
 						$current,
 						"value",
 						lv_value_1_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.Boolean");
+						"com.b2international.snomed.ecl.Ecl.Boolean");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -4700,7 +4700,7 @@ ruleStringValueEquals returns [EObject current=null]
 						$current,
 						"value",
 						lv_value_1_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.STRING");
+						"com.b2international.snomed.ecl.Ecl.STRING");
 				}
 			)
 		)
@@ -4741,7 +4741,7 @@ ruleStringValueNotEquals returns [EObject current=null]
 						$current,
 						"value",
 						lv_value_1_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.STRING");
+						"com.b2international.snomed.ecl.Ecl.STRING");
 				}
 			)
 		)
@@ -4786,7 +4786,7 @@ ruleIntegerValueEquals returns [EObject current=null]
 						$current,
 						"value",
 						lv_value_2_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.Integer");
+						"com.b2international.snomed.ecl.Ecl.Integer");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -4832,7 +4832,7 @@ ruleIntegerValueNotEquals returns [EObject current=null]
 						$current,
 						"value",
 						lv_value_2_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.Integer");
+						"com.b2international.snomed.ecl.Ecl.Integer");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -4878,7 +4878,7 @@ ruleIntegerValueGreaterThan returns [EObject current=null]
 						$current,
 						"value",
 						lv_value_2_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.Integer");
+						"com.b2international.snomed.ecl.Ecl.Integer");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -4924,7 +4924,7 @@ ruleIntegerValueLessThan returns [EObject current=null]
 						$current,
 						"value",
 						lv_value_2_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.Integer");
+						"com.b2international.snomed.ecl.Ecl.Integer");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -4970,7 +4970,7 @@ ruleIntegerValueGreaterThanEquals returns [EObject current=null]
 						$current,
 						"value",
 						lv_value_2_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.Integer");
+						"com.b2international.snomed.ecl.Ecl.Integer");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -5016,7 +5016,7 @@ ruleIntegerValueLessThanEquals returns [EObject current=null]
 						$current,
 						"value",
 						lv_value_2_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.Integer");
+						"com.b2international.snomed.ecl.Ecl.Integer");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -5062,7 +5062,7 @@ ruleDecimalValueEquals returns [EObject current=null]
 						$current,
 						"value",
 						lv_value_2_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.Decimal");
+						"com.b2international.snomed.ecl.Ecl.Decimal");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -5108,7 +5108,7 @@ ruleDecimalValueNotEquals returns [EObject current=null]
 						$current,
 						"value",
 						lv_value_2_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.Decimal");
+						"com.b2international.snomed.ecl.Ecl.Decimal");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -5154,7 +5154,7 @@ ruleDecimalValueGreaterThan returns [EObject current=null]
 						$current,
 						"value",
 						lv_value_2_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.Decimal");
+						"com.b2international.snomed.ecl.Ecl.Decimal");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -5200,7 +5200,7 @@ ruleDecimalValueLessThan returns [EObject current=null]
 						$current,
 						"value",
 						lv_value_2_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.Decimal");
+						"com.b2international.snomed.ecl.Ecl.Decimal");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -5246,7 +5246,7 @@ ruleDecimalValueGreaterThanEquals returns [EObject current=null]
 						$current,
 						"value",
 						lv_value_2_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.Decimal");
+						"com.b2international.snomed.ecl.Ecl.Decimal");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -5292,7 +5292,7 @@ ruleDecimalValueLessThanEquals returns [EObject current=null]
 						$current,
 						"value",
 						lv_value_2_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.Decimal");
+						"com.b2international.snomed.ecl.Ecl.Decimal");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -5334,7 +5334,7 @@ ruleNestedExpression returns [EObject current=null]
 						$current,
 						"nested",
 						lv_nested_1_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.ExpressionConstraint");
+						"com.b2international.snomed.ecl.Ecl.ExpressionConstraint");
 					afterParserOrEnumRuleCall();
 				}
 			)

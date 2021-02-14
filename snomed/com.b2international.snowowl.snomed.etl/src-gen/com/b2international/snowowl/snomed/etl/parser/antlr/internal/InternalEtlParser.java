@@ -1,13 +1,24 @@
 package com.b2international.snowowl.snomed.etl.parser.antlr.internal;
 
-import org.antlr.runtime.*;
+import org.eclipse.xtext.*;
+import org.eclipse.xtext.parser.*;
+import org.eclipse.xtext.parser.impl.*;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.parser.antlr.AbstractInternalAntlrParser;
-import org.eclipse.xtext.parser.antlr.AntlrDatatypeRuleToken;
 import org.eclipse.xtext.parser.antlr.XtextTokenStream;
 import org.eclipse.xtext.parser.antlr.XtextTokenStream.HiddenTokens;
-
+import org.eclipse.xtext.parser.antlr.AntlrDatatypeRuleToken;
 import com.b2international.snowowl.snomed.etl.services.EtlGrammarAccess;
+
+
+
+import org.antlr.runtime.*;
+import java.util.Stack;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
 @SuppressWarnings("all")
 public class InternalEtlParser extends AbstractInternalAntlrParser {
     public static final String[] tokenNames = new String[] {

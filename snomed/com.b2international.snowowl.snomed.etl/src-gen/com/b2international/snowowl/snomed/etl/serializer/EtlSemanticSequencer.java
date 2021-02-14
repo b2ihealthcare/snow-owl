@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,78 @@
  */
 package com.b2international.snowowl.snomed.etl.serializer;
 
+import com.b2international.snomed.ecl.ecl.AncestorOf;
+import com.b2international.snomed.ecl.ecl.AncestorOrSelfOf;
+import com.b2international.snomed.ecl.ecl.AndExpressionConstraint;
+import com.b2international.snomed.ecl.ecl.AndRefinement;
+import com.b2international.snomed.ecl.ecl.Any;
+import com.b2international.snomed.ecl.ecl.AttributeConstraint;
+import com.b2international.snomed.ecl.ecl.AttributeValueEquals;
+import com.b2international.snomed.ecl.ecl.AttributeValueNotEquals;
+import com.b2international.snomed.ecl.ecl.BooleanValueEquals;
+import com.b2international.snomed.ecl.ecl.BooleanValueNotEquals;
+import com.b2international.snomed.ecl.ecl.Cardinality;
+import com.b2international.snomed.ecl.ecl.ChildOf;
+import com.b2international.snomed.ecl.ecl.DecimalValueEquals;
+import com.b2international.snomed.ecl.ecl.DecimalValueGreaterThan;
+import com.b2international.snomed.ecl.ecl.DecimalValueGreaterThanEquals;
+import com.b2international.snomed.ecl.ecl.DecimalValueLessThan;
+import com.b2international.snomed.ecl.ecl.DecimalValueLessThanEquals;
+import com.b2international.snomed.ecl.ecl.DecimalValueNotEquals;
+import com.b2international.snomed.ecl.ecl.DescendantOf;
+import com.b2international.snomed.ecl.ecl.DescendantOrSelfOf;
+import com.b2international.snomed.ecl.ecl.DottedExpressionConstraint;
+import com.b2international.snomed.ecl.ecl.EclAttributeGroup;
+import com.b2international.snomed.ecl.ecl.EclConceptReference;
+import com.b2international.snomed.ecl.ecl.EclPackage;
+import com.b2international.snomed.ecl.ecl.ExclusionExpressionConstraint;
+import com.b2international.snomed.ecl.ecl.IntegerValueEquals;
+import com.b2international.snomed.ecl.ecl.IntegerValueGreaterThan;
+import com.b2international.snomed.ecl.ecl.IntegerValueGreaterThanEquals;
+import com.b2international.snomed.ecl.ecl.IntegerValueLessThan;
+import com.b2international.snomed.ecl.ecl.IntegerValueLessThanEquals;
+import com.b2international.snomed.ecl.ecl.IntegerValueNotEquals;
+import com.b2international.snomed.ecl.ecl.MemberOf;
+import com.b2international.snomed.ecl.ecl.NestedExpression;
+import com.b2international.snomed.ecl.ecl.NestedRefinement;
+import com.b2international.snomed.ecl.ecl.OrExpressionConstraint;
+import com.b2international.snomed.ecl.ecl.OrRefinement;
+import com.b2international.snomed.ecl.ecl.ParentOf;
+import com.b2international.snomed.ecl.ecl.RefinedExpressionConstraint;
+import com.b2international.snomed.ecl.ecl.Script;
+import com.b2international.snomed.ecl.ecl.StringValueEquals;
+import com.b2international.snomed.ecl.ecl.StringValueNotEquals;
+import com.b2international.snomed.ecl.serializer.EclSemanticSequencer;
+import com.b2international.snowowl.snomed.etl.etl.Attribute;
+import com.b2international.snowowl.snomed.etl.etl.AttributeGroup;
+import com.b2international.snowowl.snomed.etl.etl.ConceptIdReplacementSlot;
+import com.b2international.snowowl.snomed.etl.etl.ConceptReference;
+import com.b2international.snowowl.snomed.etl.etl.DecimalReplacementSlot;
+import com.b2international.snowowl.snomed.etl.etl.DecimalValue;
+import com.b2international.snowowl.snomed.etl.etl.EtlCardinality;
+import com.b2international.snowowl.snomed.etl.etl.EtlPackage;
+import com.b2international.snowowl.snomed.etl.etl.ExpressionReplacementSlot;
+import com.b2international.snowowl.snomed.etl.etl.ExpressionTemplate;
+import com.b2international.snowowl.snomed.etl.etl.FocusConcept;
+import com.b2international.snowowl.snomed.etl.etl.IntegerReplacementSlot;
+import com.b2international.snowowl.snomed.etl.etl.IntegerValue;
+import com.b2international.snowowl.snomed.etl.etl.Refinement;
+import com.b2international.snowowl.snomed.etl.etl.SlotDecimalMaximumValue;
+import com.b2international.snowowl.snomed.etl.etl.SlotDecimalMinimumValue;
+import com.b2international.snowowl.snomed.etl.etl.SlotDecimalRange;
+import com.b2international.snowowl.snomed.etl.etl.SlotDecimalValue;
+import com.b2international.snowowl.snomed.etl.etl.SlotIntegerMaximumValue;
+import com.b2international.snowowl.snomed.etl.etl.SlotIntegerMinimumValue;
+import com.b2international.snowowl.snomed.etl.etl.SlotIntegerRange;
+import com.b2international.snowowl.snomed.etl.etl.SlotIntegerValue;
+import com.b2international.snowowl.snomed.etl.etl.StringReplacementSlot;
+import com.b2international.snowowl.snomed.etl.etl.StringValue;
+import com.b2international.snowowl.snomed.etl.etl.SubExpression;
+import com.b2international.snowowl.snomed.etl.etl.TemplateInformationSlot;
+import com.b2international.snowowl.snomed.etl.etl.TokenReplacementSlot;
+import com.b2international.snowowl.snomed.etl.services.EtlGrammarAccess;
+import com.google.inject.Inject;
 import java.util.Set;
-
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.xtext.Action;
@@ -25,12 +95,6 @@ import org.eclipse.xtext.ParserRule;
 import org.eclipse.xtext.serializer.ISerializationContext;
 import org.eclipse.xtext.serializer.acceptor.SequenceFeeder;
 import org.eclipse.xtext.serializer.sequencer.ITransientValueService.ValueTransient;
-
-import com.b2international.snomed.ecl.ecl.*;
-import com.b2international.snomed.ecl.serializer.EclSemanticSequencer;
-import com.b2international.snowowl.snomed.etl.etl.*;
-import com.b2international.snowowl.snomed.etl.services.EtlGrammarAccess;
-import com.google.inject.Inject;
 
 @SuppressWarnings("all")
 public class EtlSemanticSequencer extends EclSemanticSequencer {

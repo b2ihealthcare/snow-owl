@@ -1,12 +1,12 @@
 /**
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *  *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *  *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,14 +15,48 @@
  */
 package com.b2international.snowowl.snomed.etl.etl.impl;
 
+import com.b2international.snomed.ecl.ecl.EclPackage;
+
+import com.b2international.snowowl.snomed.etl.etl.Attribute;
+import com.b2international.snowowl.snomed.etl.etl.AttributeGroup;
+import com.b2international.snowowl.snomed.etl.etl.AttributeValue;
+import com.b2international.snowowl.snomed.etl.etl.ConceptIdReplacementSlot;
+import com.b2international.snowowl.snomed.etl.etl.ConceptReference;
+import com.b2international.snowowl.snomed.etl.etl.ConceptReplacementSlot;
+import com.b2international.snowowl.snomed.etl.etl.ConcreteValueReplacementSlot;
+import com.b2international.snowowl.snomed.etl.etl.DecimalReplacementSlot;
+import com.b2international.snowowl.snomed.etl.etl.DecimalValue;
+import com.b2international.snowowl.snomed.etl.etl.EtlCardinality;
+import com.b2international.snowowl.snomed.etl.etl.EtlFactory;
+import com.b2international.snowowl.snomed.etl.etl.EtlPackage;
+import com.b2international.snowowl.snomed.etl.etl.ExpressionReplacementSlot;
+import com.b2international.snowowl.snomed.etl.etl.ExpressionTemplate;
+import com.b2international.snowowl.snomed.etl.etl.FocusConcept;
+import com.b2international.snowowl.snomed.etl.etl.IntegerReplacementSlot;
+import com.b2international.snowowl.snomed.etl.etl.IntegerValue;
+import com.b2international.snowowl.snomed.etl.etl.Refinement;
+import com.b2international.snowowl.snomed.etl.etl.SlotDecimal;
+import com.b2international.snowowl.snomed.etl.etl.SlotDecimalMaximumValue;
+import com.b2international.snowowl.snomed.etl.etl.SlotDecimalMinimumValue;
+import com.b2international.snowowl.snomed.etl.etl.SlotDecimalRange;
+import com.b2international.snowowl.snomed.etl.etl.SlotDecimalValue;
+import com.b2international.snowowl.snomed.etl.etl.SlotInteger;
+import com.b2international.snowowl.snomed.etl.etl.SlotIntegerMaximumValue;
+import com.b2international.snowowl.snomed.etl.etl.SlotIntegerMinimumValue;
+import com.b2international.snowowl.snomed.etl.etl.SlotIntegerRange;
+import com.b2international.snowowl.snomed.etl.etl.SlotIntegerValue;
+import com.b2international.snowowl.snomed.etl.etl.StringReplacementSlot;
+import com.b2international.snowowl.snomed.etl.etl.StringValue;
+import com.b2international.snowowl.snomed.etl.etl.SubExpression;
+import com.b2international.snowowl.snomed.etl.etl.TemplateInformationSlot;
+import com.b2international.snowowl.snomed.etl.etl.TokenReplacementSlot;
+
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EReference;
-import org.eclipse.emf.ecore.impl.EPackageImpl;
 
-import com.b2international.snomed.ecl.ecl.EclPackage;
-import com.b2international.snowowl.snomed.etl.etl.*;
+import org.eclipse.emf.ecore.impl.EPackageImpl;
 
 /**
  * <!-- begin-user-doc -->
