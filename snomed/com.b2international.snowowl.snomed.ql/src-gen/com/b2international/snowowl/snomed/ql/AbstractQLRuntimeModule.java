@@ -1,5 +1,5 @@
 /*
- * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,19 @@
  */
 package com.b2international.snowowl.snomed.ql;
 
+import com.b2international.snowowl.snomed.ql.generator.QLGenerator;
+import com.b2international.snowowl.snomed.ql.parser.antlr.QLAntlrTokenFileProvider;
+import com.b2international.snowowl.snomed.ql.parser.antlr.QLParser;
+import com.b2international.snowowl.snomed.ql.parser.antlr.lexer.InternalQLLexer;
+import com.b2international.snowowl.snomed.ql.scoping.QLScopeProvider;
+import com.b2international.snowowl.snomed.ql.serializer.QLSemanticSequencer;
+import com.b2international.snowowl.snomed.ql.serializer.QLSyntacticSequencer;
+import com.b2international.snowowl.snomed.ql.services.QLGrammarAccess;
+import com.b2international.snowowl.snomed.ql.validation.QLValidator;
+import com.google.inject.Binder;
+import com.google.inject.Provider;
+import com.google.inject.name.Names;
 import java.util.Properties;
-
 import org.eclipse.xtext.Constants;
 import org.eclipse.xtext.IGrammarAccess;
 import org.eclipse.xtext.conversion.impl.AbstractIDValueConverter;
@@ -26,7 +37,13 @@ import org.eclipse.xtext.naming.DefaultDeclarativeQualifiedNameProvider;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
 import org.eclipse.xtext.parser.IParser;
 import org.eclipse.xtext.parser.ITokenToStringConverter;
-import org.eclipse.xtext.parser.antlr.*;
+import org.eclipse.xtext.parser.antlr.AntlrTokenDefProvider;
+import org.eclipse.xtext.parser.antlr.AntlrTokenToStringConverter;
+import org.eclipse.xtext.parser.antlr.IAntlrTokenFileProvider;
+import org.eclipse.xtext.parser.antlr.ITokenDefProvider;
+import org.eclipse.xtext.parser.antlr.Lexer;
+import org.eclipse.xtext.parser.antlr.LexerBindings;
+import org.eclipse.xtext.parser.antlr.LexerProvider;
 import org.eclipse.xtext.parsetree.reconstr.ITokenSerializer;
 import org.eclipse.xtext.parsetree.reconstr.impl.IgnoreCaseKeywordSerializer;
 import org.eclipse.xtext.resource.IContainer;
@@ -49,19 +66,6 @@ import org.eclipse.xtext.serializer.sequencer.ISyntacticSequencer;
 import org.eclipse.xtext.serializer.tokens.IKeywordSerializer;
 import org.eclipse.xtext.service.DefaultRuntimeModule;
 import org.eclipse.xtext.service.SingletonBinding;
-
-import com.b2international.snowowl.snomed.ql.generator.QLGenerator;
-import com.b2international.snowowl.snomed.ql.parser.antlr.QLAntlrTokenFileProvider;
-import com.b2international.snowowl.snomed.ql.parser.antlr.QLParser;
-import com.b2international.snowowl.snomed.ql.parser.antlr.lexer.InternalQLLexer;
-import com.b2international.snowowl.snomed.ql.scoping.QLScopeProvider;
-import com.b2international.snowowl.snomed.ql.serializer.QLSemanticSequencer;
-import com.b2international.snowowl.snomed.ql.serializer.QLSyntacticSequencer;
-import com.b2international.snowowl.snomed.ql.services.QLGrammarAccess;
-import com.b2international.snowowl.snomed.ql.validation.QLValidator;
-import com.google.inject.Binder;
-import com.google.inject.Provider;
-import com.google.inject.name.Names;
 
 /**
  * Manual modifications go to {@link QLRuntimeModule}.

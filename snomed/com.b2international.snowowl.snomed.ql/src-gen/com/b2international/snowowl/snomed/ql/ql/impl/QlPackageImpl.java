@@ -4,9 +4,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *  *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *  *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,11 +15,43 @@
  */
 package com.b2international.snowowl.snomed.ql.ql.impl;
 
-import org.eclipse.emf.ecore.*;
-import org.eclipse.emf.ecore.impl.EPackageImpl;
-
 import com.b2international.snomed.ecl.ecl.EclPackage;
-import com.b2international.snowowl.snomed.ql.ql.*;
+
+import com.b2international.snowowl.snomed.ql.ql.AcceptableInFilter;
+import com.b2international.snowowl.snomed.ql.ql.ActiveFilter;
+import com.b2international.snowowl.snomed.ql.ql.CaseSignificanceFilter;
+import com.b2international.snowowl.snomed.ql.ql.ConjunctionFilter;
+import com.b2international.snowowl.snomed.ql.ql.DisjunctionFilter;
+import com.b2international.snowowl.snomed.ql.ql.Domain;
+import com.b2international.snowowl.snomed.ql.ql.DomainQuery;
+import com.b2international.snowowl.snomed.ql.ql.ExclusionFilter;
+import com.b2international.snowowl.snomed.ql.ql.Filter;
+import com.b2international.snowowl.snomed.ql.ql.LanguageCodeFilter;
+import com.b2international.snowowl.snomed.ql.ql.LanguageRefSetFilter;
+import com.b2international.snowowl.snomed.ql.ql.LexicalSearchType;
+import com.b2international.snowowl.snomed.ql.ql.ModuleFilter;
+import com.b2international.snowowl.snomed.ql.ql.NestedFilter;
+import com.b2international.snowowl.snomed.ql.ql.NestedQuery;
+import com.b2international.snowowl.snomed.ql.ql.PreferredInFilter;
+import com.b2international.snowowl.snomed.ql.ql.PropertyFilter;
+import com.b2international.snowowl.snomed.ql.ql.QlFactory;
+import com.b2international.snowowl.snomed.ql.ql.QlPackage;
+import com.b2international.snowowl.snomed.ql.ql.Query;
+import com.b2international.snowowl.snomed.ql.ql.QueryConjunction;
+import com.b2international.snowowl.snomed.ql.ql.QueryConstraint;
+import com.b2international.snowowl.snomed.ql.ql.QueryDisjunction;
+import com.b2international.snowowl.snomed.ql.ql.QueryExclusion;
+import com.b2international.snowowl.snomed.ql.ql.SubQuery;
+import com.b2international.snowowl.snomed.ql.ql.TermFilter;
+import com.b2international.snowowl.snomed.ql.ql.TypeFilter;
+
+import org.eclipse.emf.ecore.EAttribute;
+import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EEnum;
+import org.eclipse.emf.ecore.EPackage;
+import org.eclipse.emf.ecore.EReference;
+
+import org.eclipse.emf.ecore.impl.EPackageImpl;
 
 /**
  * <!-- begin-user-doc -->
