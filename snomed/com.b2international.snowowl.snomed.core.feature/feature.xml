@@ -16,6 +16,7 @@ Visit us at http://b2i.sg
 
    <requires>
       <import feature="com.b2international.snowowl.core.feature" version="7.5.0.qualifier"/>
+      <import feature="com.b2international.snomed.ecl.feature" version="1.3.0"/>
    </requires>
 
    <plugin
@@ -34,13 +35,6 @@ Visit us at http://b2i.sg
 
    <plugin
          id="com.b2international.snowowl.snomed.reasoner"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="com.b2international.snowowl.snomed.ecl"
          download-size="0"
          install-size="0"
          version="0.0.0"
