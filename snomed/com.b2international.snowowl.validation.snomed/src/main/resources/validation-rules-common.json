@@ -155,7 +155,7 @@
   {
   	"id": "671",
     "toolingId": "com.b2international.snowowl.terminology.snomed",
-    "messageTemplate": "All active SNOMED CT Descriptions on inactive SNOMED CT Concepts should have a single inactivation indicator with either Concept non-current, Pending Move, or Limited value in the Description Inactivation Indicator Reference Set.",
+    "messageTemplate": "All active descriptions, and only active descriptions, of inactive concepts should have a single Concept non-current or Pending Move inactivation indicator.",
     "severity": "WARNING",
     "checkType": "FAST",
     "type": "script-groovy",
