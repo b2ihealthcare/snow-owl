@@ -19,8 +19,10 @@ import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
+import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
@@ -67,7 +69,7 @@ public final class CodeSystemsCommand extends Command {
 	@Override
 	public void run(CommandLineStream out) {
 		if (Strings.isNullOrEmpty(codeSystem)) {
-			out.println(Joiner.on("\n").join(FluentIterable.from(getCodeSystems()).transform(input -> getCodeSystemInfo(input))));
+			out.println(Joiner.on("\n\n").join(FluentIterable.from(getCodeSystems()).transform(input -> getCodeSystemInfo(input))));
 		} else {
 			CodeSystem cs = getCodeSystemById(codeSystem);
 			
@@ -81,21 +83,77 @@ public final class CodeSystemsCommand extends Command {
 	}
 
 	private String getCodeSystemInfo(CodeSystem codeSystem) {
+		//Added the three spaces for better readability
 		return new StringBuilder()
-			.append("Name: ").append(codeSystem.getName()).append("\n")
-			.append("Short name: ").append(codeSystem.getShortName()).append("\n")
-			.append("OID: ").append(codeSystem.getOid()).append("\n")
-			.append("Maintaining organization link: ").append(codeSystem.getOrganizationLink()).append("\n")
-			.append("Language: ").append(codeSystem.getPrimaryLanguage()).append("\n")
-			.append("Repository: ").append(codeSystem.getRepositoryId()).append("\n")
-			.append("Working branch: ").append(codeSystem.getBranchPath()).append("\n")
-			.append("Terminology ID: ").append(codeSystem.getTerminologyId())
-			.append(showVersions ? getCodeSystemVersionsInfo(codeSystem) : "")
+			.append(codeSystem.getShortName()).append("\n")
+			.append("\tName: ").append(codeSystem.getName()).append("\n")
+			.append("\tShort name: ").append(codeSystem.getShortName()).append("\n")
+			.append("\tOID: ").append(codeSystem.getOid()).append("\n")
+			.append("\tMaintaining organization link: ").append(codeSystem.getOrganizationLink()).append("\n")
+			.append(codeSystem.getCitation() == null? "" :
+					"\tCitation: " + codeSystem.getCitation() + "\n")
+			.append(getAvailableUpgradesInfo(codeSystem))
+			.append("\tCode System URI: ").append(codeSystem.getCodeSystemURI()).append("\n")
+			.append("\tIcon Path: ").append(codeSystem.getIconPath()).append("\n")
+			.append(getDependenciesInfo(codeSystem))
+			.append(codeSystem.getUpgradeOf() == null? "" : 
+					"\tUpgrade of: " + codeSystem.getUpgradeOf().toString() + "\n")
+			.append(codeSystem.getExtensionOf() == null? "" : 
+					"\tExtension of: " + codeSystem.getExtensionOf().toString() + "\n")
+			.append("\tRepository: ").append(codeSystem.getRepositoryId()).append("\n")
+			.append("\tWorking branch: ").append(codeSystem.getBranchPath()).append("\n")
+			.append("\tTerminology ID: ").append(codeSystem.getTerminologyId())
+			.append(getAdditionalPropertiesInfo(codeSystem))
+			.append(getLocalesInfo(codeSystem))
+			.append(showVersions ? "\t" + getCodeSystemVersionsInfo(codeSystem) : "")
 			.toString();
 	}
 	
+	private String getAdditionalPropertiesInfo(CodeSystem codeSystem) {
+		if(codeSystem.getAdditionalProperties() == null || codeSystem.getAdditionalProperties().isEmpty()){
+			return "";
+		}
+		
+		StringBuilder result = new StringBuilder("\n\tAdditional Properties:\n");
+		codeSystem.getAdditionalProperties().forEach((key, value) -> result.append("\t\t").append(key).append(": ").append(value.toString()).append("\n"));;
+		
+		return result.toString();
+	}
+
+	private String getDependenciesInfo(CodeSystem codeSystem) {
+		if(codeSystem.getDependencies() == null || codeSystem.getDependencies().isEmpty()){
+			return "";
+		}
+		
+		StringBuilder result = new StringBuilder("\tDependencies:\n");
+		codeSystem.getDependencies().forEach(dependency -> result.append("\t\t").append(dependency).append("\n"));
+		
+		return result.toString();
+	}
+
+	private String getLocalesInfo(CodeSystem codeSystem) {
+		if(codeSystem.getLocales() == null || codeSystem.getLocales().isEmpty()){
+			return "";
+		}
+		StringBuilder result = new StringBuilder("\tLocales:\n");
+		result.append(codeSystem.getLocales().stream().map(e -> "\t\t" + e.toString()).collect(Collectors.joining("\n")));
+		
+		return result.toString();
+	}
+
+	private String getAvailableUpgradesInfo(CodeSystem codeSystem) {
+		
+		if(codeSystem.getAvailableUpgrades() == null || codeSystem.getAvailableUpgrades().isEmpty()){
+			return "";
+		}
+		StringBuilder result = new StringBuilder("\tAvailable Upgrades:\n");
+		codeSystem.getAvailableUpgrades().forEach(update -> result.append("\t\t").append(update).append("\n"));
+		
+		return result.toString();
+	}
+
 	private String getCodeSystemVersionsInfo(CodeSystem cs) {
-		final StringBuilder info = new StringBuilder("\nVersions:\n");
+		final StringBuilder info = new StringBuilder("\n\tVersions:\n");
 		final CodeSystemVersions versions = CodeSystemRequests
 			.prepareSearchCodeSystemVersion()
 			.all()
@@ -105,7 +163,7 @@ public final class CodeSystemsCommand extends Command {
 			.execute(getBus())
 			.getSync(1, TimeUnit.MINUTES);
 		if (versions.isEmpty()) {
-			info.append("\tNo versions have been created yet.");
+			info.append("\t\tNo versions have been created yet.");
 		} else {
 			info.append(versions
 					.stream()
@@ -144,7 +202,7 @@ public final class CodeSystemsCommand extends Command {
 		final List<Promise<CodeSystems>> getAllCodeSystems = newArrayList();
 		for (String repositoryId : getRepositoryIds()) {
 			getAllCodeSystems.add(CodeSystemRequests.prepareSearchCodeSystem()
-					.all()
+					.one()
 					.filterById(shortNameOrOid)
 					.build(repositoryId)
 					.execute(getBus()));
@@ -163,12 +221,13 @@ public final class CodeSystemsCommand extends Command {
 	
 	private String getCodeSystemVersionInformation(CodeSystemVersion codeSystemVersion) {
 		return new StringBuilder()
-			.append("\tVersion id: ").append(codeSystemVersion.getVersion()).append("\n")
-			.append("\tDescription: ").append(codeSystemVersion.getDescription()).append("\n")
-			.append("\tEffective date: ").append(EffectiveTimes.format(codeSystemVersion.getEffectiveTime(), DateFormats.DEFAULT)).append("\n")
-			.append("\tCreation date: ").append(Dates.formatByHostTimeZone(codeSystemVersion.getImportDate(), DateFormats.DEFAULT)).append("\n")
-			.append("\tLast update: ").append(codeSystemVersion.getLastModificationDate() != null ? StdDateFormat.getDateInstance().format(codeSystemVersion.getLastModificationDate()) : "-").append("\n")
-			.append("\tVersion branch path: ").append(codeSystemVersion.getPath())
+			.append("\t\tVersion id: ").append(codeSystemVersion.getVersion()).append("\n")
+			.append("\t\tDescription: ").append(codeSystemVersion.getDescription()).append("\n")
+			.append("\t\tEffective date: ").append(EffectiveTimes.format(codeSystemVersion.getEffectiveTime(), DateFormats.DEFAULT)).append("\n")
+			.append("\t\tCreation date: ").append(Dates.formatByHostTimeZone(codeSystemVersion.getImportDate(), DateFormats.DEFAULT)).append("\n")
+			.append("\t\tLast update: ").append(codeSystemVersion.getLastModificationDate() != null ? StdDateFormat.getDateInstance().format(codeSystemVersion.getLastModificationDate()) : "-").append("\n")
+			.append("\t\tVersion branch path: ").append(codeSystemVersion.getPath())
+			.append("\n")
 			.toString();
 	}
 	
