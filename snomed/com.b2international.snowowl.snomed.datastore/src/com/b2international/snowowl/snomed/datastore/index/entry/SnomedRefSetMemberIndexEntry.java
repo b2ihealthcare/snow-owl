@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,8 +29,8 @@ import static com.b2international.snowowl.snomed.common.SnomedTerminologyCompone
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -276,7 +276,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		switch (rf2Field) {
 		case SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME:
 		case SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME:
-			return EffectiveTimes.getEffectiveTime((Date) value);
+			return EffectiveTimes.getEffectiveTime((LocalDate) value);
 		default: 
 			return value;
 		}

@@ -33,6 +33,7 @@ import com.b2international.commons.ClassUtils;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.Pair;
 import com.b2international.index.BulkUpdate;
+import com.b2international.index.IndexClientFactory;
 import com.b2international.index.IndexException;
 import com.b2international.index.es.admin.EsIndexAdmin;
 import com.b2international.index.mapping.DocumentMapping;
@@ -62,6 +63,7 @@ public final class StagingArea {
 	private final DefaultRevisionIndex index;
 	private final String branchPath;
 	private final ObjectMapper mapper;
+	private final int maxTermsCount;
 
 	private Map<ObjectId, StagedObject> stagedObjects;
 
@@ -76,6 +78,7 @@ public final class StagingArea {
 		this.index = index;
 		this.branchPath = branchPath;
 		this.mapper = mapper;
+		this.maxTermsCount = Integer.parseInt((String) index.admin().settings().get(IndexClientFactory.MAX_TERMS_COUNT_KEY));
 		reset();
 	}
 	
@@ -666,7 +669,6 @@ public final class StagingArea {
 		
 		applyPropertyUpdates(toRef, propertyUpdatesToApply);
 		
-		
 		// apply new objects
 		applyNewObjects(added, fromRef, toRef, squash);
 		
@@ -837,7 +839,9 @@ public final class StagingArea {
 			boolean squash) {
 		for (Class<? extends Revision> type : ImmutableSet.copyOf(removed.keySet())) {
 			final Collection<String> removedRevisionIds = removed.removeAll(type);
-			index.read(toRef, searcher -> searcher.get(type, removedRevisionIds)).forEach(this::stageRemove);
+			for (List<String> currentRemovedRevisionIds : Iterables.partition(removedRevisionIds, maxTermsCount)) {
+				index.read(toRef, searcher -> searcher.get(type, currentRemovedRevisionIds)).forEach(this::stageRemove);
+			}
 		}
 	}
 
@@ -845,17 +849,22 @@ public final class StagingArea {
 			boolean squash) {
 		for (Class<? extends Revision> type : ImmutableSet.copyOf(changed.keySet())) {
 			final Collection<String> changedRevisionIds = changed.removeAll(type);
-			final Iterable<? extends Revision> oldRevisions = index.read(toRef, searcher -> searcher.get(type, changedRevisionIds));
-			final Map<String, ? extends Revision> oldRevisionsById = FluentIterable.from(oldRevisions).uniqueIndex(Revision::getId);
 			
-			final Iterable<? extends Revision> updatedRevisions = index.read(fromRef, searcher -> searcher.get(type, changedRevisionIds));
-			final Map<String, ? extends Revision> updatedRevisionsById = FluentIterable.from(updatedRevisions).uniqueIndex(Revision::getId);
-			for (String updatedId : updatedRevisionsById.keySet()) {
-				if (oldRevisionsById.containsKey(updatedId)) {
-					stageChange(oldRevisionsById.get(updatedId), updatedRevisionsById.get(updatedId), squash);
-				} else {
-					stageNew(updatedRevisionsById.get(updatedId), squash);
+			for (List<String> currentChangedRevisionIds : Iterables.partition(changedRevisionIds, maxTermsCount)) {
+				
+				final Iterable<? extends Revision> oldRevisions = index.read(toRef, searcher -> searcher.get(type, currentChangedRevisionIds));
+				final Map<String, ? extends Revision> oldRevisionsById = FluentIterable.from(oldRevisions).uniqueIndex(Revision::getId);
+				final Iterable<? extends Revision> updatedRevisions = index.read(fromRef, searcher -> searcher.get(type, currentChangedRevisionIds));
+				final Map<String, ? extends Revision> updatedRevisionsById = FluentIterable.from(updatedRevisions).uniqueIndex(Revision::getId);
+			
+				for (String updatedId : updatedRevisionsById.keySet()) {
+					if (oldRevisionsById.containsKey(updatedId)) {
+						stageChange(oldRevisionsById.get(updatedId), updatedRevisionsById.get(updatedId), squash);
+					} else {
+						stageNew(updatedRevisionsById.get(updatedId), squash);
+					}
 				}
+				
 			}
 		}
 	}
@@ -865,17 +874,20 @@ public final class StagingArea {
 			final Set<String> addedIds = added.removeAll(type);
 			// skip new objects that are already marked as revised on merge source, content that is present on target should take place instead
 			final Set<String> newRevisionIds = Sets.difference(addedIds, externalRevisionsToReviseOnMergeSource.get(type));
-			final Iterable<? extends Revision> oldRevisions = index.read(toRef, searcher -> searcher.get(type, newRevisionIds));
-			final Iterable<? extends Revision> newRevisions = index.read(fromRef, searcher -> searcher.get(type, newRevisionIds));
-			final Map<String, ? extends Revision> oldRevisionsById = FluentIterable.from(oldRevisions).uniqueIndex(Revision::getId);
 			
-			newRevisions.forEach(rev -> {
-				if (oldRevisionsById.containsKey(rev.getId())) {
-					stageChange(oldRevisionsById.get(rev.getId()), rev, squash);
-				} else {
-					stageNew(rev, squash);
-				}
-			});
+			for (List<String> currentNewRevisionIds : Iterables.partition(newRevisionIds, maxTermsCount)) {
+				final Iterable<? extends Revision> oldRevisions = index.read(toRef, searcher -> searcher.get(type, currentNewRevisionIds));
+				final Iterable<? extends Revision> newRevisions = index.read(fromRef, searcher -> searcher.get(type, currentNewRevisionIds));
+				final Map<String, ? extends Revision> oldRevisionsById = FluentIterable.from(oldRevisions).uniqueIndex(Revision::getId);
+				
+				newRevisions.forEach(rev -> {
+					if (oldRevisionsById.containsKey(rev.getId())) {
+						stageChange(oldRevisionsById.get(rev.getId()), rev, squash);
+					} else {
+						stageNew(rev, squash);
+					}
+				});
+			}
 		}
 	}
 	

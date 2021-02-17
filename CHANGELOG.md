@@ -1,6 +1,33 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 7.15.1
+
+### Bugs/Improvements
+- [core] compare only active mapping members in Concept Map Compare (#759)
+- [core] make branch name validation messages more brief (#760)
+- [snomed] decrease color depth of icons to 32 BPP (895ef2b)
+- [validation] update description of rule 671 (#763)
+- [cli] add `ldap` commands to verify LDAP configuration (#764)
+
+## 7.15.0
+
+### Core
+- Code System Upgrade (beta) (#755, #757)
+  * New API to work with specific Code System branches and environments, especially dependency version upgrades (eg. SNOMED International version upgrades)
+  * Support full lifecycle of Code System upgrades (start -> complete)
+  * Support expanding `extensionOfBranchInfo()` and `upgradeOfBranchInfo()` in Code System upgrades
+- Support `force` flag in version create requests (#746)
+  * Allow recreating the latest published Code System version (optionally reusing the same effective date) with `force` flag
+
+### Bugs/Improvements
+- [api] ignore component not found exceptions during delete requests
+- [core] change `Date` types to LocalDate in EffectiveTime arguments, APIs (#749, #754)
+- [core] potential NPE when searching for concept maps (#748)
+- [snomed] add moduleId to classification statement fragments for extension specific filtering (#751)
+- [snomed] change module of inactivated content to the current module in request scope (#752)
+- [build] bump Tycho to 2.2.0 (#745)
+
 ## 7.14.3
 
 ### Bugs/Improvements

@@ -15,14 +15,14 @@
  */
 package com.b2international.snowowl.snomed.core.rest.ext;
 
+import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.getComponent;
+import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewConcept;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests.createCodeSystem;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.createVersion;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getVersion;
-import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.getComponent;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewConcept;
 import static org.hamcrest.CoreMatchers.equalTo;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 import org.junit.Test;
 
@@ -52,7 +52,7 @@ public class SnomedExtensionCreationTest extends AbstractSnomedApiTest {
 		.body("released", equalTo(false));
 
 		String versionId = "v1";
-		String effectiveDate = EffectiveTimes.format(new Date(), DateFormats.SHORT);
+		String effectiveDate = EffectiveTimes.format(LocalDate.now(), DateFormats.SHORT);
 		createVersion(shortName, versionId, effectiveDate).statusCode(201);
 
 		getVersion(shortName, versionId).statusCode(200)
@@ -85,7 +85,7 @@ public class SnomedExtensionCreationTest extends AbstractSnomedApiTest {
 		.body("released", equalTo(false));
 
 		String versionId = "v1";
-		String effectiveDate = EffectiveTimes.format(new Date(), DateFormats.SHORT);
+		String effectiveDate = EffectiveTimes.format(LocalDate.now(), DateFormats.SHORT);
 		createVersion(shortName, versionId, effectiveDate).statusCode(201);
 
 		getVersion(shortName, versionId).statusCode(200)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,15 +18,22 @@ package com.b2international.snowowl.core.codesystem;
 import java.util.List;
 
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 4.7
  */
-public final class CodeSystemVersions extends PageableCollectionResource<CodeSystemVersionEntry> {
+public final class CodeSystemVersions extends PageableCollectionResource<CodeSystemVersion> {
 
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 	
-	public CodeSystemVersions(final List<CodeSystemVersionEntry> items, String searchAfter, int limit, int total) {
+	@JsonCreator
+	public CodeSystemVersions(
+			@JsonProperty("items") final List<CodeSystemVersion> items, 
+			@JsonProperty("searchAfter") final String searchAfter, 
+			@JsonProperty("limit") final int limit, 
+			@JsonProperty("total") final int total) {
 		super(items, searchAfter, limit, total);
 	}
 }

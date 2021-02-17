@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.core.store;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
@@ -27,15 +27,15 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemb
  */
 public final class SnomedModuleDependencyReferenceSetMemberBuilder extends SnomedMemberBuilder<SnomedModuleDependencyReferenceSetMemberBuilder> {
 
-	private Date sourceEffectiveTime;
-	private Date targetEffectiveTime;
+	private LocalDate sourceEffectiveTime;
+	private LocalDate targetEffectiveTime;
 
-	public SnomedModuleDependencyReferenceSetMemberBuilder withSourceEffectiveTime(Date sourceEffectiveTime) {
+	public SnomedModuleDependencyReferenceSetMemberBuilder withSourceEffectiveTime(LocalDate sourceEffectiveTime) {
 		this.sourceEffectiveTime = sourceEffectiveTime;
 		return getSelf();
 	}
 
-	public SnomedModuleDependencyReferenceSetMemberBuilder withTargetEffectiveTime(Date targetEffectiveTime) {
+	public SnomedModuleDependencyReferenceSetMemberBuilder withTargetEffectiveTime(LocalDate targetEffectiveTime) {
 		this.targetEffectiveTime = targetEffectiveTime;
 		return getSelf();
 	}

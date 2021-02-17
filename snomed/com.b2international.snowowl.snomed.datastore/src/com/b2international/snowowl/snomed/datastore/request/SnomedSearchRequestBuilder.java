@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -91,7 +91,7 @@ public abstract class SnomedSearchRequestBuilder<B extends SnomedSearchRequestBu
 			if (EffectiveTimes.isUnset(effectiveTime)) {
 				return filterByEffectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME);
 			} else {
-				return filterByEffectiveTime(EffectiveTimes.parse(effectiveTime, DateFormats.SHORT).getTime());
+				return filterByEffectiveTime(EffectiveTimes.getEffectiveTime(effectiveTime, DateFormats.SHORT));
 			}
 		}
 	}
