@@ -107,7 +107,23 @@ final class ConceptMapCompareRequest extends ResourceRequest<BranchContext, Conc
 		//Unchanged elements are in the intersection
 		Set<Wrapper<ConceptMapMapping>> allUnchangedWrappedMappings = Sets.intersection(baseWrappedMappings, compareWrappedMappings);
 		
-		List<ConceptMapCompareResultItem> allUnchanged = allUnchangedWrappedMappings.stream()
+		//Collect mappings with comments
+		
+		Set<Wrapper<ConceptMapMapping>> allUnchangedWrappedMappingsWithComments = allUnchangedWrappedMappings.stream().map(mapping -> {
+			List<String> comments = Lists.newArrayList();
+
+			baseWrappedMappings.stream().filter(baseMapping -> baseMapping.equals(mapping))
+				.findFirst()
+				.ifPresent(m -> comments.add(m.get().getComments()));
+
+			compareWrappedMappings.stream().filter(compareMapping -> compareMapping.equals(mapping))
+				.findFirst()
+				.ifPresent(m -> comments.add(m.get().getComments()));
+			
+			return mapCompareEquivalence.wrap(ConceptMapMapping.builder(mapping.get()).comments(String.join(" ", comments)).build());
+		}).collect(Collectors.toSet());
+		
+		List<ConceptMapCompareResultItem> allUnchanged = allUnchangedWrappedMappingsWithComments.stream()
 			.map(w -> new ConceptMapCompareResultItem(ConceptMapCompareChangeKind.SAME, w.get()))
 			.collect(Collectors.toList());
 		
