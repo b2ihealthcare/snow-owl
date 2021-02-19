@@ -212,7 +212,6 @@ public final class ConceptMapMapping implements Serializable {
 	
 	private final boolean approximate;
 	
-	@JsonIgnore
 	private String comments;
 	
 	ConceptMapMapping(
@@ -327,6 +326,7 @@ public final class ConceptMapMapping implements Serializable {
 		return approximate;
 	}
 	
+	@JsonIgnore
 	public String getComments() {
 		return comments;
 	}
