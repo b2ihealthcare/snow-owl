@@ -120,7 +120,7 @@ final class ConceptMapCompareRequest extends ResourceRequest<BranchContext, Conc
 				.findFirst()
 				.ifPresent(m -> comments.add(m.get().getComments()));
 			
-			return mapCompareEquivalence.wrap(ConceptMapMapping.builder(mapping.get()).comments(String.join(" ", comments)).build());
+			return mapCompareEquivalence.wrap(ConceptMapMapping.builder(mapping.get()).comments(String.join(" ", comments).trim()).build());
 		}).collect(Collectors.toSet());
 		
 		List<ConceptMapCompareResultItem> allUnchanged = allUnchangedWrappedMappingsWithComments.stream()
