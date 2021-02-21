@@ -88,13 +88,11 @@ final class BranchCompareRequest implements Request<RepositoryContext, BranchCom
 			baseBranchPath = branchToCompare.parentPath();
 		}
 		
-		final BranchCompareResult.Builder result = BranchCompareResult.builder(baseBranchPath, compare, compareHeadTimestamp)
-				.totalNew(compareResult.getTotalAdded())
-				.totalChanged(compareResult.getTotalChanged())
-				.totalDeleted(compareResult.getTotalRemoved());
+		final BranchCompareResult.Builder result = BranchCompareResult.builder(baseBranchPath, compare, compareHeadTimestamp);
 		
 		final Set<ComponentIdentifier> changedContainers = Sets.newHashSet(); 
 		
+		int subtractAdded = 0;
 		for (RevisionCompareDetail detail : compareResult.getDetails()) {
 			final ObjectId affectedId;
 			if (detail.isComponentChange()) {
@@ -110,6 +108,7 @@ final class BranchCompareRequest implements Request<RepositoryContext, BranchCom
 			}
 			final short terminologyComponentId = context.service(TerminologyComponents.class).getTerminologyComponentId(DocumentMapping.getClass(affectedId.type()));
 			if (CodeSystemEntry.TERMINOLOGY_COMPONENT_ID == terminologyComponentId || CodeSystemVersionEntry.TERMINOLOGY_COMPONENT_ID == terminologyComponentId) {
+				subtractAdded++;
 				continue;
 			}
 			
@@ -128,7 +127,11 @@ final class BranchCompareRequest implements Request<RepositoryContext, BranchCom
 			}
 		}
 		
-		return result.build(changedContainers);
+		return result
+				.totalNew(compareResult.getTotalAdded() - subtractAdded)
+				.totalChanged(compareResult.getTotalChanged())
+				.totalDeleted(compareResult.getTotalRemoved())
+				.build(changedContainers);
 	}
 	
 	@Override
