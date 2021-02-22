@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,10 @@ package com.b2international.snowowl.core.commit;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayListWithExpectedSize;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.b2international.commons.ChangeKind;
@@ -33,6 +33,7 @@ import com.b2international.snowowl.core.commit.CommitInfo.Builder;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.BaseResourceConverter;
 import com.google.common.base.Strings;
+import com.google.common.collect.Iterables;
 
 /**
  * @since 5.2
@@ -59,10 +60,12 @@ final class CommitInfoConverter extends BaseResourceConverter<Commit, CommitInfo
 		if (expand().containsKey(CommitInfo.Expand.DETAILS)) {
 			final Options detailsExpandOptions = expand().get(CommitInfo.Expand.DETAILS, Options.class);
 			final Collection<CommitDetail> commitDetails = getCommitDetails(doc, detailsExpandOptions);
-			final List<CommitInfoDetail> commitInfoDetails = commitDetails.stream()
-					.flatMap(info -> toCommitInfoDetail(info))
-					.collect(Collectors.toList());
+			final List<CommitInfoDetail> commitInfoDetails = new ArrayList<>();
 			
+			// make sure we gc each commit info detail as soon as we can to free up memory faster
+			for (CommitDetail info : Iterables.consumingIterable(commitDetails)) {
+				toCommitInfoDetail(info).forEach(commitInfoDetails::add);
+			}
 			builder.details(new CommitInfoDetails(commitInfoDetails, null, commitInfoDetails.size(), commitInfoDetails.size()));
 		}
 		
