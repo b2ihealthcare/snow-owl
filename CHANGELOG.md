@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 7.15.2
+
+### Bugs/Improvements
+- [core] prevent unnecessary branch delete attempt in case of regular version create requests (8a076e6)
+- [core] add comments to Concept Map Mapping (#767)
+- [core] fix lowerCase method in StringUtils (#768)
+- [core] return total added/changed/removed branch compare counters based on number of components instead of changes (#768) 
+
 ## 7.15.1
 
 ### Bugs/Improvements
