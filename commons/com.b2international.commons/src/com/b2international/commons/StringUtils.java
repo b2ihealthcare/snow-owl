@@ -138,7 +138,7 @@ public class StringUtils {
 			return arg;
 		}
 		if (arg.length() == 1) {
-			return arg.toUpperCase();
+			return arg.toLowerCase();
 		}
 		return Character.toLowerCase(arg.charAt(0)) + arg.substring(1);
 	}

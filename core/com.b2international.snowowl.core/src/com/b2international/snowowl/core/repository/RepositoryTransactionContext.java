@@ -244,24 +244,24 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 	}
 
 	@Override
-	public Long commit() {
+	public Optional<Commit> commit() {
 		return commit(author(), commitComment, parentLockContext);
 	}
 	
 	@Override
-	public Long commit(String commitComment) {
+	public Optional<Commit> commit(String commitComment) {
 		return commit(author(), commitComment, parentLockContext);
 	}
 	
 	@Override
-	public Long commit(String commitComment, String parentLockContext) {
+	public Optional<Commit> commit(String commitComment, String parentLockContext) {
 		return commit(author(), commitComment, parentLockContext);
 	}
 	
 	@Override
-	public Long commit(String author, String commitComment, String parentLockContext) {
+	public Optional<Commit> commit(String author, String commitComment, String parentLockContext) {
 		if (!isDirty()) {
-			return Commit.NO_COMMIT_TIMESTAMP;
+			return Optional.empty();
 		}
 		
 		// XXX it would be great to use Locks.on(...) here as well
@@ -279,7 +279,7 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 			log().info("Persisting changes to {}@{}", path(), timestamp);
 			commit = staging.commit(null, timestamp, author, commitComment);
 			log().info("Changes have been successfully persisted to {}@{}.", path(), timestamp);
-			return commit == null ? Commit.NO_COMMIT_TIMESTAMP : commit.getTimestamp();
+			return Optional.ofNullable(commit);
 		} catch (final IndexException e) {
 			Throwable rootCause = Throwables.getRootCause(e);
 			if (rootCause instanceof CycleDetectedException) {
