@@ -59,7 +59,6 @@ import com.google.common.collect.Sets;
 	}
 )
 @JsonDeserialize(builder = SnomedDescriptionIndexEntry.Builder.class)
-@Script(name="normalizeWithOffset", script="(_score / (_score + 1.0f)) + params.offset")
 public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 
 	private static final long serialVersionUID = 301681633674309020L;
