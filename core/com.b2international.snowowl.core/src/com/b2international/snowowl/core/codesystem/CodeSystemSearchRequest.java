@@ -15,11 +15,8 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
-import static com.google.common.collect.Lists.newArrayList;
-
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
@@ -93,11 +90,11 @@ final class CodeSystemSearchRequest
 		if (containsKey(OptionKey.NAME)) {
 			final String searchTerm = getString(OptionKey.NAME);
 			ExpressionBuilder termFilter = Expressions.builder();
-			final List<Expression> disjuncts = newArrayList();
-			disjuncts.add(CodeSystemEntry.Expressions.matchNameExact(searchTerm));
-			disjuncts.add(CodeSystemEntry.Expressions.matchNameAllTermsPresent(searchTerm));
-			disjuncts.add(CodeSystemEntry.Expressions.matchNameAllPrefixesPresent(searchTerm));
-			termFilter.should(Expressions.dismax(disjuncts));
+			termFilter.should(Expressions.dismaxWithScoreCategories(
+				CodeSystemEntry.Expressions.matchNameExact(searchTerm),
+				CodeSystemEntry.Expressions.matchNameAllTermsPresent(searchTerm),
+				CodeSystemEntry.Expressions.matchNameAllPrefixesPresent(searchTerm)
+			));
 			termFilter.should(Expressions.boost(CodeSystemEntry.Expressions.shortName(searchTerm), 1000.0f));
 			queryBuilder.must(termFilter.build());
 		}

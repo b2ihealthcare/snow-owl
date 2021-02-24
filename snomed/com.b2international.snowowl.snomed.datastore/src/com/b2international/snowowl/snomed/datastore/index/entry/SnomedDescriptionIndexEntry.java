@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,32 +15,14 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.entry;
 
-import static com.b2international.index.query.Expressions.dismax;
-import static com.b2international.index.query.Expressions.exactMatch;
-import static com.b2international.index.query.Expressions.matchAny;
-import static com.b2international.index.query.Expressions.matchTextAll;
-import static com.b2international.index.query.Expressions.matchTextAny;
-import static com.b2international.index.query.Expressions.matchTextFuzzy;
-import static com.b2international.index.query.Expressions.matchTextParsed;
-import static com.b2international.index.query.Expressions.regexp;
-import static com.b2international.index.query.Expressions.scriptScore;
-import static com.google.common.collect.Lists.newArrayList;
+import static com.b2international.index.query.Expressions.*;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.SortedSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.b2international.index.Analyzers;
-import com.b2international.index.Doc;
-import com.b2international.index.Keyword;
-import com.b2international.index.Normalizers;
-import com.b2international.index.Script;
-import com.b2international.index.Text;
+import com.b2international.index.*;
 import com.b2international.index.query.Expression;
 import com.b2international.index.revision.ObjectId;
 import com.b2international.index.revision.Revision;
@@ -58,8 +40,6 @@ import com.google.common.base.Function;
 import com.google.common.base.MoreObjects.ToStringHelper;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
@@ -79,7 +59,6 @@ import com.google.common.collect.Sets;
 	}
 )
 @JsonDeserialize(builder = SnomedDescriptionIndexEntry.Builder.class)
-@Script(name="normalizeWithOffset", script="(_score / (_score + 1.0f)) + params.offset")
 public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 
 	private static final long serialVersionUID = 301681633674309020L;
@@ -174,18 +153,18 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		}
 		
 		public static Expression termDisjunctionQuery(final TermFilter termFilter) {
-			final List<Expression> disjuncts = newArrayList();
-			disjuncts.add(scriptScore(matchEntireTerm(termFilter.getTerm()), "normalizeWithOffset", ImmutableMap.of("offset", 2)));
-			disjuncts.add(scriptScore(matchTextAll(Fields.TERM, termFilter.getTerm()).withIgnoreStopwords(termFilter.isIgnoreStopwords()), "normalizeWithOffset", ImmutableMap.of("offset", 1)));
-			disjuncts.add(scriptScore(matchTextAll(Fields.TERM_PREFIX, termFilter.getTerm()).withIgnoreStopwords(termFilter.isIgnoreStopwords()), "normalizeWithOffset", ImmutableMap.of("offset", 0)));
-			return dismax(disjuncts);
+			return dismaxWithScoreCategories(
+				matchEntireTerm(termFilter.getTerm()),
+				matchTextAll(Fields.TERM, termFilter.getTerm()).withIgnoreStopwords(termFilter.isIgnoreStopwords()),
+				matchTextAll(Fields.TERM_PREFIX, termFilter.getTerm()).withIgnoreStopwords(termFilter.isIgnoreStopwords())
+			);
 		}
 		
 		public static Expression minShouldMatchTermDisjunctionQuery(final TermFilter termFilter) {
-			final List<Expression> disjuncts = Lists.newArrayList();
-			disjuncts.add(matchTextAny(Fields.TERM, termFilter.getTerm(), termFilter.getMinShouldMatch()).withIgnoreStopwords(termFilter.isIgnoreStopwords()));
-			disjuncts.add(matchTextAny(Fields.TERM_PREFIX, termFilter.getTerm(), termFilter.getMinShouldMatch()).withIgnoreStopwords(termFilter.isIgnoreStopwords()));
-			return dismax(disjuncts);
+			return dismaxWithScoreCategories(
+				matchTextAny(Fields.TERM, termFilter.getTerm(), termFilter.getMinShouldMatch()).withIgnoreStopwords(termFilter.isIgnoreStopwords()),
+				matchTextAny(Fields.TERM_PREFIX, termFilter.getTerm(), termFilter.getMinShouldMatch()).withIgnoreStopwords(termFilter.isIgnoreStopwords())
+			);
 		}
 
 		public static Expression fuzzy(String term) {
