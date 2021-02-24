@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 7.15.3
+
+### Bugs/Improvements
+- [core] extract common score normalization logic and enable it for all documents (#770)
+
 ## 7.15.2
 
 ### Bugs/Improvements
