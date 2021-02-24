@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import com.b2international.index.query.TextPredicate.MatchType;
 import com.google.common.base.Splitter;
@@ -176,6 +178,19 @@ public class Expressions {
 	
 	public static RegexpPredicate regexp(String field, String regexp) {
 		return new RegexpPredicate(field, regexp);
+	}
+	
+	public static Expression dismaxWithScoreCategories(Expression...disjuncts) {
+		return dismaxWithScoreCategories(List.of(disjuncts));
+	}
+	
+	public static Expression dismaxWithScoreCategories(List<Expression> disjuncts) {
+		return new DisMaxPredicate(
+			IntStream.range(0, disjuncts.size())
+				.mapToObj(i -> scriptScore(disjuncts.get(i), "normalizeWithOffset", Map.of("offset", disjuncts.size() - 1 - i)))
+				.collect(Collectors.toList()),
+			0.0f
+		);
 	}
 	
 	public static Expression dismax(Expression...disjuncts) {
