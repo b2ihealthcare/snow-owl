@@ -28,7 +28,10 @@ import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersion;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
+import com.b2international.snowowl.core.config.RepositoryConfiguration;
+import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.domain.CappedTransactionContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.id.IDs;
@@ -65,8 +68,12 @@ public class VersioningRequest implements Request<TransactionContext, Boolean>, 
 
 		log.info("Versioning components of '{}' codesystem...", config.getCodeSystemShortName());
 		try {
-			doVersionComponents(context);
-			
+			// capped context to commit versioned components in the configured low watermark bulks
+			try (CappedTransactionContext versioningContext = new CappedTransactionContext(context, getCommitLimit(context))) {
+				doVersionComponents(versioningContext);
+			}
+
+			// FIXME remove when fixing _id field value for version documents
 			if (version != null && config.isForce()) {
 				context.delete(version);
 			}
@@ -79,6 +86,10 @@ public class VersioningRequest implements Request<TransactionContext, Boolean>, 
 			throw new SnowowlRuntimeException(e);
 		}
 		return Boolean.TRUE;
+	}
+
+	protected final int getCommitLimit(TransactionContext context) {
+		return context.service(SnowOwlConfiguration.class).getModuleConfig(RepositoryConfiguration.class).getIndexConfiguration().getCommitWatermarkLow();
 	}
 	
 	/**

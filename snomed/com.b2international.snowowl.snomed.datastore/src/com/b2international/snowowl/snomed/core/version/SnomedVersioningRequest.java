@@ -19,11 +19,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import org.slf4j.Logger;
 
@@ -40,12 +36,7 @@ import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.*;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
@@ -72,7 +63,7 @@ public final class SnomedVersioningRequest extends VersioningRequest {
 		SnomedRelationshipIndexEntry.class
 	);
 	
-	private Set<String> componentIdsToPublish = newHashSet();
+	private final Set<String> componentIdsToPublish = newHashSet();
 	
 	public SnomedVersioningRequest(VersioningConfiguration config) {
 		super(config);
@@ -271,23 +262,7 @@ public final class SnomedVersioningRequest extends VersioningRequest {
 			componentIdsByReferringModule.put(moduleId, dependency);
 		}
 	}
-	
-//	@Override
-//	protected void createCodeSystemVersion(final CDOEditingContext editingContext, VersioningConfiguration config) {
-//		if (Branch.MAIN_PATH.equals(editingContext.getBranch())) {
-//			super.createCodeSystemVersion(editingContext, config);
-//		} else {
-//			try (final SnomedEditingContext mainEditingContext = new SnomedEditingContext(BranchPathUtils.createMainPath())) {
-//				super.createCodeSystemVersion(mainEditingContext, config);
-//				final String commitComment = String.format("New Snomed Version %s was added to Snomed Release %s.", config.getVersionId(), config.getCodeSystemShortName());
-//				CDOServerUtils.commit(mainEditingContext, "System", commitComment, null);
-//			} catch (Exception e) {
-//				throw new SnowowlRuntimeException(String.format("An error occurred while adding Snomed Version %s to Snomed Release %s.",
-//						config.getVersionId(), config.getCodeSystemShortName()), e);
-//			}
-//		}
-//	}
-//	
+
 //	@Override
 //	public void postCommit() {
 //		if (!CompareUtils.isEmpty(componentIdsToPublish)) {
