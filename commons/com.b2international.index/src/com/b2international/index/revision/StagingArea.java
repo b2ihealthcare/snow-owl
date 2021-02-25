@@ -64,6 +64,8 @@ public final class StagingArea {
 	private final String branchPath;
 	private final ObjectMapper mapper;
 	private final int maxTermsCount;
+	private final int commitWatermarkLow;
+	private final int commitWatermarkHigh;
 
 	private Map<ObjectId, StagedObject> stagedObjects;
 
@@ -79,6 +81,8 @@ public final class StagingArea {
 		this.branchPath = branchPath;
 		this.mapper = mapper;
 		this.maxTermsCount = Integer.parseInt((String) index.admin().settings().get(IndexClientFactory.MAX_TERMS_COUNT_KEY));
+		this.commitWatermarkLow = (int) index.admin().settings().get(IndexClientFactory.COMMIT_WATERMARK_LOW_KEY);
+		this.commitWatermarkHigh = (int) index.admin().settings().get(IndexClientFactory.COMMIT_WATERMARK_LOW_KEY);
 		reset();
 	}
 	
@@ -148,6 +152,10 @@ public final class StagingArea {
 	public boolean isRemoved(Revision revision) {
 		StagedObject so = stagedObjects.get(revision.getObjectId());
 		return so != null && so.isRemoved();
+	}
+	
+	public int getNumberOfStagedObjects() {
+		return stagedObjects.size();
 	}
 	
 	public Stream<Object> getNewObjects() {
@@ -461,6 +469,13 @@ public final class StagingArea {
 		// nothing to commit, break
 		if (writer.isEmpty() && CompareUtils.isEmpty(mergeSources)) {
 			return null;
+		}
+		
+		// raise watermark logs if above thresholds
+		if (details.size() > commitWatermarkHigh) {
+			index.admin().log().warn("high commit watermark [{}] exceeded in commit [{} - {} - {}] details size: {}", commitWatermarkHigh, branchPath, author, commitComment, details.size());
+		} else if (details.size() > commitWatermarkLow) {
+			index.admin().log().warn("low commit watermark [{}] exceeded in commit [{} - {} - {}] details size: {}", commitWatermarkLow, branchPath, author, commitComment, details.size());
 		}
 		
 		// generate a commit entry that marks the end of the commit and contains all changes in a details property
