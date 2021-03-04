@@ -139,10 +139,11 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 				} catch (NotFoundException e) {
 					// branch does not exist, ignore
 				}
+			} else {
+				
+				// if there is no conflict, delete the branch (the request also ignores non-existent branches)
+				deleteBranch(context, newVersionPath, repositoryId);
 			}
-			
-			// if there is no conflict, delete the branch (the request also ignores non-existent branches)
-			deleteBranch(context, newVersionPath, repositoryId);
 		}
 		
 		acquireLocks(context, user, codeSystemsToVersion);

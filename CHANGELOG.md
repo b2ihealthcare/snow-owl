@@ -1,6 +1,28 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 7.15.3
+
+### Bugs/Improvements
+- [core] extract common score normalization logic and enable it for all documents (#770)
+
+## 7.15.2
+
+### Bugs/Improvements
+- [core] prevent unnecessary branch delete attempt in case of regular version create requests (8a076e6)
+- [core] add comments to Concept Map Mapping (#767)
+- [core] fix lowerCase method in StringUtils (#768)
+- [core] return total added/changed/removed branch compare counters based on number of components instead of changes (#768) 
+
+## 7.15.1
+
+### Bugs/Improvements
+- [core] compare only active mapping members in Concept Map Compare (#759)
+- [core] make branch name validation messages more brief (#760)
+- [snomed] decrease color depth of icons to 32 BPP (895ef2b)
+- [validation] update description of rule 671 (#763)
+- [cli] add `ldap` commands to verify LDAP configuration (#764)
+
 ## 7.15.0
 
 ### Core

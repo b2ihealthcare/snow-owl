@@ -26,7 +26,7 @@ import com.google.common.collect.Iterables;
 /**
  * @since 5.11
  */
-final class MultiIdentityProvider implements IdentityProvider, IdentityWriter {
+public final class MultiIdentityProvider implements IdentityProvider, IdentityWriter {
 
 	private final List<IdentityProvider> providers;
 
@@ -81,4 +81,9 @@ final class MultiIdentityProvider implements IdentityProvider, IdentityWriter {
 			provider.validateSettings();
 		}
 	}
+	
+	public List<IdentityProvider> getProviders() {
+		return providers;
+	}
+	
 }
