@@ -19,10 +19,8 @@ import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
-import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
@@ -167,7 +165,7 @@ public final class CodeSystemsCommand extends Command {
 		} else {
 			info.append(versions
 					.stream()
-					.map(this::getCodeSystemVersionInformation)
+					.map(v -> getCodeSystemVersionInformation(v, cs))
 					.collect(Collectors.joining("\n")));
 		}
 		return info.toString();
@@ -219,16 +217,38 @@ public final class CodeSystemsCommand extends Command {
 				.getSync(1, TimeUnit.MINUTES);
 	}
 	
-	private String getCodeSystemVersionInformation(CodeSystemVersion codeSystemVersion) {
+	//I added the CodeSystem argument so i don't have to search for it in a request. It saves a lot of time
+	private String getCodeSystemVersionInformation(CodeSystemVersion codeSystemVersion, CodeSystem codeSystem) {
 		return new StringBuilder()
 			.append("\t\tVersion id: ").append(codeSystemVersion.getVersion()).append("\n")
 			.append("\t\tDescription: ").append(codeSystemVersion.getDescription()).append("\n")
 			.append("\t\tEffective date: ").append(EffectiveTimes.format(codeSystemVersion.getEffectiveTime(), DateFormats.DEFAULT)).append("\n")
 			.append("\t\tCreation date: ").append(Dates.formatByHostTimeZone(codeSystemVersion.getImportDate(), DateFormats.DEFAULT)).append("\n")
 			.append("\t\tLast update: ").append(codeSystemVersion.getLastModificationDate() != null ? StdDateFormat.getDateInstance().format(codeSystemVersion.getLastModificationDate()) : "-").append("\n")
-			.append("\t\tVersion branch path: ").append(codeSystemVersion.getPath())
+			.append("\t\tVersion branch path: ").append(codeSystemVersion.getPath()).append("\n")
+			.append("\t\tExtensions: ").append(getExtensionsForGivenVersionOfCodeSystem(codeSystemVersion, codeSystem))
 			.append("\n")
 			.toString();
+	}
+	
+	private String getExtensionsForGivenVersionOfCodeSystem(CodeSystemVersion version, CodeSystem extendedCodeSystem) {
+		final List<String> extensionsOfThisVersion =
+		CodeSystemRequests
+		.getAllCodeSystems(getContext())
+		.stream()
+		.filter(cs -> 
+				{
+					//Filters the code systems that are the direct extensions of the extendedCodeSystem and the given version
+					return cs.getExtensionOf() != null 
+							&& 
+							cs.getExtensionOf().getCodeSystem().equals(extendedCodeSystem.getCodeSystemURI().getCodeSystem())
+							&&
+							cs.getExtensionOf().getPath().equals(version.getVersion());
+					}
+		)
+		.map(css -> css.getShortName())
+		.collect(Collectors.toList());
+		return extensionsOfThisVersion.isEmpty()? "-" : String.join(", ", extensionsOfThisVersion);
 	}
 	
 }
