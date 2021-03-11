@@ -93,7 +93,6 @@ public final class CodeSystemsCommand extends Command {
 			.append(getAvailableUpgradesInfo(codeSystem))
 			.append("\tCode System URI: ").append(codeSystem.getCodeSystemURI()).append("\n")
 			.append("\tIcon Path: ").append(codeSystem.getIconPath()).append("\n")
-			.append(getDependenciesInfo(codeSystem))
 			.append(codeSystem.getUpgradeOf() == null? "" : 
 					"\tUpgrade of: " + codeSystem.getUpgradeOf().toString() + "\n")
 			.append(codeSystem.getExtensionOf() == null? "" : 
@@ -114,17 +113,6 @@ public final class CodeSystemsCommand extends Command {
 		
 		StringBuilder result = new StringBuilder("\n\tAdditional Properties:\n");
 		codeSystem.getAdditionalProperties().forEach((key, value) -> result.append("\t\t").append(key).append(": ").append(value.toString()).append("\n"));;
-		
-		return result.toString();
-	}
-
-	private String getDependenciesInfo(CodeSystem codeSystem) {
-		if(codeSystem.getDependencies() == null || codeSystem.getDependencies().isEmpty()){
-			return "";
-		}
-		
-		StringBuilder result = new StringBuilder("\tDependencies:\n");
-		codeSystem.getDependencies().forEach(dependency -> result.append("\t\t").append(dependency).append("\n"));
 		
 		return result.toString();
 	}
