@@ -234,6 +234,7 @@ public final class EsQueryBuilder {
 			query = QueryBuilders.matchBoolPrefixQuery(field, term)
 				.analyzer(predicate.analyzer())
 				.operator(Operator.AND);
+				break;
 		case PHRASE:
 			query = QueryBuilders.matchPhraseQuery(field, term)
 						.analyzer(predicate.analyzer());
