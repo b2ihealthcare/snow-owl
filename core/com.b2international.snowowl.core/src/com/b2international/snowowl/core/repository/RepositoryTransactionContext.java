@@ -294,6 +294,12 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 			clear();
 		}
 	}
+
+	@Override
+	public void rollback() {
+		staging.rollback();
+		clear();
+	}
 	
 	private void clear() {
 		resolvedObjectsById.clear();

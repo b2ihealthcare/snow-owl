@@ -113,6 +113,11 @@ public class DelegatingTransactionContext extends DelegatingBranchContext implem
 	}
 
 	@Override
+	public void rollback() {
+		getDelegate().rollback();
+	}
+	
+	@Override
 	public void clearContents() {
 		getDelegate().clearContents();
 	}
