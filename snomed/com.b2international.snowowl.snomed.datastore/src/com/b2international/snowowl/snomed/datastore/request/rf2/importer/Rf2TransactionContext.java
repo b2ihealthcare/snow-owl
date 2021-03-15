@@ -28,11 +28,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.index.revision.Commit;
-import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.StagingArea;
 import com.b2international.snowowl.core.codesystem.CodeSystemEntry;
 import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.core.domain.DelegatingBranchContext;
+import com.b2international.snowowl.core.domain.DelegatingTransactionContext;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
@@ -58,7 +57,7 @@ import com.google.common.collect.Multimaps;
 /**
  * @since 6.0
  */
-public final class Rf2TransactionContext extends DelegatingBranchContext implements TransactionContext {
+public final class Rf2TransactionContext extends DelegatingTransactionContext {
 	
 	private static final Logger LOG = LoggerFactory.getLogger("import");
 
@@ -77,33 +76,8 @@ public final class Rf2TransactionContext extends DelegatingBranchContext impleme
 	}
 	
 	@Override
-	public boolean isDirty() {
-		return getDelegate().isDirty();
-	}
-	
-	@Override
-	public String author() {
-		return getDelegate().author();
-	}
-
-	@Override
 	protected RepositoryTransactionContext getDelegate() {
 		return (RepositoryTransactionContext) super.getDelegate();
-	}
-	
-	@Override
-	public String add(Object o) {
-		return getDelegate().add(o);
-	}
-	
-	@Override
-	public void update(Revision oldVersion, Revision newVersion) {
-		getDelegate().update(oldVersion, newVersion);
-	}
-	
-	@Override
-	public void clearContents() {
-		getDelegate().clearContents();
 	}
 	
 	@Override
@@ -134,41 +108,6 @@ public final class Rf2TransactionContext extends DelegatingBranchContext impleme
 	@Override
 	public Optional<Commit> commit(String userId, String commitComment, String parentContextDescription) {
 		throw new UnsupportedOperationException("Use the single supported commit(String) method");
-	}
-	
-	@Override
-	public void delete(Object o) {
-		getDelegate().delete(o);
-	}
-	
-	@Override
-	public void delete(Object o, boolean force) {
-		getDelegate().delete(o, force);
-	}
-	
-	@Override
-	public void close() throws Exception {
-		getDelegate().close();
-	}
-
-	@Override
-	public <T> T lookupIfExists(String componentId, Class<T> type) {
-		return getDelegate().lookupIfExists(componentId, type);
-	}
-	
-	@Override
-	public boolean isNotificationEnabled() {
-		return getDelegate().isNotificationEnabled();
-	}
-	
-	@Override
-	public void setNotificationEnabled(boolean notificationEnabled) {
-		getDelegate().setNotificationEnabled(notificationEnabled);
-	}
-	
-	@Override
-	public String parentLock() {
-		return getDelegate().parentLock();
 	}
 	
 	@Override

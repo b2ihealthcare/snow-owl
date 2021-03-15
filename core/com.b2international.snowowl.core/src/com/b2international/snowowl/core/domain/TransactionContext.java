@@ -121,6 +121,11 @@ public interface TransactionContext extends BranchContext, AutoCloseable {
 	 * @return - an {@link Optional} {@link Commit} object
 	 */
 	Optional<Commit> commit(String userId, String commitComment, String parentContextDescription);
+
+	/**
+	 * Rolls back the transaction to an empty state, where nothing is staged for commit.
+	 */
+	void rollback();
 	
 	/**
 	 * @return whether the commit will notify interested services, notification services about this transaction's commit or not. It's enabled by default.

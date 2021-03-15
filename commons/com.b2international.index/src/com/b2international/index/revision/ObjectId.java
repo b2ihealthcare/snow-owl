@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -92,6 +92,14 @@ public final class ObjectId {
 	
 	public static ObjectId rootOf(String type) {
 		return of(type, ROOT);
+	}
+	
+	public static ObjectId toObjectId(Object obj, String id) {
+		if (obj instanceof Revision) {
+			return ((Revision) obj).getObjectId();
+		} else {
+			return ObjectId.of(obj.getClass(), id);
+		}
 	}
 
 }
