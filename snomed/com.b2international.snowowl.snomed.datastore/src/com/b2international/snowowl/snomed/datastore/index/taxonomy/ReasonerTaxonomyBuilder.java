@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -595,7 +595,7 @@ public final class ReasonerTaxonomyBuilder {
 						statementId,
 						null, // moduleId is not supported here
 						released,
-						hasStatedPair);
+						hasStatedPair ? lastStatedRelationship[0] : null);
 		
 				fragments.add(statement);
 			}
@@ -695,7 +695,7 @@ public final class ReasonerTaxonomyBuilder {
 						statementId,
 						null, // moduleId is not supported here
 						released,
-						false); // Relationships added through this method have no stated pair
+						null); // Relationships added through this method have no stated pair
 				
 				fragments.add(statement);
 			}
@@ -758,7 +758,7 @@ public final class ReasonerTaxonomyBuilder {
 						statementId,
 						null, // moduleId is not supported here
 						false,  // XXX: "injected" concepts will not set these flags correctly, but they should
-						false);  // only be used for equivalence checks
+						null);  // only be used for equivalence checks
 
 				fragments.add(statement);
 			}

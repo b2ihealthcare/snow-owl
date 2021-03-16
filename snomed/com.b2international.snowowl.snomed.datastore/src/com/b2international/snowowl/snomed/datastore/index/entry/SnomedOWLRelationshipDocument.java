@@ -72,7 +72,7 @@ public final class SnomedOWLRelationshipDocument implements Serializable {
 			adjustedGroup = group + groupOffset;
 		}
 		
-		return new StatementFragment(Long.parseLong(typeId), Long.parseLong(destinationId), false, adjustedGroup, 0, false, -1L, null, false, false);
+		return new StatementFragment(Long.parseLong(typeId), Long.parseLong(destinationId), false, adjustedGroup, 0, false, -1L, null, false, null);
 	}
 	
 	@Override
