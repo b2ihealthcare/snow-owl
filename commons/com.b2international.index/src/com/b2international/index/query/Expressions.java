@@ -164,6 +164,21 @@ public class Expressions {
 		return new TextPredicate(field, term, MatchType.ANY, minShouldMatch);
 	}
 	
+	/**
+	 * <p>
+	 * Returns a text predicate that uses <a href="https://www.elastic.co/guide/en/elasticsearch/reference/7.10/query-dsl-match-bool-prefix-query.html">match boolean prefix query</a>.
+	 * It will match results by constructing a bool query with an AND operator from the analyzed terms,
+	 * using the last term in a prefix query and every term preceding it in a term query.
+	 * </p>
+	 * 
+	 * @param field	the text field to query
+	 * @param term the string query
+	 * @return new match boolean prefix type Text Predicate
+	 */
+	public static TextPredicate matchBooleanPrefix(String field, String term) {
+		return new TextPredicate(field, term, MatchType.BOOLEAN_PREFIX);
+	}
+	
 	public static TextPredicate matchTextPhrase(String field, String term) {
 		return new TextPredicate(field, term, MatchType.PHRASE);
 	}
