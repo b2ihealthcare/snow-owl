@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
@@ -39,6 +40,7 @@ import com.fasterxml.jackson.databind.util.StdDateFormat;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Ordering;
 
@@ -57,6 +59,9 @@ import picocli.CommandLine.Option;
 public final class CodeSystemsCommand extends Command {
 
 	private static final Ordering<CodeSystem> SHORT_NAME_ORDERING = Ordering.natural().onResultOf(CodeSystem::getShortName);
+	
+	private static final String CODE_SYSTEM_INFO_JOIN_DELIMITER = "\n   ";
+	private static final String LOCALES_ADDITIONAL_PROPERTIES_AVAILABLE_UPGRADES_VERSIONS_JOIN_DELIMITER = "\n      ";
 
 	@Option(names = { "-c", "--codesystem" }, description = { "A short name of the codeSystem to return" })
 	String codeSystem;
@@ -81,65 +86,98 @@ public final class CodeSystemsCommand extends Command {
 	}
 
 	private String getCodeSystemInfo(CodeSystem codeSystem) {
-		//Added the three spaces for better readability
-		return new StringBuilder()
-			.append(codeSystem.getShortName()).append("\n")
-			.append("\tName: ").append(codeSystem.getName()).append("\n")
-			.append("\tShort name: ").append(codeSystem.getShortName()).append("\n")
-			.append("\tOID: ").append(codeSystem.getOid()).append("\n")
-			.append("\tMaintaining organization link: ").append(codeSystem.getOrganizationLink()).append("\n")
-			.append(codeSystem.getCitation() == null? "" :
-					"\tCitation: " + codeSystem.getCitation() + "\n")
-			.append(getAvailableUpgradesInfo(codeSystem))
-			.append("\tCode System URI: ").append(codeSystem.getCodeSystemURI()).append("\n")
-			.append("\tIcon Path: ").append(codeSystem.getIconPath()).append("\n")
-			.append(codeSystem.getUpgradeOf() == null? "" : 
-					"\tUpgrade of: " + codeSystem.getUpgradeOf().toString() + "\n")
-			.append(codeSystem.getExtensionOf() == null? "" : 
-					"\tExtension of: " + codeSystem.getExtensionOf().toString() + "\n")
-			.append("\tRepository: ").append(codeSystem.getRepositoryId()).append("\n")
-			.append("\tWorking branch: ").append(codeSystem.getBranchPath()).append("\n")
-			.append("\tTerminology ID: ").append(codeSystem.getTerminologyId())
-			.append(getAdditionalPropertiesInfo(codeSystem))
-			.append(getLocalesInfo(codeSystem))
-			.append(showVersions ? "\t" + getCodeSystemVersionsInfo(codeSystem) : "")
-			.toString();
+		
+		final ImmutableList.Builder<String> infos = ImmutableList.builder();
+		
+		infos.add(codeSystem.getShortName());
+		infos.add("Name: ".concat(codeSystem.getName()));
+		infos.add("Short name: ".concat(codeSystem.getShortName()));
+		infos.add("OID: ".concat(codeSystem.getOid()));
+		infos.add("Maintaining organization link: ".concat(codeSystem.getOrganizationLink()));
+		
+		if(!CompareUtils.isEmpty(codeSystem.getCitation())) {
+			infos.add("Citation: ".concat(codeSystem.getCitation()));
+		}
+		
+		final String availableUpgradesInfo = getAvailableUpgradesInfo(codeSystem);
+		if (availableUpgradesInfo != null) {
+			infos.add(availableUpgradesInfo);
+		}
+		
+		infos.add("Code System URI: ".concat(codeSystem.getCodeSystemURI().toString()));
+		infos.add("Icon Path: ".concat(codeSystem.getIconPath()));
+		
+		if(codeSystem.getUpgradeOf() != null) {
+			infos.add("Upgrade of: ".concat(codeSystem.getUpgradeOf().toString()));
+		}
+		
+		if(codeSystem.getExtensionOf() != null) {
+			infos.add("Extension of: ".concat(codeSystem.getExtensionOf().toString()));
+		}
+		
+		infos.add("Repository: ".concat(codeSystem.getRepositoryId()));
+		infos.add("Working branch: ".concat(codeSystem.getBranchPath()));
+		infos.add("Terminology ID: ".concat(codeSystem.getTerminologyId()));
+		
+		final String additionalPropertiesInfo = getAdditionalPropertiesInfo(codeSystem);
+		if (additionalPropertiesInfo != null) {
+			infos.add(additionalPropertiesInfo);
+		}
+		
+		final String localesInfo = getLocalesInfo(codeSystem);
+		if (localesInfo != null) {
+			infos.add(localesInfo);
+		}
+		
+		if(showVersions) {
+			infos.add(getCodeSystemVersionsInfo(codeSystem));
+		}
+		return String.join(CODE_SYSTEM_INFO_JOIN_DELIMITER, infos.build());
 	}
 	
 	private String getAdditionalPropertiesInfo(CodeSystem codeSystem) {
 		if(codeSystem.getAdditionalProperties() == null || codeSystem.getAdditionalProperties().isEmpty()){
-			return "";
+			return null;
 		}
 		
-		StringBuilder result = new StringBuilder("\n\tAdditional Properties:\n");
-		codeSystem.getAdditionalProperties().forEach((key, value) -> result.append("\t\t").append(key).append(": ").append(value.toString()).append("\n"));;
+		final ImmutableList.Builder<String> result = ImmutableList.builder();
 		
-		return result.toString();
+		result.add("Additional Properties: ");
+		codeSystem.getAdditionalProperties().forEach((key, value) -> result.add(key.concat(": ").concat(value.toString())));
+		
+		return String.join(LOCALES_ADDITIONAL_PROPERTIES_AVAILABLE_UPGRADES_VERSIONS_JOIN_DELIMITER, result.build());
 	}
 
 	private String getLocalesInfo(CodeSystem codeSystem) {
 		if(codeSystem.getLocales() == null || codeSystem.getLocales().isEmpty()){
-			return "";
+			return null;
 		}
-		StringBuilder result = new StringBuilder("\tLocales:\n");
-		result.append(codeSystem.getLocales().stream().map(e -> "\t\t" + e.toString()).collect(Collectors.joining("\n")));
+		final ImmutableList.Builder<String> result = ImmutableList.builder();
 		
-		return result.toString();
+		result.add("Locales: ");
+		codeSystem.getLocales().forEach(l -> result.add(l.toString()));
+		
+		return String.join(LOCALES_ADDITIONAL_PROPERTIES_AVAILABLE_UPGRADES_VERSIONS_JOIN_DELIMITER, result.build());
 	}
 
 	private String getAvailableUpgradesInfo(CodeSystem codeSystem) {
 		
 		if(codeSystem.getAvailableUpgrades() == null || codeSystem.getAvailableUpgrades().isEmpty()){
-			return "";
+			return null;
 		}
-		StringBuilder result = new StringBuilder("\tAvailable Upgrades:\n");
-		codeSystem.getAvailableUpgrades().forEach(update -> result.append("\t\t").append(update).append("\n"));
 		
-		return result.toString();
+		final ImmutableList.Builder<String> result = ImmutableList.builder();
+		
+		result.add("Available Upgrades: ");
+		codeSystem.getAvailableUpgrades().forEach(update -> result.add(update.toString()));
+		
+		return String.join(LOCALES_ADDITIONAL_PROPERTIES_AVAILABLE_UPGRADES_VERSIONS_JOIN_DELIMITER, result.build());
 	}
 
 	private String getCodeSystemVersionsInfo(CodeSystem cs) {
-		final StringBuilder info = new StringBuilder("\n\tVersions:\n");
+		final ImmutableList.Builder<String> result = ImmutableList.builder();
+		
+		result.add("Versions:");
 		final CodeSystemVersions versions = CodeSystemRequests
 			.prepareSearchCodeSystemVersion()
 			.all()
@@ -148,15 +186,16 @@ public final class CodeSystemsCommand extends Command {
 			.build(cs.getRepositoryId())
 			.execute(getBus())
 			.getSync(1, TimeUnit.MINUTES);
+		
 		if (versions.isEmpty()) {
-			info.append("\t\tNo versions have been created yet.");
+			result.add("No versions have been created yet.");
 		} else {
-			info.append(versions
+			result.addAll(versions
 					.stream()
-					.map(v -> getCodeSystemVersionInformation(v, cs))
-					.collect(Collectors.joining("\n")));
+					.map(v -> getCodeSystemVersionInformation(v, cs).concat("\n"))
+					.collect(ImmutableList.toImmutableList()));
 		}
-		return info.toString();
+		return String.join(LOCALES_ADDITIONAL_PROPERTIES_AVAILABLE_UPGRADES_VERSIONS_JOIN_DELIMITER, result.build());
 	}
 	
 	private List<String> getRepositoryIds() {
@@ -207,36 +246,41 @@ public final class CodeSystemsCommand extends Command {
 	
 	//I added the CodeSystem argument so i don't have to search for it in a request. It saves a lot of time
 	private String getCodeSystemVersionInformation(CodeSystemVersion codeSystemVersion, CodeSystem codeSystem) {
-		return new StringBuilder()
-			.append("\t\tVersion id: ").append(codeSystemVersion.getVersion()).append("\n")
-			.append("\t\tDescription: ").append(codeSystemVersion.getDescription()).append("\n")
-			.append("\t\tEffective date: ").append(EffectiveTimes.format(codeSystemVersion.getEffectiveTime(), DateFormats.DEFAULT)).append("\n")
-			.append("\t\tCreation date: ").append(Dates.formatByHostTimeZone(codeSystemVersion.getImportDate(), DateFormats.DEFAULT)).append("\n")
-			.append("\t\tLast update: ").append(codeSystemVersion.getLastModificationDate() != null ? StdDateFormat.getDateInstance().format(codeSystemVersion.getLastModificationDate()) : "-").append("\n")
-			.append("\t\tVersion branch path: ").append(codeSystemVersion.getPath()).append("\n")
-			.append("\t\tExtensions: ").append(getExtensionsForGivenVersionOfCodeSystem(codeSystemVersion, codeSystem))
-			.append("\n")
-			.toString();
+		final ImmutableList.Builder<String> result = ImmutableList.builder();
+		
+		result.add("Version id: ".concat(codeSystemVersion.getVersion()));
+		result.add("Description: ".concat(codeSystemVersion.getDescription()));
+		result.add("Effective date: ".concat(EffectiveTimes.format(codeSystemVersion.getEffectiveTime(), DateFormats.DEFAULT)));
+		result.add("Creation date: ".concat(Dates.formatByHostTimeZone(codeSystemVersion.getImportDate(), DateFormats.DEFAULT)));
+		result.add("Last update: ".concat(codeSystemVersion.getLastModificationDate() != null ? StdDateFormat.getDateInstance().format(codeSystemVersion.getLastModificationDate()) : "-"));
+		result.add("Version branch path: ".concat(codeSystemVersion.getPath()));
+		final ImmutableList<String> extensionsForGivenVersion = getExtensionsForGivenVersionOfCodeSystem(codeSystemVersion, codeSystem);
+		result.add("Extensions: ".concat(CompareUtils.isEmpty(extensionsForGivenVersion)?  "-" : String.join(", ", extensionsForGivenVersion)));
+
+		return String.join(LOCALES_ADDITIONAL_PROPERTIES_AVAILABLE_UPGRADES_VERSIONS_JOIN_DELIMITER, result.build());
 	}
 	
-	private String getExtensionsForGivenVersionOfCodeSystem(CodeSystemVersion version, CodeSystem extendedCodeSystem) {
-		final List<String> extensionsOfThisVersion =
-		CodeSystemRequests
-		.getAllCodeSystems(getContext())
-		.stream()
-		.filter(cs -> 
-				{
-					//Filters the code systems that are the direct extensions of the extendedCodeSystem and the given version
-					return cs.getExtensionOf() != null 
-							&& 
-							cs.getExtensionOf().getCodeSystem().equals(extendedCodeSystem.getCodeSystemURI().getCodeSystem())
-							&&
-							cs.getExtensionOf().getPath().equals(version.getVersion());
+	private ImmutableList<String> getExtensionsForGivenVersionOfCodeSystem(CodeSystemVersion version, CodeSystem extendedCodeSystem) {
+		return CodeSystemRequests
+		.prepareSearchAllCodeSystems()
+		.buildAsync()
+		.execute(getBus())
+		.then(results -> results
+				.stream()
+				.filter(cs -> 
+					{
+						//Filters the code systems that are the direct extensions of the extendedCodeSystem and the given version
+						return cs.getExtensionOf() != null 
+								&& 
+								cs.getExtensionOf().getCodeSystem().equals(extendedCodeSystem.getCodeSystemURI().getCodeSystem())
+								&&
+								cs.getExtensionOf().getPath().equals(version.getVersion());
 					}
+				)
+				.map(css -> css.getShortName())
+				.collect(ImmutableList.toImmutableList())
 		)
-		.map(css -> css.getShortName())
-		.collect(Collectors.toList());
-		return extensionsOfThisVersion.isEmpty()? "-" : String.join(", ", extensionsOfThisVersion);
+		.getSync(1, TimeUnit.MINUTES);
 	}
 	
 }
