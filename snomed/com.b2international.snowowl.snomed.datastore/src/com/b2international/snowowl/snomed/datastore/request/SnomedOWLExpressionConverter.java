@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 package com.b2international.snowowl.snomed.datastore.request;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.List;
 import java.util.Map;
@@ -39,11 +37,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedOWLRelationshipDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.google.common.base.Stopwatch;
-import com.google.common.base.Strings;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
-import com.google.common.base.Throwables;
+import com.google.common.base.*;
 
 /**
  * @since 6.14 
@@ -52,17 +46,21 @@ public final class SnomedOWLExpressionConverter {
 
 	private static final Logger LOG = LoggerFactory.getLogger(SnomedOWLExpressionConverter.class);
 	
-	private final BranchContext context;
-	
-	private final Supplier<AxiomRelationshipConversionService> conversionService = Suppliers.memoize(() -> {
-		Stopwatch stopwatch = Stopwatch.createStarted();
-		AxiomRelationshipConversionService service = withTccl(() -> new AxiomRelationshipConversionService(getUngroupedAttributes()));
-		LOG.debug("SNOMED OWL Toolkit conversion service initialization took {}", TimeUtil.toString(stopwatch));
-		return service;
-	});
+	private final Supplier<AxiomRelationshipConversionService> conversionService;
 	
 	public SnomedOWLExpressionConverter(BranchContext context) {
-		this.context = checkNotNull(context);
+		this(Suppliers.memoize(() -> {
+			return getUngroupedAttributes(context);
+		}));
+	}
+	
+	public SnomedOWLExpressionConverter(Supplier<Set<Long>> ungroupedAttributes) {
+		this.conversionService = Suppliers.memoize(() -> {
+			Stopwatch stopwatch = Stopwatch.createStarted();
+			AxiomRelationshipConversionService service = withTccl(() -> new AxiomRelationshipConversionService(ungroupedAttributes.get()));
+			LOG.debug("SNOMED OWL Toolkit conversion service initialization took {}", TimeUtil.toString(stopwatch));
+			return service;
+		});
 	}
 
 	public SnomedOWLExpressionConverterResult toSnomedOWLRelationships(String referencedComponentId, String owlExpression) {
@@ -112,7 +110,7 @@ public final class SnomedOWLExpressionConverter {
 		}
 	}
 
-	private Set<Long> getUngroupedAttributes() {
+	private static Set<Long> getUngroupedAttributes(BranchContext context) {
 		return SnomedRequests.prepareSearchMember()
 			.all()
 			.filterByActive(true)
