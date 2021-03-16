@@ -156,6 +156,7 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 			return dismaxWithScoreCategories(
 				matchEntireTerm(termFilter.getTerm()),
 				matchTextAll(Fields.TERM, termFilter.getTerm()).withIgnoreStopwords(termFilter.isIgnoreStopwords()),
+				matchBooleanPrefix(Fields.TERM, termFilter.getTerm()).withIgnoreStopwords(termFilter.isIgnoreStopwords()),
 				matchTextAll(Fields.TERM_PREFIX, termFilter.getTerm()).withIgnoreStopwords(termFilter.isIgnoreStopwords())
 			);
 		}
