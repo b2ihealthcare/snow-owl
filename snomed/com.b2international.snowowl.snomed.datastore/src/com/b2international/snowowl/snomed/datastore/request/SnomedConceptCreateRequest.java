@@ -115,7 +115,7 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 
 	private SnomedConceptDocument convertConcept(final TransactionContext context) {
 		final String newDefinitionStatusId;
-		final Set<String> newAxiomExpressions = getOwlAxiomExpressions();
+		final Set<String> newAxiomExpressions = getOwlAxiomExpressions(context);
 
 		if (!newAxiomExpressions.isEmpty()) {
 			newDefinitionStatusId = SnomedOWLAxiomHelper.getDefinitionStatusFromExpressions(newAxiomExpressions);
@@ -140,12 +140,17 @@ public final class SnomedConceptCreateRequest extends BaseSnomedComponentCreateR
 		}
 	}
 
-	private Set<String> getOwlAxiomExpressions() {
+	private Set<String> getOwlAxiomExpressions(final TransactionContext context) {
 		return Optional.ofNullable(members()).map(Collection::stream).orElseGet(Stream::empty)
 			.filter(req -> req.hasProperty(SnomedRf2Headers.FIELD_OWL_EXPRESSION))
+			.filter(req -> {
+				String owlExpression = req.getProperty(SnomedRf2Headers.FIELD_OWL_EXPRESSION);
+				SnomedOWLExpressionConverterResult result = context.service(SnomedOWLExpressionConverter.class)
+						.toSnomedOWLRelationships(req.getReferencedComponentId(), owlExpression);
+				return result.getGciAxiomRelationships() == null || result.getGciAxiomRelationships().isEmpty();
+			})
 			.map(req -> req.getProperty(SnomedRf2Headers.FIELD_OWL_EXPRESSION))
 			.collect(Collectors.toSet());
-		
 	}
 	
 	private void convertDescriptions(TransactionContext context, final String conceptId) {

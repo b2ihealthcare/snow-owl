@@ -35,10 +35,10 @@ public final class SnomedOWLAxiomHelper {
 		
 		return owlExpressions.stream()
 				.filter(expression -> !Strings.isNullOrEmpty(expression))
-				.filter(expression -> expression.toLowerCase(Locale.ENGLISH).contains(EQUIVALENTCLASSES))
+				.filter(expression -> !expression.toLowerCase(Locale.ENGLISH).contains(EQUIVALENTCLASSES))
 				.findFirst()
-				.map(equivalentClassesAxiom -> Concepts.FULLY_DEFINED)
-				.orElse(Concepts.PRIMITIVE);
+				.map(equivalentClassesAxiom -> Concepts.PRIMITIVE)
+				.orElse(Concepts.FULLY_DEFINED);
 	}
 
 }

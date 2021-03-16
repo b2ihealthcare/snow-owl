@@ -252,6 +252,7 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 				.map(Collection::stream)
 				.orElseGet(Stream::empty)
 					.filter(member -> SnomedRefSetType.OWL_AXIOM == member.type() || Concepts.REFSET_OWL_AXIOM.equals(member.getReferenceSetId()))
+					.filter(member -> member.getGciOWLRelationships() == null || member.getGciOWLRelationships().isEmpty())  // Filter out GCI axioms
 					.map(member -> (String) member.getProperties().get(SnomedRf2Headers.FIELD_OWL_EXPRESSION))
 					.collect(Collectors.toSet());
 		
