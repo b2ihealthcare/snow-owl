@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -117,6 +117,17 @@ public interface IndexClientFactory {
 	 */
 	String BULK_ACTIONS_SIZE_IN_MB = "bulk_action_size_in_mb";
 
+	// Non-elasticsearch configuration keys
+	
+	/**
+	 * Configuration key to specify the low watermark of commits and raise a log entry with commit properties indicating a minor problem.  
+	 */
+	String COMMIT_WATERMARK_LOW_KEY = "commit.watermark.low";
+	
+	/**
+	 * Configuration key to specify the high watermark of commits and raise a log entry with commit properties indicating a major problem.
+	 */
+	String COMMIT_WATERMARK_HIGH_KEY = "commit.watermark.high";
 	
 	//
 	// Default values
@@ -179,6 +190,17 @@ public interface IndexClientFactory {
 	 * Default size in megabytes to limit all outgoing bulk requests.
 	 */
 	int DEFAULT_BULK_ACTIONS_SIZE_IN_MB = 9;
+	
+	/**
+	 * Default amount of commit details indicating low watermark
+	 */
+	int DEFAULT_COMMIT_WATERMARK_LOW_VALUE = 10_000;
+	
+	/**
+	 * Default amount of commit details indicating high watermark
+	 */
+	int DEFAULT_COMMIT_WATERMARK_HIGH_VALUE = 50_000;
+
 
 	/**
 	 * Create a new {@link IndexClient} with the given name.
