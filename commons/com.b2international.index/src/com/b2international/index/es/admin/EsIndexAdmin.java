@@ -26,16 +26,8 @@ import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Random;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest;
@@ -90,7 +82,19 @@ import com.google.common.primitives.Primitives;
  */
 public final class EsIndexAdmin implements IndexAdmin {
 
-	private static final Set<String> DYNAMIC_SETTINGS = Set.of(IndexClientFactory.RESULT_WINDOW_KEY);
+	/**
+	 * List of Elasticsearch supported dynamic settings.
+	 */
+	private static final Set<String> DYNAMIC_SETTINGS = Set.of(
+		IndexClientFactory.RESULT_WINDOW_KEY
+	);
+	/**
+	 * Local Settings are Snow Owl index client only configuration, not actual Elasticsearch supported configuration, they are implicitly dynamic.
+	 */
+	private static final Set<String> LOCAL_SETTINGS = Set.of(
+		IndexClientFactory.COMMIT_WATERMARK_LOW_KEY,
+		IndexClientFactory.COMMIT_WATERMARK_HIGH_KEY
+	);
 	
 	/**
 	 * Important DIFF flags required to produce the JSON patch needed for proper compare and branch merge operation behavior, for proper index schema migration, and so on.
@@ -512,7 +516,9 @@ public final class EsIndexAdmin implements IndexAdmin {
 		if (CompareUtils.isEmpty(newSettings)) {
 			return;
 		}
-		final Set<String> unsupportedDynamicSettings = Sets.difference(newSettings.keySet(), DYNAMIC_SETTINGS);
+
+		// ignore local and/or dynamic settings
+		final Set<String> unsupportedDynamicSettings = Sets.difference(Sets.difference(newSettings.keySet(), DYNAMIC_SETTINGS), LOCAL_SETTINGS);
 		if (!unsupportedDynamicSettings.isEmpty()) {
 			throw new IndexException(String.format("Settings [%s] are not dynamically updateable settings.", unsupportedDynamicSettings), null);
 		}
@@ -530,13 +536,17 @@ public final class EsIndexAdmin implements IndexAdmin {
 			return;
 		}
 		
+		Map<String, Object> esSettings = new HashMap<>(newSettings);
+		// remove any local settings from esSettings
+		esSettings.keySet().removeAll(LOCAL_SETTINGS);
+		
 		for (DocumentMapping mapping : mappings.getMappings()) {
 			final String index = getTypeIndex(mapping);
 			// if any index exists, then update the settings based on the new settings
 			if (exists(mapping)) {
 				try {
-					log.info("Applying settings '{}' changes in index {}...", newSettings, index);
-					AcknowledgedResponse response = client.indices().updateSettings(new UpdateSettingsRequest().indices(index).settings(newSettings));
+					log.info("Applying settings '{}' changes in index {}...", esSettings, index);
+					AcknowledgedResponse response = client.indices().updateSettings(new UpdateSettingsRequest().indices(index).settings(esSettings));
 					checkState(response.isAcknowledged(), "Failed to update index settings '%s'.", index);
 				} catch (IOException e) {
 					throw new IndexException(String.format("Couldn't update settings of index '%s'", index), e);
@@ -544,6 +554,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 			}
 		}
 		
+		// update both local and es settings
 		settings.putAll(newSettings);
 	}
 

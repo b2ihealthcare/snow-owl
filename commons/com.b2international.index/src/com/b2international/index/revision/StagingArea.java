@@ -82,7 +82,7 @@ public final class StagingArea {
 		this.mapper = mapper;
 		this.maxTermsCount = Integer.parseInt((String) index.admin().settings().get(IndexClientFactory.MAX_TERMS_COUNT_KEY));
 		this.commitWatermarkLow = (int) index.admin().settings().get(IndexClientFactory.COMMIT_WATERMARK_LOW_KEY);
-		this.commitWatermarkHigh = (int) index.admin().settings().get(IndexClientFactory.COMMIT_WATERMARK_LOW_KEY);
+		this.commitWatermarkHigh = (int) index.admin().settings().get(IndexClientFactory.COMMIT_WATERMARK_HIGH_KEY);
 		rollback();
 	}
 	
@@ -537,11 +537,7 @@ public final class StagingArea {
 		}
 		
 		// raise watermark logs if above thresholds
-		if (details.size() > commitWatermarkHigh) {
-			index.admin().log().warn("high commit watermark [{}] exceeded in commit [{} - {} - {}] details size: {}", commitWatermarkHigh, branchPath, author, commitComment, details.size());
-		} else if (details.size() > commitWatermarkLow) {
-			index.admin().log().warn("low commit watermark [{}] exceeded in commit [{} - {} - {}] details size: {}", commitWatermarkLow, branchPath, author, commitComment, details.size());
-		}
+		reportWarningIfCommitWatermarkExceeded(details, author, commitComment);
 		
 		// generate a commit entry that marks the end of the commit and contains all changes in a details property
 		Commit commitDoc = commit
@@ -582,6 +578,31 @@ public final class StagingArea {
 		mergeSources = null;
 		
 		return commitDoc;
+	}
+
+	private void reportWarningIfCommitWatermarkExceeded(final List<CommitDetail> details, String author, String commitComment) {
+		int numberOfCommitDetails = calculateCommitDetails(details);
+		if (numberOfCommitDetails > commitWatermarkHigh) {
+			index.admin().log().warn("high commit watermark [{}] exceeded in commit [{} - {} - {}] number of changes: {}", commitWatermarkHigh, branchPath, author, commitComment, numberOfCommitDetails);
+		} else if (numberOfCommitDetails > commitWatermarkLow) {
+			index.admin().log().warn("low commit watermark [{}] exceeded in commit [{} - {} - {}] number of changes: {}", commitWatermarkLow, branchPath, author, commitComment, numberOfCommitDetails);
+		}
+	}
+
+	private int calculateCommitDetails(List<CommitDetail> details) {
+		int i = 0;
+		for (CommitDetail detail : details) {
+			i += calculateCommitDetails(detail);
+		}
+		return i;
+	}
+	
+	private int calculateCommitDetails(CommitDetail detail) {
+		if (detail.isPropertyChange()) {
+			return detail.getObjects().size();
+		} else {
+			return detail.getComponents().stream().mapToInt(Set::size).sum();
+		}
 	}
 
 	/**
