@@ -75,10 +75,12 @@ public abstract class BaseRevisionIndexTest {
 	}
 	
 	protected Map<String, Object> getIndexSettings() {
-		// make sure we use the default max_result_window in tests
+		// make sure we use the default settings for each tests (including max_result_window)
 		// this also changes it back if a subclass has changed it for its tests
 		return Map.of(
-			IndexClientFactory.RESULT_WINDOW_KEY, ""+IndexClientFactory.DEFAULT_RESULT_WINDOW
+			IndexClientFactory.RESULT_WINDOW_KEY, ""+IndexClientFactory.DEFAULT_RESULT_WINDOW,
+			IndexClientFactory.COMMIT_WATERMARK_LOW_KEY, IndexClientFactory.DEFAULT_COMMIT_WATERMARK_LOW_VALUE,
+			IndexClientFactory.COMMIT_WATERMARK_HIGH_KEY, IndexClientFactory.DEFAULT_COMMIT_WATERMARK_HIGH_VALUE
 		);
 	}
 	
