@@ -756,7 +756,13 @@ public final class StagingArea {
 	 * @return - this staging area for chaining
 	 */
 	public StagingArea stageRemove(String key, Object removed, boolean commit) {
-		stagedObjects.put(ObjectId.toObjectId(removed, key), removed(removed, null, commit));
+		ObjectId objectId = ObjectId.toObjectId(removed, key);
+		StagedObject stagedObject = stagedObjects.get(objectId);
+		if (stagedObject != null && stagedObject.isChanged()) {
+			stagedObjects.put(objectId, removed(stagedObject.getDiff().oldRevision, null, commit));			
+		} else {
+			stagedObjects.put(ObjectId.toObjectId(removed, key), removed(removed, null, commit));			
+		}
 		return this;
 	}
 	
@@ -1273,8 +1279,10 @@ public final class StagingArea {
 		public StagedObject withObject(Object newObject, boolean commit) {
 			if (isChanged()) {
 				return new StagedObject(stageKind, newObject, diff != null ? new RevisionDiff(diff.oldRevision, (Revision) newObject) : null, commit);
-			} else {
+			} else if (isAdded()) {
 				return new StagedObject(stageKind, newObject, null, commit);
+			} else {
+				return this;
 			}
 		}
 		
