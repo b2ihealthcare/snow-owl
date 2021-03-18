@@ -193,9 +193,9 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 		String descriptionId = createNewDescription(branchPath);
 		
 		Json requestBody = Json.object(
-				"active", false,
-				"commitComment", "Inactivated description"
-			);
+			"active", false,
+			"commitComment", "Inactivated description"
+		);
 
 		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, requestBody)
 				.statusCode(204);
