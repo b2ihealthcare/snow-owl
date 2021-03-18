@@ -62,10 +62,7 @@ import com.b2international.snowowl.snomed.cis.domain.IdentifierStatus;
 import com.b2international.snowowl.snomed.cis.domain.SctId;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.AssociationTarget;
-import com.b2international.snowowl.snomed.core.domain.InactivationProperties;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.*;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
@@ -189,6 +186,26 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 			.statusCode(204);
 		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId)
 			.statusCode(404);
+	}
+	
+	@Test
+	public void retireDescription() {
+		String descriptionId = createNewDescription(branchPath);
+		
+		Json requestBody = Json.object(
+				"active", false,
+				"commitComment", "Inactivated description"
+			);
+
+		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, requestBody)
+				.statusCode(204);
+		
+		SnomedDescription description = getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, "acceptabilities()")
+			.statusCode(200)
+			.extract().as(SnomedDescription.class);
+		
+		assertThat(!description.isActive());
+		assertThat(description.getAcceptabilities().isEmpty());
 	}
 
 	@Test

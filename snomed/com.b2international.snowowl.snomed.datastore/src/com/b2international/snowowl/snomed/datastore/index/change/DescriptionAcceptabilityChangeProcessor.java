@@ -102,7 +102,6 @@ public class DescriptionAcceptabilityChangeProcessor {
 		// remove earlier active detached members
 		
 		for (final SnomedRefSetMemberIndexEntry before : detachedLanguageMembers) {
-			if (before.isActive()) {
 				final String uuid = before.getId();
 				final String refSetId = before.getReferenceSetId();
 				final String referencedComponentId = before.getReferencedComponentId();
@@ -110,7 +109,6 @@ public class DescriptionAcceptabilityChangeProcessor {
 				final RefSetMemberChange change = new RefSetMemberChange(uuid, refSetId, MemberChangeKind.REMOVED, before.isActive());
 				
 				registerChange(preferredMemberChanges, acceptableMemberChanges, beforeAcceptabilityId, referencedComponentId, change);
-			}
 		}
 		
 		final Map<String, Multimap<Acceptability, RefSetMemberChange>> changes = newHashMap();

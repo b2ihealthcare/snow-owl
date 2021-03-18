@@ -79,9 +79,7 @@ public class ReferenceSetMembershipUpdater {
 			.stream()
 			.filter(c -> c.getChangeKind() == MemberChangeKind.REMOVED)
 			.forEach(change -> {
-				if (change.isActive()) {
-					activeMemberOf.remove(change.getRefSetId());
-				}
+				activeMemberOf.remove(change.getRefSetId());
 				memberOf.remove(change.getRefSetId());
 			});
 	}
