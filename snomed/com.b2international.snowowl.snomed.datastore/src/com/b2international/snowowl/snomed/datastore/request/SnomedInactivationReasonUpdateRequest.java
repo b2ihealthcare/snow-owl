@@ -120,8 +120,9 @@ final class SnomedInactivationReasonUpdateRequest extends BaseComponentMemberUpd
 			
 			if (firstMemberFound) {
 				// If we got through the first iteration, all other members can be removed
-				removeOrDeactivate(context, existingMember, updatedMember);
-				context.update(oldRevision, updatedMember.build());
+				if (removeOrDeactivate(context, existingMember, updatedMember)) {
+					context.update(oldRevision, updatedMember.build());					
+				}
 				continue;
 			}
 			
