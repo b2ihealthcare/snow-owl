@@ -18,10 +18,7 @@ package com.b2international.snowowl.snomed.datastore.index.change;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.b2international.index.Hits;
@@ -41,9 +38,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.index.entry.*;
 import com.b2international.snowowl.snomed.datastore.request.ModuleRequest.ModuleIdProvider;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Multimap;
+import com.google.common.collect.*;
 
 /**
  * @since 7.0
@@ -217,6 +212,7 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 		for (Hits<SnomedRefSetMemberIndexEntry> hits : searcher.scroll(Query.select(SnomedRefSetMemberIndexEntry.class)
 				.where(Expressions.builder()
 						.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
+						.mustNot(SnomedRefSetMemberIndexEntry.Expressions.refSetTypes(Collections.singleton(SnomedRefSetType.LANGUAGE)))
 						.should(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(inactivatedComponentIds))
 						.should(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(inactivatedComponentIds))
 						.setMinimumNumberShouldMatch(1)
