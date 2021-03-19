@@ -32,6 +32,7 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Collections;
 import java.util.List;
@@ -157,6 +158,27 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 		assertEquals(IdentifierStatus.ASSIGNED.getSerializedName(), descriptionSctId.getStatus());
 	}
 
+	@Test
+	public void retireDescription() {
+		String descriptionId = createNewDescription(branchPath);
+
+		Json requestBody = Json.object(
+			"active", false,
+			"commitComment", "Inactivated description",
+			"acceptability", Json.object()
+		);
+
+		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, requestBody)
+				.statusCode(204);
+
+		SnomedDescription description = getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, "acceptabilities()")
+			.statusCode(200)
+			.extract().as(SnomedDescription.class);
+
+		assertTrue(!description.isActive());
+		assertTrue(description.getAcceptabilities().isEmpty());
+	}
+	
 	@Test
 	public void createDuplicateDescription() {
 		String descriptionId = createNewDescription(branchPath);
