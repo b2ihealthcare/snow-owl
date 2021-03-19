@@ -52,6 +52,7 @@ import org.junit.runners.Parameterized.Parameters;
 
 import com.b2international.collections.PrimitiveCollectionModule;
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.exceptions.SyntaxException;
 import com.b2international.index.Index;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
@@ -1103,6 +1104,16 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 		final Expression actual = eval(String.format("<%s: { [0..0] %s = <%s }", DRUG_ROOT, HAS_ACTIVE_INGREDIENT, SUBSTANCE));
 		final Expression expected = Expressions.matchNone();
 		assertEquals(expected, actual);
+	}
+
+	@Test(expected = SyntaxException.class)
+	public void refinementORconceptCauseSyntaxError() throws Exception {
+		eval("(<64572001 |Disease (disorder)|: 363698007 |Finding site| = 74281007 |Myocardium structure| OR 404684003 |Clinical finding|)");
+	}
+
+	@Test
+	public void conceptORRefinementResolveSuccessfully() throws Exception {
+		eval("(404684003 |Clinical finding (finding)| OR <64572001 |Disease (disorder)|: 363698007 |Finding site| = 74281007 |Myocardium structure|)");
 	}
 	
 	@Ignore
