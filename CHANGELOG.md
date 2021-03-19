@@ -1,6 +1,25 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 7.16.0
+
+### Core
+- Introduce `commitWatermarkLow` and `commitWatermarkHigh` configuration settings to raise warning log entries for large (low mark) and very large (high mark) commits (#771)
+- Introduce `CappedTransactionContext` to cap commits to a certain threshold and commit in batches to reduce commit sizes (#771)
+  * Versioning terminology content uses this new feature to reduce the amount of changes that go into a single commit
+- Introduce new boolean prefix query type (#773)
+
+### SNOMED CT API
+- SNOMED CT Description search now uses the new boolean prefix query type to offer better results and scores when only the last word represents a partial/prefix match (#773)  
+
+### Bugs/Improvements
+- [snomed] fixed an issue where an unpublished description inactivation would keep the descriptions acceptabilities set incorrectly (#776) 
+- [validation] avoid creating duplicate issues in MRCM constraint type rule (#772)
+
+### Dependencies
+- Bump jackson-databind 2.10.5.1 to resolve a security vulnerability issue (#766)
+- Bump netty to 4.1.59.Final to resolve a security vulnerability issue (#758)
+
 ## 7.15.3
 
 ### Bugs/Improvements
