@@ -38,10 +38,10 @@ public final class StatementFragment implements Serializable {
 	private final long statementId;
 	private final boolean released;
 
-	private boolean hasStatedPair;
+	private String statedStatementId;
 
 	public StatementFragment(final long typeId, final long destinationId) {
-		this(typeId, destinationId, false, 0, 0, false, -1L, null, false, false);
+		this(typeId, destinationId, false, 0, 0, false, -1L, null, false, null);
 	}
 
 	public StatementFragment(final long typeId,
@@ -53,7 +53,7 @@ public final class StatementFragment implements Serializable {
 			final long statementId,
 			final String moduleId,
 			final boolean released,
-			final boolean hasStatedPair) {
+			final String statedStatementId) {
 		this.typeId = typeId;
 		this.destinationId = destinationId;
 		this.destinationNegated = destinationNegated;
@@ -63,7 +63,7 @@ public final class StatementFragment implements Serializable {
 		this.statementId = statementId;
 		this.moduleId = moduleId;
 		this.released = released;
-		this.hasStatedPair = hasStatedPair;
+		this.statedStatementId = statedStatementId;
 	}
 
 	public long getTypeId() {
@@ -102,8 +102,12 @@ public final class StatementFragment implements Serializable {
 		return released;
 	}
 
+	public String getStatedStatementId() {
+		return statedStatementId;
+	}
+	
 	public boolean hasStatedPair() {
-		return hasStatedPair;
+		return statedStatementId != null;
 	}
 	
 	@Override
@@ -127,8 +131,8 @@ public final class StatementFragment implements Serializable {
 		builder.append(moduleId);
 		builder.append(", released=");
 		builder.append(released);
-		builder.append(", hasStatedPair=");
-		builder.append(hasStatedPair);
+		builder.append(", statedStatementId=");
+		builder.append(statedStatementId);
 		builder.append("]");
 		return builder.toString();
 	}

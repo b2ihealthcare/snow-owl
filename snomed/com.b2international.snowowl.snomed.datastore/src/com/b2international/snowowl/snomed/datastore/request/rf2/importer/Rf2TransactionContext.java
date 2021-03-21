@@ -21,21 +21,17 @@ import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.index.revision.Revision;
+import com.b2international.index.revision.Commit;
 import com.b2international.index.revision.StagingArea;
 import com.b2international.snowowl.core.codesystem.CodeSystemEntry;
 import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.core.domain.DelegatingBranchContext;
+import com.b2international.snowowl.core.domain.DelegatingTransactionContext;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
@@ -45,22 +41,13 @@ import com.b2international.snowowl.snomed.cis.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.*;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.store.SnomedComponentBuilder;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.core.store.SnomedMemberBuilder;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.*;
 import com.b2international.snowowl.snomed.datastore.request.SnomedOWLExpressionConverter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -70,7 +57,7 @@ import com.google.common.collect.Multimaps;
 /**
  * @since 6.0
  */
-public final class Rf2TransactionContext extends DelegatingBranchContext implements TransactionContext {
+public final class Rf2TransactionContext extends DelegatingTransactionContext {
 	
 	private static final Logger LOG = LoggerFactory.getLogger("import");
 
@@ -89,98 +76,38 @@ public final class Rf2TransactionContext extends DelegatingBranchContext impleme
 	}
 	
 	@Override
-	public boolean isDirty() {
-		return getDelegate().isDirty();
-	}
-	
-	@Override
-	public String author() {
-		return getDelegate().author();
-	}
-
-	@Override
 	protected RepositoryTransactionContext getDelegate() {
 		return (RepositoryTransactionContext) super.getDelegate();
 	}
 	
 	@Override
-	public String add(Object o) {
-		return getDelegate().add(o);
-	}
-	
-	@Override
-	public void update(Revision oldVersion, Revision newVersion) {
-		getDelegate().update(oldVersion, newVersion);
-	}
-	
-	@Override
-	public void clearContents() {
-		getDelegate().clearContents();
-	}
-	
-	@Override
-	public Long commit() {
+	public Optional<Commit> commit() {
 		throw new UnsupportedOperationException("Use the single supported commit(String) method");
 	}
 	
 	@Override
-	public Long commit(String commitComment) {
+	public Optional<Commit> commit(String commitComment) {
 		final Set<String> idsToRegister = ImmutableSet.copyOf(newComponents.keySet().stream().filter(SnomedIdentifiers::isValid).iterator());
 		// clear local cache before executing commit
 		newComponents = newHashMap();
 		LOG.info("Pushing changes: {}", commitComment);
-		Long timestamp = getDelegate().commit(commitComment);
+		Optional<Commit> commit = getDelegate().commit(commitComment);
 		// after successful commit register all commited IDs to CIS
 		final ISnomedIdentifierService cis = service(ISnomedIdentifierService.class);
 		if (cis.importSupported()) {
 			cis.register(idsToRegister);
 		}
-		return timestamp;
+		return commit;
 	}
 	
 	@Override
-	public Long commit(String commitComment, String parentContextDescription) {
+	public Optional<Commit> commit(String commitComment, String parentContextDescription) {
 		throw new UnsupportedOperationException("Use the single supported commit(String) method");
 	}
 	
 	@Override
-	public Long commit(String userId, String commitComment, String parentContextDescription) {
+	public Optional<Commit> commit(String userId, String commitComment, String parentContextDescription) {
 		throw new UnsupportedOperationException("Use the single supported commit(String) method");
-	}
-	
-	@Override
-	public void delete(Object o) {
-		getDelegate().delete(o);
-	}
-	
-	@Override
-	public void delete(Object o, boolean force) {
-		getDelegate().delete(o, force);
-	}
-	
-	@Override
-	public void close() throws Exception {
-		getDelegate().close();
-	}
-
-	@Override
-	public <T> T lookupIfExists(String componentId, Class<T> type) {
-		return getDelegate().lookupIfExists(componentId, type);
-	}
-	
-	@Override
-	public boolean isNotificationEnabled() {
-		return getDelegate().isNotificationEnabled();
-	}
-	
-	@Override
-	public void setNotificationEnabled(boolean notificationEnabled) {
-		getDelegate().setNotificationEnabled(notificationEnabled);
-	}
-	
-	@Override
-	public String parentLock() {
-		return getDelegate().parentLock();
 	}
 	
 	@Override

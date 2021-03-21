@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <artifactId>core-parent</artifactId>
-    <version>7.16.0-SNAPSHOT</version>
+    <version>7.16.1-SNAPSHOT</version>
     <groupId>com.b2international.snowowl</groupId>
   </parent>
   <artifactId>com.b2international.snowowl.core.rest.feature</artifactId>

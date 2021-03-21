@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Net4J Eventbus
 Bundle-SymbolicName: com.b2international.snowowl.eventbus;singleton:=true
-Bundle-Version: 7.16.0.qualifier
+Bundle-Version: 7.16.1.qualifier
 Bundle-Vendor: B2i Healthcare
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Require-Bundle: org.eclipse.net4j;bundle-version="[4.9.0,4.10.0)",

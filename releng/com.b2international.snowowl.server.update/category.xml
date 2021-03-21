@@ -1,27 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <feature url="features/com.b2international.snowowl.core.feature_7.16.0.qualifier.jar" id="com.b2international.snowowl.core.feature" version="7.16.0.qualifier">
+   <feature url="features/com.b2international.snowowl.core.feature_7.16.1.qualifier.jar" id="com.b2international.snowowl.core.feature" version="7.16.1.qualifier">
       <category name="server-core"/>
    </feature>
-   <feature url="features/com.b2international.snowowl.server.product.feature_7.16.0.qualifier.jar" id="com.b2international.snowowl.server.product.feature" version="7.16.0.qualifier">
+   <feature url="features/com.b2international.snowowl.server.product.feature_7.16.1.qualifier.jar" id="com.b2international.snowowl.server.product.feature" version="7.16.1.qualifier">
       <category name="server-core"/>
    </feature>
-   <feature url="features/com.b2international.snowowl.snomed.core.feature_7.16.0.qualifier.jar" id="com.b2international.snowowl.snomed.core.feature" version="7.16.0.qualifier">
+   <feature url="features/com.b2international.snowowl.snomed.core.feature_7.16.1.qualifier.jar" id="com.b2international.snowowl.snomed.core.feature" version="7.16.1.qualifier">
       <category name="snomed-core"/>
    </feature>
-   <feature url="features/com.b2international.snowowl.test.feature_7.16.0.qualifier.jar" id="com.b2international.snowowl.test.feature" version="7.16.0.qualifier">
+   <feature url="features/com.b2international.snowowl.test.feature_7.16.1.qualifier.jar" id="com.b2international.snowowl.test.feature" version="7.16.1.qualifier">
       <category name="tests"/>
    </feature>
-   <feature url="features/com.b2international.snowowl.snomed.core.rest.feature_7.16.0.qualifier.jar" id="com.b2international.snowowl.snomed.core.rest.feature" version="7.16.0.qualifier">
+   <feature url="features/com.b2international.snowowl.snomed.core.rest.feature_7.16.1.qualifier.jar" id="com.b2international.snowowl.snomed.core.rest.feature" version="7.16.1.qualifier">
       <category name="snomed-core"/>
    </feature>
-   <feature url="features/com.b2international.snowowl.core.rest.feature_7.16.0.qualifier.jar" id="com.b2international.snowowl.core.rest.feature" version="7.16.0.qualifier">
+   <feature url="features/com.b2international.snowowl.core.rest.feature_7.16.1.qualifier.jar" id="com.b2international.snowowl.core.rest.feature" version="7.16.1.qualifier">
       <category name="server-core"/>
    </feature>
-   <feature url="features/com.b2international.snowowl.fhir.rest.feature_7.16.0.qualifier.jar" id="com.b2international.snowowl.fhir.rest.feature" version="7.16.0.qualifier">
+   <feature url="features/com.b2international.snowowl.fhir.rest.feature_7.16.1.qualifier.jar" id="com.b2international.snowowl.fhir.rest.feature" version="7.16.1.qualifier">
       <category name="server-core"/>
    </feature>
-   <feature url="features/com.b2international.snowowl.snomed.cis.feature_7.16.0.qualifier.jar" id="com.b2international.snowowl.snomed.cis.feature" version="7.16.0.qualifier">
+   <feature url="features/com.b2international.snowowl.snomed.cis.feature_7.16.1.qualifier.jar" id="com.b2international.snowowl.snomed.cis.feature" version="7.16.1.qualifier">
       <category name="snomed-core"/>
    </feature>
    <category-def name="server-core" label="Snow Owl Server Common"/>

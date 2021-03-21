@@ -5,7 +5,7 @@
   <parent>
     <groupId>com.b2international.snowowl</groupId>
     <artifactId>snomed-parent</artifactId>
-    <version>7.16.0-SNAPSHOT</version>
+    <version>7.16.1-SNAPSHOT</version>
   </parent>
   <artifactId>com.b2international.snowowl.snomed.reasoner</artifactId>
   <packaging>eclipse-plugin</packaging>

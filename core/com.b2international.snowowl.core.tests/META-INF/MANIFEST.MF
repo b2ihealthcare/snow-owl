@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Snow Owl Core Tests
 Bundle-SymbolicName: com.b2international.snowowl.core.tests
-Bundle-Version: 7.16.0.qualifier
+Bundle-Version: 7.16.1.qualifier
 Bundle-Vendor: B2i Healthcare
 Fragment-Host: com.b2international.snowowl.core;bundle-version="7.5.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-11

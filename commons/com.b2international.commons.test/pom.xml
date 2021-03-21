@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>commons-parent</artifactId>
-		<version>7.16.0-SNAPSHOT</version>
+		<version>7.16.1-SNAPSHOT</version>
 	</parent>
 	<artifactId>com.b2international.commons.test</artifactId>
 	<packaging>eclipse-test-plugin</packaging>

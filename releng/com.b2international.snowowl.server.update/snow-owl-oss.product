@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="Snow Owl Server" uid="com.b2international.snowowl.server" id="com.b2international.snowowl.server.product.product" application="com.b2international.snowowl.server.product.app" version="7.16.0.qualifier" useFeatures="true" includeLaunchers="true">
+<product name="Snow Owl Server" uid="com.b2international.snowowl.server" id="com.b2international.snowowl.server.product.product" application="com.b2international.snowowl.server.product.app" version="7.16.1.qualifier" useFeatures="true" includeLaunchers="true">
 
    <configIni use="default">
    </configIni>

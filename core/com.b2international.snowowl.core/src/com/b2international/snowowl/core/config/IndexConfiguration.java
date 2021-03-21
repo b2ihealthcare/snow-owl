@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.config;
 
+import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 
 import org.hibernate.validator.constraints.NotEmpty;
@@ -63,6 +64,14 @@ public class IndexConfiguration {
 	@Min(IndexClientFactory.DEFAULT_RESULT_WINDOW)
 	private int resultWindow = DEFAULT_RESULT_WINDOW;
 
+	@Min(5_000)
+	@Max(IndexClientFactory.DEFAULT_COMMIT_WATERMARK_HIGH_VALUE)
+	private int commitWatermarkLow = IndexClientFactory.DEFAULT_COMMIT_WATERMARK_LOW_VALUE;
+	
+	@Min(5_000)
+	@Max(IndexClientFactory.DEFAULT_COMMIT_WATERMARK_HIGH_VALUE)
+	private int commitWatermarkHigh = IndexClientFactory.DEFAULT_COMMIT_WATERMARK_HIGH_VALUE;
+	
 	@JsonProperty
 	public String getCommitInterval() {
 		return commitInterval;
@@ -194,6 +203,22 @@ public class IndexConfiguration {
 	public void setBulkActionSizeInMb(int bulkActionSizeInMb) {
 		this.bulkActionSizeInMb = bulkActionSizeInMb;
 	}
+	
+	public int getCommitWatermarkHigh() {
+		return commitWatermarkHigh;
+	}
+	
+	public int getCommitWatermarkLow() {
+		return commitWatermarkLow;
+	}
+	
+	public void setCommitWatermarkHigh(int commitWatermarkHigh) {
+		this.commitWatermarkHigh = commitWatermarkHigh;
+	}
+	
+	public void setCommitWatermarkLow(int commitWatermarkLow) {
+		this.commitWatermarkLow = commitWatermarkLow;
+	}
 
 	public void configure(Builder<String, Object> settings) {
 		if (getClusterHealthTimeout() <= getSocketTimeout()) {
@@ -222,7 +247,9 @@ public class IndexConfiguration {
 		settings.put(IndexClientFactory.SOCKET_TIMEOUT, getSocketTimeout());
 		settings.put(IndexClientFactory.CLUSTER_HEALTH_TIMEOUT, getClusterHealthTimeout());
 		settings.put(IndexClientFactory.BULK_ACTIONS_SIZE, getBulkActionSize());
-		settings.put(IndexClientFactory.BULK_ACTIONS_SIZE_IN_MB, getBulkActionSizeInMb());		
+		settings.put(IndexClientFactory.BULK_ACTIONS_SIZE_IN_MB, getBulkActionSizeInMb());
+		settings.put(IndexClientFactory.COMMIT_WATERMARK_LOW_KEY, getCommitWatermarkLow());
+		settings.put(IndexClientFactory.COMMIT_WATERMARK_HIGH_KEY, getCommitWatermarkHigh());
 	}
 	
 }

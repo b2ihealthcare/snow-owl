@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Snow Owl FHIR API Tests
 Bundle-SymbolicName: com.b2international.snowowl.fhir.rest.tests
-Bundle-Version: 7.16.0.qualifier
+Bundle-Version: 7.16.1.qualifier
 Bundle-Vendor: B2i Healthcare
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Require-Bundle: org.junit;bundle-version="4.12.0",

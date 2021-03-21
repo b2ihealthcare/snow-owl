@@ -3,7 +3,7 @@ Automatic-Module-Name: com.b2international.snowowl.snomed.scg
 Bundle-ManifestVersion: 2
 Bundle-Name: Snow Owl SNOMED CT Compositional Grammar
 Bundle-Vendor: B2i Healthcare
-Bundle-Version: 7.16.0.qualifier
+Bundle-Version: 7.16.1.qualifier
 Bundle-SymbolicName: com.b2international.snowowl.snomed.scg;singleton:=true
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.equinox.common;bundle-version="3.5.0",

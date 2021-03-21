@@ -18,6 +18,8 @@ package com.b2international.snowowl.snomed.core.domain;
 import java.io.Serializable;
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  * @since 7.4
  */
@@ -42,6 +44,7 @@ public final class AcceptabilityMembership implements Comparable<AcceptabilityMe
 		this.acceptability = acceptability;
 	}
 
+	@JsonIgnore
 	public String getAcceptabilityId() {
 		return acceptability == null ? null : acceptability.getId();
 	}
@@ -54,6 +57,7 @@ public final class AcceptabilityMembership implements Comparable<AcceptabilityMe
 		this.languageRefSet = languageRefSet;
 	}
 
+	@JsonIgnore
 	public String getLanguageRefSetId() {
 		return languageRefSet == null ? null : languageRefSet.getId();
 	}

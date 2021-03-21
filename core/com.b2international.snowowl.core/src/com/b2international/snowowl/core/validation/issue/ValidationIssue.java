@@ -45,7 +45,6 @@ import com.google.common.base.MoreObjects;
  */
 @Doc
 @Script(name = ValidationIssue.Scripts.WHITELIST, script="ctx._source.whitelisted = params.whitelisted")
-@Script(name="normalizeWithOffset", script="(_score / (_score + 1.0f)) + params.offset")
 public final class ValidationIssue implements Serializable {
 
 	private static final long serialVersionUID = 5674287017882543560L;

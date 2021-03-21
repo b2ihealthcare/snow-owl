@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,10 @@ package com.b2international.snowowl.core.domain;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Optional;
 
 import com.b2international.index.Doc;
+import com.b2international.index.revision.Commit;
 import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.index.revision.StagingArea;
@@ -75,43 +77,55 @@ public interface TransactionContext extends BranchContext, AutoCloseable {
 	void delete(Object obj, boolean force);
 
 	/**
-	 * Commits all changes made so far using the current userId, default commit comment and no lock context.
+	 * Commits all changes made so far using the current userId, default commit comment and no lock context (or parent lock context).
+	 * Returns an {@link Optional} {@link Commit} object that represents either 
+	 * - a successful commit with an actual timestamp (optional value present) 
+	 * - or an empty optional object if the commit would not produce anything because there were no staged changes in this transaction or the pushed changes did not produce any actual changes in the underlying revision tree.
 	 * 
-	 * @return - the timestamp of the successful commit
+	 * @return - an {@link Optional} {@link Commit} object
 	 */
-	Long commit();
+	Optional<Commit> commit();
 	
 	/**
 	 * Commits all changes made so far using the current userId, the given commit comment and no lock context.
+ 	 * Returns an {@link Optional} {@link Commit} object that represents either 
+	 * - a successful commit with an actual timestamp (optional value present) 
+	 * - or an empty optional object if the commit would not produce anything because there were no staged changes in this transaction or the pushed changes did not produce any actual changes in the underlying revision tree.
 	 * 
 	 * @param commitComment - the commit comment to use for the commit
-	 * @return - the timestamp of the successful commit
+	 * @return - an {@link Optional} {@link Commit} object
 	 */
-	Long commit(String commitComment);
+	Optional<Commit> commit(String commitComment);
 	
 	/**
 	 * Commits all changes made so far using the current userId and the given commitComment and lock context.
+	 * Returns an {@link Optional} {@link Commit} object that represents either 
+	 * - a successful commit with an actual timestamp (optional value present) 
+	 * - or an empty optional object if the commit would not produce anything because there were no staged changes in this transaction or the pushed changes did not produce any actual changes in the underlying revision tree.
 	 * 
 	 * @param commitComment - the commit comment to use for the commit
 	 * @param parentContextDescription - the parent lock context to use for the commit
-	 * @return - the timestamp of the successful commit
+	 * @return - an {@link Optional} {@link Commit} object
 	 */
-	Long commit(String commitComment, String parentContextDescription);
+	Optional<Commit> commit(String commitComment, String parentContextDescription);
 	
 	/**
-	 * Commits all changes made so far.
+	 * Commits all changes made so far using the specific commit parameters. 
+	 * Returns an {@link Optional} {@link Commit} object that represents either 
+	 * - a successful commit with an actual timestamp (optional value present) 
+	 * - or an empty optional object if the commit would not produce anything because there were no staged changes in this transaction or the pushed changes did not produce any actual changes in the underlying revision tree.
 	 * 
-	 * @param userId
-	 *            - the owner of the commit
-	 * @param commitComment
-	 *            - a message for the commit
-	 * @param parentContextDescription
-	 *            - the description of the lock context already held, for nested
-	 *            locking
-	 * 
-	 * @return - the timestamp of the successful commit
+	 * @param userId - the owner of the commit
+	 * @param commitComment - a message for the commit
+	 * @param parentContextDescription - the description of the lock context already held, for nested locking
+	 * @return - an {@link Optional} {@link Commit} object
 	 */
-	Long commit(String userId, String commitComment, String parentContextDescription);
+	Optional<Commit> commit(String userId, String commitComment, String parentContextDescription);
+
+	/**
+	 * Rolls back the transaction to an empty state, where nothing is staged for commit.
+	 */
+	void rollback();
 	
 	/**
 	 * @return whether the commit will notify interested services, notification services about this transaction's commit or not. It's enabled by default.

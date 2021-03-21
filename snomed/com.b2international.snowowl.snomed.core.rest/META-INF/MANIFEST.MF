@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Snow Owl SNOMED CT REST Services
 Bundle-SymbolicName: com.b2international.snowowl.snomed.core.rest;singleton:=true
-Bundle-Version: 7.16.0.qualifier
+Bundle-Version: 7.16.1.qualifier
 Bundle-Vendor: B2i Healthcare
 Fragment-Host: com.b2international.snowowl.core.rest
 Automatic-Module-Name: com.b2international.snowowl.rest.snomed

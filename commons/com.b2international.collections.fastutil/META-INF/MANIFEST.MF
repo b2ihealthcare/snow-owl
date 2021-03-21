@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Fastutil based implementation of Collections API
 Bundle-SymbolicName: com.b2international.collections.fastutil;singleton:=true
-Bundle-Version: 7.16.0.qualifier
+Bundle-Version: 7.16.1.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Fragment-Host: com.b2international.collections.api
 Export-Package: com.b2international.collections,

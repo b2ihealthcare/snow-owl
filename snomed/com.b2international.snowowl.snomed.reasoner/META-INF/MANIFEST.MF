@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Snow Owl Reasoner Plug-in
 Bundle-SymbolicName: com.b2international.snowowl.snomed.reasoner;singleton:=true
-Bundle-Version: 7.16.0.qualifier
+Bundle-Version: 7.16.1.qualifier
 Bundle-Vendor: B2i Healthcare
 Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  org.semanticweb.owl.owlapi;bundle-version="[4.5.10,5.0.0)",
