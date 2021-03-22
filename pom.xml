@@ -37,6 +37,8 @@
 		<javax.activation.version>1.2.0</javax.activation.version>
 		<snomed.owl.toolkit.version>2.9.1</snomed.owl.toolkit.version>
 		<failsafe.version>2.3.1</failsafe.version>
+		<osgi.versionRange>[3.16.0,3.17.0]</osgi.versionRange>
+		
 		<!-- Build tool/compiler versions -->
 		<tycho.version>2.2.0</tycho.version>
 		<tycho-extras.version>2.2.0</tycho-extras.version>
@@ -631,7 +633,7 @@
 							<type>eclipse-plugin</type>
 							<id>org.eclipse.osgi</id>
 							<restrictTo>
-								<versionRange>[3.15.0,3.16.0]</versionRange>
+								<versionRange>${osgi.versionRange}</versionRange>
 							</restrictTo>
 						</filter>
 						<!-- work around Equinox bug 348045 -->
