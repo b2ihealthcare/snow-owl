@@ -78,6 +78,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.ModuleRequest.ModuleIdProvider;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 
 import io.restassured.http.ContentType;
@@ -312,6 +313,28 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 			.body("effectiveTime", equalTo(effectiveDate))
 			.body("members.items.active", not(hasItem(true)))
 			.body("members.items.effectiveTime", not(hasItem(not(equalTo(effectiveDate)))));
+	}
+	
+	@Test
+	public void testSelectiveAcceptabilityInactivation() throws Exception {
+		String descriptionId = createNewDescription(branchPath, 
+				Concepts.ROOT_CONCEPT, 
+				Concepts.SYNONYM, 
+				ImmutableMap.of(
+						Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE,
+						Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.ACCEPTABLE)
+				);
+		
+		Json inactivateRequestBody = Json.object(
+			"active", false,
+			"acceptability", Json.object(Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.ACCEPTABLE),
+			"commitComment", "Inactivate released description"
+		);
+
+		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, inactivateRequestBody).statusCode(204);		
+		SnomedDescription description = getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, "members()")
+			.extract().as(SnomedDescription.class);
+		assertTrue(description.getAcceptabilityMap().containsKey(Concepts.REFSET_LANGUAGE_TYPE_US));
 	}
 
 	@Test
