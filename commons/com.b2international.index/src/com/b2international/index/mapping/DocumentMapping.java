@@ -16,7 +16,6 @@
 package com.b2international.index.mapping;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.lang.annotation.Annotation;
@@ -46,8 +45,6 @@ import com.google.common.collect.ImmutableMap.Builder;
 public final class DocumentMapping {
 
 	private static final Logger LOG = LoggerFactory.getLogger(DocumentMapping.class);
-	
-	private static final BiMap<Class<?>, String> DOC_TYPE_CACHE = HashBiMap.create();
 	
 	// type path delimiter to differentiate between same nested types in different contexts
 	public static final String DELIMITER = ".";
@@ -119,7 +116,7 @@ public final class DocumentMapping {
 		this.textFields = new TreeMap<>(textFields.build());
 		this.keywordFields = new TreeMap<>(keywordFields.build());
 
-		final Doc doc = getDocAnnotation(type);
+		final Doc doc = DocumentMappingRegistry.getDocAnnotation(type);
 		if (doc != null) {
 			this.hashedFields = ImmutableSortedSet.copyOf(doc.revisionHash());
 		} else {
@@ -302,50 +299,22 @@ public final class DocumentMapping {
 	}
 	
 	public static String getType(Class<?> type) {
-		if (!DOC_TYPE_CACHE.containsKey(type)) {
-			final Doc annotation = getDocAnnotation(type);
-			checkArgument(annotation != null, "Doc annotation must be present on type '%s' or on its class hierarchy", type);
-			final String docType = Strings.isNullOrEmpty(annotation.type()) ? type.getSimpleName().toLowerCase() : annotation.type();
-			checkArgument(!Strings.isNullOrEmpty(docType), "Document type should not be null or empty on class %s", type.getName());
-			DOC_TYPE_CACHE.put(type, docType);
-		}
-		return DOC_TYPE_CACHE.get(type);
+		return DocumentMappingRegistry.INSTANCE.getType(type);
 	}
 	
 	/**
 	 * @return all types currently registered in doc type mapping
 	 */
 	public static Collection<Class<?>> getTypes() {
-		return ImmutableSet.copyOf(DOC_TYPE_CACHE.keySet());
+		return DocumentMappingRegistry.INSTANCE.getTypes();
 	}
 	
 	public static Class<?> getClass(String type) {
-		return checkNotNull(DOC_TYPE_CACHE.inverse().get(type), "Missing doc class for key '%s'. Populate the doc type cache via #getType(Class<?>) method before using this method.", type);
+		return DocumentMappingRegistry.INSTANCE.getClass(type);
 	}
 	
-	private static Doc getDocAnnotation(Class<?> type) {
-		if (type.isAnnotationPresent(Doc.class)) {
-			return type.getAnnotation(Doc.class);
-		} else {
-			if (type.getSuperclass() != null) {
-				final Doc doc = getDocAnnotation(type.getSuperclass());
-				if (doc != null) {
-					return doc;
-				}
-			}
-			
-			for (Class<?> iface : type.getInterfaces()) {
-				final Doc doc = getDocAnnotation(iface);
-				if (doc != null) {
-					return doc;
-				}
-			}
-			return null;
-		}
-	}
-
 	public static boolean isNestedDoc(Class<?> fieldType) {
-		final Doc doc = getDocAnnotation(fieldType);
+		final Doc doc = DocumentMappingRegistry.getDocAnnotation(fieldType);
 		return doc == null ? false : doc.nested();
 	}
 
