@@ -574,9 +574,6 @@ public final class EsIndexAdmin implements IndexAdmin {
 	}
 
 	@Override
-	public void close() {}
-
-	@Override
 	public void optimize(int maxSegments) {
 //		client().admin().indices().prepareForceMerge(name).setMaxNumSegments(maxSegments).get();
 //		waitForYellowHealth();
