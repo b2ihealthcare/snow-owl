@@ -409,11 +409,10 @@ public final class EsIndexAdmin implements IndexAdmin {
 							prop.put("normalizer", normalizer);
 						}
 						// XXX index: true is the default, ES won't store it in the mapping and will default to true even if explicitly set, which would cause unnecessary mapping update during boot
+						// XXX doc_values: true is the default, ES won't store it in the mapping and will default to true even if explicitly set, which would cause unnecessary mapping update during boot
 						if (!keywordMapping.index()) {
 							prop.put("index", false);
-						}
-						if (!keywordMapping.index()) {
-							prop.put("doc_values", keywordMapping.index());
+							prop.put("doc_values", false);
 						}
 					}
 					
