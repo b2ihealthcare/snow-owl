@@ -78,7 +78,7 @@ public class MappingMigrationTest extends BaseIndexTest {
 	}
 	
 	@Doc(type = "schema")
-	static class SchemaWithNewFieldAlias {
+	static class SchemaWithNewTextField {
 
 		@ID
 		private String id;
@@ -88,7 +88,60 @@ public class MappingMigrationTest extends BaseIndexTest {
 		private String field;
 		
 		@JsonCreator
-		public SchemaWithNewFieldAlias(@JsonProperty("id") String id, @JsonProperty("field") String field) {
+		public SchemaWithNewTextField(@JsonProperty("id") String id, @JsonProperty("field") String field) {
+			this.id = id;
+			this.field = field;
+		}
+		
+		public String getId() {
+			return id;
+		}
+		
+		public String getField() {
+			return field;
+		}
+		
+	}
+	
+	@Doc(type = "schema")
+	static class SchemaWithNewKeywordField {
+
+		@ID
+		private String id;
+		
+		@Keyword
+		@Keyword(alias = "exact", normalizer = Normalizers.LOWER_ASCII)
+		private String field;
+		
+		@JsonCreator
+		public SchemaWithNewKeywordField(@JsonProperty("id") String id, @JsonProperty("field") String field) {
+			this.id = id;
+			this.field = field;
+		}
+		
+		public String getId() {
+			return id;
+		}
+		
+		public String getField() {
+			return field;
+		}
+		
+	}
+	
+	@Doc(type = "schema")
+	static class SchemaWithTextFieldAndNewKeywordField {
+
+		@ID
+		private String id;
+		
+		@Keyword
+		@Text(alias = "text", analyzer = Analyzers.TOKENIZED)
+		@Keyword(alias = "exact", normalizer = Normalizers.LOWER_ASCII)
+		private String field;
+		
+		@JsonCreator
+		public SchemaWithTextFieldAndNewKeywordField(@JsonProperty("id") String id, @JsonProperty("field") String field) {
 			this.id = id;
 			this.field = field;
 		}
@@ -119,8 +172,8 @@ public class MappingMigrationTest extends BaseIndexTest {
 		admin().updateMappings(new Mappings(Schema.class));
 		admin().create();
 		// index two documents with the existing schema
-		existingDoc1 = new Schema(KEY1, "existing field one");
-		existingDoc2 = new Schema(KEY2, "existing field two");
+		existingDoc1 = new Schema(KEY1, "Existing Field One");
+		existingDoc2 = new Schema(KEY2, "Existing Field Two");
 		indexDocuments(Map.of(
 			KEY1, existingDoc1,
 			KEY2, existingDoc2
@@ -133,26 +186,67 @@ public class MappingMigrationTest extends BaseIndexTest {
 		admin().updateMappings(new Mappings(SchemaWithNewField.class));
 		// then recreate indices using the new mappings (and to perform potential migration as well)
 		admin().create();
-		// TODO assert log messages about successfully applying new compatible mapping change
+
 		assertDocEquals(existingDoc1, getDocument(SchemaWithNewField.class, KEY1));
 		assertDocEquals(existingDoc2, getDocument(SchemaWithNewField.class, KEY2));
 	}
 	
 	@Test
-	public void migrateNewFieldAlias() throws Exception {
+	public void migrateNewTextField() throws Exception {
 		// update Mappings to new schema
-		admin().updateMappings(new Mappings(SchemaWithNewFieldAlias.class));
+		admin().updateMappings(new Mappings(SchemaWithNewTextField.class));
 		// then recreate indices using the new mappings (and to perform potential migration as well)
 		admin().create();
-		// TODO assert log messages about successfully applying new compatible mapping change
-		assertDocEquals(existingDoc1, getDocument(SchemaWithNewFieldAlias.class, KEY1));
-		assertDocEquals(existingDoc2, getDocument(SchemaWithNewFieldAlias.class, KEY2));
+
+		assertDocEquals(existingDoc1, getDocument(SchemaWithNewTextField.class, KEY1));
+		assertDocEquals(existingDoc2, getDocument(SchemaWithNewTextField.class, KEY2));
 		
-		// TODO perform full text search to verify successful migration
-		Hits<SchemaWithNewFieldAlias> hits = search(Query.select(SchemaWithNewFieldAlias.class)
-				.where(Expressions.matchTextAll("field", "one"))
+		Hits<SchemaWithNewTextField> hits = search(Query.select(SchemaWithNewTextField.class)
+				.where(Expressions.matchTextAll("field.text", "one"))
 				.build());
 		assertThat(hits).hasSize(1);
+	}
+	
+	@Test
+	public void migrateNewKeywordField() throws Exception {
+		// update Mappings to new schema
+		admin().updateMappings(new Mappings(SchemaWithNewKeywordField.class));
+		// then recreate indices using the new mappings (and to perform potential migration as well)
+		admin().create();
+
+		assertDocEquals(existingDoc1, getDocument(SchemaWithNewKeywordField.class, KEY1));
+		assertDocEquals(existingDoc2, getDocument(SchemaWithNewKeywordField.class, KEY2));
+		
+		Hits<SchemaWithNewKeywordField> hits = search(Query.select(SchemaWithNewKeywordField.class)
+				.where(Expressions.exactMatch("field.exact", "existing field one"))
+				.build());
+		assertThat(hits).hasSize(1);
+	}
+	
+	@Test
+	public void migrateNewKeywordFieldOnExistingKeywordAndTextField() throws Exception {
+		// update Mapping to perform the first migration
+		admin().updateMappings(new Mappings(SchemaWithNewTextField.class));
+		admin().create();
+
+		// then apply the actual test migration to the extra keyword field alias
+		admin().updateMappings(new Mappings(SchemaWithTextFieldAndNewKeywordField.class));
+		admin().create();
+
+		assertDocEquals(existingDoc1, getDocument(SchemaWithTextFieldAndNewKeywordField.class, KEY1));
+		assertDocEquals(existingDoc2, getDocument(SchemaWithTextFieldAndNewKeywordField.class, KEY2));
+		
+		assertThat(
+			search(Query.select(SchemaWithTextFieldAndNewKeywordField.class)
+				.where(Expressions.matchTextAll("field.text", "one"))
+				.build())
+		).hasSize(1);
+		
+		assertThat(
+			search(Query.select(SchemaWithTextFieldAndNewKeywordField.class)
+				.where(Expressions.exactMatch("field.exact", "existing field one"))
+				.build())
+		).hasSize(1);
 	}
 	
 	@After
