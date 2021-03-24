@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,12 +45,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.datastore.index.constraint.HierarchyDefinitionFragment;
 import com.b2international.snowowl.snomed.datastore.index.constraint.RelationshipPredicateFragment;
 import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionFragment;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedOWLRelationshipDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.*;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
@@ -637,14 +632,22 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		final SnomedRefSetMemberIndexEntry duplicateAttributeMember2 = member(Concepts.ATTRIBUTE_TYPE_CONCEPT_TYPE_COMPONENT, Concepts.REFSET_ATTRIBUTE_VALUE_TYPE).referenceSetType(SnomedRefSetType.ATTRIBUTE_VALUE).build();
 		final SnomedRefSetMemberIndexEntry correctAttributeMember = member(Concepts.ATTRIBUTE_TYPE_CONCEPT_TYPE_COMPONENT, Concepts.MODULE_SCT_CORE).referenceSetType(SnomedRefSetType.ATTRIBUTE_VALUE).build();
 		
-		indexRevision(MAIN, duplicateSimpleMember1, duplicateSimpleMember2, correctSimpleMember, duplicateLanguageMember1, duplicateLanguageMember2, correctLanguageMember, duplicateAttributeMember1, duplicateAttributeMember2, correctAttributeMember);
+		final SnomedRefSetMemberIndexEntry duplicateAttributeMemberWithModule1 = member(Concepts.ATTRIBUTE, Concepts.REFSET_ATTRIBUTE_VALUE_TYPE).moduleId(Concepts.MODULE_SCT_CORE).referenceSetType(SnomedRefSetType.ATTRIBUTE_VALUE).build();
+		final SnomedRefSetMemberIndexEntry duplicateAttributeMemberWithModule2 = member(Concepts.ATTRIBUTE, Concepts.REFSET_ATTRIBUTE_VALUE_TYPE).moduleId(Concepts.MODULE_SCT_CORE).referenceSetType(SnomedRefSetType.ATTRIBUTE_VALUE).build();
+		final SnomedRefSetMemberIndexEntry correctAttributeMemberWithModule = member(Concepts.ATTRIBUTE, Concepts.REFSET_ATTRIBUTE_VALUE_TYPE).moduleId(Concepts.UK_CLINICAL_EXTENSION_MODULE).referenceSetType(SnomedRefSetType.ATTRIBUTE_VALUE).build();
+		
+		indexRevision(MAIN, duplicateSimpleMember1, duplicateSimpleMember2, correctSimpleMember, 
+				duplicateLanguageMember1, duplicateLanguageMember2, correctLanguageMember, 
+				duplicateAttributeMember1, duplicateAttributeMember2, correctAttributeMember, 
+				duplicateAttributeMemberWithModule1, duplicateAttributeMemberWithModule2, correctAttributeMemberWithModule);
 		
 		final ValidationIssues issues = validate(ruleId);
 		
 		assertAffectedComponents(issues, 
 				ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.IS_A),
 				ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.REFSET_ROOT_CONCEPT),
-				ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.ATTRIBUTE_TYPE_CONCEPT_TYPE_COMPONENT));
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.ATTRIBUTE_TYPE_CONCEPT_TYPE_COMPONENT),
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.ATTRIBUTE));
 	}
 	
 	@Test
