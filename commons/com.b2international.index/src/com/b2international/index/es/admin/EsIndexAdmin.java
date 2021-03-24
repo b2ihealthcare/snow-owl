@@ -83,7 +83,7 @@ import com.google.common.primitives.Primitives;
  */
 public final class EsIndexAdmin implements IndexAdmin {
 
-	private static final Pattern FIELD_ALIAS_CHANGE_PROPERTY_PATTERN = Pattern.compile("properties/[a-zA-Z0-9_]*/fields(/[a-zA-Z0-9_]*)?");
+	private static final Pattern FIELD_ALIAS_CHANGE_PROPERTY_PATTERN = Pattern.compile("properties(/[a-zA-Z0-9_]+)+/fields(/[a-zA-Z0-9_]+)?");
 	
 	/**
 	 * List of Elasticsearch supported dynamic settings.
