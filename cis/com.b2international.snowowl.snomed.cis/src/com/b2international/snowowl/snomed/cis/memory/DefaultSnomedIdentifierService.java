@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import static com.google.common.collect.Sets.newLinkedHashSet;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -38,7 +37,6 @@ import com.b2international.index.Index;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
-import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.cis.AbstractSnomedIdentifierService;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifierConfiguration;
@@ -51,11 +49,7 @@ import com.b2international.snowowl.snomed.cis.reservations.ISnomedIdentifierRese
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicates;
 import com.google.common.base.Strings;
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
+import com.google.common.collect.*;
 import com.google.inject.Provider;
 
 /**
@@ -63,13 +57,12 @@ import com.google.inject.Provider;
  * 
  * @since 4.5
  */
-public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierService implements IDisposableService {
+public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierService {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSnomedIdentifierService.class);
 
 	private final Index store;
 	private final ItemIdGenerationStrategy generationStrategy;
-	private final AtomicBoolean disposed = new AtomicBoolean(false);
 
 	/*
 	 * Tests only
@@ -349,18 +342,6 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 			index.commit();
 			return null;
 		});
-	}
-	
-	@Override
-	public void dispose() {
-		if (disposed.compareAndSet(false, true)) {
-			store.admin().close();
-		}
-	}
-	
-	@Override
-	public boolean isDisposed() {
-		return disposed.get();
 	}
 	
 }

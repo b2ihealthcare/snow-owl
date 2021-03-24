@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,11 +25,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 
 import com.b2international.commons.exceptions.RequestTimeoutException;
-import com.b2international.index.DefaultIndex;
-import com.b2international.index.Index;
-import com.b2international.index.IndexClient;
-import com.b2international.index.IndexClientFactory;
-import com.b2international.index.Indexes;
+import com.b2international.index.*;
 import com.b2international.index.es.client.EsClient;
 import com.b2international.index.es.client.EsClusterStatus;
 import com.b2international.index.mapping.Mappings;
@@ -137,11 +133,6 @@ public final class TerminologyRepository extends DelegatingContext implements Re
 		return revisionIndex;
 	}
 
-	@Override
-	public void doDispose() {
-		service(RevisionIndex.class).admin().close();
-	}
-	
 	@Override
 	protected Environment getDelegate() {
 		return (Environment) super.getDelegate();

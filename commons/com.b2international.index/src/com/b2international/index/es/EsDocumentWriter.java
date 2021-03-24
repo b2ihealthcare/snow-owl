@@ -40,23 +40,13 @@ import org.elasticsearch.common.unit.ByteSizeUnit;
 import org.elasticsearch.common.unit.ByteSizeValue;
 import org.elasticsearch.common.xcontent.XContentType;
 
-import com.b2international.index.BulkDelete;
-import com.b2international.index.BulkUpdate;
-import com.b2international.index.IndexClientFactory;
-import com.b2international.index.IndexException;
-import com.b2international.index.Searcher;
-import com.b2international.index.Writer;
+import com.b2international.index.*;
 import com.b2international.index.es.admin.EsIndexAdmin;
 import com.b2international.index.es.client.EsClient;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.revision.Revision;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Table;
+import com.google.common.collect.*;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
@@ -137,10 +127,18 @@ public class EsDocumentWriter implements Writer {
 		}
 		final List<ListenableFuture<?>> updateFutures = newArrayList();
 		for (BulkUpdate<?> update : bulkUpdateOperations) {
-			updateFutures.add(executor.submit(() -> admin.bulkUpdate(update, mappingsToRefresh)));
+			updateFutures.add(executor.submit(() -> {
+				if (admin.bulkUpdate(update)) {
+					mappingsToRefresh.add(admin.mappings().getMapping(update.getType()));
+				}
+			}));
 		}
 		for (BulkDelete<?> delete: bulkDeleteOperations) {
-			updateFutures.add(executor.submit(() -> admin.bulkDelete(delete, mappingsToRefresh)));
+			updateFutures.add(executor.submit(() -> {
+				if (admin.bulkDelete(delete)) {
+					mappingsToRefresh.add(admin.mappings().getMapping(delete.getType()));
+				}
+			}));
 		}
 		try {
 			executor.shutdown();

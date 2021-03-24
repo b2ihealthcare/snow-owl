@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,11 @@
  */
 package com.b2international.index;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -24,7 +28,9 @@ import org.junit.Rule;
 
 import com.b2international.index.aggregations.Aggregation;
 import com.b2international.index.aggregations.AggregationBuilder;
+import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Query;
+import com.b2international.index.util.Reflections;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -107,6 +113,25 @@ public abstract class BaseIndexTest {
 	
 	protected final <T> Iterable<Hits<T>> scroll(final Query<T> query) {
 		return index().read(index -> index.scroll(query));
+	}
+	
+	protected void assertDocEquals(Object expected, Object actual) {
+		assertNotNull("Actual document is missing from index", actual);
+		for (Field actualField : index.getIndex().admin().mappings().getMapping(actual.getClass()).getFields()) {
+			Field existingField = null;
+			try {
+				existingField = Reflections.getField(expected.getClass(), actualField.getName());
+			} catch (IndexException e) {
+				// ignore fields that do not exist on the expected schema
+				continue;
+			}
+			
+			if (DocumentMapping._ID.equals(existingField.getName())	|| WithScore.SCORE.equals(existingField.getName())) {
+				// skip known metadata fields from equality check
+				continue;
+			}
+			assertEquals(String.format("Field '%s' should be equal", existingField.getName()), Reflections.getValueOrNull(expected, existingField), Reflections.getValueOrNull(actual, actualField));
+		}
 	}
 	
 }
