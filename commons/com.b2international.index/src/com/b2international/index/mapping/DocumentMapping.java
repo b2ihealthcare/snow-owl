@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,25 +19,17 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Sets.newHashSet;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.collections.PrimitiveCollection;
-import com.b2international.index.Analyzers;
-import com.b2international.index.Doc;
-import com.b2international.index.ID;
-import com.b2international.index.Keyword;
-import com.b2international.index.Script;
-import com.b2international.index.Text;
+import com.b2international.index.*;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.util.Reflections;
@@ -45,16 +37,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.HashBiMap;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.*;
 import com.google.common.collect.ImmutableMap.Builder;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedMap;
-import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Maps;
 
 /**
  * @since 4.7
@@ -158,7 +142,28 @@ public final class DocumentMapping {
 				}
 			});
 		
-		this.scripts = Maps.uniqueIndex(getScripts(type), Script::name);
+		this.scripts = new HashMap<>();
+		getScripts(type).forEach(script -> this.scripts.put(script.name(), script));
+		// add default scripts
+		if (!this.scripts.containsKey("normalizeWithOffset")) {
+			// add generic score normalizer to all mappings
+			this.scripts.put("normalizeWithOffset", new Script() {
+				@Override
+				public Class<? extends Annotation> annotationType() {
+					return Script.class;
+				}
+				
+				@Override
+				public String script() {
+					return "(_score / (_score + 1.0f)) + params.offset";
+				}
+				
+				@Override
+				public String name() {
+					return "normalizeWithOffset";
+				}
+			});
+		}
 	}
 
 	private Collection<Script> getScripts(Class<?> type) {

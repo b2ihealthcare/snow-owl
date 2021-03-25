@@ -19,12 +19,7 @@ import java.io.Serializable;
 import java.util.List;
 
 import com.b2international.commons.collections.Collections3;
-import com.b2international.index.Analyzers;
-import com.b2international.index.Doc;
-import com.b2international.index.ID;
-import com.b2international.index.Keyword;
-import com.b2international.index.Script;
-import com.b2international.index.Text;
+import com.b2international.index.*;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -35,7 +30,6 @@ import com.google.common.base.MoreObjects;
  * @since 6.1
  */
 @Doc
-@Script(name="normalizeWithOffset", script="(_score / (_score + 1.0f)) + params.offset")
 public final class ValidationWhiteList implements Serializable {
 
 	/**
