@@ -17,17 +17,15 @@ package com.b2international.snowowl.snomed.core.rest.components;
 
 import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.ROOT_CONCEPT;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.createComponent;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createConceptRequestBody;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewConcept;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewRelationship;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createRefSetMemberRequestBody;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.inactivateConcept;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.reactivateConcept;
+import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.updateComponent;
+import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.*;
+import static com.b2international.snowowl.test.commons.rest.RestExtensions.assertCreated;
 import static com.google.common.collect.Maps.newHashMap;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.everyItem;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 import java.util.Map;
@@ -40,8 +38,11 @@ import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.AssociationTarget;
 import com.b2international.snowowl.snomed.core.domain.InactivationProperties;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants;
+import com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
 import com.google.common.collect.Maps;
 
@@ -81,6 +82,59 @@ public class SnomedConceptInactivationApiTest extends AbstractSnomedApiTest {
 
 		inactivateConcept(branchPath, conceptId);
 		assertConceptInactive(conceptId);
+	}
+	
+	@Test
+	public void toggleDefinitionStatusAtStatusChange() {
+		String conceptId = createNewConcept(branchPath);
+		Json requestBody = createRefSetMemberRequestBody(Concepts.REFSET_OWL_AXIOM, conceptId)
+				.with(SnomedRf2Headers.FIELD_OWL_EXPRESSION, "EquivalentClasses(:" + conceptId + " :" + Concepts.NAMESPACE_ROOT + ")")
+				.with("commitComment", "Created new equivalent class OWL Axiom reference set member");
+		
+		assertCreated(createComponent(branchPath, SnomedComponentType.MEMBER, requestBody));
+		SnomedReferenceSetMembers members = SnomedComponentRestRequests.searchComponent(branchPath, 
+				SnomedComponentType.MEMBER, 
+				Map.of("referencedComponentId", conceptId))
+			.extract().as(SnomedReferenceSetMembers.class);
+		
+		updateComponent(
+				branchPath, 
+				SnomedComponentType.CONCEPT, 
+				conceptId, 
+				Json.object(
+					"members", members,
+					"commitComment", "Update concept members"
+				)
+			).statusCode(204);
+
+		SnomedConcept concept = assertGetConcept(conceptId)
+			.statusCode(200)
+			.extract().as(SnomedConcept.class);
+		assertTrue(concept.isActive());
+		assertTrue(!concept.isPrimitive()); //Active concept is defined after adding equivalent class axioms to it
+		
+		inactivateConcept(branchPath, conceptId);
+		concept = assertGetConcept(conceptId)
+				.statusCode(200)
+				.extract().as(SnomedConcept.class);
+		assertTrue(!concept.isActive());
+		assertTrue(concept.isPrimitive()); //Inactive concept becomes primitive
+		
+		updateComponent(
+				branchPath, 
+				SnomedComponentType.CONCEPT, 
+				conceptId, 
+				Json.object(
+					"active", true,
+					"commitComment", "Reactivate concept"
+				)
+			).statusCode(204);
+		
+		concept = assertGetConcept(conceptId)
+				.statusCode(200)
+				.extract().as(SnomedConcept.class);
+		assertTrue(concept.isActive());
+		assertTrue(concept.isPrimitive()); //Reactivated concept with no active members stays primitive
 	}
 
 	@Test
