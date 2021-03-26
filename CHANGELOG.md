@@ -1,6 +1,13 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 7.16.1
+
+### Bugs/Improvements
+- [index] support fields alias migration on index level (#783)
+- [snomed] exclude inactive OWL Axioms when calculating concept's definition status (#785)
+- [validation] consider `moduleId` when calculating reference set member duplication in SIMPLE, LANGUAGE, ASSOCIATION and ATTRIBUTE reference sets (#782)
+
 ## 7.16.0
 
 ### Core
