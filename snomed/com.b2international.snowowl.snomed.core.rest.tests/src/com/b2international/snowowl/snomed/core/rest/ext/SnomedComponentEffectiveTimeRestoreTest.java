@@ -43,11 +43,9 @@ import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
  */
 public class SnomedComponentEffectiveTimeRestoreTest extends AbstractSnomedExtensionApiTest {
 
-	private static final String EXT_BASE_SI_VERSION = "2019-07-31";
 	private static final String EXT_UPGRADE_SI_VERSION = "2020-01-31";
 	private static final String EXT_VERSION = "2019-10-31";
 	
-	private final CodeSystemURI baseInternationalCodeSystem = CodeSystemURI.branch(SNOMEDCT, EXT_BASE_SI_VERSION);
 	private final CodeSystemURI upgradeInternationalCodeSystem = CodeSystemURI.branch(SNOMEDCT, EXT_UPGRADE_SI_VERSION);
 	
 	@Test

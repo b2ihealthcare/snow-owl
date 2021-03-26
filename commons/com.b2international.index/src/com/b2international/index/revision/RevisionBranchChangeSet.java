@@ -66,6 +66,7 @@ public final class RevisionBranchChangeSet {
 						changedRevisionIdsByType.put((Class<? extends Revision>) revType, detail.getObject().id());
 					}
 				} else {
+					// TODO this block is required if a Revision class does not define a property as tracked, can be removed in 8.0 after move to annotation based field tracking
 					Class<?> revType = DocumentMapping.getClass(detail.getComponent().type());
 					if (Revision.class.isAssignableFrom(revType)) {
 						changedRevisionIdsByType.put((Class<? extends Revision>) revType, detail.getComponent().id());
