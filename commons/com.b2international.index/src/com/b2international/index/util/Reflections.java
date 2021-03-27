@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2016 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,15 @@ public class Reflections {
 			return field.get(object);
 		} catch (IllegalArgumentException | IllegalAccessException e) {
 			throw new IndexException("Couldn't get value from field " + field, e);
+		}
+	}
+	
+	public static Object getValueOrNull(Object object, Field field) {
+		try {
+			return field.get(object);
+		} catch (IllegalArgumentException | IllegalAccessException e) {
+			// in case of any error treat the field as non-existent and return null
+			return null;
 		}
 	}
 	

@@ -2,7 +2,7 @@
 <feature
       id="com.b2international.snowowl.core.dependencies.feature"
       label="Snow Owl Core Dependencies"
-      version="7.16.1.qualifier"
+      version="7.17.0.qualifier"
       provider-name="B2i Healthcare">
 
    <description url="http://b2i.sg">
@@ -305,7 +305,7 @@ Visit us at http://b2i.sg
          id="org.objectweb.asm"
          download-size="0"
          install-size="0"
-         version="7.2.0.v20191010-1910"
+         version="8.0.1.v20200420-1007"
          unpack="false"/>
 
    <plugin
@@ -557,7 +557,7 @@ Visit us at http://b2i.sg
          id="org.objectweb.asm.tree"
          download-size="0"
          install-size="0"
-         version="7.2.0.v20191010-1910"
+         version="8.0.1.v20200420-1007"
          unpack="false"/>
 
    <plugin
@@ -793,6 +793,27 @@ Visit us at http://b2i.sg
 
    <plugin
          id="com.fasterxml.woodstox.woodstox-core"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="com.fasterxml.jackson.datatype.jackson-datatype-jsr310"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="io.github.classgraph"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.apache.commons.io"
          download-size="0"
          install-size="0"
          version="0.0.0"

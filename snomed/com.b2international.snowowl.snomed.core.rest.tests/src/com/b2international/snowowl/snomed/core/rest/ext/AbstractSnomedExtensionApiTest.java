@@ -36,8 +36,11 @@ import io.restassured.response.ValidatableResponse;
  * @since 7.14.1
  */
 public abstract class AbstractSnomedExtensionApiTest extends AbstractSnomedApiTest {
-
+	
+	protected static final String EXT_BASE_SI_VERSION = "2019-07-31";
 	protected static final String SNOMEDCT = SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME;
+	
+	protected final CodeSystemURI baseInternationalCodeSystem = CodeSystemURI.branch(SNOMEDCT, EXT_BASE_SI_VERSION);
 	
 	protected final String createModule(CodeSystem extension) {
 		// generate ID for the module first

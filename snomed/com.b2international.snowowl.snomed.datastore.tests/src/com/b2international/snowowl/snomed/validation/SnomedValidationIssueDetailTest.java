@@ -28,7 +28,6 @@ import java.util.stream.Collectors;
 import org.eclipse.xtext.parser.IParser;
 import org.eclipse.xtext.serializer.ISerializer;
 import org.eclipse.xtext.validation.IResourceValidator;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -127,11 +126,6 @@ public class SnomedValidationIssueDetailTest extends BaseRevisionIndexTest {
 		}
 		
 		context.service(ValidationIssueDetailExtensionProvider.class).addExtension(new SnomedValidationIssueDetailExtension());
-	}
-	
-	@After
-	public void teardown() {
-		repository.dispose();
 	}
 	
 	@Test

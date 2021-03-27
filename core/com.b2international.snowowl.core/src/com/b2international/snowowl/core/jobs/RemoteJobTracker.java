@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,7 @@
 package com.b2international.snowowl.core.jobs;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -33,11 +27,7 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.index.BulkUpdate;
-import com.b2international.index.Hits;
-import com.b2international.index.Index;
-import com.b2international.index.Scroll;
-import com.b2international.index.Searcher;
+import com.b2international.index.*;
 import com.b2international.index.aggregations.Aggregation;
 import com.b2international.index.aggregations.AggregationBuilder;
 import com.b2international.index.query.Expression;
@@ -219,7 +209,6 @@ public final class RemoteJobTracker implements IDisposableService {
 		if (disposed.compareAndSet(false, true)) {
 			this.cleanUp.cancel();
 			Job.getJobManager().removeJobChangeListener(listener);
-			this.index.admin().close();
 		}
 	}
 

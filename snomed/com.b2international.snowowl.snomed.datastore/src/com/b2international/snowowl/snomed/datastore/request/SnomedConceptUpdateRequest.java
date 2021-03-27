@@ -251,9 +251,10 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 		final Set<String> newOwlAxiomExpressions = Optional.ofNullable(members)
 				.map(Collection::stream)
 				.orElseGet(Stream::empty)
-					.filter(member -> SnomedRefSetType.OWL_AXIOM == member.type() || Concepts.REFSET_OWL_AXIOM.equals(member.getReferenceSetId()))
-					.map(member -> (String) member.getProperties().get(SnomedRf2Headers.FIELD_OWL_EXPRESSION))
-					.collect(Collectors.toSet());
+				.filter(SnomedReferenceSetMember::isActive)
+				.filter(member -> SnomedRefSetType.OWL_AXIOM == member.type() || Concepts.REFSET_OWL_AXIOM.equals(member.getReferenceSetId()))
+				.map(member -> (String) member.getProperties().get(SnomedRf2Headers.FIELD_OWL_EXPRESSION))
+				.collect(Collectors.toSet());
 		
 		final String newDefinitionStatusId;
 		if (!newOwlAxiomExpressions.isEmpty()) {

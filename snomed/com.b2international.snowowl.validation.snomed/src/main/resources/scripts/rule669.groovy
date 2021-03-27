@@ -12,6 +12,7 @@ import com.b2international.snowowl.core.terminology.ComponentCategory
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry
 
 def RevisionSearcher searcher = ctx.service(RevisionSearcher.class)
@@ -61,15 +62,16 @@ if (params.isUnpublishedOnly) {
 
 def String previousMemberKey
 
-// search ALL relevant members by the current query and sort them by refset and refComp 
+// search ALL relevant members by the current query and sort them by refset and refComp and moduleId
 searcher.scroll(Query.select(String[].class)
 	.from(SnomedRefSetMemberIndexEntry.class)
-	.fields(SnomedRefSetMemberIndexEntry.Fields.REFERENCE_SET_ID, SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID)
+	.fields(SnomedRefSetMemberIndexEntry.Fields.REFERENCE_SET_ID, SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID, SnomedDocument.Fields.MODULE_ID)
 	.where(queryBuilder.build())
 	.sortBy(
 		SortBy.builder()
 			.sortByField(SnomedRefSetMemberIndexEntry.Fields.REFERENCE_SET_ID, Order.ASC)
 			.sortByField(SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID, Order.ASC)
+			.sortByField(SnomedDocument.Fields.MODULE_ID, Order.ASC)
 		.build()
 	)
 	.limit(10_000)
@@ -78,7 +80,8 @@ searcher.scroll(Query.select(String[].class)
 	members.each { member ->
 		def refSetId = member[0]
 		def referencedComponentId = member[1]
-		def currentMemberKey = String.join("_", refSetId, referencedComponentId)
+		def moduleId = member[2]
+		def currentMemberKey = String.join("_", refSetId, referencedComponentId, moduleId)
 		if (!Objects.equals(previousMemberKey, currentMemberKey)) {
 			previousMemberKey = currentMemberKey
 		} else {
