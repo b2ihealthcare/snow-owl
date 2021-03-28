@@ -36,8 +36,6 @@ import java.util.Locale;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -115,9 +113,12 @@ public final class ReasonerTaxonomyBuilder {
 
 	private InternalSctIdSet.Builder exhaustiveConcepts;
 
-	private InternalIdMultimap.Builder<String> statedAdditionalAxioms;
-	private InternalIdMultimap.Builder<StatementFragment> subclassOfStatements;
-	private InternalIdMultimap.Builder<StatementFragment> equivalentStatements;
+	// Holds OWL axioms related to the referenced component
+	private InternalIdMultimap.Builder<String> statedAxioms;
+	// Holds statement fragments collected from stated relationships (including IS A relationships)
+	private InternalIdMultimap.Builder<StatementFragment> statedRelationships;
+	// Hold statement fragments extracted from OWL axioms (_not_ including IS A, as we only need this information for the normal form)
+	private InternalIdMultimap.Builder<StatementFragment> statedAxiomRelationships;
 	private InternalIdMultimap.Builder<StatementFragment> additionalGroupedRelationships;
 	private InternalIdMultimap.Builder<StatementFragment> existingInferredRelationships;
 	
@@ -227,10 +228,10 @@ public final class ReasonerTaxonomyBuilder {
 		
 		this.exhaustiveConcepts = InternalSctIdSet.builder(builtConceptMap);
 		
-		this.statedAdditionalAxioms = InternalIdMultimap.builder(builtConceptMap);
+		this.statedAxioms = InternalIdMultimap.builder(builtConceptMap);
 		
-		this.subclassOfStatements = InternalIdMultimap.builder(builtConceptMap);
-		this.equivalentStatements = InternalIdMultimap.builder(builtConceptMap);
+		this.statedRelationships = InternalIdMultimap.builder(builtConceptMap);
+		this.statedAxiomRelationships = InternalIdMultimap.builder(builtConceptMap);
 		this.additionalGroupedRelationships = InternalIdMultimap.builder(builtConceptMap);
 		this.existingInferredRelationships = InternalIdMultimap.builder(builtConceptMap);
 		
@@ -433,41 +434,33 @@ public final class ReasonerTaxonomyBuilder {
 		return this;
 	}
 
-	public ReasonerTaxonomyBuilder addActiveStatedNonIsARelationships(final RevisionSearcher searcher) {
-		entering("Registering active stated non-IS A relationships using revision searcher");
+	public ReasonerTaxonomyBuilder addActiveStatedRelationships(final RevisionSearcher searcher) {
+		entering("Registering active stated relationships using revision searcher");
 
 		final ExpressionBuilder whereExpressionBuilder = Expressions.builder()
 				.filter(active())
-				.filter(characteristicTypeId(Concepts.STATED_RELATIONSHIP))
-				.mustNot(typeId(Concepts.IS_A));
+				.filter(characteristicTypeId(Concepts.STATED_RELATIONSHIP));
 		
 		if (!excludedModuleIds.isEmpty()) {
 			whereExpressionBuilder.mustNot(modules(excludedModuleIds));
 		}
 		
-		addRelationships(searcher, whereExpressionBuilder, conceptId -> builtDefinedConceptMap.containsKey(conceptId) ? equivalentStatements : subclassOfStatements);
+		addRelationships(searcher, whereExpressionBuilder, statedRelationships);
 
-		leaving("Registering active stated non-IS A relationships using revision searcher");
+		leaving("Registering active stated relationships using revision searcher");
 		return this;
 	}
 
-	public ReasonerTaxonomyBuilder addActiveStatedNonIsARelationships(final Stream<SnomedRelationship> sortedRelationships) {
-		entering("Registering active stated non-IS A relationships using relationship stream");
+	public ReasonerTaxonomyBuilder addActiveStatedRelationships(final Stream<SnomedRelationship> sortedRelationships) {
+		entering("Registering active stated relationships using relationship stream");
 	
 		Predicate<SnomedRelationship> predicate = relationship -> relationship.isActive() 
 				&& Concepts.STATED_RELATIONSHIP.equals(relationship.getCharacteristicTypeId())
-				&& !Concepts.IS_A.equals(relationship.getTypeId())
 				&& !excludedModuleIds.contains(relationship.getModuleId());
 		
-		addRelationships(sortedRelationships.filter(predicate), (sourceId, fragments) -> {
-			if (builtDefinedConceptMap.containsKey(sourceId)) {
-				equivalentStatements.putAll(sourceId, fragments);
-			} else {
-				subclassOfStatements.putAll(sourceId, fragments);
-			}
-		});
+		addRelationships(sortedRelationships.filter(predicate), statedRelationships);
 	
-		leaving("Registering active stated non-IS A relationships using relationship stream");
+		leaving("Registering active stated relationships using relationship stream");
 		return this;
 	}
 
@@ -483,7 +476,7 @@ public final class ReasonerTaxonomyBuilder {
 			whereExpressionBuilder.mustNot(modules(excludedModuleIds));
 		}
 		
-		addRelationships(searcher, whereExpressionBuilder, conceptId -> additionalGroupedRelationships);
+		addRelationships(searcher, whereExpressionBuilder, additionalGroupedRelationships);
 	
 		leaving("Registering active additional grouped relationships using revision searcher");
 		return this;
@@ -497,7 +490,7 @@ public final class ReasonerTaxonomyBuilder {
 				&& relationship.getGroup() > 0
 				&& !excludedModuleIds.contains(relationship.getModuleId());
 		
-		addRelationships(sortedRelationships.filter(predicate), additionalGroupedRelationships::putAll);
+		addRelationships(sortedRelationships.filter(predicate), additionalGroupedRelationships);
 	
 		leaving("Registering active additional grouped relationships using relationship stream");
 		return this;
@@ -623,13 +616,13 @@ public final class ReasonerTaxonomyBuilder {
 				&& Concepts.INFERRED_RELATIONSHIP.equals(relationship.getCharacteristicTypeId())
 				&& !excludedModuleIds.contains(relationship.getModuleId());
 		
-		addRelationships(sortedRelationships.filter(predicate), existingInferredRelationships::putAll);
+		addRelationships(sortedRelationships.filter(predicate), existingInferredRelationships);
 		
 		leaving("Registering active inferred relationships using relationship stream");
 		return this;
 	}
 
-	private void addRelationships(final RevisionSearcher searcher, final ExpressionBuilder whereExpressionBuilder, final Function<String, Builder<StatementFragment>> fragmentBuilder) {
+	private void addRelationships(final RevisionSearcher searcher, final ExpressionBuilder whereExpressionBuilder, final Builder<StatementFragment> fragmentBuilder) {
 		
 		final Query<String[]> query = Query.select(String[].class)
 				.from(SnomedRelationshipIndexEntry.class)
@@ -667,7 +660,7 @@ public final class ReasonerTaxonomyBuilder {
 					lastSourceId = sourceId;
 				} else if (!lastSourceId.equals(sourceId)) {
 					if (builtConceptMap.containsKey(lastSourceId)) {
-						fragmentBuilder.apply(lastSourceId).putAll(lastSourceId, fragments);
+						fragmentBuilder.putAll(lastSourceId, fragments);
 					} else {
 						LOGGER.debug("Not registering {} relationships for source concept {} as it is inactive.",
 								fragments.size(),
@@ -703,7 +696,7 @@ public final class ReasonerTaxonomyBuilder {
 		
 		if (!lastSourceId.isEmpty()) {
 			if (builtConceptMap.containsKey(lastSourceId)) {
-				fragmentBuilder.apply(lastSourceId).putAll(lastSourceId, fragments);
+				fragmentBuilder.putAll(lastSourceId, fragments);
 			} else {
 				LOGGER.debug("Not registering {} relationships for source concept {} as it is inactive.",
 						fragments.size(),
@@ -716,8 +709,7 @@ public final class ReasonerTaxonomyBuilder {
 	/*
 	 * XXX: sortedRelationships should be sorted by source ID; we can not verify this in advance
 	 */
-	private void addRelationships(final Stream<SnomedRelationship> sortedRelationships,
-			final BiConsumer<String, List<StatementFragment>> consumer) {
+	private void addRelationships(final Stream<SnomedRelationship> sortedRelationships, final Builder<StatementFragment> builder) {
 		
 		final List<StatementFragment> fragments = newArrayListWithExpectedSize(SCROLL_LIMIT);
 		String lastSourceId = "";
@@ -730,7 +722,7 @@ public final class ReasonerTaxonomyBuilder {
 					lastSourceId = sourceId;
 				} else if (!lastSourceId.equals(sourceId)) {
 					if (builtConceptMap.containsKey(lastSourceId)) {
-						consumer.accept(lastSourceId, fragments);
+						builder.putAll(lastSourceId, fragments);
 					} else {
 						LOGGER.debug("Not registering {} relationships for source concept {} as it is inactive.",
 								fragments.size(),
@@ -766,7 +758,7 @@ public final class ReasonerTaxonomyBuilder {
 
 		if (!lastSourceId.isEmpty()) {
 			if (builtConceptMap.containsKey(lastSourceId)) {
-				consumer.accept(lastSourceId, fragments);
+				builder.putAll(lastSourceId, fragments);
 			} else {
 				LOGGER.debug("Not registering {} relationships for source concept {} as it is inactive.",
 						fragments.size(),
@@ -801,9 +793,8 @@ public final class ReasonerTaxonomyBuilder {
 		
 		final List<String> sourceIds = newArrayListWithExpectedSize(SCROLL_LIMIT);
 		final List<String> destinationIds = newArrayListWithExpectedSize(SCROLL_LIMIT);
-		final List<StatementFragment> subclassOfFragments = newArrayListWithExpectedSize(SCROLL_LIMIT);
-		final List<StatementFragment> equivalentFragments = newArrayListWithExpectedSize(SCROLL_LIMIT);
-		final List<String> additionalAxioms = newArrayListWithExpectedSize(SCROLL_LIMIT);
+		final List<StatementFragment> statementFragments = newArrayListWithExpectedSize(SCROLL_LIMIT);
+		final List<String> axioms = newArrayListWithExpectedSize(SCROLL_LIMIT);
 		String lastReferencedComponentId = "";
 		int groupOffset = AXIOM_GROUP_BASE;
 		
@@ -815,38 +806,38 @@ public final class ReasonerTaxonomyBuilder {
 					lastReferencedComponentId = referencedComponentId;
 				} else if (!lastReferencedComponentId.equals(referencedComponentId)) {
 					if (builtConceptMap.containsKey(lastReferencedComponentId)) {
-						subclassOfStatements.putAll(lastReferencedComponentId, subclassOfFragments);
-						equivalentStatements.putAll(lastReferencedComponentId, equivalentFragments);
+						statedAxiomRelationships.putAll(lastReferencedComponentId, statementFragments);
 						statedAncestors.addEdges(sourceIds, destinationIds);
 						statedDescendants.addEdges(destinationIds, sourceIds);
-						statedAdditionalAxioms.putAll(lastReferencedComponentId, additionalAxioms);
+						statedAxioms.putAll(lastReferencedComponentId, axioms);
 					} else {
 						LOGGER.debug("Not registering OWL axioms for concept {} as it is inactive.", lastReferencedComponentId);
 					}
-					subclassOfFragments.clear();
-					equivalentFragments.clear();
+					statementFragments.clear();
 					sourceIds.clear();
 					destinationIds.clear();
-					additionalAxioms.clear();
+					axioms.clear();
 					
 					lastReferencedComponentId = referencedComponentId;
 					groupOffset = AXIOM_GROUP_BASE;
 				}
 
-				// if not a class axiom then process it as owl axiom member
 				final String expression = member.getOwlExpression();
-				// SubObjectPropertyOf(ObjectPropertyChain(:246093002 :738774007) :246093002)
-				// TransitiveObjectProperty(:774081006)
-				StringTokenizer tok = new StringTokenizer(expression.toLowerCase(Locale.ENGLISH), "(): ");
-				
-				List<StatementFragment> fragments = null;
-				
+				final StringTokenizer tok = new StringTokenizer(expression.toLowerCase(Locale.ENGLISH), "(): ");
+
+				// OWL axiom types that we are expecting here, only two of which requires special handling:
+				// 
+				// [ ] SubClassOf(...)
+				// [ ] EquivalentClasses(...)
+				// [+] SubObjectPropertyOf(ObjectPropertyChain(:246093002 :738774007) :246093002)
+				// [+] TransitiveObjectProperty(:774081006)
+				// [ ] ReflexiveObjectProperty(...)
 				try {
-					String firstToken = tok.nextToken();
+					
+					final String firstToken = tok.nextToken();
 					if ("transitiveobjectproperty".equals(firstToken)) {
 						long propertyId = Long.parseLong(tok.nextToken());
 						propertyChains.add(new PropertyChain(propertyId, propertyId, propertyId));
-						additionalAxioms.add(expression);
 					} else if ("subobjectpropertyof".equals(firstToken)) {
 						String nextToken = tok.nextToken();
 						if ("objectpropertychain".equals(nextToken)) {
@@ -855,12 +846,10 @@ public final class ReasonerTaxonomyBuilder {
 							long inferredType = Long.parseLong(tok.nextToken());
 							propertyChains.add(new PropertyChain(sourceType, destinationType, inferredType));
 						}
-						additionalAxioms.add(expression);
-					} else if ("reflexiveobjectproperty".equals(firstToken)) {
-						additionalAxioms.add(expression);
-					} else {
-						fragments = "equivalentclasses".equals(firstToken) ? equivalentFragments : subclassOfFragments;
 					}
+					
+					// Always collect the OWL axiom, regardless of type
+					axioms.add(expression);
 					
 				} catch (NoSuchElementException | NumberFormatException e) {
 					// skip
@@ -873,7 +862,7 @@ public final class ReasonerTaxonomyBuilder {
 								sourceIds.add(referencedComponentId);
 								destinationIds.add(relationship.getDestinationId());
 							} else {
-								fragments.add(relationship.toStatementFragment(groupOffset));
+								statementFragments.add(relationship.toStatementFragment(groupOffset));
 							}
 						} else {
 							LOGGER.debug(
@@ -881,9 +870,6 @@ public final class ReasonerTaxonomyBuilder {
 									referencedComponentId, relationship.getDestinationId());
 						}
 					}
-				} else if (!CompareUtils.isEmpty(member.getGciAxiomRelationships())) {
-					// make sure we register GCI expressions as well
-					additionalAxioms.add(expression);
 				}
 				
 				groupOffset += AXIOM_GROUP_BASE;
@@ -892,11 +878,10 @@ public final class ReasonerTaxonomyBuilder {
 		
 		if (!lastReferencedComponentId.isEmpty()) {
 			if (builtConceptMap.containsKey(lastReferencedComponentId)) {
-				subclassOfStatements.putAll(lastReferencedComponentId, subclassOfFragments);
-				equivalentStatements.putAll(lastReferencedComponentId, equivalentFragments);
+				statedAxiomRelationships.putAll(lastReferencedComponentId, statementFragments);
 				statedAncestors.addEdges(sourceIds, destinationIds);
 				statedDescendants.addEdges(destinationIds, sourceIds);
-				statedAdditionalAxioms.putAll(lastReferencedComponentId, additionalAxioms);
+				statedAxioms.putAll(lastReferencedComponentId, axioms);
 			} else {
 				LOGGER.debug("Not registering OWL axioms for concept {} as it is inactive.", lastReferencedComponentId);
 			}
@@ -1112,12 +1097,12 @@ public final class ReasonerTaxonomyBuilder {
 				
 				exhaustiveConcepts.build(),
 				
-				subclassOfStatements.build(),
-				equivalentStatements.build(),
+				statedRelationships.build(),
+				statedAxiomRelationships.build(),
 				existingInferredRelationships.build(),
 				additionalGroupedRelationships.build(),
 				
-				statedAdditionalAxioms.build(),
+				statedAxioms.build(),
 				LongCollections.unmodifiableSet(neverGroupedIds),
 				propertyChains.build(),
 				
