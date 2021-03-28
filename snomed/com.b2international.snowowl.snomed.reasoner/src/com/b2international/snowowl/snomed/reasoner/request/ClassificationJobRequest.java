@@ -161,7 +161,7 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean>,
 		
 		taxonomyBuilder.addConceptFlags(revisionSearcher);
 		taxonomyBuilder.addActiveStatedEdges(revisionSearcher);
-		taxonomyBuilder.addActiveStatedNonIsARelationships(revisionSearcher);
+		taxonomyBuilder.addActiveStatedRelationships(revisionSearcher);
 		taxonomyBuilder.addActiveInferredRelationships(revisionSearcher);
 		taxonomyBuilder.addActiveAdditionalGroupedRelationships(revisionSearcher);
 		
@@ -179,7 +179,7 @@ final class ClassificationJobRequest implements Request<BranchContext, Boolean>,
 				.flatMap(c -> c.getRelationships().stream());
 		
 		taxonomyBuilder.addActiveStatedEdges(relationshipSupplier.get());
-		taxonomyBuilder.addActiveStatedNonIsARelationships(relationshipSupplier.get());
+		taxonomyBuilder.addActiveStatedRelationships(relationshipSupplier.get());
 		taxonomyBuilder.addActiveInferredRelationships(relationshipSupplier.get());
 		taxonomyBuilder.addActiveAdditionalGroupedRelationships(relationshipSupplier.get());
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,12 +43,12 @@ public final class ReasonerTaxonomy implements IReasonerTaxonomy {
 
 	private final InternalSctIdSet exhaustiveConcepts;
 
-	private final InternalIdMultimap<StatementFragment> subclassOfStatements;
-	private final InternalIdMultimap<StatementFragment> equivalentStatements;
+	private final InternalIdMultimap<StatementFragment> statedRelationships;
+	private final InternalIdMultimap<StatementFragment> statedAxiomRelationships;
 	private final InternalIdMultimap<StatementFragment> existingInferredRelationships;
 	private final InternalIdMultimap<StatementFragment> additionalGroupedRelationships;
 	
-	private final InternalIdMultimap<String> statedAdditionalAxioms;
+	private final InternalIdMultimap<String> statedAxioms;
 	private final LongSet neverGroupedTypeIds;
 	private Set<PropertyChain> propertyChains;
 	
@@ -71,12 +71,12 @@ public final class ReasonerTaxonomy implements IReasonerTaxonomy {
 			
 			final InternalSctIdSet exhaustiveConcepts, 
 			
-			final InternalIdMultimap<StatementFragment> subclassOfStatements,
-			final InternalIdMultimap<StatementFragment> equivalentStatements,
+			final InternalIdMultimap<StatementFragment> statedRelationships,
+			final InternalIdMultimap<StatementFragment> statedAxiomRelationships,
 			final InternalIdMultimap<StatementFragment> existingInferredRelationships,
 			final InternalIdMultimap<StatementFragment> additionalGroupedRelationships, 
 			
-			final InternalIdMultimap<String> statedAdditionalAxioms,
+			final InternalIdMultimap<String> statedAxioms,
 			final LongSet neverGroupedTypeIds,
 			final Set<PropertyChain> propertyChains, 
 			
@@ -98,12 +98,12 @@ public final class ReasonerTaxonomy implements IReasonerTaxonomy {
 		
 		this.exhaustiveConcepts = exhaustiveConcepts;
 		
-		this.subclassOfStatements = subclassOfStatements;
-		this.equivalentStatements = equivalentStatements;
+		this.statedRelationships = statedRelationships;
+		this.statedAxiomRelationships = statedAxiomRelationships;
 		this.existingInferredRelationships = existingInferredRelationships;
 		this.additionalGroupedRelationships = additionalGroupedRelationships;
 		
-		this.statedAdditionalAxioms = statedAdditionalAxioms;
+		this.statedAxioms = statedAxioms;
 		this.neverGroupedTypeIds = neverGroupedTypeIds;
 		this.propertyChains = propertyChains;
 		
@@ -155,12 +155,12 @@ public final class ReasonerTaxonomy implements IReasonerTaxonomy {
 		return exhaustiveConcepts;
 	}
 
-	public InternalIdMultimap<StatementFragment> getSubclassOfStatements() {
-		return subclassOfStatements;
+	public InternalIdMultimap<StatementFragment> getStatedRelationships() {
+		return statedRelationships;
 	}
 	
-	public InternalIdMultimap<StatementFragment> getEquivalentStatements() {
-		return equivalentStatements;
+	public InternalIdMultimap<StatementFragment> getStatedAxiomRelationships() {
+		return statedAxiomRelationships;
 	}
 	
 	public InternalIdMultimap<StatementFragment> getExistingInferredRelationships() {
@@ -171,8 +171,8 @@ public final class ReasonerTaxonomy implements IReasonerTaxonomy {
 		return additionalGroupedRelationships;
 	}
 
-	public InternalIdMultimap<String> getStatedAdditionalAxioms() {
-		return statedAdditionalAxioms;
+	public InternalIdMultimap<String> getStatedAxioms() {
+		return statedAxioms;
 	}
 	
 	public LongSet getNeverGroupedTypeIds() {
@@ -223,12 +223,12 @@ public final class ReasonerTaxonomy implements IReasonerTaxonomy {
 				
 				exhaustiveConcepts,
 				
-				subclassOfStatements,
-				equivalentStatements,
+				statedRelationships,
+				statedAxiomRelationships,
 				existingInferredRelationships,
 				additionalGroupedRelationships,
 				
-				statedAdditionalAxioms,
+				statedAxioms,
 				neverGroupedTypeIds,
 				propertyChains,
 				

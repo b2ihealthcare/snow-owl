@@ -209,9 +209,15 @@ public final class NormalFormGenerator implements INormalFormGenerator {
 			candidateNonIsARelationships.put(parentId, statementCache.get(parentId));
 		}
 
+		// Stated axiom fragments are non-IS A, but any stated relationships need to be filtered (if they are still present)
+		final Collection<StatementFragment> ownStatedRelationships = reasonerTaxonomy.getStatedRelationships().get(conceptId);
+		final Collection<StatementFragment> ownStatedNonIsaRelationships = ownStatedRelationships.stream()
+				.filter(r -> r.getTypeId() != IS_A)
+				.collect(Collectors.toList());
+
 		candidateNonIsARelationships.put(conceptId, ImmutableList.<StatementFragment>builder()
-				.addAll(reasonerTaxonomy.getSubclassOfStatements().get(conceptId))
-				.addAll(reasonerTaxonomy.getEquivalentStatements().get(conceptId))
+				.addAll(ownStatedNonIsaRelationships)
+				.addAll(reasonerTaxonomy.getStatedAxiomRelationships().get(conceptId))
 				.addAll(reasonerTaxonomy.getAdditionalGroupedRelationships().get(conceptId))
 				.build());
 
