@@ -39,6 +39,9 @@ jobs:
         servers: '[{ "id": "b2i-releases", "username": "${env.NEXUS_DEPLOYMENT_USER}", "password": "${env.NEXUS_DEPLOYMENT_PASS}" }, { "id": "b2i-snapshots", "username": "${env.NEXUS_DEPLOYMENT_USER}", "password": "${env.NEXUS_DEPLOYMENT_PASS}" }, { "id": "nexus_deployment", "username": "${env.NEXUS_DEPLOYMENT_USER}", "password": "${env.NEXUS_DEPLOYMENT_PASS}" }]'
     - name: Build with Maven
       run: mvn -ntp clean verify
+      env: 
+        NEXUS_DEPLOYMENT_USER: ${{ secrets.NEXUS_DEPLOYMENT_USER }}
+        NEXUS_DEPLOYMENT_PASS: ${{ secrets.NEXUS_DEPLOYMENT_PASS }}
     - name: Upload Codecov
       uses: codecov/codecov-action@v1.0.13
       with:
