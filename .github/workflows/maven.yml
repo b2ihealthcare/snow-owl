@@ -33,6 +33,10 @@ jobs:
         key: ${{ runner.os }}-npm-${{ hashFiles('core/com.b2international.snowowl.core.rest/snow-owl-api-docs/package-lock.json') }}
         restore-keys: |
           ${{ runner.os }}-npm-:
+    - name: Setup Maven settings.xml
+      uses: whelk-io/maven-settings-xml-action@v14
+      with:
+        servers: '[{ "id": "nexus_deployment", "username": "${env.NEXUS_DEPLOYMENT_USER}", "password": "${env.NEXUS_DEPLOYMENT_PASS}" }]'
     - name: Build with Maven
       run: mvn -ntp clean verify
     - name: Upload Codecov
