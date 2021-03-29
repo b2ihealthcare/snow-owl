@@ -28,11 +28,11 @@ import org.eclipse.xtext.Group;
 import org.eclipse.xtext.ParserRule;
 import org.eclipse.xtext.RuleCall;
 import org.eclipse.xtext.TerminalRule;
-import org.eclipse.xtext.service.AbstractElementFinder.AbstractGrammarElementFinder;
+import org.eclipse.xtext.service.AbstractElementFinder;
 import org.eclipse.xtext.service.GrammarProvider;
 
 @Singleton
-public class EtlGrammarAccess extends AbstractGrammarElementFinder {
+public class EtlGrammarAccess extends AbstractElementFinder.AbstractGrammarElementFinder {
 	
 	public class ExpressionTemplateElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.etl.Etl.ExpressionTemplate");
@@ -2004,7 +2004,8 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//SubExpressionConstraint ExpressionConstraint:
-	//	ChildOf | DescendantOf | DescendantOrSelfOf | ParentOf | AncestorOf | AncestorOrSelfOf | EclFocusConcept;
+	//	ChildOf | ChildOrSelfOf | DescendantOf | DescendantOrSelfOf | ParentOf | ParentOrSelfOf | AncestorOf |
+	//	AncestorOrSelfOf | EclFocusConcept;
 	public EclGrammarAccess.SubExpressionConstraintElements getSubExpressionConstraintAccess() {
 		return gaEcl.getSubExpressionConstraintAccess();
 	}
@@ -2031,6 +2032,16 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 	
 	public ParserRule getChildOfRule() {
 		return getChildOfAccess().getRule();
+	}
+	
+	//ChildOrSelfOf:
+	//	DBL_LT_EM constraint=EclFocusConcept;
+	public EclGrammarAccess.ChildOrSelfOfElements getChildOrSelfOfAccess() {
+		return gaEcl.getChildOrSelfOfAccess();
+	}
+	
+	public ParserRule getChildOrSelfOfRule() {
+		return getChildOrSelfOfAccess().getRule();
 	}
 	
 	//DescendantOf:
@@ -2061,6 +2072,16 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 	
 	public ParserRule getParentOfRule() {
 		return getParentOfAccess().getRule();
+	}
+	
+	//ParentOrSelfOf:
+	//	DBL_GT_EM constraint=EclFocusConcept;
+	public EclGrammarAccess.ParentOrSelfOfElements getParentOrSelfOfAccess() {
+		return gaEcl.getParentOrSelfOfAccess();
+	}
+	
+	public ParserRule getParentOrSelfOfRule() {
+		return getParentOrSelfOfAccess().getRule();
 	}
 	
 	//AncestorOf:
@@ -2718,10 +2739,22 @@ public class EtlGrammarAccess extends AbstractGrammarElementFinder {
 		return gaEcl.getLT_EMRule();
 	}
 	
+	//terminal DBL_LT_EM:
+	//	'<<!';
+	public TerminalRule getDBL_LT_EMRule() {
+		return gaEcl.getDBL_LT_EMRule();
+	}
+	
 	//terminal GT_EM:
 	//	'>!';
 	public TerminalRule getGT_EMRule() {
 		return gaEcl.getGT_EMRule();
+	}
+	
+	//terminal DBL_GT_EM:
+	//	'>>!';
+	public TerminalRule getDBL_GT_EMRule() {
+		return gaEcl.getDBL_GT_EMRule();
 	}
 	
 	//terminal GTE:

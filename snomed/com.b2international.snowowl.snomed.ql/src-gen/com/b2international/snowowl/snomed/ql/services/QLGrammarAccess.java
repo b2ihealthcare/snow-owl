@@ -31,12 +31,11 @@ import org.eclipse.xtext.Keyword;
 import org.eclipse.xtext.ParserRule;
 import org.eclipse.xtext.RuleCall;
 import org.eclipse.xtext.TerminalRule;
-import org.eclipse.xtext.service.AbstractElementFinder.AbstractEnumRuleElementFinder;
-import org.eclipse.xtext.service.AbstractElementFinder.AbstractGrammarElementFinder;
+import org.eclipse.xtext.service.AbstractElementFinder;
 import org.eclipse.xtext.service.GrammarProvider;
 
 @Singleton
-public class QLGrammarAccess extends AbstractGrammarElementFinder {
+public class QLGrammarAccess extends AbstractElementFinder.AbstractGrammarElementFinder {
 	
 	public class QueryElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.Query");
@@ -773,7 +772,7 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 		public RuleCall getLanguageCodeSTRINGTerminalRuleCall_2_0() { return cLanguageCodeSTRINGTerminalRuleCall_2_0; }
 	}
 	
-	public class LexicalSearchTypeElements extends AbstractEnumRuleElementFinder {
+	public class LexicalSearchTypeElements extends AbstractElementFinder.AbstractEnumRuleElementFinder {
 		private final EnumRule rule = (EnumRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.LexicalSearchType");
 		private final Alternatives cAlternatives = (Alternatives)rule.eContents().get(1);
 		private final EnumLiteralDeclaration cMATCHEnumLiteralDeclaration_0 = (EnumLiteralDeclaration)cAlternatives.eContents().get(0);
@@ -808,7 +807,7 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 		//"exact"
 		public Keyword getEXACTExactKeyword_2_0() { return cEXACTExactKeyword_2_0; }
 	}
-	public class DomainElements extends AbstractEnumRuleElementFinder {
+	public class DomainElements extends AbstractElementFinder.AbstractEnumRuleElementFinder {
 		private final EnumRule rule = (EnumRule) GrammarUtil.findRuleForName(getGrammar(), "com.b2international.snowowl.snomed.ql.QL.Domain");
 		private final Alternatives cAlternatives = (Alternatives)rule.eContents().get(1);
 		private final EnumLiteralDeclaration cCONCEPTEnumLiteralDeclaration_0 = (EnumLiteralDeclaration)cAlternatives.eContents().get(0);
@@ -1268,7 +1267,8 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 	}
 	
 	//SubExpressionConstraint ExpressionConstraint:
-	//	ChildOf | DescendantOf | DescendantOrSelfOf | ParentOf | AncestorOf | AncestorOrSelfOf | EclFocusConcept;
+	//	ChildOf | ChildOrSelfOf | DescendantOf | DescendantOrSelfOf | ParentOf | ParentOrSelfOf | AncestorOf |
+	//	AncestorOrSelfOf | EclFocusConcept;
 	public EclGrammarAccess.SubExpressionConstraintElements getSubExpressionConstraintAccess() {
 		return gaEcl.getSubExpressionConstraintAccess();
 	}
@@ -1295,6 +1295,16 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 	
 	public ParserRule getChildOfRule() {
 		return getChildOfAccess().getRule();
+	}
+	
+	//ChildOrSelfOf:
+	//	DBL_LT_EM constraint=EclFocusConcept;
+	public EclGrammarAccess.ChildOrSelfOfElements getChildOrSelfOfAccess() {
+		return gaEcl.getChildOrSelfOfAccess();
+	}
+	
+	public ParserRule getChildOrSelfOfRule() {
+		return getChildOrSelfOfAccess().getRule();
 	}
 	
 	//DescendantOf:
@@ -1325,6 +1335,16 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 	
 	public ParserRule getParentOfRule() {
 		return getParentOfAccess().getRule();
+	}
+	
+	//ParentOrSelfOf:
+	//	DBL_GT_EM constraint=EclFocusConcept;
+	public EclGrammarAccess.ParentOrSelfOfElements getParentOrSelfOfAccess() {
+		return gaEcl.getParentOrSelfOfAccess();
+	}
+	
+	public ParserRule getParentOrSelfOfRule() {
+		return getParentOrSelfOfAccess().getRule();
 	}
 	
 	//AncestorOf:
@@ -1982,10 +2002,22 @@ public class QLGrammarAccess extends AbstractGrammarElementFinder {
 		return gaEcl.getLT_EMRule();
 	}
 	
+	//terminal DBL_LT_EM:
+	//	'<<!';
+	public TerminalRule getDBL_LT_EMRule() {
+		return gaEcl.getDBL_LT_EMRule();
+	}
+	
 	//terminal GT_EM:
 	//	'>!';
 	public TerminalRule getGT_EMRule() {
 		return gaEcl.getGT_EMRule();
+	}
+	
+	//terminal DBL_GT_EM:
+	//	'>>!';
+	public TerminalRule getDBL_GT_EMRule() {
+		return gaEcl.getDBL_GT_EMRule();
 	}
 	
 	//terminal GTE:

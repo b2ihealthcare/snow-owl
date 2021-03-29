@@ -109,7 +109,11 @@ RULE_DBL_GT : '>>';
 
 RULE_LT_EM : '<!';
 
+RULE_DBL_LT_EM : '<<!';
+
 RULE_GT_EM : '>!';
+
+RULE_DBL_GT_EM : '>>!';
 
 RULE_GTE : '>=';
 

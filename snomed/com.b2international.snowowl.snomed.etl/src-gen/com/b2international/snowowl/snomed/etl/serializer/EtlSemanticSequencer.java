@@ -27,6 +27,7 @@ import com.b2international.snomed.ecl.ecl.BooleanValueEquals;
 import com.b2international.snomed.ecl.ecl.BooleanValueNotEquals;
 import com.b2international.snomed.ecl.ecl.Cardinality;
 import com.b2international.snomed.ecl.ecl.ChildOf;
+import com.b2international.snomed.ecl.ecl.ChildOrSelfOf;
 import com.b2international.snomed.ecl.ecl.DecimalValueEquals;
 import com.b2international.snomed.ecl.ecl.DecimalValueGreaterThan;
 import com.b2international.snomed.ecl.ecl.DecimalValueGreaterThanEquals;
@@ -52,6 +53,7 @@ import com.b2international.snomed.ecl.ecl.NestedRefinement;
 import com.b2international.snomed.ecl.ecl.OrExpressionConstraint;
 import com.b2international.snomed.ecl.ecl.OrRefinement;
 import com.b2international.snomed.ecl.ecl.ParentOf;
+import com.b2international.snomed.ecl.ecl.ParentOrSelfOf;
 import com.b2international.snomed.ecl.ecl.RefinedExpressionConstraint;
 import com.b2international.snomed.ecl.ecl.Script;
 import com.b2international.snomed.ecl.ecl.StringValueEquals;
@@ -161,6 +163,9 @@ public class EtlSemanticSequencer extends EclSemanticSequencer {
 			case EclPackage.CHILD_OF:
 				sequence_ChildOf(context, (ChildOf) semanticObject); 
 				return; 
+			case EclPackage.CHILD_OR_SELF_OF:
+				sequence_ChildOrSelfOf(context, (ChildOrSelfOf) semanticObject); 
+				return; 
 			case EclPackage.DECIMAL_VALUE_EQUALS:
 				sequence_DecimalValueEquals(context, (DecimalValueEquals) semanticObject); 
 				return; 
@@ -262,6 +267,9 @@ public class EtlSemanticSequencer extends EclSemanticSequencer {
 				else break;
 			case EclPackage.PARENT_OF:
 				sequence_ParentOf(context, (ParentOf) semanticObject); 
+				return; 
+			case EclPackage.PARENT_OR_SELF_OF:
+				sequence_ParentOrSelfOf(context, (ParentOrSelfOf) semanticObject); 
 				return; 
 			case EclPackage.REFINED_EXPRESSION_CONSTRAINT:
 				sequence_RefinedExpressionConstraint(context, (RefinedExpressionConstraint) semanticObject); 
