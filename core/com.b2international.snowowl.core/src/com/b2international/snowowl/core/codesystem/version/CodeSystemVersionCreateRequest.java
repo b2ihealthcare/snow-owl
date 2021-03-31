@@ -113,9 +113,12 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 				.map(codeSystemsByShortName::get)
 				.collect(Collectors.toList());
 		
-		if (codeSystemsToVersion.stream().anyMatch(cs -> cs.getUpgradeOf() != null)) {
-			throw new IllegalArgumentException("Upgrade codesystem can not be versioned.");
-		}
+		codeSystemsToVersion.stream()
+			.filter(cs -> cs.getUpgradeOf() != null)
+			.findAny()
+			.ifPresent(cs -> {
+				throw new BadRequestException("Upgrade codesystem %s can not be versioned.", cs.getShortName());				
+			});
 		
 		for (CodeSystem cs : codeSystemsToVersion) {
 			// check that the new versionId does not conflict with any other currently available branch
