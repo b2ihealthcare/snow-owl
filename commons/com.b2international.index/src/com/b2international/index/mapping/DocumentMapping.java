@@ -21,6 +21,7 @@ import static com.google.common.collect.Sets.newHashSet;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -28,9 +29,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.collections.PrimitiveCollection;
+import com.b2international.collections.PrimitiveSet;
 import com.b2international.index.*;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
+import com.b2international.index.revision.Revision;
 import com.b2international.index.util.Reflections;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Function;
@@ -55,8 +58,6 @@ public final class DocumentMapping {
 	 */
 	public static final String _ID = "_id";
 
-	private static final Function<? super Field, String> GET_NAME = Field::getName;
-	
 	private final Class<?> type;
 	private final String typeAsString;
 	private final Map<String, Field> fieldMap;
@@ -65,7 +66,7 @@ public final class DocumentMapping {
 	private final TreeMap<String, Keyword> keywordFields;
 	private final DocumentMapping parent;
 	private final Map<String, Script> scripts;
-	private final Set<String> hashedFields;
+	private final SortedSet<String> trackedRevisionFields;
 	private final String idField;
 
 	public DocumentMapping(Class<?> type) {
@@ -77,7 +78,7 @@ public final class DocumentMapping {
 		this.type = type;
 		final String typeAsString = getType(type);
 		this.typeAsString = parent == null ? typeAsString : parent.typeAsString() + DELIMITER + typeAsString;
-		this.fieldMap = FluentIterable.from(Reflections.getFields(type)).filter(DocumentMapping::isValidField).uniqueIndex(GET_NAME);
+		this.fieldMap = FluentIterable.from(Reflections.getFields(type)).filter(DocumentMapping::isValidField).uniqueIndex(Field::getName);
 
 		final Collection<Field> idFields = fieldMap.values().stream()
 				.filter(f -> f.isAnnotationPresent(ID.class))
@@ -91,7 +92,6 @@ public final class DocumentMapping {
 			LOG.warn("'{}' does not define an ID annotated field, falling back to the deprecated '_id', but keep in mind that support will be removed in 8.0", type.getName());
 			this.idField = _ID;
 		}
-		
 		
 		final Builder<String, Text> textFields = ImmutableSortedMap.naturalOrder();
 		final Builder<String, Keyword> keywordFields = ImmutableSortedMap.naturalOrder();
@@ -118,10 +118,11 @@ public final class DocumentMapping {
 
 		final Doc doc = DocumentMappingRegistry.getDocAnnotation(type);
 		if (doc != null) {
-			this.hashedFields = ImmutableSortedSet.copyOf(doc.revisionHash());
+			this.trackedRevisionFields = ImmutableSortedSet.copyOf(doc.revisionHash());
 		} else {
-			this.hashedFields = ImmutableSortedSet.of();
+			this.trackedRevisionFields = ImmutableSortedSet.of();
 		}
+		checkRevisionType();
 				
 		this.nestedTypes = FluentIterable.from(getFields())
 			.transform(field -> {
@@ -160,6 +161,12 @@ public final class DocumentMapping {
 					return "normalizeWithOffset";
 				}
 			});
+		}
+	}
+
+	private void checkRevisionType() {
+		if (!this.trackedRevisionFields.isEmpty() && !Revision.class.isAssignableFrom(this.type)) {
+			LOG.warn("Tracked fields feature is only supported in subtypes of the Revision class. '{}' is not a subtype of Revision.", type.getName());
 		}
 	}
 
@@ -245,8 +252,24 @@ public final class DocumentMapping {
 	}
 	
 	public boolean isCollection(String field) {
-		Class<?> fieldType = getFieldType(field);
-		return Iterable.class.isAssignableFrom(fieldType) || PrimitiveCollection.class.isAssignableFrom(fieldType) || fieldType.getClass().isArray();
+		return isCollection(getFieldType(field));
+	}
+	
+	public boolean isSet(String field) {
+		final Class<?> fieldType = getFieldType(field);
+		return Set.class.isAssignableFrom(fieldType) || PrimitiveSet.class.isAssignableFrom(fieldType);
+	}
+
+	private static boolean isCollection(Class<?> fieldType) {
+		return Iterable.class.isAssignableFrom(fieldType) || PrimitiveCollection.class.isAssignableFrom(fieldType) || fieldType.isArray();
+	}
+	
+	public boolean isObject(String field) {
+		return isObject(getFieldType(field));
+	}
+
+	private static boolean isObject(Class<?> fieldType) {
+		return !fieldType.isPrimitive() && !String.class.equals(fieldType) && !BigDecimal.class.equals(fieldType) && !isCollection(fieldType);
 	}
 	
 	public Map<String, Text> getTextFields() {
@@ -257,8 +280,13 @@ public final class DocumentMapping {
 		return keywordFields;
 	}
 	
-	public Set<String> getRevisionFields() {
-		return hashedFields;
+	/**
+	 * Fields that are being tracked in commits and will receive proper conflict detection during merges/rebases.
+	 * 
+	 * @return a non-<code>null</code> {@link SortedSet} containing all tracked revision fields declared in the {@link #type()}'s {@link Doc} annotation.
+	 */
+	public SortedSet<String> getTrackedRevisionFields() {
+		return trackedRevisionFields;
 	}
 
 	public Class<?> type() {

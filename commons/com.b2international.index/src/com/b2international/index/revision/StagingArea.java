@@ -938,7 +938,8 @@ public final class StagingArea {
 		Set<String> changedRevisionIdsToCheck = newHashSet(toChangeSet.getChangedIds());
 		Set<String> removedRevisionIdsToCheck = newHashSet(toChangeSet.getRemovedIds());
 		for (Class<? extends Revision> type : fromChangeSet.getChangedTypes()) {
-			final String docType = DocumentMapping.getType(type);
+			final DocumentMapping mapping = index.admin().mappings().getMapping(type);
+			final String docType = mapping.typeAsString();
 			Set<String> changedRevisionIdsToMerge = newHashSet(fromChangeSet.getChangedIds(type));
 			// first handle changed vs. removed
 			Set<String> changedInSourceDetachedInTargetIds = Sets.newHashSet(Sets.intersection(changedRevisionIdsToMerge, removedRevisionIdsToCheck));
@@ -989,10 +990,12 @@ public final class StagingArea {
 								RevisionPropertyDiff targetChangeDiff = new RevisionPropertyDiff(targetPropertyChange.getProperty(), targetPropertyChange.getFromValue(), targetPropertyChange.getValue());
 								// changed on both sides, ask conflict processor to resolve the issue or raise conflict error
 								RevisionPropertyDiff resolution = conflictProcessor.handleChangedInSourceAndTarget(
-										changedInSourceAndTargetId, 
-										sourceChangeDiff,
-										targetChangeDiff
-										);
+									changedInSourceAndTargetId, 
+									mapping,
+									sourceChangeDiff,
+									targetChangeDiff,
+									mapper
+								);
 								if (resolution == null) {
 									conflicts.add(new ChangedInSourceAndTargetConflict(sourcePropertyChange.getObject(), sourceChangeDiff.convert(conflictProcessor), targetChangeDiff.convert(conflictProcessor)));
 								} else {
@@ -1134,7 +1137,7 @@ public final class StagingArea {
 					}
 					
 					// in case of a collection-like tracked property, convert the first diff to a full prop diff and ignore the rest of the prop changes on the same property
-					if (mapping.getRevisionFields().contains(property) && mapping.isCollection(property)) {
+					if (mapping.getTrackedRevisionFields().contains(property) && mapping.isCollection(property)) {
 						// construct a replacement JSON array patch node
 						change = new RevisionPropertyDiff(property, serializeToCommitDetailValue(oldRevisionSource, property), serializeToCommitDetailValue(newRevisionSource, property))
 								.asPatch(mapper, oldRevisionSource, true /* includeFromValue */);
@@ -1154,7 +1157,7 @@ public final class StagingArea {
 		public ArrayNode diff() {
 			if (diff == null) {
 				final DocumentMapping mapping = getMapping();
-				final Set<String> revisionFields = mapping.getRevisionFields();
+				final Set<String> revisionFields = mapping.getTrackedRevisionFields();
 				if (revisionFields.isEmpty()) {
 					return null; // in case of no fields to revision control, do NOT try to compute the diff
 				}

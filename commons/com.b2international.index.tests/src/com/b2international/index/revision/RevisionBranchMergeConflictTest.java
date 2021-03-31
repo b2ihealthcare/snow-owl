@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.junit.Test;
 
 import com.b2international.index.Fixtures.Data;
 import com.b2international.index.revision.RevisionFixtures.NestedRevisionData;
+import com.b2international.index.revision.RevisionFixtures.ObjectArrayPropertyData;
 import com.b2international.index.revision.RevisionFixtures.RevisionData;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -36,7 +37,7 @@ public class RevisionBranchMergeConflictTest extends BaseRevisionIndexTest {
 	
 	@Override
 	protected Collection<Class<?>> getTypes() {
-		return ImmutableList.<Class<?>>of(RevisionData.class, NestedRevisionData.class);
+		return ImmutableList.<Class<?>>of(RevisionData.class, NestedRevisionData.class, ObjectArrayPropertyData.class);
 	}
 	
 	@Override
@@ -254,6 +255,75 @@ public class RevisionBranchMergeConflictTest extends BaseRevisionIndexTest {
 		
 		// trigger second rebase causes issues in 7.11.0, but with patch it's not
 		branching().prepareMerge(MAIN, branchA).merge(); // throws BranchMergeConflictException in 7.11.0 and earlier versions
+	}
+	
+	@Test
+	public void rebaseSameNonObjectItemArrayChanges() throws Exception {
+		indexRevision(MAIN, NEW_DATA);
+		final String branchA = createBranch(MAIN, "a");
+		
+		indexChange(MAIN, NEW_DATA, NEW_DATA.toBuilder().terms(List.of("1", "2")).build());
+		indexChange(branchA, NEW_DATA, NEW_DATA.toBuilder().terms(List.of("1", "2")).build());
+		
+		branching().prepareMerge(MAIN, branchA).merge(); // should not throw BranchMergeConflictException
+	}
+	
+	@Test
+	public void rebaseSameObjectItemArrayChanges() throws Exception {
+		ObjectArrayPropertyData data = new ObjectArrayPropertyData(STORAGE_KEY1, List.of());
+		indexRevision(MAIN, data);
+		String branchA = createBranch(MAIN, "a");
+		
+		ObjectArrayPropertyData updatedData = new ObjectArrayPropertyData(STORAGE_KEY1, List.of(
+			new RevisionFixtures.ObjectArrayPropertyItem("field1", "field2"),
+			new RevisionFixtures.ObjectArrayPropertyItem("field3", "field4")
+		));
+		indexChange(MAIN, data, updatedData);
+		indexChange(branchA, data, updatedData);
+		
+		branching().prepareMerge(MAIN, branchA).merge(); // should not throw BranchMergeConflictException
+	}
+	
+	@Test
+	public void rebaseObjectItemArrayChangeWithOneExtraElement() throws Exception {
+		ObjectArrayPropertyData data = new ObjectArrayPropertyData(STORAGE_KEY1, List.of());
+		indexRevision(MAIN, data);
+		String branchA = createBranch(MAIN, "a");
+		
+		ObjectArrayPropertyData updateOnMain = new ObjectArrayPropertyData(STORAGE_KEY1, List.of(
+			new RevisionFixtures.ObjectArrayPropertyItem("field1", "field2"),
+			new RevisionFixtures.ObjectArrayPropertyItem("field3", "field4")
+		));
+		ObjectArrayPropertyData updateOnBranch = new ObjectArrayPropertyData(STORAGE_KEY1, List.of(
+			new RevisionFixtures.ObjectArrayPropertyItem("field1", "field2"),
+			new RevisionFixtures.ObjectArrayPropertyItem("field3", "field4"),
+			new RevisionFixtures.ObjectArrayPropertyItem("field5", "field6")
+		));
+		indexChange(MAIN, data, updateOnMain);
+		indexChange(branchA, data, updateOnBranch);
+		
+		branching().prepareMerge(MAIN, branchA).merge(); // should not throw BranchMergeConflictException
+	}
+	
+	@Test
+	public void rebaseObjectItemArrayChangeWithOneExtraElementFromParent() throws Exception {
+		ObjectArrayPropertyData data = new ObjectArrayPropertyData(STORAGE_KEY1, List.of());
+		indexRevision(MAIN, data);
+		String branchA = createBranch(MAIN, "a");
+		
+		ObjectArrayPropertyData updateOnMain = new ObjectArrayPropertyData(STORAGE_KEY1, List.of(
+			new RevisionFixtures.ObjectArrayPropertyItem("field1", "field2"),
+			new RevisionFixtures.ObjectArrayPropertyItem("field3", "field4"),
+			new RevisionFixtures.ObjectArrayPropertyItem("field5", "field6")
+		));
+		ObjectArrayPropertyData updateOnBranch = new ObjectArrayPropertyData(STORAGE_KEY1, List.of(
+			new RevisionFixtures.ObjectArrayPropertyItem("field1", "field2"),
+			new RevisionFixtures.ObjectArrayPropertyItem("field3", "field4")
+		));
+		indexChange(MAIN, data, updateOnMain);
+		indexChange(branchA, data, updateOnBranch);
+		
+		branching().prepareMerge(MAIN, branchA).merge(); // should not throw BranchMergeConflictException
 	}
 	
 }
