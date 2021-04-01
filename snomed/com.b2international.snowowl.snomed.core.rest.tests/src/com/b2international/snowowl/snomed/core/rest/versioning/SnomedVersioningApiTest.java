@@ -17,25 +17,23 @@ package com.b2international.snowowl.snomed.core.rest.versioning;
 
 import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.INT_CODESYSTEM;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.createVersion;
-import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getLatestVersion;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getNextAvailableEffectiveDateAsString;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getVersion;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures;
-import com.b2international.snowowl.snomed.core.rest.ext.AbstractSnomedExtensionApiTest;
 
 /**
  * @since 2.0
  */
-public class SnomedVersioningApiTest extends AbstractSnomedExtensionApiTest {
+public class SnomedVersioningApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void getNonExistentVersion() {
@@ -61,19 +59,6 @@ public class SnomedVersioningApiTest extends AbstractSnomedExtensionApiTest {
 	@Test
 	public void createVersionWithSameNameAsBranch() {
 		createVersion(INT_CODESYSTEM, "SnomedVersioningApiTest", getNextAvailableEffectiveDateAsString(INT_CODESYSTEM)).statusCode(409);
-	}
-	
-	@Test
-	public void createVersionOnUpgradeCodeSystem() {
-		CodeSystemURI latestInternationalVersion = CodeSystemURI.branch(SNOMEDCT, getLatestVersion(SNOMEDCT));
-		CodeSystem extension = createExtension(latestInternationalVersion, branchPath.lastSegment());
-		
-		String effectiveDate = getNextAvailableEffectiveDateAsString(INT_CODESYSTEM);
-		createVersion(INT_CODESYSTEM, effectiveDate, effectiveDate).statusCode(201);
-		
-		String newEffectiveDate = getNextAvailableEffectiveDateAsString(INT_CODESYSTEM);
-		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getCodeSystemURI(), CodeSystemURI.branch(INT_CODESYSTEM, effectiveDate));
-		createVersion(upgradeCodeSystem.getShortName(), newEffectiveDate, newEffectiveDate).statusCode(400);
 	}
 	
 	@Test
