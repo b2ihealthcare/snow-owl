@@ -18,12 +18,8 @@ package com.b2international.snowowl.core.codesystem.version;
 import static com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions.CREATE_VERSION;
 
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -116,6 +112,13 @@ final class CodeSystemVersionCreateRequest implements Request<ServiceProvider, B
 				.stream()
 				.map(codeSystemsByShortName::get)
 				.collect(Collectors.toList());
+		
+		codeSystemsToVersion.stream()
+			.filter(cs -> cs.getUpgradeOf() != null)
+			.findAny()
+			.ifPresent(cs -> {
+				throw new BadRequestException("Upgrade codesystem %s can not be versioned.", cs.getShortName());				
+			});
 		
 		for (CodeSystem cs : codeSystemsToVersion) {
 			// check that the new versionId does not conflict with any other currently available branch
