@@ -1275,11 +1275,15 @@ public final class StagingArea {
 			}
 		}
 		
+		public RevisionPropertyDiff withNewValue(String newValue) {
+			return new RevisionPropertyDiff(property, oldValue, newValue);
+		}
+		
 		@Override
 		public String toString() {
 			return String.format("%s[%s]", getProperty(), toValueChangeString());
 		}
-		
+
 	}
 	
 	private enum StageKind {

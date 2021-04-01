@@ -266,6 +266,9 @@ public class RevisionBranchMergeConflictTest extends BaseRevisionIndexTest {
 		indexChange(branchA, NEW_DATA, NEW_DATA.toBuilder().terms(List.of("1", "2")).build());
 		
 		branching().prepareMerge(MAIN, branchA).merge(); // should not throw BranchMergeConflictException
+		
+		RevisionData actual = getRevision(branchA, RevisionData.class, STORAGE_KEY1);
+		assertDocEquals(NEW_DATA.toBuilder().terms(List.of("1", "2")).build(), actual);
 	}
 	
 	@Test
@@ -282,6 +285,9 @@ public class RevisionBranchMergeConflictTest extends BaseRevisionIndexTest {
 		indexChange(branchA, data, updatedData);
 		
 		branching().prepareMerge(MAIN, branchA).merge(); // should not throw BranchMergeConflictException
+		
+		ObjectArrayPropertyData actual = getRevision(branchA, ObjectArrayPropertyData.class, STORAGE_KEY1);
+		assertDocEquals(updatedData, actual);
 	}
 	
 	@Test
@@ -303,6 +309,9 @@ public class RevisionBranchMergeConflictTest extends BaseRevisionIndexTest {
 		indexChange(branchA, data, updateOnBranch);
 		
 		branching().prepareMerge(MAIN, branchA).merge(); // should not throw BranchMergeConflictException
+		
+		ObjectArrayPropertyData actual = getRevision(branchA, ObjectArrayPropertyData.class, STORAGE_KEY1);
+		assertDocEquals(updateOnBranch, actual);
 	}
 	
 	@Test
@@ -324,6 +333,45 @@ public class RevisionBranchMergeConflictTest extends BaseRevisionIndexTest {
 		indexChange(branchA, data, updateOnBranch);
 		
 		branching().prepareMerge(MAIN, branchA).merge(); // should not throw BranchMergeConflictException
+		
+		ObjectArrayPropertyData actual = getRevision(branchA, ObjectArrayPropertyData.class, STORAGE_KEY1);
+		assertDocEquals(updateOnMain, actual);
+	}
+	
+	@Test
+	public void rebaseObjectItemArrayChangeWithOneExtraElementOnEachSide() throws Exception {
+		ObjectArrayPropertyData data = new ObjectArrayPropertyData(STORAGE_KEY1, List.of(
+			new RevisionFixtures.ObjectArrayPropertyItem("field1", "field2"),
+			new RevisionFixtures.ObjectArrayPropertyItem("field3", "field4")
+		));
+		indexRevision(MAIN, data);
+		String branchA = createBranch(MAIN, "a");
+		
+		ObjectArrayPropertyData updateOnMain = new ObjectArrayPropertyData(STORAGE_KEY1, List.of(
+			new RevisionFixtures.ObjectArrayPropertyItem("field1", "field2"),
+			new RevisionFixtures.ObjectArrayPropertyItem("field3", "field4"),
+			new RevisionFixtures.ObjectArrayPropertyItem("field5", "field6")
+		));
+		ObjectArrayPropertyData updateOnBranch = new ObjectArrayPropertyData(STORAGE_KEY1, List.of(
+			new RevisionFixtures.ObjectArrayPropertyItem("field1", "field2"),
+			new RevisionFixtures.ObjectArrayPropertyItem("field3", "field4"),
+			new RevisionFixtures.ObjectArrayPropertyItem("field7", "field8")
+		));
+		indexChange(MAIN, data, updateOnMain);
+		indexChange(branchA, data, updateOnBranch);
+		
+		branching().prepareMerge(MAIN, branchA).merge(); // should not throw BranchMergeConflictException
+		
+		ObjectArrayPropertyData actual = getRevision(branchA, ObjectArrayPropertyData.class, STORAGE_KEY1);
+		assertDocEquals(
+			new ObjectArrayPropertyData(STORAGE_KEY1, List.of(
+				new RevisionFixtures.ObjectArrayPropertyItem("field1", "field2"),
+				new RevisionFixtures.ObjectArrayPropertyItem("field3", "field4"),
+				new RevisionFixtures.ObjectArrayPropertyItem("field5", "field6"),
+				new RevisionFixtures.ObjectArrayPropertyItem("field7", "field8")
+			)), 
+			actual
+		);
 	}
 	
 }

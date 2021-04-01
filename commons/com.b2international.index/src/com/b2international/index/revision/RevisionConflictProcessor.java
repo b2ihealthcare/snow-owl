@@ -15,16 +15,18 @@
  */
 package com.b2international.index.revision;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.index.IndexException;
+import com.b2international.index.es.admin.EsIndexAdmin;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.revision.StagingArea.RevisionPropertyDiff;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.flipkart.zjsonpatch.DiffFlags;
 import com.flipkart.zjsonpatch.JsonDiff;
 
 /**
@@ -115,17 +117,29 @@ public interface RevisionConflictProcessor {
 		
 		protected RevisionPropertyDiff handleCollectionConflict(DocumentMapping mapping, RevisionPropertyDiff sourceChange, RevisionPropertyDiff targetChange, ObjectMapper mapper) {
 			try {
-				JsonNode sourceArray = mapper.readTree(sourceChange.getNewValue());
-				JsonNode targetArray = mapper.readTree(targetChange.getNewValue());
-				JsonNode targetChanges = JsonDiff.asJson(sourceArray, targetArray);
-				// TODO handle Set-like structures as well
-				for (JsonNode change : targetChanges) {
-					// if any non-add value is detected, then report conflict, otherwise keep target
-					if (!"add".equals(change.get("op").asText())) {
+				ArrayNode oldArray = CompareUtils.isEmpty(sourceChange.getOldValue()) ? mapper.createArrayNode() : (ArrayNode) mapper.readTree(sourceChange.getOldValue());
+				ArrayNode sourceArray = CompareUtils.isEmpty(sourceChange.getOldValue()) ? mapper.createArrayNode() : (ArrayNode) mapper.readTree(sourceChange.getNewValue());
+				ArrayNode targetArray = CompareUtils.isEmpty(targetChange.getNewValue()) ? mapper.createArrayNode() : (ArrayNode) mapper.readTree(targetChange.getNewValue());
+				
+				Iterator<JsonNode> oldItems = oldArray.iterator();
+				Iterator<JsonNode> sourceItems = sourceArray.iterator();
+				
+				while (oldItems.hasNext() && sourceItems.hasNext()) {
+					JsonNode oldItem = oldItems.next();
+					JsonNode sourceItem = sourceItems.next();
+					// if common part is not equal, then report conflict
+					if (!oldItem.equals(sourceItem)) {
 						return null;
 					}
 				}
-				return targetChange;
+				
+//				Iterator<JsonNode> targetItems = targetArray.iterator();
+//				// if common part is equal, then add all items from target to source and keep source diff with altered new value
+//				while (targetItems.hasNext()) {
+//					sourceArray.add(targetItems.next());
+//				}
+
+				return sourceChange.withNewValue(sourceArray.toString());
 			} catch (JsonProcessingException e) {
 				throw new IndexException("Couldn't parse json tree", e);
 			}
