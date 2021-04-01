@@ -88,18 +88,6 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 	}
 	
 	@Test
-	public void upgrade00Version() {
-		CodeSystem extension = createExtension(latestInternationalVersion, branchPath.lastSegment());
-		
-		String effectiveDate = getNextAvailableEffectiveDateAsString(INT_CODESYSTEM);
-		createVersion(INT_CODESYSTEM, effectiveDate, effectiveDate).statusCode(201);
-		
-		String newEffectiveDate = getNextAvailableEffectiveDateAsString(INT_CODESYSTEM);
-		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getCodeSystemURI(), CodeSystemURI.branch(INT_CODESYSTEM, effectiveDate));
-		createVersion(upgradeCodeSystem.getShortName(), newEffectiveDate, newEffectiveDate).statusCode(400);
-	}
-
-	@Test
 	public void upgrade02NewExtensionConceptOnly() {
 		// create extension on the latest SI VERSION
 		CodeSystem extension = createExtension(latestInternationalVersion, branchPath.lastSegment());
@@ -963,6 +951,18 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 			.assertThat().statusCode(200)
 			.and().body("branchPath", is(upgradeCodeSystem.getBranchPath()))
 			.and().body("extensionOf", is(upgradeCodeSystem.getExtensionOf().toString()));
+	}
+	
+	@Test
+	public void upgrade15Version() {
+		CodeSystem extension = createExtension(latestInternationalVersion, branchPath.lastSegment());
+		
+		String effectiveDate = getNextAvailableEffectiveDateAsString(INT_CODESYSTEM);
+		createVersion(INT_CODESYSTEM, effectiveDate, effectiveDate).statusCode(201);
+		
+		String newEffectiveDate = getNextAvailableEffectiveDateAsString(INT_CODESYSTEM);
+		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getCodeSystemURI(), CodeSystemURI.branch(INT_CODESYSTEM, effectiveDate));
+		createVersion(upgradeCodeSystem.getShortName(), newEffectiveDate, newEffectiveDate).statusCode(400);
 	}
 	
 	private String getFirstRelationshipId(SnomedConcept concept, String characteristicTypeId) {
