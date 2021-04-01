@@ -15,19 +15,20 @@
  */
 package com.b2international.index.revision;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.index.IndexException;
-import com.b2international.index.es.admin.EsIndexAdmin;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.revision.StagingArea.RevisionPropertyDiff;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.flipkart.zjsonpatch.DiffFlags;
-import com.flipkart.zjsonpatch.JsonDiff;
+import com.google.common.collect.Lists;
 
 /**
  * @since 7.0
@@ -106,7 +107,7 @@ public interface RevisionConflictProcessor {
 			// in case of Collection/Array properties, allow subsets to be merged together 
 			// eg. [1,2] vs. [1,2,3] should not produce conflicts
 			if (mapping.isCollection(property)) {
-				return handleCollectionConflict(mapping, sourceChange, targetChange, mapper);
+				return handleCollectionConflict(mapping, sourceChange, targetChange, mapper, mapping.isSet(property));
 			} else if (Objects.equals(sourceChange.getNewValue(), targetChange.getNewValue())) {
 				// apply source change if the new value is the same, otherwise report conflict
 				return sourceChange;
@@ -115,34 +116,53 @@ public interface RevisionConflictProcessor {
 			}
 		}
 		
-		protected RevisionPropertyDiff handleCollectionConflict(DocumentMapping mapping, RevisionPropertyDiff sourceChange, RevisionPropertyDiff targetChange, ObjectMapper mapper) {
+		protected RevisionPropertyDiff handleCollectionConflict(DocumentMapping mapping, RevisionPropertyDiff sourceChange, RevisionPropertyDiff targetChange, ObjectMapper mapper, boolean isSet) {
 			try {
 				ArrayNode oldArray = CompareUtils.isEmpty(sourceChange.getOldValue()) ? mapper.createArrayNode() : (ArrayNode) mapper.readTree(sourceChange.getOldValue());
-				ArrayNode sourceArray = CompareUtils.isEmpty(sourceChange.getOldValue()) ? mapper.createArrayNode() : (ArrayNode) mapper.readTree(sourceChange.getNewValue());
+				ArrayNode sourceArray = CompareUtils.isEmpty(sourceChange.getNewValue()) ? mapper.createArrayNode() : (ArrayNode) mapper.readTree(sourceChange.getNewValue());
 				ArrayNode targetArray = CompareUtils.isEmpty(targetChange.getNewValue()) ? mapper.createArrayNode() : (ArrayNode) mapper.readTree(targetChange.getNewValue());
 				
-				Iterator<JsonNode> oldItems = oldArray.iterator();
-				Iterator<JsonNode> sourceItems = sourceArray.iterator();
+				List<JsonNode> sourceChanges = getChanges(oldArray, sourceArray);
+				List<JsonNode> targetChanges = getChanges(oldArray, targetArray);
 				
-				while (oldItems.hasNext() && sourceItems.hasNext()) {
-					JsonNode oldItem = oldItems.next();
-					JsonNode sourceItem = sourceItems.next();
-					// if common part is not equal, then report conflict
-					if (!oldItem.equals(sourceItem)) {
-						return null;
+				if (sourceChanges == null || targetChanges == null) {
+					// if either source or target array modified the old array in a destructive way, report conflict
+					return null;
+				} else {
+					// take all source changes
+					oldArray.addAll(sourceChanges);
+					if (isSet) {
+						// filter out duplicates that have been added on both sides if this collection should be handled as a Set
+						targetChanges.removeIf(sourceChanges::contains);
 					}
+					oldArray.addAll(targetChanges);
+					return sourceChange.withNewValue(oldArray.toString());
 				}
-				
-//				Iterator<JsonNode> targetItems = targetArray.iterator();
-//				// if common part is equal, then add all items from target to source and keep source diff with altered new value
-//				while (targetItems.hasNext()) {
-//					sourceArray.add(targetItems.next());
-//				}
-
-				return sourceChange.withNewValue(sourceArray.toString());
 			} catch (JsonProcessingException e) {
-				throw new IndexException("Couldn't parse json tree", e);
+				throw new IndexException("Couldn't parse json", e);
 			}
+		}
+
+		private List<JsonNode> getChanges(ArrayNode oldArray, ArrayNode newArray) {
+			Iterator<JsonNode> oldItems = oldArray.iterator();
+			Iterator<JsonNode> newItems = newArray.iterator();
+			
+			while (oldItems.hasNext() && newItems.hasNext()) {
+				JsonNode oldItem = oldItems.next();
+				JsonNode sourceItem = newItems.next();
+				// if common part is not equal, then report conflict
+				if (!oldItem.equals(sourceItem)) {
+					return null;
+				}
+			}
+			
+			// if oldArray has more items then newArray removed them, report destructive change
+			if (oldItems.hasNext()) {
+				return null;
+			}
+			
+			// construct new items list that have been added to the old array 
+			return Lists.newArrayList(newItems);
 		}
 
 		@Override

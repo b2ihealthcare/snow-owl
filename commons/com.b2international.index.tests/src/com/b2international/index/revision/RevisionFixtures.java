@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,10 @@ package com.b2international.index.revision;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import com.b2international.commons.collections.Collections3;
-import com.b2international.index.Analyzers;
-import com.b2international.index.Doc;
-import com.b2international.index.Script;
-import com.b2international.index.Text;
-import com.b2international.index.WithScore;
+import com.b2international.index.*;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects.ToStringHelper;
@@ -406,6 +403,23 @@ public class RevisionFixtures {
 		
 	}
 	
+	@Doc(revisionHash = { "items" })
+	public static final class ObjectSetPropertyData extends Revision {
+
+		private final Set<ObjectArrayPropertyItem> items;
+
+		@JsonCreator
+		public ObjectSetPropertyData(@JsonProperty("id") String id, @JsonProperty("items") Set<ObjectArrayPropertyItem> items) {
+			super(id);
+			this.items = items;
+		}
+		
+		public Set<ObjectArrayPropertyItem> getItems() {
+			return items;
+		}
+		
+	}
+	
 	@Doc
 	public static final class ObjectArrayPropertyItem {
 		
@@ -438,6 +452,11 @@ public class RevisionFixtures {
 			if (getClass() != obj.getClass()) return false;
 			ObjectArrayPropertyItem other = (ObjectArrayPropertyItem) obj;
 			return Objects.equals(field1, other.field1) && Objects.equals(field2, other.field2);
+		}
+		
+		@Override
+		public String toString() {
+			return String.format("{ \"field1\": \"%s\", \"field2\": \"%s\" }", field1, field2);
 		}
 		
 	}
