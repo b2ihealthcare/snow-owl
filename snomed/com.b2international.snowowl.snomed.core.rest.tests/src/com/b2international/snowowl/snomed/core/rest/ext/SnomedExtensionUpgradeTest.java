@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.core.rest.ext;
 
+import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.INT_CODESYSTEM;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.getComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedMergingRestRequests.createMerge;
 import static com.b2international.snowowl.snomed.core.rest.SnomedMergingRestRequests.waitForMergeJob;
@@ -84,6 +85,18 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		// start upgrade
 		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getCodeSystemURI(), CodeSystemURI.branch(SNOMEDCT, effectiveDate));
 		assertEquals(CodeSystemURI.branch(SNOMEDCT, effectiveDate), upgradeCodeSystem.getExtensionOf());
+	}
+	
+	@Test
+	public void upgrade00Version() {
+		CodeSystem extension = createExtension(latestInternationalVersion, branchPath.lastSegment());
+		
+		String effectiveDate = getNextAvailableEffectiveDateAsString(INT_CODESYSTEM);
+		createVersion(INT_CODESYSTEM, effectiveDate, effectiveDate).statusCode(201);
+		
+		String newEffectiveDate = getNextAvailableEffectiveDateAsString(INT_CODESYSTEM);
+		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getCodeSystemURI(), CodeSystemURI.branch(INT_CODESYSTEM, effectiveDate));
+		createVersion(upgradeCodeSystem.getShortName(), newEffectiveDate, newEffectiveDate).statusCode(400);
 	}
 
 	@Test
