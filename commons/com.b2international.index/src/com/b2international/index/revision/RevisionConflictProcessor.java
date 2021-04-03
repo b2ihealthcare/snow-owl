@@ -15,20 +15,23 @@
  */
 package com.b2international.index.revision;
 
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+
+import org.elasticsearch.common.util.set.Sets;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.index.IndexException;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.revision.StagingArea.RevisionPropertyDiff;
+import com.b2international.index.util.JsonDiff;
+import com.b2international.index.util.JsonDiff.JsonChange;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 /**
  * @since 7.0
@@ -104,18 +107,71 @@ public interface RevisionConflictProcessor {
 		@Override
 		public RevisionPropertyDiff handleChangedInSourceAndTarget(String revisionId, DocumentMapping mapping, RevisionPropertyDiff sourceChange, RevisionPropertyDiff targetChange, ObjectMapper mapper) {
 			String property = sourceChange.getProperty();
-			// in case of Collection/Array properties, allow subsets to be merged together 
-			// eg. [1,2] vs. [1,2,3] should not produce conflicts
-			if (mapping.isCollection(property)) {
+			if (mapping.isObject(property)) {
+				// in case of Object properties, allow changes touching different properties to be merged without reporting conflict 
+				return handleObjectConflict(mapping, sourceChange, targetChange, mapper);
+			} else if (mapping.isCollection(property)) {
+				// in case of Collection/Array properties, allow subsets to be merged together 
+				// eg. [1,2] -> [1,2,3] vs. [1,2] -> [1,2,4] should not produce conflicts, but merge the array into [1,2,3,4]
 				return handleCollectionConflict(mapping, sourceChange, targetChange, mapper, mapping.isSet(property));
 			} else if (Objects.equals(sourceChange.getNewValue(), targetChange.getNewValue())) {
-				// apply source change if the new value is the same, otherwise report conflict
+				// apply source change if the new value is exactly the same as the target change
 				return sourceChange;
 			} else {
 				return null; 
 			}
 		}
+
+		private RevisionPropertyDiff handleObjectConflict(DocumentMapping mapping, RevisionPropertyDiff sourceChange, RevisionPropertyDiff targetChange, ObjectMapper mapper) {
+			try {
+				ObjectNode oldObject = CompareUtils.isEmpty(sourceChange.getOldValue()) ? mapper.createObjectNode() : (ObjectNode) mapper.readTree(sourceChange.getOldValue());
+				ObjectNode sourceObject = CompareUtils.isEmpty(sourceChange.getNewValue()) ? mapper.createObjectNode() : (ObjectNode) mapper.readTree(sourceChange.getNewValue());
+				ObjectNode targetObject = CompareUtils.isEmpty(targetChange.getNewValue()) ? mapper.createObjectNode() : (ObjectNode) mapper.readTree(targetChange.getNewValue());
+
+				JsonDiff sourceDiff = JsonDiff.diff(oldObject, sourceObject).withoutNullAdditions(mapper);
+				JsonDiff targetDiff = JsonDiff.diff(oldObject, targetObject).withoutNullAdditions(mapper);
+				
+				Map<String, JsonChange> sourceChanges = Maps.uniqueIndex(sourceDiff.getChanges(), JsonChange::getRootFieldPath);
+				Map<String, JsonChange> targetChanges = Maps.uniqueIndex(targetDiff.getChanges(), JsonChange::getRootFieldPath);
+				
+				final Set<String> conflictingFields = Sets.intersection(sourceChanges.keySet(), targetChanges.keySet());
+				
+				for (String conflictingField : conflictingFields) {
+					JsonChange sourceJsonChange = sourceChanges.get(conflictingField);
+					JsonChange targetJsonChange = targetChanges.get(conflictingField);
+					
+					// report conflict if any change differs in any way on any property
+					if (!Objects.equals(sourceJsonChange, targetJsonChange)) {
+						return null;
+					}
+				}
+
+				// otherwise apply both changes on old object to merge them
+				sourceDiff.applyInPlace(oldObject);
+				targetDiff.applyInPlace(oldObject);
+				
+				// if the resulting object would be empty, then null it out instead
+				return sourceChange.withNewValue(isEmpty(oldObject) ? null : oldObject.toString());
+			} catch (JsonProcessingException e) {
+				throw new IndexException("Couldn't parse json", e);
+			}
+		}
 		
+		private boolean isEmpty(JsonNode node) {
+			if (node == null || node.isNull()) {
+				return true;
+			} else if (node.isContainerNode()) {
+				for (JsonNode child : node) {
+					if (!isEmpty(child)) {
+						return false;
+					}
+				}
+				return true;
+			} else {
+				return false;
+			}
+		}
+
 		protected RevisionPropertyDiff handleCollectionConflict(DocumentMapping mapping, RevisionPropertyDiff sourceChange, RevisionPropertyDiff targetChange, ObjectMapper mapper, boolean isSet) {
 			try {
 				ArrayNode oldArray = CompareUtils.isEmpty(sourceChange.getOldValue()) ? mapper.createArrayNode() : (ArrayNode) mapper.readTree(sourceChange.getOldValue());
@@ -142,7 +198,7 @@ public interface RevisionConflictProcessor {
 				throw new IndexException("Couldn't parse json", e);
 			}
 		}
-
+		
 		private List<JsonNode> getChanges(ArrayNode oldArray, ArrayNode newArray) {
 			Iterator<JsonNode> oldItems = oldArray.iterator();
 			Iterator<JsonNode> newItems = newArray.iterator();

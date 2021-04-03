@@ -250,7 +250,7 @@ public class JsonDiff implements Iterable<JsonDiff.JsonChange> {
 	public static String serialize(ObjectNode change, String property) {
 		if (change.has(property)) {
 			final JsonNode node = change.get(property);
-			if (node == null || node.isNull()) {
+			if (node.isNull()) {
 				return null;
 			} else if (node.isArray() || node.isObject()) {
 				return node.toString();
