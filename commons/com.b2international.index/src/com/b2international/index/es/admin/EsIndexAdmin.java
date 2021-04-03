@@ -54,7 +54,6 @@ import org.elasticsearch.script.ScriptType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.commons.ClassUtils;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.ReflectionUtils;
 import com.b2international.index.*;
@@ -65,16 +64,12 @@ import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
+import com.b2international.index.util.JsonDiff;
 import com.b2international.index.util.NumericClassUtils;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.flipkart.zjsonpatch.DiffFlags;
-import com.flipkart.zjsonpatch.JsonDiff;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import com.google.common.primitives.Primitives;
 
@@ -98,12 +93,6 @@ public final class EsIndexAdmin implements IndexAdmin {
 		IndexClientFactory.COMMIT_WATERMARK_LOW_KEY,
 		IndexClientFactory.COMMIT_WATERMARK_HIGH_KEY
 	);
-	
-	/**
-	 * Important DIFF flags required to produce the JSON patch needed for proper compare and branch merge operation behavior, for proper index schema migration, and so on.
-	 * Should be used by default when using jsonpatch.
-	 */
-	public static final EnumSet<DiffFlags> DIFF_FLAGS = EnumSet.of(DiffFlags.ADD_ORIGINAL_VALUE_ON_REPLACE, DiffFlags.OMIT_COPY_OPERATION, DiffFlags.OMIT_MOVE_OPERATION);
 	
 	private static final int DEFAULT_MAX_NUMBER_OF_VERSION_CONFLICT_RETRIES = 5;
 	
@@ -192,24 +181,15 @@ public final class EsIndexAdmin implements IndexAdmin {
 				try {
 					final ObjectNode newTypeMapping = mapper.valueToTree(typeMapping);
 					final ObjectNode currentTypeMapping = mapper.valueToTree(currentIndexMapping.get(type).getSourceAsMap());
-					final JsonNode diff = JsonDiff.asJson(currentTypeMapping, newTypeMapping, DIFF_FLAGS);
-					final ArrayNode diffNode = ClassUtils.checkAndCast(diff, ArrayNode.class);
 					SortedSet<String> compatibleChanges = Sets.newTreeSet();
 					SortedSet<String> uncompatibleChanges = Sets.newTreeSet();
-					for (ObjectNode change : Iterables.filter(diffNode, ObjectNode.class)) {
-						String prop = change.get("path").asText().substring(1);
-						switch (change.get("op").asText()) {
-						case "add":
-							compatibleChanges.add(prop);
-							break;
-						case "move":
-						case "replace":
-							uncompatibleChanges.add(prop);
-							break;
-						default:
-							break;
+					JsonDiff.diff(currentTypeMapping, newTypeMapping).forEach(change -> {
+						if (change.isAdd()) {
+							compatibleChanges.add(change.getFieldPath());
+						} else if (change.isMove() || change.isReplace()) {
+							uncompatibleChanges.add(change.getFieldPath());
 						}
-					}
+					});
 					if (!uncompatibleChanges.isEmpty()) {
 						log.warn("Cannot migrate index '{}' to new mapping with breaking changes on properties '{}'. Run repository reindex to migrate to new mapping schema or drop that index manually using the Elasticsearch API.", index, uncompatibleChanges);
 					} else if (!compatibleChanges.isEmpty()) {
