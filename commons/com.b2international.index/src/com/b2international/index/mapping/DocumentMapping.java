@@ -41,6 +41,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.*;
 import com.google.common.collect.ImmutableMap.Builder;
+import com.google.common.primitives.Primitives;
 
 /**
  * @since 4.7
@@ -269,7 +270,11 @@ public final class DocumentMapping {
 	}
 
 	private static boolean isObject(Class<?> fieldType) {
-		return !fieldType.isPrimitive() && !String.class.equals(fieldType) && !BigDecimal.class.equals(fieldType) && !isCollection(fieldType);
+		return !fieldType.isPrimitive() 
+				&& !String.class.equals(fieldType)
+				&& !BigDecimal.class.equals(fieldType) 
+				&& !Primitives.isWrapperType(fieldType)
+				&& !isCollection(fieldType);
 	}
 	
 	public Map<String, Text> getTextFields() {
