@@ -104,13 +104,13 @@ public interface RevisionConflictProcessor {
 		@Override
 		public RevisionPropertyDiff handleChangedInSourceAndTarget(String revisionId, DocumentMapping mapping, RevisionPropertyDiff sourceChange, RevisionPropertyDiff targetChange, ObjectMapper mapper) {
 			String property = sourceChange.getProperty();
-			// in case of Collection/Array properties, allow subsets to be merged together 
-			// eg. [1,2] vs. [1,2,3] should not produce conflicts
-			if (mapping.isCollection(property)) {
-				return handleCollectionConflict(mapping, sourceChange, targetChange, mapper, mapping.isSet(property));
-			} else if (Objects.equals(sourceChange.getNewValue(), targetChange.getNewValue())) {
-				// apply source change if the new value is the same, otherwise report conflict
+			if (Objects.equals(sourceChange.getNewValue(), targetChange.getNewValue())) {
+				// apply source change if the new value is exactly the same as the target change
 				return sourceChange;
+			} else if (mapping.isCollection(property)) {
+				// in case of Collection/Array properties, allow subsets to be merged together 
+				// eg. [1,2] -> [1,2,3] vs. [1,2] -> [1,2,4] should not produce conflicts, but merge the array into [1,2,3,4]
+				return handleCollectionConflict(mapping, sourceChange, targetChange, mapper, mapping.isSet(property));
 			} else {
 				return null; 
 			}
