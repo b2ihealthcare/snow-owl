@@ -449,15 +449,25 @@ public final class StagingArea {
 			details = Lists.newArrayList();
 			// collect property changes
 			revisionsByChange.asMap().forEach((change, objects) -> {
-				final String prop = change.getFieldPath();
-				final String from = change.serializeFromValue();
-				final String to = change.serializeValue();
 				ListMultimap<String, String> objectIdsByType = ArrayListMultimap.create();
 				objects.forEach(objectId -> objectIdsByType.put(objectId.type(), objectId.id()));
-				// split by object type
-				objectIdsByType.keySet().forEach(type -> {
-					details.add(CommitDetail.changedProperty(prop, from, to, type, objectIdsByType.get(type)));
-				});
+				
+				final String prop = change.getFieldPath();
+				final String value = change.serializeValue();
+				if (change.isRemove()) { // fully clear property
+					// split by object type
+					objectIdsByType.keySet().forEach(type -> {
+						details.add(CommitDetail.changedProperty(prop, value, "", type, objectIdsByType.get(type)));
+					});
+				} else if (change.isAdd() || change.isReplace()) { // set or replace value
+					final String from = change.serializeFromValue();
+					// split by object type
+					objectIdsByType.keySet().forEach(type -> {
+						details.add(CommitDetail.changedProperty(prop, from, value, type, objectIdsByType.get(type)));
+					});
+				} else {
+					throw new UnsupportedOperationException("Unknown change: " + change);
+				}
 			});
 			
 			final List<Pair<Multimap<ObjectId, ObjectId>, BiFunction<String, String, CommitDetail.Builder>>> maps = ImmutableList.of(
