@@ -151,9 +151,7 @@ public class JsonDiff implements Iterable<JsonDiff.JsonChange> {
 		
 		/**
 		 * Returns the top/root level property that has been changed.
-		 * Ignores array indexes and nested property paths.
 		 * 
-		 * @param change - the change to extract the root level prop name from 
 		 * @return the root property name that has been changed
 		 */
 		public String getRootFieldPath() {
@@ -168,7 +166,6 @@ public class JsonDiff implements Iterable<JsonDiff.JsonChange> {
 		/**
 		 * Returns the actual field path that has been changed, be it nested or an array index.
 		 * 
-		 * @param change - the change to extract the prop name from 
 		 * @return the absolute property name that has been changed
 		 */
 		public String getFieldPath() {
