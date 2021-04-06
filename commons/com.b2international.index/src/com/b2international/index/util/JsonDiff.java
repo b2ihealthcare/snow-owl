@@ -239,7 +239,7 @@ public class JsonDiff implements Iterable<JsonDiff.JsonChange> {
 	 */
 	public static JsonDiff diff(JsonNode source, JsonNode target) {
 		Preconditions.checkNotNull(source, "source may not be null");
-		Preconditions.checkNotNull(source, "target may not be null");
+		Preconditions.checkNotNull(target, "target may not be null");
 		final JsonNode changes = com.flipkart.zjsonpatch.JsonDiff.asJson(source, target, DIFF_FLAGS);
 		return new JsonDiff(changes);
 	}
@@ -258,5 +258,5 @@ public class JsonDiff implements Iterable<JsonDiff.JsonChange> {
 			return "";
 		}
 	}
-
+	
 }
