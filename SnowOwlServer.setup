@@ -31,13 +31,13 @@
       label="Xtext and Xtend">
     <requirement
         name="org.eclipse.emf.mwe2.language.sdk.feature.group"
-        versionRange="[2.10.0,2.11.0)"/>
+        versionRange="[2.11.3,2.12.0)"/>
     <requirement
         name="org.eclipse.xtend.sdk.feature.group"
-        versionRange="[2.18.0,2.19.0)"/>
+        versionRange="[2.23.0,2.24.0)"/>
     <requirement
         name="org.eclipse.xtext.sdk.feature.group"
-        versionRange="[2.18.0,2.19.0)"/>
+        versionRange="[2.23.0,2.24.0)"/>
     <repository
         url="http://download.eclipse.org/modeling/tmf/xtext/updates/composite/releases/"/>
     <description></description>
@@ -47,15 +47,15 @@
       label="Groovy">
     <requirement
         name="org.codehaus.groovy.eclipse.feature.feature.group"
-        versionRange="[3.5.0,3.6.0)"/>
+        versionRange="[3.9.0,4.0.0)"/>
     <requirement
         name="org.codehaus.groovy.m2eclipse.feature.feature.group"
-        versionRange="[3.5.0,3.6.0)"/>
+        versionRange="[3.9.0,4.0.0)"/>
     <requirement
         name="org.codehaus.groovy24.feature.feature.group"
-        versionRange="[3.5.0,3.6.0)"/>
+        versionRange="[3.9.0,4.0.0)"/>
     <repository
-        url="https://dist.springsource.org/snapshot/GRECLIPSE/e4.12"/>
+        url="https://dist.springsource.org/release/GRECLIPSE/3.9.0/e4.17"/>
   </setupTask>
   <setupTask
       xsi:type="setup.p2:P2Task"

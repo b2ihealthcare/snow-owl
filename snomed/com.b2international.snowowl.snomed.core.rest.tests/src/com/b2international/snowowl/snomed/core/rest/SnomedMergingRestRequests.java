@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,6 +51,20 @@ public abstract class SnomedMergingRestRequests {
 		if (null != reviewId) {
 			requestBuilder.put("reviewId", reviewId);
 		}
+
+		return givenAuthenticatedRequest(SCT_API)
+				.contentType(ContentType.JSON)
+				.body(requestBuilder.build())
+				.post("/merges")
+				.then();
+	}
+	
+	public static ValidatableResponse createMerge(String source, String target, String commitComment, boolean squash) {
+		ImmutableMap.Builder<String, Object> requestBuilder = ImmutableMap.<String, Object>builder()
+				.put("source", source)
+				.put("target", target)
+				.put("commitComment", commitComment)
+				.put("squash", squash);
 
 		return givenAuthenticatedRequest(SCT_API)
 				.contentType(ContentType.JSON)

@@ -85,39 +85,41 @@ public class DefaultRevisionSearcher implements RevisionSearcher {
 
 	@Override
 	public <T> Hits<T> search(Query<T> query) throws IOException {
-		if (query.getParentType() == null && Revision.class.isAssignableFrom(query.getFrom())) {
-			// rewrite query if we are looking for revision, otherwise if we are looking for unversioned nested use it as is
-			query = Query.select(query.getSelect())
-					.from(query.getFrom())
-					.fields(query.getFields())
-					.where(
-						Expressions.builder()
-							.must(query.getWhere())
-							.filter(branch.toRevisionFilter())
-						.build()
-					)
-					.sortBy(query.getSortBy())
-					.limit(query.getLimit())
-					.scroll(query.getScrollKeepAlive())
-					.searchAfter(query.getSearchAfter())
-					.withScores(query.isWithScores())
-					.build();
-		} else {
-			checkArgument(Revision.class.isAssignableFrom(query.getParentType()), "Searching non-revision documents require a revision parent type: %s", query);
-			// run a query on the parent documents with nested match on the children
-			query = Query.select(query.getSelect())
-					.parent(query.getParentType())
-					.fields(query.getFields())
-					.where(Expressions.builder()
-							.must(query.getWhere())
-							.filter(Expressions.hasParent(query.getParentType(), branch.toRevisionFilter()))
-							.build())
-					.sortBy(query.getSortBy())
-					.limit(query.getLimit())
-					.scroll(query.getScrollKeepAlive())
-					.searchAfter(query.getSearchAfter())
-					.withScores(query.isWithScores())
-					.build();
+		if (Revision.class.isAssignableFrom(query.getFrom())) {
+			if (query.getParentType() == null) {
+				// rewrite query if we are looking for revision, otherwise if we are looking for unversioned nested use it as is
+				query = Query.select(query.getSelect())
+						.from(query.getFrom())
+						.fields(query.getFields())
+						.where(
+							Expressions.builder()
+								.must(query.getWhere())
+								.filter(branch.toRevisionFilter())
+							.build()
+						)
+						.sortBy(query.getSortBy())
+						.limit(query.getLimit())
+						.scroll(query.getScrollKeepAlive())
+						.searchAfter(query.getSearchAfter())
+						.withScores(query.isWithScores())
+						.build();				
+			} else {
+				checkArgument(Revision.class.isAssignableFrom(query.getParentType()), "Searching non-revision documents require a revision parent type: %s", query);
+				// run a query on the parent documents with nested match on the children
+				query = Query.select(query.getSelect())
+						.parent(query.getParentType())
+						.fields(query.getFields())
+						.where(Expressions.builder()
+								.must(query.getWhere())
+								.filter(Expressions.hasParent(query.getParentType(), branch.toRevisionFilter()))
+								.build())
+						.sortBy(query.getSortBy())
+						.limit(query.getLimit())
+						.scroll(query.getScrollKeepAlive())
+						.searchAfter(query.getSearchAfter())
+						.withScores(query.isWithScores())
+						.build();
+			}
 		}
 		return searcher.search(query);
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,43 +16,23 @@
 package com.b2international.snowowl.core.internal.validation;
 
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.b2international.index.Hits;
-import com.b2international.index.Index;
-import com.b2international.index.IndexRead;
-import com.b2international.index.IndexWrite;
-import com.b2international.index.Scroll;
-import com.b2international.index.Searcher;
+import com.b2international.index.*;
 import com.b2international.index.admin.IndexAdmin;
 import com.b2international.index.aggregations.Aggregation;
 import com.b2international.index.aggregations.AggregationBuilder;
 import com.b2international.index.query.Query;
-import com.b2international.snowowl.core.IDisposableService;
 
 /**
  * @since 6.0
  */
-public final class ValidationRepository implements Index, IDisposableService {
+public final class ValidationRepository implements Index {
 
 	private final Index index;
-	private final AtomicBoolean disposed = new AtomicBoolean(false);
 
 	public ValidationRepository(Index index) {
 		this.index = index;
 		this.index.admin().create();
-	}
-	
-	@Override
-	public boolean isDisposed() {
-		return disposed.get();
-	}
-
-	@Override
-	public void dispose() {
-		if (disposed.compareAndSet(false, true)) {
-			admin().close();
-		}
 	}
 	
 	@Override

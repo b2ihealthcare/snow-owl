@@ -24,7 +24,7 @@ import com.b2international.index.Analyzers;
 public final class TextPredicate extends Predicate {
 
 	public enum MatchType {
-		ALL, ANY, PHRASE, FUZZY, PARSED
+		ALL, ANY, PHRASE, FUZZY, PARSED, BOOLEAN_PREFIX
 	}
 	
 	private final String term;

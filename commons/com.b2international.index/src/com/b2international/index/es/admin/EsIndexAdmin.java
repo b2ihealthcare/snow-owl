@@ -18,7 +18,6 @@ package com.b2international.index.es.admin;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
-import static com.google.common.collect.Sets.newHashSet;
 import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
 
 import java.io.IOException;
@@ -26,16 +25,9 @@ import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Random;
-import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest;
@@ -71,6 +63,7 @@ import com.b2international.index.es.client.EsClient;
 import com.b2international.index.es.query.EsQueryBuilder;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.mapping.Mappings;
+import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.util.NumericClassUtils;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -90,7 +83,21 @@ import com.google.common.primitives.Primitives;
  */
 public final class EsIndexAdmin implements IndexAdmin {
 
-	private static final Set<String> DYNAMIC_SETTINGS = Set.of(IndexClientFactory.RESULT_WINDOW_KEY);
+	private static final Pattern FIELD_ALIAS_CHANGE_PROPERTY_PATTERN = Pattern.compile("properties(/[a-zA-Z0-9_]+)+/fields(/[a-zA-Z0-9_]+)?");
+	
+	/**
+	 * List of Elasticsearch supported dynamic settings.
+	 */
+	private static final Set<String> DYNAMIC_SETTINGS = Set.of(
+		IndexClientFactory.RESULT_WINDOW_KEY
+	);
+	/**
+	 * Local Settings are Snow Owl index client only configuration, not actual Elasticsearch supported configuration, they are implicitly dynamic.
+	 */
+	private static final Set<String> LOCAL_SETTINGS = Set.of(
+		IndexClientFactory.COMMIT_WATERMARK_LOW_KEY,
+		IndexClientFactory.COMMIT_WATERMARK_HIGH_KEY
+	);
 	
 	/**
 	 * Important DIFF flags required to produce the JSON patch needed for proper compare and branch merge operation behavior, for proper index schema migration, and so on.
@@ -159,6 +166,9 @@ public final class EsIndexAdmin implements IndexAdmin {
 	@Override
 	public void create() {
 		log.info("Preparing '{}' indexes...", name);
+		// register any type that requires a refresh at the end of the index create/open
+		Set<DocumentMapping> mappingsToRefresh = Sets.newHashSet();
+		
 		// create number of indexes based on number of types
 		for (DocumentMapping mapping : mappings.getMappings()) {
 			final String index = getTypeIndex(mapping);
@@ -184,8 +194,8 @@ public final class EsIndexAdmin implements IndexAdmin {
 					final ObjectNode currentTypeMapping = mapper.valueToTree(currentIndexMapping.get(type).getSourceAsMap());
 					final JsonNode diff = JsonDiff.asJson(currentTypeMapping, newTypeMapping, DIFF_FLAGS);
 					final ArrayNode diffNode = ClassUtils.checkAndCast(diff, ArrayNode.class);
-					Set<String> compatibleChanges = newHashSet();
-					Set<String> uncompatibleChanges = newHashSet();
+					SortedSet<String> compatibleChanges = Sets.newTreeSet();
+					SortedSet<String> uncompatibleChanges = Sets.newTreeSet();
 					for (ObjectNode change : Iterables.filter(diffNode, ObjectNode.class)) {
 						String prop = change.get("path").asText().substring(1);
 						switch (change.get("op").asText()) {
@@ -203,11 +213,17 @@ public final class EsIndexAdmin implements IndexAdmin {
 					if (!uncompatibleChanges.isEmpty()) {
 						log.warn("Cannot migrate index '{}' to new mapping with breaking changes on properties '{}'. Run repository reindex to migrate to new mapping schema or drop that index manually using the Elasticsearch API.", index, uncompatibleChanges);
 					} else if (!compatibleChanges.isEmpty()) {
-						compatibleChanges.forEach(prop -> {
-							log.info("Applying mapping changes on property {} in index {}", prop, index);
-						});
+						log.info("Applying mapping changes {} in index {}", compatibleChanges, index);
 						AcknowledgedResponse response = client.indices().updateMapping(new PutMappingRequest(index).type(type).source(typeMapping));
 						checkState(response.isAcknowledged(), "Failed to update mapping '%s' for type '%s'", name, mapping.typeAsString());
+						// if there are field alias changes, then run update_by_query on all documents to simply reindex them
+						// new fields do not require reindex, they will be added to new documents, existing documents don't have any data that needs reindex 
+						if (hasFieldAliasChange(compatibleChanges)) {
+							if (bulkIndexByScroll(client, mapping, Expressions.matchAll(), "update", null /*no script, in place update of docs to pick up mapping changes*/, "mapping migration")) {
+								mappingsToRefresh.add(mapping);
+							}
+							log.info("Migrated documents to new mapping in index '{}'", index);
+						}
 					}
 				} catch (IOException e) {
 					throw new IndexException(String.format("Failed to update mapping '%s' for type '%s'", name, mapping.typeAsString()), e);
@@ -236,9 +252,18 @@ public final class EsIndexAdmin implements IndexAdmin {
 		}
 		// wait until the cluster processes each index create request
 		waitForYellowHealth(indices());
+		if (!mappingsToRefresh.isEmpty()) {
+			refresh(mappingsToRefresh);
+		}
 		log.info("'{}' indexes are ready.", name);
 	}
 
+	private boolean hasFieldAliasChange(SortedSet<String> compatibleChanges) {
+		return compatibleChanges.stream()
+				.map(FIELD_ALIAS_CHANGE_PROPERTY_PATTERN::matcher)
+				.anyMatch(Matcher::matches);
+	}
+	
 	private Map<String, Object> stringsAsKeywords() {
 		return Map.of(
 			"strings_as_keywords", Map.of(
@@ -384,10 +409,11 @@ public final class EsIndexAdmin implements IndexAdmin {
 							prop.put("normalizer", normalizer);
 						}
 						// XXX index: true is the default, ES won't store it in the mapping and will default to true even if explicitly set, which would cause unnecessary mapping update during boot
+						// XXX doc_values: true is the default, ES won't store it in the mapping and will default to true even if explicitly set, which would cause unnecessary mapping update during boot
 						if (!keywordMapping.index()) {
 							prop.put("index", false);
+							prop.put("doc_values", false);
 						}
-						prop.put("doc_values", keywordMapping.index());
 					}
 					
 					// put extra text fields into fields object
@@ -496,7 +522,9 @@ public final class EsIndexAdmin implements IndexAdmin {
 		final Set<DocumentMapping> typesToRefresh = Collections.synchronizedSet(newHashSetWithExpectedSize(types.size()));
 		
 		for (Class<?> type : types) {
-			bulkDelete(new BulkDelete<>(type, Expressions.matchAll()), typesToRefresh);
+			if (bulkDelete(new BulkDelete<>(type, Expressions.matchAll()))) {
+				typesToRefresh.add(mappings.getMapping(type));
+			}
 		}
 		
 		refresh(typesToRefresh);
@@ -512,7 +540,9 @@ public final class EsIndexAdmin implements IndexAdmin {
 		if (CompareUtils.isEmpty(newSettings)) {
 			return;
 		}
-		final Set<String> unsupportedDynamicSettings = Sets.difference(newSettings.keySet(), DYNAMIC_SETTINGS);
+
+		// ignore local and/or dynamic settings
+		final Set<String> unsupportedDynamicSettings = Sets.difference(Sets.difference(newSettings.keySet(), DYNAMIC_SETTINGS), LOCAL_SETTINGS);
 		if (!unsupportedDynamicSettings.isEmpty()) {
 			throw new IndexException(String.format("Settings [%s] are not dynamically updateable settings.", unsupportedDynamicSettings), null);
 		}
@@ -530,13 +560,17 @@ public final class EsIndexAdmin implements IndexAdmin {
 			return;
 		}
 		
+		Map<String, Object> esSettings = new HashMap<>(newSettings);
+		// remove any local settings from esSettings
+		esSettings.keySet().removeAll(LOCAL_SETTINGS);
+		
 		for (DocumentMapping mapping : mappings.getMappings()) {
 			final String index = getTypeIndex(mapping);
 			// if any index exists, then update the settings based on the new settings
 			if (exists(mapping)) {
 				try {
-					log.info("Applying settings '{}' changes in index {}...", newSettings, index);
-					AcknowledgedResponse response = client.indices().updateSettings(new UpdateSettingsRequest().indices(index).settings(newSettings));
+					log.info("Applying settings '{}' changes in index {}...", esSettings, index);
+					AcknowledgedResponse response = client.indices().updateSettings(new UpdateSettingsRequest().indices(index).settings(esSettings));
 					checkState(response.isAcknowledged(), "Failed to update index settings '%s'.", index);
 				} catch (IOException e) {
 					throw new IndexException(String.format("Couldn't update settings of index '%s'", index), e);
@@ -544,6 +578,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 			}
 		}
 		
+		// update both local and es settings
 		settings.putAll(newSettings);
 	}
 
@@ -561,9 +596,6 @@ public final class EsIndexAdmin implements IndexAdmin {
 	public String name() {
 		return name;
 	}
-
-	@Override
-	public void close() {}
 
 	@Override
 	public void optimize(int maxSegments) {
@@ -616,26 +648,28 @@ public final class EsIndexAdmin implements IndexAdmin {
 		}
 	}
 	
-	public void bulkUpdate(final BulkUpdate<?> update, Set<DocumentMapping> mappingsToRefresh) {
+	public boolean bulkUpdate(final BulkUpdate<?> update) {
 		final DocumentMapping mapping = mappings().getMapping(update.getType());
 		final String rawScript = mapping.getScript(update.getScript()).script();
-		org.elasticsearch.script.Script script = new org.elasticsearch.script.Script(ScriptType.INLINE, "painless", rawScript, ImmutableMap.copyOf(update.getParams()));
-		bulkIndexByScroll(client, update, "update", script, mappingsToRefresh);
+		org.elasticsearch.script.Script script = new org.elasticsearch.script.Script(ScriptType.INLINE, "painless", rawScript, Map.copyOf(update.getParams()));
+		return bulkIndexByScroll(client, mapping, update.getFilter(), "update", script, update.toString());
 	}
 
-	public void bulkDelete(final BulkDelete<?> delete, Set<DocumentMapping> mappingsToRefresh) {
-		bulkIndexByScroll(client, delete, "delete", null, mappingsToRefresh);
+	public boolean bulkDelete(final BulkDelete<?> delete) {
+		final DocumentMapping mapping = mappings().getMapping(delete.getType());
+		return bulkIndexByScroll(client, mapping, delete.getFilter(), "delete", null, delete.toString());
 	}
 
-	private void bulkIndexByScroll(final EsClient client,
-			final BulkOperation<?> op, 
+	private boolean bulkIndexByScroll(final EsClient client,
+			final DocumentMapping mapping,
+			final Expression filter,
 			final String command, 
-			final org.elasticsearch.script.Script script, 
-			final Set<DocumentMapping> mappingsToRefresh) {
+			final org.elasticsearch.script.Script script,
+			final String operationDescription) {
 		
-		final DocumentMapping mapping = mappings().getMapping(op.getType());
-		final QueryBuilder query = new EsQueryBuilder(mapping, settings, log).build(op.getFilter());
+		final QueryBuilder query = new EsQueryBuilder(mapping, settings, log).build(filter);
 		
+		boolean needsRefresh = false;
 		long versionConflicts = 0;
 		int attempts = DEFAULT_MAX_NUMBER_OF_VERSION_CONFLICT_RETRIES;
 		
@@ -662,19 +696,19 @@ public final class EsIndexAdmin implements IndexAdmin {
 				
 				boolean updated = updateCount > 0;
 				if (updated) {
-					mappingsToRefresh.add(mapping);
-					log().info("Updated {} {} documents with bulk {}", updateCount, mapping.typeAsString(), op);
+					log().info("Updated {} {} documents with bulk {}", updateCount, mapping.typeAsString(), operationDescription);
+					needsRefresh = true;
 				}
 				
 				boolean deleted = deleteCount > 0;
 				if (deleted) {
-					mappingsToRefresh.add(mapping);
-					log().info("Deleted {} {} documents with bulk {}", deleteCount, mapping.typeAsString(), op);
+					log().info("Deleted {} {} documents with bulk {}", deleteCount, mapping.typeAsString(), operationDescription);
+					needsRefresh = true;
 				}
 				
 				if (!updated && !deleted) {
 					log().warn("Bulk {} could not be applied to {} documents, no-ops ({}), conflicts ({})",
-							op,
+							operationDescription,
 							mapping.typeAsString(), 
 							noops, 
 							versionConflicts);
@@ -716,6 +750,8 @@ public final class EsIndexAdmin implements IndexAdmin {
 				throw new IndexException("Could not execute bulk update.", e);
 			}
 		} while (versionConflicts > 0);
+		
+		return needsRefresh;
 	}
 	
 	public int getConcurrencyLevel() {

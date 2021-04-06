@@ -74,7 +74,7 @@ abstract class BaseComponentMemberUpdateRequest implements Request<TransactionCo
 
 			if (LOG.isDebugEnabled()) { LOG.debug("Removing {} member {}.", getMemberType(), existingMember.getId()); }
 			context.delete(updatedMember.build());
-			return true;
+			return false;
 			
 		} else if (existingMember.isActive()) {
 

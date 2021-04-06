@@ -1,6 +1,6 @@
 /*
  * Copyright 2009-2017 International Health Terminology Standards Development Organisation
- * Copyright 2013-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2013-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -88,6 +88,10 @@ final class NormalFormRelationship implements NormalFormProperty {
 
 	public boolean hasStatedPair() {
 		return fragment.hasStatedPair();
+	}
+	
+	public String getStatedStatementId() {
+		return fragment.getStatedStatementId();
 	}
 
 	@Override

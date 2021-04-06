@@ -15,9 +15,7 @@
  */
 package com.b2international.index.revision;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 import java.util.Collection;
 import java.util.List;
@@ -412,16 +410,13 @@ public class RevisionBranchMergeTest extends BaseRevisionIndexTest {
 		indexRevision(branchB, NEW_DATA2);
 		indexRevision(MAIN, NEW_DATA3);
 		
-		Hooks.PreCommitHook hook = new Hooks.PreCommitHook() {
-			@Override
-			public void run(StagingArea staging) {
-				if (branchA.equals(staging.getBranchPath())) {
-					staging.getNewObjects(RevisionData.class).forEach(newRevision -> {
-						if (NEW_DATA3.getId().equals(newRevision.getId())) {
-							staging.stageNew(newRevision);
-						}
-					});
-				}
+		Hooks.PreCommitHook hook = staging -> {
+			if (branchA.equals(staging.getBranchPath())) {
+				staging.getNewObjects(RevisionData.class).forEach(newRevision -> {
+					if (NEW_DATA3.getId().equals(newRevision.getId())) {
+						staging.stageNew(newRevision);
+					}
+				});
 			}
 		};
 		index().hooks().addHook(hook);
@@ -467,6 +462,107 @@ public class RevisionBranchMergeTest extends BaseRevisionIndexTest {
 		
 		// accessing branchC base data via ^ should also return the object
 		assertNotNull(getRevision(RevisionIndex.toBaseRef(branchC), RevisionData.class, STORAGE_KEY1));
+	}
+	
+	@Test
+	public void moveBranchContentWithSquashMergeToADifferentParent() throws Exception {
+		final String oldParent = createBranch(MAIN, "oldParent");
+		final String oldBranch = createBranch(oldParent, "move");
+		final String newParent = createBranch(MAIN, "newParent");
+		
+		// index initial data
+		indexRevision(oldBranch, NEW_DATA);
+		// simulate some kind of new data that requires the move of the task branch content to the new place
+		indexRevision(newParent, NEW_DATA3);
+		
+		final String newBranch = createBranch(newParent, "move");
+		
+		// initial sync
+		branching().prepareMerge(oldBranch, newBranch).squash(true).merge();
+		
+		assertNotNull(getRevision(newBranch, RevisionData.class, STORAGE_KEY1));
+	}
+	
+	@Test
+	public void moveBranchContentWithNonSquashMergeToADifferentParent() throws Exception {
+		final String oldParent = createBranch(MAIN, "oldParent");
+		final String oldBranch = createBranch(oldParent, "move");
+		final String newParent = createBranch(MAIN, "newParent");
+		
+		// index initial data
+		indexRevision(oldBranch, NEW_DATA);
+		// simulate some kind of new data that requires the move of the task branch content to the new place
+		indexRevision(newParent, NEW_DATA3);
+		
+		final String newBranch = createBranch(newParent, "move");
+		
+		// initial sync
+		branching().prepareMerge(oldBranch, newBranch).squash(false).merge();
+		
+		assertNotNull(getRevision(newBranch, RevisionData.class, STORAGE_KEY1));
+	}
+	
+	@Test
+	public void synchronizeMovedBranchContentMultipleTimes() throws Exception {
+		final String oldParent = createBranch(MAIN, "oldParent");
+		final String oldBranch = createBranch(oldParent, "move");
+		final String newParent = createBranch(MAIN, "newParent");
+		
+		// index initial data
+		indexRevision(oldBranch, NEW_DATA);
+		// simulate some kind of new data that requires the move of the task branch content to the new place
+		indexRevision(newParent, NEW_DATA3);
+		
+		final String newBranch = createBranch(newParent, "move");
+		
+		// initial sync
+		branching().prepareMerge(oldBranch, newBranch).squash(false).merge();
+		
+		assertNotNull(getRevision(newBranch, RevisionData.class, STORAGE_KEY1));
+		assertNull(getRevision(newBranch, RevisionData.class, STORAGE_KEY2));
+		
+		indexRevision(oldBranch, NEW_DATA2);
+		
+		// second sync
+		branching().prepareMerge(oldBranch, newBranch).squash(false).merge();
+		
+		assertNotNull(getRevision(newBranch, RevisionData.class, STORAGE_KEY1));
+		assertNotNull(getRevision(newBranch, RevisionData.class, STORAGE_KEY2));
+	}
+	
+	@Test
+	public void movedPropertyChange_AppliedOnBothSides() throws Exception {
+		// index the document fixture on MAIN
+		indexRevision(MAIN, NEW_DATA);
+		final String oldParent = createBranch(MAIN, "oldParent");
+		final String oldBranch = createBranch(oldParent, "move");
+		// index change in doc in another field
+		RevisionData updatedOnOnBranch = NEW_DATA.toBuilder().terms(List.of("term")).build();
+		indexChange(oldBranch, NEW_DATA, updatedOnOnBranch);
+		
+		// index a change on MAIN after creating the old branches and old change
+		indexChange(MAIN, NEW_DATA, NEW_DATA.toBuilder().derivedField("change").build());
+		// create new parent and target move branch
+		final String newParent = createBranch(MAIN, "newParent");
+		final String newBranch = createBranch(newParent, "move");
+		
+		// initial sync produces empty commit but an actual change in the doc
+		branching().prepareMerge(oldBranch, newBranch).squash(false).merge();
+		
+		RevisionData afterFirstSync = getRevision(newBranch, RevisionData.class, STORAGE_KEY1);
+		assertEquals("change", afterFirstSync.getDerivedField());
+		assertEquals(List.of("term"), afterFirstSync.getTerms());
+		
+		// represent the same change as the one made on newParent
+		indexChange(oldBranch, updatedOnOnBranch, updatedOnOnBranch.toBuilder().derivedField("change").build());
+		
+		// second sync
+		branching().prepareMerge(oldBranch, newBranch).squash(false).merge();
+		
+		// single revision exists with the desired values
+		RevisionData actual = getRevision(newBranch, RevisionData.class, STORAGE_KEY1);
+		assertEquals("change", actual.getDerivedField());
+		assertEquals(List.of("term"), afterFirstSync.getTerms());
 	}
 	
 	private void assertState(String branchPath, String compareWith, BranchState expectedState) {

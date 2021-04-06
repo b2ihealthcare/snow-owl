@@ -25,11 +25,7 @@ import java.util.stream.Collectors;
 import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.common.lucene.search.function.CombineFunction;
 import org.elasticsearch.common.unit.Fuzziness;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.DisMaxQueryBuilder;
-import org.elasticsearch.index.query.Operator;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.*;
 import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
 import org.slf4j.Logger;
 
@@ -234,6 +230,11 @@ public final class EsQueryBuilder {
 		final int minShouldMatch = predicate.minShouldMatch();
 		QueryBuilder query;
 		switch (type) {
+		case BOOLEAN_PREFIX:
+			query = QueryBuilders.matchBoolPrefixQuery(field, term)
+				.analyzer(predicate.analyzer())
+				.operator(Operator.AND);
+				break;
 		case PHRASE:
 			query = QueryBuilders.matchPhraseQuery(field, term)
 						.analyzer(predicate.analyzer());
