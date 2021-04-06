@@ -23,6 +23,7 @@ import com.b2international.commons.CompareUtils;
 import com.b2international.index.IndexException;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.revision.StagingArea.RevisionPropertyDiff;
+import com.b2international.index.util.ArrayDiff;
 import com.b2international.index.util.JsonDiff;
 import com.b2international.index.util.JsonDiff.JsonChange;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -30,7 +31,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 /**
@@ -118,7 +118,7 @@ public interface RevisionConflictProcessor {
 				// apply source change if the new value is exactly the same as the target change
 				return sourceChange;
 			} else {
-				return null; 
+				return null;
 			}
 		}
 
@@ -178,49 +178,34 @@ public interface RevisionConflictProcessor {
 				ArrayNode sourceArray = CompareUtils.isEmpty(sourceChange.getNewValue()) ? mapper.createArrayNode() : (ArrayNode) mapper.readTree(sourceChange.getNewValue());
 				ArrayNode targetArray = CompareUtils.isEmpty(targetChange.getNewValue()) ? mapper.createArrayNode() : (ArrayNode) mapper.readTree(targetChange.getNewValue());
 				
-				List<JsonNode> sourceChanges = getChanges(oldArray, sourceArray);
-				List<JsonNode> targetChanges = getChanges(oldArray, targetArray);
+				ArrayDiff sourceDiff = ArrayDiff.diff(oldArray, sourceArray);
+				ArrayDiff targetDiff = ArrayDiff.diff(oldArray, targetArray);
 				
-				if (sourceChanges == null || targetChanges == null) {
-					// if either source or target array modified the old array in a destructive way, report conflict
-					return null;
-				} else {
-					// take all source changes
-					oldArray.addAll(sourceChanges);
-					if (isSet) {
-						// filter out duplicates that have been added on both sides if this collection should be handled as a Set
-						targetChanges.removeIf(sourceChanges::contains);
+				// TODO nested item conflict resolution???
+				// create a big union of all changes, treat collection as set if needed
+				// this eliminates most of the unnecessary conflicts between two collection properties
+				sourceDiff.getAddedItems().forEach(oldArray::add);
+				Set<JsonNode> newSourceItems = Set.copyOf(sourceDiff.getAddedItems());
+				targetDiff.getAddedItems().forEach(newTargetItem -> {
+					if (!isSet || !newSourceItems.contains(newTargetItem)) {
+						oldArray.add(newTargetItem);
 					}
-					oldArray.addAll(targetChanges);
-					return sourceChange.withNewValue(oldArray.toString());
+				});
+
+				Iterator<JsonNode> oldItems = oldArray.iterator();
+				while (oldItems.hasNext()) {
+					JsonNode oldItem = oldItems.next();
+					if (sourceDiff.getRemovedItems().contains(oldItem) || targetDiff.getRemovedItems().contains(oldItem)) {
+						oldItems.remove();
+					}
 				}
+
+				return sourceChange.withNewValue(oldArray.toString());
 			} catch (JsonProcessingException e) {
 				throw new IndexException("Couldn't parse json", e);
 			}
 		}
 		
-		private List<JsonNode> getChanges(ArrayNode oldArray, ArrayNode newArray) {
-			Iterator<JsonNode> oldItems = oldArray.iterator();
-			Iterator<JsonNode> newItems = newArray.iterator();
-			
-			while (oldItems.hasNext() && newItems.hasNext()) {
-				JsonNode oldItem = oldItems.next();
-				JsonNode sourceItem = newItems.next();
-				// if common part is not equal, then report conflict
-				if (!oldItem.equals(sourceItem)) {
-					return null;
-				}
-			}
-			
-			// if oldArray has more items then newArray removed them, report destructive change
-			if (oldItems.hasNext()) {
-				return null;
-			}
-			
-			// construct new items list that have been added to the old array 
-			return Lists.newArrayList(newItems);
-		}
-
 		@Override
 		public Conflict handleChangedInSourceDetachedInTarget(ObjectId objectId, List<RevisionPropertyDiff> sourceChanges) {
 			return null; // by default do not report conflict and omit the changes

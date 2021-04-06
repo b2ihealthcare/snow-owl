@@ -45,6 +45,17 @@ public class RevisionBranchMergeConflictTest extends BaseRevisionIndexTest {
 		mapper.setSerializationInclusion(Include.NON_NULL);
 	}
 	
+	@Test(expected = BranchMergeConflictException.class)
+	public void rebaseObjectChangeDifferentValue() throws Exception {
+		indexRevision(MAIN, NEW_DATA);
+		final String branchA = createBranch(MAIN, "a");
+		
+		indexChange(MAIN, NEW_DATA, NEW_DATA.toBuilder().field1("changedOnMain").build());
+		indexChange(branchA, NEW_DATA, NEW_DATA.toBuilder().field1("changedOnBranch").build());
+		
+		branching().prepareMerge(MAIN, branchA).merge();
+	}
+	
 	@Test
 	public void rebaseThenMergeResolvableSingleValuedPropertyChanges() throws Exception {
 		indexRevision(MAIN, NEW_DATA);
@@ -88,79 +99,11 @@ public class RevisionBranchMergeConflictTest extends BaseRevisionIndexTest {
 		assertDocEquals(NEW_DATA.toBuilder().field1("field1Changed").terms(terms).build(), branchARevision);
 	}
 	
+	/**
+	 * @deprecated - keeping test case for the 7.x stream, but it will be removed in the 8.x stream
+	 */
 	@Test
-	public void rebaseResolvableConflictSingleValuedProperty() throws Exception {
-		indexRevision(MAIN, NEW_DATA);
-		final String branchA = createBranch(MAIN, "a");
-		
-		indexChange(MAIN, NEW_DATA, NEW_DATA.toBuilder().field1("field1Changed").build());
-		indexChange(branchA, NEW_DATA, NEW_DATA.toBuilder().field1("field1Changed").build());
-		
-		branching().prepareMerge(MAIN, branchA).merge();
-		RevisionData mainRevision = getRevision(MAIN, RevisionData.class, NEW_DATA.getId());
-		assertDocEquals(new RevisionData(NEW_DATA.getId(), "field1Changed", "field2"), mainRevision);
-		RevisionData branchARevision = getRevision(branchA, RevisionData.class, NEW_DATA.getId());
-		assertDocEquals(new RevisionData(NEW_DATA.getId(), "field1Changed", "field2"), branchARevision);
-		
-		branching().prepareMerge(branchA, MAIN).squash(true).merge();
-		mainRevision = getRevision(MAIN, RevisionData.class, NEW_DATA.getId());
-		assertDocEquals(new RevisionData(NEW_DATA.getId(), "field1Changed", "field2"), mainRevision);
-		branchARevision = getRevision(branchA, RevisionData.class, NEW_DATA.getId());
-		assertDocEquals(new RevisionData(NEW_DATA.getId(), "field1Changed", "field2"), branchARevision);
-	}
-	
-	@Test
-	public void rebaseResolvableConflictMultiValuedProperty() throws Exception {
-		final List<String> terms = List.of("term1", "term2");
-		
-		indexRevision(MAIN, NEW_DATA);
-		final String branchA = createBranch(MAIN, "a");
-		
-		RevisionData newDataWithUpdatedTerms = NEW_DATA.toBuilder().terms(terms).build();
-		indexChange(MAIN, NEW_DATA, newDataWithUpdatedTerms);
-		indexChange(branchA, NEW_DATA, newDataWithUpdatedTerms);
-		
-		branching().prepareMerge(MAIN, branchA).merge();
-		RevisionData mainRevision = getRevision(MAIN, RevisionData.class, NEW_DATA.getId());
-		assertDocEquals(newDataWithUpdatedTerms, mainRevision);
-		RevisionData branchARevision = getRevision(branchA, RevisionData.class, NEW_DATA.getId());
-		RevisionData mergedData = NEW_DATA.toBuilder().terms(List.of("term1", "term2", "term1", "term2")).build();
-		assertDocEquals(mergedData, branchARevision);
-		
-		branching().prepareMerge(branchA, MAIN).squash(true).merge();
-		mainRevision = getRevision(MAIN, RevisionData.class, NEW_DATA.getId());
-		assertDocEquals(mergedData, mainRevision);
-		branchARevision = getRevision(branchA, RevisionData.class, NEW_DATA.getId());
-		assertDocEquals(mergedData, branchARevision);
-	}
-	
-	@Test
-	public void rebaseResolvableConflictMultiValuedPropertyNonNullFromValue() throws Exception {
-		final List<String> terms = List.of("term1", "term2");
-		
-		indexRevision(MAIN, NEW_DATA.toBuilder().terms(List.of()).build());
-		final String branchA = createBranch(MAIN, "a");
-		
-		RevisionData newDataWithUpdatedTerms = NEW_DATA.toBuilder().terms(terms).build();
-		indexChange(MAIN, NEW_DATA, newDataWithUpdatedTerms);
-		indexChange(branchA, NEW_DATA, newDataWithUpdatedTerms);
-		
-		branching().prepareMerge(MAIN, branchA).merge();
-		RevisionData mainRevision = getRevision(MAIN, RevisionData.class, NEW_DATA.getId());
-		assertDocEquals(newDataWithUpdatedTerms, mainRevision);
-		RevisionData branchARevision = getRevision(branchA, RevisionData.class, NEW_DATA.getId());
-		RevisionData mergedData = NEW_DATA.toBuilder().terms(List.of("term1", "term2", "term1", "term2")).build();
-		assertDocEquals(mergedData, branchARevision);
-		
-		branching().prepareMerge(branchA, MAIN).squash(true).merge();
-		mainRevision = getRevision(MAIN, RevisionData.class, NEW_DATA.getId());
-		assertDocEquals(mergedData, mainRevision);
-		branchARevision = getRevision(branchA, RevisionData.class, NEW_DATA.getId());
-		assertDocEquals(mergedData, branchARevision);
-	}
-	
-	@Test
-	public void rebaseResolvableNestedRevisionDataChanges_NestedObjectChange() throws Exception {
+	public void rebaseObjectNestedChangeWithDifferentPropertyChangeToValue_OLD() throws Exception {
 		final Data nestedData = new Data();
 		nestedData.setField1("field1_1");
 		nestedData.setField2("field2_1");
@@ -197,7 +140,7 @@ public class RevisionBranchMergeConflictTest extends BaseRevisionIndexTest {
 	}
 	
 	@Test
-	public void rebaseResolvableNestedRevisionDataChanges_SetObject() throws Exception {
+	public void rebaseObjectNestedChangeWithRootVsNestedChange() throws Exception {
 		final NestedRevisionData doc = new NestedRevisionData(STORAGE_KEY1, "parent1", null);
 		indexRevision(MAIN, doc);
 		
@@ -225,10 +168,32 @@ public class RevisionBranchMergeConflictTest extends BaseRevisionIndexTest {
 	}
 	
 	@Test
-	public void rebaseSameChanges() throws Exception {
+	public void rebaseObjectChangeSameTrackedProperty() throws Exception {
 		indexRevision(MAIN, NEW_DATA);
 		final String branchA = createBranch(MAIN, "a");
 		
+		indexChange(MAIN, NEW_DATA, NEW_DATA.toBuilder().field1("field1Changed").build());
+		indexChange(branchA, NEW_DATA, NEW_DATA.toBuilder().field1("field1Changed").build());
+		
+		branching().prepareMerge(MAIN, branchA).merge();
+		RevisionData mainRevision = getRevision(MAIN, RevisionData.class, NEW_DATA.getId());
+		assertDocEquals(new RevisionData(NEW_DATA.getId(), "field1Changed", "field2"), mainRevision);
+		RevisionData branchARevision = getRevision(branchA, RevisionData.class, NEW_DATA.getId());
+		assertDocEquals(new RevisionData(NEW_DATA.getId(), "field1Changed", "field2"), branchARevision);
+		
+		branching().prepareMerge(branchA, MAIN).squash(true).merge();
+		mainRevision = getRevision(MAIN, RevisionData.class, NEW_DATA.getId());
+		assertDocEquals(new RevisionData(NEW_DATA.getId(), "field1Changed", "field2"), mainRevision);
+		branchARevision = getRevision(branchA, RevisionData.class, NEW_DATA.getId());
+		assertDocEquals(new RevisionData(NEW_DATA.getId(), "field1Changed", "field2"), branchARevision);
+	}
+	
+	@Test
+	public void rebaseObjectChangeSameNonTrackedProperty() throws Exception {
+		indexRevision(MAIN, NEW_DATA);
+		final String branchA = createBranch(MAIN, "a");
+		
+		// change untracked field to the same value
 		RevisionData newDataWithUpdatedDerivedField = NEW_DATA.toBuilder().derivedField("derived").build();
 		indexChange(MAIN, NEW_DATA, newDataWithUpdatedDerivedField);
 		indexChange(branchA, NEW_DATA, newDataWithUpdatedDerivedField);
@@ -241,7 +206,7 @@ public class RevisionBranchMergeConflictTest extends BaseRevisionIndexTest {
 	}
 	
 	@Test
-	public void rebaseResolvableChangesShouldNotCauseConflictOnSecondRebase() throws Exception {
+	public void rebaseObjectChangeSameTrackedPropertyMultipleRebases() throws Exception {
 		indexRevision(MAIN, NEW_DATA);
 		final String branchA = createBranch(MAIN, "a");
 		
@@ -259,7 +224,31 @@ public class RevisionBranchMergeConflictTest extends BaseRevisionIndexTest {
 	}
 	
 	@Test
-	public void rebaseSameObjectArrayChanges() throws Exception {
+	public void rebaseObjectArrayChangeSameNonObjects() throws Exception {
+		indexRevision(MAIN, NEW_DATA);
+		final String branchA = createBranch(MAIN, "a");
+		
+		final List<String> terms = List.of("term1", "term2");
+		RevisionData newDataWithUpdatedTerms = NEW_DATA.toBuilder().terms(terms).build();
+		indexChange(MAIN, NEW_DATA, newDataWithUpdatedTerms);
+		indexChange(branchA, NEW_DATA, newDataWithUpdatedTerms);
+		
+		branching().prepareMerge(MAIN, branchA).merge();
+		RevisionData mainRevision = getRevision(MAIN, RevisionData.class, NEW_DATA.getId());
+		assertDocEquals(newDataWithUpdatedTerms, mainRevision);
+		RevisionData branchARevision = getRevision(branchA, RevisionData.class, NEW_DATA.getId());
+		RevisionData mergedData = NEW_DATA.toBuilder().terms(List.of("term1", "term2", "term1", "term2")).build();
+		assertDocEquals(mergedData, branchARevision);
+		
+		branching().prepareMerge(branchA, MAIN).squash(true).merge();
+		mainRevision = getRevision(MAIN, RevisionData.class, NEW_DATA.getId());
+		assertDocEquals(mergedData, mainRevision);
+		branchARevision = getRevision(branchA, RevisionData.class, NEW_DATA.getId());
+		assertDocEquals(mergedData, branchARevision);
+	}
+	
+	@Test
+	public void rebaseObjectArrayChangeSameObjects() throws Exception {
 		ObjectListPropertyData data = new ObjectListPropertyData(STORAGE_KEY1, List.of());
 		indexRevision(MAIN, data);
 		String branchA = createBranch(MAIN, "a");
@@ -287,33 +276,7 @@ public class RevisionBranchMergeConflictTest extends BaseRevisionIndexTest {
 	}
 	
 	@Test
-	public void rebaseSameObjectSetChanges() throws Exception {
-		ObjectSetPropertyData data = new ObjectSetPropertyData(STORAGE_KEY1, Set.of());
-		indexRevision(MAIN, data);
-		String branchA = createBranch(MAIN, "a");
-		
-		ObjectSetPropertyData updatedData = new ObjectSetPropertyData(STORAGE_KEY1, Set.of(
-			new RevisionFixtures.ObjectItem("field1", "field2"),
-			new RevisionFixtures.ObjectItem("field3", "field4")
-		));
-		indexChange(MAIN, data, updatedData);
-		indexChange(branchA, data, updatedData);
-		
-		branching().prepareMerge(MAIN, branchA).merge(); // should not throw BranchMergeConflictException
-		
-		// how ever as the Collection type List has been used in the ObjectArrayPropertyData the resulting list will have duplicates
-		ObjectSetPropertyData actual = getRevision(branchA, ObjectSetPropertyData.class, STORAGE_KEY1);
-		assertDocEquals(
-			new ObjectSetPropertyData(STORAGE_KEY1, Set.of(
-				new RevisionFixtures.ObjectItem("field1", "field2"),
-				new RevisionFixtures.ObjectItem("field3", "field4")
-			)), 
-			actual
-		);
-	}
-	
-	@Test
-	public void rebaseObjectItemArrayChangeWithOneExtraElementOnEachSide() throws Exception {
+	public void rebaseObjectArrayChangeExtraObject() throws Exception {
 		ObjectListPropertyData data = new ObjectListPropertyData(STORAGE_KEY1, List.of(
 			new RevisionFixtures.ObjectItem("field1", "field2"),
 			new RevisionFixtures.ObjectItem("field3", "field4")
@@ -349,7 +312,180 @@ public class RevisionBranchMergeConflictTest extends BaseRevisionIndexTest {
 	}
 	
 	@Test
-	public void rebaseObjectChangeToSameValueOnBothSides() throws Exception {
+	public void rebaseObjectArrayChangeRemoveSameOldItem() throws Exception {
+		ObjectListPropertyData data = new ObjectListPropertyData(STORAGE_KEY1, List.of(
+			new RevisionFixtures.ObjectItem("field1", "field2"),
+			new RevisionFixtures.ObjectItem("field3", "field4")
+		));
+		indexRevision(MAIN, data);
+		String branchA = createBranch(MAIN, "a");
+		
+		ObjectListPropertyData updateOnMain = new ObjectListPropertyData(STORAGE_KEY1, List.of(
+			new RevisionFixtures.ObjectItem("field1", "field2")
+		));
+		ObjectListPropertyData updateOnBranch = new ObjectListPropertyData(STORAGE_KEY1, List.of(
+			new RevisionFixtures.ObjectItem("field1", "field2")
+		));
+		indexChange(MAIN, data, updateOnMain);
+		indexChange(branchA, data, updateOnBranch);
+		
+		branching().prepareMerge(MAIN, branchA).merge(); // should not throw BranchMergeConflictException
+		
+		ObjectListPropertyData actual = getRevision(branchA, ObjectListPropertyData.class, STORAGE_KEY1);
+		assertDocEquals(
+			new ObjectListPropertyData(STORAGE_KEY1, List.of(
+				new RevisionFixtures.ObjectItem("field1", "field2")
+			)), 
+			actual
+		);
+	}
+	
+	@Test
+	public void rebaseObjectArrayChangeRemoveDifferentOldItem() throws Exception {
+		ObjectListPropertyData data = new ObjectListPropertyData(STORAGE_KEY1, List.of(
+			new RevisionFixtures.ObjectItem("field1", "field2"),
+			new RevisionFixtures.ObjectItem("field3", "field4")
+		));
+		indexRevision(MAIN, data);
+		String branchA = createBranch(MAIN, "a");
+		
+		ObjectListPropertyData updateOnMain = new ObjectListPropertyData(STORAGE_KEY1, List.of(
+			new RevisionFixtures.ObjectItem("field3", "field4")
+		));
+		ObjectListPropertyData updateOnBranch = new ObjectListPropertyData(STORAGE_KEY1, List.of(
+			new RevisionFixtures.ObjectItem("field1", "field2")
+		));
+		indexChange(MAIN, data, updateOnMain);
+		indexChange(branchA, data, updateOnBranch);
+		
+		branching().prepareMerge(MAIN, branchA).merge(); // should not throw BranchMergeConflictException
+		
+		ObjectListPropertyData actual = getRevision(branchA, ObjectListPropertyData.class, STORAGE_KEY1);
+		assertDocEquals(
+			new ObjectListPropertyData(STORAGE_KEY1, List.of()), 
+			actual
+		);
+	}
+	
+	@Test
+	public void rebaseObjectArrayChangeReplaceSameItemWithSameItem() throws Exception {
+		ObjectListPropertyData data = new ObjectListPropertyData(STORAGE_KEY1, List.of(
+			new RevisionFixtures.ObjectItem("field1", "field2"),
+			new RevisionFixtures.ObjectItem("field3", "field4")
+		));
+		indexRevision(MAIN, data);
+		String branchA = createBranch(MAIN, "a");
+		
+		ObjectListPropertyData updateOnMain = new ObjectListPropertyData(STORAGE_KEY1, List.of(
+			new RevisionFixtures.ObjectItem("field1", "field2"),
+			new RevisionFixtures.ObjectItem("field5", "field6")
+		));
+		ObjectListPropertyData updateOnBranch = new ObjectListPropertyData(STORAGE_KEY1, List.of(
+			new RevisionFixtures.ObjectItem("field1", "field2"),
+			new RevisionFixtures.ObjectItem("field5", "field6")
+		));
+		indexChange(MAIN, data, updateOnMain);
+		indexChange(branchA, data, updateOnBranch);
+		
+		branching().prepareMerge(MAIN, branchA).merge(); // should not throw BranchMergeConflictException
+		
+		ObjectListPropertyData actual = getRevision(branchA, ObjectListPropertyData.class, STORAGE_KEY1);
+		assertDocEquals(
+			new ObjectListPropertyData(STORAGE_KEY1, List.of(
+				new RevisionFixtures.ObjectItem("field1", "field2"),
+				new RevisionFixtures.ObjectItem("field5", "field6"),
+				new RevisionFixtures.ObjectItem("field5", "field6")
+			)), 
+			actual
+		);
+	}
+	
+	@Test
+	public void rebaseObjectArrayChangeReplaceSameItemWithDifferentItem() throws Exception {
+		ObjectListPropertyData data = new ObjectListPropertyData(STORAGE_KEY1, List.of(
+			new RevisionFixtures.ObjectItem("field1", "field2"),
+			new RevisionFixtures.ObjectItem("field3", "field4")
+		));
+		indexRevision(MAIN, data);
+		String branchA = createBranch(MAIN, "a");
+		
+		ObjectListPropertyData updateOnMain = new ObjectListPropertyData(STORAGE_KEY1, List.of(
+			new RevisionFixtures.ObjectItem("field1", "field2"),
+			new RevisionFixtures.ObjectItem("field5", "field6")
+		));
+		ObjectListPropertyData updateOnBranch = new ObjectListPropertyData(STORAGE_KEY1, List.of(
+			new RevisionFixtures.ObjectItem("field1", "field2"),
+			new RevisionFixtures.ObjectItem("field7", "field8")
+		));
+		indexChange(MAIN, data, updateOnMain);
+		indexChange(branchA, data, updateOnBranch);
+		
+		branching().prepareMerge(MAIN, branchA).merge(); // should not throw BranchMergeConflictException
+		
+		ObjectListPropertyData actual = getRevision(branchA, ObjectListPropertyData.class, STORAGE_KEY1);
+		assertDocEquals(
+			new ObjectListPropertyData(STORAGE_KEY1, List.of(
+				new RevisionFixtures.ObjectItem("field1", "field2"),
+				new RevisionFixtures.ObjectItem("field5", "field6"),
+				new RevisionFixtures.ObjectItem("field7", "field8")
+			)), 
+			actual
+		);
+	}
+	
+	@Test
+	public void rebaseObjectArrayChangeNonObjectsEmptied() throws Exception {
+		final List<String> terms = List.of("term1", "term2");
+		
+		indexRevision(MAIN, NEW_DATA.toBuilder().terms(List.of()).build());
+		final String branchA = createBranch(MAIN, "a");
+		
+		RevisionData newDataWithUpdatedTerms = NEW_DATA.toBuilder().terms(terms).build();
+		indexChange(MAIN, NEW_DATA, newDataWithUpdatedTerms);
+		indexChange(branchA, NEW_DATA, newDataWithUpdatedTerms);
+		
+		branching().prepareMerge(MAIN, branchA).merge();
+		RevisionData mainRevision = getRevision(MAIN, RevisionData.class, NEW_DATA.getId());
+		assertDocEquals(newDataWithUpdatedTerms, mainRevision);
+		RevisionData branchARevision = getRevision(branchA, RevisionData.class, NEW_DATA.getId());
+		RevisionData mergedData = NEW_DATA.toBuilder().terms(List.of("term1", "term2", "term1", "term2")).build();
+		assertDocEquals(mergedData, branchARevision);
+		
+		branching().prepareMerge(branchA, MAIN).squash(true).merge();
+		mainRevision = getRevision(MAIN, RevisionData.class, NEW_DATA.getId());
+		assertDocEquals(mergedData, mainRevision);
+		branchARevision = getRevision(branchA, RevisionData.class, NEW_DATA.getId());
+		assertDocEquals(mergedData, branchARevision);
+	}
+	
+	@Test
+	public void rebaseObjectSetSameChanges() throws Exception {
+		ObjectSetPropertyData data = new ObjectSetPropertyData(STORAGE_KEY1, Set.of());
+		indexRevision(MAIN, data);
+		String branchA = createBranch(MAIN, "a");
+		
+		ObjectSetPropertyData updatedData = new ObjectSetPropertyData(STORAGE_KEY1, Set.of(
+			new RevisionFixtures.ObjectItem("field1", "field2"),
+			new RevisionFixtures.ObjectItem("field3", "field4")
+		));
+		indexChange(MAIN, data, updatedData);
+		indexChange(branchA, data, updatedData);
+		
+		branching().prepareMerge(MAIN, branchA).merge(); // should not throw BranchMergeConflictException
+		
+		// how ever as the Collection type List has been used in the ObjectArrayPropertyData the resulting list will have duplicates
+		ObjectSetPropertyData actual = getRevision(branchA, ObjectSetPropertyData.class, STORAGE_KEY1);
+		assertDocEquals(
+			new ObjectSetPropertyData(STORAGE_KEY1, Set.of(
+				new RevisionFixtures.ObjectItem("field1", "field2"),
+				new RevisionFixtures.ObjectItem("field3", "field4")
+			)), 
+			actual
+		);
+	}
+	
+	@Test
+	public void rebaseObjectNestedChangeToSameValueOnBothSides() throws Exception {
 		ObjectPropertyData data = new ObjectPropertyData(STORAGE_KEY1, null);
 		indexRevision(MAIN, data);
 		String branchA = createBranch(MAIN, "a");
@@ -369,7 +505,7 @@ public class RevisionBranchMergeConflictTest extends BaseRevisionIndexTest {
 	}
 	
 	@Test
-	public void rebaseObjectChangeToNullOnBothSides() throws Exception {
+	public void rebaseObjectNestedChangeToNullOnBothSides() throws Exception {
 		ObjectPropertyData data = new ObjectPropertyData(STORAGE_KEY1, new RevisionFixtures.ObjectItem("field1", "field2"));
 		indexRevision(MAIN, data);
 		String branchA = createBranch(MAIN, "a");
@@ -388,8 +524,23 @@ public class RevisionBranchMergeConflictTest extends BaseRevisionIndexTest {
 		);
 	}
 	
+	@Test(expected = BranchMergeConflictException.class)
+	public void rebaseObjectNestedChangeToDifferentValues() throws Exception {
+		ObjectPropertyData data = new ObjectPropertyData(STORAGE_KEY1, null);
+		indexRevision(MAIN, data);
+		String branchA = createBranch(MAIN, "a");
+		
+		ObjectPropertyData updateOnMain = new ObjectPropertyData(STORAGE_KEY1, new RevisionFixtures.ObjectItem("field1", "field2"));
+		indexChange(MAIN, data, updateOnMain);
+		
+		ObjectPropertyData updateOnBranch = new ObjectPropertyData(STORAGE_KEY1, new RevisionFixtures.ObjectItem("field2", "field1"));
+		indexChange(branchA, data, updateOnBranch);
+		
+		branching().prepareMerge(MAIN, branchA).merge();
+	}
+	
 	@Test
-	public void rebaseObjectChangeWithDifferentNestedPropertyChanges() throws Exception {
+	public void rebaseObjectNestedChangeWithDifferentPropertyChangeToValue() throws Exception {
 		ObjectPropertyData data = new ObjectPropertyData(STORAGE_KEY1, null);
 		indexRevision(MAIN, data);
 		String branchA = createBranch(MAIN, "a");
@@ -410,12 +561,12 @@ public class RevisionBranchMergeConflictTest extends BaseRevisionIndexTest {
 	}
 	
 	@Test
-	public void rebaseObjectChangeWithDifferentNestedPropertyFieldsSetToNull() throws Exception {
+	public void rebaseObjectNestedChangeWithDifferentPropertyChangeToNull() throws Exception {
 		ObjectPropertyData data = new ObjectPropertyData(STORAGE_KEY1, new RevisionFixtures.ObjectItem("field1", "field2"));
 		indexRevision(MAIN, data);
 		String branchA = createBranch(MAIN, "a");
 		
-		ObjectPropertyData updateOnMain = new ObjectPropertyData(STORAGE_KEY1, new RevisionFixtures.ObjectItem("field1", null));
+		ObjectPropertyData updateOnMain = new ObjectPropertyData(STORAGE_KEY1, new RevisionFixtures.ObjectItem("field1", null ));
 		ObjectPropertyData updateOnBranch = new ObjectPropertyData(STORAGE_KEY1, new RevisionFixtures.ObjectItem(null, "field2"));
 		
 		indexChange(MAIN, data, updateOnMain);
