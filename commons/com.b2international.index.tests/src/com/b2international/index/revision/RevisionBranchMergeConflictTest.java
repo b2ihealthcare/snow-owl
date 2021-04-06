@@ -15,6 +15,8 @@
  */
 package com.b2international.index.revision;
 
+import static org.junit.Assert.assertNull;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -36,13 +38,66 @@ public class RevisionBranchMergeConflictTest extends BaseRevisionIndexTest {
 	
 	@Override
 	protected Collection<Class<?>> getTypes() {
-		return ImmutableList.<Class<?>>of(RevisionData.class, NestedRevisionData.class, ObjectPropertyData.class, ObjectListPropertyData.class, ObjectSetPropertyData.class);
+		return ImmutableList.<Class<?>>of(RevisionData.class, NestedRevisionData.class, ObjectPropertyData.class, ObjectListPropertyData.class, ObjectSetPropertyData.class, ContainerRevisionData.class, ComponentRevisionData.class);
 	}
 	
 	@Override
 	protected void configureMapper(ObjectMapper mapper) {
 		super.configureMapper(mapper);
 		mapper.setSerializationInclusion(Include.NON_NULL);
+	}
+	
+	@Test(expected = BranchMergeConflictException.class)
+	public void rebaseAddedOnSourceAndTarget() throws Exception {
+		final String branchA = createBranch(MAIN, "a");
+		indexRevision(MAIN, NEW_DATA);
+		indexRevision(branchA, NEW_DATA);
+		
+		branching().prepareMerge(MAIN, branchA).merge();
+	}
+	
+	@Test
+	public void rebaseChangeOnSourceDeletedOnTarget() throws Exception {
+		indexRevision(MAIN, NEW_DATA);
+		final String branchA = createBranch(MAIN, "a");
+		deleteRevision(branchA, RevisionData.class, STORAGE_KEY1);
+		indexChange(MAIN, NEW_DATA, NEW_DATA.toBuilder().field1("changed").build());
+		
+		branching().prepareMerge(MAIN, branchA).merge();
+		
+		assertNull(getRevision(branchA, RevisionData.class, STORAGE_KEY1));
+	}
+	
+	@Test
+	public void rebaseDeletedOnSourceChangedOnTarget() throws Exception {
+		indexRevision(MAIN, NEW_DATA);
+		final String branchA = createBranch(MAIN, "a");
+		indexChange(branchA, NEW_DATA, NEW_DATA.toBuilder().field1("changed").build());
+		deleteRevision(MAIN, RevisionData.class, STORAGE_KEY1);
+		
+		branching().prepareMerge(MAIN, branchA).merge();
+		
+		assertNull(getRevision(branchA, RevisionData.class, STORAGE_KEY1));
+	}
+	
+	@Test(expected = BranchMergeConflictException.class)
+	public void rebaseContainerDeletedOnSourceAndComponentAddedOnTarget() throws Exception {
+		indexRevision(MAIN, new ContainerRevisionData(STORAGE_KEY1));
+		final String branchA = createBranch(MAIN, "a");
+		deleteRevision(MAIN, ContainerRevisionData.class, STORAGE_KEY1);
+		indexRevision(branchA, new ComponentRevisionData(STORAGE_KEY2, STORAGE_KEY1, "field"));
+		
+		branching().prepareMerge(MAIN, branchA).merge();
+	}
+	
+	@Test(expected = BranchMergeConflictException.class)
+	public void rebaseContainerDeletedOnTargetAndComponentAddedOnSource() throws Exception {
+		indexRevision(MAIN, new ContainerRevisionData(STORAGE_KEY1));
+		final String branchA = createBranch(MAIN, "a");
+		indexRevision(MAIN, new ComponentRevisionData(STORAGE_KEY2, STORAGE_KEY1, "field"));
+		deleteRevision(branchA, ContainerRevisionData.class, STORAGE_KEY1);
+		
+		branching().prepareMerge(MAIN, branchA).merge();
 	}
 	
 	@Test(expected = BranchMergeConflictException.class)
