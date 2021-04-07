@@ -32,6 +32,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Streams;
 
 /**
  * @since 7.0
@@ -184,13 +185,13 @@ public interface RevisionConflictProcessor {
 				// TODO nested item conflict resolution???
 				// create a big union of all changes, treat collection as set if needed
 				// this eliminates most of the unnecessary conflicts between two collection properties
-				sourceDiff.getAddedItems().forEach(oldArray::add);
-				Set<JsonNode> newSourceItems = Set.copyOf(sourceDiff.getAddedItems());
-				targetDiff.getAddedItems().forEach(newTargetItem -> {
-					if (!isSet || !newSourceItems.contains(newTargetItem)) {
-						oldArray.add(newTargetItem);
-					}
-				});
+				Set<JsonNode> oldArraySet = Sets.newHashSet(oldArray);
+				Streams.concat(sourceDiff.getAddedItems().stream(), targetDiff.getAddedItems().stream())
+					.forEach(newItem -> {
+						if (!isSet || !oldArraySet.contains(newItem)) {
+							oldArray.add(newItem);
+						}
+					});
 
 				Iterator<JsonNode> oldItems = oldArray.iterator();
 				while (oldItems.hasNext()) {
