@@ -33,6 +33,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Streams;
 
@@ -228,15 +229,33 @@ public interface RevisionConflictProcessor {
 
 				// create a big union of all changes, treat collection as set if needed
 				// this eliminates most of the unnecessary conflicts between two collection properties
-				Set<JsonNode> oldArraySet = Sets.newHashSet(oldArray);
-				
-				// then apply added items
-				Streams.concat(sourceDiff.getAddedItems().stream(), targetDiff.getAddedItems().stream())
-					.forEach(newItem -> {
-						if (!isSet || oldArraySet.add(newItem)) {
-							oldArray.add(newItem);
+				if (idFunction != null) {
+					// add new items with IDs using a Map to check if they have added twice and raise conflict if needed
+					Map<String, JsonNode> newItemsById = Maps.newHashMap();
+					for (JsonNode newItem : Iterables.concat(sourceDiff.getAddedItems(), targetDiff.getAddedItems())) {
+						final String id = idFunction.apply(newItem);
+						// if the item is already present check the value added by already and raise conflict if it is not the same
+						if (newItemsById.containsKey(id)) {
+							if (newItem.equals(newItemsById.get(id))) {
+								continue; // skip, same value already present
+							} else {
+								return null; // different value, report conflict
+							}
+						} else {
+							newItemsById.put(id, newItem);
 						}
-					});
+						oldArray.add(newItem);
+					}
+				} else {
+					// simply add new items without IDs using a backing Set
+					Set<JsonNode> oldArraySet = Sets.newHashSet(oldArray);
+					Streams.concat(sourceDiff.getAddedItems().stream(), targetDiff.getAddedItems().stream())
+						.forEach(newItem -> {
+							if (!isSet || oldArraySet.add(newItem)) {
+								oldArray.add(newItem);
+							}
+						});
+				}
 				
 				// lastly remove all items indicated by the diffs
 				if (!sourceDiff.getRemovedItems().isEmpty() || !targetDiff.getRemovedItems().isEmpty()) {
