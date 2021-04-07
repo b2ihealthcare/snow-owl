@@ -211,7 +211,7 @@ public interface RevisionConflictProcessor {
 					} else if (sourceItemDiff != null && targetItemDiff == null) {
 						// source only change, apply directly on from value, which should be old object from old array
 						sourceItemDiff.diff().applyInPlace(sourceItemDiff.getFromValue());
-					} else {
+					} else if (sourceItemDiff != null && targetItemDiff != null) {
 						// changed on both sides
 						if (hasConflictingField(sourceItemDiff.diff(), targetItemDiff.diff())) {
 							return null; // report conflict for this tracked array property
@@ -224,6 +224,8 @@ public interface RevisionConflictProcessor {
 						targetItemDiff.diff().applyInPlace(oldObject);
 						
 						// XXX no need to add the oldObject to any lists since it is already part of the oldArray, updated in-place
+					} else {
+						// should not happen, but if in a parallel universe it does, then nothing to do
 					}
 				}
 
