@@ -188,7 +188,7 @@ public interface RevisionConflictProcessor {
 				Set<JsonNode> oldArraySet = Sets.newHashSet(oldArray);
 				Streams.concat(sourceDiff.getAddedItems().stream(), targetDiff.getAddedItems().stream())
 					.forEach(newItem -> {
-						if (!isSet || !oldArraySet.contains(newItem)) {
+						if (!isSet || oldArraySet.add(newItem)) {
 							oldArray.add(newItem);
 						}
 					});
