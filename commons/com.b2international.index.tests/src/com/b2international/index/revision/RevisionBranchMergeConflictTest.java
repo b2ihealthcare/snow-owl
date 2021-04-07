@@ -692,4 +692,40 @@ public class RevisionBranchMergeConflictTest extends BaseRevisionIndexTest {
 		);
 	}
 	
+	@Test
+	public void rebaseObjectUniqueArrayAddSameObjectSameValues() throws Exception {
+		ObjectUniqueListPropertyData data = new ObjectUniqueListPropertyData(STORAGE_KEY1, List.of());
+		indexRevision(MAIN, data);
+		String branchA = createBranch(MAIN, "a");
+		
+		ObjectUniqueListPropertyData updateOnMain = new ObjectUniqueListPropertyData(STORAGE_KEY1, List.of(new RevisionFixtures.ObjectUniqueItem(STORAGE_KEY2, "field1", "field2" )));
+		ObjectUniqueListPropertyData updateOnBranch = new ObjectUniqueListPropertyData(STORAGE_KEY1, List.of(new RevisionFixtures.ObjectUniqueItem(STORAGE_KEY2, "field1", "field2")));
+		
+		indexChange(MAIN, data, updateOnMain);
+		indexChange(branchA, data, updateOnBranch);
+		
+		branching().prepareMerge(MAIN, branchA).merge(); // should not throw BranchMergeConflictException
+		
+		ObjectUniqueListPropertyData actual = getRevision(branchA, ObjectUniqueListPropertyData.class, STORAGE_KEY1);
+		assertDocEquals(
+			new ObjectUniqueListPropertyData(STORAGE_KEY1, List.of(new RevisionFixtures.ObjectUniqueItem(STORAGE_KEY2, "field1", "field2"))), 
+			actual
+		);
+	}
+	
+	@Test(expected = BranchMergeConflictException.class)
+	public void rebaseObjectUniqueArrayAddSameObjectDifferentValues() throws Exception {
+		ObjectUniqueListPropertyData data = new ObjectUniqueListPropertyData(STORAGE_KEY1, List.of());
+		indexRevision(MAIN, data);
+		String branchA = createBranch(MAIN, "a");
+		
+		ObjectUniqueListPropertyData updateOnMain = new ObjectUniqueListPropertyData(STORAGE_KEY1, List.of(new RevisionFixtures.ObjectUniqueItem(STORAGE_KEY2, "field1Main", "field2Main" )));
+		ObjectUniqueListPropertyData updateOnBranch = new ObjectUniqueListPropertyData(STORAGE_KEY1, List.of(new RevisionFixtures.ObjectUniqueItem(STORAGE_KEY2, "field1Branch", "field2Branch")));
+		
+		indexChange(MAIN, data, updateOnMain);
+		indexChange(branchA, data, updateOnBranch);
+		
+		branching().prepareMerge(MAIN, branchA).merge();
+	}
+	
 }

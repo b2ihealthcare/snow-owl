@@ -84,8 +84,10 @@ public final class ArrayDiff {
 					addedItems.add(targetItem);
 				} else if (sourceItem != null && targetItem == null) {
 					removedItems.add(sourceItem);
-				} else {
+				} else if (sourceItem != null && targetItem != null) {
 					changedItems.put(id, new ArrayItemDiff(id, sourceItem, targetItem));
+				} else {
+					// should not happen, but if in a parallel universe it does, then nothing to do
 				}
 			}
 			
