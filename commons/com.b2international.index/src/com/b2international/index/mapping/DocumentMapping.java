@@ -198,6 +198,11 @@ public final class DocumentMapping {
 		return ImmutableList.copyOf(nestedTypes.values());
 	}
 	
+	public boolean isNestedMapping(String field) {
+		final Class<?> nestedType = Reflections.getType(getField(field));
+		return nestedTypes.containsKey(nestedType);
+	}
+	
 	public boolean isNestedMapping(Class<?> fieldType) {
 		return nestedTypes.containsKey(fieldType);
 	}

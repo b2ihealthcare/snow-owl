@@ -478,4 +478,75 @@ public class RevisionFixtures {
 		
 	}
 	
+	@Doc(revisionHash = { "items" })
+	public static final class ObjectUniqueListPropertyData extends Revision {
+
+		private final List<ObjectUniqueItem> items;
+
+		@JsonCreator
+		public ObjectUniqueListPropertyData(@JsonProperty("id") String id, @JsonProperty("items") List<ObjectUniqueItem> items) {
+			super(id);
+			this.items = items;
+		}
+		
+		public List<ObjectUniqueItem> getItems() {
+			return items;
+		}
+		
+	}
+	
+	@Doc
+	public static final class ObjectUniqueItem {
+	
+		@ID
+		private final String id;
+		
+		private final String field1;
+		private final String field2;
+		
+		@JsonCreator
+		public ObjectUniqueItem(
+				@JsonProperty("id") String id,
+				@JsonProperty("field1") String field1, 
+				@JsonProperty("field2") String field2) {
+			this.id = id;
+			this.field1 = field1;
+			this.field2 = field2;
+		}
+		
+		public String getId() {
+			return id;
+		}
+		
+		public String getField1() {
+			return field1;
+		}
+		
+		public String getField2() {
+			return field2;
+		}
+		
+		@Override
+		public int hashCode() {
+			return Objects.hash(getId(), getField1(), getField2());
+		}
+		
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) return true;
+			if (obj == null) return false;
+			if (getClass() != obj.getClass()) return false;
+			ObjectUniqueItem other = (ObjectUniqueItem) obj;
+			return Objects.equals(getId(), other.getId()) 
+					&& Objects.equals(getField1(), other.getField1()) 
+					&& Objects.equals(getField2(), other.getField2());
+		}
+		
+		@Override
+		public String toString() {
+			return String.format("{ \"id\": %s, \"field1\": %s, \"field2\": %s }", getId(), getField1(), getField2());
+		}
+		
+	}
+	
 }

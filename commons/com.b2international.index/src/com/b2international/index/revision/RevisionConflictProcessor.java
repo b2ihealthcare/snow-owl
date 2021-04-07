@@ -24,6 +24,7 @@ import com.b2international.index.IndexException;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.revision.StagingArea.RevisionPropertyDiff;
 import com.b2international.index.util.ArrayDiff;
+import com.b2international.index.util.ArrayDiff.ArrayItemDiff;
 import com.b2international.index.util.JsonDiff;
 import com.b2international.index.util.JsonDiff.JsonChange;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -31,6 +32,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.base.Function;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Streams;
 
@@ -132,21 +134,11 @@ public interface RevisionConflictProcessor {
 				JsonDiff sourceDiff = JsonDiff.diff(oldObject, sourceObject).withoutNullAdditions(mapper);
 				JsonDiff targetDiff = JsonDiff.diff(oldObject, targetObject).withoutNullAdditions(mapper);
 				
-				Map<String, JsonChange> sourceChanges = Maps.uniqueIndex(sourceDiff.getChanges(), JsonChange::getRootFieldPath);
-				Map<String, JsonChange> targetChanges = Maps.uniqueIndex(targetDiff.getChanges(), JsonChange::getRootFieldPath);
-				
-				final Set<String> conflictingFields = Sets.intersection(sourceChanges.keySet(), targetChanges.keySet());
-				
-				for (String conflictingField : conflictingFields) {
-					JsonChange sourceJsonChange = sourceChanges.get(conflictingField);
-					JsonChange targetJsonChange = targetChanges.get(conflictingField);
-					
-					// report conflict if any change differs in any way on any property
-					if (!Objects.equals(sourceJsonChange, targetJsonChange)) {
-						return null;
-					}
+				// report conflict if any change differs in any way on any property
+				if (hasConflictingField(sourceDiff, targetDiff)) {
+					return null;
 				}
-
+				
 				// otherwise apply both changes on old object to merge them
 				sourceDiff.applyInPlace(oldObject);
 				targetDiff.applyInPlace(oldObject);
@@ -156,6 +148,21 @@ public interface RevisionConflictProcessor {
 			} catch (JsonProcessingException e) {
 				throw new IndexException("Couldn't parse json", e);
 			}
+		}
+
+		private boolean hasConflictingField(JsonDiff sourceDiff, JsonDiff targetDiff) {
+			Map<String, JsonChange> sourceChanges = Maps.uniqueIndex(sourceDiff.getChanges(), JsonChange::getRootFieldPath);
+			Map<String, JsonChange> targetChanges = Maps.uniqueIndex(targetDiff.getChanges(), JsonChange::getRootFieldPath);
+			
+			return Sets.intersection(sourceChanges.keySet(), targetChanges.keySet())
+				.stream()
+				.filter(conflictingField -> {
+					JsonChange sourceJsonChange = sourceChanges.get(conflictingField);
+					JsonChange targetJsonChange = targetChanges.get(conflictingField);
+					return !Objects.equals(sourceJsonChange, targetJsonChange);
+				})
+				.findAny()
+				.isPresent();
 		}
 		
 		private boolean isEmpty(JsonNode node) {
@@ -179,28 +186,69 @@ public interface RevisionConflictProcessor {
 				ArrayNode sourceArray = CompareUtils.isEmpty(sourceChange.getNewValue()) ? mapper.createArrayNode() : (ArrayNode) mapper.readTree(sourceChange.getNewValue());
 				ArrayNode targetArray = CompareUtils.isEmpty(targetChange.getNewValue()) ? mapper.createArrayNode() : (ArrayNode) mapper.readTree(targetChange.getNewValue());
 				
-				ArrayDiff sourceDiff = ArrayDiff.diff(oldArray, sourceArray);
-				ArrayDiff targetDiff = ArrayDiff.diff(oldArray, targetArray);
+				Function<JsonNode, String> idFunction = null; 
+				// if nested and has a valid ID field then use that to identify same objects in a list
+				if (mapping.isNestedMapping(sourceChange.getProperty())) {
+					DocumentMapping nestedMapping = mapping.getNestedMapping(sourceChange.getProperty());
+					String idField = nestedMapping.getIdField();
+					if (!DocumentMapping._ID.equals(idField)) {
+						idFunction = item -> item.get(idField).toString();
+					}
+				}
 				
-				// TODO nested item conflict resolution???
+				ArrayDiff sourceDiff = ArrayDiff.diff(oldArray, sourceArray, idFunction);
+				ArrayDiff targetDiff = ArrayDiff.diff(oldArray, targetArray, idFunction);
+				
+				// first apply changed objects and check potential conflicts
+				for (String changedId : Sets.union(sourceDiff.getChangedItemsById().keySet(), targetDiff.getChangedItemsById().keySet())) {
+					ArrayItemDiff sourceItemDiff = sourceDiff.getChangedItemsById().get(changedId);
+					ArrayItemDiff targetItemDiff = targetDiff.getChangedItemsById().get(changedId);
+					
+					if (sourceItemDiff == null && targetItemDiff != null) {
+						// target only change, apply directly on from value, which should be old object from old array
+						targetItemDiff.diff().applyInPlace(targetItemDiff.getFromValue());
+					} else if (sourceItemDiff != null && targetItemDiff == null) {
+						// source only change, apply directly on from value, which should be old object from old array
+						sourceItemDiff.diff().applyInPlace(sourceItemDiff.getFromValue());
+					} else {
+						// changed on both sides
+						if (hasConflictingField(sourceItemDiff.diff(), targetItemDiff.diff())) {
+							return null; // report conflict for this tracked array property
+						}
+						// otherwise apply diff to the old object from the two diffs
+						JsonNode oldObject = sourceItemDiff.getFromValue();
+						
+						// otherwise apply both changes on old object to merge them
+						sourceItemDiff.diff().applyInPlace(oldObject);
+						targetItemDiff.diff().applyInPlace(oldObject);
+						
+						// XXX no need to add the oldObject to any lists since it is already part of the oldArray, updated in-place
+					}
+				}
+
 				// create a big union of all changes, treat collection as set if needed
 				// this eliminates most of the unnecessary conflicts between two collection properties
 				Set<JsonNode> oldArraySet = Sets.newHashSet(oldArray);
+				
+				// then apply added items
 				Streams.concat(sourceDiff.getAddedItems().stream(), targetDiff.getAddedItems().stream())
 					.forEach(newItem -> {
 						if (!isSet || oldArraySet.add(newItem)) {
 							oldArray.add(newItem);
 						}
 					});
-
-				Iterator<JsonNode> oldItems = oldArray.iterator();
-				while (oldItems.hasNext()) {
-					JsonNode oldItem = oldItems.next();
-					if (sourceDiff.getRemovedItems().contains(oldItem) || targetDiff.getRemovedItems().contains(oldItem)) {
-						oldItems.remove();
+				
+				// lastly remove all items indicated by the diffs
+				if (!sourceDiff.getRemovedItems().isEmpty() || !targetDiff.getRemovedItems().isEmpty()) {
+					Iterator<JsonNode> oldItems = oldArray.iterator();
+					while (oldItems.hasNext()) {
+						JsonNode oldItem = oldItems.next();
+						if (sourceDiff.getRemovedItems().contains(oldItem) || targetDiff.getRemovedItems().contains(oldItem)) {
+							oldItems.remove();
+						}
 					}
 				}
-
+				
 				return sourceChange.withNewValue(oldArray.toString());
 			} catch (JsonProcessingException e) {
 				throw new IndexException("Couldn't parse json", e);

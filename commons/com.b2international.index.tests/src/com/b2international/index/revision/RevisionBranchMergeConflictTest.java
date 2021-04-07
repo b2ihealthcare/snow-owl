@@ -38,7 +38,7 @@ public class RevisionBranchMergeConflictTest extends BaseRevisionIndexTest {
 	
 	@Override
 	protected Collection<Class<?>> getTypes() {
-		return ImmutableList.<Class<?>>of(RevisionData.class, NestedRevisionData.class, ObjectPropertyData.class, ObjectListPropertyData.class, ObjectSetPropertyData.class, ContainerRevisionData.class, ComponentRevisionData.class);
+		return ImmutableList.<Class<?>>of(RevisionData.class, NestedRevisionData.class, ObjectPropertyData.class, ObjectListPropertyData.class, ObjectSetPropertyData.class, ContainerRevisionData.class, ComponentRevisionData.class, ObjectUniqueListPropertyData.class);
 	}
 	
 	@Override
@@ -317,7 +317,7 @@ public class RevisionBranchMergeConflictTest extends BaseRevisionIndexTest {
 		
 		branching().prepareMerge(MAIN, branchA).merge(); // should not throw BranchMergeConflictException
 		
-		// how ever as the Collection type List has been used in the ObjectArrayPropertyData the resulting list will have duplicates
+		// how ever as the Collection type List has been used in the ObjectListPropertyData the resulting list will have duplicates
 		ObjectListPropertyData actual = getRevision(branchA, ObjectListPropertyData.class, STORAGE_KEY1);
 		assertDocEquals(
 			new ObjectListPropertyData(STORAGE_KEY1, List.of(
@@ -528,7 +528,6 @@ public class RevisionBranchMergeConflictTest extends BaseRevisionIndexTest {
 		
 		branching().prepareMerge(MAIN, branchA).merge(); // should not throw BranchMergeConflictException
 		
-		// how ever as the Collection type List has been used in the ObjectArrayPropertyData the resulting list will have duplicates
 		ObjectSetPropertyData actual = getRevision(branchA, ObjectSetPropertyData.class, STORAGE_KEY1);
 		assertDocEquals(
 			new ObjectSetPropertyData(STORAGE_KEY1, Set.of(
@@ -632,6 +631,63 @@ public class RevisionBranchMergeConflictTest extends BaseRevisionIndexTest {
 		ObjectPropertyData actual = getRevision(branchA, ObjectPropertyData.class, STORAGE_KEY1);
 		assertDocEquals(
 			new ObjectPropertyData(STORAGE_KEY1, new RevisionFixtures.ObjectItem(null, null)), // TODO should we expect null here, or just a merged fully emptied object
+			actual
+		);
+	}
+	
+	@Test
+	public void rebaseObjectUniqueArrayChangeSameObjectSamePropertySameValue() throws Exception {
+		ObjectUniqueListPropertyData data = new ObjectUniqueListPropertyData(STORAGE_KEY1, List.of(new RevisionFixtures.ObjectUniqueItem(STORAGE_KEY2, "field1", "field2")));
+		indexRevision(MAIN, data);
+		String branchA = createBranch(MAIN, "a");
+		
+		ObjectUniqueListPropertyData updateOnMain = new ObjectUniqueListPropertyData(STORAGE_KEY1, List.of(new RevisionFixtures.ObjectUniqueItem(STORAGE_KEY2, "field1Changed", "field2" )));
+		ObjectUniqueListPropertyData updateOnBranch = new ObjectUniqueListPropertyData(STORAGE_KEY1, List.of(new RevisionFixtures.ObjectUniqueItem(STORAGE_KEY2, "field1Changed", "field2")));
+		
+		indexChange(MAIN, data, updateOnMain);
+		indexChange(branchA, data, updateOnBranch);
+		
+		branching().prepareMerge(MAIN, branchA).merge(); // should not throw BranchMergeConflictException
+		
+		ObjectUniqueListPropertyData actual = getRevision(branchA, ObjectUniqueListPropertyData.class, STORAGE_KEY1);
+		assertDocEquals(
+			new ObjectUniqueListPropertyData(STORAGE_KEY1, List.of(new RevisionFixtures.ObjectUniqueItem(STORAGE_KEY2, "field1Changed", "field2"))), 
+			actual
+		);
+	}
+	
+	@Test(expected = BranchMergeConflictException.class)
+	public void rebaseObjectUniqueArrayChangeSameObjectSamePropertyDifferentValue() throws Exception {
+		ObjectUniqueListPropertyData data = new ObjectUniqueListPropertyData(STORAGE_KEY1, List.of(new RevisionFixtures.ObjectUniqueItem(STORAGE_KEY2, "field1", "field2")));
+		indexRevision(MAIN, data);
+		String branchA = createBranch(MAIN, "a");
+		
+		ObjectUniqueListPropertyData updateOnMain = new ObjectUniqueListPropertyData(STORAGE_KEY1, List.of(new RevisionFixtures.ObjectUniqueItem(STORAGE_KEY2, "field1ChangedOnMain", "field2" )));
+		ObjectUniqueListPropertyData updateOnBranch = new ObjectUniqueListPropertyData(STORAGE_KEY1, List.of(new RevisionFixtures.ObjectUniqueItem(STORAGE_KEY2, "field1ChangedOnBranch", "field2")));
+		
+		indexChange(MAIN, data, updateOnMain);
+		indexChange(branchA, data, updateOnBranch);
+		
+		branching().prepareMerge(MAIN, branchA).merge();
+	}
+	
+	@Test
+	public void rebaseObjectUniqueArrayChangeSameObjectDifferentProperty() throws Exception {
+		ObjectUniqueListPropertyData data = new ObjectUniqueListPropertyData(STORAGE_KEY1, List.of(new RevisionFixtures.ObjectUniqueItem(STORAGE_KEY2, "field1", "field2")));
+		indexRevision(MAIN, data);
+		String branchA = createBranch(MAIN, "a");
+		
+		ObjectUniqueListPropertyData updateOnMain = new ObjectUniqueListPropertyData(STORAGE_KEY1, List.of(new RevisionFixtures.ObjectUniqueItem(STORAGE_KEY2, "field1", "field2Changed" )));
+		ObjectUniqueListPropertyData updateOnBranch = new ObjectUniqueListPropertyData(STORAGE_KEY1, List.of(new RevisionFixtures.ObjectUniqueItem(STORAGE_KEY2, "field1Changed", "field2")));
+		
+		indexChange(MAIN, data, updateOnMain);
+		indexChange(branchA, data, updateOnBranch);
+		
+		branching().prepareMerge(MAIN, branchA).merge(); // should not throw BranchMergeConflictException
+		
+		ObjectUniqueListPropertyData actual = getRevision(branchA, ObjectUniqueListPropertyData.class, STORAGE_KEY1);
+		assertDocEquals(
+			new ObjectUniqueListPropertyData(STORAGE_KEY1, List.of(new RevisionFixtures.ObjectUniqueItem(STORAGE_KEY2, "field1Changed", "field2Changed"))), 
 			actual
 		);
 	}
