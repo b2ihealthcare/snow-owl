@@ -457,12 +457,14 @@ public final class StagingArea {
 				if (change.isRemove()) { // fully clear property
 					// split by object type
 					objectIdsByType.keySet().forEach(type -> {
+						// in case of property removal/clear use empty String as toValue and the original value as fromValue 
 						details.add(CommitDetail.changedProperty(prop, value, "", type, objectIdsByType.get(type)));
 					});
 				} else if (change.isAdd() || change.isReplace()) { // set or replace value
 					final String from = change.serializeFromValue();
 					// split by object type
 					objectIdsByType.keySet().forEach(type -> {
+						// standard property add/replace should use the JSON diffs, from/to values as is
 						details.add(CommitDetail.changedProperty(prop, from, value, type, objectIdsByType.get(type)));
 					});
 				} else {
