@@ -182,16 +182,16 @@ public final class EsIndexAdmin implements IndexAdmin {
 					final ObjectNode newTypeMapping = mapper.valueToTree(typeMapping);
 					final ObjectNode currentTypeMapping = mapper.valueToTree(currentIndexMapping.get(type).getSourceAsMap());
 					SortedSet<String> compatibleChanges = Sets.newTreeSet();
-					SortedSet<String> uncompatibleChanges = Sets.newTreeSet();
+					SortedSet<String> incompatibleChanges = Sets.newTreeSet();
 					JsonDiff.diff(currentTypeMapping, newTypeMapping).forEach(change -> {
 						if (change.isAdd()) {
 							compatibleChanges.add(change.getFieldPath());
 						} else if (change.isMove() || change.isReplace()) {
-							uncompatibleChanges.add(change.getFieldPath());
+							incompatibleChanges.add(change.getFieldPath());
 						}
 					});
-					if (!uncompatibleChanges.isEmpty()) {
-						log.warn("Cannot migrate index '{}' to new mapping with breaking changes on properties '{}'. Run repository reindex to migrate to new mapping schema or drop that index manually using the Elasticsearch API.", index, uncompatibleChanges);
+					if (!incompatibleChanges.isEmpty()) {
+						log.warn("Cannot migrate index '{}' to new mapping with breaking changes on properties '{}'. Run repository reindex to migrate to new mapping schema or drop that index manually using the Elasticsearch API.", index, incompatibleChanges);
 					} else if (!compatibleChanges.isEmpty()) {
 						log.info("Applying mapping changes {} in index {}", compatibleChanges, index);
 						AcknowledgedResponse response = client.indices().updateMapping(new PutMappingRequest(index).type(type).source(typeMapping));
