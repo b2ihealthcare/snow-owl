@@ -246,7 +246,7 @@ final class NormalFormRelationship implements NormalFormProperty {
 
 		final NormalFormRelationship other = (NormalFormRelationship) obj;
 
-		if (isAdditional() != other.isAdditional()) { return false; }
+		// isAdditional() is not part of the equality check
 		if (isUniversal() != other.isUniversal()) { return false; }
 		if (isDestinationNegated() != other.isDestinationNegated()) { return false; }
 		if (getTypeId() != other.getTypeId()) { return false; }
@@ -258,7 +258,7 @@ final class NormalFormRelationship implements NormalFormProperty {
 	@Override
 	public int hashCode() {
 		return Objects.hash(
-			isAdditional(), 
+			// isAdditional() is not part of the hash code 
 			isUniversal(), 
 			isDestinationNegated(), 
 			getTypeId(), 

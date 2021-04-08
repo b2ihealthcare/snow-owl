@@ -99,7 +99,7 @@ final class NormalFormValue implements NormalFormProperty {
 
 		final NormalFormValue other = (NormalFormValue) obj;
 
-		if (isAdditional() != other.isAdditional()) { return false; }
+		// isAdditional() is not part of the equality check
 		if (getRefSetId() != other.getRefSetId()) { return false; }
 		if (getTypeId() != other.getTypeId()) { return false; }
 		if (!getSerializedValue().equals(other.getSerializedValue())) { return false; }
@@ -110,7 +110,7 @@ final class NormalFormValue implements NormalFormProperty {
 	@Override
 	public int hashCode() {
 		return Objects.hash(
-			isAdditional(),
+			// isAdditional() is not part of the hash code
 			getRefSetId(), 
 			getTypeId(),
 			getSerializedValue());
