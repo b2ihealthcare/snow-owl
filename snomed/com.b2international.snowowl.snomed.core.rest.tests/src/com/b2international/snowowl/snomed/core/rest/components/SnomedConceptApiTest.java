@@ -28,10 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -45,6 +42,7 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchPathUtils;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
@@ -980,7 +978,43 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		assertEquals(moduleConceptId, updatedSourceRelationship.getModuleId());
 		assertFalse(updatedDestinationRelationship.isActive());
 		assertEquals(moduleConceptId, updatedDestinationRelationship.getModuleId());
+	}
+	
+	@Test
+	public void reactivateConceptWithExistingOWLAxiom() throws Exception {
+		final String conceptId = ApplicationContext.getServiceForClass(ISnomedIdentifierService.class).generate(null, ComponentCategory.CONCEPT, 1).iterator().next();
+		final String owlSubclassOfExpression = String.format("SubClassOf(:%s :%s)", conceptId, Concepts.ROOT_CONCEPT);
+		final String owlAxiomMemberId = UUID.randomUUID().toString();
 
+		// create an inactive concept with an active OWL axiom
+		Json conceptRequestBody = createConceptRequestBody(Concepts.FULLY_SPECIFIED_NAME)
+			.with(Json.object(
+				"id", conceptId,
+				"active", false,
+				"members", Json.array(Json.object(
+					"id", owlAxiomMemberId,
+					"active", true,
+					"moduleId", Concepts.MODULE_SCT_CORE,
+					"referenceSetId", Concepts.REFSET_OWL_AXIOM,
+					SnomedRf2Headers.FIELD_OWL_EXPRESSION, owlSubclassOfExpression
+				)),
+				"commitComment", "Created concept with owl axiom reference set member"
+			));
+		conceptRequestBody = conceptRequestBody.without("relationships");
+		createConcept(branchPath, conceptRequestBody);
+		
+		// check the concept before reactivating, parentage info should be empty
+		SnomedConcept concept = getConcept(conceptId);
+//		assertThat(concept.getStatedAncestorIdsAsString()).isEmpty();
+//		assertThat(concept.getStatedParentIdsAsString()).contains(IComponent.ROOT_ID);
+		
+		// reactivate concept and check stated parentage info
+		reactivateConcept(branchPath, conceptId);
+		
+		// it should receive the necessary info to be part of the tree again
+		concept = getConcept(conceptId);
+		assertThat(concept.getStatedAncestorIdsAsString()).contains(IComponent.ROOT_ID);
+		assertThat(concept.getStatedParentIdsAsString()).contains(Concepts.ROOT_CONCEPT);
 	}
 	
 }
