@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -240,11 +240,6 @@ public final class Taxonomies {
 	}
 	
 	private static void updateEdge(SnomedRefSetMemberIndexEntry member, TaxonomyGraph graphToUpdate, SnomedOWLExpressionConverter expressionConverter) {
-		if ("c57106ed-dc45-4264-a1bf-080a9781d73e".equals(member.getId())
-				|| "684f8761-f673-ffd1-4484-e137cd0b58a3".equals(member.getId())
-				|| "448964007".equals(member.getReferencedComponentId())) {
-			System.err.println();
-		}
 		if (member.isActive()) {
 			SnomedOWLExpressionConverterResult result = expressionConverter.toSnomedOWLRelationships(member.getReferencedComponentId(), member.getOwlExpression());
 			if (!CompareUtils.isEmpty(result.getClassAxiomRelationships())) {
@@ -323,9 +318,6 @@ public final class Taxonomies {
 					.build();
 			Hits<SnomedRefSetMemberIndexEntry> activeAxiomISARelationships = searcher.search(activeAxiomISARelationshipsQuery);
 			activeAxiomISARelationships.forEach(owlMember -> {
-				if ("c57106ed-dc45-4264-a1bf-080a9781d73e".equals(owlMember.getId()) || "684f8761-f673-ffd1-4484-e137cd0b58a3".equals(owlMember.getId())) {
-					System.err.println();
-				}
 				if (!CompareUtils.isEmpty(owlMember.getClassAxiomRelationships())) {
 					long[] destinationIds = owlMember.getClassAxiomRelationships()
 						.stream()
