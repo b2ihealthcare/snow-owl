@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,6 @@ public abstract class SnomedMemberBuilder<B extends SnomedMemberBuilder<B>> exte
 	private String referencedComponent;
 	
 	protected SnomedMemberBuilder() {
-		withId(UUID.randomUUID().toString());
 	}
 	
 	/**
@@ -93,6 +92,11 @@ public abstract class SnomedMemberBuilder<B extends SnomedMemberBuilder<B>> exte
 		if (refSet.getRefSetType() == SnomedRefSetType.CONCRETE_DATA_TYPE) {
 			component.field(SnomedRefSetMemberIndexEntry.Fields.DATA_TYPE, SnomedRefSetUtil.getDataType(referenceSetId));
 		}
+	}
+	
+	@Override
+	protected String generateId() {
+		return UUID.randomUUID().toString();
 	}
 	
 }

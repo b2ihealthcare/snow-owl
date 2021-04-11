@@ -29,25 +29,24 @@ import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.b2international.commons.ClassUtils;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.Pair;
 import com.b2international.index.BulkUpdate;
 import com.b2international.index.IndexClientFactory;
 import com.b2international.index.IndexException;
-import com.b2international.index.es.admin.EsIndexAdmin;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.Hooks.Hook;
 import com.b2international.index.revision.Hooks.PostCommitHook;
 import com.b2international.index.revision.Hooks.PreCommitHook;
+import com.b2international.index.util.JsonDiff;
+import com.b2international.index.util.JsonDiff.JsonChange;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.flipkart.zjsonpatch.JsonDiff;
 import com.flipkart.zjsonpatch.JsonPatch;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.*;
@@ -397,7 +396,7 @@ public final class StagingArea {
 		});
 		
 		// and changed documents/revisions
-		final Multimap<ObjectNode, ObjectId> revisionsByChange = HashMultimap.create();
+		final Multimap<JsonChange, ObjectId> revisionsByChange = HashMultimap.create();
 		stagedObjects.entrySet().forEach( entry -> {
 			ObjectId key = entry.getKey();
 			StagedObject value = entry.getValue();
@@ -424,10 +423,8 @@ public final class StagingArea {
 					
 					if (revisionDiff.diff() != null) {
 						// register actual difference between revisions to commit
-						revisionDiff.diff().forEach(node -> {
-							if (node instanceof ObjectNode) {
-								revisionsByChange.put((ObjectNode) node, objectId);
-							}
+						revisionDiff.diff().forEach(change -> {
+							revisionsByChange.put(change, objectId);
 						});
 					}
 					
@@ -452,15 +449,27 @@ public final class StagingArea {
 			details = Lists.newArrayList();
 			// collect property changes
 			revisionsByChange.asMap().forEach((change, objects) -> {
-				final String prop = getChangeProperty(change);
-				final String from = getChangeFromValue(change);
-				final String to = getChangeValue(change);
 				ListMultimap<String, String> objectIdsByType = ArrayListMultimap.create();
 				objects.forEach(objectId -> objectIdsByType.put(objectId.type(), objectId.id()));
-				// split by object type
-				objectIdsByType.keySet().forEach(type -> {
-					details.add(CommitDetail.changedProperty(prop, from, to, type, objectIdsByType.get(type)));
-				});
+				
+				final String prop = change.getFieldPath();
+				final String value = change.serializeValue();
+				final String from = change.serializeFromValue();
+				if (change.isRemove()) { // fully clear property
+					// split by object type
+					objectIdsByType.keySet().forEach(type -> {
+						// in case of property removal/clear use empty String as toValue and the original value as fromValue 
+						details.add(CommitDetail.changedProperty(prop, value, from, type, objectIdsByType.get(type)));
+					});
+				} else if (change.isAdd() || change.isReplace()) { // set or replace value
+					// split by object type
+					objectIdsByType.keySet().forEach(type -> {
+						// standard property add/replace should use the JSON diffs, from/to values as is
+						details.add(CommitDetail.changedProperty(prop, from, value, type, objectIdsByType.get(type)));
+					});
+				} else {
+					throw new UnsupportedOperationException("Unknown change: " + change);
+				}
 			});
 			
 			final List<Pair<Multimap<ObjectId, ObjectId>, BiFunction<String, String, CommitDetail.Builder>>> maps = ImmutableList.of(
@@ -938,7 +947,8 @@ public final class StagingArea {
 		Set<String> changedRevisionIdsToCheck = newHashSet(toChangeSet.getChangedIds());
 		Set<String> removedRevisionIdsToCheck = newHashSet(toChangeSet.getRemovedIds());
 		for (Class<? extends Revision> type : fromChangeSet.getChangedTypes()) {
-			final String docType = DocumentMapping.getType(type);
+			final DocumentMapping mapping = index.admin().mappings().getMapping(type);
+			final String docType = mapping.typeAsString();
 			Set<String> changedRevisionIdsToMerge = newHashSet(fromChangeSet.getChangedIds(type));
 			// first handle changed vs. removed
 			Set<String> changedInSourceDetachedInTargetIds = Sets.newHashSet(Sets.intersection(changedRevisionIdsToMerge, removedRevisionIdsToCheck));
@@ -989,10 +999,12 @@ public final class StagingArea {
 								RevisionPropertyDiff targetChangeDiff = new RevisionPropertyDiff(targetPropertyChange.getProperty(), targetPropertyChange.getFromValue(), targetPropertyChange.getValue());
 								// changed on both sides, ask conflict processor to resolve the issue or raise conflict error
 								RevisionPropertyDiff resolution = conflictProcessor.handleChangedInSourceAndTarget(
-										changedInSourceAndTargetId, 
-										sourceChangeDiff,
-										targetChangeDiff
-										);
+									changedInSourceAndTargetId, 
+									mapping,
+									sourceChangeDiff,
+									targetChangeDiff,
+									mapper
+								);
 								if (resolution == null) {
 									conflicts.add(new ChangedInSourceAndTargetConflict(sourcePropertyChange.getObject(), sourceChangeDiff.convert(conflictProcessor), targetChangeDiff.convert(conflictProcessor)));
 								} else {
@@ -1098,8 +1110,8 @@ public final class StagingArea {
 		public final Revision oldRevision;
 		public final Revision newRevision;
 		
-		private ArrayNode rawDiff;
-		private ArrayNode diff;
+		private JsonDiff rawDiff;
+		private JsonDiff diff;
 		private Map<String, RevisionPropertyDiff> propertyChanges;
 		
 		private RevisionDiff(Revision oldRevision, Revision newRevision) {
@@ -1108,35 +1120,35 @@ public final class StagingArea {
 		}
 
 		public boolean hasChanges() {
-			return rawDiff().size() > 0;
+			return rawDiff().hasChanges();
 		}
 		
 		public DocumentMapping getMapping() {
 			return index.admin().mappings().getMapping(newRevision.getClass());
 		}
 
-		private ArrayNode rawDiff() {
+		private JsonDiff rawDiff() {
 			if (rawDiff == null) {
 				final DocumentMapping mapping = getMapping();
 				ObjectNode oldRevisionSource = mapper.valueToTree(oldRevision);
 				ObjectNode newRevisionSource = mapper.valueToTree(newRevision);
-				final JsonNode diff = JsonDiff.asJson(oldRevisionSource, newRevisionSource, EsIndexAdmin.DIFF_FLAGS);
-				final ArrayNode rawDiff = ClassUtils.checkAndCast(diff, ArrayNode.class);
+				final JsonDiff diff = JsonDiff.diff(oldRevisionSource, newRevisionSource);
 				final ArrayNode filteredRawDiff = mapper.createArrayNode();
-				final Iterator<JsonNode> elements = rawDiff.elements();
+				final Iterator<JsonChange> elements = diff.iterator();
 				Set<String> fieldsToSkip = null; 
 				while (elements.hasNext()) {
-					ObjectNode change = ClassUtils.checkAndCast(elements.next(), ObjectNode.class);
-					final String property = getChangeRootProperty(change);
+					JsonChange change = elements.next();
+					ObjectNode rawChange = change.getRawChange();
+					final String property = change.getRootFieldPath();
 					
 					if (Revision.isRevisionField(property) || (fieldsToSkip != null && fieldsToSkip.contains(property))) {
 						continue;
 					}
 					
 					// in case of a collection-like tracked property, convert the first diff to a full prop diff and ignore the rest of the prop changes on the same property
-					if (mapping.getRevisionFields().contains(property) && mapping.isCollection(property)) {
+					if (mapping.getTrackedRevisionFields().contains(property) && mapping.isCollection(property)) {
 						// construct a replacement JSON array patch node
-						change = new RevisionPropertyDiff(property, serializeToCommitDetailValue(oldRevisionSource, property), serializeToCommitDetailValue(newRevisionSource, property))
+						rawChange = new RevisionPropertyDiff(property, JsonDiff.serialize(oldRevisionSource, property), JsonDiff.serialize(newRevisionSource, property))
 								.asPatch(mapper, oldRevisionSource, true /* includeFromValue */);
 						if (fieldsToSkip == null) {
 							fieldsToSkip = Sets.newHashSetWithExpectedSize(1); // expect a single array like property per type
@@ -1144,36 +1156,32 @@ public final class StagingArea {
 						fieldsToSkip.add(property);
 					}
 					
-					filteredRawDiff.add(change);
+					filteredRawDiff.add(rawChange);
 				}
-				this.rawDiff = filteredRawDiff;
+				this.rawDiff = new JsonDiff(filteredRawDiff);
 			}
 			return this.rawDiff;
 		}
 		
-		public ArrayNode diff() {
+		public JsonDiff diff() {
 			if (diff == null) {
 				final DocumentMapping mapping = getMapping();
-				final Set<String> revisionFields = mapping.getRevisionFields();
+				final Set<String> revisionFields = mapping.getTrackedRevisionFields();
 				if (revisionFields.isEmpty()) {
 					return null; // in case of no fields to revision control, do NOT try to compute the diff
 				}
 				
-				final ArrayNode diff = mapper.createArrayNode();
-				final Iterator<JsonNode> elements = rawDiff().elements();
-				while (elements.hasNext()) {
-					JsonNode node = elements.next();
-					final ObjectNode change = ClassUtils.checkAndCast(node, ObjectNode.class);
-					
+				final ArrayNode filteredDiff = mapper.createArrayNode();
+				for (JsonChange change : rawDiff()) {
 					// Remove trailing segments in nested property paths (we are only interested in the top property)
-					String property = getChangeRootProperty(change);
+					String property = change.getRootFieldPath();
 
 					// Keep revision fields only
 					if (revisionFields.contains(property)) {
-						diff.add(change);
-					}
+						filteredDiff.add(change.getRawChange());
+					}					
 				}
-				this.diff = diff;
+				this.diff = new JsonDiff(filteredDiff);
 			}
 			return this.diff;
 		}
@@ -1185,10 +1193,10 @@ public final class StagingArea {
 		private Map<String, RevisionPropertyDiff> getRevisionPropertyDiffs() {
 			if (propertyChanges == null) {
 				propertyChanges = newHashMapWithExpectedSize(2);
-				for (ObjectNode change : Iterables.filter(diff(), ObjectNode.class)) {
-					String prop = getChangeProperty(change);
-					final String from = getChangeFromValue(change);
-					final String to = getChangeValue(change);
+				for (JsonChange change : diff()) {
+					String prop = change.getFieldPath();
+					final String from = change.serializeFromValue();
+					final String to = change.serializeValue();
 					propertyChanges.put(prop, new RevisionPropertyDiff(prop, from, to));
 				}
 			}
@@ -1272,11 +1280,15 @@ public final class StagingArea {
 			}
 		}
 		
+		public RevisionPropertyDiff withNewValue(String newValue) {
+			return new RevisionPropertyDiff(property, oldValue, newValue);
+		}
+		
 		@Override
 		public String toString() {
 			return String.format("%s[%s]", getProperty(), toValueChangeString());
 		}
-		
+
 	}
 	
 	private enum StageKind {
@@ -1345,53 +1357,4 @@ public final class StagingArea {
 		return new StagedObject(StageKind.REMOVED, object, diff, commit);
 	}
 	
-	/**
-	 * Returns the top/root level property that has been changed.
-	 * Ignores array indexes and nested property paths.
-	 * 
-	 * @param change - the change to extract the root level prop name from 
-	 * @return the root property name that has been changed
-	 */
-	private static String getChangeRootProperty(ObjectNode change) {
-		String property = getChangeProperty(change);
-		final int nextSegmentIdx = property.indexOf("/");
-		if (nextSegmentIdx >= 0) {
-			property = property.substring(0, nextSegmentIdx);
-		}
-		return property;
-	}
-
-	/**
-	 * Returns the actual property that has been changed, be it nested or an array index
-	 * 
-	 * @param change - the change to extract the prop name from 
-	 * @return the property name that has been changed
-	 */
-	private static String getChangeProperty(ObjectNode change) {
-		return change.get("path").asText().substring(1);
-	}
-	
-	private static String getChangeFromValue(ObjectNode change) {
-		return serializeToCommitDetailValue(change, "fromValue");
-	}
-	
-	private static String getChangeValue(ObjectNode change) {
-		return serializeToCommitDetailValue(change, "value");
-	}
-	
-	private static String serializeToCommitDetailValue(ObjectNode object, String property) {
-		if (object.has(property)) {
-			JsonNode value = object.get(property);
-			if (value.isNull()) {
-				return null;
-			} else if (value.isArray() || value.isObject()) {
-				return value.toString();
-			} else {
-				return value.asText();
-			}
-		} else  {
-			return "";
-		}
-	}
-
 }

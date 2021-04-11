@@ -16,25 +16,13 @@
 package com.b2international.snowowl.snomed.core.merge;
 
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Query;
-import com.b2international.index.revision.AddedInSourceAndDetachedInTargetConflict;
-import com.b2international.index.revision.AddedInSourceAndTargetConflict;
-import com.b2international.index.revision.AddedInTargetAndDetachedInSourceConflict;
-import com.b2international.index.revision.ChangedInSourceAndDetachedInTargetConflict;
-import com.b2international.index.revision.ChangedInSourceAndTargetConflict;
-import com.b2international.index.revision.Conflict;
-import com.b2international.index.revision.ObjectId;
-import com.b2international.index.revision.Revision;
-import com.b2international.index.revision.StagingArea;
+import com.b2international.index.revision.*;
 import com.b2international.index.revision.StagingArea.RevisionPropertyDiff;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.date.DateFormats;
@@ -46,16 +34,9 @@ import com.b2international.snowowl.core.merge.IMergeConflictRule;
 import com.b2international.snowowl.core.repository.RepositoryCodeSystemProvider;
 import com.b2international.snowowl.core.repository.RevisionDocument;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
+import com.b2international.snowowl.snomed.datastore.index.entry.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.*;
 
 /**
  * @since 7.0
@@ -74,7 +55,7 @@ public final class SnomedComponentRevisionConflictProcessor extends ComponentRev
 	}
 	
 	@Override
-	public RevisionPropertyDiff handleChangedInSourceAndTarget(String revisionId, RevisionPropertyDiff sourceChange, RevisionPropertyDiff targetChange) {
+	public RevisionPropertyDiff handleChangedInSourceAndTarget(String revisionId, DocumentMapping mapping, RevisionPropertyDiff sourceChange, RevisionPropertyDiff targetChange, ObjectMapper mapper) {
 		if (SnomedDocument.Fields.EFFECTIVE_TIME.equals(sourceChange.getProperty()) && !Objects.equals(sourceChange.getNewValue(), targetChange.getNewValue())) {
 			if (EffectiveTimes.isUnset(sourceChange.getNewValue())) {
 				return sourceChange;
@@ -88,7 +69,7 @@ public final class SnomedComponentRevisionConflictProcessor extends ComponentRev
 				}
 			}
 		}
-		return super.handleChangedInSourceAndTarget(revisionId, sourceChange, targetChange);
+		return super.handleChangedInSourceAndTarget(revisionId, mapping, sourceChange, targetChange, mapper);
 	}
 	
 	@Override

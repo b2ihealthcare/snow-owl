@@ -1,6 +1,18 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 7.16.2
+
+### Bugs/Improvements
+- [core] support automatic merging of conflict-free nested objects and arrays (#790, #791)
+- [snomed] register reactivated concepts for taxonomy updates (#792)
+- [snomed] use "broken bone" icon for morphologic abnormalities (cfe08be)
+- [api] disable versioning of upgrade codesystems (#789)
+- [cli] improved formatting of 'snowowl codesystems' command (#761)
+
+### Dependencies
+- Bump Eclipse Platform to 2020-09 (#779)
+
 ## 7.16.1
 
 ### Bugs/Improvements
