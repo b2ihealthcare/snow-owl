@@ -199,6 +199,25 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 	}
 	
 	/**
+	 * Handles ChildOrSelfOf simple expression constraints
+	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.1+Simple+Expression+Constraints
+	 */
+	protected Promise<Expression> eval(BranchContext context, final ChildOrSelfOf childOrSelfOf) {
+		final ExpressionConstraint innerConstraint = childOrSelfOf.getConstraint();
+		// <<!* should eval to * (direct child or self of all concept IDs === all concept IDs)
+		if (isAnyExpression(innerConstraint)) {
+			return evaluate(context, innerConstraint);
+		} else {
+			return evaluate(context, innerConstraint)
+					.thenWith(resolveIds(context, innerConstraint, expressionForm))
+					.then(ids -> Expressions.builder()
+							.should(ids(ids))
+							.should(parentsExpression(ids))
+							.build());
+		}
+	}
+	
+	/**
 	 * Handles ParentOf simple expression constraints
 	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.1+Simple+Expression+Constraints
 	 */
@@ -211,6 +230,24 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 						addParentIds(concept, parents);
 					}
 					return parents;
+				})
+				.then(matchIdsOrNone());
+	}
+	
+	/**
+	 * Handles ParentOrSelfOf simple expression constraints
+	 * @see https://confluence.ihtsdotools.org/display/DOCECL/6.1+Simple+Expression+Constraints
+	 */
+	protected Promise<Expression> eval(BranchContext context, final ParentOrSelfOf parentOrSelfOf) {
+		return EclExpression.of(parentOrSelfOf.getConstraint(), expressionForm)
+				.resolveConcepts(context)
+				.then(concepts -> {
+					final Set<String> results = newHashSet();
+					for (SnomedConcept concept : concepts) {
+						results.add(concept.getId());
+						addParentIds(concept, results);
+					}
+					return results;
 				})
 				.then(matchIdsOrNone());
 	}

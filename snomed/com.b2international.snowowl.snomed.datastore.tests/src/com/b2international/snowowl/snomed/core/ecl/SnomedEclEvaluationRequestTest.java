@@ -23,22 +23,13 @@ import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedCon
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.parents;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.statedAncestors;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.statedParents;
-import static com.b2international.snowowl.test.commons.snomed.DocumentBuilders.booleanMember;
-import static com.b2international.snowowl.test.commons.snomed.DocumentBuilders.classAxioms;
-import static com.b2international.snowowl.test.commons.snomed.DocumentBuilders.concept;
-import static com.b2international.snowowl.test.commons.snomed.DocumentBuilders.decimalMember;
-import static com.b2international.snowowl.test.commons.snomed.DocumentBuilders.integerMember;
-import static com.b2international.snowowl.test.commons.snomed.DocumentBuilders.relationship;
-import static com.b2international.snowowl.test.commons.snomed.DocumentBuilders.stringMember;
+import static com.b2international.snowowl.test.commons.snomed.DocumentBuilders.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.UUID;
+import java.util.*;
 
 import org.eclipse.xtext.parser.IParser;
 import org.eclipse.xtext.serializer.ISerializer;
@@ -59,6 +50,7 @@ import com.b2international.index.query.MatchNone;
 import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.index.revision.StagingArea;
+import com.b2international.snomed.ecl.EclStandaloneSetup;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
@@ -72,7 +64,6 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptio
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snomed.ecl.EclStandaloneSetup;
 import com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator;
 import com.b2international.snowowl.test.commons.snomed.TestBranchContext;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -312,6 +303,25 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	}
 	
 	@Test
+	public void childOrSelfOf() throws Exception {
+		final Expression actual = eval("<<!"+ROOT_ID);
+		Expression expectedParentsClause; 
+		if (isInferred()) {
+			expectedParentsClause = parents(Collections.singleton(ROOT_ID));
+		} else {
+			expectedParentsClause = statedParents(Collections.singleton(ROOT_ID));
+			
+		}
+		assertEquals(
+			Expressions.builder()
+				.should(ids(Collections.singleton(ROOT_ID)))
+				.should(expectedParentsClause)
+			.build(), 
+			actual
+		);
+	}
+	
+	@Test
 	public void parentOf() throws Exception {
 		// SCT Core module has a single parent in this test case
 		indexRevision(MAIN, concept(Concepts.MODULE_SCT_CORE)
@@ -320,6 +330,18 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 				.build());
 		final Expression actual = eval(">!"+Concepts.MODULE_SCT_CORE);
 		final Expression expected = ids(Collections.singleton(Concepts.MODULE_ROOT));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void parentOrSelfOf() throws Exception {
+		// SCT Core module has a single parent in this test case
+		indexRevision(MAIN, concept(Concepts.MODULE_SCT_CORE)
+				.parents(Long.parseLong(Concepts.MODULE_ROOT))
+				.statedParents(Long.parseLong(Concepts.MODULE_ROOT))
+				.build());
+		final Expression actual = eval(">>!"+Concepts.MODULE_SCT_CORE);
+		final Expression expected = ids(Set.of(Concepts.MODULE_SCT_CORE, Concepts.MODULE_ROOT));
 		assertEquals(expected, actual);
 	}
 	
