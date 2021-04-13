@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,10 @@ package com.b2international.index.revision;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import com.b2international.commons.collections.Collections3;
-import com.b2international.index.Analyzers;
-import com.b2international.index.Doc;
-import com.b2international.index.Script;
-import com.b2international.index.Text;
-import com.b2international.index.WithScore;
+import com.b2international.index.*;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects.ToStringHelper;
@@ -389,31 +386,65 @@ public class RevisionFixtures {
 		
 	}
 	
-	@Doc(revisionHash = { "items" })
-	public static final class ObjectArrayPropertyData extends Revision {
+	@Doc(revisionHash = { "nested" })
+	public static final class ObjectPropertyData extends Revision {
 
-		private final List<ObjectArrayPropertyItem> items;
+		private final ObjectItem nested;
 
 		@JsonCreator
-		public ObjectArrayPropertyData(@JsonProperty("id") String id, @JsonProperty("items") List<ObjectArrayPropertyItem> items) {
+		public ObjectPropertyData(@JsonProperty("id") String id, @JsonProperty("nested") ObjectItem nested) {
+			super(id);
+			this.nested = nested;
+		}
+		
+		public ObjectItem getNested() {
+			return nested;
+		}
+		
+	}
+	
+	@Doc(revisionHash = { "items" })
+	public static final class ObjectListPropertyData extends Revision {
+
+		private final List<ObjectItem> items;
+
+		@JsonCreator
+		public ObjectListPropertyData(@JsonProperty("id") String id, @JsonProperty("items") List<ObjectItem> items) {
 			super(id);
 			this.items = items;
 		}
 		
-		public List<ObjectArrayPropertyItem> getItems() {
+		public List<ObjectItem> getItems() {
+			return items;
+		}
+		
+	}
+	
+	@Doc(revisionHash = { "items" })
+	public static final class ObjectSetPropertyData extends Revision {
+
+		private final Set<ObjectItem> items;
+
+		@JsonCreator
+		public ObjectSetPropertyData(@JsonProperty("id") String id, @JsonProperty("items") Set<ObjectItem> items) {
+			super(id);
+			this.items = items;
+		}
+		
+		public Set<ObjectItem> getItems() {
 			return items;
 		}
 		
 	}
 	
 	@Doc
-	public static final class ObjectArrayPropertyItem {
+	public static final class ObjectItem {
 		
 		private final String field1;
 		private final String field2;
 		
 		@JsonCreator
-		public ObjectArrayPropertyItem(@JsonProperty("field1") String field1, @JsonProperty("field2") String field2) {
+		public ObjectItem(@JsonProperty("field1") String field1, @JsonProperty("field2") String field2) {
 			this.field1 = field1;
 			this.field2 = field2;
 		}
@@ -424,6 +455,96 @@ public class RevisionFixtures {
 		
 		public String getField2() {
 			return field2;
+		}
+		
+		@Override
+		public int hashCode() {
+			return Objects.hash(field1, field2);
+		}
+		
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) return true;
+			if (obj == null) return false;
+			if (getClass() != obj.getClass()) return false;
+			ObjectItem other = (ObjectItem) obj;
+			return Objects.equals(field1, other.field1) && Objects.equals(field2, other.field2);
+		}
+		
+		@Override
+		public String toString() {
+			return String.format("{ \"field1\": %s, \"field2\": %s }", field1, field2);
+		}
+		
+	}
+	
+	@Doc(revisionHash = { "items" })
+	public static final class ObjectUniqueListPropertyData extends Revision {
+
+		private final List<ObjectUniqueItem> items;
+
+		@JsonCreator
+		public ObjectUniqueListPropertyData(@JsonProperty("id") String id, @JsonProperty("items") List<ObjectUniqueItem> items) {
+			super(id);
+			this.items = items;
+		}
+		
+		public List<ObjectUniqueItem> getItems() {
+			return items;
+		}
+		
+	}
+	
+	@Doc
+	public static final class ObjectUniqueItem {
+	
+		@ID
+		private final String id;
+		
+		private final String field1;
+		private final String field2;
+		
+		@JsonCreator
+		public ObjectUniqueItem(
+				@JsonProperty("id") String id,
+				@JsonProperty("field1") String field1, 
+				@JsonProperty("field2") String field2) {
+			this.id = id;
+			this.field1 = field1;
+			this.field2 = field2;
+		}
+		
+		public String getId() {
+			return id;
+		}
+		
+		public String getField1() {
+			return field1;
+		}
+		
+		public String getField2() {
+			return field2;
+		}
+		
+		@Override
+		public int hashCode() {
+			return Objects.hash(getId(), getField1(), getField2());
+		}
+		
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) return true;
+			if (obj == null) return false;
+			if (getClass() != obj.getClass()) return false;
+			ObjectUniqueItem other = (ObjectUniqueItem) obj;
+			return Objects.equals(getId(), other.getId()) 
+					&& Objects.equals(getField1(), other.getField1()) 
+					&& Objects.equals(getField2(), other.getField2());
+		}
+		
+		@Override
+		public String toString() {
+			return String.format("{ \"id\": %s, \"field1\": %s, \"field2\": %s }", getId(), getField1(), getField2());
 		}
 		
 	}

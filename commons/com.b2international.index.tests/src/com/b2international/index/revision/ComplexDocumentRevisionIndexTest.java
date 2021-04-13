@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Collection;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.b2international.index.Fixtures.NestedData;
@@ -50,21 +49,6 @@ public class ComplexDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 		final Iterable<DeeplyNestedData> matches = search(MAIN, deeplyNestedQuery);
 		assertThat(matches).hasSize(1);
 		assertThat(matches).containsOnly(data);
-	}
-	
-	@Ignore("We don't support this anymore")
-	@Test
-	public void searchAndReturnDeeplyNestedDocument() throws Exception {
-		final NestedData nestedData = new NestedData("field2");
-		final DeeplyNestedData data = new DeeplyNestedData(STORAGE_KEY1, new ParentData("field1", nestedData));
-		final DeeplyNestedData data2 = new DeeplyNestedData(STORAGE_KEY2, new ParentData("field12", new NestedData("field22")));
-		
-		indexRevision(MAIN, data, data2);
-		
-		final Query<NestedData> query = Query.select(NestedData.class).from(DeeplyNestedData.class).where(Expressions.exactMatch("field2", "field2")).build();
-		final Iterable<NestedData> matches = search(MAIN, query);
-		assertThat(matches).hasSize(1);
-		assertThat(matches).containsOnly(nestedData);
 	}
 	
 }

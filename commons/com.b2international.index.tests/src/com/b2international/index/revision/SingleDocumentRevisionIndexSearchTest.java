@@ -98,6 +98,19 @@ public class SingleDocumentRevisionIndexSearchTest extends BaseRevisionIndexTest
 		assertThat(matches).containsOnly(second);
 	}
 	
+	@Test
+	public void searchMatchBooleanPrefixQuery() {
+		final RevisionData first = new RevisionData(STORAGE_KEY1, "Long field value", "field2");
+		final RevisionData second = new RevisionData(STORAGE_KEY2, "Verbose field value", "field2");
+		
+		indexRevision(MAIN, first, second);
+		
+		final Query<RevisionData> query = Query.select(RevisionData.class).where(Expressions.matchBooleanPrefix("field1", "Verbose f")).build();
+		final Iterable<RevisionData> matches = search(MAIN, query);
+		
+		assertThat(matches).hasSize(1);
+		assertThat(matches).containsOnly(second);
+	}	
 	
 	@Test
 	public void searchWithCustomScore() throws Exception {

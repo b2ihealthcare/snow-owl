@@ -19,6 +19,7 @@ import java.time.LocalDate;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
@@ -90,6 +91,10 @@ public abstract class SnomedComponentBuilder<B extends SnomedComponentBuilder<B,
 	@Override
 	@OverridingMethodsMustInvokeSuper
 	public void init(CB component, TransactionContext context) {
+		if (id == null) {
+			id = generateId();
+		}
+		
 		component
 			.id(id)
 			.active(active)
@@ -107,6 +112,14 @@ public abstract class SnomedComponentBuilder<B extends SnomedComponentBuilder<B,
 			component.effectiveTime(EffectiveTimes.getEffectiveTime(effectiveTime));
 			component.released(true);
 		}
+	}
+
+	/**
+	 * Subclasses may override this method to provide a default random ID for the new SNOMED CT component if needed (usually refset member UUIDs can be generated automatically).
+	 * @return
+	 */
+	protected String generateId() {
+		throw new BadRequestException("'id' may not be null");
 	}
 
 }

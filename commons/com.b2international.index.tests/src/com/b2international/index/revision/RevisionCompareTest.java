@@ -25,7 +25,7 @@ import org.junit.Test;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.revision.RevisionFixtures.ComponentRevisionData;
 import com.b2international.index.revision.RevisionFixtures.ContainerRevisionData;
-import com.b2international.index.revision.RevisionFixtures.ObjectArrayPropertyData;
+import com.b2international.index.revision.RevisionFixtures.ObjectListPropertyData;
 import com.b2international.index.revision.RevisionFixtures.RevisionData;
 import com.google.common.collect.ImmutableSet;
 
@@ -39,7 +39,7 @@ public class RevisionCompareTest extends BaseRevisionIndexTest {
 	
 	@Override
 	protected Collection<Class<?>> getTypes() {
-		return ImmutableSet.<Class<?>>of(RevisionData.class, ContainerRevisionData.class, ComponentRevisionData.class, ObjectArrayPropertyData.class);
+		return ImmutableSet.<Class<?>>of(RevisionData.class, ContainerRevisionData.class, ComponentRevisionData.class, ObjectListPropertyData.class);
 	}
 	
 	@Test
@@ -259,14 +259,14 @@ public class RevisionCompareTest extends BaseRevisionIndexTest {
 	
 	@Test
 	public void compareBranchWithObjectArrayPropertyChange() throws Exception {
-		ObjectArrayPropertyData data = new ObjectArrayPropertyData(STORAGE_KEY1, List.of());
+		ObjectListPropertyData data = new ObjectListPropertyData(STORAGE_KEY1, List.of());
 		indexRevision(MAIN, data);
 		
 		String branch = createBranch(MAIN, "a");
 		
-		ObjectArrayPropertyData updatedData = new ObjectArrayPropertyData(STORAGE_KEY1, List.of(
-			new RevisionFixtures.ObjectArrayPropertyItem("field1", "field2"),
-			new RevisionFixtures.ObjectArrayPropertyItem("field3", "field4")
+		ObjectListPropertyData updatedData = new ObjectListPropertyData(STORAGE_KEY1, List.of(
+			new RevisionFixtures.ObjectItem("field1", "field2"),
+			new RevisionFixtures.ObjectItem("field3", "field4")
 		));
 		indexChange(branch, data, updatedData);
 		

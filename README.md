@@ -3,7 +3,7 @@
 Snow Owl<sup>&reg;</sup> is a highly scalable, open source terminology server with revision-control capabilities and collaborative authoring platform features. It allows you to store, search and author high volumes of terminology artifacts quickly and efficiently.
 
 [![build status](https://img.shields.io/github/workflow/status/b2ihealthcare/snow-owl/Java%20CI/7.x?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/actions)
-[![latest release](https://img.shields.io/github/tag/b2ihealthcare/snow-owl.svg?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/releases/tag/v7.6.0)
+[![latest release](https://img.shields.io/github/tag/b2ihealthcare/snow-owl.svg?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/releases/tag/v7.16.2)
 [![downloads](https://img.shields.io/github/downloads/b2ihealthcare/snow-owl/total.svg?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/releases/)
 [![Docker](https://img.shields.io/docker/pulls/b2ihealthcare/snow-owl-oss?style=flat-square)](https://hub.docker.com/r/b2ihealthcare/snow-owl-oss)
 [![GitHub](https://img.shields.io/github/license/b2ihealthcare/snow-owl.svg?style=flat-square)](https://github.com/b2ihealthcare/snow-owl/blob/7.x/LICENSE)
@@ -85,17 +85,20 @@ These instructions will get Snow Owl up and running on your local machine for de
 ## Prerequisites
 
 Snow Owl is an Equinox-OSGi based server. To develop plug-ins for Snow Owl you need to use Eclipse as IDE: 
-* Use latest Eclipse IDE for Eclipse Committers package: http://www.eclipse.org/downloads/eclipse-packages/
+* Download Eclipse IDE for Eclipse Committers 2020-09 package from here: https://www.eclipse.org/downloads/packages/release/2020-09/r/eclipse-ide-eclipse-committers
 
 Required Eclipse plug-ins (install the listed features via `Help` -> `Install New Software...`):
 
 *Note: you may have to untick the `Show only the latest versions of the available software` checkbox to get older versions of a feature. Please use the exact version specified below, not the latest point release.*
 
-* Xtext/Xtend (http://download.eclipse.org/modeling/tmf/xtext/updates/composite/releases/)
-  * MWE 2 language SDK 2.11.2 (MWE)
-  * Xtend IDE 2.21.0 (Xtext)
-  * Xtext Complete SDK 2.21.0 (Xtext)
-* Maven integration (http://download.eclipse.org/technology/m2e/releases) 
+* Xtext/Xtend (https://download.eclipse.org/modeling/tmf/xtext/updates/releases/2.23.0/)
+  * Xtend IDE 2.23.0 (Xtext)
+  * Xtext Complete SDK 2.23.0 (Xtext)
+* MWE2 (https://download.eclipse.org/modeling/emft/mwe/updates/releases/2.11.3/)
+  * MWE SDK	1.5.3 (MWE)
+  * MWE 2 language SDK 2.11.3 (MWE)
+* Groovy Development Tools (https://dist.springsource.org/release/GRECLIPSE/3.9.0/e4.17)
+  * Eclipse Groovy Development Tools 3.9.0 (Main Package)
  
 ### Eclipse Preferences
 

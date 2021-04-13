@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,10 +28,12 @@ import org.junit.runner.Description;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.commons.options.MetadataImpl;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.attachments.Attachment;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.b2international.snowowl.core.branch.Branching;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
+import com.b2international.snowowl.core.util.PlatformUtil;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.google.common.collect.ImmutableMap;
 
@@ -115,6 +117,10 @@ public abstract class AbstractCoreApiTest {
 			.build(getRepositoryId())
 			.execute(getBus())
 			.getSync(1, TimeUnit.MINUTES);
+	}
+	
+	protected final Attachment upload(String attachmentFileName) {
+		return Attachment.upload(Services.context(), PlatformUtil.toAbsolutePath(getClass(), attachmentFileName));
 	}
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package com.b2international.snowowl.core.merge;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -45,9 +46,10 @@ public class ComponentRevisionConflictProcessor extends RevisionConflictProcesso
 	
 	@Override
 	public List<Conflict> checkConflicts(StagingArea staging, RevisionBranchChangeSet fromChanges, RevisionBranchChangeSet toChanges) {
-		LOG.info("Post-processing merge/rebase operation...");
+		if (rules.isEmpty()) return Collections.emptyList();
 		Stopwatch w = Stopwatch.createStarted();
 		try {
+			LOG.info("Post-processing merge/rebase operation...");
 			return rules.stream().flatMap(rule -> rule.validate(staging, fromChanges, toChanges).stream()).collect(Collectors.toList());
 		} finally {
 			LOG.info("Post-processing took {}", TimeUtil.toString(w));

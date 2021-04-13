@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import java.util.Collection;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.exceptions.ApiException;
+import com.b2international.index.revision.Commit;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
@@ -69,13 +70,21 @@ public final class TransactionalRequest implements Request<BranchContext, Commit
 	public CommitResult execute(BranchContext context) {
 //		final Metrics metrics = context.service(Metrics.class);
 //		metrics.setExternalValue("preRequest", preRequestPreparationTime);
+		TransactionContext tx = null;
 		try (final TransactionContext transaction = context.openTransaction(context, author, commitComment, parentLockContext)) {
+			tx = transaction;
 			transaction.setNotificationEnabled(notify);
 			final Object body = executeNext(transaction);
 			return commit(transaction, body);
 		} catch (ApiException e) {
+			if (tx != null) {
+				tx.rollback();
+			}
 			throw e;
 		} catch (Exception e) {
+			if (tx != null) {
+				tx.rollback();
+			}
 			throw SnowowlRuntimeException.wrap(e);
 		}
 	}
@@ -85,7 +94,7 @@ public final class TransactionalRequest implements Request<BranchContext, Commit
 		 * FIXME: at this point, the component identifier might have changed even though the input 
 		 * required an exact ID to be assigned. What to do?
 		 */
-		final Long commitTimestamp = context.commit(context.author(), commitComment, parentLockContext);
+		final long commitTimestamp = context.commit(context.author(), commitComment, parentLockContext).map(Commit::getTimestamp).orElse(Commit.NO_COMMIT_TIMESTAMP);
 		return new CommitResult(commitTimestamp, body);
 	}
 	
