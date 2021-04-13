@@ -53,10 +53,6 @@
 		<testHeapSize>1g</testHeapSize>
 		<testArgLine>${tycho.testArgLine} -Xms${testHeapSize} -Xmx${testHeapSize} -XX:+AlwaysLockClassLoader -Dosgi.classloader.type=nonparallel -Djetty.home.bundle=org.eclipse.jetty.osgi.boot -Djetty.port=9090 -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75 -XX:+UseCMSInitiatingOccupancyOnly -XX:+AlwaysPreTouch -Dlogback.configurationFile=${basedir}/src/configuration/logback-maven.xml</testArgLine>
 
-		<!-- Deployment -->
-		<maven.repository.id>nexus_deployment</maven.repository.id>
-		<nexus.releases.url>${nexus.url}/content/repositories/releases</nexus.releases.url>
-		<nexus.snapshots.url>${nexus.url}/content/repositories/snapshots</nexus.snapshots.url>
 	</properties>
 
 	<modules>
@@ -890,12 +886,12 @@
 
 	<distributionManagement>
 		<repository>
-			<id>${maven.repository.id}</id>
-			<url>${nexus.releases.url}</url>
+			<id>nexus_deployment</id>
+			<url>https://nexus.b2i.sg/repository/maven-releases</url>
 		</repository>
 		<snapshotRepository>
-			<id>${maven.repository.id}</id>
-			<url>${nexus.snapshots.url}</url>
+			<id>nexus_deployment</id>
+			<url>https://nexus.b2i.sg/repository/maven-snapshots</url>
 		</snapshotRepository>
 	</distributionManagement>
 
