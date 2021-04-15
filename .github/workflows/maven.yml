@@ -36,7 +36,6 @@ jobs:
     - name: Build with Maven
       run: mvn -ntp clean verify
     - name: Upload Codecov
-      uses: codecov/codecov-action@v1.0.13
+      uses: codecov/codecov-action@v1.3.2
       with:
-        yml: ./codecov.yml
         fail_ci_if_error: true
