@@ -43,8 +43,6 @@ jobs:
         NEXUS_DEPLOYMENT_USER: ${{ secrets.NEXUS_DEPLOYMENT_USER }}
         NEXUS_DEPLOYMENT_PASS: ${{ secrets.NEXUS_DEPLOYMENT_PASS }}
     - name: Upload Codecov
-      uses: codecov/codecov-action@v1.0.13
+      uses: codecov/codecov-action@v1.3.2
       with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        yml: ./codecov.yml
         fail_ci_if_error: true
