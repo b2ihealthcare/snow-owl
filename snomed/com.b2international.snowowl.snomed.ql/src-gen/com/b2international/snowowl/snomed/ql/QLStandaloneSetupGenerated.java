@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.ql;
 
-import com.b2international.snowowl.snomed.ecl.EclStandaloneSetup;
+import com.b2international.snomed.ecl.EclStandaloneSetup;
 import com.b2international.snowowl.snomed.ql.ql.QlPackage;
 import com.google.inject.Guice;
 import com.google.inject.Injector;

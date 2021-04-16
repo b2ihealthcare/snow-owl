@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.etl.converter;
 
-import com.b2international.snowowl.snomed.ecl.converter.EclValueConverterService;
+import com.b2international.snomed.ecl.converter.EclValueConverterService;
 
 public final class EtlValueConverterService extends EclValueConverterService {
 

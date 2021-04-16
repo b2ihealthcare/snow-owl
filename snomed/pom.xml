@@ -31,8 +31,6 @@
 		<!-- SNOMED CT DSLs -->
 		<module>com.b2international.snowowl.snomed.scg</module>
 		<module>com.b2international.snowowl.snomed.scg.tests</module>
-		<module>com.b2international.snowowl.snomed.ecl</module>
-		<module>com.b2international.snowowl.snomed.ecl.tests</module>
 		<module>com.b2international.snowowl.snomed.ql</module>
 		<module>com.b2international.snowowl.snomed.ql.tests</module>
 		<module>com.b2international.snowowl.snomed.etl</module>

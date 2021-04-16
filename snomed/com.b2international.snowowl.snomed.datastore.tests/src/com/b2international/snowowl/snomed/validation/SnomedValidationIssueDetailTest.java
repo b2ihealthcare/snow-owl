@@ -66,7 +66,7 @@ import com.b2international.snowowl.snomed.core.ecl.EclSerializer;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
-import com.b2international.snowowl.snomed.ecl.EclStandaloneSetup;
+import com.b2international.snomed.ecl.EclStandaloneSetup;
 import com.b2international.snowowl.snomed.validation.detail.SnomedValidationIssueDetailExtension;
 import com.b2international.snowowl.snomed.validation.detail.SnomedValidationIssueDetailExtension.SnomedIssueDetailFilterFields;
 import com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator;

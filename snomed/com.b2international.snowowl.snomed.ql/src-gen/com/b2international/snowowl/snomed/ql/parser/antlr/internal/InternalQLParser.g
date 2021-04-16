@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -432,7 +432,7 @@ ruleDomainQuery returns [EObject current=null]
 						$current,
 						"ecl",
 						lv_ecl_1_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.ExpressionConstraint");
+						"com.b2international.snomed.ecl.Ecl.ExpressionConstraint");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -992,7 +992,7 @@ ruleActiveFilter returns [EObject current=null]
 						$current,
 						"active",
 						lv_active_4_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.Boolean");
+						"com.b2international.snomed.ecl.Ecl.Boolean");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -1063,7 +1063,7 @@ ruleModuleFilter returns [EObject current=null]
 						$current,
 						"moduleId",
 						lv_moduleId_4_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.ExpressionConstraint");
+						"com.b2international.snomed.ecl.Ecl.ExpressionConstraint");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -1134,7 +1134,7 @@ ruleTermFilter returns [EObject current=null]
 						$current,
 						"term",
 						lv_term_4_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.STRING");
+						"com.b2international.snomed.ecl.Ecl.STRING");
 				}
 			)
 		)
@@ -1179,7 +1179,7 @@ rulePreferredInFilter returns [EObject current=null]
 						$current,
 						"languageRefSetId",
 						lv_languageRefSetId_2_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.ExpressionConstraint");
+						"com.b2international.snomed.ecl.Ecl.ExpressionConstraint");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -1225,7 +1225,7 @@ ruleAcceptableInFilter returns [EObject current=null]
 						$current,
 						"languageRefSetId",
 						lv_languageRefSetId_2_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.ExpressionConstraint");
+						"com.b2international.snomed.ecl.Ecl.ExpressionConstraint");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -1271,7 +1271,7 @@ ruleLanguageRefSetFilter returns [EObject current=null]
 						$current,
 						"languageRefSetId",
 						lv_languageRefSetId_2_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.ExpressionConstraint");
+						"com.b2international.snomed.ecl.Ecl.ExpressionConstraint");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -1317,7 +1317,7 @@ ruleTypeFilter returns [EObject current=null]
 						$current,
 						"type",
 						lv_type_2_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.ExpressionConstraint");
+						"com.b2international.snomed.ecl.Ecl.ExpressionConstraint");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -1363,7 +1363,7 @@ ruleCaseSignificanceFilter returns [EObject current=null]
 						$current,
 						"caseSignificanceId",
 						lv_caseSignificanceId_2_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.ExpressionConstraint");
+						"com.b2international.snomed.ecl.Ecl.ExpressionConstraint");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -1409,7 +1409,7 @@ ruleLanguageCodeFilter returns [EObject current=null]
 						$current,
 						"languageCode",
 						lv_languageCode_2_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.STRING");
+						"com.b2international.snomed.ecl.Ecl.STRING");
 				}
 			)
 		)
@@ -1500,7 +1500,7 @@ ruleOrExpressionConstraint returns [EObject current=null]
 							$current,
 							"right",
 							lv_right_3_0,
-							"com.b2international.snowowl.snomed.ecl.Ecl.AndExpressionConstraint");
+							"com.b2international.snomed.ecl.Ecl.AndExpressionConstraint");
 						afterParserOrEnumRuleCall();
 					}
 				)
@@ -1572,7 +1572,7 @@ ruleAndExpressionConstraint returns [EObject current=null]
 							$current,
 							"right",
 							lv_right_4_0,
-							"com.b2international.snowowl.snomed.ecl.Ecl.ExclusionExpressionConstraint");
+							"com.b2international.snomed.ecl.Ecl.ExclusionExpressionConstraint");
 						afterParserOrEnumRuleCall();
 					}
 				)
@@ -1637,7 +1637,7 @@ ruleExclusionExpressionConstraint returns [EObject current=null]
 							$current,
 							"right",
 							lv_right_3_0,
-							"com.b2international.snowowl.snomed.ecl.Ecl.RefinedExpressionConstraint");
+							"com.b2international.snomed.ecl.Ecl.RefinedExpressionConstraint");
 						afterParserOrEnumRuleCall();
 					}
 				)
@@ -1702,7 +1702,7 @@ ruleRefinedExpressionConstraint returns [EObject current=null]
 							$current,
 							"refinement",
 							lv_refinement_3_0,
-							"com.b2international.snowowl.snomed.ecl.Ecl.EclRefinement");
+							"com.b2international.snomed.ecl.Ecl.EclRefinement");
 						afterParserOrEnumRuleCall();
 					}
 				)
@@ -1767,7 +1767,7 @@ ruleDottedExpressionConstraint returns [EObject current=null]
 							$current,
 							"attribute",
 							lv_attribute_3_0,
-							"com.b2international.snowowl.snomed.ecl.Ecl.SubExpressionConstraint");
+							"com.b2international.snomed.ecl.Ecl.SubExpressionConstraint");
 						afterParserOrEnumRuleCall();
 					}
 				)
@@ -1808,11 +1808,11 @@ ruleSubExpressionConstraint returns [EObject current=null]
 			/* */
 		}
 		{
-			newCompositeNode(grammarAccess.getSubExpressionConstraintAccess().getDescendantOfParserRuleCall_1());
+			newCompositeNode(grammarAccess.getSubExpressionConstraintAccess().getChildOrSelfOfParserRuleCall_1());
 		}
-		this_DescendantOf_1=ruleDescendantOf
+		this_ChildOrSelfOf_1=ruleChildOrSelfOf
 		{
-			$current = $this_DescendantOf_1.current;
+			$current = $this_ChildOrSelfOf_1.current;
 			afterParserOrEnumRuleCall();
 		}
 		    |
@@ -1820,11 +1820,11 @@ ruleSubExpressionConstraint returns [EObject current=null]
 			/* */
 		}
 		{
-			newCompositeNode(grammarAccess.getSubExpressionConstraintAccess().getDescendantOrSelfOfParserRuleCall_2());
+			newCompositeNode(grammarAccess.getSubExpressionConstraintAccess().getDescendantOfParserRuleCall_2());
 		}
-		this_DescendantOrSelfOf_2=ruleDescendantOrSelfOf
+		this_DescendantOf_2=ruleDescendantOf
 		{
-			$current = $this_DescendantOrSelfOf_2.current;
+			$current = $this_DescendantOf_2.current;
 			afterParserOrEnumRuleCall();
 		}
 		    |
@@ -1832,11 +1832,11 @@ ruleSubExpressionConstraint returns [EObject current=null]
 			/* */
 		}
 		{
-			newCompositeNode(grammarAccess.getSubExpressionConstraintAccess().getParentOfParserRuleCall_3());
+			newCompositeNode(grammarAccess.getSubExpressionConstraintAccess().getDescendantOrSelfOfParserRuleCall_3());
 		}
-		this_ParentOf_3=ruleParentOf
+		this_DescendantOrSelfOf_3=ruleDescendantOrSelfOf
 		{
-			$current = $this_ParentOf_3.current;
+			$current = $this_DescendantOrSelfOf_3.current;
 			afterParserOrEnumRuleCall();
 		}
 		    |
@@ -1844,11 +1844,11 @@ ruleSubExpressionConstraint returns [EObject current=null]
 			/* */
 		}
 		{
-			newCompositeNode(grammarAccess.getSubExpressionConstraintAccess().getAncestorOfParserRuleCall_4());
+			newCompositeNode(grammarAccess.getSubExpressionConstraintAccess().getParentOfParserRuleCall_4());
 		}
-		this_AncestorOf_4=ruleAncestorOf
+		this_ParentOf_4=ruleParentOf
 		{
-			$current = $this_AncestorOf_4.current;
+			$current = $this_ParentOf_4.current;
 			afterParserOrEnumRuleCall();
 		}
 		    |
@@ -1856,11 +1856,11 @@ ruleSubExpressionConstraint returns [EObject current=null]
 			/* */
 		}
 		{
-			newCompositeNode(grammarAccess.getSubExpressionConstraintAccess().getAncestorOrSelfOfParserRuleCall_5());
+			newCompositeNode(grammarAccess.getSubExpressionConstraintAccess().getParentOrSelfOfParserRuleCall_5());
 		}
-		this_AncestorOrSelfOf_5=ruleAncestorOrSelfOf
+		this_ParentOrSelfOf_5=ruleParentOrSelfOf
 		{
-			$current = $this_AncestorOrSelfOf_5.current;
+			$current = $this_ParentOrSelfOf_5.current;
 			afterParserOrEnumRuleCall();
 		}
 		    |
@@ -1868,11 +1868,35 @@ ruleSubExpressionConstraint returns [EObject current=null]
 			/* */
 		}
 		{
-			newCompositeNode(grammarAccess.getSubExpressionConstraintAccess().getEclFocusConceptParserRuleCall_6());
+			newCompositeNode(grammarAccess.getSubExpressionConstraintAccess().getAncestorOfParserRuleCall_6());
 		}
-		this_EclFocusConcept_6=ruleEclFocusConcept
+		this_AncestorOf_6=ruleAncestorOf
 		{
-			$current = $this_EclFocusConcept_6.current;
+			$current = $this_AncestorOf_6.current;
+			afterParserOrEnumRuleCall();
+		}
+		    |
+		{
+			/* */
+		}
+		{
+			newCompositeNode(grammarAccess.getSubExpressionConstraintAccess().getAncestorOrSelfOfParserRuleCall_7());
+		}
+		this_AncestorOrSelfOf_7=ruleAncestorOrSelfOf
+		{
+			$current = $this_AncestorOrSelfOf_7.current;
+			afterParserOrEnumRuleCall();
+		}
+		    |
+		{
+			/* */
+		}
+		{
+			newCompositeNode(grammarAccess.getSubExpressionConstraintAccess().getEclFocusConceptParserRuleCall_8());
+		}
+		this_EclFocusConcept_8=ruleEclFocusConcept
+		{
+			$current = $this_EclFocusConcept_8.current;
 			afterParserOrEnumRuleCall();
 		}
 	)
@@ -1978,7 +2002,49 @@ ruleChildOf returns [EObject current=null]
 						$current,
 						"constraint",
 						lv_constraint_1_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.EclFocusConcept");
+						"com.b2international.snomed.ecl.Ecl.EclFocusConcept");
+					afterParserOrEnumRuleCall();
+				}
+			)
+		)
+	)
+;
+
+// Entry rule entryRuleChildOrSelfOf
+entryRuleChildOrSelfOf returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getChildOrSelfOfRule()); }
+	iv_ruleChildOrSelfOf=ruleChildOrSelfOf
+	{ $current=$iv_ruleChildOrSelfOf.current; }
+	EOF;
+
+// Rule ChildOrSelfOf
+ruleChildOrSelfOf returns [EObject current=null]
+@init {
+	enterRule();
+}
+@after {
+	leaveRule();
+}:
+	(
+		this_DBL_LT_EM_0=RULE_DBL_LT_EM
+		{
+			newLeafNode(this_DBL_LT_EM_0, grammarAccess.getChildOrSelfOfAccess().getDBL_LT_EMTerminalRuleCall_0());
+		}
+		(
+			(
+				{
+					newCompositeNode(grammarAccess.getChildOrSelfOfAccess().getConstraintEclFocusConceptParserRuleCall_1_0());
+				}
+				lv_constraint_1_0=ruleEclFocusConcept
+				{
+					if ($current==null) {
+						$current = createModelElementForParent(grammarAccess.getChildOrSelfOfRule());
+					}
+					set(
+						$current,
+						"constraint",
+						lv_constraint_1_0,
+						"com.b2international.snomed.ecl.Ecl.EclFocusConcept");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -2020,7 +2086,7 @@ ruleDescendantOf returns [EObject current=null]
 						$current,
 						"constraint",
 						lv_constraint_1_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.EclFocusConcept");
+						"com.b2international.snomed.ecl.Ecl.EclFocusConcept");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -2062,7 +2128,7 @@ ruleDescendantOrSelfOf returns [EObject current=null]
 						$current,
 						"constraint",
 						lv_constraint_1_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.EclFocusConcept");
+						"com.b2international.snomed.ecl.Ecl.EclFocusConcept");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -2104,7 +2170,49 @@ ruleParentOf returns [EObject current=null]
 						$current,
 						"constraint",
 						lv_constraint_1_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.EclFocusConcept");
+						"com.b2international.snomed.ecl.Ecl.EclFocusConcept");
+					afterParserOrEnumRuleCall();
+				}
+			)
+		)
+	)
+;
+
+// Entry rule entryRuleParentOrSelfOf
+entryRuleParentOrSelfOf returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getParentOrSelfOfRule()); }
+	iv_ruleParentOrSelfOf=ruleParentOrSelfOf
+	{ $current=$iv_ruleParentOrSelfOf.current; }
+	EOF;
+
+// Rule ParentOrSelfOf
+ruleParentOrSelfOf returns [EObject current=null]
+@init {
+	enterRule();
+}
+@after {
+	leaveRule();
+}:
+	(
+		this_DBL_GT_EM_0=RULE_DBL_GT_EM
+		{
+			newLeafNode(this_DBL_GT_EM_0, grammarAccess.getParentOrSelfOfAccess().getDBL_GT_EMTerminalRuleCall_0());
+		}
+		(
+			(
+				{
+					newCompositeNode(grammarAccess.getParentOrSelfOfAccess().getConstraintEclFocusConceptParserRuleCall_1_0());
+				}
+				lv_constraint_1_0=ruleEclFocusConcept
+				{
+					if ($current==null) {
+						$current = createModelElementForParent(grammarAccess.getParentOrSelfOfRule());
+					}
+					set(
+						$current,
+						"constraint",
+						lv_constraint_1_0,
+						"com.b2international.snomed.ecl.Ecl.EclFocusConcept");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -2146,7 +2254,7 @@ ruleAncestorOf returns [EObject current=null]
 						$current,
 						"constraint",
 						lv_constraint_1_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.EclFocusConcept");
+						"com.b2international.snomed.ecl.Ecl.EclFocusConcept");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -2188,7 +2296,7 @@ ruleAncestorOrSelfOf returns [EObject current=null]
 						$current,
 						"constraint",
 						lv_constraint_1_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.EclFocusConcept");
+						"com.b2international.snomed.ecl.Ecl.EclFocusConcept");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -2231,7 +2339,7 @@ ruleMemberOf returns [EObject current=null]
 							$current,
 							"constraint",
 							lv_constraint_1_1,
-							"com.b2international.snowowl.snomed.ecl.Ecl.EclConceptReference");
+							"com.b2international.snomed.ecl.Ecl.EclConceptReference");
 						afterParserOrEnumRuleCall();
 					}
 					    |
@@ -2247,7 +2355,7 @@ ruleMemberOf returns [EObject current=null]
 							$current,
 							"constraint",
 							lv_constraint_1_2,
-							"com.b2international.snowowl.snomed.ecl.Ecl.Any");
+							"com.b2international.snomed.ecl.Ecl.Any");
 						afterParserOrEnumRuleCall();
 					}
 					    |
@@ -2263,7 +2371,7 @@ ruleMemberOf returns [EObject current=null]
 							$current,
 							"constraint",
 							lv_constraint_1_3,
-							"com.b2international.snowowl.snomed.ecl.Ecl.NestedExpression");
+							"com.b2international.snomed.ecl.Ecl.NestedExpression");
 						afterParserOrEnumRuleCall();
 					}
 				)
@@ -2302,7 +2410,7 @@ ruleEclConceptReference returns [EObject current=null]
 						$current,
 						"id",
 						lv_id_0_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.SnomedIdentifier");
+						"com.b2international.snomed.ecl.Ecl.SnomedIdentifier");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -2321,7 +2429,7 @@ ruleEclConceptReference returns [EObject current=null]
 						$current,
 						"term",
 						lv_term_1_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.TERM_STRING");
+						"com.b2international.snomed.ecl.Ecl.TERM_STRING");
 				}
 			)
 		)?
@@ -2447,7 +2555,7 @@ ruleOrRefinement returns [EObject current=null]
 								$current,
 								"right",
 								lv_right_3_0,
-								"com.b2international.snowowl.snomed.ecl.Ecl.AndRefinement");
+								"com.b2international.snomed.ecl.Ecl.AndRefinement");
 							afterParserOrEnumRuleCall();
 						}
 					)
@@ -2522,7 +2630,7 @@ ruleAndRefinement returns [EObject current=null]
 								$current,
 								"right",
 								lv_right_4_0,
-								"com.b2international.snowowl.snomed.ecl.Ecl.SubRefinement");
+								"com.b2international.snomed.ecl.Ecl.SubRefinement");
 							afterParserOrEnumRuleCall();
 						}
 					)
@@ -2620,7 +2728,7 @@ ruleNestedRefinement returns [EObject current=null]
 						$current,
 						"nested",
 						lv_nested_1_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.EclRefinement");
+						"com.b2international.snomed.ecl.Ecl.EclRefinement");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -2662,7 +2770,7 @@ ruleEclAttributeGroup returns [EObject current=null]
 						$current,
 						"cardinality",
 						lv_cardinality_0_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.Cardinality");
+						"com.b2international.snomed.ecl.Ecl.Cardinality");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -2685,7 +2793,7 @@ ruleEclAttributeGroup returns [EObject current=null]
 						$current,
 						"refinement",
 						lv_refinement_2_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.EclAttributeSet");
+						"com.b2international.snomed.ecl.Ecl.EclAttributeSet");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -2781,7 +2889,7 @@ ruleOrAttributeSet returns [EObject current=null]
 							$current,
 							"right",
 							lv_right_3_0,
-							"com.b2international.snowowl.snomed.ecl.Ecl.AndAttributeSet");
+							"com.b2international.snomed.ecl.Ecl.AndAttributeSet");
 						afterParserOrEnumRuleCall();
 					}
 				)
@@ -2853,7 +2961,7 @@ ruleAndAttributeSet returns [EObject current=null]
 							$current,
 							"right",
 							lv_right_4_0,
-							"com.b2international.snowowl.snomed.ecl.Ecl.SubAttributeSet");
+							"com.b2international.snomed.ecl.Ecl.SubAttributeSet");
 						afterParserOrEnumRuleCall();
 					}
 				)
@@ -2938,7 +3046,7 @@ ruleNestedAttributeSet returns [EObject current=null]
 						$current,
 						"nested",
 						lv_nested_1_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.EclAttributeSet");
+						"com.b2international.snomed.ecl.Ecl.EclAttributeSet");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -2980,7 +3088,7 @@ ruleAttributeConstraint returns [EObject current=null]
 						$current,
 						"cardinality",
 						lv_cardinality_0_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.Cardinality");
+						"com.b2international.snomed.ecl.Ecl.Cardinality");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -2998,8 +3106,8 @@ ruleAttributeConstraint returns [EObject current=null]
 					setWithLastConsumed(
 						$current,
 						"reversed",
-						true,
-						"com.b2international.snowowl.snomed.ecl.Ecl.REVERSED");
+						lv_reversed_1_0 != null,
+						"com.b2international.snomed.ecl.Ecl.REVERSED");
 				}
 			)
 		)?
@@ -3017,7 +3125,7 @@ ruleAttributeConstraint returns [EObject current=null]
 						$current,
 						"attribute",
 						lv_attribute_2_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.SubExpressionConstraint");
+						"com.b2international.snomed.ecl.Ecl.SubExpressionConstraint");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -3036,7 +3144,7 @@ ruleAttributeConstraint returns [EObject current=null]
 						$current,
 						"comparison",
 						lv_comparison_3_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.Comparison");
+						"com.b2international.snomed.ecl.Ecl.Comparison");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -3078,7 +3186,7 @@ ruleCardinality returns [EObject current=null]
 						$current,
 						"min",
 						lv_min_1_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.NonNegativeInteger");
+						"com.b2international.snomed.ecl.Ecl.NonNegativeInteger");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -3101,7 +3209,7 @@ ruleCardinality returns [EObject current=null]
 						$current,
 						"max",
 						lv_max_3_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.MaxValue");
+						"com.b2international.snomed.ecl.Ecl.MaxValue");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -3441,7 +3549,7 @@ ruleAttributeValueEquals returns [EObject current=null]
 						$current,
 						"constraint",
 						lv_constraint_1_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.SubExpressionConstraint");
+						"com.b2international.snomed.ecl.Ecl.SubExpressionConstraint");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -3483,7 +3591,7 @@ ruleAttributeValueNotEquals returns [EObject current=null]
 						$current,
 						"constraint",
 						lv_constraint_1_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.SubExpressionConstraint");
+						"com.b2international.snomed.ecl.Ecl.SubExpressionConstraint");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -3525,7 +3633,7 @@ ruleBooleanValueEquals returns [EObject current=null]
 						$current,
 						"value",
 						lv_value_1_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.Boolean");
+						"com.b2international.snomed.ecl.Ecl.Boolean");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -3567,7 +3675,7 @@ ruleBooleanValueNotEquals returns [EObject current=null]
 						$current,
 						"value",
 						lv_value_1_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.Boolean");
+						"com.b2international.snomed.ecl.Ecl.Boolean");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -3609,7 +3717,7 @@ ruleStringValueEquals returns [EObject current=null]
 						$current,
 						"value",
 						lv_value_1_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.STRING");
+						"com.b2international.snomed.ecl.Ecl.STRING");
 				}
 			)
 		)
@@ -3650,7 +3758,7 @@ ruleStringValueNotEquals returns [EObject current=null]
 						$current,
 						"value",
 						lv_value_1_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.STRING");
+						"com.b2international.snomed.ecl.Ecl.STRING");
 				}
 			)
 		)
@@ -3695,7 +3803,7 @@ ruleIntegerValueEquals returns [EObject current=null]
 						$current,
 						"value",
 						lv_value_2_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.Integer");
+						"com.b2international.snomed.ecl.Ecl.Integer");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -3741,7 +3849,7 @@ ruleIntegerValueNotEquals returns [EObject current=null]
 						$current,
 						"value",
 						lv_value_2_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.Integer");
+						"com.b2international.snomed.ecl.Ecl.Integer");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -3787,7 +3895,7 @@ ruleIntegerValueGreaterThan returns [EObject current=null]
 						$current,
 						"value",
 						lv_value_2_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.Integer");
+						"com.b2international.snomed.ecl.Ecl.Integer");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -3833,7 +3941,7 @@ ruleIntegerValueLessThan returns [EObject current=null]
 						$current,
 						"value",
 						lv_value_2_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.Integer");
+						"com.b2international.snomed.ecl.Ecl.Integer");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -3879,7 +3987,7 @@ ruleIntegerValueGreaterThanEquals returns [EObject current=null]
 						$current,
 						"value",
 						lv_value_2_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.Integer");
+						"com.b2international.snomed.ecl.Ecl.Integer");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -3925,7 +4033,7 @@ ruleIntegerValueLessThanEquals returns [EObject current=null]
 						$current,
 						"value",
 						lv_value_2_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.Integer");
+						"com.b2international.snomed.ecl.Ecl.Integer");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -3971,7 +4079,7 @@ ruleDecimalValueEquals returns [EObject current=null]
 						$current,
 						"value",
 						lv_value_2_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.Decimal");
+						"com.b2international.snomed.ecl.Ecl.Decimal");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -4017,7 +4125,7 @@ ruleDecimalValueNotEquals returns [EObject current=null]
 						$current,
 						"value",
 						lv_value_2_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.Decimal");
+						"com.b2international.snomed.ecl.Ecl.Decimal");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -4063,7 +4171,7 @@ ruleDecimalValueGreaterThan returns [EObject current=null]
 						$current,
 						"value",
 						lv_value_2_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.Decimal");
+						"com.b2international.snomed.ecl.Ecl.Decimal");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -4109,7 +4217,7 @@ ruleDecimalValueLessThan returns [EObject current=null]
 						$current,
 						"value",
 						lv_value_2_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.Decimal");
+						"com.b2international.snomed.ecl.Ecl.Decimal");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -4155,7 +4263,7 @@ ruleDecimalValueGreaterThanEquals returns [EObject current=null]
 						$current,
 						"value",
 						lv_value_2_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.Decimal");
+						"com.b2international.snomed.ecl.Ecl.Decimal");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -4201,7 +4309,7 @@ ruleDecimalValueLessThanEquals returns [EObject current=null]
 						$current,
 						"value",
 						lv_value_2_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.Decimal");
+						"com.b2international.snomed.ecl.Ecl.Decimal");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -4243,7 +4351,7 @@ ruleNestedExpression returns [EObject current=null]
 						$current,
 						"nested",
 						lv_nested_1_0,
-						"com.b2international.snowowl.snomed.ecl.Ecl.ExpressionConstraint");
+						"com.b2international.snomed.ecl.Ecl.ExpressionConstraint");
 					afterParserOrEnumRuleCall();
 				}
 			)

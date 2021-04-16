@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,8 +69,12 @@ public class EtlSyntacticSequencer extends AbstractSyntacticSequencer {
 			return getCURLY_OPENToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getDBL_GTRule())
 			return getDBL_GTToken(semanticObject, ruleCall, node);
+		else if (ruleCall.getRule() == grammarAccess.getDBL_GT_EMRule())
+			return getDBL_GT_EMToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getDBL_LTRule())
 			return getDBL_LTToken(semanticObject, ruleCall, node);
+		else if (ruleCall.getRule() == grammarAccess.getDBL_LT_EMRule())
+			return getDBL_LT_EMToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getDECRule())
 			return getDECToken(semanticObject, ruleCall, node);
 		else if (ruleCall.getRule() == grammarAccess.getDISJUNCTIONRule())
@@ -207,6 +211,16 @@ public class EtlSyntacticSequencer extends AbstractSyntacticSequencer {
 	}
 	
 	/**
+	 * terminal DBL_GT_EM:
+	 * 	'>>!';
+	 */
+	protected String getDBL_GT_EMToken(EObject semanticObject, RuleCall ruleCall, INode node) {
+		if (node != null)
+			return getTokenText(node);
+		return ">>!";
+	}
+	
+	/**
 	 * terminal DBL_LT:
 	 * 	'<<';
 	 */
@@ -214,6 +228,16 @@ public class EtlSyntacticSequencer extends AbstractSyntacticSequencer {
 		if (node != null)
 			return getTokenText(node);
 		return "<<";
+	}
+	
+	/**
+	 * terminal DBL_LT_EM:
+	 * 	'<<!';
+	 */
+	protected String getDBL_LT_EMToken(EObject semanticObject, RuleCall ruleCall, INode node) {
+		if (node != null)
+			return getTokenText(node);
+		return "<<!";
 	}
 	
 	/**

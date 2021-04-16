@@ -39,6 +39,10 @@
 		<failsafe.version>2.3.1</failsafe.version>
 		<osgi.versionRange>[3.16.0,3.17.0]</osgi.versionRange>
 		
+		<!-- p2 repositories -->
+		<snomed.ecl.version>1.4.0</snomed.ecl.version>
+		<snomed.ecl.site>mvn:com.b2international:com.b2international.snomed.ecl.update:${snomed.ecl.version}:zip</snomed.ecl.site>
+		
 		<!-- Build tool/compiler versions -->
 		<tycho.version>2.2.0</tycho.version>
 		<tycho-extras.version>2.2.0</tycho-extras.version>
@@ -102,6 +106,31 @@
 			<snapshots>
 				<enabled>false</enabled>
 			</snapshots>
+		</repository>
+		<repository>
+			<id>b2i-releases</id>
+			<url>https://nexus.b2i.sg/repository/maven-releases</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>b2i-snapshots</id>
+			<url>https://nexus.b2i.sg/repository/maven-snapshots</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>snomed-ecl</id>
+			<url>${snomed.ecl.site}</url>
+			<layout>p2</layout>
 		</repository>
 	</repositories>
 
@@ -178,6 +207,13 @@
 			<artifactId>guava</artifactId>
 			<version>${guava.version}</version>
 			<scope>provided</scope>
+			<exclusions>
+				<!-- Exclude All transitive dependencies (it is already built into the bundle, or replaced by something else) -->
+		        <exclusion>
+		            <groupId>*</groupId>
+		            <artifactId>*</artifactId>
+		        </exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.assertj</groupId>
@@ -333,6 +369,15 @@
           			<groupId>org.eclipse.equinox</groupId>
   					<artifactId>org.eclipse.equinox.registry</artifactId>
         		</exclusion>
+				<!-- Exclude all non-OSGi dependencies that are not needed -->
+				<exclusion>
+          			<groupId>com.jgoodies</groupId>
+  					<artifactId>jgoodies-common</artifactId>
+        		</exclusion>
+				<exclusion>
+          			<groupId>com.jgoodies</groupId>
+  					<artifactId>jgoodies-looks</artifactId>
+        		</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
@@ -351,6 +396,11 @@
 		          	<groupId>net.sourceforge.owlapi</groupId>
   					<artifactId>owlapi-osgidistribution</artifactId>
 		        </exclusion>
+				<!-- Exclude all non-OSGi dependencies that are not needed -->
+				<exclusion>
+          			<groupId>xml-resolver</groupId>
+  					<artifactId>xml-resolver</artifactId>
+        		</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
@@ -491,18 +541,39 @@
 			<artifactId>httpclient-osgi</artifactId>
 			<version>4.5.3</version>
 			<scope>provided</scope>
+			<exclusions>
+				<!-- Exclude All transitive dependencies (it is already built into the bundle, or replaced by something else) -->
+		        <exclusion>
+		            <groupId>*</groupId>
+		            <artifactId>*</artifactId>
+		        </exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 		  	<groupId>org.apache.httpcomponents</groupId>
 		  	<artifactId>httpcore-osgi</artifactId>
 		  	<version>4.4.10</version>
 		  	<scope>provided</scope>
+			<exclusions>
+				<!-- Exclude All transitive dependencies (it is already built into the bundle, or replaced by something else) -->
+		        <exclusion>
+		            <groupId>*</groupId>
+		            <artifactId>*</artifactId>
+		        </exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 		  	<groupId>org.apache.httpcomponents</groupId>
 		  	<artifactId>httpasyncclient-osgi</artifactId>
 		  	<version>4.1.4</version>
 		  	<scope>provided</scope>
+			<exclusions>
+				<!-- Exclude All transitive dependencies (it is already built into the bundle, or replaced by something else) -->
+		        <exclusion>
+		            <groupId>*</groupId>
+		            <artifactId>*</artifactId>
+		        </exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 	        <groupId>de.svenkubiak</groupId>
@@ -806,7 +877,6 @@
 				</executions>
 				<configuration>
 					<excludes>
-						<exclude>com/b2international/snowowl/snomed/ecl/parser/**/*</exclude>
 						<exclude>com/b2international/snowowl/snomed/etl/parser/**/*</exclude>
 						<exclude>com/b2international/snowowl/snomed/ql/parser/**/*</exclude>
 						<exclude>com/b2international/snowowl/snomed/scg/parser/**/*</exclude>

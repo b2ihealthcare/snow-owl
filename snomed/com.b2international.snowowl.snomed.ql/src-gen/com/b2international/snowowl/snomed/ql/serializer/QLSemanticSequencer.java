@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,48 +15,50 @@
  */
 package com.b2international.snowowl.snomed.ql.serializer;
 
-import com.b2international.snowowl.snomed.ecl.ecl.AncestorOf;
-import com.b2international.snowowl.snomed.ecl.ecl.AncestorOrSelfOf;
-import com.b2international.snowowl.snomed.ecl.ecl.AndExpressionConstraint;
-import com.b2international.snowowl.snomed.ecl.ecl.AndRefinement;
-import com.b2international.snowowl.snomed.ecl.ecl.Any;
-import com.b2international.snowowl.snomed.ecl.ecl.AttributeConstraint;
-import com.b2international.snowowl.snomed.ecl.ecl.AttributeValueEquals;
-import com.b2international.snowowl.snomed.ecl.ecl.AttributeValueNotEquals;
-import com.b2international.snowowl.snomed.ecl.ecl.BooleanValueEquals;
-import com.b2international.snowowl.snomed.ecl.ecl.BooleanValueNotEquals;
-import com.b2international.snowowl.snomed.ecl.ecl.Cardinality;
-import com.b2international.snowowl.snomed.ecl.ecl.ChildOf;
-import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueEquals;
-import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueGreaterThan;
-import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueGreaterThanEquals;
-import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueLessThan;
-import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueLessThanEquals;
-import com.b2international.snowowl.snomed.ecl.ecl.DecimalValueNotEquals;
-import com.b2international.snowowl.snomed.ecl.ecl.DescendantOf;
-import com.b2international.snowowl.snomed.ecl.ecl.DescendantOrSelfOf;
-import com.b2international.snowowl.snomed.ecl.ecl.DottedExpressionConstraint;
-import com.b2international.snowowl.snomed.ecl.ecl.EclAttributeGroup;
-import com.b2international.snowowl.snomed.ecl.ecl.EclConceptReference;
-import com.b2international.snowowl.snomed.ecl.ecl.EclPackage;
-import com.b2international.snowowl.snomed.ecl.ecl.ExclusionExpressionConstraint;
-import com.b2international.snowowl.snomed.ecl.ecl.IntegerValueEquals;
-import com.b2international.snowowl.snomed.ecl.ecl.IntegerValueGreaterThan;
-import com.b2international.snowowl.snomed.ecl.ecl.IntegerValueGreaterThanEquals;
-import com.b2international.snowowl.snomed.ecl.ecl.IntegerValueLessThan;
-import com.b2international.snowowl.snomed.ecl.ecl.IntegerValueLessThanEquals;
-import com.b2international.snowowl.snomed.ecl.ecl.IntegerValueNotEquals;
-import com.b2international.snowowl.snomed.ecl.ecl.MemberOf;
-import com.b2international.snowowl.snomed.ecl.ecl.NestedExpression;
-import com.b2international.snowowl.snomed.ecl.ecl.NestedRefinement;
-import com.b2international.snowowl.snomed.ecl.ecl.OrExpressionConstraint;
-import com.b2international.snowowl.snomed.ecl.ecl.OrRefinement;
-import com.b2international.snowowl.snomed.ecl.ecl.ParentOf;
-import com.b2international.snowowl.snomed.ecl.ecl.RefinedExpressionConstraint;
-import com.b2international.snowowl.snomed.ecl.ecl.Script;
-import com.b2international.snowowl.snomed.ecl.ecl.StringValueEquals;
-import com.b2international.snowowl.snomed.ecl.ecl.StringValueNotEquals;
-import com.b2international.snowowl.snomed.ecl.serializer.EclSemanticSequencer;
+import com.b2international.snomed.ecl.ecl.AncestorOf;
+import com.b2international.snomed.ecl.ecl.AncestorOrSelfOf;
+import com.b2international.snomed.ecl.ecl.AndExpressionConstraint;
+import com.b2international.snomed.ecl.ecl.AndRefinement;
+import com.b2international.snomed.ecl.ecl.Any;
+import com.b2international.snomed.ecl.ecl.AttributeConstraint;
+import com.b2international.snomed.ecl.ecl.AttributeValueEquals;
+import com.b2international.snomed.ecl.ecl.AttributeValueNotEquals;
+import com.b2international.snomed.ecl.ecl.BooleanValueEquals;
+import com.b2international.snomed.ecl.ecl.BooleanValueNotEquals;
+import com.b2international.snomed.ecl.ecl.Cardinality;
+import com.b2international.snomed.ecl.ecl.ChildOf;
+import com.b2international.snomed.ecl.ecl.ChildOrSelfOf;
+import com.b2international.snomed.ecl.ecl.DecimalValueEquals;
+import com.b2international.snomed.ecl.ecl.DecimalValueGreaterThan;
+import com.b2international.snomed.ecl.ecl.DecimalValueGreaterThanEquals;
+import com.b2international.snomed.ecl.ecl.DecimalValueLessThan;
+import com.b2international.snomed.ecl.ecl.DecimalValueLessThanEquals;
+import com.b2international.snomed.ecl.ecl.DecimalValueNotEquals;
+import com.b2international.snomed.ecl.ecl.DescendantOf;
+import com.b2international.snomed.ecl.ecl.DescendantOrSelfOf;
+import com.b2international.snomed.ecl.ecl.DottedExpressionConstraint;
+import com.b2international.snomed.ecl.ecl.EclAttributeGroup;
+import com.b2international.snomed.ecl.ecl.EclConceptReference;
+import com.b2international.snomed.ecl.ecl.EclPackage;
+import com.b2international.snomed.ecl.ecl.ExclusionExpressionConstraint;
+import com.b2international.snomed.ecl.ecl.IntegerValueEquals;
+import com.b2international.snomed.ecl.ecl.IntegerValueGreaterThan;
+import com.b2international.snomed.ecl.ecl.IntegerValueGreaterThanEquals;
+import com.b2international.snomed.ecl.ecl.IntegerValueLessThan;
+import com.b2international.snomed.ecl.ecl.IntegerValueLessThanEquals;
+import com.b2international.snomed.ecl.ecl.IntegerValueNotEquals;
+import com.b2international.snomed.ecl.ecl.MemberOf;
+import com.b2international.snomed.ecl.ecl.NestedExpression;
+import com.b2international.snomed.ecl.ecl.NestedRefinement;
+import com.b2international.snomed.ecl.ecl.OrExpressionConstraint;
+import com.b2international.snomed.ecl.ecl.OrRefinement;
+import com.b2international.snomed.ecl.ecl.ParentOf;
+import com.b2international.snomed.ecl.ecl.ParentOrSelfOf;
+import com.b2international.snomed.ecl.ecl.RefinedExpressionConstraint;
+import com.b2international.snomed.ecl.ecl.Script;
+import com.b2international.snomed.ecl.ecl.StringValueEquals;
+import com.b2international.snomed.ecl.ecl.StringValueNotEquals;
+import com.b2international.snomed.ecl.serializer.EclSemanticSequencer;
 import com.b2international.snowowl.snomed.ql.ql.AcceptableInFilter;
 import com.b2international.snowowl.snomed.ql.ql.ActiveFilter;
 import com.b2international.snowowl.snomed.ql.ql.CaseSignificanceFilter;
@@ -153,6 +155,9 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 				return; 
 			case EclPackage.CHILD_OF:
 				sequence_ChildOf(context, (ChildOf) semanticObject); 
+				return; 
+			case EclPackage.CHILD_OR_SELF_OF:
+				sequence_ChildOrSelfOf(context, (ChildOrSelfOf) semanticObject); 
 				return; 
 			case EclPackage.DECIMAL_VALUE_EQUALS:
 				sequence_DecimalValueEquals(context, (DecimalValueEquals) semanticObject); 
@@ -255,6 +260,9 @@ public class QLSemanticSequencer extends EclSemanticSequencer {
 				else break;
 			case EclPackage.PARENT_OF:
 				sequence_ParentOf(context, (ParentOf) semanticObject); 
+				return; 
+			case EclPackage.PARENT_OR_SELF_OF:
+				sequence_ParentOrSelfOf(context, (ParentOrSelfOf) semanticObject); 
 				return; 
 			case EclPackage.REFINED_EXPRESSION_CONSTRAINT:
 				sequence_RefinedExpressionConstraint(context, (RefinedExpressionConstraint) semanticObject); 
