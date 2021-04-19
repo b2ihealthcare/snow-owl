@@ -35,7 +35,7 @@ import com.b2international.snowowl.core.request.ResourceRequest;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snomed.ecl.ecl.EclConceptReference;
-import com.b2international.snowowl.snomed.ql.ql.Query;
+import com.b2international.snomed.ql.ql.Query;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
