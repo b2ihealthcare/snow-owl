@@ -40,7 +40,7 @@
 		<osgi.versionRange>[3.16.0,3.17.0]</osgi.versionRange>
 		
 		<!-- p2 repositories -->
-		<snomed.ecl.version>1.4.1-SNAPSHOT</snomed.ecl.version>
+		<snomed.ecl.version>1.4.1</snomed.ecl.version>
 		<snomed.ecl.site>mvn:com.b2international:com.b2international.snomed.ecl.update:${snomed.ecl.version}:zip</snomed.ecl.site>
 		
 		<snomed.ql.version>0.1.0</snomed.ql.version>
