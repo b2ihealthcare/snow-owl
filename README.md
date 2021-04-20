@@ -99,6 +99,9 @@ Required Eclipse plug-ins (install the listed features via `Help` -> `Install Ne
   * MWE 2 language SDK 2.11.3 (MWE)
 * Groovy Development Tools (https://dist.springsource.org/release/GRECLIPSE/3.9.0/e4.17)
   * Eclipse Groovy Development Tools 3.9.0 (Main Package)
+* M2Eclipse (https://download.eclipse.org/technology/m2e/releases/latest/)
+  * m2e 1.17.2
+  * m2e PDE 1.17.2
  
 ### Eclipse Preferences
 
@@ -111,6 +114,10 @@ Make sure you have the following preferences enabled/disabled.
 ### Git configuration
 
 * Make sure the Git line endings are set to *input* (Preferences->Team->Git->Configuration - add key if missing *core.autocrlf = input*)
+
+### Maven Settings
+
+* Make sure the `settings.xml` in your ~/.m2/settings.xml location is updated with the content from the `settings.xml` from this repository's root folder.
 
 ## First steps
 
