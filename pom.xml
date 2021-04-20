@@ -43,6 +43,9 @@
 		<snomed.ecl.version>1.4.1-SNAPSHOT</snomed.ecl.version>
 		<snomed.ecl.site>mvn:com.b2international:com.b2international.snomed.ecl.update:${snomed.ecl.version}:zip</snomed.ecl.site>
 		
+		<snomed.ql.version>0.1.0</snomed.ql.version>
+		<snomed.ql.site>mvn:com.b2international:com.b2international.snomed.ql.update:${snomed.ql.version}:zip</snomed.ql.site>
+		
 		<!-- Build tool/compiler versions -->
 		<tycho.version>2.2.0</tycho.version>
 		<tycho-extras.version>2.2.0</tycho-extras.version>
@@ -130,6 +133,11 @@
 		<repository>
 			<id>snomed-ecl</id>
 			<url>${snomed.ecl.site}</url>
+			<layout>p2</layout>
+		</repository>
+		<repository>
+			<id>snomed-ql</id>
+			<url>${snomed.ql.site}</url>
 			<layout>p2</layout>
 		</repository>
 	</repositories>

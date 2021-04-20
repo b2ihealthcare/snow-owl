@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.core.ql;
 
-import static com.b2international.snowowl.snomed.ql.QLRuntimeModule.getDomain;
+import static com.b2international.snomed.ql.QLRuntimeModule.getDomain;
 
 import java.io.IOException;
 
@@ -39,7 +39,7 @@ import com.b2international.snowowl.snomed.core.ecl.EclExpression;
 import com.b2international.snowowl.snomed.core.tree.Trees;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
-import com.b2international.snowowl.snomed.ql.ql.*;
+import com.b2international.snomed.ql.ql.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
