@@ -43,7 +43,7 @@
 		<snomed.ecl.version>1.4.1</snomed.ecl.version>
 		<snomed.ecl.site>mvn:com.b2international:com.b2international.snomed.ecl.update:${snomed.ecl.version}:zip</snomed.ecl.site>
 		
-		<snomed.ql.version>0.1.0</snomed.ql.version>
+		<snomed.ql.version>0.1.1-SNAPSHOT</snomed.ql.version>
 		<snomed.ql.site>mvn:com.b2international:com.b2international.snomed.ql.update:${snomed.ql.version}:zip</snomed.ql.site>
 		
 		<!-- Build tool/compiler versions -->
