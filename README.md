@@ -19,7 +19,7 @@ Features include:
     * Maintains multiple versions (including unpublished and published) for each terminology artifact and provides APIs to access them all
     * Independent work branches offer work-in-process isolation, external business workflow integration and team collaboration
 * SNOMED CT and others
-    * SNOMED CT terminology support (full RF2 support, ECL v1.4, SCG 2.3.1, ETL 1.0, Reference Sets, OWL Axioms, OWL 2 EL/DL support, SNOMED Query Language draft specification)
+    * SNOMED CT terminology support
         * RF2 Specification as of 2021-01-31
         * Official and Custom Reference Sets
         * Expression Constraint Language v1.4.0 [spec](https://confluence.ihtsdotools.org/download/attachments/33493263/doc_ExpressionConstraintLanguage_v1.4-en-US_INT_20200617.pdf%09?api=v2), [implementation](https://github.com/b2ihealthcare/snomed-ecl)
