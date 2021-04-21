@@ -19,12 +19,18 @@ Features include:
     * Maintains multiple versions (including unpublished and published) for each terminology artifact and provides APIs to access them all
     * Independent work branches offer work-in-process isolation, external business workflow integration and team collaboration
 * SNOMED CT and others
-    * Full SNOMED CT terminology support (full RF2 support, ECL v1.3, SCG 2.3.1, ETL 1.0, Reference Sets, OWL Axioms, OWL 2 EL/DL support, SNOMED Query Language draft specification)
+    * SNOMED CT terminology support (full RF2 support, ECL v1.4, SCG 2.3.1, ETL 1.0, Reference Sets, OWL Axioms, OWL 2 EL/DL support, SNOMED Query Language draft specification)
+        * RF2 Specification as of 2021-01-31
+        * Official and Custom Reference Sets
+        * Expression Constraint Language v1.4.0 [spec](https://confluence.ihtsdotools.org/download/attachments/33493263/doc_ExpressionConstraintLanguage_v1.4-en-US_INT_20200617.pdf%09?api=v2), [implementation](https://github.com/b2ihealthcare/snomed-ecl)
+        * Compositional Grammar 2.3.1 [spec](https://confluence.ihtsdotools.org/download/attachments/33496020/doc_CompositionalGrammar_v2.3.1-en-US_INT_20161118.pdf?api=v2), [implementation](https://github.com/b2ihealthcare/snomed-scg)
+        * Expression Template Language 1.0.0 [spec](https://confluence.ihtsdotools.org/download/attachments/45529301/doc_TemplateSyntax_v1.0-en-US_INT_20170726.pdf?api=v2), [implementation](https://github.com/b2ihealthcare/snomed-etl)
+        * Query Language Draft 0.1.0 [draft](https://confluence.ihtsdotools.org/download/attachments/52180605/Draft%20SNOMED%20Query%20Language%20-%20Examples%20for%20Discussion.pptx?api=v2), [implementation](https://github.com/b2ihealthcare/snomed-ql)
     * With its modular design, the server can maintain multiple terminologies (including local codes, mapping sets, value sets)
 * Various set of APIs
     * SNOMED CT API (RESTful and native Java API)
-    * FHIR API
-    * CIS API
+    * FHIR API R4 v4.0.1 [spec](https://www.hl7.org/fhir/history.html#v4.0.1)
+    * CIS API 1.0 [see reference implementation](https://github.com/IHTSDO/component-identifier-service)
 * Highly extensible and configurable
     * Simple to use plug-in system makes it easy to develop and add new terminology tooling/API or any other functionality
 * Built on top of [Elasticsearch](https://www.elastic.co/products/elasticsearch) (highly scalable, distributed, open source search engine)
@@ -42,13 +48,13 @@ Features include:
 This distribution only includes features licensed under the Apache 2.0 license. To get access to the full set of features, please contact [B2i Healthcare](mailto:info@b2i.sg).
 {% endhint %}
 
-View the detailed release notes [here](https://github.com/b2ihealthcare/snow-owl/releases/tag/v7.6.0).
+View the detailed release notes [here](https://github.com/b2ihealthcare/snow-owl/releases/tag/v7.16.2).
 
 Not the version you're looking for? View [past releases](https://github.com/b2ihealthcare/snow-owl/releases).
 
 ### Install and Run
 
-NOTE: You need to have a recent version of Java installed (Java 11+, https://jdk.java.net/archive/).
+NOTE: You need to have a recent version of Java installed (Java 11+, https://adoptopenjdk.net/).
 
 Once you have downloaded the appropriate package:
 
