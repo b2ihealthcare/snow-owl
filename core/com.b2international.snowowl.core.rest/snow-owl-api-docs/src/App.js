@@ -10,11 +10,12 @@ class App extends React.Component {
 
   state = {
     selectedKey: 'admin',
-    apis: []
+    apis: [],
+    serverUrl: process.env.REACT_APP_SO_BASE_URL || process.env.PUBLIC_URL
   }
 
   componentDidMount() {
-    fetch(`${process.env.REACT_APP_SO_BASE_URL}/admin/apis`)
+    fetch(`${this.state.serverUrl}/admin/apis`)
       .then(response => response.json())
       .then(data => this.setState({ apis: data.items }));
   }
@@ -26,7 +27,7 @@ class App extends React.Component {
   }
 
   render() {
-    const apis = this.state.apis
+    const { apis, serverUrl } = this.state
     return (
       <>
         <BackTop />
@@ -55,7 +56,8 @@ class App extends React.Component {
           </Sider>
           <Content style={{ marginLeft: 200 }}>
             <rapi-doc
-              spec-url = {`${process.env.REACT_APP_SO_BASE_URL}/api-docs?group=${this.state.selectedKey}`}
+              spec-url = {`${serverUrl}/api-docs?group=${this.state.selectedKey}`}
+			  server-url = {`${serverUrl}`}
               render-style = "view"
               layout = "row"
               schema-expand-level = "3"
