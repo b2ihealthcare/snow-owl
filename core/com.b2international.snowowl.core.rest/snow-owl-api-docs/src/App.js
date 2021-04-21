@@ -1,8 +1,7 @@
 import 'antd/dist/antd.css';
-import 'swagger-ui-react/swagger-ui.css';
+import 'rapidoc';
 
 import React from 'react';
-import SwaggerUI from "swagger-ui-react"
 import { Layout, BackTop, Menu } from 'antd';
 
 const { Content, Sider } = Layout;
@@ -55,9 +54,15 @@ class App extends React.Component {
             </Menu>
           </Sider>
           <Content style={{ marginLeft: 200 }}>
-            <SwaggerUI 
-              url={`${process.env.REACT_APP_SO_BASE_URL}/api-docs?group=${this.state.selectedKey}`} 
-              docExpansion = "list"
+            <rapi-doc
+              spec-url = {`${process.env.REACT_APP_SO_BASE_URL}/api-docs?group=${this.state.selectedKey}`}
+              render-style = "view"
+              layout = "row"
+              schema-expand-level = "3"
+              style = {{ height: "100vh", width: "100%" }}
+              allow-spec-url-load="false"
+              allow-spec-file-load="false"
+              allow-server-selection="false"
             />
           </Content>
         </Layout>
