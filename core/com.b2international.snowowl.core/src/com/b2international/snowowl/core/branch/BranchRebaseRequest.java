@@ -48,8 +48,8 @@ public final class BranchRebaseRequest extends AbstractBranchChangeRequest {
 				: String.format("Rebase branch '%s' on '%s'", targetPath, sourcePath);
 	}
 
-	BranchRebaseRequest(final String sourcePath, final String targetPath, final String userId, final String commitMessage, String reviewId, String parentLockContext) {
-		super(sourcePath, targetPath, userId, commitMessageOrDefault(sourcePath, targetPath, commitMessage), reviewId, parentLockContext);
+	BranchRebaseRequest(final String sourcePath, final String targetPath, final String userId, final String commitMessage, String parentLockContext) {
+		super(sourcePath, targetPath, userId, commitMessageOrDefault(sourcePath, targetPath, commitMessage), parentLockContext);
 	}
 	
 	@Override

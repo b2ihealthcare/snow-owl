@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,14 +23,10 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.exceptions.ApiError;
 import com.b2international.commons.exceptions.ApiException;
-import com.b2international.commons.exceptions.ConflictException;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.index.revision.*;
 import com.b2international.index.revision.StagingArea.RevisionPropertyDiff;
 import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
-import com.b2international.snowowl.core.branch.review.BranchState;
-import com.b2international.snowowl.core.branch.review.Review;
-import com.b2international.snowowl.core.branch.review.ReviewManager;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.Permission;
@@ -71,17 +67,13 @@ public abstract class AbstractBranchChangeRequest implements Request<RepositoryC
 	protected final String commitMessage;
 	
 	@JsonProperty
-	protected final String reviewId;
-	
-	@JsonProperty
 	protected final String parentLockContext;
 
-	protected AbstractBranchChangeRequest(String sourcePath, String targetPath, String userId, String commitMessage, String reviewId, String parentLockContext) {
+	protected AbstractBranchChangeRequest(String sourcePath, String targetPath, String userId, String commitMessage, String parentLockContext) {
 		this.sourcePath = sourcePath;
 		this.targetPath = targetPath;
 		this.userId = userId;
 		this.commitMessage = commitMessage;
-		this.reviewId = reviewId;
 		this.parentLockContext = parentLockContext;
 	}
 
@@ -91,21 +83,6 @@ public abstract class AbstractBranchChangeRequest implements Request<RepositoryC
 		try {
 			final Branch source = RepositoryRequests.branching().prepareGet(sourcePath).build().execute(context);
 			final Branch target = RepositoryRequests.branching().prepareGet(targetPath).build().execute(context);
-			
-			if (reviewId != null) {
-				final ReviewManager reviewManager = context.service(ReviewManager.class);
-				final Review review = reviewManager.getReview(reviewId);
-				final BranchState sourceState = review.source();
-				final BranchState targetState = review.target();
-				
-				if (!sourceState.matches(source)) {
-					throw new ConflictException("Source branch '%s' did not match with stored state on review identifier '%s'.", source.path(), reviewId);
-				}
-				
-				if (!targetState.matches(target)) {
-					throw new ConflictException("Target branch '%s' did not match with stored state on review identifier '%s'.", target.path(), reviewId);
-				}
-			}
 			
 			Merge merge = Merge.builder()
 					.source(sourcePath)

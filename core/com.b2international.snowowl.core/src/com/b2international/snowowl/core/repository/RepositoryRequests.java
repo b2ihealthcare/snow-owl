@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package com.b2international.snowowl.core.repository;
 
 import com.b2international.snowowl.core.branch.Branching;
 import com.b2international.snowowl.core.branch.Merging;
-import com.b2international.snowowl.core.branch.review.Reviews;
 import com.b2international.snowowl.core.commit.CommitInfoRequests;
 import com.b2international.snowowl.core.request.RepositoryBulkReadRequestBuilder;
 import com.b2international.snowowl.core.request.RepositoryCommitRequestBuilder;
@@ -46,14 +45,6 @@ public final class RepositoryRequests {
 	 */
 	public static Merging merging() {
 		return new Merging();
-	}
-	
-	/**
-	 * Returns the central class that provides access the server's review features
-	 * @return central review class with access to review features
-	 */
-	public static Reviews reviews() {
-		return new Reviews();
 	}
 	
 	public static CommitInfoRequests commitInfos() {

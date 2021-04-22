@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,6 @@ import com.b2international.index.revision.TimestampProvider;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
-import com.b2international.snowowl.core.branch.review.ReviewConfiguration;
 import com.b2international.snowowl.core.client.TransportClient;
 import com.b2international.snowowl.core.client.TransportConfiguration;
 import com.b2international.snowowl.core.config.IndexConfiguration;
@@ -75,7 +74,6 @@ public final class RepositoryPlugin extends Plugin {
 	
 	@Override
 	public void addConfigurations(ConfigurationRegistry registry) {
-		registry.add("reviewManager", ReviewConfiguration.class);
 		registry.add("repository", RepositoryConfiguration.class);
 		registry.add("rpc", RpcConfiguration.class);
 		registry.add("transport", TransportConfiguration.class);

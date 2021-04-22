@@ -45,8 +45,8 @@ public final class BranchMergeRequest extends AbstractBranchChangeRequest {
 				: String.format("Merge branch '%s' into '%s'", sourcePath, targetPath);
 	}
 
-	BranchMergeRequest(final String sourcePath, final String targetPath, Set<String> exclusions, final String userId, final String commitMessage, String reviewId, String parentLockContext, boolean squash) {
-		super(sourcePath, targetPath, userId, commitMessageOrDefault(sourcePath, targetPath, commitMessage), reviewId, parentLockContext);
+	BranchMergeRequest(final String sourcePath, final String targetPath, Set<String> exclusions, final String userId, final String commitMessage, String parentLockContext, boolean squash) {
+		super(sourcePath, targetPath, userId, commitMessageOrDefault(sourcePath, targetPath, commitMessage), parentLockContext);
 		this.exclusions = exclusions;
 		this.squash = squash;
 	}

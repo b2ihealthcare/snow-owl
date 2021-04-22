@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,6 @@ public final class CreateMergeRequestBuilder extends BaseRequestBuilder<CreateMe
 	private String source;
 	private String target;
 	private String commitComment;
-	private String reviewId;
 	private Set<String> exclusions;
 	
 	private String userId;
@@ -62,11 +61,6 @@ public final class CreateMergeRequestBuilder extends BaseRequestBuilder<CreateMe
 		return this;
 	}
 	
-	public CreateMergeRequestBuilder setReviewId(String reviewId) {
-		this.reviewId = reviewId;
-		return this;
-	}
-
 	public CreateMergeRequestBuilder setParentLockContext(String parentLockContext) {
 		this.parentLockContext = parentLockContext;
 		return this;
@@ -87,9 +81,9 @@ public final class CreateMergeRequestBuilder extends BaseRequestBuilder<CreateMe
 		final IBranchPath sourcePath = BranchPathUtils.createPath(source);
 		final IBranchPath targetPath = BranchPathUtils.createPath(target);
 		if (targetPath.getParent().equals(sourcePath)) {
-			return new BranchRebaseRequest(source, target, userId, commitComment, reviewId, parentLockContext);
+			return new BranchRebaseRequest(source, target, userId, commitComment, parentLockContext);
 		} else {
-			return new BranchMergeRequest(source, target, Collections3.toImmutableSet(exclusions), userId, commitComment, reviewId, parentLockContext, squash);
+			return new BranchMergeRequest(source, target, Collections3.toImmutableSet(exclusions), userId, commitComment, parentLockContext, squash);
 		}
 	}
 	

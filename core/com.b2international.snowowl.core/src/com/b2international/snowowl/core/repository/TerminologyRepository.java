@@ -37,9 +37,6 @@ import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.core.RepositoryInfo.Health;
 import com.b2international.snowowl.core.branch.BranchChangedEvent;
-import com.b2international.snowowl.core.branch.review.ReviewConfiguration;
-import com.b2international.snowowl.core.branch.review.ReviewManager;
-import com.b2international.snowowl.core.branch.review.ReviewManagerImpl;
 import com.b2international.snowowl.core.config.IndexConfiguration;
 import com.b2international.snowowl.core.config.IndexSettings;
 import com.b2international.snowowl.core.config.RepositoryConfiguration;
@@ -75,7 +72,6 @@ public final class TerminologyRepository extends DelegatingContext implements Re
 		bind(Logger.class, log);
 		
 		final ObjectMapper mapper = service(ObjectMapper.class);
-		initializeServices();
 		RevisionIndex index = initIndex(mapper, mappings);
 		bind(Repository.class, this);
 		bind(Mappings.class, mappings);
@@ -105,12 +101,6 @@ public final class TerminologyRepository extends DelegatingContext implements Re
 		}
 	}
 	
-	private void initializeServices() {
-		final ReviewConfiguration reviewConfiguration = getDelegate().service(SnowOwlConfiguration.class).getModuleConfig(ReviewConfiguration.class);
-		final ReviewManagerImpl reviewManager = new ReviewManagerImpl(this, reviewConfiguration);
-		bind(ReviewManager.class, reviewManager);
-	}
-
 	private RevisionIndex initIndex(final ObjectMapper mapper, Mappings mappings) {
 		final Map<String, Object> indexSettings = newHashMap(getDelegate().service(IndexSettings.class));
 		final IndexConfiguration repositoryIndexConfiguration = getDelegate().service(SnowOwlConfiguration.class).getModuleConfig(RepositoryConfiguration.class).getIndexConfiguration();

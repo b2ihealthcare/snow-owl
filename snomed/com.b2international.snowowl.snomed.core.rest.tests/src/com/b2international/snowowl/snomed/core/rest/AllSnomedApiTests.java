@@ -36,7 +36,6 @@ import com.b2international.snowowl.snomed.core.request.ValueSetMemberSearchSnome
 import com.b2international.snowowl.snomed.core.rest.branches.SnomedBranchingApiTest;
 import com.b2international.snowowl.snomed.core.rest.branches.SnomedMergeApiTest;
 import com.b2international.snowowl.snomed.core.rest.branches.SnomedMergeConflictTest;
-import com.b2international.snowowl.snomed.core.rest.branches.SnomedReviewApiTest;
 import com.b2international.snowowl.snomed.core.rest.classification.SnomedClassificationApiTest;
 import com.b2international.snowowl.snomed.core.rest.compare.ConceptMapCompareSnomedMapTypeReferenceSetTest;
 import com.b2international.snowowl.snomed.core.rest.components.*;
@@ -89,10 +88,9 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	ConceptMapCompareSnomedMapTypeReferenceSetTest.class,
 	ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest.class,
 	ConceptMapCompareDsvExportTest.class,
-	// Merge, Review test cases
+	// Branch Merge API test cases
 	SnomedMergeApiTest.class,
 	SnomedMergeConflictTest.class,
-	SnomedReviewApiTest.class,
 	// Import-Export-Versioning-Classification
 	SnomedClassificationApiTest.class,
 	SnomedImportApiTest.class,

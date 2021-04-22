@@ -25,13 +25,7 @@ import java.util.function.Predicate;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.context.annotation.Scope;
-import org.springframework.context.annotation.ScopedProxyMode;
+import org.springframework.context.annotation.*;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.http.HttpHeaders;
@@ -66,8 +60,6 @@ import com.b2international.commons.options.MetadataMixin;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.authorization.AuthorizedEventBus;
-import com.b2international.snowowl.core.branch.review.Review;
-import com.b2international.snowowl.core.branch.review.ReviewMixin;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.identity.IdentityProvider;
 import com.b2international.snowowl.core.rate.ApiConfiguration;
@@ -120,7 +112,6 @@ public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 		objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 		objectMapper.addMixIn(Metadata.class, MetadataMixin.class);
 		objectMapper.addMixIn(MetadataHolder.class, MetadataHolderMixin.class);
-		objectMapper.addMixIn(Review.class, ReviewMixin.class);
 		return objectMapper;
 	}
 	

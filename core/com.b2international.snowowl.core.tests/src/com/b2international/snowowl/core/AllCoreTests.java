@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 import com.b2international.snowowl.core.attachments.AttachmentRegistryTest;
-import com.b2international.snowowl.core.branch.review.ReviewSerializationTest;
 import com.b2international.snowowl.core.codesystem.CodeSystemTest;
 import com.b2international.snowowl.core.events.NotificationsTest;
 import com.b2international.snowowl.core.events.util.PromiseTest;
@@ -54,7 +53,6 @@ import com.b2international.snowowl.core.validation.issue.ValidationIssueApiTest;
 	SortParserTest.class,
 	JobRequestsTest.class,
 	MergeConflictSerializationTest.class,
-	ReviewSerializationTest.class,
 	PermissionTest.class,
 	ComponentURITest.class,
 	DatastoreLockTests.class,
