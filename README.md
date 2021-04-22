@@ -39,10 +39,10 @@ Features include:
 
 # Download
 
-* [WINDOWS](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.6.0/snow-owl-oss-7.6.0.zip) - [sha](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.6.0/snow-owl-oss-7.6.0.zip.sha512)
-* [MACOS/LINUX](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.6.0/snow-owl-oss-7.6.0.tar.gz) - [sha](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.6.0/snow-owl-oss-7.6.0.tar.gz.sha512) 
-* [RPM](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.6.0/snow-owl-oss-7.6.0.rpm) - [sha](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.6.0/snow-owl-oss-7.6.0.rpm.sha512)
-* [DEB](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.6.0/snow-owl-oss-7.6.0.deb) - [sha](https://github.com/b2ihealthcare/snow-owl/releases/download/v7.6.0/snow-owl-oss-7.6.0.deb.sha512)
+* [WINDOWS](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/7.16.2/com.b2international.snowowl.server.update-7.16.2-oss.zip) - [sha](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/7.16.2/com.b2international.snowowl.server.update-7.16.2-oss.zip.sha1)
+* [MACOS/LINUX](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/7.16.2/com.b2international.snowowl.server.update-7.16.2-oss.tar.gz) - [sha](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/7.16.2/com.b2international.snowowl.server.update-7.16.2-oss.tar.gz.sha1) 
+* [RPM](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/7.16.2/com.b2international.snowowl.server.update-7.16.2-rpm.rpm) - [sha](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/7.16.2/com.b2international.snowowl.server.update-7.16.2-rpm.rpm.sha1)
+* [DEB](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/7.16.2/com.b2international.snowowl.server.update-7.16.2-deb.deb) - [sha](https://nexus.b2i.sg/repository/maven-releases/com/b2international/snowowl/com.b2international.snowowl.server.update/7.16.2/com.b2international.snowowl.server.update-7.16.2-deb.deb.sha1)
 
 {% hint style="info" %}
 This distribution only includes features licensed under the Apache 2.0 license. To get access to the full set of features, please contact [B2i Healthcare](mailto:info@b2i.sg).
