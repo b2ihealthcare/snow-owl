@@ -155,7 +155,7 @@ public final class ComponentURI implements Serializable {
 	@JsonValue
 	@Override
 	public String toString() {
-		return SLASH_JOINER.join(codeSystem(), terminologyComponentId(), identifier());
+		return SLASH_JOINER.join(codeSystemUri(), terminologyComponentId(), identifier());
 	}
 	
 	@Override
