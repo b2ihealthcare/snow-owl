@@ -30,6 +30,7 @@ import java.util.stream.Stream;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersion;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
@@ -111,9 +112,12 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 		if (branchPath.equals(IBranchPath.MAIN_BRANCH)) {
 			throw FhirException.createFhirError(String.format("No code system version found for code system %s", codeSystemURI.getUri()), OperationOutcomeCode.MSG_PARAM_INVALID, "CodeSystem");
 		} else {
+			
+			IBranchPath fullBranchPath = BranchPathUtils.createPath(BranchPathUtils.createMainPath(), branchPath);
+			
 			Optional<CodeSystemVersion> csve = CodeSystemRequests.prepareSearchCodeSystemVersion()
 				.one()
-				.filterByBranchPath(branchPath)
+				.filterByBranchPath(fullBranchPath.getPath())
 				.build(repositoryId)
 				.execute(getBus())
 				.getSync()

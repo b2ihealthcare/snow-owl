@@ -31,7 +31,6 @@ import com.b2international.snowowl.core.codesystem.CodeSystemVersion;
 import com.b2international.snowowl.core.plugin.Component;
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.fhir.core.LogicalId;
 import com.b2international.snowowl.fhir.core.codesystems.IdentifierUse;
 import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
@@ -118,7 +117,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 	@Override
 	public ValueSet getValueSet(ComponentURI componentURI) {
 		
-		CodeSystemVersion codeSystemVersion = findCodeSystemVersion(componentURI);
+		CodeSystemVersion codeSystemVersion = findCodeSystemVersion(componentURI, "ValueSet.id");
 		
 		//Simple type reference set
 		if (componentURI.terminologyComponentId()!= SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER) {
@@ -165,7 +164,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 	@Override
 	public ValueSet expandValueSet(ComponentURI componentURI) {
 		
-		CodeSystemVersion codeSystemVersion = findCodeSystemVersion(componentURI);
+		CodeSystemVersion codeSystemVersion = findCodeSystemVersion(componentURI, "ValueSet.id");
 
 		if (componentURI.terminologyComponentId()!= SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER) {
 			return buildSimpleTypeRefsetValueSet(componentURI.identifier(), codeSystemVersion);
@@ -420,7 +419,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 	@Override
 	public ValidateCodeResult validateCode(ValidateCodeRequest validateCodeRequest, ComponentURI componentURI) {
 		
-		CodeSystemVersion codeSystemVersion = findCodeSystemVersion(componentURI);
+		CodeSystemVersion codeSystemVersion = findCodeSystemVersion(componentURI, "ValueSet.id");
 		
 		//simple type reference
 		if (componentURI.terminologyComponentId()!= SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER) {
@@ -680,9 +679,9 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 
 	private ValueSet.Builder buildExpandedQueryTypeValueSet(SnomedReferenceSetMember refsetMember, SnomedConcept referencedComponent, CodeSystemVersion codeSystemVersion, List<ExtendedLocale> locales) {
 		
-		LogicalId logicalId = new LogicalId(repositoryId, codeSystemVersion.getPath(), refsetMember.getReferenceSetId(), refsetMember.getId());
+		ComponentURI componentURI = ComponentURI.of(codeSystemVersion.getUri(), SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, refsetMember.getId());
 		
-		Builder builder = createValueSetBuilder(logicalId, refsetMember, codeSystemVersion);
+		Builder builder = createValueSetBuilder(componentURI, refsetMember, codeSystemVersion);
 
 		String narrativeText = String.format("<div>This is the Value Set representation of the reference set member [%s] from the Query Type Reference Set [%s].</div>", refsetMember.getId(), refsetMember.getReferenceSetId());
 		
@@ -700,7 +699,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 			.filterByActive(true)
 			.setLocales(locales)
 			.setExpand("pt()")
-			.build(repositoryId, logicalId.getBranchPath())
+			.build(codeSystemVersion.getUri())
 			.execute(getBus())
 			.getSync();
 		
@@ -734,9 +733,9 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 	
 	private ValueSet.Builder buildSimpleTypeValueSet(final SnomedComponent snomedComponent, final CodeSystemVersion codeSystemVersion, final List<ExtendedLocale> locales) {
 		
-		LogicalId logicalId = new LogicalId(repositoryId, codeSystemVersion.getPath(), snomedComponent.getId());
+		ComponentURI componentURI = ComponentURI.of(codeSystemVersion.getUri(), SnomedTerminologyComponentConstants.REFSET_NUMBER, snomedComponent.getId());
 		
-		Builder builder = createValueSetBuilder(logicalId, snomedComponent, codeSystemVersion);
+		Builder builder = createValueSetBuilder(componentURI, snomedComponent, codeSystemVersion);
 		addSimpleTypeProperties(builder, snomedComponent, codeSystemVersion);
 		
 		Include include = Include.builder()
@@ -755,9 +754,9 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 	
 	private ValueSet.Builder buildExpandedSimpleTypeValueSet(SnomedReferenceSet referenceSet, CodeSystemVersion codeSystemVersion, final List<ExtendedLocale> locales) {
 		
-		LogicalId logicalId = new LogicalId(repositoryId, codeSystemVersion.getPath(), referenceSet.getId());
+		ComponentURI componentURI = ComponentURI.of(codeSystemVersion.getUri(), SnomedTerminologyComponentConstants.REFSET_NUMBER, referenceSet.getId());
 		
-		Builder builder = createValueSetBuilder(logicalId, referenceSet, codeSystemVersion);
+		Builder builder = createValueSetBuilder(componentURI, referenceSet, codeSystemVersion);
 		addSimpleTypeProperties(builder, referenceSet, codeSystemVersion);
 		
 		SnomedReferenceSetMembers members = referenceSet.getMembers();
@@ -863,16 +862,12 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 		return searchBuilder;
 	}
 	
-	/**
-	 * @param snomedComponent 
-	 * @param codeSystemVersion 
-	 * @return
-	 */
-	private Builder createValueSetBuilder(LogicalId logicalId, SnomedComponent snomedComponent, CodeSystemVersion codeSystemVersion) {
+	private Builder createValueSetBuilder(ComponentURI componentURI, SnomedComponent snomedComponent, CodeSystemVersion codeSystemVersion) {
 		
-		String referenceSetId = snomedComponent.getId();
+		//Refset | Member
+		String refsetComponentId = snomedComponent.getId();
 		
-		Builder builder = ValueSet.builder(logicalId.toString());
+		Builder builder = ValueSet.builder(componentURI.toString());
 		
 		//TODO: module needs to be added as well
 		SnomedUri uri = SnomedUri.builder().version(codeSystemVersion.getEffectiveDate()).build();
@@ -880,7 +875,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 		Identifier identifier = Identifier.builder()
 			.use(IdentifierUse.OFFICIAL)
 			.system(uri.toString())
-			.value(referenceSetId)
+			.value(refsetComponentId)
 			.build();
 		
 		builder
@@ -913,9 +908,9 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 
 	private ValueSet.Builder buildQueryTypeValueSet(final SnomedReferenceSetMember refsetMember, final SnomedConcept referencedComponent, final CodeSystemVersion codeSystemVersion, final List<ExtendedLocale> locales) {
 	
-		LogicalId logicalId = new LogicalId(repositoryId, codeSystemVersion.getPath(), refsetMember.getReferenceSetId(), refsetMember.getId());
+		ComponentURI componentURI = ComponentURI.of(codeSystemVersion.getUri(), SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, refsetMember.getId());
 		
-		Builder builder = createValueSetBuilder(logicalId, refsetMember, codeSystemVersion);
+		Builder builder = createValueSetBuilder(componentURI, refsetMember, codeSystemVersion);
 
 		String narrativeText = String.format("<div>This is the Value Set representation of the reference set member [%s] from the Query Type Reference Set [%s].</div>", refsetMember.getId(), refsetMember.getReferenceSetId());
 		

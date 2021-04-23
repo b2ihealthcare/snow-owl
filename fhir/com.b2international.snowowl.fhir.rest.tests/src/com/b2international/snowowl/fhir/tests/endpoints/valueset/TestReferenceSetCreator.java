@@ -123,7 +123,8 @@ public class TestReferenceSetCreator extends TestArtifactCreator {
 					.findFirst()
 					.get();
 				
-				return refsetId + "|" + firstMember.getId();
+				return firstMember.getId();
+				//return refsetId + "|" + firstMember.getId();
 			}
 	}
 

@@ -24,7 +24,6 @@ import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.plugin.ClassPathScanner;
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.fhir.core.LogicalId;
 import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.core.model.conceptmap.ConceptMap;
 import com.b2international.snowowl.fhir.core.model.conceptmap.Match;
@@ -99,6 +98,10 @@ public interface IConceptMapApiProvider extends IFhirApiProvider {
 	 */
 	Collection<ConceptMap> getConceptMaps();
 
+	/**
+	 * @param componentURI - logical code system path (codeSystemShortName/version/typeId/componentId)
+	 * @return true if this provider supports the code system represented by the logical id
+	 */
 	boolean isSupported(ComponentURI componentUri);
 
 	/**

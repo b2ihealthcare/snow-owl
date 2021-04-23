@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.fhir.core.model.valueset;
 
-import com.b2international.snowowl.fhir.core.LogicalId;
+import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -93,9 +93,9 @@ public class ValidateCodeResult {
 		 * @param logicalId
 		 * @return
 		 */
-		public Builder valueSetNotFoundResult(LogicalId logicalId) {
+		public Builder valueSetNotFoundResult(ComponentURI componentUri) {
 			this.result = false;
-			this.message("Could not find a valueset to check against: " + logicalId);
+			this.message("Could not find a valueset to check against: " + componentUri);
 			return this;
 		}
 		

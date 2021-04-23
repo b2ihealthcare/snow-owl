@@ -97,6 +97,7 @@ public abstract class FhirApiProvider {
 		
 		Optional<CodeSystemVersion> codeSystemOptional = CodeSystemRequests.prepareSearchCodeSystemVersion()
 			.one()
+			.filterByVersionId(componentURI.codeSystemUri().getPath())
 			.filterByCodeSystemShortName(componentURI.codeSystemUri().getCodeSystem())
 			.build(getRepositoryId())
 			.execute(getBus())

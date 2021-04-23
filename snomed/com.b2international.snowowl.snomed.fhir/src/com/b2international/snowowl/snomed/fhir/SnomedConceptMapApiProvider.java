@@ -36,7 +36,6 @@ import com.b2international.snowowl.core.plugin.Component;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.fhir.core.LogicalId;
 import com.b2international.snowowl.fhir.core.codesystems.ConceptMapEquivalence;
 import com.b2international.snowowl.fhir.core.codesystems.IdentifierUse;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
@@ -351,8 +350,8 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 
 	private ConceptMap.Builder buildConceptMap(SnomedReferenceSet snomedReferenceSet, CodeSystemVersion codeSystemVersion, List<ExtendedLocale> locales) {
 		
-		LogicalId logicalId = new LogicalId(repositoryId, codeSystemVersion.getPath(), snomedReferenceSet.getId());
-		ConceptMap.Builder conceptMapBuilder = ConceptMap.builder(logicalId.toString());
+		ComponentURI componentURI = ComponentURI.of(codeSystemVersion.getUri(), SnomedTerminologyComponentConstants.REFSET_NUMBER, snomedReferenceSet.getId());
+		ConceptMap.Builder conceptMapBuilder = ConceptMap.builder(componentURI.toString());
 
 		String referenceSetId = snomedReferenceSet.getId();
 

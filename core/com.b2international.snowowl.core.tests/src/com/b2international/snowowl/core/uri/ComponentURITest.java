@@ -70,7 +70,6 @@ public class ComponentURITest {
 		assertTrue(componentURI == ComponentURI.of(codeSystemURI.toString(), terminologyComponentId, identifier));
 	}
 	
-	
 	@Test
 	public void toStringTest() {
 		String uri = "SNOMEDCT/2019-09-30/150/59524001";
