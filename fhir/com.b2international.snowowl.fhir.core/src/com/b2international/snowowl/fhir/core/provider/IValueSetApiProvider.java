@@ -104,8 +104,8 @@ public interface IValueSetApiProvider extends IFhirApiProvider {
 	boolean isSupported(ComponentURI componentURI);
 
 	/**
-	 * Returns the value set for the passed in logical id (repositoryId:branchPath/valueSetId[|memberId])
-	 * @param logicalId
+	 * Returns the value set for the passed in logical id (codeSystemShortName/version/typeId/componentId)
+	 * @param componentURI
 	 * @return {@link ValueSet}
 	 * @throws BadRequestException if the value set is not supported by this provider
 	 */

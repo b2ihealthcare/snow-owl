@@ -88,8 +88,8 @@ public abstract class FhirApiProvider {
 	}
 	
 	/**
-	 * Returns the code system version for the logical id
-	 * @param logicalId
+	 * Returns the code system version for the component URI
+	 * @param componentURI
 	 * @param location for logging the location in case of an exception
 	 * @return
 	 */
@@ -105,7 +105,7 @@ public abstract class FhirApiProvider {
 			.first();
 			
 		return codeSystemOptional.orElseThrow(() -> 
-			new BadRequestException(String.format("Could not find corresponding version [%s] for logical id [%s].", componentURI.codeSystemUri(), componentURI.identifier()), location));
+			new BadRequestException(String.format("Could not find corresponding version [%s] for the component id [%s].", componentURI.codeSystemUri(), componentURI.identifier()), location));
 	}
 	
 	/**

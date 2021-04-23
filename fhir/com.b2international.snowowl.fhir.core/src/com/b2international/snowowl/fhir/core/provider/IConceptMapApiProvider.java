@@ -59,7 +59,7 @@ public interface IConceptMapApiProvider extends IFhirApiProvider {
 		 * Returns the matching {@link IConceptMapApiProvider} for the given path (repository:branchPath).
 		 * @param bus
 		 * @param locales
-		 * @param componentUri code system path (e.g.icd10Store:20140101)
+		 * @param componentUri code system path (e.g.ICD10/20140101/A10)
 		 * @return FHIR concept map provider
 		 * @throws com.b2international.snowowl.fhir.core.exceptions.BadRequestException - if provider is not found with the given path
 		 */

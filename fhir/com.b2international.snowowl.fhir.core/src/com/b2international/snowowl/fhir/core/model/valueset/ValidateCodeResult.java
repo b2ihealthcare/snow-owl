@@ -90,7 +90,7 @@ public class ValidateCodeResult {
 
 		/**
 		 * Builds a result for errors when value set is not found
-		 * @param logicalId
+		 * @param componentUri
 		 * @return
 		 */
 		public Builder valueSetNotFoundResult(ComponentURI componentUri) {
