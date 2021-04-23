@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.fhir;
 
+import java.time.ZoneOffset;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -26,6 +27,7 @@ import java.util.stream.Collectors;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.commons.exceptions.NotImplementedException;
 import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.snowowl.core.codesystem.CodeSystemVersion;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
 import com.b2international.snowowl.core.plugin.Component;
 import com.b2international.snowowl.core.uri.ComponentURI;
@@ -222,7 +224,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 		String locationName = "$expand.url";
 		SnomedUri snomedUri = SnomedUri.fromUriString(uriString, locationName);
 		
-		CodeSystemVersionEntry codeSystemVersion = getCodeSystemVersion(snomedUri.getVersionTag());
+		CodeSystemVersion codeSystemVersion = getCodeSystemVersion(snomedUri.getVersionTag());
 		
 		if (!snomedUri.hasQueryPart()) {
 			throw new BadRequestException("Query part is missing for value set expansion.", locationName);
