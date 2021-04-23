@@ -28,6 +28,7 @@ import com.b2international.commons.exceptions.NotImplementedException;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
 import com.b2international.snowowl.core.plugin.Component;
+import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.fhir.core.LogicalId;
 import com.b2international.snowowl.fhir.core.codesystems.IdentifierUse;
@@ -89,6 +90,11 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 	public SnomedValueSetApiProvider(IEventBus bus, List<ExtendedLocale> locales) {
 		super(bus, locales);
 	}
+	
+	@Override
+	public boolean isSupported(ComponentURI componentURI) {
+		return componentURI.codeSystem().startsWith(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME);
+	}
 
 	@Override
 	public Collection<ValueSet> getValueSets() {
@@ -109,15 +115,15 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 	}
 	
 	@Override
-	public ValueSet getValueSet(LogicalId logicalId) {
+	public ValueSet getValueSet(ComponentURI componentURI) {
 		
-		CodeSystemVersionEntry codeSystemVersion = findCodeSystemVersion(logicalId);
+		CodeSystemVersionEntry codeSystemVersion = findCodeSystemVersion(componentURI);
 		
 		//Simple type reference set
-		if (!logicalId.isMemberId()) {
+		if (componentURI.terminologyComponentId()!= SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER) {
 		
-			return getSimpleTypeRefsetSearchRequestBuilder(logicalId.getComponentId())
-				.build(repositoryId, logicalId.getBranchPath())
+			return getSimpleTypeRefsetSearchRequestBuilder(componentURI.identifier())
+				.build(componentURI.codeSystemUri())
 				.execute(getBus())
 				.then(refsets -> {
 					return refsets.stream()
@@ -128,7 +134,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 				.getSync()
 				.stream()
 				.findFirst()
-				.orElseThrow(() -> new NotFoundException("Active value set", logicalId.toString()));
+				.orElseThrow(() -> new NotFoundException("Active value set", componentURI.toString()));
 		} else {
 			
 			//Query type reference set
@@ -136,10 +142,10 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 				.one()
 				.filterByRefSetType(Sets.newHashSet(SnomedRefSetType.QUERY))
 				.filterByActive(true)
-				.filterById(logicalId.getMemberId())
+				.filterById(componentURI.identifier())
 				.setLocales(getLocales())
 				.setExpand("referencedComponent(expand(pt()))")
-				.build(repositoryId, logicalId.getBranchPath())
+				.build(componentURI.codeSystemUri())
 				.execute(getBus())
 				.then(members -> {
 					return members.stream()
@@ -150,28 +156,28 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 				.getSync()
 				.stream()
 				.findFirst()
-				.orElseThrow(() -> new NotFoundException("Active member", logicalId.toString()));
+				.orElseThrow(() -> new NotFoundException("Active member", componentURI.toString()));
 		}
 		
 	}
 
 	@Override
-	public ValueSet expandValueSet(LogicalId logicalId) {
+	public ValueSet expandValueSet(ComponentURI componentURI) {
 		
-		CodeSystemVersionEntry codeSystemVersion = findCodeSystemVersion(logicalId);
+		CodeSystemVersionEntry codeSystemVersion = findCodeSystemVersion(componentURI);
 
-		if (!logicalId.isMemberId()) {
-			return buildSimpleTypeRefsetValueSet(logicalId.getComponentId(), codeSystemVersion);
+		if (componentURI.terminologyComponentId()!= SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER) {
+			return buildSimpleTypeRefsetValueSet(componentURI.identifier(), codeSystemVersion);
 		} 
 		else {
 			//Query type reference set member
 			return SnomedRequests.prepareSearchMember()
 				.one()
-				.filterById(logicalId.getMemberId())
+				.filterById(componentURI.identifier())
 				.filterByRefSetType(Sets.newHashSet(SnomedRefSetType.QUERY))
 				.setLocales(getLocales())
 				.setExpand("referencedComponent(expand(pt()))")
-				.build(repositoryId, logicalId.getBranchPath())
+				.build(componentURI.codeSystemUri())
 				.execute(getBus())
 				.then(members -> {
 					return members.stream()
@@ -182,7 +188,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 				.getSync()
 				.stream()
 				.findFirst()
-				.orElseThrow(() -> new NotFoundException("No active member found for ", logicalId.toString()));
+				.orElseThrow(() -> new NotFoundException("No active member found for ", componentURI.toString()));
 		}
 	}
 	
@@ -411,13 +417,13 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 	}
 	
 	@Override
-	public ValidateCodeResult validateCode(ValidateCodeRequest validateCodeRequest, LogicalId valueSetLogicalId) {
+	public ValidateCodeResult validateCode(ValidateCodeRequest validateCodeRequest, ComponentURI componentURI) {
 		
-		CodeSystemVersionEntry codeSystemVersion = findCodeSystemVersion(valueSetLogicalId);
+		CodeSystemVersionEntry codeSystemVersion = findCodeSystemVersion(componentURI);
 		
 		//simple type reference
-		if (!valueSetLogicalId.isMemberId()) {
-			return validateSimpleTypReferenceSet(valueSetLogicalId, codeSystemVersion.getParentBranchPath(), validateCodeRequest);
+		if (componentURI.terminologyComponentId()!= SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER) {
+			return validateSimpleTypReferenceSet(componentURI, codeSystemVersion.getParentBranchPath(), validateCodeRequest);
 		} 
 		
 		//query type refset
@@ -425,19 +431,19 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 			//Query type reference set member
 			Optional<SnomedReferenceSetMember> optionalRefsetMember = SnomedRequests.prepareSearchMember()
 				.one()
-				.filterById(valueSetLogicalId.getMemberId())
+				.filterById(componentURI.identifier())
 				.filterByActive(true)
 				.filterByRefSetType(Sets.newHashSet(SnomedRefSetType.QUERY))
 				.setLocales(getLocales())
 				.setExpand("referencedComponent(expand(pt()))")
-				.build(repositoryId, valueSetLogicalId.getBranchPath())
+				.build(componentURI.codeSystemUri())
 				.execute(getBus())
 				.getSync()
 				.stream()
 				.findFirst();
 			
 			if (!optionalRefsetMember.isPresent()) {
-				throw new NotFoundException("Reference set member", valueSetLogicalId.getMemberId());
+				throw new NotFoundException("Reference set member", componentURI.identifier());
 			}
 			
 			SnomedReferenceSetMember referenceSetMember = optionalRefsetMember.get();
@@ -450,7 +456,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 				.filterByActive(true)
 				.setLocales(getLocales())
 				.setExpand("pt()")
-				.build(repositoryId, valueSetLogicalId.getBranchPath())
+				.build(componentURI.codeSystemUri())
 				.execute(getBus())
 				.getSync();
 			
@@ -459,7 +465,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 			Optional<SnomedConcept> optionalConcept = snomedConcepts.stream().filter(c -> c.getId().equals(componentId)).findFirst();
 			if (!optionalConcept.isPresent()) {
 				return ValidateCodeResult.builder()
-					.valueSetMemberNotFoundResult(validateCodeRequest.getSystem(), validateCodeRequest.getCode(), valueSetLogicalId.toString())
+					.valueSetMemberNotFoundResult(validateCodeRequest.getSystem(), validateCodeRequest.getCode(), componentURI.toString())
 					.build();
 			}
 			
@@ -477,7 +483,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 	 * @param validateCodeRequest 
 	 * @return
 	 */
-	private ValidateCodeResult validateSimpleTypReferenceSet(LogicalId valueSetLogicalId, String branchPath, ValidateCodeRequest validateCodeRequest) {
+	private ValidateCodeResult validateSimpleTypReferenceSet(ComponentURI componentURI, String branchPath, ValidateCodeRequest validateCodeRequest) {
 		
 		String componentId = validateCodeRequest.getCode();
 		String codeSystem = validateCodeRequest.getSystem();
@@ -491,7 +497,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 		}
 		
 		//fetch the simple type refset
-		String refsetId = valueSetLogicalId.getComponentId();
+		String refsetId = componentURI.identifier();
 		SnomedReferenceSets snomedReferenceSets = SnomedRequests.prepareSearchRefSet()
 			.filterByActive(true)
 			.filterById(refsetId)

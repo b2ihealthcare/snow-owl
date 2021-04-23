@@ -36,7 +36,7 @@ public interface IFhirApiProvider {
 	 * @param logicalId - logical code system path (repositoryId:branchPath)
 	 * @return true if this provider supports the code system represented by the logical id
 	 */
-	boolean isSupported(LogicalId logicalId);
+	//boolean isSupported(LogicalId logicalId);
 	
 	/**
 	 * Returns the code system URIs supported.

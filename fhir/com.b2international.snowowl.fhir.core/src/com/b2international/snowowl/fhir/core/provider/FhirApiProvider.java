@@ -30,8 +30,8 @@ import com.b2international.snowowl.core.codesystem.CodeSystems;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
+import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.fhir.core.LogicalId;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.google.common.collect.Lists;
 
@@ -91,18 +91,18 @@ public abstract class FhirApiProvider {
 	 * @param logicalId
 	 * @return
 	 */
-	protected CodeSystemVersionEntry findCodeSystemVersion(LogicalId logicalId) {
+	protected CodeSystemVersionEntry findCodeSystemVersion(ComponentURI componentURI) {
 		
 		Optional<CodeSystemVersionEntry> codeSystemOptional = CodeSystemRequests.prepareSearchCodeSystemVersion()
 			.one()
-			.filterByBranchPath(logicalId.getBranchPath())
+			.filterByCodeSystemShortName(componentURI.codeSystemUri().getCodeSystem())
 			.build(getRepositoryId())
 			.execute(getBus())
 			.getSync()
 			.first();
 			
 		return codeSystemOptional.orElseThrow(() -> 
-			new BadRequestException(String.format("Could not find corresponding version [%s] for logical id [%s].", logicalId.getBranchPath(), logicalId), "ValueSet.id"));
+			new BadRequestException(String.format("Could not find corresponding version [%s] for logical id [%s].", componentURI.codeSystemUri(), componentURI.identifier()), "ValueSet.id"));
 	}
 	
 	/**

@@ -31,9 +31,9 @@ import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
 import com.b2international.snowowl.core.plugin.Component;
+import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.fhir.core.FhirCoreActivator;
-import com.b2international.snowowl.fhir.core.LogicalId;
 import com.b2international.snowowl.fhir.core.ResourceNarrative;
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
 import com.b2international.snowowl.fhir.core.codesystems.FhirCodeSystem;
@@ -88,25 +88,25 @@ public final class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 	}
 
 	@Override
-	public boolean isSupported(LogicalId logicalId) {
+	public boolean isSupported(CodeSystemURI codeSystemId) {
 		
 		Optional<String> supportedPath = getSupportedURIs().stream()
 			.map(u -> u.substring(u.lastIndexOf("/") + 1))
-			.filter(p -> p.equals(logicalId.getBranchPath()))
+			.filter(p -> p.equals(codeSystemId.getPath()))
 			.findFirst();
 		return supportedPath.isPresent();
 	}
 	
 	@Override
-	public CodeSystem getCodeSystem(LogicalId logicalId) {
+	public CodeSystem getCodeSystem(CodeSystemURI codeSystemURI) {
 		
 		return getCodeSystemClasses().stream().map(cl-> { 
-			Object enumObject = createCodeSystemEnum(cl);
-			return (FhirCodeSystem) enumObject;
-		}).filter(fcs -> fcs.getCodeSystemUri().endsWith(logicalId.getBranchPath()))
-		.map(this::buildCodeSystem)
-		.findFirst()
-		.get();
+				Object enumObject = createCodeSystemEnum(cl);
+				return (FhirCodeSystem) enumObject;
+			}).filter(fcs -> fcs.getCodeSystemUri().endsWith(codeSystemURI.getPath()))
+				.map(this::buildCodeSystem)
+				.findFirst()
+				.get();
 	}
 
 	@Override
