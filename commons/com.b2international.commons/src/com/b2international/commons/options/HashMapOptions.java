@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,25 +34,21 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
 /**
- * FIXME make this class internal impl, but first remove subclasses from plugin projects
- * 
  * @since 4.5
  */
 public class HashMapOptions extends HashMap<String, Object> implements Options {
 
 	private static final long serialVersionUID = 4190786291142214160L;
 
-	@Deprecated
-	protected HashMapOptions() {
+	public HashMapOptions() {
 		this(5);
 	}
 	
-	@Deprecated
-	protected HashMapOptions(int initialCapacity) {
+	public HashMapOptions(int initialCapacity) {
 		super(initialCapacity);
 	}
 	
-	HashMapOptions(Map<String, Object> options) {
+	public HashMapOptions(Map<String, Object> options) {
 		super(options);
 	}
 	
