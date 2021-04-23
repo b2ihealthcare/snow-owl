@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.core.validation.issue;
 
-import static com.google.common.collect.Lists.newArrayListWithExpectedSize;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
@@ -37,7 +36,6 @@ import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
 import com.b2international.snowowl.core.validation.ValidationRequests;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Sets.SetView;
@@ -165,12 +163,12 @@ final class ValidationIssueSearchRequest
 			if (containsKey(OptionKey.AFFECTED_COMPONENT_ID)) {
 				queryBuilder.must(Expressions.matchTextPhrase(ValidationIssue.Fields.AFFECTED_COMPONENT_LABELS, searchTerm));
 			} else {
-				final List<Expression> disjuncts = newArrayListWithExpectedSize(2);
-				disjuncts.add(Expressions.scriptScore(Expressions.matchTextPhrase(ValidationIssue.Fields.AFFECTED_COMPONENT_LABELS, searchTerm), "normalizeWithOffset", ImmutableMap.of("offset", 1)));
-				disjuncts.add(Expressions.scriptScore(Expressions.matchTextAll(ValidationIssue.Fields.AFFECTED_COMPONENT_LABELS_PREFIX, searchTerm), "normalizeWithOffset", ImmutableMap.of("offset", 0)));
 				queryBuilder.must(
 					Expressions.builder()
-						.should(Expressions.dismax(disjuncts))
+						.should(Expressions.dismaxWithScoreCategories(
+							Expressions.matchTextPhrase(ValidationIssue.Fields.AFFECTED_COMPONENT_LABELS, searchTerm),
+							Expressions.matchTextAll(ValidationIssue.Fields.AFFECTED_COMPONENT_LABELS_PREFIX, searchTerm)
+						))
 						.should(Expressions.boost(Expressions.exactMatch(ValidationIssue.Fields.AFFECTED_COMPONENT_ID, searchTerm), 1000f))
 					.build()
 				);

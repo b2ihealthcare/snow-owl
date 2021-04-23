@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,8 @@ import org.eclipse.xtext.validation.IResourceValidator;
 import org.slf4j.Logger;
 
 import com.b2international.index.revision.Hooks.PreCommitHook;
+import com.b2international.snomed.ecl.EclStandaloneSetup;
+import com.b2international.snomed.ql.QLStandaloneSetup;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.codesystem.version.VersioningRequestBuilder;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
@@ -32,16 +34,8 @@ import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.core.merge.ComponentRevisionConflictProcessor;
 import com.b2international.snowowl.core.plugin.Component;
-import com.b2international.snowowl.core.repository.ComponentDeletionPolicy;
-import com.b2international.snowowl.core.repository.CompositeComponentDeletionPolicy;
-import com.b2international.snowowl.core.repository.ContentAvailabilityInfoProvider;
-import com.b2international.snowowl.core.repository.TerminologyRepositoryInitializer;
-import com.b2international.snowowl.core.repository.TerminologyRepositoryPlugin;
-import com.b2international.snowowl.core.request.ConceptMapMappingSearchRequestEvaluator;
-import com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator;
-import com.b2international.snowowl.core.request.QueryOptimizer;
-import com.b2international.snowowl.core.request.SetMemberSearchRequestEvaluator;
-import com.b2international.snowowl.core.request.TransactionalRequest;
+import com.b2international.snowowl.core.repository.*;
+import com.b2international.snowowl.core.request.*;
 import com.b2international.snowowl.core.setup.ConfigurationRegistry;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
@@ -76,12 +70,11 @@ import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfigurati
 import com.b2international.snowowl.snomed.datastore.index.change.SnomedRepositoryPreCommitHook;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.internal.SnomedRepositoryInitializer;
+import com.b2international.snowowl.snomed.datastore.request.ModuleRequest.ModuleIdProvider;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptMapSearchRequestEvaluator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedMemberSearchRequestEvaluator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.request.Synonyms;
-import com.b2international.snowowl.snomed.ecl.EclStandaloneSetup;
-import com.b2international.snowowl.snomed.ql.QLStandaloneSetup;
 import com.b2international.snowowl.snomed.validation.SnomedQueryValidationRuleEvaluator;
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Injector;
@@ -150,6 +143,7 @@ public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 					BranchContext branchContext = (BranchContext) context;
 					return (C) branchContext.inject()
 							.bind(Synonyms.class, new Synonyms(branchContext))
+							.bind(ModuleIdProvider.class, c -> c.getModuleId())
 							.build();
 				} else {
 					return context;

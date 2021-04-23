@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,12 +25,9 @@ import java.util.stream.Collectors;
 import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.common.lucene.search.function.CombineFunction;
 import org.elasticsearch.common.unit.Fuzziness;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.DisMaxQueryBuilder;
-import org.elasticsearch.index.query.Operator;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.*;
 import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
+import org.slf4j.Logger;
 
 import com.b2international.commons.exceptions.FormattedRuntimeException;
 import com.b2international.index.IndexClientFactory;
@@ -54,17 +51,19 @@ public final class EsQueryBuilder {
 	private final Deque<QueryBuilder> deque = Queues.newLinkedBlockingDeque();
 	private final Map<String, Object> settings;
 	private final DocumentMapping mapping;
+	private final Logger log;
 	private final String path;
 	
 	private boolean needsScoring;
 	
-	public EsQueryBuilder(DocumentMapping mapping, Map<String, Object> settings) {
-		this(mapping, settings, "");
+	public EsQueryBuilder(DocumentMapping mapping, Map<String, Object> settings, Logger log) {
+		this(mapping, settings, log, "");
 	}
 	
-	private EsQueryBuilder(DocumentMapping mapping, Map<String, Object> settings, String path) {
+	private EsQueryBuilder(DocumentMapping mapping, Map<String, Object> settings, Logger log, String path) {
 		this.mapping = mapping;
 		this.settings = settings;
+		this.log = log;
 		this.path = path;
 	}
 	
@@ -170,7 +169,7 @@ public final class EsQueryBuilder {
 		final BoolQueryBuilder query = QueryBuilders.boolQuery();
 		for (Expression must : bool.mustClauses()) {
 			// visit the item and immediately pop the deque item back
-			final EsQueryBuilder innerQueryBuilder = new EsQueryBuilder(mapping, settings);
+			final EsQueryBuilder innerQueryBuilder = new EsQueryBuilder(mapping, settings, log);
 			innerQueryBuilder.visit(must);
 			if (innerQueryBuilder.needsScoring) {
 				needsScoring = innerQueryBuilder.needsScoring;
@@ -205,7 +204,7 @@ public final class EsQueryBuilder {
 	private void visit(NestedPredicate predicate) {
 		final String nestedPath = toFieldPath(predicate);
 		final DocumentMapping nestedMapping = mapping.getNestedMapping(predicate.getField());
-		final EsQueryBuilder nestedQueryBuilder = new EsQueryBuilder(nestedMapping, settings, nestedPath);
+		final EsQueryBuilder nestedQueryBuilder = new EsQueryBuilder(nestedMapping, settings, log, nestedPath);
 		nestedQueryBuilder.visit(predicate.getExpression());
 		needsScoring = nestedQueryBuilder.needsScoring;
 		final QueryBuilder nestedQuery = nestedQueryBuilder.deque.pop();
@@ -231,6 +230,11 @@ public final class EsQueryBuilder {
 		final int minShouldMatch = predicate.minShouldMatch();
 		QueryBuilder query;
 		switch (type) {
+		case BOOLEAN_PREFIX:
+			query = QueryBuilders.matchBoolPrefixQuery(field, term)
+				.analyzer(predicate.analyzer())
+				.operator(Operator.AND);
+				break;
 		case PHRASE:
 			query = QueryBuilders.matchPhraseQuery(field, term)
 						.analyzer(predicate.analyzer());
@@ -292,6 +296,7 @@ public final class EsQueryBuilder {
 	private <T> void toTermsQuery(SetPredicate<T> predicate, final Set<T> terms, final Function<T, ?> valueConverter) {
 		final int maxTermsCount = Integer.parseInt((String) settings.get(IndexClientFactory.MAX_TERMS_COUNT_KEY));
 		if (terms.size() > maxTermsCount) {
+			log.warn("More than currently configured max_terms_count ({}) filter values on field query: {}.{}", maxTermsCount, mapping.typeAsString(), toFieldPath(predicate));
 			final BoolQueryBuilder bool = QueryBuilders.boolQuery().minimumShouldMatch(1);
 			Iterables.partition(terms, maxTermsCount).forEach(partition -> {
 				if (valueConverter != null) {
@@ -299,7 +304,6 @@ public final class EsQueryBuilder {
 				} else {
 					bool.should(QueryBuilders.termsQuery(toFieldPath(predicate), partition));
 				}
-				
 			});
 			deque.push(bool);
 		} else {

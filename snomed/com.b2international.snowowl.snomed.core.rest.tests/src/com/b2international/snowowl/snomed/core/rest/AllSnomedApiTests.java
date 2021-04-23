@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,8 @@ import com.b2international.snowowl.snomed.core.rest.classification.SnomedClassif
 import com.b2international.snowowl.snomed.core.rest.compare.ConceptMapCompareSnomedMapTypeReferenceSetTest;
 import com.b2international.snowowl.snomed.core.rest.components.*;
 import com.b2international.snowowl.snomed.core.rest.ext.SnomedComponentEffectiveTimeRestoreTest;
+import com.b2international.snowowl.snomed.core.rest.ext.SnomedExtensionCreationTest;
+import com.b2international.snowowl.snomed.core.rest.ext.SnomedExtensionUpgradeTest;
 import com.b2international.snowowl.snomed.core.rest.io.SnomedExportApiTest;
 import com.b2international.snowowl.snomed.core.rest.io.SnomedImportApiTest;
 import com.b2international.snowowl.snomed.core.rest.io.SnomedImportRowValidatorTest;
@@ -86,6 +88,7 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	ValueSetMemberSearchSnomedReferenceSetTest.class,
 	ConceptMapCompareSnomedMapTypeReferenceSetTest.class,
 	ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest.class,
+	ConceptMapCompareDsvExportTest.class,
 	// Merge, Review test cases
 	SnomedMergeApiTest.class,
 	SnomedMergeConflictTest.class,
@@ -99,17 +102,15 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	// Module dependecy test cases - they modify the MAIN branch so should be executed after tests that rely on MAIN branch stuff
 	SnomedModuleDependencyRefsetTest.class,
 	SnomedVersioningApiTest.class,
-	// Extension test cases - 7.0.preview version currently does not support extension upgrade
-//	SnomedExtensionUpgradeTest.class, 
-//	SnomedExtensionDowngradeTest.class,
-//	SnomedExtensionVersioningTest.class,
-	// MRCM export/importF
+	// Extension test cases
+	SnomedComponentEffectiveTimeRestoreTest.class,
+	SnomedExtensionCreationTest.class,
+	SnomedExtensionUpgradeTest.class, 
+	// MRCM export/import
 	MrcmImportExportTest.class,
 	// Performance test cases, should be the last tests to perform
 	SnomedConceptCreatePerformanceTest.class,
 	SnomedMergePerformanceTest.class,
-	ConceptMapCompareDsvExportTest.class,
-	SnomedComponentEffectiveTimeRestoreTest.class
 })
 public class AllSnomedApiTests {
 
@@ -119,7 +120,6 @@ public class AllSnomedApiTests {
 			.around(new BundleStartRule("org.eclipse.jetty.osgi.boot"))
 			.around(new BundleStartRule("com.b2international.snowowl.core.rest"))
 			.around(new SnomedContentRule(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, Branch.MAIN_PATH, Resources.Snomed.MINI_RF2_INT, Rf2ReleaseType.FULL))
-			.around(new SnomedContentRule(SnomedTerminologyComponentConstants.SNOMED_B2I_SHORT_NAME, SnomedApiTestConstants.EXTENSION_PATH, Resources.Snomed.MINI_RF2_EXT, Rf2ReleaseType.DELTA))
 			.around(new SnomedContentRule(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, Branch.MAIN_PATH, Resources.Snomed.MINI_RF2_COMPLEX_BLOCK_MAP, Rf2ReleaseType.DELTA));
 
 }

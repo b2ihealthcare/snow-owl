@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,33 +16,23 @@
 package com.b2international.snowowl.snomed.core.rest.components;
 
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
-import static com.b2international.snowowl.snomed.core.rest.CodeSystemRestRequests.createCodeSystem;
-import static com.b2international.snowowl.snomed.core.rest.CodeSystemVersionRestRequests.createCodeSystemAndVersion;
-import static com.b2international.snowowl.snomed.core.rest.CodeSystemVersionRestRequests.createVersion;
-import static com.b2international.snowowl.snomed.core.rest.CodeSystemVersionRestRequests.getNextAvailableEffectiveDateAsString;
-import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.assertInactivation;
-import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.createComponent;
-import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.deleteComponent;
-import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.getComponent;
-import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.updateComponent;
+import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.*;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRefSetRestRequests.bulkUpdateMembers;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRefSetRestRequests.updateRefSetComponent;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.changeToAcceptable;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createDescriptionRequestBody;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewConcept;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewDescription;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.inactivateDescription;
+import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.*;
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests.createCodeSystem;
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.createCodeSystemAndVersion;
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.createVersion;
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getNextAvailableEffectiveDateAsString;
+import static com.b2international.snowowl.test.commons.rest.RestExtensions.assertCreated;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
-import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static com.google.common.collect.Lists.newArrayList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.CoreMatchers.endsWith;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.hasItems;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Collections;
 import java.util.List;
@@ -53,6 +43,7 @@ import java.util.stream.Collectors;
 import org.junit.Test;
 
 import com.b2international.commons.exceptions.ConflictException;
+import com.b2international.commons.json.Json;
 import com.b2international.index.compat.TextConstants;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.index.revision.TimestampProvider;
@@ -85,9 +76,8 @@ import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
+import com.b2international.snowowl.snomed.datastore.request.ModuleRequest.ModuleIdProvider;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 
 import io.restassured.http.ContentType;
@@ -101,51 +91,46 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void createDescriptionNonExistentBranch() {
-		Map<?, ?> requestBody = createDescriptionRequestBody(Concepts.ROOT_CONCEPT)
-				.put("commitComment", "Created new description on non-existent branch")
-				.build();
+		Json requestBody = createDescriptionRequestBody(Concepts.ROOT_CONCEPT)
+				.with("commitComment", "Created new description on non-existent branch");
 
 		createComponent(BranchPathUtils.createPath("MAIN/x/y/z"), SnomedComponentType.DESCRIPTION, requestBody).statusCode(404);
 	}
 
 	@Test
 	public void createDescriptionInvalidConcept() {
-		Map<?, ?> requestBody = createDescriptionRequestBody("11110000")
-				.put("commitComment", "Created new description with invalid conceptId")
-				.build();
+		Json requestBody = createDescriptionRequestBody("11110000")
+				.with("commitComment", "Created new description with invalid conceptId");
 
 		createComponent(branchPath, SnomedComponentType.DESCRIPTION, requestBody).statusCode(400);
 	}
 
 	@Test
 	public void createDescriptionInvalidType() {
-		Map<?, ?> requestBody = createDescriptionRequestBody(Concepts.ROOT_CONCEPT, "11110000")
-				.put("commitComment", "Created new description with invalid typeId")
-				.build();
+		Json requestBody = createDescriptionRequestBody(Concepts.ROOT_CONCEPT, "11110000")
+				.with("commitComment", "Created new description with invalid typeId");
 
 		createComponent(branchPath, SnomedComponentType.DESCRIPTION, requestBody).statusCode(400);
 	}
 
 	@Test
 	public void createDescriptionInvalidModule() {
-		Map<?, ?> requestBody = createDescriptionRequestBody(Concepts.ROOT_CONCEPT, Concepts.SYNONYM, "11110000")
-				.put("commitComment", "Created new description with invalid moduleId")
-				.build();
+		Json requestBody = createDescriptionRequestBody(Concepts.ROOT_CONCEPT, Concepts.SYNONYM, "11110000")
+				.with("commitComment", "Created new description with invalid moduleId");
 
 		createComponent(branchPath, SnomedComponentType.DESCRIPTION, requestBody).statusCode(400);
 	}
 
 	@Test
 	public void createDescriptionWithoutCommitComment() {
-		Map<?, ?> requestBody = createDescriptionRequestBody(Concepts.ROOT_CONCEPT).build();
+		Json requestBody = createDescriptionRequestBody(Concepts.ROOT_CONCEPT);
 		createComponent(branchPath, SnomedComponentType.DESCRIPTION, requestBody).statusCode(400);
 	}
 
 	@Test
 	public void createDescription() {
-		Map<?, ?> requestBody = createDescriptionRequestBody(Concepts.ROOT_CONCEPT)
-				.put("commitComment", "Created new description")
-				.build();
+		Json requestBody = createDescriptionRequestBody(Concepts.ROOT_CONCEPT)
+				.with("commitComment", "Created new description");
 
 		createComponent(branchPath, SnomedComponentType.DESCRIPTION, requestBody).statusCode(201);
 	}
@@ -155,13 +140,12 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 		ISnomedIdentifierService identifierService = getServiceForClass(ISnomedIdentifierService.class);
 		String descriptionId = Iterables.getOnlyElement(identifierService.reserve(null, ComponentCategory.DESCRIPTION, 1));
 
-		Map<?, ?> requestBody = createDescriptionRequestBody(Concepts.ROOT_CONCEPT)
-				.put("id", descriptionId)
-				.put("commitComment", "Created new description with reserved identifier")
-				.build();
+		Json requestBody = createDescriptionRequestBody(Concepts.ROOT_CONCEPT)
+				.with("id", descriptionId)
+				.with("commitComment", "Created new description with reserved identifier");
 
-		createComponent(branchPath, SnomedComponentType.DESCRIPTION, requestBody).statusCode(201)
-		.header("Location", endsWith("/" + descriptionId));
+		final String createdDescriptionId = assertCreated(createComponent(branchPath, SnomedComponentType.DESCRIPTION, requestBody));
+		assertEquals(descriptionId, createdDescriptionId);
 		
 		SctId descriptionSctId = SnomedRequests.identifiers().prepareGet()
 				.setComponentId(descriptionId)
@@ -175,37 +159,58 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 	}
 
 	@Test
+	public void retireDescription() {
+		String descriptionId = createNewDescription(branchPath);
+
+		Json requestBody = Json.object(
+			"active", false,
+			"commitComment", "Inactivated description",
+			"acceptability", Json.object()
+		);
+
+		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, requestBody)
+				.statusCode(204);
+
+		SnomedDescription description = getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, "acceptabilities()")
+			.statusCode(200)
+			.extract().as(SnomedDescription.class);
+
+		assertTrue(!description.isActive());
+		assertTrue(description.getAcceptabilities().isEmpty());
+	}
+	
+	@Test
 	public void createDuplicateDescription() {
 		String descriptionId = createNewDescription(branchPath);
-		Map<?, ?> requestBody = createDescriptionRequestBody(Concepts.ROOT_CONCEPT)
-				.put("id", descriptionId)
-				.put("commitComment", "Created new description with duplicate identifier")
-				.build();
+		Json requestBody = createDescriptionRequestBody(Concepts.ROOT_CONCEPT)
+				.with("id", descriptionId)
+				.with("commitComment", "Created new description with duplicate identifier");
 
-		createComponent(branchPath, SnomedComponentType.DESCRIPTION, requestBody).statusCode(409);
+		createComponent(branchPath, SnomedComponentType.DESCRIPTION, requestBody)
+			.statusCode(409);
 	}
 
 	@Test
 	public void createDescriptionCaseInsensitive() {
-		Map<?, ?> requestBody = createDescriptionRequestBody(Concepts.ROOT_CONCEPT, Concepts.SYNONYM, Concepts.MODULE_SCT_CORE, 
+		Json requestBody = createDescriptionRequestBody(Concepts.ROOT_CONCEPT, Concepts.SYNONYM, Concepts.MODULE_SCT_CORE, 
 				SnomedApiTestConstants.UK_ACCEPTABLE_MAP, 
 				Concepts.ENTIRE_TERM_CASE_INSENSITIVE)
-				.put("commitComment", "Created new description with case insensitive significance")
-				.build();
+				.with("commitComment", "Created new description with case insensitive significance");
 
-		String descriptionId = lastPathSegment(createComponent(branchPath, SnomedComponentType.DESCRIPTION, requestBody)
-				.statusCode(201)
-				.extract().header("Location"));
+		String descriptionId = assertCreated(createComponent(branchPath, SnomedComponentType.DESCRIPTION, requestBody));
 
-		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(200)
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId)
+			.statusCode(200)
 			.body("caseSignificanceId", equalTo(Concepts.ENTIRE_TERM_CASE_INSENSITIVE));
 	}
 
 	@Test
 	public void deleteDescription() {
 		String descriptionId = createNewDescription(branchPath);
-		deleteComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, false).statusCode(204);
-		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(404);
+		deleteComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, false)
+			.statusCode(204);
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId)
+			.statusCode(404);
 	}
 
 	@Test
@@ -236,14 +241,16 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void testDescriptionInactivation() {
 		String descriptionId = createNewDescription(branchPath);
-		Map<?, ?> requestBody = ImmutableMap.builder()
-				.put("active", false)
-				.put("commitComment", "Inactivated description")
-				.build();
+		Json requestBody = Json.object(
+			"active", false,
+			"commitComment", "Inactivated description"
+		);
 
-		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, requestBody).statusCode(204);
-		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(200)
-		.body("active", equalTo(false));
+		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, requestBody)
+			.statusCode(204);
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId)
+			.statusCode(200)
+			.body("active", equalTo(false));
 	}
 
 	@Test
@@ -256,19 +263,20 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 		String effectiveDate = getNextAvailableEffectiveDateAsString(shortName);
 		createVersion(shortName, "v1", effectiveDate).statusCode(201);
 
-		Map<?, ?> requestBody = ImmutableMap.builder()
-				.put("active", true)
-				.put("acceptability", ImmutableMap.of(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE))
-				.put("commitComment", "Reactivate released description")
-				.build();
+		Json requestBody = Json.object(
+			"active", true,
+			"acceptability", Json.object(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE),
+			"commitComment", "Reactivate released description"
+		);
 
-		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, requestBody).statusCode(204);
+		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, requestBody)
+			.statusCode(204);
 		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, "members()")
-		.body("active", equalTo(true))
-		.body("released", equalTo(true))
-		.body("effectiveTime", nullValue())
-		.body("members.items.active", not(hasItem(false)))
-		.body("members.items.effectiveTime", not(hasItem(not(nullValue()))));
+			.body("active", equalTo(true))
+			.body("released", equalTo(true))
+			.body("effectiveTime", nullValue())
+			.body("members.items.active", not(hasItem(false)))
+			.body("members.items.effectiveTime", not(hasItem(not(nullValue()))));
 	}
 
 	@Test
@@ -281,27 +289,29 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 		String effectiveDate = getNextAvailableEffectiveDateAsString(shortName);
 		createVersion(shortName, "v1", effectiveDate).statusCode(201);
 
-		Map<?, ?> reactivateRequestBody = ImmutableMap.builder()
-				.put("active", true)
-				.put("acceptability", ImmutableMap.of(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE))
-				.put("commitComment", "Reactivate released description")
-				.build();
+		Json reactivateRequestBody = Json.object(
+			"active", true,
+			"acceptability", Json.object(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE),
+			"commitComment", "Reactivate released description"
+		);
 
-		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, reactivateRequestBody).statusCode(204);
+		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, reactivateRequestBody)
+			.statusCode(204);
 
-		Map<?, ?> inactivateRequestBody = ImmutableMap.builder()
-				.put("active", false)
-				.put("acceptability", ImmutableMap.of())
-				.put("commitComment", "Inactivate reactivated released description again")
-				.build();
+		Json inactivateRequestBody = Json.object(
+			"active", false,
+			"acceptability", Json.object(),
+			"commitComment", "Inactivate reactivated released description again"
+		);
 
-		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, inactivateRequestBody).statusCode(204);
+		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, inactivateRequestBody)
+			.statusCode(204);
 		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, "members()")
-		.body("active", equalTo(false))
-		.body("released", equalTo(true))
-		.body("effectiveTime", equalTo(effectiveDate))
-		.body("members.items.active", not(hasItem(true)))
-		.body("members.items.effectiveTime", not(hasItem(not(equalTo(effectiveDate)))));
+			.body("active", equalTo(false))
+			.body("released", equalTo(true))
+			.body("effectiveTime", equalTo(effectiveDate))
+			.body("members.items.active", not(hasItem(true)))
+			.body("members.items.effectiveTime", not(hasItem(not(equalTo(effectiveDate)))));
 	}
 
 	@Test
@@ -322,7 +332,7 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 		assertInactivation(
 			branchPath, 
 			descriptionToInactivate, 
-			new InactivationProperties(Concepts.DUPLICATE, ImmutableList.of(new AssociationTarget(Concepts.REFSET_POSSIBLY_EQUIVALENT_TO_ASSOCIATION, associationTarget)))
+			new InactivationProperties(Concepts.DUPLICATE, List.of(new AssociationTarget(Concepts.REFSET_POSSIBLY_EQUIVALENT_TO_ASSOCIATION, associationTarget)))
 		);
 	}
 
@@ -375,14 +385,16 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void updateCaseSignificance() {
 		String descriptionId = createNewDescription(branchPath);
-		Map<?, ?> inactivationRequestBody = ImmutableMap.builder()
-				.put("active", false)
-				.put("caseSignificanceId", Concepts.ENTIRE_TERM_CASE_INSENSITIVE)
-				.put("commitComment", "Updated description case significance")
-				.build();
+		Json inactivationRequestBody = Json.object(
+			"active", false,
+			"caseSignificanceId", Concepts.ENTIRE_TERM_CASE_INSENSITIVE,
+			"commitComment", "Updated description case significance"
+		);
 
-		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, inactivationRequestBody).statusCode(204);
-		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(200)
+		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, inactivationRequestBody)
+			.statusCode(204);
+		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId)
+			.statusCode(200)
 			.body("caseSignificanceId", equalTo(Concepts.ENTIRE_TERM_CASE_INSENSITIVE));
 	}
 
@@ -397,12 +409,13 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 		assertEquals(1, beforeMembers.getTotal());
 		SnomedReferenceSetMember beforeMember = Iterables.getOnlyElement(beforeMembers);
 
-		Map<?, ?> requestBody = ImmutableMap.builder()
-				.put("acceptability", SnomedApiTestConstants.UK_PREFERRED_MAP)
-				.put("commitComment", "Updated description acceptability")
-				.build();
+		Json requestBody = Json.object(
+			"acceptability", SnomedApiTestConstants.UK_PREFERRED_MAP,
+			"commitComment", "Updated description acceptability"
+		);
 
-		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, requestBody).statusCode(204);
+		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, requestBody)
+			.statusCode(204);
 		SnomedReferenceSetMembers afterMembers = getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, "members()")
 				.statusCode(200)
 				.extract().as(SnomedDescription.class)
@@ -424,16 +437,17 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 				.extract().path("pt.id");
 
 		String descriptionId = createNewDescription(branchPath, conceptId);
-		Map<?, ?> requestBody = ImmutableMap.builder()
-				.put("acceptability", SnomedApiTestConstants.US_PREFERRED_MAP)
-				.put("active", false)
-				.put("commitComment", "Updated description acceptability and inactivated it at the same time")
-				.build();
+		Json requestBody = Json.object(
+			"acceptability", SnomedApiTestConstants.US_PREFERRED_MAP,
+			"active", false,
+			"commitComment", "Updated description acceptability and inactivated it at the same time"
+		);
 
-		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, requestBody).statusCode(204);
+		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, requestBody)
+			.statusCode(204);
 		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, "pt()")
-		.statusCode(200)
-		.body("pt.id", equalTo(ptDescriptionId));
+			.statusCode(200)
+			.body("pt.id", equalTo(ptDescriptionId));
 	}
 
 	@Test
@@ -442,12 +456,13 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 		String descriptionId = createNewDescription(branchPath, Concepts.ROOT_CONCEPT, Concepts.SYNONYM, SnomedApiTestConstants.UK_PREFERRED_MAP);
 
 		changeToAcceptable(branchPath, Concepts.ROOT_CONCEPT, Concepts.REFSET_LANGUAGE_TYPE_US);
-		Map<?, ?> requestBody = ImmutableMap.builder()
-				.put("acceptability", ImmutableMap.of(
-						Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE, 
-						Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.PREFERRED))
-				.put("commitComment", "Changed UK, added US acceptability to description")
-				.build();
+		Json requestBody = Json.object(
+			"acceptability", Json.object(
+				Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE, 
+				Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.PREFERRED
+			),
+			"commitComment", "Changed UK, added US acceptability to description"
+		);
 
 		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, requestBody).statusCode(204);
 		SnomedReferenceSetMembers members = getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, "members()").statusCode(200)
@@ -474,13 +489,14 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 		changeToAcceptable(branchPath, Concepts.ROOT_CONCEPT, Concepts.REFSET_LANGUAGE_TYPE_US);
 		
 		// Change UK preferred synonym to US preferred, UK acceptable, with default module ID parameter
-		Map<?, ?> requestBody = ImmutableMap.builder()
-				.put("acceptability", ImmutableMap.of(
-						Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE, 
-						Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.PREFERRED))
-				.put("commitComment", "Changed UK, added US acceptability to description")
-				.put("defaultModuleId", "449081005") // SNOMED CT Spanish edition module
-				.build();
+		Json requestBody = Json.object(
+			"acceptability", Json.object(
+				Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE, 
+				Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.PREFERRED
+			),
+			"defaultModuleId", "449081005", // SNOMED CT Spanish edition module
+			"commitComment", "Changed UK, added US acceptability to description"
+		);
 		
 		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, requestBody)
 				.statusCode(204);
@@ -515,22 +531,25 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 
 		// Inactivate the reference set member
 		members.forEach(m -> {
-			Map<?, ?> requestBody = ImmutableMap.builder()
-					.put("active", false)
-					.put("commitComment", "Inactivate language reference set member")
-					.build();
+			Json requestBody = Json.object(
+				"active", false,
+				"commitComment", "Inactivate language reference set member"
+			);
 			
-			updateRefSetComponent(branchPath, SnomedComponentType.MEMBER, m.getId(), requestBody, false).statusCode(204);
+			updateRefSetComponent(branchPath, SnomedComponentType.MEMBER, m.getId(), requestBody, false)
+				.statusCode(204);
 		});
 		
-		Map<?, ?> requestBody = ImmutableMap.builder()
-				.put("acceptability", ImmutableMap.of(
-						Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED, 
-						Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.PREFERRED))
-				.put("commitComment", "Reactivated UK, added US acceptability to description")
-				.build();
+		Json requestBody = Json.object(
+			"acceptability", Json.object(
+				Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.PREFERRED, 
+				Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.PREFERRED
+			),
+			"commitComment", "Reactivated UK, added US acceptability to description"
+		);
 
-		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, requestBody).statusCode(204);
+		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, requestBody)
+			.statusCode(204);
 		
 		members = getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, "members()").statusCode(200)
 				.body("members.items.referenceSetId", hasItems(Concepts.REFSET_LANGUAGE_TYPE_UK, Concepts.REFSET_LANGUAGE_TYPE_US))
@@ -546,14 +565,19 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void updateAcceptabilityWithRemove() throws Exception {
 		changeToAcceptable(branchPath, Concepts.ROOT_CONCEPT, Concepts.REFSET_LANGUAGE_TYPE_US);
-		String descriptionId = createNewDescription(branchPath, Concepts.ROOT_CONCEPT, Concepts.SYNONYM, ImmutableMap.<String, Acceptability>of(
+		String descriptionId = createNewDescription(branchPath, Concepts.ROOT_CONCEPT, Concepts.SYNONYM, 
+			Map.<String, Acceptability>of(
 				Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE, 
-				Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.PREFERRED));
+				Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.PREFERRED
+			)
+		);
 
-		Map<?, ?> requestBody = ImmutableMap.builder()
-				.put("acceptability", ImmutableMap.of(Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE))
-				.put("commitComment", "Removed US preferred acceptability from description")
-				.build();
+		Json requestBody = Json.object(
+			"acceptability", Json.object(
+				Concepts.REFSET_LANGUAGE_TYPE_UK, Acceptability.ACCEPTABLE
+			),
+			"commitComment", "Removed US preferred acceptability from description"
+		);
 
 		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, requestBody).statusCode(204);
 		SnomedReferenceSetMembers members = getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, "members()").statusCode(200)
@@ -636,7 +660,7 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 				.service(RevisionIndex.class)
 				.prepareCommit(branchPath.getPath())
 				.stageNew(member)
-				.withContext(context)
+				.withContext(context.inject().bind(ModuleIdProvider.class, c -> c.getModuleId()).build())
 				.commit(ApplicationContext.getServiceForClass(TimestampProvider.class).getTimestamp(), "test", "Added duplicate language reference set member to " + descriptionId);
 			return null;
 		}).execute(ApplicationContext.getServiceForClass(Environment.class));
@@ -659,24 +683,24 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 		assertNotNull(memberIdToDelete);
 
 		// Using bulk update, remove the currently active member and activate the inactive one, also changing its acceptability
-		Map<?, ?> deleteMember = ImmutableMap.<String, Object>builder()
-				.put("action", "delete")
-				.put("memberId", memberIdToDelete)
-				.build();
+		Json bulkRequest = Json.object(
+			"requests", Json.array(
+				Json.object(
+					"action", "delete",
+					"memberId", memberIdToDelete
+				),
+				Json.object(
+					"action", "update",
+					"memberId", memberIdToUpdate,
+					"active", true,
+					"acceptabilityId", Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE
+				)
+			),
+			"commitComment", "Consolidated language reference set members"
+		);
 
-		Map<?, ?> activateMember = ImmutableMap.<String, Object>builder()
-				.put("action", "update")
-				.put("memberId", memberIdToUpdate)
-				.put("active", true)
-				.put("acceptabilityId", Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_ACCEPTABLE)
-				.build();
-
-		Map<?, ?> bulkRequest = ImmutableMap.<String, Object>builder()
-				.put("requests", ImmutableList.of(deleteMember, activateMember))
-				.put("commitComment", "Consolidated language reference set members")
-				.build();
-
-		bulkUpdateMembers(branchPath, Concepts.REFSET_LANGUAGE_TYPE_UK, bulkRequest).statusCode(204);
+		bulkUpdateMembers(branchPath, Concepts.REFSET_LANGUAGE_TYPE_UK, bulkRequest)
+			.statusCode(204);
 
 		// Verify that description acceptability is still acceptable, but only one member remains
 		SnomedDescription newDescription = getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, "members()").statusCode(200)
@@ -693,22 +717,23 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void issue_SO_2158_termFilter_throws_NPE() throws Exception {
 		givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
-		.accept(ContentType.JSON)
-		.queryParam("term", "<<")
-		.get("/{path:**}/descriptions", branchPath.getPath())
-		.then()
-		.statusCode(200);
+			.accept(ContentType.JSON)
+			.queryParam("term", "<<")
+			.get("/{path:**}/descriptions", branchPath.getPath())
+			.then()
+			.statusCode(200);
 	}
 	
 	@Test
 	public void updateUnreleasedDescriptionTypeId() throws Exception {
 		String descriptionId = createNewDescription(branchPath);
-		Map<?, ?> update = ImmutableMap.builder()
-				.put(SnomedRf2Headers.FIELD_TYPE_ID, Concepts.TEXT_DEFINITION)
-				.put("commitComment", "Update unreleased description type")
-				.build();
+		Json update = Json.object(
+			SnomedRf2Headers.FIELD_TYPE_ID, Concepts.TEXT_DEFINITION,
+			"commitComment", "Update unreleased description type"
+		);
 
-		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, update).statusCode(204);
+		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, update)
+			.statusCode(204);
 		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId)
 			.statusCode(200)
 			.body(SnomedRf2Headers.FIELD_TYPE_ID, equalTo(Concepts.TEXT_DEFINITION));
@@ -717,12 +742,13 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void updateUnreleasedDescriptionTerm() throws Exception {
 		String descriptionId = createNewDescription(branchPath);
-		Map<?, ?> update = ImmutableMap.builder()
-				.put(SnomedRf2Headers.FIELD_TERM, "updatedUnreleasedDescriptionTerm")
-				.put("commitComment", "Update unreleased description term")
-				.build();
+		Json update = Json.object(
+			SnomedRf2Headers.FIELD_TERM, "updatedUnreleasedDescriptionTerm",
+			"commitComment", "Update unreleased description term"
+		);
 
-		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, update).statusCode(204);
+		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, update)
+			.statusCode(204);
 		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId)
 			.statusCode(200)
 			.body(SnomedRf2Headers.FIELD_TERM, equalTo("updatedUnreleasedDescriptionTerm"));
@@ -731,12 +757,13 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void updateUnreleasedDescriptionLanguageCode() throws Exception {
 		String descriptionId = createNewDescription(branchPath);
-		Map<?, ?> update = ImmutableMap.builder()
-				.put(SnomedRf2Headers.FIELD_LANGUAGE_CODE, "hu")
-				.put("commitComment", "Update unreleased description languageCode")
-				.build();
+		Json update = Json.object(
+			SnomedRf2Headers.FIELD_LANGUAGE_CODE, "hu",
+			"commitComment", "Update unreleased description languageCode"
+		);
 
-		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, update).statusCode(204);
+		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, update)
+			.statusCode(204);
 		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId)
 			.statusCode(200)
 			.body(SnomedRf2Headers.FIELD_LANGUAGE_CODE, equalTo("hu"));
@@ -749,12 +776,13 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 		// release component
 		createCodeSystemAndVersion(branchPath, "SNOMEDCT-RELDESC-TYPEID", "v1", "20170301");
 		
-		Map<?, ?> update = ImmutableMap.builder()
-				.put(SnomedRf2Headers.FIELD_TYPE_ID, Concepts.TEXT_DEFINITION)
-				.put("commitComment", "Update unreleased description type")
-				.build();
+		Json update = Json.object(
+			SnomedRf2Headers.FIELD_TYPE_ID, Concepts.TEXT_DEFINITION,
+			"commitComment", "Update unreleased description type"
+		);
 
-		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, update).statusCode(400);
+		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, update)
+			.statusCode(400);
 		
 		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId)
 			.statusCode(200)
@@ -765,10 +793,10 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 	public void shouldUpdateReleasedDescriptionTerm() throws Exception {
 		final String descriptionId = createNewDescription(branchPath);
 		final String newTerm = "updatedUnreleasedDescriptionTerm";
-		final Map<?, ?> update = ImmutableMap.builder()
-				.put(SnomedRf2Headers.FIELD_TERM, newTerm)
-				.put("commitComment", "Update unreleased description term")
-				.build();
+		final Json update = Json.object(
+			SnomedRf2Headers.FIELD_TERM, newTerm,
+			"commitComment", "Update unreleased description term"
+		);
 		
 		// release component
 		createCodeSystemAndVersion(branchPath, "SNOMEDCT-RELDESC-TERM", "v1", "20170301");
@@ -783,10 +811,10 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void updateReleasedDescriptionLanguageCode() throws Exception {
 		String descriptionId = createNewDescription(branchPath);
-		Map<?, ?> update = ImmutableMap.builder()
-				.put(SnomedRf2Headers.FIELD_LANGUAGE_CODE, "hu")
-				.put("commitComment", "Update unreleased description languageCode")
-				.build();
+		Json update = Json.object(
+			SnomedRf2Headers.FIELD_LANGUAGE_CODE, "hu",
+			"commitComment", "Update unreleased description languageCode"
+		);
 
 		// release component
 		createCodeSystemAndVersion(branchPath, "SNOMEDCT-RELDESC-LANGCODE", "v1", "20170301");
@@ -830,10 +858,10 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 		String descriptionId = createNewDescription(branchPath);
 		// The escaped form is used below; hopefully this catches source file encoding issues as well. 
 		String term = "Ménière";
-		Map<?, ?> update = ImmutableMap.builder()
-				.put(SnomedRf2Headers.FIELD_TERM, term)
-				.put("commitComment", "Updated unreleased description term with special UTF8 char.")
-				.build();
+		Json update = Json.object(
+			SnomedRf2Headers.FIELD_TERM, term,
+			"commitComment", "Updated unreleased description term with special UTF8 char."
+		);
 		
 		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, update).statusCode(204);
 		
@@ -883,10 +911,10 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 		.body("released", equalTo(true))
  		.body("effectiveTime", nullValue());
 
-		Map<?, ?> reactivationRequestBody = ImmutableMap.builder()
-				.put("active", true)
-				.put("commitComment", "Inactivated description")
-				.build();
+		Json reactivationRequestBody = Json.object(
+			"active", true,
+			"commitComment", "Inactivated description"
+		);
 
 		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, reactivationRequestBody).statusCode(204);
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.locks;
 
+import com.b2international.commons.exceptions.LockedException;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContext;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockTarget;
 
@@ -45,10 +46,9 @@ public interface IOperationLockManager {
 	 * @param timeoutMillis the maximum allowed time in milliseconds in which this call may block (must be {@link #NO_TIMEOUT}, zero or positive)
 	 * @param firstTarget the first (or only) target to lock (may not be {@code null})
 	 * @param restTargets subsequent targets to lock (may not be {@code null}; individual elements may not be {@code null})
-	 * @throws OperationLockException when one or more locks for the given targets can not be acquired for some reason
-	 * @throws InterruptedException if waiting for the requested locks to be acquired is interrupted 
+	 * @throws LockedException when one or more locks for the given targets can not be acquired for some reason
 	 */
-	void lock(DatastoreLockContext context, long timeoutMillis, DatastoreLockTarget firstTarget, DatastoreLockTarget... restTargets) throws OperationLockException, InterruptedException;
+	void lock(DatastoreLockContext context, long timeoutMillis, DatastoreLockTarget firstTarget, DatastoreLockTarget... restTargets) throws LockedException;
 
 	/**
 	 * Locks one or more {@link IOperationLockTarget targets} for the specified lock context.
@@ -56,10 +56,9 @@ public interface IOperationLockManager {
 	 * @param context the lock context (may not be {@code null})
 	 * @param timeoutMillis the maximum allowed time in milliseconds in which this call may block (must be {@link #NO_TIMEOUT}, zero or positive)
 	 * @param targets the targets to lock (may not be {@code null}; can be empty)
-	 * @throws OperationLockException when one or more locks for the given targets can not be acquired for some reason
-	 * @throws InterruptedException if waiting for the requested locks to be acquired is interrupted
+	 * @throws LockedException when one or more locks for the given targets can not be acquired for some reason
 	 */
-	void lock(DatastoreLockContext context, long timeoutMillis, Iterable<DatastoreLockTarget> targets) throws OperationLockException, InterruptedException;
+	void lock(DatastoreLockContext context, long timeoutMillis, Iterable<DatastoreLockTarget> targets) throws LockedException;
 
 	/**
 	 * Unlocks one or more {@link IOperationLockTarget targets} with the specified lock context.
@@ -67,16 +66,16 @@ public interface IOperationLockManager {
 	 * @param context the lock context (may not be {@code null})
 	 * @param firstTarget the first (or only) target to unlock (may not be {@code null})
 	 * @param restTargets subsequent targets to unlock (may not be {@code null}; individual elements may not be {@code null})
-	 * @throws OperationLockException when one or more locks for the given targets could not be released for some reason
+	 * @throws IllegalArgumentException when one or more locks for the given targets could not be released for some reason
 	 */
-	void unlock(DatastoreLockContext context, DatastoreLockTarget firstTarget, DatastoreLockTarget... restTargets) throws OperationLockException;
+	void unlock(DatastoreLockContext context, DatastoreLockTarget firstTarget, DatastoreLockTarget... restTargets) throws IllegalArgumentException;
 
 	/**
 	 * Unlocks one or more {@link IOperationLockTarget targets} with the specified lock context.
 	 * 
 	 * @param context the lock context (may not be {@code null})
 	 * @param targets the targets to unlock (may not be {@code null}; can be empty)
-	 * @throws OperationLockException when one or more locks for the given targets could not be released for some reason
+	 * @throws IllegalArgumentException when one or more locks for the given targets could not be released for some reason
 	 */
-	void unlock(DatastoreLockContext context, Iterable<DatastoreLockTarget> targets) throws OperationLockException;
+	void unlock(DatastoreLockContext context, Iterable<DatastoreLockTarget> targets) throws IllegalArgumentException;
 }

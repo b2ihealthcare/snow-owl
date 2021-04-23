@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,10 +76,11 @@ public final class DefaultRevisionBranching extends BaseRevisionBranching {
 			.add(parentLastSegment.withEnd(currentTime))
 			.build();
 		
-		final SortedSet<RevisionBranchPoint> initialMergeSources = parentSegments.stream()
+		// use the parentBranch.ref to compute the initialMergeSources, this contains parentSegment AND parent mergeSources to access all data
+		final SortedSet<RevisionBranchPoint> initialMergeSources = parentBranch.ref().segments().stream()
 				.map(RevisionSegment::getEndPoint)
 				.collect(Collectors.toCollection(TreeSet::new));
-		
+
 		final RevisionBranch branch = RevisionBranch.builder()
 				.id(newBranchId)
 				.parentPath(parentBranch.getPath())

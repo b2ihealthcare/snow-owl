@@ -42,9 +42,9 @@ public interface IOperationLock {
 	
 	boolean targetEquals(DatastoreLockTarget otherTarget);
 	
-	void acquire(DatastoreLockContext context) throws OperationLockException;
+	void acquire(DatastoreLockContext context);
 	
-	void release(DatastoreLockContext context) throws OperationLockException;
+	void release(DatastoreLockContext context);
 	
 	boolean isLocked();
 }

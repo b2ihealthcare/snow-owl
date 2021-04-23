@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,11 +26,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
-import com.b2international.commons.exceptions.AlreadyExistsException;
-import com.b2international.commons.exceptions.ApiException;
-import com.b2international.commons.exceptions.BadRequestException;
-import com.b2international.commons.exceptions.NotFoundException;
-import com.b2international.commons.exceptions.RequestTimeoutException;
+import com.b2international.commons.exceptions.*;
 import com.b2international.commons.options.Metadata;
 import com.b2international.index.BulkUpdate;
 import com.b2international.index.Hits;
@@ -135,6 +131,17 @@ public abstract class BaseRevisionBranching {
 		}
 		return branch;
 	}
+	
+	public RevisionBranch getBranch(long branchId) {
+		return index().read(searcher -> searcher.search(Query.select(RevisionBranch.class)
+				.where(Expressions.exactMatch(RevisionBranch.Fields.ID, branchId))
+				.limit(1)
+				.build())
+				.stream()
+				.findFirst()
+				.orElseThrow(() -> new NotFoundException("RevisionBranch", Long.toString(branchId))));
+	}
+	
 	
 	/**
 	 * Returns the revision branch for the given branchPath.

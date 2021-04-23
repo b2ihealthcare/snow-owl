@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.util.Objects;
 
 import com.b2international.snowowl.core.request.MappingCorrelation;
 import com.b2international.snowowl.core.uri.ComponentURI;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Strings;
 
@@ -80,6 +81,8 @@ public final class ConceptMapMapping implements Serializable {
 		private String mapAdvice = "";
 		
 		private boolean approximate;
+		
+		private String comments;
 		
 		public Builder uri(ComponentURI uri) {
 			this.uri = uri;
@@ -166,6 +169,11 @@ public final class ConceptMapMapping implements Serializable {
 			return this;
 		}
 		
+		public Builder comments(final String comments) {
+			this.comments = Strings.nullToEmpty(comments);
+			return this;
+		}
+		
 		public ConceptMapMapping build() {
 			return new ConceptMapMapping(
 					uri,
@@ -174,7 +182,8 @@ public final class ConceptMapMapping implements Serializable {
 					targetIconId, targetTerm, targetComponentURI, 
 					active, 
 					mappingCorrelation, mapGroup, mapPriority, mapRule, mapAdvice,
-					approximate);
+					approximate,
+					comments);
 		}
 	
 	}
@@ -203,6 +212,8 @@ public final class ConceptMapMapping implements Serializable {
 	
 	private final boolean approximate;
 	
+	private String comments;
+	
 	ConceptMapMapping(
 			ComponentURI uri,
 			String containerIconId,
@@ -220,7 +231,8 @@ public final class ConceptMapMapping implements Serializable {
 			Integer mapPriority, 
 			String mapRule, 
 			String mapAdvice,
-			boolean approximate) {
+			boolean approximate,
+			String comments) {
 		
 		this.uri = uri; 
 		this.containerIconId = containerIconId;
@@ -239,6 +251,7 @@ public final class ConceptMapMapping implements Serializable {
 		this.mapRule = mapRule;
 		this.mapAdvice = mapAdvice;
 		this.approximate = approximate;
+		this.comments = comments;
 	}
 
 	public String getId() {
@@ -313,6 +326,11 @@ public final class ConceptMapMapping implements Serializable {
 		return approximate;
 	}
 	
+	@JsonIgnore
+	public String getComments() {
+		return comments;
+	}
+	
 	@Override
 	public String toString() {
 		return MoreObjects.toStringHelper(getClass())
@@ -333,6 +351,7 @@ public final class ConceptMapMapping implements Serializable {
 				.add("mapRule", mapRule)
 				.add("mapAdvice", mapAdvice)
 				.add("approximate", approximate)
+				.add("comments", comments)
 				.toString();
 	}
 

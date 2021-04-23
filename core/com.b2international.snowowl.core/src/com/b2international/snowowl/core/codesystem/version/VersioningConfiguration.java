@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package com.b2international.snowowl.core.codesystem.version;
 
 import static com.google.common.base.Strings.nullToEmpty;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.google.common.base.MoreObjects;
@@ -31,19 +31,22 @@ public final class VersioningConfiguration {
 	private final String codeSystemShortName;
 	private final String versionId;
 	private final String description;
-	private final Date effectiveTime;
+	private final LocalDate effectiveTime;
+	private final boolean force;
 	
 	public VersioningConfiguration(
 			String user,
 			String codeSystemShortName,
 			String versionId, 
 			String description,
-			Date effectiveTime) {
+			LocalDate effectiveTime,
+			boolean force) {
 		this.user = user;
 		this.codeSystemShortName = codeSystemShortName;
 		this.versionId = versionId;
 		this.description = description;
 		this.effectiveTime = effectiveTime;
+		this.force = force;
 	}
 	
 	public String getUser() {
@@ -54,8 +57,8 @@ public final class VersioningConfiguration {
 		return versionId;
 	}
 
-	public Date getEffectiveTime() {
-		return null == effectiveTime ? null : new Date(effectiveTime.getTime());
+	public LocalDate getEffectiveTime() {
+		return effectiveTime;
 	}
 
 	public String getDescription() {
@@ -66,11 +69,15 @@ public final class VersioningConfiguration {
 		return codeSystemShortName;
 	}
 	
+	public boolean isForce() {
+		return force;
+	}
+	
 	@Override
 	public String toString() {
 		return MoreObjects.toStringHelper(this)
 				.add("Version ID", versionId)
-				.add("Effective time", null == effectiveTime ? "unset" : EffectiveTimes.format(effectiveTime))
+				.add("Effective time", EffectiveTimes.format(effectiveTime))
 				.add("Description", nullToEmpty(description))
 				.toString();
 	}

@@ -48,6 +48,7 @@
         <setEntry value="com.fasterxml.jackson.dataformat.jackson-dataformat-csv@default:default"/>
         <setEntry value="com.fasterxml.jackson.dataformat.jackson-dataformat-smile@default:default"/>
         <setEntry value="com.fasterxml.jackson.dataformat.jackson-dataformat-yaml@default:default"/>
+        <setEntry value="com.fasterxml.jackson.datatype.jackson-datatype-jsr310@default:default"/>
         <setEntry value="com.fasterxml.jackson.module.jackson-module-afterburner@default:default"/>
         <setEntry value="com.fasterxml.jackson.module.jackson-module-jaxb-annotations@default:default"/>
         <setEntry value="com.google.guava@default:default"/>
@@ -200,6 +201,7 @@
         <setEntry value="com.b2international.index@default:default"/>
         <setEntry value="com.b2international.mapdb@default:default"/>
         <setEntry value="com.b2international.restassured-all@default:default"/>
+        <setEntry value="com.b2international.snomed.ecl@default:default"/>
         <setEntry value="com.b2international.snowowl.core.rest@default:default"/>
         <setEntry value="com.b2international.snowowl.core@default:default"/>
         <setEntry value="com.b2international.snowowl.eventbus@default:default"/>
@@ -210,7 +212,6 @@
         <setEntry value="com.b2international.snowowl.snomed.core.rest.tests@default:default"/>
         <setEntry value="com.b2international.snowowl.snomed.core.rest@default:false"/>
         <setEntry value="com.b2international.snowowl.snomed.datastore@default:default"/>
-        <setEntry value="com.b2international.snowowl.snomed.ecl@default:default"/>
         <setEntry value="com.b2international.snowowl.snomed.icons@default:default"/>
         <setEntry value="com.b2international.snowowl.snomed.ql@default:default"/>
         <setEntry value="com.b2international.snowowl.snomed.reasoner@default:default"/>

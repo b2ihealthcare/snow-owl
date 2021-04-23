@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,20 +15,40 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
+import static com.b2international.snowowl.core.api.IBranchPath.MAIN_BRANCH;
+
+import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.Date;
 
-/**
- */
-public class CodeSystemVersion implements CodeSystemVersionProperties {
+import com.b2international.snowowl.core.branch.BranchPathUtils;
+import com.b2international.snowowl.core.date.DateFormats;
+import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.uri.CodeSystemURI;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
+/**
+ * @since 1.0
+ */
+public final class CodeSystemVersion implements CodeSystemVersionProperties, Serializable {
+
+	private static final long serialVersionUID = 1L;
+	
+	private String id;
 	private Date importDate;
-	private Date effectiveDate;
+	private String effectiveDate;
 	private Date lastModificationDate;
 	private String description;
 	private String version;
-	private String parentBranchPath;
-	private boolean patched;
-
+	private String path;
+	private CodeSystemURI uri;
+	private String repositoryId;
+	
+	@JsonIgnore
+	public String getId() {
+		return id;
+	}
+	
 	/**
 	 * Returns the date on which this code system version was imported into the server.
 	 * 
@@ -39,8 +59,19 @@ public class CodeSystemVersion implements CodeSystemVersionProperties {
 	}
 
 	@Override
-	public Date getEffectiveDate() {
+	public String getEffectiveDate() {
 		return effectiveDate;
+	}
+	
+	@JsonIgnore
+	public LocalDate getEffectiveTime() {
+		return EffectiveTimes.parse(effectiveDate, DateFormats.SHORT);
+	}
+	
+	@Deprecated
+	@JsonIgnore
+	public String getParentBranchPath() {
+		return BranchPathUtils.createPath(getPath()).getParentPath();
 	}
 
 	/**
@@ -56,34 +87,35 @@ public class CodeSystemVersion implements CodeSystemVersionProperties {
 	public String getDescription() {
 		return description;
 	}
+	
+	@Deprecated
+	public String getRepositoryId() {
+		return repositoryId;
+	}
+	
+	public String getPath() {
+		return path;
+	}
 
 	@Override
 	public String getVersion() {
 		return version;
 	}
 
-	/**
-	 * Returns the parent branch path where the version branch is forked off
-	 * @return parent branch path
-	 */
-	public String getParentBranchPath() {
-		return parentBranchPath;
+	public CodeSystemURI getUri() {
+		return uri;
 	}
-
-	/**
-	 * Indicates if any modifications have been made on this code system version after releasing it.
-	 *  
-	 * @return {@code true} if this code system version includes retroactive modifications, {@code false} otherwise
-	 */
-	public boolean isPatched() {
-		return patched;
+	
+	@JsonIgnore
+	public String getCodeSystem() {
+		return getUri().getCodeSystem();
 	}
-
+	
 	public void setImportDate(final Date importDate) {
 		this.importDate = importDate;
 	}
 
-	public void setEffectiveDate(final Date effectiveDate) {
+	public void setEffectiveDate(final String effectiveDate) {
 		this.effectiveDate = effectiveDate;
 	}
 
@@ -95,36 +127,33 @@ public class CodeSystemVersion implements CodeSystemVersionProperties {
 		this.description = description;
 	}
 
+	public void setPath(String path) {
+		this.path = path;
+	}
+	
+	@Deprecated
+	public void setRepositoryId(String repositoryId) {
+		this.repositoryId = repositoryId;
+	}
+	
 	public void setVersion(final String version) {
 		this.version = version;
 	}
 	
-	public void setParentBranchPath(final String parentBranchPath) {
-		this.parentBranchPath = parentBranchPath;
+	public void setUri(CodeSystemURI uri) {
+		this.uri = uri;
+	}
+	
+	public void setId(String id) {
+		this.id = id;
+	}
+	
+	/**
+	 * @return {@code true} if this version represents the HEAD in the repository.
+	 */
+	@JsonIgnore
+	public boolean isLatestVersion() {
+		return MAIN_BRANCH.equals(getVersion());
 	}
 
-	public void setPatched(final boolean patched) {
-		this.patched = patched;
-	}
-
-	@Override
-	public String toString() {
-		final StringBuilder builder = new StringBuilder();
-		builder.append("CodeSystemVersion [importDate=");
-		builder.append(importDate);
-		builder.append(", effectiveDate=");
-		builder.append(effectiveDate);
-		builder.append(", lastModificationDate=");
-		builder.append(lastModificationDate);
-		builder.append(", description=");
-		builder.append(description);
-		builder.append(", version=");
-		builder.append(version);
-		builder.append(", parentBranchPath=");
-		builder.append(parentBranchPath);
-		builder.append(", patched=");
-		builder.append(patched);
-		builder.append("]");
-		return builder.toString();
-	}
 }

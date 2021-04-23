@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
+import com.b2international.snowowl.core.codesystem.CodeSystemVersion;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersions;
 import com.b2international.snowowl.core.codesystem.CodeSystems;
@@ -110,7 +111,7 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 		if (branchPath.equals(IBranchPath.MAIN_BRANCH)) {
 			throw FhirException.createFhirError(String.format("No code system version found for code system %s", codeSystemURI.getUri()), OperationOutcomeCode.MSG_PARAM_INVALID, "CodeSystem");
 		} else {
-			Optional<CodeSystemVersionEntry> csve = CodeSystemRequests.prepareSearchCodeSystemVersion()
+			Optional<CodeSystemVersion> csve = CodeSystemRequests.prepareSearchCodeSystemVersion()
 				.one()
 				.filterByBranchPath(branchPath)
 				.build(repositoryId)
@@ -123,10 +124,10 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 				throw FhirException.createFhirError(String.format("No code system version found for code system %s", codeSystemURI.getUri()), OperationOutcomeCode.MSG_PARAM_INVALID, "CodeSystem");
 			}
 			
-			CodeSystemVersionEntry codeSystemVersionEntry = csve.get();
+			CodeSystemVersion codeSystemVersionEntry = csve.get();
 			
 			com.b2international.snowowl.core.codesystem.CodeSystem codeSystem = CodeSystemRequests
-					.prepareGetCodeSystem(codeSystemVersionEntry.getCodeSystemShortName())
+					.prepareGetCodeSystem(codeSystemVersionEntry.getUri().getCodeSystem())
 					.build(repositoryId)
 					.execute(getBus())
 					.getSync();
@@ -170,7 +171,7 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 		codeSystems.forEach(cse -> { 
 			
 			List<CodeSystem> fhirCodeSystems = codeSystemVersions.stream()
-				.filter(csv -> csv.getCodeSystemShortName().equals(cse.getShortName()))
+				.filter(csv -> csv.getUri().getCodeSystem().equals(cse.getShortName()))
 				.map(csve -> createCodeSystemBuilder(cse, csve))
 				.map(Builder::build)
 				.collect(Collectors.toList());
@@ -187,7 +188,7 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 	 * @param codeSystemVersion 
 	 * @return
 	 */
-	protected abstract Uri getFhirUri(com.b2international.snowowl.core.codesystem.CodeSystem codeSystem, CodeSystemVersionEntry codeSystemVersion);
+	protected abstract Uri getFhirUri(com.b2international.snowowl.core.codesystem.CodeSystem codeSystem, CodeSystemVersion codeSystemVersion);
 	
 	/**
 	 * Creates a FHIR {@link CodeSystem} from a {@link com.b2international.snowowl.core.codesystem.CodeSystem}
@@ -196,7 +197,7 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 	 * @return FHIR Code system
 	 */
 	protected final Builder createCodeSystemBuilder(final com.b2international.snowowl.core.codesystem.CodeSystem codeSystem, 
-			final CodeSystemVersionEntry codeSystemVersion) {
+			final CodeSystemVersion codeSystemVersion) {
 		
 		Identifier identifier = Identifier.builder()
 			.use(IdentifierUse.OFFICIAL)
@@ -221,10 +222,10 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 			.count(getCount(codeSystemVersion));
 		
 		if (codeSystemVersion !=null) {
-			builder.version(codeSystemVersion.getVersionId());
+			builder.version(codeSystemVersion.getVersion());
 			
 			Meta meta = Meta.builder()
-				.lastUpdated(Instant.builder().instant(codeSystemVersion.getLatestUpdateDate()).build())
+				.lastUpdated(Instant.builder().instant(codeSystemVersion.getLastModificationDate()).build())
 				.build();
 			
 			builder.meta(meta);
@@ -254,10 +255,10 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 	/*
 	 * Returns the logical ID of the code system resource
 	 */
-	private String getId(com.b2international.snowowl.core.codesystem.CodeSystem codeSystem, CodeSystemVersionEntry codeSystemVersion) {
+	private String getId(com.b2international.snowowl.core.codesystem.CodeSystem codeSystem, CodeSystemVersion codeSystemVersion) {
 		//in theory there should always be at least one version present
 		if (codeSystemVersion != null) {
-			return codeSystemVersion.getRepositoryUuid() + ":" + codeSystemVersion.getPath();
+			return codeSystem.getRepositoryId() + ":" + codeSystemVersion.getPath();
 		} else {
 			return codeSystem.getRepositoryId() + ":" + codeSystem.getBranchPath();
 		}
@@ -267,7 +268,7 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 		return Collections.emptySet();
 	}
 
-	protected abstract int getCount(CodeSystemVersionEntry codeSystemVersion);
+	protected abstract int getCount(CodeSystemVersion codeSystemVersion);
 
 	@Override
 	public SubsumptionResult subsumes(SubsumptionRequest subsumptionRequest) {
@@ -305,26 +306,21 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 	 * @return version string
 	 */
 	protected String getVersion(SubsumptionRequest subsumptionRequest) {
-		
 		String version = subsumptionRequest.getVersion();
 
 		//get the latest version
 		if (version == null) {
-			Optional<CodeSystemVersionEntry> optionalVersion = CodeSystemRequests.prepareSearchCodeSystemVersion()
+			return CodeSystemRequests.prepareSearchCodeSystemVersion()
 				.one()
 				.filterByCodeSystemShortName(getCodeSystemShortName())
 				.sortBy(SearchResourceRequest.SortField.descending(CodeSystemVersionEntry.Fields.EFFECTIVE_DATE))
 				.build(getRepositoryId())
 				.execute(getBus())
 				.getSync()
-				.first();
-				
-			if (optionalVersion.isPresent()) {
-				return optionalVersion.get().getVersionId();
-			} else {
+				.first()
+				.map(CodeSystemVersion::getVersion)
 				//never been versioned
-				return null;
-			}
+				.orElse(null);
 		}
 		
 		return version;

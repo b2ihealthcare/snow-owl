@@ -103,7 +103,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 		Collection<ValueSet> valueSets = Lists.newArrayList();
 		
 		//Collect every version on every extension
-		List<CodeSystemVersionEntry> codeSystemVersionList = collectCodeSystemVersions(repositoryId);
+		List<CodeSystemVersion> codeSystemVersionList = collectCodeSystemVersions(repositoryId);
 		
 		List<ValueSet> simpleTypevalueSets = collectSimpleTypeRefsets(codeSystemVersionList);
 		valueSets.addAll(simpleTypevalueSets);
@@ -117,7 +117,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 	@Override
 	public ValueSet getValueSet(ComponentURI componentURI) {
 		
-		CodeSystemVersionEntry codeSystemVersion = findCodeSystemVersion(componentURI);
+		CodeSystemVersion codeSystemVersion = findCodeSystemVersion(componentURI);
 		
 		//Simple type reference set
 		if (componentURI.terminologyComponentId()!= SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER) {
@@ -164,7 +164,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 	@Override
 	public ValueSet expandValueSet(ComponentURI componentURI) {
 		
-		CodeSystemVersionEntry codeSystemVersion = findCodeSystemVersion(componentURI);
+		CodeSystemVersion codeSystemVersion = findCodeSystemVersion(componentURI);
 
 		if (componentURI.terminologyComponentId()!= SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER) {
 			return buildSimpleTypeRefsetValueSet(componentURI.identifier(), codeSystemVersion);
@@ -290,7 +290,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 		}
 		
 		SnomedUri snomedUri = SnomedUri.fromUriString(validateCodeRequest.getUrl().getUriValue(), locationName);
-		CodeSystemVersionEntry codeSystemVersion = getCodeSystemVersion(snomedUri.getVersionTag());
+		CodeSystemVersion codeSystemVersion = getCodeSystemVersion(snomedUri.getVersionTag());
 		String componentId = validateCodeRequest.getCode();
 
 		if (!snomedUri.hasQueryPart()) {
@@ -332,7 +332,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 				SnomedConcept snomedConcept = SnomedRequests.prepareGetConcept(queryPart.getQueryValue())
 					.setLocales(getLocales())
 					.setExpand("pt()")
-					.build(repositoryId, codeSystemVersion.getPath())
+					.build(codeSystemVersion.getUri())
 					.execute(getBus())
 					.getSync();
 				
@@ -356,7 +356,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 				.filterByReferencedComponent(componentId)
 				.setLocales(getLocales())
 				.setExpand("referencedComponent(expand(pt()))")
-				.build(repositoryId, codeSystemVersion.getPath())
+				.build(codeSystemVersion.getUri())
 				.execute(getBus())
 				.getSync()
 				.first();
@@ -378,7 +378,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 				.filterByReferencedComponent(componentId)
 				.setLocales(getLocales())
 				.setExpand("referencedComponent(expand(pt()))")
-				.build(repositoryId, codeSystemVersion.getPath())
+				.build(codeSystemVersion.getUri())
 				.execute(getBus())
 				.getSync()
 				.first();
@@ -399,7 +399,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 				.filterByActive(true)
 				.setLocales(getLocales())
 				.setExpand("pt()")
-				.build(repositoryId, codeSystemVersion.getPath())
+				.build(codeSystemVersion.getUri())
 				.execute(getBus())
 				.getSync()
 				.first();
@@ -419,7 +419,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 	@Override
 	public ValidateCodeResult validateCode(ValidateCodeRequest validateCodeRequest, ComponentURI componentURI) {
 		
-		CodeSystemVersionEntry codeSystemVersion = findCodeSystemVersion(componentURI);
+		CodeSystemVersion codeSystemVersion = findCodeSystemVersion(componentURI);
 		
 		//simple type reference
 		if (componentURI.terminologyComponentId()!= SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER) {
@@ -529,7 +529,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 		return ValidateCodeResult.builder().okResult(concept.getPt().getTerm()).build();
 	}
 	
-	private ValueSet buildSimpleTypeRefsetValueSets(CodeSystemVersionEntry codeSystemVersion) {
+	private ValueSet buildSimpleTypeRefsetValueSets(CodeSystemVersion codeSystemVersion) {
 		
 		int all = Integer.MAX_VALUE;
 		
@@ -540,7 +540,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 			.filterByReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
 			.setLocales(getLocales())
 			.setExpand("members(expand(referencedComponent(expand(pt()))), limit:"+ all +")")
-			.build(repositoryId, codeSystemVersion.getPath())
+			.build(codeSystemVersion.getUri())
 			.execute(getBus())
 			
 			//collect the members
@@ -611,7 +611,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 		return builder.build();		
 	}
 	
-	private ValueSet buildSubsumptionValueSet(String parentConceptId, CodeSystemVersionEntry codeSystemVersion, boolean fetchAll) {
+	private ValueSet buildSubsumptionValueSet(String parentConceptId, CodeSystemVersion codeSystemVersion, boolean fetchAll) {
 		
 		Builder builder = ValueSet.builder(UUID.randomUUID().toString());
 		
@@ -624,9 +624,9 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 			.build();
 		
 		builder.status(PublicationStatus.ACTIVE)
-			.date(new Date(codeSystemVersion.getEffectiveDate()))
+			.date(Date.from(codeSystemVersion.getEffectiveTime().atStartOfDay().toInstant(ZoneOffset.UTC)))
 			.language(getLocales().get(0).getLanguageTag())
-			.version(codeSystemVersion.getVersionId())
+			.version(codeSystemVersion.getVersion())
 			.identifier(identifier)
 			.url(uri.toUri());
 		
@@ -648,7 +648,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 			snomedConceptSearchRequestBuilder.all();
 		}
 		
-		SnomedConcepts snomedConcepts  = snomedConceptSearchRequestBuilder.build(repositoryId, codeSystemVersion.getPath())
+		SnomedConcepts snomedConcepts  = snomedConceptSearchRequestBuilder.build(codeSystemVersion.getUri())
 			.execute(getBus())
 			.getSync();
 		
@@ -677,7 +677,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 		return builder.build();
 	}
 
-	private ValueSet.Builder buildExpandedQueryTypeValueSet(SnomedReferenceSetMember refsetMember, SnomedConcept referencedComponent, CodeSystemVersionEntry codeSystemVersion, List<ExtendedLocale> locales) {
+	private ValueSet.Builder buildExpandedQueryTypeValueSet(SnomedReferenceSetMember refsetMember, SnomedConcept referencedComponent, CodeSystemVersion codeSystemVersion, List<ExtendedLocale> locales) {
 		
 		LogicalId logicalId = new LogicalId(repositoryId, codeSystemVersion.getPath(), refsetMember.getReferenceSetId(), refsetMember.getId());
 		
@@ -731,7 +731,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 			.expansion(expansionBuilder.build());
 	}
 	
-	private ValueSet.Builder buildSimpleTypeValueSet(final SnomedComponent snomedComponent, final CodeSystemVersionEntry codeSystemVersion, final List<ExtendedLocale> locales) {
+	private ValueSet.Builder buildSimpleTypeValueSet(final SnomedComponent snomedComponent, final CodeSystemVersion codeSystemVersion, final List<ExtendedLocale> locales) {
 		
 		LogicalId logicalId = new LogicalId(repositoryId, codeSystemVersion.getPath(), snomedComponent.getId());
 		
@@ -752,7 +752,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 		return builder.compose(compose);
 	}
 	
-	private ValueSet.Builder buildExpandedSimpleTypeValueSet(SnomedReferenceSet referenceSet, CodeSystemVersionEntry codeSystemVersion, final List<ExtendedLocale> locales) {
+	private ValueSet.Builder buildExpandedSimpleTypeValueSet(SnomedReferenceSet referenceSet, CodeSystemVersion codeSystemVersion, final List<ExtendedLocale> locales) {
 		
 		LogicalId logicalId = new LogicalId(repositoryId, codeSystemVersion.getPath(), referenceSet.getId());
 		
@@ -790,7 +790,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 	}
 	
 	//Collect every version on every extension
-	private List<ValueSet> collectSimpleTypeRefsets(List<CodeSystemVersionEntry> codeSystemVersionList) {
+	private List<ValueSet> collectSimpleTypeRefsets(List<CodeSystemVersion> codeSystemVersionList) {
 		
 		List<ValueSet> simpleTypevalueSets = codeSystemVersionList.stream().map(csve -> {
 			
@@ -798,7 +798,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 				.all()
 				.filterByType(SnomedRefSetType.SIMPLE)
 				.filterByReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
-				.build(repositoryId, csve.getPath())
+				.build(csve.getUri())
 				.execute(getBus())
 				.then(refsets -> {
 					return refsets.stream()
@@ -820,7 +820,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 	 * We assign their member id as part of the logical id
 	 * Collect every version on every extension
 	 */
-	private List<ValueSet> collectQueryTypeVirtualRefsets(List<CodeSystemVersionEntry> codeSystemVersionList) {
+	private List<ValueSet> collectQueryTypeVirtualRefsets(List<CodeSystemVersion> codeSystemVersionList) {
 		
 		List<ValueSet> simpleTypevalueSets = codeSystemVersionList.stream().map(csve -> {
 		
@@ -831,7 +831,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 				.filterByActive(true)
 				.setLocales(getLocales())
 				.setExpand("referencedComponent(expand(pt()))")
-				.build(repositoryId, csve.getPath())
+				.build(csve.getUri())
 				.execute(getBus())
 				.then(members -> {
 					return members.stream()
@@ -867,7 +867,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 	 * @param codeSystemVersion 
 	 * @return
 	 */
-	private Builder createValueSetBuilder(LogicalId logicalId, SnomedComponent snomedComponent, CodeSystemVersionEntry codeSystemVersion) {
+	private Builder createValueSetBuilder(LogicalId logicalId, SnomedComponent snomedComponent, CodeSystemVersion codeSystemVersion) {
 		
 		String referenceSetId = snomedComponent.getId();
 		
@@ -884,9 +884,9 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 		
 		builder
 			.status(snomedComponent.isActive() ? PublicationStatus.ACTIVE : PublicationStatus.RETIRED)
-			.date(new Date(codeSystemVersion.getEffectiveDate()))
+			.date(Date.from(codeSystemVersion.getEffectiveTime().atStartOfDay(ZoneOffset.UTC).toInstant()))
 			.language(getLocales().get(0).getLanguageTag())
-			.version(codeSystemVersion.getVersionId())
+			.version(codeSystemVersion.getVersion())
 			.identifier(identifier)
 			.url(uri.toUri());
 		
@@ -894,14 +894,14 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 	}
 	
 	//Common Simple type refset properties
-	private void addSimpleTypeProperties(Builder builder, SnomedComponent snomedComponent, CodeSystemVersionEntry codeSystemVersion) {
+	private void addSimpleTypeProperties(Builder builder, SnomedComponent snomedComponent, CodeSystemVersion codeSystemVersion) {
 		
 		String referenceSetId = snomedComponent.getId();
 
 		SnomedConcept refsetConcept = SnomedRequests.prepareGetConcept(referenceSetId)
 			.setExpand("pt()")
 			.setLocales(getLocales())
-			.build(getRepositoryId(), codeSystemVersion.getPath())
+			.build(codeSystemVersion.getUri())
 			.execute(getBus())
 			.getSync();
 		
@@ -910,7 +910,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 	}
 
 
-	private ValueSet.Builder buildQueryTypeValueSet(final SnomedReferenceSetMember refsetMember, final SnomedConcept referencedComponent, final CodeSystemVersionEntry codeSystemVersion, final List<ExtendedLocale> locales) {
+	private ValueSet.Builder buildQueryTypeValueSet(final SnomedReferenceSetMember refsetMember, final SnomedConcept referencedComponent, final CodeSystemVersion codeSystemVersion, final List<ExtendedLocale> locales) {
 	
 		LogicalId logicalId = new LogicalId(repositoryId, codeSystemVersion.getPath(), refsetMember.getReferenceSetId(), refsetMember.getId());
 		

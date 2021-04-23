@@ -33,7 +33,7 @@ import com.google.common.collect.Multimap
 import com.google.common.collect.Sets
 
 RevisionSearcher searcher = ctx.service(RevisionSearcher.class)
-List<ComponentIdentifier> issues = Lists.newArrayList()
+Set<ComponentIdentifier> issues = Sets.newHashSet()
 
 def getPredicate = { SnomedConstraint constraint ->
 	return constraint.getPredicate() instanceof SnomedCardinalityPredicate
@@ -289,4 +289,4 @@ if (params.isUnpublishedOnly) {
 	})
 }
 
-return issues
+return issues as List

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,11 @@
  */
 package com.b2international.snowowl.fhir.tests;
 
-import java.util.Date;
-
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.jobs.JobRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.test.commons.Services;
+import com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests;
 
 /**
  * Common superclass for test artefact creators
@@ -30,12 +29,12 @@ import com.b2international.snowowl.test.commons.Services;
 public class TestArtifactCreator {
 	
 	protected synchronized static void createVersion(String version, String codeSystemName) {
-		
+		String nextAvailableEffectiveTime = CodeSystemVersionRestRequests.getNextAvailableEffectiveDateAsString(codeSystemName);
 		String jobId = CodeSystemRequests.prepareNewCodeSystemVersion()
 			.setCodeSystemShortName(codeSystemName)
 			.setDescription("FHIR Test version")
 			.setVersionId(version)
-			.setEffectiveTime(new Date())
+			.setEffectiveTime(nextAvailableEffectiveTime)
 			.buildAsync()
 			.runAsJob(String.format("Creating version '%s/%s'", codeSystemName, version))
 			.execute(getEventBus())

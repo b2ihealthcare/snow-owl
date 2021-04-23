@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>snowowl-parent</artifactId>
-		<version>7.15.0-SNAPSHOT</version>
+		<version>7.17.0-SNAPSHOT</version>
 	</parent>
 	
 	<modules>
@@ -27,16 +27,6 @@
 		<!-- SNOMED CT Classification Support -->
 		<module>com.b2international.snowowl.snomed.reasoner</module>
 		<module>com.b2international.snowowl.snomed.reasoner.tests</module>
-		
-		<!-- SNOMED CT DSLs -->
-		<module>com.b2international.snowowl.snomed.scg</module>
-		<module>com.b2international.snowowl.snomed.scg.tests</module>
-		<module>com.b2international.snowowl.snomed.ecl</module>
-		<module>com.b2international.snowowl.snomed.ecl.tests</module>
-		<module>com.b2international.snowowl.snomed.ql</module>
-		<module>com.b2international.snowowl.snomed.ql.tests</module>
-		<module>com.b2international.snowowl.snomed.etl</module>
-		<module>com.b2international.snowowl.snomed.etl.tests</module>
 		
 		<!-- SNOMED CT Core Features -->
 		<module>com.b2international.snowowl.snomed.core.feature</module>

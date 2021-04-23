@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.core.domain;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.domain.BaseComponent;
@@ -31,6 +31,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * @since 4.0
  */
 public abstract class SnomedComponent extends BaseComponent {
+
+	private static final long serialVersionUID = 1L;
 
 	/**
 	 * @since 7.4
@@ -52,7 +54,7 @@ public abstract class SnomedComponent extends BaseComponent {
 	} 
 	
 	private Boolean active;
-	private Date effectiveTime;
+	private LocalDate effectiveTime;
 	private String moduleId;
 	private String iconId;
 	private Float score;
@@ -74,7 +76,7 @@ public abstract class SnomedComponent extends BaseComponent {
 	 * @return the component's effective time
 	 */
 	@JsonFormat(shape=Shape.STRING, pattern=DateFormats.SHORT, timezone="UTC")
-	public Date getEffectiveTime() {
+	public LocalDate getEffectiveTime() {
 		return effectiveTime;
 	}
 
@@ -116,7 +118,7 @@ public abstract class SnomedComponent extends BaseComponent {
 	}
 
 	@JsonFormat(shape=Shape.STRING, pattern = DateFormats.SHORT, timezone="UTC")
-	public void setEffectiveTime(final Date effectiveTime) {
+	public void setEffectiveTime(final LocalDate effectiveTime) {
 		this.effectiveTime = effectiveTime;
 	}
 

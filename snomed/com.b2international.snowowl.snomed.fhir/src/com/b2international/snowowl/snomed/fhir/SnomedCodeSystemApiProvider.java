@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
+import com.b2international.snowowl.core.codesystem.CodeSystemVersion;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.plugin.Component;
@@ -91,9 +91,9 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 		
 		validateVersion(snomedUri, lookup.getVersion());
 		
-		CodeSystemVersionEntry codeSystemVersion = getCodeSystemVersion(snomedUri.getVersionTag());
+		CodeSystemVersion codeSystemVersion = getCodeSystemVersion(snomedUri.getVersionTag());
 		String branchPath = codeSystemVersion.getPath();
-		String versionString = EffectiveTimes.format(codeSystemVersion.getEffectiveDate(), DateFormats.SHORT);
+		String versionString = codeSystemVersion.getEffectiveDate();
 		
 		validateRequestedProperties(lookup);
 		
@@ -184,7 +184,7 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 	}
 	
 	@Override
-	protected int getCount(CodeSystemVersionEntry codeSystemVersion) {
+	protected int getCount(CodeSystemVersion codeSystemVersion) {
 		return SnomedRequests.prepareSearchConcept().setLimit(0)
 			.build(getRepositoryId(), codeSystemVersion.getPath())
 			.execute(getBus()).getSync().getTotal();
@@ -210,7 +210,7 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 	}
 	
 	@Override
-	protected Uri getFhirUri(com.b2international.snowowl.core.codesystem.CodeSystem codeSystem, CodeSystemVersionEntry codeSystemVersion) {
+	protected Uri getFhirUri(com.b2international.snowowl.core.codesystem.CodeSystem codeSystem, CodeSystemVersion codeSystemVersion) {
 		
 		//TODO: edition module should come here
 		Builder builder = SnomedUri.builder();
@@ -229,7 +229,7 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 	protected String getVersion(SubsumptionRequest subsumptionRequest) {
 		SnomedUri snomedUri = SnomedUri.fromUriString(subsumptionRequest.getSystem(), "CodeSystem$subsumes.system");
 		validateVersion(snomedUri, subsumptionRequest.getVersion());
-		return getCodeSystemVersion(snomedUri.getVersionTag()).getVersionId();
+		return getCodeSystemVersion(snomedUri.getVersionTag()).getVersion();
 	}
 	
 	private LookupResult mapToLookupResult(SnomedConcept concept, LookupRequest lookupRequest, String version) {

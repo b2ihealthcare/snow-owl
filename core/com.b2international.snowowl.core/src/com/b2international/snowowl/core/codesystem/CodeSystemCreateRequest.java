@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -120,12 +120,12 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 
 	@Override
 	public String execute(final TransactionContext context) {
-		final Optional<CodeSystemVersionEntry> extensionOfVersion = checkCodeSystem(context);
+		final Optional<CodeSystemVersion> extensionOfVersion = checkCodeSystem(context);
 		
 		// Set the parent path if a branch needs to be created
 		if (createBranch) {
 			parentPath = extensionOfVersion
-				.map(CodeSystemVersionEntry::getPath)
+				.map(CodeSystemVersion::getPath)
 				.orElse(Branch.MAIN_PATH);
 		}
 
@@ -161,7 +161,7 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 		}
 	}
 
-	private Optional<CodeSystemVersionEntry> checkCodeSystem(final TransactionContext context) {
+	private Optional<CodeSystemVersion> checkCodeSystem(final TransactionContext context) {
 		// OID must be unique if defined
 		if (!StringUtils.isEmpty(oid) && codeSystemExists(oid, context)) {
 			throw new AlreadyExistsException("Code system", oid);
@@ -182,7 +182,7 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 			final String extensionOfShortName = extensionOf.getCodeSystem(); 
 			final String versionId = extensionOf.getPath();
 			
-			final Optional<CodeSystemVersionEntry> extensionOfVersion = CodeSystemRequests.prepareSearchCodeSystemVersion()
+			final Optional<CodeSystemVersion> extensionOfVersion = CodeSystemRequests.prepareSearchCodeSystemVersion()
 					.one()
 					.filterByCodeSystemShortName(extensionOfShortName)
 					.filterByVersionId(versionId)

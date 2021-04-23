@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.exceptions.LockedException;
 import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -44,7 +45,6 @@ import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.core.locks.Locks;
-import com.b2international.snowowl.core.locks.OperationLockException;
 import com.b2international.snowowl.core.plugin.Extensions;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.CommitResult;
@@ -158,7 +158,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 				.user(user)
 				.lock(DatastoreLockContextDescriptions.SAVE_CLASSIFICATION_RESULTS, parentLockContext)) {
 			return persistChanges(context, monitor);
-		} catch (final OperationLockException e) {
+		} catch (final LockedException e) {
 			tracker.classificationFailed(classificationId);
 			throw new ReasonerApiException("Couldn't acquire exclusive access to terminology store for persisting classification changes; %s", e.getMessage(), e);
 		} catch (final Exception e) {

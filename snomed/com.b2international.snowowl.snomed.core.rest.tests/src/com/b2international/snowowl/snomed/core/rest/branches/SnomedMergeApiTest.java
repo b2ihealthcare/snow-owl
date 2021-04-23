@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.core.rest.branches;
 
-import static com.b2international.snowowl.snomed.core.rest.CodeSystemVersionRestRequests.getNextAvailableEffectiveDate;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.createComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.deleteComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.getComponent;
@@ -23,12 +22,14 @@ import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRe
 import static com.b2international.snowowl.snomed.core.rest.SnomedRefSetRestRequests.updateRefSetComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRefSetRestRequests.updateRefSetMemberEffectiveTime;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.*;
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getNextAvailableEffectiveDate;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertFalse;
 
-import java.util.Calendar;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 
@@ -717,15 +718,14 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 	public void rebaseUnsetEffectiveTimeOnSource() {
 		final String memberId = createNewRefSetMember(branchPath);
 
-		final Calendar calendar = Calendar.getInstance();
-		calendar.setTime(getNextAvailableEffectiveDate(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME));
-		updateRefSetMemberEffectiveTime(branchPath, memberId, calendar.getTime());
+		LocalDate version = getNextAvailableEffectiveDate(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME);
+		updateRefSetMemberEffectiveTime(branchPath, memberId, version);
 
 		final IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
 		branching.createBranch(a).statusCode(201);
 
-		calendar.add(Calendar.DATE, 1);
-		updateRefSetMemberEffectiveTime(branchPath, memberId, calendar.getTime()); // Parent increases the effective time by one day
+		version = version.plus(1, ChronoUnit.DAYS);
+		updateRefSetMemberEffectiveTime(branchPath, memberId, version); // Parent increases the effective time by one day
 
 		final Map<?, ?> childRequest = ImmutableMap.builder()
 				.put("active", false)
@@ -738,7 +738,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 		getComponent(branchPath, SnomedComponentType.MEMBER, memberId).statusCode(200)
 		.body("released", equalTo(true))
-		.body("effectiveTime", equalTo(EffectiveTimes.format(calendar.getTime(), DateFormats.SHORT)))
+		.body("effectiveTime", equalTo(EffectiveTimes.format(version, DateFormats.SHORT)))
 		.body("active", equalTo(true));
 
 		getComponent(a, SnomedComponentType.MEMBER, memberId).statusCode(200)
@@ -751,9 +751,8 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 	public void rebaseUnsetEffectiveTimeOnTarget() {
 		final String memberId = createNewRefSetMember(branchPath);
 
-		final Calendar calendar = Calendar.getInstance();
-		calendar.setTime(getNextAvailableEffectiveDate(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME));
-		updateRefSetMemberEffectiveTime(branchPath, memberId, calendar.getTime());
+		LocalDate version = getNextAvailableEffectiveDate(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME);
+		updateRefSetMemberEffectiveTime(branchPath, memberId, version);
 
 		final IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
 		branching.createBranch(a).statusCode(201);
@@ -765,8 +764,8 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 
 		updateRefSetComponent(branchPath, SnomedComponentType.MEMBER, memberId, parentRequest, false).statusCode(204); // Parent unsets the effective time and inactivates the member
 
-		calendar.add(Calendar.DATE, 1);
-		updateRefSetMemberEffectiveTime(a, memberId, calendar.getTime()); // Child increases the effective time by one day
+		version = version.plus(1, ChronoUnit.DAYS);
+		updateRefSetMemberEffectiveTime(a, memberId, version); // Child increases the effective time by one day
 
 		merge(branchPath, a, "Rebased effective time change over update").body("status", equalTo(Merge.Status.COMPLETED.name()));
 

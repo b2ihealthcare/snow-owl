@@ -70,14 +70,16 @@ public class ComponentURITest {
 		assertTrue(componentURI == ComponentURI.of(codeSystemURI.toString(), terminologyComponentId, identifier));
 	}
 	
+	
 	@Test
 	public void toStringTest() {
-		ComponentURI componentURI = ComponentURI.of("SNOMEDCT/2019-09-30/150/1");
+		String uri = "SNOMEDCT/2019-09-30/150/59524001";
+		ComponentURI componentURI = ComponentURI.of(uri);
 		assertEquals("SNOMEDCT", componentURI.codeSystem());
 		assertEquals("SNOMEDCT/2019-09-30", componentURI.codeSystemUri().toString());
 		assertEquals(150, componentURI.terminologyComponentId());
-		assertEquals("1", componentURI.identifier());
-		assertEquals("SNOMEDCT/2019-09-30", componentURI.toString());
+		assertEquals("59524001", componentURI.identifier());
+		assertEquals(uri, componentURI.toString());
 	}
 	
 	@Test

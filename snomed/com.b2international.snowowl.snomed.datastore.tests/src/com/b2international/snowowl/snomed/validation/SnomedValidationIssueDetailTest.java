@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@ import java.util.stream.Collectors;
 import org.eclipse.xtext.parser.IParser;
 import org.eclipse.xtext.serializer.ISerializer;
 import org.eclipse.xtext.validation.IResourceValidator;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -67,7 +66,7 @@ import com.b2international.snowowl.snomed.core.ecl.EclSerializer;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
-import com.b2international.snowowl.snomed.ecl.EclStandaloneSetup;
+import com.b2international.snomed.ecl.EclStandaloneSetup;
 import com.b2international.snowowl.snomed.validation.detail.SnomedValidationIssueDetailExtension;
 import com.b2international.snowowl.snomed.validation.detail.SnomedValidationIssueDetailExtension.SnomedIssueDetailFilterFields;
 import com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator;
@@ -127,11 +126,6 @@ public class SnomedValidationIssueDetailTest extends BaseRevisionIndexTest {
 		}
 		
 		context.service(ValidationIssueDetailExtensionProvider.class).addExtension(new SnomedValidationIssueDetailExtension());
-	}
-	
-	@After
-	public void teardown() {
-		repository.dispose();
 	}
 	
 	@Test

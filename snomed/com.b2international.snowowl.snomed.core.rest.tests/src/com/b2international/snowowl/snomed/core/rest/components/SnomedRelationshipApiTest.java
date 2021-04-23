@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,10 @@
 package com.b2international.snowowl.snomed.core.rest.components;
 
 import static com.b2international.snowowl.core.ApplicationContext.getServiceForClass;
-import static com.b2international.snowowl.snomed.core.rest.CodeSystemRestRequests.createCodeSystem;
-import static com.b2international.snowowl.snomed.core.rest.CodeSystemVersionRestRequests.createCodeSystemAndVersion;
-import static com.b2international.snowowl.snomed.core.rest.CodeSystemVersionRestRequests.createVersion;
-import static com.b2international.snowowl.snomed.core.rest.CodeSystemVersionRestRequests.getNextAvailableEffectiveDateAsString;
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests.createCodeSystem;
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.createCodeSystemAndVersion;
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.createVersion;
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getNextAvailableEffectiveDateAsString;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.createComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.deleteComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.getComponent;
@@ -27,20 +27,21 @@ import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRe
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewConcept;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewRelationship;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createRelationshipRequestBody;
-import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
+import static com.b2international.snowowl.test.commons.rest.RestExtensions.assertCreated;
 import static com.google.common.collect.Lists.newArrayList;
 import static org.hamcrest.CoreMatchers.endsWith;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 
 import com.b2international.commons.exceptions.ConflictException;
+import com.b2international.commons.json.Json;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.b2international.snowowl.core.domain.TransactionContext;
@@ -58,7 +59,6 @@ import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.test.commons.Services;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 
 /**
@@ -70,54 +70,48 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void createRelationshipNonExistentBranch() {
-		Map<?, ?> requestBody = createRelationshipRequestBody(Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT)
-				.put("commitComment", "Created new relationship on non-existent branch")
-				.build();
+		Json requestBody = createRelationshipRequestBody(Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT)
+				.with("commitComment", "Created new relationship on non-existent branch");
 
 		createComponent(BranchPathUtils.createPath("MAIN/x/y/z"), SnomedComponentType.RELATIONSHIP, requestBody).statusCode(404);
 	}
 
 	@Test
 	public void createRelationshipInvalidSource() {
-		Map<?, ?> requestBody = createRelationshipRequestBody("11110000", Concepts.PART_OF, Concepts.NAMESPACE_ROOT)
-				.put("commitComment", "Created new relationship with invalid sourceId")
-				.build();
+		Json requestBody = createRelationshipRequestBody("11110000", Concepts.PART_OF, Concepts.NAMESPACE_ROOT)
+				.with("commitComment", "Created new relationship with invalid sourceId");
 
 		createComponent(branchPath, SnomedComponentType.RELATIONSHIP, requestBody).statusCode(400);
 	}
 
 	@Test
 	public void createRelationshipInvalidType() {
-		Map<?, ?> requestBody = createRelationshipRequestBody(Concepts.ROOT_CONCEPT, "11110000", Concepts.NAMESPACE_ROOT)
-				.put("commitComment", "Created new relationship with invalid typeId")
-				.build();
+		Json requestBody = createRelationshipRequestBody(Concepts.ROOT_CONCEPT, "11110000", Concepts.NAMESPACE_ROOT)
+				.with("commitComment", "Created new relationship with invalid typeId");
 
 		createComponent(branchPath, SnomedComponentType.RELATIONSHIP, requestBody).statusCode(400);
 	}
 
 	@Test
 	public void createRelationshipInvalidDestination() {
-		Map<?, ?> requestBody = createRelationshipRequestBody(Concepts.ROOT_CONCEPT, Concepts.PART_OF, "11110000")
-				.put("commitComment", "Created new relationship with invalid destinationId")
-				.build();
+		Json requestBody = createRelationshipRequestBody(Concepts.ROOT_CONCEPT, Concepts.PART_OF, "11110000")
+				.with("commitComment", "Created new relationship with invalid destinationId");
 
 		createComponent(branchPath, SnomedComponentType.RELATIONSHIP, requestBody).statusCode(400);
 	}
 
 	@Test
 	public void createRelationshipInvalidModule() {
-		Map<?, ?> requestBody = createRelationshipRequestBody(Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT, "11110000")
-				.put("commitComment", "Created new relationship with invalid moduleId")
-				.build();
+		Json requestBody = createRelationshipRequestBody(Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT, "11110000")
+				.with("commitComment", "Created new relationship with invalid moduleId");
 
 		createComponent(branchPath, SnomedComponentType.RELATIONSHIP, requestBody).statusCode(400);
 	}
 
 	@Test
 	public void createRelationship() {
-		Map<?, ?> requestBody = createRelationshipRequestBody(Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT)
-				.put("commitComment", "Created new relationship")
-				.build();
+		Json requestBody = createRelationshipRequestBody(Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT)
+				.with("commitComment", "Created new relationship");
 
 		createComponent(branchPath, SnomedComponentType.RELATIONSHIP, requestBody).statusCode(201);
 	}
@@ -127,10 +121,9 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 		ISnomedIdentifierService identifierService = getServiceForClass(ISnomedIdentifierService.class);
 		String relationshipId = Iterables.getOnlyElement(identifierService.reserve(null, ComponentCategory.RELATIONSHIP, 1));
 
-		Map<?, ?> requestBody = createRelationshipRequestBody(Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT)
-				.put("id", relationshipId)
-				.put("commitComment", "Created new relationship with reserved identifier")
-				.build();
+		Json requestBody = createRelationshipRequestBody(Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT)
+				.with("id", relationshipId)
+				.with("commitComment", "Created new relationship with reserved identifier");
 
 		createComponent(branchPath, SnomedComponentType.RELATIONSHIP, requestBody).statusCode(201)
 		.header("Location", endsWith("/" + relationshipId));
@@ -149,24 +142,19 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void createDuplicateRelationship() {
 		String relationshipId = createNewRelationship(branchPath);
-		Map<?, ?> requestBody = createRelationshipRequestBody(Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT)
-				.put("id", relationshipId)
-				.put("commitComment", "Created new relationship with duplicate identifier")
-				.build();
+		Json requestBody = createRelationshipRequestBody(Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT)
+				.with("id", relationshipId)
+				.with("commitComment", "Created new relationship with duplicate identifier");
 
 		createComponent(branchPath, SnomedComponentType.RELATIONSHIP, requestBody).statusCode(409);
 	}
 
 	@Test
 	public void createRelationshipInferred() {
-		Map<?, ?> requestBody = createRelationshipRequestBody(Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT,  
-				Concepts.INFERRED_RELATIONSHIP)
-				.put("commitComment", "Created new relationship with inferred characteristic type")
-				.build();
+		Json requestBody = createRelationshipRequestBody(Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT, Concepts.INFERRED_RELATIONSHIP)
+				.with("commitComment", "Created new relationship with inferred characteristic type");
 
-		String relationshipId = lastPathSegment(createComponent(branchPath, SnomedComponentType.RELATIONSHIP, requestBody)
-				.statusCode(201)
-				.extract().header("Location"));
+		String relationshipId = assertCreated(createComponent(branchPath, SnomedComponentType.RELATIONSHIP, requestBody));
 
 		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200)
 		.body("characteristicTypeId", equalTo(Concepts.INFERRED_RELATIONSHIP));
@@ -182,14 +170,15 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void inactivateRelationship() {
 		String relationshipId = createNewRelationship(branchPath);
-		Map<?, ?> requestBody = ImmutableMap.builder()
-				.put("active", false)
-				.put("commitComment", "Inactivated relationship")
-				.build();
+		Json requestBody = Json.object(
+			"active", false,
+			"commitComment", "Inactivated relationship"
+		);
 
-		updateComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, requestBody).statusCode(204);
+		updateComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, requestBody)
+			.statusCode(204);
 		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200)
-		.body("active", equalTo(false));
+			.body("active", equalTo(false));
 	}
 
 	@Test
@@ -206,10 +195,10 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 		String sourceId = createNewConcept(branchPath);
 		String relationshipId = createNewRelationship(branchPath, sourceId, typeId, Concepts.NAMESPACE_ROOT);
 
-		Map<?, ?> requestBody = ImmutableMap.builder()
-				.put("active", false)
-				.put("commitComment", "Inactivated relationship")
-				.build();
+		Json requestBody = Json.object(
+			"active", false,
+			"commitComment", "Inactivated relationship"
+		);
 
 		updateComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, requestBody).statusCode(204);
 		deleteComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, false).statusCode(204);
@@ -233,87 +222,92 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 	}
 
 	private void createInactiveRelationship(String typeId) {
-		Map<?, ?> requestBody = createRelationshipRequestBody(Concepts.ROOT_CONCEPT, typeId, Concepts.NAMESPACE_ROOT)
-				.put("active", false)
-				.put("commitComment", "Created inactive relationship")
-				.build();
+		Json requestBody = createRelationshipRequestBody(Concepts.ROOT_CONCEPT, typeId, Concepts.NAMESPACE_ROOT)
+				.with("active", false)
+				.with("commitComment", "Created inactive relationship");
 
-		String relationshipId = lastPathSegment(createComponent(branchPath, SnomedComponentType.RELATIONSHIP, requestBody)
-				.statusCode(201)
-				.extract().header("Location"));
+		String relationshipId = assertCreated(createComponent(branchPath, SnomedComponentType.RELATIONSHIP, requestBody));
 
 		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200)
-		.body("active", equalTo(false));
+			.body("active", equalTo(false));
 	}
 
 	@Test
 	public void createIsARelationshipToSelf() throws Exception {
-		Map<?, ?> requestBody = createRelationshipRequestBody(Concepts.NAMESPACE_ROOT, Concepts.IS_A, Concepts.NAMESPACE_ROOT)
-				.put("commitComment", "Created new relationship pointing to itself")
-				.build();
+		Json requestBody = createRelationshipRequestBody(Concepts.NAMESPACE_ROOT, Concepts.IS_A, Concepts.NAMESPACE_ROOT)
+				.with("commitComment", "Created new relationship pointing to itself");
 
-		createComponent(branchPath, SnomedComponentType.RELATIONSHIP, requestBody).statusCode(400);
+		createComponent(branchPath, SnomedComponentType.RELATIONSHIP, requestBody)
+			.statusCode(400);
 	}
 
 	@Test
 	public void updateGroup() {
 		String relationshipId = createNewRelationship(branchPath);
-		Map<?, ?> requestBody = ImmutableMap.builder()
-				.put("group", 99)
-				.put("commitComment", "Updated relationship group")
-				.build();
+		Json requestBody = Json.object(
+			"group", 99,
+			"commitComment", "Updated relationship group"
+		);
 
-		updateComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, requestBody).statusCode(204);
-		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200)
-		.body("group", equalTo(99));
+		updateComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, requestBody)
+			.statusCode(204);
+		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId)
+			.statusCode(200)
+			.body("group", equalTo(99));
 	}
 
 	@Test
 	public void updateGroupToInvalidValue() {
 		String relationshipId = createNewRelationship(branchPath);
-		Map<?, ?> requestBody = ImmutableMap.builder()
-				.put("group", -5)
-				.put("commitComment", "Updated relationship group to invalid value")
-				.build();
+		Json requestBody = Json.object(
+			"group", -5,
+			"commitComment", "Updated relationship group to invalid value"
+		);
 
-		updateComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, requestBody).statusCode(400);
-		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200)
-		.body("group", equalTo(0));
+		updateComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, requestBody)
+			.statusCode(400);
+		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId)
+			.statusCode(200)
+			.body("group", equalTo(0));
 	}
 
 	@Test
 	public void changeRelationshipUnionGroup() {
 		String relationshipId = createNewRelationship(branchPath);
-		Map<?, ?> requestBody = ImmutableMap.builder()
-				.put("unionGroup", 101)
-				.put("commitComment", "Updated relationship union group")
-				.build();
+		Json requestBody = Json.object(
+			"unionGroup", 101,
+			"commitComment", "Updated relationship union group"
+		);
 
-		updateComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, requestBody).statusCode(204);
-		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200)
-		.body("unionGroup", equalTo(101));
+		updateComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, requestBody)
+			.statusCode(204);
+		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId)
+			.statusCode(200)
+			.body("unionGroup", equalTo(101));
 	}
 
 	@Test
 	public void changeRelationshipCharacteristicType() {
 		String relationshipId = createNewRelationship(branchPath);
-		Map<?, ?> requestBody = ImmutableMap.builder()
-				.put("characteristicTypeId", Concepts.ADDITIONAL_RELATIONSHIP)
-				.put("commitComment", "Updated relationship characteristic type")
-				.build();
+		Json requestBody = Json.object(
+			"characteristicTypeId", Concepts.ADDITIONAL_RELATIONSHIP,
+			"commitComment", "Updated relationship characteristic type"
+		);
 
-		updateComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, requestBody).statusCode(204);
-		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200)
+		updateComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, requestBody)
+			.statusCode(204);
+		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId)
+			.statusCode(200)
 			.body("characteristicTypeId", equalTo(Concepts.ADDITIONAL_RELATIONSHIP));
 	}
 
 	@Test
 	public void changeRelationshipModifier() {
 		String relationshipId = createNewRelationship(branchPath);
-		Map<?, ?> requestBody = ImmutableMap.builder()
-				.put("modifierId", Concepts.UNIVERSAL_RESTRICTION_MODIFIER)
-				.put("commitComment", "Updated relationship modifier")
-				.build();
+		Json requestBody = Json.object(
+			"modifierId", Concepts.UNIVERSAL_RESTRICTION_MODIFIER,
+			"commitComment", "Updated relationship modifier"
+		);
 
 		updateComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, requestBody).statusCode(204);
 		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200)
@@ -374,10 +368,10 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void updateUnreleasedRelationshipTypeId() throws Exception {
 		String relationshipId = createNewRelationship(branchPath);
-		Map<?, ?> update = ImmutableMap.builder()
-				.put(SnomedRf2Headers.FIELD_TYPE_ID, Concepts.DEFINING_RELATIONSHIP /*part of is the initial type*/)
-				.put("commitComment", "Updated unreleased relationship typeId")
-				.build();
+		Json update = Json.object(
+			SnomedRf2Headers.FIELD_TYPE_ID, Concepts.DEFINING_RELATIONSHIP, // part of is the initial type
+			"commitComment", "Updated unreleased relationship typeId"
+		);
 
 		updateComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, update)
 			.statusCode(204);
@@ -390,10 +384,10 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void updateUnreleasedRelationshipDestinationId() throws Exception {
 		String relationshipId = createNewRelationship(branchPath);
-		Map<?, ?> update = ImmutableMap.builder()
-				.put(SnomedRf2Headers.FIELD_DESTINATION_ID, Concepts.MODULE_ROOT)
-				.put("commitComment", "Updated unreleased relationship destinationId")
-				.build();
+		Json update = Json.object(
+			SnomedRf2Headers.FIELD_DESTINATION_ID, Concepts.MODULE_ROOT,
+			"commitComment", "Updated unreleased relationship destinationId"
+		);
 
 		updateComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, update)
 			.statusCode(204);
@@ -406,10 +400,10 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void updateReleasedRelationshipTypeId() throws Exception {
 		String relationshipId = createNewRelationship(branchPath);
-		Map<?, ?> update = ImmutableMap.builder()
-				.put(SnomedRf2Headers.FIELD_TYPE_ID, Concepts.DEFINING_RELATIONSHIP /*part of is the initial type*/)
-				.put("commitComment", "Updated unreleased relationship typeId")
-				.build();
+		Json update = Json.object(
+			SnomedRf2Headers.FIELD_TYPE_ID, Concepts.DEFINING_RELATIONSHIP, // part of is the initial type
+			"commitComment", "Updated unreleased relationship typeId"
+		);
 
 		// release component
 		createCodeSystemAndVersion(branchPath, "SNOMEDCT-RELREL-TYPEID", "v1", "20170301");
@@ -425,10 +419,10 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void updateReleasedRelationshipDestinationId() throws Exception {
 		String relationshipId = createNewRelationship(branchPath);
-		Map<?, ?> update = ImmutableMap.builder()
-				.put(SnomedRf2Headers.FIELD_DESTINATION_ID, Concepts.MODULE_ROOT)
-				.put("commitComment", "Updated unreleased relationship destinationId")
-				.build();
+		Json update = Json.object(
+			SnomedRf2Headers.FIELD_DESTINATION_ID, Concepts.MODULE_ROOT,
+			"commitComment", "Updated unreleased relationship destinationId"
+		);
 
 		// release component
 		createCodeSystemAndVersion(branchPath, "SNOMEDCT-RELREL-DESTID", "v1", "20170301");
@@ -483,10 +477,10 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 		.body("released", equalTo(true))
 		.body("effectiveTime", equalTo(effectiveDate));
 		
-		Map<?, ?> inactivationRequestBody = ImmutableMap.builder()
-				.put("active", false)
-				.put("commitComment", "Inactivated relationship")
-				.build();
+		Json inactivationRequestBody = Json.object(
+			"active", false,
+			"commitComment", "Inactivated relationship"
+		);
 
 		updateComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, inactivationRequestBody).statusCode(204);
 
@@ -496,10 +490,10 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 		.body("released", equalTo(true))
  		.body("effectiveTime", nullValue());
 
-		Map<?, ?> reactivationRequestBody = ImmutableMap.builder()
-				.put("active", true)
-				.put("commitComment", "Inactivated relationships")
-				.build();
+		Json reactivationRequestBody = Json.object(
+			"active", true,
+			"commitComment", "Inactivated relationships"
+		);
 
 		updateComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, reactivationRequestBody).statusCode(204);
 

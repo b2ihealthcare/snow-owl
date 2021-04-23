@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,45 +16,32 @@
 package com.b2international.index.mapping;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Sets.newHashSet;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.TreeMap;
+import java.math.BigDecimal;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.collections.PrimitiveCollection;
-import com.b2international.index.Analyzers;
-import com.b2international.index.Doc;
-import com.b2international.index.ID;
-import com.b2international.index.Keyword;
-import com.b2international.index.Script;
-import com.b2international.index.Text;
+import com.b2international.collections.PrimitiveSet;
+import com.b2international.index.*;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
+import com.b2international.index.revision.Revision;
 import com.b2international.index.util.Reflections;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.HashBiMap;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.*;
 import com.google.common.collect.ImmutableMap.Builder;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedMap;
-import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Maps;
+import com.google.common.primitives.Primitives;
 
 /**
  * @since 4.7
@@ -62,8 +49,6 @@ import com.google.common.collect.Maps;
 public final class DocumentMapping {
 
 	private static final Logger LOG = LoggerFactory.getLogger(DocumentMapping.class);
-	
-	private static final BiMap<Class<?>, String> DOC_TYPE_CACHE = HashBiMap.create();
 	
 	// type path delimiter to differentiate between same nested types in different contexts
 	public static final String DELIMITER = ".";
@@ -74,8 +59,6 @@ public final class DocumentMapping {
 	 */
 	public static final String _ID = "_id";
 
-	private static final Function<? super Field, String> GET_NAME = Field::getName;
-	
 	private final Class<?> type;
 	private final String typeAsString;
 	private final Map<String, Field> fieldMap;
@@ -84,7 +67,7 @@ public final class DocumentMapping {
 	private final TreeMap<String, Keyword> keywordFields;
 	private final DocumentMapping parent;
 	private final Map<String, Script> scripts;
-	private final Set<String> hashedFields;
+	private final SortedSet<String> trackedRevisionFields;
 	private final String idField;
 
 	public DocumentMapping(Class<?> type) {
@@ -96,7 +79,7 @@ public final class DocumentMapping {
 		this.type = type;
 		final String typeAsString = getType(type);
 		this.typeAsString = parent == null ? typeAsString : parent.typeAsString() + DELIMITER + typeAsString;
-		this.fieldMap = FluentIterable.from(Reflections.getFields(type)).filter(DocumentMapping::isValidField).uniqueIndex(GET_NAME);
+		this.fieldMap = FluentIterable.from(Reflections.getFields(type)).filter(DocumentMapping::isValidField).uniqueIndex(Field::getName);
 
 		final Collection<Field> idFields = fieldMap.values().stream()
 				.filter(f -> f.isAnnotationPresent(ID.class))
@@ -110,7 +93,6 @@ public final class DocumentMapping {
 			LOG.warn("'{}' does not define an ID annotated field, falling back to the deprecated '_id', but keep in mind that support will be removed in 8.0", type.getName());
 			this.idField = _ID;
 		}
-		
 		
 		final Builder<String, Text> textFields = ImmutableSortedMap.naturalOrder();
 		final Builder<String, Keyword> keywordFields = ImmutableSortedMap.naturalOrder();
@@ -135,12 +117,13 @@ public final class DocumentMapping {
 		this.textFields = new TreeMap<>(textFields.build());
 		this.keywordFields = new TreeMap<>(keywordFields.build());
 
-		final Doc doc = getDocAnnotation(type);
+		final Doc doc = DocumentMappingRegistry.getDocAnnotation(type);
 		if (doc != null) {
-			this.hashedFields = ImmutableSortedSet.copyOf(doc.revisionHash());
+			this.trackedRevisionFields = ImmutableSortedSet.copyOf(doc.revisionHash());
 		} else {
-			this.hashedFields = ImmutableSortedSet.of();
+			this.trackedRevisionFields = ImmutableSortedSet.of();
 		}
+		checkRevisionType();
 				
 		this.nestedTypes = FluentIterable.from(getFields())
 			.transform(field -> {
@@ -158,7 +141,34 @@ public final class DocumentMapping {
 				}
 			});
 		
-		this.scripts = Maps.uniqueIndex(getScripts(type), Script::name);
+		this.scripts = new HashMap<>();
+		getScripts(type).forEach(script -> this.scripts.put(script.name(), script));
+		// add default scripts
+		if (!this.scripts.containsKey("normalizeWithOffset")) {
+			// add generic score normalizer to all mappings
+			this.scripts.put("normalizeWithOffset", new Script() {
+				@Override
+				public Class<? extends Annotation> annotationType() {
+					return Script.class;
+				}
+				
+				@Override
+				public String script() {
+					return "(_score / (_score + 1.0f)) + params.offset";
+				}
+				
+				@Override
+				public String name() {
+					return "normalizeWithOffset";
+				}
+			});
+		}
+	}
+
+	private void checkRevisionType() {
+		if (!this.trackedRevisionFields.isEmpty() && !Revision.class.isAssignableFrom(this.type)) {
+			LOG.warn("Tracked fields feature is only supported in subtypes of the Revision class. '{}' is not a subtype of Revision.", type.getName());
+		}
 	}
 
 	private Collection<Script> getScripts(Class<?> type) {
@@ -186,6 +196,11 @@ public final class DocumentMapping {
 	
 	public Collection<DocumentMapping> getNestedMappings() {
 		return ImmutableList.copyOf(nestedTypes.values());
+	}
+	
+	public boolean isNestedMapping(String field) {
+		final Class<?> nestedType = Reflections.getType(getField(field));
+		return nestedTypes.containsKey(nestedType);
 	}
 	
 	public boolean isNestedMapping(Class<?> fieldType) {
@@ -243,8 +258,28 @@ public final class DocumentMapping {
 	}
 	
 	public boolean isCollection(String field) {
-		Class<?> fieldType = getFieldType(field);
-		return Iterable.class.isAssignableFrom(fieldType) || PrimitiveCollection.class.isAssignableFrom(fieldType) || fieldType.getClass().isArray();
+		return isCollection(getFieldType(field));
+	}
+	
+	public boolean isSet(String field) {
+		final Class<?> fieldType = getFieldType(field);
+		return Set.class.isAssignableFrom(fieldType) || PrimitiveSet.class.isAssignableFrom(fieldType);
+	}
+
+	private static boolean isCollection(Class<?> fieldType) {
+		return Iterable.class.isAssignableFrom(fieldType) || PrimitiveCollection.class.isAssignableFrom(fieldType) || fieldType.isArray();
+	}
+	
+	public boolean isObject(String field) {
+		return isObject(getFieldType(field));
+	}
+
+	private static boolean isObject(Class<?> fieldType) {
+		return !fieldType.isPrimitive() 
+				&& !String.class.equals(fieldType)
+				&& !BigDecimal.class.equals(fieldType) 
+				&& !Primitives.isWrapperType(fieldType)
+				&& !isCollection(fieldType);
 	}
 	
 	public Map<String, Text> getTextFields() {
@@ -255,8 +290,13 @@ public final class DocumentMapping {
 		return keywordFields;
 	}
 	
-	public Set<String> getRevisionFields() {
-		return hashedFields;
+	/**
+	 * Fields that are being tracked in commits and will receive proper conflict detection during merges/rebases.
+	 * 
+	 * @return a non-<code>null</code> {@link SortedSet} containing all tracked revision fields declared in the {@link #type()}'s {@link Doc} annotation.
+	 */
+	public SortedSet<String> getTrackedRevisionFields() {
+		return trackedRevisionFields;
 	}
 
 	public Class<?> type() {
@@ -297,50 +337,22 @@ public final class DocumentMapping {
 	}
 	
 	public static String getType(Class<?> type) {
-		if (!DOC_TYPE_CACHE.containsKey(type)) {
-			final Doc annotation = getDocAnnotation(type);
-			checkArgument(annotation != null, "Doc annotation must be present on type '%s' or on its class hierarchy", type);
-			final String docType = Strings.isNullOrEmpty(annotation.type()) ? type.getSimpleName().toLowerCase() : annotation.type();
-			checkArgument(!Strings.isNullOrEmpty(docType), "Document type should not be null or empty on class %s", type.getName());
-			DOC_TYPE_CACHE.put(type, docType);
-		}
-		return DOC_TYPE_CACHE.get(type);
+		return DocumentMappingRegistry.INSTANCE.getType(type);
 	}
 	
 	/**
 	 * @return all types currently registered in doc type mapping
 	 */
 	public static Collection<Class<?>> getTypes() {
-		return ImmutableSet.copyOf(DOC_TYPE_CACHE.keySet());
+		return DocumentMappingRegistry.INSTANCE.getTypes();
 	}
 	
 	public static Class<?> getClass(String type) {
-		return checkNotNull(DOC_TYPE_CACHE.inverse().get(type), "Missing doc class for key '%s'. Populate the doc type cache via #getType(Class<?>) method before using this method.", type);
+		return DocumentMappingRegistry.INSTANCE.getClass(type);
 	}
 	
-	private static Doc getDocAnnotation(Class<?> type) {
-		if (type.isAnnotationPresent(Doc.class)) {
-			return type.getAnnotation(Doc.class);
-		} else {
-			if (type.getSuperclass() != null) {
-				final Doc doc = getDocAnnotation(type.getSuperclass());
-				if (doc != null) {
-					return doc;
-				}
-			}
-			
-			for (Class<?> iface : type.getInterfaces()) {
-				final Doc doc = getDocAnnotation(iface);
-				if (doc != null) {
-					return doc;
-				}
-			}
-			return null;
-		}
-	}
-
 	public static boolean isNestedDoc(Class<?> fieldType) {
-		final Doc doc = getDocAnnotation(fieldType);
+		final Doc doc = DocumentMappingRegistry.getDocAnnotation(fieldType);
 		return doc == null ? false : doc.nested();
 	}
 

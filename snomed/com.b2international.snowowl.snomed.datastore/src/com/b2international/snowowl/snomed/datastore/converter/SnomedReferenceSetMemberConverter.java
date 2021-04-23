@@ -31,6 +31,7 @@ import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.request.BaseRevisionResourceConverter;
 import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
+import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -255,25 +256,28 @@ final class SnomedReferenceSetMemberConverter extends BaseRevisionResourceConver
 	private void setReferencedComponent(SnomedReferenceSetMember member, String referencedComponentId, short referencedComponentType) {
 		final SnomedCoreComponent component;
 		switch (referencedComponentType) {
-		// TODO support query type refset refcomp expansion, currently it's a concept
-		case SnomedTerminologyComponentConstants.REFSET_NUMBER:
-		case SnomedTerminologyComponentConstants.CONCEPT_NUMBER:
-			component = new SnomedConcept();
-			((SnomedConcept) component).setId(referencedComponentId);
-			break;
-		case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER:
-			component = new SnomedDescription();
-			((SnomedDescription) component).setId(referencedComponentId);
-			break;
-		case SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER:
-			component = new SnomedRelationship();
-			((SnomedRelationship) component).setId(referencedComponentId);
-			break;
-		// XXX partial field loading support
-		case 0:
-			component = null;
-			break;
-		default: throw new UnsupportedOperationException("UnsupportedReferencedComponentType: " + referencedComponentType);
+			// TODO support query type refset refcomp expansion, currently it's a concept
+			case SnomedTerminologyComponentConstants.REFSET_NUMBER:
+			case SnomedTerminologyComponentConstants.CONCEPT_NUMBER:
+				component = new SnomedConcept();
+				((SnomedConcept) component).setId(referencedComponentId);
+				break;
+			case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER:
+				component = new SnomedDescription();
+				((SnomedDescription) component).setId(referencedComponentId);
+				break;
+			case SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER:
+				component = new SnomedRelationship();
+				((SnomedRelationship) component).setId(referencedComponentId);
+				break;
+			default: 
+				// XXX: partial field loading support
+				if (referencedComponentType < TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT || referencedComponentType > 0) {
+					throw new UnsupportedOperationException("UnsupportedReferencedComponentType: " + referencedComponentType);
+				} else {
+					component = null;
+				}
+				break;
 		}
 		member.setReferencedComponent(component);
 	}

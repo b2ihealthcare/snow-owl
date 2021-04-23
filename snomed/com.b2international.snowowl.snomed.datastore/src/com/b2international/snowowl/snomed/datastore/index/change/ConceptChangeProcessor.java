@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,6 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import com.b2international.commons.collect.LongSets;
-import com.b2international.index.query.Query;
 import com.b2international.index.revision.ObjectId;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.StagingArea;
@@ -53,8 +52,6 @@ import com.b2international.snowowl.snomed.datastore.index.update.ReferenceSetMem
 import com.b2international.snowowl.snomed.datastore.taxonomy.Taxonomy;
 import com.b2international.snowowl.snomed.datastore.taxonomy.TaxonomyGraph;
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
@@ -66,15 +63,15 @@ import com.google.common.collect.Streams;
  */
 public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 
-	private static final Set<String> ALLOWED_DESCRIPTION_CHANGE_FEATURES = ImmutableSet.<String>builder()
-			.add(SnomedDescriptionIndexEntry.Fields.ACTIVE)
-			.add(SnomedDescriptionIndexEntry.Fields.TERM)
-			.add(SnomedDescriptionIndexEntry.Fields.TYPE_ID)
-			.build();
-	private static final Set<String> ALLOWED_LANG_MEMBER_CHANGE_FEATURES = ImmutableSet.<String>builder()
-			.add(SnomedRefSetMemberIndexEntry.Fields.ACTIVE)
-			.add(SnomedRefSetMemberIndexEntry.Fields.ACCEPTABILITY_ID)
-			.build();
+	private static final Set<String> ALLOWED_DESCRIPTION_CHANGE_FEATURES = Set.of(
+		SnomedDescriptionIndexEntry.Fields.ACTIVE,
+		SnomedDescriptionIndexEntry.Fields.TERM,
+		SnomedDescriptionIndexEntry.Fields.TYPE_ID
+	);
+	private static final Set<String> ALLOWED_LANG_MEMBER_CHANGE_FEATURES = Set.of(
+		SnomedRefSetMemberIndexEntry.Fields.ACTIVE,
+		SnomedRefSetMemberIndexEntry.Fields.ACCEPTABILITY_ID
+	);
 	
 	private static final Ordering<SnomedDescriptionFragment> DESCRIPTION_TYPE_ORDER = Ordering.natural()
 			.onResultOf((SnomedDescriptionFragment description) -> {
@@ -127,7 +124,7 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		processNewConcepts(staging);
 		
 		// collect dirty concepts that require additional properties to be set for index
-		final Map<String, RevisionDiff> dirtyConceptDiffsById = Maps.uniqueIndex(staging.getChangedRevisions(SnomedConceptDocument.class).collect(Collectors.toList()), diff -> diff.newRevision.getId());
+		final Map<String, RevisionDiff> dirtyConceptDiffsById = Maps.uniqueIndex(staging.getChangedRevisions(SnomedConceptDocument.class).iterator(), diff -> diff.newRevision.getId());
 		
 		final Set<String> dirtyConceptIds = collectDirtyConceptIds(staging);
 		
@@ -137,8 +134,8 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		dirtyConceptIds.addAll(affectedDescriptionsByConcept.keySet());
 		
 		// remove all new/detached concept IDs, we've already processed them
-		dirtyConceptIds.removeAll(staging.getRemovedObjects(SnomedConceptDocument.class).map(SnomedConceptDocument::getId).collect(Collectors.toSet()));
-		dirtyConceptIds.removeAll(staging.getNewObjects(SnomedConceptDocument.class).map(SnomedConceptDocument::getId).collect(Collectors.toSet()));
+		staging.getRemovedObjects(SnomedConceptDocument.class).map(SnomedConceptDocument::getId).forEach(dirtyConceptIds::remove);
+		staging.getNewObjects(SnomedConceptDocument.class).map(SnomedConceptDocument::getId).forEach(dirtyConceptIds::remove);
 		
 		if (!dirtyConceptIds.isEmpty()) {
 			final Map<ObjectId, RevisionDiff> changedRevisions = staging.getChangedRevisions();
@@ -146,11 +143,8 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 			final Set<String> missingCurrentConceptIds = dirtyConceptIds.stream()
 					.filter(id -> !changedRevisions.containsKey(ObjectId.of(SnomedConceptDocument.class, id)))
 					.collect(Collectors.toSet());
-			final Query<SnomedConceptDocument> query = Query.select(SnomedConceptDocument.class)
-					.where(SnomedConceptDocument.Expressions.ids(missingCurrentConceptIds))
-					.limit(missingCurrentConceptIds.size())
-					.build();
-			final Map<String, SnomedConceptDocument> currentConceptDocumentsById = newHashMap(Maps.uniqueIndex(searcher.search(query), IComponent::getId));
+
+			final Map<String, SnomedConceptDocument> currentConceptDocumentsById = newHashMap(Maps.uniqueIndex(searcher.get(SnomedConceptDocument.class, missingCurrentConceptIds), IComponent::getId));
 			dirtyConceptIds.stream()
 				.map(id -> ObjectId.of(SnomedConceptDocument.class, id))
 				.filter(changedRevisions::containsKey)
@@ -317,7 +311,7 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 			.refSetType(newOrDirtyRevision != null ? newOrDirtyRevision.getRefSetType() : cleanRevision.getRefSetType())
 			.referencedComponentType(newOrDirtyRevision != null ? newOrDirtyRevision.getReferencedComponentType() : cleanRevision.getReferencedComponentType())
 			.mapTargetComponentType(newOrDirtyRevision != null ? newOrDirtyRevision.getMapTargetComponentType() : cleanRevision.getMapTargetComponentType())
-			.doi(doiData.getDoiScore(id));
+			.doi(doiData.getDoiScore(idLong));
 		
 		final boolean inStated = statedTaxonomy.getNewTaxonomy().containsNode(idLong);
 		final boolean inInferred = inferredTaxonomy.getNewTaxonomy().containsNode(idLong);
@@ -362,7 +356,7 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 			description.getId(), 
 			description.getTypeId(), 
 			description.getTerm(), 
-			ImmutableList.copyOf(getPreferredLanguageMembers(description))
+			List.copyOf(getPreferredLanguageMembers(description))
 		);
 	}
 

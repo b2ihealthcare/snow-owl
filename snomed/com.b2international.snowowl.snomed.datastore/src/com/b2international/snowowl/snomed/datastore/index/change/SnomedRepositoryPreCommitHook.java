@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,19 +32,16 @@ import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionBranch;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.StagingArea;
+import com.b2international.index.revision.StagingArea.RevisionPropertyDiff;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.repository.BaseRepositoryPreCommitHook;
 import com.b2international.snowowl.core.repository.ChangeSetProcessor;
 import com.b2international.snowowl.core.request.BranchRequest;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedOWLRelationshipDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.*;
 import com.b2international.snowowl.snomed.datastore.request.SnomedOWLExpressionConverter;
 import com.b2international.snowowl.snomed.datastore.request.SnomedOWLExpressionConverterResult;
 import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2ImportConfiguration;
@@ -122,14 +119,8 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 		final LongSet statedConceptIds = PrimitiveSets.newLongOpenHashSet();
 		final LongSet inferredConceptIds = PrimitiveSets.newLongOpenHashSet();
 		
-		
 		if (!statedDestinationIds.isEmpty()) {
-			final Query<SnomedConceptDocument> statedDestinationConceptsQuery = Query.select(SnomedConceptDocument.class)
-					.where(SnomedDocument.Expressions.ids(statedDestinationIds))
-					.limit(statedDestinationIds.size())
-					.build();
-			
-			for (SnomedConceptDocument statedDestinationConcept : index.search(statedDestinationConceptsQuery)) {
+			for (SnomedConceptDocument statedDestinationConcept : index.get(SnomedConceptDocument.class, statedDestinationIds)) {
 				statedConceptIds.add(Long.parseLong(statedDestinationConcept.getId()));
 				if (statedDestinationConcept.getStatedParents() != null) {
 					statedConceptIds.addAll(statedDestinationConcept.getStatedParents());
@@ -141,12 +132,7 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 		}
 		
 		if (!inferredDestinationIds.isEmpty()) {
-			final Query<SnomedConceptDocument> inferredDestinationConceptsQuery = Query.select(SnomedConceptDocument.class)
-					.where(SnomedDocument.Expressions.ids(inferredDestinationIds))
-					.limit(inferredDestinationIds.size())
-					.build();
-			
-			for (SnomedConceptDocument inferredDestinationConcept : index.search(inferredDestinationConceptsQuery)) {
+			for (SnomedConceptDocument inferredDestinationConcept : index.get(SnomedConceptDocument.class, inferredDestinationIds)) {
 				inferredConceptIds.add(Long.parseLong(inferredDestinationConcept.getId()));
 				if (inferredDestinationConcept.getParents() != null) {
 					inferredConceptIds.addAll(inferredDestinationConcept.getParents());
@@ -230,7 +216,17 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 			statedConceptIds.add(longId);
 			inferredConceptIds.add(longId);
 		});
-
+		
+		// collect all reactivated concepts for the taxonomy to properly re-register them in the tree even if they don't carry stated/inferred information in this commit, but they have something in the index
+		staging.getChangedRevisions(SnomedConceptDocument.class, Set.of(SnomedRf2Headers.FIELD_ACTIVE)).forEach(diff -> {
+			RevisionPropertyDiff propertyDiff = diff.getRevisionPropertyDiff(SnomedRf2Headers.FIELD_ACTIVE);
+			if ("false".equals(propertyDiff.getOldValue()) && "true".equals(propertyDiff.getNewValue())) {
+				long longId = Long.parseLong(diff.newRevision.getId());
+				statedConceptIds.add(longId);
+				inferredConceptIds.add(longId);
+			}
+		});
+		
 		log.trace("Retrieving taxonomic information from store...");
 
 		final boolean checkCycles = !(context instanceof Rf2TransactionContext);
@@ -270,13 +266,13 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 		}
 	}
 
-	private void collectIds(final Set<String> sourceIds, final Set<String> destinationIds, Stream<SnomedRelationshipIndexEntry> newRelationships, String characteristicTypeId) {
-		newRelationships
-			.filter(newRelationship -> Concepts.IS_A.equals(newRelationship.getTypeId()))
-			.filter(newRelationship -> newRelationship.getCharacteristicTypeId().equals(characteristicTypeId))
-			.forEach(newRelationship -> {
-				sourceIds.add(newRelationship.getSourceId());
-				destinationIds.add(newRelationship.getDestinationId());
+	private void collectIds(final Set<String> sourceIds, final Set<String> destinationIds, Stream<SnomedRelationshipIndexEntry> relationships, String characteristicTypeId) {
+		relationships
+			.filter(relationship -> Concepts.IS_A.equals(relationship.getTypeId()))
+			.filter(relationship -> relationship.getCharacteristicTypeId().equals(characteristicTypeId))
+			.forEach(relationship -> {
+				sourceIds.add(relationship.getSourceId());
+				destinationIds.add(relationship.getDestinationId());
 			});
 	}
 	

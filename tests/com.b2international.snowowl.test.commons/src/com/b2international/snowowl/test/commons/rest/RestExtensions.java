@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package com.b2international.snowowl.test.commons.rest;
 import static io.restassured.RestAssured.given;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +29,7 @@ import org.apache.commons.lang.text.StrSubstitutor;
 import org.hamcrest.CoreMatchers;
 
 import com.b2international.snowowl.core.util.PlatformUtil;
-import com.b2international.snowowl.test.commons.json.JsonExtensions;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
@@ -38,8 +39,10 @@ import com.google.common.collect.Iterables;
 
 import io.restassured.RestAssured;
 import io.restassured.config.LogConfig;
+import io.restassured.config.ObjectMapperConfig;
 import io.restassured.config.RestAssuredConfig;
 import io.restassured.http.ContentType;
+import io.restassured.mapper.factory.Jackson2ObjectMapperFactory;
 import io.restassured.response.Response;
 import io.restassured.response.ValidatableResponse;
 import io.restassured.specification.RequestSpecification;
@@ -100,7 +103,19 @@ public class RestExtensions {
 			}
 			
 			RestAssured.config = RestAssuredConfig.config()
-				.logConfig(LogConfig.logConfig().enableLoggingOfRequestAndResponseIfValidationFails());
+					.objectMapperConfig(
+						ObjectMapperConfig.objectMapperConfig().jackson2ObjectMapperFactory(new Jackson2ObjectMapperFactory() {
+							@Override
+							public com.fasterxml.jackson.databind.ObjectMapper create(Type arg0, String arg1) {
+								com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+								mapper.registerModule(new JavaTimeModule());
+								return mapper;
+							}
+						})
+					)
+					.logConfig(
+						LogConfig.logConfig().enableLoggingOfRequestAndResponseIfValidationFails()
+					);
 		}
 		Preconditions.checkArgument(api.startsWith("/"), "Api param should start with a forward slash: '/'");
 		return given().port(getPort()).basePath(CONTEXT + api);
@@ -118,10 +133,6 @@ public class RestExtensions {
 		return givenUnauthenticatedRequest(api).auth().preemptive().basic(USER, password);
 	}
 
-	public static RequestSpecification withJson(RequestSpecification it, Map<String, ? extends Object> properties) {
-		return it.contentType(ContentType.JSON).body(JsonExtensions.asJson(properties));
-	}
-
 	public static String asPath(List<? extends String> values) {
 		return ("/" + values.stream().collect(Collectors.joining("/"))).replaceAll("//", "/");
 	}
@@ -130,7 +141,7 @@ public class RestExtensions {
 		final String header = it.header(LOCATION);
 		return Strings.isNullOrEmpty(header) ? "" : header;
 	}
-
+	
 	public static String renderWithFields(String it, Object object) {
 		return render(it, getFieldValueMap(object));
 	}
@@ -196,14 +207,6 @@ public class RestExtensions {
 		return givenAuthenticatedRequest(api).delete(asPath(Arrays.asList(segments)));
 	}
 	
-	public static Response postJson(String api, Map<String, ?> json, String...segments) {
-		return withJson(givenAuthenticatedRequest(api), json).post(asPath(Arrays.asList(segments)));
-	}
-
-	public static Response putJson(String api, Map<String, ?> json, String...segments) {
-		return withJson(givenAuthenticatedRequest(api), json).put(asPath(Arrays.asList(segments)));
-	}
-
 	public static String assertCreated(ValidatableResponse response) {
 		return lastPathSegment(response.statusCode(201)
 				.extract()

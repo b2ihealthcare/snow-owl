@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,12 @@
  */
 package com.b2international.index.revision;
 
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.collections.Collections3;
+import com.google.common.collect.Sets;
 
 /**
  * @since 5.0
@@ -37,9 +35,10 @@ public final class RevisionCompare {
 		
 		private final RevisionBranchRef base;
 		private final RevisionBranchRef compare;
+		
 		private int added;
-		private int changed;
 		private int removed;
+		
 		private final int limit;
 	
 		private final TreeMap<String, RevisionCompareDetail> detailsByComponent = new TreeMap<>();
@@ -101,20 +100,24 @@ public final class RevisionCompare {
 		}
 		
 		public RevisionCompare build() {
+			// count changes only once
+			final Set<ObjectId> changedObjects = Sets.newHashSet();
 			final List<RevisionCompareDetail> details = detailsByComponent.values().stream()
-					.map(compareDetail -> {
+					.peek(compareDetail -> {
 						switch (compareDetail.getOp()) {
 						case ADD:
 							added++;
 							break;
 						case CHANGE:
-							changed++;
+							// count only property changes
+							if (compareDetail.isPropertyChange()) {
+								changedObjects.add(compareDetail.getObject());
+							}
 							break;
 						case REMOVE:
 							removed++;
 							break;
 						}
-						return compareDetail;
 					})
 					.limit(limit)
 					.collect(Collectors.toUnmodifiableList());
@@ -123,7 +126,7 @@ public final class RevisionCompare {
 					compare,
 					details,
 					added,
-					changed,
+					changedObjects.size(),
 					removed);
 		}
 		

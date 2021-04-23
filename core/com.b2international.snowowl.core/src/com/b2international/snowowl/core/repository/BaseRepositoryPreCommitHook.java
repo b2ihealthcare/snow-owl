@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,46 +48,8 @@ public abstract class BaseRepositoryPreCommitHook implements Hooks.PreCommitHook
 		});
 	}
 	
-//	private void processNewCodeSystemsAndVersions(final StagingArea commitChangeSet, final ImmutableIndexCommitChangeSet.Builder indexCommitChangeSet) {
-//		for (Object object : commitChangeSet.getNewObjects().values()) {
-//			if (object instanceof CodeSystemEntry) {
-//				CodeSystem newCodeSystem  = (CodeSystem) object;
-//				final CodeSystemEntry entry = CodeSystemEntry.builder(newCodeSystem).build();
-//				indexCommitChangeSet.putNewObject(ComponentIdentifier.of(CodeSystemEntry.TERMINOLOGY_COMPONENT_ID, entry.getShortName()), entry);
-//			} else if (TerminologymetadataPackage.eINSTANCE.getCodeSystemVersion().isSuperTypeOf(object.eClass())) {
-//				CodeSystemVersion newCodeSystemVersion = (CodeSystemVersion) object;
-//				final CodeSystemVersionEntry entry = CodeSystemVersionEntry.builder(newCodeSystemVersion).build();
-//				indexCommitChangeSet.putNewObject(ComponentIdentifier.of(CodeSystemVersionEntry.TERMINOLOGY_COMPONENT_ID, entry.getVersionId()), entry);
-//			}
-//		}
-//	}
-
-//	private void processDirtyCodeSystemsAndVersions(ICDOCommitChangeSet commitChangeSet, final ImmutableIndexCommitChangeSet.Builder indexCommitChangeSet) {
-//		for (final CDOObject dirtyObject : commitChangeSet.getDirtyComponents()) {
-//			if (TerminologymetadataPackage.eINSTANCE.getCodeSystem().isSuperTypeOf(dirtyObject.eClass())) {
-//				final CodeSystemEntry entry = CodeSystemEntry.builder((CodeSystem) dirtyObject).build();
-//				indexCommitChangeSet.putChangedObject(ComponentIdentifier.of(CodeSystemEntry.TERMINOLOGY_COMPONENT_ID, entry.getShortName()), entry);
-//			} else if (TerminologymetadataPackage.eINSTANCE.getCodeSystemVersion().isSuperTypeOf(dirtyObject.eClass())) {
-//				checkAndSetCodeSystemLastUpdateTime(dirtyObject, indexCommitChangeSet);
-//			}
-//		}
-//	}
-
 	private final void updateDocuments(StagingArea staging, RevisionSearcher index) throws IOException {
 		log.info("Processing changes...");
-//		processNewCodeSystemsAndVersions(commitChangeSet, indexCommitChangeSet);
-//		processDirtyCodeSystemsAndVersions(commitChangeSet, indexCommitChangeSet);
-
-		// apply code system and version deletions
-//		commitChangeSet.getDetachedComponents(TerminologymetadataPackage.Literals.CODE_SYSTEM, CodeSystemEntry.class, CodeSystemEntry.Expressions::storageKeys)
-//			.forEach(removed -> {
-//				indexCommitChangeSet.putRemovedComponent(ComponentIdentifier.of(CodeSystemEntry.TERMINOLOGY_COMPONENT_ID, removed.getShortName()), removed);
-//			});
-//		commitChangeSet.getDetachedComponents(TerminologymetadataPackage.Literals.CODE_SYSTEM_VERSION, CodeSystemVersionEntry.class, CodeSystemVersionEntry.Expressions::storageKeys)
-//			.forEach(removed -> {
-//				indexCommitChangeSet.putRemovedComponent(ComponentIdentifier.of(CodeSystemVersionEntry.TERMINOLOGY_COMPONENT_ID, removed.getVersionId()), removed);
-//			});
-		
 		preUpdateDocuments(staging, index);
 		doProcess(getChangeSetProcessors(staging, index), staging, index);
 		postUpdateDocuments(staging, index);
@@ -96,10 +58,10 @@ public abstract class BaseRepositoryPreCommitHook implements Hooks.PreCommitHook
 
 	protected final void doProcess(Collection<ChangeSetProcessor> changeSetProcessors, StagingArea staging, RevisionSearcher index) throws IOException {
 		for (ChangeSetProcessor processor : changeSetProcessors) {
-			log.trace("Collecting {}...", processor.description());
+			log.trace("Processing {} changes...", processor.description());
 			processor.process(staging, index);
-			// register additions, deletions from the sub processor
 			
+			// register additions, deletions from the sub processor
 			for (RevisionDocument revision : processor.getNewMappings().values()) {
 				staging.stageNew(revision);
 			}
@@ -143,20 +105,5 @@ public abstract class BaseRepositoryPreCommitHook implements Hooks.PreCommitHook
 	 */
 	protected void postUpdateDocuments(StagingArea staging, RevisionSearcher index) throws IOException {
 	}
-
-//	@SuppressWarnings("restriction")
-//	private void checkAndSetCodeSystemLastUpdateTime(final CDOObject component, ImmutableIndexCommitChangeSet.Builder indexCommitChangeSet) {
-//		final CodeSystemVersion version = (CodeSystemVersion) component;
-//		final CDOFeatureDelta lastUpdateFeatureDelta = commitChangeSet.getRevisionDeltas().get(component.cdoID())
-//				.getFeatureDelta(TerminologymetadataPackage.eINSTANCE.getCodeSystemVersion_LastUpdateDate());
-//		if (lastUpdateFeatureDelta instanceof org.eclipse.emf.cdo.internal.common.revision.delta.CDOSetFeatureDeltaImpl) {
-//			((org.eclipse.emf.cdo.internal.common.revision.delta.CDOSetFeatureDeltaImpl) lastUpdateFeatureDelta)
-//					.setValue(new Date(commitChangeSet.getTimestamp()));
-//			((InternalCDORevision) component.cdoRevision()).set(TerminologymetadataPackage.eINSTANCE.getCodeSystemVersion_LastUpdateDate(),
-//					CDOStore.NO_INDEX, new Date(commitChangeSet.getTimestamp()));
-//			final CodeSystemVersionEntry entry = CodeSystemVersionEntry.builder(version).build();
-//			indexCommitChangeSet.putChangedObject(ComponentIdentifier.of(CodeSystemVersionEntry.TERMINOLOGY_COMPONENT_ID, entry.getVersionId()), entry);
-//		}
-//	}
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import java.util.Map;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
+import com.b2international.commons.json.Json;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
@@ -151,20 +152,18 @@ public class SnomedRefSetBulkApiTest extends AbstractSnomedApiTest {
 
 		List<Map<?, ?>> requests = newArrayList();
 		for (int i = 0; i < numberOfConcepts; i++) {
-			Map<?, ?> createRequest = ImmutableMap.<String, Object>builder()
-					.put("action", "create")
-					.putAll(createRefSetMemberRequestBody(refSetId, conceptIds.get(i)).build())
-					.build();
-
-			requests.add(createRequest);
+			requests.add(createRefSetMemberRequestBody(refSetId, conceptIds.get(i))
+					.with("action", "create"));
 		}
 
-		Map<?, ?> bulkRequest = ImmutableMap.<String, Object>builder()
-				.put("requests", requests)
-				.put("commitComment", "Add three members to refset")
-				.build();
-
-		bulkUpdateMembers(branchPath, refSetId, bulkRequest).statusCode(204);
+		bulkUpdateMembers(
+			branchPath, 
+			refSetId,
+			Json.object(
+				"requests", requests,
+				"commitComment", "Add three members to refset"
+			)
+		).statusCode(204);
 		return refSetId;
 	}
 

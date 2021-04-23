@@ -165,7 +165,7 @@ final class LdapIdentityProvider implements IdentityProvider {
 		}
 	}
 	
-	private String findUserDN(final DirContext context, final String username) {
+	protected String findUserDN(final DirContext context, final String username) {
 		Preconditions.checkNotNull(context, "Directory context is null.");
 		Preconditions.checkNotNull(username, "Username is null.");
 
@@ -245,7 +245,7 @@ final class LdapIdentityProvider implements IdentityProvider {
 		}
 	}
 	
-	private Collection<LdapRole> getAllLdapRoles(InitialLdapContext context) throws NamingException {
+	protected Collection<LdapRole> getAllLdapRoles(InitialLdapContext context) throws NamingException {
 		NamingEnumeration<SearchResult> enumeration = null;
 		try {
 			final ImmutableList.Builder<LdapRole> results = ImmutableList.builder();
@@ -327,7 +327,7 @@ final class LdapIdentityProvider implements IdentityProvider {
 	 * @return the created LDAP context
 	 * @throws NamingException 
 	 */
-	private InitialLdapContext createLdapContext() throws NamingException {
+	protected InitialLdapContext createLdapContext() throws NamingException {
 		return createLdapContext(createLdapEnvironment());
 	}
 
@@ -443,7 +443,7 @@ final class LdapIdentityProvider implements IdentityProvider {
 		return searchControls;
 	}
 	
-	private static class LdapRole {
+	protected static class LdapRole {
 		
 		private final String name;
 		private final List<Permission> permissions;

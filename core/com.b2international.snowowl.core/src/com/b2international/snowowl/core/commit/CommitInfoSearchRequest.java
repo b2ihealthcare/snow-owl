@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +15,9 @@
  */
 package com.b2international.snowowl.core.commit;
 
-import static com.b2international.index.revision.Commit.Expressions.affectedObject;
-import static com.b2international.index.revision.Commit.Expressions.allCommentPrefixesPresent;
-import static com.b2international.index.revision.Commit.Expressions.author;
-import static com.b2international.index.revision.Commit.Expressions.branchPrefix;
-import static com.b2international.index.revision.Commit.Expressions.branches;
-import static com.b2international.index.revision.Commit.Expressions.exactComment;
-import static com.b2international.index.revision.Commit.Expressions.timestampRange;
-import static com.b2international.index.revision.Commit.Expressions.timestamps;
+import static com.b2international.index.revision.Commit.Expressions.*;
 
 import java.util.Collection;
-import java.util.List;
 
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
@@ -36,7 +28,6 @@ import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
-import com.google.common.collect.Lists;
 
 /**
  * @since 5.2
@@ -115,12 +106,10 @@ final class CommitInfoSearchRequest extends SearchIndexResourceRequest<Repositor
 	private void addCommentClause(final ExpressionBuilder builder) {
 		if (containsKey(OptionKey.COMMENT)) {
 			final String comment = getString(OptionKey.COMMENT);
-			final List<Expression> disjuncts = Lists.newArrayList();
-			
-			disjuncts.add(exactComment(comment));
-			disjuncts.add(allCommentPrefixesPresent(comment));
-			
-			builder.must(Expressions.dismax(disjuncts));
+			builder.must(Expressions.dismaxWithScoreCategories(
+				exactComment(comment),
+				allCommentPrefixesPresent(comment)
+			));
 		}
 	}
 

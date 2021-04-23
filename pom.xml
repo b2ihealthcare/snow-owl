@@ -6,7 +6,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.b2international.snowowl</groupId>
 	<artifactId>snowowl-parent</artifactId>
-	<version>7.15.0-SNAPSHOT</version>
+	<version>7.17.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<properties>
@@ -14,20 +14,20 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
 		<!-- Maven Dependency Versions -->
-		<jackson.version>2.10.4</jackson.version>
-		<jackson.databind.version>2.10.4</jackson.databind.version>
-		<netty.version>4.1.50.Final</netty.version>
-		<slf4j.version>1.7.25</slf4j.version>
+		<jackson.version>2.10.5</jackson.version>
+		<jackson.databind.version>2.10.5.1</jackson.databind.version>
+		<netty.version>4.1.59.Final</netty.version>
+		<slf4j.version>1.7.30</slf4j.version>
 		<logback.version>1.2.3</logback.version>
 		<logback.versionRange>[1.2.3,1.2.4)</logback.versionRange>
 		<guava.version>27.1-jre</guava.version>
 		<guava.versionRange>[27.1.0,28.0.0)</guava.versionRange>
-		<groovy.version>2.4.19</groovy.version>
+		<groovy.version>2.4.20</groovy.version>
 		<kotlin.version>1.2.71</kotlin.version>
 		<protege.version>5.0.5-b2i</protege.version>
 		<owlapi.version>4.5.24</owlapi.version>
 		<elk.version>0.4.3</elk.version>
-		<jetty.version>9.4.27.v20200227</jetty.version>
+		<jetty.version>9.4.31.v20200723</jetty.version>
 		<classgraph.version>4.8.90</classgraph.version>
 		<jbcrypt.version>0.4.1</jbcrypt.version>
 		<typetools.version>0.6.1</typetools.version>
@@ -37,10 +37,12 @@
 		<javax.activation.version>1.2.0</javax.activation.version>
 		<snomed.owl.toolkit.version>2.9.1</snomed.owl.toolkit.version>
 		<failsafe.version>2.3.1</failsafe.version>
+		<osgi.versionRange>[3.16.0,3.17.0]</osgi.versionRange>
+		
 		<!-- Build tool/compiler versions -->
-		<tycho.version>1.7.0</tycho.version>
-		<tycho-extras.version>1.7.0</tycho-extras.version>
-		<xtend.compiler.version>2.21.0</xtend.compiler.version>
+		<tycho.version>2.2.0</tycho.version>
+		<tycho-extras.version>2.2.0</tycho-extras.version>
+		<xtend.compiler.version>2.23.0</xtend.compiler.version>
 		<jacoco.version>0.8.6</jacoco.version>
 		
 		<!-- Versioning -->
@@ -51,10 +53,11 @@
 		<testHeapSize>1g</testHeapSize>
 		<testArgLine>${tycho.testArgLine} -Xms${testHeapSize} -Xmx${testHeapSize} -XX:+AlwaysLockClassLoader -Dosgi.classloader.type=nonparallel -Djetty.home.bundle=org.eclipse.jetty.osgi.boot -Djetty.port=9090 -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75 -XX:+UseCMSInitiatingOccupancyOnly -XX:+AlwaysPreTouch -Dlogback.configurationFile=${basedir}/src/configuration/logback-maven.xml</testArgLine>
 
-		<!-- Deployment -->
+		<!-- Artifact distribution -->
 		<maven.repository.id>nexus_deployment</maven.repository.id>
-		<nexus.releases.url>${nexus.url}/content/repositories/releases</nexus.releases.url>
-		<nexus.snapshots.url>${nexus.url}/content/repositories/snapshots</nexus.snapshots.url>
+		<maven.releases.repository>https://nexus.b2i.sg/repository/maven-releases</maven.releases.repository>
+		<maven.snapshots.repository>https://nexus.b2i.sg/repository/maven-snapshots</maven.snapshots.repository>
+
 	</properties>
 
 	<modules>
@@ -98,6 +101,26 @@
 			</releases>
 			<snapshots>
 				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>b2i-releases</id>
+			<url>https://nexus.b2i.sg/repository/maven-releases</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>b2i-snapshots</id>
+			<url>https://nexus.b2i.sg/repository/maven-snapshots</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
 			</snapshots>
 		</repository>
 	</repositories>
@@ -165,10 +188,23 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
+  			<groupId>com.fasterxml.jackson.datatype</groupId>
+  			<artifactId>jackson-datatype-jsr310</artifactId>
+  			<version>${jackson.version}</version>
+  			<scope>provided</scope>
+		</dependency>
+		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
 			<version>${guava.version}</version>
 			<scope>provided</scope>
+			<exclusions>
+				<!-- Exclude All transitive dependencies (it is already built into the bundle, or replaced by something else) -->
+		        <exclusion>
+		            <groupId>*</groupId>
+		            <artifactId>*</artifactId>
+		        </exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.assertj</groupId>
@@ -324,6 +360,15 @@
           			<groupId>org.eclipse.equinox</groupId>
   					<artifactId>org.eclipse.equinox.registry</artifactId>
         		</exclusion>
+				<!-- Exclude all non-OSGi dependencies that are not needed -->
+				<exclusion>
+          			<groupId>com.jgoodies</groupId>
+  					<artifactId>jgoodies-common</artifactId>
+        		</exclusion>
+				<exclusion>
+          			<groupId>com.jgoodies</groupId>
+  					<artifactId>jgoodies-looks</artifactId>
+        		</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
@@ -342,6 +387,11 @@
 		          	<groupId>net.sourceforge.owlapi</groupId>
   					<artifactId>owlapi-osgidistribution</artifactId>
 		        </exclusion>
+				<!-- Exclude all non-OSGi dependencies that are not needed -->
+				<exclusion>
+          			<groupId>xml-resolver</groupId>
+  					<artifactId>xml-resolver</artifactId>
+        		</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
@@ -349,6 +399,13 @@
 			<artifactId>owlapi-osgidistribution</artifactId>
 			<version>${owlapi.version}</version>
 			<scope>provided</scope>
+			<exclusions>
+				<!-- Exclude All transitive dependencies (it is already built into the bundle, or replaced by something else) -->
+		        <exclusion>
+		            <groupId>*</groupId>
+		            <artifactId>*</artifactId>
+		        </exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.semanticweb.elk</groupId>
@@ -356,20 +413,11 @@
 			<version>${elk.version}</version>
 			<scope>provided</scope>
 			<exclusions>
-				<!-- We use log4j-over-slf4j to delegate all log events to slf4j -->
-				<exclusion>
-					<groupId>log4j</groupId>
-  					<artifactId>log4j</artifactId>
-				</exclusion>
-				<!-- Using customized Protege bundles -->
-				<exclusion>
-          			<groupId>org.protege</groupId>
-          			<artifactId>protege-editor-core-application</artifactId>
-        		</exclusion>
-				<exclusion>
-          			<groupId>org.protege</groupId>
-          			<artifactId>protege-editor-owl</artifactId>
-        		</exclusion>
+				<!-- Exclude All transitive dependencies (it is already built into the bundle, or replaced by something else) -->
+		        <exclusion>
+		            <groupId>*</groupId>
+		            <artifactId>*</artifactId>
+		        </exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
@@ -484,18 +532,39 @@
 			<artifactId>httpclient-osgi</artifactId>
 			<version>4.5.3</version>
 			<scope>provided</scope>
+			<exclusions>
+				<!-- Exclude All transitive dependencies (it is already built into the bundle, or replaced by something else) -->
+		        <exclusion>
+		            <groupId>*</groupId>
+		            <artifactId>*</artifactId>
+		        </exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 		  	<groupId>org.apache.httpcomponents</groupId>
 		  	<artifactId>httpcore-osgi</artifactId>
 		  	<version>4.4.10</version>
 		  	<scope>provided</scope>
+			<exclusions>
+				<!-- Exclude All transitive dependencies (it is already built into the bundle, or replaced by something else) -->
+		        <exclusion>
+		            <groupId>*</groupId>
+		            <artifactId>*</artifactId>
+		        </exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 		  	<groupId>org.apache.httpcomponents</groupId>
 		  	<artifactId>httpasyncclient-osgi</artifactId>
 		  	<version>4.1.4</version>
 		  	<scope>provided</scope>
+			<exclusions>
+				<!-- Exclude All transitive dependencies (it is already built into the bundle, or replaced by something else) -->
+		        <exclusion>
+		            <groupId>*</groupId>
+		            <artifactId>*</artifactId>
+		        </exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 	        <groupId>de.svenkubiak</groupId>
@@ -564,19 +633,11 @@
 			<classifier>bundle</classifier>
 			<scope>provided</scope>
 			<exclusions>
-				<!-- Exclude Guice 4.0 transitive dependencies -->
-				<exclusion>
-          			<groupId>com.google.inject</groupId>
-          			<artifactId>guice</artifactId>
-        		</exclusion>
-        		<exclusion>
-          			<groupId>com.google.inject.extensions</groupId>
-          			<artifactId>guice-assistedinject</artifactId>
-        		</exclusion>
-        		<exclusion>
-          			<groupId>com.google.inject.extensions</groupId>
-          			<artifactId>guice-multibindings</artifactId>
-        		</exclusion>
+				<!-- Exclude All transitive dependencies (it is already built into the bundle, or replaced by something else) -->
+		        <exclusion>
+		            <groupId>*</groupId>
+		            <artifactId>*</artifactId>
+		        </exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
@@ -635,7 +696,7 @@
 							<type>eclipse-plugin</type>
 							<id>org.eclipse.osgi</id>
 							<restrictTo>
-								<versionRange>[3.15.0,3.16.0]</versionRange>
+								<versionRange>${osgi.versionRange}</versionRange>
 							</restrictTo>
 						</filter>
 						<!-- work around Equinox bug 348045 -->
@@ -807,7 +868,6 @@
 				</executions>
 				<configuration>
 					<excludes>
-						<exclude>com/b2international/snowowl/snomed/ecl/parser/**/*</exclude>
 						<exclude>com/b2international/snowowl/snomed/etl/parser/**/*</exclude>
 						<exclude>com/b2international/snowowl/snomed/ql/parser/**/*</exclude>
 						<exclude>com/b2international/snowowl/snomed/scg/parser/**/*</exclude>
@@ -893,11 +953,11 @@
 	<distributionManagement>
 		<repository>
 			<id>${maven.repository.id}</id>
-			<url>${nexus.releases.url}</url>
+			<url>${maven.releases.repository}</url>
 		</repository>
 		<snapshotRepository>
 			<id>${maven.repository.id}</id>
-			<url>${nexus.snapshots.url}</url>
+			<url>${maven.snapshots.repository}</url>
 		</snapshotRepository>
 	</distributionManagement>
 

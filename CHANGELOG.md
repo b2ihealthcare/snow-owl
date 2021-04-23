@@ -1,6 +1,105 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 7.16.2
+
+### Bugs/Improvements
+- [core] support automatic merging of conflict-free nested objects and arrays (#790, #791)
+- [snomed] register reactivated concepts for taxonomy updates (#792)
+- [snomed] use "broken bone" icon for morphologic abnormalities (cfe08be)
+- [api] disable versioning of upgrade codesystems (#789)
+- [cli] improved formatting of 'snowowl codesystems' command (#761)
+
+### Dependencies
+- Bump Eclipse Platform to 2020-09 (#779)
+
+## 7.16.1
+
+### Bugs/Improvements
+- [index] support fields alias migration on index level (#783)
+- [snomed] exclude inactive OWL Axioms when calculating concept's definition status (#785)
+- [validation] consider `moduleId` when calculating reference set member duplication in SIMPLE, LANGUAGE, ASSOCIATION and ATTRIBUTE reference sets (#782)
+
+## 7.16.0
+
+### Core
+- Introduce `commitWatermarkLow` and `commitWatermarkHigh` configuration settings to raise warning log entries for large (low mark) and very large (high mark) commits (#771)
+- Introduce `CappedTransactionContext` to cap commits to a certain threshold and commit in batches to reduce commit sizes (#771)
+  * Versioning terminology content uses this new feature to reduce the amount of changes that go into a single commit
+- Introduce new boolean prefix query type (#773)
+
+### SNOMED CT API
+- SNOMED CT Description search now uses the new boolean prefix query type to offer better results and scores when only the last word represents a partial/prefix match (#773)  
+
+### Bugs/Improvements
+- [snomed] fixed an issue where an unpublished description inactivation would keep the descriptions acceptabilities set incorrectly (#776) 
+- [validation] avoid creating duplicate issues in MRCM constraint type rule (#772)
+
+### Dependencies
+- Bump jackson-databind 2.10.5.1 to resolve a security vulnerability issue (#766)
+- Bump netty to 4.1.59.Final to resolve a security vulnerability issue (#758)
+
+## 7.15.3
+
+### Bugs/Improvements
+- [core] extract common score normalization logic and enable it for all documents (#770)
+
+## 7.15.2
+
+### Bugs/Improvements
+- [core] prevent unnecessary branch delete attempt in case of regular version create requests (8a076e6)
+- [core] add comments to Concept Map Mapping (#767)
+- [core] fix lowerCase method in StringUtils (#768)
+- [core] return total added/changed/removed branch compare counters based on number of components instead of changes (#768) 
+
+## 7.15.1
+
+### Bugs/Improvements
+- [core] compare only active mapping members in Concept Map Compare (#759)
+- [core] make branch name validation messages more brief (#760)
+- [snomed] decrease color depth of icons to 32 BPP (895ef2b)
+- [validation] update description of rule 671 (#763)
+- [cli] add `ldap` commands to verify LDAP configuration (#764)
+
+## 7.15.0
+
+### Core
+- Code System Upgrade (beta) (#755, #757)
+  * New API to work with specific Code System branches and environments, especially dependency version upgrades (eg. SNOMED International version upgrades)
+  * Support full lifecycle of Code System upgrades (start -> complete)
+  * Support expanding `extensionOfBranchInfo()` and `upgradeOfBranchInfo()` in Code System upgrades
+- Support `force` flag in version create requests (#746)
+  * Allow recreating the latest published Code System version (optionally reusing the same effective date) with `force` flag
+
+### Bugs/Improvements
+- [api] ignore component not found exceptions during delete requests
+- [core] change `Date` types to LocalDate in EffectiveTime arguments, APIs (#749, #754)
+- [core] potential NPE when searching for concept maps (#748)
+- [snomed] add moduleId to classification statement fragments for extension specific filtering (#751)
+- [snomed] change module of inactivated content to the current module in request scope (#752)
+- [build] bump Tycho to 2.2.0 (#745)
+
+## 7.14.3
+
+### Bugs/Improvements
+- [index] fix content visibility issues when creating branch from parent with non-squash merge sources (b442723, 0cf45c6)
+
+## 7.14.2
+
+### Bugs/Improvements
+- [index] improve commit performance by reducing number of terms in ID queries and increase batch size during bulk updates (6700c4f, b02ae99, eee60a7, 8cd6723)
+
+## 7.14.1
+
+### Bugs/Improvements
+- [core] fix NPE in shutdown hook (#741)
+- [snomed] fix a potential exception in component effective time restore (4cd52c7)
+- [api] add elapsedTime to Job API representation (e8069b1)
+- [api] add missing async request timeout handler to exception mapping, HTTP 504 (3ebf813, dfa9a72)
+- [api] increase default request timeout to `300s` (be258f9)
+- [api] support custom `codeSystemId` when upgrading (52a521a)
+- [api] add initial support for content donation during upgrades, migrated from 6.x (#739)
+
 ## 7.14.0
 
 ### Core

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,11 @@
  */
 package com.b2international.snowowl.snomed.core.store;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
@@ -36,7 +37,7 @@ public abstract class SnomedComponentBuilder<B extends SnomedComponentBuilder<B,
 
 	private String id;
 	private boolean active = true;
-	private Date effectiveTime;
+	private LocalDate effectiveTime;
 	private String moduleId;
 
 	/**
@@ -78,7 +79,7 @@ public abstract class SnomedComponentBuilder<B extends SnomedComponentBuilder<B,
 	 * @param effectiveTime
 	 * @return
 	 */
-	public final B withEffectiveTime(Date effectiveTime) {
+	public final B withEffectiveTime(LocalDate effectiveTime) {
 		this.effectiveTime = effectiveTime;
 		return getSelf();
 	}
@@ -90,6 +91,10 @@ public abstract class SnomedComponentBuilder<B extends SnomedComponentBuilder<B,
 	@Override
 	@OverridingMethodsMustInvokeSuper
 	public void init(CB component, TransactionContext context) {
+		if (id == null) {
+			id = generateId();
+		}
+		
 		component
 			.id(id)
 			.active(active)
@@ -104,9 +109,17 @@ public abstract class SnomedComponentBuilder<B extends SnomedComponentBuilder<B,
 			component.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME);
 			component.released(false);
 		} else {
-			component.effectiveTime(effectiveTime.getTime());
+			component.effectiveTime(EffectiveTimes.getEffectiveTime(effectiveTime));
 			component.released(true);
 		}
+	}
+
+	/**
+	 * Subclasses may override this method to provide a default random ID for the new SNOMED CT component if needed (usually refset member UUIDs can be generated automatically).
+	 * @return
+	 */
+	protected String generateId() {
+		throw new BadRequestException("'id' may not be null");
 	}
 
 }

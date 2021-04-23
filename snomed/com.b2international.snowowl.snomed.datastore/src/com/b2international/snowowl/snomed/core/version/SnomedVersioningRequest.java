@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +15,10 @@
  */
 package com.b2international.snowowl.snomed.core.version;
 
-import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import org.slf4j.Logger;
 
@@ -41,12 +35,7 @@ import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.*;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
@@ -65,108 +54,56 @@ import com.google.common.collect.Multimap;
  */
 public final class SnomedVersioningRequest extends VersioningRequest {
 
+	private static final long serialVersionUID = 1L;
+
 	private static final List<Class<? extends SnomedComponentDocument>> CORE_COMPONENT_TYPES = ImmutableList.of(
 		SnomedConceptDocument.class,
 		SnomedDescriptionIndexEntry.class, 
 		SnomedRelationshipIndexEntry.class
 	);
 	
-	private Set<String> componentIdsToPublish = newHashSet();
+	private final Set<String> componentIdsToPublish = newHashSet();
+	private final long effectiveTime;
 	
 	public SnomedVersioningRequest(VersioningConfiguration config) {
 		super(config);
+		this.effectiveTime = EffectiveTimes.getEffectiveTime(config().getEffectiveTime());
 	}
 	
 	@Override
 	protected void doVersionComponents(TransactionContext context) throws Exception {
 		final Logger log = context.service(Logger.class);
 		
-		log.info("Collecting unpublished components...");
-		RevisionSearcher searcher = context.service(RevisionSearcher.class);
-			
-		final Collection<SnomedDocument> componentsToVersion = newArrayList();
-		
-		searcher.search(Query.select(SnomedConceptDocument.class)
-				.where(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
-				.limit(Integer.MAX_VALUE)
-				.build())
-				.forEach(componentsToVersion::add);
-		
-		searcher.search(Query.select(SnomedDescriptionIndexEntry.class)
-				.where(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
-				.limit(Integer.MAX_VALUE)
-				.build())
-				.forEach(componentsToVersion::add);
-		
-		searcher.search(Query.select(SnomedRelationshipIndexEntry.class)
-				.where(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
-				.limit(Integer.MAX_VALUE)
-				.build())
-				.forEach(componentsToVersion::add);
-		
-		searcher.search(Query.select(SnomedRefSetMemberIndexEntry.class)
-				.where(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
-				.limit(Integer.MAX_VALUE)
-				.build())
-				.forEach(componentsToVersion::add);
+		log.info("Publishing SNOMED CT components [effectiveTime: {}]...", EffectiveTimes.format(config().getEffectiveTime()));
 		
 		// sourceModuleId to targetModuleId map
 		final Multimap<String, String> componentIdsByReferringModule = HashMultimap.create();
 		
-		log.info("Publishing SNOMED CT components [effectiveTime: {}]...", EffectiveTimes.format(config().getEffectiveTime()));
-		long effectiveTime = EffectiveTimes.getEffectiveTime(config().getEffectiveTime());
+		RevisionSearcher searcher = context.service(RevisionSearcher.class);
+			
+		searcher.scroll(Query.select(SnomedConceptDocument.class)
+				.where(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
+				.limit(getCommitLimit(context))
+				.build())
+				.forEach(componentsToVersion -> versionComponents(context, componentsToVersion, componentIdsByReferringModule));
 		
-		for (SnomedDocument componentToVersion : componentsToVersion) {
-			
-			// register IDs for publication
-			if (componentToVersion instanceof SnomedComponentDocument) {
-				componentIdsToPublish.add(componentToVersion.getId());
-			}
-			
-			// stage update on components based on actual type
-			final SnomedDocument.Builder<?, ?> updatedComponent;
-			if (componentToVersion instanceof SnomedConceptDocument) {
-				final SnomedConceptDocument concept = (SnomedConceptDocument) componentToVersion;
-				componentIdsByReferringModule.put(concept.getModuleId(), concept.isPrimitive() ? Concepts.PRIMITIVE : Concepts.FULLY_DEFINED);
-				updatedComponent = SnomedConceptDocument.builder(concept);
-			} else if (componentToVersion instanceof SnomedDescriptionIndexEntry) {
-				final SnomedDescriptionIndexEntry description = (SnomedDescriptionIndexEntry) componentToVersion;
-				componentIdsByReferringModule.put(description.getModuleId(), description.getConceptId());
-				componentIdsByReferringModule.put(description.getModuleId(), description.getTypeId());
-				componentIdsByReferringModule.put(description.getModuleId(), description.getCaseSignificanceId());
-				updatedComponent = SnomedDescriptionIndexEntry.builder(description);
-			} else if (componentToVersion instanceof SnomedRelationshipIndexEntry) {
-				final SnomedRelationshipIndexEntry relationship = (SnomedRelationshipIndexEntry) componentToVersion;
-				componentIdsByReferringModule.put(relationship.getModuleId(), relationship.getSourceId());
-				componentIdsByReferringModule.put(relationship.getModuleId(), relationship.getTypeId());
-				componentIdsByReferringModule.put(relationship.getModuleId(), relationship.getDestinationId());
-				componentIdsByReferringModule.put(relationship.getModuleId(), relationship.getModifierId());
-				componentIdsByReferringModule.put(relationship.getModuleId(), relationship.getCharacteristicTypeId());
-				updatedComponent = SnomedRelationshipIndexEntry.builder(relationship);
-			} else if (componentToVersion instanceof SnomedRefSetMemberIndexEntry) {
-				final SnomedRefSetMemberIndexEntry member = (SnomedRefSetMemberIndexEntry) componentToVersion;
-				componentIdsByReferringModule.put(member.getModuleId(), member.getReferenceSetId());
-
-				registerIfConcept(componentIdsByReferringModule, member.getModuleId(), member.getReferencedComponentId());
-				
-				final Map<String, Object> additionalFields = member.getAdditionalFields();
-				SnomedRf2Headers.MEMBER_FIELDS_WITH_COMPONENT_ID.forEach(field -> {
-					registerIfConcept(componentIdsByReferringModule, member.getModuleId(), (String) additionalFields.get(field));
-				});
-				
-				updatedComponent = SnomedRefSetMemberIndexEntry.builder(member);
-			} else {
-				throw new UnsupportedOperationException("Not implemented case for: " + componentToVersion);
-			}
-			
-			context.update(
-				componentToVersion, 
-				updatedComponent
-					.effectiveTime(effectiveTime)
-					.released(true)
-					.build()
-			);
-		}
+		searcher.scroll(Query.select(SnomedDescriptionIndexEntry.class)
+				.where(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
+				.limit(getCommitLimit(context))
+				.build())
+				.forEach(componentsToVersion -> versionComponents(context, componentsToVersion, componentIdsByReferringModule));
+		
+		searcher.scroll(Query.select(SnomedRelationshipIndexEntry.class)
+				.where(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
+				.limit(getCommitLimit(context))
+				.build())
+				.forEach(componentsToVersion -> versionComponents(context, componentsToVersion, componentIdsByReferringModule));
+		
+		searcher.scroll(Query.select(SnomedRefSetMemberIndexEntry.class)
+				.where(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
+				.limit(getCommitLimit(context))
+				.build())
+				.forEach(componentsToVersion -> versionComponents(context, componentsToVersion, componentIdsByReferringModule));
 		
 		// iterate over each module and get modules of all components registered to componentsByReferringModule
 		log.info("Collecting module dependencies of changed components...");
@@ -201,12 +138,67 @@ public final class SnomedVersioningRequest extends VersioningRequest {
 		log.info("Collecting module dependencies of changed components successfully finished.");
 		
 		log.info("Adjusting effective time changes on module dependency...");
-		adjustDependencyRefSetMembers(context, moduleDependencies, moduleToLatestEffectiveTime, config().getEffectiveTime());
+		adjustDependencyRefSetMembers(context, moduleDependencies, moduleToLatestEffectiveTime, effectiveTime);
 		log.info("Effective time adjustment successfully finished on module dependency.");
 		
 	}
 	
-	private void adjustDependencyRefSetMembers(TransactionContext context, Multimap<String, String> moduleDependencies, Map<String, Long> moduleToLatestEffectiveTime, Date effectiveTime) {
+	private void versionComponents(TransactionContext context, Iterable<? extends SnomedDocument> componentsToVersion, Multimap<String, String> componentIdsByReferringModule) {
+		
+		for (SnomedDocument componentToVersion : componentsToVersion) {
+			// register IDs for publication
+			if (componentToVersion instanceof SnomedComponentDocument) {
+				componentIdsToPublish.add(componentToVersion.getId());
+			}
+			
+			// stage update on components based on actual type
+			final SnomedDocument.Builder<?, ?> updatedComponent;
+			if (componentToVersion instanceof SnomedConceptDocument) {
+				final SnomedConceptDocument concept = (SnomedConceptDocument) componentToVersion;
+				componentIdsByReferringModule.put(concept.getModuleId(), concept.isPrimitive() ? Concepts.PRIMITIVE : Concepts.FULLY_DEFINED);
+				updatedComponent = SnomedConceptDocument.builder(concept);
+			} else if (componentToVersion instanceof SnomedDescriptionIndexEntry) {
+				final SnomedDescriptionIndexEntry description = (SnomedDescriptionIndexEntry) componentToVersion;
+				componentIdsByReferringModule.put(description.getModuleId(), description.getConceptId());
+				componentIdsByReferringModule.put(description.getModuleId(), description.getTypeId());
+				componentIdsByReferringModule.put(description.getModuleId(), description.getCaseSignificanceId());
+				updatedComponent = SnomedDescriptionIndexEntry.builder(description);
+			} else if (componentToVersion instanceof SnomedRelationshipIndexEntry) {
+				final SnomedRelationshipIndexEntry relationship = (SnomedRelationshipIndexEntry) componentToVersion;
+				componentIdsByReferringModule.put(relationship.getModuleId(), relationship.getSourceId());
+				componentIdsByReferringModule.put(relationship.getModuleId(), relationship.getTypeId());
+				componentIdsByReferringModule.put(relationship.getModuleId(), relationship.getDestinationId());
+				componentIdsByReferringModule.put(relationship.getModuleId(), relationship.getModifierId());
+				componentIdsByReferringModule.put(relationship.getModuleId(), relationship.getCharacteristicTypeId());
+				updatedComponent = SnomedRelationshipIndexEntry.builder(relationship);
+			} else if (componentToVersion instanceof SnomedRefSetMemberIndexEntry) {
+				final SnomedRefSetMemberIndexEntry member = (SnomedRefSetMemberIndexEntry) componentToVersion;
+				componentIdsByReferringModule.put(member.getModuleId(), member.getReferenceSetId());
+				
+				registerIfConcept(componentIdsByReferringModule, member.getModuleId(), member.getReferencedComponentId());
+				
+				final Map<String, Object> additionalFields = member.getAdditionalFields();
+				SnomedRf2Headers.MEMBER_FIELDS_WITH_COMPONENT_ID.forEach(field -> {
+					registerIfConcept(componentIdsByReferringModule, member.getModuleId(), (String) additionalFields.get(field));
+				});
+				
+				updatedComponent = SnomedRefSetMemberIndexEntry.builder(member);
+			} else {
+				throw new UnsupportedOperationException("Not implemented case for: " + componentToVersion);
+			}
+			
+			context.update(
+				componentToVersion, 
+				updatedComponent
+					.effectiveTime(effectiveTime)
+					.released(true)
+				.build()
+			);
+		}
+		
+	}
+
+	private void adjustDependencyRefSetMembers(TransactionContext context, Multimap<String, String> moduleDependencies, Map<String, Long> moduleToLatestEffectiveTime, long effectiveTime) {
 		// Update existing, add new members to moduleDependencyRefSet
 		if (!CompareUtils.isEmpty(moduleDependencies)) {
 			moduleDependencies.entries().forEach((entry) -> {
@@ -247,12 +239,12 @@ public final class SnomedVersioningRequest extends VersioningRequest {
 					updatedMember = SnomedRefSetMemberIndexEntry.builder(existingLatestMember);
 				}
 
-				final long targetEffectiveTime = moduleToLatestEffectiveTime.get(target) == EffectiveTimes.UNSET_EFFECTIVE_TIME ? effectiveTime.getTime() : moduleToLatestEffectiveTime.get(target);
+				final long targetEffectiveTime = moduleToLatestEffectiveTime.get(target) == EffectiveTimes.UNSET_EFFECTIVE_TIME ? effectiveTime : moduleToLatestEffectiveTime.get(target);
 				
 				updatedMember
 					.released(true)
-					.effectiveTime(effectiveTime.getTime())
-					.field(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME, effectiveTime.getTime())
+					.effectiveTime(effectiveTime)
+					.field(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME, effectiveTime)
 					.field(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME, targetEffectiveTime);
 				
 				if (existingLatestMember == null) {
@@ -270,23 +262,7 @@ public final class SnomedVersioningRequest extends VersioningRequest {
 			componentIdsByReferringModule.put(moduleId, dependency);
 		}
 	}
-	
-//	@Override
-//	protected void createCodeSystemVersion(final CDOEditingContext editingContext, VersioningConfiguration config) {
-//		if (Branch.MAIN_PATH.equals(editingContext.getBranch())) {
-//			super.createCodeSystemVersion(editingContext, config);
-//		} else {
-//			try (final SnomedEditingContext mainEditingContext = new SnomedEditingContext(BranchPathUtils.createMainPath())) {
-//				super.createCodeSystemVersion(mainEditingContext, config);
-//				final String commitComment = String.format("New Snomed Version %s was added to Snomed Release %s.", config.getVersionId(), config.getCodeSystemShortName());
-//				CDOServerUtils.commit(mainEditingContext, "System", commitComment, null);
-//			} catch (Exception e) {
-//				throw new SnowowlRuntimeException(String.format("An error occurred while adding Snomed Version %s to Snomed Release %s.",
-//						config.getVersionId(), config.getCodeSystemShortName()), e);
-//			}
-//		}
-//	}
-//	
+
 //	@Override
 //	public void postCommit() {
 //		if (!CompareUtils.isEmpty(componentIdsToPublish)) {

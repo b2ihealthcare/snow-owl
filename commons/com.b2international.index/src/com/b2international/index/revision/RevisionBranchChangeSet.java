@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import java.util.Set;
 import com.b2international.index.mapping.DocumentMapping;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Multimap;
+import com.google.common.collect.SetMultimap;
 
 /**
  * @since 7.0
@@ -34,9 +34,9 @@ public final class RevisionBranchChangeSet {
 
 	private final DefaultRevisionIndex index;
 	private final RevisionBranchRef ref;
-	private final Multimap<Class<? extends Revision>, String> newRevisionIdsByType = HashMultimap.create();
-	private final Multimap<Class<? extends Revision>, String> changedRevisionIdsByType = HashMultimap.create();
-	private final Multimap<Class<? extends Revision>, String> removedRevisionIdsByType = HashMultimap.create();
+	private final SetMultimap<Class<? extends Revision>, String> newRevisionIdsByType = HashMultimap.create();
+	private final SetMultimap<Class<? extends Revision>, String> changedRevisionIdsByType = HashMultimap.create();
+	private final SetMultimap<Class<? extends Revision>, String> removedRevisionIdsByType = HashMultimap.create();
 	private final Map<ObjectId, ObjectId> containersRequiredForNewAndChangedRevisions = newHashMap();
 	
 	RevisionBranchChangeSet(DefaultRevisionIndex index, RevisionBranchRef ref, List<RevisionCompareDetail> compareDetails) {
@@ -66,6 +66,7 @@ public final class RevisionBranchChangeSet {
 						changedRevisionIdsByType.put((Class<? extends Revision>) revType, detail.getObject().id());
 					}
 				} else {
+					// TODO this block is required if a Revision class does not define a property as tracked, can be removed in 8.0 after move to annotation based field tracking
 					Class<?> revType = DocumentMapping.getClass(detail.getComponent().type());
 					if (Revision.class.isAssignableFrom(revType)) {
 						changedRevisionIdsByType.put((Class<? extends Revision>) revType, detail.getComponent().id());
@@ -92,6 +93,18 @@ public final class RevisionBranchChangeSet {
 		});
 	}
 
+	SetMultimap<Class<? extends Revision>, String> getAdded() {
+		return newRevisionIdsByType;
+	}
+	
+	SetMultimap<Class<? extends Revision>, String> getChanged() {
+		return changedRevisionIdsByType;
+	}
+	
+	SetMultimap<Class<? extends Revision>, String> getRemoved() {
+		return removedRevisionIdsByType;
+	}
+	
 	public Collection<Class<? extends Revision>> getAddedTypes() {
 		return ImmutableSet.copyOf(newRevisionIdsByType.keySet());
 	}
