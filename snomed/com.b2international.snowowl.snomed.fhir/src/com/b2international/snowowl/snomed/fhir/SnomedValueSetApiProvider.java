@@ -28,7 +28,6 @@ import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.commons.exceptions.NotImplementedException;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersion;
-import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
 import com.b2international.snowowl.core.plugin.Component;
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -194,7 +193,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 		}
 	}
 	
-	private ValueSet buildSimpleTypeRefsetValueSet(String componentId, CodeSystemVersionEntry codeSystemVersion) {
+	private ValueSet buildSimpleTypeRefsetValueSet(String componentId, CodeSystemVersion codeSystemVersion) {
 		
 		int all = Integer.MAX_VALUE;
 		
@@ -316,7 +315,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 				.filterByActive(true)
 				.setLocales(getLocales())
 				.setExpand("pt()")
-				.build(getRepositoryId(), codeSystemVersion.getPath())
+				.build(codeSystemVersion.getUri())
 				.execute(getBus())
 				.getSync()
 				.first();
@@ -578,9 +577,9 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 			.build();
 		
 		builder.status(PublicationStatus.ACTIVE)
-			.date(new Date(codeSystemVersion.getEffectiveDate()))
+			.date(Date.from(codeSystemVersion.getEffectiveTime().atStartOfDay().toInstant(ZoneOffset.UTC)))
 			.language(getLocales().get(0).getLanguageTag())
-			.version(codeSystemVersion.getVersionId())
+			.version(codeSystemVersion.getVersion())
 			.identifier(identifier)
 			.url(uri.toUri())
 			.name("SNOMED CT all simple type reference sets");
