@@ -132,7 +132,7 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 	@Override
 	public ConceptMap getConceptMap(ComponentURI componentURI) {
 		
-		CodeSystemVersion codeSystemVersion = findCodeSystemVersion(componentURI);
+		CodeSystemVersion codeSystemVersion = findCodeSystemVersion(componentURI, "ConceptMap.id");
 		
 		SnomedReferenceSet snomedReferenceSet = SnomedRequests.prepareSearchRefSet()
 			.all()
@@ -176,7 +176,7 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 		}
 				
 		//can we find the refset in question?
-		CodeSystemVersion codeSystemVersion = findCodeSystemVersion(componentURI);
+		CodeSystemVersion codeSystemVersion = findCodeSystemVersion(componentURI, "ConceptMap.id");
 
 		SnomedReferenceSet referenceSet = SnomedRequests.prepareSearchRefSet()
 			.one()
