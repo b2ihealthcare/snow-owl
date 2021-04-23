@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ import java.util.UUID;
 import org.junit.Test;
 
 import com.b2international.collections.PrimitiveCollectionModule;
+import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Query;
 import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.reasoner.domain.ChangeNature;
@@ -49,7 +51,6 @@ public class RelationshipChangeSerializationTest extends BaseRevisionIndexTest {
 
 	@Test
 	public void indexNewRelationship() throws Exception {
-		final String id = randomUUID();
 		final String classificationId = randomUUID();
 
 		final RelationshipChangeDocument expected = RelationshipChangeDocument.builder()
@@ -65,17 +66,17 @@ public class RelationshipChangeSerializationTest extends BaseRevisionIndexTest {
 				.unionGroup(2)
 				.build();
 
-		indexDocument(id, expected);
+		indexDocument(expected);
 
 		final RelationshipChangeDocument actual = rawIndex()
-				.read(r -> r.get(RelationshipChangeDocument.class, id));
+				.read(r -> r.search(Query.select(RelationshipChangeDocument.class).where(Expressions.matchAll()).build()).first());
+		
 		
 		assertDocEquals(expected, actual);
 	}
 	
 	@Test
 	public void indexUpdatedRelationship() throws Exception {
-		final String id = randomUUID();
 		final String classificationId = randomUUID();
 		
 		final RelationshipChangeDocument expected = RelationshipChangeDocument.builder()
@@ -88,17 +89,16 @@ public class RelationshipChangeSerializationTest extends BaseRevisionIndexTest {
 				.sourceId("sourceId")
 				.build();
 		
-		indexDocument(id, expected);
+		indexDocument(expected);
 		
 		final RelationshipChangeDocument actual = rawIndex()
-				.read(r -> r.get(RelationshipChangeDocument.class, id));
+				.read(r -> r.search(Query.select(RelationshipChangeDocument.class).where(Expressions.matchAll()).build()).first());
 		
 		assertDocEquals(expected, actual);
 	}
 	
 	@Test
 	public void indexRedundantRelationship() throws Exception {
-		final String id = randomUUID();
 		final String classificationId = randomUUID();
 		
 		final RelationshipChangeDocument expected = RelationshipChangeDocument.builder()
@@ -110,10 +110,10 @@ public class RelationshipChangeSerializationTest extends BaseRevisionIndexTest {
 				.sourceId("sourceId")
 				.build();
 		
-		indexDocument(id, expected);
+		indexDocument(expected);
 		
 		final RelationshipChangeDocument actual = rawIndex()
-				.read(r -> r.get(RelationshipChangeDocument.class, id));
+				.read(r -> r.search(Query.select(RelationshipChangeDocument.class).where(Expressions.matchAll()).build()).first());
 		
 		assertDocEquals(expected, actual);
 	}

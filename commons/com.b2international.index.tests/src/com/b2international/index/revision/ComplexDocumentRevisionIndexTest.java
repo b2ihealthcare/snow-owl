@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Collection;
 
+import org.elasticsearch.common.UUIDs;
 import org.junit.Test;
 
 import com.b2international.index.Fixtures.NestedData;
@@ -40,8 +41,8 @@ public class ComplexDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 	
 	@Test
 	public void searchDeeplyNestedDocument() throws Exception {
-		final DeeplyNestedData data = new DeeplyNestedData(STORAGE_KEY1, new ParentData("field1", new NestedData("field2")));
-		final DeeplyNestedData data2 = new DeeplyNestedData(STORAGE_KEY2, new ParentData("field12", new NestedData("field22")));
+		final DeeplyNestedData data = new DeeplyNestedData(STORAGE_KEY1, new ParentData(UUIDs.randomBase64UUID(), "field1", new NestedData("field2")));
+		final DeeplyNestedData data2 = new DeeplyNestedData(STORAGE_KEY2, new ParentData(UUIDs.randomBase64UUID(), "field12", new NestedData("field22")));
 		
 		indexRevision(MAIN, data, data2);
 		

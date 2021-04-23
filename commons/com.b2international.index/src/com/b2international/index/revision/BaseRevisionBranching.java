@@ -452,7 +452,7 @@ public abstract class BaseRevisionBranching {
 	
 	protected final IndexWrite<RevisionBranch> create(final RevisionBranch branch) {
 		return index -> {
-			index.put(branch.getPath(), branch);
+			index.put(branch);
 			return branch;
 		};
 	}

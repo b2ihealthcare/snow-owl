@@ -334,7 +334,6 @@ public final class EsIndexAdmin implements IndexAdmin {
 			}
 			
 			final String property = field.getName();
-			if (DocumentMapping._ID.equals(property)) continue;
 			final Class<?> fieldType = NumericClassUtils.unwrapCollectionType(field);
 			
 			if (Map.class.isAssignableFrom(fieldType)) {
@@ -356,7 +355,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 				if (!annotation.index()) {
 					prop.put("enabled", false);
 				}
-				prop.putAll(toProperties(new DocumentMapping(fieldType)));
+				prop.putAll(toProperties(new DocumentMapping(fieldType, true /*nested*/)));
 				properties.put(property, prop);
 			} else {
 				final Map<String, Object> prop = newHashMap();

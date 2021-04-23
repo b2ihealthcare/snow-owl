@@ -191,8 +191,8 @@ public interface RevisionConflictProcessor {
 				// if nested and has a valid ID field then use that to identify same objects in a list
 				if (mapping.isNestedMapping(sourceChange.getProperty())) {
 					DocumentMapping nestedMapping = mapping.getNestedMapping(sourceChange.getProperty());
-					String idField = nestedMapping.getIdField();
-					if (!DocumentMapping._ID.equals(idField)) {
+					if (nestedMapping.hasIdField()) {
+						String idField = nestedMapping.getIdField();
 						idFunction = item -> item.get(idField).toString();
 					}
 				}

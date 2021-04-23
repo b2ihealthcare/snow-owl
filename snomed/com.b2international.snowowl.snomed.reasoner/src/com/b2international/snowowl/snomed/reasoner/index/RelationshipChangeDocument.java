@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import static com.b2international.index.query.Expressions.exactMatch;
 import static com.b2international.index.query.Expressions.matchAny;
 
 import com.b2international.index.Doc;
+import com.b2international.index.mapping.AutoGenerateID;
 import com.b2international.index.query.Expression;
 import com.b2international.snowowl.snomed.reasoner.domain.ChangeNature;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -28,7 +29,8 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 /**
  * @since 7.0
  */
-@Doc(type="relationshipchange")
+@Doc(type = "relationshipchange")
+@AutoGenerateID
 @JsonDeserialize(builder=RelationshipChangeDocument.Builder.class)
 public final class RelationshipChangeDocument {
 

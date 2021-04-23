@@ -20,9 +20,10 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.Collections;
 import java.util.List;
 
-import com.b2international.index.ID;
 import com.b2international.index.Script;
+import com.b2international.index.mapping.AutoGenerateID;
 import com.b2international.index.mapping.DocumentMapping;
+import com.b2international.index.mapping.Field;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -32,6 +33,7 @@ import com.google.common.base.MoreObjects.ToStringHelper;
 /**
  * @since 4.7
  */
+@AutoGenerateID
 @Script(
 	name=Revision.UPDATE_REVISED, 
 	script=""
@@ -57,7 +59,7 @@ public abstract class Revision {
 	// scripts
 	public static final String UPDATE_REVISED = "updateRevised";
 
-	@ID
+	@Field(defaultSortBy = true)
 	private String id;
 	
 	/**

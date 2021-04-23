@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,7 @@
 package com.b2international.snowowl.snomed.reasoner.classification;
 
 import java.io.IOException;
-import java.util.Date;
-import java.util.Map;
-import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.core.runtime.IStatus;
@@ -38,12 +33,7 @@ import com.b2international.collections.longs.LongList;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.exceptions.FormattedRuntimeException;
 import com.b2international.commons.exceptions.NotFoundException;
-import com.b2international.index.BulkDelete;
-import com.b2international.index.BulkUpdate;
-import com.b2international.index.Hits;
-import com.b2international.index.Index;
-import com.b2international.index.Searcher;
-import com.b2international.index.Writer;
+import com.b2international.index.*;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.query.SortBy;
@@ -60,8 +50,6 @@ import com.b2international.snowowl.snomed.reasoner.index.ClassificationTaskDocum
 import com.b2international.snowowl.snomed.reasoner.index.ConcreteDomainChangeDocument;
 import com.b2international.snowowl.snomed.reasoner.index.EquivalentConceptSetDocument;
 import com.b2international.snowowl.snomed.reasoner.index.RelationshipChangeDocument;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 
 /**
@@ -180,14 +168,14 @@ public final class ClassificationTracker implements IDisposableService {
 		this.index.write(writer -> {
 			// Set classification statuses where a process was interrupted by a shutdown to FAILED
 			updateTasksByStatus(writer, 
-					ImmutableSet.of(ClassificationStatus.RUNNING, ClassificationStatus.SCHEDULED),	// from 
+					Set.of(ClassificationStatus.RUNNING, ClassificationStatus.SCHEDULED),	// from 
 					ClassificationTaskDocument.Scripts.FAILED,										// to
-					ImmutableMap.of("completionDate", System.currentTimeMillis()));
+					Map.of("completionDate", System.currentTimeMillis()));
 
 			updateTasksByStatus(writer, 
-					ImmutableSet.of(ClassificationStatus.SAVING_IN_PROGRESS),						// from 
+					Set.of(ClassificationStatus.SAVING_IN_PROGRESS),						// from 
 					ClassificationTaskDocument.Scripts.SAVE_FAILED,									// to
-					ImmutableMap.of());
+					Map.of());
 			
 			writer.commit();
 			return null;
@@ -234,7 +222,7 @@ public final class ClassificationTracker implements IDisposableService {
 					.status(ClassificationStatus.SCHEDULED)
 					.build();
 
-			writer.put(classificationId, classificationRun);
+			writer.put(classificationRun);
 			writer.commit();
 			return null;
 		});
@@ -246,7 +234,7 @@ public final class ClassificationTracker implements IDisposableService {
 					ClassificationTaskDocument.class, 
 					ClassificationTaskDocument.Expressions.id(classificationId), 
 					ClassificationTaskDocument.Scripts.RUNNING, 
-					ImmutableMap.of("timestamp", timestamp)));
+					Map.of("timestamp", timestamp)));
 			writer.commit();
 			return null;
 		});
@@ -275,7 +263,7 @@ public final class ClassificationTracker implements IDisposableService {
 			writer.bulkUpdate(new BulkUpdate<>(ClassificationTaskDocument.class, 
 					ClassificationTaskDocument.Expressions.id(classificationId), 
 					ClassificationTaskDocument.Scripts.COMPLETED, 
-					ImmutableMap.of("completionDate", System.currentTimeMillis(),
+					Map.of("completionDate", System.currentTimeMillis(),
 							"hasEquivalentConcepts", hasEquivalentConcepts,
 							"hasInferredChanges", hasInferredChanges,
 							"hasRedundantStatedChanges", hasRedundantStatedChanges)));
@@ -291,7 +279,7 @@ public final class ClassificationTracker implements IDisposableService {
 					ClassificationTaskDocument.class, 
 					ClassificationTaskDocument.Expressions.id(classificationId), 
 					ClassificationTaskDocument.Scripts.SAVING_IN_PROGRESS, 
-					ImmutableMap.of()));
+					Map.of()));
 			writer.commit();
 			return null;
 		});
@@ -303,7 +291,7 @@ public final class ClassificationTracker implements IDisposableService {
 					ClassificationTaskDocument.class, 
 					ClassificationTaskDocument.Expressions.id(classificationId), 
 					ClassificationTaskDocument.Scripts.SAVED, 
-					ImmutableMap.of("saveDate", commitTimestamp)));
+					Map.of("saveDate", commitTimestamp)));
 			writer.commit();
 			return null;
 		});
@@ -315,7 +303,7 @@ public final class ClassificationTracker implements IDisposableService {
 					ClassificationTaskDocument.class, 
 					ClassificationTaskDocument.Expressions.id(classificationId), 
 					ClassificationTaskDocument.Scripts.SAVE_FAILED, 
-					ImmutableMap.of()));
+					Map.of()));
 			writer.commit();
 			return null;
 		});
@@ -332,7 +320,7 @@ public final class ClassificationTracker implements IDisposableService {
 					.unsatisfiable(true)
 					.build();
 	
-			writer.put(UUID.randomUUID().toString(), equivalentDoc);
+			writer.put(equivalentDoc);
 		}
 	}
 
@@ -354,7 +342,7 @@ public final class ClassificationTracker implements IDisposableService {
 					.unsatisfiable(false)
 					.build();
 
-			writer.put(UUID.randomUUID().toString(), equivalentDoc);			
+			writer.put(equivalentDoc);			
 		}
 	}
 
@@ -363,7 +351,7 @@ public final class ClassificationTracker implements IDisposableService {
 			writer.bulkUpdate(new BulkUpdate<>(ClassificationTaskDocument.class, 
 					ClassificationTaskDocument.Expressions.id(classificationId), 
 					ClassificationTaskDocument.Scripts.FAILED, 
-					ImmutableMap.of("completionDate", System.currentTimeMillis())));
+					Map.of("completionDate", System.currentTimeMillis())));
 			writer.commit();
 			return null;
 		});
@@ -373,7 +361,7 @@ public final class ClassificationTracker implements IDisposableService {
 		index.write(writer -> {
 			writer.bulkUpdate(new BulkUpdate<>(ClassificationTaskDocument.class, 
 					ClassificationTaskDocument.Expressions.id(classificationId), 
-					ClassificationTaskDocument.Scripts.CANCELED, ImmutableMap.of()));
+					ClassificationTaskDocument.Scripts.CANCELED, Map.of()));
 			writer.commit();
 			return null;
 		});

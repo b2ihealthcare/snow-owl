@@ -20,23 +20,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.After;
 import org.junit.Rule;
 
 import com.b2international.commons.options.MetadataImpl;
-import com.b2international.index.Hits;
-import com.b2international.index.Index;
-import com.b2international.index.IndexClientFactory;
-import com.b2international.index.IndexResource;
-import com.b2international.index.WithScore;
-import com.b2international.index.mapping.DocumentMapping;
+import com.b2international.index.*;
 import com.b2international.index.query.Query;
 import com.b2international.index.util.Reflections;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -125,9 +116,9 @@ public abstract class BaseRevisionIndexTest {
 		return branching().getBranch(branchPath);
 	}
 	
-	protected final void indexDocument(final String key, final Object doc) {
+	protected final void indexDocument(final Object doc) {
 		rawIndex().write(index -> {
-			index.put(key, doc);
+			index.put(doc);
 			index.commit();
 			return null;
 		});
@@ -183,7 +174,6 @@ public abstract class BaseRevisionIndexTest {
 		for (Field f : index.getIndex().admin().mappings().getMapping(expected.getClass()).getFields()) {
 			if (Revision.Fields.CREATED.equals(f.getName()) 
 					|| Revision.Fields.REVISED.equals(f.getName())
-					|| DocumentMapping._ID.equals(f.getName())
 					|| WithScore.SCORE.equals(f.getName())
 					) {
 				// skip revision fields from equality check

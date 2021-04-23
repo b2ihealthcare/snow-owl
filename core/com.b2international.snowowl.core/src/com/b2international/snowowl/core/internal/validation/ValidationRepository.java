@@ -92,9 +92,9 @@ public final class ValidationRepository implements Index {
 		};
 	}
 
-	public void save(String key, Object document) {
+	public void save(Object document) {
 		write(writer -> {
-			writer.put(key, document);
+			writer.put(document);
 			writer.commit();
 			return null;
 		});

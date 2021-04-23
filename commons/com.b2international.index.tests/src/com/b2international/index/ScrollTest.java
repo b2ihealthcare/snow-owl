@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,11 @@
 package com.b2international.index;
 
 import static com.google.common.collect.Lists.newArrayListWithExpectedSize;
-import static com.google.common.collect.Maps.newHashMap;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 
 import org.apache.commons.lang.RandomStringUtils;
@@ -139,14 +138,14 @@ public class ScrollTest extends BaseIndexTest {
 	}
 	
 	private void indexDocs(int numberOfDocs) {
-		final Map<String, Data> docsToIndex = newHashMap();
+		final List<Data> docsToIndex = new ArrayList<>(numberOfDocs);
 		for (int i = 0; i < numberOfDocs; i++) {
-			Data doc = new Data();
+			Data doc = new Data("key"+i);
 			doc.setAnalyzedField(RandomStringUtils.randomAlphabetic(20));
 			doc.setField1("field1" + i);
 			doc.setFloatField(rnd.nextFloat());
 			doc.setIntField(rnd.nextInt());
-			docsToIndex.put("key"+i, doc);
+			docsToIndex.add(doc);
 		}
 		indexDocuments(docsToIndex);
 	}

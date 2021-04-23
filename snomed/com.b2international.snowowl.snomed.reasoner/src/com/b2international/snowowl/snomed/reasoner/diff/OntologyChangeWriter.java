@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.reasoner.diff;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.UUID;
 
 import com.b2international.index.IndexException;
 import com.b2international.index.Writer;
@@ -60,7 +59,7 @@ public abstract class OntologyChangeWriter<T extends Serializable> extends Ontol
 	protected abstract void indexChange(final String conceptId, final T subject, final ChangeNature nature);
 
 	protected void indexChange(final Object doc) {
-		writer.put(UUID.randomUUID().toString(), doc);
+		writer.put(doc);
 		writeOps++;
 		if (writeOps > WRITES_PER_COMMIT) {
 			try {

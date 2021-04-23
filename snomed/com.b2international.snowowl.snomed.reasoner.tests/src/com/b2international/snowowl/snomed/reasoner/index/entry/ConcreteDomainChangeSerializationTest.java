@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ import java.util.UUID;
 import org.junit.Test;
 
 import com.b2international.collections.PrimitiveCollectionModule;
+import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Query;
 import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.reasoner.domain.ChangeNature;
@@ -49,7 +51,6 @@ public class ConcreteDomainChangeSerializationTest extends BaseRevisionIndexTest
 
 	@Test
 	public void indexNewConcreteDomain() throws Exception {
-		final String id = randomUUID();
 		final String classificationId = randomUUID();
 
 		final ConcreteDomainChangeDocument expected = ConcreteDomainChangeDocument.builder()
@@ -63,17 +64,16 @@ public class ConcreteDomainChangeSerializationTest extends BaseRevisionIndexTest
 				.serializedValue("500")
 				.build();
 
-		indexDocument(id, expected);
+		indexDocument(expected);
 
 		final ConcreteDomainChangeDocument actual = rawIndex()
-				.read(r -> r.get(ConcreteDomainChangeDocument.class, id));
+				.read(r -> r.search(Query.select(ConcreteDomainChangeDocument.class).where(Expressions.matchAll()).build()).first());
 		
 		assertDocEquals(expected, actual);
 	}
 	
 	@Test
 	public void indexUpdatedConcreteDomain() throws Exception {
-		final String id = randomUUID();
 		final String classificationId = randomUUID();
 		
 		final ConcreteDomainChangeDocument expected = ConcreteDomainChangeDocument.builder()
@@ -85,17 +85,16 @@ public class ConcreteDomainChangeSerializationTest extends BaseRevisionIndexTest
 				.serializedValue("500")
 				.build();
 		
-		indexDocument(id, expected);
+		indexDocument(expected);
 		
 		final ConcreteDomainChangeDocument actual = rawIndex()
-				.read(r -> r.get(ConcreteDomainChangeDocument.class, id));
+				.read(r -> r.search(Query.select(ConcreteDomainChangeDocument.class).where(Expressions.matchAll()).build()).first());
 		
 		assertDocEquals(expected, actual);
 	}
 	
 	@Test
 	public void indexRedundantConcreteDomain() throws Exception {
-		final String id = randomUUID();
 		final String classificationId = randomUUID();
 		
 		final ConcreteDomainChangeDocument expected = ConcreteDomainChangeDocument.builder()
@@ -106,10 +105,10 @@ public class ConcreteDomainChangeSerializationTest extends BaseRevisionIndexTest
 				.released(Boolean.TRUE)
 				.build();
 		
-		indexDocument(id, expected);
+		indexDocument(expected);
 		
 		final ConcreteDomainChangeDocument actual = rawIndex()
-				.read(r -> r.get(ConcreteDomainChangeDocument.class, id));
+				.read(r -> r.search(Query.select(ConcreteDomainChangeDocument.class).where(Expressions.matchAll()).build()).first());
 		
 		assertDocEquals(expected, actual);
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Collection;
 
+import org.elasticsearch.common.UUIDs;
 import org.junit.Test;
 
 import com.b2international.index.Fixtures.Data;
@@ -26,7 +27,6 @@ import com.b2international.index.aggregations.Aggregation;
 import com.b2international.index.aggregations.AggregationBuilder;
 import com.b2international.index.query.Expressions;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 
 /**
  * @since 5.12.0
@@ -40,23 +40,19 @@ public class AggregationsTest extends BaseIndexTest {
 	
 	@Test
 	public void aggregateOnFieldValue() throws Exception {
-		final Data dup1 = new Data();
+		final Data dup1 = new Data(UUIDs.randomBase64UUID());
 		dup1.setField1("dup1");
 		dup1.setAnalyzedField("duplicate");
 		
-		final Data dup2 = new Data();
+		final Data dup2 = new Data(UUIDs.randomBase64UUID());
 		dup2.setField1("dup2");
 		dup2.setAnalyzedField("duplicate");
 		
-		final Data different = new Data();
+		final Data different = new Data(UUIDs.randomBase64UUID());
 		different.setField1("different");
 		different.setAnalyzedField("different");
 		
-		indexDocuments(ImmutableMap.<String, Object>builder()
-				.put(KEY1, dup1)
-				.put(KEY2, dup2)
-				.put("key3", different)
-				.build());
+		indexDocuments(dup1, dup2, different);
 		
 		final Aggregation<Data> buckets = aggregate(
 			AggregationBuilder.bucket("aggregateOnFieldValue", Data.class)
@@ -83,23 +79,19 @@ public class AggregationsTest extends BaseIndexTest {
 	
 	@Test
 	public void aggregateOnScriptValue() throws Exception {
-		final Data dup1 = new Data();
+		final Data dup1 = new Data(UUIDs.randomBase64UUID());
 		dup1.setField1("field1");
 		dup1.setField2("field2");
 		
-		final Data dup2 = new Data();
+		final Data dup2 = new Data(UUIDs.randomBase64UUID());
 		dup2.setField1("field1");
 		dup2.setField2("field2");
 		
-		final Data different = new Data();
+		final Data different = new Data(UUIDs.randomBase64UUID());
 		different.setField1("differentField1");
 		different.setField2("differentField2");
 		
-		indexDocuments(ImmutableMap.<String, Object>builder()
-				.put(KEY1, dup1)
-				.put(KEY2, dup2)
-				.put("key3", different)
-				.build());
+		indexDocuments(dup1, dup2, different);
 		
 		final Aggregation<Data> buckets = aggregate(
 			AggregationBuilder.bucket("aggregateOnScriptValue", Data.class)

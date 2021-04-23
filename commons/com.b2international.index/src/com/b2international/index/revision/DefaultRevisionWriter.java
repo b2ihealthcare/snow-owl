@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,7 +67,7 @@ public class DefaultRevisionWriter implements RevisionWriter {
 	}
 
 	@Override
-	public void put(String key, Object object) {
+	public void put(Object object) {
 		if (object instanceof Revision) {
 			Revision rev = (Revision) object;
 			final Class<? extends Revision> type = rev.getClass();
@@ -76,19 +76,20 @@ public class DefaultRevisionWriter implements RevisionWriter {
 			}
 			final Collection<String> revisionsToUpdate = revisionUpdates.get(type);
 			// prevent duplicated revisions
+			final String key = rev.getId();
 			checkArgument(!revisionsToUpdate.contains(key), "duplicate revision %s", key);
 			revisionsToUpdate.add(key);
 			
+			// set created time to the current commit timestamp
 			rev.setCreated(created);
-			index.put(generateRevisionId(), rev);
-		} else {
-			index.put(key, object);
 		}
+		// register object for commit
+		index.put(object);
 	}
 
 	@Override
-	public <T> void putAll(Map<String, T> objectsByKey) {
-		objectsByKey.forEach(this::put);
+	public <T> void putAll(Collection<T> objects) {
+		objects.forEach(this::put);
 	}
 	
 	@Override

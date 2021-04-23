@@ -20,6 +20,7 @@ import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -28,7 +29,6 @@ import org.junit.Rule;
 
 import com.b2international.index.aggregations.Aggregation;
 import com.b2international.index.aggregations.AggregationBuilder;
-import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Query;
 import com.b2international.index.util.Reflections;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -74,15 +74,20 @@ public abstract class BaseIndexTest {
 		return index().read(index -> index.get(type, key));
 	}
 	
-	protected final void indexDocument(final String key, final Object doc) {
+	protected final void indexDocument(final Object doc) {
 		index().write(index -> {
-			index.put(key, doc);
+			index.put(doc);
 			index.commit();
 			return null;
 		});
 	}
 	
-	protected final <T> void indexDocuments(final Map<String, T> docs) {
+	@SafeVarargs
+	protected final <T> void indexDocuments(final T...docs) {
+		indexDocuments(Arrays.asList(docs));
+	}
+	
+	protected final <T> void indexDocuments(final Collection<T> docs) {
 		index().write(index -> {
 			index.putAll(docs);
 			index.commit();
@@ -126,7 +131,7 @@ public abstract class BaseIndexTest {
 				continue;
 			}
 			
-			if (DocumentMapping._ID.equals(existingField.getName())	|| WithScore.SCORE.equals(existingField.getName())) {
+			if (WithScore.SCORE.equals(existingField.getName())) {
 				// skip known metadata fields from equality check
 				continue;
 			}

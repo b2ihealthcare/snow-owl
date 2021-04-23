@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,8 @@
  */
 package com.b2international.index;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import java.math.BigDecimal;
 import java.util.Collection;
@@ -54,15 +55,14 @@ public class PartialDocumentLoadingTest extends BaseIndexTest {
 	
 	@Test
 	public void selectPartialWithMap() throws Exception {
-		final Data data1 = new Data();
+		final Data data1 = new Data(KEY1);
 		data1.setField1("field1_1"); 
 		data1.setField2("field2_1");
-		indexDocument(KEY1, data1);
 		
-		final Data data2 = new Data();
+		final Data data2 = new Data(KEY2);
 		data2.setField1("field1_2"); 
 		data2.setField2("field2_2");
-		indexDocument(KEY2, data2);
+		indexDocuments(data1, data2);
 		
 		final Query<Map> query = Query.select(Map.class)
 				.from(Data.class)
@@ -80,15 +80,14 @@ public class PartialDocumentLoadingTest extends BaseIndexTest {
 	
 	@Test
 	public void selectPartialWithStringArray() throws Exception {
-		final Data data1 = new Data();
+		final Data data1 = new Data(KEY1);
 		data1.setField1("field1_1"); 
 		data1.setField2("field2_1");
-		indexDocument(KEY1, data1);
 		
-		final Data data2 = new Data();
+		final Data data2 = new Data(KEY2);
 		data2.setField1("field1_2"); 
 		data2.setField2("field2_2");
-		indexDocument(KEY2, data2);
+		indexDocuments(data1, data2);
 		
 		final Query<String[]> query = Query.select(String[].class)
 				.from(Data.class)
@@ -107,15 +106,14 @@ public class PartialDocumentLoadingTest extends BaseIndexTest {
 
 	@Test
 	public void selectPartialWithClass() throws Exception {
-		final Data data1 = new Data();
+		final Data data1 = new Data(KEY1);
 		data1.setField1("field1_1"); 
 		data1.setField2("field2_1");
-		indexDocument(KEY1, data1);
 		
-		final Data data2 = new Data();
+		final Data data2 = new Data(KEY2);
 		data2.setField1("field1_2"); 
 		data2.setField2("field2_2");
-		indexDocument(KEY2, data2);
+		indexDocuments(data1, data2);
 		
 		final Query<PartialData> query = Query.select(PartialData.class)
 				.from(Data.class)
@@ -131,15 +129,14 @@ public class PartialDocumentLoadingTest extends BaseIndexTest {
 
 	@Test
 	public void selectPartialStringField() throws Exception {
-		final Data data1 = new Data();
+		final Data data1 = new Data(KEY1);
 		data1.setField1("field1_1"); 
 		data1.setField2("field2_1");
-		indexDocument(KEY1, data1);
 		
-		final Data data2 = new Data();
+		final Data data2 = new Data(KEY2);
 		data2.setField1("field1_2"); 
 		data2.setField2("field2_2");
-		indexDocument(KEY2, data2);
+		indexDocuments(data1, data2);
 		
 		final Query<Data> query = Query.select(Data.class)
 				.fields("field1")
@@ -158,15 +155,14 @@ public class PartialDocumentLoadingTest extends BaseIndexTest {
 	
 	@Test
 	public void selectPartialAnalyzedField() throws Exception {
-		final Data data1 = new Data();
+		final Data data1 = new Data(KEY1);
 		data1.setAnalyzedField("analyzedField_1"); 
 		data1.setField1("field1_1");
-		indexDocument(KEY1, data1);
 		
-		final Data data2 = new Data();
+		final Data data2 = new Data(KEY2);
 		data2.setAnalyzedField("analyzedField_2"); 
 		data2.setField1("field1_2");
-		indexDocument(KEY2, data2);
+		indexDocuments(data1, data2);
 		
 		final Query<Data> query = Query.select(Data.class)
 				.fields("analyzedField")
@@ -185,15 +181,14 @@ public class PartialDocumentLoadingTest extends BaseIndexTest {
 	
 	@Test
 	public void selectPartialBigDecimalField() throws Exception {
-		final Data data1 = new Data();
+		final Data data1 = new Data(KEY1);
 		data1.setBigDecimalField(new BigDecimal("100.987654321")); 
 		data1.setField1("field1_1");
-		indexDocument(KEY1, data1);
 		
-		final Data data2 = new Data();
+		final Data data2 = new Data(KEY2);
 		data2.setBigDecimalField(new BigDecimal("200.123456789")); 
 		data2.setField1("field1_2");
-		indexDocument(KEY2, data2);
+		indexDocuments(data1, data2);
 		
 		final Query<Data> query = Query.select(Data.class)
 				.fields("bigDecimalField")
@@ -212,17 +207,16 @@ public class PartialDocumentLoadingTest extends BaseIndexTest {
 	
 	@Test
 	public void selectPartialFloatFields() throws Exception {
-		final Data data1 = new Data();
+		final Data data1 = new Data(KEY1);
 		data1.setFloatField(64.0f); 
 		data1.setFloatWrapper(32.0f); 
 		data1.setField1("field1_1");
-		indexDocument(KEY1, data1);
 		
-		final Data data2 = new Data();
+		final Data data2 = new Data(KEY2);
 		data2.setFloatField(16.0f); 
 		data2.setFloatWrapper(8.0f); 
 		data2.setField1("field1_2");
-		indexDocument(KEY2, data2);
+		indexDocuments(data1, data2);
 		
 		final Query<Data> query = Query.select(Data.class)
 				.fields("floatField", "floatWrapper")
@@ -243,17 +237,16 @@ public class PartialDocumentLoadingTest extends BaseIndexTest {
 	
 	@Test
 	public void selectPartialLongFields() throws Exception {
-		final Data data1 = new Data();
+		final Data data1 = new Data(KEY1);
 		data1.setLongField(64L); 
 		data1.setLongWrapper(32L); 
 		data1.setField1("field1_1");
-		indexDocument(KEY1, data1);
 		
-		final Data data2 = new Data();
+		final Data data2 = new Data(KEY2);
 		data2.setLongField(16L); 
 		data2.setLongWrapper(8L); 
 		data2.setField1("field1_2");
-		indexDocument(KEY2, data2);
+		indexDocuments(data1, data2);
 		
 		final Query<Data> query = Query.select(Data.class)
 				.fields("longField", "longWrapper")
@@ -274,17 +267,16 @@ public class PartialDocumentLoadingTest extends BaseIndexTest {
 	
 	@Test
 	public void selectPartialIntFields() throws Exception {
-		final Data data1 = new Data();
+		final Data data1 = new Data(KEY1);
 		data1.setIntField(64); 
 		data1.setIntWrapper(32); 
 		data1.setField1("field1_1");
-		indexDocument(KEY1, data1);
 		
-		final Data data2 = new Data();
+		final Data data2 = new Data(KEY2);
 		data2.setIntField(16); 
 		data2.setIntWrapper(8); 
 		data2.setField1("field1_2");
-		indexDocument(KEY2, data2);
+		indexDocuments(data1, data2);
 		
 		final Query<Data> query = Query.select(Data.class)
 				.fields("intField", "intWrapper")
@@ -305,17 +297,16 @@ public class PartialDocumentLoadingTest extends BaseIndexTest {
 	
 	@Test
 	public void selectPartialShortFields() throws Exception {
-		final Data data1 = new Data();
+		final Data data1 = new Data(KEY1);
 		data1.setShortField((short) 64); 
 		data1.setShortWrapper((short) 32); 
 		data1.setField1("field1_1");
-		indexDocument(KEY1, data1);
 		
-		final Data data2 = new Data();
+		final Data data2 = new Data(KEY2);
 		data2.setShortField((short) 16); 
 		data2.setShortWrapper((short) 8); 
 		data2.setField1("field1_2");
-		indexDocument(KEY2, data2);
+		indexDocuments(data1, data2);
 		
 		final Query<Data> query = Query.select(Data.class)
 				.fields("shortField", "shortWrapper")
@@ -337,17 +328,16 @@ public class PartialDocumentLoadingTest extends BaseIndexTest {
 	
 	@Test
 	public void selectPartialIntFieldsWithSort() throws Exception {
-		final Data data1 = new Data();
+		final Data data1 = new Data(KEY1);
 		data1.setIntField(64); 
 		data1.setIntWrapper(32); 
 		data1.setField1("field1_1");
-		indexDocument(KEY1, data1);
 		
-		final Data data2 = new Data();
+		final Data data2 = new Data(KEY2);
 		data2.setIntField(16); 
 		data2.setIntWrapper(8); 
 		data2.setField1("field1_2");
-		indexDocument(KEY2, data2);
+		indexDocuments(data1, data2);
 		
 		final Query<Data> query = Query.select(Data.class)
 				.fields("intField", "intWrapper")
@@ -372,15 +362,14 @@ public class PartialDocumentLoadingTest extends BaseIndexTest {
 	
 	@Test
 	public void selectPartialSingleIntField() throws Exception {
-		final Data data1 = new Data();
+		final Data data1 = new Data(KEY1);
 		data1.setIntField(64); 
 		data1.setField1("field1_1");
-		indexDocument(KEY1, data1);
 		
-		final Data data2 = new Data();
+		final Data data2 = new Data(KEY2);
 		data2.setIntField(16); 
 		data2.setField1("field1_2");
-		indexDocument(KEY2, data2);
+		indexDocuments(data1, data2);
 		
 		final Query<Integer> query = Query.select(Integer.class)
 				.from(Data.class)
@@ -397,10 +386,10 @@ public class PartialDocumentLoadingTest extends BaseIndexTest {
 	
 	@Test
 	public void selectJsonNode() throws Exception {
-		final Data data1 = new Data();
+		final Data data1 = new Data(KEY1);
 		data1.setField1("field1_1"); 
 		data1.setField2("field2_1");
-		indexDocument(KEY1, data1);
+		indexDocument(data1);
 		
 		final Query<JsonNode> query = Query.select(JsonNode.class)
 				.from(Data.class)

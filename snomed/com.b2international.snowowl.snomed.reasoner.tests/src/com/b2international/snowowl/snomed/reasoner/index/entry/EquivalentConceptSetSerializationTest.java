@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,8 @@ import org.junit.Test;
 
 import com.b2international.collections.PrimitiveCollectionModule;
 import com.b2international.collections.PrimitiveLists;
+import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Query;
 import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.snowowl.snomed.reasoner.index.EquivalentConceptSetDocument;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -48,7 +50,6 @@ public class EquivalentConceptSetSerializationTest extends BaseRevisionIndexTest
 
 	@Test
 	public void indexClassificationTask() throws Exception {
-		final String id = randomUUID();
 		final String classificationId = randomUUID();
 
 		final EquivalentConceptSetDocument expected = EquivalentConceptSetDocument.builder()
@@ -57,10 +58,10 @@ public class EquivalentConceptSetSerializationTest extends BaseRevisionIndexTest
 				.unsatisfiable(true)
 				.build();
 
-		indexDocument(id, expected);
+		indexDocument(expected);
 
 		final EquivalentConceptSetDocument actual = rawIndex()
-				.read(r -> r.get(EquivalentConceptSetDocument.class, id));
+				.read(r -> r.search(Query.select(EquivalentConceptSetDocument.class).where(Expressions.matchAll()).build()).first());
 		assertDocEquals(expected, actual);
 	}
 }

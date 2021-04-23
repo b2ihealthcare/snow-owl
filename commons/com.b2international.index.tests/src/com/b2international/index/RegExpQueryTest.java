@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,17 +38,15 @@ public class RegExpQueryTest extends BaseIndexTest {
 	
 	@Test
 	public void containsText() throws Exception {
-		Data match1 = new Data();
+		Data match1 = new Data(KEY1);
 		match1.setAnalyzedField("Hello Regexp1!");
-		indexDocument(KEY1, match1);
 		
-		Data match2 = new Data();
+		Data match2 = new Data(KEY2);
 		match2.setAnalyzedField("Hello Regexp2!");
-		indexDocument(KEY2, match2);
 		
-		Data notMatch = new Data();
+		Data notMatch = new Data("key3");
 		notMatch.setAnalyzedField("Hello World!");
-		indexDocument("key3", notMatch);
+		indexDocuments(match1, match2, notMatch);
 		
 		final Hits<Data> hits = search(
 			Query.select(Data.class)
@@ -61,25 +59,22 @@ public class RegExpQueryTest extends BaseIndexTest {
 	
 	@Test
 	public void whitespaceRegexp() throws Exception {
-		Data crlf = new Data();
+		Data crlf = new Data(KEY1);
 		crlf.setAnalyzedField("Hello\\r\\nRegexp1!");
-		indexDocument(KEY1, crlf);
 		
-		Data cr = new Data();
+		Data cr = new Data(KEY2);
 		cr.setAnalyzedField("Hello\\rRegexp2!");
-		indexDocument(KEY2, cr);
 		
-		Data lf = new Data();
+		Data lf = new Data("key3");
 		lf.setAnalyzedField("Hello\\nRegexp2!");
-		indexDocument("key3", lf);
 		
-		Data tab = new Data();
+		Data tab = new Data("key4");
 		tab.setAnalyzedField("Hello\\tRegexp2!");
-		indexDocument("key4", tab);
 		
-		Data regular = new Data();
+		Data regular = new Data("key5");
 		regular.setAnalyzedField("Hello Regexp2!");
-		indexDocument("key5", regular);
+		
+		indexDocuments(crlf, cr, lf, tab, regular);
 		
 		final Hits<Data> hits = search(
 			Query.select(Data.class)
@@ -93,13 +88,12 @@ public class RegExpQueryTest extends BaseIndexTest {
 	
 	@Test
 	public void doubleSpaces() throws Exception {
-		Data doubleSpace = new Data();
+		Data doubleSpace = new Data(KEY1);
 		doubleSpace.setAnalyzedField("Hello  Regexp1!");
-		indexDocument(KEY1, doubleSpace);
 		
-		Data singleSpace = new Data();
+		Data singleSpace = new Data(KEY2);
 		singleSpace.setAnalyzedField("Hello Regexp2!");
-		indexDocument(KEY2, singleSpace);
+		indexDocuments(doubleSpace, singleSpace);
 	
 		final Hits<Data> hits = search(
 			Query.select(Data.class)

@@ -174,10 +174,7 @@ public class MappingMigrationTest extends BaseIndexTest {
 		// index two documents with the existing schema
 		existingDoc1 = new Schema(KEY1, "Existing Field One");
 		existingDoc2 = new Schema(KEY2, "Existing Field Two");
-		indexDocuments(Map.of(
-			KEY1, existingDoc1,
-			KEY2, existingDoc2
-		));
+		indexDocuments(existingDoc1, existingDoc2);
 	}
 
 	@Test

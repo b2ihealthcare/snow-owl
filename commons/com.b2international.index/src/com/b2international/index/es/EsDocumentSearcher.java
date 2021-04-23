@@ -23,11 +23,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import org.apache.lucene.search.TotalHits;
 import org.apache.lucene.search.TotalHits.Relation;
@@ -58,13 +54,7 @@ import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 
 import com.b2international.commons.exceptions.FormattedRuntimeException;
-import com.b2international.index.Hits;
-import com.b2international.index.IndexClientFactory;
-import com.b2international.index.IndexException;
-import com.b2international.index.Scroll;
-import com.b2international.index.SearchContextMissingException;
-import com.b2international.index.Searcher;
-import com.b2international.index.WithScore;
+import com.b2international.index.*;
 import com.b2international.index.aggregations.Aggregation;
 import com.b2international.index.aggregations.AggregationBuilder;
 import com.b2international.index.aggregations.Bucket;
@@ -159,12 +149,12 @@ public class EsDocumentSearcher implements Searcher {
 			.trackTotalHitsUpTo(Integer.MAX_VALUE);
 		
 		// field selection
-		final boolean fetchSource = applySourceFiltering(query.getFields(), query.isDocIdOnly(), mapping, reqSource);
+		final boolean fetchSource = applySourceFiltering(query.getFields(), mapping, reqSource);
 		
 		// this won't load fields like _parent, _routing, _uid at all
 		// and _id in cases where we explicitly require the _source
 		// ES internals require loading the _id field when we require the _source
-		if (fetchSource	|| query.isDocIdOnly()) {
+		if (fetchSource) {
 			reqSource.storedFields(STORED_FIELDS_ID_ONLY);
 		} else {
 			reqSource.storedFields(STORED_FIELDS_NONE);
@@ -258,17 +248,11 @@ public class EsDocumentSearcher implements Searcher {
 		return toHits(select, from, query.getFields(), fetchSource, limit, totalHitCount, response.getScrollId(), query.getSortBy(), allHits.build());
 	}
 
-	private <T> boolean applySourceFiltering(List<String> fields, boolean isDocIdOnly, final DocumentMapping mapping, final SearchSourceBuilder reqSource) {
+	private <T> boolean applySourceFiltering(List<String> fields, final DocumentMapping mapping, final SearchSourceBuilder reqSource) {
 		// No specific fields requested? Use _source to retrieve all of them
 		if (fields.isEmpty()) {
 			reqSource.fetchSource(true);
 			return true;
-		}
-		
-		// Only IDs required? _source is not needed at all
-		if (isDocIdOnly) {
-			reqSource.fetchSource(false);
-			return false;
 		}
 		
 		// Any field requested that can only retrieved from _source? Use source filtering
@@ -411,7 +395,7 @@ public class EsDocumentSearcher implements Searcher {
 				case "_default": //$FALL-THROUGH$
 					if (liveScroll) {
 						// for live scrolls use the document ID field as tiebreaker
-						field = mapping.getIdField();
+						field = mapping.getDefaultSortField();
 					} else {
 						// for snapshot scrolls use the "_doc" field as tiebreaker
 						field = "_doc";
@@ -475,7 +459,7 @@ public class EsDocumentSearcher implements Searcher {
 			.trackTotalHitsUpTo(Integer.MAX_VALUE);
 		
 		// field selection
-		final boolean fetchSource = applySourceFiltering(aggregation.getFields(), false, mapping, reqSource);
+		final boolean fetchSource = applySourceFiltering(aggregation.getFields(), mapping, reqSource);
 		reqSource.aggregation(toEsAggregation(mapping, aggregation, fetchSource));
 		
 		SearchResponse response = null; 

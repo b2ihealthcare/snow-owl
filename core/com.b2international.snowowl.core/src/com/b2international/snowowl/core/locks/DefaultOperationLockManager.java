@@ -331,7 +331,7 @@ public final class DefaultOperationLockManager implements IOperationLockManager,
 				final String lockId = Integer.toString(lastAssignedId);
 				lock = createLock(lastAssignedId, target);
 				final DatastoreLockIndexEntry newEntry = buildIndexEntry(lockId, branchPath, repositoryId, context);
-				put(lockId, newEntry);
+				put(newEntry);
 				
 				assignedIds.set(lastAssignedId);
 				/* 
@@ -434,9 +434,9 @@ public final class DefaultOperationLockManager implements IOperationLockManager,
 		});
 	}
 	
-	private void put(String lockId, DatastoreLockIndexEntry lock) {
+	private void put(DatastoreLockIndexEntry lock) {
 		index.write(writer -> {
-			writer.put(lockId, lock);
+			writer.put(lock);
 			writer.commit();
 			return null;
 		});

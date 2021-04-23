@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package com.b2international.index;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
@@ -24,9 +25,9 @@ import java.util.Set;
  */
 public interface Writer {
 
-	void put(String key, Object object);
+	void put(Object object);
 	
-	<T> void putAll(Map<String, T> objectsByKey);
+	<T> void putAll(Collection<T> objects);
 
 	<T> void bulkUpdate(BulkUpdate<T> update);
 	

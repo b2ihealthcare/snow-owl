@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
+import org.elasticsearch.common.UUIDs;
 import org.junit.Test;
 
 import com.b2international.index.Fixtures.Data;
@@ -30,7 +31,6 @@ import com.b2international.index.es.query.EsQueryBuilder;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.query.SetPredicate;
-import com.google.common.collect.ImmutableMap;
 
 /**
  * This test should fail without the partitioning code for {@link SetPredicate}s in {@link EsQueryBuilder}, 
@@ -53,10 +53,10 @@ public class MaxTermsCountTest extends BaseIndexTest {
 			moreThanMaxTermsCount.add(""+i);
 		}
 		
-		indexDocuments(ImmutableMap.of(
-			UUID.randomUUID().toString(), createData("1"),
-			UUID.randomUUID().toString(), createData("2"),
-			UUID.randomUUID().toString(), createData(""+(numberOfTerms + 1))
+		indexDocuments(List.of(
+			createData("1"),
+			createData("2"),
+			createData(""+(numberOfTerms + 1))
 		));
 		
 		// two matches
@@ -66,7 +66,7 @@ public class MaxTermsCountTest extends BaseIndexTest {
 	}
 
 	private Data createData(String field1Value) {
-		final Data data = new Data();
+		final Data data = new Data(UUIDs.randomBase64UUID());
 		data.setField1(field1Value);
 		return data;
 	}

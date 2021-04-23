@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,7 @@ package com.b2international.snowowl.core.validation.issue;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.junit.After;
@@ -257,10 +253,10 @@ public class ValidationIssueApiTest {
 		);
 		
 		context.service(ValidationRepository.class).write(index -> {
-			index.put(oldIssue.getId(), oldIssue);
-			index.put(oldIssueOtherBranch.getId(), oldIssueOtherBranch);
-			index.put(newIssue.getId(), newIssue);
-			index.put(newIssueOtherBranch.getId(), newIssueOtherBranch);
+			index.put(oldIssue);
+			index.put(oldIssueOtherBranch);
+			index.put(newIssue);
+			index.put(newIssueOtherBranch);
 			index.commit();
 			return null;
 		});
@@ -300,11 +296,7 @@ public class ValidationIssueApiTest {
 			issue.setAffectedComponentLabels(ImmutableList.copyOf(labels));
 		}
 		
-		context.service(ValidationRepository.class).write(index -> {
-			index.put(issueId, issue);
-			index.commit();
-			return null;
-		});
+		context.service(ValidationRepository.class).save(issue);
 		
 		return issueId;
 	}

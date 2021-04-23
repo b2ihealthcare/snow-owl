@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -122,10 +122,9 @@ public final class ValidationPlugin extends Plugin {
 				// index all rules from the file, this will update existing rules as well
 				final Set<String> ruleIds = newHashSet();
 				for (ValidationRule rule : availableRules) {
-					writer.put(rule.getId(), rule);
+					writer.put(rule);
 					ruleIds.add(rule.getId());
 				}
-				
 				
 				// delete rules and associated issues
 				Set<String> rulesToDelete = Sets.difference(existingRules.keySet(), ruleIds);

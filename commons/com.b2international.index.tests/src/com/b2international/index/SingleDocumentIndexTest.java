@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,6 @@ import org.junit.Test;
 
 import com.b2international.index.Fixtures.Data;
 import com.b2international.index.Fixtures.DataWithMap;
-import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.google.common.collect.ImmutableList;
@@ -55,17 +54,17 @@ public class SingleDocumentIndexTest extends BaseIndexTest {
 	
 	@Test
 	public void indexDocument() throws Exception {
-		final Data doc = new Data();
-		indexDocument(KEY1, doc);
+		final Data doc = new Data(KEY1);
+		indexDocument(doc);
 		assertEquals(doc, getDocument(Data.class, KEY1));
 	}
 	
 	@Test
 	public void indexTwoDocumentWithDifferentTypeButWithSameId() throws Exception {
-		final Data doc = new Data();
-		final DataWithMap doc2 = new DataWithMap(ImmutableMap.<String, Object>of("prop1", "value1"));
-		indexDocument(KEY1, doc);
-		indexDocument(KEY1, doc2);
+		final Data doc = new Data(KEY1);
+		final DataWithMap doc2 = new DataWithMap(KEY1, Map.<String, Object>of("prop1", "value1"));
+		indexDocument(doc);
+		indexDocument(doc2);
 		assertEquals(doc, getDocument(Data.class, KEY1));
 		assertEquals(doc2, getDocument(DataWithMap.class, KEY1));
 	}
@@ -76,15 +75,15 @@ public class SingleDocumentIndexTest extends BaseIndexTest {
 		final List<String> keys = newArrayList();
 		
 		for (int i = 0; i < NUM_DOCS; i++) {
-			final Data doc = new Data();
+			final String key = Integer.toString(i);
+			final Data doc = new Data(key);
 			doc.setIntField(i);
 			
-			final String key = Integer.toString(i);
 			keys.add(key);
 			documents.put(key, doc);
 		}
 		
-		indexDocuments(documents);
+		indexDocuments(documents.values());
 		
 		// Change sequential keys to a random permutation of the original
 		Collections.shuffle(keys);
@@ -99,13 +98,13 @@ public class SingleDocumentIndexTest extends BaseIndexTest {
 	public void updateDocument() throws Exception {
 		indexDocument();
 		
-		final Data updatedDoc = new Data();
+		final Data updatedDoc = new Data(KEY1);
 		updatedDoc.setField1("field1_updated");
 		updatedDoc.setField2("field2_updated");
-		indexDocument(KEY1, updatedDoc);
+		indexDocument(updatedDoc);
 		
 		Query<Data> query = Query.select(Data.class)
-				.where(DocumentMapping.matchId(KEY1))
+				.where(Expressions.exactMatch("id", KEY1))
 				.build();
 		
 		// execute search so we can see that it really updated the doc and did not create a duplicate
@@ -116,9 +115,9 @@ public class SingleDocumentIndexTest extends BaseIndexTest {
 	
 	@Test
 	public void indexDocumentWithSearchDuringTransaction() throws Exception {
-		final Data data = new Data();
+		final Data data = new Data(KEY1);
 		index().write(index -> {
-			index.put(KEY1, data);
+			index.put(data);
 			assertNull(index.searcher().get(Data.class, KEY1));
 			index.commit();
 			return null;
@@ -134,15 +133,15 @@ public class SingleDocumentIndexTest extends BaseIndexTest {
 	
 	@Test
 	public void searchDocuments() throws Exception {
-		final Data data1 = new Data();
+		final Data data1 = new Data(KEY1);
 		data1.setField1("field1_1");
 		data1.setField2("field2_1");
-		indexDocument(KEY1, data1);
 		
-		final Data data2 = new Data();
+		final Data data2 = new Data(KEY2);
 		data2.setField1("field1_2");
 		data2.setField2("field2_2");
-		indexDocument(KEY2, data2);
+		
+		indexDocuments(data1, data2);
 		
 		// search for field1_1 value, it should return a single doc
 		final Query<Data> query = Query.select(Data.class)
@@ -156,8 +155,8 @@ public class SingleDocumentIndexTest extends BaseIndexTest {
 	
 	@Test
 	public void indexDocumentWithMapType() throws Exception {
-		final DataWithMap data = new DataWithMap(ImmutableMap.<String, Object>of("field1", "field1Value", "field2", "field2Value"));
-		indexDocument(KEY1, data);
+		final DataWithMap data = new DataWithMap(KEY1, ImmutableMap.<String, Object>of("field1", "field1Value", "field2", "field2Value"));
+		indexDocument(data);
 		assertEquals(data, getDocument(DataWithMap.class, KEY1));
 		
 		final Query<DataWithMap> query = Query.select(DataWithMap.class)

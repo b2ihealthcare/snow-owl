@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,11 +36,15 @@ public class AnalyzerTest extends BaseIndexTest {
 	@Doc
 	private static final class DataWithTokenizedText {
 		
+		@ID
+		private String id;
+		
 		@Text(analyzer = Analyzers.TOKENIZED)
 		private String text;
 		
 		@JsonCreator
-		public DataWithTokenizedText(@JsonProperty("text") String text) {
+		public DataWithTokenizedText(@JsonProperty("id") String id, @JsonProperty("text") String text) {
+			this.id = id;
 			this.text = text;
 		}
 		
@@ -50,7 +54,7 @@ public class AnalyzerTest extends BaseIndexTest {
 		
 		@Override
 		public int hashCode() {
-			return Objects.hash(text);
+			return Objects.hash(id, text);
 		}
 		
 		@Override
@@ -59,7 +63,8 @@ public class AnalyzerTest extends BaseIndexTest {
 			if (obj == null) return false;
 			if (getClass() != obj.getClass()) return false;
 			DataWithTokenizedText other = (DataWithTokenizedText) obj;
-			return Objects.equals(text, other.text);
+			return Objects.equals(id, other.id) 
+					&& Objects.equals(text, other.text);
 		}
 		
 	}
@@ -71,10 +76,10 @@ public class AnalyzerTest extends BaseIndexTest {
 	
 	@Test
 	public void tokenizedIgnoreStopwords() throws Exception {
-		DataWithTokenizedText withStopwords = new DataWithTokenizedText("a quick fox jumps over the lazy dog and cat");
-		indexDocument(KEY1, withStopwords);
-		DataWithTokenizedText withoutStopwords = new DataWithTokenizedText("quick fox jumps over lazy dog cat");
-		indexDocument(KEY2, withoutStopwords);
+		DataWithTokenizedText withStopwords = new DataWithTokenizedText(KEY1, "a quick fox jumps over the lazy dog and cat");
+		indexDocument(withStopwords);
+		DataWithTokenizedText withoutStopwords = new DataWithTokenizedText(KEY2, "quick fox jumps over lazy dog cat");
+		indexDocument(withoutStopwords);
 		
 		// search with stopwords enabled
 		Hits<DataWithTokenizedText> hits = search(Query.select(DataWithTokenizedText.class)

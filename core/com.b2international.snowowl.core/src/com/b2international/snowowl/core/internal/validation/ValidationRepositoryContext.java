@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ package com.b2international.snowowl.core.internal.validation;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -33,11 +35,7 @@ import com.b2international.snowowl.core.validation.issue.ValidationIssue;
 import com.b2international.snowowl.core.validation.whitelist.ValidationWhiteList;
 import com.b2international.snowowl.core.validation.whitelist.WhiteListNotification;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
+import com.google.common.collect.*;
 
 /**
  * @since 6.3
@@ -45,7 +43,7 @@ import com.google.common.collect.Sets;
 public final class ValidationRepositoryContext extends DelegatingContext {
 
 	// actual raw mapping changes
-	private final Map<String, Object> newObjects = newHashMap();
+	private final List<Object> newObjects = new ArrayList<>();
 	private final Multimap<Class<?>, String> objectsToDelete = HashMultimap.create();
 	
 	
@@ -61,8 +59,8 @@ public final class ValidationRepositoryContext extends DelegatingContext {
 	 * @param id
 	 * @param doc
 	 */
-	public void save(String id, Object doc) {
-		newObjects.put(id, doc);
+	public void save(Object doc) {
+		newObjects.add(doc);
 	}
 	
 	/**
@@ -82,7 +80,7 @@ public final class ValidationRepositoryContext extends DelegatingContext {
 				writer.putAll(newObjects);
 				
 				final Multimap<String, ComponentIdentifier> addToWhitelist = HashMultimap.create();
-				newObjects.values()
+				newObjects
 					.stream()
 					.filter(ValidationWhiteList.class::isInstance)
 					.map(ValidationWhiteList.class::cast)
@@ -130,11 +128,11 @@ public final class ValidationRepositoryContext extends DelegatingContext {
 			if (!newObjects.isEmpty()) {
 				final Set<String> addedWhiteLists = newHashSet();
 				final Set<String> affectedRuleIds = newHashSet();
-				newObjects.forEach((id, doc) -> {
+				newObjects.forEach((doc) -> {
 					if (doc instanceof ValidationWhiteList) {
 						ValidationWhiteList whitelistedDoc = (ValidationWhiteList) doc;
 						affectedRuleIds.add(whitelistedDoc.getRuleId());
-						addedWhiteLists.add(id);
+						addedWhiteLists.add(whitelistedDoc.getId());
 					}
 				});
 				if (!addedWhiteLists.isEmpty()) {

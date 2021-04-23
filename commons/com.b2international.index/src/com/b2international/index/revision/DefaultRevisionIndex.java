@@ -24,7 +24,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import com.b2international.index.Hits;
+import com.b2international.index.BulkDelete;
 import com.b2international.index.Index;
 import com.b2international.index.Searcher;
 import com.b2international.index.Writer;
@@ -38,17 +38,12 @@ import com.b2international.index.revision.RevisionCompare.Builder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 
 /**
  * @since 4.7
  */
 public final class DefaultRevisionIndex implements InternalRevisionIndex, Hooks {
 
-	private static final String SCROLL_KEEP_ALIVE = "2m";
-	
-	private static final int PURGE_LIMIT = 100_000;
-	
 	private static final int COMPARE_DEFAULT_LIMIT = 100_000;
 	
 	private final Index index;
@@ -239,8 +234,6 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex, Hooks 
 			return;
 		}
 		
-		final Searcher searcher = writer.searcher();
-		
 		final ExpressionBuilder purgeQuery = Expressions.builder();
 		// purge only documents added to the selected branch
 		for (RevisionSegment segmentToPurge : refToPurge.segments()) {
@@ -251,23 +244,9 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex, Hooks 
 		}
 		for (Class<? extends Revision> revisionType : typesToPurge) {
 			final String type = DocumentMapping.getType(revisionType);
-			
-			final Query<String> query = Query.select(String.class)
-				.from(revisionType)
-				.fields(DocumentMapping._ID)
-				.where(purgeQuery.build())
-				.scroll(SCROLL_KEEP_ALIVE) 
-				.limit(PURGE_LIMIT)
-				.build();
-			
-			int purged = 0;
-			for (Hits<String> revisionsToPurge : searcher.scroll(query)) {
-				purged += revisionsToPurge.getHits().size();
-				admin().log().info("Purging {}/{} '{}' documents...", purged, revisionsToPurge.getTotal(), type);
-				writer.removeAll(ImmutableMap.of(revisionType, newHashSet(revisionsToPurge)));
-				writer.commit();
-			}
-			
+			admin().log().info("Purging '{}' revisions...", type);
+			writer.bulkDelete(new BulkDelete<>(revisionType, purgeQuery.build()));
+			writer.commit();
 		}
 	}
 	

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -154,7 +154,7 @@ public abstract class BaseValidationTest extends BaseRevisionIndexTest {
 			while (it.hasNext()) {
 				final ValidationRule rule = it.next();
 				if (ruleId.equals(rule.getId())) {
-					indexDocument(ruleId, rule);
+					indexDocument(rule);
 					return;
 				}
 			}

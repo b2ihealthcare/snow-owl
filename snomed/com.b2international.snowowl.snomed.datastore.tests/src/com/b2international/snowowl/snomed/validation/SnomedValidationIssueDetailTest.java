@@ -38,6 +38,7 @@ import com.b2international.index.Indexes;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.index.revision.RevisionIndex;
+import com.b2international.snomed.ecl.EclStandaloneSetup;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.date.EffectiveTimes;
@@ -66,7 +67,6 @@ import com.b2international.snowowl.snomed.core.ecl.EclSerializer;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
-import com.b2international.snomed.ecl.EclStandaloneSetup;
 import com.b2international.snowowl.snomed.validation.detail.SnomedValidationIssueDetailExtension;
 import com.b2international.snowowl.snomed.validation.detail.SnomedValidationIssueDetailExtension.SnomedIssueDetailFilterFields;
 import com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator;
@@ -235,7 +235,7 @@ public class SnomedValidationIssueDetailTest extends BaseRevisionIndexTest {
 	
 	private void save(ValidationIssue issue) {
 		context.service(ValidationRepository.class).write(index -> {
-			index.put(issue.getId(), issue);
+			index.put(issue);
 			index.commit();
 			return null;
 		});

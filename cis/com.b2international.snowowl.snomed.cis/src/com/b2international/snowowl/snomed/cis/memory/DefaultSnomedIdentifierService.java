@@ -21,6 +21,7 @@ import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 import static com.google.common.collect.Sets.newLinkedHashSet;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -34,7 +35,6 @@ import com.b2international.commons.VerhoeffCheck;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.index.Hits;
 import com.b2international.index.Index;
-import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
@@ -99,7 +99,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 
 		final Set<String> componentIds = generateIds(namespace, category, quantity);
 		final Map<String, SctId> sctIds = FluentIterable.from(componentIds).toMap(componentId -> buildSctId(componentId, IdentifierStatus.ASSIGNED));
-		putSctIds(sctIds);
+		putSctIds(sctIds.values());
 		return sctIds;
 	}
 
@@ -120,7 +120,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 			sctId.setStatus(IdentifierStatus.ASSIGNED.getSerializedName());
 		}
 		
-		putSctIds(availableOrReservedSctIds);
+		putSctIds(availableOrReservedSctIds.values());
 		
 		return ImmutableMap.copyOf(sctIds);
 	}
@@ -140,7 +140,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 
 		final Set<String> componentIds = generateIds(namespace, category, quantity);
 		final Map<String, SctId> sctIds = FluentIterable.from(componentIds).toMap(componentId -> buildSctId(componentId, IdentifierStatus.RESERVED));
-		putSctIds(sctIds);
+		putSctIds(sctIds.values());
 		return ImmutableMap.copyOf(sctIds);
 	}
 
@@ -174,7 +174,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 			sctId.setStatus(IdentifierStatus.DEPRECATED.getSerializedName());
 		}
 		
-		putSctIds(assignedOrPublishedSctIds);
+		putSctIds(assignedOrPublishedSctIds.values());
 		
 		return ImmutableMap.copyOf(sctIds);
 	}
@@ -191,7 +191,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 			sctId.setStatus(IdentifierStatus.PUBLISHED.getSerializedName());
 		}
 		
-		putSctIds(sctIdsToPublish);
+		putSctIds(sctIdsToPublish.values());
 		
 		return ImmutableMap.copyOf(sctIds);
 	}
@@ -202,7 +202,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 			return Collections.emptyMap();
 		}
 		final Query<SctId> getSctIdsQuery = Query.select(SctId.class)
-				.where(Expressions.matchAny(DocumentMapping._ID, componentIds))
+				.where(Expressions.matchAny("sctid", componentIds))
 				.limit(componentIds.size())
 				.build();
 		
@@ -328,7 +328,7 @@ public class DefaultSnomedIdentifierService extends AbstractSnomedIdentifierServ
 		return sctId;
 	}
 	
-	private void putSctIds(final Map<String, SctId> ids) {
+	private void putSctIds(final Collection<SctId> ids) {
 		store.write(index -> {
 			index.putAll(ids);
 			index.commit();

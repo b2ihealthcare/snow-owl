@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,11 @@
  */
 package com.b2international.index;
 
-import static com.google.common.collect.Maps.newHashMap;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -33,7 +32,6 @@ import com.b2international.index.query.Query;
 import com.b2international.index.query.Query.QueryBuilder;
 import com.b2international.index.query.SortBy;
 import com.b2international.index.query.SortBy.Order;
-import com.google.common.collect.ImmutableList;
 
 /**
  * @since 6.0.0
@@ -44,17 +42,16 @@ public class SearchAfterTest extends BaseIndexTest {
 	
 	@Override
 	protected Collection<Class<?>> getTypes() {
-		return ImmutableList.of(Data.class);
+		return List.of(Data.class);
 	}
 	
 	@Before
 	public void setup() {
-		final Map<String, Data> docs = newHashMap(); 
+		final List<Data> docs = new ArrayList<>(NUM_DOCS); 
 
 		for (int i = 0; i < NUM_DOCS; i++) {
-			final Data data = new Data();
+			final Data data = new Data(Integer.toString(i));
 			data.setField1("field" + i);
-			docs.put(Integer.toString(i), data);
 		}
 		
 		indexDocuments(docs);

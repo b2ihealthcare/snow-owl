@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,9 +38,10 @@ public @interface Doc {
 	 * @return
 	 */
 	boolean index() default true;
-	
+
 	/**
-	 * @return an array of field names that should be used for computing the revision hash, if empty no hash will be computed and the component will not have property level change history
+	 * @return an array of field names that should be used for computing the revision hash, if empty no hash will be computed and the component will
+	 *         not have property level change history
 	 */
 	String[] revisionHash() default {};
 

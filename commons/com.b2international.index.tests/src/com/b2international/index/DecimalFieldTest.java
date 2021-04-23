@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,12 @@ package com.b2international.index;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Objects;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -30,9 +31,6 @@ import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 
 /**
  * @since 5.4
@@ -50,17 +48,17 @@ public class DecimalFieldTest extends BaseIndexTest {
 	
 	@Override
 	protected Collection<Class<?>> getTypes() {
-		return ImmutableSet.<Class<?>>of(DataWithDecimal.class);
+		return Set.of(DataWithDecimal.class);
 	}
 
 	@Before
 	public void setup() {
-		indexDocuments(ImmutableMap.of(
-			KEY1, new DataWithDecimal(VALUE_10),
-			KEY2, new DataWithDecimal(VALUE_05),
-			KEY3, new DataWithDecimal(VALUE_20),
-			KEY4, new DataWithDecimal(VALUE_00)
-		));
+		indexDocuments(
+			new DataWithDecimal(KEY1, VALUE_10),
+			new DataWithDecimal(KEY2, VALUE_05),
+			new DataWithDecimal(KEY3, VALUE_20),
+			new DataWithDecimal(KEY4, VALUE_00)
+		);
 	}
 	
 	@Test
@@ -68,9 +66,8 @@ public class DecimalFieldTest extends BaseIndexTest {
 		final Hits<DataWithDecimal> hits = search(Query.select(DataWithDecimal.class)
 				.where(Expressions.match("value", VALUE_10))
 				.build());
-		assertThat(hits).hasSize(1);
-		final DataWithDecimal hit = Iterables.getOnlyElement(hits);
-		assertEquals(new DataWithDecimal(VALUE_10), hit);
+		assertThat(hits)
+			.containsOnly(new DataWithDecimal(KEY1, VALUE_10));
 	}
 	
 	@Test
@@ -83,9 +80,9 @@ public class DecimalFieldTest extends BaseIndexTest {
 		assertThat(hits)
 			.hasSize(3)
 			.containsOnly(
-				new DataWithDecimal(VALUE_00),
-				new DataWithDecimal(VALUE_05), 
-				new DataWithDecimal(VALUE_20)
+				new DataWithDecimal(KEY4, VALUE_00),
+				new DataWithDecimal(KEY2, VALUE_05), 
+				new DataWithDecimal(KEY3, VALUE_20)
 			);
 	}
 	
@@ -96,7 +93,7 @@ public class DecimalFieldTest extends BaseIndexTest {
 				.build());
 		assertThat(hits)
 			.hasSize(2)
-			.containsOnly(new DataWithDecimal(VALUE_10), new DataWithDecimal(VALUE_20));
+			.containsOnly(new DataWithDecimal(KEY1, VALUE_10), new DataWithDecimal(KEY3, VALUE_20));
 	}
 	
 	@Test
@@ -107,8 +104,8 @@ public class DecimalFieldTest extends BaseIndexTest {
 		assertThat(hits)
 			.hasSize(2)
 			.containsOnly(
-				new DataWithDecimal(VALUE_00),
-				new DataWithDecimal(VALUE_05)
+				new DataWithDecimal(KEY4, VALUE_00),
+				new DataWithDecimal(KEY2, VALUE_05)
 			);
 	}
 	
@@ -119,7 +116,7 @@ public class DecimalFieldTest extends BaseIndexTest {
 				.build());
 		assertThat(hits)
 			.hasSize(1)
-			.containsOnly(new DataWithDecimal(VALUE_20));
+			.containsOnly(new DataWithDecimal(KEY3, VALUE_20));
 	}
 	
 	@Test
@@ -130,9 +127,9 @@ public class DecimalFieldTest extends BaseIndexTest {
 		assertThat(hits)
 			.hasSize(3)
 			.containsOnly(
-				new DataWithDecimal(VALUE_00),
-				new DataWithDecimal(VALUE_05), 
-				new DataWithDecimal(VALUE_10)
+				new DataWithDecimal(KEY4, VALUE_00),
+				new DataWithDecimal(KEY2, VALUE_05), 
+				new DataWithDecimal(KEY1, VALUE_10)
 			);
 	}
 	
@@ -143,46 +140,52 @@ public class DecimalFieldTest extends BaseIndexTest {
 				.build());
 		assertThat(hits)
 			.hasSize(2)
-			.containsOnly(new DataWithDecimal(VALUE_10), new DataWithDecimal(VALUE_20));
+			.containsOnly(new DataWithDecimal(KEY1, VALUE_10), new DataWithDecimal(KEY3, VALUE_20));
 	}
 	
 	@Test
 	public void indexReallyBigPositiveDecimal() throws Exception {
-		indexDocument(KEY1, new DataWithDecimal(REALLY_BIG));
+		indexDocument(new DataWithDecimal(KEY1, REALLY_BIG));
 		final DataWithDecimal actual = getDocument(DataWithDecimal.class, KEY1);
-		assertEquals(new DataWithDecimal(REALLY_BIG), actual);
+		assertEquals(new DataWithDecimal(KEY1, REALLY_BIG), actual);
 		
 		final Hits<DataWithDecimal> hits = search(Query.select(DataWithDecimal.class)
 				.where(Expressions.match("value", REALLY_BIG))
 				.build());
-		assertThat(hits).hasSize(1);
-		final DataWithDecimal hit = Iterables.getOnlyElement(hits);
-		assertEquals(new DataWithDecimal(REALLY_BIG), hit);
+		assertThat(hits)
+			.containsOnly(new DataWithDecimal(KEY1, REALLY_BIG));
 	}
 	
 	@Test
 	public void indexReallySmallPositiveDecimal() throws Exception {
-		final DataWithDecimal expected = new DataWithDecimal(REALLY_SMALL);
-		indexDocument(KEY1, expected);
+		final DataWithDecimal expected = new DataWithDecimal(KEY1, REALLY_SMALL);
+		indexDocument(expected);
 		final DataWithDecimal actual = getDocument(DataWithDecimal.class, KEY1);
 		assertEquals(expected, actual);
 		
 		final Hits<DataWithDecimal> hits = search(Query.select(DataWithDecimal.class)
 				.where(Expressions.match("value", REALLY_SMALL))
 				.build());
-		assertThat(hits).hasSize(1);
-		final DataWithDecimal hit = Iterables.getOnlyElement(hits);
-		assertEquals(new DataWithDecimal(REALLY_SMALL), hit);
+		assertThat(hits)
+			.containsOnly(new DataWithDecimal(KEY1, REALLY_SMALL));
 	}
 	
 	@Doc
 	static class DataWithDecimal {
 		
+		@ID
+		private final String id;
+		
 		private final BigDecimal value;
 		
 		@JsonCreator
-		public DataWithDecimal(@JsonProperty("value") BigDecimal value) {
+		public DataWithDecimal(@JsonProperty("id") String id, @JsonProperty("value") BigDecimal value) {
+			this.id = id;
 			this.value = checkNotNull(value);
+		}
+		
+		public String getId() {
+			return id;
 		}
 		
 		public BigDecimal getValue() {
@@ -191,7 +194,7 @@ public class DecimalFieldTest extends BaseIndexTest {
 		
 		@Override
 		public int hashCode() {
-			return Objects.hash(value);
+			return Objects.hash(id, value);
 		}
 		
 		@Override
@@ -200,7 +203,7 @@ public class DecimalFieldTest extends BaseIndexTest {
 			if (obj == null) return false;
 			if (getClass() != obj.getClass()) return false;
 			DataWithDecimal other = (DataWithDecimal) obj;
-			return value.compareTo(other.value) == 0;
+			return Objects.equals(id, other.id) && value.compareTo(other.value) == 0;
 		}
 		
 	}

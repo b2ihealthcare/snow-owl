@@ -186,13 +186,13 @@ public final class RemoteJobTracker implements IDisposableService {
 		notifyRemoved(existingJobIds);
 	}
 	
-	private void put(String jobId, RemoteJobEntry job) {
+	private void put(RemoteJobEntry job) {
 		index.write(writer -> {
-			writer.put(jobId, job);
+			writer.put(job);
 			writer.commit();
 			return null;
 		});
-		notifyAdded(jobId);
+		notifyAdded(job.getId());
 	}
 	
 	private void update(String jobId, String script, Map<String, Object> params) {
@@ -248,7 +248,7 @@ public final class RemoteJobTracker implements IDisposableService {
 				} catch (Throwable e) {
 					parameters = "";
 				}
-				put(jobId, RemoteJobEntry.builder()
+				put(RemoteJobEntry.builder()
 						.id(jobId)
 						.key(job.getKey())
 						.description(job.getDescription())

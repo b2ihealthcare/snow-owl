@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import static com.b2international.index.query.Expressions.matchAnyLong;
 
 import com.b2international.collections.longs.LongList;
 import com.b2international.index.Doc;
+import com.b2international.index.mapping.AutoGenerateID;
 import com.b2international.index.query.Expression;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -30,7 +31,8 @@ import com.google.common.collect.FluentIterable;
 /**
  * @since 7.0
  */
-@Doc(type="equivalentconceptset")
+@Doc(type = "equivalentconceptset")
+@AutoGenerateID
 @JsonDeserialize(builder=EquivalentConceptSetDocument.Builder.class)
 public final class EquivalentConceptSetDocument {
 

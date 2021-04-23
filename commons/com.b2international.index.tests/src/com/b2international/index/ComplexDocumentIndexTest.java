@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import static org.junit.Assert.assertEquals;
 import java.util.Arrays;
 import java.util.Collection;
 
+import org.elasticsearch.common.UUIDs;
 import org.junit.Test;
 
 import com.b2international.index.Fixtures.DeepData;
@@ -43,13 +44,10 @@ public class ComplexDocumentIndexTest extends BaseIndexTest {
 	
 	@Test
 	public void indexDeeplyNestedDocument() throws Exception {
-		final DeepData data = new DeepData(new ParentData("field1", new NestedData("field2")));
-		final DeepData data2 = new DeepData(new ParentData("field1", new NestedData("field2Changed")));
+		final DeepData data = new DeepData(KEY1, new ParentData(UUIDs.randomBase64UUID(), "field1", new NestedData("field2")));
+		final DeepData data2 = new DeepData(KEY2, new ParentData(UUIDs.randomBase64UUID(), "field1", new NestedData("field2Changed")));
 		
-		Writer writer = client().writer();
-		writer.put(KEY1, data);
-		writer.put(KEY2, data2);
-		writer.commit();
+		indexDocuments(data, data2);
 		
 		// try to get nested document as is first
 		Searcher searcher = client().searcher();
@@ -68,13 +66,10 @@ public class ComplexDocumentIndexTest extends BaseIndexTest {
 	
 	@Test
 	public void indexCollectionOfNestedDocs() throws Exception {
-		final MultipleNestedData data = new MultipleNestedData(Arrays.asList(new NestedData("field2"), new NestedData("field2Another")));
-		final MultipleNestedData data2 = new MultipleNestedData(Arrays.asList(new NestedData("field2Changed"), new NestedData("field2AnotherChanged")));
+		final MultipleNestedData data = new MultipleNestedData(KEY1, Arrays.asList(new NestedData("field2"), new NestedData("field2Another")));
+		final MultipleNestedData data2 = new MultipleNestedData(KEY2, Arrays.asList(new NestedData("field2Changed"), new NestedData("field2AnotherChanged")));
 		// index multi nested data
-		Writer writer = client().writer();
-		writer.put(KEY1, data);
-		writer.put(KEY2, data2);
-		writer.commit();
+		indexDocuments(data, data2);
 		
 		Searcher searcher = client().searcher();
 		// get data by key

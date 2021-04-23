@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.Collection;
 
+import org.elasticsearch.common.UUIDs;
 import org.junit.Test;
 
 import com.b2international.index.Fixtures.Data;
@@ -40,7 +41,7 @@ public class NestedDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 	
 	@Test
 	public void indexNestedDocument() throws Exception {
-		final Data child = new Data();
+		final Data child = new Data(UUIDs.randomBase64UUID());
 		child.setField1("field1");
 		child.setField2("field2");
 		
@@ -51,12 +52,12 @@ public class NestedDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 
 	@Test
 	public void searchParentDocumentWithNestedQuery() throws Exception {
-		final Data child1 = new Data();
+		final Data child1 = new Data(UUIDs.randomBase64UUID());
 		child1.setField1("field1_1");
 		child1.setField2("field2_1");
 		final NestedRevisionData parent1 = new NestedRevisionData(STORAGE_KEY1, "parent1", child1);
 		
-		final Data child2 = new Data();
+		final Data child2 = new Data(UUIDs.randomBase64UUID());
 		child2.setField1("field1_2");
 		child2.setField2("field2_2");
 		final NestedRevisionData parent2 = new NestedRevisionData(STORAGE_KEY2, "parent2", child2);
@@ -75,7 +76,8 @@ public class NestedDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 	
 	@Test
 	public void compareNestedRevisionData() throws Exception {
-		final Data nestedData = new Data();
+		final String id = UUIDs.randomBase64UUID();
+		final Data nestedData = new Data(id);
 		nestedData.setField1("field1_1");
 		nestedData.setField2("field2_1");
 		final NestedRevisionData doc = new NestedRevisionData(STORAGE_KEY1, "parent1", nestedData);
@@ -84,7 +86,7 @@ public class NestedDocumentRevisionIndexTest extends BaseRevisionIndexTest {
 		
 		String a = createBranch(MAIN, "a");
 		
-		final Data updatedNestedData = new Data();
+		final Data updatedNestedData = new Data(id);
 		updatedNestedData.setField1("field1_2");
 		updatedNestedData.setField2("field2_2");
 		final NestedRevisionData updatedDoc = new NestedRevisionData(STORAGE_KEY1, "parent1", updatedNestedData);

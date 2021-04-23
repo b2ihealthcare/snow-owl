@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package com.b2international.snowowl.core.validation.whitelist;
 
 import java.util.List;
-import java.util.UUID;
 
 import javax.validation.constraints.NotNull;
 
@@ -24,6 +23,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.internal.validation.ValidationRepositoryContext;
 
 /**
@@ -31,6 +31,8 @@ import com.b2international.snowowl.core.internal.validation.ValidationRepository
  */
 final class ValidationWhiteListCreateRequest implements Request<ValidationRepositoryContext, String> {
 
+	private static final long serialVersionUID = 1L;
+	
 	@NotEmpty String ruleId;
 	@NotNull ComponentIdentifier componentIdentifier;
 	@NotNull List<String> affectedComponentLabels;
@@ -39,8 +41,8 @@ final class ValidationWhiteListCreateRequest implements Request<ValidationReposi
 	
 	@Override
 	public String execute(ValidationRepositoryContext context) {
-		final String id = UUID.randomUUID().toString();
-		context.save(id, new ValidationWhiteList(id, ruleId, reporter, createdAt, componentIdentifier, affectedComponentLabels));
+		final String id = IDs.randomBase64UUID();
+		context.save(new ValidationWhiteList(id, ruleId, reporter, createdAt, componentIdentifier, affectedComponentLabels));
 		return id;
 	}
 
