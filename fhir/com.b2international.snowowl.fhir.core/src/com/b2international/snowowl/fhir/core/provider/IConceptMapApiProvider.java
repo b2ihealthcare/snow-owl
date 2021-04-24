@@ -99,7 +99,7 @@ public interface IConceptMapApiProvider extends IFhirApiProvider {
 	Collection<ConceptMap> getConceptMaps();
 
 	/**
-	 * @param componentURI - logical code system path (codeSystemShortName/version/typeId/componentId)
+	 * @param componentUri - logical code system path (codeSystemShortName/version/typeId/componentId)
 	 * @return true if this provider supports the code system represented by the logical id
 	 */
 	boolean isSupported(ComponentURI componentUri);
