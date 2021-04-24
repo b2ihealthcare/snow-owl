@@ -31,9 +31,7 @@ import com.b2international.index.query.Query;
 import com.b2international.index.query.SortBy;
 import com.b2international.index.query.SortBy.Order;
 import com.google.common.base.Function;
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
+import com.google.common.collect.*;
 
 /**
  * @since 5.4
@@ -306,18 +304,13 @@ public class SortIndexTest extends BaseIndexTest {
 
 	@Test
 	public void sortScore() throws Exception {
-		final List<String> orderedItems = newArrayList(); 
+		final List<String> orderedKeys = newArrayList(); 
 		final List<Data> documents = new ArrayList<>(NUM_DOCS);
 		
 		for (int i = 0; i < NUM_DOCS; i++) {
-			String item = null;
-			while (item == null || orderedItems.contains(item)) {
-				item = RandomStringUtils.randomAlphabetic(10);
-			}
-			orderedItems.add(item);
-			
-			final Data data = new Data(Integer.toString(i));
-			data.setField1(item);
+			String key = Integer.toString(NUM_DOCS - i);
+			orderedKeys.add(key);
+			final Data data = new Data(key);
 			data.setFloatField(NUM_DOCS - i);
 			documents.add(data);
 		}
@@ -330,7 +323,7 @@ public class SortIndexTest extends BaseIndexTest {
 				.sortBy(SortBy.SCORE)
 				.build();
 		
-		checkDocumentOrder(descendingQuery, data -> data.getField1(), Set.copyOf(orderedItems), String.class);
+		checkDocumentOrder(descendingQuery, data -> data.getId(), Sets.newLinkedHashSet(orderedKeys), String.class);
 		
 		final Query<Data> ascendingQuery = Query.select(Data.class)
 				.where(Expressions.scriptScore(Expressions.matchAll(), Data.Scripts.FIELD_SCORE))
@@ -338,7 +331,7 @@ public class SortIndexTest extends BaseIndexTest {
 				.sortBy(SortBy.field(SortBy.FIELD_SCORE, Order.ASC))
 				.build();
 		
-		checkDocumentOrder(ascendingQuery, data -> data.getField1(), Set.copyOf(Lists.reverse(orderedItems)), String.class);
+		checkDocumentOrder(ascendingQuery, data -> data.getId(), Sets.newLinkedHashSet(Lists.reverse(orderedKeys)), String.class);
 	}
 
 	private <T> void checkDocumentOrder(Query<Data> query, Function<? super Data, T> hitFunction, Set<T> keySet, Class<T> clazz) {
