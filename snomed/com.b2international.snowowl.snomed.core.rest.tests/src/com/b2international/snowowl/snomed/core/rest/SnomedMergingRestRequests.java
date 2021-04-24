@@ -42,15 +42,11 @@ public abstract class SnomedMergingRestRequests {
 			Merge.Status.FAILED.name(), 
 			Merge.Status.CONFLICTS.name());
 
-	public static ValidatableResponse createMerge(IBranchPath source, IBranchPath target, String commitComment, String reviewId) {
+	public static ValidatableResponse createMerge(IBranchPath source, IBranchPath target, String commitComment) {
 		ImmutableMap.Builder<String, Object> requestBuilder = ImmutableMap.<String, Object>builder()
 				.put("source", source.getPath())
 				.put("target", target.getPath())
 				.put("commitComment", commitComment);
-
-		if (null != reviewId) {
-			requestBuilder.put("reviewId", reviewId);
-		}
 
 		return givenAuthenticatedRequest(SCT_API)
 				.contentType(ContentType.JSON)

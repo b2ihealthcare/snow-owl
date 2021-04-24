@@ -311,11 +311,7 @@ public abstract class SnomedRestFixtures {
 	}
 	
 	public static ValidatableResponse merge(IBranchPath sourcePath, IBranchPath targetPath, String commitComment) {
-		return merge(sourcePath, targetPath, commitComment, null);
-	}
-	
-	public static ValidatableResponse merge(IBranchPath sourcePath, IBranchPath targetPath, String commitComment, String reviewId) {
-		final String mergeLocation = createMerge(sourcePath, targetPath, commitComment, reviewId)
+		final String mergeLocation = createMerge(sourcePath, targetPath, commitComment)
 				.statusCode(202)
 				.body(equalTo(""))
 				.extract().header("Location");

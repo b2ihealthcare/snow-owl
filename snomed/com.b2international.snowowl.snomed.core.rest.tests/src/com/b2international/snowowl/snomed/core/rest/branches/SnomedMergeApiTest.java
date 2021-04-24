@@ -36,7 +36,6 @@ import java.util.Map;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.b2international.snowowl.core.date.DateFormats;
@@ -125,20 +124,10 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200);
 	}
 
-	@Test
-	public void noMergeWithNonExistentReview() throws BadRequestException {
-		final IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
-		branching.createBranch(a).statusCode(201);
-
-		createNewConcept(a);
-		merge(a, branchPath, "Merged new concept from child branch with non-existent review ID", "non-existent-id")
-			.body("status", equalTo(Merge.Status.FAILED.name()));
-	}
-
 //	@Test
 //	public void noMergeNewConceptDiverged() {
 //		final IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
-//		createBranch(a).statusCode(201);
+//		branching.createBranch(a).statusCode(201);
 //
 //		final String concept1Id = createNewConcept(a);
 //		final String concept2Id = createNewConcept(branchPath);
@@ -161,7 +150,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 //	@Test
 //	public void noMergeNewDescriptionDiverged() {
 //		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
-//		createBranch(a).statusCode(201);
+//		branching.createBranch(a).statusCode(201);
 //
 //		String description1Id = createNewDescription(a);
 //		String description2Id = createNewDescription(branchPath);
@@ -184,7 +173,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 //	@Test
 //	public void noMergeNewRelationshipDiverged() {
 //		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
-//		createBranch(a).statusCode(201);
+//		branching.createBranch(a).statusCode(201);
 //
 //		String relationship1Id = createNewRelationship(a);
 //		String relationship2Id = createNewRelationship(branchPath);
