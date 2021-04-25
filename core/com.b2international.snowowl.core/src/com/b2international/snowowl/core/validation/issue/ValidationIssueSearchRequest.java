@@ -161,12 +161,12 @@ final class ValidationIssueSearchRequest
 		if (containsKey(OptionKey.AFFECTED_COMPONENT_LABEL)) {
 			final String searchTerm = getString(OptionKey.AFFECTED_COMPONENT_LABEL);
 			if (containsKey(OptionKey.AFFECTED_COMPONENT_ID)) {
-				queryBuilder.must(Expressions.matchTextPhrase(ValidationIssue.Fields.AFFECTED_COMPONENT_LABELS, searchTerm));
+				queryBuilder.must(Expressions.matchTextPhrase(ValidationIssue.Fields.AFFECTED_COMPONENT_LABELS_TEXT, searchTerm));
 			} else {
 				queryBuilder.must(
 					Expressions.builder()
 						.should(Expressions.dismaxWithScoreCategories(
-							Expressions.matchTextPhrase(ValidationIssue.Fields.AFFECTED_COMPONENT_LABELS, searchTerm),
+							Expressions.matchTextPhrase(ValidationIssue.Fields.AFFECTED_COMPONENT_LABELS_TEXT, searchTerm),
 							Expressions.matchTextAll(ValidationIssue.Fields.AFFECTED_COMPONENT_LABELS_PREFIX, searchTerm)
 						))
 						.should(Expressions.boost(Expressions.exactMatch(ValidationIssue.Fields.AFFECTED_COMPONENT_ID, searchTerm), 1000f))

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import java.io.Serializable;
 import com.b2international.commons.StringUtils;
 import com.b2international.index.Doc;
 import com.b2international.index.ID;
-import com.b2international.index.Keyword;
+import com.b2international.index.mapping.Field;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
@@ -30,6 +30,8 @@ import com.google.common.base.MoreObjects;
  */
 @Doc
 public final class ValidationRule implements Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 	/**
 	 * @since 6.0
@@ -95,7 +97,7 @@ public final class ValidationRule implements Serializable {
 	private final CheckType checkType;
 	private final String type;
 	
-	@Keyword(index = false)
+	@Field(index = false)
 	private final String implementation;
 	
 	@JsonCreator

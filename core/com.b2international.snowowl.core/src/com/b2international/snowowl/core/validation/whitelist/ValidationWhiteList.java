@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,12 @@ import java.io.Serializable;
 import java.util.List;
 
 import com.b2international.commons.collections.Collections3;
-import com.b2international.index.*;
+import com.b2international.index.Analyzers;
+import com.b2international.index.Doc;
+import com.b2international.index.ID;
+import com.b2international.index.mapping.Field;
+import com.b2international.index.mapping.FieldAlias;
+import com.b2international.index.mapping.FieldAlias.FieldAliasType;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -32,6 +37,8 @@ import com.google.common.base.MoreObjects;
 @Doc
 public final class ValidationWhiteList implements Serializable {
 
+	private static final long serialVersionUID = 1L;
+
 	/**
 	 * @since 6.1
 	 */
@@ -41,8 +48,8 @@ public final class ValidationWhiteList implements Serializable {
 		public static final String COMPONENT_ID = "componentId";
 		public static final String TERMINOLOGY_COMPONENT_ID = "terminologyComponentId";
 		public static final String AFFECTED_COMPONENT_LABELS = "affectedComponentLabels";
+		public static final String AFFECTED_COMPONENT_LABELS_TEXT = AFFECTED_COMPONENT_LABELS + ".text";
 		public static final String AFFECTED_COMPONENT_LABELS_PREFIX = AFFECTED_COMPONENT_LABELS + ".prefix";
-		public static final String AFFECTED_COMPONENT_LABELS_ORIGINAL= AFFECTED_COMPONENT_LABELS + ".original";
 		public static final String REPORTER = "reporter";
 		public static final String CREATED_AT = "createdAt";
 	}
@@ -55,9 +62,10 @@ public final class ValidationWhiteList implements Serializable {
 	private final String componentId;
 	private final short terminologyComponentId;
 	
-	@Text(analyzer = Analyzers.TOKENIZED)
-	@Text(alias="prefix", analyzer = Analyzers.PREFIX, searchAnalyzer = Analyzers.TOKENIZED)
-	@Keyword(alias="original")
+	@Field(aliases = {
+		@FieldAlias(name = "text", type = FieldAliasType.TEXT, analyzer = Analyzers.TOKENIZED),
+		@FieldAlias(name = "prefix", type = FieldAliasType.TEXT, analyzer = Analyzers.PREFIX, searchAnalyzer = Analyzers.TOKENIZED)
+	})
 	private final List<String> affectedComponentLabels;
 	
 	private transient ComponentIdentifier componentIdentifier;

@@ -34,6 +34,8 @@ import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
 final class ValidationWhiteListSearchRequest 
 		extends SearchIndexResourceRequest<ServiceProvider, ValidationWhiteLists, ValidationWhiteList> {
 
+	private static final long serialVersionUID = 1L;
+
 	enum OptionKey {
 
 		/**
@@ -89,7 +91,7 @@ final class ValidationWhiteListSearchRequest
 			queryBuilder.must(
 					Expressions.builder()
 						.should(Expressions.dismaxWithScoreCategories(
-							Expressions.matchTextPhrase(ValidationWhiteList.Fields.AFFECTED_COMPONENT_LABELS, searchTerm),
+							Expressions.matchTextPhrase(ValidationWhiteList.Fields.AFFECTED_COMPONENT_LABELS_TEXT, searchTerm),
 							Expressions.matchTextAll(ValidationWhiteList.Fields.AFFECTED_COMPONENT_LABELS_PREFIX, searchTerm)
 						))
 						.should(Expressions.boost(Expressions.matchAny(ValidationWhiteList.Fields.COMPONENT_ID, Collections.singleton(searchTerm)), 1000f))

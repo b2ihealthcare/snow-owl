@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,28 +15,21 @@
  */
 package com.b2international.snowowl.core.jobs;
 
-import static com.b2international.index.query.Expressions.exactMatch;
-import static com.b2international.index.query.Expressions.match;
-import static com.b2international.index.query.Expressions.matchAny;
-import static com.b2international.index.query.Expressions.nestedMatch;
-import static com.b2international.index.query.Expressions.prefixMatch;
+import static com.b2international.index.query.Expressions.*;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.time.TimeUtil;
 import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
 import com.b2international.index.ID;
-import com.b2international.index.Keyword;
 import com.b2international.index.Script;
-import com.b2international.index.Text;
+import com.b2international.index.mapping.Field;
+import com.b2international.index.mapping.FieldAlias;
+import com.b2international.index.mapping.FieldAlias.FieldAliasType;
 import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -92,6 +85,8 @@ public final class RemoteJobEntry implements Serializable {
 			SCHEDULE_DATE
 		);
 		public static final String DESCRIPTION = "description";
+		public static final String DESCRIPTION_TEXT = "description.text";
+		public static final String DESCRIPTION_PREFIX = "description.prefix";
 	}
 	
 	public static class Expressions {
@@ -256,9 +251,10 @@ public final class RemoteJobEntry implements Serializable {
 	private final String id;
 	private final String key;
 	
-	@Text(analyzer = Analyzers.TOKENIZED)
-	@Text(alias="prefix", analyzer = Analyzers.PREFIX, searchAnalyzer = Analyzers.TOKENIZED)
-	@Keyword(alias="original")
+	@Field(aliases = {
+		@FieldAlias(name = "text", type = FieldAliasType.TEXT, analyzer = Analyzers.TOKENIZED),
+		@FieldAlias(name = "prefix", type = FieldAliasType.TEXT, analyzer = Analyzers.PREFIX, searchAnalyzer = Analyzers.TOKENIZED)
+	})
 	private final String description;	
 	private final String user;
 	private final Date scheduleDate;
@@ -268,10 +264,10 @@ public final class RemoteJobEntry implements Serializable {
 	private final int completionLevel;
 	private final boolean deleted;
 	
-	@Keyword(index=false)
+	@Field(index=false)
 	private final String result;
 	
-	@Keyword(index=false)
+	@Field(index=false)
 	private final String parameters;
 
 	private RemoteJobEntry(

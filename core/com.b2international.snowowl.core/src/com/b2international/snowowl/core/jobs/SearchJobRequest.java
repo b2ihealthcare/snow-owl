@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,8 @@ import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
  * @since 5.7
  */
 final class SearchJobRequest extends SearchIndexResourceRequest<ServiceProvider, RemoteJobs, RemoteJobEntry> {
+
+	private static final long serialVersionUID = 1L;
 
 	SearchJobRequest() {
 	}
@@ -75,7 +77,7 @@ final class SearchJobRequest extends SearchIndexResourceRequest<ServiceProvider,
 					Expressions.builder()
 						.should(Expressions.prefixMatch(RemoteJobEntry.Fields.USER, searchTerm))
 						.should(Expressions.prefixMatch(RemoteJobEntry.Fields.STATE, searchTerm.toUpperCase()))
-						.should(Expressions.matchTextAll(RemoteJobEntry.Fields.DESCRIPTION + ".prefix", searchTerm))
+						.should(Expressions.matchTextAll(RemoteJobEntry.Fields.DESCRIPTION_PREFIX, searchTerm))
 					.build()
 			);
 		}

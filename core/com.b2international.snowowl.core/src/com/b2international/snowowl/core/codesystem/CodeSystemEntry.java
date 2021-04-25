@@ -21,11 +21,7 @@ import static com.b2international.index.query.Expressions.matchTextAll;
 import static com.b2international.index.query.Expressions.regexp;
 
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.collections.Collections3;
@@ -34,7 +30,9 @@ import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
 import com.b2international.index.ID;
 import com.b2international.index.Normalizers;
-import com.b2international.index.Text;
+import com.b2international.index.mapping.Field;
+import com.b2international.index.mapping.FieldAlias;
+import com.b2international.index.mapping.FieldAlias.FieldAliasType;
 import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -270,10 +268,13 @@ public final class CodeSystemEntry implements Serializable {
 
 	private final String oid;
 	
-	@com.b2international.index.Keyword // The original type
-	@Text(alias="prefix", analyzer=Analyzers.PREFIX, searchAnalyzer=Analyzers.TOKENIZED)
-	@com.b2international.index.Keyword(alias="exact", normalizer=Normalizers.LOWER_ASCII)
-	@com.b2international.index.Text(alias="analyzed") // Analyzed text appears as a field alias
+	@Field(
+		aliases = {
+			@FieldAlias(name = "prefix", type = FieldAliasType.TEXT, analyzer=Analyzers.PREFIX, searchAnalyzer=Analyzers.TOKENIZED),
+			@FieldAlias(name = "analyzed", type = FieldAliasType.TEXT),
+			@FieldAlias(name = "exact", type = FieldAliasType.KEYWORD, normalizer = Normalizers.LOWER_ASCII)
+		}
+	)
 	private final String name; 
 
 	@ID

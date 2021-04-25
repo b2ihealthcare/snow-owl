@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,18 +26,15 @@ import com.b2international.commons.collections.Collections3;
 import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
 import com.b2international.index.ID;
-import com.b2international.index.Keyword;
 import com.b2international.index.Script;
-import com.b2international.index.Text;
+import com.b2international.index.mapping.Field;
+import com.b2international.index.mapping.FieldAlias;
+import com.b2international.index.mapping.FieldAlias.FieldAliasType;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.core.validation.whitelist.ValidationWhiteList;
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.*;
 import com.google.common.base.MoreObjects;
 
 /**
@@ -59,8 +56,8 @@ public final class ValidationIssue implements Serializable {
 		public static final String AFFECTED_COMPONENT_ID = "affectedComponentId";
 		public static final String AFFECTED_COMPONENT_URI = "affectedComponentURI";
 		public static final String AFFECTED_COMPONENT_LABELS = "affectedComponentLabels";
+		public static final String AFFECTED_COMPONENT_LABELS_TEXT = AFFECTED_COMPONENT_LABELS + ".text";
 		public static final String AFFECTED_COMPONENT_LABELS_PREFIX = AFFECTED_COMPONENT_LABELS + ".prefix";
-		public static final String AFFECTED_COMPONENT_LABELS_ORIGINAL= AFFECTED_COMPONENT_LABELS + ".original";
 		public static final String WHITELISTED = "whitelisted";
 		public static final String DETAILS = "details";
 		
@@ -97,10 +94,10 @@ public final class ValidationIssue implements Serializable {
 	 */
 	private final short affectedComponentType;
 	
-	
-	@Text(analyzer = Analyzers.TOKENIZED)
-	@Text(alias="prefix", analyzer = Analyzers.PREFIX, searchAnalyzer = Analyzers.TOKENIZED)
-	@Keyword(alias="original")
+	@Field(aliases = {
+		@FieldAlias(name = "text", type = FieldAliasType.TEXT, analyzer = Analyzers.TOKENIZED),
+		@FieldAlias(name = "prefix", type = FieldAliasType.TEXT, analyzer = Analyzers.PREFIX, searchAnalyzer = Analyzers.TOKENIZED)
+	})
 	private List<String> affectedComponentLabels = Collections.emptyList();
 	
 	private Map<String, Object> details = null;
