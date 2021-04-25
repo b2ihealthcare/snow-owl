@@ -270,7 +270,7 @@ public class EsDocumentSearcher implements Searcher {
 	private boolean requiresDocumentSourceField(DocumentMapping mapping, List<String> fields) {
 		return fields
 			.stream()
-			.filter(field -> mapping.isText(field) || mapping.isCollection(field))
+			.filter(mapping::isCollection)
 			.findFirst()
 			.isPresent();
 	}

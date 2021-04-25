@@ -20,13 +20,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Collection;
 import java.util.List;
 
-import org.elasticsearch.common.collect.Map;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 import com.b2international.index.*;
 import com.b2international.index.admin.IndexAdmin;
+import com.b2international.index.mapping.FieldAlias.FieldAliasType;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -35,6 +37,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * @since 7.16.1
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class MappingMigrationTest extends BaseIndexTest {
 
 	@Doc(type = "schema") // this will ensure the same index name will be used for all subclasses and versions
@@ -83,8 +86,11 @@ public class MappingMigrationTest extends BaseIndexTest {
 		@ID
 		private String id;
 		
-		@Keyword
-		@Text(alias = "text", analyzer = Analyzers.TOKENIZED)
+		@Field(
+			aliases = {
+				@FieldAlias(name = "text", type = FieldAliasType.TEXT, analyzer = Analyzers.TOKENIZED)
+			}
+		)
 		private String field;
 		
 		@JsonCreator
@@ -109,8 +115,11 @@ public class MappingMigrationTest extends BaseIndexTest {
 		@ID
 		private String id;
 		
-		@Keyword
-		@Keyword(alias = "exact", normalizer = Normalizers.LOWER_ASCII)
+		@Field(
+			aliases = {
+				@FieldAlias(name = "exact", type = FieldAliasType.KEYWORD, normalizer = Normalizers.LOWER_ASCII)
+			}
+		)
 		private String field;
 		
 		@JsonCreator
@@ -135,9 +144,12 @@ public class MappingMigrationTest extends BaseIndexTest {
 		@ID
 		private String id;
 		
-		@Keyword
-		@Text(alias = "text", analyzer = Analyzers.TOKENIZED)
-		@Keyword(alias = "exact", normalizer = Normalizers.LOWER_ASCII)
+		@Field(
+			aliases = {
+				@FieldAlias(name = "text", type = FieldAliasType.TEXT, analyzer = Analyzers.TOKENIZED),
+				@FieldAlias(name = "exact", type = FieldAliasType.KEYWORD, normalizer = Normalizers.LOWER_ASCII)
+			}
+		)
 		private String field;
 		
 		@JsonCreator
@@ -178,7 +190,7 @@ public class MappingMigrationTest extends BaseIndexTest {
 	}
 
 	@Test
-	public void migrateNewField() throws Exception {
+	public void migrate01_NewField() throws Exception {
 		// update Mappings to new schema
 		admin().updateMappings(new Mappings(SchemaWithNewField.class));
 		// then recreate indices using the new mappings (and to perform potential migration as well)
@@ -189,7 +201,7 @@ public class MappingMigrationTest extends BaseIndexTest {
 	}
 	
 	@Test
-	public void migrateNewTextField() throws Exception {
+	public void migrate02_NewTextField() throws Exception {
 		// update Mappings to new schema
 		admin().updateMappings(new Mappings(SchemaWithNewTextField.class));
 		// then recreate indices using the new mappings (and to perform potential migration as well)
@@ -205,7 +217,7 @@ public class MappingMigrationTest extends BaseIndexTest {
 	}
 	
 	@Test
-	public void migrateNewKeywordField() throws Exception {
+	public void migrate03_NewKeywordField() throws Exception {
 		// update Mappings to new schema
 		admin().updateMappings(new Mappings(SchemaWithNewKeywordField.class));
 		// then recreate indices using the new mappings (and to perform potential migration as well)
@@ -221,7 +233,7 @@ public class MappingMigrationTest extends BaseIndexTest {
 	}
 	
 	@Test
-	public void migrateNewKeywordFieldOnExistingKeywordAndTextField() throws Exception {
+	public void migrate04_NewKeywordFieldOnExistingKeywordAndTextField() throws Exception {
 		// update Mapping to perform the first migration
 		admin().updateMappings(new Mappings(SchemaWithNewTextField.class));
 		admin().create();

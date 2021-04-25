@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,27 +13,41 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.index;
+package com.b2international.index.mapping;
 
-import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.ElementType.ANNOTATION_TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-import java.lang.annotation.Repeatable;
+import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
-/**
- * @since 5.12.0
- */
-@Repeatable(KeywordFields.class)
-@Retention(RUNTIME)
-@Target(FIELD)
-public @interface Keyword {
+import com.b2international.index.Analyzers;
+import com.b2international.index.Normalizers;
 
-	String alias() default "";
+/**
+ * @since 8.0
+ */
+@Documented
+@Retention(RUNTIME)
+@Target(ANNOTATION_TYPE)
+public @interface FieldAlias {
+
+	String name();
+	
+	FieldAliasType type();
+	
+	Analyzers analyzer() default Analyzers.DEFAULT;
+	
+	Analyzers searchAnalyzer() default Analyzers.INDEX;
 	
 	Normalizers normalizer() default Normalizers.NONE;
 	
 	boolean index() default true;
+	
+	public enum FieldAliasType {
+		KEYWORD, 
+		TEXT
+	}
 	
 }

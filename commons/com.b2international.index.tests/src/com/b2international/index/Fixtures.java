@@ -22,6 +22,9 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 
+import com.b2international.index.mapping.Field;
+import com.b2international.index.mapping.FieldAlias;
+import com.b2international.index.mapping.FieldAlias.FieldAliasType;
 import com.fasterxml.jackson.annotation.*;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.Maps;
@@ -42,8 +45,12 @@ public class Fixtures {
 		@ID
 		private String id;
 
-		@Text(analyzer=Analyzers.CASE_SENSITIVE)
-		@Keyword(alias="exact")
+		@Field(
+			aliases = {
+				@FieldAlias(name = "text", type = FieldAliasType.TEXT, analyzer=Analyzers.CASE_SENSITIVE),
+				@FieldAlias(name = "exact", type = FieldAliasType.KEYWORD)
+			} 
+		)
 		private String analyzedField;
 		
 		private String field1;

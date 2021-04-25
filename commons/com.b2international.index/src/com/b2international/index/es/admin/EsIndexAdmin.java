@@ -26,7 +26,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
-import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -61,6 +60,7 @@ import com.b2international.index.admin.IndexAdmin;
 import com.b2international.index.es.client.EsClient;
 import com.b2international.index.es.query.EsQueryBuilder;
 import com.b2international.index.mapping.DocumentMapping;
+import com.b2international.index.mapping.FieldAlias;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
@@ -333,6 +333,7 @@ public final class EsIndexAdmin implements IndexAdmin {
 				continue;
 			}
 			
+			com.b2international.index.mapping.Field fieldAnnotation = field.getAnnotation(com.b2international.index.mapping.Field.class);
 			final String property = field.getName();
 			final Class<?> fieldType = NumericClassUtils.unwrapCollectionType(field);
 			
@@ -351,92 +352,65 @@ public final class EsIndexAdmin implements IndexAdmin {
 				if (annotation.nested()) {
 					prop.put("type", "nested");
 				}
+				// disable indexing/doc_values for the field
 				// XXX enabled: true is the default, ES won't store it in the mapping and will default to true even if explicitly set, which would cause unnecessary mapping update during boot
-				if (!annotation.index()) {
+				if (!annotation.index() || (fieldAnnotation != null && !fieldAnnotation.index())) {
 					prop.put("enabled", false);
 				}
 				prop.putAll(toProperties(new DocumentMapping(fieldType, true /*nested*/)));
 				properties.put(property, prop);
 			} else {
 				final Map<String, Object> prop = newHashMap();
+				addFieldProperties(prop, fieldType);
 				
-				if (!mapping.isText(property) && !mapping.isKeyword(property)) {
-					addFieldProperties(prop, fieldType);
-					properties.put(property, prop);
-				} else {
-					checkState(String.class.isAssignableFrom(fieldType), "Only String fields can have Text and Keyword annotation. Found them on '%s'", property);
-					
-					final Map<String, Text> textFields = mapping.getTextFields(property);
-					final Map<String, Keyword> keywordFields = mapping.getKeywordFields(property);
-					
-					final Text textMapping = textFields.get(property);
-					final Keyword keywordMapping = keywordFields.get(property);
-					checkState(textMapping == null || keywordMapping == null, "Cannot declare both Text and Keyword annotation on same field '%s'", property);
-					
-					if (textMapping != null) {
-						prop.put("type", "text");
-						prop.put("analyzer", textMapping.analyzer().getAnalyzer());
-						if (textMapping.searchAnalyzer() != Analyzers.INDEX) {
-							prop.put("search_analyzer", textMapping.searchAnalyzer().getAnalyzer());
-						}
-					}
-					
-					if (keywordMapping != null) {
-						prop.put("type", "keyword");
-						String normalizer = keywordMapping.normalizer().getNormalizer();
-						if (!Strings.isNullOrEmpty(normalizer)) {
-							prop.put("normalizer", normalizer);
-						}
-						// XXX index: true is the default, ES won't store it in the mapping and will default to true even if explicitly set, which would cause unnecessary mapping update during boot
-						// XXX doc_values: true is the default, ES won't store it in the mapping and will default to true even if explicitly set, which would cause unnecessary mapping update during boot
-						if (!keywordMapping.index()) {
-							prop.put("index", false);
-							prop.put("doc_values", false);
-						}
-					}
-					
-					// put extra text fields into fields object
-					final Map<String, Object> fields = newHashMapWithExpectedSize(textFields.size() + keywordFields.size());
-					for (Entry<String, Text> analyzer : textFields.entrySet()) {
-						final String extraField = analyzer.getKey();
-						final String[] extraFieldParts = extraField.split(Pattern.quote(DocumentMapping.DELIMITER));
-						if (extraFieldParts.length > 1) {
-							final Text analyzed = analyzer.getValue();
-							final Map<String, Object> fieldProps = newHashMap();
-							fieldProps.put("type", "text");
-							fieldProps.put("analyzer", analyzed.analyzer().getAnalyzer());
-							if (analyzed.searchAnalyzer() != Analyzers.INDEX) {
-								fieldProps.put("search_analyzer", analyzed.searchAnalyzer().getAnalyzer());
-							}
-							fields.put(extraFieldParts[1], fieldProps);
-						}
-					}
-					
-					// put extra keyword fields into fields object
-					for (Entry<String, Keyword> analyzer : keywordFields.entrySet()) {
-						final String extraField = analyzer.getKey();
-						final String[] extraFieldParts = extraField.split(Pattern.quote(DocumentMapping.DELIMITER));
-						if (extraFieldParts.length > 1) {
-							final Keyword analyzed = analyzer.getValue();
-							final Map<String, Object> fieldProps = newHashMap();
-							fieldProps.put("type", "keyword");
-							String normalizer = analyzed.normalizer().getNormalizer();
+				// add aliases
+				final Map<String, FieldAlias> fieldAliases = mapping.getFieldAliases(property);
+				if (!fieldAliases.isEmpty()) {
+					final Map<String, Object> fields = newHashMapWithExpectedSize(fieldAliases.size());
+					for (FieldAlias fieldAlias : fieldAliases.values()) {
+						final Map<String, Object> fieldAliasProps = newHashMap();
+						// only keywords can have normalizers
+						switch (fieldAlias.type()) {
+						case KEYWORD:
+							fieldAliasProps.put("type", "keyword");
+							String normalizer = fieldAlias.normalizer().getNormalizer();
 							if (!Strings.isNullOrEmpty(normalizer)) {
-								fieldProps.put("normalizer", normalizer);
+								fieldAliasProps.put("normalizer", normalizer);
 							}
-							if (!analyzed.index()) {
-								fieldProps.put("index", false);
+							// XXX index: true is the default, ES won't store it in the mapping and will default to true even if explicitly set, which would cause unnecessary mapping update during boot
+							// XXX doc_values: true is the default, ES won't store it in the mapping and will default to true even if explicitly set, which would cause unnecessary mapping update during boot
+							if (!fieldAlias.index()) {
+								fieldAliasProps.put("index", false);
+								fieldAliasProps.put("doc_values", false);
 							}
-							fields.put(extraFieldParts[1], fieldProps);
+							break;
+						case TEXT:
+							fieldAliasProps.put("type", "text");
+							fieldAliasProps.put("analyzer", fieldAlias.analyzer().getAnalyzer());
+							if (fieldAlias.searchAnalyzer() != Analyzers.INDEX) {
+								fieldAliasProps.put("search_analyzer", fieldAlias.searchAnalyzer().getAnalyzer());
+							}
+							// XXX index: true is the default, ES won't store it in the mapping and will default to true even if explicitly set, which would cause unnecessary mapping update during boot
+							if (!fieldAlias.index()) {
+								fieldAliasProps.put("index", false);
+							}
+							break;
+						default: throw new UnsupportedOperationException("Unknown field alias type: " + fieldAlias.type());
 						}
+						fields.put(fieldAlias.name(), fieldAliasProps);
 					}
-					
-					if (!fields.isEmpty()) {
-						prop.put("fields", fields);
-					}
-					properties.put(property, prop);
+					prop.put("fields", fields);
 				}
 				
+				// disable indexing/doc_values for the field
+				// XXX enabled: true is the default, ES won't store it in the mapping and will default to true even if explicitly set, which would cause unnecessary mapping update during boot
+				if (fieldAnnotation != null && !fieldAnnotation.index()) {
+					prop.put("index", false);
+					prop.put("doc_values", false);
+				}
+				
+				// register mapping
+				properties.put(property, prop);
 			}
 		}
 		

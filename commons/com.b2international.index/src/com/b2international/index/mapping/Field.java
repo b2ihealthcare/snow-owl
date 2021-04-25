@@ -18,6 +18,7 @@ package com.b2international.index.mapping;
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
@@ -26,6 +27,7 @@ import com.b2international.index.ID;
 /**
  * @since 8.0
  */
+@Documented
 @Retention(RUNTIME)
 @Target(FIELD)
 public @interface Field {
@@ -35,5 +37,16 @@ public @interface Field {
 	 *         field falls back to the {@link ID} annotated field.
 	 */
 	boolean defaultSortBy() default false;
+	
+	/**
+	 * Define the aliases here via {@link FieldAlias} annotations. By default there is not alias defined on any field.
+	 * @return
+	 */
+	FieldAlias[] aliases() default {};
+	
+	/**
+	 * @return whether to make the field available in search or just store only, defaults to make any field available for search always.
+	 */
+	boolean index() default true;
 
 }

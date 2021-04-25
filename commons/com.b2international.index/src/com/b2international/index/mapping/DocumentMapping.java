@@ -16,6 +16,7 @@
 package com.b2international.index.mapping;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.lang.annotation.Annotation;
@@ -33,11 +34,11 @@ import com.b2international.collections.PrimitiveSet;
 import com.b2international.commons.CompareUtils;
 import com.b2international.index.*;
 import com.b2international.index.revision.Revision;
+import com.b2international.index.util.NumericClassUtils;
 import com.b2international.index.util.Reflections;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
-import com.google.common.base.Strings;
 import com.google.common.collect.*;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.primitives.Primitives;
@@ -49,6 +50,8 @@ public final class DocumentMapping {
 
 	private static final Logger LOG = LoggerFactory.getLogger(DocumentMapping.class);
 	
+	private static final String _DOC = "_doc";
+	
 	// type path delimiter to differentiate between same nested types in different contexts
 	public static final String DELIMITER = ".";
 	private static final Joiner DELIMITER_JOINER = Joiner.on(DELIMITER);
@@ -57,8 +60,7 @@ public final class DocumentMapping {
 	private final String typeAsString;
 	private final Map<String, Field> fieldMap;
 	private final Map<Class<?>, DocumentMapping> nestedTypes;
-	private final TreeMap<String, Text> textFields;
-	private final TreeMap<String, Keyword> keywordFields;
+	private final TreeMap<String, FieldAlias> fieldAliases;
 	private final DocumentMapping parent;
 	private final Map<String, Script> scripts;
 	private final SortedSet<String> trackedRevisionFields;
@@ -111,32 +113,38 @@ public final class DocumentMapping {
 		} else {
 			this.defaultSortField = defaultSortFields.stream().findFirst().map(Field::getName)
 					.or(() -> Optional.ofNullable(idField))
-					.orElse("_doc");
+					.orElse(_DOC);
 		}
 		
-		final Builder<String, Text> textFields = ImmutableSortedMap.naturalOrder();
-		final Builder<String, Keyword> keywordFields = ImmutableSortedMap.naturalOrder();
-
+		final Set<String> fieldAliasNames = new HashSet<>();
+		final Builder<String, FieldAlias> aliasFields = ImmutableSortedMap.naturalOrder();
 		for (Field field : getFields()) {
-			for (Text analyzer : field.getAnnotationsByType(Text.class)) {
-				if (Strings.isNullOrEmpty(analyzer.alias())) {
-					textFields.put(field.getName(), analyzer);
-				} else {
-					textFields.put(DELIMITER_JOINER.join(field.getName(), analyzer.alias()), analyzer);
-				}
-			}
-			for (Keyword analyzer : field.getAnnotationsByType(Keyword.class)) {
-				if (Strings.isNullOrEmpty(analyzer.alias())) {
-					keywordFields.put(field.getName(), analyzer);
-				} else {
-					keywordFields.put(DELIMITER_JOINER.join(field.getName(), analyzer.alias()), analyzer);
+			if (field.isAnnotationPresent(com.b2international.index.mapping.Field.class)) {
+				final String fieldName = field.getName();
+				com.b2international.index.mapping.Field fieldAnnotation = field.getAnnotation(com.b2international.index.mapping.Field.class);
+				Class<?> fieldType = NumericClassUtils.unwrapCollectionType(field);
+				checkArgument(String.class == fieldType || fieldAnnotation.aliases().length == 0, "Field aliases are not supported on non-String fields: '%s/%s'.", type.getName(), fieldName);
+				for (FieldAlias alias : fieldAnnotation.aliases()) {
+					final String fieldAliasName = DELIMITER_JOINER.join(fieldName, alias.name());
+					checkState(fieldAliasNames.add(fieldAliasName), "Multiple FieldAlias annotations have been found using the same alias on field '%s/%s'.", type.getName(), fieldAliasName);
+					
+					// check text/keyword analyzer/normalizer consistency
+					switch (alias.type()) {
+					case KEYWORD:
+						checkArgument(alias.analyzer() == Analyzers.DEFAULT && alias.searchAnalyzer() == Analyzers.INDEX, "Invalid alias configuration on field '%s/%s'. Keyword aliases support only text normalization via normalizer. Analyzer and searchAnalyzer should be set to their default values or unset.", type.getName(), fieldAliasName);
+						break;
+					case TEXT:
+						checkArgument(alias.normalizer() == Normalizers.NONE, "Invalid alias configuration on field '%s/%s'. Text aliases does not support text normalization via normalizer. Normalizer should be set to its default value or unset.", type.getName(), fieldAliasName);
+						break;
+					default: throw new UnsupportedOperationException("Unknown alias type: " + alias.type());
+					}
+					
+					aliasFields.put(fieldAliasName, alias);
 				}
 			}
 		}
+		this.fieldAliases = new TreeMap<>(aliasFields.build());
 		
-		this.textFields = new TreeMap<>(textFields.build());
-		this.keywordFields = new TreeMap<>(keywordFields.build());
-
 		final Doc doc = DocumentMappingRegistry.getDocAnnotation(type);
 		if (doc != null) {
 			this.trackedRevisionFields = ImmutableSortedSet.copyOf(doc.revisionHash());
@@ -268,13 +276,9 @@ public final class DocumentMapping {
 	public Collection<Field> getFields() {
 		return ImmutableList.copyOf(fieldMap.values());
 	}
-	
-	public boolean isText(String field) {
-		return textFields.containsKey(field);
-	}
-	
-	public boolean isKeyword(String field) {
-		return keywordFields.containsKey(field);
+
+	public TreeMap<String, FieldAlias> getFieldAliases() {
+		return fieldAliases;
 	}
 	
 	public boolean isCollection(String field) {
@@ -300,14 +304,6 @@ public final class DocumentMapping {
 				&& !BigDecimal.class.equals(fieldType) 
 				&& !Primitives.isWrapperType(fieldType)
 				&& !isCollection(fieldType);
-	}
-	
-	public Map<String, Text> getTextFields() {
-		return textFields;
-	}
-	
-	public Map<String, Keyword> getKeywordFields() {
-		return keywordFields;
 	}
 	
 	/**
@@ -380,16 +376,12 @@ public final class DocumentMapping {
 		return doc == null ? false : doc.nested();
 	}
 
-	public Map<String, Text> getTextFields(String fieldName) {
-		return textFields.subMap(fieldName, fieldName + Character.MAX_VALUE);
-	}
-	
-	public Map<String, Keyword> getKeywordFields(String fieldName) {
-		return keywordFields.subMap(fieldName, fieldName + Character.MAX_VALUE);
+	public Map<String, FieldAlias> getFieldAliases(String fieldName) {
+		return fieldAliases.subMap(fieldName, fieldName + Character.MAX_VALUE);
 	}
 	
 	public Analyzers getSearchAnalyzer(String fieldName) {
-		final Text analyzed = getTextFields().get(fieldName);
+		final FieldAlias analyzed = getFieldAliases().get(fieldName);
 		return analyzed.searchAnalyzer() == Analyzers.INDEX ? analyzed.analyzer() : analyzed.searchAnalyzer();
 	}
 	

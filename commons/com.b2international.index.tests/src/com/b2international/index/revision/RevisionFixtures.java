@@ -21,6 +21,9 @@ import java.util.Set;
 
 import com.b2international.commons.collections.Collections3;
 import com.b2international.index.*;
+import com.b2international.index.mapping.Field;
+import com.b2international.index.mapping.FieldAlias;
+import com.b2international.index.mapping.FieldAlias.FieldAliasType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects.ToStringHelper;
@@ -88,7 +91,11 @@ public class RevisionFixtures {
 			}
 		}
 		
-		@Text(analyzer=Analyzers.TOKENIZED)
+		@Field(
+			aliases = {
+				@FieldAlias(name = "text", type = FieldAliasType.TEXT, analyzer = Analyzers.TOKENIZED)
+			}
+		)
 		private final String field1;
 		private final String field2;
 		private final List<String> terms;
@@ -152,7 +159,11 @@ public class RevisionFixtures {
 	@Doc
 	public static final class AnalyzedData extends Revision {
 		
-		@Text
+		@Field(
+			aliases = {
+				@FieldAlias(name = "text", type = FieldAliasType.TEXT, analyzer = Analyzers.TOKENIZED)
+			}
+		)
 		private final String field;
 		
 		@JsonCreator

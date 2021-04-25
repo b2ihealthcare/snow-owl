@@ -23,6 +23,9 @@ import java.util.Objects;
 import org.elasticsearch.common.collect.List;
 import org.junit.Test;
 
+import com.b2international.index.mapping.Field;
+import com.b2international.index.mapping.FieldAlias;
+import com.b2international.index.mapping.FieldAlias.FieldAliasType;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -39,7 +42,11 @@ public class AnalyzerTest extends BaseIndexTest {
 		@ID
 		private String id;
 		
-		@Text(analyzer = Analyzers.TOKENIZED)
+		@Field(
+			aliases = {
+				@FieldAlias(name = "tokenized", type = FieldAliasType.TEXT, analyzer = Analyzers.TOKENIZED)
+			}
+		)
 		private String text;
 		
 		@JsonCreator
@@ -83,14 +90,14 @@ public class AnalyzerTest extends BaseIndexTest {
 		
 		// search with stopwords enabled
 		Hits<DataWithTokenizedText> hits = search(Query.select(DataWithTokenizedText.class)
-				.where(Expressions.matchTextAll("text", "a quick fox jumps over the lazy dog and cat"))
+				.where(Expressions.matchTextAll("text.tokenized", "a quick fox jumps over the lazy dog and cat"))
 				.build());
 		// should return the document where the text has the stopwords
 		assertThat(hits).containsOnly(withStopwords);
 		
 		// search with stopwords filtered
 		hits = search(Query.select(DataWithTokenizedText.class)
-				.where(Expressions.matchTextAll("text", "a quick fox jumps over the lazy dog and cat").withAnalyzer(Analyzers.TOKENIZED_IGNORE_STOPWORDS))
+				.where(Expressions.matchTextAll("text.tokenized", "a quick fox jumps over the lazy dog and cat").withAnalyzer(Analyzers.TOKENIZED_IGNORE_STOPWORDS))
 				.build());
 		// should return both document
 		assertThat(hits).containsOnly(withStopwords, withoutStopwords);

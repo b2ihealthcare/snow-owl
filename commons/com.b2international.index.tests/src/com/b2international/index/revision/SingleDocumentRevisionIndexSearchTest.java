@@ -252,7 +252,7 @@ public class SingleDocumentRevisionIndexSearchTest extends BaseRevisionIndexTest
 		
 		indexRevision(MAIN, first, second);
 		
-		final Query<RevisionData> query = Query.select(RevisionData.class).where(Expressions.matchTextAny("field1", "a b")).build();
+		final Query<RevisionData> query = Query.select(RevisionData.class).where(Expressions.matchTextAny("field1.text", "a b")).build();
 		final Iterable<RevisionData> matches = search(MAIN, query);
 		
 		assertThat(matches).hasSize(2);
@@ -264,7 +264,7 @@ public class SingleDocumentRevisionIndexSearchTest extends BaseRevisionIndexTest
 		final RevisionData data = new RevisionData(STORAGE_KEY1, "abcd", "efgh");
 		indexRevision(MAIN, data);
 		
-		final Query<RevisionData> query = Query.select(RevisionData.class).where(Expressions.matchTextFuzzy("field1", "aacd")).build();
+		final Query<RevisionData> query = Query.select(RevisionData.class).where(Expressions.matchTextFuzzy("field1.text", "aacd")).build();
 		final Iterable<RevisionData> matches = search(MAIN, query);
 		
 		assertThat(matches).hasSize(1);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,31 +15,20 @@
  */
 package com.b2international.index.revision;
 
-import static com.b2international.index.query.Expressions.exactMatch;
-import static com.b2international.index.query.Expressions.match;
-import static com.b2international.index.query.Expressions.matchAny;
-import static com.b2international.index.query.Expressions.matchAnyLong;
-import static com.b2international.index.query.Expressions.matchRange;
-import static com.b2international.index.query.Expressions.matchTextAll;
-import static com.b2international.index.query.Expressions.matchTextPhrase;
-import static com.b2international.index.query.Expressions.prefixMatch;
+import static com.b2international.index.query.Expressions.*;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 
-import java.util.ArrayDeque;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Deque;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import com.b2international.commons.collections.Collections3;
 import com.b2international.index.Analyzers;
 import com.b2international.index.Doc;
 import com.b2international.index.ID;
-import com.b2international.index.Text;
 import com.b2international.index.WithScore;
+import com.b2international.index.mapping.Field;
+import com.b2international.index.mapping.FieldAlias;
+import com.b2international.index.mapping.FieldAlias.FieldAliasType;
 import com.b2international.index.query.Expression;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -160,7 +149,7 @@ public final class Commit implements WithScore {
 		}
 		
 		public static Expression exactComment(final String comment) {
-			return matchTextPhrase(Fields.COMMENT, comment);
+			return exactMatch(Fields.COMMENT, comment);
 		}
 		
 		public static Expression allCommentPrefixesPresent(final String comment) {
@@ -203,6 +192,7 @@ public final class Commit implements WithScore {
 		public static final String BRANCH = "branch";
 		public static final String AUTHOR = "author";
 		public static final String COMMENT = "comment";
+		public static final String COMMENT_TEXT = "comment.text";
 		public static final String COMMENT_PREFIX = "comment.prefix";
 		public static final String TIMESTAMP = "timestamp";
 		public static final String GROUP_ID = "groupId";
@@ -216,8 +206,13 @@ public final class Commit implements WithScore {
 	private final String id;
 	private final String branch;
 	private final String author;
-	@Text(analyzer=Analyzers.TOKENIZED)
-	@Text(alias="prefix", analyzer=Analyzers.PREFIX, searchAnalyzer=Analyzers.TOKENIZED)
+	
+	@Field(
+		aliases = {
+			@FieldAlias(name = "text", type = FieldAliasType.TEXT, analyzer=Analyzers.TOKENIZED),
+			@FieldAlias(name = "prefix", type = FieldAliasType.TEXT, analyzer=Analyzers.PREFIX, searchAnalyzer=Analyzers.TOKENIZED)
+		}
+	)
 	private final String comment;
 	private final long timestamp;
 	private final String groupId;
