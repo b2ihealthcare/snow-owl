@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,7 @@
 package com.b2international.snowowl.snomed.datastore.request;
 
 import static com.b2international.snowowl.core.repository.RevisionDocument.Expressions.id;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.acceptableIn;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.fuzzy;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.languageCodes;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.matchTermOriginal;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.minShouldMatchTermDisjunctionQuery;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.parsedTerm;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.preferredIn;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.termDisjunctionQuery;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Expressions.*;
 
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.index.Hits;
@@ -145,7 +138,7 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 		if (termFilter.isFuzzy()) {
 			qb.should(fuzzy(termFilter.getTerm()));
 		} else if (termFilter.isExact()) {
-			qb.should(matchTermOriginal(termFilter.getTerm()));
+			qb.should(matchTerm(termFilter.getTerm()));
 		} else if (termFilter.isParsed()) {
 			qb.should(parsedTerm(termFilter.getTerm()));
 		} else if (termFilter.isAnyMatch()) {

@@ -23,7 +23,7 @@ import java.util.Set;
 
 import com.b2international.commons.collections.Collections3;
 import com.b2international.index.Doc;
-import com.b2international.index.Keyword;
+import com.b2international.index.mapping.Field;
 import com.b2international.index.query.Expression;
 import com.b2international.index.revision.Revision;
 import com.b2international.snowowl.core.repository.RevisionDocument;
@@ -259,12 +259,12 @@ public final class SnomedConstraintDocument extends RevisionDocument {
 
 	private final boolean active;
 	private final long effectiveTime;
-	@Keyword(index=false)
+	@Field(index=false)
 	private final String author;
 	private final ConstraintStrength strength;
-	@Keyword(index=false) 
+	@Field(index=false) 
 	private final String validationMessage;
-	@Keyword(index=false) 
+	@Field(index=false) 
 	private final String description;
 	private final ConstraintForm form;
 	private final ConceptSetDefinitionFragment domain;

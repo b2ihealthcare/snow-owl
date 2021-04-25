@@ -22,7 +22,12 @@ import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.b2international.index.*;
+import com.b2international.index.Analyzers;
+import com.b2international.index.Doc;
+import com.b2international.index.Normalizers;
+import com.b2international.index.mapping.Field;
+import com.b2international.index.mapping.FieldAlias;
+import com.b2international.index.mapping.FieldAlias.FieldAliasType;
 import com.b2international.index.query.Expression;
 import com.b2international.index.revision.ObjectId;
 import com.b2international.index.revision.Revision;
@@ -141,9 +146,10 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		public static final String PREFERRED_IN = "preferredIn";
 		public static final String ACCEPTABLE_IN = "acceptableIn";
 		public static final String SEMANTIC_TAG = "semanticTag";
+		
 		public static final String TERM = SnomedRf2Headers.FIELD_TERM;
+		public static final String TERM_TEXT = Fields.TERM + ".text";
 		public static final String TERM_PREFIX = Fields.TERM + ".prefix";
-		public static final String TERM_ORIGINAL = Fields.TERM + ".original";
 		public static final String TERM_EXACT = Fields.TERM + ".exact";
 	}
 	
@@ -155,41 +161,41 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		public static Expression termDisjunctionQuery(final TermFilter termFilter) {
 			return dismaxWithScoreCategories(
 				matchEntireTerm(termFilter.getTerm()),
-				matchTextAll(Fields.TERM, termFilter.getTerm()).withIgnoreStopwords(termFilter.isIgnoreStopwords()),
-				matchBooleanPrefix(Fields.TERM, termFilter.getTerm()).withIgnoreStopwords(termFilter.isIgnoreStopwords()),
+				matchTextAll(Fields.TERM_TEXT, termFilter.getTerm()).withIgnoreStopwords(termFilter.isIgnoreStopwords()),
+				matchBooleanPrefix(Fields.TERM_TEXT, termFilter.getTerm()).withIgnoreStopwords(termFilter.isIgnoreStopwords()),
 				matchTextAll(Fields.TERM_PREFIX, termFilter.getTerm()).withIgnoreStopwords(termFilter.isIgnoreStopwords())
 			);
 		}
 		
 		public static Expression minShouldMatchTermDisjunctionQuery(final TermFilter termFilter) {
 			return dismaxWithScoreCategories(
-				matchTextAny(Fields.TERM, termFilter.getTerm(), termFilter.getMinShouldMatch()).withIgnoreStopwords(termFilter.isIgnoreStopwords()),
+				matchTextAny(Fields.TERM_TEXT, termFilter.getTerm(), termFilter.getMinShouldMatch()).withIgnoreStopwords(termFilter.isIgnoreStopwords()),
 				matchTextAny(Fields.TERM_PREFIX, termFilter.getTerm(), termFilter.getMinShouldMatch()).withIgnoreStopwords(termFilter.isIgnoreStopwords())
 			);
 		}
 
 		public static Expression fuzzy(String term) {
-			return matchTextFuzzy(Fields.TERM, term);
+			return matchTextFuzzy(Fields.TERM_TEXT, term);
 		}
 		
 		public static Expression matchEntireTerm(String term) {
 			return matchTextAll(Fields.TERM_EXACT, term);
 		}
 		
-		public static Expression matchTermOriginal(String term) {
-			return exactMatch(Fields.TERM_ORIGINAL, term);
+		public static Expression matchTerm(String term) {
+			return exactMatch(Fields.TERM, term);
 		}
 		
-		public static Expression matchTermOriginal(Iterable<String> terms) {
-			return matchAny(Fields.TERM_ORIGINAL, terms);
+		public static Expression matchTerm(Iterable<String> terms) {
+			return matchAny(Fields.TERM, terms);
 		}
 		
 		public static Expression matchTermRegex(String regex) {
-			return regexp(Fields.TERM_ORIGINAL, regex);
+			return regexp(Fields.TERM, regex);
 		}
 		
 		public static Expression parsedTerm(String term) {
-			return matchTextParsed(Fields.TERM, term);
+			return matchTextParsed(Fields.TERM_TEXT, term);
 		}
 		
 		public static Expression concept(String conceptId) {
@@ -369,10 +375,11 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 	private final String conceptId;
 	private final String languageCode;
 	
-	@Text(analyzer=Analyzers.TOKENIZED)
-	@Text(alias="prefix", analyzer=Analyzers.PREFIX, searchAnalyzer=Analyzers.TOKENIZED)
-	@Keyword(alias="exact", normalizer=Normalizers.LOWER_ASCII)
-	@Keyword(alias="original")
+	@Field(aliases = {
+		@FieldAlias(name = "text", type = FieldAliasType.TEXT, analyzer = Analyzers.TOKENIZED),
+		@FieldAlias(name = "prefix", type = FieldAliasType.TEXT, analyzer = Analyzers.PREFIX, searchAnalyzer = Analyzers.TOKENIZED),
+		@FieldAlias(name = "exact", type = FieldAliasType.KEYWORD, normalizer = Normalizers.LOWER_ASCII),
+	})
 	private final String term;
 	
 	private final String semanticTag;
