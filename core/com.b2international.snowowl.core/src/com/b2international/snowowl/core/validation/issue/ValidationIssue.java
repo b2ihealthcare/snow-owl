@@ -78,22 +78,10 @@ public final class ValidationIssue implements Serializable {
 	private final String id;
 	private final String ruleId;
 	private final ComponentURI affectedComponentURI;
+	private final String affectedComponentId;
 	private final CodeSystemURI resourceURI;
 	private final boolean whitelisted;
-	
-	
-	private final String affectedComponentId;
 
-	/**
-	 * @deprecated - kept only to support clear migration path for older indices, will be removed in 8.0
-	 */
-	private final String branchPath;
-	
-	/**
-	 * @deprecated - kept only to support clear migration path for older indices, will be removed in 8.0
-	 */
-	private final short affectedComponentType;
-	
 	@Field(aliases = {
 		@FieldAlias(name = "text", type = FieldAliasType.TEXT, analyzer = Analyzers.TOKENIZED),
 		@FieldAlias(name = "prefix", type = FieldAliasType.TEXT, analyzer = Analyzers.PREFIX, searchAnalyzer = Analyzers.TOKENIZED)
@@ -106,10 +94,8 @@ public final class ValidationIssue implements Serializable {
 	/*package*/ ValidationIssue(
 			@JsonProperty("id") final String id,
 			@JsonProperty("ruleId") final String ruleId, 
-			@JsonProperty("branchPath") final String branchPath, 
 			@JsonProperty("affectedComponentURI") final ComponentURI affectedComponentURI,
 			@JsonProperty("resourceURI") final CodeSystemURI resourceURI,
-			@JsonProperty("affectedComponentType") final short affectedComponentType,
 			@JsonProperty("affectedComponentId") final String affectedComponentId,
 			@JsonProperty("whitelisted") final boolean whitelisted) {
 		this.id = id;
@@ -118,8 +104,6 @@ public final class ValidationIssue implements Serializable {
 		this.affectedComponentURI = affectedComponentURI;
 		this.resourceURI = resourceURI;
 		this.whitelisted = whitelisted;
-		this.branchPath = branchPath;
-		this.affectedComponentType = affectedComponentType;
 	}
 	
 	public ValidationIssue(
@@ -127,19 +111,11 @@ public final class ValidationIssue implements Serializable {
 			final String ruleId, 
 			final ComponentURI componentURI, 
 			final boolean whitelisted) {
-		this(id, ruleId, null, componentURI, componentURI.codeSystemUri(), componentURI.terminologyComponentId(), componentURI.identifier(), whitelisted);
+		this(id, ruleId, componentURI, componentURI.codeSystemUri(), componentURI.identifier(), whitelisted);
 	}
 	
 	public String getId() {
 		return id;
-	}
-	
-	/**
-	 * @deprecated - kept only to support clear migration path for older indices, will be removed in 8.0
-	 */
-	@JsonProperty
-	public String getBranchPath() {
-		return branchPath;
 	}
 	
 	/**
@@ -151,23 +127,11 @@ public final class ValidationIssue implements Serializable {
 	}
 	
 	/**
-	 * @deprecated - kept only to support clear migration path for older indices, will be removed in 8.0
-	 */
-	@JsonProperty
-	short getAffectedComponentType() {
-		return affectedComponentType;
-	}
-	
-	/**
 	 * @return the {@link ComponentIdentifier} part from the {@link ComponentURI}, never <code>null</code>.
 	 */
 	@JsonIgnore
 	public ComponentIdentifier getAffectedComponent() {
-		if (getAffectedComponentURI() == null) {
-			return ComponentIdentifier.of(affectedComponentType, affectedComponentId);
-		} else {
-			return getAffectedComponentURI().toComponentIdentifier();
-		}
+		return getAffectedComponentURI().toComponentIdentifier();
 	}
 	
 	/**
