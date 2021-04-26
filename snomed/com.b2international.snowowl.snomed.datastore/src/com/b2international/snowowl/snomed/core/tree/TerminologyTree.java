@@ -45,30 +45,6 @@ public final class TerminologyTree {
 	}
 
 	/**
-	 * @return
-	 * @deprecated - will be removed in 4.7
-	 */
-	public Map<String, SnomedConcept> getItems() {
-		return items;
-	}
-
-	/**
-	 * @return
-	 * @deprecated - will be removed in 4.7
-	 */
-	public Multimap<String, String> getSubTypes() {
-		return subTypes;
-	}
-
-	/**
-	 * @return
-	 * @deprecated - will be removed in 4.7
-	 */
-	public Multimap<String, String> getSuperTypes() {
-		return superTypes;
-	}
-
-	/**
 	 * Returns the node by its ID.
 	 * 
 	 * @param nodeId

@@ -24,9 +24,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.StagingArea;
-import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.repository.ChangeSetProcessorBase;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
@@ -34,12 +34,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptio
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Builder;
 import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberChange;
 import com.b2international.snowowl.snomed.datastore.index.update.ReferenceSetMembershipUpdater;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
+import com.google.common.collect.*;
 
 /**
  * @since 4.3
@@ -76,7 +71,7 @@ public class DescriptionChangeProcessor extends ChangeSetProcessorBase {
 		
 		// load the known descriptions 
 		final Iterable<SnomedDescriptionIndexEntry> changedDescriptionHits = searcher.get(SnomedDescriptionIndexEntry.class, changedDescriptionIds);
-		final Map<String, SnomedDescriptionIndexEntry> changedDescriptionRevisionsById = Maps.uniqueIndex(changedDescriptionHits, IComponent::getId);
+		final Map<String, SnomedDescriptionIndexEntry> changedDescriptionRevisionsById = Maps.uniqueIndex(changedDescriptionHits, Revision::getId);
 		
 		// load missing descriptions with only changed acceptability values
 		final Set<String> descriptionsToBeLoaded = newHashSet();

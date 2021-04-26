@@ -23,9 +23,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.StagingArea;
-import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.repository.ChangeSetProcessorBase;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
@@ -64,7 +64,7 @@ public class RelationshipChangeProcessor extends ChangeSetProcessorBase {
 		changedRelationshipIds.addAll(referencedRelationshipIds);
 		
 		final Iterable<SnomedRelationshipIndexEntry> changedRelationshipHits = searcher.get(SnomedRelationshipIndexEntry.class, changedRelationshipIds);
-		final Map<String, SnomedRelationshipIndexEntry> changedRelationshipRevisionsById = Maps.uniqueIndex(changedRelationshipHits, IComponent::getId);
+		final Map<String, SnomedRelationshipIndexEntry> changedRelationshipRevisionsById = Maps.uniqueIndex(changedRelationshipHits, Revision::getId);
 		
 		for (final String id : changedRelationshipIds) {
 			final SnomedRelationshipIndexEntry currentDoc = changedRelationshipRevisionsById.get(id);

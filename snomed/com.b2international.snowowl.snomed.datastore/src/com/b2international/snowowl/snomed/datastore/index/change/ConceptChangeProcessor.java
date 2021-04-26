@@ -20,22 +20,17 @@ import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
 import com.b2international.commons.collect.LongSets;
 import com.b2international.index.revision.ObjectId;
+import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.StagingArea;
 import com.b2international.index.revision.StagingArea.RevisionDiff;
-import com.b2international.snowowl.core.api.IComponent;
 import com.b2international.snowowl.core.repository.ChangeSetProcessorBase;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
@@ -51,12 +46,7 @@ import com.b2international.snowowl.snomed.datastore.index.update.ParentageUpdate
 import com.b2international.snowowl.snomed.datastore.index.update.ReferenceSetMembershipUpdater;
 import com.b2international.snowowl.snomed.datastore.taxonomy.Taxonomy;
 import com.b2international.snowowl.snomed.datastore.taxonomy.TaxonomyGraph;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
-import com.google.common.collect.Ordering;
-import com.google.common.collect.Streams;
+import com.google.common.collect.*;
 
 /**
  * @since 4.3
@@ -144,7 +134,7 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 					.filter(id -> !changedRevisions.containsKey(ObjectId.of(SnomedConceptDocument.class, id)))
 					.collect(Collectors.toSet());
 
-			final Map<String, SnomedConceptDocument> currentConceptDocumentsById = newHashMap(Maps.uniqueIndex(searcher.get(SnomedConceptDocument.class, missingCurrentConceptIds), IComponent::getId));
+			final Map<String, SnomedConceptDocument> currentConceptDocumentsById = newHashMap(Maps.uniqueIndex(searcher.get(SnomedConceptDocument.class, missingCurrentConceptIds), Revision::getId));
 			dirtyConceptIds.stream()
 				.map(id -> ObjectId.of(SnomedConceptDocument.class, id))
 				.filter(changedRevisions::containsKey)

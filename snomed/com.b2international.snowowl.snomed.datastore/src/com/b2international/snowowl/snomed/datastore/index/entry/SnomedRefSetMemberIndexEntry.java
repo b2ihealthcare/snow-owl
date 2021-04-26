@@ -736,14 +736,6 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			return getSelf();
 		}
 		
-		/**
-		 * @deprecated - this is no longer a valid refset member index field, but required to make pre-5.4 dataset work with 5.4 without migration
-		 */
-		Builder value(final Object value) {
-			this.value = value;
-			return getSelf();
-		}
-		
 		public Builder decimalValue(final BigDecimal value) {
 			this.value = value;
 			return getSelf();
