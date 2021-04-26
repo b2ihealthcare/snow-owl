@@ -285,7 +285,7 @@ public final class NormalFormGenerator implements INormalFormGenerator {
 
 			Iterables.addAll(targetGroupSet, otherGroups);
 		}
-		
+
 		// Finally, add the (stated) information from the concept itself
 		final Iterable<NormalFormGroup> ownGroups = toGroups(false,
 				candidateNonIsAFragments.get(conceptId),
@@ -294,6 +294,7 @@ public final class NormalFormGenerator implements INormalFormGenerator {
 
 		Iterables.addAll(targetGroupSet, ownGroups);
 
+		
 		// Shuffle around group numbers to match existing inferred group numbers as much as possible 
 		targetGroupSet.adjustOrder(existingGroupSet);
 
@@ -303,7 +304,7 @@ public final class NormalFormGenerator implements INormalFormGenerator {
 		return targetGroupSet;
 	}
 
-	private Iterable<NormalFormGroup> toGroups(final boolean preserveNumbers, 
+	private Iterable<NormalFormGroup> toGroups(final boolean inferredGroups, 
 			final Collection<StatementFragment> conceptRelationships, 
 			final Collection<ConcreteDomainFragment> conceptMembers, 
 			final boolean useNodeGraphs) {
@@ -318,15 +319,19 @@ public final class NormalFormGenerator implements INormalFormGenerator {
 			final Collection<StatementFragment> groupRelationships = relationshipsByGroupId.get(key);
 			final Collection<ConcreteDomainFragment> groupMembers = membersByGroupId.get(key);
 
-			final Iterable<NormalFormUnionGroup> unionGroups = toUnionGroups(preserveNumbers, groupRelationships, groupMembers, useNodeGraphs);
-			final Iterable<NormalFormUnionGroup> disjointUnionGroups = getDisjointUnionGroups(unionGroups);
+			final Iterable<NormalFormUnionGroup> unionGroups = toUnionGroups(inferredGroups, groupRelationships, groupMembers, useNodeGraphs);
+			
+			// No redundancy check needed for existing inferred groups
+			final Iterable<NormalFormUnionGroup> filteredUnionGroups = inferredGroups 
+				? unionGroups 
+				: getDisjointUnionGroups(unionGroups);
 
 			if (key == 0) {
 				// Properties in group 0 form separate groups
-				groups.addAll(toZeroGroups(preserveNumbers, disjointUnionGroups));
+				groups.addAll(toZeroGroups(inferredGroups, filteredUnionGroups));
 			} else {
 				// Other group numbers produce a single group from all properties
-				groups.add(toNonZeroGroup(preserveNumbers, key, disjointUnionGroups));
+				groups.add(toNonZeroGroup(inferredGroups, key, filteredUnionGroups));
 			}
 		}
 
