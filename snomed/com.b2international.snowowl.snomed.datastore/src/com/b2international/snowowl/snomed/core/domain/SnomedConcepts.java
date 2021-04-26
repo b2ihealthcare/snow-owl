@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,8 @@ import java.util.Collections;
 import java.util.List;
 
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Function;
 
 /**
  * A page-able collection of SNOMED CT concepts. To access the items of this collection call
@@ -33,12 +31,7 @@ import com.google.common.base.Function;
  */
 public final class SnomedConcepts extends PageableCollectionResource<SnomedConcept> {
 
-	public static final Function<SnomedConcepts, List<SnomedConceptDocument>> TO_DOCS = new Function<SnomedConcepts, List<SnomedConceptDocument>>() {
-		@Override
-		public List<SnomedConceptDocument> apply(SnomedConcepts input) {
-			return SnomedConceptDocument.fromConcepts(input);
-		}
-	};
+	private static final long serialVersionUID = 1L;
 
 	/**
 	 * Instantiates an empty pageable collection for SNOMED CT concepts.

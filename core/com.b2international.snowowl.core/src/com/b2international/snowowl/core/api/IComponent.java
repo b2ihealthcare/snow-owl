@@ -31,10 +31,4 @@ import com.b2international.snowowl.core.api.component.IdProvider;
  * @param <K> type of the identifier.
  */
 public interface IComponent<K> extends IdProvider<K>, Serializable {
-
-	/**
-	 * @return a human-readable label for this instance
-	 */
-	String getLabel();
-	
 }

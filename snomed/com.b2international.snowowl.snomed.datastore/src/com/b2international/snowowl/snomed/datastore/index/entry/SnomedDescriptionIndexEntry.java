@@ -342,17 +342,11 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 			return getSelf();
 		}
 		
-		@Override
-		public Builder label(String label) {
-			throw new IllegalStateException("Use term() builder method instead to set the label property");
-		}
-		
 		public SnomedDescriptionIndexEntry build() {
 			if (!Strings.isNullOrEmpty(term) && semanticTag == null) {
 				semanticTag = extractSemanticTag(term);
 			}
 			final SnomedDescriptionIndexEntry doc = new SnomedDescriptionIndexEntry(id,
-					term,
 					moduleId,
 					released, 
 					active, 
@@ -389,7 +383,6 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 	private final SortedSet<String> preferredIn;
 
 	private SnomedDescriptionIndexEntry(final String id,
-			final String label,
 			final String moduleId, 
 			final Boolean released, 
 			final Boolean active, 
@@ -406,7 +399,6 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 			final List<String> referringMappingRefSets) {
 		
 		super(id,
-				label,
 				typeId /* XXX: iconId is the same as typeId*/,
 				moduleId,
 				released,

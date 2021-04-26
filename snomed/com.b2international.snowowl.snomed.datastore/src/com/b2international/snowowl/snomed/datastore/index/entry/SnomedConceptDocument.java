@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.entry;
 
-import static com.b2international.index.query.Expressions.exactMatch;
-import static com.b2international.index.query.Expressions.match;
-import static com.b2international.index.query.Expressions.matchAny;
-import static com.b2international.index.query.Expressions.matchAnyInt;
-import static com.b2international.index.query.Expressions.matchAnyLong;
+import static com.b2international.index.query.Expressions.*;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
 
@@ -42,7 +38,6 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -272,14 +267,6 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 		
 		return builder;
 	}
-	
-	public static List<SnomedConceptDocument> fromConcepts(Iterable<? extends SnomedConcept> concepts) {
-		return FluentIterable.from(concepts).transform((input) -> {
-			final SnomedDescription pt = input.getPt();
-			final String preferredTerm = pt == null ? input.getId() : pt.getTerm();
-			return SnomedConceptDocument.builder(input).label(preferredTerm).build();
-		}).toList();
-	}
 
 	@JsonPOJOBuilder(withPrefix="")
 	public static class Builder extends SnomedComponentDocument.Builder<Builder, SnomedConceptDocument> {
@@ -411,7 +398,6 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 		
 		public SnomedConceptDocument build() {
 			final SnomedConceptDocument entry = new SnomedConceptDocument(id,
-					label,
 					iconId, 
 					moduleId, 
 					released, 
@@ -464,7 +450,6 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 	private float doi;
 
 	private SnomedConceptDocument(final String id,
-			final String label,
 			final String iconId,
 			final String moduleId,
 			final Boolean released,
@@ -479,7 +464,7 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 			final List<String> referringMappingRefSets,
 			final List<SnomedDescriptionFragment> preferredDescriptions) {
 
-		super(id, label, iconId, moduleId, released, active, effectiveTime, referringRefSets, referringMappingRefSets);
+		super(id, iconId, moduleId, released, active, effectiveTime, referringRefSets, referringMappingRefSets);
 		this.primitive = primitive;
 		this.exhaustive = exhaustive;
 		this.refSetType = refSetType;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,20 +70,11 @@ public abstract class RevisionDocument extends Revision implements IComponent<St
 	public static abstract class RevisionDocumentBuilder<B extends RevisionDocumentBuilder<B, T>, T extends RevisionDocument> extends Revision.Builder<B, T> {
 		
 		protected String id;
-		protected String label;
 		protected String iconId;
 		protected float score = 0.0f;
 		
 		public B id(final String id) {
 			this.id = id;
-			return getSelf();
-		}
-		
-		/**
-		 * @deprecated - UNSUPPORTED, will be removed in 4.7
-		 */
-		public B label(final String label) {
-			this.label = label;
 			return getSelf();
 		}
 		
@@ -99,22 +90,14 @@ public abstract class RevisionDocument extends Revision implements IComponent<St
 		
 	}
 	
-	private final String label;
 	private final String iconId;
 	private float score = 0.0f;
 	
-	protected RevisionDocument(final String id, final String label, String iconId) {
+	protected RevisionDocument(final String id, final String iconId) {
 		super(id);
-		this.label = label;
 		this.iconId = iconId;
 	}
 	
-	@JsonIgnore
-	@Override
-	public String getLabel() {
-		return label;
-	}
-
 	public String getIconId() {
 		return iconId;
 	}
@@ -134,7 +117,6 @@ public abstract class RevisionDocument extends Revision implements IComponent<St
 	@Override
 	protected ToStringHelper doToString() {
 		return super.doToString()
-				.add("label", label)
 				.add("iconId", iconId)
 				.add("score", score);
 	}

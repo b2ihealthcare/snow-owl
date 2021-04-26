@@ -871,7 +871,6 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		
 		public SnomedRefSetMemberIndexEntry build() {
 			final SnomedRefSetMemberIndexEntry doc = new SnomedRefSetMemberIndexEntry(id,
-					label,
 					moduleId, 
 					released, 
 					active, 
@@ -1048,7 +1047,6 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	private Integer mapBlock;
 
 	private SnomedRefSetMemberIndexEntry(final String id,
-			final String label,
 			final String moduleId, 
 			final Boolean released,
 			final Boolean active, 
@@ -1059,7 +1057,6 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			final short referencedComponentType) {
 
 		super(id, 
-				label,
 				referencedComponentId, // XXX: iconId is the referenced component identifier
 				moduleId, 
 				released, 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,32 +18,23 @@ package com.b2international.snowowl.snomed.core.tree;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongCollection;
 import com.b2international.commons.AlphaNumericComparator;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.collect.LongSets;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.api.IComponent;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Ordering;
-import com.google.common.collect.SetMultimap;
+import com.google.common.collect.*;
 
 /**
  * @since 4.6
@@ -51,7 +42,7 @@ import com.google.common.collect.SetMultimap;
 abstract class TreeBuilderImpl implements TreeBuilder {
 
 	private final List<ExtendedLocale> locales;
-	private Collection<SnomedConceptDocument> topLevelConcepts;
+	private Collection<SnomedConcept> topLevelConcepts;
 	
 	TreeBuilderImpl(List<ExtendedLocale> locales) {
 		this.locales = locales;
@@ -60,17 +51,17 @@ abstract class TreeBuilderImpl implements TreeBuilder {
 	abstract String getForm();
 	
 	@Override
-	public final TreeBuilder withTopLevelConcepts(final Collection<SnomedConceptDocument> topLevelConcepts) {
+	public final TreeBuilder withTopLevelConcepts(final Collection<SnomedConcept> topLevelConcepts) {
 		this.topLevelConcepts = topLevelConcepts;
 		return this;
 	}
 	
 	@Override
-	public TerminologyTree build(final String branch, final Iterable<SnomedConceptDocument> nodes, final String snomedDescriptionExpand) {
-		final Collection<SnomedConceptDocument> topLevelConcepts = this.topLevelConcepts == null ? 
+	public TerminologyTree build(final String branch, final Iterable<SnomedConcept> nodes, final String snomedDescriptionExpand) {
+		final Collection<SnomedConcept> topLevelConcepts = this.topLevelConcepts == null ? 
 				getDefaultTopLevelConcepts(branch, snomedDescriptionExpand) : this.topLevelConcepts;
 		
-		final Map<String, SnomedConceptDocument> treeItemsById = newHashMap();
+		final Map<String, SnomedConcept> treeItemsById = newHashMap();
 		
 		// all matching concepts should be in the componentMap
 		treeItemsById.putAll(FluentIterable.from(nodes).uniqueIndex(IComponent::getId));
@@ -81,7 +72,7 @@ abstract class TreeBuilderImpl implements TreeBuilder {
 		final SetMultimap<String, String> superTypeMap = HashMultimap.create();
 		final SetMultimap<String, String> subTypeMap = HashMultimap.create();
 		
-		for (SnomedConceptDocument entry : nodes) {
+		for (SnomedConcept entry : nodes) {
 			final LongCollection parentIds = getParents(entry);
 			final LongCollection ancestorIds = getAncestors(entry);
 			if (parentIds != null) {
@@ -110,7 +101,7 @@ abstract class TreeBuilderImpl implements TreeBuilder {
 		}
 
 		// add TOP levels
-		for (SnomedConceptDocument entry : topLevelConcepts) {
+		for (SnomedConcept entry : topLevelConcepts) {
 			if (!Concepts.ROOT_CONCEPT.equals(entry.getId()) && !treeItemsById.containsKey(entry.getId())) {
 				if (subTypeMap.containsKey(entry.getId())) {
 					treeItemsById.put(entry.getId(), entry);
@@ -119,10 +110,10 @@ abstract class TreeBuilderImpl implements TreeBuilder {
 		}
 		
 		
-		for (SnomedConceptDocument entry : topLevelConcepts) {
+		for (SnomedConcept entry : topLevelConcepts) {
 			if (Concepts.ROOT_CONCEPT.equals(entry.getId())) {
 				// find all top level child and connect them with the root
-				for (SnomedConceptDocument tl : topLevelConcepts) {
+				for (SnomedConcept tl : topLevelConcepts) {
 					if (!Concepts.ROOT_CONCEPT.equals(tl.getId()) && treeItemsById.containsKey(tl.getId())) {
 						subTypeMap.put(entry.getId(), tl.getId());
 						superTypeMap.put(tl.getId(), entry.getId());
@@ -147,14 +138,14 @@ abstract class TreeBuilderImpl implements TreeBuilder {
 		allRequiredComponents.remove(null);
 		
 		// fetch required data for all unknown items
-		for (SnomedConceptDocument entry : getComponents(branch, allRequiredComponents, snomedDescriptionExpand)) {
+		for (SnomedConcept entry : getComponents(branch, allRequiredComponents, snomedDescriptionExpand)) {
 			treeItemsById.put(entry.getId(), entry);
 		}
 		
 		return new TerminologyTree(treeItemsById, subTypeMap, superTypeMap);
 	}
 	
-	private Collection<SnomedConceptDocument> getComponents(String branch, Set<String> componentIds, final String snomedDescriptionExpand) {
+	private Iterable<SnomedConcept> getComponents(String branch, Set<String> componentIds, final String snomedDescriptionExpand) {
 		if (CompareUtils.isEmpty(componentIds)) {
 			return Collections.emptySet();
 		}
@@ -165,11 +156,10 @@ abstract class TreeBuilderImpl implements TreeBuilder {
 				.setExpand(snomedDescriptionExpand + ",parentIds(),ancestorIds()")
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
 				.execute(getBus())
-				.then(SnomedConcepts.TO_DOCS)
 				.getSync();
 	}
 
-	private List<SnomedConceptDocument> getDefaultTopLevelConcepts(final String branch, final String snomedDescriptionExpand) {
+	private Collection<SnomedConcept> getDefaultTopLevelConcepts(final String branch, final String snomedDescriptionExpand) {
 		final SnomedConcept root = SnomedRequests.prepareGetConcept(Concepts.ROOT_CONCEPT)
 				.setExpand(String.format("%2$s,%s(direct:true,expand(%2$s))", Trees.STATED_FORM.equals(getForm()) ? "statedDescendants" : "descendants", snomedDescriptionExpand))
 				.setLocales(locales)
@@ -181,30 +171,30 @@ abstract class TreeBuilderImpl implements TreeBuilder {
 		requiredTreeItemConcepts.add(root);
 		requiredTreeItemConcepts.addAll(root.getDescendants().getItems());
 	
-		return SnomedConceptDocument.fromConcepts(requiredTreeItemConcepts);
+		return requiredTreeItemConcepts;
 	}
 	
 	private IEventBus getBus() {
 		return ApplicationContext.getInstance().getService(IEventBus.class);
 	}
 
-	private LongCollection getParents(SnomedConceptDocument entry) {
+	private LongCollection getParents(SnomedConcept entry) {
 		switch (getForm()) {
-		case Trees.INFERRED_FORM: return entry.getParents();
-		case Trees.STATED_FORM: return entry.getStatedParents();
+		case Trees.INFERRED_FORM: return PrimitiveSets.newLongOpenHashSet(entry.getParentIds());
+		case Trees.STATED_FORM: return PrimitiveSets.newLongOpenHashSet(entry.getStatedParentIds());
 		default: return null;
 		}
 	}
 	
-	private LongCollection getAncestors(SnomedConceptDocument entry) {
+	private LongCollection getAncestors(SnomedConcept entry) {
 		switch (getForm()) {
-		case Trees.INFERRED_FORM: return entry.getAncestors();
-		case Trees.STATED_FORM: return entry.getStatedAncestors();
+		case Trees.INFERRED_FORM: return PrimitiveSets.newLongOpenHashSet(entry.getAncestorIds());
+		case Trees.STATED_FORM: return PrimitiveSets.newLongOpenHashSet(entry.getStatedAncestorIds());
 		default: return null;
 		}
 	}
 	
-	private void findParentInAncestors(final SnomedConceptDocument entry, final Map<String, SnomedConceptDocument> treeItemsById,
+	private void findParentInAncestors(final SnomedConcept entry, final Map<String, SnomedConcept> treeItemsById,
 			final Collection<String> requiredTopLevelConceptIds, final SetMultimap<String, String> subTypeMap, final SetMultimap<String, String> superTypeMap) {
 		// try to find a single matching ancestor and hook into that, otherwise we will require additional parentage info about the ancestors
 		final Collection<String> ancestors = LongSets.toStringSet(getAncestors(entry));

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -266,7 +266,6 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 		
 		public SnomedRelationshipIndexEntry build() {
 			final SnomedRelationshipIndexEntry doc = new SnomedRelationshipIndexEntry(id,
-					label,
 					moduleId, 
 					released, 
 					active, 
@@ -296,7 +295,6 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 	private final boolean destinationNegated;
 	
 	private SnomedRelationshipIndexEntry(final String id, 
-			final String label,
 			final String moduleId, 
 			final Boolean released,
 			final Boolean active, 
@@ -313,7 +311,6 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 			final List<String> referringMappingRefSets) {
 
 		super(id, 
-				label,
 				typeId, // XXX: iconId is the same as typeId 
 				moduleId, 
 				released, 

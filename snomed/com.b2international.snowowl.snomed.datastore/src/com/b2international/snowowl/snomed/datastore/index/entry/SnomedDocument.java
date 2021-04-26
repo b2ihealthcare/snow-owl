@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -142,13 +142,12 @@ public abstract class SnomedDocument extends RevisionDocument {
 	private final Long effectiveTime;
 
 	protected SnomedDocument(final String id,
-			final String label,
 			final String iconId,
 			final String moduleId, 
 			final Boolean released, 
 			final Boolean active, 
 			final Long effectiveTime) {
-		super(id, label, iconId);
+		super(id, iconId);
 		this.moduleId = moduleId;
 		this.released = released;
 		this.active = active;
@@ -196,7 +195,6 @@ public abstract class SnomedDocument extends RevisionDocument {
 	protected ToStringHelper toStringHelper() {
 		return MoreObjects.toStringHelper(this)
 				.add("id", getId())
-				.add("label", getLabel())
 				.add("iconId", getIconId())
 				.add("moduleId", moduleId)
 				.add("released", released)
