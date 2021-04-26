@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -97,28 +97,10 @@ public class RepositoryConfiguration {
 	}
 
 	/**
-	 * @return the number of workers threads
-	 * @deprecated - use #getMaxThreads() instead, will be unsupported in 7.5
-	 */
-	@JsonProperty
-	public int getNumberOfWorkers() {
-		return getMaxThreads();
-	}
-	
-	/**
 	 * @return number of maximum threads to allow in the underlying event bus instance
 	 */
 	public int getMaxThreads() {
 		return maxThreads;
-	}
-	
-	/**
-	 * @param numberOfWorkers - the number of workers to set
-	 * @deprecated - use #setMaxThreads(int) instead, will be unsupported in 7.5
-	 */
-	@JsonProperty
-	public void setNumberOfWorkers(int numberOfWorkers) {
-		setMaxThreads(numberOfWorkers);
 	}
 	
 	/**
