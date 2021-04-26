@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,28 +67,12 @@ public class LdapIdentityProviderConfig implements IdentityProviderConfig {
 		return bindDn;
 	}
 	
-	/**
-	 * @param rootDn
-	 * @deprecated - replaced by {@link #setBindDn(String)}, will be removed in 8.0
-	 */
-	public void setRootDn(String rootDn) {
-		setBindDn(rootDn);
-	}
-	
 	public void setBindDn(String bindDn) {
 		this.bindDn = bindDn;
 	}
 	
 	public String getBindDnPassword() {
 		return bindDnPassword;
-	}
-	
-	/**
-	 * @param rootDnPassword
-	 * @deprecated - replaced by {@link #setBindDnPassword(String)}, will be removed in 8.0
-	 */
-	public void setRootDnPassword(String rootDnPassword) {
-		setBindDnPassword(rootDnPassword);
 	}
 	
 	public void setBindDnPassword(String bindDnPassword) {
