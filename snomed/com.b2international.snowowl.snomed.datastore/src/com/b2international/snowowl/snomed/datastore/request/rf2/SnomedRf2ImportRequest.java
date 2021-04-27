@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,11 +61,7 @@ import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2ContentType;
-import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2EffectiveTimeSlice;
-import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2EffectiveTimeSlices;
-import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2Format;
-import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2ImportConfiguration;
+import com.b2international.snowowl.snomed.datastore.request.rf2.importer.*;
 import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2GlobalValidator;
 import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationIssueReporter;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -152,10 +148,18 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 					+ "ontology is not available on the terminology server. "
 					+ "Please perform either a Full or a Snapshot import instead.");
 		}
+		
+		String mainBranchPath = context.service(RepositoryCodeSystemProvider.class).get(context.branch().path()).getBranchPath();
+		
+		if (!mainBranchPath.equals(context.branch().path())) {
+			throw new BadRequestException("Creating a version during RF2 import from a branch is not supported. "
+					+ "Please perform the import process from the MAIN branch.");
+		}
 	}
 
 	ImportResponse doImport(final BranchContext context, final File rf2Archive, final Rf2ImportConfiguration importconfig) throws Exception {
 		final String codeSystem = context.service(RepositoryCodeSystemProvider.class).get(context.branch().path()).getShortName();
+		
 		final Rf2ValidationIssueReporter reporter = new Rf2ValidationIssueReporter();
 		
 		try (final DB db = createDb()) {
