@@ -47,6 +47,8 @@ public class SearchRequestParameter {
 		_type,
 		_query,
 		
+		_name, //Metadataresource
+		
 		//result parameters, probably should be moved somewhere else
 		_sort,
 		_count,
@@ -190,6 +192,22 @@ public class SearchRequestParameter {
 		
 		//modifier
 		addModifier(builder, lastUpdatedKey);
+		
+		//prefix
+		addPrefixedValue(builder, value);
+		
+		return builder.build();
+	}
+	
+	public static SearchRequestParameter name(String nameKey, String value) {
+		
+		
+		Builder builder = SearchRequestParameter.builder()
+			.name(SearchRequestParameterKey._name)
+			.type(SearchRequestParameterType.STRING);
+		
+		//modifier
+		addModifier(builder, nameKey);
 		
 		//prefix
 		addPrefixedValue(builder, value);

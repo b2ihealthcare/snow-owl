@@ -16,11 +16,17 @@
 package com.b2international.snowowl.fhir.tests;
 
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.util.List;
 
 import org.junit.Assert;
+import org.junit.ClassRule;
+import org.junit.Test;
+import org.junit.rules.RuleChain;
 
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionResult;
@@ -30,6 +36,8 @@ import com.b2international.snowowl.fhir.core.model.dt.Parameter;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Json;
+import com.b2international.snowowl.test.commons.BundleStartRule;
+import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 
 /**
  * CodeSystem REST end-point test cases
@@ -60,6 +68,36 @@ public class SandBoxRestTest extends FhirRestTest {
 	private static final String FHIR_ISSUE_TYPE_CODESYSTEM_URI = "http://hl7.org/fhir/issue-type";
 	
 	private static final String FHIR_ISSUE_TYPE_CODESYSTEM_ID = "fhir:issue-type";
+	
+	/**
+	 * Execute the tests with this rule if the no dataset needs to be imported
+	 */
+	@ClassRule
+	public static final RuleChain appRule = RuleChain
+		.outerRule(SnowOwlAppRule.snowOwl(AllFhirRestTests.class).clearResources(false))
+		.around(new BundleStartRule("org.eclipse.jetty.osgi.boot"))
+		.around(new BundleStartRule("com.b2international.snowowl.core.rest"));
+	
+	
+	/*
+	 * the name, _id, description and publisher parameters (these 3 additionally support the :exact, :contains and :missing modifiers)
+	 */
+	@Test
+	public void searchCodeSystemByName() {
+			
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.param("_name", "IssueType")
+			.when().get("/CodeSystem").prettyPrint();
+		
+		/*
+			.then()
+			.body("resourceType", equalTo("Bundle"))
+			.body("total", equalTo(1))
+			.body("type", equalTo("searchset"))
+			.body("entry[0].resource.concept", notNullValue())
+			.statusCode(200);
+			*/
+	}
 	
 	//@Test
 	public void buildCode() throws IOException {
