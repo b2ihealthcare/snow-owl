@@ -139,7 +139,6 @@ public class SearchRequestParameters {
 				}
 				
 				//Name
-				//LastUpdated
 				if (key.startsWith(SearchRequestParameterKey._name.name())) {
 					validateSingleValue(values, SearchRequestParameterKey._name.name());
 					name = SearchRequestParameter.name(key, values.iterator().next());
@@ -172,7 +171,7 @@ public class SearchRequestParameters {
 	
 	public SearchRequestParameters(final Class<?> model, Multimap<String, String> multiMap) {
 		
-		List<Field> allSearchableFields = getAllSearchFields(model);
+		List<Field> allSearchableFields = collectSearchableFields(model);
 		
 		Map<String, SearchablePropertyDefinition> searchablePropertyDefinitions = allSearchableFields.stream().map(f -> {
 			SearchParameter[] declaredAnnotationsByType = f.getDeclaredAnnotationsByType(SearchParameter.class);
@@ -190,19 +189,7 @@ public class SearchRequestParameters {
 			}
 		}).collect(Collectors.toMap(k -> "_" + k.getName(), Function.identity()));
 		
-		//validate keys
-		Set<String> parameterKeys = multiMap.keySet();
-		
-		
-		for (String parameterKey : parameterKeys) {
-			if (!searchablePropertyDefinitions.keySet().contains(parameterKey)) {
-				throw new BadRequestException(String.format("Parameter %s is not supported. Supported parameters are %s.", parameterKey, Arrays.toString(searchablePropertyDefinitions.keySet().toArray())), "SearchRequestParameter");
-			}
-			Collection<String> values = multiMap.get(parameterKey);
-			//TODO: multi/single value annotation
-			validateSingleValue(values, parameterKey);
-			
-		}
+		Set<String> parameterKeys = validate(multiMap, searchablePropertyDefinitions);
 		
 		//Create the parameter
 		for (String key : parameterKeys) {
@@ -218,27 +205,10 @@ public class SearchRequestParameters {
 			
 			System.out.println(searchRequestParameter);
 		}
-			
-			
-//		allSearchableFieldsld field : allFields) {
-//				
-//				
-//				System.out.println("field: " + field.getName());
-//				
-//				SearchParameter[] declaredAnnotationsByType = field.getDeclaredAnnotationsByType(SearchParameter.class);
-//				
-//				for (SearchParameter param : declaredAnnotationsByType) {
-//					System.out.println("Annotation: " + param.name() + " : " + param.type());
-//				}
-//			}
-//			
-//		}
 		
 		parameterKeys.stream()
 			.map(k -> k.split(":")[0])
 			.forEach(System.out::println);
-		
-		
 		
 		for (Field field : allSearchableFields) {
 			System.out.println("field: " + field.getName());
@@ -250,30 +220,37 @@ public class SearchRequestParameters {
 			}
 		}
 		
+	}
+
+	private Set<String> validate(Multimap<String, String> multiMap,
+			Map<String, SearchablePropertyDefinition> searchablePropertyDefinitions) {
+		//validate keys
+		Set<String> parameterKeys = multiMap.keySet();
 		
-//		Field[] declaredFields = model.getDeclaredFields();
-//		for (Field field : declaredFields) {
-//			
-//			System.out.println(field.getName());
-//			if (!field.isAnnotationPresent(SearchParameter.class)) continue;
-//			
-//			SearchParameter[] declaredAnnotationsByType = field.getDeclaredAnnotationsByType(SearchParameter.class);
-//			
-//			for (SearchParameter param : declaredAnnotationsByType) {
-//				System.out.println(param.toString());
-//			}
-//			
-//		}
 		
+		for (String parameterKey : parameterKeys) {
+			if (!searchablePropertyDefinitions.keySet().contains(parameterKey)) {
+				throw new BadRequestException(String.format("Parameter %s is not supported. Supported parameters are %s.", parameterKey, Arrays.toString(searchablePropertyDefinitions.keySet().toArray())), "SearchRequestParameter");
+			}
+			Collection<String> values = multiMap.get(parameterKey);
+			//TODO: multi/single value annotation
+			validateSingleValue(values, parameterKey);
+			
+		}
+		return parameterKeys;
 	}
 	
-	private List<Field> getAllSearchFields(Class<?> clazz) {
+	/*
+	 * Recursively collect the annotated fields from the class hierarchy.
+	 * @see @SearchParameter
+	 */
+	private List<Field> collectSearchableFields(Class<?> clazz) {
 		
 		if (clazz == null) {
 	        return Collections.emptyList();
 	    }
 		
-	    List<Field> result = Lists.newArrayList(getAllSearchFields(clazz.getSuperclass()));
+	    List<Field> result = Lists.newArrayList(collectSearchableFields(clazz.getSuperclass()));
 	    List<Field> filteredFields = Arrays.stream(clazz.getDeclaredFields())
 	      .filter(f -> f.isAnnotationPresent(SearchParameter.class))
 	      .collect(Collectors.toList());
