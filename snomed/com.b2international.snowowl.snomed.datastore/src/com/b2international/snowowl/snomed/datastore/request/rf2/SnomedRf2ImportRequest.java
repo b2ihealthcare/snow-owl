@@ -118,12 +118,13 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 	
 	@Override
 	public ImportResponse execute(BranchContext context) {
-		validate(context);
+		Rf2ImportConfiguration importConfig = new Rf2ImportConfiguration(releaseType, createVersions);
+		validate(context, importConfig);
 		final InternalAttachmentRegistry fileReg = (InternalAttachmentRegistry) context.service(AttachmentRegistry.class);
 		final File rf2Archive = fileReg.getAttachment(rf2ArchiveId);
 		
 		try (Locks locks = Locks.on(context).lock(DatastoreLockContextDescriptions.IMPORT)) {
-			return doImport(context, rf2Archive, new Rf2ImportConfiguration(releaseType, createVersions));
+			return doImport(context, rf2Archive, importConfig);
 		} catch (Exception e) {
 			if (e instanceof ApiException) {
 				throw (ApiException) e;
@@ -132,7 +133,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 		}
 	}
 
-	private void validate(BranchContext context) {
+	private void validate(BranchContext context, final Rf2ImportConfiguration importConfig) {
 		final boolean contentAvailable = context.service(ContentAvailabilityInfoProvider.class).isAvailable(context);
 		
 		if (contentAvailable && Rf2ReleaseType.FULL.equals(releaseType)) {
@@ -151,7 +152,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 		
 		String mainBranchPath = context.service(RepositoryCodeSystemProvider.class).get(context.branch().path()).getBranchPath();
 		
-		if (!mainBranchPath.equals(context.branch().path())) {
+		if (!mainBranchPath.equals(context.branch().path()) && importConfig.isCreateVersions()) {
 			throw new BadRequestException("Creating a version during RF2 import from a branch is not supported. "
 					+ "Please perform the import process from the MAIN branch.");
 		}
