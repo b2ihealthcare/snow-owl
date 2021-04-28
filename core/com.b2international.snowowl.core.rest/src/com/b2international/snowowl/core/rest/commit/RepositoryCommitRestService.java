@@ -109,6 +109,7 @@ public abstract class RepositoryCommitRestService extends AbstractRestService {
 		return RepositoryRequests
 					.commitInfos()
 					.prepareSearchCommitInfo()
+					.setFields(Commit.Fields.ID, Commit.Fields.AUTHOR, Commit.Fields.BRANCH, Commit.Fields.COMMENT, Commit.Fields.TIMESTAMP, Commit.Fields.GROUP_ID)
 					.filterByIds(id)
 					.filterByAuthor(author)
 					.filterByAffectedComponent(affectedComponentId)
