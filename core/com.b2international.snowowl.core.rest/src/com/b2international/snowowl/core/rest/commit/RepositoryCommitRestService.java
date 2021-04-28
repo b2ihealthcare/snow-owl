@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,6 +67,10 @@ public abstract class RepositoryCommitRestService extends AbstractRestService {
 			@RequestParam(value="id", required=false)
 			final Set<String> id,
 			
+			@ApiParam(value = "Affected component identifier to match")
+			@RequestParam(value="affectedComponentId", required=false)
+			final String affectedComponentId,
+			
 			@ApiParam(value = "Commit comment term to match")
 			@RequestParam(value="comment", required=false)
 			final String comment,
@@ -78,6 +82,14 @@ public abstract class RepositoryCommitRestService extends AbstractRestService {
 			@ApiParam(value = "Commit timestamp to match")
 			@RequestParam(value="timestamp", required=false)
 			final Long timestamp,
+			
+			@ApiParam(value = "Minimum commit timestamp to search matches from")
+			@RequestParam(value="timestampFrom", required=false)
+			final Long timestampFrom,
+			
+			@ApiParam(value = "Maximum commit timestamp to search matches to")
+			@RequestParam(value="timestampTo", required=false)
+			final Long timestampTo,
 			
 			@ApiParam(value = "Expansion parameters")
 			@RequestParam(value="expand", required=false)
@@ -99,9 +111,11 @@ public abstract class RepositoryCommitRestService extends AbstractRestService {
 					.prepareSearchCommitInfo()
 					.filterByIds(id)
 					.filterByAuthor(author)
+					.filterByAffectedComponent(affectedComponentId)
 					.filterByComment(comment)
 					.filterByBranches(branch)
 					.filterByTimestamp(timestamp)
+					.filterByTimestamp(timestampFrom, timestampTo)
 					.setExpand(expand)
 					.setSearchAfter(searchAfter)
 					.setLimit(limit)
