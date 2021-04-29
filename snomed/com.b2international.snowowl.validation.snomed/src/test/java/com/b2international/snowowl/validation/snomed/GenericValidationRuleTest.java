@@ -378,6 +378,36 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 	}
 	
 	@Test
+	public void rule115b() throws Exception {
+		// Subsets should not contain retired descriptions
+		final String ruleId = "115b";
+		indexRule(ruleId);
+
+		SnomedConceptDocument r1 = concept(generateConceptId())
+				.refSetType(SnomedRefSetType.DESCRIPTION_TYPE)
+				.referencedComponentType(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER)
+				.parents(Long.parseLong(SnomedConstants.Concepts.REFSET_ROOT_CONCEPT))
+				.build();
+
+		SnomedDescriptionIndexEntry badDesc = description(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, "I've been bad, i deserve this")
+				.active(false)
+				.activeMemberOf(ImmutableList.of(r1.getId()))
+				.build();
+
+		SnomedDescriptionIndexEntry goodDesc = description(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, "I've been good, i deserve this")
+				.active(true)
+				.activeMemberOf(ImmutableList.of(r1.getId()))
+				.build();
+		
+		indexRevision(MAIN, r1, badDesc, goodDesc);
+
+		ValidationIssues issues = validate(ruleId);
+
+		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, badDesc.getId()));
+
+	}
+	
+	@Test
 	public void rule663() throws Exception {
 		final String ruleId = "663";
 		indexRule(ruleId);
