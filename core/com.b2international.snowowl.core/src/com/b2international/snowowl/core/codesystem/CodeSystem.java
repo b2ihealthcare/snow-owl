@@ -15,512 +15,57 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
-import java.io.Serializable;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.SortedSet;
-
-import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.branch.BranchInfo;
-import com.b2international.snowowl.core.terminology.TerminologyRegistry;
-import com.b2international.snowowl.core.uri.CodeSystemURI;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import com.b2international.snowowl.core.TerminologyResource;
 
 /**
- * Captures metadata about a code system, which holds a set of concepts of
- * medical significance (optionally with other, supporting components that
- * together make up the definition of concepts) and their corresponding unique
- * code.
+ * Captures metadata about a code system, which holds a set of concepts of medical significance (optionally with other, supporting components that
+ * together make up the definition of concepts) and their corresponding unique code.
  * 
  * @since 1.0
  */
-@JsonDeserialize(builder=CodeSystem.Builder.class)
-public class CodeSystem implements Serializable {
+public class CodeSystem extends TerminologyResource {
 	
-	private static final long serialVersionUID = 760L;
-
-	/**
-	 * @since 7.6.0
-	 */
-	public static final class Expand {
-		public static final String AVAILABLE_UPGRADES = "availableUpgrades";
-		public static final String EXTENSION_OF_BRANCH_INFO = "extensionOfBranchInfo";
-		public static final String UPGRADE_OF_BRANCH_INFO = "upgradeOfBranchInfo";
-	}
-	
-	public static Builder builder() {
-		return new Builder();
-	}
-	
-	public static Builder builder(final CodeSystemEntry input) {
-		return builder()
-				.oid(input.getOid())
-				.name(input.getName())
-				.shortName(input.getShortName())
-				.organizationLink(input.getOrgLink())
-				.primaryLanguage(input.getLanguage())
-				.citation(input.getCitation())
-				.branchPath(input.getBranchPath())
-				.iconPath(input.getIconPath())
-				.terminologyId(input.getTerminologyComponentId())
-				.repositoryId(input.getRepositoryId())
-				.extensionOf(input.getExtensionOf())
-				.upgradeOf(input.getUpgradeOf())
-				.locales(input.getLocales())
-				.additionalProperties(input.getAdditionalProperties());
-	}
-	
-	@JsonPOJOBuilder(withPrefix = "")
-	public static class Builder {
-		
-		private String oid;
-		private String name;
-		private String shortName;
-		private String organizationLink;
-		private String primaryLanguage;
-		private String citation;
-		private String branchPath;
-		private String iconPath;
-		private String terminologyId;
-		private String repositoryId;
-		private CodeSystemURI extensionOf;
-		private CodeSystemURI upgradeOf;
-		private List<ExtendedLocale> locales;
-		private Map<String, Object> additionalProperties;
-		
-		@JsonCreator
-		private Builder() {}
-		
-		public Builder oid(final String oid) {
-			this.oid = oid;
-			return getSelf();
-		}
-		
-		public Builder name(final String name) {
-			this.name = name;
-			return getSelf();
-		}
-		
-		public Builder shortName(final String shortName) {
-			this.shortName = shortName;
-			return getSelf();
-		}
-		
-		public Builder organizationLink(final String organizationLink) {
-			this.organizationLink = organizationLink;
-			return getSelf();
-		}
-		
-		public Builder primaryLanguage(final String primaryLanguage) {
-			this.primaryLanguage = primaryLanguage;
-			return getSelf();
-		}
-		
-		public Builder citation(final String citation) {
-			this.citation = citation;
-			return getSelf();
-		}
-		
-		public Builder branchPath(final String branchPath) {
-			this.branchPath = branchPath;
-			return getSelf();
-		}
-		
-		public Builder iconPath(final String iconPath) {
-			this.iconPath = iconPath;
-			return getSelf();
-		}
-		
-		public Builder terminologyId(final String terminologyId) {
-			this.terminologyId = terminologyId;
-			return getSelf();
-		}
-		
-		public Builder repositoryId(final String repositoryId) {
-			this.repositoryId = repositoryId;
-			return getSelf();
-		}
-		
-		public Builder extensionOf(final CodeSystemURI extensionOf) {
-			this.extensionOf = extensionOf;
-			return getSelf();
-		}
-		
-		public Builder upgradeOf(final CodeSystemURI upgradeOf) {
-			this.upgradeOf = upgradeOf;
-			return getSelf();
-		}
-		
-		public Builder locales(final List<ExtendedLocale> locales) {
-			this.locales = Optional.ofNullable(locales)
-					.map(Lists::newArrayList)
-					.orElse(null);
-			
-			return getSelf();
-		}
-		
-		public Builder additionalProperties(final Map<String, Object> additionalProperties) {
-			this.additionalProperties = Optional.ofNullable(additionalProperties)
-					.map(Maps::newHashMap)
-					.orElse(null);
-			
-			return getSelf();
-		}
-		
-		public CodeSystem build() {
-			return new CodeSystem(
-					oid, 
-					name, 
-					shortName, 
-					organizationLink, 
-					primaryLanguage, 
-					citation, 
-					branchPath, 
-					iconPath, 
-					terminologyId, 
-					repositoryId,
-					extensionOf,
-					upgradeOf,
-					locales,
-					additionalProperties);
-		}
-		
-		private Builder getSelf() {
-			return this;
-		}
-	}
-	
-	private String oid;
-	private @NotEmpty String name;
-	private @NotEmpty String shortName;
-	private String organizationLink;
-	private @NotEmpty String primaryLanguage;
-	private @NotEmpty String citation;
-	private String branchPath;
-	private @NotEmpty String iconPath;
-	private @NotEmpty String terminologyId;
-	private @NotEmpty String repositoryId;
-	private List<ExtendedLocale> locales;
-	private Map<String, Object> additionalProperties;
-	private List<CodeSystemURI> availableUpgrades;
-	private BranchInfo extensionOfBranchInfo;
-	private BranchInfo upgradeOfBranchInfo;
-	
-	// extension related fields
-	private CodeSystemURI extensionOf;
-	private CodeSystemURI upgradeOf;
-	
-	private CodeSystem(final String oid, 
-			final String name, 
-			final String shortName, 
-			final String organizationLink, 
-			final String primaryLanguage,
-			final String citation, 
-			final String branchPath, 
-			final String iconPath, 
-			final String terminologyId, 
-			final String repositoryId,
-			final CodeSystemURI extensionOf,
-			final CodeSystemURI upgradeOf, 
-			final List<ExtendedLocale> locales,
-			final Map<String, Object> additionalProperties) {
-
-		this.oid = oid;
-		this.name = name;
-		this.shortName = shortName;
-		this.organizationLink = organizationLink;
-		this.primaryLanguage = primaryLanguage;
-		this.citation = citation;
-		this.branchPath = branchPath;
-		this.iconPath = iconPath;
-		this.terminologyId = terminologyId;
-		this.repositoryId = repositoryId;
-		this.extensionOf = extensionOf;
-		this.upgradeOf = upgradeOf;
-		this.locales = locales;
-		this.additionalProperties = additionalProperties;
-	}
-
-	/**
-	 * @return the assigned object identifier (OID) of this code system, eg. "{@code 3.4.5.6.10000}" (can be {@code null})
-	 */
-	public String getOid() {
-		return oid;
-	}
-
-	/**
-	 * @return the name of this code system, eg. "{@code SNOMED Clinical Terms}"
-	 */
-	public String getName() {
-		return name;
-	}
-
-	/**
-	 * @return the short name of this code system, usually an abbreviation of the name; eg. "{@code SNOMEDCT}"
-	 */
-	public String getShortName() {
-		return shortName;
-	}
-
-	/**
-	 * @return the URL of the maintaining organization, eg. "{@code http://example.com/}" (can be {@code null})
-	 */
-	public String getOrganizationLink() {
-		return organizationLink;
-	}
-
-	/**
-	 * @return the primary language tag, eg. "en_US"
-	 * @deprecated Clients should access language information via {@link #getLocales()} instead. 
-	 */
-	@Deprecated
-	public String getPrimaryLanguage() {
-		return primaryLanguage;
-	}
-
-	/**
-	 * @return a short paragraph describing the origins and purpose of this code
-	 *         system (can be {@code null})
-	 */
-	public String getCitation() {
-		return citation;
-	}
-
-	/**
-	 * @return the working branch path for the code system, eg.
-	 *         "{@code MAIN/2018-07-31/SNOMEDCT-EXT}"
-	 */
-	public String getBranchPath() {
-		return branchPath;
-	}
-
-	/**
-	 * @return the application specific icon path for the code system
-	 */
-	public String getIconPath() {
-		return iconPath;
-	}
-
-	/**
-	 * @return the terminology (tooling) ID, used to associate the code system with specific application features
-	 */
-	public String getTerminologyId() {
-		return terminologyId;
-	}
-
-	/**
-	 * @return the unique ID of the repository where code system content is stored
-	 */
-	public String getRepositoryId() {
-		return repositoryId;
-	}
-
-	/**
-	 * @return the URI of the code system version this code system is based upon (can be {@code null} if this is a stand-alone code system).
-	 */
-	public CodeSystemURI getExtensionOf() {
-		return extensionOf;
-	}
+	private static final long serialVersionUID = 761L;
 	
 	/**
-	 * @return the URI of the code system version this code system is an upgrade of or <code>null</code> if this is a non-upgrade code system.
+	 * @since 8.0
 	 */
-	public CodeSystemURI getUpgradeOf() {
-		return upgradeOf;
+	public static final class CommonSettings {
+		public static final String LOCALES = "locales";
+	}
+
+	@Override
+	public String getResourceType() {
+		return "codesystem";
 	}
 	
 	/**
 	 * @return the list of {@link ExtendedLocale} instances representing the language content this code system carries (can be {@code null})
 	 */
 	public List<ExtendedLocale> getLocales() {
-		return locales;
+		return (List<ExtendedLocale>) getSettings().get(CommonSettings.LOCALES);
 	}
 	
-	/**
-	 * @return a map storing metadata key-value pairs specific to this code system (can be {@code null}). Interpretation of values is
-	 *         implementation-dependent.
-	 */
-	public Map<String, Object> getAdditionalProperties() {
-		return additionalProperties;
-	}
+//	/**
+//	 * Returns all code system short name dependencies and itself.
+//	 */
+//	@JsonIgnore
+//	public SortedSet<String> getDependenciesAndSelf() {
+//		ImmutableSortedSet.Builder<String> affectedCodeSystems = ImmutableSortedSet.naturalOrder();
+//		affectedCodeSystems.addAll(getDependencies());
+//		affectedCodeSystems.add(shortName);
+//		return affectedCodeSystems.build();
+//	}
 	
-	/**
-	 * @return a list of {@link CodeSystemURI}s pointing to code system versions that have been created after the current {@code extensionOf} version
-	 *         on the parent code system (can be {@code null} if not requested as part of an expand() option)
-	 */
-	public List<CodeSystemURI> getAvailableUpgrades() {
-		return availableUpgrades;
-	}
-
-	public BranchInfo getExtensionOfBranchInfo() {
-		return extensionOfBranchInfo;
-	}
+//	/**
+//	 * Returns the short names of all affected code systems
+//	 */
+//	@JsonIgnore
+//	public SortedSet<String> getDependencies() {
+//		return TerminologyRegistry.INSTANCE.getTerminology(terminologyId).getDependencies();
+//	}
 	
-	public BranchInfo getUpgradeOfBranchInfo() {
-		return upgradeOfBranchInfo;
-	}
-
-	public void setOid(final String oid) {
-		this.oid = oid;
-	}
-
-	public void setName(final String name) {
-		this.name = name;
-	}
-
-	public void setShortName(final String shortName) {
-		this.shortName = shortName;
-	}
-
-	public void setOrganizationLink(final String organizationLink) {
-		this.organizationLink = organizationLink;
-	}
-
-	@Deprecated
-	public void setPrimaryLanguage(final String primaryLanguage) {
-		this.primaryLanguage = primaryLanguage;
-	}
-
-	public void setCitation(final String citation) {
-		this.citation = citation;
-	}
-	
-	public void setBranchPath(final String branchPath) {
-		this.branchPath = branchPath;
-	}
-	
-	public void setIconPath(final String iconPath) {
-		this.iconPath = iconPath;
-	}
-	
-	public void setTerminologyId(final String terminologyId) {
-		this.terminologyId = terminologyId;
-	}
-	
-	public void setRepositoryId(final String repositoryId) {
-		this.repositoryId = repositoryId;
-	}
-	
-	public void setExtensionOf(final CodeSystemURI extensionOf) {
-		this.extensionOf = extensionOf;
-	}
-	
-	public void setUpgradeOf(CodeSystemURI upgradeOf) {
-		this.upgradeOf = upgradeOf;
-	}
-	
-	public void setLocales(final List<ExtendedLocale> locales) {
-		this.locales = locales;
-	}
-	
-	public void setAdditionalProperties(final Map<String, Object> additionalProperties) {
-		this.additionalProperties = additionalProperties;
-	}
-	
-	public void setAvailableUpgrades(final List<CodeSystemURI> availableUpgrades) {
-		this.availableUpgrades = availableUpgrades;
-	}
-
-	public void setExtensionOfBranchInfo(BranchInfo extensionOfBranchInfo) {
-		this.extensionOfBranchInfo = extensionOfBranchInfo;
-	}
-	
-	public void setUpgradeOfBranchInfo(BranchInfo upgradeOfBranchInfo) {
-		this.upgradeOfBranchInfo = upgradeOfBranchInfo;
-	}
-	
-	/**
-	 * Returns all code system short name dependencies and itself.
-	 */
-	@JsonIgnore
-	public SortedSet<String> getDependenciesAndSelf() {
-		ImmutableSortedSet.Builder<String> affectedCodeSystems = ImmutableSortedSet.naturalOrder();
-		affectedCodeSystems.addAll(getDependencies());
-		affectedCodeSystems.add(shortName);
-		return affectedCodeSystems.build();
-	}
-	
-	/**
-	 * Returns the short names of all affected code systems
-	 */
-	@JsonIgnore
-	public SortedSet<String> getDependencies() {
-		return TerminologyRegistry.INSTANCE.getTerminology(terminologyId).getDependencies();
-	}
-	
-	/**
-	 * Returns a new branch path that originates from the code system's branch path
-	 */
-	@JsonIgnore
-	public String getRelativeBranchPath(String relativeTo) {
-		return String.join(Branch.SEPARATOR, branchPath, relativeTo);
-	}
-	
-	/**
-	 * @return the {@link CodeSystemURI} of this code system that points to the latest development version of it (HEAD).
-	 */
-	@JsonIgnore
-	public CodeSystemURI getCodeSystemURI() {
-		return getCodeSystemURI("");
-	}
-	
-	/**
-	 * @return the {@link CodeSystemURI} of this code system at the given active branch, if the branch is empty it returns the HEAD of this {@link CodeSystem}.
-	 */
-	@JsonIgnore
-	public CodeSystemURI getCodeSystemURI(String branch) {
-		Preconditions.checkNotNull(branch, "Branch argument should not be null");
-		if (!Strings.isNullOrEmpty(branch)) {
-			Preconditions.checkArgument(branch.startsWith(branchPath), "Branch argument '%s' should start with Code System working branch '%s'.", branch, branchPath);
-			final String relativePath = branch.replaceFirst(branchPath, "").replaceFirst("/", "");
-			return relativePath.isEmpty() ? new CodeSystemURI(shortName) : CodeSystemURI.branch(shortName, relativePath);
-		} else {
-			return new CodeSystemURI(shortName);
-		}
-	}
-
-	@Override
-	public String toString() {
-		final StringBuilder builder = new StringBuilder();
-		builder.append("CodeSystem [oid=");
-		builder.append(oid);
-		builder.append(", name=");
-		builder.append(name);
-		builder.append(", shortName=");
-		builder.append(shortName);
-		builder.append(", organizationLink=");
-		builder.append(organizationLink);
-		builder.append(", primaryLanguage=");
-		builder.append(primaryLanguage);
-		builder.append(", citation=");
-		builder.append(citation);
-		builder.append(", branchPath=");
-		builder.append(branchPath);
-		builder.append(", iconPath=");
-		builder.append(iconPath);
-		builder.append(", repositoryId=");
-		builder.append(repositoryId);
-		builder.append(", extensionOf=");
-		builder.append(extensionOf);
-		builder.append(", upgradeOf=");
-		builder.append(upgradeOf);
-		builder.append(", locales=");
-		builder.append(locales);
-		builder.append(", additionalProperties=");
-		builder.append(additionalProperties);
-		builder.append("]");
-		return builder.toString();
-	}
 }
