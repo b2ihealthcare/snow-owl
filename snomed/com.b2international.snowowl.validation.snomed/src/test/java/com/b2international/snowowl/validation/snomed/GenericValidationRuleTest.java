@@ -36,6 +36,7 @@ import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.core.validation.issue.ValidationIssue;
 import com.b2international.snowowl.core.validation.issue.ValidationIssues;
+import com.b2international.snowowl.snomed.common.SnomedConstants;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
@@ -345,6 +346,35 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 			ComponentIdentifier.of(RELATIONSHIP_NUMBER, relationship1.getId()),
 			ComponentIdentifier.of(REFSET_MEMBER_NUMBER, owlAxiomMember2.getId())
 		);	
+	}
+	
+	@Test
+	public void rule115a() throws Exception {
+		// Reference Sets should not contain retired concepts
+		final String ruleId = "115a";
+		indexRule(ruleId);
+
+		SnomedConceptDocument r1 = concept(generateConceptId())
+				.refSetType(SnomedRefSetType.SIMPLE)
+				.referencedComponentType(CONCEPT_NUMBER)
+				.parents(Long.parseLong(SnomedConstants.Concepts.REFSET_ROOT_CONCEPT))
+				.build();
+
+		SnomedConceptDocument badConcept = concept(generateConceptId())
+				.active(false)
+				.activeMemberOf(ImmutableList.of(r1.getId()))
+				.build();
+
+		SnomedConceptDocument goodConcept = concept(generateConceptId())
+				.active(true)
+				.activeMemberOf(ImmutableList.of(r1.getId()))
+				.build();
+		
+		indexRevision(MAIN, r1, badConcept, goodConcept);
+
+		ValidationIssues issues = validate(ruleId);
+
+		assertAffectedComponents(issues, ComponentIdentifier.of(CONCEPT_NUMBER, badConcept.getId()));
 	}
 	
 	@Test
