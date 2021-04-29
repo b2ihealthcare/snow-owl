@@ -35,12 +35,13 @@ import com.b2international.snowowl.fhir.core.model.dt.Narrative;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.usagecontext.UsageContext;
 import com.b2international.snowowl.fhir.core.search.FhirBeanPropertyFilter;
+import com.b2international.snowowl.fhir.core.search.Filterable;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -65,6 +66,7 @@ import io.swagger.annotations.ApiModel;
  */
 @ApiModel("CodeSystem")
 @JsonFilter(FhirBeanPropertyFilter.FILTER_NAME)
+@Filterable( filters = {"_summary"})
 public class CodeSystem extends MetadataResource {
 
 	// FHIR header "resourceType" : "CodeSystem",

@@ -1,0 +1,255 @@
+/*
+ * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.b2international.snowowl.fhir.core.search;
+
+import java.lang.reflect.Field;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import com.b2international.commons.StringUtils;
+import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
+import com.b2international.snowowl.fhir.core.search.SupportedFilterParameter.FhirFilterParameterKey;
+import com.b2international.snowowl.fhir.core.search.FhirRequestParameterDefinition.FhirRequestParameterType;
+import com.b2international.snowowl.fhir.core.search.FhirRequestParameterDefinition.SearchRequestParameterModifier;
+import com.b2international.snowowl.fhir.core.search.SupportedSearchParameter.FhirCommonSearchKey;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import com.google.common.collect.Sets.SetView;
+
+public class SupportedFhirUriParameterDefinitions {
+	
+	private Map<String, SupportedFilterParameter> supportedFilterParameters = Maps.newHashMap();
+	
+	private Map<String, SupportedSearchParameter> supportedSearchParameters = Maps.newHashMap();
+
+	public Map<String, SupportedFilterParameter> getSupportedFilterParameters() {
+		return supportedFilterParameters;
+	}
+	
+	public void validateFilterParameter(RawRequestParameter requestParameter) {
+
+		String parameterName = requestParameter.getParameterName();
+		if (!supportedFilterParameters.keySet().contains(parameterName)) {
+			throw new BadRequestException(String.format("Filter parameter %s is not supported. Supported filter parameters are %s.", parameterName, Arrays.toString(supportedFilterParameters.keySet().toArray())), "SearchRequestParameter");
+		}
+		
+		if (requestParameter.hasModifier()) {
+			String parameterModifier = requestParameter.getParameterModifier();
+			
+			if (!SearchRequestParameterModifier.hasValue(parameterModifier)) {
+				throw new BadRequestException(String.format("Unknown filter parameter modifier '%s' for parameter '%s'. Valid modifiers are %s.", parameterModifier, parameterName, Arrays.toString(SearchRequestParameterModifier.values())), "SearchRequestParameter");
+			}
+			
+		}
+		
+//		
+//		//validate keys
+//		Set<String> parameterKeys = multiMap.keySet();
+//		
+//		for (String parameterKey : parameterKeys) {
+//			if (!searchablePropertyDefinitions.keySet().contains(parameterKey)) {
+//				throw new BadRequestException(String.format("Parameter %s is not supported. Supported parameters are %s.", parameterKey, Arrays.toString(searchablePropertyDefinitions.keySet().toArray())), "SearchRequestParameter");
+//			}
+//			Collection<String> values = multiMap.get(parameterKey);
+//			//TODO: multi/single value annotation
+//			validateSingleValue(values, parameterKey);
+//			
+//		}
+//		return parameterKeys;
+	}
+	
+	public FhirRequestParameterDefinition classifyParameter(RawRequestParameter fhirParameter) {
+		
+		String parameterName = fhirParameter.getParameterName();
+		if (supportedSearchParameters.containsKey(parameterName)) {
+			
+			FhirSearchParameter fhirSearchParameter = new FhirSearchParameter(parameterName, null); //TODO:
+			return fhirSearchParameter;
+			
+			//create search parameter
+		} else if (supportedFilterParameters.containsKey(parameterName)) {
+			
+			validateFilterParameter(fhirParameter);
+			
+			SupportedFilterParameter supportedFilterParameter = supportedFilterParameters.get(parameterName);
+			FhirRequestParameterType type = supportedFilterParameter.getType();
+			//create filter parameter
+			return new FhirFilterParameter(parameterName, type); //Values?
+		} else if (FhirCommonSearchKey.hasParameter(parameterName)) {
+			throw new BadRequestException(String.format("Search parameter %s is not supported. Supported search parameters are %s.", parameterName, Arrays.toString(supportedSearchParameters.keySet().toArray())), "SearchRequestParameter");
+		} else if (FhirFilterParameterKey.hasParameter(parameterName)) {
+			throw new BadRequestException(String.format("Filter parameter %s is not supported. Supported filter parameters are %s.", parameterName, Arrays.toString(supportedFilterParameters.keySet().toArray())), "SearchRequestParameter");
+		} else {
+			SetView<String> union = Sets.union(supportedSearchParameters.keySet(), supportedFilterParameters.keySet());
+			throw new BadRequestException(String.format("URI parameter %s is not supported. Supported filter parameters are %s.", parameterName, Arrays.toString(union.toArray())), "SearchRequestParameter");
+		}
+	}
+	
+	public void validateSearchParameter(RawRequestParameter requestParameter) {
+
+		String parameterName = requestParameter.getParameterName();
+		if (!supportedSearchParameters.keySet().contains(parameterName)) {
+			throw new BadRequestException(String.format("Search parameter %s is not supported. Supported search parameters are %s.", parameterName, Arrays.toString(supportedFilterParameters.keySet().toArray())), "SearchRequestParameter");
+		}
+		
+		SupportedSearchParameter supportedSearchParameter = supportedSearchParameters.get(parameterName);
+		
+		if (requestParameter.hasModifier()) {
+			String parameterModifier = requestParameter.getParameterModifier();
+			
+			if (!SearchRequestParameterModifier.hasValue(parameterModifier)) {
+				throw new BadRequestException(String.format("Unknown search parameter modifier '%s' for parameter '%s'. Valid modifiers are %s.", parameterModifier, parameterName, Arrays.toString(SearchRequestParameterModifier.values())), "SearchRequestParameter");
+			}
+			
+			if (!supportedSearchParameter.hasSupportedModifier(parameterModifier)) {
+				throw new BadRequestException(String.format("Unsupported search parameter modifier '%s' for parameter '%s'. Supported modifiers are %s.", parameterModifier, parameterName, Arrays.toString(supportedSearchParameter.getSupportedModifiers().toArray())), "SearchRequestParameter");
+			}
+			
+		}
+	}
+	
+	private  void validateSingleValue(Collection<String> values, String parameterName) {
+		
+		if (values.isEmpty()) {
+			throw new BadRequestException(String.format("No %s parameter is submitted.", parameterName), "SearchRequestParameter");
+		}
+		
+		if (values.size() != 1) {
+			throw new BadRequestException(String.format("Too many %s parameter values are submitted.", parameterName), "SearchRequestParameter");
+		}
+	}
+	
+	public static SupportedFhirUriParameterDefinitions createDefinitions(final Class<?> model) {
+		
+		SupportedFhirUriParameterDefinitions definitions = new SupportedFhirUriParameterDefinitions();
+		
+		List<String> filterParameters = collectFilterParameters(model);
+		
+		for (String filterParameter : filterParameters) {
+			SupportedFilterParameter filterResultUriParameter = new SupportedFilterParameter(filterParameter);
+			definitions.supportedFilterParameters.put(filterParameter, filterResultUriParameter);
+		}
+		
+		List<Field> searchableFields = collectSearchableFields(model);
+		definitions.supportedSearchParameters.putAll(createSearchableParameters(searchableFields));
+		return definitions;
+	}
+	
+	private static List<String> collectFilterParameters(Class<?> model) {
+		
+		if (model == null) {
+	        return Collections.emptyList();
+	    }
+		
+		List<String> result = Lists.newArrayList(collectFilterParameters(model.getSuperclass()));
+		
+		if (model.isAnnotationPresent(Filterable.class)) {
+			Filterable annotation = model.getAnnotation(Filterable.class);
+			String[] filters = annotation.filters();
+			result.addAll(Sets.newHashSet(filters));
+		}
+		return result;
+	}
+
+	/*
+	 * Recursively collect the annotated fields from the class hierarchy.
+	 * @see @SearchParameter
+	 */
+	private static List<Field> collectSearchableFields(Class<?> clazz) {
+		
+		if (clazz == null) {
+	        return Collections.emptyList();
+	    }
+
+		//search in the hieararchy
+	    List<Field> results = Lists.newArrayList(collectSearchableFields(clazz.getSuperclass()));
+	    
+	    Field[] declaredFields = clazz.getDeclaredFields();
+	    List<Field> filteredFields = Arrays.stream(declaredFields)
+	    		.filter(f -> f.isAnnotationPresent(Searchable.class))
+	    		.collect(Collectors.toList());
+	    results.addAll(filteredFields);
+	   
+	    //search the graph - only direct references
+	    List<Class<?>> referencedClasses = Arrays.stream(declaredFields)
+	    		.filter(f -> clazz.getPackageName().startsWith(f.getType().getPackageName()))
+	    		.map(f -> f.getType())
+	    		.collect(Collectors.toList());
+	    
+	    for (Class<?> referencedClass : referencedClasses) {
+	    	List<Field> referencedClassFields = Lists.newArrayList(collectSearchableFields(referencedClass));
+	    	results.addAll(referencedClassFields);
+		}
+	    
+	    return results;
+	}
+	
+	private static Map<String, SupportedSearchParameter> createSearchableParameters(final List<Field> allSearchableFields) {
+		return allSearchableFields.stream().map(f -> {
+			
+			Searchable[] declaredAnnotationsByType = f.getDeclaredAnnotationsByType(Searchable.class);
+			
+			if (declaredAnnotationsByType.length > 1) {
+				throw new IllegalArgumentException(String.format("%s is present multiple times on %s.%s", Searchable.class.getSimpleName(), f.getDeclaringClass().getSimpleName(), f.getName()));
+			}
+			
+			Searchable simpleParameterAnnotation = declaredAnnotationsByType[0];
+			
+			if (!StringUtils.isEmpty(simpleParameterAnnotation.name())) {
+				return new SupportedSearchParameter(simpleParameterAnnotation.name(), simpleParameterAnnotation.type(), simpleParameterAnnotation.modifiers());
+			} else {
+				return new SupportedSearchParameter(f.getName(), simpleParameterAnnotation.type(), simpleParameterAnnotation.modifiers()); 
+			}
+		}).collect(Collectors.toMap(k -> "_" + k.getName(), Function.identity()));
+	}
+	
+	@Override
+	public String toString() {
+		
+		StringBuilder sb = new StringBuilder("Supported FRIR URI parameters:\n");
+		sb.append("  Filter parameters:\n");
+		
+		Set<String> filterKeys = supportedFilterParameters.keySet();
+		
+		for (String filterKey : filterKeys) {
+			SupportedFilterParameter supportedFilterParameter = supportedFilterParameters.get(filterKey);
+			sb.append("\t\t");
+			sb.append(supportedFilterParameter);
+			sb.append("\n");
+		}
+		
+		sb.append("  Search parameters:\n");
+		
+		Set<String> searchKeys = supportedSearchParameters.keySet();
+		
+		for (String searchKey : searchKeys) {
+			SupportedSearchParameter searchParameter = supportedSearchParameters.get(searchKey);
+			sb.append("\t\t");
+			sb.append(searchParameter);
+			sb.append("\n");
+		}
+		
+		return sb.toString();
+	}
+
+}

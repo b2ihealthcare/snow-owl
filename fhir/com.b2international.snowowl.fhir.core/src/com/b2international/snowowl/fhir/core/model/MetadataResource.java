@@ -36,7 +36,7 @@ import com.b2international.snowowl.fhir.core.model.dt.Narrative;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.usagecontext.UsageContext;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
-import com.b2international.snowowl.fhir.core.search.SearchParameter;
+import com.b2international.snowowl.fhir.core.search.Searchable;
 import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -64,9 +64,9 @@ public abstract class MetadataResource extends DomainResource {
 	@JsonProperty
 	private String version; //not necessarily available - and what to do when we have more than 1??
 	
-	@SearchParameter(type = "String")
 	@Summary
 	@JsonProperty
+	@Searchable(type = "String", modifiers = {"exact"})
 	private String name;
 	
 	@Summary

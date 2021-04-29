@@ -15,15 +15,9 @@
  */
 package com.b2international.snowowl.fhir.core.search;
 
-import java.lang.reflect.Field;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
@@ -31,7 +25,6 @@ import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.search.SearchRequestParameter.SearchRequestParameterKey;
 import com.b2international.snowowl.fhir.core.search.SearchRequestParameter.SearchRequestParameterType;
 import com.b2international.snowowl.fhir.core.search.SearchRequestParameter.SummaryParameterValue;
-import com.b2international.snowowl.fhir.core.search.SearchRequestParameters.SearchablePropertyDefinition;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 
@@ -150,114 +143,6 @@ public class SearchRequestParameters {
 		validateRequestParams();
 	}
 	
-	public class SearchablePropertyDefinition {
-
-		private String name;
-		private String type;
-
-		public SearchablePropertyDefinition(String name, String type) {
-			this.name = name;
-			this.type = type;
-		}
-
-		public String getName() {
-			return name;
-		}
-		
-		public String getType() {
-			return type;
-		}
-	}
-	
-	public SearchRequestParameters(final Class<?> model, Multimap<String, String> multiMap) {
-		
-		List<Field> allSearchableFields = collectSearchableFields(model);
-		
-		Map<String, SearchablePropertyDefinition> searchablePropertyDefinitions = allSearchableFields.stream().map(f -> {
-			SearchParameter[] declaredAnnotationsByType = f.getDeclaredAnnotationsByType(SearchParameter.class);
-			if (declaredAnnotationsByType.length > 1) {
-				throw new IllegalArgumentException(String.format("%s is present multiple times on %s.%s", SearchParameter.class.getSimpleName(), model.getSimpleName(), f.getName()));
-			}
-			
-			
-			SearchParameter simpleParameterAnnotation = declaredAnnotationsByType[0];
-			
-			if (!StringUtils.isEmpty(simpleParameterAnnotation.name())) {
-				return new SearchablePropertyDefinition(simpleParameterAnnotation.name(), simpleParameterAnnotation.type());
-			} else {
-				return new SearchablePropertyDefinition(f.getName(), simpleParameterAnnotation.type());
-			}
-		}).collect(Collectors.toMap(k -> "_" + k.getName(), Function.identity()));
-		
-		Set<String> parameterKeys = validate(multiMap, searchablePropertyDefinitions);
-		
-		//Create the parameter
-		for (String key : parameterKeys) {
-			Collection<String> values = multiMap.get(key);
-			
-			SearchablePropertyDefinition searchablePropertyDefinition = searchablePropertyDefinitions.get(key);
-			
-			SearchRequestParameter searchRequestParameter = SearchRequestParameter.builder()
-				.name(key)
-				.type(searchablePropertyDefinition.getType())
-				.values(values)
-				.build();
-			
-			System.out.println(searchRequestParameter);
-		}
-		
-		parameterKeys.stream()
-			.map(k -> k.split(":")[0])
-			.forEach(System.out::println);
-		
-		for (Field field : allSearchableFields) {
-			System.out.println("field: " + field.getName());
-			
-			SearchParameter[] declaredAnnotationsByType = field.getDeclaredAnnotationsByType(SearchParameter.class);
-			
-			for (SearchParameter param : declaredAnnotationsByType) {
-				System.out.println("Annotation: " + param.name() + " : " + param.type());
-			}
-		}
-		
-	}
-
-	private Set<String> validate(Multimap<String, String> multiMap,
-			Map<String, SearchablePropertyDefinition> searchablePropertyDefinitions) {
-		//validate keys
-		Set<String> parameterKeys = multiMap.keySet();
-		
-		
-		for (String parameterKey : parameterKeys) {
-			if (!searchablePropertyDefinitions.keySet().contains(parameterKey)) {
-				throw new BadRequestException(String.format("Parameter %s is not supported. Supported parameters are %s.", parameterKey, Arrays.toString(searchablePropertyDefinitions.keySet().toArray())), "SearchRequestParameter");
-			}
-			Collection<String> values = multiMap.get(parameterKey);
-			//TODO: multi/single value annotation
-			validateSingleValue(values, parameterKey);
-			
-		}
-		return parameterKeys;
-	}
-	
-	/*
-	 * Recursively collect the annotated fields from the class hierarchy.
-	 * @see @SearchParameter
-	 */
-	private List<Field> collectSearchableFields(Class<?> clazz) {
-		
-		if (clazz == null) {
-	        return Collections.emptyList();
-	    }
-		
-	    List<Field> result = Lists.newArrayList(collectSearchableFields(clazz.getSuperclass()));
-	    List<Field> filteredFields = Arrays.stream(clazz.getDeclaredFields())
-	      .filter(f -> f.isAnnotationPresent(SearchParameter.class))
-	      .collect(Collectors.toList());
-	    result.addAll(filteredFields);
-	    return result;
-	}
-
 	private void validateSingleValue(Collection<String> values, String parameterName) {
 		
 		if (values.isEmpty()) {
@@ -329,7 +214,7 @@ public class SearchRequestParameters {
 				if (!StringUtils.isEmpty(element)) {
 					requestedParameters.add(element);
 				} else {
-					//thow an exception??
+					//throw an exception??
 				}
 			}
 		}

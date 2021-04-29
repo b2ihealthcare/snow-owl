@@ -21,8 +21,8 @@ import org.junit.runners.Suite.SuiteClasses;
 
 import com.b2international.snowowl.fhir.tests.filter.ConceptMapFilterTest;
 import com.b2international.snowowl.fhir.tests.filter.FilterTest;
-import com.b2international.snowowl.fhir.tests.filter.ParameterParsingTest;
-import com.b2international.snowowl.fhir.tests.filter.SearchRequestParametersTest;
+import com.b2international.snowowl.fhir.tests.filter.FhirRequestParameterTest;
+import com.b2international.snowowl.fhir.tests.filter.FhirRequestParametersTest;
 import com.b2international.snowowl.fhir.tests.serialization.domain.BundleSerializationTest;
 import com.b2international.snowowl.fhir.tests.serialization.domain.CodeSystemSerializationTest;
 import com.b2international.snowowl.fhir.tests.serialization.domain.ConceptMapSerializationTest;
@@ -48,8 +48,8 @@ import com.b2international.snowowl.fhir.tests.serialization.parameterized.*;
 	FilterTest.class,
 
 	//tests related to request parameter parsing and filtering
-	ParameterParsingTest.class,
-	SearchRequestParametersTest.class,
+	FhirRequestParameterTest.class,
+	FhirRequestParametersTest.class,
 
 	//Data type tests
 	PrimitiveDataTypeSerializationTest.class,

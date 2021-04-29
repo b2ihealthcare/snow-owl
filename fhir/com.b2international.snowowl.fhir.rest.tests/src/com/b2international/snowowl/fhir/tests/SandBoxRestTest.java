@@ -79,6 +79,12 @@ public class SandBoxRestTest extends FhirRestTest {
 		.around(new BundleStartRule("com.b2international.snowowl.core.rest"));
 	
 	
+	@Test
+	public void printAllCodesystems() {
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+		.when().get("/CodeSystem").prettyPrint();
+	}
+	
 	/*
 	 * the name, _id, description and publisher parameters (these 3 additionally support the :exact, :contains and :missing modifiers)
 	 */

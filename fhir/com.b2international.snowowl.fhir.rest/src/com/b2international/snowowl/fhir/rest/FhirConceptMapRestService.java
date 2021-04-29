@@ -21,6 +21,7 @@ import static java.net.HttpURLConnection.HTTP_OK;
 
 import java.util.Collection;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,9 +48,7 @@ import com.b2international.snowowl.fhir.core.model.conceptmap.TranslateResult;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.provider.IConceptMapApiProvider;
-import com.b2international.snowowl.fhir.core.search.SearchRequestParameters;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
+import com.b2international.snowowl.fhir.core.search.RawRequestParameter;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -87,9 +86,7 @@ public class FhirConceptMapRestService extends BaseFhirResourceRestService<Conce
 	@RequestMapping(method=RequestMethod.GET)
 	public Bundle getConceptMaps(@RequestParam(required=false) MultiValueMap<String, String> parameters) {
 		
-		Multimap<String, String> multiMap = HashMultimap.create();
-		parameters.keySet().forEach(k -> multiMap.putAll(k, parameters.get(k)));
-		SearchRequestParameters requestParameters = new SearchRequestParameters(multiMap); 
+		Set<RawRequestParameter> requestParameters = processParameters(parameters);
 		
 		String uri = MvcUriComponentsBuilder.fromController(FhirConceptMapRestService.class).build().toString();
 		
@@ -132,9 +129,7 @@ public class FhirConceptMapRestService extends BaseFhirResourceRestService<Conce
 	public MappingJacksonValue getConceptMap(@PathVariable("conceptMapId") String conceptMapId, 
 			@RequestParam(required=false) MultiValueMap<String, String> parameters) {
 		
-		Multimap<String, String> multiMap = HashMultimap.create();
-		parameters.keySet().forEach(k -> multiMap.putAll(k, parameters.get(k)));
-		SearchRequestParameters requestParameters = new SearchRequestParameters(multiMap);
+		Set<RawRequestParameter> requestParameters = processParameters(parameters);
 		
 		LogicalId logicalId = LogicalId.fromIdString(conceptMapId);
 		ConceptMap conceptMap = conceptMapProviderRegistry.getConceptMapProvider(getBus(), locales, logicalId).getConceptMap(logicalId);
