@@ -22,6 +22,7 @@ import static java.net.HttpURLConnection.HTTP_OK;
 import java.util.Collection;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.converter.json.MappingJacksonValue;
@@ -47,7 +48,8 @@ import com.b2international.snowowl.fhir.core.model.valueset.ValidateCodeRequest;
 import com.b2international.snowowl.fhir.core.model.valueset.ValidateCodeResult;
 import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
 import com.b2international.snowowl.fhir.core.provider.IValueSetApiProvider;
-import com.b2international.snowowl.fhir.core.search.RawRequestParameter;
+import com.b2international.snowowl.fhir.core.search.FhirFilterParameter;
+import com.b2international.snowowl.fhir.core.search.FhirParameter;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -70,6 +72,11 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 	@Autowired
 	private IValueSetApiProvider.Registry valueSetProviderRegistry;
 	
+	@Override
+	protected Class<ValueSet> getModelClass() {
+		return ValueSet.class;
+	}
+	
 	/**
 	 * ValueSets
 	 * @param parameters - request parameters
@@ -84,7 +91,12 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 	@RequestMapping(method=RequestMethod.GET)
 	public Bundle getValueSets(@RequestParam(required=false) MultiValueMap<String, String> parameters) {
 		
-		Set<RawRequestParameter> requestParameters = processParameters(parameters); 
+		Set<FhirParameter> fhirParameters = processParameters(parameters); 
+		
+		Set<FhirFilterParameter> filterParameters = fhirParameters.stream()
+				.filter(FhirFilterParameter.class::isInstance)
+				.map(FhirFilterParameter.class::cast)
+				.collect(Collectors.toSet());
 		
 		//TODO: replace this with something more general as described in
 		//https://docs.spring.io/spring-hateoas/docs/current/reference/html/
@@ -98,7 +110,7 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 		for (IValueSetApiProvider fhirProvider : valueSetProviderRegistry.getProviders(getBus(), locales)) {
 			Collection<ValueSet> valueSets = fhirProvider.getValueSets();
 			for (ValueSet valueSet : valueSets) {
-				applyResponseContentFilter(valueSet, requestParameters);
+				applyResponseContentFilter(valueSet, filterParameters);
 				
 				String resourceUrl = String.join("/", uri, valueSet.getId().getIdValue());
 				
@@ -129,14 +141,19 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 	public MappingJacksonValue getValueSet(@PathVariable("valueSetId") String valueSetId, 
 			@RequestParam(required=false) MultiValueMap<String, String> parameters) {
 		
-		Set<RawRequestParameter> requestParameters = processParameters(parameters);
+		Set<FhirParameter> fhirParameters = processParameters(parameters); 
+		
+		Set<FhirFilterParameter> filterParameters = fhirParameters.stream()
+				.filter(FhirFilterParameter.class::isInstance)
+				.map(FhirFilterParameter.class::cast)
+				.collect(Collectors.toSet());
 		
 		LogicalId logicalId = LogicalId.fromIdString(valueSetId);
 		ValueSet valueSet = valueSetProviderRegistry
 			.getValueSetProvider(getBus(), locales, logicalId) 
 			.getValueSet(logicalId);
 
-		return applyResponseContentFilter(valueSet, requestParameters);
+		return applyResponseContentFilter(valueSet, filterParameters);
 	}
 	
 	/**

@@ -50,17 +50,17 @@ public class FhirRequestParameterTest extends FhirTest {
 		String key = paramMap.keySet().iterator().next();
 		Collection<String> values = paramMap.get(key);
 		RawRequestParameter fhirParameter = new RawRequestParameter(key, values);
-		assertThat(fhirParameter.getParameterName(), equalTo("_summary"));
-		assertThat(fhirParameter.getParameterValues(), contains("1", "2"));
-		assertThat(fhirParameter.getParameterModifier(), equalTo(null));
+		assertThat(fhirParameter.getName(), equalTo("_summary"));
+		assertThat(fhirParameter.getValues(), contains("1", "2"));
+		assertThat(fhirParameter.getModifier(), equalTo(null));
 		
 		paramMap = convertToMultimap("http://localhost?_text:exact=test");
 		key = paramMap.keySet().iterator().next();
 		values = paramMap.get(key);
 		fhirParameter = new RawRequestParameter(key, values);
-		assertThat(fhirParameter.getParameterName(), equalTo("_text"));
-		assertThat(fhirParameter.getParameterValues(), contains("test"));
-		assertThat(fhirParameter.getParameterModifier(), equalTo("exact"));
+		assertThat(fhirParameter.getName(), equalTo("_text"));
+		assertThat(fhirParameter.getValues(), contains("test"));
+		assertThat(fhirParameter.getModifier(), equalTo("exact"));
 		
 	}
 	

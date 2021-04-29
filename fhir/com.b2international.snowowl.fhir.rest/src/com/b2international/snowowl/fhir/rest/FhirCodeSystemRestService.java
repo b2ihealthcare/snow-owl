@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.converter.json.MappingJacksonValue;
@@ -54,7 +55,9 @@ import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.provider.ICodeSystemApiProvider;
-import com.b2international.snowowl.fhir.core.search.RawRequestParameter;
+import com.b2international.snowowl.fhir.core.search.FhirFilterParameter;
+import com.b2international.snowowl.fhir.core.search.FhirParameter;
+import com.b2international.snowowl.fhir.core.search.FhirSearchParameter;
 import com.b2international.snowowl.fhir.core.search.SupportedSearchParameter.FhirCommonSearchKey;
 
 import io.swagger.annotations.Api;
@@ -85,6 +88,11 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 	@Autowired
 	private ICodeSystemApiProvider.Registry codeSystemProviderRegistry;
 	
+	@Override
+	protected Class<CodeSystem> getModelClass() {
+		return CodeSystem.class;
+	}
+	
 	/**
 	 * CodeSystems
 	 * @param parameters - request parameters
@@ -99,11 +107,12 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 	@GetMapping
 	public Bundle getCodeSystems(@RequestParam(required=false) MultiValueMap<String, String> parameters) {
 		
-		Set<RawRequestParameter> requestParameters = processParameters(parameters);
+		Set<FhirParameter> requestParameters = processParameters(parameters);
 		
-//		Multimap<String, String> multiMap = HashMultimap.create();
-//		parameters.keySet().forEach(k -> multiMap.putAll(k, parameters.get(k)));
-//		SearchRequestParameters requestParameters = new SearchRequestParameters(multiMap); 
+		Set<FhirFilterParameter> filterParameters = requestParameters.stream()
+			.filter(FhirFilterParameter.class::isInstance)
+			.map(FhirFilterParameter.class::cast)
+			.collect(Collectors.toSet());
 		
 		//TODO: replace this with something more general as described in
 		//https://docs.spring.io/spring-hateoas/docs/current/reference/html/
@@ -121,7 +130,7 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 		//String id = requestParameters.getId();
 		if (idOptional.isPresent()) {
 			CodeSystem codeSystem = getCodeSystemById(idOptional.get());
-			applyResponseContentFilter(codeSystem, requestParameters);
+			applyResponseContentFilter(codeSystem, filterParameters);
 			String resourceUrl = String.join("/", uri, codeSystem.getId().getIdValue());
 			Entry entry = new Entry(new Uri(resourceUrl), codeSystem);
 			builder.addEntry(entry);
@@ -131,7 +140,7 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 		} else {
 			for (ICodeSystemApiProvider fhirProvider : codeSystemProviderRegistry.getProviders(getBus(), locales)) {
 				Collection<CodeSystem> codeSystems = fhirProvider.getCodeSystems();
-				total = total + applySearchParameters(builder, uri, codeSystems, requestParameters);
+				total = total + applyFilterParameters(builder, uri, codeSystems, filterParameters);
 			}
 		}
 		return builder.total(total).build();
@@ -156,14 +165,18 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 	public MappingJacksonValue getCodeSystem(@PathVariable("codeSystemId") String codeSystemId, 
 			@RequestParam(required=false) MultiValueMap<String, String> parameters) {
 		
-		Set<RawRequestParameter> fhirParameters = processParameters(parameters);
+		Set<FhirParameter> fhirParameters = processParameters(parameters);
+		Set<FhirFilterParameter> filterParameters = fhirParameters.stream()
+				.filter(FhirFilterParameter.class::isInstance)
+				.map(FhirFilterParameter.class::cast)
+				.collect(Collectors.toSet());
 		
 //		Multimap<String, String> multiMap = HashMultimap.create();
 //		parameters.keySet().forEach(k -> multiMap.putAll(k, parameters.get(k)));
 //		SearchRequestParameters requestParameters = new SearchRequestParameters(multiMap); 
 		
 		CodeSystem codeSystem = getCodeSystemById(codeSystemId);
-		return applyResponseContentFilter(codeSystem, fhirParameters);
+		return applyResponseContentFilter(codeSystem, filterParameters);
 	}
 	
 	/**
@@ -441,5 +454,5 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 			}
 		}
 	}
-	
+
 }

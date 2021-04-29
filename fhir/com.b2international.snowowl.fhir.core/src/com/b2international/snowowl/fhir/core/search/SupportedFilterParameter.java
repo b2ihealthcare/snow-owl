@@ -66,8 +66,6 @@ public class SupportedFilterParameter extends FhirRequestParameterDefinition {
 			return valueOf(requestParam.toLowerCase());
 		}
 		
-		
-		
 		public static Set<String> getParameterNames() {
 			return Arrays.stream(values()).map(k -> k.name()).collect(Collectors.toSet());
 		}

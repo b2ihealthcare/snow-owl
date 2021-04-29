@@ -1,70 +1,80 @@
 package com.b2international.snowowl.fhir.core.search;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.commons.StringUtils;
+import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
+import com.google.common.collect.Lists;
+
 /**
- * 
- * FHIR search request URI parameter part representation<br> 
+ * FHIR URI request URI parameter raw (unprocessed) representation<br> 
  *  
- *  Examples:<br>
+ *  Format:<br>
  *  <pre>
- *  GET [base]/Observation?_lastUpdated=gt2010-10-01
- *  GET [base]/Condition?_tag=http://acme.org/codes|needs-review
- *  GET [base]/Patient?given:contains=eve
- *  GET [base]/ValueSet?url:above=http://acme.org/fhir/ValueSet/123/_history/5
- *  
- *  GET [base]/Patient?gender:not=male
- *  GET [base]/DiagnosticReport?subject.name=peter
- *  
- *  GET [base]/DiagnosticReport?subject.height=lt100 - larger than
+ *  parameterName[:modifier] = value1, value2, value3...
  *  </pre>
- *
+ *  
+ *  @since 7.17
  */
 public class RawRequestParameter {
 	
-	private String parameterKey;
-	private Collection<String> parameterValues;
-	
-	private String parameterName;
-	private String parameterModifier;
+	private String name;
+	private String modifier;
+	private Collection<String> values;
 
 	public RawRequestParameter(@NotEmpty String parameterKey, Collection<String> parameterValues) {
-		this.parameterKey = parameterKey;
-		this.parameterValues = parameterValues;
-		parse();
-	}
-	
-	private void parse() {
 		String[] parameterKeyArray = parameterKey.split(":");
 		if (parameterKeyArray.length == 1) {
-			parameterName = parameterKeyArray[0];
+			name = parameterKeyArray[0];
 		} else if (parameterKeyArray.length == 2) {
-			parameterName = parameterKeyArray[0];
-			parameterModifier = parameterKeyArray[1];
+			name = parameterKeyArray[0];
+			modifier = parameterKeyArray[1];
 		} else {
-			//BadRequest instead
-			throw new IllegalArgumentException(String.format("Too many modifiers in parameter key '%s'", parameterKey));
+			throw new BadRequestException(String.format("Too many modifiers in parameter key '%s'", parameterKey));
 		}
 		
+		values = splitParameterValues(parameterValues);
 	}
 	
-	public String getParameterName() {
-		return parameterName;
+	/*
+	 * org.springframework.util.MultiValueMap does not split the commma separated values.
+	 * We have to do it manually here.
+	 */
+	private List<String> splitParameterValues(Collection<String> unsplitValues) {
+		
+		List<String> splitParameters = Lists.newArrayList();
+		for (String element : unsplitValues) {
+			
+			//Spring can return a collection with nulls as elements
+			if (StringUtils.isEmpty(element)) continue;
+			
+			element = element.replaceAll(" ", "");
+			if (element.contains(",")) {
+				String requestedFields[] = element.split(",");
+				splitParameters.addAll(Lists.newArrayList(requestedFields));
+			} else {
+				splitParameters.add(element);
+			}
+		}
+		return splitParameters;
 	}
 	
-	public String getParameterModifier() {
-		return parameterModifier;
+	public String getName() {
+		return name;
+	}
+	
+	public String getModifier() {
+		return modifier;
 	}
 
 	public boolean hasModifier() {
-		return parameterModifier !=null;
+		return modifier !=null;
 	}
 	
-	public Collection<String> getParameterValues() {
-		return parameterValues;
+	public Collection<String> getValues() {
+		return values;
 	}
-
-	
 }

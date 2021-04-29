@@ -50,13 +50,13 @@ public class SupportedFhirUriParameterDefinitions {
 	
 	public void validateFilterParameter(RawRequestParameter requestParameter) {
 
-		String parameterName = requestParameter.getParameterName();
+		String parameterName = requestParameter.getName();
 		if (!supportedFilterParameters.keySet().contains(parameterName)) {
 			throw new BadRequestException(String.format("Filter parameter %s is not supported. Supported filter parameters are %s.", parameterName, Arrays.toString(supportedFilterParameters.keySet().toArray())), SEARCH_REQUEST_PARAMETER_MARKER);
 		}
 		
 		if (requestParameter.hasModifier()) {
-			String parameterModifier = requestParameter.getParameterModifier();
+			String parameterModifier = requestParameter.getModifier();
 			
 			if (!SearchRequestParameterModifier.hasValue(parameterModifier)) {
 				throw new BadRequestException(String.format("Unknown filter parameter modifier '%s' for parameter '%s'. Valid modifiers are %s.", parameterModifier, parameterName, Arrays.toString(SearchRequestParameterModifier.values())), SEARCH_REQUEST_PARAMETER_MARKER);
@@ -80,14 +80,14 @@ public class SupportedFhirUriParameterDefinitions {
 //		return parameterKeys;
 	}
 	
-	public FhirRequestParameterDefinition classifyParameter(RawRequestParameter fhirParameter) {
+	public FhirParameter classifyParameter(RawRequestParameter fhirParameter) {
 		
-		String parameterName = fhirParameter.getParameterName();
+		String parameterName = fhirParameter.getName();
 		if (supportedSearchParameters.containsKey(parameterName)) {
 			
 			SupportedSearchParameter supportedSearchParameter = supportedSearchParameters.get(parameterName);
 			
-			FhirSearchParameter fhirSearchParameter = new FhirSearchParameter(parameterName, supportedSearchParameter.getType(), fhirParameter.getParameterValues());
+			FhirSearchParameter fhirSearchParameter = new FhirSearchParameter(parameterName, supportedSearchParameter.getType(), fhirParameter.getValues());
 			return fhirSearchParameter;
 			
 			//create search parameter
@@ -96,7 +96,7 @@ public class SupportedFhirUriParameterDefinitions {
 			validateFilterParameter(fhirParameter);
 			
 			SupportedFilterParameter supportedFilterParameter = supportedFilterParameters.get(parameterName);
-			return new FhirFilterParameter(parameterName, supportedFilterParameter.getType(), fhirParameter.getParameterValues()); 
+			return new FhirFilterParameter(parameterName, supportedFilterParameter.getType(), fhirParameter.getValues()); 
 		} else if (FhirCommonSearchKey.hasParameter(parameterName)) {
 			throw new BadRequestException(String.format("Search parameter %s is not supported. Supported search parameters are %s.", parameterName, Arrays.toString(supportedSearchParameters.keySet().toArray())), SEARCH_REQUEST_PARAMETER_MARKER);
 		} else if (FhirFilterParameterKey.hasParameter(parameterName)) {
@@ -109,7 +109,7 @@ public class SupportedFhirUriParameterDefinitions {
 	
 	public void validateSearchParameter(RawRequestParameter requestParameter) {
 
-		String parameterName = requestParameter.getParameterName();
+		String parameterName = requestParameter.getName();
 		if (!supportedSearchParameters.keySet().contains(parameterName)) {
 			throw new BadRequestException(String.format("Search parameter %s is not supported. Supported search parameters are %s.", parameterName, Arrays.toString(supportedFilterParameters.keySet().toArray())), SEARCH_REQUEST_PARAMETER_MARKER);
 		}
@@ -117,7 +117,7 @@ public class SupportedFhirUriParameterDefinitions {
 		SupportedSearchParameter supportedSearchParameter = supportedSearchParameters.get(parameterName);
 		
 		if (requestParameter.hasModifier()) {
-			String parameterModifier = requestParameter.getParameterModifier();
+			String parameterModifier = requestParameter.getModifier();
 			
 			if (!SearchRequestParameterModifier.hasValue(parameterModifier)) {
 				throw new BadRequestException(String.format("Unknown search parameter modifier '%s' for parameter '%s'. Valid modifiers are %s.", parameterModifier, parameterName, Arrays.toString(SearchRequestParameterModifier.values())), SEARCH_REQUEST_PARAMETER_MARKER);

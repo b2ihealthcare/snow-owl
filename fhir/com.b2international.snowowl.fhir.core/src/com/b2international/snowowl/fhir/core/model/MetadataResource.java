@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Narrative;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.usagecontext.UsageContext;
+import com.b2international.snowowl.fhir.core.search.Filterable;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.b2international.snowowl.fhir.core.search.Searchable;
 import com.b2international.snowowl.fhir.core.search.Summary;
@@ -49,6 +50,7 @@ import com.google.common.collect.Sets;
  * 
  * @since 6.3
  */
+@Filterable( filters = {"_summary", "_elements"})
 public abstract class MetadataResource extends DomainResource {
 	
 	//same as logical id

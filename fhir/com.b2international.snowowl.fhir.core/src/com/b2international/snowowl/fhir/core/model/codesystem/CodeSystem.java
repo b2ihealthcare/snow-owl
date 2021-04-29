@@ -66,7 +66,6 @@ import io.swagger.annotations.ApiModel;
  */
 @ApiModel("CodeSystem")
 @JsonFilter(FhirBeanPropertyFilter.FILTER_NAME)
-@Filterable( filters = {"_summary"})
 public class CodeSystem extends MetadataResource {
 
 	// FHIR header "resourceType" : "CodeSystem",

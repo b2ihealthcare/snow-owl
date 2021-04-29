@@ -2,17 +2,16 @@ package com.b2international.snowowl.fhir.core.search;
 
 import java.util.Collection;
 
-public class FhirFilterParameter extends FhirRequestParameterDefinition {
+import com.b2international.snowowl.fhir.core.search.FhirRequestParameterDefinition.FhirRequestParameterType;
 
-	private Collection<String> values;
+public class FhirFilterParameter extends FhirParameter {
 
-	public FhirFilterParameter(String name, String type) {
-		super(name, type);
+	public FhirFilterParameter(String name, FhirRequestParameterType type, Collection<String> values) {
+		super(name, type, values);
 	}
 
-	public FhirFilterParameter(final String name, final FhirRequestParameterType type, Collection<String> values) {
-		super(name, type);
-		this.values = values;
+	public FhirFilterParameter(String name, String type, Collection<String> values) {
+		super(name, type, values);
 	}
 
 }
