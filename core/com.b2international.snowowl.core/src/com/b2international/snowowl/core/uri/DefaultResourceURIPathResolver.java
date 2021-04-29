@@ -22,6 +22,8 @@ import java.util.stream.Collectors;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.snowowl.core.Resource;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
@@ -36,21 +38,21 @@ import com.b2international.snowowl.core.request.SearchResourceRequest;
 public final class DefaultResourceURIPathResolver implements ResourceURIPathResolver {
 
 	@Override
-	public List<String> resolve(ServiceProvider context, List<CodeSystemURI> codeSystemURIs) {
+	public List<String> resolve(ServiceProvider context, List<ResourceURI> codeSystemURIs) {
 		if (CompareUtils.isEmpty(codeSystemURIs)) {
 			return Collections.emptyList();
 		}
-		final Map<String, CodeSystem> codeSystemsByShortName = CodeSystemRequests.prepareSearchAllCodeSystems()
-				.filterByIds(codeSystemURIs.stream().map(CodeSystemURI::getCodeSystem).collect(Collectors.toSet()))
+		final Map<String, Resource> codeSystemsByShortName = CodeSystemRequests.prepareSearchAllCodeSystems()
+				.filterByIds(codeSystemURIs.stream().map(ResourceURI::getResourceId).collect(Collectors.toSet()))
 				.build()
 				.execute(context)
 				.stream()
-				.collect(Collectors.toMap(CodeSystem::getShortName, t -> t));
+				.collect(Collectors.toMap(Resource::getId, t -> t));
 		
 		return codeSystemURIs.stream().map(uri -> resolve(context, uri, codeSystemsByShortName.get(uri.getCodeSystem()))).collect(Collectors.toList());
 	}
 
-	private String resolve(ServiceProvider context, CodeSystemURI uriToResolve, CodeSystem codeSystem) {
+	private String resolve(ServiceProvider context, ResourceURI uriToResolve, CodeSystem codeSystem) {
 		if (uriToResolve.isHead()) {
 			// use code system working branch directly when HEAD is specified
 			return codeSystem.getBranchPath();

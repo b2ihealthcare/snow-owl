@@ -18,6 +18,7 @@ package com.b2international.snowowl.core.codesystem;
 import java.util.List;
 
 import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.TerminologyResource;
 
 /**
@@ -28,7 +29,9 @@ import com.b2international.snowowl.core.TerminologyResource;
  */
 public class CodeSystem extends TerminologyResource {
 	
-	private static final long serialVersionUID = 761L;
+	private static final long serialVersionUID = 5L;
+	
+	private static final String CODESYSTEM_RESOURCE_TYPE = "codesystem";
 	
 	/**
 	 * @since 8.0
@@ -39,7 +42,7 @@ public class CodeSystem extends TerminologyResource {
 
 	@Override
 	public String getResourceType() {
-		return "codesystem";
+		return CODESYSTEM_RESOURCE_TYPE;
 	}
 	
 	/**
@@ -49,6 +52,10 @@ public class CodeSystem extends TerminologyResource {
 		return (List<ExtendedLocale>) getSettings().get(CommonSettings.LOCALES);
 	}
 	
+	public static ResourceURI uri(String codeSystemId, String path) {
+		return ResourceURI.branch(CODESYSTEM_RESOURCE_TYPE, codeSystemId, path);
+	}
+
 //	/**
 //	 * Returns all code system short name dependencies and itself.
 //	 */
