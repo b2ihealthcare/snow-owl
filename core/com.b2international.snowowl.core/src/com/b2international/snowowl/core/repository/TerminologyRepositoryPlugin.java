@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,16 +37,7 @@ import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.ContextConfigurer;
 import com.b2international.snowowl.core.merge.ComponentRevisionConflictProcessor;
 import com.b2international.snowowl.core.merge.IMergeConflictRule;
-import com.b2international.snowowl.core.request.ConceptMapMappingSearchRequestEvaluator;
-import com.b2international.snowowl.core.request.ConceptSearchRequest;
-import com.b2international.snowowl.core.request.ConceptSearchRequestBuilder;
-import com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator;
-import com.b2international.snowowl.core.request.ConceptMapMappingSearchRequest;
-import com.b2international.snowowl.core.request.ConceptMapMappingSearchRequestBuilder;
-import com.b2international.snowowl.core.request.MemberSearchRequest;
-import com.b2international.snowowl.core.request.MemberSearchRequestBuilder;
-import com.b2international.snowowl.core.request.QueryOptimizer;
-import com.b2international.snowowl.core.request.SetMemberSearchRequestEvaluator;
+import com.b2international.snowowl.core.request.*;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.Plugin;
 import com.b2international.snowowl.core.terminology.Terminology;
@@ -75,7 +66,6 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 			
 			
 			final Repository repo = builder
-					.withInitializer(getTerminologyRepositoryInitializer())
 					.withPreCommitHook(getTerminologyRepositoryPreCommitHook(builder.log()))
 					.setMergeMaxResults(repositoryConfig.getMergeMaxResults())
 					.addTerminologyComponents(getTerminologyComponents())
@@ -199,8 +189,6 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 	protected void afterRun(SnowOwlConfiguration configuration, Environment env) throws Exception {
 	}
 
-	protected abstract TerminologyRepositoryInitializer getTerminologyRepositoryInitializer();
-	
 	/**
 	 * Subclasses may override and provide a custom precommit hook to be installed on the underlying repository. {@link BaseRepositoryPreCommitHook}
 	 * is a good candidate to extend and use for any particular terminology plugin.
