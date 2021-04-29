@@ -38,6 +38,8 @@ import com.google.common.collect.Sets.SetView;
 
 public class SupportedFhirUriParameterDefinitions {
 	
+	private static final String SEARCH_REQUEST_PARAMETER_MARKER = "SearchRequestParameter";
+
 	private Map<String, SupportedFilterParameter> supportedFilterParameters = Maps.newHashMap();
 	
 	private Map<String, SupportedSearchParameter> supportedSearchParameters = Maps.newHashMap();
@@ -50,14 +52,14 @@ public class SupportedFhirUriParameterDefinitions {
 
 		String parameterName = requestParameter.getParameterName();
 		if (!supportedFilterParameters.keySet().contains(parameterName)) {
-			throw new BadRequestException(String.format("Filter parameter %s is not supported. Supported filter parameters are %s.", parameterName, Arrays.toString(supportedFilterParameters.keySet().toArray())), "SearchRequestParameter");
+			throw new BadRequestException(String.format("Filter parameter %s is not supported. Supported filter parameters are %s.", parameterName, Arrays.toString(supportedFilterParameters.keySet().toArray())), SEARCH_REQUEST_PARAMETER_MARKER);
 		}
 		
 		if (requestParameter.hasModifier()) {
 			String parameterModifier = requestParameter.getParameterModifier();
 			
 			if (!SearchRequestParameterModifier.hasValue(parameterModifier)) {
-				throw new BadRequestException(String.format("Unknown filter parameter modifier '%s' for parameter '%s'. Valid modifiers are %s.", parameterModifier, parameterName, Arrays.toString(SearchRequestParameterModifier.values())), "SearchRequestParameter");
+				throw new BadRequestException(String.format("Unknown filter parameter modifier '%s' for parameter '%s'. Valid modifiers are %s.", parameterModifier, parameterName, Arrays.toString(SearchRequestParameterModifier.values())), SEARCH_REQUEST_PARAMETER_MARKER);
 			}
 			
 		}
@@ -83,7 +85,9 @@ public class SupportedFhirUriParameterDefinitions {
 		String parameterName = fhirParameter.getParameterName();
 		if (supportedSearchParameters.containsKey(parameterName)) {
 			
-			FhirSearchParameter fhirSearchParameter = new FhirSearchParameter(parameterName, null); //TODO:
+			SupportedSearchParameter supportedSearchParameter = supportedSearchParameters.get(parameterName);
+			
+			FhirSearchParameter fhirSearchParameter = new FhirSearchParameter(parameterName, supportedSearchParameter.getType(), fhirParameter.getParameterValues());
 			return fhirSearchParameter;
 			
 			//create search parameter
@@ -92,16 +96,14 @@ public class SupportedFhirUriParameterDefinitions {
 			validateFilterParameter(fhirParameter);
 			
 			SupportedFilterParameter supportedFilterParameter = supportedFilterParameters.get(parameterName);
-			FhirRequestParameterType type = supportedFilterParameter.getType();
-			//create filter parameter
-			return new FhirFilterParameter(parameterName, type); //Values?
+			return new FhirFilterParameter(parameterName, supportedFilterParameter.getType(), fhirParameter.getParameterValues()); 
 		} else if (FhirCommonSearchKey.hasParameter(parameterName)) {
-			throw new BadRequestException(String.format("Search parameter %s is not supported. Supported search parameters are %s.", parameterName, Arrays.toString(supportedSearchParameters.keySet().toArray())), "SearchRequestParameter");
+			throw new BadRequestException(String.format("Search parameter %s is not supported. Supported search parameters are %s.", parameterName, Arrays.toString(supportedSearchParameters.keySet().toArray())), SEARCH_REQUEST_PARAMETER_MARKER);
 		} else if (FhirFilterParameterKey.hasParameter(parameterName)) {
-			throw new BadRequestException(String.format("Filter parameter %s is not supported. Supported filter parameters are %s.", parameterName, Arrays.toString(supportedFilterParameters.keySet().toArray())), "SearchRequestParameter");
+			throw new BadRequestException(String.format("Filter parameter %s is not supported. Supported filter parameters are %s.", parameterName, Arrays.toString(supportedFilterParameters.keySet().toArray())), SEARCH_REQUEST_PARAMETER_MARKER);
 		} else {
 			SetView<String> union = Sets.union(supportedSearchParameters.keySet(), supportedFilterParameters.keySet());
-			throw new BadRequestException(String.format("URI parameter %s is not supported. Supported filter parameters are %s.", parameterName, Arrays.toString(union.toArray())), "SearchRequestParameter");
+			throw new BadRequestException(String.format("URI parameter %s is not supported. Supported parameters are %s.", parameterName, Arrays.toString(union.toArray())), SEARCH_REQUEST_PARAMETER_MARKER);
 		}
 	}
 	
@@ -109,7 +111,7 @@ public class SupportedFhirUriParameterDefinitions {
 
 		String parameterName = requestParameter.getParameterName();
 		if (!supportedSearchParameters.keySet().contains(parameterName)) {
-			throw new BadRequestException(String.format("Search parameter %s is not supported. Supported search parameters are %s.", parameterName, Arrays.toString(supportedFilterParameters.keySet().toArray())), "SearchRequestParameter");
+			throw new BadRequestException(String.format("Search parameter %s is not supported. Supported search parameters are %s.", parameterName, Arrays.toString(supportedFilterParameters.keySet().toArray())), SEARCH_REQUEST_PARAMETER_MARKER);
 		}
 		
 		SupportedSearchParameter supportedSearchParameter = supportedSearchParameters.get(parameterName);
@@ -118,11 +120,11 @@ public class SupportedFhirUriParameterDefinitions {
 			String parameterModifier = requestParameter.getParameterModifier();
 			
 			if (!SearchRequestParameterModifier.hasValue(parameterModifier)) {
-				throw new BadRequestException(String.format("Unknown search parameter modifier '%s' for parameter '%s'. Valid modifiers are %s.", parameterModifier, parameterName, Arrays.toString(SearchRequestParameterModifier.values())), "SearchRequestParameter");
+				throw new BadRequestException(String.format("Unknown search parameter modifier '%s' for parameter '%s'. Valid modifiers are %s.", parameterModifier, parameterName, Arrays.toString(SearchRequestParameterModifier.values())), SEARCH_REQUEST_PARAMETER_MARKER);
 			}
 			
 			if (!supportedSearchParameter.hasSupportedModifier(parameterModifier)) {
-				throw new BadRequestException(String.format("Unsupported search parameter modifier '%s' for parameter '%s'. Supported modifiers are %s.", parameterModifier, parameterName, Arrays.toString(supportedSearchParameter.getSupportedModifiers().toArray())), "SearchRequestParameter");
+				throw new BadRequestException(String.format("Unsupported search parameter modifier '%s' for parameter '%s'. Supported modifiers are %s.", parameterModifier, parameterName, Arrays.toString(supportedSearchParameter.getSupportedModifiers().toArray())), SEARCH_REQUEST_PARAMETER_MARKER);
 			}
 			
 		}
@@ -131,11 +133,11 @@ public class SupportedFhirUriParameterDefinitions {
 	private  void validateSingleValue(Collection<String> values, String parameterName) {
 		
 		if (values.isEmpty()) {
-			throw new BadRequestException(String.format("No %s parameter is submitted.", parameterName), "SearchRequestParameter");
+			throw new BadRequestException(String.format("No %s parameter is submitted.", parameterName), SEARCH_REQUEST_PARAMETER_MARKER);
 		}
 		
 		if (values.size() != 1) {
-			throw new BadRequestException(String.format("Too many %s parameter values are submitted.", parameterName), "SearchRequestParameter");
+			throw new BadRequestException(String.format("Too many %s parameter values are submitted.", parameterName), SEARCH_REQUEST_PARAMETER_MARKER);
 		}
 	}
 	
