@@ -379,7 +379,7 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 	
 	@Test
 	public void rule115b() throws Exception {
-		// Subsets should not contain retired descriptions
+		// Reference Sets should not contain retired descriptions
 		final String ruleId = "115b";
 		indexRule(ruleId);
 
