@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,45 +15,34 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
-import java.util.List;
 import java.util.Map;
 
-import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.TransactionalRequestBuilder;
-import com.b2international.snowowl.core.uri.CodeSystemURI;
 
 /**
  * @since 4.7
  */
 public final class CodeSystemUpdateRequestBuilder extends BaseRequestBuilder<CodeSystemUpdateRequestBuilder, TransactionContext, Boolean> implements TransactionalRequestBuilder<Boolean> {
 
-	private final String uniqueId;
+	private final String resourceId;
 
-	private String name;
-	private String link;
+	private String title;
 	private String language;
-	private String citation;
 	private String branchPath;
-	private String iconPath;
-	private CodeSystemURI extensionOf;
-	private List<ExtendedLocale> locales;
-	private Map<String, Object> additionalProperties;
+	private ResourceURI extensionOf;
+	private Map<String, Object> settings;
 
 	CodeSystemUpdateRequestBuilder(final String uniqueId) {
 		super();
-		this.uniqueId = uniqueId;
+		this.resourceId = uniqueId;
 	}
 
-	public CodeSystemUpdateRequestBuilder setName(String name) {
-		this.name = name;
-		return getSelf();
-	}
-
-	public CodeSystemUpdateRequestBuilder setLink(String link) {
-		this.link = link;
+	public CodeSystemUpdateRequestBuilder setTitle(String title) {
+		this.title = title;
 		return getSelf();
 	}
 
@@ -62,48 +51,29 @@ public final class CodeSystemUpdateRequestBuilder extends BaseRequestBuilder<Cod
 		return getSelf();
 	}
 
-	public CodeSystemUpdateRequestBuilder setCitation(String citation) {
-		this.citation = citation;
-		return getSelf();
-	}
-
 	public CodeSystemUpdateRequestBuilder setBranchPath(String branchPath) {
 		this.branchPath = branchPath;
 		return getSelf();
 	}
 
-	public CodeSystemUpdateRequestBuilder setIconPath(String iconPath) {
-		this.iconPath = iconPath;
-		return getSelf();
-	}
-	
-	public CodeSystemUpdateRequestBuilder setLocales(List<ExtendedLocale> locales) {
-		this.locales = locales;
-		return getSelf();
-	}
-
-	public CodeSystemUpdateRequestBuilder setExtensionOf(CodeSystemURI extensionOf) {
+	public CodeSystemUpdateRequestBuilder setExtensionOf(ResourceURI extensionOf) {
 		this.extensionOf = extensionOf;
 		return getSelf();
 	}
 	
-	public CodeSystemUpdateRequestBuilder setAdditionalProperties(Map<String, Object> additionalProperties) {
-		this.additionalProperties = additionalProperties;
+	public CodeSystemUpdateRequestBuilder setSettings(Map<String, Object> settings) {
+		this.settings = settings;
 		return getSelf();
 	}
 
 	@Override
 	protected Request<TransactionContext, Boolean> doBuild() {
-		final CodeSystemUpdateRequest req = new CodeSystemUpdateRequest(uniqueId);
-		req.setName(name);
-		req.setLink(link);
+		final CodeSystemUpdateRequest req = new CodeSystemUpdateRequest(resourceId);
+		req.setTitle(title);
 		req.setLanguage(language);
-		req.setCitation(citation);
 		req.setBranchPath(branchPath);
-		req.setIconPath(iconPath);
 		req.setExtensionOf(extensionOf);
-		req.setLocales(locales);
-		req.setAdditionalProperties(additionalProperties);
+		req.setSettings(settings);
 		return req;
 	}
 }

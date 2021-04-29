@@ -22,20 +22,21 @@ import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
+import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
-import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.identity.Permission;
+import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
-import com.b2international.snowowl.core.uri.CodeSystemURI;
 
 /**
  * @since 4.7
  */
 final class CodeSystemSearchRequest 
-	extends SearchIndexResourceRequest<RepositoryContext, CodeSystems, CodeSystemEntry> 
+	extends SearchIndexResourceRequest<ServiceProvider, CodeSystems, ResourceDocument> 
 	implements RepositoryAccessControl {
 
-	private static final long serialVersionUID = 2L;
+	private static final long serialVersionUID = 3L;
 
 	CodeSystemSearchRequest() { }
 
@@ -45,10 +46,10 @@ final class CodeSystemSearchRequest
 	public enum OptionKey {
 		/** Search by specific tooling ID */
 		TOOLING_ID,
-		/** "Smart" search by name (taking prefixes, stemming, etc. into account) */
-		NAME,
-		/** Exact match for code system name */
-		NAME_EXACT,
+		/** "Smart" search by title (taking prefixes, stemming, etc. into account) */
+		TITLE,
+		/** Exact match for code system title */
+		TITLE_EXACT,
 		/** HL7 registry OID **/
 		OID, 
 		/**
@@ -58,18 +59,15 @@ final class CodeSystemSearchRequest
 	}
 	
 	@Override
-	protected Class<CodeSystemEntry> getDocumentType() {
-		return CodeSystemEntry.class;
+	protected Class<ResourceDocument> getDocumentType() {
+		return ResourceDocument.class;
 	}
 	
 	@Override
-	protected Expression prepareQuery(RepositoryContext context) {
+	protected Expression prepareQuery(ServiceProvider context) {
 		final ExpressionBuilder queryBuilder = Expressions.builder();
 		
-		addIdFilter(queryBuilder, ids -> Expressions.builder()
-				.should(CodeSystemEntry.Expressions.shortNames(ids))
-				.should(CodeSystemEntry.Expressions.oids(ids))
-				.build());
+		addIdFilter(queryBuilder, ResourceDocument.Expressions::ids);
 		
 		addToolingIdFilter(queryBuilder);
 		addNameFilter(queryBuilder);
@@ -82,45 +80,45 @@ final class CodeSystemSearchRequest
 
 	private void addToolingIdFilter(final ExpressionBuilder queryBuilder) {
 		if (containsKey(OptionKey.TOOLING_ID)) {
-			queryBuilder.filter(CodeSystemEntry.Expressions.toolingIds(getCollection(OptionKey.TOOLING_ID, String.class)));
+			queryBuilder.filter(ResourceDocument.Expressions.toolingIds(getCollection(OptionKey.TOOLING_ID, String.class)));
 		}
 	}
 
 	private void addNameFilter(ExpressionBuilder queryBuilder) {
-		if (containsKey(OptionKey.NAME)) {
-			final String searchTerm = getString(OptionKey.NAME);
+		if (containsKey(OptionKey.TITLE)) {
+			final String searchTerm = getString(OptionKey.TITLE);
 			ExpressionBuilder termFilter = Expressions.builder();
 			termFilter.should(Expressions.dismaxWithScoreCategories(
-				CodeSystemEntry.Expressions.matchNameExact(searchTerm),
-				CodeSystemEntry.Expressions.matchNameAllTermsPresent(searchTerm),
-				CodeSystemEntry.Expressions.matchNameAllPrefixesPresent(searchTerm)
+				ResourceDocument.Expressions.matchNameExact(searchTerm),
+				ResourceDocument.Expressions.matchNameAllTermsPresent(searchTerm),
+				ResourceDocument.Expressions.matchNameAllPrefixesPresent(searchTerm)
 			));
-			termFilter.should(Expressions.boost(CodeSystemEntry.Expressions.shortName(searchTerm), 1000.0f));
+			termFilter.should(Expressions.boost(ResourceDocument.Expressions.id(searchTerm), 1000.0f));
 			queryBuilder.must(termFilter.build());
 		}
 	}
 	
 	private void addNameExactFilter(ExpressionBuilder queryBuilder) {
-		if (containsKey(OptionKey.NAME_EXACT)) {
-			queryBuilder.must(CodeSystemEntry.Expressions.matchNameOriginal(getString(OptionKey.NAME_EXACT)));
+		if (containsKey(OptionKey.TITLE_EXACT)) {
+			queryBuilder.must(ResourceDocument.Expressions.matchNameOriginal(getString(OptionKey.TITLE_EXACT)));
 		}		
 	}
 	
 	private void addOidFilter(final ExpressionBuilder queryBuilder) {
 		if (containsKey(OptionKey.OID)) {
-			queryBuilder.filter(CodeSystemEntry.Expressions.oids(getCollection(OptionKey.OID, String.class)));
+			queryBuilder.filter(ResourceDocument.Expressions.oids(getCollection(OptionKey.OID, String.class)));
 		}
 	}
 	
 	private void addUpgradeOfFilter(ExpressionBuilder queryBuilder) {
 		if (containsKey(OptionKey.UPGRADE_OF)) {
-			Collection<CodeSystemURI> upgradeOfs = getCollection(OptionKey.UPGRADE_OF, CodeSystemURI.class);
-			queryBuilder.filter(CodeSystemEntry.Expressions.upgradeOf(upgradeOfs));
+			Collection<ResourceURI> upgradeOfs = getCollection(OptionKey.UPGRADE_OF, ResourceURI.class);
+			queryBuilder.filter(ResourceDocument.Expressions.upgradeOf(upgradeOfs));
 		}
 	}
 	
 	@Override
-	protected CodeSystems toCollectionResource(RepositoryContext context, Hits<CodeSystemEntry> hits) {
+	protected CodeSystems toCollectionResource(ServiceProvider context, Hits<ResourceDocument> hits) {
 		final CodeSystemConverter converter = new CodeSystemConverter(context, expand(), null);
 		return converter.convert(hits.getHits(), hits.getSearchAfter(), hits.getLimit(), hits.getTotal());
 	}

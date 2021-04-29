@@ -16,18 +16,13 @@
 package com.b2international.snowowl.core.codesystem;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
-import com.b2international.commons.exceptions.NotFoundException;
-import com.b2international.snowowl.core.Repositories;
-import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.codesystem.version.CodeSystemVersionCreateRequestBuilder;
 import com.b2international.snowowl.core.codesystem.version.CodeSystemVersionSearchRequestBuilder;
 import com.b2international.snowowl.core.compare.ConceptMapCompareResultItem;
 import com.b2international.snowowl.core.jobs.RemoteJobEntry;
-import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.*;
-import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.core.uri.ComponentURI;
 
 /**
@@ -65,7 +60,7 @@ public class CodeSystemRequests {
 	
 	// Upgrade API
 	
-	public static CodeSystemUpgradeRequestBuilder prepareUpgrade(CodeSystemURI codeSystem, CodeSystemURI extensionOf) {
+	public static CodeSystemUpgradeRequestBuilder prepareUpgrade(ResourceURI codeSystem, ResourceURI extensionOf) {
 		return new CodeSystemUpgradeRequestBuilder(codeSystem, extensionOf);
 	}
 	
@@ -110,61 +105,12 @@ public class CodeSystemRequests {
 		return new QueryOptimizeRequestBuilder();
 	}
 	
-	public static AllCodeSystemSearchRequestBuilder prepareSearchAllCodeSystems(){
-		return new AllCodeSystemSearchRequestBuilder();
-	}
-	
 	public static ConceptMapCompareRequestBuilder prepareConceptMapCompare(ComponentURI baseConceptMapURI, ComponentURI compareConceptMapURI){
 		return new ConceptMapCompareRequestBuilder(baseConceptMapURI, compareConceptMapURI);
 	}
 
 	public static ConceptMapCompareDsvExportRequestBuilder prepareConceptMapCompareDsvExport(final List<ConceptMapCompareResultItem> items, final String filePath){
 		return new ConceptMapCompareDsvExportRequestBuilder(items, filePath);
-	}
-
-	/**
-	 * Returns all {@link CodeSystem}s from all repositories.
-	 * @param context
-	 * @return
-	 */
-	public static List<CodeSystem> getAllCodeSystems(ServiceProvider context) {
-		final Repositories repositories = RepositoryRequests.prepareSearch()
-			.all()
-			.build()
-			.execute(context);
-		
-		return repositories.getItems()
-			.stream()
-			.flatMap(repository -> {
-				return CodeSystemRequests.prepareSearchCodeSystem()
-						.all()
-						.build(repository.id())
-						.getRequest()
-						.execute(context)
-						.stream();
-			})
-			.collect(Collectors.toList());
-	}
-
-	public static CodeSystem getCodeSystem(ServiceProvider context, String codeSystem) throws NotFoundException {
-		final Repositories repositories = RepositoryRequests.prepareSearch()
-				.all()
-				.build()
-				.execute(context);
-			
-		return repositories
-			.stream()
-			.flatMap(repository -> {
-				return CodeSystemRequests.prepareSearchCodeSystem()
-						.one()
-						.filterById(codeSystem)
-						.build(repository.id())
-						.getRequest()
-						.execute(context)
-						.stream();
-			})
-			.findFirst()
-			.orElseThrow(() -> new NotFoundException("CodeSystem", codeSystem));
 	}
 
 	public static String versionJobKey(String codeSystemShortName) {

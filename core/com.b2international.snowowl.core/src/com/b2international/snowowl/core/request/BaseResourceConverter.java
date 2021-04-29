@@ -23,9 +23,9 @@ import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.CollectionResource;
-import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.google.common.collect.Iterables;
 
 /**
@@ -36,7 +36,7 @@ import com.google.common.collect.Iterables;
  */
 public abstract class BaseResourceConverter<T, R, CR extends CollectionResource<R>> extends ResourceExpander implements ResourceConverter<T, R, CR> {
 
-	protected BaseResourceConverter(RepositoryContext context, Options expand, List<ExtendedLocale> locales) {
+	protected BaseResourceConverter(ServiceProvider context, Options expand, List<ExtendedLocale> locales) {
 		super(context, expand, locales);
 	}
 

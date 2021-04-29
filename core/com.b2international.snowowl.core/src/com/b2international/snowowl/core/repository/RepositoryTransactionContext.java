@@ -38,8 +38,6 @@ import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.*;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.core.codesystem.CodeSystem;
-import com.b2international.snowowl.core.codesystem.CodeSystemEntry;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersion;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -145,9 +143,7 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 	}
 	
 	private String getObjectId(Object component) {
-		if (component instanceof CodeSystemEntry) {
-			return ((CodeSystemEntry) component).getShortName();
-		} else if (component instanceof CodeSystemVersionEntry) { 
+		if (component instanceof CodeSystemVersionEntry) { 
 			return ((CodeSystemVersionEntry) component).getId();
 		} else if (component instanceof Revision) {
 			return ((Revision) component).getId();
@@ -173,12 +169,7 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 
 	@Override
 	public String add(Object o) {
-		if (o instanceof CodeSystemEntry) {
-			final CodeSystemEntry cs = (CodeSystemEntry) o;
-			staging.stageNew(cs.getShortName(), cs);
-			resolvedObjectsById.put(createComponentKey(cs.getShortName(), cs.getClass()), cs);
-			return cs.getShortName();
-		} else if (o instanceof CodeSystemVersionEntry) { 
+		if (o instanceof CodeSystemVersionEntry) { 
 			final CodeSystemVersionEntry cs = (CodeSystemVersionEntry) o;
 			staging.stageNew(cs.getId(), cs);
 			resolvedObjectsById.put(createComponentKey(cs.getVersionId(), cs.getClass()), cs);
@@ -211,13 +202,7 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 	
 	@Override
 	public void delete(Object o, boolean force) {
-		if (o instanceof CodeSystem) {
-			final CodeSystem cs = (CodeSystem) o;
-			staging.stageRemove(cs.getShortName(), lookup(cs.getShortName(), CodeSystemEntry.class));
-		} else if (o instanceof CodeSystemEntry) {
-			final CodeSystemEntry cs = (CodeSystemEntry) o;
-			staging.stageRemove(cs.getShortName(), cs);
-		} else if (o instanceof CodeSystemVersion) {
+		if (o instanceof CodeSystemVersion) {
 			final CodeSystemVersion cs = (CodeSystemVersion) o;
 			staging.stageRemove(cs.getId(), lookup(cs.getId(), CodeSystemVersionEntry.class));
 		} else if (o instanceof CodeSystemVersionEntry) {

@@ -237,13 +237,13 @@ public final class CodeSystemsCommand extends Command {
 				StdDateFormat.getDateInstance().format(codeSystemVersion.getLastModificationDate())
 				: "-"));
 		result.add("Version branch path: ".concat(codeSystemVersion.getPath()));
-		final ImmutableList<String> extensionsForGivenVersion = getExtensionsForGivenVersionOfCodeSystem(codeSystemVersion, codeSystem);
+		final List<String> extensionsForGivenVersion = getExtensionsForGivenVersionOfCodeSystem(codeSystemVersion, codeSystem);
 		result.add("Extensions: ".concat(CompareUtils.isEmpty(extensionsForGivenVersion)? "-" : String.join(", ", extensionsForGivenVersion)));
 
 		return String.join(CODE_SYSTEM_SUBPROPERTY_DELIMITER, result.build());
 	}
 
-	private ImmutableList<String> getExtensionsForGivenVersionOfCodeSystem(CodeSystemVersion version,
+	private List<String> getExtensionsForGivenVersionOfCodeSystem(CodeSystemVersion version,
 			CodeSystem extendedCodeSystem) {
 		return CodeSystemRequests.prepareSearchAllCodeSystems().buildAsync().execute(getBus())
 				.then(results -> results.stream().filter(cs -> {

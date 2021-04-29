@@ -15,17 +15,17 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
-import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.request.RepositoryRequestBuilder;
+import com.b2international.snowowl.core.request.SystemRequestBuilder;
 
 /**
  * @since 7.15.0
  */
 public final class CodeSystemCompleteUpgradeRequestBuilder 
-			extends BaseRequestBuilder<CodeSystemCompleteUpgradeRequestBuilder, RepositoryContext, Boolean>
-			implements RepositoryRequestBuilder<Boolean> {
+			extends BaseRequestBuilder<CodeSystemCompleteUpgradeRequestBuilder, ServiceProvider, Boolean>
+			implements SystemRequestBuilder<Boolean> {
 
 	private final String codeSystemId;
 
@@ -34,7 +34,7 @@ public final class CodeSystemCompleteUpgradeRequestBuilder
 	}
 	
 	@Override
-	protected Request<RepositoryContext, Boolean> doBuild() {
+	protected Request<ServiceProvider, Boolean> doBuild() {
 		CodeSystemCompleteUpgradeRequest req = new CodeSystemCompleteUpgradeRequest();
 		req.setCodeSystemId(codeSystemId);
 		return req;

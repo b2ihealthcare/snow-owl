@@ -15,19 +15,19 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.codesystem.CodeSystemSearchRequest.OptionKey;
-import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.request.RepositoryRequestBuilder;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
+import com.b2international.snowowl.core.request.SystemRequestBuilder;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
 
 /**
  * @since 4.7
  */
 public final class CodeSystemSearchRequestBuilder 
-		extends SearchResourceRequestBuilder<CodeSystemSearchRequestBuilder, RepositoryContext, CodeSystems>
-		implements RepositoryRequestBuilder<CodeSystems> {
+		extends SearchResourceRequestBuilder<CodeSystemSearchRequestBuilder, ServiceProvider, CodeSystems>
+		implements SystemRequestBuilder<CodeSystems> {
 
 	CodeSystemSearchRequestBuilder() {
 		super();
@@ -41,12 +41,12 @@ public final class CodeSystemSearchRequestBuilder
 		return addOption(OptionKey.TOOLING_ID, toolingIds);
 	}
 	
-	public CodeSystemSearchRequestBuilder filterByName(String term) {
-		return addOption(OptionKey.NAME, term);
+	public CodeSystemSearchRequestBuilder filterByTitle(String term) {
+		return addOption(OptionKey.TITLE, term);
 	}
 	
-	public CodeSystemSearchRequestBuilder filterByNameExact(String term) {
-		return addOption(OptionKey.NAME_EXACT, term);
+	public CodeSystemSearchRequestBuilder filterByTitleExact(String term) {
+		return addOption(OptionKey.TITLE_EXACT, term);
 	}
 	
 	public CodeSystemSearchRequestBuilder filterByOid(String oid) {
@@ -66,7 +66,7 @@ public final class CodeSystemSearchRequestBuilder
 	}
 
 	@Override
-	protected SearchResourceRequest<RepositoryContext, CodeSystems> createSearch() {
+	protected SearchResourceRequest<ServiceProvider, CodeSystems> createSearch() {
 		return new CodeSystemSearchRequest();
 	}
 

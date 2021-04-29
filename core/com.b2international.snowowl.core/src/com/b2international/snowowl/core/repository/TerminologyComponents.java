@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import org.slf4j.Logger;
 
-import com.b2international.snowowl.core.codesystem.CodeSystemEntry;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
 import com.b2international.snowowl.core.terminology.TerminologyComponent;
 import com.google.common.collect.BiMap;
@@ -35,7 +34,6 @@ public final class TerminologyComponents {
 	
 	public TerminologyComponents(Logger log) {
 		this.log = log;
-		this.terminologyComponentIdToDocuments.put(CodeSystemEntry.TERMINOLOGY_COMPONENT_ID, CodeSystemEntry.class);
 		this.terminologyComponentIdToDocuments.put(CodeSystemVersionEntry.TERMINOLOGY_COMPONENT_ID, CodeSystemVersionEntry.class);
 	}
 	

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,8 +29,6 @@ import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.codesystem.CodeSystemEntry;
-import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.Permission;
@@ -92,25 +90,18 @@ final class BranchCompareRequest implements Request<RepositoryContext, BranchCom
 		
 		final Set<ComponentIdentifier> changedContainers = Sets.newHashSet(); 
 		
-		int subtractAdded = 0;
 		for (RevisionCompareDetail detail : compareResult.getDetails()) {
 			final ObjectId affectedId;
 			if (detail.isComponentChange()) {
 				affectedId = detail.getComponent();
 				if (!detail.getObject().isRoot()) {
 					final short containerTerminologyComponentId = context.service(TerminologyComponents.class).getTerminologyComponentId(DocumentMapping.getClass(detail.getObject().type()));
-					if (CodeSystemEntry.TERMINOLOGY_COMPONENT_ID != containerTerminologyComponentId && CodeSystemVersionEntry.TERMINOLOGY_COMPONENT_ID != containerTerminologyComponentId) {
-						changedContainers.add(ComponentIdentifier.of(containerTerminologyComponentId, detail.getObject().id()));
-					}
+					changedContainers.add(ComponentIdentifier.of(containerTerminologyComponentId, detail.getObject().id()));
 				}
 			} else {
 				affectedId = detail.getObject();
 			}
 			final short terminologyComponentId = context.service(TerminologyComponents.class).getTerminologyComponentId(DocumentMapping.getClass(affectedId.type()));
-			if (CodeSystemEntry.TERMINOLOGY_COMPONENT_ID == terminologyComponentId || CodeSystemVersionEntry.TERMINOLOGY_COMPONENT_ID == terminologyComponentId) {
-				subtractAdded++;
-				continue;
-			}
 			
 			final ComponentIdentifier identifier = ComponentIdentifier.of(terminologyComponentId, affectedId.id());
 			
@@ -128,7 +119,7 @@ final class BranchCompareRequest implements Request<RepositoryContext, BranchCom
 		}
 		
 		return result
-				.totalNew(compareResult.getTotalAdded() - subtractAdded)
+				.totalNew(compareResult.getTotalAdded())
 				.totalChanged(compareResult.getTotalChanged())
 				.totalDeleted(compareResult.getTotalRemoved())
 				.build(changedContainers);

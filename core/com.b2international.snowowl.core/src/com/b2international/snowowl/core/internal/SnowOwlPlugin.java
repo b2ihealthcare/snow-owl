@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,21 @@
  */
 package com.b2international.snowowl.core.internal;
 
+import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
 
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.b2international.index.Index;
+import com.b2international.index.IndexClientFactory;
+import com.b2international.index.Indexes;
+import com.b2international.index.mapping.Mappings;
+import com.b2international.index.revision.DefaultRevisionIndex;
+import com.b2international.index.revision.RevisionIndex;
+import com.b2international.index.revision.TimestampProvider;
+import com.b2international.snowowl.core.config.IndexSettings;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.monitoring.MonitoringConfiguration;
 import com.b2international.snowowl.core.plugin.Component;
@@ -30,6 +39,7 @@ import com.b2international.snowowl.core.setup.Plugin;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.core.uri.DefaultResourceURIPathResolver;
 import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
@@ -56,6 +66,7 @@ public final class SnowOwlPlugin extends Plugin {
 		env.services().registerService(TerminologyRegistry.class, TerminologyRegistry.INSTANCE);
 		env.services().registerService(ResourceURIPathResolver.class, new DefaultResourceURIPathResolver());
 		
+		// configure monitoring support
 		final MonitoringConfiguration monitoringConfig = configuration.getModuleConfig(MonitoringConfiguration.class);
 		if (monitoringConfig.isEnabled()) {
 			final PrometheusMeterRegistry registry = createRegistry(monitoringConfig);
@@ -63,6 +74,26 @@ public final class SnowOwlPlugin extends Plugin {
 		} else {
 			// XXX this works like a NOOP registry if you do NOT register any additional registries to it
 			env.services().registerService(MeterRegistry.class, new CompositeMeterRegistry());
+		}
+	}
+	
+	@Override
+	public void preRun(SnowOwlConfiguration configuration, Environment env) throws Exception {
+		if (env.isServer()) {
+			final ObjectMapper mapper = env.service(ObjectMapper.class);
+			final Map<String, Object> indexSettings = newHashMap(env.service(IndexSettings.class));
+			indexSettings.put(IndexClientFactory.NUMBER_OF_SHARDS, 3); // TODO make this configurable
+			final Index resourceIndex = Indexes.createIndex(
+				"resources", 
+				mapper, 
+				new Mappings(ResourceDocument.class), 
+				env.service(IndexSettings.class)
+			);
+			
+			final TimestampProvider timestampProvider = new TimestampProvider.Default();
+			env.services().registerService(TimestampProvider.class, timestampProvider);
+			final RevisionIndex revisionIndex = new DefaultRevisionIndex(resourceIndex, timestampProvider, mapper);
+			env.services().registerService(ResourceRepository.class, new ResourceRepository(revisionIndex));
 		}
 	}
 

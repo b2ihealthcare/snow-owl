@@ -18,16 +18,19 @@ package com.b2international.snowowl.core.codesystem;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.index.revision.TimestampProvider;
 import com.b2international.index.revision.RevisionBranch.BranchState;
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.internal.ResourceRepository;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 
 /**
  * @since 7.15.0
  */
-final class CodeSystemCompleteUpgradeRequest implements Request<RepositoryContext, Boolean> {
+final class CodeSystemCompleteUpgradeRequest implements Request<ServiceProvider, Boolean> {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -39,7 +42,7 @@ final class CodeSystemCompleteUpgradeRequest implements Request<RepositoryContex
 	}
 	
 	@Override
-	public Boolean execute(RepositoryContext context) {
+	public Boolean execute(ServiceProvider context) {
 		CodeSystem codeSystem = CodeSystemRequests.prepareGetCodeSystem(codeSystemId)
 				.setExpand(CodeSystem.Expand.UPGRADE_OF_BRANCH_INFO + "()")
 				.build()
@@ -53,24 +56,22 @@ final class CodeSystemCompleteUpgradeRequest implements Request<RepositoryContex
 			}
 		}
 		
+		ResourceRepository resourceRepository = context.service(ResourceRepository.class);
+		
+		// TODO create ResourceContext, ResourceRequest and ResourceTransactionContext 
 		// mark the upgrade Code System completed by removing it from the index and updating the upgradeOf CodeSystem branch to the branch of the Upgrade
-		return RepositoryRequests.prepareCommit()
-				.setCommitComment(String.format("Complete upgrade of %s to %s", codeSystem.getUpgradeOf().getCodeSystem(), codeSystem.getExtensionOf()))
-				.setBody((tx) -> {
-					CodeSystemRequests.prepareUpdateCodeSystem(codeSystem.getUpgradeOf().getCodeSystem())
-						.setBranchPath(codeSystem.getBranchPath())
-						.setExtensionOf(codeSystem.getExtensionOf())
-						.build()
-						.execute(tx);
-					
-					tx.delete(codeSystem);
-					
-					return Boolean.TRUE;
-				})
-				.build(codeSystem.getRepositoryId(), Branch.MAIN_PATH)
-				.getRequest()
-				.execute(context)
-				.getResultAs(Boolean.class);
+		final long timestamp = context.service(TimestampProvider.class).getTimestamp();
+		resourceRepository.prepareCommit()
+			.commit(timestamp, author, String.format("Complete upgrade of %s to %s", codeSystem.getUpgradeOf().getResourceId(), codeSystem.getExtensionOf()));
+		
+		CodeSystemRequests.prepareUpdateCodeSystem(codeSystem.getUpgradeOf().getResourceId())
+			.setBranchPath(codeSystem.getBranchPath())
+			.setExtensionOf(codeSystem.getExtensionOf())
+			.build()
+			.execute(tx);
+	
+		tx.delete(codeSystem);
+		return Boolean.TRUE;
 	}
 
 }

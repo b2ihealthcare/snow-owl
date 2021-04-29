@@ -23,6 +23,7 @@ import com.b2international.commons.StringUtils;
 import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.branch.Branch;
@@ -30,6 +31,7 @@ import com.b2international.snowowl.core.branch.Branches;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.Permission;
+import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
 
@@ -38,23 +40,31 @@ import com.b2international.snowowl.core.uri.CodeSystemURI;
  */
 final class CodeSystemCreateRequest implements Request<TransactionContext, String>, RepositoryAccessControl {
 
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 
-	private String branchPath;
-	private String citation;
-	private String oid;
-	private String iconPath;
-	private String language;
-	private String link;
-	private String name;
-	private String repositoryId;
-	private String shortName;
-	private String terminologyId;
-	private CodeSystemURI extensionOf;
-	private CodeSystemURI upgradeOf;
-	private List<ExtendedLocale> locales;
-	private Map<String, Object> additionalProperties;
-
+	// the new codesystem's ID, if not specified, it will be auto-generated
+	String id;
+	
+	// common resource fields TODO move to superclass
+	String url;
+	String title;
+	String language;
+	String description;
+	String status;
+	String copyright;
+	String owner;
+	String contact;
+	String usage;
+	String purpose;
+	
+	// specialized resource fields
+	String oid;
+	String branchPath;
+	String toolingId;
+	ResourceURI extensionOf;
+	ResourceURI upgradeOf;
+	Map<String, Object> settings;
+	
 	private String parentPath;
 	private boolean createBranch = true;
 	
@@ -64,58 +74,6 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 		this.branchPath = branchPath;
 		// Branch should not be created if a path was specified from the outside
 		createBranch = StringUtils.isEmpty(branchPath);
-	}
-
-	void setCitation(final String citation) {
-		this.citation = citation;
-	}
-
-	void setOid(final String oid) {
-		this.oid = oid;
-	}
-
-	void setIconPath(final String iconPath) {
-		this.iconPath = iconPath;
-	}
-
-	void setLanguage(final String language) {
-		this.language = language;
-	}
-
-	void setLink(final String link) {
-		this.link = link;
-	}
-
-	void setName(final String name) {
-		this.name = name;
-	}
-
-	void setRepositoryId(final String repositoryId) {
-		this.repositoryId = repositoryId;
-	}
-
-	void setShortName(final String shortName) {
-		this.shortName = shortName;
-	}
-
-	void setTerminologyId(final String terminologyId) {
-		this.terminologyId = terminologyId;
-	}
-
-	void setExtensionOf(final CodeSystemURI extensionOf) {
-		this.extensionOf = extensionOf;
-	}
-	
-	void setUpgradeOf(CodeSystemURI upgradeOf) {
-		this.upgradeOf = upgradeOf;
-	}
-	
-	void setLocales(final List<ExtendedLocale> locales) {
-		this.locales = locales;
-	}
-	
-	void setAdditionalProperties(final Map<String, Object> additionalProperties) {
-		this.additionalProperties = additionalProperties;
 	}
 
 	@Override
@@ -130,8 +88,7 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 		}
 
 		checkBranchPath(context);
-		checkLocales();
-		checkAdditionalProperties();
+		checkSettings();
 		
 		// Set branchPath to the path of the created branch 
 		if (createBranch) {
@@ -209,22 +166,16 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 		return Optional.empty();
 	}
 
-	private void checkLocales() {
-		if (locales != null && locales.contains(null)) {
-			throw new BadRequestException("Locale list can not contain null.");
-		}
-	}
-
-	private void checkAdditionalProperties() {
-		if (additionalProperties != null) {
-			final Optional<String> nullValueProperty = additionalProperties.entrySet()
+	private void checkSettings() {
+		if (settings != null) {
+			final Optional<String> nullValueProperty = settings.entrySet()
 				.stream()
 				.filter(e -> e.getValue() == null)
 				.map(e -> e.getKey())
 				.findFirst();
 			
 			nullValueProperty.ifPresent(key -> {
-				throw new BadRequestException("Additional property value for key %s is null.", key);	
+				throw new BadRequestException("Setting value for key '%s' is null.", key);	
 			});
 		}
 	}
@@ -254,22 +205,25 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 		
 	}
 
-	private CodeSystemEntry createCodeSystemEntry(final TransactionContext context) {
-		return CodeSystemEntry.builder()
+	private ResourceDocument createCodeSystemEntry(final TransactionContext context) {
+		return ResourceDocument.builder()
+				.id(id)
+				.url(url)
+				.title(title)
+				.language(language)
+				.description(description)
+				.status(status)
+				.copyright(copyright)
+				.owner(owner)
+				.contact(contact)
+				.usage(usage)
+				.purpose(purpose)
 				.oid(oid)
 				.branchPath(branchPath)
-				.name(name)
-				.shortName(shortName)
-				.orgLink(link)
-				.language(language)
-				.citation(citation)
-				.iconPath(iconPath)
-				.terminologyComponentId(terminologyId)
-				.repositoryId(repositoryId)
+				.toolingId(toolingId)
 				.extensionOf(extensionOf)
 				.upgradeOf(upgradeOf)
-				.locales(locales)
-				.additionalProperties(additionalProperties)
+				.settings(settings)
 				.build();
 	}
 	

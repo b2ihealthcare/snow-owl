@@ -24,7 +24,7 @@ import com.b2international.index.revision.Commit;
 import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.index.revision.StagingArea;
-import com.b2international.snowowl.core.codesystem.CodeSystemEntry;
+import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
 import com.b2international.snowowl.core.domain.DelegatingContext.Builder;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
@@ -49,7 +49,7 @@ public interface TransactionContext extends BranchContext, AutoCloseable {
 	 * Adds the given {@link Object} to this transaction context as a completely new object. 
 	 * 
 	 * @param obj - the object to persist and add to the repository
-	 * @return the identifier of the object if it is an instanceof of any of the following classes: {@link Revision} / {@link CodeSystemEntry} / {@link CodeSystemVersionEntry} or <code>null</code> in any other cases.
+	 * @return the identifier of the object if it is an instanceof of any of the following classes: {@link Revision} / {@link Resource} / {@link CodeSystemVersionEntry} or <code>null</code> in any other cases.
 	 */
 	String add(Object obj);
 	

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import java.util.List;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.commons.options.OptionsBuilder;
-import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.ServiceProvider;
 
 /**
  * @since 7.7
@@ -32,11 +32,11 @@ public abstract class ResourceExpander {
 
 	public static final int DEFAULT_LIMIT = 50;
 	
-	private final RepositoryContext context;
+	private final ServiceProvider context;
 	private final Options expand;
 	private final List<ExtendedLocale> locales;
 
-	protected ResourceExpander(RepositoryContext context, Options expand, List<ExtendedLocale> locales) {
+	protected ResourceExpander(ServiceProvider context, Options expand, List<ExtendedLocale> locales) {
 		this.context = checkNotNull(context, "context");
 		this.expand = expand == null ? OptionsBuilder.newBuilder().build() : expand;
 		this.locales = locales == null ? Collections.<ExtendedLocale>emptyList() : locales;
@@ -46,7 +46,7 @@ public abstract class ResourceExpander {
 		return expand;
 	}
 
-	protected RepositoryContext context() {
+	protected ServiceProvider context() {
 		return context;
 	}
 	

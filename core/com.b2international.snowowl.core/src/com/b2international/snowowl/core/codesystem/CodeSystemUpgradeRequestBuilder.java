@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,42 +15,42 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
-import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.request.RepositoryRequestBuilder;
-import com.b2international.snowowl.core.uri.CodeSystemURI;
+import com.b2international.snowowl.core.request.SystemRequestBuilder;
 
 /**
  * @since 7.13.0
  */
-public final class CodeSystemUpgradeRequestBuilder extends BaseRequestBuilder<CodeSystemUpgradeRequestBuilder, RepositoryContext, String> implements RepositoryRequestBuilder<String> {
+public final class CodeSystemUpgradeRequestBuilder extends BaseRequestBuilder<CodeSystemUpgradeRequestBuilder, ServiceProvider, String> implements SystemRequestBuilder<String> {
 
-	private final CodeSystemURI codeSystem;
-	private final CodeSystemURI extensionOf;
+	private final ResourceURI codeSystem;
+	private final ResourceURI extensionOf;
 	
-	private String codeSystemId;
+	private String resourceId;
 
-	CodeSystemUpgradeRequestBuilder(CodeSystemURI codeSystem, CodeSystemURI extensionOf) {
+	CodeSystemUpgradeRequestBuilder(ResourceURI codeSystem, ResourceURI extensionOf) {
 		this.codeSystem = codeSystem;
 		this.extensionOf = extensionOf;
 	}
 	
 	/**
-	 * Optionally set the upgrade CodeSystem's unique ID instead of letting the system generate it automatically from the codeSystem and the new extensionOf values.
+	 * Optionally set the upgrade resource's unique ID instead of letting the system generate it automatically from the resource and the new extensionOf values.
 	 * 
-	 * @param codeSystemId
+	 * @param resourceId
 	 * @return
 	 */
-	public CodeSystemUpgradeRequestBuilder setCodeSystemId(String codeSystemId) {
-		this.codeSystemId = codeSystemId;
+	public CodeSystemUpgradeRequestBuilder setResourceId(String resourceId) {
+		this.resourceId = resourceId;
 		return getSelf();
 	}
 	
 	@Override
-	protected Request<RepositoryContext, String> doBuild() {
+	protected Request<ServiceProvider, String> doBuild() {
 		final CodeSystemUpgradeRequest req = new CodeSystemUpgradeRequest(codeSystem, extensionOf);
-		req.setCodeSystemId(codeSystemId);
+		req.setResourceId(resourceId);
 		return req;
 	}
 

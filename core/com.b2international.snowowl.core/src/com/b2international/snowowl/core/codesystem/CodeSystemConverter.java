@@ -23,8 +23,11 @@ import com.b2international.commons.options.Options;
 import com.b2international.index.revision.BaseRevisionBranching;
 import com.b2international.index.revision.RevisionBranch;
 import com.b2international.index.revision.RevisionBranch.BranchState;
+import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.branch.BranchInfo;
 import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.request.BaseResourceConverter;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
@@ -36,9 +39,9 @@ import com.google.common.collect.TreeMultimap;
 /**
  * @since 7.6
  */
-public final class CodeSystemConverter extends BaseResourceConverter<CodeSystemEntry, CodeSystem, CodeSystems> {
+public final class CodeSystemConverter extends BaseResourceConverter<ResourceDocument, CodeSystem, CodeSystems> {
 
-	public CodeSystemConverter(RepositoryContext context, Options expand, List<ExtendedLocale> locales) {
+	public CodeSystemConverter(ServiceProvider context, Options expand, List<ExtendedLocale> locales) {
 		super(context, expand, locales);
 	}
 
@@ -48,8 +51,29 @@ public final class CodeSystemConverter extends BaseResourceConverter<CodeSystemE
 	}
 
 	@Override
-	protected CodeSystem toResource(CodeSystemEntry entry) {
-		return CodeSystem.builder(entry).build();
+	protected CodeSystem toResource(ResourceDocument doc) {
+		CodeSystem codeSystem = new CodeSystem();
+		
+		codeSystem.setId(doc.getId());
+		codeSystem.setUrl(doc.getUrl());
+		codeSystem.setTitle(doc.getTitle());
+		codeSystem.setLanguage(doc.getLanguage());
+		codeSystem.setDescription(doc.getDescription());
+		codeSystem.setStatus(doc.getStatus());
+		codeSystem.setCopyright(doc.getCopyright());
+		codeSystem.setOwner(doc.getOwner());
+		codeSystem.setContact(doc.getContact());
+		codeSystem.setUsage(doc.getUsage());
+		codeSystem.setPurpose(doc.getPurpose());
+		
+		codeSystem.setOid(doc.getOid());
+		codeSystem.setBranchPath(doc.getBranchPath());
+		codeSystem.setToolingId(doc.getToolingId());
+		codeSystem.setExtensionOf(doc.getExtensionOf());
+		codeSystem.setUpgradeOf(doc.getUpgradeOf());
+		codeSystem.setSettings(doc.getSettings());
+		
+		return codeSystem;
 	}
 	
 	@Override
@@ -82,7 +106,7 @@ public final class CodeSystemConverter extends BaseResourceConverter<CodeSystemE
 			return;
 		}
 		
-		final List<CodeSystemURI> upgradeOfURIs = results.stream()
+		final List<ResourceURI> upgradeOfURIs = results.stream()
 				.filter(codeSystem -> codeSystem.getUpgradeOf() != null)
 				.map(codeSystem -> codeSystem.getUpgradeOf())
 				.collect(Collectors.toList());
@@ -94,11 +118,11 @@ public final class CodeSystemConverter extends BaseResourceConverter<CodeSystemE
 		
 		final List<String> upgradeOfBranches = context().service(ResourceURIPathResolver.class).resolve(context(), upgradeOfURIs);
 		
-		final Map<CodeSystemURI, String> branchesByUpgradeOf = Maps.newHashMap();
-		Iterator<CodeSystemURI> uriIterator = upgradeOfURIs.iterator();
+		final Map<ResourceURI, String> branchesByUpgradeOf = Maps.newHashMap();
+		Iterator<ResourceURI> uriIterator = upgradeOfURIs.iterator();
 		Iterator<String> branchIterator = upgradeOfBranches.iterator();
 		while (uriIterator.hasNext() && branchIterator.hasNext()) {
-			CodeSystemURI uri = uriIterator.next();
+			ResourceURI uri = uriIterator.next();
 			String branch = branchIterator.next();
 			branchesByUpgradeOf.put(uri, branch);
 		}
@@ -122,7 +146,7 @@ public final class CodeSystemConverter extends BaseResourceConverter<CodeSystemE
 		final Set<String> parentCodeSystems = results.stream()
 			.map(CodeSystem::getExtensionOf)
 			.filter(uri -> uri != null)
-			.map(CodeSystemURI::getCodeSystem)
+			.map(ResourceURI::getResourceId)
 			.collect(Collectors.toSet());
 		
 		final CodeSystemVersions parentVersions = CodeSystemRequests.prepareSearchCodeSystemVersion()
@@ -138,7 +162,7 @@ public final class CodeSystemConverter extends BaseResourceConverter<CodeSystemE
 		versionsByShortName.putAll(Multimaps.index(parentVersions, CodeSystemVersion::getCodeSystem));
 		
 		for (final CodeSystem result : results) {
-			final CodeSystemURI extensionOf = result.getExtensionOf();
+			final ResourceURI extensionOf = result.getExtensionOf();
 			
 			// skip if there is not dependency set in extensionOf
 			// or if this is an upgrade CodeSystem
@@ -149,16 +173,16 @@ public final class CodeSystemConverter extends BaseResourceConverter<CodeSystemE
 				continue;
 			}
 			
-			final String shortName = extensionOf.getCodeSystem();
+			final String resourceId = extensionOf.getResourceId();
 			final String versionId = extensionOf.getPath();
 			
-			final NavigableSet<CodeSystemVersion> candidates = versionsByShortName.get(shortName);
+			final NavigableSet<CodeSystemVersion> candidates = versionsByShortName.get(resourceId);
 			
 			final Optional<CodeSystemVersion> currentExtensionVersion = candidates.stream()
 					.filter(v -> v.getVersion().equals(versionId))
 					.findFirst();
 			
-			final Optional<List<CodeSystemURI>> upgradeUris = currentExtensionVersion.map(currentVersion -> {
+			final Optional<List<ResourceURI>> upgradeUris = currentExtensionVersion.map(currentVersion -> {
 				final SortedSet<CodeSystemVersion> upgradeVersions = candidates.tailSet(currentVersion, false);
 				return upgradeVersions.stream()
 						.map(upgradeVersion -> upgradeVersion.getUri())
@@ -173,13 +197,13 @@ public final class CodeSystemConverter extends BaseResourceConverter<CodeSystemE
 		// first check the results
 		return results
 			.stream()
-			.filter(cs -> result.getCodeSystemURI().equals(cs.getUpgradeOf()))
+			.filter(cs -> result.getResourceURI().equals(cs.getUpgradeOf()))
 			.findFirst()
 			.or(() -> {
 				// then the index
 				return CodeSystemRequests.prepareSearchCodeSystem()
 					.one()
-					.filterByUpgradeOf(result.getCodeSystemURI())
+					.filterByUpgradeOf(result.getResourceURI())
 					.build()
 					.execute(context())
 					.first();

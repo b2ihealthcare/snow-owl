@@ -32,12 +32,9 @@ import com.b2international.index.revision.Hooks;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryInfo.Health;
-import com.b2international.snowowl.core.codesystem.CodeSystemEntry;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
 import com.b2international.snowowl.core.domain.IComponent;
-import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.plugin.ClassPathScanner;
-import com.b2international.snowowl.core.request.RepositoryRequest;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.terminology.Terminology;
 import com.b2international.snowowl.core.terminology.TerminologyComponent;
@@ -52,11 +49,9 @@ public final class RepositoryBuilder {
 	private final Logger log;
 	
 	private int mergeMaxResults;
-	private TerminologyRepositoryInitializer initializer;
 	private Hooks.PreCommitHook hook;
 	
 	private final Mappings mappings = new Mappings(
-		CodeSystemEntry.class, 
 		CodeSystemVersionEntry.class
 	);
 	private final TerminologyComponents terminologyComponents;
@@ -76,11 +71,6 @@ public final class RepositoryBuilder {
 
 	public RepositoryBuilder setMergeMaxResults(int mergeMaxResults) {
 		this.mergeMaxResults = mergeMaxResults;
-		return this;
-	}
-	
-	public RepositoryBuilder withInitializer(TerminologyRepositoryInitializer initializer) {
-		this.initializer = initializer;
 		return this;
 	}
 	
@@ -146,9 +136,6 @@ public final class RepositoryBuilder {
 		
 		// execute initialization steps
 		repository.waitForHealth(Health.GREEN, 3 * 60L /*wait 3 minutes for GREEN repository status*/);
-		new RepositoryRequest<>(repositoryId, initializer).execute(env.inject()
-				.bind(User.class, User.SYSTEM)
-				.build());
 		
 		return repository;
 	}

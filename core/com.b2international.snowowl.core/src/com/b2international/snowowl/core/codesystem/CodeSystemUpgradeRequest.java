@@ -25,6 +25,8 @@ import com.b2international.commons.exceptions.ApiError;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.ConflictException;
 import com.b2international.index.revision.RevisionBranch.BranchNameValidator;
+import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
@@ -39,69 +41,69 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * @since 7.14.0 
  */
-final class CodeSystemUpgradeRequest implements Request<RepositoryContext, String> {
+final class CodeSystemUpgradeRequest implements Request<ServiceProvider, String> {
 
 	private static final long serialVersionUID = 1L;
 
 	@JsonProperty
 	@NotNull
-	private final CodeSystemURI codeSystem;
+	private final ResourceURI resource;
 	
 	@JsonProperty
 	@NotNull
-	private final CodeSystemURI extensionOf;
+	private final ResourceURI extensionOf;
 
 	@JsonProperty
-	private String codeSystemId;
+	private String resourceId;
 	
-	public CodeSystemUpgradeRequest(CodeSystemURI codeSystem, CodeSystemURI extensionOf) {
-		this.codeSystem = codeSystem;
+	public CodeSystemUpgradeRequest(ResourceURI resource, ResourceURI extensionOf) {
+		this.resource = resource;
 		this.extensionOf = extensionOf;
 	}
 	
-	void setCodeSystemId(String codeSystemId) {
-		this.codeSystemId = codeSystemId;
+	void setResourceId(String resourceId) {
+		this.resourceId = resourceId;
 	}
 	
 	@Override
-	public String execute(RepositoryContext context) {
-		if (!codeSystem.isHead()) {
-			throw new BadRequestException("Upgrades can not be started from CodeSystem versions.")
-				.withDeveloperMessage("Use '%s' only instead of '%s'", codeSystem.getCodeSystem(), codeSystem);
+	public String execute(ServiceProvider context) {
+		if (!resource.isHead()) {
+			throw new BadRequestException("Upgrades can not be started from versions.")
+				.withDeveloperMessage("Use '%s' only instead of '%s'", resource.getResourceId(), resource);
 		}
 
 		// get available upgrades 
-		final CodeSystem currentCodeSystem = CodeSystemRequests.prepareGetCodeSystem(codeSystem.getCodeSystem())
+		final CodeSystem currentCodeSystem = CodeSystemRequests.prepareGetCodeSystem(resource.getResourceId())
 				.setExpand(CodeSystem.Expand.AVAILABLE_UPGRADES + "()")
 				.build()
 				.execute(context);
 		
 		if (currentCodeSystem.getUpgradeOf() != null) {
-			throw new BadRequestException("Upgrade can not be started on an existing Code System Upgrade");
+			throw new BadRequestException("Upgrade can not be started on an existing upgrade resource");
 		}
 		
-		final List<CodeSystemURI> availableUpgrades = currentCodeSystem.getAvailableUpgrades();
+		final List<ResourceURI> availableUpgrades = currentCodeSystem.getAvailableUpgrades();
 		// report bad request if there are no upgrades available
 		if (availableUpgrades.isEmpty()) {
-			throw new BadRequestException("There are no upgrades available for the CodeSystem '%s'.", codeSystem.getCodeSystem());
+			throw new BadRequestException("There are no upgrades available for resource '%s'.", resource.getResourceId());
 		}
 		
 		// or the selected extensionOf version is not present as a valid available upgrade
 		if (!availableUpgrades.contains(extensionOf)) {
 			throw new BadRequestException("Upgrades can only be performed to the next available version dependency.")
-				.withDeveloperMessage("Use '%s/<VERSION_ID>', where <VERSION_ID> is one of: '%s'", extensionOf.getCodeSystem(), availableUpgrades);
+				.withDeveloperMessage("Use '%s/<VERSION_ID>', where <VERSION_ID> is one of: '%s'", extensionOf.getResourceId(), availableUpgrades);
 		}
 		
-		// auto-generate the codeSystemId if not provided
-		// auto-generated upgrade IDs consist of the original CodeSystem's name and the new extensionOf dependency's URI
-		final String upgradeCodeSystemId;
-		if (codeSystemId == null) {
-			upgradeCodeSystemId = String.format("%s-%s-UPGRADE", codeSystem.getCodeSystem(), extensionOf.getPath() /*versionId*/); 
-		} else if (codeSystemId.isBlank()) {
-			throw new BadRequestException("'codeSystemId' property should not be empty, if provided");
+		// auto-generate the resourceId if not provided
+		// auto-generated upgrade IDs consist of the original Resource's ID and the new extensionOf dependency's path, which is version at this point
+		final String upgradeResourceId;
+		if (resourceId == null) {
+			upgradeResourceId = String.format("%s-%s-UPGRADE", resource.getResourceId(), extensionOf.getPath() /*versionId*/); 
+		} else if (resourceId.isBlank()) {
+			throw new BadRequestException("'resourceId' property should not be empty, if provided");
 		} else {
-			BranchNameValidator.DEFAULT.checkName(codeSystemId);
-			upgradeCodeSystemId = codeSystemId;
+			BranchNameValidator.DEFAULT.checkName(resourceId);
+			upgradeResourceId = resourceId;
 		}
 		
 		// create the same branch name under the new extensionOf path
@@ -109,7 +111,7 @@ final class CodeSystemUpgradeRequest implements Request<RepositoryContext, Strin
 		
 		String upgradeBranch = RepositoryRequests.branching().prepareCreate()
 			.setParent(parentBranch)
-			.setName(codeSystem.getCodeSystem())
+			.setName(resource.getResourceId())
 			.build()
 			.execute(context);
 		
@@ -135,20 +137,20 @@ final class CodeSystemUpgradeRequest implements Request<RepositoryContext, Strin
 			
 			// and lastly create the actual CodeSystem so users will be able to browse, access and complete the upgrade
 			return CodeSystemRequests.prepareNewCodeSystem()
-						.setShortName(upgradeCodeSystemId)
+						.setShortName(upgradeResourceId)
 						.setBranchPath(upgradeBranch)
 						// copy shared properties from the original CodeSystem
-						.setAdditionalProperties(currentCodeSystem.getAdditionalProperties())
+						.setSettings(currentCodeSystem.getAdditionalProperties())
 						.setCitation(currentCodeSystem.getCitation())
 						.setExtensionOf(extensionOf)
-						.setUpgradeOf(codeSystem)
+						.setUpgradeOf(resource)
 						.setIconPath(currentCodeSystem.getIconPath())
 						.setLocales(currentCodeSystem.getLocales())
 						.setLink(currentCodeSystem.getOrganizationLink())
 						.setName(String.format("Upgrade of '%s' to '%s'", currentCodeSystem.getName(), extensionOf))
 						.setRepositoryId(context.id())
 						.setTerminologyId(currentCodeSystem.getTerminologyId())
-						.build(context.id(), Branch.MAIN_PATH, context.service(User.class).getUsername(), String.format("Start upgrade of '%s' to '%s'", codeSystem, extensionOf))
+						.build(context.id(), Branch.MAIN_PATH, context.service(User.class).getUsername(), String.format("Start upgrade of '%s' to '%s'", resource, extensionOf))
 						.getRequest()
 						.execute(context)
 						.getResultAs(String.class);			

@@ -29,7 +29,6 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.index.revision.Commit;
 import com.b2international.index.revision.StagingArea;
-import com.b2international.snowowl.core.codesystem.CodeSystemEntry;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.DelegatingTransactionContext;
 import com.b2international.snowowl.core.domain.IComponent;

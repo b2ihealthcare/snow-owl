@@ -15,24 +15,20 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
-import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
 import com.b2international.commons.exceptions.BadRequestException;
-import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.codesystem.CodeSystemEntry.Builder;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.identity.Permission;
+import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.UpdateRequest;
-import com.b2international.snowowl.core.uri.CodeSystemURI;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 
 /**
@@ -42,75 +38,58 @@ final class CodeSystemUpdateRequest extends UpdateRequest<TransactionContext> im
 
 	private static final long serialVersionUID = 1L;
 
-	private String name;
-	private String link;
+//	private String iconPath; // TODO should we support custom icons for resources?? branding??
+	
+	// generic resource update properties, TODO move to super-superclass
+	private String title;
 	private String language;
-	private String citation;
+	
+	// generic terminology resource update properties, TODO move to superclass 
 	private String branchPath;
-	private String iconPath;
-	private CodeSystemURI extensionOf;
-	private List<ExtendedLocale> locales;
-	private Map<String, Object> additionalProperties;
-
+	private ResourceURI extensionOf;
+	private Map<String, Object> settings;
+	
 	CodeSystemUpdateRequest(final String uniqueId) {
 		super(uniqueId);
 	}
 
-	void setName(final String name) {
-		this.name = name;
-	}
-
-	void setLink(final String link) {
-		this.link = link;
+	void setTitle(final String title) {
+		this.title = title;
 	}
 
 	void setLanguage(final String language) {
 		this.language = language;
 	}
 
-	void setCitation(final String citation) {
-		this.citation = citation;
-	}
-
 	void setBranchPath(final String branchPath) {
 		this.branchPath = branchPath;
 	}
 
-	void setIconPath(final String iconPath) {
-		this.iconPath = iconPath;
-	}
+//	void setIconPath(final String iconPath) {
+//		this.iconPath = iconPath;
+//	}
 	
-	void setExtensionOf(CodeSystemURI extensionOf) {
+	void setExtensionOf(ResourceURI extensionOf) {
 		this.extensionOf = extensionOf;
 	}
 	
-	void setLocales(final List<ExtendedLocale> locales) {
-		this.locales = locales;
-	}
-	
-	void setAdditionalProperties(final Map<String, Object> additionalProperties) {
-		this.additionalProperties = additionalProperties;
+	void setSettings(final Map<String, Object> settings) {
+		this.settings = settings;
 	}
 
 	@Override
 	public Boolean execute(final TransactionContext context) {
-		if (locales != null && locales.contains(null)) {
-			throw new BadRequestException("Locale list can not contain null.");
-		}
-
-		CodeSystemEntry codeSystem = context.lookup(componentId(), CodeSystemEntry.class);
-		final CodeSystemEntry.Builder updated = CodeSystemEntry.builder(codeSystem);
+		ResourceDocument codeSystem = context.lookup(componentId(), ResourceDocument.class);
+		final ResourceDocument.Builder updated = ResourceDocument.builder(codeSystem);
 
 		boolean changed = false;
-		changed |= updateProperty(name, codeSystem::getName, updated::name);
-		changed |= updateProperty(link, codeSystem::getOrgLink, updated::orgLink);
+		changed |= updateProperty(title, codeSystem::getTitle, updated::title);
 		changed |= updateProperty(language, codeSystem::getLanguage, updated::language);
-		changed |= updateProperty(citation, codeSystem::getCitation, updated::citation);
-		changed |= updateProperty(iconPath, codeSystem::getIconPath, updated::iconPath);
-		changed |= updateLocales(codeSystem, updated);
-		changed |= updateAdditionalProperties(codeSystem, updated);
-		changed |= updateExtensionOf(context, updated, codeSystem.getExtensionOf(), codeSystem.getShortName());
+//		changed |= updateProperty(iconPath, codeSystem::getIconPath, updated::iconPath);
+//		changed |= updateLocales(codeSystem, updated);
 		changed |= updateBranchPath(context, updated, codeSystem.getBranchPath());
+		changed |= updateExtensionOf(context, updated, codeSystem.getExtensionOf(), codeSystem.getId());
+		changed |= updateSettings(codeSystem, updated);
 		
 		if (changed) {
 			context.add(updated.build());
@@ -119,60 +98,60 @@ final class CodeSystemUpdateRequest extends UpdateRequest<TransactionContext> im
 		return changed;
 	}
 
-	private boolean updateLocales(final CodeSystemEntry codeSystem, final Builder updated) {
-		// Don't update if no list was given
-		if (locales == null) {
-			return false;
-		}
-		
-		final List<ExtendedLocale> currentLocales = codeSystem.getLocales();
+//	private boolean updateLocales(final ResourceDocument codeSystem, final ResourceDocument.Builder updated) {
+//		// Don't update if no list was given
+//		if (locales == null) {
+//			return false;
+//		}
+//		
+//		final List<ExtendedLocale> currentLocales = codeSystem.getLocales();
+//
+//		// Also don't update if the lists contain the same elements in the same order
+//		if (Objects.equals(currentLocales, locales)) {
+//			return false;
+//		}
+//		
+//		updated.locales(ImmutableList.copyOf(locales));
+//		return true;
+//	}
 
-		// Also don't update if the lists contain the same elements in the same order
-		if (Objects.equals(currentLocales, locales)) {
+	private boolean updateSettings(final ResourceDocument codeSystem, final ResourceDocument.Builder updated) {
+		if (settings == null || settings.isEmpty()) {
 			return false;
 		}
 		
-		updated.locales(ImmutableList.copyOf(locales));
-		return true;
-	}
-
-	private boolean updateAdditionalProperties(final CodeSystemEntry codeSystem, final CodeSystemEntry.Builder updated) {
-		if (additionalProperties == null || additionalProperties.isEmpty()) {
-			return false;
-		}
-		
-		// Get mutable copy of existing properties, or an empty map for starters
-		final Map<String, Object> updatedProperties = Optional.ofNullable(codeSystem.getAdditionalProperties())
+		// Get mutable copy of existing settings, or an empty map for starters
+		final Map<String, Object> updatedSettings = Optional.ofNullable(codeSystem.getSettings())
 				.map(Maps::newHashMap)
 				.orElse(Maps.newHashMap());
 		
 		boolean changed = false;
 		
 		// Remove null values from map
-		final Set<String> keysToRemove = Maps.filterValues(additionalProperties, v -> v == null).keySet();
+		final Set<String> keysToRemove = Maps.filterValues(settings, v -> v == null).keySet();
 		for (final String key : keysToRemove) {
-			changed |= (updatedProperties.remove(key) != null);
+			changed |= (updatedSettings.remove(key) != null);
 		}
 
 		// Merge (add or modify) non-null values
-		final Set<String> keysToUpdate = Maps.filterValues(additionalProperties, v -> v != null).keySet();
+		final Set<String> keysToUpdate = Maps.filterValues(settings, v -> v != null).keySet();
 		for (final String key : keysToUpdate) {
-			changed |= updateProperty(additionalProperties.get(key), // value 
-					() -> updatedProperties.get(key),                // getter
-					value -> updatedProperties.put(key, value));     // setter 
+			changed |= updateProperty(settings.get(key), 			// value 
+					() -> updatedSettings.get(key),                 // getter
+					value -> updatedSettings.put(key, value));      // setter 
 		}
 		
 		if (changed) {
-			updated.additionalProperties(updatedProperties);
+			updated.settings(updatedSettings);
 		}
 		
 		return changed;
 	}
 
 	private boolean updateExtensionOf(final TransactionContext context, 
-			final CodeSystemEntry.Builder codeSystem, 
-			final CodeSystemURI currentExtensionOf, 
-			final String shortName) {
+			final ResourceDocument.Builder codeSystem, 
+			final ResourceURI currentExtensionOf, 
+			final String resourceId) {
 		
 		if (extensionOf != null && !extensionOf.equals(currentExtensionOf)) {
 			
@@ -181,12 +160,12 @@ final class CodeSystemUpdateRequest extends UpdateRequest<TransactionContext> im
 						+ "LATEST or HEAD) in extensionOf URI %s.", extensionOf);
 			}
 			
-			final String extensionOfShortName = extensionOf.getCodeSystem(); 
+			final String extensionOfResourceId = extensionOf.getResourceId(); 
 			final String versionId = extensionOf.getPath();
 			
 			final Optional<CodeSystemVersion> extensionOfVersion = CodeSystemRequests.prepareSearchCodeSystemVersion()
 					.one()
-					.filterByCodeSystemShortName(extensionOfShortName)
+					.filterByCodeSystemShortName(extensionOfResourceId)
 					.filterByVersionId(versionId)
 					.build()
 					.execute(context)
@@ -197,7 +176,7 @@ final class CodeSystemUpdateRequest extends UpdateRequest<TransactionContext> im
 			}
 			
 			// The working branch prefix is determined by the extensionOf code system version's path
-			final String newCodeSystemPath = extensionOfVersion.get().getPath() + IBranchPath.SEPARATOR + shortName;
+			final String newCodeSystemPath = extensionOfVersion.get().getPath() + IBranchPath.SEPARATOR + resourceId;
 			
 			if (branchPath != null && !branchPath.equals(newCodeSystemPath)) {
 				throw new BadRequestException("Branch path is inconsistent with extensionOf URI ('%s' given, should be '%s').",
@@ -213,7 +192,7 @@ final class CodeSystemUpdateRequest extends UpdateRequest<TransactionContext> im
 	}
 
 	private boolean updateBranchPath(final TransactionContext context, 
-			final CodeSystemEntry.Builder codeSystem, 
+			final ResourceDocument.Builder codeSystem, 
 			final String currentBranchPath) {
 		
 		// if extensionOf is set, branch path changes are already handled in updateExtensionOf
@@ -228,7 +207,7 @@ final class CodeSystemUpdateRequest extends UpdateRequest<TransactionContext> im
 				throw new BadRequestException("Branch with identifier %s is deleted.", branchPath);
 			}
 
-			// TODO: check if update branch path coincides with a code system version working path 
+			// TODO: check if update branch path coincides with a version working path 
 			// and update extensionOf accordingly?
 			codeSystem.extensionOf(null);
 			codeSystem.branchPath(branchPath);
