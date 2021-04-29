@@ -72,6 +72,15 @@
     "implementation": "scripts/rule80.groovy"
   },
   {
+    "id": "83",
+    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "messageTemplate": "Active terms should not contain double spaces.",
+    "severity": "ERROR",
+    "checkType": "FAST",
+    "type": "snomed-query",
+    "implementation": "{\"componentType\": \"description\",\"active\": \"true\",\"term\": \"regex(.*[ ]{2,}.*)\"}"
+  },
+  {
     "id": "110",
     "toolingId": "com.b2international.snowowl.terminology.snomed",
     "messageTemplate": "Concepts used as attributes must come from the attribute hierarchy.",
