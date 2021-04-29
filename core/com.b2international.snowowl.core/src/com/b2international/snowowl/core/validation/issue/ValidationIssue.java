@@ -31,6 +31,7 @@ import com.b2international.index.mapping.Field;
 import com.b2international.index.mapping.FieldAlias;
 import com.b2international.index.mapping.FieldAlias.FieldAliasType;
 import com.b2international.snowowl.core.ComponentIdentifier;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.core.validation.whitelist.ValidationWhiteList;
@@ -44,7 +45,7 @@ import com.google.common.base.MoreObjects;
 @Script(name = ValidationIssue.Scripts.WHITELIST, script="ctx._source.whitelisted = params.whitelisted")
 public final class ValidationIssue implements Serializable {
 
-	private static final long serialVersionUID = 5674287017882543560L;
+	private static final long serialVersionUID = 2L;
 
 	/**
 	 * @since 6.0
@@ -79,7 +80,7 @@ public final class ValidationIssue implements Serializable {
 	private final String ruleId;
 	private final ComponentURI affectedComponentURI;
 	private final String affectedComponentId;
-	private final CodeSystemURI resourceURI;
+	private final ResourceURI resourceURI;
 	private final boolean whitelisted;
 
 	@Field(aliases = {
@@ -95,7 +96,7 @@ public final class ValidationIssue implements Serializable {
 			@JsonProperty("id") final String id,
 			@JsonProperty("ruleId") final String ruleId, 
 			@JsonProperty("affectedComponentURI") final ComponentURI affectedComponentURI,
-			@JsonProperty("resourceURI") final CodeSystemURI resourceURI,
+			@JsonProperty("resourceURI") final ResourceURI resourceURI,
 			@JsonProperty("affectedComponentId") final String affectedComponentId,
 			@JsonProperty("whitelisted") final boolean whitelisted) {
 		this.id = id;
@@ -142,9 +143,9 @@ public final class ValidationIssue implements Serializable {
 	}
 	
 	/**
-	 * @return the resourceURI (currently only {@link CodeSystemURI} is supported) that marks the location of this issue, never <code>null</code>.
+	 * @return the resourceURI that marks the location of this issue, never <code>null</code>.
 	 */
-	public CodeSystemURI getResourceURI() {
+	public ResourceURI getResourceURI() {
 		return resourceURI;
 	}
 	

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,11 @@ package com.b2international.snowowl.core.validation.issue;
 import java.util.Map;
 
 import com.b2international.commons.options.Options;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
 import com.b2international.snowowl.core.request.SystemRequestBuilder;
-import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.core.validation.issue.ValidationIssueSearchRequest.OptionKey;
 
 /**
@@ -46,7 +46,7 @@ public final class ValidationIssueSearchRequestBuilder
 		return addOption(OptionKey.RESOURCE_URI, resourceURI);
 	}
 	
-	public ValidationIssueSearchRequestBuilder filterByResourceUri(CodeSystemURI resourceURI) {
+	public ValidationIssueSearchRequestBuilder filterByResourceUri(ResourceURI resourceURI) {
 		return addOption(OptionKey.RESOURCE_URI, resourceURI.toString());
 	}
 	

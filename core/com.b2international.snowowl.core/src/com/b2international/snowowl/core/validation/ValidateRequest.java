@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import com.b2international.commons.CompareUtils;
 import com.b2international.index.Writer;
 import com.b2international.snowowl.core.ComponentIdentifier;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
@@ -77,7 +78,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult>,
 		ValidationRuleSearchRequestBuilder req = ValidationRequests.rules().prepareSearch();
 		
 		CodeSystem codeSystem = context.service(RepositoryCodeSystemProvider.class).get(branchPath);
-		CodeSystemURI codeSystemURI = codeSystem.getCodeSystemURI(branchPath);
+		ResourceURI codeSystemURI = codeSystem.getResourceURI(branchPath);
 		
 		if (!CompareUtils.isEmpty(ruleIds)) {
 			req.filterByIds(ruleIds);
