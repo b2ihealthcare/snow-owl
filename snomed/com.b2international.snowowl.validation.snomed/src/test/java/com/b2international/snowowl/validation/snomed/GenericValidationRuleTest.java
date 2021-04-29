@@ -276,6 +276,30 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 					ComponentIdentifier.of(CONCEPT_NUMBER, validConcept2.getId())));
 	}
 
+	@Test
+	public void rule83() throws Exception {
+		final String ruleId = "83";
+		indexRule(ruleId);
+
+		// index terms containing double spaces
+		SnomedDescriptionIndexEntry description1 = description(generateDescriptionId(), Concepts.SYNONYM, "Hello  world")
+				.build();
+		
+		SnomedDescriptionIndexEntry description2 = description(generateDescriptionId(), Concepts.SYNONYM, "Hello  world")
+			.build();
+
+		// index correct term
+		SnomedDescriptionIndexEntry description3 = description(generateDescriptionId(), Concepts.SYNONYM, "Hello world")
+				.build();
+		
+		indexRevision(MAIN, description1, description2, description3);
+
+		ValidationIssues issues = validate(ruleId);
+
+		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, description1.getId()),
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, description2.getId()));
+
+	}
 	
 	@Test	
 	public void rule110() throws Exception {	
