@@ -30,10 +30,14 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
+import com.b2international.snowowl.fhir.core.search.FhirFilterParameter;
+import com.b2international.snowowl.fhir.core.search.FhirParameter;
+import com.b2international.snowowl.fhir.core.search.FhirRequestParameterDefinition.FhirRequestParameterType;
 import com.b2international.snowowl.fhir.core.search.RawRequestParameter;
 import com.b2international.snowowl.fhir.core.search.SupportedFhirUriParameterDefinitions;
 import com.b2international.snowowl.fhir.tests.FhirTest;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 
@@ -42,6 +46,15 @@ import com.google.common.collect.Multimap;
  * @since 6.4
  */
 public class FhirRequestParameterTest extends FhirTest {
+	
+	@Test
+	public void rawRequestParameterTest() {
+		
+		RawRequestParameter fhirParameter = new RawRequestParameter("_summary:data", ImmutableSet.of("1 ,2", "3"));
+		assertThat(fhirParameter.getName(), equalTo("_summary"));
+		assertThat(fhirParameter.getValues(), contains("1", "2", "3"));
+		assertThat(fhirParameter.getModifier(), equalTo("data"));
+	}
 	
 	@Test
 	public void parameterParseTest() {
@@ -61,7 +74,21 @@ public class FhirRequestParameterTest extends FhirTest {
 		assertThat(fhirParameter.getName(), equalTo("_text"));
 		assertThat(fhirParameter.getValues(), contains("test"));
 		assertThat(fhirParameter.getModifier(), equalTo("exact"));
+	}
+	
+	@Test
+	public void filterParameterTest() {
 		
+		Multimap<String, String> paramMap = convertToMultimap("http://localhost?_summary=1, 2");
+		String key = paramMap.keySet().iterator().next();
+		Collection<String> values = paramMap.get(key);
+		RawRequestParameter rawParameter = new RawRequestParameter(key, values);
+		SupportedFhirUriParameterDefinitions definitions = SupportedFhirUriParameterDefinitions.createDefinitions(CodeSystem.class);
+		FhirParameter fhirParameter = definitions.classifyParameter(rawParameter);
+		assertThat(fhirParameter.getClass(), equalTo(FhirFilterParameter.class));
+		assertThat(fhirParameter.getName(), equalTo("_summary"));
+		assertThat(fhirParameter.getType(), equalTo(FhirRequestParameterType.STRING));
+		assertThat(fhirParameter.getValues(), contains("1", "2"));
 	}
 	
 	@Test
@@ -83,7 +110,6 @@ public class FhirRequestParameterTest extends FhirTest {
 		
 	}
 	
-	
 	//Not really a test case - to check Spring/Guava parameter processing
 	@Test
 	public void uriParsingTest() {
@@ -93,7 +119,7 @@ public class FhirRequestParameterTest extends FhirTest {
 		
 		paramMap = convertToMultimap("http://localhost?_summary=1, 2");
 		Collection<String> paramValues = paramMap.get("_summary");
-		assertThat(paramValues, contains("1", "2"));
+		assertThat(paramValues, contains("1, 2")); //Not split yet!
 		
 		paramMap = convertToMultimap("http://localhost?_summary=1&_summary=2");
 		paramValues = paramMap.get("_summary");
@@ -101,17 +127,17 @@ public class FhirRequestParameterTest extends FhirTest {
 
 		paramMap = convertToMultimap("http://localhost?_summary");
 		paramValues = paramMap.get("_summary");
-		assertTrue(paramValues.isEmpty());
+		assertThat(paramValues.iterator().next(), equalTo(null)); //Bizarre Spring parameter handling
 		
 		paramMap = convertToMultimap("http://localhost?_summary=1, 2&_elements=id");
 		paramValues = paramMap.get("_summary");
-		assertThat(paramValues, contains("1", "2"));
+		assertThat(paramValues, contains("1, 2")); //not split!
 		paramValues = paramMap.get("_elements");
 		assertThat(paramValues, contains("id"));
 		
 		paramMap = convertToMultimap("http://localhost?_summary=1, 2&_summary=3");
 		paramValues = paramMap.get("_summary");
-		assertThat(paramValues, contains("1", "2", "3")); //split already
+		assertThat(paramValues, contains("1, 2", "3")); //not split!
 
 		paramMap = convertToMultimap("http://localhost?property=isActive&property=effectiveTime");
 		paramValues = paramMap.get("property");
@@ -129,22 +155,7 @@ public class FhirRequestParameterTest extends FhirTest {
 				.getQueryParams();
 		
 		Multimap<String, String> multiMap = HashMultimap.create();
-		multiValueMap.keySet().forEach(k -> {
-			List<String> values = multiValueMap.get(k);
-			
-			List<String> requestedParameters = Lists.newArrayList();
-			for (String element : values) {
-				if (StringUtils.isEmpty(element)) continue;
-				element = element.replaceAll(" ", "");
-				if (element.contains(",")) {
-					String requestedFields[] = element.split(",");
-					requestedParameters.addAll(Lists.newArrayList(requestedFields));
-				} else {
-					requestedParameters.add(element);
-				}
-			}
-			multiMap.putAll(k, requestedParameters);
-		});
+		multiValueMap.keySet().forEach(k -> multiMap.putAll(k, multiValueMap.get(k)));
 		return multiMap;
 	}
 	
