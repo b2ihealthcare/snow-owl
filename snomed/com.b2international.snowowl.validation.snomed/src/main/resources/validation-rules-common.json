@@ -90,6 +90,15 @@
     "implementation": "scripts/rule110.groovy"
   },
   {
+    "id": "115a",
+    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "messageTemplate": "Reference Sets should not contain retired concepts",
+    "severity": "WARNING",
+    "checkType": "NORMAL",
+    "type": "snomed-query",
+    "implementation": "{\"componentType\": \"concept\",\"active\": \"false\",\"isActiveMemberOf\": \"<900000000000455006 MINUS (<900000000000522004 OR 900000000000489007)\"}"
+  },
+  {
   	"id": "663",
     "toolingId": "com.b2international.snowowl.terminology.snomed",
     "messageTemplate": "Relationships must not have inactive source, destination or type concepts.",
