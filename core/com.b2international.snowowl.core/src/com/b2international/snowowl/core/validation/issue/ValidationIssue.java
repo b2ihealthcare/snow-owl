@@ -32,7 +32,6 @@ import com.b2international.index.mapping.FieldAlias;
 import com.b2international.index.mapping.FieldAlias.FieldAliasType;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.ResourceURI;
-import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.core.validation.whitelist.ValidationWhiteList;
 import com.fasterxml.jackson.annotation.*;
@@ -61,11 +60,6 @@ public final class ValidationIssue implements Serializable {
 		public static final String AFFECTED_COMPONENT_LABELS_PREFIX = AFFECTED_COMPONENT_LABELS + ".prefix";
 		public static final String WHITELISTED = "whitelisted";
 		public static final String DETAILS = "details";
-		
-		/**
-		 * @deprecated - kept only to support clear migration path for older indices, will be removed in 8.0
-		 */
-		public static final String BRANCH_PATH = "branchPath";
 	}
 
 	/**
@@ -112,7 +106,7 @@ public final class ValidationIssue implements Serializable {
 			final String ruleId, 
 			final ComponentURI componentURI, 
 			final boolean whitelisted) {
-		this(id, ruleId, componentURI, componentURI.codeSystemUri(), componentURI.identifier(), whitelisted);
+		this(id, ruleId, componentURI, componentURI.resourceUri(), componentURI.identifier(), whitelisted);
 	}
 	
 	public String getId() {

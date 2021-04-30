@@ -40,7 +40,6 @@ import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
 import com.b2international.snowowl.core.internal.validation.ValidationThreadPool;
 import com.b2international.snowowl.core.repository.RepositoryCodeSystemProvider;
-import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
 import com.b2international.snowowl.core.validation.issue.ValidationIssue;
@@ -78,7 +77,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult>,
 		ValidationRuleSearchRequestBuilder req = ValidationRequests.rules().prepareSearch();
 		
 		CodeSystem codeSystem = context.service(RepositoryCodeSystemProvider.class).get(branchPath);
-		ResourceURI codeSystemURI = codeSystem.getResourceURI(branchPath);
+		ResourceURI resourceURI = codeSystem.getResourceURI(branchPath);
 		
 		if (!CompareUtils.isEmpty(ruleIds)) {
 			req.filterByIds(ruleIds);
@@ -134,7 +133,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult>,
 						final String ruleId = ruleIssues.ruleId;
 						final List<ValidationIssue> existingRuleIssues = ValidationRequests.issues().prepareSearch()
 								.all()
-								.filterByResourceUri(codeSystemURI)
+								.filterByResourceUri(resourceURI)
 								.filterByRule(ruleId)
 								.build()
 								.execute(context)
@@ -163,14 +162,14 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult>,
 								validationIssue = new ValidationIssue(
 										UUID.randomUUID().toString(),
 										ruleId,
-										ComponentURI.of(codeSystemURI, componentIdentifier),
+										ComponentURI.of(resourceURI, componentIdentifier),
 										ruleWhiteListEntries.contains(componentIdentifier));
 							} else {
 								final ValidationIssue issueToCopy = existingIsssuesByComponentIdentifier.get(componentIdentifier);
 								validationIssue = new ValidationIssue(
 									issueToCopy.getId(),
 									issueToCopy.getRuleId(),
-									ComponentURI.of(codeSystemURI, issueToCopy.getAffectedComponent()),
+									ComponentURI.of(resourceURI, issueToCopy.getAffectedComponent()),
 									ruleWhiteListEntries.contains(issueToCopy.getAffectedComponent()));	
 								existingIsssuesByComponentIdentifier.remove(componentIdentifier);
 							}

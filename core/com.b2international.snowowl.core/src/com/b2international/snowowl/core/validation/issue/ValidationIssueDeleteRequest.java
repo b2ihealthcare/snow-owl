@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.core.validation.issue;
 
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -26,8 +25,6 @@ import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
-import com.b2international.snowowl.core.uri.CodeSystemURI;
-import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
 import com.b2international.snowowl.core.validation.ValidationDeleteNotification;
 import com.b2international.snowowl.core.validation.ValidationRequests;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
@@ -57,13 +54,7 @@ final class ValidationIssueDeleteRequest implements Request<ServiceProvider, Boo
 		ExpressionBuilder query = Expressions.builder();
 		
 		if (!CompareUtils.isEmpty(resourceURIs)) {
-			List<String> branchPaths = context.service(ResourceURIPathResolver.class).resolve(context, resourceURIs.stream().map(CodeSystemURI::new).collect(Collectors.toList()));
-			query.filter(
-				Expressions.builder()
-					.should(Expressions.matchAny(ValidationIssue.Fields.RESOURCE_URI, resourceURIs))
-					.should(Expressions.matchAny(ValidationIssue.Fields.BRANCH_PATH, branchPaths))
-					.build()
-			);
+			query.filter(Expressions.matchAny(ValidationIssue.Fields.RESOURCE_URI, resourceURIs));
 		}
 		
 		if (!CompareUtils.isEmpty(toolingIds)) {

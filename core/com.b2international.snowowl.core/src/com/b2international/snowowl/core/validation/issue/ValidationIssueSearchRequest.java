@@ -18,7 +18,6 @@ package com.b2international.snowowl.core.validation.issue;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -32,8 +31,6 @@ import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
 import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
-import com.b2international.snowowl.core.uri.CodeSystemURI;
-import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
 import com.b2international.snowowl.core.validation.ValidationRequests;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
 import com.google.common.collect.ImmutableSet;
@@ -106,12 +103,7 @@ final class ValidationIssueSearchRequest
 		addIdFilter(queryBuilder, ids -> Expressions.matchAny(ValidationIssue.Fields.ID, ids));
 		
 		if (containsKey(OptionKey.RESOURCE_URI)) {
-			// lookup CodeSystem branch paths from registry and apply as an alternative search expression, so issues from pre-7.12 will be properly returned
-			final List<String> branchPathFilter = getCodeSystemBranchPaths(context);
-			queryBuilder.filter(Expressions.builder()
-					.should(Expressions.matchAny(ValidationIssue.Fields.RESOURCE_URI, getCollection(OptionKey.RESOURCE_URI, String.class)))
-					.should(Expressions.matchAny(ValidationIssue.Fields.BRANCH_PATH, branchPathFilter))
-					.build());
+			queryBuilder.filter(Expressions.matchAny(ValidationIssue.Fields.RESOURCE_URI, getCollection(OptionKey.RESOURCE_URI, String.class)));
 		}
 		
 		Set<String> filterByRuleIds = null;
@@ -205,16 +197,6 @@ final class ValidationIssueSearchRequest
 		}
 		
 		return queryBuilder.build();
-	}
-
-	private List<String> getCodeSystemBranchPaths(ServiceProvider context) {
-		if (containsKey(OptionKey.RESOURCE_URI)) {
-			final List<CodeSystemURI> resourceURIs = getCollection(OptionKey.RESOURCE_URI, String.class).stream()
-					.map(CodeSystemURI::new)
-					.collect(Collectors.toList());
-			return context.service(ResourceURIPathResolver.class).resolve(context, resourceURIs);
-		}
-		return null;
 	}
 
 	@Override
