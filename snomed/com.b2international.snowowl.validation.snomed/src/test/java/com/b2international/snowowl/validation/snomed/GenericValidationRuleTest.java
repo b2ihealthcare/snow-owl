@@ -375,6 +375,49 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 	}
 	
 	@Test
+	public void rule266() throws Exception {
+		final String ruleId = "266";
+		indexRule(ruleId);
+		
+		SnomedConceptDocument concept = concept(generateConceptId()).build();
+
+		SnomedDescriptionIndexEntry validDescription1 = description(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, "Clinical finding (semantic tag)")
+				.moduleId(Concepts.UK_DRUG_EXTENSION_MODULE)
+				.conceptId(concept.getId())
+				.build();
+		
+		SnomedDescriptionIndexEntry irrelevantDescription1 = description(generateDescriptionId(), Concepts.TEXT_DEFINITION, "Clinical finding (semantic tag)")
+				.moduleId(Concepts.UK_DRUG_EXTENSION_MODULE)
+				.conceptId(concept.getId())
+				.build();
+		
+		SnomedDescriptionIndexEntry validDescription2 = description(generateDescriptionId(), Concepts.SYNONYM, "Clinical finding ( regime/therapy )")
+				.moduleId(Concepts.UK_DRUG_EXTENSION_MODULE)
+				.conceptId(concept.getId())
+				.build();
+
+		SnomedDescriptionIndexEntry invalidDescription1 = description(generateDescriptionId(), Concepts.SYNONYM, "Clinical finding (regime/therapy)")
+				.moduleId(Concepts.UK_DRUG_EXTENSION_MODULE)
+				.conceptId(concept.getId())
+				.build();
+
+		SnomedDescriptionIndexEntry invalidDescription2 = description(generateDescriptionId(), Concepts.SYNONYM, "Clinical finding (specimen)")
+				.moduleId(Concepts.UK_DRUG_EXTENSION_MODULE)
+				.conceptId(concept.getId())
+				.build();
+		
+		indexRevision(MAIN, concept, validDescription1, irrelevantDescription1, validDescription2,
+				invalidDescription1, invalidDescription2);
+
+		ValidationIssues issues = validate(ruleId);
+
+		assertAffectedComponents(issues, 
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, invalidDescription1.getId()),
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, invalidDescription2.getId())
+		);
+	}
+	
+	@Test
 	public void rule663() throws Exception {
 		final String ruleId = "663";
 		indexRule(ruleId);
