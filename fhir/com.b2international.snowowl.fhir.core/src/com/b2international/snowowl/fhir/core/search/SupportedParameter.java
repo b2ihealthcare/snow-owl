@@ -16,11 +16,13 @@
 package com.b2international.snowowl.fhir.core.search;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Set;
 
 import com.google.common.collect.Sets;
 
-public class FhirRequestParameterDefinition {
+public class SupportedParameter {
 	
 	public enum SearchRequestParameterModifier {
 		missing,
@@ -46,7 +48,6 @@ public class FhirRequestParameterDefinition {
 					.anyMatch(v -> parameterModifier.replaceAll("-", "_").toLowerCase().equals(v.name()));
 		}
 	}
-	
 	
 	/**
 	 * Request parameter types
@@ -81,14 +82,14 @@ public class FhirRequestParameterDefinition {
 				SearchRequestParameterModifier.below,
 				SearchRequestParameterModifier.above));
 		
-		private HashSet<SearchRequestParameterModifier> supportedModifiers;
+		private HashSet<SearchRequestParameterModifier> availableModifiers;
 
-		FhirRequestParameterType(HashSet<SearchRequestParameterModifier> supportedModifiers) {
-			this.supportedModifiers = supportedModifiers;
+		FhirRequestParameterType(HashSet<SearchRequestParameterModifier> availableModifiers) {
+			this.availableModifiers = availableModifiers;
 		}
 		
-		public HashSet<SearchRequestParameterModifier> getSupportedModifiers() {
-			return supportedModifiers;
+		public HashSet<SearchRequestParameterModifier> getAvailableModifiers() {
+			return availableModifiers;
 		}
 
 		public static FhirRequestParameterType fromRequestParameter(String requestParam) {
@@ -100,14 +101,22 @@ public class FhirRequestParameterDefinition {
 	
 	protected FhirRequestParameterType type;
 	
-	public FhirRequestParameterDefinition(final String name, final String type) {
+	protected Set<String> supportedValues = Collections.emptySet();
+	
+	public SupportedParameter(final String name, final String type) {
 		this.name = name;
 		this.type = FhirRequestParameterType.fromRequestParameter(type);
 	}
 
-	public FhirRequestParameterDefinition(final String name, final FhirRequestParameterType type) {
+	public SupportedParameter(final String name, final FhirRequestParameterType type) {
 		this.name = name;
 		this.type = type;
+	}
+	
+	public SupportedParameter(final String name, final FhirRequestParameterType type, Set<String> supportedValues) {
+		this.name = name;
+		this.type = type;
+		this.supportedValues = supportedValues;
 	}
 	
 	public String getName() {
@@ -118,9 +127,17 @@ public class FhirRequestParameterDefinition {
 		return type;
 	}
 	
+	/**
+	 * Returns the supported values for this parameter
+	 * @return
+	 */
+	public Set<String> getSupportedValues() {
+		return supportedValues;
+	}
+	
 	@Override
 	public String toString() {
-		return name + ":" + type.name();
+		return name + ":" + type.name() + " = " + Arrays.toString(supportedValues.toArray());
 	}
 
 }

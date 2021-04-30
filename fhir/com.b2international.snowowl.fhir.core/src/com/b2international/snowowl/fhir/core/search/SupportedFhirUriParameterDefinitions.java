@@ -25,14 +25,18 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.b2international.commons.Pair;
 import com.b2international.commons.StringUtils;
+import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
+import com.b2international.snowowl.fhir.core.exceptions.FhirException;
 import com.b2international.snowowl.fhir.core.search.SupportedFilterParameter.FhirFilterParameterKey;
-import com.b2international.snowowl.fhir.core.search.FhirRequestParameterDefinition.FhirRequestParameterType;
-import com.b2international.snowowl.fhir.core.search.FhirRequestParameterDefinition.SearchRequestParameterModifier;
+import com.b2international.snowowl.fhir.core.search.SupportedParameter.SearchRequestParameterModifier;
 import com.b2international.snowowl.fhir.core.search.SupportedSearchParameter.FhirCommonSearchKey;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Sets.SetView;
 
@@ -46,6 +50,33 @@ public class SupportedFhirUriParameterDefinitions {
 
 	public Map<String, SupportedFilterParameter> getSupportedFilterParameters() {
 		return supportedFilterParameters;
+	}
+	
+	public FhirParameter classifyParameter(RawRequestParameter fhirParameter) {
+		
+		String parameterName = fhirParameter.getName();
+		if (supportedSearchParameters.containsKey(parameterName)) {
+			
+			SupportedSearchParameter supportedSearchParameter = supportedSearchParameters.get(parameterName);
+			
+			FhirSearchParameter fhirSearchParameter = new FhirSearchParameter(supportedSearchParameter, fhirParameter.getModifier(), fhirParameter.getValues());
+			
+			//FhirSearchParameter fhirSearchParameter = new FhirSearchParameter(parameterName, supportedSearchParameter.getType(), fhirParameter.getValues());
+			return fhirSearchParameter;
+			
+		} else if (supportedFilterParameters.containsKey(parameterName)) {
+			SupportedFilterParameter supportedFilterParameter = supportedFilterParameters.get(parameterName);
+			FhirFilterParameter fhirFilterParameter = new FhirFilterParameter(supportedFilterParameter, fhirParameter.getValues());
+			fhirFilterParameter.validate();
+			return fhirFilterParameter; 
+		} else if (FhirCommonSearchKey.hasParameter(parameterName)) {
+			throw FhirException.createFhirError(String.format("Search parameter %s is not supported. Supported search parameters are %s.", parameterName, Arrays.toString(supportedSearchParameters.keySet().toArray())), OperationOutcomeCode.MSG_PARAM_UNKNOWN, "SEARCH_REQUEST_PARAMETER_MARKER");
+		} else if (FhirFilterParameterKey.hasParameter(parameterName)) {
+			throw FhirException.createFhirError(String.format("Filter parameter %s is not supported. Supported filter parameters are %s.", parameterName, Arrays.toString(supportedFilterParameters.keySet().toArray())), OperationOutcomeCode.MSG_PARAM_UNKNOWN, "SEARCH_REQUEST_PARAMETER_MARKER");
+		} else {
+			SetView<String> union = Sets.union(supportedSearchParameters.keySet(), supportedFilterParameters.keySet());
+			throw FhirException.createFhirError(String.format("URI parameter %s is unknown. Supported parameters are %s.", parameterName, Arrays.toString(union.toArray())), OperationOutcomeCode.MSG_PARAM_UNKNOWN, "SEARCH_REQUEST_PARAMETER_MARKER");
+		}
 	}
 	
 	public void validateFilterParameter(RawRequestParameter requestParameter) {
@@ -80,33 +111,6 @@ public class SupportedFhirUriParameterDefinitions {
 //		return parameterKeys;
 	}
 	
-	public FhirParameter classifyParameter(RawRequestParameter fhirParameter) {
-		
-		String parameterName = fhirParameter.getName();
-		if (supportedSearchParameters.containsKey(parameterName)) {
-			
-			SupportedSearchParameter supportedSearchParameter = supportedSearchParameters.get(parameterName);
-			
-			FhirSearchParameter fhirSearchParameter = new FhirSearchParameter(parameterName, supportedSearchParameter.getType(), fhirParameter.getValues());
-			return fhirSearchParameter;
-			
-			//create search parameter
-		} else if (supportedFilterParameters.containsKey(parameterName)) {
-			
-			validateFilterParameter(fhirParameter);
-			
-			SupportedFilterParameter supportedFilterParameter = supportedFilterParameters.get(parameterName);
-			return new FhirFilterParameter(parameterName, supportedFilterParameter.getType(), fhirParameter.getValues()); 
-		} else if (FhirCommonSearchKey.hasParameter(parameterName)) {
-			throw new BadRequestException(String.format("Search parameter %s is not supported. Supported search parameters are %s.", parameterName, Arrays.toString(supportedSearchParameters.keySet().toArray())), SEARCH_REQUEST_PARAMETER_MARKER);
-		} else if (FhirFilterParameterKey.hasParameter(parameterName)) {
-			throw new BadRequestException(String.format("Filter parameter %s is not supported. Supported filter parameters are %s.", parameterName, Arrays.toString(supportedFilterParameters.keySet().toArray())), SEARCH_REQUEST_PARAMETER_MARKER);
-		} else {
-			SetView<String> union = Sets.union(supportedSearchParameters.keySet(), supportedFilterParameters.keySet());
-			throw new BadRequestException(String.format("URI parameter %s is not supported. Supported parameters are %s.", parameterName, Arrays.toString(union.toArray())), SEARCH_REQUEST_PARAMETER_MARKER);
-		}
-	}
-	
 	public void validateSearchParameter(RawRequestParameter requestParameter) {
 
 		String parameterName = requestParameter.getName();
@@ -126,7 +130,6 @@ public class SupportedFhirUriParameterDefinitions {
 			if (!supportedSearchParameter.hasSupportedModifier(parameterModifier)) {
 				throw new BadRequestException(String.format("Unsupported search parameter modifier '%s' for parameter '%s'. Supported modifiers are %s.", parameterModifier, parameterName, Arrays.toString(supportedSearchParameter.getSupportedModifiers().toArray())), SEARCH_REQUEST_PARAMETER_MARKER);
 			}
-			
 		}
 	}
 	
@@ -145,11 +148,11 @@ public class SupportedFhirUriParameterDefinitions {
 		
 		SupportedFhirUriParameterDefinitions definitions = new SupportedFhirUriParameterDefinitions();
 		
-		List<String> filterParameters = collectFilterParameters(model);
+		List<Pair<String, Set<String>>> filterParameters = collectFilterParameters(model);
 		
-		for (String filterParameter : filterParameters) {
-			SupportedFilterParameter filterResultUriParameter = new SupportedFilterParameter(filterParameter);
-			definitions.supportedFilterParameters.put(filterParameter, filterResultUriParameter);
+		for (Pair<String, Set<String>> filterParameter : filterParameters) {
+			SupportedFilterParameter filterResultUriParameter = new SupportedFilterParameter(filterParameter.getA(), filterParameter.getB());
+			definitions.supportedFilterParameters.put(filterParameter.getA(), filterResultUriParameter);
 		}
 		
 		List<Field> searchableFields = collectSearchableFields(model);
@@ -157,18 +160,28 @@ public class SupportedFhirUriParameterDefinitions {
 		return definitions;
 	}
 	
-	private static List<String> collectFilterParameters(Class<?> model) {
+	private static List<Pair<String, Set<String>>> collectFilterParameters(Class<?> model) {
 		
 		if (model == null) {
 	        return Collections.emptyList();
 	    }
 		
-		List<String> result = Lists.newArrayList(collectFilterParameters(model.getSuperclass()));
+		List<Pair<String, Set<String>>> result = Lists.newArrayList(collectFilterParameters(model.getSuperclass()));
 		
-		if (model.isAnnotationPresent(Filterable.class)) {
-			Filterable annotation = model.getAnnotation(Filterable.class);
-			String[] filters = annotation.filters();
-			result.addAll(Sets.newHashSet(filters));
+		if (model.isAnnotationPresent(Filterables.class)) {
+			Filterable[] filterableAnnotations = model.getAnnotationsByType(Filterable.class);
+			for (Filterable filterable : filterableAnnotations) {
+				
+				Pair<String, Set<String>> filterValuePair = new Pair<String, Set<String>>();
+				if (filterable.values() != null && filterable.values().length != 0) {
+					filterValuePair.setA(filterable.filter());
+					filterValuePair.setB(Sets.newHashSet(filterable.values()));
+				} else {
+					filterValuePair.setA(filterable.filter());
+					filterValuePair.setB(Sets.newHashSet(filterable.values()));
+				}
+				result.add(filterValuePair);
+			}
 		}
 		return result;
 	}
@@ -220,9 +233,9 @@ public class SupportedFhirUriParameterDefinitions {
 			if (!StringUtils.isEmpty(simpleParameterAnnotation.name())) {
 				return new SupportedSearchParameter(simpleParameterAnnotation.name(), simpleParameterAnnotation.type(), simpleParameterAnnotation.modifiers());
 			} else {
-				return new SupportedSearchParameter(f.getName(), simpleParameterAnnotation.type(), simpleParameterAnnotation.modifiers()); 
+				return new SupportedSearchParameter("_" + f.getName(), simpleParameterAnnotation.type(), simpleParameterAnnotation.modifiers()); 
 			}
-		}).collect(Collectors.toMap(k -> "_" + k.getName(), Function.identity()));
+		}).collect(Collectors.toMap(k -> k.getName(), Function.identity()));
 	}
 	
 	@Override

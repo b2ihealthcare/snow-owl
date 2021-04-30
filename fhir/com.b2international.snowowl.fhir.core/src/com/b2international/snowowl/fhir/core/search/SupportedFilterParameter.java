@@ -19,7 +19,7 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class SupportedFilterParameter extends FhirRequestParameterDefinition {
+public class SupportedFilterParameter extends SupportedParameter {
 	
 	public enum SummaryParameterValue {
 		
@@ -79,12 +79,17 @@ public class SupportedFilterParameter extends FhirRequestParameterDefinition {
 	public SupportedFilterParameter(String requestParameterKey) {
 		super(requestParameterKey, FhirFilterParameterKey.valueOf(requestParameterKey).getParameterType().name());
 	}
+	
+	public SupportedFilterParameter(String requestParameterKey, Set<String> supportedValues) {
+		super(requestParameterKey, FhirFilterParameterKey.valueOf(requestParameterKey).getParameterType(), supportedValues);
+	}
 
 	private FhirFilterParameterKey requestParameterKey;
-
-
+	
 	public FhirFilterParameterKey getKey() {
 		return requestParameterKey;
 	}
+
+	
 	
 }

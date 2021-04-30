@@ -2,23 +2,23 @@ package com.b2international.snowowl.fhir.core.search;
 
 import java.util.Collection;
 
-import com.b2international.snowowl.fhir.core.search.FhirRequestParameterDefinition.FhirRequestParameterType;
+import com.b2international.snowowl.fhir.core.search.SupportedParameter.FhirRequestParameterType;
 
-public class FhirParameter {
+public abstract class FhirParameter {
 	
-	private FhirRequestParameterDefinition parameterDefinition;
+	protected SupportedParameter parameterDefinition;
 	
-	private Collection<String> values;
+	protected Collection<String> values;
 	
-	public FhirParameter(String name, String type, Collection<String> values) {
-		parameterDefinition = new FhirRequestParameterDefinition(name, type);
+	public FhirParameter(final SupportedParameter parameterDefinition, Collection<String> values) {
+		this.parameterDefinition = parameterDefinition;
 		this.values = values;
 	}
 
-	public FhirParameter(final String name, final FhirRequestParameterType type, Collection<String> values) {
-		parameterDefinition = new FhirRequestParameterDefinition(name, type);
-		this.values = values;
-	}
+//	public FhirParameter(final String name, final FhirRequestParameterType type, Collection<String> values) {
+//		parameterDefinition = new FhirRequestParameterDefinition(name, type);
+//		this.values = values;
+//	}
 	
 	public String getName() {
 		return parameterDefinition.getName();
@@ -31,5 +31,11 @@ public class FhirParameter {
 	public Collection<String> getValues() {
 		return values;
 	}
+	
+	public SupportedParameter getParameterDefinition() {
+		return parameterDefinition;
+	}
+
+	public abstract void validate();
 
 }

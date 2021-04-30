@@ -17,18 +17,9 @@ package com.b2international.snowowl.fhir.core.search;
 
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 
-/**
- * Annotation to mark resources with the supported filter parameters
- * @since 7.14
- */
 @Retention(RUNTIME)
-@Repeatable(value = Filterables.class )
-public @interface Filterable {
-
-	String filter();
-	
-	String[] values()  default {};
+public @interface Filterables {
+	Filterable[] value() default {};
 }

@@ -31,7 +31,7 @@ import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.search.RawRequestParameter;
 import com.b2international.snowowl.fhir.core.search.SupportedFhirUriParameterDefinitions;
 import com.b2international.snowowl.fhir.core.search.SupportedFilterParameter;
-import com.b2international.snowowl.fhir.core.search.FhirRequestParameterDefinition.FhirRequestParameterType;
+import com.b2international.snowowl.fhir.core.search.SupportedParameter.FhirRequestParameterType;
 
 public class SupportedFhirUriParameterDefinitionsTest {
 	

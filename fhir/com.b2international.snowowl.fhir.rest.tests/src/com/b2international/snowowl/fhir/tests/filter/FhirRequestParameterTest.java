@@ -21,24 +21,24 @@ import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.b2international.commons.StringUtils;
+import com.b2international.snowowl.fhir.core.exceptions.FhirException;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.search.FhirFilterParameter;
 import com.b2international.snowowl.fhir.core.search.FhirParameter;
-import com.b2international.snowowl.fhir.core.search.FhirRequestParameterDefinition.FhirRequestParameterType;
+import com.b2international.snowowl.fhir.core.search.SupportedParameter.FhirRequestParameterType;
+import com.b2international.snowowl.fhir.core.search.FhirSearchParameter;
 import com.b2international.snowowl.fhir.core.search.RawRequestParameter;
 import com.b2international.snowowl.fhir.core.search.SupportedFhirUriParameterDefinitions;
 import com.b2international.snowowl.fhir.tests.FhirTest;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 
 
@@ -47,6 +47,14 @@ import com.google.common.collect.Multimap;
  */
 public class FhirRequestParameterTest extends FhirTest {
 	
+	private static SupportedFhirUriParameterDefinitions definitions;
+
+	@BeforeClass
+	public static void loadParameterDefinitions() {
+		definitions = SupportedFhirUriParameterDefinitions.createDefinitions(CodeSystem.class);
+	}
+	
+	//Raw unprocessed parameter
 	@Test
 	public void rawRequestParameterTest() {
 		
@@ -56,6 +64,7 @@ public class FhirRequestParameterTest extends FhirTest {
 		assertThat(fhirParameter.getModifier(), equalTo("data"));
 	}
 	
+	//URI -> Raw unprocessed parameter
 	@Test
 	public void parameterParseTest() {
 		
@@ -76,19 +85,76 @@ public class FhirRequestParameterTest extends FhirTest {
 		assertThat(fhirParameter.getModifier(), equalTo("exact"));
 	}
 	
+	//URI->Raw -> unknown param
 	@Test
-	public void filterParameterTest() {
+	public void unknownParameterTest() {
 		
-		Multimap<String, String> paramMap = convertToMultimap("http://localhost?_summary=1, 2");
+		exception.expect(FhirException.class);
+		exception.expectMessage("URI parameter unknownparameter is unknown.");
+		
+		Multimap<String, String> paramMap = convertToMultimap("http://localhost?unknownparameter=true");
 		String key = paramMap.keySet().iterator().next();
 		Collection<String> values = paramMap.get(key);
 		RawRequestParameter rawParameter = new RawRequestParameter(key, values);
-		SupportedFhirUriParameterDefinitions definitions = SupportedFhirUriParameterDefinitions.createDefinitions(CodeSystem.class);
+		definitions.classifyParameter(rawParameter);
+	}
+	
+	@Test
+	public void unsupportedFilterParameterTest() {
+		
+		exception.expect(FhirException.class);
+		exception.expectMessage("Filter parameter _contained is not supported.");
+		
+		Multimap<String, String> paramMap = convertToMultimap("http://localhost?_contained=true");
+		String key = paramMap.keySet().iterator().next();
+		Collection<String> values = paramMap.get(key);
+		RawRequestParameter rawParameter = new RawRequestParameter(key, values);
+		definitions.classifyParameter(rawParameter);
+	}
+	
+	@Test
+	public void unsupportedFilterParameterValueTest() {
+		
+		exception.expect(FhirException.class);
+		exception.expectMessage("Filter parameter value [uknownvalue] is not supported.");
+		
+		Multimap<String, String> paramMap = convertToMultimap("http://localhost?_summary=uknownvalue");
+		String key = paramMap.keySet().iterator().next();
+		Collection<String> values = paramMap.get(key);
+		RawRequestParameter rawParameter = new RawRequestParameter(key, values);
+		definitions.classifyParameter(rawParameter);
+	}
+	
+	//URI->Raw -> filter
+	@Test
+	public void filterParameterTest() {
+		
+		Multimap<String, String> paramMap = convertToMultimap("http://localhost?_summary=true");
+		String key = paramMap.keySet().iterator().next();
+		Collection<String> values = paramMap.get(key);
+		RawRequestParameter rawParameter = new RawRequestParameter(key, values);
 		FhirParameter fhirParameter = definitions.classifyParameter(rawParameter);
+		
 		assertThat(fhirParameter.getClass(), equalTo(FhirFilterParameter.class));
 		assertThat(fhirParameter.getName(), equalTo("_summary"));
 		assertThat(fhirParameter.getType(), equalTo(FhirRequestParameterType.STRING));
-		assertThat(fhirParameter.getValues(), contains("1", "2"));
+		assertThat(fhirParameter.getValues(), contains("true"));
+	}
+	
+	//URI->Raw -> filter
+	@Test
+	public void searchParameterTest() {
+		
+		Multimap<String, String> paramMap = convertToMultimap("http://localhost?_id=1");
+		String key = paramMap.keySet().iterator().next();
+		Collection<String> values = paramMap.get(key);
+		RawRequestParameter rawParameter = new RawRequestParameter(key, values);
+		FhirParameter fhirParameter = definitions.classifyParameter(rawParameter);
+		
+		assertThat(fhirParameter.getClass(), equalTo(FhirSearchParameter.class));
+		assertThat(fhirParameter.getName(), equalTo("_id"));
+		assertThat(fhirParameter.getType(), equalTo(FhirRequestParameterType.STRING));
+		assertThat(fhirParameter.getValues(), contains("1"));
 	}
 	
 	@Test
@@ -102,6 +168,7 @@ public class FhirRequestParameterTest extends FhirTest {
 		
 		
 		SupportedFhirUriParameterDefinitions definitions = SupportedFhirUriParameterDefinitions.createDefinitions(CodeSystem.class);
+		System.out.println(definitions);
 		
 		definitions.classifyParameter(fhirParameter);
 		

@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 import com.google.common.collect.Sets;
 
-public class SupportedSearchParameter extends FhirRequestParameterDefinition {
+public class SupportedSearchParameter extends SupportedParameter {
 	
 	public enum FhirCommonSearchKey {
 		
