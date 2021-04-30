@@ -34,7 +34,10 @@ import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.core.merge.ComponentRevisionConflictProcessor;
 import com.b2international.snowowl.core.plugin.Component;
-import com.b2international.snowowl.core.repository.*;
+import com.b2international.snowowl.core.repository.ComponentDeletionPolicy;
+import com.b2international.snowowl.core.repository.CompositeComponentDeletionPolicy;
+import com.b2international.snowowl.core.repository.ContentAvailabilityInfoProvider;
+import com.b2international.snowowl.core.repository.TerminologyRepositoryPlugin;
 import com.b2international.snowowl.core.request.*;
 import com.b2international.snowowl.core.setup.ConfigurationRegistry;
 import com.b2international.snowowl.core.setup.Environment;
@@ -65,11 +68,9 @@ import com.b2international.snowowl.snomed.core.ql.SnomedQuerySerializer;
 import com.b2international.snowowl.snomed.core.request.SnomedConceptSearchRequestEvaluator;
 import com.b2international.snowowl.snomed.core.request.SnomedQueryOptimizer;
 import com.b2international.snowowl.snomed.core.version.SnomedVersioningRequest;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.index.change.SnomedRepositoryPreCommitHook;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
-import com.b2international.snowowl.snomed.datastore.internal.SnomedRepositoryInitializer;
 import com.b2international.snowowl.snomed.datastore.request.ModuleRequest.ModuleIdProvider;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptMapSearchRequestEvaluator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedMemberSearchRequestEvaluator;
@@ -168,12 +169,7 @@ public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 	}
 	
 	@Override
-	protected String getRepositoryId() {
-		return SnomedDatastoreActivator.REPOSITORY_UUID;
-	}
-	
-	@Override
-	public String getId() {
+	public String getToolingId() {
 		return SnomedTerminologyComponentConstants.TERMINOLOGY_ID;
 	}
 	
@@ -208,11 +204,6 @@ public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 			0L, 
 			DatastoreLockContextDescriptions.CREATE_VERSION
 		);
-	}
-	
-	@Override
-	protected TerminologyRepositoryInitializer getTerminologyRepositoryInitializer() {
-		return new SnomedRepositoryInitializer();
 	}
 	
 	@Override

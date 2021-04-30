@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,11 +37,11 @@ public interface Terminology {
 	String getName();
 
 	/**
-	 * Returns with the unique identifier of the terminology.
+	 * Returns with the unique identifier of this terminology tooling.
 	 * 
-	 * @return the unique terminology ID.
+	 * @return the unique terminology tooling ID.
 	 */
-	String getId();
+	String getToolingId();
 
 	/**
 	 * Returns whether the terminology supports effective time updates and

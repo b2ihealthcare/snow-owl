@@ -57,12 +57,12 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 		// register terminology and component definitions
 		TerminologyRegistry registry = env.service(TerminologyRegistry.class);
 		registry.register(this);
-		getAdditionalTerminologyComponents().values().forEach(additionalTerminologyComponent -> registry.register(getId(), additionalTerminologyComponent));
+		getAdditionalTerminologyComponents().values().forEach(additionalTerminologyComponent -> registry.register(getToolingId(), additionalTerminologyComponent));
 		
 		if (env.isServer()) {
 			final DefaultRepositoryManager repositories = (DefaultRepositoryManager) env.service(RepositoryManager.class);
 			final RepositoryConfiguration repositoryConfig = configuration.getModuleConfig(RepositoryConfiguration.class);
-			final RepositoryBuilder builder = repositories.prepareCreate(getRepositoryId());
+			final RepositoryBuilder builder = repositories.prepareCreate(getToolingId());
 			
 			
 			final Repository repo = builder
@@ -222,9 +222,4 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 		return new ComponentRevisionConflictProcessor(Collections.emptyList());
 	}
 
-	/**
-	 * @return the associated unique repository ID to use for the repository.
-	 */
-	protected abstract String getRepositoryId();
-	
 }

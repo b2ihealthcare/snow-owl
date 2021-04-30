@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,20 +18,12 @@ package com.b2international.snowowl.snomed.datastore;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
-import com.b2international.snowowl.core.uri.CodeSystemURI;
-
 public class SnomedDatastoreActivator implements BundleActivator {
 
 	/**
 	 * Unique identifier of the bundle. ID: {@value}
 	 */
 	public static final String PLUGIN_ID = "com.b2international.snowowl.snomed.datastore"; //$NON-NLS-1$
-	
-	/** 
-	 * The repository identifier for this tooling
-	 * @deprecated - will be removed in Snow Owl 8.0, should not be used when accessing Snow Owl APIs, instead always refer to {@link CodeSystemURI}s.
-	 */
-	public static final String REPOSITORY_UUID = "snomedStore";
 	
 	// Resource names
 	public static final String ROOT_RESOURCE_NAME = "SNOMED";
