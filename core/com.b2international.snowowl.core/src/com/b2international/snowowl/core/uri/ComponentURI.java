@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Objects;
 
 import com.b2international.snowowl.core.ComponentIdentifier;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -74,16 +75,16 @@ public final class ComponentURI implements Serializable {
 	@JsonIgnore
 	public static final ComponentURI UNSPECIFIED = ComponentURI.of(TerminologyRegistry.UNSPECIFIED, TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT, "");
 	
-	private final CodeSystemURI codeSystemUri;
+	private final ResourceURI resourceUri;
 	private final short terminologyComponentId;
 	private final String identifier;
 	
-	public CodeSystemURI codeSystemUri() {
-		return codeSystemUri;
+	public ResourceURI resourceUri() {
+		return resourceUri;
 	}
 	
-	public String codeSystem() {
-		return codeSystemUri.getCodeSystem();
+	public String resourceId() {
+		return resourceUri.getResourceId();
 	}
 	
 	public short terminologyComponentId() {
@@ -96,33 +97,33 @@ public final class ComponentURI implements Serializable {
 
 	@JsonIgnore
 	public final boolean isUnspecified() {
-		return TerminologyRegistry.UNSPECIFIED.equals(codeSystem());
+		return TerminologyRegistry.UNSPECIFIED.equals(resourceId());
 	}
 	
 	public final ComponentIdentifier toComponentIdentifier() {
 		return ComponentIdentifier.of(terminologyComponentId(), identifier());
 	}
 
-	private ComponentURI(CodeSystemURI codeSystemURI, short terminologyComponentId, String identifier) {
-		checkNotNull(codeSystemURI, "CodeSystemURI argument should not be null.");
+	private ComponentURI(ResourceURI resourceUri, short terminologyComponentId, String identifier) {
+		checkNotNull(resourceUri, "ResourceURI argument should not be null.");
 		checkArgument(terminologyComponentId >= TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT, 
 				"TerminologyComponentId should be either unspecified (-1) or greater than zero. Got: '%s'.", terminologyComponentId);
-		checkArgument(TerminologyRegistry.UNSPECIFIED.equals(codeSystemURI.getCodeSystem()) || !Strings.isNullOrEmpty(identifier), "Identifier should not be null or empty.");
-		this.codeSystemUri = codeSystemURI;
+		checkArgument(TerminologyRegistry.UNSPECIFIED.equals(resourceUri.getResourceId()) || !Strings.isNullOrEmpty(identifier), "Identifier should not be null or empty.");
+		this.resourceUri = resourceUri;
 		this.terminologyComponentId = terminologyComponentId;
 		this.identifier = Strings.nullToEmpty(identifier);
 	}
 	
-	public static ComponentURI of(CodeSystemURI codeSystemURI, short terminologyComponentId, String identifier) {
-		return getOrCache(new ComponentURI(codeSystemURI, terminologyComponentId, identifier));
+	public static ComponentURI of(ResourceURI resourceURI, short terminologyComponentId, String identifier) {
+		return getOrCache(new ComponentURI(resourceURI, terminologyComponentId, identifier));
 	}
 	
-	public static ComponentURI of(CodeSystemURI codeSystemURI, ComponentIdentifier componentIdentifier) {
-		return of(codeSystemURI, componentIdentifier.getTerminologyComponentId(), componentIdentifier.getComponentId());
+	public static ComponentURI of(ResourceURI resourceURI, ComponentIdentifier componentIdentifier) {
+		return of(resourceURI, componentIdentifier.getTerminologyComponentId(), componentIdentifier.getComponentId());
 	}
 	
-	public static ComponentURI of(String codeSystemUri, short terminologyComponentId, String identifier) {
-		return of(new CodeSystemURI(codeSystemUri), terminologyComponentId, identifier);
+	public static ComponentURI of(String resourceURI, short terminologyComponentId, String identifier) {
+		return of(new ResourceURI(resourceURI), terminologyComponentId, identifier);
 	}
 	
 	private static ComponentURI getOrCache(final ComponentURI componentURI) {
@@ -143,24 +144,24 @@ public final class ComponentURI implements Serializable {
 			return ComponentURI.UNSPECIFIED;
 		}
 		final List<String> parts = SLASH_SPLITTER.splitToList(uri);
-		checkArgument(parts.size() >= 3, "A component uri consists of three parts (codeSystemURI/componentType/componentId). Arg was: %s", uri);
-		int terminologyComponentTypeIndex = parts.size()-2;
-		int componentIdIndex = parts.size()-1;
-		CodeSystemURI codeSystemURI = new CodeSystemURI(SLASH_JOINER.join(parts.subList(0, terminologyComponentTypeIndex)));
+		checkArgument(parts.size() >= 3, "A component uri consists of at least three parts (resourceUri/componentType/componentId). Arg was: %s", uri);
+		int terminologyComponentTypeIndex = parts.size() - 2;
+		int componentIdIndex = parts.size() - 1;
+		ResourceURI resourceURI = new ResourceURI(SLASH_JOINER.join(parts.subList(0, terminologyComponentTypeIndex)));
 		Short terminologyComponentId = Short.valueOf(parts.get(terminologyComponentTypeIndex));
 		String componentId = parts.get(componentIdIndex);
-		return new ComponentURI(codeSystemURI, terminologyComponentId, componentId);
+		return new ComponentURI(resourceURI, terminologyComponentId, componentId);
 	}
 
 	@JsonValue
 	@Override
 	public String toString() {
-		return SLASH_JOINER.join(codeSystemUri(), terminologyComponentId(), identifier());
+		return SLASH_JOINER.join(resourceUri(), terminologyComponentId(), identifier());
 	}
 	
 	@Override
 	public int hashCode() {
-		return Objects.hash(codeSystemUri, terminologyComponentId, identifier);
+		return Objects.hash(resourceUri, terminologyComponentId, identifier);
 	}
 	
 	@Override
@@ -169,7 +170,7 @@ public final class ComponentURI implements Serializable {
 		if (obj == null) return false;
 		if (getClass() != obj.getClass()) return false;
 		ComponentURI other = (ComponentURI) obj;
-		return Objects.equals(codeSystemUri, other.codeSystemUri)
+		return Objects.equals(resourceUri, other.resourceUri)
 				&& terminologyComponentId == other.terminologyComponentId
 				&& Objects.equals(identifier, other.identifier);
 	}
