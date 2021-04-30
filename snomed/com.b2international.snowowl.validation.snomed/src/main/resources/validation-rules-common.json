@@ -90,6 +90,15 @@
     "implementation": "scripts/rule110.groovy"
   },
   {
+    "id": "266",
+    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "messageTemplate": "Descriptions which are not Fully Specified Names should not contain semantic tags",
+    "severity": "ERROR",
+    "checkType": "FAST",
+    "type": "script-groovy",
+    "implementation": "scripts/rule266.groovy"
+  },
+  {
   	"id": "663",
     "toolingId": "com.b2international.snowowl.terminology.snomed",
     "messageTemplate": "Relationships must not have inactive source, destination or type concepts.",
