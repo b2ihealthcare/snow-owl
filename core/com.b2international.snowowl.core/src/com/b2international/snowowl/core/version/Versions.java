@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.codesystem;
+package com.b2international.snowowl.core.version;
 
 import java.util.List;
 
@@ -24,13 +24,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * @since 4.7
  */
-public final class CodeSystemVersions extends PageableCollectionResource<CodeSystemVersion> {
+public final class Versions extends PageableCollectionResource<Version> {
 
-	private static final long serialVersionUID = 2L;
+	private static final long serialVersionUID = 3L;
 	
 	@JsonCreator
-	public CodeSystemVersions(
-			@JsonProperty("items") final List<CodeSystemVersion> items, 
+	public Versions(
+			@JsonProperty("items") final List<Version> items, 
 			@JsonProperty("searchAfter") final String searchAfter, 
 			@JsonProperty("limit") final int limit, 
 			@JsonProperty("total") final int total) {
