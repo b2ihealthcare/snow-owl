@@ -34,7 +34,6 @@ import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.core.merge.MergeConflict;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
-import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
 import com.fasterxml.jackson.annotation.JsonProperty;
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,11 +22,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.options.Options;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.Concept;
 import com.b2international.snowowl.core.domain.Concepts;
 import com.b2international.snowowl.core.domain.IComponent;
-import com.b2international.snowowl.core.uri.CodeSystemURI;
 
 /**
  * @since 7.5
@@ -104,9 +104,9 @@ public interface ConceptSearchRequestEvaluator {
 	 *            - the search filters and options to apply to the code system specific search
 	 * @return
 	 */
-	Concepts evaluate(CodeSystemURI uri, BranchContext context, Options search);
+	Concepts evaluate(ResourceURI uri, BranchContext context, Options search);
 
-	default Concept toConcept(CodeSystemURI codeSystem, IComponent concept, String iconId, String term, Float score) {
+	default Concept toConcept(ResourceURI codeSystem, IComponent concept, String iconId, String term, Float score) {
 		Concept result = new Concept(codeSystem.toString(), concept.getTerminologyComponentId());
 		result.setId(concept.getId());
 		result.setReleased(concept.isReleased());
@@ -152,7 +152,7 @@ public interface ConceptSearchRequestEvaluator {
 	ConceptSearchRequestEvaluator NOOP = new ConceptSearchRequestEvaluator() {
 
 		@Override
-		public Concepts evaluate(CodeSystemURI uri, BranchContext context, Options search) {
+		public Concepts evaluate(ResourceURI uri, BranchContext context, Options search) {
 			return new Concepts(search.get(OptionKey.LIMIT, Integer.class), 0);
 		}
 

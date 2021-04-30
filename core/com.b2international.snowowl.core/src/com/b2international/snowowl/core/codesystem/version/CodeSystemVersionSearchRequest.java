@@ -26,6 +26,7 @@ import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersion;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
@@ -40,7 +41,7 @@ import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
  * @since 4.7
  */
 final class CodeSystemVersionSearchRequest 
-	extends SearchIndexResourceRequest<RepositoryContext, CodeSystemVersions, CodeSystemVersionEntry> 
+	extends SearchIndexResourceRequest<ServiceProvider, CodeSystemVersions, CodeSystemVersionEntry> 
 	implements RepositoryAccessControl {
 
 	private static final long serialVersionUID = 2L;
@@ -90,7 +91,7 @@ final class CodeSystemVersionSearchRequest
 	}
 	
 	@Override
-	protected Expression prepareQuery(RepositoryContext context) {
+	protected Expression prepareQuery(ServiceProvider context) {
 		final ExpressionBuilder query = Expressions.builder();
 
 		if (containsKey(OptionKey.SHORT_NAME)) {
@@ -131,7 +132,7 @@ final class CodeSystemVersionSearchRequest
 	}
 
 	@Override
-	protected CodeSystemVersions toCollectionResource(RepositoryContext context, Hits<CodeSystemVersionEntry> hits) {
+	protected CodeSystemVersions toCollectionResource(ServiceProvider context, Hits<CodeSystemVersionEntry> hits) {
 		return new CodeSystemVersions(toResource(hits), hits.getSearchAfter(), limit(), hits.getTotal());
 	}
 	

@@ -16,10 +16,10 @@
 package com.b2international.snowowl.core.request;
 
 import com.b2international.commons.options.Options;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.ConceptMapMapping;
 import com.b2international.snowowl.core.domain.ConceptMapMappings;
-import com.b2international.snowowl.core.uri.CodeSystemURI;
 
 /**
  * @since 7.8
@@ -88,6 +88,6 @@ public interface SetSearchRequestEvaluator<R> {
 	 * @param search - the search filters and options to apply to the code system specific search
 	 * @return resource 
 	 */
-	R evaluate(CodeSystemURI uri, BranchContext context, Options search);
+	R evaluate(ResourceURI uri, BranchContext context, Options search);
 
 }

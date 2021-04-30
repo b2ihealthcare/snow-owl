@@ -20,20 +20,20 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.Collection;
 
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersions;
 import com.b2international.snowowl.core.codesystem.version.CodeSystemVersionSearchRequest.OptionKey;
 import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.request.RepositoryRequestBuilder;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
+import com.b2international.snowowl.core.request.SystemRequestBuilder;
 
 /**
  * @since 4.7
  */
 public final class CodeSystemVersionSearchRequestBuilder 
-		extends SearchResourceRequestBuilder<CodeSystemVersionSearchRequestBuilder, RepositoryContext, CodeSystemVersions>
- 		implements RepositoryRequestBuilder<CodeSystemVersions> {
+		extends SearchResourceRequestBuilder<CodeSystemVersionSearchRequestBuilder, ServiceProvider, CodeSystemVersions>
+ 		implements SystemRequestBuilder<CodeSystemVersions> {
 
 	private String versionId;
 	private String parentBranchPath;
@@ -123,7 +123,7 @@ public final class CodeSystemVersionSearchRequestBuilder
 	}
 
 	@Override
-	protected SearchResourceRequest<RepositoryContext, CodeSystemVersions> createSearch() {
+	protected SearchResourceRequest<ServiceProvider, CodeSystemVersions> createSearch() {
 		final CodeSystemVersionSearchRequest req = new CodeSystemVersionSearchRequest();
 		req.setVersionId(versionId);
 		req.setParentBranchPath(parentBranchPath);

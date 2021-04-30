@@ -15,12 +15,12 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.codesystem.CodeSystemSearchRequest.OptionKey;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
 import com.b2international.snowowl.core.request.SystemRequestBuilder;
-import com.b2international.snowowl.core.uri.CodeSystemURI;
 
 /**
  * @since 4.7
@@ -57,11 +57,11 @@ public final class CodeSystemSearchRequestBuilder
 		return addOption(OptionKey.OID, oids);
 	}
 	
-	public CodeSystemSearchRequestBuilder filterByUpgradeOf(CodeSystemURI upgradeOf) {
+	public CodeSystemSearchRequestBuilder filterByUpgradeOf(ResourceURI upgradeOf) {
 		return addOption(OptionKey.UPGRADE_OF, upgradeOf);
 	}
 	
-	public CodeSystemSearchRequestBuilder filterByUpgradeOf(Iterable<CodeSystemURI> upgradeOfs) {
+	public CodeSystemSearchRequestBuilder filterByUpgradeOf(Iterable<ResourceURI> upgradeOfs) {
 		return addOption(OptionKey.UPGRADE_OF, upgradeOfs);
 	}
 

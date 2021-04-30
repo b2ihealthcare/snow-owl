@@ -111,7 +111,7 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 		
 		// If the branch should be created, it branch should not exist, however 
 		if (createBranch) {
-			final String newBranchPath = Branch.get(parentPath, name);
+			final String newBranchPath = Branch.get(parentPath, title);
 			if (branchExists(newBranchPath, context)) {
 				throw new AlreadyExistsException("Code system branch", newBranchPath);
 			}

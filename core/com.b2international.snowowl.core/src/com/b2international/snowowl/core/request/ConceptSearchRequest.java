@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,9 @@ package com.b2international.snowowl.core.request;
 import java.io.IOException;
 
 import com.b2international.commons.options.Options;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.Concepts;
-import com.b2international.snowowl.core.uri.CodeSystemURI;
 
 /**
  * A generic concept search request that can be executed in any code system using generic query expressions and filters to get back primary
@@ -47,7 +47,7 @@ public final class ConceptSearchRequest extends SearchResourceRequest<BranchCont
 				.put(ConceptSearchRequestEvaluator.OptionKey.LOCALES, locales())
 				.put(SearchResourceRequest.OptionKey.SORT_BY, sortBy())
 				.build();
-		return context.service(ConceptSearchRequestEvaluator.class).evaluate(context.service(CodeSystemURI.class), context, options);
+		return context.service(ConceptSearchRequestEvaluator.class).evaluate(context.service(ResourceURI.class), context, options);
 	}
 
 }

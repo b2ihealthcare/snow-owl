@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,9 @@
 package com.b2international.snowowl.core.request;
 
 import com.b2international.commons.options.Options;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.ConceptMapMappings;
-import com.b2international.snowowl.core.uri.CodeSystemURI;
 
 /**
  * @since 7.8
@@ -32,7 +32,7 @@ public interface ConceptMapMappingSearchRequestEvaluator extends SetSearchReques
 	ConceptMapMappingSearchRequestEvaluator NOOP = new ConceptMapMappingSearchRequestEvaluator() {
 		
 		@Override
-		public ConceptMapMappings evaluate(CodeSystemURI uri, BranchContext context, Options search) {
+		public ConceptMapMappings evaluate(ResourceURI uri, BranchContext context, Options search) {
 			return new ConceptMapMappings(search.get(OptionKey.LIMIT, Integer.class), 0);
 		}
 	};
