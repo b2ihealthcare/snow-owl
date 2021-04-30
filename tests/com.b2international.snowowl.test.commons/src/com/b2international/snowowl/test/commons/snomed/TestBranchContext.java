@@ -39,7 +39,7 @@ import com.b2international.snowowl.core.domain.RepositoryContextProvider;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.BranchRequest;
-import com.b2international.snowowl.core.request.CodeSystemResourceRequest;
+import com.b2international.snowowl.core.request.TerminologyResourceRequest;
 import com.b2international.snowowl.eventbus.EventBusUtil;
 import com.b2international.snowowl.eventbus.IEventBus;
 
@@ -115,7 +115,7 @@ public final class TestBranchContext extends DelegatingContext implements Branch
 				try {
 					final Request<?, ?> req = message.body(Request.class);
 					final BranchRequest<?> branchReq = Request.getNestedRequest(req, BranchRequest.class);
-					final CodeSystemResourceRequest<?> codeSystemResourceRequest = Request.getNestedRequest(req, CodeSystemResourceRequest.class);
+					final TerminologyResourceRequest<?> codeSystemResourceRequest = Request.getNestedRequest(req, TerminologyResourceRequest.class);
 					final Request<BranchContext, ?> innerReq = branchReq != null ? ReflectionUtils.getField(DelegatingRequest.class, branchReq, "next") : ReflectionUtils.getField(DelegatingRequest.class, codeSystemResourceRequest, "next");
 					message.reply(innerReq.execute(context));
 				} catch (WrappedException e1) {

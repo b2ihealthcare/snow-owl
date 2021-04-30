@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import com.b2international.snowowl.core.identity.IdentityProvider;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.request.BranchRequest;
-import com.b2international.snowowl.core.request.CodeSystemResourceRequest;
+import com.b2international.snowowl.core.request.TerminologyResourceRequest;
 import com.b2international.snowowl.core.request.RepositoryRequest;
 import com.b2international.snowowl.core.util.PlatformUtil;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -80,7 +80,7 @@ public final class AuthorizedRequest<R> extends DelegatingRequest<ServiceProvide
 			
 			RepositoryRequest<?> repositoryRequest = Request.getNestedRequest(next(), RepositoryRequest.class);
 			BranchRequest<?> branchRequest = Request.getNestedRequest(next(), BranchRequest.class);
-			CodeSystemResourceRequest<?> codeSystemResourceRequest = Request.getNestedRequest(next(), CodeSystemResourceRequest.class);
+			TerminologyResourceRequest<?> codeSystemResourceRequest = Request.getNestedRequest(next(), TerminologyResourceRequest.class);
 			
 			// authorize user whether it is permitted to execute the operation or not
 			requests
@@ -94,7 +94,7 @@ public final class AuthorizedRequest<R> extends DelegatingRequest<ServiceProvide
 						if (repositoryRequest != null) {
 							newResource = newResource.replace(RepositoryAccessControl.REPOSITORY_TEMPLATE, repositoryRequest.getContextId());
 						} else if (codeSystemResourceRequest != null) {
-							newResource = newResource.replace(RepositoryAccessControl.REPOSITORY_TEMPLATE, codeSystemResourceRequest.getRepositoryId(context));
+							newResource = newResource.replace(RepositoryAccessControl.REPOSITORY_TEMPLATE, codeSystemResourceRequest.getToolingId(context));
 						} else {
 							throw new IllegalArgumentException("Repository context is missing from request: " + next());
 						}

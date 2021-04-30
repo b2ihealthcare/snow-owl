@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,32 +15,32 @@
  */
 package com.b2international.snowowl.core.request;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.events.DelegatingRequest;
+import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.events.RequestBuilder;
 
 /**
- * @since 4.5
+ * @since 8.0
  */
-public final class BranchRequest<B> extends DelegatingRequest<RepositoryContext, BranchContext, B> {
+public interface TerminologyResourceRequestBuilder<R> extends RequestBuilder<BranchContext, R> {
 
-	private final String branchPath;
-	
-	public BranchRequest(String branchPath, Request<BranchContext, B> next) {
-		super(next);
-		this.branchPath = checkNotNull(branchPath, "branchPath");
+	default AsyncRequest<R> build(String resourceUri) {
+		return build(new ResourceURI(resourceUri));
 	}
 	
-	public String getBranchPath() {
-		return branchPath;
+	default AsyncRequest<R> build(ResourceURI resourceUri) {
+		return new AsyncRequest<>(
+			new TerminologyResourceRequest<>(
+				resourceUri,
+				wrap(build())
+			)
+		);
 	}
 	
-	@Override
-	public B execute(RepositoryContext context) {
-		return next(context.openBranch(context, branchPath));
+	default Request<BranchContext, R> wrap(Request<BranchContext, R> req) {
+		return req;
 	}
 	
 }

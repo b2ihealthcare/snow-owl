@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,13 @@ package com.b2international.snowowl.core.request;
 
 import java.util.List;
 
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.codesystem.CodeSystem;
+import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Iterables;
@@ -31,42 +31,43 @@ import com.google.common.collect.Iterables;
 /**
  * @since 7.5
  */
-public final class CodeSystemResourceRequest<R> extends DelegatingRequest<ServiceProvider, BranchContext, R> {
+public final class TerminologyResourceRequest<R> extends DelegatingRequest<ServiceProvider, BranchContext, R> {
 
 	private static final long serialVersionUID = 1L;
 	
 	@JsonProperty
-	private final CodeSystemURI uri;
+	private final ResourceURI uri;
 	
-	private transient CodeSystem codeSystem;
+	private transient TerminologyResource resource;
 	
 	private transient String branchPath;
 	
-	public CodeSystemResourceRequest(CodeSystemURI codeSystemUri, Request<BranchContext, R> next) {
+	public TerminologyResourceRequest(ResourceURI codeSystemUri, Request<BranchContext, R> next) {
 		super(next);
 		this.uri = codeSystemUri;
 	}
 
 	@Override
 	public R execute(ServiceProvider context) {
-		return new RepositoryRequest<R>(getRepositoryId(context),
+		return new RepositoryRequest<R>(getToolingId(context),
 			new BranchRequest<R>(getBranchPath(context),
 				next()
 			)
 		).execute(context.inject()
-				.bind(CodeSystemURI.class, uri)
+				.bind(ResourceURI.class, uri)
 				.build());
 	}
 
-	public CodeSystem getCodeSystem(ServiceProvider context) {
-		if (codeSystem == null) {
-			codeSystem = CodeSystemRequests.getCodeSystem(context, uri.getCodeSystem());
+	public TerminologyResource getResource(ServiceProvider context) {
+		if (resource == null) {
+			// TODO support other resource types as well here
+			resource = CodeSystemRequests.prepareGetCodeSystem(uri.getResourceId()).build().execute(context);
 		}
-		return codeSystem;
+		return resource;
 	}
 	
-	public String getRepositoryId(ServiceProvider context) {
-		return getCodeSystem(context).getRepositoryId();
+	public String getToolingId(ServiceProvider context) {
+		return getResource(context).getToolingId();
 	}
 	
 	public String getBranchPath(ServiceProvider context) {

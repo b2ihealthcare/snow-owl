@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,10 @@
  */
 package com.b2international.snowowl.core.request;
 
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.events.RequestBuilder;
-import com.b2international.snowowl.core.uri.CodeSystemURI;
 
 /**
  * @since 5.7
@@ -26,20 +26,20 @@ import com.b2international.snowowl.core.uri.CodeSystemURI;
  */
 public interface TransactionalRequestBuilder<R> extends RequestBuilder<TransactionContext, R> {
 
-	default AsyncRequest<CommitResult> build(String codeSystemUri, 
+	default AsyncRequest<CommitResult> build(String resourceUri, 
 			String author,
 			String commitComment) {
 		return commit()
 				.setAuthor(author)
 				.setCommitComment(commitComment)
-				.build(codeSystemUri);
+				.build(resourceUri);
 	}
 	
-	default AsyncRequest<CommitResult> build(CodeSystemURI codeSystemUri, 
+	default AsyncRequest<CommitResult> build(ResourceURI resourceUri, 
 			String author,
 			String commitComment) {
 		
-		return build(codeSystemUri.getUri(), author, commitComment);
+		return build(resourceUri.getUri(), author, commitComment);
 	}
 	
 	

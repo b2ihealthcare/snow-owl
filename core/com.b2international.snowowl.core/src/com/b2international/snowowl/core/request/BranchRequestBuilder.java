@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,11 @@
  */
 package com.b2international.snowowl.core.request;
 
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.AsyncRequest;
-import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.RequestBuilder;
-import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.google.common.base.Strings;
 
 /**
@@ -31,13 +30,13 @@ import com.google.common.base.Strings;
  * @since 7.0
  * @param <R> - the return type
  */
-public interface BranchRequestBuilder<R> extends RequestBuilder<BranchContext, R>, AllowedHealthStates {
+public interface BranchRequestBuilder<R> extends RequestBuilder<BranchContext, R>, AllowedHealthStates, TerminologyResourceRequestBuilder<R> {
 
 	/**
 	 * @param repositoryId
 	 * @param branch
 	 * @return
-	 * @deprecated - use {@link #build(String)} or {@link #build(CodeSystemURI)}, this method will be removed in 8.0
+	 * @deprecated - use {@link #build(String)} or {@link #build(ResourceURI)}, this method will be removed in 8.0
 	 */
 	default AsyncRequest<R> build(String repositoryId, String branch) {
 		// if the branch starts with MAIN, then it is an explicit branch path with a repositoryId
@@ -57,20 +56,4 @@ public interface BranchRequestBuilder<R> extends RequestBuilder<BranchContext, R
 		}
 	}
 
-	default AsyncRequest<R> build(String codeSystemUri) {
-		return build(new CodeSystemURI(codeSystemUri));
-	}
-	
-	default AsyncRequest<R> build(CodeSystemURI codeSystemUri) {
-		return new AsyncRequest<>(
-			new CodeSystemResourceRequest<>(
-				codeSystemUri,
-				wrap(build())
-			)
-		);
-	}
-	
-	default Request<BranchContext, R> wrap(Request<BranchContext, R> req) {
-		return req;
-	}
 }

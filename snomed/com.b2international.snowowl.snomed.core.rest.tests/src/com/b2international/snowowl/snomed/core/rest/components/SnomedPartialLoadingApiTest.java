@@ -21,7 +21,7 @@ import org.junit.Test;
 
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
-import com.b2international.snowowl.core.request.CodeSystemResourceRequest;
+import com.b2international.snowowl.core.request.TerminologyResourceRequest;
 import com.b2international.snowowl.core.request.RevisionIndexReadRequest;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
@@ -40,7 +40,7 @@ public class SnomedPartialLoadingApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void partialLoadingConceptApi() throws Exception {
-		PageableCollectionResource<String[]> hits = new CodeSystemResourceRequest<>(new CodeSystemURI(SnomedApiTestConstants.INT_CODESYSTEM), new RevisionIndexReadRequest<>(
+		PageableCollectionResource<String[]> hits = new TerminologyResourceRequest<>(new CodeSystemURI(SnomedApiTestConstants.INT_CODESYSTEM), new RevisionIndexReadRequest<>(
 			context -> {
 				return SnomedRequests.prepareSearchConcept()
 						.all()
