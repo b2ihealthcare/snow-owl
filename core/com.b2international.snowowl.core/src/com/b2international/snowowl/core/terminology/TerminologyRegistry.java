@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,7 +64,7 @@ public enum TerminologyRegistry {
 			}
 			
 			@Override
-			public String getId() {
+			public String getToolingId() {
 				return UNSPECIFIED;
 			}
 		});
@@ -76,13 +76,13 @@ public enum TerminologyRegistry {
 	}
 	
 	public void register(Terminology terminology) {
-		Terminology prev = terminologies.put(terminology.getId(), terminology);
+		Terminology prev = terminologies.put(terminology.getToolingId(), terminology);
 		if (prev != null) {
-			throw new IllegalArgumentException(String.format("A terminology is already registered with id '%s'", terminology.getId()));
+			throw new IllegalArgumentException(String.format("A terminology is already registered with id '%s'", terminology.getToolingId()));
 		}
 		for (Class<? extends IComponent> terminologyComponentType : terminology.getTerminologyComponents()) {
 			TerminologyComponent terminologyComponent = Terminology.getAnnotation(terminologyComponentType);
-			register(terminology.getId(), terminologyComponent);
+			register(terminology.getToolingId(), terminologyComponent);
 		}
 	}
 
