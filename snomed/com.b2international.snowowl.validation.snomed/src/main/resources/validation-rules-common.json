@@ -54,6 +54,15 @@
     "implementation": "{\"componentType\": \"relationship\",\"active\": \"true\",\"characteristicType\": \"<900000000000449001 MINUS <900000000000006009\",\"groupMin\": \"0\",\"groupMax\": \"0\"}"
   },
   {
+    "id": "55",
+    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "messageTemplate": "Spacing around hyphens should be consistent in active terms",
+    "severity": "WARNING",
+    "checkType": "NORMAL",
+    "type": "script-groovy",
+    "implementation": "scripts/rule55.groovy"
+  },
+  {
     "id": "75",
     "toolingId": "com.b2international.snowowl.terminology.snomed",
     "messageTemplate": "Relationships in group 0 should not be duplicated in any other group.",
