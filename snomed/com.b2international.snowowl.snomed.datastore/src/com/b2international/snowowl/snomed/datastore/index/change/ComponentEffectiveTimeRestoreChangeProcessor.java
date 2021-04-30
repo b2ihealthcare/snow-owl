@@ -242,7 +242,7 @@ public final class ComponentEffectiveTimeRestoreChangeProcessor extends ChangeSe
 	}
 	
 	private Optional<CodeSystemVersion> getLatestCodeSystemVersion(RepositoryContext context, String codeSystemId) {
-		return CodeSystemRequests.prepareSearchCodeSystemVersion()
+		return CodeSystemRequests.prepareSearchVersion()
 				.one()
 				.filterByCodeSystemShortName(codeSystemId)
 				.sortBy(SearchResourceRequest.SortField.descending(CodeSystemVersionEntry.Fields.EFFECTIVE_DATE))

@@ -69,7 +69,7 @@ public abstract class FhirApiProvider {
 		} else {
 			
 			//get the last version for now
-			Optional<CodeSystemVersion> latestVersion = CodeSystemRequests.prepareSearchCodeSystemVersion()
+			Optional<CodeSystemVersion> latestVersion = CodeSystemRequests.prepareSearchVersion()
 				.one()
 				.filterByCodeSystemShortName(getCodeSystemShortName())
 				.sortBy(SearchResourceRequest.SortField.ascending(CodeSystemVersionEntry.Fields.EFFECTIVE_DATE))
@@ -93,7 +93,7 @@ public abstract class FhirApiProvider {
 	 * @return
 	 */
 	protected CodeSystemVersion findCodeSystemVersion(LogicalId logicalId, String location) {
-		return CodeSystemRequests.prepareSearchCodeSystemVersion()
+		return CodeSystemRequests.prepareSearchVersion()
 			.one()
 			.filterByBranchPath(logicalId.getBranchPath())
 			.build(getRepositoryId())
@@ -112,7 +112,7 @@ public abstract class FhirApiProvider {
 		
 		if (versionEffectiveDate == null) {
 			//get the last version
-			return CodeSystemRequests.prepareSearchCodeSystemVersion()
+			return CodeSystemRequests.prepareSearchVersion()
 				.one()
 				.filterByCodeSystemShortName(getCodeSystemShortName())
 				.sortBy(SearchResourceRequest.SortField.descending(CodeSystemVersionEntry.Fields.EFFECTIVE_DATE))
@@ -122,7 +122,7 @@ public abstract class FhirApiProvider {
 				.first()
 				.orElseThrow(() -> new BadRequestException(String.format("Could not find any versions for %s with effective date '%s'", getCodeSystemShortName(), versionEffectiveDate), "CodeSystem.system"));
 		} else {
-			return CodeSystemRequests.prepareSearchCodeSystemVersion()
+			return CodeSystemRequests.prepareSearchVersion()
 				.one()
 				.filterByEffectiveDate(EffectiveTimes.parse(versionEffectiveDate, DateFormats.SHORT))
 				.filterByCodeSystemShortName(getCodeSystemShortName())
@@ -145,7 +145,7 @@ public abstract class FhirApiProvider {
 			.getSync();
 		
 		//fetch all the versions
-		CodeSystemVersions codeSystemVersions = CodeSystemRequests.prepareSearchCodeSystemVersion()
+		CodeSystemVersions codeSystemVersions = CodeSystemRequests.prepareSearchVersion()
 			.all()
 			.sortBy(SearchResourceRequest.SortField.descending(CodeSystemVersionEntry.Fields.EFFECTIVE_DATE))
 			.build(repositoryId)

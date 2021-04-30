@@ -26,11 +26,11 @@ import com.b2international.index.revision.RevisionBranch.BranchState;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.branch.BranchInfo;
-import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.request.BaseResourceConverter;
-import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
+import com.b2international.snowowl.core.version.Version;
+import com.b2international.snowowl.core.version.Versions;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimaps;
@@ -143,23 +143,22 @@ public final class CodeSystemConverter extends BaseResourceConverter<ResourceDoc
 			return;
 		}
 		
-		final Set<String> parentCodeSystems = results.stream()
+		final Set<ResourceURI> parentResources = results.stream()
 			.map(CodeSystem::getExtensionOf)
 			.filter(uri -> uri != null)
-			.map(ResourceURI::getResourceId)
 			.collect(Collectors.toSet());
 		
-		final CodeSystemVersions parentVersions = CodeSystemRequests.prepareSearchCodeSystemVersion()
+		final Versions parentVersions = CodeSystemRequests.prepareSearchVersion()
 			.all()
-			.filterByCodeSystemShortNames(parentCodeSystems)
+			.filterByResources(parentResources)
 			.build()
 			.execute(context());
 		
-		final TreeMultimap<String, CodeSystemVersion> versionsByShortName = TreeMultimap.create(
+		final TreeMultimap<ResourceURI, Version> versionsByResource = TreeMultimap.create(
 				Comparator.naturalOrder(), 
-				Comparator.comparing(CodeSystemVersion::getEffectiveTime));
+				Comparator.comparing(Version::getEffectiveTime));
 		
-		versionsByShortName.putAll(Multimaps.index(parentVersions, CodeSystemVersion::getCodeSystem));
+		versionsByResource.putAll(Multimaps.index(parentVersions, Version::getResource));
 		
 		for (final CodeSystem result : results) {
 			final ResourceURI extensionOf = result.getExtensionOf();
@@ -173,19 +172,19 @@ public final class CodeSystemConverter extends BaseResourceConverter<ResourceDoc
 				continue;
 			}
 			
-			final String resourceId = extensionOf.getResourceId();
-			final String versionId = extensionOf.getPath();
+			final ResourceURI resource = extensionOf.withoutPath();
+			final String version = extensionOf.getPath();
 			
-			final NavigableSet<CodeSystemVersion> candidates = versionsByShortName.get(resourceId);
+			final NavigableSet<Version> candidates = versionsByResource.get(resource);
 			
-			final Optional<CodeSystemVersion> currentExtensionVersion = candidates.stream()
-					.filter(v -> v.getVersion().equals(versionId))
+			final Optional<Version> currentExtensionVersion = candidates.stream()
+					.filter(v -> v.getVersion().equals(version))
 					.findFirst();
 			
 			final Optional<List<ResourceURI>> upgradeUris = currentExtensionVersion.map(currentVersion -> {
-				final SortedSet<CodeSystemVersion> upgradeVersions = candidates.tailSet(currentVersion, false);
+				final SortedSet<Version> upgradeVersions = candidates.tailSet(currentVersion, false);
 				return upgradeVersions.stream()
-						.map(upgradeVersion -> upgradeVersion.getUri())
+						.map(upgradeVersion -> upgradeVersion.getResource())
 						.collect(Collectors.toList());
 			});
 	

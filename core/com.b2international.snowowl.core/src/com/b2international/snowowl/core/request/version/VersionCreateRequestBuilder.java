@@ -13,11 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.codesystem.version;
+package com.b2international.snowowl.core.request.version;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
@@ -26,22 +27,22 @@ import com.b2international.snowowl.core.request.SystemRequestBuilder;
 /**
  * @since 5.7
  */
-public final class CodeSystemVersionCreateRequestBuilder 
-		extends BaseRequestBuilder<CodeSystemVersionCreateRequestBuilder, ServiceProvider, Boolean>
+public final class VersionCreateRequestBuilder 
+		extends BaseRequestBuilder<VersionCreateRequestBuilder, ServiceProvider, Boolean>
 		implements SystemRequestBuilder<Boolean> {
 
-	private String codeSystemShortName;
-	private String versionId;
+	private String version;
 	private String description;
 	private LocalDate effectiveTime;
+	private ResourceURI resource;
 	private boolean force = false;
 
-	public CodeSystemVersionCreateRequestBuilder setCodeSystemShortName(String codeSystemShortName) {
-		this.codeSystemShortName = codeSystemShortName;
+	public VersionCreateRequestBuilder setResource(ResourceURI resource) {
+		this.resource = resource;
 		return getSelf();
 	}
 	
-	public CodeSystemVersionCreateRequestBuilder setDescription(String description) {
+	public VersionCreateRequestBuilder setDescription(String description) {
 		this.description = description;
 		return getSelf();
 	}
@@ -51,32 +52,32 @@ public final class CodeSystemVersionCreateRequestBuilder
 	 * @param effectiveTime
 	 * @return
 	 */
-	public CodeSystemVersionCreateRequestBuilder setEffectiveTime(String effectiveTime) {
+	public VersionCreateRequestBuilder setEffectiveTime(String effectiveTime) {
 		return setEffectiveTime(LocalDate.parse(effectiveTime, DateTimeFormatter.BASIC_ISO_DATE));
 	}
 	
-	public CodeSystemVersionCreateRequestBuilder setEffectiveTime(LocalDate effectiveTime) {
+	public VersionCreateRequestBuilder setEffectiveTime(LocalDate effectiveTime) {
 		this.effectiveTime = effectiveTime;
 		return getSelf();
 	}
 	
-	public CodeSystemVersionCreateRequestBuilder setVersionId(String versionId) {
-		this.versionId = versionId;
+	public VersionCreateRequestBuilder setVersionId(String versionId) {
+		this.version = versionId;
 		return getSelf();
 	}
 	
-	public CodeSystemVersionCreateRequestBuilder setForce(boolean force) {
+	public VersionCreateRequestBuilder setForce(boolean force) {
 		this.force = force;
 		return getSelf();
 	}
 	
 	@Override
 	protected Request<ServiceProvider, Boolean> doBuild() {
-		final CodeSystemVersionCreateRequest req = new CodeSystemVersionCreateRequest();
-		req.codeSystemShortName = codeSystemShortName;
-		req.versionId = versionId;
+		final VersionCreateRequest req = new VersionCreateRequest();
+		req.version = version;
 		req.description= description;
 		req.effectiveTime = effectiveTime;
+		req.resource = resource;
 		req.force = force;
 		return req;
 	}

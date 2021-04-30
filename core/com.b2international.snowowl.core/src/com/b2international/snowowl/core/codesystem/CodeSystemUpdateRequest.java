@@ -163,7 +163,7 @@ final class CodeSystemUpdateRequest extends UpdateRequest<TransactionContext> im
 			final String extensionOfResourceId = extensionOf.getResourceId(); 
 			final String versionId = extensionOf.getPath();
 			
-			final Optional<CodeSystemVersion> extensionOfVersion = CodeSystemRequests.prepareSearchCodeSystemVersion()
+			final Optional<CodeSystemVersion> extensionOfVersion = CodeSystemRequests.prepareSearchVersion()
 					.one()
 					.filterByCodeSystemShortName(extensionOfResourceId)
 					.filterByVersionId(versionId)

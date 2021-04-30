@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.codesystem.version;
+package com.b2international.snowowl.core.request.version;
 
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
@@ -42,7 +42,7 @@ public interface VersioningRequestBuilder {
 	Request<BranchContext, CommitResult> build(VersioningConfiguration config);
 
 	static String defaultCommitComment(VersioningConfiguration config) {
-		return String.format(NEW_VERSION_COMMIT_COMMENT_TEMPLATE, config.getVersionId(), config.getCodeSystemShortName());
+		return String.format(NEW_VERSION_COMMIT_COMMENT_TEMPLATE, config.getVersion(), config.getResource());
 	}
 	
 }

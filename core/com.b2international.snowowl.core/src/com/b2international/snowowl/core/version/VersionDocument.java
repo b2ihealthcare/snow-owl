@@ -65,6 +65,10 @@ public final class VersionDocument implements Serializable {
 		public static Expression version(String version) {
 			return exactMatch(Fields.VERSION, version);
 		}
+		
+		public static Expression versions(Iterable<String> versions) {
+			return matchAny(Fields.VERSION, versions);
+		}
 
 		public static Expression resource(ResourceURI resourceUri) {
 			return exactMatch(Fields.RESOURCE, resourceUri.toString());

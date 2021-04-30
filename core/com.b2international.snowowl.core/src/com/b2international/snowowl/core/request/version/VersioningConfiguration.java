@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.codesystem.version;
+package com.b2international.snowowl.core.request.version;
 
 import static com.google.common.base.Strings.nullToEmpty;
 
 import java.time.LocalDate;
 
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.google.common.base.MoreObjects;
 
@@ -28,22 +29,23 @@ import com.google.common.base.MoreObjects;
 public final class VersioningConfiguration {
 
 	private final String user;
-	private final String codeSystemShortName;
-	private final String versionId;
+	
+	private final ResourceURI resource;
+	private final String version;
 	private final String description;
 	private final LocalDate effectiveTime;
 	private final boolean force;
 	
 	public VersioningConfiguration(
 			String user,
-			String codeSystemShortName,
-			String versionId, 
+			ResourceURI resource,
+			String version, 
 			String description,
 			LocalDate effectiveTime,
 			boolean force) {
 		this.user = user;
-		this.codeSystemShortName = codeSystemShortName;
-		this.versionId = versionId;
+		this.resource = resource;
+		this.version = version;
 		this.description = description;
 		this.effectiveTime = effectiveTime;
 		this.force = force;
@@ -53,8 +55,8 @@ public final class VersioningConfiguration {
 		return user;
 	}
 
-	public String getVersionId() {
-		return versionId;
+	public String getVersion() {
+		return version;
 	}
 
 	public LocalDate getEffectiveTime() {
@@ -65,8 +67,8 @@ public final class VersioningConfiguration {
 		return nullToEmpty(description);
 	}
 	
-	public String getCodeSystemShortName() {
-		return codeSystemShortName;
+	public ResourceURI getResource() {
+		return resource;
 	}
 	
 	public boolean isForce() {
@@ -76,9 +78,10 @@ public final class VersioningConfiguration {
 	@Override
 	public String toString() {
 		return MoreObjects.toStringHelper(this)
-				.add("Version ID", versionId)
-				.add("Effective time", EffectiveTimes.format(effectiveTime))
-				.add("Description", nullToEmpty(description))
+				.add("resource", resource)
+				.add("version", version)
+				.add("effectiveTime", EffectiveTimes.format(effectiveTime))
+				.add("description", nullToEmpty(description))
 				.toString();
 	}
 

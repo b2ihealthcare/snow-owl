@@ -984,7 +984,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 	}
 
 	private static CodeSystemVersions getCodeSystemVersions(final RepositoryContext context, final String shortName) {
-		return CodeSystemRequests.prepareSearchCodeSystemVersion()
+		return CodeSystemRequests.prepareSearchVersion()
 				.all()
 				.filterByCodeSystemShortName(shortName)
 				.sortBy(SearchResourceRequest.SortField.descending(CodeSystemVersionEntry.Fields.EFFECTIVE_DATE))

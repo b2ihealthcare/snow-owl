@@ -33,10 +33,10 @@ import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersionProperties;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersions;
 import com.b2international.snowowl.core.domain.exceptions.CodeSystemNotFoundException;
-import com.b2international.snowowl.core.domain.exceptions.CodeSystemVersionNotFoundException;
 import com.b2international.snowowl.core.jobs.JobRequests;
 import com.b2international.snowowl.core.jobs.RemoteJobEntry;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
+import com.b2international.snowowl.core.request.version.VersionNotFoundException;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
@@ -79,7 +79,7 @@ public class CodeSystemVersionService {
 	 * @return the requested code system version
 	 * 
 	 * @throws CodeSystemNotFoundException        if a code system with the given short name is not registered
-	 * @throws CodeSystemVersionNotFoundException if a code system version for the code system with the given identifier is not registered
+	 * @throws VersionNotFoundException if a code system version for the code system with the given identifier is not registered
 	 */
 	public CodeSystemVersion getCodeSystemVersionById(final String shortName, final String versionId) {
 		checkNotNull(shortName, "Short name may not be null.");
@@ -87,7 +87,7 @@ public class CodeSystemVersionService {
 		final CodeSystem codeSystem = codeSystems.getCodeSystemById(shortName);
 		
 		final CodeSystemVersions versions = CodeSystemRequests
-				.prepareSearchCodeSystemVersion()
+				.prepareSearchVersion()
 				.all()
 				.filterByCodeSystemShortName(shortName)
 				.filterByVersionId(versionId)
@@ -97,7 +97,7 @@ public class CodeSystemVersionService {
 		
 		final CodeSystemVersion version = Iterables.getOnlyElement(versions, null);
 		if (version == null) {
-			throw new CodeSystemVersionNotFoundException(versionId);
+			throw new VersionNotFoundException(versionId);
 		} else {
 			return version;
 		}
@@ -113,7 +113,7 @@ public class CodeSystemVersionService {
 	 * @return the newly created code system version, as returned by {@link #getCodeSystemVersionById(String, String)}
 	 */
 	public CodeSystemVersion createVersion(String shortName, CodeSystemVersionProperties properties, boolean force) {
-		String jobId = CodeSystemRequests.prepareNewCodeSystemVersion()
+		String jobId = CodeSystemRequests.prepareNewVersion()
 				.setCodeSystemShortName(shortName)
 				.setVersionId(properties.getVersion())
 				.setDescription(properties.getDescription())
@@ -138,7 +138,7 @@ public class CodeSystemVersionService {
 
 	private CodeSystemVersions getCodeSystemVersions(final String shortName, final String repositoryId) {
 		return CodeSystemRequests
-				.prepareSearchCodeSystemVersion()
+				.prepareSearchVersion()
 				.all()
 				.filterByCodeSystemShortName(shortName)
 				.sortBy(SortField.ascending(CodeSystemVersionEntry.Fields.EFFECTIVE_DATE))

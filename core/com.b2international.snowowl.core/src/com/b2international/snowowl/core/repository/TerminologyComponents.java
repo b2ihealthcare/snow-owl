@@ -19,7 +19,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import org.slf4j.Logger;
 
-import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
 import com.b2international.snowowl.core.terminology.TerminologyComponent;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -34,7 +33,6 @@ public final class TerminologyComponents {
 	
 	public TerminologyComponents(Logger log) {
 		this.log = log;
-		this.terminologyComponentIdToDocuments.put(CodeSystemVersionEntry.TERMINOLOGY_COMPONENT_ID, CodeSystemVersionEntry.class);
 	}
 	
 	public void add(TerminologyComponent component) {

@@ -38,8 +38,6 @@ import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.*;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.core.codesystem.CodeSystemVersion;
-import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.DelegatingBranchContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
@@ -143,9 +141,7 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 	}
 	
 	private String getObjectId(Object component) {
-		if (component instanceof CodeSystemVersionEntry) { 
-			return ((CodeSystemVersionEntry) component).getId();
-		} else if (component instanceof Revision) {
+		if (component instanceof Revision) {
 			return ((Revision) component).getId();
 		}
 		throw new UnsupportedOperationException("Cannot get objectId for " + component);
@@ -169,12 +165,7 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 
 	@Override
 	public String add(Object o) {
-		if (o instanceof CodeSystemVersionEntry) { 
-			final CodeSystemVersionEntry cs = (CodeSystemVersionEntry) o;
-			staging.stageNew(cs.getId(), cs);
-			resolvedObjectsById.put(createComponentKey(cs.getVersionId(), cs.getClass()), cs);
-			return cs.getVersionId();
-		} else if (o instanceof Revision) {
+		if (o instanceof Revision) {
 			Revision rev = (Revision) o;
 			staging.stageNew(rev);
 			resolvedObjectsById.put(createComponentKey(rev.getId(), rev.getClass()), rev);
@@ -202,13 +193,7 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 	
 	@Override
 	public void delete(Object o, boolean force) {
-		if (o instanceof CodeSystemVersion) {
-			final CodeSystemVersion cs = (CodeSystemVersion) o;
-			staging.stageRemove(cs.getId(), lookup(cs.getId(), CodeSystemVersionEntry.class));
-		} else if (o instanceof CodeSystemVersionEntry) {
-			final CodeSystemVersionEntry cs = (CodeSystemVersionEntry) o;
-			staging.stageRemove(cs.getId(), cs);
-		} else if (o instanceof RevisionDocument) {
+		if (o instanceof RevisionDocument) {
 			RevisionDocument doc = (RevisionDocument) o;
 			
 			if (force || service(ComponentDeletionPolicy.class).canDelete(doc)) {

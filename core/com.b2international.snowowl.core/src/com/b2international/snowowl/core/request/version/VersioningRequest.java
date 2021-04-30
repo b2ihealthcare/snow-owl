@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.codesystem.version;
-
-import java.util.Date;
+package com.b2international.snowowl.core.request.version;
 
 import javax.annotation.Nullable;
 
@@ -26,17 +24,16 @@ import com.b2international.commons.exceptions.ApiException;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
-import com.b2international.snowowl.core.codesystem.CodeSystemVersion;
-import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
 import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.CappedTransactionContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.repository.TerminologyRepositoryPlugin;
+import com.b2international.snowowl.core.version.Version;
+import com.b2international.snowowl.core.version.VersionDocument;
 
 /**
  * {@link VersioningRequest} that will create a {@link CodeSystemVersionEntry} without modifying any of the available terminology components. 
@@ -61,12 +58,12 @@ public class VersioningRequest implements Request<TransactionContext, Boolean>, 
 	public final Boolean execute(TransactionContext context) {
 		final Logger log = context.log();
 		
-		CodeSystemVersion version = getVersion(context);
+		Version version = getVersion(context);
 		if (version != null && !config.isForce()) {
-			throw new AlreadyExistsException("Version", config.getVersionId());
+			throw new AlreadyExistsException("Version", config.getVersion());
 		}
 
-		log.info("Versioning components of '{}' codesystem...", config.getCodeSystemShortName());
+		log.info("Versioning components of '{}' resource...", config.getResource());
 		try {
 			// capped context to commit versioned components in the configured low watermark bulks
 			try (CappedTransactionContext versioningContext = new CappedTransactionContext(context, getCommitLimit(context))) {
@@ -101,28 +98,25 @@ public class VersioningRequest implements Request<TransactionContext, Boolean>, 
 	}
 
 	@Nullable
-	private CodeSystemVersion getVersion(TransactionContext context) {
+	private Version getVersion(TransactionContext context) {
 		return CodeSystemRequests
-				.prepareSearchCodeSystemVersion()
+				.prepareSearchVersion()
 				.setLimit(2)
-				.filterByCodeSystemShortName(config.getCodeSystemShortName())
-				.filterByVersionId(config.getVersionId())
+				.filterByResource(config.getResource())
+				.filterByVersionId(config.getVersion())
 				.build()
 				.execute(context)
 				.first()
 				.orElse(null);
 	}
 	
-	private final CodeSystemVersionEntry createVersion(final TransactionContext context, final VersioningConfiguration config) {
-		return CodeSystemVersionEntry.builder()
-				.id(IDs.base64UUID())
+	private final VersionDocument createVersion(final TransactionContext context, final VersioningConfiguration config) {
+		return VersionDocument.builder()
+				.id(config.getResource().withPath(config.getVersion()).toString())
+				.version(config.getVersion())
 				.description(config.getDescription())
-				.effectiveDate(EffectiveTimes.getEffectiveTime(config.getEffectiveTime()))
-				.importDate(new Date().getTime())
-				.parentBranchPath(context.path())
-				.versionId(config.getVersionId())
-				.codeSystemShortName(config.getCodeSystemShortName())
-				.repositoryUuid(context.id())
+				.effectiveTime(EffectiveTimes.getEffectiveTime(config.getEffectiveTime()))
+				.resource(config.getResource())
 				.build();
 	}
 	

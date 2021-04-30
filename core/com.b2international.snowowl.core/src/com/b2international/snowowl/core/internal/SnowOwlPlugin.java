@@ -39,6 +39,7 @@ import com.b2international.snowowl.core.setup.Plugin;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.core.uri.DefaultResourceURIPathResolver;
 import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
+import com.b2international.snowowl.core.version.VersionDocument;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.micrometer.core.instrument.MeterRegistry;
@@ -86,7 +87,7 @@ public final class SnowOwlPlugin extends Plugin {
 			final Index resourceIndex = Indexes.createIndex(
 				"resources", 
 				mapper, 
-				new Mappings(ResourceDocument.class), 
+				new Mappings(ResourceDocument.class, VersionDocument.class), 
 				env.service(IndexSettings.class)
 			);
 			

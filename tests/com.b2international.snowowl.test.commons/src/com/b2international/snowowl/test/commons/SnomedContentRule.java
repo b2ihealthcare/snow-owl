@@ -117,7 +117,7 @@ public class SnomedContentRule extends ExternalResource {
 				return;
 			}
 			
-			final CodeSystemVersions snomedVersions = CodeSystemRequests.prepareSearchCodeSystemVersion()
+			final CodeSystemVersions snomedVersions = CodeSystemRequests.prepareSearchVersion()
 				.filterByCodeSystemShortName(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME)
 				.sortBy(SortField.descending(CodeSystemVersionEntry.Fields.EFFECTIVE_DATE))
 				.setLimit(1)

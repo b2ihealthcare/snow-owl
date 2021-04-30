@@ -29,8 +29,8 @@ import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersion;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
-import com.b2international.snowowl.core.codesystem.version.CodeSystemVersionSearchRequestBuilder;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
+import com.b2international.snowowl.core.request.version.VersionSearchRequestBuilder;
 
 /**
  * @since 7.12
@@ -57,7 +57,7 @@ public final class DefaultResourceURIPathResolver implements ResourceURIPathReso
 			// use code system working branch directly when HEAD is specified
 			return codeSystem.getBranchPath();
 		} else {
-			CodeSystemVersionSearchRequestBuilder versionSearch = CodeSystemRequests.prepareSearchCodeSystemVersion()
+			VersionSearchRequestBuilder versionSearch = CodeSystemRequests.prepareSearchVersion()
 					.one()
 					.filterByCodeSystemShortName(codeSystem.getShortName());
 			

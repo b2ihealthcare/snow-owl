@@ -26,7 +26,6 @@ import com.b2international.index.revision.Hooks.PreCommitHook;
 import com.b2international.snomed.ecl.EclStandaloneSetup;
 import com.b2international.snomed.ql.QLStandaloneSetup;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.codesystem.version.VersioningRequestBuilder;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.ContextConfigurer;
@@ -39,6 +38,7 @@ import com.b2international.snowowl.core.repository.CompositeComponentDeletionPol
 import com.b2international.snowowl.core.repository.ContentAvailabilityInfoProvider;
 import com.b2international.snowowl.core.repository.TerminologyRepositoryPlugin;
 import com.b2international.snowowl.core.request.*;
+import com.b2international.snowowl.core.request.version.VersioningRequestBuilder;
 import com.b2international.snowowl.core.setup.ConfigurationRegistry;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;

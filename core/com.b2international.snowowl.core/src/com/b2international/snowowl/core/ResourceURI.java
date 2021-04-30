@@ -120,6 +120,11 @@ public final class ResourceURI implements Serializable {
 		return ResourceURI.branch(resourceType, resourceId, path);
 	}
 	
+	@JsonIgnore
+	public ResourceURI withoutPath() {
+		return new ResourceURI(String.join(resourceType, Branch.SEPARATOR, resourceId));
+	}
+	
 	@Override
 	public int hashCode() {
 		return Objects.hash(uri);

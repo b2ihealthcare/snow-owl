@@ -175,7 +175,7 @@ public final class CodeSystemsCommand extends Command {
 		final ImmutableList.Builder<String> result = ImmutableList.builder();
 
 		result.add("Versions:");
-		final CodeSystemVersions versions = CodeSystemRequests.prepareSearchCodeSystemVersion().all()
+		final CodeSystemVersions versions = CodeSystemRequests.prepareSearchVersion().all()
 				.filterByCodeSystemShortName(cs.getShortName())
 				.sortBy(SortField.ascending(CodeSystemVersionEntry.Fields.EFFECTIVE_DATE)).build(cs.getRepositoryId())
 				.execute(getBus()).getSync(1, TimeUnit.MINUTES);

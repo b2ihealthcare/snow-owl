@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,23 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.domain.exceptions;
+package com.b2international.snowowl.core.request;
 
 import com.b2international.commons.exceptions.NotFoundException;
+import com.b2international.snowowl.core.ResourceURI;
 
 /**
- * Thrown when a code system can not be found for the given short name.
+ * Thrown when a resource can not be found for the given uri.
  */
-public class CodeSystemNotFoundException extends NotFoundException {
+public final class ResourceNotFoundException extends NotFoundException {
 
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * Creates a new instance with the specified short name.
+	 * Creates a new instance with the specified {@link ResourceURI}.
 	 * 
-	 * @param shortName the short name of the code system which could not be found (may not be {@code null})
+	 * @param resourceURI the uri of the resource which could not be found (may not be {@code null})
 	 */
-	public CodeSystemNotFoundException(final String shortName) {
-		super("Code system", shortName);
+	public ResourceNotFoundException(final ResourceURI resourceURI) {
+		super("Resource", resourceURI.toString());
 	}
 }

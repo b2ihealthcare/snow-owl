@@ -139,7 +139,7 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 			final String extensionOfShortName = extensionOf.getCodeSystem(); 
 			final String versionId = extensionOf.getPath();
 			
-			final Optional<CodeSystemVersion> extensionOfVersion = CodeSystemRequests.prepareSearchCodeSystemVersion()
+			final Optional<CodeSystemVersion> extensionOfVersion = CodeSystemRequests.prepareSearchVersion()
 					.one()
 					.filterByCodeSystemShortName(extensionOfShortName)
 					.filterByVersionId(versionId)

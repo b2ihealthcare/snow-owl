@@ -41,7 +41,7 @@ public class IssueSO2503RemoteJobDynamicMappingFix extends AbstractSnomedApiTest
 		
 		// 1. create a version with a datelike versionId
 		LocalDate nextAvailableEffectiveDate1 = getNextAvailableEffectiveDate(codeSystemShortName);
-		CodeSystemRequests.prepareNewCodeSystemVersion()
+		CodeSystemRequests.prepareNewVersion()
 			.setCodeSystemShortName(codeSystemShortName)
 			// XXX use default format, ES will likely try to convert this to a date field, unless we disable it in the mapping
 			.setVersionId(nextAvailableEffectiveDate1.toString())
@@ -53,7 +53,7 @@ public class IssueSO2503RemoteJobDynamicMappingFix extends AbstractSnomedApiTest
 			.thenWith(unused -> {
 				// 2. create another version with a non-datelike versionId
 				LocalDate nextAvailableEffectiveDate2 = getNextAvailableEffectiveDate(codeSystemShortName);
-				return CodeSystemRequests.prepareNewCodeSystemVersion()
+				return CodeSystemRequests.prepareNewVersion()
 					.setCodeSystemShortName(codeSystemShortName)
 					.setVersionId("xx-" + nextAvailableEffectiveDate2.toString())
 					.setEffectiveTime(EffectiveTimes.format(nextAvailableEffectiveDate2, DateFormats.SHORT))

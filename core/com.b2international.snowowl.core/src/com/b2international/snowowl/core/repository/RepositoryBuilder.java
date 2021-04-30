@@ -32,7 +32,6 @@ import com.b2international.index.revision.Hooks;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryInfo.Health;
-import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.plugin.ClassPathScanner;
 import com.b2international.snowowl.core.setup.Environment;
@@ -51,9 +50,7 @@ public final class RepositoryBuilder {
 	private int mergeMaxResults;
 	private Hooks.PreCommitHook hook;
 	
-	private final Mappings mappings = new Mappings(
-		CodeSystemVersionEntry.class
-	);
+	private final Mappings mappings = new Mappings();
 	private final TerminologyComponents terminologyComponents;
 	private final Map<Class<?>, Object> bindings = newHashMap();
 

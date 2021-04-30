@@ -18,11 +18,11 @@ package com.b2international.snowowl.core.codesystem;
 import java.util.List;
 
 import com.b2international.snowowl.core.ResourceURI;
-import com.b2international.snowowl.core.codesystem.version.CodeSystemVersionCreateRequestBuilder;
-import com.b2international.snowowl.core.codesystem.version.CodeSystemVersionSearchRequestBuilder;
 import com.b2international.snowowl.core.compare.ConceptMapCompareResultItem;
 import com.b2international.snowowl.core.jobs.RemoteJobEntry;
 import com.b2international.snowowl.core.request.*;
+import com.b2international.snowowl.core.request.version.VersionCreateRequestBuilder;
+import com.b2international.snowowl.core.request.version.VersionSearchRequestBuilder;
 import com.b2international.snowowl.core.uri.ComponentURI;
 
 /**
@@ -50,12 +50,12 @@ public class CodeSystemRequests {
 		return new CodeSystemSearchRequestBuilder();
 	}
 
-	public static CodeSystemVersionSearchRequestBuilder prepareSearchCodeSystemVersion() {
-		return new CodeSystemVersionSearchRequestBuilder();
+	public static VersionSearchRequestBuilder prepareSearchVersion() {
+		return new VersionSearchRequestBuilder();
 	}
 	
-	public static CodeSystemVersionCreateRequestBuilder prepareNewCodeSystemVersion() {
-		return new CodeSystemVersionCreateRequestBuilder();
+	public static VersionCreateRequestBuilder prepareNewVersion() {
+		return new VersionCreateRequestBuilder();
 	}
 	
 	// Upgrade API

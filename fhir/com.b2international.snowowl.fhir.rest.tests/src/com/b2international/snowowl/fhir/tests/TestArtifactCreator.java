@@ -30,7 +30,7 @@ public class TestArtifactCreator {
 	
 	protected synchronized static void createVersion(String version, String codeSystemName) {
 		String nextAvailableEffectiveTime = CodeSystemVersionRestRequests.getNextAvailableEffectiveDateAsString(codeSystemName);
-		String jobId = CodeSystemRequests.prepareNewCodeSystemVersion()
+		String jobId = CodeSystemRequests.prepareNewVersion()
 			.setCodeSystemShortName(codeSystemName)
 			.setDescription("FHIR Test version")
 			.setVersionId(version)

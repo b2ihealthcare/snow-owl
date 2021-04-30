@@ -102,7 +102,7 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 		if (branchPath.equals(IBranchPath.MAIN_BRANCH)) {
 			throw FhirException.createFhirError(String.format("No code system version found for code system %s", codeSystemLogicalId), OperationOutcomeCode.MSG_PARAM_INVALID, "CodeSystem");
 		} else {
-			Optional<CodeSystemVersion> csve = CodeSystemRequests.prepareSearchCodeSystemVersion()
+			Optional<CodeSystemVersion> csve = CodeSystemRequests.prepareSearchVersion()
 				.one()
 				.filterByBranchPath(branchPath)
 				.build(repositoryId)
@@ -150,7 +150,7 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 			.getSync();
 		
 		//fetch all the versions
-		CodeSystemVersions codeSystemVersions = CodeSystemRequests.prepareSearchCodeSystemVersion()
+		CodeSystemVersions codeSystemVersions = CodeSystemRequests.prepareSearchVersion()
 			.all()
 			.sortBy(SearchResourceRequest.SortField.descending(CodeSystemVersionEntry.Fields.EFFECTIVE_DATE))
 			.build(repositoryId)
@@ -301,7 +301,7 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 
 		//get the latest version
 		if (version == null) {
-			return CodeSystemRequests.prepareSearchCodeSystemVersion()
+			return CodeSystemRequests.prepareSearchVersion()
 				.one()
 				.filterByCodeSystemShortName(getCodeSystemShortName())
 				.sortBy(SearchResourceRequest.SortField.descending(CodeSystemVersionEntry.Fields.EFFECTIVE_DATE))
