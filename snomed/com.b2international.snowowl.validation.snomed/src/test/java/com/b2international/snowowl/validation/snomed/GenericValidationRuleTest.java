@@ -33,6 +33,7 @@ import org.junit.runners.MethodSorters;
 import org.junit.runners.Parameterized;
 
 import com.b2international.snowowl.core.ComponentIdentifier;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.core.validation.issue.ValidationIssue;
 import com.b2international.snowowl.core.validation.issue.ValidationIssues;
@@ -214,6 +215,56 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 			.contains(ComponentIdentifier.of(RELATIONSHIP_NUMBER, nonDefiningRelationshipInGroup0.getId()))
 			.doesNotContainAnyElementsOf(ImmutableList.of(ComponentIdentifier.of(RELATIONSHIP_NUMBER, definingRelationshipInGroup0.getId()),
 				ComponentIdentifier.of(RELATIONSHIP_NUMBER, relationshipInGroup2.getId())));		
+	}
+	
+	@Test
+	public void rule55() throws Exception {
+		final String ruleId = "55";
+		indexRule(ruleId);
+		
+		//wrong examples
+		SnomedConceptDocument invalidDescriptionConcept = concept(generateConceptId()).build();
+		SnomedDescriptionIndexEntry descWithInvalidHypenSpacing = description(generateDescriptionId(), Concepts.SYNONYM, "Hello -Cruel!")
+				.moduleId(Concepts.UK_DRUG_EXTENSION_MODULE)
+				.conceptId(invalidDescriptionConcept.getId())
+				.build();
+		
+		SnomedConceptDocument invalidDescriptionConcept2 = concept(generateConceptId()).build();
+		SnomedDescriptionIndexEntry descWithMultipleInvalidHypenSpacing = description(generateDescriptionId(), Concepts.SYNONYM, "Hello -Cruel- World!")
+				.moduleId(Concepts.UK_DRUG_EXTENSION_MODULE)
+				.conceptId(invalidDescriptionConcept2.getId())
+				.build();
+		
+		SnomedConceptDocument invalidDescriptionConcept3 = concept(generateConceptId()).build();
+		SnomedDescriptionIndexEntry descWithSymbolAndInvalidHypenSpacing = description(generateDescriptionId(), Concepts.SYNONYM, "Hello -? -a")
+				.moduleId(Concepts.UK_DRUG_EXTENSION_MODULE)
+				.conceptId(invalidDescriptionConcept3.getId())
+				.build();
+
+		//good examples
+		SnomedConceptDocument validDescriptionConcept = concept(generateConceptId()).build();
+		SnomedDescriptionIndexEntry descWithValidHypenSpacing= description(generateDescriptionId(), Concepts.SYNONYM, "Hello-Cruel!")
+				.moduleId(Concepts.UK_DRUG_EXTENSION_MODULE)
+				.conceptId(validDescriptionConcept.getId())
+				.build();
+		
+		SnomedConceptDocument validDescriptionConcept2 = concept(generateConceptId()).build();
+		SnomedDescriptionIndexEntry descWithSymbolNextToHypen = description(generateDescriptionId(), Concepts.SYNONYM, "Hello -?")
+				.moduleId(Concepts.UK_DRUG_EXTENSION_MODULE)
+				.conceptId(validDescriptionConcept2.getId())
+				.build();
+		
+		indexRevision(Branch.MAIN_PATH, invalidDescriptionConcept, invalidDescriptionConcept2, invalidDescriptionConcept3,
+				descWithInvalidHypenSpacing, descWithMultipleInvalidHypenSpacing, descWithSymbolAndInvalidHypenSpacing,
+				descWithSymbolNextToHypen, descWithValidHypenSpacing, validDescriptionConcept, validDescriptionConcept2);
+
+		ValidationIssues issues = validate(ruleId);
+
+		assertAffectedComponents(issues,
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, descWithInvalidHypenSpacing.getId()),
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, descWithMultipleInvalidHypenSpacing.getId()),
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, descWithSymbolAndInvalidHypenSpacing.getId())
+		);
 	}
 	
 	@Test
