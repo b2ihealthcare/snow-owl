@@ -58,6 +58,7 @@ public final class VersionDocument implements Serializable {
 		public static final String DESCRIPTION = "description";
 		public static final String EFFECTIVE_TIME = "effectiveTime";
 		public static final String RESOURCE = "resource";
+		public static final String BRANCH_PATH = "branchPath";
 	}
 
 	public static class Expressions {
@@ -100,6 +101,7 @@ public final class VersionDocument implements Serializable {
 		private String description;
 		private long effectiveTime;
 		private ResourceURI resource;
+		private String branchPath;
 		
 		public Builder id(String id) {
 			this.id = id;
@@ -126,13 +128,19 @@ public final class VersionDocument implements Serializable {
 			return this;
 		}
 		
+		public Builder setBranchPath(String branchPath) {
+			this.branchPath = branchPath;
+			return this;
+		}
+		
 		public VersionDocument build() {
 			return new VersionDocument(
 				id,
 				version,
 				description,
 				effectiveTime, 
-				resource
+				resource,
+				branchPath
 			);
 		}
 		
@@ -144,18 +152,21 @@ public final class VersionDocument implements Serializable {
 	private final String description;
 	private final long effectiveTime;
 	private final ResourceURI resource;
+	private final String branchPath;
 	
 	private VersionDocument(
 			final String id, 
 			final String version,
 			final String description,
 			final long effectiveTime, 
-			final ResourceURI resource) {
+			final ResourceURI resource,
+			final String branchPath) {
 		this.id = id;
 		this.version = version;
 		this.description = description;
 		this.effectiveTime = effectiveTime;
 		this.resource = resource;
+		this.branchPath = branchPath;
 	}
 	
 	public String getId() {
@@ -176,6 +187,10 @@ public final class VersionDocument implements Serializable {
 	
 	public ResourceURI getResource() {
 		return resource;
+	}
+	
+	public String getBranchPath() {
+		return branchPath;
 	}
 
 	// additional helpers
@@ -218,6 +233,7 @@ public final class VersionDocument implements Serializable {
 				.add("description", description)
 				.add("effectiveTime", effectiveTime)
 				.add("resource", resource)
+				.add("branchPath", branchPath)
 				.toString();
 	}
 

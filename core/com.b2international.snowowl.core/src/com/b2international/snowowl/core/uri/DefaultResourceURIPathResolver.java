@@ -18,6 +18,7 @@ package com.b2international.snowowl.core.uri;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.CompareUtils;
@@ -25,12 +26,13 @@ import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.codesystem.CodeSystem;
+import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
-import com.b2international.snowowl.core.codesystem.CodeSystemVersion;
-import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
+import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.version.VersionSearchRequestBuilder;
+import com.b2international.snowowl.core.version.Version;
+import com.b2international.snowowl.core.version.VersionDocument;
 
 /**
  * @since 7.12
@@ -42,47 +44,52 @@ public final class DefaultResourceURIPathResolver implements ResourceURIPathReso
 		if (CompareUtils.isEmpty(codeSystemURIs)) {
 			return Collections.emptyList();
 		}
-		final Map<String, Resource> codeSystemsByShortName = CodeSystemRequests.prepareSearchAllCodeSystems()
-				.filterByIds(codeSystemURIs.stream().map(ResourceURI::getResourceId).collect(Collectors.toSet()))
+		final Set<String> resourceIds = codeSystemURIs.stream().map(ResourceURI::getResourceId).collect(Collectors.toSet());
+		final Map<String, Resource> resourcesById = ResourceRequests.prepareSearch()
+				.filterByIds(resourceIds)
 				.build()
 				.execute(context)
 				.stream()
 				.collect(Collectors.toMap(Resource::getId, t -> t));
 		
-		return codeSystemURIs.stream().map(uri -> resolve(context, uri, codeSystemsByShortName.get(uri.getCodeSystem()))).collect(Collectors.toList());
+		return codeSystemURIs.stream().map(uri -> resolve(context, uri, resourcesById.get(uri.getResourceId()))).collect(Collectors.toList());
 	}
 
-	private String resolve(ServiceProvider context, ResourceURI uriToResolve, CodeSystem codeSystem) {
-		if (uriToResolve.isHead()) {
-			// use code system working branch directly when HEAD is specified
-			return codeSystem.getBranchPath();
-		} else {
-			VersionSearchRequestBuilder versionSearch = CodeSystemRequests.prepareSearchVersion()
-					.one()
-					.filterByCodeSystemShortName(codeSystem.getShortName());
-			
-			if (uriToResolve.isLatest()) {
-				// fetch the latest code system version if LATEST is specified in the URI
-				versionSearch.sortBy(SearchResourceRequest.SortField.descending(CodeSystemVersionEntry.Fields.EFFECTIVE_DATE));
+	private String resolve(ServiceProvider context, ResourceURI uriToResolve, Resource resource) {
+		if (resource instanceof TerminologyResource) {
+			TerminologyResource terminologyResource = (TerminologyResource) resource;
+			if (uriToResolve.isHead()) {
+				// use code system working branch directly when HEAD is specified
+				return terminologyResource.getBranchPath();
 			} else {
-				// try to fetch the path as exact version if not the special LATEST is specified in the URI
-				versionSearch.filterByVersionId(uriToResolve.getPath());
+				VersionSearchRequestBuilder versionSearch = CodeSystemRequests.prepareSearchVersion()
+						.one()
+						.filterByResource(uriToResolve);
+				
+				if (uriToResolve.isLatest()) {
+					// fetch the latest resource version if LATEST is specified in the URI
+					versionSearch.sortBy(SearchResourceRequest.SortField.descending(VersionDocument.Fields.EFFECTIVE_TIME));
+				} else {
+					// try to fetch the path as exact version if not the special LATEST is specified in the URI
+					versionSearch.filterByVersionId(uriToResolve.getPath());
+				}
+				// determine the final branch path, if based on the version search we find a version, then use that, otherwise use the defined path as relative branch of the code system working branch
+				return versionSearch
+						.build()
+						.execute(context)
+						.stream()
+						.findFirst()
+						.map(Version::getBranchPath)
+						.orElseGet(() -> {
+							if (uriToResolve.isLatest()) {
+								throw new BadRequestException("No CodeSystem version is present in '%s'. Explicit '%s/HEAD' can be used to retrieve the latest work in progress version of the CodeSystem.", terminologyResource.getId(), terminologyResource.getId());
+							} else {
+								return terminologyResource.getRelativeBranchPath(uriToResolve.getPath()); 
+							}
+						});
 			}
-			// determine the final branch path, if based on the version search we find a version, then use that, otherwise use the defined path as relative branch of the code system working branch
-			return versionSearch
-					.build(codeSystem.getRepositoryId())
-					.getRequest()
-					.execute(context)
-					.stream()
-					.findFirst()
-					.map(CodeSystemVersion::getPath)
-					.orElseGet(() -> {
-						if (uriToResolve.isLatest()) {
-							throw new BadRequestException("No CodeSystem version is present in '%s'. Explicit '%s/HEAD' can be used to retrieve the latest work in progress version of the CodeSystem.", codeSystem.getShortName(), codeSystem.getShortName());
-						} else {
-							return codeSystem.getRelativeBranchPath(uriToResolve.getPath()); 
-						}
-					});
+		} else {
+			return "";
 		}
 	}
 	

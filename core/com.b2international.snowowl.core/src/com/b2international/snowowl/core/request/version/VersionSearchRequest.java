@@ -110,13 +110,14 @@ public final class VersionSearchRequest
 		return hits.stream().map(this::toResource).collect(Collectors.toList());
 	}
 	
-	private Version toResource(VersionDocument input) {
+	private Version toResource(VersionDocument doc) {
 		Version version = new Version();
-		version.setId(input.getId());
-		version.setVersion(input.getVersion());
-		version.setDescription(input.getDescription());
-		version.setEffectiveTime(input.getEffectiveTimeAsLocalDate());
-		version.setResource(input.getResource());
+		version.setId(doc.getId());
+		version.setVersion(doc.getVersion());
+		version.setDescription(doc.getDescription());
+		version.setEffectiveTime(doc.getEffectiveTimeAsLocalDate());
+		version.setResource(doc.getResource());
+		version.setBranchPath(doc.getBranchPath());
 		return version;
 	}
 	

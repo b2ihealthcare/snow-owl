@@ -40,22 +40,22 @@ public interface ResourceURIPathResolver {
 	List<String> resolve(ServiceProvider context, List<ResourceURI> resourceURIs);
 
 	/**
-	 * Basic resource URI to branch path resolver, which uses a CodeSystem ShortName to BranchPath Map to provide branch paths for CodeSystems.
+	 * Basic resource URI to branch path resolver, which uses a Resource ID to BranchPath Map to provide branch paths for any Resource.
 	 * 
-	 * @param codeSystemsToBranches
+	 * @param resourcesToBranches
 	 * @return
 	 */
 	@VisibleForTesting
-	static ResourceURIPathResolver fromMap(Map<String, String> codeSystemsToBranches) {
+	static ResourceURIPathResolver fromMap(Map<String, String> resourcesToBranches) {
 		return (context, uris) -> {
 			return uris.stream()
-					.map(uri -> {
-						if (codeSystemsToBranches.containsKey(uri.getResourceId())) {
-							return String.join(Branch.SEPARATOR, codeSystemsToBranches.get(uri.getResourceId()), uri.getPath());
-						} else {
-							throw new UnsupportedOperationException("Unrecognized CodeSystemURI: " + uri);
-						}
-					}).collect(Collectors.toList());
+				.map(uri -> {
+					if (resourcesToBranches.containsKey(uri.getResourceId())) {
+						return String.join(Branch.SEPARATOR, resourcesToBranches.get(uri.getResourceId()), uri.getPath());
+					} else {
+						throw new UnsupportedOperationException("Unrecognized Resource: " + uri);
+					}
+				}).collect(Collectors.toList());
 		};
 	}
 

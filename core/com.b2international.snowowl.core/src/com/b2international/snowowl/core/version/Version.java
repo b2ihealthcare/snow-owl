@@ -33,6 +33,7 @@ public final class Version implements Serializable {
 	private String description;
 	private LocalDate effectiveTime;
 	private ResourceURI resource;
+	private String branchPath;
 	
 	/**
 	 * @return the globally unique identifier of this version, resource + version.
@@ -63,6 +64,10 @@ public final class Version implements Serializable {
 		return resource;
 	}
 	
+	public String getBranchPath() {
+		return branchPath;
+	}
+	
 	public void setId(String id) {
 		this.id = id;
 	}
@@ -81,6 +86,10 @@ public final class Version implements Serializable {
 	
 	public void setResource(ResourceURI resource) {
 		this.resource = resource;
+	}
+	
+	public void setBranchPath(String branchPath) {
+		this.branchPath = branchPath;
 	}
 	
 	// additional helper methods

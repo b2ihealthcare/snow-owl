@@ -21,7 +21,6 @@ import java.util.Set;
 
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.ResourceURI;
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.TransactionContext;
@@ -29,6 +28,7 @@ import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.UpdateRequest;
+import com.b2international.snowowl.core.version.Version;
 import com.google.common.collect.Maps;
 
 /**
@@ -160,31 +160,30 @@ final class CodeSystemUpdateRequest extends UpdateRequest<TransactionContext> im
 						+ "LATEST or HEAD) in extensionOf URI %s.", extensionOf);
 			}
 			
-			final String extensionOfResourceId = extensionOf.getResourceId(); 
 			final String versionId = extensionOf.getPath();
 			
-			final Optional<CodeSystemVersion> extensionOfVersion = CodeSystemRequests.prepareSearchVersion()
+			final Optional<Version> extensionOfVersion = CodeSystemRequests.prepareSearchVersion()
 					.one()
-					.filterByCodeSystemShortName(extensionOfResourceId)
+					.filterByResource(extensionOf.withoutPath())
 					.filterByVersionId(versionId)
 					.build()
 					.execute(context)
 					.first();
 			
 			if (!extensionOfVersion.isPresent()) {
-				throw new BadRequestException("Couldn't find base code system version for extensionOf URI %s.", extensionOf);
+				throw new BadRequestException("Couldn't find base resource version for extensionOf URI %s.", extensionOf);
 			}
 			
-			// The working branch prefix is determined by the extensionOf code system version's path
-			final String newCodeSystemPath = extensionOfVersion.get().getPath() + IBranchPath.SEPARATOR + resourceId;
+			// The working branch prefix is determined by the extensionOf resource version's path
+			final String newResourceBranchPath = Branch.get(extensionOfVersion.get().getBranchPath(), resourceId);
 			
-			if (branchPath != null && !branchPath.equals(newCodeSystemPath)) {
+			if (branchPath != null && !branchPath.equals(newResourceBranchPath)) {
 				throw new BadRequestException("Branch path is inconsistent with extensionOf URI ('%s' given, should be '%s').",
-						branchPath, newCodeSystemPath);
+						branchPath, newResourceBranchPath);
 			}
 
 			codeSystem.extensionOf(extensionOf);
-			codeSystem.branchPath(newCodeSystemPath);
+			codeSystem.branchPath(newResourceBranchPath);
 			return true;
 		}
 		
