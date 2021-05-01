@@ -33,7 +33,7 @@ import com.google.common.base.Preconditions;
 /**
  * @since 8.0
  */
-public final class ResourceURI implements Serializable {
+public final class ResourceURI implements Serializable, Comparable<ResourceURI> {
 
 	private static final long serialVersionUID = 1L;
 
@@ -143,6 +143,11 @@ public final class ResourceURI implements Serializable {
 	@Override
 	public String toString() {
 		return getUri();
+	}
+	
+	@Override
+	public int compareTo(ResourceURI o) {
+		return toString().compareTo(o.toString());
 	}
 
 	public static ResourceURI branch(String resourceType, String resourceId, String path) {
