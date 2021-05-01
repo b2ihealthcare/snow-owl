@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,8 +51,8 @@ public final class MapCompareSourceAndTargetEquivalence  extends Equivalence<Con
 	protected int doHash(ConceptMapMapping t) {
 		List<String> objectsToHash = Lists.newArrayList();
 		if (configProps.contains(ConceptMapCompareConfigurationProperties.CODE_SYSTEM)) {
-			objectsToHash.add(t.getSourceComponentURI().codeSystem());
-			objectsToHash.add(t.getTargetComponentURI().codeSystem());
+			objectsToHash.add(t.getSourceComponentURI().resourceUri().getResourceId());
+			objectsToHash.add(t.getTargetComponentURI().resourceUri().getResourceId());
 		}
 		
 		if (configProps.contains(ConceptMapCompareConfigurationProperties.CODE)) {

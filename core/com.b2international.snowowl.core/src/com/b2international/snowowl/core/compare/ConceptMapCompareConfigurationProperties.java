@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,8 +29,8 @@ public enum ConceptMapCompareConfigurationProperties {
 
 	CODE_SYSTEM (
 		"Code System", 
-		(member1, member2) -> Objects.equals(member1.getSourceComponentURI().codeSystem(), member2.getSourceComponentURI().codeSystem()),
-		(member1, member2) -> Objects.equals(member1.getTargetComponentURI().codeSystem(), member2.getTargetComponentURI().codeSystem())
+		(member1, member2) -> Objects.equals(member1.getSourceComponentURI().resourceUri().getResourceId(), member2.getSourceComponentURI().resourceUri().getResourceId()),
+		(member1, member2) -> Objects.equals(member1.getTargetComponentURI().resourceUri().getResourceId(), member2.getTargetComponentURI().resourceUri().getResourceId())
 	),
 
 	TERM (
