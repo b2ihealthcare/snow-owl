@@ -15,16 +15,13 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.commons.exceptions.BadRequestException;
-import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ResourceURI;
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.Branches;
@@ -33,7 +30,7 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
-import com.b2international.snowowl.core.uri.CodeSystemURI;
+import com.b2international.snowowl.core.version.Version;
 
 /**
  * @since 4.7
@@ -78,13 +75,13 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 
 	@Override
 	public String execute(final TransactionContext context) {
-		final Optional<CodeSystemVersion> extensionOfVersion = checkCodeSystem(context);
+		final Optional<Version> extensionOfVersion = checkCodeSystem(context);
 		
 		// Set the parent path if a branch needs to be created
 		if (createBranch) {
 			parentPath = extensionOfVersion
-				.map(CodeSystemVersion::getPath)
-				.orElse(Branch.MAIN_PATH);
+				.map(Version::getBranchPath)
+				.orElse(Branch.MAIN_PATH); // TODO totally separate branching system?? MAIN could be removed
 		}
 
 		checkBranchPath(context);
@@ -95,7 +92,7 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 			branchPath = RepositoryRequests.branching()
 				.prepareCreate()
 				.setParent(parentPath)
-				.setName(shortName)
+				.setName(id)
 				.build()
 				.execute(context);
 		}
@@ -118,15 +115,15 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 		}
 	}
 
-	private Optional<CodeSystemVersion> checkCodeSystem(final TransactionContext context) {
+	private Optional<Version> checkCodeSystem(final TransactionContext context) {
 		// OID must be unique if defined
 		if (!StringUtils.isEmpty(oid) && codeSystemExists(oid, context)) {
-			throw new AlreadyExistsException("Code system", oid);
+			throw new AlreadyExistsException("Resource", oid);
 		}
 
 		// Short name is always checked against existing code systems
-		if (codeSystemExists(shortName, context)) {
-			throw new AlreadyExistsException("Code system", shortName);
+		if (codeSystemExists(id, context)) {
+			throw new AlreadyExistsException("Resource", id);
 		}
 		
 		if (extensionOf != null) {
@@ -136,12 +133,11 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 						+ "LATEST or HEAD) in extensionOf URI %s.", extensionOf);
 			}
 			
-			final String extensionOfShortName = extensionOf.getCodeSystem(); 
 			final String versionId = extensionOf.getPath();
 			
-			final Optional<CodeSystemVersion> extensionOfVersion = CodeSystemRequests.prepareSearchVersion()
+			final Optional<Version> extensionOfVersion = CodeSystemRequests.prepareSearchVersion()
 					.one()
-					.filterByCodeSystemShortName(extensionOfShortName)
+					.filterByResource(extensionOf.withoutPath())
 					.filterByVersionId(versionId)
 					.build()
 					.execute(context)
@@ -152,12 +148,12 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 			}
 			
 			// The working branch prefix is determined by the extensionOf code system version's path
-			final String newCodeSystemPath = extensionOfVersion.get().getPath() + IBranchPath.SEPARATOR + shortName;
+			final String newResourceBranchPath = Branch.get(extensionOfVersion.get().getBranchPath(), id);
 			
 			// CodeSystem Upgrade branches are managed by CodeSystemUpgradeRequest and they can have different paths than the usual extension branch paths, skip check
-			if (upgradeOf == null && !createBranch && !branchPath.equals(newCodeSystemPath)) {
+			if (upgradeOf == null && !createBranch && !branchPath.equals(newResourceBranchPath)) {
 				throw new BadRequestException("Branch path is inconsistent with extensionOf URI ('%s' given, should be '%s').",
-						branchPath, newCodeSystemPath);
+						branchPath, newResourceBranchPath);
 			}
 
 			return extensionOfVersion;
