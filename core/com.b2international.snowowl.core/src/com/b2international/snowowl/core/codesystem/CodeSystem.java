@@ -20,6 +20,7 @@ import java.util.List;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.TerminologyResource;
+import com.b2international.snowowl.core.internal.ResourceDocument;
 
 /**
  * Captures metadata about a code system, which holds a set of concepts of medical significance (optionally with other, supporting components that
@@ -54,6 +55,28 @@ public class CodeSystem extends TerminologyResource {
 	
 	public static ResourceURI uri(String codeSystemId, String path) {
 		return ResourceURI.branch(CODESYSTEM_RESOURCE_TYPE, codeSystemId, path);
+	}
+	
+	public static CodeSystem from(ResourceDocument doc) {
+		CodeSystem codeSystem = new CodeSystem();
+		codeSystem.setId(doc.getId());
+		codeSystem.setUrl(doc.getUrl());
+		codeSystem.setTitle(doc.getTitle());
+		codeSystem.setLanguage(doc.getLanguage());
+		codeSystem.setDescription(doc.getDescription());
+		codeSystem.setStatus(doc.getStatus());
+		codeSystem.setCopyright(doc.getCopyright());
+		codeSystem.setOwner(doc.getOwner());
+		codeSystem.setContact(doc.getContact());
+		codeSystem.setUsage(doc.getUsage());
+		codeSystem.setPurpose(doc.getPurpose());
+		codeSystem.setOid(doc.getOid());
+		codeSystem.setBranchPath(doc.getBranchPath());
+		codeSystem.setToolingId(doc.getToolingId());
+		codeSystem.setExtensionOf(doc.getExtensionOf());
+		codeSystem.setUpgradeOf(doc.getUpgradeOf());
+		codeSystem.setSettings(doc.getSettings());
+		return codeSystem;
 	}
 
 //	/**

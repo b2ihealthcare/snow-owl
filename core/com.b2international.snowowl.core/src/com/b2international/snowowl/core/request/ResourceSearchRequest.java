@@ -15,34 +15,35 @@
  */
 package com.b2international.snowowl.core.request;
 
-import java.util.List;
-
-import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.commons.options.Options;
-import com.b2international.snowowl.core.Resource;
+import com.b2international.index.Hits;
+import com.b2international.index.query.Expression;
+import com.b2international.index.query.Expressions;
 import com.b2international.snowowl.core.Resources;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 
 /**
  * @since 8.0
  */
-public final class ResourceConverter extends BaseResourceConverter<ResourceDocument, Resource, Resources> {
+public final class ResourceSearchRequest extends SearchIndexResourceRequest<ServiceProvider, Resources, ResourceDocument> {
 
-	public ResourceConverter(ServiceProvider context, Options expand, List<ExtendedLocale> locales) {
-		super(context, expand, locales);
+	private static final long serialVersionUID = 1L;
+
+	@Override
+	protected Expression prepareQuery(ServiceProvider context) {
+		return Expressions.matchAll();
 	}
 
 	@Override
-	protected Resources createCollectionResource(List<Resource> results, String searchAfter, int limit, int total) {
-		return new Resources(results, searchAfter, limit, total);
+	protected Resources toCollectionResource(ServiceProvider context, Hits<ResourceDocument> hits) {
+		return new ResourceConverter(context, expand(), locales()).convert(hits);
 	}
 
 	@Override
-	protected Resource toResource(ResourceDocument doc) {
-		// TODO pluggable resource conversion to available domain models, for now only CodeSystem
-		return CodeSystem.from(doc);
+	protected Resources createEmptyResult(int limit) {
+		return new Resources(limit, 0);
 	}
 
+	
+	
 }

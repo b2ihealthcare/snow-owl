@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
+import com.b2international.index.Hits;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.CollectionResource;
@@ -30,22 +31,39 @@ import com.google.common.collect.Iterables;
 
 /**
  * @since 4.0
- * @param <T>
- * @param <R>
- * @param <CR>
+ * @param <T> - document type
+ * @param <R> - domain type
+ * @param <CR> - collection resource type
  */
-public abstract class BaseResourceConverter<T, R, CR extends CollectionResource<R>> extends ResourceExpander implements ResourceConverter<T, R, CR> {
+public abstract class BaseResourceConverter<T, R, CR extends CollectionResource<R>> extends ResourceExpander {
 
 	protected BaseResourceConverter(ServiceProvider context, Options expand, List<ExtendedLocale> locales) {
 		super(context, expand, locales);
 	}
 
-	@Override
+	public final CR convert(Hits<T> hits) {
+		return convert(hits.getHits(), hits.getSearchAfter(), hits.getLimit(), hits.getTotal());
+	}
+	
+	/**
+	 * Convert a single internal index based entity to a resource based representation.
+	 * 
+	 * @param component
+	 * @return
+	 */
 	public final R convert(T component) {
 		return Iterables.getOnlyElement(convert(Collections.singleton(component), null, 1, 1));
 	}
 
-	@Override
+	/**
+	 * Convert multiple internal index based entities to resource based representations.
+	 * 
+	 * @param components
+	 * @param searchAfter
+	 * @param limit
+	 * @param total
+	 * @return
+	 */
 	public final CR convert(Collection<T> components, String searchAfter, int limit, int total) {
 		final List<R> results = components
 				.stream()
