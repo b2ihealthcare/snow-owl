@@ -15,12 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.ancestors;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.defining;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.parents;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.primitive;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.statedAncestors;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.statedParents;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.*;
 import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.Collection;
@@ -47,7 +42,7 @@ import com.b2international.snowowl.snomed.core.ecl.EclExpression;
 import com.b2international.snowowl.snomed.core.ql.SnomedQueryExpression;
 import com.b2international.snowowl.snomed.core.tree.Trees;
 import com.b2international.snowowl.snomed.datastore.SnomedDescriptionUtils;
-import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
+import com.b2international.snowowl.snomed.datastore.converter.SnomedConceptConverter;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
@@ -282,7 +277,7 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 		if (limit() < 1 || hits.getTotal() < 1) {
 			return new SnomedConcepts(limit(), hits.getTotal());
 		} else {
-			return SnomedConverters.newConceptConverter(context, expand(), locales()).convert(hits.getHits(), hits.getSearchAfter(), limit(), hits.getTotal());
+			return new SnomedConceptConverter(context, expand(), locales()).convert(hits);
 		}
 	}
 	

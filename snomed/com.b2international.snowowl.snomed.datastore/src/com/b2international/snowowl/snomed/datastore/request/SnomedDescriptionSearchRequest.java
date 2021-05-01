@@ -29,7 +29,7 @@ import com.b2international.snowowl.core.request.TermFilter;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
-import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
+import com.b2international.snowowl.snomed.datastore.converter.SnomedDescriptionConverter;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 
@@ -123,7 +123,7 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 		if (limit() < 1 || hits.getTotal() < 1) {
 			return new SnomedDescriptions(limit(), hits.getTotal());
 		} else {
-			return SnomedConverters.newDescriptionConverter(context, expand(), locales()).convert(hits.getHits(), hits.getSearchAfter(), limit(), hits.getTotal());
+			return new SnomedDescriptionConverter(context, expand(), locales()).convert(hits);
 		}
 	}
 	

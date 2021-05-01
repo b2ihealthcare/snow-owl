@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
@@ -42,6 +43,7 @@ import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.attachments.InternalAttachmentRegistry;
 import com.b2international.snowowl.core.authorization.BranchAccessControl;
+import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -355,7 +357,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 				.collect(Collectors.toList());
 			
 			final boolean changed = CodeSystemRequests.prepareUpdateCodeSystem(codeSystem)
-				.setLocales(locales)
+				.setSettings(Map.of(CodeSystem.CommonSettings.LOCALES, locales))
 				.build()
 				.execute(tx);
 			

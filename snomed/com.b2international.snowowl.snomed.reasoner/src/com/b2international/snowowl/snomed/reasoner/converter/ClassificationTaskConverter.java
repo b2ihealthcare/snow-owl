@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,6 +57,11 @@ public final class ClassificationTaskConverter extends BaseResourceConverter<Cla
 
 	public ClassificationTaskConverter(final RepositoryContext context, final Options expand, final List<ExtendedLocale> locales) {
 		super(context, expand, locales);
+	}
+	
+	@Override
+	protected RepositoryContext context() {
+		return (RepositoryContext) super.context();
 	}
 
 	@Override

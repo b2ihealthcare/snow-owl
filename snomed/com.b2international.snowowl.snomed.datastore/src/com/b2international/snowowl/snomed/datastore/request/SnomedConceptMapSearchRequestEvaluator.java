@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.commons.options.OptionsBuilder;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -37,7 +38,6 @@ import com.b2international.snowowl.core.request.MappingCorrelation;
 import com.b2international.snowowl.core.terminology.Terminology;
 import com.b2international.snowowl.core.terminology.TerminologyComponent;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
-import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
@@ -61,7 +61,7 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 	//RefsetID -> targetComponentURI
 
 	@Override
-	public ConceptMapMappings evaluate(CodeSystemURI uri, BranchContext context, Options search) {
+	public ConceptMapMappings evaluate(ResourceURI uri, BranchContext context, Options search) {
 		final String preferredDisplay = search.get(OptionKey.DISPLAY, String.class);
 		final SnomedDisplayTermType snomedDisplayTermType = SnomedDisplayTermType.getEnum(preferredDisplay);
 
@@ -69,7 +69,7 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 		return toCollectionResource(referenceSetMembers, uri, context, search, snomedDisplayTermType);
 	}
 
-	private ConceptMapMappings toCollectionResource(SnomedReferenceSetMembers referenceSetMembers, CodeSystemURI uri, BranchContext context, Options search, SnomedDisplayTermType snomedDisplayTermType) {
+	private ConceptMapMappings toCollectionResource(SnomedReferenceSetMembers referenceSetMembers, ResourceURI uri, BranchContext context, Options search, SnomedDisplayTermType snomedDisplayTermType) {
 		final Set<String> refSetsToFetch = referenceSetMembers.stream()
 				.map(SnomedReferenceSetMember::getReferenceSetId)
 				.collect(Collectors.toSet());
@@ -95,11 +95,11 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 				.collect(Collectors.toList());
 		
 		if (!mappings.isEmpty()) {
-			final Map<String, Concept> conceptsById = Multimaps.index(mappings, mapping -> mapping.getTargetComponentURI().codeSystemUri())
+			final Map<String, Concept> conceptsById = Multimaps.index(mappings, mapping -> mapping.getTargetComponentURI().resourceUri())
 					.asMap()
 					.entrySet()
 					.stream()
-					.filter(entry -> !TerminologyRegistry.UNSPECIFIED.equals(entry.getKey().getCodeSystem()))
+					.filter(entry -> !TerminologyRegistry.UNSPECIFIED.equals(entry.getKey().getResourceId()))
 					.map(entry -> {
 								final Set<String> idsToFetch = entry.getValue().stream().map(map -> map.getTargetComponentURI().identifier()).collect(Collectors.toSet());
 								return CodeSystemRequests.prepareSearchConcepts()
@@ -140,9 +140,11 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 	}
 
 	private Map<String, ComponentURI> getTargetComponentsByRefSetId(BranchContext context, Map<String, SnomedConcept> refSetsById) {
-		final List<CodeSystem> codeSystemList = CodeSystemRequests.getAllCodeSystems(context)
-				.stream()
-				.collect(Collectors.toList());
+		final List<CodeSystem> codeSystemList = CodeSystemRequests.prepareSearchCodeSystem()
+				.all()
+				.build()
+				.execute(context)
+				.getItems();
 		
 		return refSetsById.entrySet()
 				.stream()
@@ -163,8 +165,8 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 							
 							// XXX while this is clearly not the right solution, for now it is the only we can do, since based on just the ID in a SNOMED CT Map Type RefSet, there is no guarantee that we get the right CodeSystem
 							return codeSystemList.stream()
-									.filter(cs -> cs.getTerminologyId().equals(mapTargetTerminology.getId()))
-									.map(CodeSystem::getShortName) 
+									.filter(cs -> cs.getToolingId().equals(mapTargetTerminology.getToolingId()))
+									.map(CodeSystem::getId) 
 									.sorted()
 									.findFirst()
 									.map(codeSystem -> ComponentURI.of(codeSystem, mapTargetTerminologyComponent.shortId(), refSet.getId()))
@@ -172,7 +174,7 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 				}));
 	}
 
-	private ConceptMapMapping toMapping(SnomedReferenceSetMember member, CodeSystemURI codeSystemURI, ComponentURI targetURI, final SnomedDisplayTermType snomedDisplayTermType, final Map<String, SnomedConcept> refSetsByIds) {	 		
+	private ConceptMapMapping toMapping(SnomedReferenceSetMember member, ResourceURI codeSystemURI, ComponentURI targetURI, final SnomedDisplayTermType snomedDisplayTermType, final Map<String, SnomedConcept> refSetsByIds) {	 		
 		final String iconId = member.getReferencedComponent().getIconId();
 		final short terminologyComponentId = member.getReferencedComponent().getTerminologyComponentId();
 
@@ -186,7 +188,7 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 		if (ComponentURI.isValid(mapTarget)) {
 			mappingBuilder.targetComponentURI(ComponentURI.of(mapTarget));
 		} else {
-			mappingBuilder.targetComponentURI(ComponentURI.of(targetURI.codeSystem(), targetURI.terminologyComponentId(), mapTarget));
+			mappingBuilder.targetComponentURI(ComponentURI.of(targetURI.resourceId(), targetURI.terminologyComponentId(), mapTarget));
 		}
 
 		if (properties.containsKey(SnomedRf2Headers.FIELD_MAP_PRIORITY)) {
@@ -205,13 +207,13 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 		final SnomedConcept referenceSet = refSetsByIds.get(member.getReferenceSetId());
 
 		return mappingBuilder
-				.uri(ComponentURI.of(codeSystemURI.getCodeSystem(), SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, member.getId()))
+				.uri(ComponentURI.of(codeSystemURI.getResourceId(), SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, member.getId()))
 				.containerIconId(referenceSet.getIconId())
 				.containerTerm(referenceSet.getPt().getTerm())
-				.containerSetURI(ComponentURI.of(codeSystemURI.getCodeSystem(), SnomedTerminologyComponentConstants.REFSET_NUMBER, member.getReferenceSetId()))
+				.containerSetURI(ComponentURI.of(codeSystemURI.getResourceId(), SnomedTerminologyComponentConstants.REFSET_NUMBER, member.getReferenceSetId()))
 				.sourceIconId(iconId)
 				.sourceTerm(term)
-				.sourceComponentURI(ComponentURI.of(codeSystemURI.getCodeSystem(), terminologyComponentId, member.getReferencedComponentId()))
+				.sourceComponentURI(ComponentURI.of(codeSystemURI.getResourceId(), terminologyComponentId, member.getReferencedComponentId()))
 				.targetTerm((String) member.getProperties().get(SnomedRf2Headers.FIELD_MAP_TARGET))
 				.active(member.isActive())
 				.mappingCorrelation(getEquivalence(member))
@@ -252,7 +254,7 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 		}
 	}
 
-	private SnomedReferenceSetMembers fetchRefsetMembers(CodeSystemURI uri, BranchContext context, Options search, SnomedDisplayTermType snomedDisplayTermType) {
+	private SnomedReferenceSetMembers fetchRefsetMembers(ResourceURI uri, BranchContext context, Options search, SnomedDisplayTermType snomedDisplayTermType) {
 
 		final Integer limit = search.get(OptionKey.LIMIT, Integer.class);
 		final String searchAfter = search.get(OptionKey.AFTER, String.class);

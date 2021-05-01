@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,11 +34,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.reasoner.domain.ChangeNature;
-import com.b2international.snowowl.snomed.reasoner.domain.ClassificationTask;
-import com.b2international.snowowl.snomed.reasoner.domain.DescriptionChange;
-import com.b2international.snowowl.snomed.reasoner.domain.DescriptionChanges;
-import com.b2international.snowowl.snomed.reasoner.domain.ReasonerDescription;
+import com.b2international.snowowl.snomed.reasoner.domain.*;
 import com.b2international.snowowl.snomed.reasoner.index.DescriptionChangeDocument;
 import com.b2international.snowowl.snomed.reasoner.request.ClassificationRequests;
 import com.google.common.collect.FluentIterable;
@@ -54,6 +50,11 @@ extends BaseResourceConverter<DescriptionChangeDocument, DescriptionChange, Desc
 
 	public DescriptionChangeConverter(final RepositoryContext context, final Options expand, final List<ExtendedLocale> locales) {
 		super(context, expand, locales);
+	}
+	
+	@Override
+	protected RepositoryContext context() {
+		return (RepositoryContext) super.context();
 	}
 
 	@Override

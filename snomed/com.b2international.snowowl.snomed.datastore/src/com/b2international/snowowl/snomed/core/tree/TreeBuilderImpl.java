@@ -28,11 +28,11 @@ import com.b2international.commons.CompareUtils;
 import com.b2international.commons.collect.LongSets;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.collect.*;
 
@@ -57,9 +57,9 @@ abstract class TreeBuilderImpl implements TreeBuilder {
 	}
 	
 	@Override
-	public TerminologyTree build(final String branch, final Iterable<SnomedConcept> nodes, final String snomedDescriptionExpand) {
+	public TerminologyTree build(final ResourceURI resource, final Iterable<SnomedConcept> nodes, final String snomedDescriptionExpand) {
 		final Collection<SnomedConcept> topLevelConcepts = this.topLevelConcepts == null ? 
-				getDefaultTopLevelConcepts(branch, snomedDescriptionExpand) : this.topLevelConcepts;
+				getDefaultTopLevelConcepts(resource, snomedDescriptionExpand) : this.topLevelConcepts;
 		
 		final Map<String, SnomedConcept> treeItemsById = newHashMap();
 		
@@ -138,14 +138,14 @@ abstract class TreeBuilderImpl implements TreeBuilder {
 		allRequiredComponents.remove(null);
 		
 		// fetch required data for all unknown items
-		for (SnomedConcept entry : getComponents(branch, allRequiredComponents, snomedDescriptionExpand)) {
+		for (SnomedConcept entry : getComponents(resource, allRequiredComponents, snomedDescriptionExpand)) {
 			treeItemsById.put(entry.getId(), entry);
 		}
 		
 		return new TerminologyTree(treeItemsById, subTypeMap, superTypeMap);
 	}
 	
-	private Iterable<SnomedConcept> getComponents(String branch, Set<String> componentIds, final String snomedDescriptionExpand) {
+	private Iterable<SnomedConcept> getComponents(ResourceURI resource, Set<String> componentIds, final String snomedDescriptionExpand) {
 		if (CompareUtils.isEmpty(componentIds)) {
 			return Collections.emptySet();
 		}
@@ -154,16 +154,16 @@ abstract class TreeBuilderImpl implements TreeBuilder {
 				.filterByIds(ImmutableSet.copyOf(componentIds))
 				.setLocales(locales)
 				.setExpand(snomedDescriptionExpand + ",parentIds(),ancestorIds()")
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
+				.build(resource)
 				.execute(getBus())
 				.getSync();
 	}
 
-	private Collection<SnomedConcept> getDefaultTopLevelConcepts(final String branch, final String snomedDescriptionExpand) {
+	private Collection<SnomedConcept> getDefaultTopLevelConcepts(final ResourceURI resource, final String snomedDescriptionExpand) {
 		final SnomedConcept root = SnomedRequests.prepareGetConcept(Concepts.ROOT_CONCEPT)
 				.setExpand(String.format("%2$s,%s(direct:true,expand(%2$s))", Trees.STATED_FORM.equals(getForm()) ? "statedDescendants" : "descendants", snomedDescriptionExpand))
 				.setLocales(locales)
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
+				.build(resource)
 				.execute(getBus())
 				.getSync();
 	

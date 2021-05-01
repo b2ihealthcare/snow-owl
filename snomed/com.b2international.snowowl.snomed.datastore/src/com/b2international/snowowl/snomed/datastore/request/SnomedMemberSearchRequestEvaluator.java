@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,11 +21,11 @@ import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.SetMember;
 import com.b2international.snowowl.core.domain.SetMembers;
 import com.b2international.snowowl.core.request.SetMemberSearchRequestEvaluator;
-import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
@@ -41,19 +41,19 @@ import com.google.common.collect.ImmutableList;
 public final class SnomedMemberSearchRequestEvaluator implements SetMemberSearchRequestEvaluator {
 
 	@Override
-	public SetMembers evaluate(CodeSystemURI uri, BranchContext context, Options search) {
+	public SetMembers evaluate(ResourceURI uri, BranchContext context, Options search) {
 		SnomedReferenceSetMembers referenceSetMembers = fetchRefsetMembers(uri, context, search);
 		return toCollectionResource(referenceSetMembers, uri);
 	}
 
-	private SetMembers toCollectionResource(SnomedReferenceSetMembers referenceSetMembers, CodeSystemURI uri) {
+	private SetMembers toCollectionResource(SnomedReferenceSetMembers referenceSetMembers, ResourceURI uri) {
 		return new SetMembers(referenceSetMembers.stream().map(m -> toMember(m, uri)).collect(Collectors.toList()),
 				referenceSetMembers.getSearchAfter(),
 				referenceSetMembers.getLimit(),
 				referenceSetMembers.getTotal());
 	}
 
-	private SetMember toMember(SnomedReferenceSetMember member, CodeSystemURI codeSystemURI) {	 		
+	private SetMember toMember(SnomedReferenceSetMember member, ResourceURI codeSystemURI) {	 		
 		final String term;		
 		final String iconId = member.getReferencedComponent().getIconId();
 		short terminologyComponentId = member.getReferencedComponent().getTerminologyComponentId();
@@ -69,12 +69,12 @@ public final class SnomedMemberSearchRequestEvaluator implements SetMemberSearch
 		default: term = member.getReferencedComponentId();
 		}
 
-		return new SetMember(ComponentURI.of(codeSystemURI.getCodeSystem(), terminologyComponentId, member.getReferencedComponentId()),
+		return new SetMember(ComponentURI.of(codeSystemURI.getResourceId(), terminologyComponentId, member.getReferencedComponentId()),
 				term, 
 				iconId);
 	}
 
-	private SnomedReferenceSetMembers fetchRefsetMembers(CodeSystemURI uri, BranchContext context, Options search) {
+	private SnomedReferenceSetMembers fetchRefsetMembers(ResourceURI uri, BranchContext context, Options search) {
 
 		final Integer limit = search.get(OptionKey.LIMIT, Integer.class);
 		final String searchAfter = search.get(OptionKey.AFTER, String.class);

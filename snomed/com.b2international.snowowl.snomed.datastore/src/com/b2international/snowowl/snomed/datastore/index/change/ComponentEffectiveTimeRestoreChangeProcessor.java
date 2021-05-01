@@ -16,11 +16,7 @@
 package com.b2international.snowowl.snomed.datastore.index.change;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -32,28 +28,19 @@ import com.b2international.commons.ClassUtils;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.StagingArea;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
-import com.b2international.snowowl.core.codesystem.CodeSystemVersion;
-import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.repository.ChangeSetProcessorBase;
 import com.b2international.snowowl.core.repository.RepositoryCodeSystemProvider;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
-import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
+import com.b2international.snowowl.core.version.Version;
+import com.b2international.snowowl.core.version.VersionDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.*;
+import com.google.common.collect.*;
 
 /**
  * @since 7.1
@@ -207,7 +194,7 @@ public final class ComponentEffectiveTimeRestoreChangeProcessor extends ChangeSe
 	}
 	
 	private List<String> getAvailableVersionPaths(RepositoryContext context, String branchPath) {
-		final List<CodeSystemURI> codeSystemsToCheck = Lists.newArrayList();
+		final List<ResourceURI> codeSystemsToCheck = Lists.newArrayList();
 		
 		CodeSystem relativeCodeSystem = context.service(RepositoryCodeSystemProvider.class).get(branchPath);
 		
@@ -219,8 +206,8 @@ public final class ComponentEffectiveTimeRestoreChangeProcessor extends ChangeSe
 		if (relativeCodeSystem.getExtensionOf() != null) {
 			if (relativeCodeSystem.getExtensionOf().isHead()) {
 				// in case of regular CodeSystem check the latest available version if available, if not, then skip
-				getLatestCodeSystemVersion(context, relativeCodeSystem.getExtensionOf().getCodeSystem()).ifPresent(latestVersion -> {
-					codeSystemsToCheck.add(CodeSystemURI.latest(relativeCodeSystem.getExtensionOf().getCodeSystem()));
+				getLatestCodeSystemVersion(context, relativeCodeSystem.getExtensionOf().withoutPath()).ifPresent(latestVersion -> {
+					codeSystemsToCheck.add(relativeCodeSystem.getExtensionOf().asLatest());
 				});
 			} else {
 				codeSystemsToCheck.add(relativeCodeSystem.getExtensionOf());
@@ -233,19 +220,19 @@ public final class ComponentEffectiveTimeRestoreChangeProcessor extends ChangeSe
 			codeSystemsToCheck.add(relativeCodeSystem.getUpgradeOf());
 		} else {
 			// in case of regular CodeSystem check the latest available version if available, if not, then skip
-			getLatestCodeSystemVersion(context, relativeCodeSystem.getCodeSystemURI().getCodeSystem()).ifPresent(latestVersion -> {
-				codeSystemsToCheck.add(latestVersion.getUri());
+			getLatestCodeSystemVersion(context, relativeCodeSystem.getResourceURI().withoutPath()).ifPresent(latestVersion -> {
+				codeSystemsToCheck.add(latestVersion.getVersionResourceURI());
 			});
 		}
 		
 		return context.service(ResourceURIPathResolver.class).resolve(context, codeSystemsToCheck);
 	}
 	
-	private Optional<CodeSystemVersion> getLatestCodeSystemVersion(RepositoryContext context, String codeSystemId) {
+	private Optional<Version> getLatestCodeSystemVersion(RepositoryContext context, ResourceURI codeSystemUri) {
 		return CodeSystemRequests.prepareSearchVersion()
 				.one()
-				.filterByCodeSystemShortName(codeSystemId)
-				.sortBy(SearchResourceRequest.SortField.descending(CodeSystemVersionEntry.Fields.EFFECTIVE_DATE))
+				.filterByResource(codeSystemUri)
+				.sortBy(SearchResourceRequest.SortField.descending(VersionDocument.Fields.EFFECTIVE_TIME))
 				.build()
 				.execute(context)
 				.stream()

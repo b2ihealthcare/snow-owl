@@ -125,6 +125,14 @@ public final class ResourceURI implements Serializable, Comparable<ResourceURI> 
 		return new ResourceURI(String.join(resourceType, Branch.SEPARATOR, resourceId));
 	}
 	
+	public ResourceURI asLatest() {
+		return ResourceURI.latest(resourceType, resourceId);
+	}
+	
+	public ResourceURI asNext() {
+		return ResourceURI.next(resourceType, resourceId);
+	}
+	
 	@Override
 	public int hashCode() {
 		return Objects.hash(uri);

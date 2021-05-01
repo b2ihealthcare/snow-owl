@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.refset.DataType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
-import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
+import com.b2international.snowowl.snomed.datastore.converter.SnomedReferenceSetMemberConverter;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.google.common.collect.Iterables;
@@ -267,7 +267,7 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 		if (limit() < 1 || hits.getTotal() < 1) {
 			return new SnomedReferenceSetMembers(limit(), hits.getTotal());
 		} else {
-			return SnomedConverters.newMemberConverter(context, expand(), locales()).convert(hits.getHits(), hits.getSearchAfter(), limit(), hits.getTotal());
+			return new SnomedReferenceSetMemberConverter(context, expand(), locales()).convert(hits);
 		}
 	}
 

@@ -475,14 +475,14 @@ public abstract class SnomedRequests {
 	/**
 	 * Returns all applicable predicates for the given selfIds, ruleParentIds (+fetched ancestorIds), refSetIds.
 	 * @param bus - the bus to use when sending the requests 
-	 * @param branch - the branch to query for the constraints
+	 * @param resourceUri - the resource to query
 	 * @param selfIds - set of SNOMED CT identifiers to use for getting self rules
 	 * @param ruleParentIds - set of parent IDs to use for getting the descendant rules, also fetches and applies all ancestors of these
 	 * @param refSetIds - reference set identifiers to match
 	 * @param relationshipKeys - relationship keys (in "type=value" format) to match
 	 * @return
 	 */
-	public static Promise<Collection<SnomedConstraint>> prepareGetApplicablePredicates(final IEventBus bus, final String branch, 
+	public static Promise<Collection<SnomedConstraint>> prepareGetApplicablePredicates(final IEventBus bus, final String resourceUri, 
 			final Set<String> selfIds, 
 			final Set<String> ruleParentIds, 
 			final Set<String> refSetIds,
@@ -491,7 +491,7 @@ public abstract class SnomedRequests {
 		return SnomedRequests.prepareSearchConcept()
 			.all()
 			.filterByIds(ruleParentIds)
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
+			.build(resourceUri)
 			.execute(bus)
 			.then(ruleParents -> {
 				final Set<String> descendantDomainIds = newHashSet();
@@ -527,7 +527,7 @@ public abstract class SnomedRequests {
 				
 				return RepositoryRequests.prepareBulkRead()
 					.setBody(constraintBulkRequestBuilder)
-					.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
+					.build(resourceUri)
 					.execute(bus);
 			})
 			.then(input -> ImmutableSet.copyOf(Iterables.concat(input.getResponses(SnomedConstraints.class))));

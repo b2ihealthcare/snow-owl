@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,11 +39,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.reasoner.domain.ChangeNature;
-import com.b2international.snowowl.snomed.reasoner.domain.ClassificationTask;
-import com.b2international.snowowl.snomed.reasoner.domain.ConcreteDomainChange;
-import com.b2international.snowowl.snomed.reasoner.domain.ConcreteDomainChanges;
-import com.b2international.snowowl.snomed.reasoner.domain.ReasonerConcreteDomainMember;
+import com.b2international.snowowl.snomed.reasoner.domain.*;
 import com.b2international.snowowl.snomed.reasoner.index.ConcreteDomainChangeDocument;
 import com.b2international.snowowl.snomed.reasoner.request.ClassificationRequests;
 import com.google.common.collect.Maps;
@@ -58,6 +54,11 @@ public final class ConcreteDomainChangeConverter
 
 	public ConcreteDomainChangeConverter(final RepositoryContext context, final Options expand, final List<ExtendedLocale> locales) {
 		super(context, expand, locales);
+	}
+	
+	@Override
+	protected RepositoryContext context() {
+		return (RepositoryContext) super.context();
 	}
 
 	@Override

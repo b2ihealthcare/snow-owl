@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,11 +58,11 @@ import com.google.common.collect.Multimaps;
 /**
  * @since 4.5
  */
-final class SnomedReferenceSetMemberConverter extends BaseRevisionResourceConverter<SnomedRefSetMemberIndexEntry, SnomedReferenceSetMember, SnomedReferenceSetMembers> {
+public final class SnomedReferenceSetMemberConverter extends BaseRevisionResourceConverter<SnomedRefSetMemberIndexEntry, SnomedReferenceSetMember, SnomedReferenceSetMembers> {
 
 	final SnomedOWLExpressionConverter owlExpressionConverter;
 	
-	SnomedReferenceSetMemberConverter(BranchContext context, Options expand, List<ExtendedLocale> locales) {
+	public SnomedReferenceSetMemberConverter(BranchContext context, Options expand, List<ExtendedLocale> locales) {
 		super(context, expand, locales);
 		owlExpressionConverter = new SnomedOWLExpressionConverter(context);
 	}

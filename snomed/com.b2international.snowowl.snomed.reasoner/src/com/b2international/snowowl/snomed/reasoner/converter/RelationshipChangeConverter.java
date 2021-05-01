@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,11 +37,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.reasoner.domain.ChangeNature;
-import com.b2international.snowowl.snomed.reasoner.domain.ClassificationTask;
-import com.b2international.snowowl.snomed.reasoner.domain.ReasonerRelationship;
-import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChange;
-import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChanges;
+import com.b2international.snowowl.snomed.reasoner.domain.*;
 import com.b2international.snowowl.snomed.reasoner.index.RelationshipChangeDocument;
 import com.b2international.snowowl.snomed.reasoner.request.ClassificationRequests;
 import com.google.common.base.Function;
@@ -60,6 +56,11 @@ public final class RelationshipChangeConverter
 	
 	public RelationshipChangeConverter(final RepositoryContext context, final Options expand, final List<ExtendedLocale> locales) {
 		super(context, expand, locales);
+	}
+	
+	@Override
+	protected RepositoryContext context() {
+		return (RepositoryContext) super.context();
 	}
 
 	@Override

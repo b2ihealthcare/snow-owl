@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
-import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
+import com.b2international.snowowl.snomed.datastore.converter.SnomedReferenceSetConverter;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
@@ -184,7 +184,7 @@ final class SnomedRefSetMemberCreateRequest implements SnomedComponentCreateRequ
 	}
 
 	private SnomedReferenceSet getRefSet(TransactionContext context) {
-		final SnomedReferenceSet refSet = SnomedConverters.newRefSetConverter(context, Options.builder().build(), Collections.emptyList()).convert(context.lookup(referenceSetId, SnomedConceptDocument.class));
+		final SnomedReferenceSet refSet = new SnomedReferenceSetConverter(context, Options.builder().build(), Collections.emptyList()).convert(context.lookup(referenceSetId, SnomedConceptDocument.class));
 		checkArgument(refSet.getType() != null, "Reference Set Properties are missing from identifier concept document: %s.", refSet.getId());
 		return refSet;
 	}

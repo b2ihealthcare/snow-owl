@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,9 +33,9 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Maps;
 
-final class SnomedRelationshipConverter extends BaseRevisionResourceConverter<SnomedRelationshipIndexEntry, SnomedRelationship, SnomedRelationships> {
+public final class SnomedRelationshipConverter extends BaseRevisionResourceConverter<SnomedRelationshipIndexEntry, SnomedRelationship, SnomedRelationships> {
 
-	SnomedRelationshipConverter(BranchContext context, Options expand, List<ExtendedLocale> locales) {
+	public SnomedRelationshipConverter(BranchContext context, Options expand, List<ExtendedLocale> locales) {
 		super(context, expand, locales);
 	}
 

@@ -20,18 +20,18 @@ import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
+import com.b2international.snomed.ecl.Ecl;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.Concept;
 import com.b2international.snowowl.core.domain.Concepts;
 import com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
-import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.snomed.core.SnomedDisplayTermType;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snomed.ecl.Ecl;
 import com.google.common.collect.FluentIterable;
 
 /**
@@ -39,7 +39,7 @@ import com.google.common.collect.FluentIterable;
  */
 public final class SnomedConceptSearchRequestEvaluator implements ConceptSearchRequestEvaluator {
 
-	private Concept toConcept(CodeSystemURI codeSystem, SnomedConcept snomedConcept, String term) {
+	private Concept toConcept(ResourceURI codeSystem, SnomedConcept snomedConcept, String term) {
 		final Concept concept = toConcept(codeSystem, snomedConcept, snomedConcept.getIconId(), term, snomedConcept.getScore());
 		concept.setAlternativeTerms(FluentIterable.from(snomedConcept.getPreferredDescriptions())
 				.transform(pd -> pd.getTerm())
@@ -48,7 +48,7 @@ public final class SnomedConceptSearchRequestEvaluator implements ConceptSearchR
 	}
 	
 	@Override
-	public Concepts evaluate(CodeSystemURI uri, BranchContext context, Options search) {
+	public Concepts evaluate(ResourceURI uri, BranchContext context, Options search) {
 		
 		final String preferredDisplay = search.getString(OptionKey.DISPLAY);
 		SnomedDisplayTermType displayTermType;

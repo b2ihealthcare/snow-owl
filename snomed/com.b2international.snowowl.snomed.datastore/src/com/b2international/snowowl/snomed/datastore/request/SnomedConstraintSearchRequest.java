@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,12 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import static com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument.Expressions.childIds;
-import static com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument.Expressions.descendantIds;
-import static com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument.Expressions.predicateTypes;
-import static com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument.Expressions.refSetIds;
-import static com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument.Expressions.relationshipKeys;
-import static com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument.Expressions.selfIds;
+import static com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument.Expressions.*;
 
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
@@ -31,7 +26,7 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraints;
-import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
+import com.b2international.snowowl.snomed.datastore.converter.SnomedConstraintConverter;
 import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintPredicateType;
 
@@ -115,7 +110,7 @@ final class SnomedConstraintSearchRequest
 	
 	@Override
 	protected SnomedConstraints toCollectionResource(BranchContext context, Hits<SnomedConstraintDocument> hits) {
-		return SnomedConverters.newConstraintConverter(context, expand(), locales()).convert(hits.getHits(), hits.getSearchAfter(), limit(), hits.getTotal());
+		return new SnomedConstraintConverter(context, expand(), locales()).convert(hits);
 	}
 	
 	@Override

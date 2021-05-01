@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,6 @@ import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.collect.LongSets;
 import com.b2international.commons.graph.LongTarjan;
-import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -247,7 +246,6 @@ public final class Rf2EffectiveTimeSlice {
 							.effectiveDate(EffectiveTimes.getEffectiveTime(effectiveDate))
 							.versionId(effectiveTime)
 							.importDate(new Date().getTime())
-							.repositoryUuid(SnomedDatastoreActivator.REPOSITORY_UUID)
 							.build());
 				}
 				

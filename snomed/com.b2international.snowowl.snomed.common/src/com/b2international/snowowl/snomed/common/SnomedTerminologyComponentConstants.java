@@ -35,6 +35,9 @@ public abstract class SnomedTerminologyComponentConstants {
 	
 	public static final String[] NS_URI = Iterables.toArray(NS_URI_SET, String.class);
 	
+	/**
+	 * @deprecated - TODO rename to TOOLING_ID and make it shorter, just snomed is enough
+	 */
 	public static final String TERMINOLOGY_ID = "com.b2international.snowowl.terminology.snomed";
 	
 	public static final String CONCEPT = "com.b2international.snowowl.terminology.snomed.concept";

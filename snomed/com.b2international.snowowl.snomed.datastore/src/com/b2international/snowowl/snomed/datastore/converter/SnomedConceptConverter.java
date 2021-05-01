@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,11 +55,11 @@ import com.google.common.collect.TreeMultimap;
 /**
  * @since 4.5
  */
-final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedConceptDocument, SnomedConcept, SnomedConcepts> {
+public final class SnomedConceptConverter extends BaseRevisionResourceConverter<SnomedConceptDocument, SnomedConcept, SnomedConcepts> {
 
 	private SnomedReferenceSetConverter referenceSetConverter;
 	
-	SnomedConceptConverter(final BranchContext context, Options expand, List<ExtendedLocale> locales) {
+	public SnomedConceptConverter(final BranchContext context, Options expand, List<ExtendedLocale> locales) {
 		super(context, expand, locales);
 	}
 	

@@ -141,7 +141,7 @@ public final class SnomedComponentRevisionConflictProcessor extends ComponentRev
 		
 		// donation Code System should be marked as extension CodeSystem to be able to detect donation changes, otherwise skip donation check and report all conflicts
 		// extensionOf is a required property for Code Systems that would like to participate in content donation
-		if (extensionCodeSystem.getExtensionOf() == null || !extensionCodeSystem.getExtensionOf().getCodeSystem().equals(donationCodeSystem.getShortName())) {
+		if (extensionCodeSystem.getExtensionOf() == null || !extensionCodeSystem.getExtensionOf().getResourceId().equals(donationCodeSystem.getId())) {
 			return conflicts;
 		}
 		

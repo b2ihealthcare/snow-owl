@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.repository.RevisionDocument;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
-import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
+import com.b2international.snowowl.snomed.datastore.converter.SnomedRelationshipConverter;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 
@@ -90,7 +90,7 @@ final class SnomedRelationshipSearchRequest extends SnomedComponentSearchRequest
 		if (limit() < 1 || totalHits < 1) {
 			return new SnomedRelationships(limit(), totalHits);
 		} else {
-			return SnomedConverters.newRelationshipConverter(context, expand(), locales()).convert(hits.getHits(), hits.getSearchAfter(), limit(), totalHits);
+			return new SnomedRelationshipConverter(context, expand(), locales()).convert(hits);
 		}
 	}
 	

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,16 +27,11 @@ import com.b2international.snowowl.core.repository.CompositeComponentDeletionPol
 import com.b2international.snowowl.core.repository.TerminologyRepositoryConfigurer;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.Plugin;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.reasoner.classification.ClassificationTracker;
-import com.b2international.snowowl.snomed.reasoner.index.ClassificationTaskDocument;
-import com.b2international.snowowl.snomed.reasoner.index.ConceptChangeDocument;
-import com.b2international.snowowl.snomed.reasoner.index.ConcreteDomainChangeDocument;
-import com.b2international.snowowl.snomed.reasoner.index.DescriptionChangeDocument;
-import com.b2international.snowowl.snomed.reasoner.index.EquivalentConceptSetDocument;
-import com.b2international.snowowl.snomed.reasoner.index.RelationshipChangeDocument;
+import com.b2international.snowowl.snomed.reasoner.index.*;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -48,7 +43,7 @@ public final class SnomedReasonerPlugin extends Plugin implements TerminologyRep
 	@Override
 	public void run(final SnowOwlConfiguration configuration, final Environment env) throws Exception {
 		if (env.isServer()) {
-			final Index repositoryIndex = env.service(RepositoryManager.class).get(getRepositoryId()).service(Index.class);
+			final Index repositoryIndex = env.service(RepositoryManager.class).get(getToolingId()).service(Index.class);
 			final SnomedCoreConfiguration snomedConfig = configuration.getModuleConfig(SnomedCoreConfiguration.class);
 			final int maximumReasonerRuns = snomedConfig.getMaxReasonerRuns();
 			final long cleanUpInterval = TimeUnit.MINUTES.toMillis(5L); // TODO: make this configurable
@@ -71,8 +66,8 @@ public final class SnomedReasonerPlugin extends Plugin implements TerminologyRep
 	}
 	
 	@Override
-	public String getRepositoryId() {
-		return SnomedDatastoreActivator.REPOSITORY_UUID;
+	public String getToolingId() {
+		return SnomedTerminologyComponentConstants.TERMINOLOGY_ID;
 	}
 	
 	@Override

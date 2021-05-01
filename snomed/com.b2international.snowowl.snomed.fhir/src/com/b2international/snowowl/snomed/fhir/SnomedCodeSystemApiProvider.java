@@ -22,7 +22,6 @@ import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.codesystem.CodeSystemVersion;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.plugin.Component;

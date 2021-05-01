@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,9 +28,9 @@ import com.b2international.snowowl.snomed.datastore.index.constraint.*;
 /**
  * @since 5.7
  */
-final class SnomedConstraintConverter extends BaseResourceConverter<SnomedConstraintDocument, SnomedConstraint, SnomedConstraints> {
+public final class SnomedConstraintConverter extends BaseResourceConverter<SnomedConstraintDocument, SnomedConstraint, SnomedConstraints> {
 
-	protected SnomedConstraintConverter(RepositoryContext context, Options expand, List<ExtendedLocale> locales) {
+	public SnomedConstraintConverter(RepositoryContext context, Options expand, List<ExtendedLocale> locales) {
 		super(context, expand, locales);
 	}
 

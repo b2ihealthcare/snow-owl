@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,9 +40,9 @@ import com.google.common.collect.Maps;
 /**
  * @since 4.0
  */
-final class SnomedDescriptionConverter extends BaseRevisionResourceConverter<SnomedDescriptionIndexEntry, SnomedDescription, SnomedDescriptions> {
+public final class SnomedDescriptionConverter extends BaseRevisionResourceConverter<SnomedDescriptionIndexEntry, SnomedDescription, SnomedDescriptions> {
 
-	SnomedDescriptionConverter(BranchContext context, Options expand, List<ExtendedLocale> locales) {
+	public SnomedDescriptionConverter(BranchContext context, Options expand, List<ExtendedLocale> locales) {
 		super(context, expand, locales);
 	}
 
