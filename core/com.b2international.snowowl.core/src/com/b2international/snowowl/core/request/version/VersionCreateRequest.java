@@ -84,17 +84,17 @@ public final class VersionCreateRequest implements Request<ServiceProvider, Bool
 	
 	// local execution variables
 	private transient Multimap<DatastoreLockContext, DatastoreLockTarget> lockTargetsByContext;
-	private transient Map<String, CodeSystem> codeSystemsByShortName;
+	private transient Map<String, CodeSystem> resourcesById;
 	
 	@Override
 	public Boolean execute(ServiceProvider context) {
 		final String user = context.service(User.class).getUsername();
 		
-		if (codeSystemsByShortName == null) {
-			codeSystemsByShortName = fetchAllResources(context);
+		if (resourcesById == null) {
+			resourcesById = fetchAllResources(context);
 		}
 		
-		final CodeSystem codeSystem = codeSystemsByShortName.get(resource);
+		final CodeSystem codeSystem = resourcesById.get(resource);
 		if (codeSystem == null) {
 			throw new ResourceNotFoundException(resource);
 		}
@@ -104,7 +104,7 @@ public final class VersionCreateRequest implements Request<ServiceProvider, Bool
 		
 		final List<CodeSystem> resourcesToVersion = codeSystem.getDependenciesAndSelf()
 				.stream()
-				.map(codeSystemsByShortName::get)
+				.map(resourcesById::get)
 				.collect(Collectors.toList());
 		
 		resourcesToVersion.stream()
@@ -273,11 +273,11 @@ public final class VersionCreateRequest implements Request<ServiceProvider, Bool
 	
 	@Override
 	public String getResource(ServiceProvider context) {
-		if (codeSystemsByShortName == null) {
-			codeSystemsByShortName = fetchAllResources(context);
+		if (resourcesById == null) {
+			resourcesById = fetchAllResources(context);
 		}
 		// TODO support multi repository version authorization
-		return codeSystemsByShortName.get(resource).getToolingId();
+		return resourcesById.get(resource).getToolingId();
 	}
 	
 	@Override

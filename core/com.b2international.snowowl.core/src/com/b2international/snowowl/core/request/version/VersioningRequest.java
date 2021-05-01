@@ -23,6 +23,7 @@ import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.commons.exceptions.ApiException;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.authorization.BranchAccessControl;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
@@ -117,6 +118,7 @@ public class VersioningRequest implements Request<TransactionContext, Boolean>, 
 				.description(config.getDescription())
 				.effectiveTime(EffectiveTimes.getEffectiveTime(config.getEffectiveTime()))
 				.resource(config.getResource())
+				.branchPath(Branch.get(context.path(), config.getVersion()))
 				.build();
 	}
 	

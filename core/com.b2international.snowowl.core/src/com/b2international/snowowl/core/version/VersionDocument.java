@@ -128,7 +128,7 @@ public final class VersionDocument implements Serializable {
 			return this;
 		}
 		
-		public Builder setBranchPath(String branchPath) {
+		public Builder branchPath(String branchPath) {
 			this.branchPath = branchPath;
 			return this;
 		}
