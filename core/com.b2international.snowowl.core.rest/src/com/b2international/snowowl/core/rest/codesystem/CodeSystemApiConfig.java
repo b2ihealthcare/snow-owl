@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,37 +13,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.rest;
+package com.b2international.snowowl.core.rest.codesystem;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.b2international.snowowl.core.rest.BaseApiConfig;
+
 import springfox.documentation.spring.web.plugins.Docket;
 
 /**
- * @since 7.2
+ * @since 8.0
  */
 @Configuration
-public class CoreApiConfig extends BaseApiConfig {
+public class CodeSystemApiConfig extends BaseApiConfig {
 
 	@Override
 	public String getApiBaseUrl() {
-		return "/admin";
+		return "/codesystems";
 	}
 	
 	@Bean
-	public Docket coreDocs() {
+	public Docket codeSystemDocs() {
 		return docs(
 			getApiBaseUrl(),
-			"admin",
+			"codesystems",
 			"1.0",
-			"Admin API",
+			"CodeSystem API",
 			"https://b2i.sg",
 			"support@b2i.sg",
 			"API License",
 			"https://b2i.sg",
-			"This describes the resources that make up the official Snow Owl® Admin API. <br > Detailed documentation is available at the [official documentation site](https://docs.b2i.sg/snow-owl/api/core)."
+			"This describes the resources that make up the official Snow Owl® CodeSystem API. <br > Detailed documentation is available at the [official documentation site](https://docs.b2i.sg/snow-owl/api/codesystems)."
 		);
 	}
-	
+
 }

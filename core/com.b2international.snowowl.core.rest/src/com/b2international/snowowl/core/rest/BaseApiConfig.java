@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,8 +30,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 
 import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.events.util.Promise;
-import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.fasterxml.classmate.TypeResolver;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
@@ -39,12 +39,7 @@ import com.google.common.collect.ImmutableList;
 import io.swagger.models.auth.In;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.schema.WildcardType;
-import springfox.documentation.service.ApiInfo;
-import springfox.documentation.service.ApiKey;
-import springfox.documentation.service.AuthorizationScope;
-import springfox.documentation.service.BasicAuth;
-import springfox.documentation.service.Contact;
-import springfox.documentation.service.SecurityReference;
+import springfox.documentation.service.*;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spi.service.contexts.SecurityContext;
 import springfox.documentation.spring.web.plugins.Docket;
@@ -119,10 +114,10 @@ public abstract class BaseApiConfig {
 				.ignoredParameterTypes(Principal.class)
 				.alternateTypeRules(
 					newRule(resolver.resolve(UUID.class), resolver.resolve(String.class)),
-					newRule(resolver.resolve(CodeSystemURI.class), resolver.resolve(String.class)),
+					newRule(resolver.resolve(ResourceURI.class), resolver.resolve(String.class)),
 					newRule(resolver.resolve(ExtendedLocale.class), resolver.resolve(String.class)),
 					newRule(
-						resolver.resolve(List.class, resolver.resolve(CodeSystemURI.class)),
+						resolver.resolve(List.class, resolver.resolve(ResourceURI.class)),
 						resolver.resolve(List.class, resolver.resolve(String.class))
 			        ),
 					newRule(

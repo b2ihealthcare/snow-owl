@@ -13,32 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.rest.codesystem;
+package com.b2international.snowowl.core.request.version;
 
-import com.b2international.snowowl.core.uri.CodeSystemURI;
+import com.b2international.snowowl.core.request.GetResourceRequest;
+import com.b2international.snowowl.core.version.Version;
 
 /**
- * @since 7.14
+ * @since 8.0
  */
-public class CodeSystemUpgradeRestInput {
+public final class VersionGetRequest extends
+		GetResourceRequest<VersionSearchRequestBuilder, com.b2international.snowowl.core.ServiceProvider, Version> {
 
-	private CodeSystemURI extensionOf;
-	private String codeSystemId;
-	
-	public CodeSystemURI getExtensionOf() {
-		return extensionOf;
-	}
-	
-	public void setExtensionOf(CodeSystemURI extensionOf) {
-		this.extensionOf = extensionOf;
+	private static final long serialVersionUID = 1L;
+
+	public VersionGetRequest(String versionId) {
+		super(versionId);
 	}
 
-	public String getCodeSystemId() {
-		return codeSystemId;
+	@Override
+	protected VersionSearchRequestBuilder createSearchRequestBuilder() {
+		return new VersionSearchRequestBuilder();
 	}
-	
-	public void setCodeSystemId(String codeSystemId) {
-		this.codeSystemId = codeSystemId;
-	}
-	
+
 }

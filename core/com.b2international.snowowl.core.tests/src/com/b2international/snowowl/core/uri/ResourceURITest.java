@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,43 +19,46 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
+import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.codesystem.CodeSystem;
+
 /**
  * @since 7.5
  */
-public class CodeSystemURITest {
+public class ResourceURITest {
 
 	@Test
 	public void headImplicit() throws Exception {
-		final CodeSystemURI uri = new CodeSystemURI("SNOMEDCT");
-		assertEquals("SNOMEDCT", uri.getCodeSystem());
-		assertEquals(CodeSystemURI.HEAD, uri.getPath());
+		final ResourceURI uri = CodeSystem.uri("SNOMEDCT");
+		assertEquals("SNOMEDCT", uri.getResourceId());
+		assertEquals(ResourceURI.HEAD, uri.getPath());
 	}
 	
 	@Test
 	public void latestReleasedExplicit() throws Exception {
-		final CodeSystemURI uri = new CodeSystemURI("SNOMEDCT/LATEST");
-		assertEquals("SNOMEDCT", uri.getCodeSystem());
-		assertEquals(CodeSystemURI.LATEST, uri.getPath());
+		final ResourceURI uri = CodeSystem.uri("SNOMEDCT/LATEST");
+		assertEquals("SNOMEDCT", uri.getResourceId());
+		assertEquals(ResourceURI.LATEST, uri.getPath());
 	}
 	
 	@Test
 	public void explicitVersion() throws Exception {
-		final CodeSystemURI uri = new CodeSystemURI("SNOMEDCT/2019-07-31");
-		assertEquals("SNOMEDCT", uri.getCodeSystem());
+		final ResourceURI uri = CodeSystem.uri("SNOMEDCT/2019-07-31");
+		assertEquals("SNOMEDCT", uri.getResourceId());
 		assertEquals("2019-07-31", uri.getPath());
 	}
 	
 	@Test
 	public void extensionVersion() throws Exception {
-		final CodeSystemURI uri = new CodeSystemURI("SNOMEDCT-EXT/2019-10-31");
-		assertEquals("SNOMEDCT-EXT", uri.getCodeSystem());
+		final ResourceURI uri = CodeSystem.uri("SNOMEDCT-EXT/2019-10-31");
+		assertEquals("SNOMEDCT-EXT", uri.getResourceId());
 		assertEquals("2019-10-31", uri.getPath());
 	}
 	
 	@Test
 	public void explicitBranch() throws Exception {
-		final CodeSystemURI uri = new CodeSystemURI("SNOMEDCT-EXT/a/b");
-		assertEquals("SNOMEDCT-EXT", uri.getCodeSystem());
+		final ResourceURI uri = CodeSystem.uri("SNOMEDCT-EXT/a/b");
+		assertEquals("SNOMEDCT-EXT", uri.getResourceId());
 		assertEquals("a/b", uri.getPath());
 	}
 	

@@ -53,6 +53,10 @@ public class CodeSystem extends TerminologyResource {
 		return (List<ExtendedLocale>) getSettings().get(CommonSettings.LOCALES);
 	}
 	
+	public static ResourceURI uri(String codeSystemId) {
+		return ResourceURI.of(CODESYSTEM_RESOURCE_TYPE, codeSystemId);
+	}
+	
 	public static ResourceURI uri(String codeSystemId, String path) {
 		return ResourceURI.branch(CODESYSTEM_RESOURCE_TYPE, codeSystemId, path);
 	}
@@ -77,6 +81,27 @@ public class CodeSystem extends TerminologyResource {
 		codeSystem.setUpgradeOf(doc.getUpgradeOf());
 		codeSystem.setSettings(doc.getSettings());
 		return codeSystem;
+	}
+
+	public CodeSystemCreateRequestBuilder toCreateRequest() {
+		return CodeSystemRequests.prepareNewCodeSystem()
+				.setId(getId())
+				.setUrl(getUrl())
+				.setTitle(getTitle())
+				.setLanguage(getLanguage())
+				.setDescription(getDescription())
+				.setStatus(getStatus())
+				.setCopyright(getCopyright())
+				.setOwner(getOwner())
+				.setContact(getContact())
+				.setUsage(getUsage())
+				.setPurpose(getPurpose())
+				.setOid(getOid())
+				.setBranchPath(getBranchPath())
+				.setToolingId(getToolingId())
+				.setExtensionOf(getExtensionOf())
+				.setUpgradeOf(getUpgradeOf())
+				.setSettings(getSettings());
 	}
 
 //	/**

@@ -41,55 +41,54 @@ final class CodeSystemUpdateRequest extends UpdateRequest<TransactionContext> im
 //	private String iconPath; // TODO should we support custom icons for resources?? branding??
 	
 	// generic resource update properties, TODO move to super-superclass
-	private String title;
-	private String language;
+	String url;
+	String title;
+	String language;
+	String description;
+	String status;
+	String copyright;
+	String owner;
+	String contact;
+	String usage;
+	String purpose;
+	String oid;
 	
 	// generic terminology resource update properties, TODO move to superclass 
-	private String branchPath;
-	private ResourceURI extensionOf;
-	private Map<String, Object> settings;
+	String branchPath;
+	ResourceURI extensionOf;
+	Map<String, Object> settings;
 	
 	CodeSystemUpdateRequest(final String uniqueId) {
 		super(uniqueId);
-	}
-
-	void setTitle(final String title) {
-		this.title = title;
-	}
-
-	void setLanguage(final String language) {
-		this.language = language;
-	}
-
-	void setBranchPath(final String branchPath) {
-		this.branchPath = branchPath;
 	}
 
 //	void setIconPath(final String iconPath) {
 //		this.iconPath = iconPath;
 //	}
 	
-	void setExtensionOf(ResourceURI extensionOf) {
-		this.extensionOf = extensionOf;
-	}
-	
-	void setSettings(final Map<String, Object> settings) {
-		this.settings = settings;
-	}
-
 	@Override
 	public Boolean execute(final TransactionContext context) {
 		ResourceDocument codeSystem = context.lookup(componentId(), ResourceDocument.class);
 		final ResourceDocument.Builder updated = ResourceDocument.builder(codeSystem);
 
 		boolean changed = false;
+		changed |= updateProperty(url, codeSystem::getUrl, updated::url);
 		changed |= updateProperty(title, codeSystem::getTitle, updated::title);
 		changed |= updateProperty(language, codeSystem::getLanguage, updated::language);
-//		changed |= updateProperty(iconPath, codeSystem::getIconPath, updated::iconPath);
-//		changed |= updateLocales(codeSystem, updated);
+		changed |= updateProperty(description, codeSystem::getDescription, updated::description);
+		changed |= updateProperty(status, codeSystem::getStatus, updated::status);
+		changed |= updateProperty(copyright, codeSystem::getCopyright, updated::copyright);
+		changed |= updateProperty(owner, codeSystem::getOwner, updated::owner);
+		changed |= updateProperty(contact, codeSystem::getContact, updated::contact);
+		changed |= updateProperty(usage, codeSystem::getUsage, updated::usage);
+		changed |= updateProperty(purpose, codeSystem::getPurpose, updated::purpose);
+		changed |= updateProperty(oid, codeSystem::getOid, updated::oid);
+		
 		changed |= updateBranchPath(context, updated, codeSystem.getBranchPath());
 		changed |= updateExtensionOf(context, updated, codeSystem.getExtensionOf(), codeSystem.getId());
 		changed |= updateSettings(codeSystem, updated);
+		
+//		changed |= updateProperty(iconPath, codeSystem::getIconPath, updated::iconPath);
 		
 		if (changed) {
 			context.add(updated.build());

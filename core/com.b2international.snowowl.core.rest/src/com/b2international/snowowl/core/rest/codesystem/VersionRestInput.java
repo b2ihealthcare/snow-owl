@@ -15,54 +15,55 @@
  */
 package com.b2international.snowowl.core.rest.codesystem;
 
-import javax.validation.constraints.NotNull;
-
-import org.hibernate.validator.constraints.NotEmpty;
-
-import com.b2international.snowowl.core.codesystem.CodeSystemVersionProperties;
-
 /**
  * @since 1.0
  */
-public class VersionInput implements CodeSystemVersionProperties {
+public class VersionRestInput {
 
-	@NotEmpty
+	private String codeSystemId;
 	private String version;
 	private String description = "";
 	private Boolean force = Boolean.FALSE;
+	private String effectiveTime;
 	
-	@NotNull
-	private String effectiveDate;
+	public String getCodeSystemId() {
+		return codeSystemId;
+	}
 	
-	@Override
 	public String getDescription() {
 		return description;
 	}
 	
-	@Override
-	public String getEffectiveDate() {
-		return effectiveDate;
+	public String getEffectiveTime() {
+		return effectiveTime;
 	}
 	
-	@Override
 	public String getVersion() {
 		return version;
+	}
+	
+	public Boolean isForce() {
+		return force;
+	}
+	
+	public void setCodeSystemId(String codeSystemId) {
+		this.codeSystemId = codeSystemId;
 	}
 	
 	public void setDescription(String description) {
 		this.description = description;
 	}
 	
-	public void setEffectiveDate(String effectiveDate) {
-		this.effectiveDate = effectiveDate;
+	public void setEffectiveTime(String effectiveTime) {
+		this.effectiveTime = effectiveTime;
 	}
 	
 	public void setVersion(String version) {
 		this.version = version;
 	}
-
-	public Boolean isForce() {
-		return force;
+	
+	public void setForce(Boolean force) {
+		this.force = force;
 	}
 	
 }

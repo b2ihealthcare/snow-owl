@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,133 +15,57 @@
  */
 package com.b2international.snowowl.core.rest.codesystem;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
-import java.util.Comparator;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.b2international.commons.StringUtils;
 import com.b2international.commons.exceptions.BadRequestException;
-import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.commons.validation.ApiValidation;
-import com.b2international.snowowl.core.Repositories;
-import com.b2international.snowowl.core.RepositoryInfo;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
-import com.b2international.snowowl.core.codesystem.CodeSystemEntry;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.codesystem.CodeSystems;
 import com.b2international.snowowl.core.events.util.Promise;
-import com.b2international.snowowl.core.repository.RepositoryRequests;
-import com.b2international.snowowl.core.request.SearchResourceRequest.Sort;
-import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
-import com.b2international.snowowl.eventbus.IEventBus;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.*;
 
 /**
  * @since 1.0
  */
 @Api(value = "CodeSystem", description="Code Systems", tags = { "code-systems" })
 @RestController
-@RequestMapping(value = "/codesystems") 
 public class CodeSystemRestService extends AbstractRestService {
 
-	@Autowired
-	private CodeSystemService codeSystemService;
-	
 	@ApiOperation(
-		value="Retrieve Code Systems", 
-		notes="Returns a collection resource containing all/filtered registered Code Systems."
-			+ "<p>Results are always sorted by repositoryUuid first, sort keys only apply per repository."
+		value="Retrieve CodeSystems", 
+		notes="Returns a collection resource containing all/filtered registered CodeSystems."
+			+ "<p>Results are by default sorted by ID."
 			+ "<p>The following properties can be expanded:"
 			+ "<p>"
-			+ "&bull; availableUpgrades() &ndash; a list of possible code system URIs that can be used as an 'extensionOf' property"
+			+ "&bull; availableUpgrades() &ndash; a list of possible code system resource URIs that can be used as an 'extensionOf' property"
 	)
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK", response = CodeSystems.class),
-		@ApiResponse(code = 400, message = "Invalid search config", response = RestApiError.class),
-		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
+		@ApiResponse(code = 400, message = "Bad Request", response = RestApiError.class)
 	})
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public Promise<CodeSystems> searchByGet(final CodeSystemRestSearch params) {
-		checkArgument(params.getSearchAfter() == null, "Parameter 'searchAfter' is not supported for code system search.");
-		
-		final IEventBus bus = getBus();
-		
-		return RepositoryRequests.prepareSearch()
-			.all()
-			.buildAsync()
-			.execute(bus)
-			.thenWith(repos -> searchByGet(params, repos, bus));
-	}
-	
-	private Promise<CodeSystems> searchByGet(CodeSystemRestSearch params, Repositories repos, IEventBus bus) {
-		final List<Promise<CodeSystems>> codeSystemsByRepository = repos.stream()
-			.map(RepositoryInfo::id)
-			.map(id -> searchByGet(params, id, bus))
-			.collect(Collectors.toList());
-		
-		if (codeSystemsByRepository.isEmpty()) {
-			return Promise.immediate(new CodeSystems(List.of(), null, params.getLimit(), 0));
-		}
-		
-		return Promise.all(codeSystemsByRepository)
-			.then(results -> {
-				final List<CodeSystem> allCodeSystems = results.stream()
-					.flatMap(r -> ((CodeSystems) r).stream())
-					// XXX: search-time sort order within a repository should be preserved by the sorter below
-					.sorted(Comparator.comparing(CodeSystem::getRepositoryId))
-					.limit(params.getLimit())
-					.collect(Collectors.toList());
-				
-				final int total = results.stream()
-					.mapToInt(r -> ((CodeSystems) r).getTotal())
-					.sum();
-				
-				return new CodeSystems(allCodeSystems, null, params.getLimit(), total);
-			});
-	}
-	
-	private Promise<CodeSystems> searchByGet(CodeSystemRestSearch params, String repositoryId, IEventBus bus) {
-		List<Sort> sortBy = extractSortFields(params.getSort());
-		if (sortBy.isEmpty()) {
-			sortBy = List.of(SortField.ascending(CodeSystemEntry.Fields.SHORT_NAME));
-		}
-
 		return CodeSystemRequests.prepareSearchCodeSystem()
 				.filterByIds(params.getId())
 				.setLimit(params.getLimit())
 				.setExpand(params.getExpand())
-				.sortBy(sortBy)
-				// .setSearchAfter(...) is not applied; we are searching in multiple repositories
-				.build(repositoryId)
-				.execute(bus);
+				.setSearchAfter(params.getSearchAfter())
+				.sortBy(extractSortFields(params.getSort()))
+				.buildAsync()
+				.execute(getBus());
 	}
-
+	
 	@ApiOperation(
 		value="Retrieve Code Systems", 
 		notes="Returns a collection resource containing all/filtered registered Code Systems."
@@ -161,66 +85,55 @@ public class CodeSystemRestService extends AbstractRestService {
 	}
 
 	@ApiOperation(
-			value="Retrieve code system by short name or OID",
-			notes="Returns generic information about a single code system with the specified short name or OID.")
+			value="Retrieve code system by its unique identifier",
+			notes="Returns generic information about a single code system associated to the given unique identifier.")
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Code system not found", response = RestApiError.class)
+		@ApiResponse(code = 404, message = "Not found", response = RestApiError.class)
 	})
-	@GetMapping(value = "/{shortNameOrOid}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public CodeSystem read(
-			@ApiParam(value="The code system identifier (short name or OID)")
-			@PathVariable(value="shortNameOrOid") final String shortNameOrOId) {
-		return codeSystemService.getCodeSystemById(shortNameOrOId);
+	@GetMapping(value = "/{codeSystemId}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
+	public Promise<CodeSystem> get(
+			@ApiParam(value="The code system identifier")
+			@PathVariable(value="codeSystemId") final String codeSystemId) {
+		return CodeSystemRequests.prepareGetCodeSystem(codeSystemId)
+				.buildAsync()
+				.execute(getBus());
 	}
 	
 	@ApiOperation(
-			value="Create a code system",
-			notes="Create a new Code System with the given parameters")
+		value="Create a code system",
+		notes="Create a new Code System with the given parameters"
+	)
 	@ApiResponses({
 		@ApiResponse(code = 201, message = "Created", response = Void.class),
-		@ApiResponse(code = 400, message = "Code System already exists in the system", response = RestApiError.class)
+		@ApiResponse(code = 400, message = "CodeSystem already exists in the system", response = RestApiError.class)
 	})
 	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.CREATED)
 	public ResponseEntity<Void> create(
 			@RequestBody
 			final CodeSystem codeSystem,
+			
 			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
 
 		ApiValidation.checkInput(codeSystem);
 		
-		final String commitComment = String.format("Created new Code System %s", codeSystem.getShortName());
-		
 		if (codeSystem.getUpgradeOf() != null) {
 			throw new BadRequestException("'upgradeOf' property cannot be set through code system create API");
 		}
 		
-		final String shortName = CodeSystemRequests
-				.prepareNewCodeSystem()
-				.setBranchPath(codeSystem.getBranchPath())
-				.setCitation(codeSystem.getCitation())
-				.setIconPath(codeSystem.getIconPath())
-				.setLanguage(codeSystem.getPrimaryLanguage())
-				.setLink(codeSystem.getOrganizationLink())
-				.setName(codeSystem.getName())
-				.setOid(codeSystem.getOid())
-				.setRepositoryId(codeSystem.getRepositoryId())
-				.setShortName(codeSystem.getShortName())
-				.setTerminologyId(codeSystem.getTerminologyId())
-				.setExtensionOf(codeSystem.getExtensionOf())
-				.setLocales(codeSystem.getLocales())
-				.setAdditionalProperties(codeSystem.getAdditionalProperties())
+		final String commitComment = String.format("Created new Code System %s", codeSystem.getId());
+		final String codeSystemId = codeSystem.toCreateRequest()
 				.commit()
 				.setAuthor(author)
 				.setCommitComment(commitComment)
-				.build(codeSystem.getRepositoryId(), IBranchPath.MAIN_BRANCH)
+				.buildAsync()
 				.execute(getBus())
 				.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES)
 				.getResultAs(String.class);
 		
-		return ResponseEntity.created(getResourceLocationURI(shortName)).build();
+		return ResponseEntity.created(getResourceLocationURI(codeSystemId)).build();
 	}
 	
 	@ApiOperation(
@@ -233,34 +146,35 @@ public class CodeSystemRestService extends AbstractRestService {
 	@PutMapping(value = "/{shortNameOrOid}", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void update(
-			@ApiParam(value="The code system identifier (short name or OID)")
-			@PathVariable(value="shortNameOrOid") 
-			final String shortNameOrOId,
+			@ApiParam(value="The code system identifier")
+			@PathVariable(value="codeSystemId") 
+			final String codeSystemId,
 			
 			@RequestBody
 			final CodeSystem codeSystem,
 			
 			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
-		validateUpdateInput(shortNameOrOId, codeSystem.getRepositoryId());
-		final String commitComment = String.format("Updated Code System %s", shortNameOrOId);
-		
-		if (codeSystem.getUpgradeOf() != null) {
-			LoggerFactory.getLogger(getClass()).warn("'upgradeOf' property update support is only present in version 7.x and will be dropped with version 8.0.");
-		}
-		
-		CodeSystemRequests
-				.prepareUpdateCodeSystem(shortNameOrOId)
-				.setName(codeSystem.getName())
+		final String commitComment = String.format("Updated Code System %s", codeSystemId);
+		CodeSystemRequests.prepareUpdateCodeSystem(codeSystemId)
+				.setUrl(codeSystem.getUrl())
+				.setTitle(codeSystem.getTitle())
+				.setLanguage(codeSystem.getLanguage())
+				.setDescription(codeSystem.getDescription())
+				.setStatus(codeSystem.getStatus())
+				.setCopyright(codeSystem.getCopyright())
+				.setOwner(codeSystem.getOwner())
+				.setContact(codeSystem.getContact())
+				.setUsage(codeSystem.getUsage())
+				.setPurpose(codeSystem.getPurpose())
+				.setOid(codeSystem.getOid())
 				.setBranchPath(codeSystem.getBranchPath())
-				.setCitation(codeSystem.getCitation())
-				.setIconPath(codeSystem.getIconPath())
-				.setLanguage(codeSystem.getPrimaryLanguage())
-				.setLink(codeSystem.getOrganizationLink())
-				.setLocales(codeSystem.getLocales())
-				.setAdditionalProperties(codeSystem.getAdditionalProperties())
 				.setExtensionOf(codeSystem.getExtensionOf())
-				.build(codeSystem.getRepositoryId(), IBranchPath.MAIN_BRANCH, author, commitComment)
+				.setSettings(codeSystem.getSettings())
+				.commit()
+				.setAuthor(author)
+				.setCommitComment(commitComment)
+				.buildAsync()
 				.execute(getBus())
 				.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);
 	}
@@ -276,36 +190,26 @@ public class CodeSystemRestService extends AbstractRestService {
 	@PostMapping(value = "/{codeSystemId}/upgrades", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.CREATED)
 	public Promise<ResponseEntity<Void>> upgrade(
-			@ApiParam(value="The code system identifier (short name only (OID is not supported))")
+			@ApiParam(value="The code system identifier")
 			@PathVariable(value="codeSystemId") 
 			final String codeSystemId,
 			
 			@RequestBody
-			final CodeSystemUpgradeRestInput body) {
-		final CodeSystem codeSystem = CodeSystemRequests.prepareSearchAllCodeSystems()
-			.filterById(codeSystemId)
+			final UpgradeRestInput body) {
+		final CodeSystem codeSystem = CodeSystemRequests.prepareGetCodeSystem(codeSystemId)
 			.buildAsync()
 			.execute(getBus())
-			.getSync(1, TimeUnit.MINUTES)
-			.first()
-			.orElseThrow(() -> new NotFoundException("Code System", codeSystemId));
+			.getSync(1, TimeUnit.MINUTES);
 			
 		final UriComponentsBuilder uriBuilder = createURIBuilder();
 		
-		return CodeSystemRequests.prepareUpgrade(codeSystem.getCodeSystemURI(), body.getExtensionOf())
-				.setCodeSystemId(body.getCodeSystemId())
-				.build(codeSystem.getRepositoryId())
+		return CodeSystemRequests.prepareUpgrade(codeSystem.getResourceURI(), ResourceURI.of(codeSystem.getResourceType(), body.getExtensionOf()))
+				.setResourceId(body.getCodeSystemId())
+				.buildAsync()
 				.execute(getBus())
 				.then(upgradeCodeSystemId -> {
 					return ResponseEntity.created(uriBuilder.pathSegment(upgradeCodeSystemId).build().toUri()).build();
 				});
 	}
 
-	private void validateUpdateInput(final String shortNameOrOId, final String repositoryUuid) {
-		if (StringUtils.isEmpty(shortNameOrOId)) {
-			throw new BadRequestException("Unique ID cannot be empty for Code System update.");
-		} else if (StringUtils.isEmpty(repositoryUuid)) {
-			throw new BadRequestException("Repository ID cannot be empty for Code System update.");
-		}
-	}
 }

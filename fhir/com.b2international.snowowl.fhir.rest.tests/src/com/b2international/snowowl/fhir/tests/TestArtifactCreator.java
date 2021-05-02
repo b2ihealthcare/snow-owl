@@ -33,7 +33,7 @@ public class TestArtifactCreator {
 		String jobId = CodeSystemRequests.prepareNewVersion()
 			.setCodeSystemShortName(codeSystemName)
 			.setDescription("FHIR Test version")
-			.setVersionId(version)
+			.setVersion(version)
 			.setEffectiveTime(nextAvailableEffectiveTime)
 			.buildAsync()
 			.runAsJob(String.format("Creating version '%s/%s'", codeSystemName, version))

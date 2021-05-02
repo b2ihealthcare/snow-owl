@@ -22,6 +22,7 @@ import com.b2international.snowowl.core.compare.ConceptMapCompareResultItem;
 import com.b2international.snowowl.core.jobs.RemoteJobEntry;
 import com.b2international.snowowl.core.request.*;
 import com.b2international.snowowl.core.request.version.VersionCreateRequestBuilder;
+import com.b2international.snowowl.core.request.version.VersionGetRequestBuilder;
 import com.b2international.snowowl.core.request.version.VersionSearchRequestBuilder;
 import com.b2international.snowowl.core.uri.ComponentURI;
 
@@ -38,12 +39,12 @@ public class CodeSystemRequests {
 		return new CodeSystemCreateRequestBuilder();
 	}
 
-	public static CodeSystemUpdateRequestBuilder prepareUpdateCodeSystem(final String uniqueId) {
-		return new CodeSystemUpdateRequestBuilder(uniqueId);
+	public static CodeSystemUpdateRequestBuilder prepareUpdateCodeSystem(final String codeSystemId) {
+		return new CodeSystemUpdateRequestBuilder(codeSystemId);
 	}
 
-	public static CodeSystemGetRequestBuilder prepareGetCodeSystem(final String uniqeId) {
-		return new CodeSystemGetRequestBuilder(uniqeId);
+	public static CodeSystemGetRequestBuilder prepareGetCodeSystem(final String codeSystemId) {
+		return new CodeSystemGetRequestBuilder(codeSystemId);
 	}
 
 	public static CodeSystemSearchRequestBuilder prepareSearchCodeSystem() {
@@ -52,6 +53,10 @@ public class CodeSystemRequests {
 
 	public static VersionSearchRequestBuilder prepareSearchVersion() {
 		return new VersionSearchRequestBuilder();
+	}
+	
+	public static VersionGetRequestBuilder prepareGetVersion(ResourceURI versionUri) {
+		return new VersionGetRequestBuilder(versionUri);
 	}
 	
 	public static VersionCreateRequestBuilder prepareNewVersion() {
@@ -113,12 +118,14 @@ public class CodeSystemRequests {
 		return new ConceptMapCompareDsvExportRequestBuilder(items, filePath);
 	}
 
-	public static String versionJobKey(String codeSystemShortName) {
-		return VERSION_JOB_KEY_PREFIX.concat(codeSystemShortName);
+	public static String versionJobKey(ResourceURI codeSystemUri) {
+		return VERSION_JOB_KEY_PREFIX.concat(codeSystemUri.toString());
 	}
 	
 	public static boolean isVersionJob(RemoteJobEntry job) {
 		return job != null && job.getKey().startsWith(VERSION_JOB_KEY_PREFIX);
 	}
+
+	
 	
 }

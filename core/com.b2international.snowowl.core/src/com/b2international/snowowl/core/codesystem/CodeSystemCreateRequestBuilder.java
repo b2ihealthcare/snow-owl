@@ -132,6 +132,11 @@ public final class CodeSystemCreateRequestBuilder extends BaseRequestBuilder<Cod
 		return getSelf();
 	}
 	
+	public CodeSystemCreateRequestBuilder setSettings(Map<String, Object> settings) {
+		this.settings = settings;
+		return getSelf();
+	}
+	
 	@Override
 	protected Request<TransactionContext, String> doBuild() {
 		final CodeSystemCreateRequest req = new CodeSystemCreateRequest();

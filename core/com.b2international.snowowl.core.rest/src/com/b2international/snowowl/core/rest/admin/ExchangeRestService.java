@@ -38,7 +38,7 @@ import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
-import com.b2international.snowowl.core.rest.codesystem.CodeSystemVersionRestService;
+import com.b2international.snowowl.core.rest.codesystem.VersionRestService;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -111,7 +111,7 @@ public class ExchangeRestService {
 	}
 	
 	private URI getVersionURI(String shortName, String version) {
-		return MvcUriComponentsBuilder.fromMethodName(CodeSystemVersionRestService.class, "getCodeSystemVersionByShortNameAndVersionId", shortName, version).build().toUri();
+		return MvcUriComponentsBuilder.fromMethodName(VersionRestService.class, "getCodeSystemVersionByShortNameAndVersionId", shortName, version).build().toUri();
 	}
 	
 }

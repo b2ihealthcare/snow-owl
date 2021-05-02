@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.internal.validation.ValidationConfiguration;
@@ -36,7 +37,6 @@ import com.b2international.snowowl.core.jobs.RemoteJobs;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
-import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.core.validation.ValidationRequests;
 import com.b2international.snowowl.core.validation.issue.ValidationIssue;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
@@ -46,11 +46,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.net.HttpHeaders;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 /**
@@ -168,7 +164,7 @@ public abstract class RepositoryValidationRestService extends AbstractRestServic
 		final IEventBus bus = getBus();
 		
 		return getValidationRun(validationId).thenWith(validationJob -> {
-			final CodeSystemURI codeSystemURI = getCodeSystemURIFromJob(validationJob);
+			final ResourceURI codeSystemURI = getCodeSystemURIFromJob(validationJob);
 			if (AbstractRestService.CSV_MEDIA_TYPE.equals(contentType)) {
 				return ValidationRequests.issues().prepareSearch()
 						.isWhitelisted(false)
@@ -212,8 +208,8 @@ public abstract class RepositoryValidationRestService extends AbstractRestServic
 		});
 	}
 	
-	private CodeSystemURI getCodeSystemURIFromJob(final RemoteJobEntry validationJob) {
-		return new CodeSystemURI((String) validationJob.getParameters(objectMapper).get("uri"));
+	private ResourceURI getCodeSystemURIFromJob(final RemoteJobEntry validationJob) {
+		return new ResourceURI((String) validationJob.getParameters(objectMapper).get("uri"));
 	}
 	
 }

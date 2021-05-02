@@ -61,8 +61,8 @@ public final class VersionCreateRequestBuilder
 		return getSelf();
 	}
 	
-	public VersionCreateRequestBuilder setVersionId(String versionId) {
-		this.version = versionId;
+	public VersionCreateRequestBuilder setVersion(String version) {
+		this.version = version;
 		return getSelf();
 	}
 	
