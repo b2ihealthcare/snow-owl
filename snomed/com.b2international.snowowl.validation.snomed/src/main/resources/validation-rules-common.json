@@ -108,6 +108,24 @@
     "implementation": "scripts/rule482.groovy"
   },
   {
+    "id": "532a",
+    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "messageTemplate": "FSN terms should not duplicate other FSN terms, regardless of case.",
+    "severity": "ERROR",
+    "checkType": "EXPENSIVE",
+    "type": "script-groovy",
+    "implementation": "scripts/rule532a.groovy"
+  },
+  {
+  	"id": "532b",
+    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "messageTemplate": "Synonyms should not duplicate other synonyms, regardless of case.",
+    "severity": "WARNING",
+    "checkType": "EXPENSIVE",
+    "type": "script-groovy",
+    "implementation": "scripts/rule532b.groovy"
+  },
+  {
   	"id": "663",
     "toolingId": "com.b2international.snowowl.terminology.snomed",
     "messageTemplate": "Relationships must not have inactive source, destination or type concepts.",
