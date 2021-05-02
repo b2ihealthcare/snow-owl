@@ -418,6 +418,37 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 	}
 	
 	@Test
+	public void rule482() throws Exception {
+		// Brackets in active terms should balance and be sequentially valid
+		final String ruleId = "482";
+		indexRule(ruleId);
+
+		SnomedDescriptionIndexEntry baadDesc1 = fsn("They are billions (game))").moduleId(Concepts.UK_DRUG_EXTENSION_MODULE).build();
+		SnomedDescriptionIndexEntry baadDesc2 = fsn("They are billions ((awesome) (game)").moduleId(Concepts.UK_DRUG_EXTENSION_MODULE).build();
+		SnomedDescriptionIndexEntry baadDesc3 = fsn("They are billions (awe( some) [game]").moduleId(Concepts.UK_DRUG_EXTENSION_MODULE).build();
+		SnomedDescriptionIndexEntry baadDesc4 = fsn("They are billions (awesome {quite indeed}").moduleId(Concepts.UK_DRUG_EXTENSION_MODULE).build();
+		SnomedDescriptionIndexEntry baadDesc5 = fsn("They are billions {awesome game").moduleId(Concepts.UK_DRUG_EXTENSION_MODULE).build();
+		SnomedDescriptionIndexEntry baadDesc6 = fsn("They are billions awesome] (game)").moduleId(Concepts.UK_DRUG_EXTENSION_MODULE).build();
+		SnomedDescriptionIndexEntry goodDesc1 = fsn("They are billions {game}").moduleId(Concepts.UK_DRUG_EXTENSION_MODULE).build();
+		SnomedDescriptionIndexEntry goodDesc2 = fsn("They are billions [awesome] (game)").moduleId(Concepts.UK_DRUG_EXTENSION_MODULE).build();
+		SnomedDescriptionIndexEntry goodDesc3 = fsn("{They are billions} (game)").moduleId(Concepts.UK_DRUG_EXTENSION_MODULE).build();
+		
+		indexRevision(MAIN, baadDesc1, baadDesc2, baadDesc3, baadDesc4, baadDesc5,
+			baadDesc6, goodDesc1, goodDesc2, goodDesc3);
+
+		ValidationIssues issues = validate(ruleId);
+
+		assertAffectedComponents(issues, 
+			ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, baadDesc1.getId()),
+			ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, baadDesc2.getId()),
+			ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, baadDesc3.getId()),
+			ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, baadDesc4.getId()),
+			ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, baadDesc5.getId()),
+			ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, baadDesc6.getId())
+		);
+	}
+	
+	@Test
 	public void rule663() throws Exception {
 		final String ruleId = "663";
 		indexRule(ruleId);
