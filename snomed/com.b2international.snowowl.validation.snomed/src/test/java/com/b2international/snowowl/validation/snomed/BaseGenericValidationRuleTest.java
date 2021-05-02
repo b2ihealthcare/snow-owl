@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.validation.snomed;
 
+import static com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator.generateDescriptionId;
+
 import java.util.*;
 
 import org.eclipse.xtext.parser.IParser;
@@ -160,6 +162,10 @@ public abstract class BaseGenericValidationRuleTest extends BaseValidationTest {
 	
 	protected final SnomedDescriptionIndexEntry.Builder description(final String id, final String type, final String term) {
 		return DocumentBuilders.description(id, type, term).effectiveTime(effectiveTime);
+	}
+	
+	protected final SnomedDescriptionIndexEntry.Builder fsn(final String term) {
+		return DocumentBuilders.description(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, term).effectiveTime(generateRandomEffectiveTime());
 	}
 	
 	protected final SnomedRelationshipIndexEntry.Builder relationship(final String source, final String type, final String destination) {
