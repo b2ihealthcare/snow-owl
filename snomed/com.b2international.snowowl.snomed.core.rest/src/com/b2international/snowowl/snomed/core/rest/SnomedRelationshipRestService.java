@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,11 +32,7 @@ import com.b2international.snowowl.snomed.core.rest.domain.SnomedRelationshipRes
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedResourceRequest;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.*;
 
 /**
  * @since 1.0
@@ -44,15 +40,15 @@ import io.swagger.annotations.ApiResponses;
 @Api(value = "Relationships", description="Relationships", tags = "relationships")
 @RestController
 @RequestMapping(value = "/{path:**}/relationships")		
-public class SnomedRelationshipRestService extends AbstractSnomedRestService {
+public class SnomedRelationshipRestService extends AbstractRestService {
 
 	public SnomedRelationshipRestService() {
 		super(SnomedRelationship.Fields.ALL);
 	}
 	
 	@ApiOperation(
-		value="Retrieve Relationships from a branch", 
-		notes="Returns a list with all/filtered Relationships from a branch."
+		value="Retrieve Relationships from a path", 
+		notes="Returns a list with all/filtered Relationships from a path."
 				+ "<p>The following properties can be expanded:"
 				+ "<p>"
 				+ "&bull; type() &ndash; the relationship's type concept<br>"
@@ -66,9 +62,9 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 	})
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public Promise<SnomedRelationships> searchByGet(
-			@ApiParam(value = "The branch path", required = true)
+			@ApiParam(value = "The resource path", required = true)
 			@PathVariable(value="path")
-			final String branch,
+			final String path,
 
 			final SnomedRelationshipRestSearch params,
 			
@@ -93,13 +89,13 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 					.setExpand(params.getExpand())
 					.setLocales(acceptLanguage)
 					.sortBy(extractSortFields(params.getSort()))
-					.build(repositoryId, branch)
+					.build(path)
 					.execute(getBus());
 	}
 	
 	@ApiOperation(
-		value="Retrieve Relationships from a branch", 
-		notes="Returns a list with all/filtered Relationships from a branch."
+		value="Retrieve Relationships from a path", 
+		notes="Returns a list with all/filtered Relationships from a path."
 				+ "<p>The following properties can be expanded:"
 				+ "<p>"
 				+ "&bull; type() &ndash; the relationship's type concept<br>"
@@ -113,9 +109,9 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 	})
 	@PostMapping(value="/search", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public Promise<SnomedRelationships> searchByPost(
-			@ApiParam(value = "The branch path", required = true)
+			@ApiParam(value = "The resource path", required = true)
 			@PathVariable(value="path")
-			final String branch,
+			final String path,
 	
 			@RequestBody(required = false)
 			final SnomedRelationshipRestSearch params,
@@ -123,12 +119,12 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 			@ApiParam(value = "Accepted language tags, in order of preference")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
-		return searchByGet(branch, params, acceptLanguage);
+		return searchByGet(path, params, acceptLanguage);
 	}
 	
 	@ApiOperation(
 		value="Create Relationship", 
-		notes="Creates a new Relationship directly on a version branch."
+		notes="Creates a new Relationship directly on a version path."
 	)
 	@ApiResponses({
 		@ApiResponse(code = 201, message = "Created"),
@@ -137,9 +133,9 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.CREATED)
 	public ResponseEntity<Void> create(
-			@ApiParam(value = "The branch path")
+			@ApiParam(value = "The resource path", required = true)
 			@PathVariable("path") 
-			final String branchPath,
+			final String path,
 			
 			@ApiParam(value = "Relationship parameters")
 			@RequestBody 
@@ -153,12 +149,16 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 		final String defaultModuleId = body.getDefaultModuleId();
 		
 		final String createdRelationshipId = change.toRequestBuilder()
-				.build(repositoryId, branchPath, author, commitComment, defaultModuleId)
+				.commit()
+				.setDefaultModuleId(defaultModuleId)
+				.setAuthor(author)
+				.setCommitComment(commitComment)
+				.build(path)
 				.execute(getBus())
 				.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES)
 				.getResultAs(String.class);
 				
-		return ResponseEntity.created(getResourceLocationURI(branchPath, createdRelationshipId)).build();
+		return ResponseEntity.created(getResourceLocationURI(path, createdRelationshipId)).build();
 	}
 
 	@ApiOperation(
@@ -171,16 +171,16 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 	})
 	@GetMapping(value = "/{relationshipId}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public Promise<SnomedRelationship> read(
-			@ApiParam(value = "The branch path")
+			@ApiParam(value = "The resource path", required = true)
 			@PathVariable("path") 
-			final String branchPath,
+			final String path,
 			
 			@ApiParam(value = "The Relationship identifier")
 			@PathVariable("relationshipId") 
 			final String relationshipId) {
 
 		return SnomedRequests.prepareGetRelationship(relationshipId)
-					.build(repositoryId, branchPath)
+					.build(path)
 					.execute(getBus());
 	}
 
@@ -195,9 +195,9 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 	@PostMapping(value = "/{relationshipId}/updates", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void update(
-			@ApiParam(value = "The branch path")
+			@ApiParam(value = "The resource path", required = true)
 			@PathVariable("path") 
-			final String branchPath,
+			final String path,
 			
 			@ApiParam(value = "The Relationship identifier")
 			@PathVariable("relationshipId") 
@@ -220,7 +220,11 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 
 		update.toRequestBuilder(relationshipId)
 			.force(force)
-			.build(repositoryId, branchPath, author, commitComment, defaultModuleId)
+			.commit()
+			.setDefaultModuleId(defaultModuleId)
+			.setAuthor(author)
+			.setCommitComment(commitComment)
+			.build(path)
 			.execute(getBus())
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);
 	}
@@ -242,9 +246,9 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 	@DeleteMapping(value = "/{relationshipId}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void delete(
-			@ApiParam(value = "The branch path")
+			@ApiParam(value = "The resource path", required = true)
 			@PathVariable("path") 
-			final String branchPath,
+			final String path,
 			
 			@ApiParam(value = "The Relationship identifier")
 			@PathVariable("relationshipId") 
@@ -259,7 +263,10 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 
 		SnomedRequests.prepareDeleteRelationship(relationshipId)
 			.force(force)
-			.build(repositoryId, branchPath, author, String.format("Deleted Relationship '%s' from store.", relationshipId))
+			.commit()
+			.setAuthor(author)
+			.setCommitComment(String.format("Deleted Relationship '%s' from store.", relationshipId))
+			.build(path)
 			.execute(getBus())
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);
 	}

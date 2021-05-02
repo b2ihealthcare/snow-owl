@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ public class ClassificationRunRestInput {
 	private String reasonerId;
 
 	@NotEmpty
-	private String branch;
+	private String path;
 
 	public String getReasonerId() {
 		return reasonerId;
@@ -36,12 +36,12 @@ public class ClassificationRunRestInput {
 		this.reasonerId = reasonerId;
 	}
 	
-	public String getBranch() {
-		return branch;
+	public String getPath() {
+		return path;
 	}
 
-	public void setBranch(final String branch) {
-		this.branch = branch;
+	public void setPath(final String path) {
+		this.path = path;
 	}
 
 	@Override
@@ -49,8 +49,8 @@ public class ClassificationRunRestInput {
 		final StringBuilder builder = new StringBuilder();
 		builder.append("ClassificationRestInput [reasonerId=");
 		builder.append(reasonerId);
-		builder.append(", branch=");
-		builder.append(branch);
+		builder.append(", path=");
+		builder.append(path);
 		builder.append("]");
 		return builder.toString();
 	}

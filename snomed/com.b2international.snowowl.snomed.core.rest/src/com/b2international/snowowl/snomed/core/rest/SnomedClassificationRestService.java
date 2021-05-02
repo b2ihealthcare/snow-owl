@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,22 +30,14 @@ import com.b2international.commons.validation.ApiValidation;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
+import com.b2international.snowowl.core.rest.SnomedApiConfig;
 import com.b2international.snowowl.snomed.core.rest.domain.ClassificationRunRestInput;
 import com.b2international.snowowl.snomed.core.rest.domain.ClassificationRunRestUpdate;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
-import com.b2international.snowowl.snomed.reasoner.domain.ClassificationStatus;
-import com.b2international.snowowl.snomed.reasoner.domain.ClassificationTask;
-import com.b2international.snowowl.snomed.reasoner.domain.ClassificationTasks;
-import com.b2international.snowowl.snomed.reasoner.domain.EquivalentConceptSets;
-import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChanges;
+import com.b2international.snowowl.snomed.reasoner.domain.*;
 import com.b2international.snowowl.snomed.reasoner.request.ClassificationRequests;
 import com.google.common.base.Strings;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.*;
 
 /**
  * @since 1.0
@@ -69,9 +61,9 @@ public class SnomedClassificationRestService extends AbstractRestService {
 	})
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public @ResponseBody Promise<ClassificationTasks> getAllClassificationRuns(
-			@ApiParam(value ="The branch path")
-			@RequestParam(value="branch", required=false) 
-			final String branch,
+			@ApiParam(value = "The resource path", required = true)
+			@RequestParam(value="path", required=false) 
+			final String path,
 			
 			@ApiParam(value ="The classification status")
 			@RequestParam(value="status", required=false) 
@@ -94,13 +86,13 @@ public class SnomedClassificationRestService extends AbstractRestService {
 			final int limit) {
 
 		return ClassificationRequests.prepareSearchClassification()
-			.filterByBranch(branch)
+			.filterByBranch(path)
 			.filterByUserId(userId)
 			.filterByStatus(status)
 			.sortBy(extractSortFields(sort))
 			.setSearchAfter(searchAfter)
 			.setLimit(limit)
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID)
+			.build(SnomedApiConfig.REPOSITORY_ID)
 			.execute(getBus());
 	}
 
@@ -131,7 +123,7 @@ public class SnomedClassificationRestService extends AbstractRestService {
 		return ClassificationRequests.prepareCreateClassification()
 				.setReasonerId(request.getReasonerId())
 				.setUserId(author)
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, request.getBranch())
+				.build(request.getPath())
 				.execute(getBus())
 				.then(id -> {
 					final URI resourceUri = linkTo.pathSegment(id).build().toUri();
@@ -153,7 +145,7 @@ public class SnomedClassificationRestService extends AbstractRestService {
 			final String classificationId) {
 
 		return ClassificationRequests.prepareGetClassification(classificationId)
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
+				.build(SnomedApiConfig.REPOSITORY_ID)
 				.execute(getBus());
 	}
 
@@ -190,7 +182,7 @@ public class SnomedClassificationRestService extends AbstractRestService {
 				.setLocales(acceptLanguage)
 				.setSearchAfter(searchAfter)
 				.setLimit(limit)
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
+				.build(SnomedApiConfig.REPOSITORY_ID)
 				.execute(getBus());
 	}
 
@@ -235,7 +227,7 @@ public class SnomedClassificationRestService extends AbstractRestService {
 				.setExpand(expandWithRelationship)
 				.setSearchAfter(searchAfter)
 				.setLimit(limit)
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
+				.build(SnomedApiConfig.REPOSITORY_ID)
 				.execute(getBus());
 	}
 	
@@ -266,7 +258,7 @@ public class SnomedClassificationRestService extends AbstractRestService {
 //		
 //		final ClassificationTask classificationTask = ClassificationRequests.prepareGetClassification(classificationId)
 //			.setExpand(String.format("relationshipChanges(sourceId:\"%s\",expand(relationship()))", conceptId))
-//			.build(SnomedDatastoreActivator.REPOSITORY_UUID)
+//			.build(SnomedApiConfig.REPOSITORY_ID)
 //			.execute(getBus())
 //			.getSync();
 //		
@@ -298,7 +290,7 @@ public class SnomedClassificationRestService extends AbstractRestService {
 //					inferred.setSourceId(relationship.getSourceId());
 //
 //					final SnomedConcept targetConcept = SnomedRequests.prepareGetConcept(relationship.getDestinationId())
-//							.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
+//							.build(SnomedApiConfig.REPOSITORY_ID, branchPath)
 //							.execute(getBus())
 //							.getSync();
 //					final ISnomedBrowserRelationshipTarget relationshipTarget = browserService.getSnomedBrowserRelationshipTarget(
@@ -357,7 +349,7 @@ public class SnomedClassificationRestService extends AbstractRestService {
 					.setModuleId(update.getModule())
 					.setNamespace(update.getNamespace())
 					.setUserId(author)
-					.build(SnomedDatastoreActivator.REPOSITORY_UUID)
+					.build(SnomedApiConfig.REPOSITORY_ID)
 					.execute(getBus())
 					.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);
 		}
@@ -379,7 +371,7 @@ public class SnomedClassificationRestService extends AbstractRestService {
 			final String classificationId) {
 		
 		ClassificationRequests.prepareDeleteClassification(classificationId)
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID)
+			.build(SnomedApiConfig.REPOSITORY_ID)
 			.execute(getBus())
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);
 	}

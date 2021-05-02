@@ -483,7 +483,7 @@ final class SnomedEclRefinementEvaluator {
 				.filterByReferencedComponent(focusConceptIds)
 				.filterByProps(propFilter)
 				.setEclExpressionForm(expressionForm)
-				.build(context.id(), context.path())
+				.build(context.path())
 				.execute(context.service(IEventBus.class));
 	}
 
@@ -578,7 +578,7 @@ final class SnomedEclRefinementEvaluator {
 			searchRelationships.filterByGroup(1, Integer.MAX_VALUE);
 		}
 		
-		Promise<Collection<Property>> relationshipSearch = searchRelationships.build(context.id(), context.path())
+		Promise<Collection<Property>> relationshipSearch = searchRelationships.build(context.path())
 			.execute(context.service(IEventBus.class))
 			.then(input -> input.stream().map(r -> new Property(r.getSourceId(), r.getTypeId(), r.getDestinationId(), r.getGroup())).collect(Collectors.toSet()));
 		

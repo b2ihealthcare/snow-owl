@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,11 +40,7 @@ import com.b2international.snowowl.snomed.core.rest.request.RestRequest;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.*;
 
 /**
  * @since 4.5
@@ -52,15 +48,15 @@ import io.swagger.annotations.ApiResponses;
 @Api(value = "members", description="Members", tags = "members")
 @Controller
 @RequestMapping(value="/{path:**}/members")
-public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestService {
+public class SnomedReferenceSetMemberRestService extends AbstractRestService {
 	
 	public SnomedReferenceSetMemberRestService() {
 		super(SnomedReferenceSetMember.Fields.ALL);
 	}
 	
 	@ApiOperation(
-		value="Retrieve reference set members from a branch", 
-		notes="Returns a list with all reference set members from a branch."
+		value="Retrieve reference set members from a path", 
+		notes="Returns a list with all reference set members from a path."
 				+ "<p>The following properties can be expanded:"
 				+ "<p>"
 				+ "&bull; referencedComponent(expand(pt(),...)) &ndash; the referenced component, and any applicable nested expansions<br>")
@@ -70,9 +66,9 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 	})
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })	
 	public @ResponseBody Promise<SnomedReferenceSetMembers> searchByGet(
-			@ApiParam(value = "The branch path", required = true)
+			@ApiParam(value = "The resource path", required = true)
 			@PathVariable(value="path")
-			final String branchPath,
+			final String path,
 
 			final SnomedReferenceSetMemberRestSearch params,
 			
@@ -98,12 +94,12 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			req.filterByProps(propFilters);
 		}
 		
-		return req.build(repositoryId, branchPath).execute(getBus());
+		return req.build(path).execute(getBus());
 	}
 	
 	@ApiOperation(
-		value="Retrieve reference set members from a branch", 
-		notes="Returns a list with all reference set members from a branch."
+		value="Retrieve reference set members from a path", 
+		notes="Returns a list with all reference set members from a path."
 				+ "<p>The following properties can be expanded:"
 				+ "<p>"
 				+ "&bull; referencedComponent(expand(pt(),...)) &ndash; the referenced component, and any applicable nested expansions<br>"
@@ -114,7 +110,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 	})
 	@PostMapping("/search")
 	public @ResponseBody Promise<SnomedReferenceSetMembers> searchByPost(
-			@ApiParam(value = "The branch path", required = true)
+			@ApiParam(value = "The resource path", required = true)
 			@PathVariable(value="path")
 			final String branch,
 
@@ -140,9 +136,9 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 	})
 	@GetMapping(value = "/{id}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public @ResponseBody Promise<SnomedReferenceSetMember> get(
-			@ApiParam(value = "The branch path")
+			@ApiParam(value = "The resource path", required = true)
 			@PathVariable(value="path")
-			final String branchPath,
+			final String path,
 
 			@ApiParam(value = "The reference set member identifier")
 			@PathVariable(value="id")
@@ -159,7 +155,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 				.prepareGetMember(memberId)
 				.setExpand(expand)
 				.setLocales(acceptLanguage)
-				.build(repositoryId, branchPath)
+				.build(path)
 				.execute(getBus());
 	}
 	
@@ -176,9 +172,9 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 	})
 	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	public ResponseEntity<Void> create(
-			@ApiParam(value = "The branch path")
+			@ApiParam(value = "The resource path", required = true)
 			@PathVariable(value="path")
-			final String branchPath,
+			final String path,
 			
 			@ApiParam(value = "Reference set member parameters")
 			@RequestBody 
@@ -196,12 +192,16 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 		UUID.fromString(id);
 		
 		final String createdRefSetMemberId = change.toRequestBuilder()
-				.build(repositoryId, branchPath, author, commitComment, defaultModuleId)
+				.commit()
+				.setDefaultModuleId(defaultModuleId)
+				.setAuthor(author)
+				.setCommitComment(commitComment)
+				.build(path)
 				.execute(getBus())
 				.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES)
 				.getResultAs(String.class);
 		
-		return ResponseEntity.created(getResourceLocationURI(branchPath, createdRefSetMemberId)).build();
+		return ResponseEntity.created(getResourceLocationURI(path, createdRefSetMemberId)).build();
 	}
 	
 	@ApiOperation(
@@ -218,9 +218,9 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 	@DeleteMapping(value = "/{id}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void delete(
-			@ApiParam(value = "The branch path")
+			@ApiParam(value = "The resource path", required = true)
 			@PathVariable(value="path")
-			final String branchPath,
+			final String path,
 			
 			@ApiParam(value = "The reference set member identifier")
 			@PathVariable(value="id")
@@ -234,7 +234,10 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 			final String author) {
 		SnomedRequests.prepareDeleteMember(memberId)
 			.force(force)
-			.build(repositoryId, branchPath, author, String.format("Deleted reference set member '%s' from store.", memberId))
+			.commit()
+			.setAuthor(author)
+			.setCommitComment(String.format("Deleted reference set member '%s' from store.", memberId))
+			.build(path)
 			.execute(getBus())
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);
 	}
@@ -254,9 +257,9 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 	@PutMapping(value = "/{id}", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void update(
-			@ApiParam(value = "The branch path")
+			@ApiParam(value = "The resource path", required = true)
 			@PathVariable(value="path")
-			final String branchPath,
+			final String path,
 			
 			@ApiParam(value = "The reference set member identifier")
 			@PathVariable(value="id")
@@ -280,7 +283,11 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 		SnomedRequests.prepareUpdateMember(memberId)
 			.setSource(update.getSource())
 			.force(force)
-			.build(repositoryId, branchPath, author, commitComment, defaultModuleId)
+			.commit()
+			.setDefaultModuleId(defaultModuleId)
+			.setAuthor(author)
+			.setCommitComment(commitComment)
+			.build(path)
 			.execute(getBus())
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);
 	}
@@ -302,9 +309,9 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 		consumes = { AbstractRestService.JSON_MEDIA_TYPE }, 
 		produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public @ResponseBody Object executeAction(
-			@ApiParam(value = "The branch path")
+			@ApiParam(value = "The resource path", required = true)
 			@PathVariable(value="path")
-			final String branchPath,
+			final String path,
 			
 			@ApiParam(value = "The reference set member identifier")
 			@PathVariable(value="id")
@@ -330,7 +337,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractSnomedRestServi
 				.setAuthor(author)
 				.setBody(change.resolve(resolver))
 				.setCommitComment(commitComment)
-				.build(repositoryId, branchPath)
+				.build(path)
 				.execute(getBus())
 				.getSync();
 	}

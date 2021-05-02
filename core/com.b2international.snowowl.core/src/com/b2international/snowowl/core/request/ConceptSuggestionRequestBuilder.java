@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package com.b2international.snowowl.core.request;
 
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.Suggestions;
-import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator.OptionKey;
 
 /**
@@ -106,11 +105,4 @@ public final class ConceptSuggestionRequestBuilder
 		return request;
 	}
 
-	/**
-	 * @deprecated - use the {@link #build(String)} method instead
-	 */
-	@Override
-	public AsyncRequest<Suggestions> build(String repositoryId, String branch) {
-		throw new UnsupportedOperationException("This build() method is unsupported for generic requests");
-	}
 }

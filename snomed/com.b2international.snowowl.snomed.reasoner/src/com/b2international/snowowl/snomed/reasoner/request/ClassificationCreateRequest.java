@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,6 +43,8 @@ import com.google.common.base.Strings;
  * @since 7.0
  */
 final class ClassificationCreateRequest implements Request<BranchContext, String>, BranchAccessControl {
+
+	private static final long serialVersionUID = 1L;
 
 	private static final long SCHEDULE_TIMEOUT_MILLIS = TimeUnit.MINUTES.toMillis(1L);
 
@@ -97,7 +99,7 @@ final class ClassificationCreateRequest implements Request<BranchContext, String
 				.setReasonerId(reasonerId)
 				.setParentLockContext(parentLockContext)
 				.addAllConcepts(additionalConcepts)
-				.build(repositoryId, branch.path());
+				.build(branch.path());
 		
 		final ClassificationSchedulingRule rule = ClassificationSchedulingRule.create(
 				config.getMaxReasonerCount(), 

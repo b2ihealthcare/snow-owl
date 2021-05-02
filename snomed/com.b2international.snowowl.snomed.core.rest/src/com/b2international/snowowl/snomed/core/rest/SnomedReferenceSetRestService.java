@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,19 +42,11 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedRefSetRestInput;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedReferenceSetRestSearch;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedResourceRequest;
-import com.b2international.snowowl.snomed.core.rest.request.BulkRestRequest;
-import com.b2international.snowowl.snomed.core.rest.request.RefSetMemberRequestResolver;
-import com.b2international.snowowl.snomed.core.rest.request.RefSetRequestResolver;
-import com.b2international.snowowl.snomed.core.rest.request.RequestResolver;
-import com.b2international.snowowl.snomed.core.rest.request.RestRequest;
+import com.b2international.snowowl.snomed.core.rest.request.*;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.collect.Sets;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.*;
 
 /**
  * @since 4.5
@@ -62,15 +54,15 @@ import io.swagger.annotations.ApiResponses;
 @Api(value = "Refsets", description="RefSets", tags = "refSets")
 @Controller
 @RequestMapping(value = "/{path:**}/refsets")		
-public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
+public class SnomedReferenceSetRestService extends AbstractRestService {
 
 	public SnomedReferenceSetRestService() {
 		super(SnomedReferenceSet.Fields.ALL);
 	}
 	
 	@ApiOperation(
-		value="Retrieve Reference Sets from a branch", 
-		notes="Returns a list with all/filtered Reference Sets from a branch."
+		value="Retrieve Reference Sets from a path", 
+		notes="Returns a list with all/filtered Reference Sets from a path."
 				+ "<p>The following properties can be expanded:"
 				+ "<p>"
 				+ "&bull; members() &ndash; members currently available in the reference set<br>"
@@ -82,9 +74,9 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 	})
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })	
 	public @ResponseBody Promise<SnomedReferenceSets> searchByGet(
-			@ApiParam(value = "The branch path", required = true)
+			@ApiParam(value = "The resource path", required = true)
 			@PathVariable(value="path")
-			final String branch,
+			final String path,
 			
 			final SnomedReferenceSetRestSearch params,
 			
@@ -101,13 +93,13 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 				.setSearchAfter(params.getSearchAfter())
 				.setLocales(acceptLanguage)
 				.sortBy(sorts)
-				.build(repositoryId, branch)
+				.build(path)
 				.execute(getBus());
 	}
 	
 	@ApiOperation(
-		value="Retrieve Reference Sets from a branch", 
-		notes="Returns a list with all/filtered Reference Sets from a branch."
+		value="Retrieve Reference Sets from a path", 
+		notes="Returns a list with all/filtered Reference Sets from a path."
 				+ "<p>The following properties can be expanded:"
 				+ "<p>"
 				+ "&bull; members() &ndash; members currently available in the reference set<br>"
@@ -119,9 +111,9 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 	})
 	@PostMapping(value="/search", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public @ResponseBody Promise<SnomedReferenceSets> searchByPost(
-			@ApiParam(value = "The branch path", required = true)
+			@ApiParam(value = "The resource path", required = true)
 			@PathVariable(value="path")
-			final String branch,
+			final String path,
 
 			@RequestBody(required = false)
 			final SnomedReferenceSetRestSearch body,
@@ -130,7 +122,7 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 		
-		return searchByGet(branch, body, acceptLanguage);
+		return searchByGet(path, body, acceptLanguage);
 	}
 	
 	private Collection<SnomedRefSetType> getRefSetTypes(String[] refSetTypes) {
@@ -171,9 +163,9 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 	})
 	@GetMapping(value = "/{id}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public @ResponseBody Promise<SnomedReferenceSet> get(
-			@ApiParam(value = "The branch path")
+			@ApiParam(value = "The resource path", required = true)
 			@PathVariable(value="path")
-			final String branchPath,
+			final String path,
 
 			@ApiParam(value = "The Reference set identifier")
 			@PathVariable(value="id")
@@ -191,13 +183,13 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 				.prepareGetReferenceSet(referenceSetId)
 				.setExpand(expand)
 				.setLocales(acceptLanguage)
-				.build(repositoryId, branchPath)
+				.build(path)
 				.execute(getBus());
 	}
 	
 	@ApiOperation(
 		value="Create a reference set",
-		notes="Creates a new reference set directly on a branch. Creates the corresponding identifier concept as well based on the given JSON body."
+		notes="Creates a new reference set directly on a path. Creates the corresponding identifier concept as well based on the given JSON body."
 			+ "<p>Reference Set type and referenced component type properties are immutable and cannot be modified, "
 			+ "thus there is no update endpoint for reference sets. "
 			+ "To update the corresponding identifier concept properties, use the concept update endpoint.</p>")
@@ -208,9 +200,9 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.CREATED)
 	public ResponseEntity<Void> create(
-			@ApiParam(value = "The branch path")
+			@ApiParam(value = "The resource path", required = true)
 			@PathVariable(value="path")
-			final String branchPath,
+			final String path,
 			
 			@ApiParam(value = "Reference set parameters")
 			@RequestBody 
@@ -223,13 +215,17 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 		final String commitComment = body.getCommitComment();
 		final String defaultModuleId = body.getDefaultModuleId(); 
 		
-		final String createdRefSetId = change.toRequestBuilder() 
-			.build(repositoryId, branchPath, author, commitComment, defaultModuleId)
-			.execute(getBus())
-			.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES)
-			.getResultAs(String.class);
+		final String createdRefSetId = change.toRequestBuilder()
+				.commit()
+				.setDefaultModuleId(defaultModuleId)
+				.setAuthor(author)
+				.setCommitComment(commitComment)
+				.build(path)
+				.execute(getBus())
+				.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES)
+				.getResultAs(String.class);
 		
-		return ResponseEntity.created(getResourceLocationURI(branchPath, createdRefSetId)).build();
+		return ResponseEntity.created(getResourceLocationURI(path, createdRefSetId)).build();
 	}
 	
 	@ApiOperation(
@@ -246,9 +242,9 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 	@PostMapping(value = "/{id}/actions", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void executeAction(
-			@ApiParam(value = "The branch path")
+			@ApiParam(value = "The resource path", required = true)
 			@PathVariable(value="path")
-			final String branchPath,
+			final String path,
 			
 			@ApiParam(value = "The reference set identifier")
 			@PathVariable(value="id")
@@ -274,7 +270,7 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			.setBody(change.resolve(resolver))
 			.setCommitComment(commitComment)
 			.setAuthor(author)
-			.build(repositoryId, branchPath)
+			.build(path)
 			.execute(getBus())
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);
 	}
@@ -291,9 +287,9 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 	@PutMapping(value="/{id}/members", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void updateMembers(
-			@ApiParam(value = "The branch path")
+			@ApiParam(value = "The resource path", required = true)
 			@PathVariable(value="path")
-			final String branchPath,
+			final String path,
 			
 			@ApiParam(value = "The reference set identifier")
 			@PathVariable(value="id")
@@ -326,7 +322,7 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			.setBody(updateRequestBuilder.build())
 			.setAuthor(author)
 			.setCommitComment(commitComment)
-			.build(repositoryId, branchPath)
+			.build(path)
 			.execute(getBus())
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);
 	}
@@ -342,9 +338,9 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 	@DeleteMapping(value = "/{id}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void delete(
-			@ApiParam(value = "The branch path")
+			@ApiParam(value = "The resource path", required = true)
 			@PathVariable(value="path")
-			final String branchPath,
+			final String path,
 
 			@ApiParam(value = "The Reference set identifier")
 			@PathVariable(value="id")
@@ -358,7 +354,10 @@ public class SnomedReferenceSetRestService extends AbstractSnomedRestService {
 			final String author) {
 		
 		SnomedRequests.prepareDeleteReferenceSet(referenceSetId, force)
-				.build(repositoryId, branchPath, author, String.format("Deleted Reference Set '%s' from store.", referenceSetId))
+				.commit()
+				.setAuthor(author)
+				.setCommitComment(String.format("Deleted Reference Set '%s' from store.", referenceSetId))
+				.build(path)
 				.execute(getBus())
 				.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.core.rest;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.b2international.snowowl.core.rest.validation.RepositoryValidationRestService;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 
 /**
  * @since 7.5
@@ -27,7 +26,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 public class SnomedRepositoryValidationRestService extends RepositoryValidationRestService {
 
 	public SnomedRepositoryValidationRestService() {
-		super(SnomedDatastoreActivator.REPOSITORY_UUID);
+		super();
 	}
 
 }

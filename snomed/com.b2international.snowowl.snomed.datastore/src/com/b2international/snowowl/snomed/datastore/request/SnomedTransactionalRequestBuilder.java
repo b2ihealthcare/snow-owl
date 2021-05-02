@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import com.b2international.snowowl.core.events.AsyncRequest;
-import com.b2international.snowowl.core.request.CommitResult;
 import com.b2international.snowowl.core.request.TransactionalRequestBuilder;
 
 /**
@@ -25,29 +23,8 @@ import com.b2international.snowowl.core.request.TransactionalRequestBuilder;
 public interface SnomedTransactionalRequestBuilder<R> extends TransactionalRequestBuilder<R> {
 
 	@Override
-	default AsyncRequest<CommitResult> build(String repositoryId, 
-			String branch, 
-			String userId,
-			String commitComment) {
-		
-		return build(repositoryId, branch, userId, commitComment, null);
-	}
-	
-	default AsyncRequest<CommitResult> build(String repositoryId, 
-			String branch, 
-			String author,
-			String commitComment,
-			String defaultModuleId) {
-		
-		return commit()
-				.setDefaultModuleId(defaultModuleId)
-				.setAuthor(author)
-				.setCommitComment(commitComment)
-				.build(repositoryId, branch);
-	}
-	
-	@Override
 	default SnomedRepositoryCommitRequestBuilder commit() {
 		return (SnomedRepositoryCommitRequestBuilder) new SnomedRepositoryCommitRequestBuilder().setBody(build());
 	}
+
 }

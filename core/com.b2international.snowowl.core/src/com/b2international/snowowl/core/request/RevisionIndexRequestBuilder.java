@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import com.b2international.snowowl.core.events.Request;
  * @since 5.7
  * @param <R> - the return type
  */
-public interface RevisionIndexRequestBuilder<R> extends BranchRequestBuilder<R> {
+public interface RevisionIndexRequestBuilder<R> extends TerminologyResourceRequestBuilder<R> {
 
 	@Override
 	default Request<BranchContext, R> wrap(Request<BranchContext, R> req) {

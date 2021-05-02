@@ -61,13 +61,6 @@ public abstract class RepositoryValidationRestService extends AbstractRestServic
 	@Autowired
 	private ObjectMapper objectMapper;
 	
-	private final String repositoryId;
-	
-	public RepositoryValidationRestService(String repositoryId) {
-		super();
-		this.repositoryId = repositoryId;
-	}
-	
 	@ApiOperation(
 			value="Retrieve all validation runs from the termserver", 
 			notes="Returns a list of validations runs")
@@ -114,7 +107,7 @@ public abstract class RepositoryValidationRestService extends AbstractRestServic
 					ValidationConfiguration.IS_UNPUBLISHED_ONLY, validationInput.isUnpublishedOnly()
 				))
 				.setRuleIds(validationInput.getRuleIds())
-				.build(repositoryId, validationInput.getPath())
+				.build(validationInput.getPath())
 				.runAsJobWithRestart(uniqueJobId, String.format("Validating '%s'", validationInput.getPath()))
 				.execute(getBus())
 				.getSync(1, TimeUnit.MINUTES);

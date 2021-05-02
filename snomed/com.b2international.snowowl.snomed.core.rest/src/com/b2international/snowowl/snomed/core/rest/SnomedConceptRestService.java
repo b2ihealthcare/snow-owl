@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ import io.swagger.annotations.ApiResponses;
 @Api(value = "Concepts", description="Concepts", tags = "concepts")
 @Controller
 @RequestMapping(value = "/{path:**}/concepts")
-public class SnomedConceptRestService extends AbstractSnomedRestService {
+public class SnomedConceptRestService extends AbstractRestService {
 
 	public SnomedConceptRestService() {
 		super(ImmutableSet.<String>builder()
@@ -62,8 +62,8 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 	}
 	
 	@ApiOperation(
-		value="Retrieve Concepts from a branch", 
-		notes="Returns a list with all/filtered Concepts from a branch."
+		value="Retrieve Concepts from a path", 
+		notes="Returns a list with all/filtered Concepts from a path."
 				+ "<p>The following properties can be expanded:"
 				+ "<p>"
 				+ "&bull; pt() &ndash; the description representing the concept's preferred term in the given locale<br>"
@@ -77,9 +77,9 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 	})
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public @ResponseBody Promise<SnomedConcepts> searchByGet(
-			@ApiParam(value = "The branch path", required = true)
+			@ApiParam(value = "The resource path", required = true)
 			@PathVariable(value="path")
-			final String branch,
+			final String path,
 
 			final SnomedConceptRestSearch params,
 			
@@ -118,13 +118,13 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 					.setExpand(params.getExpand())
 					.setLocales(acceptLanguage)
 					.sortBy(sorts)
-					.build(repositoryId, branch)
+					.build(path)
 					.execute(getBus());
 	}
 	
 	@ApiOperation(
-		value="Retrieve Concepts from a branch", 
-		notes="Returns a list with all/filtered Concepts from a branch."
+		value="Retrieve Concepts from a path", 
+		notes="Returns a list with all/filtered Concepts from a path."
 				+ "<p>The following properties can be expanded:"
 				+ "<p>"
 				+ "&bull; pt() &ndash; the description representing the concept's preferred term in the given locale<br>"
@@ -138,9 +138,9 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 	})
 	@PostMapping(value="/search", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public @ResponseBody Promise<SnomedConcepts> searchByPost(
-			@ApiParam(value = "The branch path", required = true)
+			@ApiParam(value = "The resource path", required = true)
 			@PathVariable(value="path")
-			final String branch,
+			final String path,
 
 			@RequestBody(required = false)
 			final SnomedConceptRestSearch body,
@@ -149,7 +149,7 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 		
-		return searchByGet(branch, body, acceptLanguage);
+		return searchByGet(path, body, acceptLanguage);
 	}
 
 	@ApiOperation(
@@ -169,9 +169,9 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 	})
 	@GetMapping(value = "/{conceptId}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public @ResponseBody Promise<SnomedConcept> read(
-			@ApiParam(value = "The branch path")
+			@ApiParam(value = "The resource path", required = true)
 			@PathVariable(value="path")
-			final String branchPath,
+			final String path,
 
 			@ApiParam(value = "The Concept identifier")
 			@PathVariable(value="conceptId")
@@ -188,13 +188,13 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 					.prepareGetConcept(conceptId)
 					.setExpand(expand)
 					.setLocales(acceptLanguage)
-					.build(repositoryId, branchPath)
+					.build(path)
 					.execute(getBus());
 	}
 
 	@ApiOperation(
 		value="Create Concept", 
-		notes="Creates a new Concept directly on a branch."
+		notes="Creates a new Concept directly on a path."
 	)
 	@ApiResponses({
 		@ApiResponse(code = 201, message = "Concept created on task"),
@@ -203,9 +203,9 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.CREATED)
 	public ResponseEntity<Void> create(
-			@ApiParam(value = "The branch path")
+			@ApiParam(value = "The resource path", required = true)
 			@PathVariable(value="path")
-			final String branchPath,
+			final String path,
 
 			@ApiParam(value = "Concept parameters")
 			@RequestBody 
@@ -219,13 +219,17 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 		final String defaultModuleId = body.getDefaultModuleId();
 		
 		final String createdConceptId = change.toRequestBuilder()
-			.build(repositoryId, branchPath, author, commitComment, defaultModuleId)
+			.commit()
+			.setDefaultModuleId(defaultModuleId)
+			.setAuthor(author)
+			.setCommitComment(commitComment)
+			.build(path)
 			.execute(getBus())
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES)
 			.getResultAs(String.class);
 		
 		
-		return ResponseEntity.created(getResourceLocationURI(branchPath, createdConceptId)).build();
+		return ResponseEntity.created(getResourceLocationURI(path, createdConceptId)).build();
 	}
 
 	@ApiOperation(
@@ -250,9 +254,9 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 	@PostMapping(value = "/{conceptId}/updates", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void update(			
-			@ApiParam(value = "The branch path")
+			@ApiParam(value = "The resource path", required = true)
 			@PathVariable(value="path")
-			final String branchPath,
+			final String path,
 
 			@ApiParam(value = "The Concept identifier")
 			@PathVariable(value="conceptId")
@@ -275,7 +279,11 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 		
 		change.toRequestBuilder(conceptId)
 			.force(force)
-			.build(repositoryId, branchPath, author, commitComment, defaultModuleId)
+			.commit()
+			.setDefaultModuleId(defaultModuleId)
+			.setAuthor(author)
+			.setCommitComment(commitComment)
+			.build(path)
 			.execute(getBus())
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);
 	}
@@ -297,9 +305,9 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 	@DeleteMapping(value = "/{conceptId}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void delete(			
-			@ApiParam(value = "The branch path")
+			@ApiParam(value = "The resource path", required = true)
 			@PathVariable(value="path")
-			final String branchPath,
+			final String path,
 
 			@ApiParam(value = "The Concept identifier")
 			@PathVariable(value="conceptId")
@@ -314,7 +322,10 @@ public class SnomedConceptRestService extends AbstractSnomedRestService {
 		SnomedRequests
 			.prepareDeleteConcept(conceptId)
 			.force(force)
-			.build(repositoryId, branchPath, author, String.format("Deleted Concept '%s' from store.", conceptId))
+			.commit()
+			.setAuthor(author)
+			.setCommitComment(String.format("Deleted Concept '%s' from store.", conceptId))
+			.build(path)
 			.execute(getBus())
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);
 	}

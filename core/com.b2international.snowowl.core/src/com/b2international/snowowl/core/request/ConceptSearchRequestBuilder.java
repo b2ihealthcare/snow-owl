@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package com.b2international.snowowl.core.request;
 import com.b2international.snowowl.core.CodeType;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.Concepts;
-import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator.OptionKey;
 import com.google.common.collect.FluentIterable;
 
@@ -162,14 +161,6 @@ public final class ConceptSearchRequestBuilder extends SearchResourceRequestBuil
 	@Override
 	protected SearchResourceRequest<BranchContext, Concepts> createSearch() {
 		return new ConceptSearchRequest();
-	}
-
-	/**
-	 * @deprecated - use the {@link #build(String)} method instead
-	 */
-	@Override
-	public AsyncRequest<Concepts> build(String repositoryId, String branch) {
-		throw new UnsupportedOperationException("This build() method is unsupported for generic requests");
 	}
 
 }

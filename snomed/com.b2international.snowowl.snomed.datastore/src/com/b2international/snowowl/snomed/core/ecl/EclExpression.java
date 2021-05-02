@@ -137,7 +137,7 @@ public final class EclExpression {
 			conceptPromise = SnomedRequests.prepareSearchConcept()
 					.all()
 					.filterByEcl(eclToEvaluate)
-					.build(context.id(), context.path())
+					.build(context.path())
 					.execute(context.service(IEventBus.class));
 		}
 		return conceptPromise;
@@ -199,7 +199,7 @@ public final class EclExpression {
 				.filterByGroup(1, Integer.MAX_VALUE)
 				.setEclExpressionForm(expressionForm)
 				.setFields(SnomedRelationshipIndexEntry.Fields.ID, SnomedRelationshipIndexEntry.Fields.SOURCE_ID, SnomedRelationshipIndexEntry.Fields.GROUP)
-				.build(context.id(), context.path())
+				.build(context.path())
 				.execute(context.service(IEventBus.class))
 				.then(new Function<SnomedRelationships, Multimap<String, Integer>>() {
 					@Override
@@ -227,7 +227,7 @@ public final class EclExpression {
 					.filterByRefSetType(SnomedRefSetType.CONCRETE_DATA_TYPE)
 					.filterByProps(propFilter)
 					.setEclExpressionForm(expressionForm)
-					.build(context.id(), context.path())
+					.build(context.path())
 					.execute(context.service(IEventBus.class))
 					.then(members -> {
 						final Multimap<String, SnomedReferenceSetMember> relationshipsBySource = Multimaps.index(members, m -> m.getReferencedComponent().getId());

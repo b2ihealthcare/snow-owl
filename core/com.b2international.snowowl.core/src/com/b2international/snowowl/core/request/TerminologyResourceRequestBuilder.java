@@ -24,7 +24,7 @@ import com.b2international.snowowl.core.events.RequestBuilder;
 /**
  * @since 8.0
  */
-public interface TerminologyResourceRequestBuilder<R> extends RequestBuilder<BranchContext, R> {
+public interface TerminologyResourceRequestBuilder<R> extends RequestBuilder<BranchContext, R>, AllowedHealthStates {
 
 	default AsyncRequest<R> build(String resourceUri) {
 		return build(new ResourceURI(resourceUri));

@@ -196,7 +196,7 @@ final class ConceptMapCompareRequest extends ResourceRequest<BranchContext, Conc
 		}
 		
 		if (configuration.contains(ConceptMapCompareConfigurationProperties.CODE_SYSTEM)) {
-			sb.append(mapping.getSourceComponentURI().codeSystem());
+			sb.append(mapping.getSourceComponentURI().resourceId());
 		}
 		
 		if (configuration.contains(ConceptMapCompareConfigurationProperties.TERM)) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,26 +51,26 @@ import io.swagger.annotations.ApiResponses;
 @Api(value = "Descriptions", description="Descriptions", tags = "descriptions")
 @RestController
 @RequestMapping(value="/{path:**}/descriptions")
-public class SnomedDescriptionRestService extends AbstractSnomedRestService {
+public class SnomedDescriptionRestService extends AbstractRestService {
 
 	public SnomedDescriptionRestService() {
 		super(SnomedDescription.Fields.ALL);
 	}
 	
 	@ApiOperation(
-		value="Retrieve Descriptions from a branch", 
-		notes="Returns all Descriptions from a branch that match the specified query parameters."
+		value="Retrieve Descriptions from a path", 
+		notes="Returns all Descriptions from a path that match the specified query parameters."
 	)
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK", response = SnomedDescriptions.class),
 		@ApiResponse(code = 400, message = "Invalid filter config", response = RestApiError.class),
-		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
+		@ApiResponse(code = 404, message = "Resource not found", response = RestApiError.class)
 	})
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public Promise<SnomedDescriptions> searchByGet(
-			@ApiParam(value = "The branch path", required = true)
+			@ApiParam(value = "The resource path", required = true)
 			@PathVariable(value="path")
-			final String branch,
+			final String path,
 
 			final SnomedDescriptionRestSearch params,
 
@@ -105,24 +105,24 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 				.setSearchAfter(params.getSearchAfter())
 				.setExpand(params.getExpand())
 				.sortBy(sorts)
-				.build(repositoryId, branch)
+				.build(path)
 				.execute(getBus());
 	}
 	
 	@ApiOperation(
-		value="Retrieve Descriptions from a branch", 
-		notes="Returns all Descriptions from a branch that match the specified query parameters."
+		value="Retrieve Descriptions from a path", 
+		notes="Returns all Descriptions from a path that match the specified query parameters."
 	)
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK", response = SnomedDescriptions.class),
 		@ApiResponse(code = 400, message = "Invalid filter config", response = RestApiError.class),
-		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
+		@ApiResponse(code = 404, message = "Resource not found", response = RestApiError.class)
 	})
 	@PostMapping(value="/search", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public Promise<SnomedDescriptions> searchByPost(
-			@ApiParam(value = "The branch path", required = true)
+			@ApiParam(value = "The resource path", required = true)
 			@PathVariable(value="path")
-			final String branch,
+			final String path,
 
 			@RequestBody(required = false)
 			final SnomedDescriptionRestSearch body,
@@ -131,7 +131,7 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 		
-		return searchByGet(branch, body, acceptLanguage);
+		return searchByGet(path, body, acceptLanguage);
 	}
 
 	@ApiOperation(
@@ -145,9 +145,9 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.CREATED)
 	public ResponseEntity<Void> create(
-			@ApiParam(value = "The branch path", required = true)
+			@ApiParam(value = "The resource path", required = true)
 			@PathVariable(value="path")
-			final String branchPath,
+			final String path,
 			
 			@ApiParam(value = "Description parameters")
 			@RequestBody 
@@ -161,12 +161,16 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 		final String defaultModuleId = body.getDefaultModuleId();
 			
 		final String createdDescriptionId = change.toRequestBuilder()
-			.build(repositoryId, branchPath, author, commitComment, defaultModuleId)
-			.execute(getBus())
-			.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES)
-			.getResultAs(String.class);
+				.commit()
+				.setDefaultModuleId(defaultModuleId)
+				.setAuthor(author)
+				.setCommitComment(commitComment)
+				.build(path)
+				.execute(getBus())
+				.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES)
+				.getResultAs(String.class);
 		
-		return ResponseEntity.created(getResourceLocationURI(branchPath, createdDescriptionId)).build();
+		return ResponseEntity.created(getResourceLocationURI(path, createdDescriptionId)).build();
 	}
 
 	@ApiOperation(
@@ -179,9 +183,9 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 	})
 	@GetMapping(value = "/{descriptionId}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public Promise<SnomedDescription> read(
-			@ApiParam(value = "The branch path")
+			@ApiParam(value = "The resource path", required = true)
 			@PathVariable(value="path")
-			final String branchPath,
+			final String path,
 			
 			@ApiParam(value = "The Description identifier")
 			@PathVariable(value="descriptionId")
@@ -193,7 +197,7 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 		
 		return SnomedRequests.prepareGetDescription(descriptionId)
 					.setExpand(expand)
-					.build(repositoryId, branchPath)
+					.build(path)
 					.execute(getBus());
 	}
 
@@ -208,9 +212,9 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 	@PostMapping(value = "/{descriptionId}/updates", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void update(			
-			@ApiParam(value = "The branch path")
+			@ApiParam(value = "The resource path", required = true)
 			@PathVariable(value="path")
-			final String branchPath,
+			final String path,
 			
 			@ApiParam(value = "The Description identifier")
 			@PathVariable(value="descriptionId")
@@ -232,7 +236,11 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 		body.getChange()
 			.toRequestBuilder(descriptionId)
 			.force(force)
-			.build(repositoryId, branchPath, author, commitComment, defaultModuleId)
+			.commit()
+			.setDefaultModuleId(defaultModuleId)
+			.setAuthor(author)
+			.setCommitComment(commitComment)
+			.build(path)
 			.execute(getBus())
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);
 		
@@ -252,9 +260,9 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 	@DeleteMapping(value="/{descriptionId}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void delete(			
-			@ApiParam(value = "The branch path")
+			@ApiParam(value = "The resource path", required = true)
 			@PathVariable(value="path")
-			final String branchPath,
+			final String path,
 			
 			@ApiParam(value = "The Description identifier")
 			@PathVariable(value="descriptionId")
@@ -269,7 +277,10 @@ public class SnomedDescriptionRestService extends AbstractSnomedRestService {
 		
 		SnomedRequests.prepareDeleteDescription(descriptionId)
 			.force(force)
-			.build(repositoryId, branchPath, author, String.format("Deleted Description '%s' from store.", descriptionId))
+			.commit()
+			.setAuthor(author)
+			.setCommitComment(String.format("Deleted Description '%s' from store.", descriptionId))
+			.build(path)
 			.execute(getBus())
 			.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);
 	}

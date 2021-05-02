@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,27 +25,20 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.attachments.Attachment;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.attachments.InternalAttachmentRegistry;
+import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.snomed.core.domain.Rf2RefSetExportLayout;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedRf2ExportConfiguration;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.*;
 
 /**
  * @since 7.5
@@ -53,7 +46,7 @@ import io.swagger.annotations.ApiResponses;
 @Api(value = "Export", description="Export", tags = "export")
 @Controller
 @RequestMapping(value="/{path:**}/export")
-public class SnomedRf2ExportRestService extends AbstractSnomedRestService {
+public class SnomedRf2ExportRestService extends AbstractRestService {
 
 	@Autowired
 	private AttachmentRegistry attachments;
@@ -92,7 +85,7 @@ public class SnomedRf2ExportRestService extends AbstractSnomedRestService {
 			.setStartEffectiveTime(params.getStartEffectiveTime())
 			.setEndEffectiveTime(params.getEndEffectiveTime())
 			.setRefSetExportLayout(params.getRefSetLayout() == null ? globalExportLayout : Rf2RefSetExportLayout.getByNameIgnoreCase(params.getRefSetLayout()))
-			.build(this.repositoryId, branch)
+			.build(branch)
 			.execute(getBus())
 			.getSync();
 		
