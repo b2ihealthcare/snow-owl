@@ -461,6 +461,22 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 		assertFalse(conceptAfter.isReleased());
 	}
 	
+	@Test
+	public void import30ImportExistingConceptAsPublished() {
+		getComponent(branchPath, SnomedComponentType.CONCEPT, "100005").statusCode(404);
+		
+		importArchive("SnomedCT_Release_INT_20210502_concept_wo_eff_time.zip");
+		SnomedConcept conceptBefore = getComponent(branchPath, SnomedComponentType.CONCEPT, "100005").statusCode(200).extract().as(SnomedConcept.class);
+		
+		importArchive("SnomedCT_Release_INT_20210502_concept_w_eff_time.zip");
+		SnomedConcept conceptAfter = getComponent(branchPath, SnomedComponentType.CONCEPT, "100005").statusCode(200).extract().as(SnomedConcept.class);
+		
+		assertEquals(EffectiveTimes.toDate(EffectiveTimes.UNSET_EFFECTIVE_TIME), conceptBefore.getEffectiveTime());
+		assertFalse(conceptBefore.isReleased());
+		assertEquals(EffectiveTimes.parse("2021-05-02"), conceptAfter.getEffectiveTime());
+		assertTrue(conceptAfter.isReleased());
+	}
+	
 	private void validateBranchHeadtimestampUpdate(IBranchPath branch, String importArchiveFileName,
 			boolean createVersions) {
 
