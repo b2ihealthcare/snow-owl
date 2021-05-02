@@ -73,7 +73,7 @@ public final class ComponentURI implements Serializable {
 	protected static final Joiner SLASH_JOINER = Joiner.on('/');
 		
 	@JsonIgnore
-	public static final ComponentURI UNSPECIFIED = ComponentURI.of(TerminologyRegistry.UNSPECIFIED, TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT, "");
+	public static final ComponentURI UNSPECIFIED = ComponentURI.of(TerminologyRegistry.UNSPECIFIED_URI, TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT, "");
 	
 	private final ResourceURI resourceUri;
 	private final short terminologyComponentId;
@@ -97,7 +97,7 @@ public final class ComponentURI implements Serializable {
 
 	@JsonIgnore
 	public final boolean isUnspecified() {
-		return TerminologyRegistry.UNSPECIFIED.equals(resourceId());
+		return TerminologyRegistry.UNSPECIFIED_URI == resourceUri();
 	}
 	
 	public final ComponentIdentifier toComponentIdentifier() {
@@ -108,7 +108,7 @@ public final class ComponentURI implements Serializable {
 		checkNotNull(resourceUri, "ResourceURI argument should not be null.");
 		checkArgument(terminologyComponentId >= TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT, 
 				"TerminologyComponentId should be either unspecified (-1) or greater than zero. Got: '%s'.", terminologyComponentId);
-		checkArgument(TerminologyRegistry.UNSPECIFIED.equals(resourceUri.getResourceId()) || !Strings.isNullOrEmpty(identifier), "Identifier should not be null or empty.");
+		checkArgument(TerminologyRegistry.UNSPECIFIED_URI == resourceUri || !Strings.isNullOrEmpty(identifier), "Identifier should not be null or empty.");
 		this.resourceUri = resourceUri;
 		this.terminologyComponentId = terminologyComponentId;
 		this.identifier = Strings.nullToEmpty(identifier);
@@ -144,7 +144,7 @@ public final class ComponentURI implements Serializable {
 			return ComponentURI.UNSPECIFIED;
 		}
 		final List<String> parts = SLASH_SPLITTER.splitToList(uri);
-		checkArgument(parts.size() >= 3, "A component uri consists of at least three parts (resourceUri/componentType/componentId). Arg was: %s", uri);
+		checkArgument(parts.size() >= 4, "A component uri consists of at least four parts (resourceType/resourceId/componentType/componentId). Arg was: %s", uri);
 		int terminologyComponentTypeIndex = parts.size() - 2;
 		int componentIdIndex = parts.size() - 1;
 		ResourceURI resourceURI = new ResourceURI(SLASH_JOINER.join(parts.subList(0, terminologyComponentTypeIndex)));

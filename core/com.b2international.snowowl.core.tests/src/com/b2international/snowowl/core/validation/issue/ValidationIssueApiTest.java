@@ -35,11 +35,11 @@ import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
 import com.b2international.snowowl.core.plugin.ClassPathScanner;
 import com.b2international.snowowl.core.repository.JsonSupport;
-import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
 import com.b2international.snowowl.core.validation.ValidationRequests;
@@ -219,7 +219,7 @@ public class ValidationIssueApiTest {
 		final ValidationIssue issue = new ValidationIssue(
 			issueId,
 			ruleId,
-			ComponentURI.of(CodeSystemURI.branch("SNOMEDCT", branchPath), ComponentIdentifier.of(terminologyShort, componentId)),
+			ComponentURI.of(CodeSystem.uri("SNOMEDCT", branchPath), ComponentIdentifier.of(terminologyShort, componentId)),
 			false
 		);
 		

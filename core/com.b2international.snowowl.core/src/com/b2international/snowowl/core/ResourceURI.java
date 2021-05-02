@@ -117,12 +117,12 @@ public final class ResourceURI implements Serializable, Comparable<ResourceURI> 
 	}
 	
 	public ResourceURI withPath(String path) {
-		return ResourceURI.branch(resourceType, resourceId, path);
+		return Strings.isNullOrEmpty(path) ? ResourceURI.of(resourceType, resourceId) : ResourceURI.branch(resourceType, resourceId, path);
 	}
 	
 	@JsonIgnore
 	public ResourceURI withoutPath() {
-		return new ResourceURI(String.join(resourceType, Branch.SEPARATOR, resourceId));
+		return new ResourceURI(String.join(Branch.SEPARATOR, resourceType, resourceId));
 	}
 	
 	public ResourceURI asLatest() {
@@ -160,26 +160,21 @@ public final class ResourceURI implements Serializable, Comparable<ResourceURI> 
 
 	public static ResourceURI branch(String resourceType, String resourceId, String path) {
 		Preconditions.checkArgument(!resourceId.contains(Branch.SEPARATOR), "Resource ID should not be an URI already. Got: %s", resourceId);
-		StringBuilder uri = new StringBuilder(resourceId);
-		if (!Strings.isNullOrEmpty(path)) {
-			uri.append(Branch.SEPARATOR);
-			uri.append(path);
-		}
-		return new ResourceURI(uri.toString());
+		return new ResourceURI(String.join(Branch.SEPARATOR, resourceType, resourceId, path));
 	}
 
 	public static ResourceURI latest(String resourceType, String resourceId) {
 		Preconditions.checkArgument(!resourceId.contains(Branch.SEPARATOR), "Resource ID should not be an URI already. Got: %s", resourceId);
-		return new ResourceURI(String.join(resourceType, Branch.SEPARATOR, resourceId, LATEST));
+		return new ResourceURI(String.join(Branch.SEPARATOR, resourceType, resourceId, LATEST));
 	}
 	
 	public static ResourceURI next(String resourceType, String resourceId) {
 		Preconditions.checkArgument(!resourceId.contains(Branch.SEPARATOR), "Resource ID should not be an URI already. Got: %s", resourceId);
-		return new ResourceURI(String.join(resourceType, Branch.SEPARATOR, resourceId, NEXT));
+		return new ResourceURI(String.join(Branch.SEPARATOR, resourceType, resourceId, NEXT));
 	}
 
 	public static ResourceURI of(String resourceType, String resourceId) {
-		return new ResourceURI(String.join(resourceType, Branch.SEPARATOR, resourceId));
+		return new ResourceURI(String.join(Branch.SEPARATOR, resourceType, resourceId));
 	}
 
 }

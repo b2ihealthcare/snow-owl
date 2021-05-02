@@ -34,8 +34,8 @@ import com.b2international.snowowl.core.request.SearchResourceRequestTest;
 import com.b2international.snowowl.core.request.SortParserTest;
 import com.b2international.snowowl.core.request.io.ImportResponseSerializationTest;
 import com.b2international.snowowl.core.scripts.GroovyScriptEngineTest;
-import com.b2international.snowowl.core.uri.CodeSystemURITest;
 import com.b2international.snowowl.core.uri.ComponentURITest;
+import com.b2international.snowowl.core.uri.ResourceURITest;
 import com.b2international.snowowl.core.validation.ValidationRuleApiTest;
 import com.b2international.snowowl.core.validation.ValidationThreadPoolTest;
 import com.b2international.snowowl.core.validation.ValidationWhiteListApiTest;
@@ -46,27 +46,30 @@ import com.b2international.snowowl.core.validation.issue.ValidationIssueApiTest;
  */
 @RunWith(Suite.class)
 @SuiteClasses({
+	// unit tests
+	ConsoleProgressMonitorTest.class,
+	ResourceURITest.class,
+	ComponentURITest.class,
 	NotificationsTest.class,
 	PromiseTest.class,
 	RequestTest.class,
 	AttachmentRegistryTest.class,
 	SortParserTest.class,
-	JobRequestsTest.class,
 	MergeConflictSerializationTest.class,
 	PermissionTest.class,
-	ComponentURITest.class,
-	DatastoreLockTests.class,
-	CodeSystemTest.class,
-	LockIndexTests.class,
-	ConsoleProgressMonitorTest.class,
-	GroovyScriptEngineTest.class,
-	CodeSystemURITest.class,
+	ImportResponseSerializationTest.class,
+	ValidationThreadPoolTest.class,
 	SearchResourceRequestTest.class,
+	CodeSystemTest.class,
+	GroovyScriptEngineTest.class,
+	
+	// medium integration tests
+	JobRequestsTest.class,
+	DatastoreLockTests.class,
+	LockIndexTests.class,
 	ValidationIssueApiTest.class,
 	ValidationRuleApiTest.class,
-	ValidationThreadPoolTest.class,
 	ValidationWhiteListApiTest.class,
-	ImportResponseSerializationTest.class
 })
 public class AllCoreTests {
 

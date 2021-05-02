@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
@@ -32,9 +28,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.b2international.commons.exceptions.NotFoundException;
-import com.b2international.snowowl.core.attachments.AttachmentRegistry;
-import com.b2international.snowowl.core.attachments.DefaultAttachmentRegistry;
-import com.b2international.snowowl.core.attachments.InternalAttachmentRegistry;
 import com.google.common.io.Resources;
 
 /**

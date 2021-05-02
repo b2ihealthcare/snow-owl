@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2020 B2i Healthcare. All rights reserved.
+ * Copyright (c) 2020-2021 B2i Healthcare. All rights reserved.
  *******************************************************************************/
 package com.b2international.snowowl.core.request.io;
 
@@ -30,11 +30,11 @@ public class ImportResponseSerializationTest {
 		mapper = new ObjectMapper();
 		mapper.setSerializationInclusion(Include.NON_NULL);
 		
-		ComponentURI componentURI = ComponentURI.of("SNOMEDCT/100/138875005");
+		ComponentURI componentURI = ComponentURI.of("codesystem/SNOMEDCT/100/138875005");
 		ImportDefect defect = ImportDefect.info("file", "location", "message");
 		response = ImportResponse.success(Set.of(componentURI), List.of(defect));
 		
-		serializedResponse = "{\"visitedComponents\":[\"SNOMEDCT/100/138875005\"],\"defects\":[{\"file\":\"file\",\"location\":\"location\",\"message\":\"message\",\"type\":\"INFO\"}],\"success\":true}";
+		serializedResponse = "{\"visitedComponents\":[\"codesystem/SNOMEDCT/100/138875005\"],\"defects\":[{\"file\":\"file\",\"location\":\"location\",\"message\":\"message\",\"type\":\"INFO\"}],\"success\":true}";
 		
 	}
 	

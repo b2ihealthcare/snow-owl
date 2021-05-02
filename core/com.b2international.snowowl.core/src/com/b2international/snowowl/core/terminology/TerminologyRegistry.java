@@ -19,15 +19,12 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Maps.newHashMap;
 
 import java.lang.annotation.Annotation;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.revision.Revision;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.google.common.collect.HashMultimap;
@@ -41,7 +38,9 @@ public enum TerminologyRegistry {
 
 	INSTANCE;
 	
+	
 	public static final String UNSPECIFIED = "UNSPECIFIED";
+	public static final ResourceURI UNSPECIFIED_URI = ResourceURI.of("resource", "UNSPECIFIED");
 	public static final int UNSPECIFIED_NUMBER = -1;
 	public static final short UNSPECIFIED_NUMBER_SHORT = -1;
 	

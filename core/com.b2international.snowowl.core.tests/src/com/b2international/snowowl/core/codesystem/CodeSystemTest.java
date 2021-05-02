@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,61 +17,55 @@ package com.b2international.snowowl.core.codesystem;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.junit.Before;
 import org.junit.Test;
 
-import com.b2international.snowowl.core.uri.CodeSystemURI;
+import com.b2international.snowowl.core.ResourceURI;
 
 /**
  * @since 7.8
  */
 public class CodeSystemTest {
 
+	private CodeSystem codeSystem = new CodeSystem();
+	
+	@Before
+	public void setup() {
+		codeSystem.setId("SNOMEDCT");
+		codeSystem.setBranchPath("MAIN");		
+	}
+	
 	@Test(expected = NullPointerException.class)
 	public void codeSystemNullChildBranchToURI() throws Exception {
-		CodeSystem cs = CodeSystem.builder()
-				.shortName("SNOMEDCT")
-				.branchPath("MAIN")
-				.build();
-		cs.getCodeSystemURI(null);
+		codeSystem.getResourceURI(null);
 	}
 	
 	@Test
 	public void codeSystemChildBranchToURI() throws Exception {
-		CodeSystem cs = CodeSystem.builder()
-				.shortName("SNOMEDCT")
-				.branchPath("MAIN")
-				.build();
-		CodeSystemURI uri = cs.getCodeSystemURI("MAIN/child");
-		assertThat(uri).isEqualTo(new CodeSystemURI("SNOMEDCT/child"));
+		ResourceURI uri = codeSystem.getResourceURI("MAIN/child");
+		assertThat(uri).isEqualTo(CodeSystem.uri("SNOMEDCT/child"));
 	}
 	
 	@Test
 	public void codeSystemMainBranchToURI() throws Exception {
-		CodeSystem cs = CodeSystem.builder()
-				.shortName("SNOMEDCT")
-				.branchPath("MAIN")
-				.build();
-		CodeSystemURI uri = cs.getCodeSystemURI("MAIN");
-		assertThat(uri).isEqualTo(new CodeSystemURI("SNOMEDCT"));
+		ResourceURI uri = codeSystem.getResourceURI("MAIN");
+		assertThat(uri).isEqualTo(CodeSystem.uri("SNOMEDCT"));
 	}
 	
 	@Test
 	public void extensionCodeSystemChildBranchToURI() throws Exception {
-		CodeSystem cs = CodeSystem.builder()
-				.shortName("SNOMEDCT-UK")
-				.branchPath("MAIN/SNOMEDCT-UK")
-				.build();
-		CodeSystemURI uri = cs.getCodeSystemURI("MAIN/SNOMEDCT-UK/child");
-		assertThat(uri).isEqualTo(new CodeSystemURI("SNOMEDCT-UK/child"));
+		codeSystem.setId("SNOMEDCT-UK");
+		codeSystem.setBranchPath("MAIN/SNOMEDCT-UK");
+				
+		ResourceURI uri = codeSystem.getResourceURI("MAIN/SNOMEDCT-UK/child");
+		assertThat(uri).isEqualTo(CodeSystem.uri("SNOMEDCT-UK/child"));
 	}
 	
 	@Test(expected = IllegalArgumentException.class)
 	public void extensionCodeSystemUnrelatedChildBranchToURI() throws Exception {
-		CodeSystem cs = CodeSystem.builder()
-				.shortName("SNOMEDCT-UK")
-				.branchPath("MAIN/SNOMEDCT-UK")
-				.build();
-		cs.getCodeSystemURI("MAIN/SNOMEDCT-US/child");
+		codeSystem.setId("SNOMEDCT-UK");
+		codeSystem.setBranchPath("MAIN/SNOMEDCT-UK");
+		codeSystem.getResourceURI("MAIN/SNOMEDCT-US/child");
 	}
 	
 }
