@@ -23,6 +23,7 @@ import static com.b2international.snowowl.test.commons.snomed.RandomSnomedIdenti
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Instant;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.assertj.core.api.Assertions;
@@ -445,6 +446,103 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 			ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, baadDesc4.getId()),
 			ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, baadDesc5.getId()),
 			ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, baadDesc6.getId())
+		);
+	}
+	
+	@Test
+	public void rule532a_pharmacy_1() throws Exception {
+		rule532("532a", Concepts.FULLY_SPECIFIED_NAME, Concepts.UK_DRUG_EXTENSION_MODULE);
+	}
+
+	@Test
+	public void rule532a_pharmacy_2() throws Exception {
+		rule532("532a", Concepts.FULLY_SPECIFIED_NAME, Concepts.UK_DRUG_EXTENSION_MODULE);
+	}
+	
+	@Test
+	public void rule532b_pharmacy_1() throws Exception {
+		rule532("532b", Concepts.SYNONYM, Concepts.UK_DRUG_EXTENSION_MODULE);
+	}
+
+	@Test
+	public void rule532b_pharmacy_2() throws Exception {
+		rule532("532b", Concepts.SYNONYM, Concepts.UK_DRUG_EXTENSION_MODULE);
+	}
+	
+	private void rule532(String ruleId, String descriptionType, String moduleId) throws Exception {
+		indexRule(ruleId);
+		
+		SnomedDescriptionIndexEntry validDescription = description(generateDescriptionId(), descriptionType, "Not duplicate term")
+				.conceptId(generateConceptId())
+				.build();
+		
+		SnomedDescriptionIndexEntry invalidDescription1 = description(generateDescriptionId(), descriptionType, "Duplicate description")
+				.conceptId(generateConceptId())
+				.moduleId(moduleId)
+				.build();
+		
+		SnomedRefSetMemberIndexEntry inactivationIndicator1 = member(invalidDescription1.getId(), Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR)
+			.active(true)
+			.field(SnomedRf2Headers.FIELD_VALUE_ID, Concepts.PENDING_MOVE)
+			.build();
+		
+		SnomedDescriptionIndexEntry invalidDescription2 = description(generateDescriptionId(), descriptionType, "duplicate description")
+				.conceptId(generateConceptId())
+				.moduleId(moduleId)
+				.build();
+		
+		SnomedDescriptionIndexEntry invalidIntDescription1 = description(generateDescriptionId(), descriptionType, "Duplicate description")
+				.conceptId(generateConceptId())
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.build();
+		
+		SnomedDescriptionIndexEntry invalidIntDescription2 = description(generateDescriptionId(), descriptionType, "Duplicate of International description")
+				.conceptId(generateConceptId())
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.build();
+		
+		SnomedDescriptionIndexEntry invalidIntDescription3 = description(generateDescriptionId(), descriptionType, "Duplicate of International description")
+				.conceptId(generateConceptId())
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.build();
+		
+		SnomedDescriptionIndexEntry invalidDescription3 = description(generateDescriptionId(), descriptionType, "This is fine")
+				.conceptId(generateConceptId())
+				.moduleId(moduleId)
+				.build();
+		
+		SnomedDescriptionIndexEntry invalidDescription4 = description(generateDescriptionId(), descriptionType, "this is fine")
+				.conceptId(generateConceptId())
+				.moduleId(moduleId)
+				.build();
+		
+		SnomedDescriptionIndexEntry shouldNotCauseIssueDescription3 = description(generateDescriptionId(), descriptionType, "duplicate description")
+				.activeMemberOf(ImmutableList.of(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR))
+				.conceptId(generateConceptId())
+				.build();
+		
+		index()
+			.prepareCommit(MAIN)
+			.stageNew(validDescription)
+			.stageNew(invalidDescription1)
+			.stageNew(inactivationIndicator1)
+			.stageNew(invalidDescription2)
+			.stageNew(invalidIntDescription1)
+			.stageNew(invalidIntDescription2)
+			.stageNew(invalidIntDescription3)
+			.stageNew(invalidDescription3)
+			.stageNew(invalidDescription4)
+			.stageNew(shouldNotCauseIssueDescription3)
+			.commit(currentTime(), UUID.randomUUID().toString(), "Indexing data for rule 532 test");
+		
+		ValidationIssues issues = validate(ruleId);
+		
+		assertAffectedComponents(issues,
+			ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, invalidDescription1.getId()),
+			ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, invalidIntDescription1.getId()),
+			ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, invalidDescription2.getId()),
+			ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, invalidDescription3.getId()),
+			ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, invalidDescription4.getId())
 		);
 	}
 	
