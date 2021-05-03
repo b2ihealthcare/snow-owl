@@ -458,7 +458,7 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 		assertEquals(EffectiveTimes.parse("2021-05-02"), conceptBefore.getEffectiveTime());
 		assertTrue(conceptBefore.isReleased());
 		assertEquals(EffectiveTimes.toDate(EffectiveTimes.UNSET_EFFECTIVE_TIME), conceptAfter.getEffectiveTime());
-		assertFalse(conceptAfter.isReleased());
+		assertTrue(conceptAfter.isReleased());
 	}
 	
 	@Test
