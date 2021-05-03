@@ -60,5 +60,15 @@
 		<unit id="org.eclipse.emf.mwe2.language.sdk.feature.group" version="2.11.3.v20200520-0756"/>
 		<repository location="https://download.eclipse.org/modeling/emft/mwe/updates/releases/2.11.3/"/>
 	</location>
+	<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
+		<repository location="mvn:com.b2international:com.b2international.snomed.ecl.update:1.4.1:zip"/>
+		<unit id="com.b2international.snomed.ecl.feature.feature.group" version="1.4.1"/>
+		<unit id="com.b2international.snomed.ecl.ui.feature.feature.group" version="1.4.1"/>
+	</location>
+	<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
+		<repository location="mvn:com.b2international:com.b2international.snomed.ql.update:0.1.1:zip"/>
+		<unit id="com.b2international.snomed.ql.feature.feature.group" version="0.1.1"/>
+		<unit id="com.b2international.snomed.ql.ui.feature.feature.group" version="0.1.1"/>
+	</location>
 </locations>
 </target>

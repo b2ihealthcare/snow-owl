@@ -71,6 +71,17 @@ public class ComponentURITest {
 	}
 	
 	@Test
+	public void toStringTest() {
+		String uri = "SNOMEDCT/2019-09-30/150/59524001";
+		ComponentURI componentURI = ComponentURI.of(uri);
+		assertEquals("SNOMEDCT", componentURI.codeSystem());
+		assertEquals("SNOMEDCT/2019-09-30", componentURI.codeSystemUri().toString());
+		assertEquals(150, componentURI.terminologyComponentId());
+		assertEquals("59524001", componentURI.identifier());
+		assertEquals(uri, componentURI.toString());
+	}
+	
+	@Test
 	public void serialization() throws Exception {
 		final String uri = "CODESYSTEM/100/1";
 		assertEquals("\""+uri+"\"", new ObjectMapper().writeValueAsString(ComponentURI.of(uri)));

@@ -17,38 +17,25 @@ package com.b2international.snowowl.fhir.core.provider;
 
 import static com.google.common.collect.Sets.newHashSet;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
-import com.b2international.snowowl.core.codesystem.CodeSystemVersion;
-import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
-import com.b2international.snowowl.core.codesystem.CodeSystemVersions;
-import com.b2international.snowowl.core.codesystem.CodeSystems;
+import com.b2international.snowowl.core.codesystem.*;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
+import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.fhir.core.LogicalId;
-import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
-import com.b2international.snowowl.fhir.core.codesystems.CodeSystemHierarchyMeaning;
-import com.b2international.snowowl.fhir.core.codesystems.IdentifierUse;
-import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
-import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
-import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
+import com.b2international.snowowl.fhir.core.codesystems.*;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.exceptions.FhirException;
 import com.b2international.snowowl.fhir.core.model.Meta;
 import com.b2international.snowowl.fhir.core.model.codesystem.*;
+import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem.Builder;
 import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Instant;
@@ -95,36 +82,37 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 	}
 	
 	@Override
-	public CodeSystem getCodeSystem(LogicalId codeSystemLogicalId) {
+	public CodeSystem getCodeSystem(CodeSystemURI codeSystemURI) {
 		
-		String branchPath = codeSystemLogicalId.getBranchPath();
+		CodeSystems codeSystems = CodeSystemRequests.prepareSearchCodeSystem()
+			.one()
+			.filterById(codeSystemURI.getCodeSystem())
+			.build(repositoryId)
+			.execute(getBus())
+			.getSync(1000, TimeUnit.MILLISECONDS);
 		
-		if (branchPath.equals(IBranchPath.MAIN_BRANCH)) {
-			throw FhirException.createFhirError(String.format("No code system version found for code system %s", codeSystemLogicalId), OperationOutcomeCode.MSG_PARAM_INVALID, "CodeSystem");
-		} else {
-			Optional<CodeSystemVersion> csve = CodeSystemRequests.prepareSearchCodeSystemVersion()
-				.one()
-				.filterByBranchPath(branchPath)
-				.build(repositoryId)
-				.execute(getBus())
-				.getSync()
-				.first();
-			
-			//could not find code system + version
-			if (!csve.isPresent()) {
-				throw FhirException.createFhirError(String.format("No code system version found for code system %s", codeSystemLogicalId), OperationOutcomeCode.MSG_PARAM_INVALID, "CodeSystem");
-			}
-			
-			CodeSystemVersion codeSystemVersionEntry = csve.get();
-			
-			com.b2international.snowowl.core.codesystem.CodeSystem codeSystem = CodeSystemRequests
-					.prepareGetCodeSystem(codeSystemVersionEntry.getUri().getCodeSystem())
-					.build(repositoryId)
-					.execute(getBus())
-					.getSync();
-
-			return createCodeSystemBuilder(codeSystem, codeSystemVersionEntry).build();
+		Optional<com.b2international.snowowl.core.codesystem.CodeSystem> optionalCodeSystem = codeSystems.first();
+		if (optionalCodeSystem.isEmpty()) {
+			throw FhirException.createFhirError(String.format("No code system version found for code system %s", codeSystemURI.getUri()), OperationOutcomeCode.MSG_PARAM_INVALID, "CodeSystem");
 		}
+		
+		com.b2international.snowowl.core.codesystem.CodeSystem codeSystem = optionalCodeSystem.get();
+		CodeSystemVersions codeSystemVersions = CodeSystemRequests.prepareSearchCodeSystemVersion()
+			.one()
+			.filterByCodeSystemShortName(codeSystem.getShortName())
+			.filterByVersionId(codeSystemURI.getPath())
+			.build(repositoryId)
+			.execute(getBus())
+			.getSync(1000, TimeUnit.MILLISECONDS);
+		
+		Optional<CodeSystemVersion> codeSystemVersionsOptional = codeSystemVersions.first();
+		if (codeSystemVersionsOptional.isEmpty()) {
+			throw FhirException.createFhirError(String.format("No code system version found for code system %s", codeSystemURI.getUri()), OperationOutcomeCode.MSG_PARAM_INVALID, "CodeSystem");
+		}
+		
+		CodeSystemVersion codeSystemVersionEntry = codeSystemVersionsOptional.get();
+		
+		return createCodeSystemBuilder(codeSystem, codeSystemVersionEntry).build();
 	}
 	
 	@Override

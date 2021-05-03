@@ -23,6 +23,8 @@ import org.eclipse.xtext.validation.IResourceValidator;
 import org.slf4j.Logger;
 
 import com.b2international.index.revision.Hooks.PreCommitHook;
+import com.b2international.snomed.ecl.EclStandaloneSetup;
+import com.b2international.snomed.ql.QLStandaloneSetup;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.codesystem.version.VersioningRequestBuilder;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
@@ -73,8 +75,6 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedConceptMapSear
 import com.b2international.snowowl.snomed.datastore.request.SnomedMemberSearchRequestEvaluator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.request.Synonyms;
-import com.b2international.snowowl.snomed.ecl.EclStandaloneSetup;
-import com.b2international.snowowl.snomed.ql.QLStandaloneSetup;
 import com.b2international.snowowl.snomed.validation.SnomedQueryValidationRuleEvaluator;
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Injector;

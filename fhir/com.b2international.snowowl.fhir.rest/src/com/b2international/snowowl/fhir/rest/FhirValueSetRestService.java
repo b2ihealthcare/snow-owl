@@ -35,7 +35,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
-import com.b2international.snowowl.fhir.core.LogicalId;
+import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.Bundle;
@@ -148,10 +148,11 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 				.map(FhirFilterParameter.class::cast)
 				.collect(Collectors.toSet());
 		
-		LogicalId logicalId = LogicalId.fromIdString(valueSetId);
+		ComponentURI componentURI = ComponentURI.of(valueSetId);
+		
 		ValueSet valueSet = valueSetProviderRegistry
-			.getValueSetProvider(getBus(), locales, logicalId) 
-			.getValueSet(logicalId);
+			.getValueSetProvider(getBus(), locales, componentURI) 
+			.getValueSet(componentURI);
 
 		return applyResponseContentFilter(valueSet, filterParameters);
 	}
@@ -173,10 +174,10 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 	@RequestMapping(value="/{valueSetId:**}/$expand", method=RequestMethod.GET)
 	public ValueSet expand(@ApiParam(value="The id of the value set to expand") @PathVariable("valueSetId") String valueSetId) {
 		
-		LogicalId logicalId = LogicalId.fromIdString(valueSetId);
+		ComponentURI componentURI = ComponentURI.of(valueSetId);
 		
-		IValueSetApiProvider valueSetProvider = valueSetProviderRegistry.getValueSetProvider(getBus(), locales, logicalId);
-		ValueSet valueSet = valueSetProvider.expandValueSet(logicalId);
+		IValueSetApiProvider valueSetProvider = valueSetProviderRegistry.getValueSetProvider(getBus(), locales, componentURI);
+		ValueSet valueSet = valueSetProvider.expandValueSet(componentURI);
 		
 		applyEmptyContentFilter(valueSet);
 		return valueSet;
@@ -275,7 +276,7 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 			@ApiParam(value="The system uri of the code to be validated") @RequestParam(value="system") final String system,
 			@ApiParam(value="The code system version of the code to be validated") @RequestParam(value="version", required=false) final String systemVersion) {
 		
-		LogicalId logicalId = LogicalId.fromIdString(valueSetId);
+		ComponentURI componentURI = ComponentURI.of(valueSetId);
 		
 		ValidateCodeRequest validateCodeRequest = ValidateCodeRequest.builder()
 			.code(code)
@@ -283,8 +284,8 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 			.systemVersion(systemVersion)
 			.build();
 		
-		IValueSetApiProvider valueSetProvider = valueSetProviderRegistry.getValueSetProvider(getBus(), locales, logicalId);
-		ValidateCodeResult validateCodeResult = valueSetProvider.validateCode(validateCodeRequest, logicalId);
+		IValueSetApiProvider valueSetProvider = valueSetProviderRegistry.getValueSetProvider(getBus(), locales, componentURI);
+		ValidateCodeResult validateCodeResult = valueSetProvider.validateCode(validateCodeRequest, componentURI);
 		return toResponse(validateCodeResult);
 	}
 	

@@ -36,7 +36,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
-import com.b2international.snowowl.fhir.core.LogicalId;
+import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.Entry;
@@ -147,8 +147,8 @@ public class FhirConceptMapRestService extends BaseFhirResourceRestService<Conce
 				.map(FhirFilterParameter.class::cast)
 				.collect(Collectors.toSet());
 		
-		LogicalId logicalId = LogicalId.fromIdString(conceptMapId);
-		ConceptMap conceptMap = conceptMapProviderRegistry.getConceptMapProvider(getBus(), locales, logicalId).getConceptMap(logicalId);
+		ComponentURI componentURI = ComponentURI.of(conceptMapId);
+		ConceptMap conceptMap = conceptMapProviderRegistry.getConceptMapProvider(getBus(), locales, componentURI).getConceptMap(componentURI);
 		return applyResponseContentFilter(conceptMap, filterParameters);
 	}
 	
@@ -312,9 +312,9 @@ public class FhirConceptMapRestService extends BaseFhirResourceRestService<Conce
 	 */
 	private TranslateResult doTranslate(String conceptMapId, TranslateRequest translateRequest) {
 		
-		LogicalId logicalId = LogicalId.fromIdString(conceptMapId);
-		IConceptMapApiProvider conceptMapApiProvider = conceptMapProviderRegistry.getConceptMapProvider(getBus(), locales, logicalId);
-		TranslateResult translateResult = conceptMapApiProvider.translate(logicalId, translateRequest);
+		ComponentURI componentURI = ComponentURI.of(conceptMapId);
+		IConceptMapApiProvider conceptMapApiProvider = conceptMapProviderRegistry.getConceptMapProvider(getBus(), locales, componentURI);
+		TranslateResult translateResult = conceptMapApiProvider.translate(componentURI, translateRequest);
 		return translateResult;
 	}
 	

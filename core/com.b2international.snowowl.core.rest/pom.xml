@@ -20,11 +20,16 @@
 	</properties>
 
 	<!-- NOTE: in case of dependency changes, please update the includeArtifactIds section in the maven-dependency-plugin configuration as well, listing all (exact and transitive) dependency artifactIds -->
-	<dependencies>
+	<dependencies>	
 		<dependency>
 		   <groupId>commons-fileupload</groupId>
 		   <artifactId>commons-fileupload</artifactId>
 		   <version>1.4</version>
+		</dependency>
+		<dependency>
+		   <groupId>commons-logging</groupId>
+		   <artifactId>commons-logging</artifactId>
+		   <version>1.2</version>
 		</dependency>
 		<dependency>
 			<groupId>io.springfox</groupId>

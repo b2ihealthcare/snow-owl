@@ -40,6 +40,8 @@
         <setEntry value="assertj-core@default:default"/>
         <setEntry value="ch.qos.logback.classic@default:default"/>
         <setEntry value="ch.qos.logback.core@default:default"/>
+        <setEntry value="com.b2international.snomed.ecl@default:default"/>
+        <setEntry value="com.b2international.snomed.ql@default:default"/>
         <setEntry value="com.fasterxml.classmate@default:default"/>
         <setEntry value="com.fasterxml.jackson.core.jackson-annotations@default:default"/>
         <setEntry value="com.fasterxml.jackson.core.jackson-core@default:default"/>
@@ -220,12 +222,9 @@
         <setEntry value="com.b2international.snowowl.snomed.common@default:default"/>
         <setEntry value="com.b2international.snowowl.snomed.core.rest@default:false"/>
         <setEntry value="com.b2international.snowowl.snomed.datastore@default:default"/>
-        <setEntry value="com.b2international.snowowl.snomed.ecl@default:default"/>
         <setEntry value="com.b2international.snowowl.snomed.fhir@default:default"/>
         <setEntry value="com.b2international.snowowl.snomed.icons@default:default"/>
-        <setEntry value="com.b2international.snowowl.snomed.ql@default:default"/>
         <setEntry value="com.b2international.snowowl.snomed.reasoner@default:default"/>
-        <setEntry value="com.b2international.snowowl.snomed.scg@default:default"/>
         <setEntry value="com.b2international.snowowl.test.commons@default:default"/>
         <setEntry value="com.b2international.snowowl.test.dependencies@default:default"/>
     </setAttribute>

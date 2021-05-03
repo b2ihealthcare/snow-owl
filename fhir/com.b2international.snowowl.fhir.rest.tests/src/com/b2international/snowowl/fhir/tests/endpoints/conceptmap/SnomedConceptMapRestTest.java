@@ -29,6 +29,7 @@ import org.junit.Test;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.fhir.tests.FhirRestTest;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.test.commons.rest.RestExtensions;
 
 /**
@@ -221,16 +222,19 @@ public class SnomedConceptMapRestTest extends FhirRestTest {
 	@Test
 	public void conceptMapsSummaryTest() throws Exception {
 		
+		
 		String simpleMapTypeRefsetId = mapTypeRefSetIds.get(0);
+		String mapTypeRefsetUri = "SNOMEDCT/" + FHIR_MAP_TYPE_REFSET_VERSION + "/" + 
+				SnomedTerminologyComponentConstants.REFSET_NUMBER + "/" + simpleMapTypeRefsetId;
 		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.pathParam("id", "snomedStore:MAIN/" + FHIR_MAP_TYPE_REFSET_VERSION + ":" + simpleMapTypeRefsetId)
+			.pathParam("id",mapTypeRefsetUri)
 			.param("_summary", true)
 			.when().get("/ConceptMap/{id}")
 			.then()
 			.body("resourceType", equalTo("ConceptMap"))
 			.body("meta.tag[0].code", equalTo("SUBSETTED"))
-			.body("id", equalTo("snomedStore:MAIN/" + FHIR_MAP_TYPE_REFSET_VERSION + ":" + simpleMapTypeRefsetId))
+			.body("id", equalTo(mapTypeRefsetUri))
 			.body("language", nullValue())
 			.body("url", startsWith("http://snomed.info/sct/version"))
 			.body("identifier.use", equalTo("official"))

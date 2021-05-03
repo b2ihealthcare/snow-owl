@@ -43,8 +43,7 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
  */
 @RunWith(Suite.class)
 @SuiteClasses({ 
-	/*
-	 */
+	
 	CodeSystemRestTest.class,
 	LookupFhirCodeSystemRestTest.class,
 	LookupSnomedRestTest.class,
@@ -52,8 +51,9 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	SnomedValueSetRestTest.class,
 	ExpandSnomedRestTest.class,
 	SnomedConceptMapRestTest.class,
-
 	TranslateSnomedConceptMapRestTest.class,
+	/*
+	 */
 	
 	//SandBoxRestTest.class,
 })
@@ -78,5 +78,4 @@ public class AllFhirRestTests {
 		.outerRule(SnowOwlAppRule.snowOwl(AllFhirRestTests.class).clearResources(false))
 		.around(new BundleStartRule("org.eclipse.jetty.osgi.boot"))
 		.around(new BundleStartRule("com.b2international.snowowl.core.rest"));
-	
 }

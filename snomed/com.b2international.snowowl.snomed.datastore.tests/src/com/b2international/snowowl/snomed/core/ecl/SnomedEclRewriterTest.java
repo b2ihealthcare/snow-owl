@@ -24,7 +24,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.ecl.EclStandaloneSetup;
+import com.b2international.snomed.ecl.EclStandaloneSetup;
 import com.google.inject.Injector;
 
 /**

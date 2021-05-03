@@ -122,12 +122,6 @@
 		</dependency>
 		<dependency>
 			<groupId>com.b2international.snowowl</groupId>
-			<artifactId>com.b2international.snowowl.snomed.ecl</artifactId>
-			<version>${project.version}</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.b2international.snowowl</groupId>
 			<artifactId>com.b2international.snowowl.snomed.etl</artifactId>
 			<version>${project.version}</version>
 			<scope>compile</scope>
@@ -214,12 +208,6 @@
 		<dependency>
 			<groupId>com.b2international.snowowl</groupId>
 			<artifactId>com.b2international.snowowl.snomed.datastore.tests</artifactId>
-			<version>${project.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.b2international.snowowl</groupId>
-			<artifactId>com.b2international.snowowl.snomed.ecl.tests</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRel
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Fields.SOURCE_ID;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Fields.TYPE_ID;
 import static com.google.common.collect.Sets.newHashSet;
-import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -46,6 +45,7 @@ import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
+import com.b2international.snomed.ecl.ecl.*;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.util.Promise;
@@ -61,17 +61,8 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.ecl.ecl.*;
 import com.google.common.base.Function;
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
-import com.google.common.collect.Range;
-import com.google.common.collect.Sets;
+import com.google.common.collect.*;
 
 /**
  * Handles refined expression constraint evaluation.
@@ -229,7 +220,7 @@ final class SnomedEclRefinementEvaluator {
 							final Set<String> matchingIds = FluentIterable.from(input).transform(idProvider).filter(String.class).toSet();
 							return focusConcepts.resolveToConceptsWithGroups(context)
 									.then(groupsById -> {
-										final Collection<Property> matchingProperties = newHashSetWithExpectedSize(groupsById.size() - matchingIds.size());
+										final Collection<Property> matchingProperties = Sets.newHashSetWithExpectedSize(groupsById.size() - matchingIds.size());
 										for (Entry<String, Integer> entry : groupsById.entries()) {
 											final String id = entry.getKey();
 											if (!matchingIds.contains(id)) {
@@ -246,7 +237,7 @@ final class SnomedEclRefinementEvaluator {
 						if (throwable instanceof MatchAll) {
 							return focusConcepts.resolveToConceptsWithGroups(context)
 									.then(groupsById -> {
-										final Collection<Property> matchingProperties = newHashSetWithExpectedSize(groupsById.size());
+										final Collection<Property> matchingProperties = Sets.newHashSetWithExpectedSize(groupsById.size());
 										for (Entry<String, Integer> entry : groupsById.entries()) {
 											matchingProperties.add(new Property(entry.getKey(), entry.getValue()));
 										}

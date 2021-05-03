@@ -39,7 +39,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
-import com.b2international.snowowl.fhir.core.LogicalId;
+import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.Bundle;
@@ -377,9 +377,10 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 	}
 	
 	private CodeSystem getCodeSystemById(String codeSystemId) {
-		LogicalId logicalId = LogicalId.fromIdString(codeSystemId);
-		ICodeSystemApiProvider codeSystemProvider = codeSystemProviderRegistry.getCodeSystemProvider(getBus(), locales, logicalId);
-		return codeSystemProvider.getCodeSystem(logicalId);
+		//LogicalId logicalId = LogicalId.fromIdString(codeSystemId);
+		CodeSystemURI codeSystemURI = new CodeSystemURI(codeSystemId);
+		ICodeSystemApiProvider codeSystemProvider = codeSystemProviderRegistry.getCodeSystemProvider(getBus(), locales, codeSystemURI);
+		return codeSystemProvider.getCodeSystem(codeSystemURI);
 	}
 	
 	/*

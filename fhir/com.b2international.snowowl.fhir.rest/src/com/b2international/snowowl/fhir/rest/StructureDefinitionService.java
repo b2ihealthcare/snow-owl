@@ -32,7 +32,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
-import com.b2international.snowowl.fhir.core.LogicalId;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.OperationOutcome;
@@ -122,9 +121,8 @@ public class StructureDefinitionService extends BaseFhirResourceRestService<Stru
 				.map(FhirFilterParameter.class::cast)
 				.collect(Collectors.toSet());
 		
-		LogicalId logicalId = LogicalId.fromIdString(structureDefinitionId);
 		
-		StructureDefinition structureDefinition = StructureDefinition.builder(logicalId.toString()).build();
+		StructureDefinition structureDefinition = StructureDefinition.builder(structureDefinitionId).build();
 
 		return applyResponseContentFilter(structureDefinition, filterParameters);
 	}
