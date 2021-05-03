@@ -28,16 +28,10 @@ List<String> semanticTagsWithoutParentheses = nonAcceptableSematicTags.stream()
 	.map{semanticTag -> semanticTag.substring(1, semanticTag.length() -1)}
 	.collect(Collectors.toList())
 
-RepositoryCodeSystemProvider csProvider = ctx.service(RepositoryCodeSystemProvider.class)
-	
-CodeSystem workingCodeSystem = csProvider.get(ctx.branch().path())
-	
-def moduleExpression = "<<" + String.join(" OR <<", workingCodeSystem.getAdditionalProperties().get("moduleIds"))
-
 SnomedDescriptionSearchRequestBuilder descRequestBuilder = SnomedRequests.prepareSearchDescription()
 	.filterByType(String.format("<<%s", Concepts.SYNONYM))
 	.filterBySemanticTags(semanticTagsWithoutParentheses)
-	.filterByModule(moduleExpression)
+	.filterByModule(params.workingModules)
 	.filterByActive(true)
 	.all()
 	.setFields(SnomedDescriptionIndexEntry.Fields.ID, SnomedDescriptionIndexEntry.Fields.EFFECTIVE_TIME)

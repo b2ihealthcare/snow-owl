@@ -28,14 +28,8 @@ RevisionSearcher searcher = ctx.service(RevisionSearcher.class)
 
 List<ComponentIdentifier> issues = Lists.newArrayList()
 
-RepositoryCodeSystemProvider csProvider = ctx.service(RepositoryCodeSystemProvider.class)
-
-CodeSystem workingCodeSystem = csProvider.get(ctx.branch().path())
-
-def moduleExpression = "<<" + String.join(" OR <<", workingCodeSystem.getAdditionalProperties().get("moduleIds"))
-
 Set<String> extensionModules = SnomedRequests.prepareSearchConcept()
-	.filterByEcl(moduleExpression)
+	.filterByEcl(params.workingModules)
 	.all()
 	.build()
 	.execute(ctx)

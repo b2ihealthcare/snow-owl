@@ -23,14 +23,8 @@ List<ComponentIdentifier> issues = Lists.newArrayList()
 @Field 
 static final Pattern SYMBOL_PATTERN = Pattern.compile("[^A-Za-z0-9]")
 
-RepositoryCodeSystemProvider csProvider = ctx.service(RepositoryCodeSystemProvider.class)
-
-CodeSystem workingCodeSystem = csProvider.get(ctx.branch().path())
-
-def moduleExpression = "<<" + String.join(" OR <<", workingCodeSystem.getAdditionalProperties().get("moduleIds"))
-
 def modules = SnomedRequests.prepareSearchConcept()
-.filterByEcl(moduleExpression)
+.filterByEcl(params.workingModules)
 .filterByActive(true)
 .all()
 .build()

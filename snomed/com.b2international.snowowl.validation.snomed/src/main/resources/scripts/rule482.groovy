@@ -22,14 +22,8 @@ import groovy.transform.Field
 
 List<ComponentIdentifier> issues = new ArrayList<>()
 
-RepositoryCodeSystemProvider csProvider = ctx.service(RepositoryCodeSystemProvider.class)
-
-CodeSystem workingCodeSystem = csProvider.get(ctx.branch().path())
-
-def moduleExpression = "<<" + String.join(" OR <<", workingCodeSystem.getAdditionalProperties().get("moduleIds"))
-
 def ukModules = SnomedRequests.prepareSearchConcept()
-	.filterByEcl(moduleExpression)
+	.filterByEcl(params.workingModules)
 	.filterByActive(true)
 	.all()
 	.build()
