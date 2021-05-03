@@ -157,7 +157,7 @@ public class FhirUriParameterDefinition {
 
 	@Override
 	public String toString() {
-		return name + ":" + type.name() + " = " + Arrays.toString(supportedValues.toArray());
+		return String.format("%s : %s %s = %s", name, type.name(), Arrays.toString(type.getAvailableModifiers().toArray()), Arrays.toString(supportedValues.toArray()));
 	}
 
 

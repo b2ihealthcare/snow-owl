@@ -72,8 +72,7 @@ public class FhirUriParameterManager {
 		return definitions;
 	}
 	
-	public Pair<Set<FhirFilterParameter>, Set<FhirSearchParameter>> processParameters(
-			Multimap<String, String> multiMap) {
+	public Pair<Set<FhirFilterParameter>, Set<FhirSearchParameter>> processParameters(Multimap<String, String> multiMap) {
 	
 		 Set<FhirParameter> fhirParameters = multiMap.keySet().stream()
 				.map(k -> new RawRequestParameter(k, multiMap.get(k)))
@@ -97,7 +96,7 @@ public class FhirUriParameterManager {
 		return Pair.of(filterParameters, searchParameters);
 	}
 	
-	public FhirParameter classifyParameter(RawRequestParameter fhirParameter) {
+	private FhirParameter classifyParameter(RawRequestParameter fhirParameter) {
 		
 		String parameterName = fhirParameter.getName();
 		if (supportedSearchParameters.containsKey(parameterName)) {
