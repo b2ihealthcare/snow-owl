@@ -94,7 +94,8 @@ public abstract class BaseGenericValidationRuleTest extends BaseValidationTest {
 	@Override
 	protected void configureValidationRequest(ValidateRequestBuilder req) {
 		req.setRuleParameters(Map.of(
-			ValidationConfiguration.IS_UNPUBLISHED_ONLY, effectiveTime == EffectiveTimes.UNSET_EFFECTIVE_TIME
+			ValidationConfiguration.IS_UNPUBLISHED_ONLY, effectiveTime == EffectiveTimes.UNSET_EFFECTIVE_TIME,
+			ValidationConfiguration.WORKING_MODULES, List.of(Concepts.UK_DRUG_EXTENSION_MODULE)
 		));
 	}
 	
