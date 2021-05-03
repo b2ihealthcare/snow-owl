@@ -22,7 +22,12 @@ import java.util.Set;
 
 import com.google.common.collect.Sets;
 
-public class SupportedParameter {
+/**
+ * Superclass to represent the definition of a valid and supported FHIR URI request parameter.
+ * 
+ * @since 7.14
+ */
+public class FhirUriParameterDefinition {
 	
 	public enum SearchRequestParameterModifier {
 		missing,
@@ -103,17 +108,17 @@ public class SupportedParameter {
 	
 	protected Set<String> supportedValues = Collections.emptySet();
 	
-	public SupportedParameter(final String name, final String type) {
+	public FhirUriParameterDefinition(final String name, final String type) {
 		this.name = name;
 		this.type = FhirRequestParameterType.fromRequestParameter(type);
 	}
 
-	public SupportedParameter(final String name, final FhirRequestParameterType type) {
+	public FhirUriParameterDefinition(final String name, final FhirRequestParameterType type) {
 		this.name = name;
 		this.type = type;
 	}
 	
-	public SupportedParameter(final String name, final FhirRequestParameterType type, Set<String> supportedValues) {
+	public FhirUriParameterDefinition(final String name, final FhirRequestParameterType type, Set<String> supportedValues) {
 		this.name = name;
 		this.type = type;
 		this.supportedValues = supportedValues;

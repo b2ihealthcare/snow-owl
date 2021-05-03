@@ -58,7 +58,7 @@ import com.b2international.snowowl.fhir.core.provider.ICodeSystemApiProvider;
 import com.b2international.snowowl.fhir.core.search.FhirFilterParameter;
 import com.b2international.snowowl.fhir.core.search.FhirParameter;
 import com.b2international.snowowl.fhir.core.search.FhirSearchParameter;
-import com.b2international.snowowl.fhir.core.search.SupportedSearchParameter.FhirCommonSearchKey;
+import com.b2international.snowowl.fhir.core.search.FhirUriSearchParameterDefinition.FhirCommonSearchKey;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;

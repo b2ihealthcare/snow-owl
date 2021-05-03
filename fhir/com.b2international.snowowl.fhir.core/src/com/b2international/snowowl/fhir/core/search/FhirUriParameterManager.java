@@ -30,9 +30,9 @@ import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.exceptions.FhirException;
-import com.b2international.snowowl.fhir.core.search.SupportedFilterParameter.FhirFilterParameterKey;
-import com.b2international.snowowl.fhir.core.search.SupportedParameter.SearchRequestParameterModifier;
-import com.b2international.snowowl.fhir.core.search.SupportedSearchParameter.FhirCommonSearchKey;
+import com.b2international.snowowl.fhir.core.search.FhirUriFilterParameterDefinition.FhirFilterParameterKey;
+import com.b2international.snowowl.fhir.core.search.FhirUriParameterDefinition.SearchRequestParameterModifier;
+import com.b2international.snowowl.fhir.core.search.FhirUriSearchParameterDefinition.FhirCommonSearchKey;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -40,15 +40,15 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Sets.SetView;
 
-public class SupportedFhirUriParameterDefinitions {
+public class FhirUriParameterManager {
 	
 	private static final String SEARCH_REQUEST_PARAMETER_MARKER = "SearchRequestParameter";
 
-	private Map<String, SupportedFilterParameter> supportedFilterParameters = Maps.newHashMap();
+	private Map<String, FhirUriFilterParameterDefinition> supportedFilterParameters = Maps.newHashMap();
 	
-	private Map<String, SupportedSearchParameter> supportedSearchParameters = Maps.newHashMap();
+	private Map<String, FhirUriSearchParameterDefinition> supportedSearchParameters = Maps.newHashMap();
 
-	public Map<String, SupportedFilterParameter> getSupportedFilterParameters() {
+	public Map<String, FhirUriFilterParameterDefinition> getSupportedFilterParameters() {
 		return supportedFilterParameters;
 	}
 	
@@ -57,7 +57,7 @@ public class SupportedFhirUriParameterDefinitions {
 		String parameterName = fhirParameter.getName();
 		if (supportedSearchParameters.containsKey(parameterName)) {
 			
-			SupportedSearchParameter supportedSearchParameter = supportedSearchParameters.get(parameterName);
+			FhirUriSearchParameterDefinition supportedSearchParameter = supportedSearchParameters.get(parameterName);
 			
 			FhirSearchParameter fhirSearchParameter = new FhirSearchParameter(supportedSearchParameter, fhirParameter.getModifier(), fhirParameter.getValues());
 			
@@ -65,7 +65,7 @@ public class SupportedFhirUriParameterDefinitions {
 			return fhirSearchParameter;
 			
 		} else if (supportedFilterParameters.containsKey(parameterName)) {
-			SupportedFilterParameter supportedFilterParameter = supportedFilterParameters.get(parameterName);
+			FhirUriFilterParameterDefinition supportedFilterParameter = supportedFilterParameters.get(parameterName);
 			FhirFilterParameter fhirFilterParameter = new FhirFilterParameter(supportedFilterParameter, fhirParameter.getValues());
 			fhirFilterParameter.validate();
 			return fhirFilterParameter; 
@@ -118,7 +118,7 @@ public class SupportedFhirUriParameterDefinitions {
 			throw new BadRequestException(String.format("Search parameter %s is not supported. Supported search parameters are %s.", parameterName, Arrays.toString(supportedFilterParameters.keySet().toArray())), SEARCH_REQUEST_PARAMETER_MARKER);
 		}
 		
-		SupportedSearchParameter supportedSearchParameter = supportedSearchParameters.get(parameterName);
+		FhirUriSearchParameterDefinition supportedSearchParameter = supportedSearchParameters.get(parameterName);
 		
 		if (requestParameter.hasModifier()) {
 			String parameterModifier = requestParameter.getModifier();
@@ -144,14 +144,14 @@ public class SupportedFhirUriParameterDefinitions {
 		}
 	}
 	
-	public static SupportedFhirUriParameterDefinitions createDefinitions(final Class<?> model) {
+	public static FhirUriParameterManager createDefinitions(final Class<?> model) {
 		
-		SupportedFhirUriParameterDefinitions definitions = new SupportedFhirUriParameterDefinitions();
+		FhirUriParameterManager definitions = new FhirUriParameterManager();
 		
 		List<Pair<String, Set<String>>> filterParameters = collectFilterParameters(model);
 		
 		for (Pair<String, Set<String>> filterParameter : filterParameters) {
-			SupportedFilterParameter filterResultUriParameter = new SupportedFilterParameter(filterParameter.getA(), filterParameter.getB());
+			FhirUriFilterParameterDefinition filterResultUriParameter = new FhirUriFilterParameterDefinition(filterParameter.getA(), filterParameter.getB());
 			definitions.supportedFilterParameters.put(filterParameter.getA(), filterResultUriParameter);
 		}
 		
@@ -185,6 +185,23 @@ public class SupportedFhirUriParameterDefinitions {
 		}
 		return result;
 	}
+	
+	/**
+	 * Cross field request parameter key validation
+	 * TODO: this is incorrect, see count paramater validation (only allowed for search operations)
+	 */
+//	protected void validateRequestParams() {
+//		
+//		if (summary != null && elements !=null) {
+//			throw new BadRequestException("Both '_summary' and '_elements' search parameters cannot be specified at the same time.", OperationOutcomeCode.MSG_PARAM_INVALID, "Request.count & Request.summary");
+//		}
+//		
+//		if (summary != null) {
+//			if (getSummary() == SummaryParameterValue.COUNT) {
+//				throw new BadRequestException("'Count' summary parameter is only allowed for search operations.", OperationOutcomeCode.MSG_PARAM_INVALID, "Request.count");
+//			}
+//		}
+//	}
 
 	/*
 	 * Recursively collect the annotated fields from the class hierarchy.
@@ -219,7 +236,7 @@ public class SupportedFhirUriParameterDefinitions {
 	    return results;
 	}
 	
-	private static Map<String, SupportedSearchParameter> createSearchableParameters(final List<Field> allSearchableFields) {
+	private static Map<String, FhirUriSearchParameterDefinition> createSearchableParameters(final List<Field> allSearchableFields) {
 		return allSearchableFields.stream().map(f -> {
 			
 			Searchable[] declaredAnnotationsByType = f.getDeclaredAnnotationsByType(Searchable.class);
@@ -231,9 +248,9 @@ public class SupportedFhirUriParameterDefinitions {
 			Searchable simpleParameterAnnotation = declaredAnnotationsByType[0];
 			
 			if (!StringUtils.isEmpty(simpleParameterAnnotation.name())) {
-				return new SupportedSearchParameter(simpleParameterAnnotation.name(), simpleParameterAnnotation.type(), simpleParameterAnnotation.modifiers());
+				return new FhirUriSearchParameterDefinition(simpleParameterAnnotation.name(), simpleParameterAnnotation.type(), simpleParameterAnnotation.modifiers());
 			} else {
-				return new SupportedSearchParameter("_" + f.getName(), simpleParameterAnnotation.type(), simpleParameterAnnotation.modifiers()); 
+				return new FhirUriSearchParameterDefinition("_" + f.getName(), simpleParameterAnnotation.type(), simpleParameterAnnotation.modifiers()); 
 			}
 		}).collect(Collectors.toMap(k -> k.getName(), Function.identity()));
 	}
@@ -247,7 +264,7 @@ public class SupportedFhirUriParameterDefinitions {
 		Set<String> filterKeys = supportedFilterParameters.keySet();
 		
 		for (String filterKey : filterKeys) {
-			SupportedFilterParameter supportedFilterParameter = supportedFilterParameters.get(filterKey);
+			FhirUriFilterParameterDefinition supportedFilterParameter = supportedFilterParameters.get(filterKey);
 			sb.append("\t\t");
 			sb.append(supportedFilterParameter);
 			sb.append("\n");
@@ -258,7 +275,7 @@ public class SupportedFhirUriParameterDefinitions {
 		Set<String> searchKeys = supportedSearchParameters.keySet();
 		
 		for (String searchKey : searchKeys) {
-			SupportedSearchParameter searchParameter = supportedSearchParameters.get(searchKey);
+			FhirUriSearchParameterDefinition searchParameter = supportedSearchParameters.get(searchKey);
 			sb.append("\t\t");
 			sb.append(searchParameter);
 			sb.append("\n");

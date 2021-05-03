@@ -18,7 +18,7 @@ public class FhirFilterParameter extends FhirParameter {
 //		super(new SupportedFilterParameter(name, type), values);
 //	}
 	
-	public FhirFilterParameter(SupportedFilterParameter supportedFilterParameter, Collection<String> values) {
+	public FhirFilterParameter(FhirUriFilterParameterDefinition supportedFilterParameter, Collection<String> values) {
 		super(supportedFilterParameter, values);
 	}
 

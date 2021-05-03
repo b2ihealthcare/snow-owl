@@ -52,9 +52,9 @@ import com.b2international.snowowl.fhir.core.search.FhirBeanPropertyFilter;
 import com.b2international.snowowl.fhir.core.search.FhirFilterParameter;
 import com.b2international.snowowl.fhir.core.search.FhirParameter;
 import com.b2international.snowowl.fhir.core.search.RawRequestParameter;
-import com.b2international.snowowl.fhir.core.search.SupportedFhirUriParameterDefinitions;
-import com.b2international.snowowl.fhir.core.search.SupportedFilterParameter.FhirFilterParameterKey;
-import com.b2international.snowowl.fhir.core.search.SupportedFilterParameter.SummaryParameterValue;
+import com.b2international.snowowl.fhir.core.search.FhirUriParameterManager;
+import com.b2international.snowowl.fhir.core.search.FhirUriFilterParameterDefinition.FhirFilterParameterKey;
+import com.b2international.snowowl.fhir.core.search.FhirUriFilterParameterDefinition.SummaryParameterValue;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
@@ -104,7 +104,7 @@ public abstract class BaseFhirResourceRestService<R extends FhirResource> extend
 		Multimap<String, String> multiMap = HashMultimap.create();
 		parameters.keySet().forEach(k -> multiMap.putAll(k, parameters.get(k)));
 		
-		SupportedFhirUriParameterDefinitions supportedDefinitions = SupportedFhirUriParameterDefinitions.createDefinitions(getModelClass());
+		FhirUriParameterManager supportedDefinitions = FhirUriParameterManager.createDefinitions(getModelClass());
 		Set<FhirParameter> requestParameters = multiMap.keySet().stream()
 				.map(k -> new RawRequestParameter(k, multiMap.get(k)))
 				.map(p -> supportedDefinitions.classifyParameter(p))

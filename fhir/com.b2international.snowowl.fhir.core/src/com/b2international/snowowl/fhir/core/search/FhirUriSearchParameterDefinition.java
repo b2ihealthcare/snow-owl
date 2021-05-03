@@ -21,7 +21,26 @@ import java.util.stream.Collectors;
 
 import com.google.common.collect.Sets;
 
-public class SupportedSearchParameter extends SupportedParameter {
+/**
+ * Class to represent the definition of a valid and supported FHIR URI request parameter
+ * used for searching.
+ * 
+ * @since 7.14
+ */
+public class FhirUriSearchParameterDefinition extends FhirUriParameterDefinition {
+	
+	public enum SearchRequestParameterValuePrefix {
+		eq, //equal - (default if no prefix is present)
+		ne, //not equal
+		gt, // greater than
+		lt, //less than
+		ge, //greater or equal
+		le, //less or equal
+		sa, //starts after
+		eb, //ends before
+		ap //approximately the same (within 10%)
+		
+	}
 	
 	public enum FhirCommonSearchKey {
 		
@@ -64,7 +83,12 @@ public class SupportedSearchParameter extends SupportedParameter {
 	
 	private Set<String> supportedModifiers = Sets.newHashSet();
 	
-	public SupportedSearchParameter(final String requestParameterKey, final String type, final String[] supportedModifiers) {
+	public FhirUriSearchParameterDefinition(final String requestParameterKey, final String type, final String[] supportedModifiers) {
+		super(requestParameterKey, type);
+		this.supportedModifiers = Sets.newHashSet(supportedModifiers);
+	}
+	
+	public FhirUriSearchParameterDefinition(final String requestParameterKey, final FhirRequestParameterType type, final String[] supportedModifiers) {
 		super(requestParameterKey, type);
 		this.supportedModifiers = Sets.newHashSet(supportedModifiers);
 	}

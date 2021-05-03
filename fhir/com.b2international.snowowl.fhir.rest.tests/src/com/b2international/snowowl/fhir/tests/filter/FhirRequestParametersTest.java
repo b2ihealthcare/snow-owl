@@ -27,9 +27,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.b2international.snowowl.fhir.core.exceptions.ValidationException;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
-import com.b2international.snowowl.fhir.core.search.SearchRequestParameters;
-import com.b2international.snowowl.fhir.core.search.SupportedFhirUriParameterDefinitions;
-import com.b2international.snowowl.fhir.core.search.SupportedFilterParameter;
+import com.b2international.snowowl.fhir.core.search.FhirUriFilterParameterDefinition;
+import com.b2international.snowowl.fhir.core.search.FhirUriParameterManager;
 import com.b2international.snowowl.fhir.tests.FhirTest;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -41,20 +40,20 @@ public class FhirRequestParametersTest extends FhirTest {
 	
 	@Test
 	public void filterParameterTest() {
-		SupportedFhirUriParameterDefinitions uriParameters = createUriParameters("http://localhost?_summary=true");
+		FhirUriParameterManager uriParameters = createUriParameters("http://localhost?_summary=true");
 		
-		Map<String, SupportedFilterParameter> resultUriParameters = uriParameters.getSupportedFilterParameters();
+		Map<String, FhirUriFilterParameterDefinition> resultUriParameters = uriParameters.getSupportedFilterParameters();
 		
 		assertEquals(1, resultUriParameters.size());
 		
-		SupportedFilterParameter resultUriParameter = resultUriParameters.values().iterator().next();
+		FhirUriFilterParameterDefinition resultUriParameter = resultUriParameters.values().iterator().next();
 		
 		assertThat(resultUriParameter.getName(), equalTo("_summary"));
 		//assertThat(resultUriParameter.getType(), equalTo(SearchRequestParameterType.STRING));
 		
 	}
 	
-	private SupportedFhirUriParameterDefinitions createUriParameters(String uriString) {
+	private FhirUriParameterManager createUriParameters(String uriString) {
 		MultiValueMap<String,String> queryParams = UriComponentsBuilder.fromHttpUrl(uriString)
 				.build()
 				.getQueryParams();
@@ -62,7 +61,7 @@ public class FhirRequestParametersTest extends FhirTest {
 		Multimap<String, String> multiMap = HashMultimap.create();
 		queryParams.keySet().forEach(k -> multiMap.putAll(k, queryParams.get(k)));
 			
-		return SupportedFhirUriParameterDefinitions.createDefinitions(CodeSystem.class);
+		return FhirUriParameterManager.createDefinitions(CodeSystem.class);
 	}
 	
 	
@@ -100,7 +99,7 @@ public class FhirRequestParametersTest extends FhirTest {
 			Multimap<String, String> multiMap = HashMultimap.create();
 			queryParams.keySet().forEach(k -> multiMap.putAll(k, queryParams.get(k)));
 			
-			SupportedFhirUriParameterDefinitions.createDefinitions(CodeSystem.class);
+			FhirUriParameterManager.createDefinitions(CodeSystem.class);
 			
 			//new SearchRequestParameters(CodeSystem.class, multiMap);
 		

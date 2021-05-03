@@ -32,10 +32,10 @@ import com.b2international.snowowl.fhir.core.exceptions.FhirException;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.search.FhirFilterParameter;
 import com.b2international.snowowl.fhir.core.search.FhirParameter;
-import com.b2international.snowowl.fhir.core.search.SupportedParameter.FhirRequestParameterType;
+import com.b2international.snowowl.fhir.core.search.FhirUriParameterDefinition.FhirRequestParameterType;
 import com.b2international.snowowl.fhir.core.search.FhirSearchParameter;
 import com.b2international.snowowl.fhir.core.search.RawRequestParameter;
-import com.b2international.snowowl.fhir.core.search.SupportedFhirUriParameterDefinitions;
+import com.b2international.snowowl.fhir.core.search.FhirUriParameterManager;
 import com.b2international.snowowl.fhir.tests.FhirTest;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSet;
@@ -47,11 +47,11 @@ import com.google.common.collect.Multimap;
  */
 public class FhirRequestParameterTest extends FhirTest {
 	
-	private static SupportedFhirUriParameterDefinitions definitions;
+	private static FhirUriParameterManager definitions;
 
 	@BeforeClass
 	public static void loadParameterDefinitions() {
-		definitions = SupportedFhirUriParameterDefinitions.createDefinitions(CodeSystem.class);
+		definitions = FhirUriParameterManager.createDefinitions(CodeSystem.class);
 	}
 	
 	//Raw unprocessed parameter
@@ -167,7 +167,7 @@ public class FhirRequestParameterTest extends FhirTest {
 		
 		
 		
-		SupportedFhirUriParameterDefinitions definitions = SupportedFhirUriParameterDefinitions.createDefinitions(CodeSystem.class);
+		FhirUriParameterManager definitions = FhirUriParameterManager.createDefinitions(CodeSystem.class);
 		System.out.println(definitions);
 		
 		definitions.classifyParameter(fhirParameter);

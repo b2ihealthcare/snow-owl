@@ -19,7 +19,13 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class SupportedFilterParameter extends SupportedParameter {
+/**
+ * Class to represent the definition of a valid and supported FHIR URI request parameter
+ * used for filtering.
+ * 
+ * @since 7.14
+ */
+public class FhirUriFilterParameterDefinition extends FhirUriParameterDefinition {
 	
 	public enum SummaryParameterValue {
 		
@@ -72,15 +78,15 @@ public class SupportedFilterParameter extends SupportedParameter {
 	}
 	
 	
-	public SupportedFilterParameter(final String name, final String type) {
+	public FhirUriFilterParameterDefinition(final String name, final String type) {
 		super(name, type);
 	}
 	
-	public SupportedFilterParameter(String requestParameterKey) {
+	public FhirUriFilterParameterDefinition(String requestParameterKey) {
 		super(requestParameterKey, FhirFilterParameterKey.valueOf(requestParameterKey).getParameterType().name());
 	}
 	
-	public SupportedFilterParameter(String requestParameterKey, Set<String> supportedValues) {
+	public FhirUriFilterParameterDefinition(String requestParameterKey, Set<String> supportedValues) {
 		super(requestParameterKey, FhirFilterParameterKey.valueOf(requestParameterKey).getParameterType(), supportedValues);
 	}
 
@@ -89,7 +95,5 @@ public class SupportedFilterParameter extends SupportedParameter {
 	public FhirFilterParameterKey getKey() {
 		return requestParameterKey;
 	}
-
-	
 	
 }
