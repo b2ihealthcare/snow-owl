@@ -125,6 +125,50 @@ public class FhirRequestParameterTest extends FhirTest {
 		definitions.classifyParameter(rawParameter);
 	}
 	
+	@Test
+	public void invalidParameterModifierTest() {
+		
+		exception.expect(FhirException.class);
+		exception.expectMessage("Invalid modifier ");
+		
+		Multimap<String, String> paramMap = convertToMultimap("http://localhost?_lastUpdated:type");
+		String key = paramMap.keySet().iterator().next();
+		Collection<String> values = paramMap.get(key);
+		RawRequestParameter rawParameter = new RawRequestParameter(key, values);
+		definitions.classifyParameter(rawParameter);
+	}
+	
+	//@Test
+	public void testPrefix() {
+		//SearchRequestParameters parameters = getSearchRequestParameters("http://localhost?_lastUpdated=gt20120131");
+		//assertThat(parameters.getLastUpdatedParameter().getPrefix(), equalTo(SearchRequestParameterValuePrefix.gt));
+		//assertThat(parameters.getLastUpdatedParameter().getValues(), hasItems("20120131"));
+	}
+	
+	//@Test
+	public void testModifierAndPrefix() {
+		//SearchRequestParameters parameters = getSearchRequestParameters("http://localhost?_lastUpdated:missing=gt20120131");
+		//assertThat(parameters.getLastUpdatedParameter().getModifier(), equalTo(SearchRequestParameterModifier.missing));
+		//assertThat(parameters.getLastUpdatedParameter().getPrefix(), equalTo(SearchRequestParameterValuePrefix.gt));
+		//assertThat(parameters.getLastUpdatedParameter().getValues(), hasItems("20120131"));
+	}
+	
+	//@Test
+	public void testInvalidCrossField() {
+		//exception.expect(FhirException.class);
+		//getSearchRequestParameters("http://localhost?_summary=true&_elements=1");
+	}
+		
+	//private SearchRequestParameters getSearchRequestParameters(final String urlString) {
+		//MultiValueMap<String,String> queryParams = UriComponentsBuilder.fromHttpUrl(urlString)
+		//	.build()
+		//	.getQueryParams();
+		
+		//Multimap<String, String> multiMap = HashMultimap.create();
+		//queryParams.keySet().forEach(k -> multiMap.putAll(k, queryParams.get(k)));
+		//return new SearchRequestParameters(multiMap);
+	//}
+	
 	//URI->Raw -> filter
 	@Test
 	public void filterParameterTest() {
@@ -165,13 +209,10 @@ public class FhirRequestParameterTest extends FhirTest {
 		Collection<String> values = paramMap.get(key);
 		RawRequestParameter fhirParameter = new RawRequestParameter(key, values);
 		
-		
-		
 		FhirUriParameterManager definitions = FhirUriParameterManager.createDefinitions(CodeSystem.class);
 		System.out.println(definitions);
 		
 		definitions.classifyParameter(fhirParameter);
-		
 		definitions.validateFilterParameter(fhirParameter);
 		
 		

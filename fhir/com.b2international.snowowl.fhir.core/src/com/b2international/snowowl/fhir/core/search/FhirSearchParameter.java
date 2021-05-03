@@ -40,6 +40,7 @@ public class FhirSearchParameter extends FhirParameter {
 		if (!StringUtils.isEmpty(modifier)) {
 			this.modifier = SearchRequestParameterModifier.fromRequestParameter(modifier);
 		}
+		validate();
 	}
 	
 	public FhirSearchParameter(FhirUriSearchParameterDefinition searchParameterDefinition, SearchRequestParameterModifier modifier, Collection<String> values) {
@@ -53,7 +54,9 @@ public class FhirSearchParameter extends FhirParameter {
 	
 	@Override
 	public void validate() {
-		// TODO Auto-generated method stub
+		
+		parameterDefinition.isValidModifier(modifier);
+		
 	}
 	
 	public static Builder builder() {

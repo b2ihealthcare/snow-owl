@@ -20,6 +20,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
+import com.b2international.snowowl.fhir.core.exceptions.FhirException;
 import com.google.common.collect.Sets;
 
 /**
@@ -140,9 +142,23 @@ public class FhirUriParameterDefinition {
 		return supportedValues;
 	}
 	
+	public void isValidModifier(SearchRequestParameterModifier modifier) {
+		if (modifier == null) return;
+		
+		if (!Sets.newHashSet(SearchRequestParameterModifier.values()).contains(modifier)) {
+			throw FhirException.createFhirError(String.format("Uknown modifier '%s' for parameter '%s'.", modifier, name), OperationOutcomeCode.MSG_PARAM_INVALID);
+		}
+		
+		if (!type.availableModifiers.contains(modifier)) {
+			throw FhirException.createFhirError(String.format("Invalid modifier '%s' for parameter [%s:%s].", modifier, name, type.name()), OperationOutcomeCode.MSG_PARAM_INVALID);
+		}
+		
+	}
+
 	@Override
 	public String toString() {
 		return name + ":" + type.name() + " = " + Arrays.toString(supportedValues.toArray());
 	}
+
 
 }
