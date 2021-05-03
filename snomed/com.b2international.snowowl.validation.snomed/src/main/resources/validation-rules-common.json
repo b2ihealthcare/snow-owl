@@ -54,6 +54,15 @@
     "implementation": "{\"componentType\": \"relationship\",\"active\": \"true\",\"characteristicType\": \"<900000000000449001 MINUS <900000000000006009\",\"groupMin\": \"0\",\"groupMax\": \"0\"}"
   },
   {
+    "id": "54",
+    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "messageTemplate": "Active terms should be capitalised or have Entire term case sensitive case significance.",
+    "severity": "WARNING",
+    "checkType": "FAST",
+    "type": "snomed-query",
+    "implementation": "{\"componentType\": \"description\",\"active\": \"true\", \"filterByWorkingModule\": \"true\", \"term\": \"regex([a-z].*)\",\"caseSignificance\": \"<900000000000447004 MINUS 900000000000017005\"}"
+  },
+  {
     "id": "55",
     "toolingId": "com.b2international.snowowl.terminology.snomed",
     "messageTemplate": "Spacing around hyphens should be consistent in active terms",
