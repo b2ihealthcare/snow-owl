@@ -498,6 +498,87 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 	}
 	
 	@Test
+	public void rule326() throws Exception {
+		final String ruleId = "326";
+		indexRule(ruleId);
+
+		SnomedConceptDocument concept1 = concept(generateConceptId()).effectiveTime(effectiveTime).build();
+		SnomedDescriptionIndexEntry description1 = description(generateDescriptionId(), Concepts.SYNONYM, "Good       synonym!?+$*~~~~")
+				.moduleId(Concepts.UK_DRUG_EXTENSION_MODULE)
+				.conceptId(concept1.getId()).build();
+		
+		SnomedConceptDocument concept2 = concept(generateConceptId()).effectiveTime(effectiveTime).build();
+		SnomedDescriptionIndexEntry description2 = description(generateDescriptionId(), Concepts.SYNONYM, "Bád synonym ©")
+				.conceptId(concept2.getId()).build();
+		
+		SnomedConceptDocument concept3 = concept(generateConceptId()).effectiveTime(effectiveTime).build();
+		SnomedDescriptionIndexEntry description3 = description(generateDescriptionId(), Concepts.SYNONYM, "Bád synonym ©")
+				.moduleId(Concepts.UK_DRUG_EXTENSION_MODULE)
+				.conceptId(concept3.getId()).build();
+		
+		indexRevision(MAIN, concept1, concept2, concept3, description1, description2, description3);
+		
+		ValidationIssues issues = validate(ruleId);
+		
+		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, description3.getId()));
+	}
+	
+	@Test
+	public void rule327() throws Exception {
+		final String ruleId = "327";
+		indexRule(ruleId);
+
+		SnomedConceptDocument concept1 = concept(generateConceptId()).effectiveTime(effectiveTime).build();
+		
+		SnomedDescriptionIndexEntry description1 = fsn("Good FSN")
+				.moduleId(Concepts.UK_DRUG_EXTENSION_MODULE)
+				.conceptId(concept1.getId()).build();
+		
+		SnomedConceptDocument concept2 = concept(generateConceptId()).effectiveTime(effectiveTime).build();
+		SnomedDescriptionIndexEntry description2 = fsn("Bad FSN <test>")
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.conceptId(concept2.getId()).build();
+		
+		SnomedConceptDocument concept3 = concept(generateConceptId()).effectiveTime(effectiveTime).build();
+		SnomedDescriptionIndexEntry description3 = fsn("Bad FSN %")
+				.moduleId(Concepts.UK_DRUG_EXTENSION_MODULE)
+				.conceptId(concept3.getId()).build();
+		
+		indexRevision(MAIN, concept1, concept2, concept3, description1, description2, description3);
+		
+		ValidationIssues issues = validate(ruleId);
+		
+		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, description3.getId()));
+	}
+	
+	@Test
+	public void rule328() throws Exception {
+		final String ruleId = "328";
+		indexRule(ruleId);
+
+		SnomedConceptDocument concept1 = concept(generateConceptId()).effectiveTime(effectiveTime).build();
+		SnomedDescriptionIndexEntry description1 = description(generateDescriptionId(), Concepts.SYNONYM, "Good synonym!")
+				.moduleId(Concepts.UK_DRUG_EXTENSION_MODULE)
+				.conceptId(concept1.getId()).build();
+		
+		SnomedConceptDocument concept2 = concept(generateConceptId()).effectiveTime(effectiveTime).build();
+		SnomedDescriptionIndexEntry description2 = description(generateDescriptionId(), Concepts.SYNONYM, "Bád synonym @")
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.conceptId(concept2.getId()).build();
+		
+		SnomedConceptDocument concept3 = concept(generateConceptId()).effectiveTime(effectiveTime).build();
+		SnomedDescriptionIndexEntry description3 = description(generateDescriptionId(), Concepts.SYNONYM, "Bád synonym $")
+				.moduleId(Concepts.UK_DRUG_EXTENSION_MODULE)
+				.conceptId(concept3.getId()).build();
+		
+		indexRevision(MAIN, concept1, concept2, concept3, description1, description2, description3);
+		
+		ValidationIssues issues = validate(ruleId);
+		
+		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, description3.getId()));
+	}
+	
+	@Test
 	public void rule482() throws Exception {
 		// Brackets in active terms should balance and be sequentially valid
 		final String ruleId = "482";
