@@ -99,6 +99,15 @@
     "implementation": "scripts/rule80.groovy"
   },
   {
+  	"id": "84",
+    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "messageTemplate": "In active terms, spaces should not precede commas, colons, semicolons or full stops.",
+    "severity": "WARNING",
+    "checkType": "FAST",
+    "type": "snomed-query",
+    "implementation": "{\"componentType\": \"description\",\"active\": \"true\", \"filterByWorkingModule\": \"true\", \"term\": \"regex(.*[ ]+[,:;\\\\.]+.*)\"}"
+  },
+  {
     "id": "110",
     "toolingId": "com.b2international.snowowl.terminology.snomed",
     "messageTemplate": "Concepts used as attributes must come from the attribute hierarchy.",
