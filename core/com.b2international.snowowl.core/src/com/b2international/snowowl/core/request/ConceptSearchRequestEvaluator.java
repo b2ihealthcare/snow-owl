@@ -89,7 +89,7 @@ public interface ConceptSearchRequestEvaluator {
 		/**
 		 * Filters concepts by their type.
 		 */
-		TYPE, PARENT,
+		TYPE,
 	}
 
 	/**

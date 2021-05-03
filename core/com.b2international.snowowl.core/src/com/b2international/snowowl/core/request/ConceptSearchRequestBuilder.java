@@ -172,9 +172,4 @@ public final class ConceptSearchRequestBuilder extends SearchResourceRequestBuil
 		throw new UnsupportedOperationException("This build() method is unsupported for generic requests");
 	}
 
-	public void filterByParent(String queryValue) {
-		// TODO Auto-generated method stub
-		
-	}
-
 }

@@ -198,7 +198,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 		
 		return getSimpleTypeRefsetSearchRequestBuilder(componentId)
 			.setExpand("members(expand(referencedComponent(expand(pt()))), limit:"+ all +")")
-			.build(repositoryId, codeSystemVersion.getPath())
+			.build(codeSystemVersion.getUri())
 			.execute(getBus())
 			.then(refsets -> {
 				return refsets.stream()
