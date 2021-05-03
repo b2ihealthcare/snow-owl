@@ -16,12 +16,7 @@
 package com.b2international.snowowl.fhir.core.search;
 
 import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -33,84 +28,72 @@ import com.b2international.snowowl.fhir.core.exceptions.FhirException;
 import com.b2international.snowowl.fhir.core.search.FhirUriFilterParameterDefinition.FhirFilterParameterKey;
 import com.b2international.snowowl.fhir.core.search.FhirUriParameterDefinition.SearchRequestParameterModifier;
 import com.b2international.snowowl.fhir.core.search.FhirUriSearchParameterDefinition.FhirCommonSearchKey;
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Sets.SetView;
 
+/**
+ * FHIR URI request parameter manager.
+ * @since 7.14
+ */
 public class FhirUriParameterManager {
 	
-	private static final String SEARCH_REQUEST_PARAMETER_MARKER = "SearchRequestParameter";
+	private static final String SEARCH_REQUEST_PARAMETER_MARKER = "SearchRequestParameter"; //$NON-NLS-N$
 
 	private Map<String, FhirUriFilterParameterDefinition> supportedFilterParameters = Maps.newHashMap();
 	
 	private Map<String, FhirUriSearchParameterDefinition> supportedSearchParameters = Maps.newHashMap();
 
-	public Map<String, FhirUriFilterParameterDefinition> getSupportedFilterParameters() {
-		return supportedFilterParameters;
+	/**
+	 * Creates a new manager with the supported definitions loaded from the model class passed in.
+	 * @param model
+	 * @return
+	 */
+	public static FhirUriParameterManager createFor(final Class<?> model) {
+		
+		FhirUriParameterManager definitions = new FhirUriParameterManager();
+		
+		List<Pair<String, Set<String>>> filterParameters = collectFilterParameters(model);
+		
+		for (Pair<String, Set<String>> filterParameter : filterParameters) {
+			FhirUriFilterParameterDefinition filterResultUriParameter = new FhirUriFilterParameterDefinition(filterParameter.getA(), filterParameter.getB());
+			definitions.supportedFilterParameters.put(filterParameter.getA(), filterResultUriParameter);
+		}
+		
+		List<Field> searchableFields = collectSearchableFields(model);
+		definitions.supportedSearchParameters.putAll(createSearchableParameters(searchableFields));
+		return definitions;
 	}
 	
 	public FhirParameter classifyParameter(RawRequestParameter fhirParameter) {
 		
 		String parameterName = fhirParameter.getName();
 		if (supportedSearchParameters.containsKey(parameterName)) {
-			
 			FhirUriSearchParameterDefinition supportedSearchParameter = supportedSearchParameters.get(parameterName);
-			
 			FhirSearchParameter fhirSearchParameter = new FhirSearchParameter(supportedSearchParameter, fhirParameter.getModifier(), fhirParameter.getValues());
-			
-			//FhirSearchParameter fhirSearchParameter = new FhirSearchParameter(parameterName, supportedSearchParameter.getType(), fhirParameter.getValues());
 			return fhirSearchParameter;
-			
+		
 		} else if (supportedFilterParameters.containsKey(parameterName)) {
 			FhirUriFilterParameterDefinition supportedFilterParameter = supportedFilterParameters.get(parameterName);
 			FhirFilterParameter fhirFilterParameter = new FhirFilterParameter(supportedFilterParameter, fhirParameter.getValues());
 			fhirFilterParameter.validate();
 			return fhirFilterParameter; 
+		
 		} else if (FhirCommonSearchKey.hasParameter(parameterName)) {
 			throw FhirException.createFhirError(String.format("Search parameter %s is not supported. Supported search parameters are %s.", parameterName, Arrays.toString(supportedSearchParameters.keySet().toArray())), OperationOutcomeCode.MSG_PARAM_UNKNOWN, "SEARCH_REQUEST_PARAMETER_MARKER");
+		
 		} else if (FhirFilterParameterKey.hasParameter(parameterName)) {
 			throw FhirException.createFhirError(String.format("Filter parameter %s is not supported. Supported filter parameters are %s.", parameterName, Arrays.toString(supportedFilterParameters.keySet().toArray())), OperationOutcomeCode.MSG_PARAM_UNKNOWN, "SEARCH_REQUEST_PARAMETER_MARKER");
+		
 		} else {
 			SetView<String> union = Sets.union(supportedSearchParameters.keySet(), supportedFilterParameters.keySet());
 			throw FhirException.createFhirError(String.format("URI parameter %s is unknown. Supported parameters are %s.", parameterName, Arrays.toString(union.toArray())), OperationOutcomeCode.MSG_PARAM_UNKNOWN, "SEARCH_REQUEST_PARAMETER_MARKER");
+		
 		}
 	}
 	
-	public void validateFilterParameter(RawRequestParameter requestParameter) {
-
-		String parameterName = requestParameter.getName();
-		if (!supportedFilterParameters.keySet().contains(parameterName)) {
-			throw new BadRequestException(String.format("Filter parameter %s is not supported. Supported filter parameters are %s.", parameterName, Arrays.toString(supportedFilterParameters.keySet().toArray())), SEARCH_REQUEST_PARAMETER_MARKER);
-		}
-		
-		if (requestParameter.hasModifier()) {
-			String parameterModifier = requestParameter.getModifier();
-			
-			if (!SearchRequestParameterModifier.hasValue(parameterModifier)) {
-				throw new BadRequestException(String.format("Unknown filter parameter modifier '%s' for parameter '%s'. Valid modifiers are %s.", parameterModifier, parameterName, Arrays.toString(SearchRequestParameterModifier.values())), SEARCH_REQUEST_PARAMETER_MARKER);
-			}
-			
-		}
-		
-//		
-//		//validate keys
-//		Set<String> parameterKeys = multiMap.keySet();
-//		
-//		for (String parameterKey : parameterKeys) {
-//			if (!searchablePropertyDefinitions.keySet().contains(parameterKey)) {
-//				throw new BadRequestException(String.format("Parameter %s is not supported. Supported parameters are %s.", parameterKey, Arrays.toString(searchablePropertyDefinitions.keySet().toArray())), "SearchRequestParameter");
-//			}
-//			Collection<String> values = multiMap.get(parameterKey);
-//			//TODO: multi/single value annotation
-//			validateSingleValue(values, parameterKey);
-//			
-//		}
-//		return parameterKeys;
-	}
-	
+	//TODO: Remove this method
 	public void validateSearchParameter(RawRequestParameter requestParameter) {
 
 		String parameterName = requestParameter.getName();
@@ -133,6 +116,14 @@ public class FhirUriParameterManager {
 		}
 	}
 	
+	public Map<String, FhirUriFilterParameterDefinition> getSupportedFilterParameters() {
+		return supportedFilterParameters;
+	}
+	
+	public Map<String, FhirUriSearchParameterDefinition> getSupportedSearchParameters() {
+		return supportedSearchParameters;
+	}
+	
 	private  void validateSingleValue(Collection<String> values, String parameterName) {
 		
 		if (values.isEmpty()) {
@@ -142,22 +133,6 @@ public class FhirUriParameterManager {
 		if (values.size() != 1) {
 			throw new BadRequestException(String.format("Too many %s parameter values are submitted.", parameterName), SEARCH_REQUEST_PARAMETER_MARKER);
 		}
-	}
-	
-	public static FhirUriParameterManager createDefinitions(final Class<?> model) {
-		
-		FhirUriParameterManager definitions = new FhirUriParameterManager();
-		
-		List<Pair<String, Set<String>>> filterParameters = collectFilterParameters(model);
-		
-		for (Pair<String, Set<String>> filterParameter : filterParameters) {
-			FhirUriFilterParameterDefinition filterResultUriParameter = new FhirUriFilterParameterDefinition(filterParameter.getA(), filterParameter.getB());
-			definitions.supportedFilterParameters.put(filterParameter.getA(), filterResultUriParameter);
-		}
-		
-		List<Field> searchableFields = collectSearchableFields(model);
-		definitions.supportedSearchParameters.putAll(createSearchableParameters(searchableFields));
-		return definitions;
 	}
 	
 	private static List<Pair<String, Set<String>>> collectFilterParameters(Class<?> model) {

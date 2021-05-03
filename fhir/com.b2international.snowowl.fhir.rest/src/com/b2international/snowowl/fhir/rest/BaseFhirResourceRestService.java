@@ -104,19 +104,14 @@ public abstract class BaseFhirResourceRestService<R extends FhirResource> extend
 		Multimap<String, String> multiMap = HashMultimap.create();
 		parameters.keySet().forEach(k -> multiMap.putAll(k, parameters.get(k)));
 		
-		FhirUriParameterManager supportedDefinitions = FhirUriParameterManager.createDefinitions(getModelClass());
+		FhirUriParameterManager supportedDefinitions = FhirUriParameterManager.createFor(getModelClass());
 		Set<FhirParameter> requestParameters = multiMap.keySet().stream()
 				.map(k -> new RawRequestParameter(k, multiMap.get(k)))
 				.map(p -> supportedDefinitions.classifyParameter(p))
 				.collect(Collectors.toSet());
 		
 		
-		//process and validate the raw parameters
-		
-		//supportedDefinitions.classifyParameter(fhirParameter);
-		
-		//supportedDefinitions.validateFilterParameter(requestParameter);
-		//supportedDefinitions.validateSearchParameter(requestParameter);
+		//TODO: cross field validation can happen here
 		return requestParameters;
 		
 	}
@@ -148,7 +143,6 @@ public abstract class BaseFhirResourceRestService<R extends FhirResource> extend
 	}
 	
 	protected MappingJacksonValue applyResponseContentFilter(FhirResource filteredFhirResource, Set<FhirFilterParameter> filterParameters) {
-//	protected MappingJacksonValue applyResponseContentFilter(FhirResource filteredFhirResource, SearchRequestParameters parameters) {
 
 		SimpleFilterProvider filterProvider = new SimpleFilterProvider().setFailOnUnknownId(false);
 
@@ -169,19 +163,6 @@ public abstract class BaseFhirResourceRestService<R extends FhirResource> extend
 			filterProvider.addFilter(FhirBeanPropertyFilter.FILTER_NAME, FhirBeanPropertyFilter.createFilter(getRequestedFields(elementsParameter.getValues())));
 			filteredFhirResource.setSubsetted();
 		}
-		
-		/*
-		SummaryParameterValue summaryParameter = parameters.getSummary();
-		Collection<String> elementsParameters = parameters.getElements();
-		
-		if (summaryParameter !=null) {
-			filterProvider.addFilter(FhirBeanPropertyFilter.FILTER_NAME, FhirBeanPropertyFilter.createFilter(summaryParameter));
-			filteredFhirResource.setSubsetted();
-		} else if (elementsParameters != null) {
-			filterProvider.addFilter(FhirBeanPropertyFilter.FILTER_NAME, FhirBeanPropertyFilter.createFilter(getRequestedFields(elementsParameters)));
-			filteredFhirResource.setSubsetted();
-		}
-		*/
 		
 		MappingJacksonValue mappingJacksonValue = new MappingJacksonValue(filteredFhirResource);
 		mappingJacksonValue.setFilters(filterProvider);

@@ -38,7 +38,7 @@ public class SupportedFhirUriParameterDefinitionsTest {
 	@Test
 	public void supportedParameterDefinitionsTest() {
 		
-		FhirUriParameterManager supportedDefinitions = FhirUriParameterManager.createDefinitions(CodeSystem.class);
+		FhirUriParameterManager supportedDefinitions = FhirUriParameterManager.createFor(CodeSystem.class);
 		
 		System.out.println(supportedDefinitions);
 		
@@ -64,7 +64,7 @@ public class SupportedFhirUriParameterDefinitionsTest {
 	@Test
 	public void parameterValidationTest() {
 		
-		FhirUriParameterManager supportedDefinitions = FhirUriParameterManager.createDefinitions(CodeSystem.class);
+		FhirUriParameterManager supportedDefinitions = FhirUriParameterManager.createFor(CodeSystem.class);
 		
 		RawRequestParameter requestParameter = new RawRequestParameter("_name", Collections.emptySet());
 		
