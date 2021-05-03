@@ -246,10 +246,8 @@ public final class Rf2TransactionContext extends DelegatingTransactionContext {
 					// in this case the component is new, and the default values are okay to use
 					add(newRevision.build());
 				} else {
-					// in this case, recalculate the released flag based on the currently available revision
-					update(existingRevision, newRevision
-							.released(existingRevision.isReleased())
-							.build());
+					// in this case, recalculate the released flag based on the new available revision
+					update(existingRevision, newRevision.build());
 				}
 			}
 			
