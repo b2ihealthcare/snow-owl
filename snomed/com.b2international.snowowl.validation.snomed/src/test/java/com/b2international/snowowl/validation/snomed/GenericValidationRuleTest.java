@@ -219,6 +219,28 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 	}
 	
 	@Test
+	public void rule54() throws Exception {
+		final String ruleId = "54";
+		indexRule(ruleId);
+
+		// index term with case insensitive case significance
+		SnomedDescriptionIndexEntry description = description(generateDescriptionId(), Concepts.SYNONYM, "hello")
+				.moduleId(Concepts.UK_DRUG_EXTENSION_MODULE)
+				.caseSignificanceId(Concepts.ENTIRE_TERM_CASE_INSENSITIVE)
+				.build();
+
+		SnomedDescriptionIndexEntry description2 = description(generateDescriptionId(), Concepts.SYNONYM, "Hello")
+				.moduleId(Concepts.UK_DRUG_EXTENSION_MODULE)
+				.caseSignificanceId(Concepts.ENTIRE_TERM_CASE_INSENSITIVE)
+				.build();
+
+		indexRevision(MAIN, description, description2);
+		ValidationIssues issues = validate(ruleId);
+
+		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, description.getId()));
+	}
+	
+	@Test
 	public void rule55() throws Exception {
 		final String ruleId = "55";
 		indexRule(ruleId);
