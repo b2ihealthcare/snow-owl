@@ -72,6 +72,15 @@
     "implementation": "scripts/rule55.groovy"
   },
   {
+    "id": "74",
+    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "messageTemplate": "The fully specified names of active concept should contain a bracketed suffix (semantic tag)",
+    "severity": "WARNING",
+    "checkType": "NORMAL",
+    "type": "snomed-query",
+    "implementation": "{\"componentType\": \"description\",\"active\": \"true\", \"filterByWorkingModule\": \"true\", \"concept\": \"<<138875005|ROOT|\",\"type\": \"900000000000003001\",\"semanticTag\":\"\"}"
+  },
+  {
     "id": "75",
     "toolingId": "com.b2international.snowowl.terminology.snomed",
     "messageTemplate": "Relationships in group 0 should not be duplicated in any other group.",
