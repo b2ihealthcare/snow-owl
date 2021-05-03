@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 
 import org.slf4j.Logger;
 
@@ -33,6 +34,7 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.repository.RevisionDocument;
 import com.b2international.snowowl.core.request.io.ImportDefectAcceptor;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
@@ -63,6 +65,7 @@ public class Rf2GlobalValidator {
 		
 		// Keys are component IDs waiting to be resolved, values are the earliest effective time "mention" of the component
 		final Map<String, String> dependenciesByEffectiveTime = Maps.newHashMap();
+		final Map<String, String> skippableMemberDependenciesByEffectiveTime = Maps.newHashMap();
 		
 		// Check the slices in reverse order for missing dependencies
 		for (Rf2EffectiveTimeSlice slice : Lists.reverse(slices)) {
@@ -98,11 +101,28 @@ public class Rf2GlobalValidator {
 				final String stringReferencedComponentId = Long.toString(referencedComponentId);
 				
 				if (!contentInSlice.contains(stringReferencedComponentId)) {
-					dependenciesByEffectiveTime.put(stringReferencedComponentId, slice.getEffectiveTime());
+					Set<String> referringMembers = slice.getMembersByReferencedComponent().get(referencedComponentId);
+					boolean isStructuralRefSetMember = false;
+					
+					for (String memberId : referringMembers) {
+						String[] referringMember = slice.getContent().get(memberId);
+						String referenceSet = referringMember[5];
+						isStructuralRefSetMember = Concepts.METADATA_REFSETS.contains(referenceSet);						
+					}
+					
+					if (isStructuralRefSetMember) {					
+						dependenciesByEffectiveTime.put(stringReferencedComponentId, slice.getEffectiveTime());						
+					} else {
+						skippableMemberDependenciesByEffectiveTime.put(stringReferencedComponentId, slice.getEffectiveTime());
+					}
 				}
 			}
 		}
 
+		final Set<String> missingConceptIds = newHashSet();
+		final Set<String> missingDescriptionIds = newHashSet();
+		final Set<String> missingRelationshipIds = newHashSet();
+		
 		// Anything that remains is not resolved by the imported data; check if it is in Snow Owl
 		if (!dependenciesByEffectiveTime.isEmpty()) {
 			
@@ -124,42 +144,86 @@ public class Rf2GlobalValidator {
 					}
 				});
 			
+			skippableMemberDependenciesByEffectiveTime.keySet().stream()
+				.forEach(id -> {
+					switch (SnomedIdentifiers.getComponentCategory(id)) {
+						case CONCEPT: conceptIds.add(id);
+							break;
+						case DESCRIPTION: descriptionIds.add(id);
+							break;
+						case RELATIONSHIP: relationshipIds.add(id);
+							break;
+						default: log.error("Unknown component type for identifier: {}", id);
+							break;
+					}
+				});
+			
 			log.trace("Fetch existing concept IDs...");
 			
-			final Set<String> missingConceptIds = fetchComponentIds(context, conceptIds, SnomedConceptDocument.class);
+			missingConceptIds.addAll(fetchComponentIds(context, conceptIds, SnomedConceptDocument.class));
+			final Function<String, Boolean> canBeSkipped = id -> {
+				return skippableMemberDependenciesByEffectiveTime.containsKey(id) && !dependenciesByEffectiveTime.containsKey(id);
+			};
 			
 			if (!missingConceptIds.isEmpty()) {
 				missingConceptIds.forEach(id -> {
-					reportMissingComponent(globalDefectAcceptor, id, dependenciesByEffectiveTime.get(id), "concept");
+					reportMissingComponent(globalDefectAcceptor, id, dependenciesByEffectiveTime.get(id), "concept", canBeSkipped.apply(id));
 				});
+				
 			}
 			
 			log.trace("Fetch existing description IDs...");
 			
-			final Set<String> missingDescriptionIds = fetchComponentIds(context, descriptionIds, SnomedDescriptionIndexEntry.class);
+			missingDescriptionIds.addAll(fetchComponentIds(context, descriptionIds, SnomedDescriptionIndexEntry.class));
 
 			if (!missingDescriptionIds.isEmpty()) {
 				missingDescriptionIds.forEach(id -> {
-					reportMissingComponent(globalDefectAcceptor, id, dependenciesByEffectiveTime.get(id), "description");
+					reportMissingComponent(globalDefectAcceptor, id, dependenciesByEffectiveTime.get(id), "description", canBeSkipped.apply(id));
 				});
 			}
 			
 			log.trace("Fetch existing relationship IDs...");
 
-			final Set<String> missingRelationshipIds = fetchComponentIds(context, relationshipIds, SnomedRelationshipIndexEntry.class);
+			missingRelationshipIds.addAll(fetchComponentIds(context, relationshipIds, SnomedRelationshipIndexEntry.class));
 
 			if (!missingRelationshipIds.isEmpty()) {
 				missingRelationshipIds.forEach(id -> {
-					reportMissingComponent(globalDefectAcceptor, id, dependenciesByEffectiveTime.get(id), "relationship");
+					reportMissingComponent(globalDefectAcceptor, id, dependenciesByEffectiveTime.get(id), "relationship", canBeSkipped.apply(id));
 				});
 			}
-			
+		}
+		
+		removeSkippableMembers(skippableMemberDependenciesByEffectiveTime, dependenciesByEffectiveTime, slices);
+	}
+	
+	private void removeSkippableMembers(Map<String, String> skippableMemberDependenciesByEffectiveTime, Map<String, String> dependenciesByEffectiveTime, List<Rf2EffectiveTimeSlice> slices) {
+		
+		for (Rf2EffectiveTimeSlice slice : slices) {
+			for (Map.Entry<String, String> entry : skippableMemberDependenciesByEffectiveTime.entrySet()) {
+				
+				String effectiveTime = entry.getValue();
+				if (!slice.getEffectiveTime().equals(effectiveTime)) {
+					continue; //Does not concern this effective time slice
+				}
+				
+				String componentId = entry.getKey();
+				if (dependenciesByEffectiveTime.containsKey(componentId)) {
+					continue; //Component is required elsewhere as well, should not be skipped
+				}
+				
+				slice.removeDependency(componentId);
+			}
 		}
 	}
 
-	private void reportMissingComponent(ImportDefectAcceptor globalDefectAcceptor, String id, String effectiveTime, String componentTypeLabel) {
+	private void reportMissingComponent(ImportDefectAcceptor globalDefectAcceptor, String id, String effectiveTime, String componentTypeLabel, boolean canBeSkipped) {
 		String effectiveTimeLabel = Rf2EffectiveTimeSlice.SNAPSHOT_SLICE.equals(effectiveTime) ? "" : String.format(" in effective time '%s'", effectiveTime);
-		globalDefectAcceptor.error(String.format("%s %s with id '%s'%s", Rf2ValidationDefects.MISSING_DEPENDANT_ID, componentTypeLabel, id, effectiveTimeLabel));
+		String message = String.format("%s %s with id '%s'%s", Rf2ValidationDefects.MISSING_DEPENDANT_ID, componentTypeLabel, id, effectiveTimeLabel);
+		if (canBeSkipped) {
+			globalDefectAcceptor.warn(message);
+		} else {
+			globalDefectAcceptor.error(message) ;
+		}
 	}
 
 	private <T extends SnomedComponentDocument> Set<String> fetchComponentIds(BranchContext context, final Set<String> componentIdsToFetch, Class<T> clazz) {
