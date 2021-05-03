@@ -377,7 +377,36 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 			.doesNotContainAnyElementsOf(ImmutableList.of(ComponentIdentifier.of(CONCEPT_NUMBER, validConcept1.getId()),
 					ComponentIdentifier.of(CONCEPT_NUMBER, validConcept2.getId())));
 	}
+	
+	@Test
+	public void rule84() throws Exception {
+		final String ruleId = "84";
+		indexRule(ruleId);
+		
+		// index term containing space before ":"
+		SnomedDescriptionIndexEntry description1 = description(generateDescriptionId(), Concepts.SYNONYM, "hello :")
+				.moduleId(Concepts.UK_DRUG_EXTENSION_MODULE)
+				.build();
 
+		// index term containing space before "."
+		SnomedDescriptionIndexEntry description2 = description(generateDescriptionId(), Concepts.SYNONYM, "hello .")
+				.moduleId(Concepts.UK_DRUG_EXTENSION_MODULE)
+				.build();
+
+		// index correct term.
+		SnomedDescriptionIndexEntry description3 = description(generateDescriptionId(), Concepts.SYNONYM, "hello")
+				.moduleId(Concepts.UK_DRUG_EXTENSION_MODULE)
+				.build();
+		
+		indexRevision(MAIN, description1, description2, description3);
+		
+		ValidationIssues issues = validate(ruleId);
+		
+		assertAffectedComponents(issues, 
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, description1.getId()),
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, description2.getId())
+		);
+	}
 	
 	@Test	
 	public void rule110() throws Exception {	
