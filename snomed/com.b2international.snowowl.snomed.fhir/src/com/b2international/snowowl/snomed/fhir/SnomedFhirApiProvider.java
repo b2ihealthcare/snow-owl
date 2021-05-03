@@ -20,8 +20,8 @@ import java.util.List;
 import java.util.Set;
 
 import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.fhir.core.LogicalId;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.provider.FhirApiProvider;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
@@ -63,10 +63,6 @@ public abstract class SnomedFhirApiProvider extends FhirApiProvider {
 	
 	public Collection<String> getSupportedURIs() {
 		return SUPPORTED_URIS;
-	}
-	
-	public boolean isSupported(LogicalId logicalId) {
-		return logicalId.getRepositoryId().startsWith(SnomedDatastoreActivator.REPOSITORY_UUID);
 	}
 	
 	public final boolean isSupported(String uri) {

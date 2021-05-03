@@ -28,6 +28,7 @@ import org.junit.Test;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.fhir.tests.FhirTestConcepts;
 import com.b2international.snowowl.fhir.tests.SnomedFhirRestTest;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 
 /**
  * ValueSet $expand operation REST end-point test cases
@@ -45,7 +46,7 @@ public class ExpandSnomedRestTest extends SnomedFhirRestTest {
 			.then()
 			.statusCode(200)
 			.body("resourceType", equalTo("ValueSet"))
-			.body("id", startsWith("snomedStore:MAIN/"))
+			.body("id", startsWith("SNOMEDCT"))
 			.body("id", endsWith(simpleTypeRefSetId))
 			.body("language", equalTo("en-us"))
 			.body("version", startsWith("FHIR_"))
@@ -119,13 +120,16 @@ public class ExpandSnomedRestTest extends SnomedFhirRestTest {
 	@Test
 	public void simpleTypeRefsetTest() throws Exception {
 		
+		String refsetURI = "SNOMEDCT/" + FHIR_SIMPLE_TYPE_REFSET_VERSION + "/" + 
+				SnomedTerminologyComponentConstants.REFSET_NUMBER + "/" + simpleTypeRefSetId;
+		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.pathParam("id", "snomedStore:MAIN/" + FHIR_SIMPLE_TYPE_REFSET_VERSION + ":" + simpleTypeRefSetId) 
+			.pathParam("id", refsetURI) 
 			.when().get("/ValueSet/{id}/$expand")
 			.then()
 			.statusCode(200)
 			.body("resourceType", equalTo("ValueSet"))
-			.body("id", equalTo("snomedStore:MAIN/" + FHIR_SIMPLE_TYPE_REFSET_VERSION+ ":" + simpleTypeRefSetId))
+			.body("id", equalTo(refsetURI))
 			.body("language", equalTo("en-us"))
 			.body("version", startsWith("FHIR_"))
 			.body("status", equalTo("active"))
@@ -138,18 +142,22 @@ public class ExpandSnomedRestTest extends SnomedFhirRestTest {
 	@Test
 	public void queryTypeRefsetTest() throws Exception {
 		
+		
 		String mainBranch = IBranchPath.MAIN_BRANCH;
 		String refsetName = "FHIR Automated Test Query Type Refset";
 		String refsetLogicalId = TestReferenceSetCreator.createQueryTypeReferenceSet(mainBranch, refsetName, FHIR_QUERY_TYPE_REFSET_VERSION);
 		System.out.println("ExpandSnomedRestTest.queryTypeRefsetTest() " + refsetLogicalId);
 		
+		String qtid = "SNOMEDCT/" + FHIR_QUERY_TYPE_REFSET_VERSION + "/" + 
+				SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER + "/" + queryTypeRefsetLogicalId;
+		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.pathParam("id", "snomedStore:MAIN/" + FHIR_QUERY_TYPE_REFSET_VERSION + ":" + refsetLogicalId) 
+			.pathParam("id", qtid) 
 			.when().get("/ValueSet/{id}/$expand")
 			.then()
 			.statusCode(200)
 			.body("resourceType", equalTo("ValueSet"))
-			.body("id", StringStartsWith.startsWith("snomedStore:MAIN/FHIR_QUERY_TYPE_REFSET_VERSION"))
+			.body("id", StringStartsWith.startsWith(qtid))
 			.body("version", equalTo(FHIR_QUERY_TYPE_REFSET_VERSION))
 			.body("name", equalTo("FHIR Automated Test Simple Type Refset"))
 			.body("status", equalTo("active"))
