@@ -126,6 +126,33 @@
     "implementation": "scripts/rule266.groovy"
   },
   {
+    "id": "326",
+    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "messageTemplate": "Terms should only contain ASCII characters",
+    "severity": "WARNING",
+    "checkType": "FAST",
+    "type": "snomed-query",
+    "implementation": "{\"componentType\": \"description\",\"active\": \"true\", \"filterByWorkingModule\": \"true\", \"term\": \"regex(.*[^\\u0020-\\u007e].*)\"}"
+  },
+  {
+    "id": "327",
+    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "messageTemplate": "Fully specified names shoud not contain <, >, &, %, $, @, # characters.",
+    "severity": "WARNING",
+    "checkType": "FAST",
+    "type": "snomed-query",
+    "implementation": "{\"componentType\": \"description\", \"type\": \"900000000000003001\", \"active\": \"true\", \"filterByWorkingModule\": \"true\", \"term\": \"regex(.*[<>&%$@#]+.*)\"}"
+  },
+  {
+    "id": "328",
+    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "messageTemplate": "Synonyms should not contain $, @ characters",
+    "severity": "WARNING",
+    "checkType": "FAST",
+    "type": "snomed-query",
+    "implementation": "{\"componentType\": \"description\", \"type\": \"900000000000013009\", \"active\": \"true\", \"filterByWorkingModule\": \"true\", \"term\": \"regex(.*[$@]+.*)\"}"
+  },
+  {
   	"id": "482",
     "toolingId": "com.b2international.snowowl.terminology.snomed",
     "messageTemplate": "Brackets in active terms should balance and be sequentially valid (in correct order).",
