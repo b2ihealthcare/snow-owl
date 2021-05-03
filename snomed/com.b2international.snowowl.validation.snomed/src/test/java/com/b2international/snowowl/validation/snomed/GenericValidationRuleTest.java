@@ -291,6 +291,34 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 	}
 	
 	@Test
+	public void rule74() throws Exception {
+		final String ruleId = "74";
+		indexRule(ruleId);
+
+		// index concept without bracketed suffix.
+		SnomedConceptDocument concept1 = concept(generateConceptId()).active(true)
+				.parents(Long.parseLong(Concepts.ROOT_CONCEPT)).build();
+		SnomedDescriptionIndexEntry description1 = description(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, "Hello Cruel")
+				.moduleId(Concepts.UK_DRUG_EXTENSION_MODULE)
+				.conceptId(concept1.getId())
+				.build();
+
+		// index concept with bracketed suffix.
+		SnomedConceptDocument concept2 = concept(generateConceptId()).active(true)
+				.parents(Long.parseLong(Concepts.ROOT_CONCEPT)).build();
+		SnomedDescriptionIndexEntry description2 = description(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, "Hello Cruel(Coco)")
+				.moduleId(Concepts.UK_DRUG_EXTENSION_MODULE)
+				.conceptId(concept2.getId())
+				.build();
+		
+		indexRevision(MAIN, concept1, concept2, description1, description2);
+
+		ValidationIssues issues = validate(ruleId);
+
+		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, description1.getId()));
+	}
+	
+	@Test
 	public void rule75() throws Exception {
 		// Message: Relationships in group 0 should not be duplicated in any other group.
 		final String ruleId = "75";
