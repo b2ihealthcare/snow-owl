@@ -23,8 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
@@ -43,29 +41,12 @@ import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
 import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
-import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
+import com.b2international.snowowl.snomed.core.domain.*;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
-import com.b2international.snowowl.snomed.datastore.request.SnomedComponentSearchRequestBuilder;
-import com.b2international.snowowl.snomed.datastore.request.SnomedConceptSearchRequestBuilder;
-import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionSearchRequestBuilder;
-import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberSearchRequestBuilder;
-import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipSearchRequestBuilder;
-import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.datastore.request.SnomedSearchRequestBuilder;
+import com.b2international.snowowl.snomed.datastore.index.entry.*;
+import com.b2international.snowowl.snomed.datastore.request.*;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -91,16 +72,16 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 		SnomedSearchRequestBuilder<?, PageableCollectionResource<SnomedComponent>> req = validationQuery
 				.prepareSearch();
 		
+		if (params != null && params.containsKey(ValidationConfiguration.WORKING_MODULES) && Boolean.TRUE.equals(validationQuery.filterByWorkingModule)) {
+			req.filterByModule(params.get(ValidationConfiguration.WORKING_MODULES).toString());
+		}
+		
 		SearchIndexResourceRequest<BranchContext, ?, ? extends SnomedDocument> searchReq = (SearchIndexResourceRequest<BranchContext, ?, ? extends SnomedDocument>) req.build();
 		
 		final ExpressionBuilder expressionBuilder = Expressions.builder().filter(searchReq.toRawQuery(context));
 
 		if (params != null && params.containsKey(ValidationConfiguration.IS_UNPUBLISHED_ONLY) && Boolean.TRUE.equals(params.get(ValidationConfiguration.IS_UNPUBLISHED_ONLY))) {
 			expressionBuilder.filter(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME));
-		}
-		
-		if (params != null && params.containsKey(ValidationConfiguration.WORKING_MODULES) && Boolean.TRUE.equals(validationQuery.filterByWorkingModule)) {
-			expressionBuilder.filter(SnomedDocument.Expressions.modules(Stream.of(params.get(ValidationConfiguration.WORKING_MODULES)).map(id -> String.valueOf(id)).collect(Collectors.toList())));
 		}
 		
 		Expression where = expressionBuilder.build();
