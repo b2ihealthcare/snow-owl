@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
@@ -97,6 +99,10 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 			expressionBuilder.filter(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME));
 		}
 		
+		if (params != null && params.containsKey(ValidationConfiguration.WORKING_MODULES) && Boolean.TRUE.equals(validationQuery.filterByWorkingModule)) {
+			expressionBuilder.filter(SnomedDocument.Expressions.modules(Stream.of(params.get(ValidationConfiguration.WORKING_MODULES)).map(id -> String.valueOf(id)).collect(Collectors.toList())));
+		}
+		
 		Expression where = expressionBuilder.build();
 		
 		// TODO check if the expression contains only the ID list, then skip scrolling and just report them
@@ -143,6 +149,7 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 		@JsonProperty private Boolean active;
 		@JsonProperty private String effectiveTime;
 		@JsonProperty private String module;
+		@JsonProperty private Boolean filterByWorkingModule;
 		@JsonProperty private Boolean released;
 
 		public final SB prepareSearch() {
@@ -155,11 +162,14 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 
 		@OverridingMethodsMustInvokeSuper
 		protected SB prepareSearch(SB req) {
-			return req.filterByActive(active)
-					.filterByReleased(released)
-					.filterByModule(module)
-					.filterByEffectiveTime(effectiveTime);
+			req.filterByActive(active)
+			.filterByReleased(released)
+			.filterByEffectiveTime(effectiveTime);
 			
+			if (!filterByWorkingModule) {
+				return req.filterByModule(module);
+			} 
+			return req;
 		}		
 	}
 	
