@@ -21,21 +21,23 @@ import java.util.Optional;
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.index.revision.Commit;
+import com.b2international.index.revision.TimestampProvider;
 import com.b2international.snowowl.core.ResourceURI;
-import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.Branches;
-import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.identity.Permission;
+import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.internal.ResourceDocument;
+import com.b2international.snowowl.core.internal.ResourceRepository;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.version.Version;
 
 /**
  * @since 4.7
  */
-final class CodeSystemCreateRequest implements Request<TransactionContext, String>, RepositoryAccessControl {
+final class CodeSystemCreateRequest implements Request<ServiceProvider, String> {
 
 	private static final long serialVersionUID = 2L;
 
@@ -74,7 +76,7 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 	}
 
 	@Override
-	public String execute(final TransactionContext context) {
+	public String execute(final ServiceProvider context) {
 		final Optional<Version> extensionOfVersion = checkCodeSystem(context);
 		
 		// Set the parent path if a branch needs to be created
@@ -93,14 +95,24 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 				.prepareCreate()
 				.setParent(parentPath)
 				.setName(id)
-				.build()
+				.build(toolingId)
+				.getRequest()
 				.execute(context);
 		}
+
+		final long timestamp = context.service(TimestampProvider.class).getTimestamp();
+		final String username = context.service(User.class).getUsername();
 		
-		return context.add(createCodeSystemEntry(context));
+		Commit commit = context.service(ResourceRepository.class).prepareCommit()
+			.stageNew(createCodeSystemEntry())
+			.commit(timestamp, username, "Create new Code System: " + id);
+		
+		// TODO notification about the new code system
+		
+		return id;
 	}
 
-	private void checkBranchPath(final TransactionContext context) {
+	private void checkBranchPath(final ServiceProvider context) {
 		// If no branch is created, the branch should already exist
 		if (!createBranch && !branchExists(branchPath, context)) {
 			throw new BadRequestException("Branch path '%s' should point to an existing branch if given.", branchPath);
@@ -115,7 +127,7 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 		}
 	}
 
-	private Optional<Version> checkCodeSystem(final TransactionContext context) {
+	private Optional<Version> checkCodeSystem(final ServiceProvider context) {
 		// OID must be unique if defined
 		if (!StringUtils.isEmpty(oid) && codeSystemExists(oid, context)) {
 			throw new AlreadyExistsException("Resource", oid);
@@ -176,7 +188,7 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 		}
 	}
 	
-	private boolean codeSystemExists(final String uniqeId, final TransactionContext context) {
+	private boolean codeSystemExists(final String uniqeId, final ServiceProvider context) {
 		return CodeSystemRequests.prepareSearchCodeSystem()
 				.setLimit(0)
 				.filterById(uniqeId)
@@ -185,12 +197,13 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 				.getTotal() > 0;
 	}
 	
-	private boolean branchExists(final String path, final TransactionContext context) {
+	private boolean branchExists(final String path, final ServiceProvider context) {
 		Branches branches = RepositoryRequests.branching()
 				.prepareSearch()
 				.setLimit(1)
 				.filterById(path)
-				.build()
+				.build(toolingId)
+				.getRequest()
 				.execute(context);
 		
 		if (branches.isEmpty()) {
@@ -201,7 +214,7 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 		
 	}
 
-	private ResourceDocument createCodeSystemEntry(final TransactionContext context) {
+	private ResourceDocument createCodeSystemEntry() {
 		return ResourceDocument.builder()
 				.id(id)
 				.url(url)
@@ -223,8 +236,4 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 				.build();
 	}
 	
-	@Override
-	public String getOperation() {
-		return Permission.OPERATION_EDIT;
-	}
 }

@@ -21,6 +21,7 @@ import java.util.Set;
 
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.TransactionContext;
@@ -34,7 +35,7 @@ import com.google.common.collect.Maps;
 /**
  * @since 4.7
  */
-final class CodeSystemUpdateRequest extends UpdateRequest<TransactionContext> implements RepositoryAccessControl {
+final class CodeSystemUpdateRequest extends UpdateRequest<ServiceProvider> {
 
 	private static final long serialVersionUID = 1L;
 
@@ -67,7 +68,7 @@ final class CodeSystemUpdateRequest extends UpdateRequest<TransactionContext> im
 //	}
 	
 	@Override
-	public Boolean execute(final TransactionContext context) {
+	public Boolean execute(final ServiceProvider context) {
 		ResourceDocument codeSystem = context.lookup(componentId(), ResourceDocument.class);
 		final ResourceDocument.Builder updated = ResourceDocument.builder(codeSystem);
 

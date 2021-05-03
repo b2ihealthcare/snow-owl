@@ -124,14 +124,15 @@ public class CodeSystemRestService extends AbstractRestService {
 		}
 		
 		final String commitComment = String.format("Created new Code System %s", codeSystem.getId());
+		// TODO support commit customization when creating new resources/codesystems
 		final String codeSystemId = codeSystem.toCreateRequest()
-				.commit()
-				.setAuthor(author)
-				.setCommitComment(commitComment)
+//				.commit() 
+//				.setAuthor(author)
+//				.setCommitComment(commitComment)
 				.buildAsync()
 				.execute(getBus())
-				.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES)
-				.getResultAs(String.class);
+				.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);
+//				.getResultAs(String.class);
 		
 		return ResponseEntity.created(getResourceLocationURI(codeSystemId)).build();
 	}

@@ -18,15 +18,19 @@ package com.b2international.snowowl.core.codesystem;
 import java.util.Map;
 
 import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.request.SystemRequestBuilder;
 import com.b2international.snowowl.core.request.TransactionalRequestBuilder;
 
 /**
  * @since 4.7
  */
-public final class CodeSystemUpdateRequestBuilder extends BaseRequestBuilder<CodeSystemUpdateRequestBuilder, TransactionContext, Boolean> implements TransactionalRequestBuilder<Boolean> {
+public final class CodeSystemUpdateRequestBuilder 
+		extends BaseRequestBuilder<CodeSystemUpdateRequestBuilder, ServiceProvider, Boolean> 
+		implements SystemRequestBuilder<Boolean> {
 
 	private final String resourceId;
 
@@ -121,7 +125,7 @@ public final class CodeSystemUpdateRequestBuilder extends BaseRequestBuilder<Cod
 	}
 
 	@Override
-	protected Request<TransactionContext, Boolean> doBuild() {
+	protected Request<ServiceProvider, Boolean> doBuild() {
 		final CodeSystemUpdateRequest req = new CodeSystemUpdateRequest(resourceId);
 		req.url = url;
 		req.title = title;
