@@ -35,6 +35,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
+import com.b2international.commons.Pair;
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
@@ -50,6 +51,7 @@ import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
 import com.b2international.snowowl.fhir.core.provider.IValueSetApiProvider;
 import com.b2international.snowowl.fhir.core.search.FhirFilterParameter;
 import com.b2international.snowowl.fhir.core.search.FhirParameter;
+import com.b2international.snowowl.fhir.core.search.FhirSearchParameter;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -91,12 +93,7 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 	@RequestMapping(method=RequestMethod.GET)
 	public Bundle getValueSets(@RequestParam(required=false) MultiValueMap<String, String> parameters) {
 		
-		Set<FhirParameter> fhirParameters = processParameters(parameters); 
-		
-		Set<FhirFilterParameter> filterParameters = fhirParameters.stream()
-				.filter(FhirFilterParameter.class::isInstance)
-				.map(FhirFilterParameter.class::cast)
-				.collect(Collectors.toSet());
+		Pair<Set<FhirFilterParameter>, Set<FhirSearchParameter>> fhirParameters = processParameters(parameters); 
 		
 		//TODO: replace this with something more general as described in
 		//https://docs.spring.io/spring-hateoas/docs/current/reference/html/
@@ -110,7 +107,7 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 		for (IValueSetApiProvider fhirProvider : valueSetProviderRegistry.getProviders(getBus(), locales)) {
 			Collection<ValueSet> valueSets = fhirProvider.getValueSets();
 			for (ValueSet valueSet : valueSets) {
-				applyResponseContentFilter(valueSet, filterParameters);
+				applyResponseContentFilter(valueSet, fhirParameters.getA());
 				
 				String resourceUrl = String.join("/", uri, valueSet.getId().getIdValue());
 				
@@ -141,12 +138,7 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 	public MappingJacksonValue getValueSet(@PathVariable("valueSetId") String valueSetId, 
 			@RequestParam(required=false) MultiValueMap<String, String> parameters) {
 		
-		Set<FhirParameter> fhirParameters = processParameters(parameters); 
-		
-		Set<FhirFilterParameter> filterParameters = fhirParameters.stream()
-				.filter(FhirFilterParameter.class::isInstance)
-				.map(FhirFilterParameter.class::cast)
-				.collect(Collectors.toSet());
+		Pair<Set<FhirFilterParameter>, Set<FhirSearchParameter>> fhirParameters = processParameters(parameters); 
 		
 		ComponentURI componentURI = ComponentURI.of(valueSetId);
 		
@@ -154,7 +146,7 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 			.getValueSetProvider(getBus(), locales, componentURI) 
 			.getValueSet(componentURI);
 
-		return applyResponseContentFilter(valueSet, filterParameters);
+		return applyResponseContentFilter(valueSet, fhirParameters.getA());
 	}
 	
 	/**

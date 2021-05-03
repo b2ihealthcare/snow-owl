@@ -36,6 +36,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
+import com.b2international.commons.Pair;
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.model.Bundle;
@@ -51,6 +52,7 @@ import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.provider.IConceptMapApiProvider;
 import com.b2international.snowowl.fhir.core.search.FhirFilterParameter;
 import com.b2international.snowowl.fhir.core.search.FhirParameter;
+import com.b2international.snowowl.fhir.core.search.FhirSearchParameter;
 import com.b2international.snowowl.fhir.core.search.RawRequestParameter;
 
 import io.swagger.annotations.Api;
@@ -94,11 +96,7 @@ public class FhirConceptMapRestService extends BaseFhirResourceRestService<Conce
 	@RequestMapping(method=RequestMethod.GET)
 	public Bundle getConceptMaps(@RequestParam(required=false) MultiValueMap<String, String> parameters) {
 		
-		Set<FhirParameter> fhirParameters = processParameters(parameters);
-		Set<FhirFilterParameter> filterParameters = fhirParameters.stream()
-				.filter(FhirFilterParameter.class::isInstance)
-				.map(FhirFilterParameter.class::cast)
-				.collect(Collectors.toSet());
+		Pair<Set<FhirFilterParameter>, Set<FhirSearchParameter>> fhirParameters = processParameters(parameters);
 		
 		String uri = MvcUriComponentsBuilder.fromController(FhirConceptMapRestService.class).build().toString();
 		
@@ -110,7 +108,7 @@ public class FhirConceptMapRestService extends BaseFhirResourceRestService<Conce
 		for (IConceptMapApiProvider fhirProvider : conceptMapProviderRegistry.getProviders(getBus(), locales)) {
 			Collection<ConceptMap> conceptMaps = fhirProvider.getConceptMaps();
 			for (ConceptMap conceptMap : conceptMaps) {
-				applyResponseContentFilter(conceptMap, filterParameters);
+				applyResponseContentFilter(conceptMap, fhirParameters.getA());
 				
 				String resourceUrl = String.join("/", uri, conceptMap.getId().getIdValue());
 				
@@ -141,15 +139,11 @@ public class FhirConceptMapRestService extends BaseFhirResourceRestService<Conce
 	public MappingJacksonValue getConceptMap(@PathVariable("conceptMapId") String conceptMapId, 
 			@RequestParam(required=false) MultiValueMap<String, String> parameters) {
 		
-		Set<FhirParameter> fhirParameters = processParameters(parameters);
-		Set<FhirFilterParameter> filterParameters = fhirParameters.stream()
-				.filter(FhirFilterParameter.class::isInstance)
-				.map(FhirFilterParameter.class::cast)
-				.collect(Collectors.toSet());
+		Pair<Set<FhirFilterParameter>, Set<FhirSearchParameter>> fhirParameters = processParameters(parameters);
 		
 		ComponentURI componentURI = ComponentURI.of(conceptMapId);
 		ConceptMap conceptMap = conceptMapProviderRegistry.getConceptMapProvider(getBus(), locales, componentURI).getConceptMap(componentURI);
-		return applyResponseContentFilter(conceptMap, filterParameters);
+		return applyResponseContentFilter(conceptMap, fhirParameters.getA());
 	}
 	
 	/**

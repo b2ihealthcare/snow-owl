@@ -16,7 +16,12 @@
 package com.b2international.snowowl.fhir.core.search;
 
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -30,6 +35,7 @@ import com.b2international.snowowl.fhir.core.search.FhirUriParameterDefinition.S
 import com.b2international.snowowl.fhir.core.search.FhirUriSearchParameterDefinition.FhirCommonSearchKey;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Sets.SetView;
 
@@ -64,6 +70,31 @@ public class FhirUriParameterManager {
 		List<Field> searchableFields = collectSearchableFields(model);
 		definitions.supportedSearchParameters.putAll(createSearchableParameters(searchableFields));
 		return definitions;
+	}
+	
+	public Pair<Set<FhirFilterParameter>, Set<FhirSearchParameter>> processParameters(
+			Multimap<String, String> multiMap) {
+	
+		 Set<FhirParameter> fhirParameters = multiMap.keySet().stream()
+				.map(k -> new RawRequestParameter(k, multiMap.get(k)))
+				.map(p -> classifyParameter(p))
+				.collect(Collectors.toSet());
+		
+		Set<FhirFilterParameter> filterParameters = fhirParameters.stream()
+				.filter(FhirFilterParameter.class::isInstance)
+				.map(FhirFilterParameter.class::cast)
+				.collect(Collectors.toSet());
+		
+		//TODO: cross-field validation comes here
+		
+		Set<FhirSearchParameter> searchParameters = fhirParameters.stream()
+				.filter(FhirSearchParameter.class::isInstance)
+				.map(FhirSearchParameter.class::cast)
+				.collect(Collectors.toSet());
+		
+		//TODO: cross-field validation comes here
+				
+		return Pair.of(filterParameters, searchParameters);
 	}
 	
 	public FhirParameter classifyParameter(RawRequestParameter fhirParameter) {

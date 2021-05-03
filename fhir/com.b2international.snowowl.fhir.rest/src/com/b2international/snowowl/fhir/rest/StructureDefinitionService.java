@@ -32,12 +32,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
+import com.b2international.commons.Pair;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.OperationOutcome;
 import com.b2international.snowowl.fhir.core.model.structuredefinition.StructureDefinition;
 import com.b2international.snowowl.fhir.core.search.FhirFilterParameter;
 import com.b2international.snowowl.fhir.core.search.FhirParameter;
+import com.b2international.snowowl.fhir.core.search.FhirSearchParameter;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -76,12 +78,7 @@ public class StructureDefinitionService extends BaseFhirResourceRestService<Stru
 	@RequestMapping(method=RequestMethod.GET)
 	public Bundle getStructureDefinitions(@RequestParam(required=false) MultiValueMap<String, String> parameters) {
 		
-		Set<FhirParameter> fhirParameters = processParameters(parameters); 
-		
-		Set<FhirFilterParameter> filterParameters = fhirParameters.stream()
-				.filter(FhirFilterParameter.class::isInstance)
-				.map(FhirFilterParameter.class::cast)
-				.collect(Collectors.toSet());
+		Pair<Set<FhirFilterParameter>, Set<FhirSearchParameter>> fhirParameters = processParameters(parameters); 
 		
 		String uri = MvcUriComponentsBuilder.fromController(StructureDefinitionService.class).build().toString();
 		
@@ -114,17 +111,11 @@ public class StructureDefinitionService extends BaseFhirResourceRestService<Stru
 	public MappingJacksonValue getStructureDefinition(@PathVariable("structureDefinitionId") String structureDefinitionId, 
 			@RequestParam(required=false) MultiValueMap<String, String> parameters) {
 		
-		Set<FhirParameter> fhirParameters = processParameters(parameters); 
-		
-		Set<FhirFilterParameter> filterParameters = fhirParameters.stream()
-				.filter(FhirFilterParameter.class::isInstance)
-				.map(FhirFilterParameter.class::cast)
-				.collect(Collectors.toSet());
-		
+		Pair<Set<FhirFilterParameter>, Set<FhirSearchParameter>> fhirParameters = processParameters(parameters); 
 		
 		StructureDefinition structureDefinition = StructureDefinition.builder(structureDefinitionId).build();
 
-		return applyResponseContentFilter(structureDefinition, filterParameters);
+		return applyResponseContentFilter(structureDefinition, fhirParameters.getA());
 	}
 	
 }

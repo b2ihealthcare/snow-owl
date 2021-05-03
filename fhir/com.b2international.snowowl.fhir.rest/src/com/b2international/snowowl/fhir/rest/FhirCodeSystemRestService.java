@@ -24,7 +24,6 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.converter.json.MappingJacksonValue;
@@ -39,6 +38,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
+import com.b2international.commons.Pair;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
@@ -56,7 +56,6 @@ import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.provider.ICodeSystemApiProvider;
 import com.b2international.snowowl.fhir.core.search.FhirFilterParameter;
-import com.b2international.snowowl.fhir.core.search.FhirParameter;
 import com.b2international.snowowl.fhir.core.search.FhirSearchParameter;
 import com.b2international.snowowl.fhir.core.search.FhirUriSearchParameterDefinition.FhirCommonSearchKey;
 
@@ -107,12 +106,8 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 	@GetMapping
 	public Bundle getCodeSystems(@RequestParam(required=false) MultiValueMap<String, String> parameters) {
 		
-		Set<FhirParameter> requestParameters = processParameters(parameters);
-		
-		Set<FhirFilterParameter> filterParameters = requestParameters.stream()
-			.filter(FhirFilterParameter.class::isInstance)
-			.map(FhirFilterParameter.class::cast)
-			.collect(Collectors.toSet());
+		Pair<Set<FhirFilterParameter>, Set<FhirSearchParameter>> requestParameters = processParameters(parameters);
+		Set<FhirFilterParameter> filterParameters = requestParameters.getA();
 		
 		//TODO: replace this with something more general as described in
 		//https://docs.spring.io/spring-hateoas/docs/current/reference/html/
@@ -124,7 +119,7 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 		
 		int total = 0;
 		
-		Optional<String> idOptional = getParameterSingleValue(requestParameters, FhirCommonSearchKey._id.name());
+		Optional<String> idOptional = getParameterSingleValue(requestParameters.getB(), FhirCommonSearchKey._id.name());
 		
 		//single code system
 		//String id = requestParameters.getId();
@@ -165,18 +160,10 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 	public MappingJacksonValue getCodeSystem(@PathVariable("codeSystemId") String codeSystemId, 
 			@RequestParam(required=false) MultiValueMap<String, String> parameters) {
 		
-		Set<FhirParameter> fhirParameters = processParameters(parameters);
-		Set<FhirFilterParameter> filterParameters = fhirParameters.stream()
-				.filter(FhirFilterParameter.class::isInstance)
-				.map(FhirFilterParameter.class::cast)
-				.collect(Collectors.toSet());
-		
-//		Multimap<String, String> multiMap = HashMultimap.create();
-//		parameters.keySet().forEach(k -> multiMap.putAll(k, parameters.get(k)));
-//		SearchRequestParameters requestParameters = new SearchRequestParameters(multiMap); 
+		Pair<Set<FhirFilterParameter>, Set<FhirSearchParameter>> fhirParameters = processParameters(parameters);
 		
 		CodeSystem codeSystem = getCodeSystemById(codeSystemId);
-		return applyResponseContentFilter(codeSystem, filterParameters);
+		return applyResponseContentFilter(codeSystem, fhirParameters.getA());
 	}
 	
 	/**

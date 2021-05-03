@@ -32,6 +32,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import com.b2international.commons.Pair;
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.exceptions.ConflictException;
 import com.b2international.commons.exceptions.NotFoundException;
@@ -51,10 +52,11 @@ import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.search.FhirBeanPropertyFilter;
 import com.b2international.snowowl.fhir.core.search.FhirFilterParameter;
 import com.b2international.snowowl.fhir.core.search.FhirParameter;
-import com.b2international.snowowl.fhir.core.search.RawRequestParameter;
-import com.b2international.snowowl.fhir.core.search.FhirUriParameterManager;
+import com.b2international.snowowl.fhir.core.search.FhirSearchParameter;
 import com.b2international.snowowl.fhir.core.search.FhirUriFilterParameterDefinition.FhirFilterParameterKey;
 import com.b2international.snowowl.fhir.core.search.FhirUriFilterParameterDefinition.SummaryParameterValue;
+import com.b2international.snowowl.fhir.core.search.FhirUriParameterManager;
+import com.b2international.snowowl.fhir.core.search.RawRequestParameter;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
@@ -98,27 +100,21 @@ public abstract class BaseFhirResourceRestService<R extends FhirResource> extend
 	
 	protected abstract Class<R> getModelClass();
 	
-	protected Set<FhirParameter> processParameters(MultiValueMap<String, String> parameters) {
+	protected Pair<Set<FhirFilterParameter>, Set<FhirSearchParameter>> processParameters(MultiValueMap<String, String> parameters) {
 		
 		//Convert it to Guava's multimap
 		Multimap<String, String> multiMap = HashMultimap.create();
 		parameters.keySet().forEach(k -> multiMap.putAll(k, parameters.get(k)));
 		
-		FhirUriParameterManager supportedDefinitions = FhirUriParameterManager.createFor(getModelClass());
-		Set<FhirParameter> requestParameters = multiMap.keySet().stream()
-				.map(k -> new RawRequestParameter(k, multiMap.get(k)))
-				.map(p -> supportedDefinitions.classifyParameter(p))
-				.collect(Collectors.toSet());
+		FhirUriParameterManager parameterManager = FhirUriParameterManager.createFor(getModelClass());
 		
-		
-		//TODO: cross field validation can happen here
-		return requestParameters;
-		
+		Pair<Set<FhirFilterParameter>, Set<FhirSearchParameter>> fhirParameters = parameterManager.processParameters(multiMap);
+		return fhirParameters;
 	}
 	
-	protected Optional<String> getParameterSingleValue(Set<FhirParameter> requestParameters, String parameterName) {
+	protected Optional<String> getParameterSingleValue(Set<FhirSearchParameter> requestParameters, String parameterName) {
 		
-		Optional<FhirParameter> parameterOptional = requestParameters.stream().filter(p -> parameterName.equals(p.getName())).findAny();
+		Optional<FhirSearchParameter> parameterOptional = requestParameters.stream().filter(p -> parameterName.equals(p.getName())).findAny();
 		
 		if (parameterOptional.isPresent()) {
 			Collection<String> parameterValues = parameterOptional.get().getValues();
