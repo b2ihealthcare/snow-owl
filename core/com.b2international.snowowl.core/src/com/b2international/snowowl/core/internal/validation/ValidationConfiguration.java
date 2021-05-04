@@ -29,7 +29,7 @@ public class ValidationConfiguration {
 	public static final String IS_UNPUBLISHED_ONLY = "isUnpublishedOnly";
 	public static final String USE_FSN = "useFsn";
 	public static final String LOCALES = "extendedLocales";
-	public static final String WORKING_MODULES = "workingModules";
+	public static final String MODULES = "modules";
 	
 	// default values for thread management
 	private static final int DEFAULT_NUMBER_OF_VALIDATION_THREADS = Math.max(4, Runtime.getRuntime().availableProcessors() / 2); 

@@ -22,7 +22,7 @@ List<ComponentIdentifier> issues = Lists.newArrayList()
 static final Pattern SYMBOL_PATTERN = Pattern.compile("[^A-Za-z0-9]")
 
 def modules = SnomedRequests.prepareSearchConcept()
-.filterByEcl(params.workingModules)
+.filterByEcl(params.modules)
 .filterByActive(true)
 .all()
 .build()

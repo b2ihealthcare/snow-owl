@@ -26,7 +26,7 @@ RevisionSearcher searcher = ctx.service(RevisionSearcher.class)
 List<ComponentIdentifier> issues = Lists.newArrayList()
 
 Set<String> extensionModules = SnomedRequests.prepareSearchConcept()
-	.filterByEcl(params.workingModules)
+	.filterByEcl(params.modules)
 	.all()
 	.build()
 	.execute(ctx)
