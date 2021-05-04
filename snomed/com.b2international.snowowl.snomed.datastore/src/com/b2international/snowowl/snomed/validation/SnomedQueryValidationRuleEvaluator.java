@@ -72,7 +72,7 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 		SnomedSearchRequestBuilder<?, PageableCollectionResource<SnomedComponent>> req = validationQuery
 				.prepareSearch();
 		
-		String extensionModules = params != null ? params.get(ValidationConfiguration.MODULES).toString() : "";
+		String extensionModules = params != null && params.containsKey(ValidationConfiguration.MODULES) ? params.get(ValidationConfiguration.MODULES).toString() : "";
 		String module = validationQuery.module;
 		
 		if (!Strings.isNullOrEmpty(module)) {
