@@ -130,7 +130,7 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 		@JsonProperty private Boolean active;
 		@JsonProperty private String effectiveTime;
 		@JsonProperty private String module;
-		@JsonProperty private Boolean filterByWorkingModule;
+		@JsonProperty private Boolean filterByWorkingModule = Boolean.FALSE;
 		@JsonProperty private Boolean released;
 
 		public final SB prepareSearch() {
