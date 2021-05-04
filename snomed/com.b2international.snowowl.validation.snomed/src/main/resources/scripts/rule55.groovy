@@ -8,9 +8,7 @@ import com.b2international.index.query.Query
 import com.b2international.index.query.Expressions.ExpressionBuilder
 import com.b2international.index.revision.RevisionSearcher
 import com.b2international.snowowl.core.ComponentIdentifier
-import com.b2international.snowowl.core.codesystem.CodeSystem
 import com.b2international.snowowl.core.date.EffectiveTimes
-import com.b2international.snowowl.core.repository.RepositoryCodeSystemProvider
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests

@@ -3,7 +3,6 @@ package scripts;
 import static com.google.common.collect.Maps.newHashMap
 
 import com.b2international.index.Hits
-import com.b2international.index.query.Expression
 import com.b2international.index.query.Expressions
 import com.b2international.index.query.Query
 import com.b2international.index.query.SortBy
@@ -12,10 +11,7 @@ import com.b2international.index.query.SortBy.Order
 import com.b2international.index.revision.RevisionSearcher
 import com.b2international.snowowl.core.ComponentIdentifier
 import com.b2international.snowowl.core.date.EffectiveTimes
-import com.b2international.snowowl.core.domain.BranchContext
-import com.b2international.snowowl.snomed.common.SnomedRf2Headers
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry
 import com.google.common.collect.Lists
 

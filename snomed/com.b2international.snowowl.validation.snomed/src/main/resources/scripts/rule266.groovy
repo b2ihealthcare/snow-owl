@@ -5,9 +5,7 @@ import static com.google.common.collect.Lists.newArrayList
 import java.util.stream.Collectors
 
 import com.b2international.snowowl.core.ComponentIdentifier
-import com.b2international.snowowl.core.codesystem.CodeSystem
 import com.b2international.snowowl.core.date.EffectiveTimes
-import com.b2international.snowowl.core.repository.RepositoryCodeSystemProvider
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription

@@ -1,8 +1,5 @@
 package scripts
 
-import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.UK_MAINTAINED_CLINICAL_MODULE
-import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.UK_MAINTAINED_PHARMACY_MODULE
-
 import java.util.stream.Collectors
 
 import com.b2international.commons.options.Options
@@ -12,9 +9,7 @@ import com.b2international.index.query.Expressions
 import com.b2international.index.query.Expressions.ExpressionBuilder
 import com.b2international.index.revision.RevisionSearcher
 import com.b2international.snowowl.core.ComponentIdentifier
-import com.b2international.snowowl.core.codesystem.CodeSystem
 import com.b2international.snowowl.core.date.EffectiveTimes
-import com.b2international.snowowl.core.repository.RepositoryCodeSystemProvider
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts

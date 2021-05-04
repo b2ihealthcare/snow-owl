@@ -3,26 +3,20 @@ package scripts;
 import java.util.function.Supplier
 
 import com.b2international.index.Hits
-import com.b2international.index.aggregations.Aggregation
 import com.b2international.index.aggregations.AggregationBuilder
 import com.b2international.index.query.Expressions
 import com.b2international.index.query.Query
-import com.b2international.index.query.Expressions.ExpressionBuilder
 import com.b2international.index.revision.RevisionSearcher
 import com.b2international.snowowl.core.ComponentIdentifier
 import com.b2international.snowowl.core.date.EffectiveTimes
-import com.b2international.snowowl.core.domain.BranchContext
-import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts
-import com.b2international.snowowl.snomed.common.SnomedRf2Headers
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument
 import com.google.common.base.Suppliers
 import com.google.common.collect.HashMultimap
-import com.google.common.collect.Lists
 import com.google.common.collect.Multimap
-import com.google.common.collect.Sets
 
 def RevisionSearcher searcher = ctx.service(RevisionSearcher.class)
 def Set<ComponentIdentifier> issues = []
