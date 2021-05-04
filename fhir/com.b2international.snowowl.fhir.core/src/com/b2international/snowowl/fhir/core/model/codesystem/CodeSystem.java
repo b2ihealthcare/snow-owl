@@ -22,6 +22,8 @@ import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
+import org.hibernate.validator.constraints.ScriptAssert;
+
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemHierarchyMeaning;
 import com.b2international.snowowl.fhir.core.model.ContactDetail;
@@ -57,6 +59,12 @@ import io.swagger.annotations.ApiModel;
  * @since 6.3
  */
 @ApiModel("CodeSystem")
+/*
+@ScriptAssert.List({
+	@ScriptAssert(lang = "javascript", script = "false", message = "Problem"),
+	@ScriptAssert(lang = "groovy", script = "_.caseSensitive == false", message = "Problem", alias = "_")
+})
+*/
 public class CodeSystem extends MetadataResource {
 
 	// FHIR header "resourceType" : "CodeSystem",
