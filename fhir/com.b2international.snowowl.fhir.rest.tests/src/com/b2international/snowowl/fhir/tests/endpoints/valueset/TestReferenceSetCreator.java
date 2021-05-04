@@ -61,7 +61,6 @@ public class TestReferenceSetCreator extends TestArtifactCreator {
 			System.out.println("Creating test simple type reference set...");
 			String refsetId = createSimpleTypeRefsetConcept(branchPath, refsetName);
 			
-			
 			System.out.println("Creating reference set members for simple type refset...");
 			createMember(branchPath, refsetId, FhirTestConcepts.BACTERIA);
 			createMember(branchPath, refsetId, FhirTestConcepts.MICROORGANISM);
@@ -123,7 +122,7 @@ public class TestReferenceSetCreator extends TestArtifactCreator {
 					.findFirst()
 					.get();
 				
-				return refsetId + "|" + firstMember.getId();
+				return firstMember.getId();
 			}
 	}
 
@@ -177,7 +176,7 @@ public class TestReferenceSetCreator extends TestArtifactCreator {
 			.getSync()
 			.getResultAs(String.class);
 		
-		return refsetId + "|" + memberId;
+		return memberId;
 	}
 	
 	private static String createSimpleTypeRefsetConcept(String branchPath, String refsetName) {

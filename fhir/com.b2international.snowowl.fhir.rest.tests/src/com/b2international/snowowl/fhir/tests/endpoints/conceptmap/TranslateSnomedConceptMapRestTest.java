@@ -35,6 +35,7 @@ import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Json;
 import com.b2international.snowowl.fhir.tests.FhirRestTest;
 import com.b2international.snowowl.fhir.tests.FhirTestConcepts;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.fhir.SnomedUri;
 
@@ -51,7 +52,6 @@ public class TranslateSnomedConceptMapRestTest extends FhirRestTest {
 	private static final String FHIR_MAP_TYPE_REFSET_VERSION = "FHIR_MAP_TYPE_REFSET_VERSION";
 	
 	protected static List<String> mapTypeRefSetIds;
-
 
 	@BeforeClass
 	public static void setupMaps() {
@@ -138,9 +138,12 @@ public class TranslateSnomedConceptMapRestTest extends FhirRestTest {
 	//From a specific Map type reference set
 	@Test
 	public void nonExistingRefsetTest() throws Exception {
+		
+		String mapTypeRefsetUri = "SNOMEDCT/" + FHIR_MAP_TYPE_REFSET_VERSION + "/" + 
+				SnomedTerminologyComponentConstants.REFSET_NUMBER + "/invalid";
 			
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.pathParam("id", "snomedStore:MAIN/" + FHIR_MAP_TYPE_REFSET_VERSION + ":invalid")
+			.pathParam("id", mapTypeRefsetUri)
 			.param("code", FhirTestConcepts.MICROORGANISM) 
 			.param("system", SnomedUri.SNOMED_BASE_URI_STRING)
 			.param("targetsystem", SnomedUri.SNOMED_BASE_URI_STRING)
@@ -158,9 +161,12 @@ public class TranslateSnomedConceptMapRestTest extends FhirRestTest {
 	//From a specific Map type reference set
 	@Test
 	public void invalidSystemTest() throws Exception {
+		
+		String mapTypeRefsetUri = "SNOMEDCT/" + FHIR_MAP_TYPE_REFSET_VERSION + "/" + 
+				SnomedTerminologyComponentConstants.REFSET_NUMBER + "/" + mapTypeRefSetIds.get(0);
 			
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.pathParam("id", "snomedStore:MAIN/" + FHIR_MAP_TYPE_REFSET_VERSION + ":" + mapTypeRefSetIds.get(0))
+			.pathParam("id", mapTypeRefsetUri)
 			.param("code", FhirTestConcepts.MICROORGANISM) 
 			.param("system", "some_other_than_snomed_system") //invalid
 			.param("targetsystem", SnomedUri.SNOMED_BASE_URI_STRING)
@@ -178,9 +184,12 @@ public class TranslateSnomedConceptMapRestTest extends FhirRestTest {
 	//From a specific Map type reference set
 	@Test
 	public void invalidTargetTest() throws Exception {
+		
+		String mapTypeRefsetUri = "SNOMEDCT/" + FHIR_MAP_TYPE_REFSET_VERSION + "/" + 
+				SnomedTerminologyComponentConstants.REFSET_NUMBER + "/" +  mapTypeRefSetIds.get(0);
 			
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.pathParam("id", "snomedStore:MAIN/" + FHIR_MAP_TYPE_REFSET_VERSION + ":" + mapTypeRefSetIds.get(0))
+			.pathParam("id", mapTypeRefsetUri)
 			.param("code", FhirTestConcepts.MICROORGANISM) 
 			.param("system", SnomedUri.SNOMED_BASE_URI_STRING)
 			.param("targetsystem", "Invalid_target_codesystem") //invalid
@@ -198,9 +207,12 @@ public class TranslateSnomedConceptMapRestTest extends FhirRestTest {
 	//From a specific Map type reference set
 	@Test
 	public void noResultTest() throws Exception {
+		
+		String mapTypeRefsetUri = "SNOMEDCT/" + FHIR_MAP_TYPE_REFSET_VERSION + "/" + 
+				SnomedTerminologyComponentConstants.REFSET_NUMBER + "/" +  mapTypeRefSetIds.get(0);
 			
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.pathParam("id", "snomedStore:MAIN/" + FHIR_MAP_TYPE_REFSET_VERSION + ":" + mapTypeRefSetIds.get(0))
+			.pathParam("id", mapTypeRefsetUri)
 			.param("code", Concepts.ROOT_CONCEPT)  //ROOT has no mapping
 			.param("system", SnomedUri.SNOMED_BASE_URI_STRING)
 			.param("targetsystem", SnomedUri.SNOMED_BASE_URI_STRING)
@@ -218,8 +230,11 @@ public class TranslateSnomedConceptMapRestTest extends FhirRestTest {
 	@Test
 	public void translateSpecificMappingTest() throws Exception {
 		
+		String mapTypeRefsetUri = "SNOMEDCT/" + FHIR_MAP_TYPE_REFSET_VERSION + "/" + 
+				SnomedTerminologyComponentConstants.REFSET_NUMBER + "/" +  mapTypeRefSetIds.get(0);
+		
 		String response = givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.pathParam("id", "snomedStore:MAIN/" + FHIR_MAP_TYPE_REFSET_VERSION + ":" + mapTypeRefSetIds.get(0))
+			.pathParam("id", mapTypeRefsetUri)
 			.param("code", FhirTestConcepts.MICROORGANISM) 
 			.param("system", SnomedUri.SNOMED_BASE_URI_STRING)
 			.param("targetsystem", SnomedUri.SNOMED_BASE_URI_STRING)
@@ -254,8 +269,11 @@ public class TranslateSnomedConceptMapRestTest extends FhirRestTest {
 	@Test
 	public void reverseTranslateSpecificMappingTest() throws Exception {
 		
+		String mapTypeRefsetUri = "SNOMEDCT/" + FHIR_MAP_TYPE_REFSET_VERSION + "/" + 
+				SnomedTerminologyComponentConstants.REFSET_NUMBER + "/" +  mapTypeRefSetIds.get(0);
+		
 		String response = givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.pathParam("id", "snomedStore:MAIN/" + FHIR_MAP_TYPE_REFSET_VERSION + ":" + mapTypeRefSetIds.get(0))
+			.pathParam("id", mapTypeRefsetUri)
 			.param("code", "MO") 
 			.param("system", SnomedUri.SNOMED_BASE_URI_STRING)
 			.param("targetsystem", SnomedUri.SNOMED_BASE_URI_STRING)

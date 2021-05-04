@@ -26,8 +26,8 @@ import com.b2international.snowowl.core.codesystem.CodeSystemVersion;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.plugin.Component;
+import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.fhir.core.LogicalId;
 import com.b2international.snowowl.fhir.core.codesystems.CommonConceptProperties;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.Designation;
@@ -153,8 +153,8 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 	
 	
 	@Override
-	public boolean isSupported(LogicalId logicalId) {
-		return logicalId.getRepositoryId().startsWith(SnomedDatastoreActivator.REPOSITORY_UUID);
+	public boolean isSupported(CodeSystemURI codeSystemURI) {
+		return codeSystemURI.getCodeSystem().startsWith(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME);
 	}
 	
 	@Override
