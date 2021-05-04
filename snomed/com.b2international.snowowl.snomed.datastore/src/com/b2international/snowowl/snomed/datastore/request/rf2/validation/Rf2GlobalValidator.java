@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 
 import org.slf4j.Logger;
 
@@ -53,6 +52,9 @@ public class Rf2GlobalValidator {
 
 	private static final int RAW_QUERY_PAGE_SIZE = 500_000;
 	private final Logger log;
+	
+	private Map<String, String> dependenciesByEffectiveTime;
+	private Map<String, String> skippableMemberDependenciesByEffectiveTime;
 
 	public Rf2GlobalValidator(Logger log) {
 		this.log = log;
@@ -63,9 +65,8 @@ public class Rf2GlobalValidator {
 			final ImportDefectAcceptor globalDefectAcceptor, 
 			final BranchContext context) {
 		
-		// Keys are component IDs waiting to be resolved, values are the earliest effective time "mention" of the component
-		final Map<String, String> dependenciesByEffectiveTime = Maps.newHashMap();
-		final Map<String, String> skippableMemberDependenciesByEffectiveTime = Maps.newHashMap();
+		dependenciesByEffectiveTime = Maps.newHashMap();
+		skippableMemberDependenciesByEffectiveTime = Maps.newHashMap();
 		
 		// Check the slices in reverse order for missing dependencies
 		for (Rf2EffectiveTimeSlice slice : Lists.reverse(slices)) {
@@ -161,15 +162,11 @@ public class Rf2GlobalValidator {
 			log.trace("Fetch existing concept IDs...");
 			
 			missingConceptIds.addAll(fetchComponentIds(context, conceptIds, SnomedConceptDocument.class));
-			final Function<String, Boolean> canBeSkipped = id -> {
-				return skippableMemberDependenciesByEffectiveTime.containsKey(id) && !dependenciesByEffectiveTime.containsKey(id);
-			};
 			
 			if (!missingConceptIds.isEmpty()) {
 				missingConceptIds.forEach(id -> {
-					reportMissingComponent(globalDefectAcceptor, id, dependenciesByEffectiveTime.get(id), "concept", canBeSkipped.apply(id));
-				});
-				
+					reportMissingComponent(globalDefectAcceptor, id, dependenciesByEffectiveTime.get(id), "concept", canBeSkipped(id));
+				});	
 			}
 			
 			log.trace("Fetch existing description IDs...");
@@ -178,7 +175,7 @@ public class Rf2GlobalValidator {
 
 			if (!missingDescriptionIds.isEmpty()) {
 				missingDescriptionIds.forEach(id -> {
-					reportMissingComponent(globalDefectAcceptor, id, dependenciesByEffectiveTime.get(id), "description", canBeSkipped.apply(id));
+					reportMissingComponent(globalDefectAcceptor, id, dependenciesByEffectiveTime.get(id), "description", canBeSkipped(id));
 				});
 			}
 			
@@ -188,12 +185,18 @@ public class Rf2GlobalValidator {
 
 			if (!missingRelationshipIds.isEmpty()) {
 				missingRelationshipIds.forEach(id -> {
-					reportMissingComponent(globalDefectAcceptor, id, dependenciesByEffectiveTime.get(id), "relationship", canBeSkipped.apply(id));
+					reportMissingComponent(globalDefectAcceptor, id, dependenciesByEffectiveTime.get(id), "relationship", canBeSkipped(id));
 				});
 			}
 		}
 		
 		removeSkippableMembers(skippableMemberDependenciesByEffectiveTime, dependenciesByEffectiveTime, slices);
+		skippableMemberDependenciesByEffectiveTime.clear();
+		dependenciesByEffectiveTime.clear();
+	}
+	
+	private boolean canBeSkipped(final String id) {
+		return skippableMemberDependenciesByEffectiveTime.containsKey(id) && !dependenciesByEffectiveTime.containsKey(id);
 	}
 	
 	private void removeSkippableMembers(Map<String, String> skippableMemberDependenciesByEffectiveTime, Map<String, String> dependenciesByEffectiveTime, List<Rf2EffectiveTimeSlice> slices) {
