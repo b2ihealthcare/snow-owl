@@ -95,7 +95,7 @@ public abstract class BaseGenericValidationRuleTest extends BaseValidationTest {
 	protected void configureValidationRequest(ValidateRequestBuilder req) {
 		req.setRuleParameters(Map.of(
 			ValidationConfiguration.IS_UNPUBLISHED_ONLY, effectiveTime == EffectiveTimes.UNSET_EFFECTIVE_TIME,
-			ValidationConfiguration.WORKING_MODULES, "<<" + Concepts.UK_DRUG_EXTENSION_MODULE
+			ValidationConfiguration.WORKING_MODULES, "<<" + Concepts.MODULE_B2I_EXTENSION
 		));
 	}
 	
@@ -143,7 +143,7 @@ public abstract class BaseGenericValidationRuleTest extends BaseValidationTest {
 			.stageNew(concept(Concepts.ONLY_INITIAL_CHARACTER_CASE_INSENSITIVE).parents(CASE_SIGNIFICANCEL).build())
 			.stageNew(concept(Concepts.ENTIRE_TERM_CASE_SENSITIVE).parents(CASE_SIGNIFICANCEL).build())
 			// Modules
-			.stageNew(concept(Concepts.UK_DRUG_EXTENSION_MODULE).parents(ROOT_CONCEPTL).build())
+			.stageNew(concept(Concepts.MODULE_B2I_EXTENSION).parents(ROOT_CONCEPTL).build())
 			.stageNew(concept(Concepts.PHYSICAL_OBJECT).parents(ROOT_CONCEPTL).build())
 			.stageNew(concept(HISTORICAL_ASSOCIATION).parents(ROOT_CONCEPTL).build()) // Historical association
 			// Refsets

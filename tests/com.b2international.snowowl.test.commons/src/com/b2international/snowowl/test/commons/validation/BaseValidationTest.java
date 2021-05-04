@@ -102,7 +102,7 @@ public abstract class BaseValidationTest extends BaseRevisionIndexTest {
 					for (String codeSystem : registry.keySet()) {
 						if (registry.get(codeSystem).equals(branchPath)) {
 							HashMap<String, Object> additionalProperties = Maps.newHashMap();
-							additionalProperties.put("moduleIds", List.of(Concepts.UK_DRUG_EXTENSION_MODULE));
+							additionalProperties.put("moduleIds", List.of(Concepts.MODULE_B2I_EXTENSION));
 							return CodeSystem.builder().branchPath(branchPath).shortName(codeSystem).additionalProperties(additionalProperties).build();
 						}
 					}

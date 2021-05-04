@@ -225,12 +225,12 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 
 		// index term with case insensitive case significance
 		SnomedDescriptionIndexEntry description = description(generateDescriptionId(), Concepts.SYNONYM, "hello")
-				.moduleId(Concepts.UK_DRUG_EXTENSION_MODULE)
+				.moduleId(Concepts.MODULE_B2I_EXTENSION)
 				.caseSignificanceId(Concepts.ENTIRE_TERM_CASE_INSENSITIVE)
 				.build();
 
 		SnomedDescriptionIndexEntry description2 = description(generateDescriptionId(), Concepts.SYNONYM, "Hello")
-				.moduleId(Concepts.UK_DRUG_EXTENSION_MODULE)
+				.moduleId(Concepts.MODULE_B2I_EXTENSION)
 				.caseSignificanceId(Concepts.ENTIRE_TERM_CASE_INSENSITIVE)
 				.build();
 
@@ -248,32 +248,32 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		//wrong examples
 		SnomedConceptDocument invalidDescriptionConcept = concept(generateConceptId()).build();
 		SnomedDescriptionIndexEntry descWithInvalidHypenSpacing = description(generateDescriptionId(), Concepts.SYNONYM, "Hello -Cruel!")
-				.moduleId(Concepts.UK_DRUG_EXTENSION_MODULE)
+				.moduleId(Concepts.MODULE_B2I_EXTENSION)
 				.conceptId(invalidDescriptionConcept.getId())
 				.build();
 		
 		SnomedConceptDocument invalidDescriptionConcept2 = concept(generateConceptId()).build();
 		SnomedDescriptionIndexEntry descWithMultipleInvalidHypenSpacing = description(generateDescriptionId(), Concepts.SYNONYM, "Hello -Cruel- World!")
-				.moduleId(Concepts.UK_DRUG_EXTENSION_MODULE)
+				.moduleId(Concepts.MODULE_B2I_EXTENSION)
 				.conceptId(invalidDescriptionConcept2.getId())
 				.build();
 		
 		SnomedConceptDocument invalidDescriptionConcept3 = concept(generateConceptId()).build();
 		SnomedDescriptionIndexEntry descWithSymbolAndInvalidHypenSpacing = description(generateDescriptionId(), Concepts.SYNONYM, "Hello -? -a")
-				.moduleId(Concepts.UK_DRUG_EXTENSION_MODULE)
+				.moduleId(Concepts.MODULE_B2I_EXTENSION)
 				.conceptId(invalidDescriptionConcept3.getId())
 				.build();
 
 		//good examples
 		SnomedConceptDocument validDescriptionConcept = concept(generateConceptId()).build();
 		SnomedDescriptionIndexEntry descWithValidHypenSpacing= description(generateDescriptionId(), Concepts.SYNONYM, "Hello-Cruel!")
-				.moduleId(Concepts.UK_DRUG_EXTENSION_MODULE)
+				.moduleId(Concepts.MODULE_B2I_EXTENSION)
 				.conceptId(validDescriptionConcept.getId())
 				.build();
 		
 		SnomedConceptDocument validDescriptionConcept2 = concept(generateConceptId()).build();
 		SnomedDescriptionIndexEntry descWithSymbolNextToHypen = description(generateDescriptionId(), Concepts.SYNONYM, "Hello -?")
-				.moduleId(Concepts.UK_DRUG_EXTENSION_MODULE)
+				.moduleId(Concepts.MODULE_B2I_EXTENSION)
 				.conceptId(validDescriptionConcept2.getId())
 				.build();
 		
@@ -299,7 +299,7 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		SnomedConceptDocument concept1 = concept(generateConceptId()).active(true)
 				.parents(Long.parseLong(Concepts.ROOT_CONCEPT)).build();
 		SnomedDescriptionIndexEntry description1 = description(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, "Hello Cruel")
-				.moduleId(Concepts.UK_DRUG_EXTENSION_MODULE)
+				.moduleId(Concepts.MODULE_B2I_EXTENSION)
 				.conceptId(concept1.getId())
 				.build();
 
@@ -307,7 +307,7 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		SnomedConceptDocument concept2 = concept(generateConceptId()).active(true)
 				.parents(Long.parseLong(Concepts.ROOT_CONCEPT)).build();
 		SnomedDescriptionIndexEntry description2 = description(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, "Hello Cruel(Coco)")
-				.moduleId(Concepts.UK_DRUG_EXTENSION_MODULE)
+				.moduleId(Concepts.MODULE_B2I_EXTENSION)
 				.conceptId(concept2.getId())
 				.build();
 		
@@ -385,17 +385,17 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		
 		// index term containing space before ":"
 		SnomedDescriptionIndexEntry description1 = description(generateDescriptionId(), Concepts.SYNONYM, "hello :")
-				.moduleId(Concepts.UK_DRUG_EXTENSION_MODULE)
+				.moduleId(Concepts.MODULE_B2I_EXTENSION)
 				.build();
 
 		// index term containing space before "."
 		SnomedDescriptionIndexEntry description2 = description(generateDescriptionId(), Concepts.SYNONYM, "hello .")
-				.moduleId(Concepts.UK_DRUG_EXTENSION_MODULE)
+				.moduleId(Concepts.MODULE_B2I_EXTENSION)
 				.build();
 
 		// index correct term.
 		SnomedDescriptionIndexEntry description3 = description(generateDescriptionId(), Concepts.SYNONYM, "hello")
-				.moduleId(Concepts.UK_DRUG_EXTENSION_MODULE)
+				.moduleId(Concepts.MODULE_B2I_EXTENSION)
 				.build();
 		
 		indexRevision(MAIN, description1, description2, description3);
@@ -462,27 +462,27 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		SnomedConceptDocument concept = concept(generateConceptId()).build();
 
 		SnomedDescriptionIndexEntry validDescription1 = description(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, "Clinical finding (semantic tag)")
-				.moduleId(Concepts.UK_DRUG_EXTENSION_MODULE)
+				.moduleId(Concepts.MODULE_B2I_EXTENSION)
 				.conceptId(concept.getId())
 				.build();
 		
 		SnomedDescriptionIndexEntry irrelevantDescription1 = description(generateDescriptionId(), Concepts.TEXT_DEFINITION, "Clinical finding (semantic tag)")
-				.moduleId(Concepts.UK_DRUG_EXTENSION_MODULE)
+				.moduleId(Concepts.MODULE_B2I_EXTENSION)
 				.conceptId(concept.getId())
 				.build();
 		
 		SnomedDescriptionIndexEntry validDescription2 = description(generateDescriptionId(), Concepts.SYNONYM, "Clinical finding ( regime/therapy )")
-				.moduleId(Concepts.UK_DRUG_EXTENSION_MODULE)
+				.moduleId(Concepts.MODULE_B2I_EXTENSION)
 				.conceptId(concept.getId())
 				.build();
 
 		SnomedDescriptionIndexEntry invalidDescription1 = description(generateDescriptionId(), Concepts.SYNONYM, "Clinical finding (regime/therapy)")
-				.moduleId(Concepts.UK_DRUG_EXTENSION_MODULE)
+				.moduleId(Concepts.MODULE_B2I_EXTENSION)
 				.conceptId(concept.getId())
 				.build();
 
 		SnomedDescriptionIndexEntry invalidDescription2 = description(generateDescriptionId(), Concepts.SYNONYM, "Clinical finding (specimen)")
-				.moduleId(Concepts.UK_DRUG_EXTENSION_MODULE)
+				.moduleId(Concepts.MODULE_B2I_EXTENSION)
 				.conceptId(concept.getId())
 				.build();
 		
@@ -504,7 +504,7 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 
 		SnomedConceptDocument concept1 = concept(generateConceptId()).effectiveTime(effectiveTime).build();
 		SnomedDescriptionIndexEntry description1 = description(generateDescriptionId(), Concepts.SYNONYM, "Good       synonym!?+$*~~~~")
-				.moduleId(Concepts.UK_DRUG_EXTENSION_MODULE)
+				.moduleId(Concepts.MODULE_B2I_EXTENSION)
 				.conceptId(concept1.getId()).build();
 		
 		SnomedConceptDocument concept2 = concept(generateConceptId()).effectiveTime(effectiveTime).build();
@@ -513,7 +513,7 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		
 		SnomedConceptDocument concept3 = concept(generateConceptId()).effectiveTime(effectiveTime).build();
 		SnomedDescriptionIndexEntry description3 = description(generateDescriptionId(), Concepts.SYNONYM, "Bád synonym ©")
-				.moduleId(Concepts.UK_DRUG_EXTENSION_MODULE)
+				.moduleId(Concepts.MODULE_B2I_EXTENSION)
 				.conceptId(concept3.getId()).build();
 		
 		indexRevision(MAIN, concept1, concept2, concept3, description1, description2, description3);
@@ -531,7 +531,7 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		SnomedConceptDocument concept1 = concept(generateConceptId()).effectiveTime(effectiveTime).build();
 		
 		SnomedDescriptionIndexEntry description1 = fsn("Good FSN")
-				.moduleId(Concepts.UK_DRUG_EXTENSION_MODULE)
+				.moduleId(Concepts.MODULE_B2I_EXTENSION)
 				.conceptId(concept1.getId()).build();
 		
 		SnomedConceptDocument concept2 = concept(generateConceptId()).effectiveTime(effectiveTime).build();
@@ -541,7 +541,7 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		
 		SnomedConceptDocument concept3 = concept(generateConceptId()).effectiveTime(effectiveTime).build();
 		SnomedDescriptionIndexEntry description3 = fsn("Bad FSN %")
-				.moduleId(Concepts.UK_DRUG_EXTENSION_MODULE)
+				.moduleId(Concepts.MODULE_B2I_EXTENSION)
 				.conceptId(concept3.getId()).build();
 		
 		indexRevision(MAIN, concept1, concept2, concept3, description1, description2, description3);
@@ -558,7 +558,7 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 
 		SnomedConceptDocument concept1 = concept(generateConceptId()).effectiveTime(effectiveTime).build();
 		SnomedDescriptionIndexEntry description1 = description(generateDescriptionId(), Concepts.SYNONYM, "Good synonym!")
-				.moduleId(Concepts.UK_DRUG_EXTENSION_MODULE)
+				.moduleId(Concepts.MODULE_B2I_EXTENSION)
 				.conceptId(concept1.getId()).build();
 		
 		SnomedConceptDocument concept2 = concept(generateConceptId()).effectiveTime(effectiveTime).build();
@@ -568,7 +568,7 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		
 		SnomedConceptDocument concept3 = concept(generateConceptId()).effectiveTime(effectiveTime).build();
 		SnomedDescriptionIndexEntry description3 = description(generateDescriptionId(), Concepts.SYNONYM, "Bád synonym $")
-				.moduleId(Concepts.UK_DRUG_EXTENSION_MODULE)
+				.moduleId(Concepts.MODULE_B2I_EXTENSION)
 				.conceptId(concept3.getId()).build();
 		
 		indexRevision(MAIN, concept1, concept2, concept3, description1, description2, description3);
@@ -584,15 +584,15 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		final String ruleId = "482";
 		indexRule(ruleId);
 
-		SnomedDescriptionIndexEntry baadDesc1 = fsn("They are billions (game))").moduleId(Concepts.UK_DRUG_EXTENSION_MODULE).build();
-		SnomedDescriptionIndexEntry baadDesc2 = fsn("They are billions ((awesome) (game)").moduleId(Concepts.UK_DRUG_EXTENSION_MODULE).build();
-		SnomedDescriptionIndexEntry baadDesc3 = fsn("They are billions (awe( some) [game]").moduleId(Concepts.UK_DRUG_EXTENSION_MODULE).build();
-		SnomedDescriptionIndexEntry baadDesc4 = fsn("They are billions (awesome {quite indeed}").moduleId(Concepts.UK_DRUG_EXTENSION_MODULE).build();
-		SnomedDescriptionIndexEntry baadDesc5 = fsn("They are billions {awesome game").moduleId(Concepts.UK_DRUG_EXTENSION_MODULE).build();
-		SnomedDescriptionIndexEntry baadDesc6 = fsn("They are billions awesome] (game)").moduleId(Concepts.UK_DRUG_EXTENSION_MODULE).build();
-		SnomedDescriptionIndexEntry goodDesc1 = fsn("They are billions {game}").moduleId(Concepts.UK_DRUG_EXTENSION_MODULE).build();
-		SnomedDescriptionIndexEntry goodDesc2 = fsn("They are billions [awesome] (game)").moduleId(Concepts.UK_DRUG_EXTENSION_MODULE).build();
-		SnomedDescriptionIndexEntry goodDesc3 = fsn("{They are billions} (game)").moduleId(Concepts.UK_DRUG_EXTENSION_MODULE).build();
+		SnomedDescriptionIndexEntry baadDesc1 = fsn("They are billions (game))").moduleId(Concepts.MODULE_B2I_EXTENSION).build();
+		SnomedDescriptionIndexEntry baadDesc2 = fsn("They are billions ((awesome) (game)").moduleId(Concepts.MODULE_B2I_EXTENSION).build();
+		SnomedDescriptionIndexEntry baadDesc3 = fsn("They are billions (awe( some) [game]").moduleId(Concepts.MODULE_B2I_EXTENSION).build();
+		SnomedDescriptionIndexEntry baadDesc4 = fsn("They are billions (awesome {quite indeed}").moduleId(Concepts.MODULE_B2I_EXTENSION).build();
+		SnomedDescriptionIndexEntry baadDesc5 = fsn("They are billions {awesome game").moduleId(Concepts.MODULE_B2I_EXTENSION).build();
+		SnomedDescriptionIndexEntry baadDesc6 = fsn("They are billions awesome] (game)").moduleId(Concepts.MODULE_B2I_EXTENSION).build();
+		SnomedDescriptionIndexEntry goodDesc1 = fsn("They are billions {game}").moduleId(Concepts.MODULE_B2I_EXTENSION).build();
+		SnomedDescriptionIndexEntry goodDesc2 = fsn("They are billions [awesome] (game)").moduleId(Concepts.MODULE_B2I_EXTENSION).build();
+		SnomedDescriptionIndexEntry goodDesc3 = fsn("{They are billions} (game)").moduleId(Concepts.MODULE_B2I_EXTENSION).build();
 		
 		indexRevision(MAIN, baadDesc1, baadDesc2, baadDesc3, baadDesc4, baadDesc5,
 			baadDesc6, goodDesc1, goodDesc2, goodDesc3);
@@ -611,22 +611,22 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 	
 	@Test
 	public void rule532a_pharmacy_1() throws Exception {
-		rule532("532a", Concepts.FULLY_SPECIFIED_NAME, Concepts.UK_DRUG_EXTENSION_MODULE);
+		rule532("532a", Concepts.FULLY_SPECIFIED_NAME, Concepts.MODULE_B2I_EXTENSION);
 	}
 
 	@Test
 	public void rule532a_pharmacy_2() throws Exception {
-		rule532("532a", Concepts.FULLY_SPECIFIED_NAME, Concepts.UK_DRUG_EXTENSION_MODULE);
+		rule532("532a", Concepts.FULLY_SPECIFIED_NAME, Concepts.MODULE_B2I_EXTENSION);
 	}
 	
 	@Test
 	public void rule532b_pharmacy_1() throws Exception {
-		rule532("532b", Concepts.SYNONYM, Concepts.UK_DRUG_EXTENSION_MODULE);
+		rule532("532b", Concepts.SYNONYM, Concepts.MODULE_B2I_EXTENSION);
 	}
 
 	@Test
 	public void rule532b_pharmacy_2() throws Exception {
-		rule532("532b", Concepts.SYNONYM, Concepts.UK_DRUG_EXTENSION_MODULE);
+		rule532("532b", Concepts.SYNONYM, Concepts.MODULE_B2I_EXTENSION);
 	}
 	
 	private void rule532(String ruleId, String descriptionType, String moduleId) throws Exception {
