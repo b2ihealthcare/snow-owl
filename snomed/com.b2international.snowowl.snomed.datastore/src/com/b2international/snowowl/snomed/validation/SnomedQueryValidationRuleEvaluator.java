@@ -72,8 +72,8 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 		SnomedSearchRequestBuilder<?, PageableCollectionResource<SnomedComponent>> req = validationQuery
 				.prepareSearch();
 		
-		if (params != null && params.containsKey(ValidationConfiguration.WORKING_MODULES) && Boolean.TRUE.equals(validationQuery.filterByWorkingModule)) {
-			req.filterByModule(params.get(ValidationConfiguration.WORKING_MODULES).toString());
+		if (params != null && params.containsKey(ValidationConfiguration.MODULES) && Boolean.TRUE.equals(validationQuery.extensionScope)) {
+			req.filterByModule(params.get(ValidationConfiguration.MODULES).toString());
 		}
 		
 		SearchIndexResourceRequest<BranchContext, ?, ? extends SnomedDocument> searchReq = (SearchIndexResourceRequest<BranchContext, ?, ? extends SnomedDocument>) req.build();
@@ -130,7 +130,7 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 		@JsonProperty private Boolean active;
 		@JsonProperty private String effectiveTime;
 		@JsonProperty private String module;
-		@JsonProperty private Boolean filterByWorkingModule = Boolean.FALSE;
+		@JsonProperty private Boolean extensionScope = Boolean.FALSE;
 		@JsonProperty private Boolean released;
 
 		public final SB prepareSearch() {
@@ -147,7 +147,7 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 			.filterByReleased(released)
 			.filterByEffectiveTime(effectiveTime);
 			
-			if (!filterByWorkingModule) {
+			if (!extensionScope) {
 				return req.filterByModule(module);
 			} 
 			return req;

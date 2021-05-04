@@ -60,7 +60,7 @@
     "severity": "WARNING",
     "checkType": "FAST",
     "type": "snomed-query",
-    "implementation": "{\"componentType\": \"description\",\"active\": \"true\", \"filterByWorkingModule\": \"true\", \"term\": \"regex([a-z].*)\",\"caseSignificance\": \"<900000000000447004 MINUS 900000000000017005\"}"
+    "implementation": "{\"componentType\": \"description\",\"active\": \"true\", \"extensionScope\": \"true\", \"term\": \"regex([a-z].*)\",\"caseSignificance\": \"<900000000000447004 MINUS 900000000000017005\"}"
   },
   {
     "id": "55",
@@ -78,7 +78,7 @@
     "severity": "WARNING",
     "checkType": "NORMAL",
     "type": "snomed-query",
-    "implementation": "{\"componentType\": \"description\",\"active\": \"true\", \"filterByWorkingModule\": \"true\", \"concept\": \"<<138875005|ROOT|\",\"type\": \"900000000000003001\",\"semanticTag\":\"\"}"
+    "implementation": "{\"componentType\": \"description\",\"active\": \"true\", \"extensionScope\": \"true\", \"concept\": \"<<138875005|ROOT|\",\"type\": \"900000000000003001\",\"semanticTag\":\"\"}"
   },
   {
     "id": "75",
@@ -105,7 +105,7 @@
     "severity": "WARNING",
     "checkType": "FAST",
     "type": "snomed-query",
-    "implementation": "{\"componentType\": \"description\",\"active\": \"true\", \"filterByWorkingModule\": \"true\", \"term\": \"regex(.*[ ]+[,:;\\\\.]+.*)\"}"
+    "implementation": "{\"componentType\": \"description\",\"active\": \"true\", \"extensionScope\": \"true\", \"term\": \"regex(.*[ ]+[,:;\\\\.]+.*)\"}"
   },
   {
     "id": "110",
@@ -132,7 +132,7 @@
     "severity": "WARNING",
     "checkType": "FAST",
     "type": "snomed-query",
-    "implementation": "{\"componentType\": \"description\",\"active\": \"true\", \"filterByWorkingModule\": \"true\", \"term\": \"regex(.*[^\\u0020-\\u007e].*)\"}"
+    "implementation": "{\"componentType\": \"description\",\"active\": \"true\", \"extensionScope\": \"true\", \"term\": \"regex(.*[^\\u0020-\\u007e].*)\"}"
   },
   {
     "id": "327",
@@ -141,7 +141,7 @@
     "severity": "WARNING",
     "checkType": "FAST",
     "type": "snomed-query",
-    "implementation": "{\"componentType\": \"description\", \"type\": \"900000000000003001\", \"active\": \"true\", \"filterByWorkingModule\": \"true\", \"term\": \"regex(.*[<>&%$@#]+.*)\"}"
+    "implementation": "{\"componentType\": \"description\", \"type\": \"900000000000003001\", \"active\": \"true\", \"extensionScope\": \"true\", \"term\": \"regex(.*[<>&%$@#]+.*)\"}"
   },
   {
     "id": "328",
@@ -150,7 +150,7 @@
     "severity": "WARNING",
     "checkType": "FAST",
     "type": "snomed-query",
-    "implementation": "{\"componentType\": \"description\", \"type\": \"900000000000013009\", \"active\": \"true\", \"filterByWorkingModule\": \"true\", \"term\": \"regex(.*[$@]+.*)\"}"
+    "implementation": "{\"componentType\": \"description\", \"type\": \"900000000000013009\", \"active\": \"true\", \"extensionScope\": \"true\", \"term\": \"regex(.*[$@]+.*)\"}"
   },
   {
   	"id": "482",
