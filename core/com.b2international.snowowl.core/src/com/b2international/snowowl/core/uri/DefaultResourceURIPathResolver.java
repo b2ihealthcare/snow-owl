@@ -55,7 +55,8 @@ public final class DefaultResourceURIPathResolver implements ResourceURIPathReso
 		return codeSystemURIs.stream().map(uri -> resolve(context, uri, resourcesById.get(uri.getResourceId()))).collect(Collectors.toList());
 	}
 
-	private String resolve(ServiceProvider context, ResourceURI uriToResolve, Resource resource) {
+	@Override
+	public String resolve(ServiceProvider context, ResourceURI uriToResolve, Resource resource) {
 		if (resource instanceof TerminologyResource) {
 			TerminologyResource terminologyResource = (TerminologyResource) resource;
 			if (uriToResolve.isHead()) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.request;
 
+import com.b2international.snowowl.core.context.TerminologyResourceContentRequestBuilder;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.SetMembers;
 import com.b2international.snowowl.core.request.SetSearchRequestEvaluator.OptionKey;
@@ -23,8 +24,9 @@ import com.google.common.collect.ImmutableSet;
 /**
 * @since 7.7
 */
-public final class MemberSearchRequestBuilder extends SearchResourceRequestBuilder<MemberSearchRequestBuilder, BranchContext, SetMembers> 
-		implements RevisionIndexRequestBuilder<SetMembers> {
+public final class MemberSearchRequestBuilder 
+		extends SearchResourceRequestBuilder<MemberSearchRequestBuilder, BranchContext, SetMembers> 
+		implements TerminologyResourceContentRequestBuilder<SetMembers> {
 	
 	public MemberSearchRequestBuilder filterBySet(String setId) {
 		return filterBySets(ImmutableSet.of(setId));

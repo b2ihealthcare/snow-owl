@@ -35,26 +35,24 @@ public final class TerminologyResourceRequest<R> extends DelegatingRequest<Servi
 	private static final long serialVersionUID = 1L;
 	
 	@NotEmpty
-	private final String resourceURI;
+	private final ResourceURI resourceURI;
 
-	public TerminologyResourceRequest(final String resourceURI, final Request<TerminologyResourceContext, R> next) {
+	public TerminologyResourceRequest(final ResourceURI resourceURI, final Request<TerminologyResourceContext, R> next) {
 		super(next);
 		this.resourceURI = resourceURI;
 	}
 	
 	@Override
 	public R execute(ServiceProvider context) {
-		final Resource resource = ResourceRequests.prepareGet(resourceURI).build().execute(context);
+		final Resource resource = ResourceRequests.prepareGet(resourceURI.toString()).build().execute(context);
 		if (!(resource instanceof TerminologyResource)) {
-			throw new NotFoundException("Terminology Resource", resourceURI);
+			throw new NotFoundException("Terminology Resource", resourceURI.toString());
 		}
 		final TerminologyResource terminologyResource = (TerminologyResource) resource;
 		
-		// TODO provide access to repository and branch services, prepare for revision read
 		final DefaultTerminologyResourceContext resourceContext = new DefaultTerminologyResourceContext(context);
 		resourceContext.bind(ResourceURI.class, terminologyResource.getResourceURI());
 		resourceContext.bind(TerminologyResource.class, terminologyResource);
-		
 		return next(resourceContext);
 	}
 

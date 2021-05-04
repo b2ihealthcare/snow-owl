@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,9 +31,9 @@ import com.b2international.commons.ChangeKind;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.context.TerminologyResourceContentRequestBuilder;
 import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.core.domain.IComponent;
-import com.b2international.snowowl.core.request.RevisionIndexRequestBuilder;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.fasterxml.jackson.databind.SequenceWriter;
@@ -57,7 +57,7 @@ public final class CompareResultsDsvExporter {
 	private final Map<String, String> compareBranches;
 	private final Path outputPath;
 	private final Map<String, BranchCompareResult> compareResultsProvider;
-	private final Map<String, BiFunction<Short, Collection<String>, RevisionIndexRequestBuilder<CollectionResource<IComponent>>>> fetcherProvider;
+	private final Map<String, BiFunction<Short, Collection<String>, TerminologyResourceContentRequestBuilder<CollectionResource<IComponent>>>> fetcherProvider;
 	private final Map<String, Function<IComponent, String>> labelResolvers;
 	private final Map<String, BiFunction<IComponent, IComponent, Collection<CompareData>>> componentCompareResultProviders;
 	private final char delimiter;
@@ -68,7 +68,7 @@ public final class CompareResultsDsvExporter {
 			Map<String, String> compareBranch,
 			Path outputPath,
 			Map<String, BranchCompareResult> compareResults,
-			Map<String, BiFunction<Short, Collection<String>, RevisionIndexRequestBuilder<CollectionResource<IComponent>>>> fetcherFunction,
+			Map<String, BiFunction<Short, Collection<String>, TerminologyResourceContentRequestBuilder<CollectionResource<IComponent>>>> fetcherFunction,
 			Map<String, Function<IComponent, String>> labelResolver,
 			Map<String, BiFunction<IComponent, IComponent, Collection<CompareData>>> componentCompareResultProviders,
 			char delimiter
@@ -120,7 +120,7 @@ public final class CompareResultsDsvExporter {
 			
 	private void exportCodeSystem(final String codeSystem, SequenceWriter writer, IProgressMonitor monitor) {
 		BranchCompareResult compareResults = compareResultsProvider.get(codeSystem);
-		BiFunction<Short, Collection<String>, RevisionIndexRequestBuilder<CollectionResource<IComponent>>> fetcherFunction = fetcherProvider.get(codeSystem);
+		BiFunction<Short, Collection<String>, TerminologyResourceContentRequestBuilder<CollectionResource<IComponent>>> fetcherFunction = fetcherProvider.get(codeSystem);
 		String repositoryUuid = repositoryUuids.get(codeSystem);
 		String compareBranch = compareBranches.get(codeSystem);
 		String baseBranch = baseBranches.get(codeSystem);
@@ -132,7 +132,7 @@ public final class CompareResultsDsvExporter {
 			
 			for (short terminologyComponentId : newComponentIds.keySet()) {
 				for (List<String> componentIds : Lists.partition(newComponentIds.get(terminologyComponentId), PARTITION_SIZE)) {
-					RevisionIndexRequestBuilder<CollectionResource<IComponent>> componentFetchRequest = fetcherFunction.apply(terminologyComponentId, componentIds);
+					TerminologyResourceContentRequestBuilder<CollectionResource<IComponent>> componentFetchRequest = fetcherFunction.apply(terminologyComponentId, componentIds);
 					
 					if (componentFetchRequest == null) {
 						break;
@@ -158,7 +158,7 @@ public final class CompareResultsDsvExporter {
 			for (short terminologyComponentId : changedComponentIds.keySet()) {
 				for (List<String> componentIds : Lists.partition(changedComponentIds.get(terminologyComponentId), PARTITION_SIZE)) {
 					componentPairs.clear();
-					RevisionIndexRequestBuilder<CollectionResource<IComponent>> componentFetchRequest = fetcherFunction.apply(terminologyComponentId, componentIds);
+					TerminologyResourceContentRequestBuilder<CollectionResource<IComponent>> componentFetchRequest = fetcherFunction.apply(terminologyComponentId, componentIds);
 					
 					if (componentFetchRequest == null) {
 						break;
@@ -195,7 +195,7 @@ public final class CompareResultsDsvExporter {
 			
 			for (short terminologyComponentId : deletedComponentIds.keySet()) {
 				for (List<String> componentIds : Lists.partition(deletedComponentIds.get(terminologyComponentId), PARTITION_SIZE)) {
-					RevisionIndexRequestBuilder<CollectionResource<IComponent>> componentFetchRequest = fetcherFunction.apply(terminologyComponentId, componentIds);
+					TerminologyResourceContentRequestBuilder<CollectionResource<IComponent>> componentFetchRequest = fetcherFunction.apply(terminologyComponentId, componentIds);
 					
 					if (componentFetchRequest == null) {
 						break;

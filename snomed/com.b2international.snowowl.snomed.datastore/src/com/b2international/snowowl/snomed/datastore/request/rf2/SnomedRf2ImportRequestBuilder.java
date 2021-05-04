@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,10 @@ package com.b2international.snowowl.snomed.datastore.request.rf2;
 
 import java.util.UUID;
 
+import com.b2international.snowowl.core.context.TerminologyResourceContentRequestBuilder;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.request.RevisionIndexRequestBuilder;
 import com.b2international.snowowl.core.request.io.ImportResponse;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 
@@ -29,7 +29,7 @@ import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
  */
 public final class SnomedRf2ImportRequestBuilder 
 		extends BaseRequestBuilder<SnomedRf2ImportRequestBuilder, BranchContext, ImportResponse> 
-		implements RevisionIndexRequestBuilder<ImportResponse> {
+		implements TerminologyResourceContentRequestBuilder<ImportResponse> {
 
 	private UUID rf2ArchiveId;
 	private Rf2ReleaseType releaseType = Rf2ReleaseType.DELTA;

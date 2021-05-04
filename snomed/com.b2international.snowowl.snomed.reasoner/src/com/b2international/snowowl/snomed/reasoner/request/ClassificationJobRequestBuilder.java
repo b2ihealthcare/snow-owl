@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,11 @@ import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.List;
 
+import com.b2international.snowowl.core.context.TerminologyResourceContentRequestBuilder;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
-import com.b2international.snowowl.core.request.RevisionIndexRequestBuilder;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 
 /**
@@ -31,7 +31,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
  */
 public final class ClassificationJobRequestBuilder 
 		extends BaseRequestBuilder<ClassificationJobRequestBuilder, BranchContext, Boolean>
-		implements RevisionIndexRequestBuilder<Boolean> {
+		implements TerminologyResourceContentRequestBuilder<Boolean> {
 
 	private String reasonerId;
 	private final List<SnomedConcept> additionalConcepts = newArrayList();

@@ -20,8 +20,8 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.context.TerminologyResourceRequest;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
-import com.b2international.snowowl.core.request.TerminologyResourceRequest;
 import com.b2international.snowowl.core.request.RevisionIndexReadRequest;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.uri.CodeSystemURI;

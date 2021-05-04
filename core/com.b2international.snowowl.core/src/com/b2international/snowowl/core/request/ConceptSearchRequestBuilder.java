@@ -16,6 +16,7 @@
 package com.b2international.snowowl.core.request;
 
 import com.b2international.snowowl.core.CodeType;
+import com.b2international.snowowl.core.context.TerminologyResourceContentRequestBuilder;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.Concepts;
 import com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator.OptionKey;
@@ -24,8 +25,9 @@ import com.google.common.collect.FluentIterable;
 /**
  * @since 7.5
  */
-public final class ConceptSearchRequestBuilder extends SearchResourceRequestBuilder<ConceptSearchRequestBuilder, BranchContext, Concepts>
-		implements RevisionIndexRequestBuilder<Concepts>, TermFilterSupport<ConceptSearchRequestBuilder> {
+public final class ConceptSearchRequestBuilder 
+		extends SearchResourceRequestBuilder<ConceptSearchRequestBuilder, BranchContext, Concepts>
+		implements TerminologyResourceContentRequestBuilder<Concepts>, TermFilterSupport<ConceptSearchRequestBuilder> {
 
 	/**
 	 * Filters matches by their active/inactive status. 

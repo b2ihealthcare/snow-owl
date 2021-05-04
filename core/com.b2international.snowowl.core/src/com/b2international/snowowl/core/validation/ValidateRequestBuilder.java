@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,17 +18,17 @@ package com.b2international.snowowl.core.validation;
 import java.util.Collection;
 import java.util.Map;
 
+import com.b2international.snowowl.core.context.TerminologyResourceContentRequestBuilder;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.request.RevisionIndexRequestBuilder;
 
 /**
  * @since 6.0
  */
 public final class ValidateRequestBuilder 
 		extends BaseRequestBuilder<ValidateRequestBuilder, BranchContext, ValidationResult>
-		implements RevisionIndexRequestBuilder<ValidationResult> {
+		implements TerminologyResourceContentRequestBuilder<ValidationResult> {
 	
 	ValidateRequestBuilder() {}
 	

@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.request;
 
+import com.b2international.snowowl.core.context.TerminologyResourceContentRequestBuilder;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.ConceptMapMappings;
 import com.b2international.snowowl.core.request.SetSearchRequestEvaluator.OptionKey;
@@ -24,8 +25,9 @@ import com.google.common.collect.ImmutableSet;
 /**
 * @since 7.8
 */
-public final class ConceptMapMappingSearchRequestBuilder extends SearchResourceRequestBuilder<ConceptMapMappingSearchRequestBuilder, BranchContext, ConceptMapMappings> 
-		implements RevisionIndexRequestBuilder<ConceptMapMappings> {
+public final class ConceptMapMappingSearchRequestBuilder 
+		extends SearchResourceRequestBuilder<ConceptMapMappingSearchRequestBuilder, BranchContext, ConceptMapMappings> 
+		implements TerminologyResourceContentRequestBuilder<ConceptMapMappings> {
 	
 	public ConceptMapMappingSearchRequestBuilder filterByConceptMap(String conceptMapId) {
 		return addOption(OptionKey.SET, conceptMapId);

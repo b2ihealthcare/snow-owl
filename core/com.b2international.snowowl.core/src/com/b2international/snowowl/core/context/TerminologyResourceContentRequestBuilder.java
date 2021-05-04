@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,25 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.request;
+package com.b2international.snowowl.core.context;
 
-import com.b2international.index.revision.RevisionSearcher;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.events.RequestBuilder;
+import com.b2international.snowowl.core.request.AllowedHealthStates;
+import com.b2international.snowowl.core.request.RevisionIndexReadRequest;
 
 /**
- * Provides a default method for wrapping {@link BranchContext}-based requests
- * into {@link AsyncRequest}s. The provided {@code BranchContext} allows
- * searching for document revisions via a {@link RevisionSearcher} service
- * reference.
- * 
- * @since 5.7
- * @param <R> - the return type
+ * @since 8.0
  */
-public interface RevisionIndexRequestBuilder<R> extends TerminologyResourceRequestBuilder<R> {
+public interface TerminologyResourceContentRequestBuilder<R> extends RequestBuilder<BranchContext, R>, AllowedHealthStates {
 
-	@Override
+	default AsyncRequest<R> build(String resourceUri) {
+		return build(new ResourceURI(resourceUri));
+	}
+	
+	default AsyncRequest<R> build(ResourceURI resourceUri) {
+		return new AsyncRequest<>(
+			new TerminologyResourceRequest<R>(resourceUri,
+				new TerminologyResourceContentRequest<>(
+					resourceUri.getPath(),
+					wrap(build())
+				)
+			)
+		);
+	}
+	
 	default Request<BranchContext, R> wrap(Request<BranchContext, R> req) {
 		return new RevisionIndexReadRequest<>(req, snapshot());
 	}

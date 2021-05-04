@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.util.Set;
 
 import com.b2international.snowowl.core.compare.ConceptMapCompareConfigurationProperties;
 import com.b2international.snowowl.core.compare.ConceptMapCompareResult;
+import com.b2international.snowowl.core.context.TerminologyResourceContentRequestBuilder;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.uri.ComponentURI;
 
@@ -27,7 +28,7 @@ import com.b2international.snowowl.core.uri.ComponentURI;
 */
 public final class ConceptMapCompareRequestBuilder 
 		extends ResourceRequestBuilder<ConceptMapCompareRequestBuilder, BranchContext, ConceptMapCompareResult>
-		implements RevisionIndexRequestBuilder<ConceptMapCompareResult> {
+		implements TerminologyResourceContentRequestBuilder<ConceptMapCompareResult> {
 	
 	private static final int MAX_LIMIT = Integer.MAX_VALUE - 1;
 	

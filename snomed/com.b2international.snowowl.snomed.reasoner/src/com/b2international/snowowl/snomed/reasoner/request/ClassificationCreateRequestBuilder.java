@@ -20,11 +20,11 @@ import static com.google.common.collect.Lists.newArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import com.b2international.snowowl.core.context.TerminologyResourceContentRequestBuilder;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
-import com.b2international.snowowl.core.request.TerminologyResourceRequestBuilder;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 
 /**
@@ -32,7 +32,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
  */
 public final class ClassificationCreateRequestBuilder 
 		extends BaseRequestBuilder<ClassificationCreateRequestBuilder, BranchContext, String>
-		implements TerminologyResourceRequestBuilder<String> {
+		implements TerminologyResourceContentRequestBuilder<String> {
 
 	private String classificationId = UUID.randomUUID().toString();
 	private String reasonerId;

@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2016-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,11 @@
 package com.b2international.snowowl.snomed.core.ecl;
 
 import com.b2international.index.query.Expression;
+import com.b2international.snowowl.core.context.TerminologyResourceContentRequestBuilder;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.Promise;
-import com.b2international.snowowl.core.request.RevisionIndexRequestBuilder;
 import com.b2international.snowowl.snomed.core.tree.Trees;
 import com.google.common.base.Preconditions;
 
@@ -29,7 +29,7 @@ import com.google.common.base.Preconditions;
  */
 public final class SnomedEclEvaluationRequestBuilder 
 		extends BaseRequestBuilder<SnomedEclEvaluationRequestBuilder, BranchContext, Promise<Expression>> 
-		implements RevisionIndexRequestBuilder<Promise<Expression>> {
+		implements TerminologyResourceContentRequestBuilder<Promise<Expression>> {
 
 	private String expression;
 	private String expressionForm = Trees.INFERRED_FORM;

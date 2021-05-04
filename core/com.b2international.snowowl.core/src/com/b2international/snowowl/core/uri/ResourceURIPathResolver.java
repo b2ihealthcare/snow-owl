@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.branch.Branch;
@@ -33,12 +34,22 @@ public interface ResourceURIPathResolver {
 	 * Resolve a List of {@link ResourceURI} instances to actual low-level branch paths.
 	 * 
 	 * @param context
-	 * @param resourceURIs
+	 * @param urisToResolve
 	 * 
 	 * @return a list of branch paths that reference the content of the {@link ResourceURI} instances, never <code>null</code>
 	 */
-	List<String> resolve(ServiceProvider context, List<ResourceURI> resourceURIs);
+	List<String> resolve(ServiceProvider context, List<ResourceURI> urisToResolve);
 
+	/**
+	 * Resolve a single {@link ResourceURI} in the context of the given {@link Resource}.
+	 * 
+	 * @param context
+	 * @param uriToResolve
+	 * @param resource
+	 * @return
+	 */
+	String resolve(ServiceProvider context, ResourceURI uriToResolve, Resource resource);
+	
 	/**
 	 * Basic resource URI to branch path resolver, which uses a Resource ID to BranchPath Map to provide branch paths for any Resource.
 	 * 
@@ -47,15 +58,23 @@ public interface ResourceURIPathResolver {
 	 */
 	@VisibleForTesting
 	static ResourceURIPathResolver fromMap(Map<String, String> resourcesToBranches) {
-		return (context, uris) -> {
-			return uris.stream()
-				.map(uri -> {
-					if (resourcesToBranches.containsKey(uri.getResourceId())) {
-						return String.join(Branch.SEPARATOR, resourcesToBranches.get(uri.getResourceId()), uri.getPath());
-					} else {
-						throw new UnsupportedOperationException("Unrecognized Resource: " + uri);
-					}
-				}).collect(Collectors.toList());
+		return new ResourceURIPathResolver() {
+			@Override
+			public List<String> resolve(ServiceProvider context, List<ResourceURI> urisToResolve) {
+				return urisToResolve.stream()
+					.map(uri -> {
+						if (resourcesToBranches.containsKey(uri.getResourceId())) {
+							return String.join(Branch.SEPARATOR, resourcesToBranches.get(uri.getResourceId()), uri.getPath());
+						} else {
+							throw new UnsupportedOperationException("Unrecognized Resource: " + uri);
+						}
+					}).collect(Collectors.toList());
+			}
+			
+			@Override
+			public String resolve(ServiceProvider context, ResourceURI uriToResolve, Resource resource) {
+				throw new UnsupportedOperationException("Not implemented yet");
+			}
 		};
 	}
 

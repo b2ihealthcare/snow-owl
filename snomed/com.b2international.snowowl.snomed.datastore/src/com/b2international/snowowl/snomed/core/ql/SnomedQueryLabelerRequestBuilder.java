@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,10 @@ package com.b2international.snowowl.snomed.core.ql;
 
 import java.util.List;
 
+import com.b2international.snowowl.core.context.TerminologyResourceContentRequestBuilder;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.ResourceRequest;
 import com.b2international.snowowl.core.request.ResourceRequestBuilder;
-import com.b2international.snowowl.core.request.RevisionIndexRequestBuilder;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.google.common.collect.ImmutableList;
 
@@ -28,7 +28,7 @@ import com.google.common.collect.ImmutableList;
  * @since 7.6
  */
 public final class SnomedQueryLabelerRequestBuilder extends ResourceRequestBuilder<SnomedQueryLabelerRequestBuilder, BranchContext, Expressions>
-		implements RevisionIndexRequestBuilder<Expressions> {
+		implements TerminologyResourceContentRequestBuilder<Expressions> {
 
 	private final List<String> expressions;
 	private String descriptionType = SnomedConcept.Expand.FULLY_SPECIFIED_NAME;

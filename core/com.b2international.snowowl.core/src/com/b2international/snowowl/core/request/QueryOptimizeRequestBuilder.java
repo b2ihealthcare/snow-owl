@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import com.b2international.snowowl.core.context.TerminologyResourceContentRequestBuilder;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.QueryExpression;
 import com.b2international.snowowl.core.domain.QueryExpressionDiffs;
@@ -29,7 +30,7 @@ import com.b2international.snowowl.core.domain.QueryExpressionDiffs;
  */
 public class QueryOptimizeRequestBuilder 
 	extends ResourceRequestBuilder<QueryOptimizeRequestBuilder, BranchContext, QueryExpressionDiffs> 
-	implements RevisionIndexRequestBuilder<QueryExpressionDiffs> {
+	implements TerminologyResourceContentRequestBuilder<QueryExpressionDiffs> {
 
 	private final List<QueryExpression> inclusions = newArrayList();
 	private final List<QueryExpression> exclusions = newArrayList();

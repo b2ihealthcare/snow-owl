@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.request;
 
+import com.b2international.snowowl.core.context.TerminologyResourceContentRequestBuilder;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.Suggestions;
 import com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator.OptionKey;
@@ -24,7 +25,7 @@ import com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator.Op
  */
 public final class ConceptSuggestionRequestBuilder 
 		extends SearchResourceRequestBuilder<ConceptSuggestionRequestBuilder, BranchContext, Suggestions>
-		implements RevisionIndexRequestBuilder<Suggestions> {
+		implements TerminologyResourceContentRequestBuilder<Suggestions> {
 
 	private int topTokenCount = 9;
 	private int minOccurrenceCount = 3;
