@@ -16,22 +16,15 @@
 package com.b2international.snowowl.fhir.core.search;
 
 import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.Pair;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
-import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.exceptions.FhirException;
 import com.b2international.snowowl.fhir.core.search.FhirUriFilterParameterDefinition.FhirFilterParameterKey;
-import com.b2international.snowowl.fhir.core.search.FhirUriParameterDefinition.SearchRequestParameterModifier;
 import com.b2international.snowowl.fhir.core.search.FhirUriSearchParameterDefinition.FhirCommonSearchKey;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -60,11 +53,11 @@ public class FhirUriParameterManager {
 		
 		FhirUriParameterManager definitions = new FhirUriParameterManager();
 		
-		List<Pair<String, Set<String>>> filterParameters = collectFilterParameters(model);
+		List<Filterable> filterableAnnotations = collectFilterParameters(model);
 		
-		for (Pair<String, Set<String>> filterParameter : filterParameters) {
-			FhirUriFilterParameterDefinition filterResultUriParameter = new FhirUriFilterParameterDefinition(filterParameter.getA(), filterParameter.getB());
-			definitions.supportedFilterParameters.put(filterParameter.getA(), filterResultUriParameter);
+		for (Filterable filterableAnnotation : filterableAnnotations) {
+			FhirUriFilterParameterDefinition filterResultUriParameter = new FhirUriFilterParameterDefinition(filterableAnnotation.filter(), filterableAnnotation.supportsMultipleValues(), Sets.newHashSet(filterableAnnotation.values()));
+			definitions.supportedFilterParameters.put(filterableAnnotation.filter(), filterResultUriParameter);
 		}
 		
 		List<Field> searchableFields = collectSearchableFields(model);
@@ -76,7 +69,7 @@ public class FhirUriParameterManager {
 	
 		 Set<FhirParameter> fhirParameters = multiMap.keySet().stream()
 				.map(k -> new RawRequestParameter(k, multiMap.get(k)))
-				.map(p -> classifyParameter(p))
+				.map(p -> processParameter(p))
 				.collect(Collectors.toSet());
 		
 		Set<FhirFilterParameter> filterParameters = fhirParameters.stream()
@@ -84,19 +77,21 @@ public class FhirUriParameterManager {
 				.map(FhirFilterParameter.class::cast)
 				.collect(Collectors.toSet());
 		
-		//TODO: cross-field validation comes here
+		//cross-parameter validation
+		validateFilterParameters(filterParameters);
 		
 		Set<FhirSearchParameter> searchParameters = fhirParameters.stream()
 				.filter(FhirSearchParameter.class::isInstance)
 				.map(FhirSearchParameter.class::cast)
 				.collect(Collectors.toSet());
 		
-		//TODO: cross-field validation comes here
+		//cross-parameter validation
+		validateSearchParameters(searchParameters);
 				
 		return Pair.of(filterParameters, searchParameters);
 	}
 	
-	private FhirParameter classifyParameter(RawRequestParameter fhirParameter) {
+	private FhirParameter processParameter(RawRequestParameter fhirParameter) {
 		
 		String parameterName = fhirParameter.getName();
 		if (supportedSearchParameters.containsKey(parameterName)) {
@@ -111,38 +106,15 @@ public class FhirUriParameterManager {
 			return fhirFilterParameter; 
 		
 		} else if (FhirCommonSearchKey.hasParameter(parameterName)) {
-			throw FhirException.createFhirError(String.format("Search parameter %s is not supported. Supported search parameters are %s.", parameterName, Arrays.toString(supportedSearchParameters.keySet().toArray())), OperationOutcomeCode.MSG_PARAM_UNKNOWN, "SEARCH_REQUEST_PARAMETER_MARKER");
+			throw FhirException.createFhirError(String.format("Search parameter %s is not supported. Supported search parameters are %s.", parameterName, Arrays.toString(supportedSearchParameters.keySet().toArray())), OperationOutcomeCode.MSG_PARAM_UNKNOWN, SEARCH_REQUEST_PARAMETER_MARKER);
 		
 		} else if (FhirFilterParameterKey.hasParameter(parameterName)) {
-			throw FhirException.createFhirError(String.format("Filter parameter %s is not supported. Supported filter parameters are %s.", parameterName, Arrays.toString(supportedFilterParameters.keySet().toArray())), OperationOutcomeCode.MSG_PARAM_UNKNOWN, "SEARCH_REQUEST_PARAMETER_MARKER");
+			throw FhirException.createFhirError(String.format("Filter parameter %s is not supported. Supported filter parameters are %s.", parameterName, Arrays.toString(supportedFilterParameters.keySet().toArray())), OperationOutcomeCode.MSG_PARAM_UNKNOWN, SEARCH_REQUEST_PARAMETER_MARKER);
 		
 		} else {
 			SetView<String> union = Sets.union(supportedSearchParameters.keySet(), supportedFilterParameters.keySet());
-			throw FhirException.createFhirError(String.format("URI parameter %s is unknown. Supported parameters are %s.", parameterName, Arrays.toString(union.toArray())), OperationOutcomeCode.MSG_PARAM_UNKNOWN, "SEARCH_REQUEST_PARAMETER_MARKER");
+			throw FhirException.createFhirError(String.format("URI parameter %s is unknown. Supported parameters are %s.", parameterName, Arrays.toString(union.toArray())), OperationOutcomeCode.MSG_PARAM_UNKNOWN, SEARCH_REQUEST_PARAMETER_MARKER);
 		
-		}
-	}
-	
-	//TODO: Remove this method
-	public void validateSearchParameter(RawRequestParameter requestParameter) {
-
-		String parameterName = requestParameter.getName();
-		if (!supportedSearchParameters.keySet().contains(parameterName)) {
-			throw new BadRequestException(String.format("Search parameter %s is not supported. Supported search parameters are %s.", parameterName, Arrays.toString(supportedFilterParameters.keySet().toArray())), SEARCH_REQUEST_PARAMETER_MARKER);
-		}
-		
-		FhirUriSearchParameterDefinition supportedSearchParameter = supportedSearchParameters.get(parameterName);
-		
-		if (requestParameter.hasModifier()) {
-			String parameterModifier = requestParameter.getModifier();
-			
-			if (!SearchRequestParameterModifier.hasValue(parameterModifier)) {
-				throw new BadRequestException(String.format("Unknown search parameter modifier '%s' for parameter '%s'. Valid modifiers are %s.", parameterModifier, parameterName, Arrays.toString(SearchRequestParameterModifier.values())), SEARCH_REQUEST_PARAMETER_MARKER);
-			}
-			
-			if (!supportedSearchParameter.hasSupportedModifier(parameterModifier)) {
-				throw new BadRequestException(String.format("Unsupported search parameter modifier '%s' for parameter '%s'. Supported modifiers are %s.", parameterModifier, parameterName, Arrays.toString(supportedSearchParameter.getSupportedModifiers().toArray())), SEARCH_REQUEST_PARAMETER_MARKER);
-			}
 		}
 	}
 	
@@ -154,60 +126,48 @@ public class FhirUriParameterManager {
 		return supportedSearchParameters;
 	}
 	
-	private  void validateSingleValue(Collection<String> values, String parameterName) {
+	private void validateFilterParameters(Set<FhirFilterParameter> filterParameters) {
 		
-		if (values.isEmpty()) {
-			throw new BadRequestException(String.format("No %s parameter is submitted.", parameterName), SEARCH_REQUEST_PARAMETER_MARKER);
-		}
+		filterParameters.forEach(p -> {
+			if (!p.getParameterDefinition().isMultipleValuesSupported() && p.getValues().size() > 1) {
+				throw FhirException.createFhirError(String.format("Too many filter parameter values %s are submitted for parameter %s.", Arrays.toString(p.getValues().toArray()), p.getName()), OperationOutcomeCode.MSG_PARAM_INVALID, SEARCH_REQUEST_PARAMETER_MARKER);
+			}
+		});
 		
-		if (values.size() != 1) {
-			throw new BadRequestException(String.format("Too many %s parameter values are submitted.", parameterName), SEARCH_REQUEST_PARAMETER_MARKER);
+		
+		if (filterParameters.stream().anyMatch(p -> p.getName().equals(FhirFilterParameterKey._summary.name())) && 
+			filterParameters.stream().anyMatch(p -> p.getName().equals(FhirFilterParameterKey._elements.name()))) {
+			
+			throw FhirException.createFhirError(String.format("Both '_summary' and '_elements' search parameters cannot be specified at the same time."), OperationOutcomeCode.MSG_PARAM_INVALID, SEARCH_REQUEST_PARAMETER_MARKER);
 		}
 	}
 	
-	private static List<Pair<String, Set<String>>> collectFilterParameters(Class<?> model) {
+	private void validateSearchParameters(Set<FhirSearchParameter> searchParameters) {
+		
+		searchParameters.forEach(p -> {
+			if (!p.getParameterDefinition().isMultipleValuesSupported() && p.getValues().size() > 1) {
+				throw FhirException.createFhirError(String.format("Too many search parameter values %s are submitted for parameter %s.", Arrays.toString(p.getValues().toArray()), p.getName()), OperationOutcomeCode.MSG_PARAM_INVALID, SEARCH_REQUEST_PARAMETER_MARKER);
+			}
+		});
+	}
+	
+	private static List<Filterable> collectFilterParameters(Class<?> model) {
 		
 		if (model == null) {
 	        return Collections.emptyList();
 	    }
 		
-		List<Pair<String, Set<String>>> result = Lists.newArrayList(collectFilterParameters(model.getSuperclass()));
+		List<Filterable> result = Lists.newArrayList(collectFilterParameters(model.getSuperclass()));
 		
 		if (model.isAnnotationPresent(Filterables.class)) {
 			Filterable[] filterableAnnotations = model.getAnnotationsByType(Filterable.class);
 			for (Filterable filterable : filterableAnnotations) {
-				
-				Pair<String, Set<String>> filterValuePair = new Pair<String, Set<String>>();
-				if (filterable.values() != null && filterable.values().length != 0) {
-					filterValuePair.setA(filterable.filter());
-					filterValuePair.setB(Sets.newHashSet(filterable.values()));
-				} else {
-					filterValuePair.setA(filterable.filter());
-					filterValuePair.setB(Sets.newHashSet(filterable.values()));
-				}
-				result.add(filterValuePair);
+				result.add(filterable);
 			}
 		}
 		return result;
 	}
 	
-	/**
-	 * Cross field request parameter key validation
-	 * TODO: this is incorrect, see count paramater validation (only allowed for search operations)
-	 */
-//	protected void validateRequestParams() {
-//		
-//		if (summary != null && elements !=null) {
-//			throw new BadRequestException("Both '_summary' and '_elements' search parameters cannot be specified at the same time.", OperationOutcomeCode.MSG_PARAM_INVALID, "Request.count & Request.summary");
-//		}
-//		
-//		if (summary != null) {
-//			if (getSummary() == SummaryParameterValue.COUNT) {
-//				throw new BadRequestException("'Count' summary parameter is only allowed for search operations.", OperationOutcomeCode.MSG_PARAM_INVALID, "Request.count");
-//			}
-//		}
-//	}
-
 	/*
 	 * Recursively collect the annotated fields from the class hierarchy.
 	 * @see @SearchParameter

@@ -30,5 +30,7 @@ public @interface Filterable {
 
 	String filter();
 	
+	boolean supportsMultipleValues() default false;
+	
 	String[] values()  default {};
 }

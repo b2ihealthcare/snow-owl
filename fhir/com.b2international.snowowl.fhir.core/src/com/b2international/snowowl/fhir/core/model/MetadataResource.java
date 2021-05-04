@@ -51,7 +51,7 @@ import com.google.common.collect.Sets;
  * @since 6.3
  */
 @Filterable(filter = "_summary", values = {"TRUE", "TEXT", "DATA", "COUNT", "FALSE"})
-@Filterable(filter = "_elements")
+@Filterable(filter = "_elements", supportsMultipleValues = true)
 public abstract class MetadataResource extends DomainResource {
 	
 	//same as logical id

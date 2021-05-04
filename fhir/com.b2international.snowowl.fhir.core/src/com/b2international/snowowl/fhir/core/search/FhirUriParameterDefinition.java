@@ -108,6 +108,8 @@ public class FhirUriParameterDefinition {
 	
 	protected FhirRequestParameterType type;
 	
+	protected boolean isMultipleValuesSupported;
+	
 	protected Set<String> supportedValues = Collections.emptySet();
 	
 	public FhirUriParameterDefinition(final String name, final String type) {
@@ -120,8 +122,9 @@ public class FhirUriParameterDefinition {
 		this.type = type;
 	}
 	
-	public FhirUriParameterDefinition(final String name, final FhirRequestParameterType type, Set<String> supportedValues) {
+	public FhirUriParameterDefinition(final String name, final boolean isMultipleValuesSupported, final FhirRequestParameterType type, Set<String> supportedValues) {
 		this.name = name;
+		this.isMultipleValuesSupported = isMultipleValuesSupported;
 		this.type = type;
 		this.supportedValues = supportedValues;
 	}
@@ -132,6 +135,10 @@ public class FhirUriParameterDefinition {
 
 	public FhirRequestParameterType getType() {
 		return type;
+	}
+	
+	public boolean isMultipleValuesSupported() {
+		return isMultipleValuesSupported;
 	}
 	
 	/**
@@ -157,7 +164,12 @@ public class FhirUriParameterDefinition {
 
 	@Override
 	public String toString() {
-		return String.format("%s : %s %s = %s", name, type.name(), Arrays.toString(type.getAvailableModifiers().toArray()), Arrays.toString(supportedValues.toArray()));
+		String cardinalityString = "";
+		if (isMultipleValuesSupported) {
+			cardinalityString = "*";
+		}
+		return String.format("%s : %s%s %s = %s", name, type.name(), cardinalityString, Arrays.toString(type.getAvailableModifiers().toArray()),
+				Arrays.toString(supportedValues.toArray()));
 	}
 
 

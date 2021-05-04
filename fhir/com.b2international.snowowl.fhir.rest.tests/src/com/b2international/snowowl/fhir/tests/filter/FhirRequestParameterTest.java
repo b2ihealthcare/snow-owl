@@ -22,6 +22,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Collection;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.junit.BeforeClass;
@@ -34,11 +36,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.b2international.commons.Pair;
 import com.b2international.snowowl.fhir.core.exceptions.FhirException;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
-import com.b2international.snowowl.fhir.core.search.FhirFilterParameter;
-import com.b2international.snowowl.fhir.core.search.FhirSearchParameter;
+import com.b2international.snowowl.fhir.core.search.*;
 import com.b2international.snowowl.fhir.core.search.FhirUriParameterDefinition.FhirRequestParameterType;
-import com.b2international.snowowl.fhir.core.search.FhirUriParameterManager;
-import com.b2international.snowowl.fhir.core.search.RawRequestParameter;
 import com.b2international.snowowl.fhir.tests.FhirTest;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSet;
@@ -91,6 +90,25 @@ public class FhirRequestParameterTest extends FhirTest {
 		assertThat(fhirParameter.getModifier(), equalTo("exact"));
 	}
 	
+	@Test
+	public void supportedParameterDefinitionsTest() {
+		
+		FhirUriParameterManager supportedDefinitions = FhirUriParameterManager.createFor(CodeSystem.class);
+		
+		Map<String, FhirUriFilterParameterDefinition> supportedFilterParameters = supportedDefinitions.getSupportedFilterParameters();
+		
+		Set<String> supportedFilterKeys = supportedFilterParameters.keySet();
+		
+		assertFalse(supportedFilterKeys.isEmpty());
+		
+		Optional<String> summaryFilterOptional = supportedFilterKeys.stream().filter(f -> f.equals(FhirUriFilterParameterDefinition.FhirFilterParameterKey._summary.name())).findFirst();
+		assertTrue(summaryFilterOptional.isPresent());
+		
+		FhirUriFilterParameterDefinition summaryFilterParameter = supportedFilterParameters.get(summaryFilterOptional.get());
+		
+		assertThat(summaryFilterParameter.getType(), equalTo(FhirRequestParameterType.STRING));
+	}
+	
 	//URI->Raw -> unknown param
 	@Test
 	public void unknownParameterTest() {
@@ -124,6 +142,24 @@ public class FhirRequestParameterTest extends FhirTest {
 	}
 	
 	@Test
+	public void tooManyFilterParameterValuesTest() {
+		
+		exception.expect(FhirException.class);
+		exception.expectMessage("Too many filter parameter values [true, false] are submitted for parameter _summary.");
+		
+		Multimap<String, String> paramMap = convertToMultimap("http://localhost?_summary=true, false");
+		parameterManager.processParameters(paramMap);
+	}
+	
+	@Test
+	public void testInvalidCrossFilterParameters() {
+		
+		exception.expect(FhirException.class);
+		exception.expectMessage("Both '_summary' and '_elements' search parameters cannot be specified at the same time.");
+		parameterManager.processParameters(convertToMultimap("http://localhost?_summary=true&_elements=1"));
+	}
+	
+	@Test
 	public void invalidParameterModifierTest() {
 		
 		exception.expect(FhirException.class);
@@ -132,6 +168,7 @@ public class FhirRequestParameterTest extends FhirTest {
 		Multimap<String, String> paramMap = convertToMultimap("http://localhost?_lastUpdated:type");
 		parameterManager.processParameters(paramMap);
 	}
+	
 	
 	//@Test
 	public void testPrefix() {
@@ -148,11 +185,7 @@ public class FhirRequestParameterTest extends FhirTest {
 		//assertThat(parameters.getLastUpdatedParameter().getValues(), hasItems("20120131"));
 	}
 	
-	//@Test
-	public void testInvalidCrossField() {
-		//exception.expect(FhirException.class);
-		//getSearchRequestParameters("http://localhost?_summary=true&_elements=1");
-	}
+	
 		
 	//private SearchRequestParameters getSearchRequestParameters(final String urlString) {
 		//MultiValueMap<String,String> queryParams = UriComponentsBuilder.fromHttpUrl(urlString)
