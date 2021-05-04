@@ -102,7 +102,6 @@ public class SnomedQueryValidationRuleEvaluatorTest extends BaseValidationTest {
 		final Map<String, Object> ruleQuery = ImmutableMap.<String, Object>builder()
 				.put("componentType", "concept")
 				.put("ecl", concept1) 
-				.put("filterByWorkingModule", false)
 				.build();
 		
 		final String ruleId = createSnomedQueryRule(ruleQuery);
@@ -129,7 +128,6 @@ public class SnomedQueryValidationRuleEvaluatorTest extends BaseValidationTest {
 				.put("componentType", "concept")
 				.put("active", true)
 				.put("module", Concepts.MODULE_B2I_EXTENSION)
-				.put("filterByWorkingModule", false)
 				.build();
 		
 		final String ruleId = createSnomedQueryRule(ruleQuery);
@@ -157,7 +155,6 @@ public class SnomedQueryValidationRuleEvaluatorTest extends BaseValidationTest {
 		final Map<String, Object> ruleQuery = ImmutableMap.<String, Object>builder()
 				.put("componentType", "description")
 				.put("term", "regex(.*heart.*)")
-				.put("filterByWorkingModule", false)
 				.build();
 		
 		final String ruleId = createSnomedQueryRule(ruleQuery);
@@ -184,7 +181,6 @@ public class SnomedQueryValidationRuleEvaluatorTest extends BaseValidationTest {
 		final Map<String, Object> ruleQuery = ImmutableMap.<String, Object>builder()
 				.put("componentType", "description")
 				.put("semanticTag", "")
-				.put("filterByWorkingModule", false)
 				.build();
 		
 		final String ruleId = createSnomedQueryRule(ruleQuery);
@@ -217,7 +213,6 @@ public class SnomedQueryValidationRuleEvaluatorTest extends BaseValidationTest {
 				.put("componentType", "description")
 				.put("acceptableIn", ImmutableList.of(langRefSet1))
 				.put("preferredIn", ImmutableList.of(langRefSet2))
-				.put("filterByWorkingModule", false)
 				.build();
 		
 		final String ruleId = createSnomedQueryRule(ruleQuery);
