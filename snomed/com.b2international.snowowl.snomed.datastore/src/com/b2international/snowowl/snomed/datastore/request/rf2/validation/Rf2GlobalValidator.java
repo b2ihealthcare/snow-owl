@@ -214,7 +214,7 @@ public class Rf2GlobalValidator {
 					continue; //Component is required elsewhere as well, should not be skipped
 				}
 				
-				slice.removeDependency(componentId);
+				slice.unregisterDependencies(componentId);
 			}
 		}
 	}

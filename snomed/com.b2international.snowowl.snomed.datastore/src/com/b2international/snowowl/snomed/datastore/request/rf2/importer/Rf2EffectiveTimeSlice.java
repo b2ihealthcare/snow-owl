@@ -172,7 +172,7 @@ public final class Rf2EffectiveTimeSlice {
 		}
 	}
 	
-	public void removeDependency(String componentId) {
+	public void unregisterDependencies(String componentId) {
 		dependenciesByComponent.remove(Long.valueOf(componentId));
 	}
 	
