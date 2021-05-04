@@ -33,7 +33,7 @@ import com.b2international.snowowl.fhir.tests.FhirRestTest;
  */
 public class CodeSystemRestTest extends FhirRestTest {
 	
-	private static final String FHIR_ISSUE_TYPE_CODESYSTEM_ID = "fhir:issue-type";
+	private static final String FHIR_ISSUE_TYPE_CODESYSTEM_ID = "fhir/issue-type";
 	
 	//@Test
 	public void pingTest() {
@@ -116,7 +116,7 @@ public class CodeSystemRestTest extends FhirRestTest {
 	@Test
 	public void getSnomedCodeSystemTest() {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-		 	.pathParam("id", "snomedStore:MAIN/2018-01-31") 
+		 	.pathParam("id", "SNOMEDCT/2018-01-31") 
 			.when().get("/CodeSystem/{id}")
 			.then()
 			.body("resourceType", equalTo("CodeSystem"))
