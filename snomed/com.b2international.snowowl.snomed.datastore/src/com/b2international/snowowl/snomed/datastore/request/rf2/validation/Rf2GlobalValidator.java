@@ -190,7 +190,7 @@ public class Rf2GlobalValidator {
 			}
 		}
 		
-		removeSkippableMembers(skippableMemberDependenciesByEffectiveTime, dependenciesByEffectiveTime, slices);
+		removeSkippableMembers(slices);
 		skippableMemberDependenciesByEffectiveTime.clear();
 		dependenciesByEffectiveTime.clear();
 	}
@@ -199,7 +199,7 @@ public class Rf2GlobalValidator {
 		return skippableMemberDependenciesByEffectiveTime.containsKey(id) && !dependenciesByEffectiveTime.containsKey(id);
 	}
 	
-	private void removeSkippableMembers(Map<String, String> skippableMemberDependenciesByEffectiveTime, Map<String, String> dependenciesByEffectiveTime, List<Rf2EffectiveTimeSlice> slices) {
+	private void removeSkippableMembers(List<Rf2EffectiveTimeSlice> slices) {
 		
 		for (Rf2EffectiveTimeSlice slice : slices) {
 			for (Map.Entry<String, String> entry : skippableMemberDependenciesByEffectiveTime.entrySet()) {
