@@ -20,7 +20,7 @@ import groovy.transform.Field
 
 List<ComponentIdentifier> issues = new ArrayList<>()
 
-def ukModules = SnomedRequests.prepareSearchConcept()
+def modules = SnomedRequests.prepareSearchConcept()
 	.filterByEcl(params.workingModules)
 	.filterByActive(true)
 	.all()
@@ -30,7 +30,7 @@ def ukModules = SnomedRequests.prepareSearchConcept()
 
 ExpressionBuilder filterExpressionBuilder = Expressions.builder()
 	.filter(SnomedDescriptionIndexEntry.Expressions.active())
-	.filter(SnomedDescriptionIndexEntry.Expressions.modules(ukModules))
+	.filter(SnomedDescriptionIndexEntry.Expressions.modules(modules))
 	
 if (params.isUnpublishedOnly) {
 	filterExpressionBuilder.filter(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
