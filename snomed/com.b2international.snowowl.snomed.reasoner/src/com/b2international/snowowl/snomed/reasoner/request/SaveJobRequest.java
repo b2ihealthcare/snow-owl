@@ -36,9 +36,13 @@ import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.LockedException;
 import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.config.RepositoryConfiguration;
+import com.b2international.snowowl.core.config.SnowOwlConfiguration;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.events.RequestBuilder;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
 import com.b2international.snowowl.core.identity.Permission;
@@ -66,12 +70,23 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipCr
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipUpdateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.reasoner.classification.ClassificationTracker;
-import com.b2international.snowowl.snomed.reasoner.domain.*;
+import com.b2international.snowowl.snomed.reasoner.domain.ChangeNature;
+import com.b2international.snowowl.snomed.reasoner.domain.ClassificationTask;
+import com.b2international.snowowl.snomed.reasoner.domain.ConcreteDomainChange;
+import com.b2international.snowowl.snomed.reasoner.domain.ConcreteDomainChanges;
+import com.b2international.snowowl.snomed.reasoner.domain.EquivalentConceptSet;
+import com.b2international.snowowl.snomed.reasoner.domain.EquivalentConceptSets;
+import com.b2international.snowowl.snomed.reasoner.domain.ReasonerConcreteDomainMember;
+import com.b2international.snowowl.snomed.reasoner.domain.ReasonerRelationship;
+import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChange;
+import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChanges;
 import com.b2international.snowowl.snomed.reasoner.equivalence.IEquivalentConceptMerger;
 import com.b2international.snowowl.snomed.reasoner.exceptions.ReasonerApiException;
 import com.google.common.base.Strings;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 
 /**
@@ -200,26 +215,42 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 		classificationTracker.classificationSaving(classificationId);
 
 		final SubMonitor subMonitor = SubMonitor.convert(monitor, "Persisting changes", 6);
-		final BulkRequestBuilder<TransactionContext> bulkRequestBuilder = BulkRequest.create();
+		final List<RequestBuilder<TransactionContext, ?>> bulkRequestBuilder = Lists.newArrayList();
 
 		applyChanges(subMonitor, context, bulkRequestBuilder);
-		final Request<BranchContext, CommitResult> commitRequest = SnomedRequests.prepareCommit()
-			.setBody(bulkRequestBuilder)
-			.setCommitComment(commitComment)
-			.setParentContextDescription(DatastoreLockContextDescriptions.SAVE_CLASSIFICATION_RESULTS)
-			.setAuthor(userId)
-			.build();
+		
+		long resultTimeStamp = -1L;
+		for (List<RequestBuilder<TransactionContext, ?>> partition : Iterables.partition(bulkRequestBuilder, getCommitLimit(context))) {
+			final BulkRequestBuilder<TransactionContext> bulkRequest = BulkRequest.create();
+			partition.forEach(request -> bulkRequest.add(request));
+			
+			final Request<BranchContext, CommitResult> commitRequest = SnomedRequests.prepareCommit()
+					.setBody(bulkRequest.build())
+					.setCommitComment(commitComment)
+					.setParentContextDescription(DatastoreLockContextDescriptions.SAVE_CLASSIFICATION_RESULTS)
+					.setAuthor(userId)
+					.build();
+			
+			final CommitResult commitResult = new IdRequest<>(commitRequest).execute(context);
+			resultTimeStamp = commitResult.getCommitTimestamp();
+		}
 
-		final CommitResult commitResult = new IdRequest<>(commitRequest)  
-			.execute(context);
-
-		classificationTracker.classificationSaved(classificationId, commitResult.getCommitTimestamp());
-		return Boolean.TRUE;
+		if (EffectiveTimes.UNSET_EFFECTIVE_TIME == resultTimeStamp) {
+			classificationTracker.classificationSaveFailed(classificationId);				
+			return Boolean.FALSE;
+		} else {
+			classificationTracker.classificationSaved(classificationId, resultTimeStamp);			
+			return Boolean.TRUE;
+		}
+	}
+	
+	private final int getCommitLimit(BranchContext context) {
+		return context.service(SnowOwlConfiguration.class).getModuleConfig(RepositoryConfiguration.class).getIndexConfiguration().getCommitWatermarkLow();
 	}
 
 	private void applyChanges(final SubMonitor subMonitor, 
 			final BranchContext context,
-			final BulkRequestBuilder<TransactionContext> bulkRequestBuilder) {
+			final List<RequestBuilder<TransactionContext, ?>> bulkRequestBuilder) {
 
 		final SnomedNamespaceAndModuleAssigner assigner = createNamespaceAndModuleAssigner(context);
 		final Set<String> conceptIdsToSkip = mergeEquivalentConcepts(context, bulkRequestBuilder, assigner);
@@ -235,7 +266,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 	}
 
 	private void applyRelationshipChanges(final BranchContext context, 
-			final BulkRequestBuilder<TransactionContext> bulkRequestBuilder,
+			final List<RequestBuilder<TransactionContext, ?>> bulkRequestBuilder,
 			final SnomedNamespaceAndModuleAssigner namespaceAndModuleAssigner, 
 			final Set<String> conceptIdsToSkip) {
 
@@ -323,7 +354,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 	}
 
 	private void applyConcreteDomainChanges(final BranchContext context, 
-			final BulkRequestBuilder<TransactionContext> bulkRequestBuilder,
+			final List<RequestBuilder<TransactionContext, ?>> bulkRequestBuilder,
 			final SnomedNamespaceAndModuleAssigner namespaceAndModuleAssigner, 
 			final Set<String> conceptIdsToSkip) {
 
@@ -411,7 +442,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 	}
 
 	private Set<String> mergeEquivalentConcepts(final BranchContext context, 
-			final BulkRequestBuilder<TransactionContext> bulkRequestBuilder, 
+			final List<RequestBuilder<TransactionContext, ?>> bulkRequestBuilder, 
 			final SnomedNamespaceAndModuleAssigner assigner) {
 
 		if (!fixEquivalences) {
@@ -535,7 +566,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 				} else if (member.getId().startsWith(IEquivalentConceptMerger.PREFIX_UPDATED)) { 
 					// Trim the prefix from the ID to restore its original form
 					member.setId(member.getId().substring(IEquivalentConceptMerger.PREFIX_UPDATED.length()));
-					bulkRequestBuilder.add(member.toUpdateRequest());
+					bulkRequestBuilder.add((RequestBuilder<TransactionContext, ?>) member.toUpdateRequest());
 				} else if (!member.isActive()) {
 					removeOrDeactivate(bulkRequestBuilder, assigner, member);
 				}
@@ -554,7 +585,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 				} else if (description.getId().startsWith(IEquivalentConceptMerger.PREFIX_UPDATED)) { 
 					// Trim the prefix from the ID to restore its original form
 					description.setId(description.getId().substring(IEquivalentConceptMerger.PREFIX_UPDATED.length()));
-					bulkRequestBuilder.add(description.toUpdateRequest());
+					bulkRequestBuilder.add((RequestBuilder<TransactionContext, ?>) description.toUpdateRequest());
 				} else if (!description.isActive()) {
 					removeOrDeactivate(bulkRequestBuilder, assigner, description);
 				}
@@ -593,7 +624,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 		return assigner;
 	}
 
-	private void removeOrDeactivate(final BulkRequestBuilder<TransactionContext> bulkRequestBuilder,
+	private void removeOrDeactivate(final List<RequestBuilder<TransactionContext, ?>> bulkRequestBuilder,
 			final SnomedNamespaceAndModuleAssigner namespaceAndModuleAssigner, final SnomedConcept concept) {
 		final Request<TransactionContext, Boolean> request;
 	
@@ -610,22 +641,22 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 					.build();
 		}
 	
-		bulkRequestBuilder.add(request);
+		bulkRequestBuilder.add((RequestBuilder<TransactionContext, ?>) request);
 	}
 
-	private void removeOrDeactivate(final BulkRequestBuilder<TransactionContext> bulkRequestBuilder,
+	private void removeOrDeactivate(final List<RequestBuilder<TransactionContext, ?>> bulkRequestBuilder,
 			final SnomedNamespaceAndModuleAssigner namespaceAndModuleAssigner,
 			final SnomedRelationship relationship) {
 		removeOrDeactivateRelationship(bulkRequestBuilder, namespaceAndModuleAssigner, relationship.isReleased(), relationship.getId(), relationship.getSourceId());
 	}
 
-	private void removeOrDeactivate(final BulkRequestBuilder<TransactionContext> bulkRequestBuilder,
+	private void removeOrDeactivate(final List<RequestBuilder<TransactionContext, ?>> bulkRequestBuilder,
 			final SnomedNamespaceAndModuleAssigner namespaceAndModuleAssigner,
 			final ReasonerRelationship relationship) {
 		removeOrDeactivateRelationship(bulkRequestBuilder, namespaceAndModuleAssigner, relationship.isReleased(), relationship.getOriginId(), relationship.getSourceId());
 	}
 
-	private void removeOrDeactivateRelationship(final BulkRequestBuilder<TransactionContext> bulkRequestBuilder,
+	private void removeOrDeactivateRelationship(final List<RequestBuilder<TransactionContext, ?>> bulkRequestBuilder,
 			final SnomedNamespaceAndModuleAssigner namespaceAndModuleAssigner,
 			final boolean released, final String relationshipId, String sourceId) {
 		
@@ -643,22 +674,22 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 					.build();
 		}
 	
-		bulkRequestBuilder.add(request);
+		bulkRequestBuilder.add((RequestBuilder<TransactionContext, ?>) request);
 	}
 
-	private void removeOrDeactivate(final BulkRequestBuilder<TransactionContext> bulkRequestBuilder,
+	private void removeOrDeactivate(final List<RequestBuilder<TransactionContext, ?>> bulkRequestBuilder,
 			final SnomedNamespaceAndModuleAssigner namespaceAndModuleAssigner,
 			final SnomedReferenceSetMember member) {
 		removeOrDeactivateMember(bulkRequestBuilder, namespaceAndModuleAssigner, member.isReleased(), member.getId(), member.getReferencedComponent().getId());
 	}
 
-	private void removeOrDeactivate(final BulkRequestBuilder<TransactionContext> bulkRequestBuilder,
+	private void removeOrDeactivate(final List<RequestBuilder<TransactionContext, ?>> bulkRequestBuilder,
 			final SnomedNamespaceAndModuleAssigner namespaceAndModuleAssigner,
 			final ReasonerConcreteDomainMember member) {
 		removeOrDeactivateMember(bulkRequestBuilder, namespaceAndModuleAssigner, member.isReleased(), member.getOriginMemberId(), member.getReferencedComponentId());
 	}
 
-	private void removeOrDeactivateMember(final BulkRequestBuilder<TransactionContext> bulkRequestBuilder, 
+	private void removeOrDeactivateMember(final List<RequestBuilder<TransactionContext, ?>> bulkRequestBuilder, 
 			final SnomedNamespaceAndModuleAssigner namespaceAndModuleAssigner,
 			final boolean released, final String memberId, String referencedComponentId) {
 		
@@ -678,10 +709,10 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 					.build();
 		}
 	
-		bulkRequestBuilder.add(request);
+		bulkRequestBuilder.add((RequestBuilder<TransactionContext, ?>) request);
 	}
 
-	private void removeOrDeactivate(final BulkRequestBuilder<TransactionContext> bulkRequestBuilder,
+	private void removeOrDeactivate(final List<RequestBuilder<TransactionContext, ?>> bulkRequestBuilder,
 			final SnomedNamespaceAndModuleAssigner namespaceAndModuleAssigner, 
 			final SnomedDescription description) {
 
@@ -699,10 +730,10 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 					.build();
 		}
 	
-		bulkRequestBuilder.add(request);
+		bulkRequestBuilder.add((RequestBuilder<TransactionContext, ?>) request);
 	}
 
-	private void addComponent(final BulkRequestBuilder<TransactionContext> bulkRequestBuilder,
+	private void addComponent(final List<RequestBuilder<TransactionContext, ?>> bulkRequestBuilder,
 			final SnomedNamespaceAndModuleAssigner namespaceAndModuleAssigner, 
 			final ReasonerRelationship relationship) {
 	
@@ -720,7 +751,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 				characteristicTypeId, group, unionGroup, modifier);
 	}
 
-	private void addComponent(final BulkRequestBuilder<TransactionContext> bulkRequestBuilder,
+	private void addComponent(final List<RequestBuilder<TransactionContext, ?>> bulkRequestBuilder,
 			final SnomedNamespaceAndModuleAssigner namespaceAndModuleAssigner, 
 			final SnomedRelationship relationship) {
 
@@ -738,7 +769,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 				characteristicTypeId, group, unionGroup, modifier);
 	}
 
-	private void addComponent(final BulkRequestBuilder<TransactionContext> bulkRequestBuilder,
+	private void addComponent(final List<RequestBuilder<TransactionContext, ?>> bulkRequestBuilder,
 			final SnomedNamespaceAndModuleAssigner namespaceAndModuleAssigner, 
 			final String sourceId,
 			final String typeId, 
@@ -768,7 +799,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 		bulkRequestBuilder.add(createRequest);
 	}
 
-	private void addComponent(final BulkRequestBuilder<TransactionContext> bulkRequestBuilder,
+	private void addComponent(final List<RequestBuilder<TransactionContext, ?>> bulkRequestBuilder,
 			final SnomedNamespaceAndModuleAssigner namespaceAndModuleAssigner, 
 			final ReasonerConcreteDomainMember member) {
 	
@@ -784,7 +815,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 				serializedValue, group, characteristicTypeId);
 	}
 
-	private void addComponent(final BulkRequestBuilder<TransactionContext> bulkRequestBuilder,
+	private void addComponent(final List<RequestBuilder<TransactionContext, ?>> bulkRequestBuilder,
 			final SnomedNamespaceAndModuleAssigner namespaceAndModuleAssigner, 
 			final SnomedReferenceSetMember member) {
 		
@@ -800,7 +831,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 				serializedValue, group, characteristicTypeId);
 	}
 	
-	private void addComponent(final BulkRequestBuilder<TransactionContext> bulkRequestBuilder,
+	private void addComponent(final List<RequestBuilder<TransactionContext, ?>> bulkRequestBuilder,
 			final SnomedNamespaceAndModuleAssigner namespaceAndModuleAssigner,
 			final String referencedComponentId,
 			final String referenceSetId, 
@@ -825,7 +856,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 		bulkRequestBuilder.add(createRequest);
 	}
 
-	private void addComponent(BulkRequestBuilder<TransactionContext> bulkRequestBuilder,
+	private void addComponent(List<RequestBuilder<TransactionContext, ?>> bulkRequestBuilder,
 			SnomedNamespaceAndModuleAssigner namespaceAndModuleAssigner, 
 			SnomedDescription description) {
 
@@ -846,7 +877,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 		bulkRequestBuilder.add(createRequest);
 	}
 
-	private void updateComponent(final BulkRequestBuilder<TransactionContext> bulkRequestBuilder,
+	private void updateComponent(final List<RequestBuilder<TransactionContext, ?>> bulkRequestBuilder,
 			final SnomedNamespaceAndModuleAssigner namespaceAndModuleAssigner,
 			final ReasonerRelationship relationship) {
 		
@@ -858,7 +889,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 		bulkRequestBuilder.add(updateRequest);
 	}
 
-	private void updateComponent(final BulkRequestBuilder<TransactionContext> bulkRequestBuilder,
+	private void updateComponent(final List<RequestBuilder<TransactionContext, ?>> bulkRequestBuilder,
 			final SnomedNamespaceAndModuleAssigner namespaceAndModuleAssigner,
 			final ReasonerConcreteDomainMember referenceSetMember) {
 		
