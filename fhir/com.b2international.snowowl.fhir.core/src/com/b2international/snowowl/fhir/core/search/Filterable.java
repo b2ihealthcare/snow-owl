@@ -22,15 +22,28 @@ import java.lang.annotation.Retention;
 
 /**
  * Annotation to mark resources with the supported filter parameters
+ * 
  * @since 7.14
  */
 @Retention(RUNTIME)
-@Repeatable(value = Filterables.class )
+@Repeatable(value = Filterables.class)
 public @interface Filterable {
 
+	/**
+	 * Returns the name of the filter
+	 * @return
+	 */
 	String filter();
 	
+	/**
+	 * Returns true if the filter request allows multiple values to be defined
+	 * @return
+	 */
 	boolean supportsMultipleValues() default false;
 	
+	/**
+	 * Returns the supported string filter parameter values
+	 * @return
+	 */
 	String[] values()  default {};
 }

@@ -19,6 +19,13 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 import java.lang.annotation.Retention;
 
+/**
+ * Container annotation for {@link Filterable} to allow multiple
+ * annotation for the same resource class.
+ * 
+ * @since 7.14
+ *
+ */
 @Retention(RUNTIME)
 public @interface Filterables {
 	Filterable[] value() default {};
