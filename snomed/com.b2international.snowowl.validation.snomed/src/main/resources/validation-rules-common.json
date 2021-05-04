@@ -15,7 +15,7 @@
     "severity": "ERROR",
     "checkType": "FAST",
     "type": "snomed-query",
-    "implementation": "{\"componentType\": \"concept\",\"active\": \"true\",\"filterByWorkingModule\": \"false\", \"parent\": \"-1\"}"
+    "implementation": "{\"componentType\": \"concept\",\"active\": \"true\",\"parent\": \"-1\"}"
   }, 
   {
     "id": "38b",
@@ -24,7 +24,7 @@
     "severity": "ERROR",
     "checkType": "FAST",
     "type": "snomed-query",
-    "implementation": "{\"componentType\": \"concept\",\"active\": \"true\", \"filterByWorkingModule\": \"false\", \"statedParent\": \"-1\"}"
+    "implementation": "{\"componentType\": \"concept\",\"active\": \"true\",\"statedParent\": \"-1\"}"
   },
   {
     "id": "45a",
@@ -33,7 +33,7 @@
     "severity": "ERROR",
     "checkType": "FAST",
     "type": "snomed-query",
-    "implementation": "{\"componentType\": \"relationship\",\"type\": \"116680003|ISA|\",\"groupMin\": \"1\", \"filterByWorkingModule\": \"false\"}"
+    "implementation": "{\"componentType\": \"relationship\",\"type\": \"116680003|ISA|\",\"groupMin\": \"1\"}"
   },
   {
     "id": "45b",
@@ -42,7 +42,7 @@
     "severity": "ERROR",
     "checkType": "FAST",
     "type": "snomed-query",
-    "implementation": "{\"componentType\": \"relationship\",\"characteristicType\": \"<900000000000449001 MINUS <900000000000006009\",\"groupMin\": \"1\", \"filterByWorkingModule\": \"false\"}"
+    "implementation": "{\"componentType\": \"relationship\",\"characteristicType\": \"<900000000000449001 MINUS <900000000000006009\",\"groupMin\": \"1\"}"
   },
   {
     "id": "45c",
@@ -51,7 +51,7 @@
     "severity": "WARNING",
     "checkType": "FAST",
     "type": "snomed-query",
-    "implementation": "{\"componentType\": \"relationship\",\"active\": \"true\",\"characteristicType\": \"<900000000000449001 MINUS <900000000000006009\",\"groupMin\": \"0\",\"groupMax\": \"0\", \"filterByWorkingModule\": \"false\"}"
+    "implementation": "{\"componentType\": \"relationship\",\"active\": \"true\",\"characteristicType\": \"<900000000000449001 MINUS <900000000000006009\",\"groupMin\": \"0\",\"groupMax\": \"0\"}"
   },
   {
     "id": "54",
