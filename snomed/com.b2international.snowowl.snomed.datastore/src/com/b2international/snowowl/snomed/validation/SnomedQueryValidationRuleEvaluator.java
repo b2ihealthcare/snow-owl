@@ -72,10 +72,16 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 		SnomedSearchRequestBuilder<?, PageableCollectionResource<SnomedComponent>> req = validationQuery
 				.prepareSearch();
 		
-		if (params != null && params.containsKey(ValidationConfiguration.MODULES) && Boolean.TRUE.equals(validationQuery.extensionScope)) {
-			req.filterByModule(params.get(ValidationConfiguration.MODULES).toString());
-		}
+		String extensionModules = params != null ? params.get(ValidationConfiguration.MODULES).toString() : "";
+		String module = validationQuery.module;
 		
+		if (!Strings.isNullOrEmpty(module)) {
+			//If there is a module given assume that it must be more specific and provided on purpose
+			req.filterByModule(module);
+		} else if (Boolean.TRUE.equals(validationQuery.extensionScope) && !Strings.isNullOrEmpty(extensionModules)) {
+			req.filterByModule(extensionModules);
+		}
+			
 		SearchIndexResourceRequest<BranchContext, ?, ? extends SnomedDocument> searchReq = (SearchIndexResourceRequest<BranchContext, ?, ? extends SnomedDocument>) req.build();
 		
 		final ExpressionBuilder expressionBuilder = Expressions.builder().filter(searchReq.toRawQuery(context));
@@ -143,14 +149,9 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 
 		@OverridingMethodsMustInvokeSuper
 		protected SB prepareSearch(SB req) {
-			req.filterByActive(active)
-			.filterByReleased(released)
-			.filterByEffectiveTime(effectiveTime);
-			
-			if (!extensionScope) {
-				return req.filterByModule(module);
-			} 
-			return req;
+			return req.filterByActive(active)
+					.filterByReleased(released)
+					.filterByEffectiveTime(effectiveTime);
 		}		
 	}
 	
