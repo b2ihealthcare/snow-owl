@@ -53,4 +53,10 @@ public @interface Searchable {
 	 */
 	String[] modifiers() default {};
 	
+	/**
+	 * Returns true if the filter request allows multiple values to be defined
+	 * @return
+	 */
+	boolean supportsMultipleValues() default false;
+	
 }

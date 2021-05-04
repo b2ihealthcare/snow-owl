@@ -23,7 +23,6 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.codesystem.*;
 import com.b2international.snowowl.core.domain.IComponent;
@@ -40,6 +39,7 @@ import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem.Builder
 import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Instant;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.b2international.snowowl.fhir.core.search.FhirSearchParameter;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 
@@ -116,24 +116,19 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 	}
 	
 	@Override
-	public final CodeSystem getCodeSystem(String codeSystemUri) {
-		if (!isSupported(codeSystemUri)) {
-			throw new BadRequestException(String.format("Code system with URI %s is not supported by this provider %s.", codeSystemUri, this.getClass().getSimpleName()));
-		}
-		return getCodeSystems()
-				.stream()
-				.filter(cs -> cs.getUrl().getUriValue().equals(codeSystemUri))
-				.findFirst()
-				.orElseThrow(() -> new NotFoundException("Could not find any code systems for %s.", codeSystemUri));
-	}
-	
-	@Override
-	public Collection<CodeSystem> getCodeSystems() {
+	public Collection<CodeSystem> getCodeSystems(final Set<FhirSearchParameter> searchParameters) {
 		
-		//Create a code system for every extension and every version
-		CodeSystems codeSystems = CodeSystemRequests.prepareSearchCodeSystem()
-			.all()
-			.build(repositoryId)
+		Optional<FhirSearchParameter> nameOptional = getSearchParam(searchParameters, "_name"); //TODO: what should we do with the names of these dynamic properties?
+
+		CodeSystemSearchRequestBuilder requestBuilder = CodeSystemRequests.prepareSearchCodeSystem().all();
+		
+		if (nameOptional.isPresent()) {
+			Collection<String> names = nameOptional.get().getValues();
+			//if (names.size() > 1) throw FhirException.createFhirError("Multiple values for name search parameter is not supported.", OperationOutcomeCode.MSG_PARAM_INVALID, "Search parameter");
+			requestBuilder.filterByNameExact(names);
+		}
+		
+		CodeSystems codeSystems = requestBuilder.build(repositoryId)
 			.execute(getBus())
 			.getSync();
 		
@@ -159,6 +154,10 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 			
 		});
 		return fhirCodeSystemList;
+	}
+	
+	protected Optional<FhirSearchParameter> getSearchParam(final Set<FhirSearchParameter> searchParameters, String parameterName) {
+		return searchParameters.stream().filter(p -> parameterName.equals(p.getName())).findFirst();
 	}
 	
 	/**

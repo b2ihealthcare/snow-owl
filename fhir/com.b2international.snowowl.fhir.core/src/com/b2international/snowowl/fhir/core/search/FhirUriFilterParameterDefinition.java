@@ -78,16 +78,16 @@ public class FhirUriFilterParameterDefinition extends FhirUriParameterDefinition
 	}
 	
 	
-	public FhirUriFilterParameterDefinition(final String name, final String type) {
-		super(name, type);
+	public FhirUriFilterParameterDefinition(final String name, final String type, final boolean isMultipleValuesSupported) {
+		super(name, type, isMultipleValuesSupported);
 	}
 	
-	public FhirUriFilterParameterDefinition(String requestParameterKey) {
-		super(requestParameterKey, FhirFilterParameterKey.valueOf(requestParameterKey).getParameterType().name());
+	public FhirUriFilterParameterDefinition(String requestParameterKey, final boolean isMultipleValuesSupported) {
+		super(requestParameterKey, FhirFilterParameterKey.valueOf(requestParameterKey).getParameterType().name(), isMultipleValuesSupported);
 	}
 	
 	public FhirUriFilterParameterDefinition(final String requestParameterKey, final boolean isMultipleValuesSupported, final Set<String> supportedValues) {
-		super(requestParameterKey, isMultipleValuesSupported, FhirFilterParameterKey.valueOf(requestParameterKey).getParameterType(), supportedValues);
+		super(requestParameterKey, FhirFilterParameterKey.valueOf(requestParameterKey).getParameterType(), supportedValues, isMultipleValuesSupported);
 	}
 
 	private FhirFilterParameterKey requestParameterKey;

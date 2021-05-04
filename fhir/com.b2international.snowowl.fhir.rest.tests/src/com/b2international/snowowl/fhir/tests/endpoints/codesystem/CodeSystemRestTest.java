@@ -26,6 +26,7 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import org.junit.Test;
 
 import com.b2international.snowowl.fhir.tests.FhirRestTest;
+import com.b2international.snowowl.test.commons.rest.RestExtensions;
 
 /**
  * CodeSystem REST end-point test cases
@@ -34,6 +35,7 @@ import com.b2international.snowowl.fhir.tests.FhirRestTest;
 public class CodeSystemRestTest extends FhirRestTest {
 	
 	private static final String FHIR_ISSUE_TYPE_CODESYSTEM_ID = "fhir/issue-type";
+	private static final String FHIR_ISSUE_TYPE_NAME = "issue-type";
 	
 	//@Test
 	public void pingTest() {
@@ -112,6 +114,43 @@ public class CodeSystemRestTest extends FhirRestTest {
 			.statusCode(400);
 	}
 	
+	//Name parameter
+	@Test
+	public void getCodeSystemsByNameParamTest() {
+		
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.param("_name", FHIR_ISSUE_TYPE_NAME)
+			.when().get("/CodeSystem")
+			.then()
+			.body("resourceType", equalTo("Bundle"))
+			.body("total", equalTo(1))
+			.body("type", equalTo("searchset"))
+			.body("entry[0].resource.id", equalTo(FHIR_ISSUE_TYPE_CODESYSTEM_ID))
+			.body("entry[0].resource.concept", notNullValue())
+			.statusCode(200);
+	}
+	
+	//Multiple name parameter
+	@Test
+	public void getCodeSystemsByNamesParamTest() {
+		
+		final String narrativeStatus = "narrative-status";
+		
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.param("_name", FHIR_ISSUE_TYPE_NAME, narrativeStatus)
+			.when().get("/CodeSystem")
+			.then()
+			.body("resourceType", equalTo("Bundle"))
+			.body("total", equalTo(2))
+			.body("type", equalTo("searchset"))
+			.root("entry.find { it.resource.id == '" + FHIR_ISSUE_TYPE_CODESYSTEM_ID + "'}")
+			.body("resource.id", equalTo(FHIR_ISSUE_TYPE_CODESYSTEM_ID))
+			.body("resource.concept", notNullValue())
+			.root("entry.find { it.resource.id == 'fhir/" + narrativeStatus + "'}")
+			.body("resource.id", equalTo("fhir/" + narrativeStatus))
+			.statusCode(200);
+	}
+
 	//Fully detailed SNOMED CT code system
 	@Test
 	public void getSnomedCodeSystemTest() {
@@ -135,7 +174,7 @@ public class CodeSystemRestTest extends FhirRestTest {
 			.then()
 			.body("resourceType", equalTo("CodeSystem"))
 			.body("status", equalTo("active")) //mandatory
-			.body("name", equalTo("IssueType")) //summary
+			.body("name", equalTo(FHIR_ISSUE_TYPE_NAME)) //summary
 			.body("concept", notNullValue()) //optional
 			.body("copyright", containsString("2011+ HL7")) //optional
 			.statusCode(200);
@@ -152,7 +191,7 @@ public class CodeSystemRestTest extends FhirRestTest {
 			.body("resourceType", equalTo("CodeSystem"))
 			.body("meta.tag.code", hasItem("SUBSETTED"))
 			.body("status", equalTo("active"))
-			.body("name", equalTo("IssueType"))
+			.body("name", equalTo(FHIR_ISSUE_TYPE_NAME))
 			//NOT part of the summary
 			.body("concept", nullValue()) 
 			.body("copyright", nullValue()) 
@@ -233,14 +272,14 @@ public class CodeSystemRestTest extends FhirRestTest {
 			.body("meta.tag.code", hasItem("SUBSETTED"))
 			.body("status", equalTo("active"))
 			.body("content", equalTo("complete"))
-			.body("id", equalTo("issue-type"))
+			.body("id", equalTo(FHIR_ISSUE_TYPE_CODESYSTEM_ID))
 			//summary and optional fields
 			.body("text", nullValue())
 			.body("count", nullValue())
 			.body("concept", nullValue()) 
 			.body("copyright", nullValue()) 
 			//requested fields
-			.body("name", notNullValue())
+			.body("name", equalTo(FHIR_ISSUE_TYPE_NAME))
 			.body("url", notNullValue()) 
 			.statusCode(200);
 	}
@@ -260,7 +299,7 @@ public class CodeSystemRestTest extends FhirRestTest {
 			.body("meta.tag.code", hasItem("SUBSETTED"))
 			.body("status", equalTo("active"))
 			.body("content", equalTo("complete"))
-			.body("id", equalTo("issue-type"))
+			.body("id", equalTo(FHIR_ISSUE_TYPE_CODESYSTEM_ID))
 			//summary and optional fields
 			.body("text", nullValue())
 			.body("count", nullValue())

@@ -27,18 +27,10 @@ import com.b2international.snowowl.fhir.core.codesystems.CodeSystemHierarchyMean
 import com.b2international.snowowl.fhir.core.model.ContactDetail;
 import com.b2international.snowowl.fhir.core.model.Meta;
 import com.b2international.snowowl.fhir.core.model.MetadataResource;
-import com.b2international.snowowl.fhir.core.model.dt.Code;
-import com.b2international.snowowl.fhir.core.model.dt.CodeableConcept;
-import com.b2international.snowowl.fhir.core.model.dt.Id;
-import com.b2international.snowowl.fhir.core.model.dt.Identifier;
-import com.b2international.snowowl.fhir.core.model.dt.Narrative;
-import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.b2international.snowowl.fhir.core.model.dt.*;
 import com.b2international.snowowl.fhir.core.model.usagecontext.UsageContext;
-import com.b2international.snowowl.fhir.core.search.FhirBeanPropertyFilter;
-import com.b2international.snowowl.fhir.core.search.Filterable;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.b2international.snowowl.fhir.core.search.Summary;
-import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -65,7 +57,6 @@ import io.swagger.annotations.ApiModel;
  * @since 6.3
  */
 @ApiModel("CodeSystem")
-@JsonFilter(FhirBeanPropertyFilter.FILTER_NAME)
 public class CodeSystem extends MetadataResource {
 
 	// FHIR header "resourceType" : "CodeSystem",

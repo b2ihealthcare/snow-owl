@@ -17,6 +17,7 @@ package com.b2international.snowowl.fhir.core.provider;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
@@ -30,6 +31,7 @@ import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupResult;
 import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionRequest;
 import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionResult;
+import com.b2international.snowowl.fhir.core.search.FhirSearchParameter;
 
 /**
  * Extension point interface for code system specific FHIR API support. 
@@ -123,17 +125,15 @@ public interface ICodeSystemApiProvider extends IFhirApiProvider {
 	 * Returns the code systems supported by this provider
 	 * @return collection of code systems supported
 	 */
-	Collection<CodeSystem> getCodeSystems();
-
+	//Collection<CodeSystem> getCodeSystems();
+	
 	/**
-	 * Returns the code system for the passed in code system URI
-	 * @param codeSystemUri
-	 * @return {@link CodeSystem}
-	 * @throws BadRequestException if the code system is not supported by this provider
-	 * 
-	 * TODO: Is this used anywhere?  Should be probably as a filter.
+	 * Returns the code systems based on the search parameters provided.
+	 * Passing in an empty collection returns all the available code systems.
+	 * @param searchParameters
+	 * @return collection of code systems found based on the parameters
 	 */
-	CodeSystem getCodeSystem(String codeSystemUri);
+	Collection<CodeSystem> getCodeSystems(Set<FhirSearchParameter> searchParameters);
 
 	/**
 	 * Returns the code system for the passed in logical id @see {@link CodeSystemURI}
@@ -142,5 +142,6 @@ public interface ICodeSystemApiProvider extends IFhirApiProvider {
 	 * @throws BadRequestException if the code system is not supported by this provider
 	 */
 	CodeSystem getCodeSystem(CodeSystemURI codeSystemId);
+
 
 }

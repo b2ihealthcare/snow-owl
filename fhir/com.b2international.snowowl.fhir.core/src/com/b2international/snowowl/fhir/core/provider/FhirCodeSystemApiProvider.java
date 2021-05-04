@@ -17,6 +17,7 @@ package com.b2international.snowowl.fhir.core.provider;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
+import java.net.URI;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -39,15 +40,11 @@ import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
 import com.b2international.snowowl.fhir.core.codesystems.FhirCodeSystem;
 import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
-import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
+import com.b2international.snowowl.fhir.core.model.codesystem.*;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem.Builder;
-import com.b2international.snowowl.fhir.core.model.codesystem.Concept;
-import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
-import com.b2international.snowowl.fhir.core.model.codesystem.LookupResult;
-import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionRequest;
-import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionResult;
 import com.b2international.snowowl.fhir.core.model.dt.Narrative;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.b2international.snowowl.fhir.core.search.FhirSearchParameter;
 import com.google.common.collect.Sets;
 
 /**
@@ -72,7 +69,6 @@ public final class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 		super(bus, locales, null);
 	}
 	
-	@Override
 	public final Collection<CodeSystem> getCodeSystems() {
 		
 		Collection<CodeSystem> codeSystems = Sets.newHashSet();
@@ -88,16 +84,6 @@ public final class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 	}
 
 	@Override
-	public boolean isSupported(CodeSystemURI codeSystemId) {
-		
-		Optional<String> supportedPath = getSupportedURIs().stream()
-			.map(u -> u.substring(u.lastIndexOf("/") + 1))
-			.filter(p -> p.equals(codeSystemId.getPath()))
-			.findFirst();
-		return supportedPath.isPresent();
-	}
-	
-	@Override
 	public CodeSystem getCodeSystem(CodeSystemURI codeSystemURI) {
 		
 		return getCodeSystemClasses().stream().map(cl-> { 
@@ -107,6 +93,19 @@ public final class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 				.map(this::buildCodeSystem)
 				.findFirst()
 				.get();
+	}
+	
+	@Override
+	public Collection<CodeSystem> getCodeSystems(Set<FhirSearchParameter> searchParameters) {
+		
+		Optional<FhirSearchParameter> nameOptional = getSearchParam(searchParameters, "_name");
+
+		if (nameOptional.isPresent()) {
+			return getCodeSystems().stream().filter(cs -> {
+				return nameOptional.get().getValues().contains(cs.getName());
+			}).collect(Collectors.toSet());
+		}
+		return getCodeSystems();
 	}
 
 	@Override
@@ -178,6 +177,16 @@ public final class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 		return codeSytemUris;
 	}
 	
+	@Override
+	public boolean isSupported(CodeSystemURI codeSystemId) {
+		
+		Optional<String> supportedPath = getSupportedURIs().stream()
+			.map(u -> u.substring(u.lastIndexOf("/") + 1))
+			.filter(p -> p.equals(codeSystemId.getPath()))
+			.findFirst();
+		return supportedPath.isPresent();
+	}
+	
 	/* private methods */
 	private CodeSystem buildCodeSystem(FhirCodeSystem fhirCodeSystem) {
 		
@@ -185,9 +194,9 @@ public final class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 
 		String id = getIdFromSystem(supportedUri);
 		
-		Builder builder = CodeSystem.builder(id)
+		Builder builder = CodeSystem.builder("fhir/" + id)
 			.language("en")
-			.name(fhirCodeSystem.getClass().getSimpleName())
+			.name(id)
 			.publisher("www.hl7.org")
 			.copyright("© 2011+ HL7")
 			.version(fhirCodeSystem.getVersion())
@@ -226,7 +235,8 @@ public final class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 		return builder.build();
 	}
 	
-/**
+	/**
+	 *  Example: "http://hl7.org/fhir/issue-type" -> issue-type 
 	 * @param supportedUri
 	 * @return
 	 */

@@ -21,20 +21,12 @@ import static com.b2international.index.query.Expressions.matchTextAll;
 import static com.b2international.index.query.Expressions.regexp;
 
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.index.Analyzers;
-import com.b2international.index.Doc;
-import com.b2international.index.ID;
-import com.b2international.index.Normalizers;
-import com.b2international.index.Text;
+import com.b2international.index.*;
 import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -81,6 +73,10 @@ public final class CodeSystemEntry implements Serializable {
 
 		public static Expression matchNameExact(String term) {
 			return matchTextAll(Fields.NAME_EXACT, term);
+		}
+
+		public static Expression matchNamesExact(Iterable<String> names) {
+			return matchAny(Fields.NAME_EXACT, names);
 		}
 		
 		public static Expression matchNameOriginal(String term) {

@@ -213,9 +213,9 @@ public class FhirUriParameterManager {
 			Searchable simpleParameterAnnotation = declaredAnnotationsByType[0];
 			
 			if (!StringUtils.isEmpty(simpleParameterAnnotation.name())) {
-				return new FhirUriSearchParameterDefinition(simpleParameterAnnotation.name(), simpleParameterAnnotation.type(), simpleParameterAnnotation.modifiers());
+				return new FhirUriSearchParameterDefinition(simpleParameterAnnotation.name(), simpleParameterAnnotation.type(), simpleParameterAnnotation.modifiers(), simpleParameterAnnotation.supportsMultipleValues());
 			} else {
-				return new FhirUriSearchParameterDefinition("_" + f.getName(), simpleParameterAnnotation.type(), simpleParameterAnnotation.modifiers()); 
+				return new FhirUriSearchParameterDefinition("_" + f.getName(), simpleParameterAnnotation.type(), simpleParameterAnnotation.modifiers(), simpleParameterAnnotation.supportsMultipleValues()); 
 			}
 		}).collect(Collectors.toMap(k -> k.getName(), Function.identity()));
 	}

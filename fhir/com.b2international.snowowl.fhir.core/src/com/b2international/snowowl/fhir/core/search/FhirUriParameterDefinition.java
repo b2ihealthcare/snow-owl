@@ -112,8 +112,9 @@ public class FhirUriParameterDefinition {
 	
 	protected Set<String> supportedValues = Collections.emptySet();
 	
-	public FhirUriParameterDefinition(final String name, final String type) {
+	public FhirUriParameterDefinition(final String name, final String type, final boolean isMultipleValuesSupported) {
 		this.name = name;
+		this.isMultipleValuesSupported = isMultipleValuesSupported;
 		this.type = FhirRequestParameterType.fromRequestParameter(type);
 	}
 
@@ -122,7 +123,7 @@ public class FhirUriParameterDefinition {
 		this.type = type;
 	}
 	
-	public FhirUriParameterDefinition(final String name, final boolean isMultipleValuesSupported, final FhirRequestParameterType type, Set<String> supportedValues) {
+	public FhirUriParameterDefinition(final String name, final FhirRequestParameterType type, Set<String> supportedValues, final boolean isMultipleValuesSupported) {
 		this.name = name;
 		this.isMultipleValuesSupported = isMultipleValuesSupported;
 		this.type = type;

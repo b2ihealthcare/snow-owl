@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
+import java.util.Collection;
+
 import com.b2international.snowowl.core.codesystem.CodeSystemSearchRequest.OptionKey;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.RepositoryRequestBuilder;
@@ -41,12 +43,16 @@ public final class CodeSystemSearchRequestBuilder
 		return addOption(OptionKey.TOOLING_ID, toolingIds);
 	}
 	
-	public CodeSystemSearchRequestBuilder filterByName(String term) {
-		return addOption(OptionKey.NAME, term);
+	public CodeSystemSearchRequestBuilder filterByName(String name) {
+		return addOption(OptionKey.NAME, name);
 	}
 	
-	public CodeSystemSearchRequestBuilder filterByNameExact(String term) {
-		return addOption(OptionKey.NAME_EXACT, term);
+	public CodeSystemSearchRequestBuilder filterByNameExact(String name) {
+		return addOption(OptionKey.NAME_EXACT, name);
+	}
+	
+	public CodeSystemSearchRequestBuilder filterByNameExact(Collection<String> names) {
+		return addOption(OptionKey.NAME_EXACT, names);
 	}
 	
 	public CodeSystemSearchRequestBuilder filterByOid(String oid) {
