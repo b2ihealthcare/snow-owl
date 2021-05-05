@@ -94,6 +94,9 @@ public class SnomedCoreConfiguration {
 	private Set<String> reasonerExcludedModuleIds = Collections.emptySet();
 	
 	@NotNull
+	private Set<String> excludeFromImportSkipRefsetIds = Collections.emptySet();
+	
+	@NotNull
 	private String namespaceModuleAssigner = "default";
 	
 	private List<SnomedLanguageConfig> languages = Collections.emptyList();
@@ -352,6 +355,14 @@ public class SnomedCoreConfiguration {
 	@JsonProperty
 	public void setReasonerExcludedModuleIds(Set<String> reasonerExcludedModuleIds) {
 		this.reasonerExcludedModuleIds = reasonerExcludedModuleIds;
+	}
+	
+	public Set<String> getExcludeFromImportSkipRefsetIds() {
+		return excludeFromImportSkipRefsetIds;
+	}
+
+	public void setExcludeFromImportSkipRefsetIds(Set<String> excludeFromImportSkipRefsetIds) {
+		this.excludeFromImportSkipRefsetIds = excludeFromImportSkipRefsetIds;
 	}
 	
 	public List<SnomedLanguageConfig> getLanguages() {
