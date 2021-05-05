@@ -21,7 +21,7 @@ import groovy.transform.Field
 List<ComponentIdentifier> issues = new ArrayList<>()
 
 def modules = SnomedRequests.prepareSearchConcept()
-	.filterByEcl(params.workingModules)
+	.filterByEcl(params.modules)
 	.filterByActive(true)
 	.all()
 	.build()
