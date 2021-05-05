@@ -17,6 +17,7 @@ package com.b2international.snowowl.fhir.core.provider;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.exceptions.BadRequestException;
@@ -29,6 +30,7 @@ import com.b2international.snowowl.fhir.core.model.conceptmap.ConceptMap;
 import com.b2international.snowowl.fhir.core.model.conceptmap.Match;
 import com.b2international.snowowl.fhir.core.model.conceptmap.TranslateRequest;
 import com.b2international.snowowl.fhir.core.model.conceptmap.TranslateResult;
+import com.b2international.snowowl.fhir.core.search.FhirSearchParameter;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -93,10 +95,12 @@ public interface IConceptMapApiProvider extends IFhirApiProvider {
 	}
 	
 	/**
-	 * Returns the concept maps supported by this provider.
-	 * @return collection of concept maps supported
+	 * Returns the concept maps based on the search parameters provided.
+	 * Passing in an empty collection as parameters returns all the available concept maps.
+	 * @param searchParameters
+	 * @return collection of concept maps found based on the parameters
 	 */
-	Collection<ConceptMap> getConceptMaps();
+	Collection<ConceptMap> getConceptMaps(final Set<FhirSearchParameter> searchParameters);
 
 	/**
 	 * @param componentUri - logical code system path (codeSystemShortName/version/typeId/componentId)

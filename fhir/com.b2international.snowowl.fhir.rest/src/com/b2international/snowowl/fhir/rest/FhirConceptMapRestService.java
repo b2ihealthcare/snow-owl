@@ -96,7 +96,7 @@ public class FhirConceptMapRestService extends BaseFhirResourceRestService<Conce
 	@RequestMapping(method=RequestMethod.GET)
 	public Bundle getConceptMaps(@RequestParam(required=false) MultiValueMap<String, String> parameters) {
 		
-		Pair<Set<FhirFilterParameter>, Set<FhirSearchParameter>> fhirParameters = processParameters(parameters);
+		Pair<Set<FhirFilterParameter>, Set<FhirSearchParameter>> requestParameters = processParameters(parameters);
 		
 		String uri = MvcUriComponentsBuilder.fromController(FhirConceptMapRestService.class).build().toString();
 		
@@ -106,12 +106,10 @@ public class FhirConceptMapRestService extends BaseFhirResourceRestService<Conce
 		
 		int total = 0;
 		for (IConceptMapApiProvider fhirProvider : conceptMapProviderRegistry.getProviders(getBus(), locales)) {
-			Collection<ConceptMap> conceptMaps = fhirProvider.getConceptMaps();
+			Collection<ConceptMap> conceptMaps = fhirProvider.getConceptMaps(requestParameters.getB());
 			for (ConceptMap conceptMap : conceptMaps) {
-				applyResponseContentFilter(conceptMap, fhirParameters.getA());
-				
+				applyResponseContentFilter(conceptMap, requestParameters.getA());
 				String resourceUrl = String.join("/", uri, conceptMap.getId().getIdValue());
-				
 				Entry entry = new Entry(new Uri(resourceUrl), conceptMap);
 				builder.addEntry(entry);
 				total++;

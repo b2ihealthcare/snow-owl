@@ -51,7 +51,7 @@ public final class CodeSystemSearchRequestBuilder
 		return addOption(OptionKey.NAME_EXACT, name);
 	}
 	
-	public CodeSystemSearchRequestBuilder filterByNameExact(Collection<String> names) {
+	public CodeSystemSearchRequestBuilder filterByNameExact(Iterable<String> names) {
 		return addOption(OptionKey.NAME_EXACT, names);
 	}
 	

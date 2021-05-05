@@ -150,5 +150,68 @@ public class SnomedValueSetRestTest extends SnomedFhirRestTest {
 			.body("filter[0].op", equalTo("="));
 	}
 	
+	@Test
+	public void getValueSetByIdParam() {
+		
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+		 	.param("_id", simpleTypeRefsetId) 
+			.when().get("/ValueSet")
+			.then()
+			.statusCode(200)
+			.body("resourceType", equalTo("Bundle"))
+			.body("type", equalTo("searchset"))
+			.body("total", equalTo(2)) //2 versions of the same refset
+			.root("entry.find { it.resource.id == '" + simpleTypeRefsetId + "'}")
+			.body("resource.resourceType", equalTo("ValueSet"))
+			.body("resource.id", equalTo(simpleTypeRefsetId))
+			.body("resource.url", startsWith("http://snomed.info/sct/version"))
+			.body("resource.version", equalTo(FHIR_SIMPLE_TYPE_REFSET_VERSION))
+			.body("resource.title", equalTo(SIMPLE_TYPE_REFSET_NAME))
+			.body("resource.name", equalTo(SIMPLE_TYPE_REFSET_NAME))
+			.body("resource.status", equalTo("active"))
+			
+			.body("resource.language", equalTo("en-us"))
+			.body("resource.identifier.use", equalTo("official"))
+			.body("resource.identifier.system", startsWith("http://snomed.info/sct/version"))
+			.body("resource.identifier.value", equalTo("11000154102"))
+			
+			.appendRoot("resource.compose.include[0]")
+			.body("system", equalTo("http://snomed.info/sct"))
+			.body("filter[0].property", equalTo("expression"))
+			.body("filter[0].value", equalTo("^" + simpleTypeRefSetId))
+			.body("filter[0].op", equalTo("="));
+	}
+	
+	@Test
+	public void getValueSetsByIdsParam() {
+		
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+		 	.param("_id", simpleTypeRefsetId, "SNOMEDCT/FHIR_QUERY_TYPE_REFSET_VERSION/104/" +  queryTypeRefsetLogicalId) 
+			.when().get("/ValueSet")
+			.then()
+			.statusCode(200)
+			.body("resourceType", equalTo("Bundle"))
+			.body("type", equalTo("searchset"))
+			.body("total", equalTo(3)) //3 versions (2 s + 1 q)
+			.root("entry.find { it.resource.id == '" + simpleTypeRefsetId + "'}")
+			.body("resource.resourceType", equalTo("ValueSet"))
+			.body("resource.id", equalTo(simpleTypeRefsetId))
+			.body("resource.url", startsWith("http://snomed.info/sct/version"))
+			.body("resource.version", equalTo(FHIR_SIMPLE_TYPE_REFSET_VERSION))
+			.body("resource.title", equalTo(SIMPLE_TYPE_REFSET_NAME))
+			.body("resource.name", equalTo(SIMPLE_TYPE_REFSET_NAME))
+			.body("resource.status", equalTo("active"))
+			
+			.body("resource.language", equalTo("en-us"))
+			.body("resource.identifier.use", equalTo("official"))
+			.body("resource.identifier.system", startsWith("http://snomed.info/sct/version"))
+			.body("resource.identifier.value", equalTo("11000154102"))
+			
+			.appendRoot("resource.compose.include[0]")
+			.body("system", equalTo("http://snomed.info/sct"))
+			.body("filter[0].property", equalTo("expression"))
+			.body("filter[0].value", equalTo("^" + simpleTypeRefSetId))
+			.body("filter[0].op", equalTo("="));
+	}
 
 }

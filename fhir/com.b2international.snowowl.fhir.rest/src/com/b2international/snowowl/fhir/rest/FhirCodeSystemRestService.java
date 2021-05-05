@@ -116,18 +116,12 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 			.addLink(uri);
 		
 		int total = 0;
+
+		//collect the hits from the providers
+		Collection<ICodeSystemApiProvider> providers = codeSystemProviderRegistry.getProviders(getBus(), locales);
 		
-		
-		//all code systems
-		if (requestParameters.getB().isEmpty()) {
-			for (ICodeSystemApiProvider fhirProvider : codeSystemProviderRegistry.getProviders(getBus(), locales)) {
-				Collection<CodeSystem> codeSystems = fhirProvider.getCodeSystems(requestParameters.getB());
-				total = total + applyFilterParameters(builder, uri, codeSystems, filterParameters);
-			}
-		} else {
-			
-			//search by parameter for code systems
-			Collection<CodeSystem> codeSystems = searchCodeSystems(requestParameters.getB());
+		for (ICodeSystemApiProvider codeSystemProvider : providers) {
+			Collection<CodeSystem> codeSystems = codeSystemProvider.getCodeSystems(requestParameters.getB());
 			for (CodeSystem codeSystem : codeSystems) {
 				applyResponseContentFilter(codeSystem, filterParameters);
 				String resourceUrl = String.join("/", uri, codeSystem.getId().getIdValue());
@@ -367,13 +361,7 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 	private Collection<CodeSystem> searchCodeSystems(Set<FhirSearchParameter> searchParameters) {
 		
 		Set<CodeSystem> results = Sets.newHashSet();
-//		Optional<FhirSearchParameter> idParam = searchParameters.stream().filter(p -> FhirCommonSearchKey._id.name().equals(p.getName())).findFirst();
-//		if (idParam.isPresent()) {
-//			CodeSystem codeSystemById = getCodeSystemById(idParam.get().getValues().iterator().next());
-//			results.add(codeSystemById);
-//			return results;
-//		}
-		
+
 		//collect the hits from the providers
 		Collection<ICodeSystemApiProvider> providers = codeSystemProviderRegistry.getProviders(getBus(), locales);
 		

@@ -161,10 +161,6 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 		return fhirCodeSystemList;
 	}
 	
-	protected Optional<FhirSearchParameter> getSearchParam(final Set<FhirSearchParameter> searchParameters, String parameterName) {
-		return searchParameters.stream().filter(p -> parameterName.equals(p.getName())).findFirst();
-	}
-	
 	/**
 	 * Returns the designated FHIR Uri for the given code system
 	 * @param codeSystem

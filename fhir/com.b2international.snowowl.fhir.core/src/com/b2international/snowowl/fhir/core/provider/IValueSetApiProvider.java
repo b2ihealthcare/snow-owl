@@ -17,6 +17,7 @@ package com.b2international.snowowl.fhir.core.provider;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.exceptions.BadRequestException;
@@ -29,6 +30,7 @@ import com.b2international.snowowl.fhir.core.model.valueset.ExpandValueSetReques
 import com.b2international.snowowl.fhir.core.model.valueset.ValidateCodeRequest;
 import com.b2international.snowowl.fhir.core.model.valueset.ValidateCodeResult;
 import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
+import com.b2international.snowowl.fhir.core.search.FhirSearchParameter;
 
 /**
  * Interface for value set specific FHIR API support. 
@@ -92,10 +94,12 @@ public interface IValueSetApiProvider extends IFhirApiProvider {
 	}
 	
 	/**
-	 * Returns the value sets supported by this provider.
-	 * @return collection of value sets supported
+	 * Returns the value sets based on the search parameters provided.
+	 * Passing in an empty collection as parameters returns all the available value sets.
+	 * @param searchParameters
+	 * @return collection of value sets found based on the parameters
 	 */
-	Collection<ValueSet> getValueSets();
+	Collection<ValueSet> getValueSets(final Set<FhirSearchParameter> searchParameters);
 
 	/**
 	 * @param componentURI - logical code system path (codeSystemShortName/version/typeId/componentId)
