@@ -27,6 +27,7 @@ public enum Rf2ValidationDefects {
 	NOT_UNIQUE_DESCRIPTION_ID("Description identifier is not unique"),
 	CONCEPT_DEFINITION_STATUS_NOT_EXIST("Concept refers to a non-existing concept in column 'definitionStatusId'"),
 	EMPTY_REFSET_MEMBER_FIELD("Reference set member field is empty"),
+	INVALID_REFSET_MEMBER_FIELD("Invalid reference set value for member type"),
 	ENCOUNTER_UNKNOWN_RELEASE_FILE("Encountered unknown release file"), 
 	UNEXPECTED_COMPONENT_CATEGORY("Unexpected component category found in column of the release file"),
 	MISSING_DESCRIPTION_TERM("Description term is missing from release file"), 

@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.snomed.datastore.request.rf2.validation;
 
+import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.HISTORICAL_ASSOCIATION_REFSETS;
+import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR;
+import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
@@ -39,6 +42,8 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentD
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2AssociationRefSetContentType;
+import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2AttributeValueRefSetContentType;
 import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2EffectiveTimeSlice;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -113,7 +118,7 @@ public class Rf2GlobalValidator {
 					for (String memberId : referringMembers) {
 						String[] referringMember = slice.getContent().get(memberId);
 						String referenceSet = referringMember[5];
-						isStructuralRefSetMember = metadataReferenceSets.contains(referenceSet);					
+						isStructuralRefSetMember = metadataReferenceSets.contains(referenceSet);
 					}
 					
 					if (isStructuralRefSetMember || !skipMissingComponents) {					
@@ -123,6 +128,9 @@ public class Rf2GlobalValidator {
 					}
 				}
 			}
+			
+			// Validate reference set type in similar reference sets
+			validateType(slice, globalDefectAcceptor);
 		}
 
 		final Set<String> missingConceptIds = newHashSet();
@@ -198,6 +206,28 @@ public class Rf2GlobalValidator {
 		removeSkippableMembers(slices);
 		skippableMemberDependenciesByEffectiveTime.clear();
 		dependenciesByEffectiveTime.clear();
+	}
+	
+	private void validateType(Rf2EffectiveTimeSlice slice, ImportDefectAcceptor globalDefectAcceptor) {
+		String effectiveTime = slice.getEffectiveTime();
+		String effectiveTimeLabel = Rf2EffectiveTimeSlice.SNAPSHOT_SLICE.equals(effectiveTime) ? "" : String.format(" in effective time '%s'", effectiveTime);
+		
+		slice.getMembersByReferencedComponent().values().forEach(memberIds -> {
+			memberIds.forEach(memberId -> {
+				String[] member = slice.getContent().get(memberId);
+				final String referenceSet = member[5];
+				final String type = member[0];
+				
+				boolean invalidHistoricalAssociationMember = HISTORICAL_ASSOCIATION_REFSETS.contains(referenceSet) && !Rf2AssociationRefSetContentType.TYPE.equals(type);
+				boolean invalidAttributeTypeMember = (REFSET_CONCEPT_INACTIVITY_INDICATOR.equals(referenceSet) || REFSET_DESCRIPTION_INACTIVITY_INDICATOR.equals(referenceSet))
+						&& !Rf2AttributeValueRefSetContentType.TYPE.equals(type);
+				
+				if (invalidHistoricalAssociationMember || invalidAttributeTypeMember) {
+					String message = String.format("%s %s with id '%s '%s", Rf2ValidationDefects.INVALID_REFSET_MEMBER_FIELD, type, memberId, effectiveTimeLabel);
+					globalDefectAcceptor.error(message);
+				} 
+			});
+		});		
 	}
 	
 	private boolean canBeSkipped(final String id) {

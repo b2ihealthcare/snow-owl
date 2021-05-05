@@ -27,7 +27,9 @@ import com.google.common.collect.ImmutableMap;
 /**
  * @since 6.0.0
  */
-final class Rf2AttributeValueRefSetContentType implements Rf2RefSetContentType {
+public final class Rf2AttributeValueRefSetContentType implements Rf2RefSetContentType {
+	
+	public static final String TYPE = "attribute-value-member";
 
 	@Override
 	public void resolve(SnomedReferenceSetMember component, String[] values) {
@@ -45,7 +47,7 @@ final class Rf2AttributeValueRefSetContentType implements Rf2RefSetContentType {
 	
 	@Override
 	public String getType() {
-		return "attribute-value-member";
+		return TYPE;
 	}
 	
 	@Override
