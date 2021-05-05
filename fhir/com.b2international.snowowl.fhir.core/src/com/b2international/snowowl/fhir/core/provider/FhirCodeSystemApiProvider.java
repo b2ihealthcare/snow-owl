@@ -17,7 +17,6 @@ package com.b2international.snowowl.fhir.core.provider;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
-import java.net.URI;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -98,14 +97,24 @@ public final class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 	@Override
 	public Collection<CodeSystem> getCodeSystems(Set<FhirSearchParameter> searchParameters) {
 		
+		Collection<CodeSystem> codeSystems = getCodeSystems();
+		
+		Optional<FhirSearchParameter> idParamOptional = getSearchParam(searchParameters, "_id");
+		if (idParamOptional.isPresent()) {
+			
+			codeSystems = codeSystems.stream().filter(cs -> {
+				return idParamOptional.get().getValues().contains(cs.getId().getIdValue());
+			}).collect(Collectors.toSet());
+		}
+		
 		Optional<FhirSearchParameter> nameOptional = getSearchParam(searchParameters, "_name");
 
 		if (nameOptional.isPresent()) {
-			return getCodeSystems().stream().filter(cs -> {
+			codeSystems = codeSystems.stream().filter(cs -> {
 				return nameOptional.get().getValues().contains(cs.getName());
 			}).collect(Collectors.toSet());
 		}
-		return getCodeSystems();
+		return codeSystems;
 	}
 
 	@Override

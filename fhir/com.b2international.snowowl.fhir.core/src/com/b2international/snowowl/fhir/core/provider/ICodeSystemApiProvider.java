@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -110,6 +110,11 @@ public interface ICodeSystemApiProvider extends IFhirApiProvider {
 	 */
 	LookupResult lookup(LookupRequest lookupRequest);
 	
+	/**
+	 * Returns true if the given code system URI is supported by this provider
+	 * @param codeSystemId
+	 * @return
+	 */
 	boolean isSupported(CodeSystemURI codeSystemId);
 
 	/**
@@ -122,14 +127,8 @@ public interface ICodeSystemApiProvider extends IFhirApiProvider {
 	SubsumptionResult subsumes(SubsumptionRequest subsumption);
 
 	/**
-	 * Returns the code systems supported by this provider
-	 * @return collection of code systems supported
-	 */
-	//Collection<CodeSystem> getCodeSystems();
-	
-	/**
 	 * Returns the code systems based on the search parameters provided.
-	 * Passing in an empty collection returns all the available code systems.
+	 * Passing in an empty collection as parameters returns all the available code systems.
 	 * @param searchParameters
 	 * @return collection of code systems found based on the parameters
 	 */

@@ -118,13 +118,18 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 	@Override
 	public Collection<CodeSystem> getCodeSystems(final Set<FhirSearchParameter> searchParameters) {
 		
-		Optional<FhirSearchParameter> nameOptional = getSearchParam(searchParameters, "_name"); //TODO: what should we do with the names of these dynamic properties?
-
 		CodeSystemSearchRequestBuilder requestBuilder = CodeSystemRequests.prepareSearchCodeSystem().all();
 		
+		//TODO: what should we do with the hardcoded names of these dynamic properties?
+		Optional<FhirSearchParameter> idParamOptional = getSearchParam(searchParameters, "_id");
+		if (idParamOptional.isPresent()) {
+			Collection<String> ids = idParamOptional.get().getValues();
+			requestBuilder.filterByIds(ids);
+		}
+
+		Optional<FhirSearchParameter> nameOptional = getSearchParam(searchParameters, "_name"); 
 		if (nameOptional.isPresent()) {
 			Collection<String> names = nameOptional.get().getValues();
-			//if (names.size() > 1) throw FhirException.createFhirError("Multiple values for name search parameter is not supported.", OperationOutcomeCode.MSG_PARAM_INVALID, "Search parameter");
 			requestBuilder.filterByNameExact(names);
 		}
 		

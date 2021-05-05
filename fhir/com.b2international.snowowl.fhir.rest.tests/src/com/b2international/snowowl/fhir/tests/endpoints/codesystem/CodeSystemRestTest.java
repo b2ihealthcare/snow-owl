@@ -86,6 +86,19 @@ public class CodeSystemRestTest extends FhirRestTest {
 			.statusCode(200);
 	}
 	
+	//Invalid ID parameter
+	@Test
+	public void getCodeSystemsInvalidIdParamTest() {
+		
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.param("_id", "whatever")
+			.when().get("/CodeSystem")
+			.then()
+			.body("resourceType", equalTo("Bundle"))
+			.body("total", equalTo(0))
+			.statusCode(200);
+	}
+	
 	//Id parameter
 	@Test
 	public void getCodeSystemsIdParamTest() {
@@ -101,18 +114,27 @@ public class CodeSystemRestTest extends FhirRestTest {
 			.statusCode(200);
 	}
 	
-	//Invalid ID parameter
+	//Id parameters
 	@Test
-	public void getCodeSystemsInvalidIdParamTest() {
+	public void getCodeSystemsIdsParamTest() {
+		
+		final String narrativeStatusId = "fhir/narrative-status";
 		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.param("_id", "whatever")
-			.when().get("/CodeSystem").then()
-			.body("resourceType", equalTo("OperationOutcome"))
-			.body("issue.severity", hasItem("error"))
-			.body("issue.code", hasItem("invalid"))
-			.statusCode(400);
-	}
+			.param("_id", FHIR_ISSUE_TYPE_CODESYSTEM_ID, narrativeStatusId)
+			.when().get("/CodeSystem")
+			.then()
+			.body("resourceType", equalTo("Bundle"))
+			.body("total", equalTo(2))
+			.body("type", equalTo("searchset"))
+			.root("entry.find { it.resource.id == '" + FHIR_ISSUE_TYPE_CODESYSTEM_ID + "'}")
+			.body("resource.id", equalTo(FHIR_ISSUE_TYPE_CODESYSTEM_ID))
+			.body("resource.concept", notNullValue())
+			.root("entry.find { it.resource.id == '" + narrativeStatusId + "'}")
+			.body("resource.id", equalTo(narrativeStatusId))
+			.statusCode(200);
+		}
+	
 	
 	//Name parameter
 	@Test

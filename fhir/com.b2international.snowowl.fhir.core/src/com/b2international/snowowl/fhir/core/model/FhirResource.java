@@ -46,7 +46,7 @@ public abstract class FhirResource {
 	 * Set the ID to -1 when submitting for creation.
 	 */
 	@Mandatory
-	@Searchable(type = "String", modifiers = {"exact"})
+	@Searchable(type = "String", modifiers = {"exact"}, supportsMultipleValues = true)
 	private final Id id;
 	
 	/**

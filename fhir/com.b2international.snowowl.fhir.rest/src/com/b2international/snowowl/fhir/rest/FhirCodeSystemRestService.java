@@ -160,7 +160,10 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 		
 		Pair<Set<FhirFilterParameter>, Set<FhirSearchParameter>> fhirParameters = processParameters(parameters);
 		
-		CodeSystem codeSystem = getCodeSystemById(codeSystemId);
+		CodeSystemURI codeSystemURI = new CodeSystemURI(codeSystemId);
+		ICodeSystemApiProvider codeSystemProvider = codeSystemProviderRegistry.getCodeSystemProvider(getBus(), locales, codeSystemURI);
+		CodeSystem codeSystem = codeSystemProvider.getCodeSystem(codeSystemURI);
+		
 		return applyResponseContentFilter(codeSystem, fhirParameters.getA());
 	}
 	
@@ -364,12 +367,12 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 	private Collection<CodeSystem> searchCodeSystems(Set<FhirSearchParameter> searchParameters) {
 		
 		Set<CodeSystem> results = Sets.newHashSet();
-		Optional<FhirSearchParameter> idParam = searchParameters.stream().filter(p -> FhirCommonSearchKey._id.name().equals(p.getName())).findFirst();
-		if (idParam.isPresent()) {
-			CodeSystem codeSystemById = getCodeSystemById(idParam.get().getValues().iterator().next());
-			results.add(codeSystemById);
-			return results;
-		}
+//		Optional<FhirSearchParameter> idParam = searchParameters.stream().filter(p -> FhirCommonSearchKey._id.name().equals(p.getName())).findFirst();
+//		if (idParam.isPresent()) {
+//			CodeSystem codeSystemById = getCodeSystemById(idParam.get().getValues().iterator().next());
+//			results.add(codeSystemById);
+//			return results;
+//		}
 		
 		//collect the hits from the providers
 		Collection<ICodeSystemApiProvider> providers = codeSystemProviderRegistry.getProviders(getBus(), locales);
@@ -380,12 +383,6 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 		}
 		
 		return results;
-	}
-	
-	private CodeSystem getCodeSystemById(String codeSystemId) {
-		CodeSystemURI codeSystemURI = new CodeSystemURI(codeSystemId);
-		ICodeSystemApiProvider codeSystemProvider = codeSystemProviderRegistry.getCodeSystemProvider(getBus(), locales, codeSystemURI);
-		return codeSystemProvider.getCodeSystem(codeSystemURI);
 	}
 	
 	/*
