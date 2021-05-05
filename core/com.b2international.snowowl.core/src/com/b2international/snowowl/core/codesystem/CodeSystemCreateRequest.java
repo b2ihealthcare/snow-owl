@@ -33,6 +33,7 @@ import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.internal.ResourceRepository;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
+import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.version.Version;
 
 /**
@@ -148,7 +149,7 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 			
 			final String versionId = extensionOf.getPath();
 			
-			final Optional<Version> extensionOfVersion = CodeSystemRequests.prepareSearchVersion()
+			final Optional<Version> extensionOfVersion = ResourceRequests.prepareSearchVersion()
 					.one()
 					.filterByResource(extensionOf.withoutPath())
 					.filterByVersionId(versionId)

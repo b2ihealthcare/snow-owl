@@ -15,6 +15,11 @@
  */
 package com.b2international.snowowl.core.request;
 
+import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.request.version.VersionCreateRequestBuilder;
+import com.b2international.snowowl.core.request.version.VersionGetRequestBuilder;
+import com.b2international.snowowl.core.request.version.VersionSearchRequestBuilder;
+
 /**
  * @since 8.0
  */
@@ -26,6 +31,18 @@ public final class ResourceRequests {
 	
 	public static ResourceSearchRequestBuilder prepareSearch() {
 		return new ResourceSearchRequestBuilder();
+	}
+	
+	public static VersionSearchRequestBuilder prepareSearchVersion() {
+		return new VersionSearchRequestBuilder();
+	}
+	
+	public static VersionGetRequestBuilder prepareGetVersion(ResourceURI versionUri) {
+		return new VersionGetRequestBuilder(versionUri);
+	}
+	
+	public static VersionCreateRequestBuilder prepareNewVersion() {
+		return new VersionCreateRequestBuilder();
 	}
 	
 }

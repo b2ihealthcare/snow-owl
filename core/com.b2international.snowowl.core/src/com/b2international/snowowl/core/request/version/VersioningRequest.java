@@ -24,7 +24,6 @@ import com.b2international.commons.exceptions.ApiException;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.date.EffectiveTimes;
@@ -33,6 +32,7 @@ import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.repository.TerminologyRepositoryPlugin;
+import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.version.Version;
 import com.b2international.snowowl.core.version.VersionDocument;
 
@@ -100,7 +100,7 @@ public class VersioningRequest implements Request<TransactionContext, Boolean>, 
 
 	@Nullable
 	private Version getVersion(TransactionContext context) {
-		return CodeSystemRequests
+		return ResourceRequests
 				.prepareSearchVersion()
 				.setLimit(2)
 				.filterByResource(config.getResource())

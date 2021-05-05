@@ -21,7 +21,6 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
@@ -37,8 +36,6 @@ import com.b2international.index.revision.RevisionBranch;
 import com.b2international.snowowl.core.*;
 import com.b2international.snowowl.core.authorization.AccessControl;
 import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.codesystem.CodeSystem;
-import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.identity.User;
@@ -84,28 +81,28 @@ public final class VersionCreateRequest implements Request<ServiceProvider, Bool
 	
 	// local execution variables
 	private transient Multimap<DatastoreLockContext, DatastoreLockTarget> lockTargetsByContext;
-	private transient Map<String, CodeSystem> resourcesById;
+	private transient Map<ResourceURI, TerminologyResource> resourcesById;
 	
 	@Override
 	public Boolean execute(ServiceProvider context) {
 		final String user = context.service(User.class).getUsername();
 		
 		if (resourcesById == null) {
-			resourcesById = fetchAllResources(context);
+			resourcesById = fetchResources(context);
 		}
 		
-		final CodeSystem codeSystem = resourcesById.get(resource);
-		if (codeSystem == null) {
+		if (!resourcesById.containsKey(resource)) {
 			throw new ResourceNotFoundException(resource);
 		}
 		
 		// validate new path
 		RevisionBranch.BranchNameValidator.DEFAULT.checkName(version);
 		
-		final List<CodeSystem> resourcesToVersion = codeSystem.getDependenciesAndSelf()
-				.stream()
-				.map(resourcesById::get)
-				.collect(Collectors.toList());
+		final List<TerminologyResource> resourcesToVersion = List.of(resourcesById.get(resource));
+//		final List<CodeSystem> resourcesToVersion = codeSystem.getDependenciesAndSelf()
+//				.stream()
+//				.map(resourcesById::get)
+//				.collect(Collectors.toList());
 		
 		resourcesToVersion.stream()
 			.filter(cs -> cs.getUpgradeOf() != null)
@@ -114,10 +111,10 @@ public final class VersionCreateRequest implements Request<ServiceProvider, Bool
 				throw new BadRequestException("Upgrade resource '%s' can not be versioned.", cs.getResourceURI());				
 			});
 		
-		for (CodeSystem cs : resourcesToVersion) {
+		for (TerminologyResource terminologyResource : resourcesToVersion) {
 			// check that the new versionId does not conflict with any other currently available branch
-			final String newVersionPath = String.join(Branch.SEPARATOR, cs.getBranchPath(), version);
-			final String repositoryId = cs.getToolingId();
+			final String newVersionPath = String.join(Branch.SEPARATOR, terminologyResource.getBranchPath(), version);
+			final String repositoryId = terminologyResource.getToolingId();
 			
 			if (!force) {
 				// branch needs checking in the non-force cases only
@@ -150,9 +147,9 @@ public final class VersionCreateRequest implements Request<ServiceProvider, Bool
 			
 			resourcesToVersion.forEach(resourceToVersion -> {
 				// check that the specified effective time is valid in this code system
-				validateVersion(context, codeSystem);
+				validateVersion(context, resourceToVersion);
 				new RepositoryRequest<>(resourceToVersion.getToolingId(),
-					new BranchRequest<>(codeSystem.getBranchPath(),
+					new BranchRequest<>(resourceToVersion.getBranchPath(),
 						new RevisionIndexReadRequest<CommitResult>(
 							context.service(RepositoryManager.class).get(resourceToVersion.getToolingId())
 								.service(VersioningRequestBuilder.class)
@@ -162,7 +159,7 @@ public final class VersionCreateRequest implements Request<ServiceProvider, Bool
 				).execute(context);
 				
 				// tag the repository
-				doTag(context, codeSystem, monitor);
+				doTag(context, resourceToVersion, monitor);
 			});
 			
 			return Boolean.TRUE;
@@ -182,26 +179,20 @@ public final class VersionCreateRequest implements Request<ServiceProvider, Bool
 				.getSync(1, TimeUnit.MINUTES);
 	}
 	
-	// TODO add generic ResourceRequests
-	private Map<String, Resource> fetchAllResources(ServiceProvider context) {
-//		final RepositoryManager repositoryManager = context.service(RepositoryManager.class);
-//		final Collection<Repository> repositories = repositoryManager.repositories();
-//		return repositories.stream()
-//			.map(repository -> fetchCodeSystems(context, repository.id()))
-//			.flatMap(Collection::stream)
-//			.collect(Collectors.toMap(CodeSystem::getShortName, Function.identity()));
+	// TODO fetch only the relevant resources and not everything
+	private Map<ResourceURI, TerminologyResource> fetchResources(ServiceProvider context) {
+		return ResourceRequests.prepareSearch()
+			.all()
+			.buildAsync()
+			.getRequest()
+			.execute(context)
+			.stream()
+			.filter(TerminologyResource.class::isInstance)
+			.map(TerminologyResource.class::cast)
+			.collect(Collectors.toMap(Resource::getResourceURI, r -> r));
 	}
 	
-	private List<CodeSystem> fetchResources(ServiceProvider context, String repositoryId) {
-//		return CodeSystemRequests.prepareSearchCodeSystem()
-//			.all()
-//			.build(repositoryId)
-//			.getRequest()
-//			.execute(context)
-//			.getItems();
-	}
-	
-	private void validateVersion(ServiceProvider context, CodeSystem codeSystem) {
+	private void validateVersion(ServiceProvider context, TerminologyResource codeSystem) {
 		if (!context.service(TerminologyRegistry.class).getTerminology(codeSystem.getToolingId()).isEffectiveTimeSupported()) {
 			return;
 		}
@@ -229,8 +220,8 @@ public final class VersionCreateRequest implements Request<ServiceProvider, Bool
 		
 	}
 	
-	private Optional<Version> getMostRecentVersion(ServiceProvider context, CodeSystem codeSystem) {
-		return CodeSystemRequests.prepareSearchVersion()
+	private Optional<Version> getMostRecentVersion(ServiceProvider context, TerminologyResource codeSystem) {
+		return ResourceRequests.prepareSearchVersion()
 			.one()
 			.filterByResource(codeSystem.getResourceURI())
 			.sortBy(SortField.descending(VersionDocument.Fields.EFFECTIVE_TIME))
@@ -240,11 +231,11 @@ public final class VersionCreateRequest implements Request<ServiceProvider, Bool
 			.findFirst();
 	}
 	
-	private void acquireLocks(ServiceProvider context, String user, Collection<CodeSystem> codeSystems) {
+	private void acquireLocks(ServiceProvider context, String user, Collection<TerminologyResource> codeSystems) {
 		this.lockTargetsByContext = HashMultimap.create();
 		
 		final DatastoreLockContext lockContext = new DatastoreLockContext(user, CREATE_VERSION);
-		for (CodeSystem codeSystem : codeSystems) {
+		for (TerminologyResource codeSystem : codeSystems) {
 			final DatastoreLockTarget lockTarget = new DatastoreLockTarget(codeSystem.getToolingId(), codeSystem.getBranchPath());
 			
 			context.service(IOperationLockManager.class).lock(lockContext, IOperationLockManager.IMMEDIATE, lockTarget);
@@ -259,7 +250,7 @@ public final class VersionCreateRequest implements Request<ServiceProvider, Bool
 		}
 	}
 	
-	private void doTag(ServiceProvider context, CodeSystem codeSystem, IProgressMonitor monitor) {
+	private void doTag(ServiceProvider context, TerminologyResource codeSystem, IProgressMonitor monitor) {
 		RepositoryRequests
 			.branching()
 			.prepareCreate()
@@ -274,7 +265,7 @@ public final class VersionCreateRequest implements Request<ServiceProvider, Bool
 	@Override
 	public String getResource(ServiceProvider context) {
 		if (resourcesById == null) {
-			resourcesById = fetchAllResources(context);
+			resourcesById = fetchResources(context);
 		}
 		// TODO support multi repository version authorization
 		return resourcesById.get(resource).getToolingId();

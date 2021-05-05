@@ -28,6 +28,7 @@ import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.branch.BranchInfo;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.request.BaseResourceConverter;
+import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
 import com.b2international.snowowl.core.version.Version;
 import com.b2international.snowowl.core.version.Versions;
@@ -148,7 +149,7 @@ public final class CodeSystemConverter extends BaseResourceConverter<ResourceDoc
 			.filter(uri -> uri != null)
 			.collect(Collectors.toSet());
 		
-		final Versions parentVersions = CodeSystemRequests.prepareSearchVersion()
+		final Versions parentVersions = ResourceRequests.prepareSearchVersion()
 			.all()
 			.filterByResources(parentResources)
 			.build()

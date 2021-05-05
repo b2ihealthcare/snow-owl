@@ -27,6 +27,7 @@ import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
+import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.request.UpdateRequest;
 import com.b2international.snowowl.core.version.Version;
 import com.google.common.collect.Maps;
@@ -161,7 +162,7 @@ final class CodeSystemUpdateRequest extends UpdateRequest<TransactionContext> im
 			
 			final String versionId = extensionOf.getPath();
 			
-			final Optional<Version> extensionOfVersion = CodeSystemRequests.prepareSearchVersion()
+			final Optional<Version> extensionOfVersion = ResourceRequests.prepareSearchVersion()
 					.one()
 					.filterByResource(extensionOf.withoutPath())
 					.filterByVersionId(versionId)

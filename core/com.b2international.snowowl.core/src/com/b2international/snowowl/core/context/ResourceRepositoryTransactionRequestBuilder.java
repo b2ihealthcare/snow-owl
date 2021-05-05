@@ -16,7 +16,9 @@
 package com.b2international.snowowl.core.context;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.events.RequestBuilder;
+import com.b2international.snowowl.core.request.CommitResult;
 
 /**
  * @since 8.0
@@ -24,6 +26,13 @@ import com.b2international.snowowl.core.events.RequestBuilder;
  */
 public interface ResourceRepositoryTransactionRequestBuilder<R> extends RequestBuilder<TransactionContext, R> {
 
+	default AsyncRequest<CommitResult> build(String author, String commitComment) {
+		return commit()
+				.setAuthor(author)
+				.setCommitComment(commitComment)
+				.buildAsync();
+	}
+	
 	default ResourceRepositoryCommitRequestBuilder commit() {
 		return new ResourceRepositoryCommitRequestBuilder().setBody(build());
 	}

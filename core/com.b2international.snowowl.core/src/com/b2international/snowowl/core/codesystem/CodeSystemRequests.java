@@ -21,9 +21,6 @@ import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.compare.ConceptMapCompareResultItem;
 import com.b2international.snowowl.core.jobs.RemoteJobEntry;
 import com.b2international.snowowl.core.request.*;
-import com.b2international.snowowl.core.request.version.VersionCreateRequestBuilder;
-import com.b2international.snowowl.core.request.version.VersionGetRequestBuilder;
-import com.b2international.snowowl.core.request.version.VersionSearchRequestBuilder;
 import com.b2international.snowowl.core.uri.ComponentURI;
 
 /**
@@ -51,18 +48,6 @@ public class CodeSystemRequests {
 		return new CodeSystemSearchRequestBuilder();
 	}
 
-	public static VersionSearchRequestBuilder prepareSearchVersion() {
-		return new VersionSearchRequestBuilder();
-	}
-	
-	public static VersionGetRequestBuilder prepareGetVersion(ResourceURI versionUri) {
-		return new VersionGetRequestBuilder(versionUri);
-	}
-	
-	public static VersionCreateRequestBuilder prepareNewVersion() {
-		return new VersionCreateRequestBuilder();
-	}
-	
 	// Upgrade API
 	
 	public static CodeSystemUpgradeRequestBuilder prepareUpgrade(ResourceURI codeSystem, ResourceURI extensionOf) {

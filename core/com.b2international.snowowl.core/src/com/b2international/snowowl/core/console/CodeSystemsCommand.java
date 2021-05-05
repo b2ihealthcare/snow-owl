@@ -22,6 +22,7 @@ import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.plugin.Component;
+import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
 import com.b2international.snowowl.core.version.Version;
 import com.b2international.snowowl.core.version.VersionDocument;
@@ -137,7 +138,7 @@ public final class CodeSystemsCommand extends Command {
 		final ImmutableList.Builder<String> result = ImmutableList.builder();
 
 		result.add("Versions:");
-		final Versions versions = CodeSystemRequests.prepareSearchVersion()
+		final Versions versions = ResourceRequests.prepareSearchVersion()
 				.all()
 				.filterByResource(cs.getResourceURI())
 				.sortBy(SortField.ascending(VersionDocument.Fields.EFFECTIVE_TIME))

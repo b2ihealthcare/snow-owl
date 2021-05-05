@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,9 +22,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.b2international.commons.exceptions.NotFoundException;
-import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.test.commons.Services;
+import com.b2international.snowowl.test.commons.rest.RestExtensions;
 
 /**
  * @since 4.7
@@ -32,8 +33,7 @@ import com.b2international.snowowl.test.commons.Services;
 public class CodeSystemRequestTest {
 
 	private static final String SNOMEDCT = "SNOMEDCT";
-	private static final String REPOSITORY_ID = "snomedStore";
-	private static final String BRANCH = IBranchPath.MAIN_BRANCH;
+	private static final String BRANCH = Branch.MAIN_PATH;
 
 	private IEventBus bus;
 
@@ -49,7 +49,7 @@ public class CodeSystemRequestTest {
 		
 		assertCodeSystemCreated(shortName, oid);
 		
-		final CodeSystems codeSystems = CodeSystemRequests.prepareSearchAllCodeSystems()
+		final CodeSystems codeSystems = CodeSystemRequests.prepareSearchCodeSystem()
 				.build()
 				.execute(Services.context());
 		
@@ -58,24 +58,24 @@ public class CodeSystemRequestTest {
 	
 	@Test
 	public void getCodeSystemByShortNameFromAllRepositoreis() {
-		final String shortName = "ShortName";
+		final String id = "ShortName";
 		final String oid = "Oid";
 		
-		assertCodeSystemCreated(shortName, oid);
+		assertCodeSystemCreated(id, oid);
 		
-		final CodeSystems existingCodeSystem = CodeSystemRequests.prepareSearchAllCodeSystems()
-				.filterById(shortName)
+		final CodeSystems existingCodeSystem = CodeSystemRequests.prepareSearchCodeSystem()
+				.filterById(id)
 				.build()
 				.execute(Services.context());
 
 		assertThat(existingCodeSystem.getItems()).hasSize(1);
-		assertThat(existingCodeSystem.getItems().get(0).getShortName()).isEqualTo(shortName);
+		assertThat(existingCodeSystem.getItems().get(0).getId()).isEqualTo(id);
 	}
 	
 	@Test
 	public void getNonExistentCodeSystemByShortNameFromAllRepositoreis() {
 		
-		final CodeSystems nonExistentCodeSystem = CodeSystemRequests.prepareSearchAllCodeSystems()
+		final CodeSystems nonExistentCodeSystem = CodeSystemRequests.prepareSearchCodeSystem()
 				.filterById("not a valid code system short name")
 				.build()
 				.execute(Services.context());
@@ -101,7 +101,7 @@ public class CodeSystemRequestTest {
 		assertCodeSystemCreated(shortName, oid);
 		
 		final CodeSystem codeSystem = getCodeSystem(shortName);
-		assertThat(codeSystem.getShortName()).isEqualTo(shortName);
+		assertThat(codeSystem.getId()).isEqualTo(shortName);
 	}
 	
 	@Test
@@ -114,14 +114,14 @@ public class CodeSystemRequestTest {
 		assertNotNull(oldCodeSystem);
 		
 		CodeSystemRequests.prepareUpdateCodeSystem(shortName)
-			.setName("updated name")
-			.build(REPOSITORY_ID, BRANCH, "system", String.format("Updated code system %s.", shortName))
+			.setTitle("updated name")
+			.build(RestExtensions.USER, String.format("Updated code system %s.", shortName))
 			.execute(bus)
 			.getSync();
 		
 		final CodeSystem updatedCodeSystem = getCodeSystem(shortName);
 		assertNotNull(updatedCodeSystem);
-		assertThat(updatedCodeSystem.getName()).isEqualTo("updated name");
+		assertThat(updatedCodeSystem.getTitle()).isEqualTo("updated name");
 	}
 	
 	@Test(expected = NotFoundException.class)
@@ -135,7 +135,7 @@ public class CodeSystemRequestTest {
 		
 		CodeSystemRequests.prepareUpdateCodeSystem(shortName)
 			.setBranchPath("non-existent-branch-path")
-			.build(REPOSITORY_ID, BRANCH, "system", String.format("Updated code system %s.", shortName))
+			.build(RestExtensions.USER, String.format("Updated code system %s.", shortName))
 			.execute(bus)
 			.getSync();
 	}
@@ -144,34 +144,32 @@ public class CodeSystemRequestTest {
 	public void searchCodeSystem() {
 		final CodeSystems codeSystems = CodeSystemRequests.prepareSearchCodeSystem()
 			.filterById(SNOMEDCT)
-			.build(REPOSITORY_ID)
+			.buildAsync()
 			.execute(bus)
 			.getSync();
 		
 		assertThat(codeSystems.getItems()).hasSize(1);
-		assertThat(codeSystems.getItems().get(0).getShortName()).isEqualTo(SNOMEDCT);
+		assertThat(codeSystems.getItems().get(0).getId()).isEqualTo(SNOMEDCT);
 	}
 	
 	private void createCodeSystem(final String shortName, final String oid) {
 		CodeSystemRequests.prepareNewCodeSystem()
-			.setShortName(shortName)
-			.setOid(oid)
-			.setName(String.format("%s - %s", shortName, oid))
+			.setId(shortName)
+			.setTitle(String.format("%s - %s", shortName, oid))
+			.setUrl("www.ihtsdo.org")
+			.setDescription("# Description")
 			.setLanguage("en")
 			.setBranchPath(BRANCH)
-			.setCitation("citation")
-			.setIconPath("snomed.png")
-			.setRepositoryId(REPOSITORY_ID)
-			.setTerminologyId("concept")
-			.setLink("www.ihtsdo.org")
-			.build(REPOSITORY_ID, BRANCH, "system", String.format("New code system %s", shortName))
+			.setToolingId("snomed")
+			.setOid(oid)
+			.build(RestExtensions.USER, String.format("New code system %s", shortName))
 			.execute(bus)
 			.getSync();
 	}
 	
 	private CodeSystem getCodeSystem(final String shortName) {
 		return CodeSystemRequests.prepareGetCodeSystem(shortName)
-				.build(REPOSITORY_ID)
+				.buildAsync()
 				.execute(bus)
 				.getSync();
 	}

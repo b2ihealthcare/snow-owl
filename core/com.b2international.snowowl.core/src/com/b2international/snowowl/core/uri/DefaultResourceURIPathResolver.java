@@ -27,7 +27,6 @@ import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.TerminologyResource;
-import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.version.VersionSearchRequestBuilder;
@@ -64,7 +63,7 @@ public final class DefaultResourceURIPathResolver implements ResourceURIPathReso
 				// use code system working branch directly when HEAD is specified
 				return terminologyResource.getBranchPath();
 			} else {
-				VersionSearchRequestBuilder versionSearch = CodeSystemRequests.prepareSearchVersion()
+				VersionSearchRequestBuilder versionSearch = ResourceRequests.prepareSearchVersion()
 						.one()
 						.filterByResource(uriToResolve);
 				

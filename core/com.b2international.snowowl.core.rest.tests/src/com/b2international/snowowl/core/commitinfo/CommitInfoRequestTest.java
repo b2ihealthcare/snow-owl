@@ -30,6 +30,7 @@ import com.b2international.snowowl.core.commit.CommitInfo;
 import com.b2international.snowowl.core.commit.CommitInfos;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.test.commons.Services;
 import com.google.common.collect.Iterables;
 
@@ -173,17 +174,15 @@ public class CommitInfoRequestTest {
 	
 	private void createCodeSystem(final String shortName, final String oid, final String comment, final String userId) {
 		CodeSystemRequests.prepareNewCodeSystem()
-			.setShortName(shortName)
+			.setId(shortName)
 			.setOid(oid)
-			.setName(String.format("%s - %s", shortName, oid))
+			.setUrl("www.ihtsdo.org")
+			.setTitle(String.format("%s - %s", shortName, oid))
 			.setLanguage("en")
 			.setBranchPath(IBranchPath.MAIN_BRANCH)
-			.setCitation("citation")
-			.setIconPath("snomed.png")
-			.setRepositoryId("snomedStore")
-			.setTerminologyId("concept")
-			.setLink("www.ihtsdo.org")
-			.build("snomedStore", IBranchPath.MAIN_BRANCH, userId, comment)
+			.setDescription("citation")
+			.setToolingId(SnomedTerminologyComponentConstants.TERMINOLOGY_ID)
+			.build(userId, comment)
 			.execute(bus)
 			.getSync();
 	}
