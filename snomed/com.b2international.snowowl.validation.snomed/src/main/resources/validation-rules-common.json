@@ -99,6 +99,15 @@
     "implementation": "scripts/rule80.groovy"
   },
   {
+    "id": "83",
+    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "messageTemplate": "Active terms should not contain double spaces.",
+    "severity": "ERROR",
+    "checkType": "FAST",
+    "type": "snomed-query",
+    "implementation": "{\"componentType\": \"description\",\"active\": \"true\",\"term\": \"regex(.*[ ]{2,}.*)\"}"
+  },
+  {
   	"id": "84",
     "toolingId": "com.b2international.snowowl.terminology.snomed",
     "messageTemplate": "In active terms, spaces should not precede commas, colons, semicolons or full stops.",
@@ -115,6 +124,24 @@
     "checkType": "NORMAL",
     "type": "script-groovy",
     "implementation": "scripts/rule110.groovy"
+  },
+  {
+  "id": "115a",
+    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "messageTemplate": "Reference Sets should not contain retired concepts",
+    "severity": "WARNING",
+    "checkType": "NORMAL",
+    "type": "snomed-query",
+    "implementation": "{\"componentType\": \"concept\",\"active\": \"false\",\"isActiveMemberOf\": \"<900000000000455006 MINUS (<900000000000522004 OR 900000000000489007)\"}"
+  },
+  {
+    "id": "115b",
+    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "messageTemplate": "Reference Sets should not contain retired descriptions",
+    "severity": "WARNING",
+    "checkType": "NORMAL",
+    "type": "snomed-query",
+    "implementation": "{\"componentType\": \"description\",\"active\": \"false\",\"isActiveMemberOf\": \"<900000000000455006 MINUS (<900000000000522004 OR 900000000000490003)\"}"
   },
   {
     "id": "266",
