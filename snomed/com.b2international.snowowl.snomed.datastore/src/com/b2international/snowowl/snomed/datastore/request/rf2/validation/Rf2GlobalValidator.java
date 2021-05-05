@@ -56,9 +56,12 @@ public class Rf2GlobalValidator {
 		
 	private Map<String, String> dependenciesByEffectiveTime;
 	private Map<String, String> skippableMemberDependenciesByEffectiveTime;
+	
+	private boolean skipMissingComponents;
 
-	public Rf2GlobalValidator(Logger log) {
+	public Rf2GlobalValidator(Logger log, boolean skipMissingComponents) {
 		this.log = log;
+		this.skipMissingComponents = skipMissingComponents;
 	}
 	
 	public void validateTerminologyComponents(
@@ -113,7 +116,7 @@ public class Rf2GlobalValidator {
 						isStructuralRefSetMember = metadataReferenceSets.contains(referenceSet);					
 					}
 					
-					if (isStructuralRefSetMember) {					
+					if (isStructuralRefSetMember || !skipMissingComponents) {					
 						dependenciesByEffectiveTime.put(stringReferencedComponentId, slice.getEffectiveTime());						
 					} else {
 						skippableMemberDependenciesByEffectiveTime.put(stringReferencedComponentId, slice.getEffectiveTime());
@@ -198,7 +201,7 @@ public class Rf2GlobalValidator {
 	}
 	
 	private boolean canBeSkipped(final String id) {
-		return skippableMemberDependenciesByEffectiveTime.containsKey(id) && !dependenciesByEffectiveTime.containsKey(id);
+		return skipMissingComponents && skippableMemberDependenciesByEffectiveTime.containsKey(id) && !dependenciesByEffectiveTime.containsKey(id);
 	}
 	
 	private void removeSkippableMembers(List<Rf2EffectiveTimeSlice> slices) {

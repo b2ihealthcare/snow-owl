@@ -94,6 +94,10 @@ public class SnomedRf2ImportRestService extends AbstractSnomedRestService {
 			@RequestParam(name = "createVersions", defaultValue = "true")
 			final Boolean createVersions,
 			
+			@ApiParam(value = "Alllow import to progress when non-structural reference set members have missing referenced components", defaultValue = "false")
+			@RequestParam(name = "skipMissingComponents", defaultValue = "false")
+			final Boolean skipMissingComponents,
+			
 			@ApiParam(value = "Enable to run the import content integrity validations without pushing any changes", defaultValue = "false")
 			@RequestParam(name = "dryRun", defaultValue = "false")
 			final Boolean dryRun,
@@ -111,6 +115,7 @@ public class SnomedRf2ImportRestService extends AbstractSnomedRestService {
 			.setRf2ArchiveId(rf2ArchiveId)
 			.setReleaseType(Rf2ReleaseType.getByNameIgnoreCase(type))
 			.setCreateVersions(createVersions)
+			.setSkipMissingComponents(skipMissingComponents)
 			.setDryRun(dryRun)
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
 			.runAsJobWithRestart(importJobId, String.format("Importing SNOMED CT RF2 file '%s'", file.getOriginalFilename()))

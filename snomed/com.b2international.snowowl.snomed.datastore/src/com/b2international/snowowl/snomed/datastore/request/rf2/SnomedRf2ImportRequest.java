@@ -102,6 +102,9 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 	private boolean createVersions = true;
 	
 	@JsonProperty
+	private boolean skipMissingComponents = false;
+	
+	@JsonProperty
 	private boolean dryRun = false;
 
 	SnomedRf2ImportRequest(UUID rf2ArchiveId) {
@@ -114,6 +117,10 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 	
 	void setCreateVersions(boolean createVersions) {
 		this.createVersions = createVersions;
+	}
+	
+	void setSkipMissingComponents(boolean skipMissingComponents) {
+		this.skipMissingComponents = skipMissingComponents;
 	}
 	
 	void setDryRun(boolean dryRun) {
@@ -175,7 +182,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 			
 			// Run validation that takes current terminology content into account
 			final List<Rf2EffectiveTimeSlice> orderedEffectiveTimeSlices = effectiveTimeSlices.consumeInOrder();
-			final Rf2GlobalValidator globalValidator = new Rf2GlobalValidator(LOG);
+			final Rf2GlobalValidator globalValidator = new Rf2GlobalValidator(LOG, skipMissingComponents);
 			
 			/* 
 			 * TODO: Use Attachment to get the release file name and/or track file and line number sources for each row 
