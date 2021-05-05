@@ -152,7 +152,6 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 				.extract().header("Location"));
 		waitForImportJob(branchPath, importId).statusCode(200)
 			.body("status", equalTo(RemoteJobState.FINISHED.name()));
-			//.extract().as(SnomedRf2Import.class);
 		getComponent(branchPath, SnomedComponentType.CONCEPT, "63961392103").statusCode(404);
 		getComponent(branchPath, SnomedComponentType.MEMBER, "5312ec36-8baf-4768-8c4b-2d6f91094d4b").statusCode(404);
 	}
