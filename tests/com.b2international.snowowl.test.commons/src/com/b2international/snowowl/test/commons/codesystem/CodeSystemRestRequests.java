@@ -85,9 +85,10 @@ public abstract class CodeSystemRestRequests {
 		return givenAuthenticatedRequest(ApiTestConstants.ADMIN_API)
 				.contentType(ContentType.JSON)
 				.body(Map.of(
-					"extensionOf", extensionOf.toString()
+					"extensionOf", extensionOf.toString(),
+					"upgradeOf", codeSystem.toString()
 				))
-				.post("codesystems/{id}/upgrades", codeSystem.toString())
+				.post("/upgrade")
 				.then();
 	}
 

@@ -23,6 +23,7 @@ import com.b2international.snowowl.core.uri.CodeSystemURI;
 public class CodeSystemUpgradeRestInput {
 
 	private CodeSystemURI extensionOf;
+	private CodeSystemURI upgradeOf;
 	private String codeSystemId;
 	
 	public CodeSystemURI getExtensionOf() {
@@ -31,6 +32,14 @@ public class CodeSystemUpgradeRestInput {
 	
 	public void setExtensionOf(CodeSystemURI extensionOf) {
 		this.extensionOf = extensionOf;
+	}
+	
+	public CodeSystemURI getUpgradeOf() {
+		return upgradeOf;
+	}
+	
+	public void setUpgradeOf(CodeSystemURI upgradeOf) {
+		this.upgradeOf = upgradeOf;
 	}
 
 	public String getCodeSystemId() {
