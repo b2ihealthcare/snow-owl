@@ -15,16 +15,31 @@
  */
 package com.b2international.snowowl.core.context;
 
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.domain.DelegatingContext;
+import com.b2international.snowowl.core.events.DelegatingRequest;
+import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.internal.ResourceRepository;
 
 /**
  * @since 8.0
+ * @param <R>
  */
-final class DefaultTerminologyResourceContext extends DelegatingContext implements TerminologyResourceContext {
+final class ResourceRepositoryRequest<R> extends DelegatingRequest<ServiceProvider, ServiceProvider, R> {
 
-	public DefaultTerminologyResourceContext(final ServiceProvider delegate) {
-		super(delegate);
+	private static final long serialVersionUID = 1L;
+	
+	public ResourceRepositoryRequest(Request<ServiceProvider, R> next) {
+		super(next);
+	}
+
+	@Override
+	public R execute(ServiceProvider context) {
+		return context.service(ResourceRepository.class).read(searcher -> {
+			return next(context.inject()
+					.bind(RevisionSearcher.class, searcher)
+					.build());
+		});
 	}
 
 }

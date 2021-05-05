@@ -42,6 +42,10 @@ public final class TerminologyResourceRequest<R> extends DelegatingRequest<Servi
 		this.resourceURI = resourceURI;
 	}
 	
+	public ResourceURI getResourceURI() {
+		return resourceURI;
+	}
+	
 	@Override
 	public R execute(ServiceProvider context) {
 		final Resource resource = ResourceRequests.prepareGet(resourceURI.toString()).build().execute(context);

@@ -25,7 +25,7 @@ import com.b2international.snowowl.core.internal.ResourceDocument;
 /**
  * @since 8.0
  */
-public final class ResourceSearchRequest extends SearchIndexResourceRequest<ServiceProvider, Resources, ResourceDocument> {
+final class ResourceSearchRequest extends SearchIndexResourceRequest<ServiceProvider, Resources, ResourceDocument> {
 
 	private static final long serialVersionUID = 1L;
 

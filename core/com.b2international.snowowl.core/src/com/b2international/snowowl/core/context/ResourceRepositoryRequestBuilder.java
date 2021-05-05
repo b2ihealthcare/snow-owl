@@ -13,21 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.request;
+package com.b2international.snowowl.core.context;
 
-import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.context.ResourceRepositoryRequestBuilder;
+import com.b2international.snowowl.core.events.AsyncRequest;
+import com.b2international.snowowl.core.events.RequestBuilder;
 
 /**
  * @since 8.0
  */
-public final class ResourceGetRequestBuilder 
-		extends GetResourceRequestBuilder<ResourceGetRequestBuilder, ResourceSearchRequestBuilder, ServiceProvider, Resource>
-		implements ResourceRepositoryRequestBuilder<Resource> {
+public interface ResourceRepositoryRequestBuilder<R> extends RequestBuilder<ServiceProvider, R> {
 
-	public ResourceGetRequestBuilder(String resourceId) {
-		super(new ResourceGetRequest(resourceId));
+	default AsyncRequest<R> buildAsync() {
+		return new AsyncRequest<>(
+			new ResourceRepositoryRequest<>(
+				build()
+			)
+		); 
 	}
-
+	
 }

@@ -41,9 +41,13 @@ public final class ResourceRepository implements RevisionIndex {
 		return index.name();
 	}
 
+	public <T> T read(RevisionIndexRead<T> read) {
+		return index.read(Branch.MAIN_PATH, read);
+	}
+	
 	@Override
 	public <T> T read(String branchPath, RevisionIndexRead<T> read) {
-		return index.read(branchPath, read);
+		throw new UnsupportedOperationException("This repository does not support non-MAIN branches, please use #read(RevisionIndexRead<T>)");
 	}
 
 	@Override
