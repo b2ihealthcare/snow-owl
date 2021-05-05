@@ -43,8 +43,8 @@ public interface TransactionalRequestBuilder<R> extends RequestBuilder<Transacti
 	}
 	
 	
-	default RepositoryCommitRequestBuilder commit() {
-		return new RepositoryCommitRequestBuilder().setBody(build());
+	default TerminologyResourceCommitRequestBuilder commit() {
+		return new TerminologyResourceCommitRequestBuilder().setBody(build());
 	}
 	
 }

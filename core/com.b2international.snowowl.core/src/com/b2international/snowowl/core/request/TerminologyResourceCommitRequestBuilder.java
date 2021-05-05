@@ -13,28 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.context;
+package com.b2international.snowowl.core.request;
 
-import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.events.AsyncRequest;
-import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.events.RequestBuilder;
+import com.b2international.snowowl.core.context.TerminologyResourceContentRequestBuilder;
 
 /**
  * @since 8.0
  */
-public interface ResourceRepositoryRequestBuilder<R> extends RequestBuilder<RepositoryContext, R> {
-
-	default AsyncRequest<R> buildAsync() {
-		return new AsyncRequest<>(
-			new ResourceRepositoryRequest<>(
-				wrap(build())
-			)
-		); 
-	}
-
-	default Request<RepositoryContext, R> wrap(Request<RepositoryContext, R> req) {
-		return req;
+public class TerminologyResourceCommitRequestBuilder 
+		extends RepositoryCommitRequestBuilder<TerminologyResourceCommitRequestBuilder>
+		implements TerminologyResourceContentRequestBuilder<CommitResult> {
+	
+	@Override
+	public boolean snapshot() {
+		return false;
 	}
 	
 }

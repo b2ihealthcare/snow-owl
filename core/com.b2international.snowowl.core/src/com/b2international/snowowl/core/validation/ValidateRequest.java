@@ -212,7 +212,7 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult>,
 		}
 		
 		// TODO return ValidationResult object with status and new issue IDs as set
-		return new ValidationResult(context.id(), context.path());
+		return new ValidationResult(context.info().id(), context.path());
 	}
 
 	private Multimap<String, ComponentIdentifier> fetchWhiteListEntries(BranchContext context, final Set<String> ruleIds) {

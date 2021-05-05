@@ -15,26 +15,25 @@
  */
 package com.b2international.snowowl.core.context;
 
-import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.events.AsyncRequest;
-import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.events.RequestBuilder;
+import com.b2international.snowowl.core.request.BranchRequest;
+import com.b2international.snowowl.core.request.CommitResult;
+import com.b2international.snowowl.core.request.RepositoryCommitRequestBuilder;
 
 /**
  * @since 8.0
  */
-public interface ResourceRepositoryRequestBuilder<R> extends RequestBuilder<RepositoryContext, R> {
+public final class ResourceRepositoryCommitRequestBuilder extends RepositoryCommitRequestBuilder<ResourceRepositoryCommitRequestBuilder> {
 
-	default AsyncRequest<R> buildAsync() {
+	public AsyncRequest<CommitResult> buildAsync() {
 		return new AsyncRequest<>(
 			new ResourceRepositoryRequest<>(
-				wrap(build())
+				new BranchRequest<>(Branch.MAIN_PATH, 
+					build()
+				)
 			)
 		); 
 	}
 
-	default Request<RepositoryContext, R> wrap(Request<RepositoryContext, R> req) {
-		return req;
-	}
-	
 }

@@ -25,7 +25,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.validation.ApiValidation;
 import com.b2international.snowowl.core.ResourceURI;
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.codesystem.CodeSystems;
@@ -124,15 +123,14 @@ public class CodeSystemRestService extends AbstractRestService {
 		}
 		
 		final String commitComment = String.format("Created new Code System %s", codeSystem.getId());
-		// TODO support commit customization when creating new resources/codesystems
 		final String codeSystemId = codeSystem.toCreateRequest()
-//				.commit() 
-//				.setAuthor(author)
-//				.setCommitComment(commitComment)
+				.commit() 
+				.setAuthor(author)
+				.setCommitComment(commitComment)
 				.buildAsync()
 				.execute(getBus())
-				.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);
-//				.getResultAs(String.class);
+				.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES)
+				.getResultAs(String.class);
 		
 		return ResponseEntity.created(getResourceLocationURI(codeSystemId)).build();
 	}

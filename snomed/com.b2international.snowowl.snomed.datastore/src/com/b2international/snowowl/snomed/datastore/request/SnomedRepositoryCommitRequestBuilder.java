@@ -19,13 +19,13 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.CommitResult;
-import com.b2international.snowowl.core.request.RepositoryCommitRequestBuilder;
 import com.b2international.snowowl.core.request.RevisionIndexReadRequest;
+import com.b2international.snowowl.core.request.TerminologyResourceCommitRequestBuilder;
 
 /**
  * @since 4.5
  */
-public final class SnomedRepositoryCommitRequestBuilder extends RepositoryCommitRequestBuilder {
+public final class SnomedRepositoryCommitRequestBuilder extends TerminologyResourceCommitRequestBuilder {
 
 	private String defaultModuleId = null;
 	

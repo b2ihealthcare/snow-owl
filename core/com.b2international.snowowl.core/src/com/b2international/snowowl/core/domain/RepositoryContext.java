@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,39 +19,25 @@ import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.List;
 
-import org.slf4j.Logger;
-
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
-import com.google.common.collect.ImmutableList;
 
 /**
- * Execution context for {@link Request requests} targeting a branch in a single repository.
+ * Execution context for {@link Request requests} targeting a repository.
  *
  * @since 4.5
  */
-public interface RepositoryContext extends ServiceProvider, RepositoryInfo {
+public interface RepositoryContext extends ServiceProvider {
 
-	/**
-	 * Returns the current application configuration object.
-	 * 
-	 * @return
-	 */
-	SnowOwlConfiguration config();
-
-	/**
-	 * Returns the {@link Logger} instance associated with the underlying repository.
-	 * 
-	 * @return
-	 */
-	Logger log();
-
+	default RepositoryInfo info() {
+		return service(RepositoryInfo.class);
+	}
+	
 	@Override
 	default DelegatingContext.Builder<? extends RepositoryContext> inject() {
 		return new DelegatingContext.Builder<>(RepositoryContext.class, this);
@@ -68,7 +54,7 @@ public interface RepositoryContext extends ServiceProvider, RepositoryInfo {
 		} else if (RevisionIndex.isBaseRefPath(path)) {
 			branchesToCheck.add(path.substring(0, path.length() - 1));
 		} else if (RevisionIndex.isRevRangePath(path)) {
-			branchesToCheck.addAll(ImmutableList.copyOf(RevisionIndex.getRevisionRangePaths(path)));
+			branchesToCheck.addAll(List.of(RevisionIndex.getRevisionRangePaths(path)));
 		} else {
 			branchesToCheck.add(path);
 		}

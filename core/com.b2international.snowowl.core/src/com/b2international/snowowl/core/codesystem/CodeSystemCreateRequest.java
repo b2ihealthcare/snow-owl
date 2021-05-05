@@ -27,6 +27,7 @@ import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.Branches;
+import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.internal.ResourceDocument;
@@ -37,7 +38,7 @@ import com.b2international.snowowl.core.version.Version;
 /**
  * @since 4.7
  */
-final class CodeSystemCreateRequest implements Request<ServiceProvider, String> {
+final class CodeSystemCreateRequest implements Request<TransactionContext, String> {
 
 	private static final long serialVersionUID = 2L;
 
@@ -76,7 +77,7 @@ final class CodeSystemCreateRequest implements Request<ServiceProvider, String> 
 	}
 
 	@Override
-	public String execute(final ServiceProvider context) {
+	public String execute(final TransactionContext context) {
 		final Optional<Version> extensionOfVersion = checkCodeSystem(context);
 		
 		// Set the parent path if a branch needs to be created

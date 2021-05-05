@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.core.request;
 
-import com.b2international.snowowl.core.context.TerminologyResourceContentRequestBuilder;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
@@ -27,9 +26,9 @@ import com.b2international.snowowl.core.events.RequestBuilder;
  * 
  * @since 4.5
  */
-public class RepositoryCommitRequestBuilder 
-		extends BaseRequestBuilder<RepositoryCommitRequestBuilder, BranchContext, CommitResult>
-		implements TerminologyResourceContentRequestBuilder<CommitResult>, AllowedHealthStates {
+public abstract class RepositoryCommitRequestBuilder<B extends RepositoryCommitRequestBuilder<B>> 
+		extends BaseRequestBuilder<B, BranchContext, CommitResult>
+		implements AllowedHealthStates {
 
 	private String author;
 	private String commitComment = "";
@@ -38,21 +37,21 @@ public class RepositoryCommitRequestBuilder
 	private String parentContextDescription;
 	private boolean notify = true;
 
-	public final RepositoryCommitRequestBuilder setAuthor(String author) {
+	public final B setAuthor(String author) {
 		this.author = author;
 		return getSelf();
 	}
 
-	public final RepositoryCommitRequestBuilder setBody(RequestBuilder<TransactionContext, ?> req) {
+	public final B setBody(RequestBuilder<TransactionContext, ?> req) {
 		return setBody(req.build());
 	}
 
-	public final RepositoryCommitRequestBuilder setBody(Request<TransactionContext, ?> req) {
+	public final B setBody(Request<TransactionContext, ?> req) {
 		this.body = req;
 		return getSelf();
 	}
 
-	public final RepositoryCommitRequestBuilder setCommitComment(String commitComment) {
+	public final B setCommitComment(String commitComment) {
 		this.commitComment = commitComment;
 		return getSelf();
 	}
@@ -73,12 +72,12 @@ public class RepositoryCommitRequestBuilder
 	 * @param preparationTime
 	 * @return
 	 */
-	public final RepositoryCommitRequestBuilder setPreparationTime(long preparationTime) {
+	public final B setPreparationTime(long preparationTime) {
 		this.preparationTime = preparationTime;
 		return getSelf();
 	}
 
-	public final RepositoryCommitRequestBuilder setParentContextDescription(String parentContextDescription) {
+	public final B setParentContextDescription(String parentContextDescription) {
 		this.parentContextDescription = parentContextDescription;
 		return getSelf();
 	}
@@ -88,7 +87,7 @@ public class RepositoryCommitRequestBuilder
 	 * @param notify
 	 * @return this builder for chaining
 	 */
-	public final RepositoryCommitRequestBuilder setNotify(boolean notify) {
+	public final B setNotify(boolean notify) {
 		this.notify = notify;
 		return getSelf();
 	}
@@ -98,9 +97,4 @@ public class RepositoryCommitRequestBuilder
 		return new TransactionalRequest(author, commitComment, getBody(), preparationTime, parentContextDescription, notify);
 	}
 	
-	@Override
-	public boolean snapshot() {
-		return false;
-	}
-
 }

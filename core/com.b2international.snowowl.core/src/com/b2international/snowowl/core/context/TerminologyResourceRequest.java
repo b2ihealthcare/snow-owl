@@ -48,7 +48,7 @@ public final class TerminologyResourceRequest<R> extends DelegatingRequest<Servi
 	
 	@Override
 	public R execute(ServiceProvider context) {
-		final Resource resource = ResourceRequests.prepareGet(resourceURI.toString()).build().execute(context);
+		final Resource resource = ResourceRequests.prepareGet(resourceURI.toString()).buildAsync().getRequest().execute(context);
 		if (!(resource instanceof TerminologyResource)) {
 			throw new NotFoundException("Terminology Resource", resourceURI.toString());
 		}

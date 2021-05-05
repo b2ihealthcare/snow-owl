@@ -19,13 +19,13 @@ import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.snowowl.core.Resources;
-import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 
 /**
  * @since 8.0
  */
-final class ResourceSearchRequest extends SearchIndexResourceRequest<ServiceProvider, Resources, ResourceDocument> {
+final class ResourceSearchRequest extends SearchIndexResourceRequest<RepositoryContext, Resources, ResourceDocument> {
 
 	private static final long serialVersionUID = 1L;
 
@@ -39,12 +39,12 @@ final class ResourceSearchRequest extends SearchIndexResourceRequest<ServiceProv
 	}
 	
 	@Override
-	protected Expression prepareQuery(ServiceProvider context) {
+	protected Expression prepareQuery(RepositoryContext context) {
 		return Expressions.matchAll();
 	}
 
 	@Override
-	protected Resources toCollectionResource(ServiceProvider context, Hits<ResourceDocument> hits) {
+	protected Resources toCollectionResource(RepositoryContext context, Hits<ResourceDocument> hits) {
 		return new ResourceConverter(context, expand(), locales()).convert(hits);
 	}
 

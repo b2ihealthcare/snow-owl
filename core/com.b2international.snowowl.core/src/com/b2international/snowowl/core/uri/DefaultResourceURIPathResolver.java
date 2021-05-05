@@ -47,7 +47,8 @@ public final class DefaultResourceURIPathResolver implements ResourceURIPathReso
 		final Set<String> resourceIds = codeSystemURIs.stream().map(ResourceURI::getResourceId).collect(Collectors.toSet());
 		final Map<String, Resource> resourcesById = ResourceRequests.prepareSearch()
 				.filterByIds(resourceIds)
-				.build()
+				.buildAsync()
+				.getRequest()
 				.execute(context)
 				.stream()
 				.collect(Collectors.toMap(Resource::getId, t -> t));

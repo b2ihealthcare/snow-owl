@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
 
+import org.slf4j.Logger;
+
+import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.DelegatingContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.jobs.JobRequests;
@@ -35,6 +38,20 @@ import com.google.inject.Provider;
  */
 public interface ServiceProvider {
 
+	/**
+	 * @return the application-level configuration object.
+	 */
+	default SnowOwlConfiguration config() {
+		return service(SnowOwlConfiguration.class);
+	}
+
+	/**
+	 * @return the {@link Logger} instance associated with this service provider.
+	 */
+	default Logger log() {
+		return service(Logger.class);
+	}
+	
 	/**
 	 * Returns the given service or throws an exception if none found in the current {@link ApplicationContext}.
 	 * 

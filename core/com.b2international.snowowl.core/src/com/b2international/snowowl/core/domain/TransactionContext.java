@@ -30,7 +30,7 @@ import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.version.Version;
 
 /**
- * Represents an ongoing transaction to the underlying repository. The transaction can commit all aggregated changes up to a given point using the {@link #commit() commit method}. 
+ * Represents an ongoing transaction over a {@link RevisionIndex}. The transaction can commit all aggregated changes up to a given point using the {@link #commit() commit method}. 
  * The changes can be new, changed and deleted objects. 
  * An object is basically a POJO with a {@link Doc} annotation, so the underlying repository will recognize and treat them properly during {@link #commit()}. 
  * If the given Object is an instance of {@link Revision} then it will be treated as a {@link Revision} and it will be persisted on the branch available via {@link #branch()}.
@@ -40,8 +40,7 @@ import com.b2international.snowowl.core.version.Version;
 public interface TransactionContext extends BranchContext, AutoCloseable {
 
 	/**
-	 * The author of the changes. 
-	 * @return
+	 * @return the author of the changes.
 	 */
 	String author();
 	

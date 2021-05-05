@@ -21,7 +21,6 @@ import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.BranchRequest;
 import com.b2international.snowowl.core.request.RepositoryRequest;
-import com.b2international.snowowl.core.request.RevisionIndexReadRequest;
 import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
 
 /**

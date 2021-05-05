@@ -15,26 +15,17 @@
  */
 package com.b2international.snowowl.core.context;
 
-import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.events.AsyncRequest;
-import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.RequestBuilder;
 
 /**
  * @since 8.0
+ * @param <R> - the return type
  */
-public interface ResourceRepositoryRequestBuilder<R> extends RequestBuilder<RepositoryContext, R> {
+public interface ResourceRepositoryTransactionRequestBuilder<R> extends RequestBuilder<TransactionContext, R> {
 
-	default AsyncRequest<R> buildAsync() {
-		return new AsyncRequest<>(
-			new ResourceRepositoryRequest<>(
-				wrap(build())
-			)
-		); 
-	}
-
-	default Request<RepositoryContext, R> wrap(Request<RepositoryContext, R> req) {
-		return req;
+	default ResourceRepositoryCommitRequestBuilder commit() {
+		return new ResourceRepositoryCommitRequestBuilder().setBody(build());
 	}
 	
 }

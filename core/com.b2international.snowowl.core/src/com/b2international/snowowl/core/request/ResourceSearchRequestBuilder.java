@@ -16,15 +16,15 @@
 package com.b2international.snowowl.core.request;
 
 import com.b2international.snowowl.core.Resources;
-import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.context.ResourceRepositoryRequestBuilder;
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.ResourceSearchRequest.OptionKey;
 
 /**
  * @since 8.0
  */
 public final class ResourceSearchRequestBuilder 
-		extends SearchResourceRequestBuilder<ResourceSearchRequestBuilder, ServiceProvider, Resources>
+		extends SearchResourceRequestBuilder<ResourceSearchRequestBuilder, RepositoryContext, Resources>
 		implements ResourceRepositoryRequestBuilder<Resources> {
 
 	/**
@@ -48,7 +48,7 @@ public final class ResourceSearchRequestBuilder
 	}
 	
 	@Override
-	protected SearchResourceRequest<ServiceProvider, Resources> createSearch() {
+	protected SearchResourceRequest<RepositoryContext, Resources> createSearch() {
 		return new ResourceSearchRequest();
 	}
 

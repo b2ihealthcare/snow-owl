@@ -34,7 +34,7 @@ public interface TerminologyResourceContentRequestBuilder<R> extends RequestBuil
 	
 	default AsyncRequest<R> build(ResourceURI resourceUri) {
 		return new AsyncRequest<>(
-			new TerminologyResourceRequest<R>(resourceUri,
+			new TerminologyResourceRequest<>(resourceUri,
 				new TerminologyResourceContentRequest<>(
 					resourceUri.getPath(),
 					wrap(build())

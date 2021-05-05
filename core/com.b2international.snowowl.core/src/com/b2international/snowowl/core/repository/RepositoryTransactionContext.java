@@ -240,7 +240,7 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 			parentLockContext = optionalService(Locks.class).map(Locks::lockContext).orElse(DatastoreLockContextDescriptions.ROOT);
 		}
 		final DatastoreLockContext lockContext = createLockContext(service(User.class).getUsername(), parentLockContext);
-		final DatastoreLockTarget lockTarget = createLockTarget(id(), path());
+		final DatastoreLockTarget lockTarget = createLockTarget(info().id(), path());
 		IOperationLockManager locks = service(IOperationLockManager.class);
 		Commit commit = null;
 		try {

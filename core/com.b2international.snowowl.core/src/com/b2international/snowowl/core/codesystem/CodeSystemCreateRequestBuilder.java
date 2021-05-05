@@ -18,18 +18,18 @@ package com.b2international.snowowl.core.codesystem;
 import java.util.Map;
 
 import com.b2international.snowowl.core.ResourceURI;
-import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.context.ResourceRepositoryTransactionRequestBuilder;
+import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.id.IDs;
-import com.b2international.snowowl.core.request.SystemRequestBuilder;
 
 /**
  * @since 4.7
  */
 public final class CodeSystemCreateRequestBuilder 
-		extends BaseRequestBuilder<CodeSystemCreateRequestBuilder, ServiceProvider, String> 
-		implements SystemRequestBuilder<String> {
+		extends BaseRequestBuilder<CodeSystemCreateRequestBuilder, TransactionContext, String> 
+		implements ResourceRepositoryTransactionRequestBuilder<String> {
 
 	// TODO create abstract for other resources
 	private String id = IDs.randomBase64UUID();
@@ -141,7 +141,7 @@ public final class CodeSystemCreateRequestBuilder
 	}
 	
 	@Override
-	protected Request<ServiceProvider, String> doBuild() {
+	protected Request<TransactionContext, String> doBuild() {
 		final CodeSystemCreateRequest req = new CodeSystemCreateRequest();
 		req.id = id;
 		req.url = url;

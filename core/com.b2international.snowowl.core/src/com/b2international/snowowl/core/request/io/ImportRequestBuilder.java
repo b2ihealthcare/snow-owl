@@ -24,7 +24,7 @@ import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.CommitResult;
-import com.b2international.snowowl.core.request.RepositoryCommitRequestBuilder;
+import com.b2international.snowowl.core.request.TerminologyResourceCommitRequestBuilder;
 
 /**
  * @since 7.12
@@ -58,7 +58,7 @@ public abstract class ImportRequestBuilder<T extends ImportRequestBuilder<T>>
 	}
 	
 	public AsyncRequest<CommitResult> build(ResourceURI codeSystemUri) {
-		return new RepositoryCommitRequestBuilder()
+		return new TerminologyResourceCommitRequestBuilder()
 				.setBody(build())
 				.setCommitComment(String.format("Imported components from source file '%s'", attachment.getFileName()))
 				.build(codeSystemUri);

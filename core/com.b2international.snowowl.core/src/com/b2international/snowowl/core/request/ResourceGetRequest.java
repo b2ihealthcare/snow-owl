@@ -16,12 +16,12 @@
 package com.b2international.snowowl.core.request;
 
 import com.b2international.snowowl.core.Resource;
-import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.domain.RepositoryContext;
 
 /**
  * @since 8.0
  */
-public final class ResourceGetRequest extends GetResourceRequest<ResourceSearchRequestBuilder, ServiceProvider, Resource> {
+public final class ResourceGetRequest extends GetResourceRequest<ResourceSearchRequestBuilder, RepositoryContext, Resource> {
 
 	private static final long serialVersionUID = 1L;
 	

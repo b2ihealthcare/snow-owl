@@ -15,30 +15,38 @@
  */
 package com.b2international.snowowl.core.context;
 
+import java.util.List;
+
+import com.b2international.index.Searcher;
 import com.b2international.index.revision.RevisionSearcher;
+import com.b2international.snowowl.core.RepositoryInfo;
+import com.b2international.snowowl.core.RepositoryInfo.Health;
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.internal.ResourceRepository;
+import com.b2international.snowowl.core.repository.DefaultRepositoryContext;
 
 /**
  * @since 8.0
  * @param <R>
  */
-final class ResourceRepositoryRequest<R> extends DelegatingRequest<ServiceProvider, ServiceProvider, R> {
+final class ResourceRepositoryRequest<R> extends DelegatingRequest<ServiceProvider, RepositoryContext, R> {
 
 	private static final long serialVersionUID = 1L;
 	
-	public ResourceRepositoryRequest(Request<ServiceProvider, R> next) {
+	public ResourceRepositoryRequest(Request<RepositoryContext, R> next) {
 		super(next);
 	}
 
 	@Override
 	public R execute(ServiceProvider context) {
 		return context.service(ResourceRepository.class).read(searcher -> {
-			return next(context.inject()
-					.bind(RevisionSearcher.class, searcher)
-					.build());
+			DefaultRepositoryContext repository = new DefaultRepositoryContext(context, RepositoryInfo.of("resources", Health.GREEN, null, List.of()));
+			repository.bind(Searcher.class, searcher.searcher());
+			repository.bind(RevisionSearcher.class, searcher);
+			return next(repository);
 		});
 	}
 

@@ -91,7 +91,7 @@ public final class Locks implements AutoCloseable {
 	private final Map<String, DatastoreLockTarget> lockTargets;
 	
 	private Locks(RepositoryContext context, String userId, String description, String parentLockContext, List<String> branchesToLock) throws LockedException {
-		this.repositoryId = context.id();
+		this.repositoryId = context.info().id();
 		this.lockManager = context.service(IOperationLockManager.class);
 		this.lockContext = new DatastoreLockContext(userId, description, Strings.isNullOrEmpty(parentLockContext) ? ROOT : parentLockContext);
 	

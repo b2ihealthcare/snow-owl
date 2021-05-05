@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,10 +43,11 @@ public final class HealthCheckingRequest<B> extends DelegatingRequest<Repository
 
 	@Override
 	public B execute(RepositoryContext context) {
-		if (allowedHealthStates.contains(context.health())) {
+		RepositoryInfo info = context.info();
+		if (allowedHealthStates.contains(info.health())) {
 			return next(context);
 		}
-		throw new BadRequestException("Requests for repository '%s' are not allowed to execute with health state '%s'.", context.id(), context.health());
+		throw new BadRequestException("Requests for repository '%s' are not allowed to execute with health state '%s'.", info.id(), info.health());
 	}
 
 }

@@ -19,7 +19,7 @@ import com.b2international.snowowl.core.branch.Branching;
 import com.b2international.snowowl.core.branch.Merging;
 import com.b2international.snowowl.core.commit.CommitInfoRequests;
 import com.b2international.snowowl.core.request.RepositoryBulkReadRequestBuilder;
-import com.b2international.snowowl.core.request.RepositoryCommitRequestBuilder;
+import com.b2international.snowowl.core.request.TerminologyResourceCommitRequestBuilder;
 import com.b2international.snowowl.core.system.ServerInfoGetRequestBuilder;
 
 /**
@@ -71,8 +71,8 @@ public final class RepositoryRequests {
 		return new RepositoryClearRequestBuilder();
 	}
 	
-	public static RepositoryCommitRequestBuilder prepareCommit() {
-		return new RepositoryCommitRequestBuilder();
+	public static TerminologyResourceCommitRequestBuilder prepareCommit() {
+		return new TerminologyResourceCommitRequestBuilder();
 	}
 	
 }
