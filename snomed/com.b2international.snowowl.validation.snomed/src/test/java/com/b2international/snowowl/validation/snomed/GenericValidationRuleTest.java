@@ -36,6 +36,7 @@ import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.core.validation.issue.ValidationIssue;
 import com.b2international.snowowl.core.validation.issue.ValidationIssues;
+import com.b2international.snowowl.snomed.common.SnomedConstants;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
@@ -276,6 +277,30 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 					ComponentIdentifier.of(CONCEPT_NUMBER, validConcept2.getId())));
 	}
 
+	@Test
+	public void rule83() throws Exception {
+		final String ruleId = "83";
+		indexRule(ruleId);
+
+		// index terms containing double spaces
+		SnomedDescriptionIndexEntry description1 = description(generateDescriptionId(), Concepts.SYNONYM, "Hello  world")
+				.build();
+		
+		SnomedDescriptionIndexEntry description2 = description(generateDescriptionId(), Concepts.SYNONYM, "Hello  world")
+			.build();
+
+		// index correct term
+		SnomedDescriptionIndexEntry description3 = description(generateDescriptionId(), Concepts.SYNONYM, "Hello world")
+				.build();
+		
+		indexRevision(MAIN, description1, description2, description3);
+
+		ValidationIssues issues = validate(ruleId);
+
+		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, description1.getId()),
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, description2.getId()));
+
+	}
 	
 	@Test	
 	public void rule110() throws Exception {	
@@ -321,6 +346,65 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 			ComponentIdentifier.of(RELATIONSHIP_NUMBER, relationship1.getId()),
 			ComponentIdentifier.of(REFSET_MEMBER_NUMBER, owlAxiomMember2.getId())
 		);	
+	}
+	
+	@Test
+	public void rule115a() throws Exception {
+		// Reference Sets should not contain retired concepts
+		final String ruleId = "115a";
+		indexRule(ruleId);
+
+		SnomedConceptDocument r1 = concept(generateConceptId())
+				.refSetType(SnomedRefSetType.SIMPLE)
+				.referencedComponentType(CONCEPT_NUMBER)
+				.parents(Long.parseLong(SnomedConstants.Concepts.REFSET_ROOT_CONCEPT))
+				.build();
+
+		SnomedConceptDocument badConcept = concept(generateConceptId())
+				.active(false)
+				.activeMemberOf(ImmutableList.of(r1.getId()))
+				.build();
+
+		SnomedConceptDocument goodConcept = concept(generateConceptId())
+				.active(true)
+				.activeMemberOf(ImmutableList.of(r1.getId()))
+				.build();
+		
+		indexRevision(MAIN, r1, badConcept, goodConcept);
+
+		ValidationIssues issues = validate(ruleId);
+
+		assertAffectedComponents(issues, ComponentIdentifier.of(CONCEPT_NUMBER, badConcept.getId()));
+	}
+	
+	@Test
+	public void rule115b() throws Exception {
+		// Reference Sets should not contain retired descriptions
+		final String ruleId = "115b";
+		indexRule(ruleId);
+
+		SnomedConceptDocument r1 = concept(generateConceptId())
+				.refSetType(SnomedRefSetType.DESCRIPTION_TYPE)
+				.referencedComponentType(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER)
+				.parents(Long.parseLong(SnomedConstants.Concepts.REFSET_ROOT_CONCEPT))
+				.build();
+
+		SnomedDescriptionIndexEntry badDesc = description(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, "I've been bad, i deserve this")
+				.active(false)
+				.activeMemberOf(ImmutableList.of(r1.getId()))
+				.build();
+
+		SnomedDescriptionIndexEntry goodDesc = description(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, "I've been good, i deserve this")
+				.active(true)
+				.activeMemberOf(ImmutableList.of(r1.getId()))
+				.build();
+		
+		indexRevision(MAIN, r1, badDesc, goodDesc);
+
+		ValidationIssues issues = validate(ruleId);
+
+		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, badDesc.getId()));
+
 	}
 	
 	@Test
