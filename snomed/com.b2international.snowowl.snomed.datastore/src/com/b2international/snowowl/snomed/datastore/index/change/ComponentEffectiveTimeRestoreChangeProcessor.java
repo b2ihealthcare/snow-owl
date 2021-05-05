@@ -29,12 +29,11 @@ import com.b2international.index.revision.RevisionIndex;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.StagingArea;
 import com.b2international.snowowl.core.ResourceURI;
-import com.b2international.snowowl.core.codesystem.CodeSystem;
-import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
+import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.repository.ChangeSetProcessorBase;
-import com.b2international.snowowl.core.repository.RepositoryCodeSystemProvider;
+import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
 import com.b2international.snowowl.core.version.Version;
@@ -196,7 +195,7 @@ public final class ComponentEffectiveTimeRestoreChangeProcessor extends ChangeSe
 	private List<String> getAvailableVersionPaths(RepositoryContext context, String branchPath) {
 		final List<ResourceURI> codeSystemsToCheck = Lists.newArrayList();
 		
-		CodeSystem relativeCodeSystem = context.service(RepositoryCodeSystemProvider.class).get(branchPath);
+		TerminologyResource relativeCodeSystem = context.service(TerminologyResource.class);
 		
 		// based on the relative CodeSystem, we might need to check up to two CodeSystems
 		// in case of upgrade, we need to check the original CodeSystem branch 
@@ -229,7 +228,7 @@ public final class ComponentEffectiveTimeRestoreChangeProcessor extends ChangeSe
 	}
 	
 	private Optional<Version> getLatestCodeSystemVersion(RepositoryContext context, ResourceURI codeSystemUri) {
-		return CodeSystemRequests.prepareSearchVersion()
+		return ResourceRequests.prepareSearchVersion()
 				.one()
 				.filterByResource(codeSystemUri)
 				.sortBy(SearchResourceRequest.SortField.descending(VersionDocument.Fields.EFFECTIVE_TIME))

@@ -50,7 +50,8 @@ public class CodeSystemRequestTest {
 		assertCodeSystemCreated(shortName, oid);
 		
 		final CodeSystems codeSystems = CodeSystemRequests.prepareSearchCodeSystem()
-				.build()
+				.buildAsync()
+				.getRequest()
 				.execute(Services.context());
 		
 		assertThat(codeSystems.getItems()).hasSizeGreaterThanOrEqualTo(2);
@@ -65,7 +66,8 @@ public class CodeSystemRequestTest {
 		
 		final CodeSystems existingCodeSystem = CodeSystemRequests.prepareSearchCodeSystem()
 				.filterById(id)
-				.build()
+				.buildAsync()
+				.getRequest()
 				.execute(Services.context());
 
 		assertThat(existingCodeSystem.getItems()).hasSize(1);
@@ -77,7 +79,8 @@ public class CodeSystemRequestTest {
 		
 		final CodeSystems nonExistentCodeSystem = CodeSystemRequests.prepareSearchCodeSystem()
 				.filterById("not a valid code system short name")
-				.build()
+				.buildAsync()
+				.getRequest()
 				.execute(Services.context());
 		assertThat(nonExistentCodeSystem.getItems()).hasSize(0);
 	}

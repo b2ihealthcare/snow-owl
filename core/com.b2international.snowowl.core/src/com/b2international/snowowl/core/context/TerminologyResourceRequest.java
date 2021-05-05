@@ -52,6 +52,7 @@ public final class TerminologyResourceRequest<R> extends DelegatingRequest<Servi
 	
 	@Override
 	public R execute(ServiceProvider context) {
+		final TerminologyResource resource = getResource(context);
 		final DefaultTerminologyResourceContext resourceContext = new DefaultTerminologyResourceContext(context);
 		resourceContext.bind(ResourceURI.class, resource.getResourceURI());
 		resourceContext.bind(TerminologyResource.class, resource);

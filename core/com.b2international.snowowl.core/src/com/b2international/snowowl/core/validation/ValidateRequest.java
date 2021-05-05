@@ -30,16 +30,15 @@ import com.b2international.commons.CompareUtils;
 import com.b2international.index.Writer;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.authorization.BranchAccessControl;
-import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
 import com.b2international.snowowl.core.internal.validation.ValidationThreadPool;
-import com.b2international.snowowl.core.repository.RepositoryCodeSystemProvider;
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
 import com.b2international.snowowl.core.validation.issue.ValidationIssue;
@@ -76,8 +75,8 @@ final class ValidateRequest implements Request<BranchContext, ValidationResult>,
 		final String branchPath = context.path();
 		ValidationRuleSearchRequestBuilder req = ValidationRequests.rules().prepareSearch();
 		
-		CodeSystem codeSystem = context.service(RepositoryCodeSystemProvider.class).get(branchPath);
-		ResourceURI resourceURI = codeSystem.getResourceURI(branchPath);
+		TerminologyResource resource = context.service(TerminologyResource.class);
+		ResourceURI resourceURI = resource.getResourceURI(branchPath);
 		
 		if (!CompareUtils.isEmpty(ruleIds)) {
 			req.filterByIds(ruleIds);

@@ -34,6 +34,7 @@ import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.jobs.JobRequests;
 import com.b2international.snowowl.core.jobs.RemoteJobEntry;
+import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
 import com.b2international.snowowl.core.version.Version;
@@ -64,7 +65,7 @@ public class VersionRestService extends AbstractRestService {
 			@PathVariable(value="codeSystemId") 
 			final String codeSystemId) {
 		
-		return CodeSystemRequests.prepareSearchVersion()
+		return ResourceRequests.prepareSearchVersion()
 				.filterByResource(CodeSystem.uri(codeSystemId))
 				.buildAsync()
 				.execute(getBus());
@@ -83,8 +84,7 @@ public class VersionRestService extends AbstractRestService {
 			@ApiParam(value="The code system version identifer")
 			@PathVariable(value="versionId") 
 			final String versionId) {
-
-		return CodeSystemRequests.prepareGetVersion(CodeSystem.uri(versionId)).buildAsync().execute(getBus());
+		return ResourceRequests.prepareGetVersion(CodeSystem.uri(versionId)).buildAsync().execute(getBus());
 
 	}
 	
@@ -105,7 +105,7 @@ public class VersionRestService extends AbstractRestService {
 			@RequestBody final VersionRestInput input) {
 		ApiValidation.checkInput(input);
 		ResourceURI codeSystemUri = CodeSystem.uri(input.getCodeSystemId());
-		String jobId = CodeSystemRequests.prepareNewVersion()
+		String jobId = ResourceRequests.prepareNewVersion()
 				.setResource(codeSystemUri)
 				.setVersion(input.getVersion())
 				.setDescription(input.getDescription())

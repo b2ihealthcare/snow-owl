@@ -39,6 +39,11 @@ final class ResourceSearchRequest extends SearchIndexResourceRequest<RepositoryC
 	}
 	
 	@Override
+	protected Class<ResourceDocument> getDocumentType() {
+		return ResourceDocument.class;
+	}
+	
+	@Override
 	protected Expression prepareQuery(RepositoryContext context) {
 		return Expressions.matchAll();
 	}

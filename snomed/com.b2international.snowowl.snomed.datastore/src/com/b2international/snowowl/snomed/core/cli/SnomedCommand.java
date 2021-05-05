@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,24 +15,17 @@
  */
 package com.b2international.snowowl.snomed.core.cli;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.PrintStream;
-import java.util.UUID;
+import java.nio.file.Paths;
 
-import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.attachments.AttachmentRegistry;
+import com.b2international.snowowl.core.attachments.Attachment;
 import com.b2international.snowowl.core.console.Command;
 import com.b2international.snowowl.core.console.CommandLineStream;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.plugin.Component;
 import com.b2international.snowowl.core.request.io.ImportResponse;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
 import picocli.CommandLine;
@@ -69,8 +62,8 @@ public final class SnomedCommand extends Command {
 		
 		private static final String SUPPORTED_FORMAT = "rf2";
 		
-		@Option(names = { "-b", "--branch" }, description = "The target branch. After a successful import all importable content will be accessible from this branch.", defaultValue = "SNOMEDCT/HEAD", required = true)
-		String branch = SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME;
+		@Option(names = { "-r", "--resource" }, description = "The target branch. After a successful import all importable content will be accessible from this branch.", required = true)
+		String resource;
 		
 		@Option(names = { "-f", "--format" }, description = "The import file format. Currently 'rf2' is supported only.", defaultValue = SUPPORTED_FORMAT)
 		String format = SUPPORTED_FORMAT;
@@ -92,28 +85,17 @@ public final class SnomedCommand extends Command {
 			
 			final User user = out.authenticate(getBus());
 			
-			if (user == null || !user.hasPermission(Permission.toImport(SnomedDatastoreActivator.REPOSITORY_UUID, branch))) {
+			if (user == null || !user.hasPermission(Permission.toImport(resource))) {
 				out.println("User is unauthorized to import SNOMED CT content.");
 				return;
 			}
 			
-			UUID rf2ArchiveId = UUID.randomUUID();
-			try (FileInputStream in = new FileInputStream(new File(path))) {
-				ApplicationContext.getServiceForClass(AttachmentRegistry.class).upload(rf2ArchiveId, in);
-			} catch (IOException e) {
-				if (e instanceof FileNotFoundException) {
-					out.println("Cannot find the path specified. '%s'", path);
-				} else {
-					out.println("Error reading the path specified. '%s'. Message: '%s'", path, e.getMessage());
-				}
-				return;
-			}
-			
+			final Attachment rf2Archive = Attachment.upload(getContext(), Paths.get(path));
 			final ImportResponse response = SnomedRequests.rf2().prepareImport()
 					.setCreateVersions(createVersions)
-					.setRf2ArchiveId(rf2ArchiveId)
+					.setRf2Archive(rf2Archive)
 					.setReleaseType(rf2ReleaseType)
-					.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
+					.build(resource)
 					.execute(getBus())
 					.getSync();
 			

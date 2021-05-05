@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.request.rf2;
 
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.jobs.RemoteJobEntry;
 
 /**
@@ -32,8 +33,12 @@ public final class SnomedRf2Requests {
 		return new SnomedRf2ImportRequestBuilder();
 	}
 
-	public static String importJobKey(String branchPath) {
-		return SNOMED_IMPORT_PREFIX.concat(branchPath);
+	public static String importJobKey(ResourceURI resourceUri) {
+		return SNOMED_IMPORT_PREFIX.concat(resourceUri.toString());
+	}
+	
+	public static String importJobKey(String resourceUri) {
+		return SNOMED_IMPORT_PREFIX.concat(resourceUri);
 	}
 	
 	public static boolean isSnomedImportJob(RemoteJobEntry job) {

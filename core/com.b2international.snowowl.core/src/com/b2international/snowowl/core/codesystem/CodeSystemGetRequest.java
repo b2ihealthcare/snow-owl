@@ -15,8 +15,8 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
-import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.request.GetResourceRequest;
 
@@ -24,7 +24,7 @@ import com.b2international.snowowl.core.request.GetResourceRequest;
  * @since 5.7
  */
 final class CodeSystemGetRequest 
-		extends GetResourceRequest<CodeSystemSearchRequestBuilder, ServiceProvider, CodeSystem>
+		extends GetResourceRequest<CodeSystemSearchRequestBuilder, RepositoryContext, CodeSystem>
 		implements RepositoryAccessControl {
 
 	private static final long serialVersionUID = 1L;

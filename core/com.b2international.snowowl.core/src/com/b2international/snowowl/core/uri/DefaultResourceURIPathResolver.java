@@ -76,7 +76,8 @@ public final class DefaultResourceURIPathResolver implements ResourceURIPathReso
 				}
 				// determine the final branch path, if based on the version search we find a version, then use that, otherwise use the defined path as relative branch of the code system working branch
 				return versionSearch
-						.build()
+						.buildAsync()
+						.getRequest()
 						.execute(context)
 						.stream()
 						.findFirst()

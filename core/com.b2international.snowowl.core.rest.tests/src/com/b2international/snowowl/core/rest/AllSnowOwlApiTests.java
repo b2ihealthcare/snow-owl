@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,13 +21,11 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
-import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequestTest;
 import com.b2international.snowowl.core.commitinfo.CommitInfoRequestTest;
 import com.b2international.snowowl.core.rest.auth.BasicAuthenticationTest;
 import com.b2international.snowowl.core.rest.codesystem.CodeSystemApiTest;
 import com.b2international.snowowl.core.rest.info.RepositoryApiTest;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.test.commons.BundleStartRule;
 import com.b2international.snowowl.test.commons.Resources;
@@ -52,5 +50,5 @@ public class AllSnowOwlApiTests {
 			.outerRule(SnowOwlAppRule.snowOwl(AllSnowOwlApiTests.class))
 			.around(new BundleStartRule("org.eclipse.jetty.osgi.boot"))
 			.around(new BundleStartRule("com.b2international.snowowl.core.rest"))
-			.around(new SnomedContentRule(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, Branch.MAIN_PATH, Resources.Snomed.MINI_RF2_INT, Rf2ReleaseType.FULL));
+			.around(new SnomedContentRule(SnomedContentRule.SNOMEDCT, Resources.Snomed.MINI_RF2_INT, Rf2ReleaseType.FULL));
 }

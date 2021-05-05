@@ -16,18 +16,18 @@
 package com.b2international.snowowl.core.codesystem;
 
 import com.b2international.snowowl.core.ResourceURI;
-import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.codesystem.CodeSystemSearchRequest.OptionKey;
+import com.b2international.snowowl.core.context.ResourceRepositoryRequestBuilder;
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
-import com.b2international.snowowl.core.request.SystemRequestBuilder;
 
 /**
  * @since 4.7
  */
 public final class CodeSystemSearchRequestBuilder 
-		extends SearchResourceRequestBuilder<CodeSystemSearchRequestBuilder, ServiceProvider, CodeSystems>
-		implements SystemRequestBuilder<CodeSystems> {
+		extends SearchResourceRequestBuilder<CodeSystemSearchRequestBuilder, RepositoryContext, CodeSystems>
+		implements ResourceRepositoryRequestBuilder<CodeSystems> {
 
 	CodeSystemSearchRequestBuilder() {
 		super();
@@ -66,7 +66,7 @@ public final class CodeSystemSearchRequestBuilder
 	}
 
 	@Override
-	protected SearchResourceRequest<ServiceProvider, CodeSystems> createSearch() {
+	protected SearchResourceRequest<RepositoryContext, CodeSystems> createSearch() {
 		return new CodeSystemSearchRequest();
 	}
 

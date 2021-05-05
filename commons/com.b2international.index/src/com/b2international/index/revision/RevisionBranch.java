@@ -148,7 +148,7 @@ public final class RevisionBranch extends MetadataHolderImpl {
 					throw new BadRequestException("Branch name is too long (max %s characters are allowed).", maximumLength);
 				}
 				if (!pattern.matcher(name).matches()) {
-					throw new BadRequestException("Branch name contains invalid characters (only '%s' characters are allowed).", allowedCharacterSet);
+					throw new BadRequestException("Branch name '%s' contains invalid characters (only '%s' characters are allowed).", name, allowedCharacterSet);
 				}
 			}
 

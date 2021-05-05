@@ -18,10 +18,13 @@ package com.b2international.snowowl.core.context;
 import java.util.List;
 
 import com.b2international.index.Searcher;
+import com.b2international.index.revision.BaseRevisionBranching;
+import com.b2international.index.revision.RevisionIndex;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.core.RepositoryInfo.Health;
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.domain.ContextConfigurer;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
@@ -47,10 +50,15 @@ public final class ResourceRepositoryRequest<R> extends DelegatingRequest<Servic
 
 	@Override
 	public R execute(ServiceProvider context) {
-		return context.service(ResourceRepository.class).read(searcher -> {
+		ResourceRepository resourceRepository = context.service(ResourceRepository.class);
+		return resourceRepository.read(searcher -> {
+			// TODO check health
 			DefaultRepositoryContext repository = new DefaultRepositoryContext(context, RepositoryInfo.of("resources", Health.GREEN, null, List.of()));
+			repository.bind(RevisionIndex.class, resourceRepository);
 			repository.bind(Searcher.class, searcher.searcher());
 			repository.bind(RevisionSearcher.class, searcher);
+			repository.bind(ContextConfigurer.class, ContextConfigurer.NOOP);
+			repository.bind(BaseRevisionBranching.class, resourceRepository.branching());
 			return next(repository);
 		});
 	}

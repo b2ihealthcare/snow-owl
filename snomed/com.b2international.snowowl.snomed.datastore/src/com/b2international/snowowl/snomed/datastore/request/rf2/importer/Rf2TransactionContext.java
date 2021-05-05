@@ -118,7 +118,7 @@ public final class Rf2TransactionContext extends DelegatingTransactionContext {
 			// XXX but use the resolvedObjects cache when we are looking up dependencies in #add method 
 			if (obj != null) {
 				return obj;
-			} else if (CodeSystemEntry.class.isAssignableFrom(type) || loadOnDemand) {
+			} else if (loadOnDemand) {
 				// XXX allow lookup only for codesystems and when loadOnDemand is enabled, 
 				return getDelegate().lookup(componentId, type);
 			} else {

@@ -268,7 +268,7 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 	}
 
 	@Override
-	protected Class<SnomedConceptDocument> getDocumentType() {
+	protected Class<SnomedConceptDocument> getSelect() {
 		return SnomedConceptDocument.class;
 	}
 	

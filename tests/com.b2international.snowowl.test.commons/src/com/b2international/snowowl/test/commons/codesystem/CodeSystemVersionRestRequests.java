@@ -24,10 +24,10 @@ import java.util.Map;
 import java.util.Optional;
 
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.codesystem.CodeSystemVersion;
-import com.b2international.snowowl.core.codesystem.CodeSystemVersions;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.version.Version;
+import com.b2international.snowowl.core.version.Versions;
 import com.b2international.snowowl.test.commons.ApiTestConstants;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
@@ -94,14 +94,14 @@ public abstract class CodeSystemVersionRestRequests {
 				.then();
 	}
 	
-	public static CodeSystemVersions getVersions(String codeSystemId) {
+	public static Versions getVersions(String codeSystemId) {
 		return givenAuthenticatedRequest(ApiTestConstants.ADMIN_API)
 				.and().contentType(ContentType.JSON)
 				.when()
 				.get("/codesystems/{codeSystemId}/versions", codeSystemId)
 				.then()
 				.extract()
-				.as(CodeSystemVersions.class);
+				.as(Versions.class);
 	}
 
 	public static LocalDate getNextAvailableEffectiveDate(String codeSystemId) {
@@ -110,7 +110,7 @@ public abstract class CodeSystemVersionRestRequests {
 		// and adding one day to that historical version would mean a historical effective time version, which is unfortunate and can lead to inconsistencies in tests
 		LocalDate today = LocalDate.now();
 		return Optional.ofNullable(Iterables.getLast(getVersions(codeSystemId), null))
-				.map(CodeSystemVersion::getEffectiveTime)
+				.map(Version::getEffectiveTime)
 				.map(latestVersion -> latestVersion.isBefore(today) ? today : latestVersion.plus(1, ChronoUnit.DAYS))
 				.orElse(today);
 	}

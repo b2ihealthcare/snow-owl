@@ -23,7 +23,6 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -39,7 +38,9 @@ import org.slf4j.LoggerFactory;
 import com.b2international.commons.exceptions.ApiException;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.attachments.Attachment;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.attachments.InternalAttachmentRegistry;
 import com.b2international.snowowl.core.authorization.BranchAccessControl;
@@ -53,7 +54,6 @@ import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.core.locks.Locks;
 import com.b2international.snowowl.core.repository.ContentAvailabilityInfoProvider;
-import com.b2international.snowowl.core.repository.RepositoryCodeSystemProvider;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
 import com.b2international.snowowl.core.request.io.ImportDefectAcceptor;
 import com.b2international.snowowl.core.request.io.ImportDefectAcceptor.ImportDefectBuilder;
@@ -63,11 +63,7 @@ import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2ContentType;
-import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2EffectiveTimeSlice;
-import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2EffectiveTimeSlices;
-import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2Format;
-import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2ImportConfiguration;
+import com.b2international.snowowl.snomed.datastore.request.rf2.importer.*;
 import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2GlobalValidator;
 import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationIssueReporter;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -94,7 +90,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 	
 	@NotNull
 	@JsonProperty
-	private final UUID rf2ArchiveId;
+	private final Attachment rf2Archive;
 	
 	@NotNull
 	@JsonProperty
@@ -106,8 +102,8 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 	@JsonProperty
 	private boolean dryRun = false;
 
-	SnomedRf2ImportRequest(UUID rf2ArchiveId) {
-		this.rf2ArchiveId = rf2ArchiveId;
+	SnomedRf2ImportRequest(Attachment rf2Archive) {
+		this.rf2Archive = rf2Archive;
 	}
 	
 	void setReleaseType(Rf2ReleaseType rf2ReleaseType) {
@@ -126,7 +122,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 	public ImportResponse execute(BranchContext context) {
 		validate(context);
 		final InternalAttachmentRegistry fileReg = (InternalAttachmentRegistry) context.service(AttachmentRegistry.class);
-		final File rf2Archive = fileReg.getAttachment(rf2ArchiveId);
+		final File rf2Archive = fileReg.getAttachment(this.rf2Archive.getAttachmentId());
 		
 		try (Locks locks = Locks.on(context).lock(DatastoreLockContextDescriptions.IMPORT)) {
 			return doImport(context, rf2Archive, new Rf2ImportConfiguration(releaseType, createVersions));
@@ -157,7 +153,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 	}
 
 	ImportResponse doImport(final BranchContext context, final File rf2Archive, final Rf2ImportConfiguration importconfig) throws Exception {
-		final String codeSystem = context.service(RepositoryCodeSystemProvider.class).get(context.branch().path()).getShortName();
+		final ResourceURI codeSystemUri = context.service(ResourceURI.class);
 		final Rf2ValidationIssueReporter reporter = new Rf2ValidationIssueReporter();
 		
 		try (final DB db = createDb()) {
@@ -200,11 +196,11 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 			if (!dryRun) {
 				// Import effective time slices in chronological order
 				for (Rf2EffectiveTimeSlice slice : orderedEffectiveTimeSlices) {
-					slice.doImport(context, codeSystem, importconfig, visitedComponents);
+					slice.doImport(context, codeSystemUri, importconfig, visitedComponents);
 				}
 					
 			    // Update locales registered on the code system
-				updateLocales(context, codeSystem);
+				updateLocales(context, codeSystemUri);
 			}
 			
 			return ImportResponse.success(visitedComponents.build(), reporter.getDefects());
@@ -315,7 +311,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 	private DB createDb() {
 		try {
 			Maker dbMaker = DBMaker 
-					.fileDB(Files.createTempDirectory(rf2ArchiveId.toString()).resolve("rf2-import.db").toFile())
+					.fileDB(Files.createTempDirectory(rf2Archive.toString()).resolve("rf2-import.db").toFile())
 					.fileDeleteAfterClose()
 					.fileMmapEnable()
 					.fileMmapPreclearDisable();
@@ -337,7 +333,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 		}
 	}
 	
-	private void updateLocales(final BranchContext context, final String codeSystem) throws Exception {
+	private void updateLocales(final BranchContext context, final ResourceURI codeSystemUri) throws Exception {
 		try (final TransactionContext tx = context.openTransaction(context, DatastoreLockContextDescriptions.IMPORT)) {
 			/*
 			 * XXX: The default language in locales is always "en", as there is no
@@ -356,7 +352,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 				.map(refSet -> new ExtendedLocale("en", "", refSet.getId()))
 				.collect(Collectors.toList());
 			
-			final boolean changed = CodeSystemRequests.prepareUpdateCodeSystem(codeSystem)
+			final boolean changed = CodeSystemRequests.prepareUpdateCodeSystem(codeSystemUri.getResourceId())
 				.setSettings(Map.of(CodeSystem.CommonSettings.LOCALES, locales))
 				.build()
 				.execute(tx);

@@ -15,8 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.request.rf2;
 
-import java.util.UUID;
-
+import com.b2international.snowowl.core.attachments.Attachment;
 import com.b2international.snowowl.core.context.TerminologyResourceContentRequestBuilder;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
@@ -31,7 +30,7 @@ public final class SnomedRf2ImportRequestBuilder
 		extends BaseRequestBuilder<SnomedRf2ImportRequestBuilder, BranchContext, ImportResponse> 
 		implements TerminologyResourceContentRequestBuilder<ImportResponse> {
 
-	private UUID rf2ArchiveId;
+	private Attachment rf2Archive;
 	private Rf2ReleaseType releaseType = Rf2ReleaseType.DELTA;
 	private boolean createVersions = true;
 	private boolean dryRun = false;
@@ -39,8 +38,8 @@ public final class SnomedRf2ImportRequestBuilder
 	SnomedRf2ImportRequestBuilder() {
 	}
 	
-	public SnomedRf2ImportRequestBuilder setRf2ArchiveId(UUID rf2ArchiveId) {
-		this.rf2ArchiveId = rf2ArchiveId;
+	public SnomedRf2ImportRequestBuilder setRf2Archive(Attachment rf2Archive) {
+		this.rf2Archive = rf2Archive;
 		return getSelf();
 	}
 
@@ -61,7 +60,7 @@ public final class SnomedRf2ImportRequestBuilder
 	
 	@Override
 	protected Request<BranchContext, ImportResponse> doBuild() {
-		final SnomedRf2ImportRequest req = new SnomedRf2ImportRequest(rf2ArchiveId);
+		final SnomedRf2ImportRequest req = new SnomedRf2ImportRequest(rf2Archive);
 		req.setReleaseType(releaseType);
 		req.setCreateVersions(createVersions);
 		req.setDryRun(dryRun);

@@ -19,17 +19,17 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 import com.b2international.snowowl.core.ResourceURI;
-import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.context.ResourceRepositoryRequestBuilder;
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.request.SystemRequestBuilder;
 
 /**
  * @since 5.7
  */
 public final class VersionCreateRequestBuilder 
-		extends BaseRequestBuilder<VersionCreateRequestBuilder, ServiceProvider, Boolean>
-		implements SystemRequestBuilder<Boolean> {
+		extends BaseRequestBuilder<VersionCreateRequestBuilder, RepositoryContext, Boolean>
+		implements ResourceRepositoryRequestBuilder<Boolean> {
 
 	private String version;
 	private String description;
@@ -72,7 +72,7 @@ public final class VersionCreateRequestBuilder
 	}
 	
 	@Override
-	protected Request<ServiceProvider, Boolean> doBuild() {
+	protected Request<RepositoryContext, Boolean> doBuild() {
 		final VersionCreateRequest req = new VersionCreateRequest();
 		req.version = version;
 		req.description= description;

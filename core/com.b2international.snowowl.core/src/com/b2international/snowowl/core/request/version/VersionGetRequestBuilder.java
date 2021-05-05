@@ -16,17 +16,17 @@
 package com.b2international.snowowl.core.request.version;
 
 import com.b2international.snowowl.core.ResourceURI;
-import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.context.ResourceRepositoryRequestBuilder;
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.GetResourceRequestBuilder;
-import com.b2international.snowowl.core.request.SystemRequestBuilder;
 import com.b2international.snowowl.core.version.Version;
 
 /**
  * @since 8.0
  */
 public final class VersionGetRequestBuilder
-		extends GetResourceRequestBuilder<VersionGetRequestBuilder, VersionSearchRequestBuilder, ServiceProvider, Version>
-		implements SystemRequestBuilder<Version> {
+		extends GetResourceRequestBuilder<VersionGetRequestBuilder, VersionSearchRequestBuilder, RepositoryContext, Version>
+		implements ResourceRepositoryRequestBuilder<Version> {
 
 	public VersionGetRequestBuilder(ResourceURI versionUri) {
 		super(new VersionGetRequest(versionUri == null ? null : versionUri.toString()));

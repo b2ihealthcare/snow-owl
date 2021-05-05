@@ -24,8 +24,8 @@ import com.b2international.index.revision.BaseRevisionBranching;
 import com.b2international.index.revision.RevisionBranch;
 import com.b2international.index.revision.RevisionBranch.BranchState;
 import com.b2international.snowowl.core.ResourceURI;
-import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.branch.BranchInfo;
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.request.BaseResourceConverter;
 import com.b2international.snowowl.core.request.ResourceRequests;
@@ -42,8 +42,13 @@ import com.google.common.collect.TreeMultimap;
  */
 public final class CodeSystemConverter extends BaseResourceConverter<ResourceDocument, CodeSystem, CodeSystems> {
 
-	public CodeSystemConverter(ServiceProvider context, Options expand, List<ExtendedLocale> locales) {
+	public CodeSystemConverter(RepositoryContext context, Options expand, List<ExtendedLocale> locales) {
 		super(context, expand, locales);
+	}
+	
+	@Override
+	protected RepositoryContext context() {
+		return (RepositoryContext) super.context();
 	}
 
 	@Override

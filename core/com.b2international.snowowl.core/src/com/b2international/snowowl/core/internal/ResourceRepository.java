@@ -81,13 +81,16 @@ public final class ResourceRepository implements RevisionIndex {
 	}
 
 	public StagingArea prepareCommit() {
-		return index.prepareCommit(Branch.MAIN_PATH);
+		return prepareCommit(Branch.MAIN_PATH);
 	}
 	
 	@Override
 	public StagingArea prepareCommit(String branchPath) {
-		throw new UnsupportedOperationException("This repository does not support non-MAIN branches, please use #prepareCommit()");
 		// this repository uses a single MAIN branch only
+		if (!Branch.MAIN_PATH.equals(branchPath)) {
+			throw new UnsupportedOperationException("This repository does not support non-MAIN branches, please use #prepareCommit()");
+		}
+		return index.prepareCommit(branchPath);
 	}
 
 	@Override

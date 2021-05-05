@@ -34,8 +34,9 @@ import com.b2international.commons.exceptions.ConflictException;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.index.revision.RevisionBranch;
 import com.b2international.snowowl.core.*;
-import com.b2international.snowowl.core.authorization.AccessControl;
+import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.identity.User;
@@ -56,7 +57,7 @@ import com.google.common.collect.Multimap;
 /**
  * @since 5.7
  */
-public final class VersionCreateRequest implements Request<ServiceProvider, Boolean>, AccessControl {
+public final class VersionCreateRequest implements Request<RepositoryContext, Boolean>, RepositoryAccessControl {
 
 	private static final long serialVersionUID = 1L;
 	private static final int TASK_WORK_STEP = 4;
@@ -84,7 +85,7 @@ public final class VersionCreateRequest implements Request<ServiceProvider, Bool
 	private transient Map<ResourceURI, TerminologyResource> resourcesById;
 	
 	@Override
-	public Boolean execute(ServiceProvider context) {
+	public Boolean execute(RepositoryContext context) {
 		final String user = context.service(User.class).getUsername();
 		
 		if (resourcesById == null) {
@@ -192,7 +193,7 @@ public final class VersionCreateRequest implements Request<ServiceProvider, Bool
 			.collect(Collectors.toMap(Resource::getResourceURI, r -> r));
 	}
 	
-	private void validateVersion(ServiceProvider context, TerminologyResource codeSystem) {
+	private void validateVersion(RepositoryContext context, TerminologyResource codeSystem) {
 		if (!context.service(TerminologyRegistry.class).getTerminology(codeSystem.getToolingId()).isEffectiveTimeSupported()) {
 			return;
 		}
@@ -220,7 +221,7 @@ public final class VersionCreateRequest implements Request<ServiceProvider, Bool
 		
 	}
 	
-	private Optional<Version> getMostRecentVersion(ServiceProvider context, TerminologyResource codeSystem) {
+	private Optional<Version> getMostRecentVersion(RepositoryContext context, TerminologyResource codeSystem) {
 		return ResourceRequests.prepareSearchVersion()
 			.one()
 			.filterByResource(codeSystem.getResourceURI())

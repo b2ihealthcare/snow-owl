@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,8 +25,9 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.ReflectionUtils;
 import com.b2international.commons.options.MetadataImpl;
-import com.b2international.index.es.client.EsIndexStatus;
 import com.b2international.index.revision.RevisionBranch.BranchState;
+import com.b2international.snowowl.core.RepositoryInfo;
+import com.b2international.snowowl.core.RepositoryInfo.Health;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.Branch;
@@ -55,6 +56,7 @@ public final class TestBranchContext extends DelegatingContext implements Branch
 		super(ServiceProvider.EMPTY);
 		this.repositoryId = repositoryId;
 		this.branch = branch;
+		bind(RepositoryInfo.class, RepositoryInfo.of(repositoryId, Health.GREEN, null, List.of()));
 	}
 	
 	@Override
@@ -80,21 +82,6 @@ public final class TestBranchContext extends DelegatingContext implements Branch
 	@Override
 	public SnowOwlConfiguration config() {
 		return service(SnowOwlConfiguration.class);
-	}
-	
-	@Override
-	public String id() {
-		return repositoryId;
-	}
-	
-	@Override
-	public Health health() {
-		return Health.GREEN;
-	}
-	
-	@Override
-	public List<EsIndexStatus> indices() {
-		return Collections.emptyList();
 	}
 	
 	public static TestBranchContext.Builder on(String branch) {

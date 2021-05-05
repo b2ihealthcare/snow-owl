@@ -27,6 +27,7 @@ import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.Branches;
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.User;
@@ -114,7 +115,7 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 		return id;
 	}
 
-	private void checkBranchPath(final ServiceProvider context) {
+	private void checkBranchPath(final RepositoryContext context) {
 		// If no branch is created, the branch should already exist
 		if (!createBranch && !branchExists(branchPath, context)) {
 			throw new BadRequestException("Branch path '%s' should point to an existing branch if given.", branchPath);
@@ -129,7 +130,7 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 		}
 	}
 
-	private Optional<Version> checkCodeSystem(final ServiceProvider context) {
+	private Optional<Version> checkCodeSystem(final RepositoryContext context) {
 		// OID must be unique if defined
 		if (!StringUtils.isEmpty(oid) && codeSystemExists(oid, context)) {
 			throw new AlreadyExistsException("Resource", oid);
@@ -190,7 +191,7 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 		}
 	}
 	
-	private boolean codeSystemExists(final String uniqeId, final ServiceProvider context) {
+	private boolean codeSystemExists(final String uniqeId, final RepositoryContext context) {
 		return CodeSystemRequests.prepareSearchCodeSystem()
 				.setLimit(0)
 				.filterById(uniqeId)

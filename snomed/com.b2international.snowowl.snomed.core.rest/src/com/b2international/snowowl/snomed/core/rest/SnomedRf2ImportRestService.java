@@ -27,6 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.b2international.commons.exceptions.ApiError;
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.attachments.Attachment;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.id.IDs;
@@ -95,7 +96,7 @@ public class SnomedRf2ImportRestService extends AbstractRestService {
 		attachments.upload(rf2ArchiveId, file.getInputStream());
 
 		String jobId = SnomedRequests.rf2().prepareImport()
-			.setRf2ArchiveId(rf2ArchiveId)
+			.setRf2Archive(new Attachment(rf2ArchiveId, file.getName()))
 			.setReleaseType(Rf2ReleaseType.getByNameIgnoreCase(type))
 			.setCreateVersions(createVersions)
 			.setDryRun(dryRun)

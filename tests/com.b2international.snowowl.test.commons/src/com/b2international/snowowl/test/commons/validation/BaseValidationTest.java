@@ -35,13 +35,11 @@ import com.b2international.index.IndexClientFactory;
 import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.ComponentIdentifier;
-import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.config.IndexConfiguration;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.internal.validation.ValidationRepository;
 import com.b2international.snowowl.core.internal.validation.ValidationThreadPool;
 import com.b2international.snowowl.core.plugin.ClassPathScanner;
-import com.b2international.snowowl.core.repository.RepositoryCodeSystemProvider;
 import com.b2international.snowowl.core.request.RevisionIndexReadRequest;
 import com.b2international.snowowl.core.scripts.ScriptEngine;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
@@ -96,16 +94,6 @@ public abstract class BaseValidationTest extends BaseRevisionIndexTest {
 				.with(ValidationThreadPool.class, new ValidationThreadPool(1, 1, 1))
 				.with(ValidationIssueDetailExtensionProvider.class, new ValidationIssueDetailExtensionProvider(scanner))
 				.with(TerminologyRegistry.class, TerminologyRegistry.INSTANCE)
-				.with(RepositoryCodeSystemProvider.class, branchPath -> {
-					final Map<String, String> registry = getTestCodeSystemPathMap();
-					Preconditions.checkArgument(registry.containsValue(branchPath), "Missing branchPath '%s' from CodeSystem registry", branchPath);
-					for (String codeSystem : registry.keySet()) {
-						if (registry.get(codeSystem).equals(branchPath)) {
-							return CodeSystem.builder().branchPath(branchPath).shortName(codeSystem).build();
-						}
-					}
-					return null; // should not happen
-				})
 				.with(ResourceURIPathResolver.class, ResourceURIPathResolver.fromMap(getTestCodeSystemPathMap()))
 				.with(ScriptEngine.Registry.class, new ScriptEngine.Registry(scanner));
 		configureContext(context);

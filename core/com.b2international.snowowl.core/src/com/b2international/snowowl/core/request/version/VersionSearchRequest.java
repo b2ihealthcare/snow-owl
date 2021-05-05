@@ -25,8 +25,8 @@ import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.ResourceURI;
-import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
 import com.b2international.snowowl.core.version.Version;
@@ -37,7 +37,7 @@ import com.b2international.snowowl.core.version.Versions;
  * @since 4.7
  */
 public final class VersionSearchRequest 
-	extends SearchIndexResourceRequest<ServiceProvider, Versions, VersionDocument> 
+	extends SearchIndexResourceRequest<RepositoryContext, Versions, VersionDocument> 
 	implements RepositoryAccessControl {
 
 	private static final long serialVersionUID = 3L;
@@ -70,7 +70,7 @@ public final class VersionSearchRequest
 	VersionSearchRequest() { }
 
 	@Override
-	protected Expression prepareQuery(ServiceProvider context) {
+	protected Expression prepareQuery(RepositoryContext context) {
 		final ExpressionBuilder query = Expressions.builder();
 
 		if (containsKey(OptionKey.RESOURCE)) {
@@ -102,7 +102,7 @@ public final class VersionSearchRequest
 	}
 
 	@Override
-	protected Versions toCollectionResource(ServiceProvider context, Hits<VersionDocument> hits) {
+	protected Versions toCollectionResource(RepositoryContext context, Hits<VersionDocument> hits) {
 		return new Versions(toResource(hits), hits.getSearchAfter(), limit(), hits.getTotal());
 	}
 	

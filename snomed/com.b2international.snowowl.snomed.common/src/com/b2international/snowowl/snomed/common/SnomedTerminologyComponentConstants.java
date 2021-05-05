@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,30 +15,20 @@
  */
 package com.b2international.snowowl.snomed.common;
 
-import java.util.Set;
 import java.util.regex.Pattern;
 
 import com.b2international.commons.VerhoeffCheck;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 
 public abstract class SnomedTerminologyComponentConstants {
 	
 	// suppress constructor
 	private SnomedTerminologyComponentConstants() {}
 
-	public static final Set<String> NS_URI_SET = ImmutableSet.of(
-			"http://b2international.com/snowowl/sct/1.0", 
-			"http://b2international.com/snowowl/snomed/refset/1.0", 
-			"http://b2international.com/snowowl/snomed/mrcm");
-	
-	public static final String[] NS_URI = Iterables.toArray(NS_URI_SET, String.class);
-	
 	/**
 	 * @deprecated - TODO rename to TOOLING_ID and make it shorter, just snomed is enough
 	 */
-	public static final String TERMINOLOGY_ID = "com.b2international.snowowl.terminology.snomed";
+	public static final String TERMINOLOGY_ID = "snomed";
 	
 	public static final String CONCEPT = "com.b2international.snowowl.terminology.snomed.concept";
 	public static final short CONCEPT_NUMBER = 100;

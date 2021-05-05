@@ -23,8 +23,8 @@ import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.ResourceURI;
-import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
@@ -33,7 +33,7 @@ import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
  * @since 4.7
  */
 final class CodeSystemSearchRequest 
-	extends SearchIndexResourceRequest<ServiceProvider, CodeSystems, ResourceDocument> 
+	extends SearchIndexResourceRequest<RepositoryContext, CodeSystems, ResourceDocument> 
 	implements RepositoryAccessControl {
 
 	private static final long serialVersionUID = 3L;
@@ -64,7 +64,7 @@ final class CodeSystemSearchRequest
 	}
 	
 	@Override
-	protected Expression prepareQuery(ServiceProvider context) {
+	protected Expression prepareQuery(RepositoryContext context) {
 		final ExpressionBuilder queryBuilder = Expressions.builder();
 		
 		addIdFilter(queryBuilder, ResourceDocument.Expressions::ids);
@@ -118,7 +118,7 @@ final class CodeSystemSearchRequest
 	}
 	
 	@Override
-	protected CodeSystems toCollectionResource(ServiceProvider context, Hits<ResourceDocument> hits) {
+	protected CodeSystems toCollectionResource(RepositoryContext context, Hits<ResourceDocument> hits) {
 		final CodeSystemConverter converter = new CodeSystemConverter(context, expand(), null);
 		return converter.convert(hits.getHits(), hits.getSearchAfter(), hits.getLimit(), hits.getTotal());
 	}

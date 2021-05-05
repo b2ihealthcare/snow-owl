@@ -15,16 +15,16 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
-import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.context.ResourceRepositoryRequestBuilder;
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.GetResourceRequestBuilder;
-import com.b2international.snowowl.core.request.SystemRequestBuilder;
 
 /**
  * @since 4.7
  */
 public final class CodeSystemGetRequestBuilder 
-		extends GetResourceRequestBuilder<CodeSystemGetRequestBuilder, CodeSystemSearchRequestBuilder, ServiceProvider, CodeSystem>
-		implements SystemRequestBuilder<CodeSystem> {
+		extends GetResourceRequestBuilder<CodeSystemGetRequestBuilder, CodeSystemSearchRequestBuilder, RepositoryContext, CodeSystem>
+		implements ResourceRepositoryRequestBuilder<CodeSystem> {
 
 	CodeSystemGetRequestBuilder(String uniqueId) {
 		super(new CodeSystemGetRequest(uniqueId));

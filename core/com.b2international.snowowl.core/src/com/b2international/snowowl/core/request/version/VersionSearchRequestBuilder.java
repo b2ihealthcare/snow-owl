@@ -18,11 +18,11 @@ package com.b2international.snowowl.core.request.version;
 import java.time.LocalDate;
 
 import com.b2international.snowowl.core.ResourceURI;
-import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.context.ResourceRepositoryRequestBuilder;
 import com.b2international.snowowl.core.date.EffectiveTimes;
+import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
-import com.b2international.snowowl.core.request.SystemRequestBuilder;
 import com.b2international.snowowl.core.request.version.VersionSearchRequest.OptionKey;
 import com.b2international.snowowl.core.version.Versions;
 
@@ -30,8 +30,8 @@ import com.b2international.snowowl.core.version.Versions;
  * @since 4.7
  */
 public final class VersionSearchRequestBuilder 
-		extends SearchResourceRequestBuilder<VersionSearchRequestBuilder, ServiceProvider, Versions>
- 		implements SystemRequestBuilder<Versions> {
+		extends SearchResourceRequestBuilder<VersionSearchRequestBuilder, RepositoryContext, Versions>
+ 		implements ResourceRepositoryRequestBuilder<Versions> {
 
 	public VersionSearchRequestBuilder() {
 		super();
@@ -83,7 +83,7 @@ public final class VersionSearchRequestBuilder
 	}
 	
 	@Override
-	protected SearchResourceRequest<ServiceProvider, Versions> createSearch() {
+	protected SearchResourceRequest<RepositoryContext, Versions> createSearch() {
 		return new VersionSearchRequest();
 	}
 }

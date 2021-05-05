@@ -20,13 +20,7 @@ import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.mapdb.DB;
 import org.mapdb.HTreeMap;
@@ -41,25 +35,21 @@ import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.collect.LongSets;
 import com.b2international.commons.graph.LongTarjan;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
-import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
+import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.request.io.ImportDefectAcceptor.ImportDefectBuilder;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.*;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
@@ -192,7 +182,7 @@ public final class Rf2EffectiveTimeSlice {
 	
 	public void doImport(
 			final BranchContext context, 
-			final String codeSystem, 
+			final ResourceURI codeSystemUri, 
 			final Rf2ImportConfiguration importConfig, 
 			final ImmutableSet.Builder<ComponentURI> visitedComponents) throws Exception {
 		
@@ -216,8 +206,8 @@ public final class Rf2EffectiveTimeSlice {
 						componentsToImport.add(component);
 						
 						// Register container concept as visited component 
-						final String conceptId = getConceptId(codeSystem, component); 
-						visitedComponents.add(ComponentURI.of(codeSystem, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, conceptId));
+						final String conceptId = getConceptId(component); 
+						visitedComponents.add(ComponentURI.of(codeSystemUri, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, conceptId));
 					}
 					// add all members of this component to this batch as well
 					final Set<String> containerComponents = membersByReferencedComponent.remove(componentToImportL);
@@ -229,30 +219,25 @@ public final class Rf2EffectiveTimeSlice {
 								
 								// Register reference set as visited component
 								final String refSetId = containedComponent.getReferenceSetId();
-								visitedComponents.add(ComponentURI.of(codeSystem, SnomedTerminologyComponentConstants.REFSET_NUMBER, refSetId));
+								visitedComponents.add(ComponentURI.of(codeSystemUri, SnomedTerminologyComponentConstants.REFSET_NUMBER, refSetId));
 							}
 						}
 					}
 				}
 				
 				tx.add(componentsToImport, getDependencies(componentsToImport));
-				
-				if (doCreateVersion && !importPlan.hasNext()) {
-					tx.add(CodeSystemVersionEntry.builder()
-							.id(IDs.base64UUID())
-							.codeSystemShortName(codeSystem)
-							.description("")
-							.parentBranchPath(context.branch().path())
-							.effectiveDate(EffectiveTimes.getEffectiveTime(effectiveDate))
-							.versionId(effectiveTime)
-							.importDate(new Date().getTime())
-							.build());
-				}
-				
 				tx.commit(commitMessage);
 			}
 			
 			if (doCreateVersion) {
+				ResourceRequests.prepareNewVersion()
+					.setResource(codeSystemUri)
+					.setVersion(effectiveTime)
+					.setDescription("")
+					.setEffectiveTime(effectiveDate)
+					.buildAsync()
+					.getRequest()
+					.execute(context);
 				// do actually create a branch with the effective time name
 				RepositoryRequests
 					.branching()
@@ -266,7 +251,7 @@ public final class Rf2EffectiveTimeSlice {
 		LOG.info("{} in {}", commitMessage, w);
 	}
 
-	private String getConceptId(final String codeSystem, SnomedComponent component) {
+	private String getConceptId(SnomedComponent component) {
 		if (component instanceof SnomedConcept) {
 			return component.getId();
 		} else if (component instanceof SnomedDescription) {

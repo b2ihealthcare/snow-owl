@@ -86,7 +86,7 @@ final class ClassificationCreateRequest implements Request<BranchContext, String
 
 	@Override
 	public String execute(final BranchContext context) {
-		final String repositoryId = context.id();
+		final String repositoryId = context.info().id();
 		final Branch branch = context.branch();
 		final ClassificationTracker tracker = context.service(ClassificationTracker.class);
 		final SnomedCoreConfiguration config = context.service(SnomedCoreConfiguration.class);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,32 +17,26 @@ package com.b2international.snowowl.test.commons;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.util.UUID;
+import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.rules.ExternalResource;
 
-import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.attachments.AttachmentRegistry;
-import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.branch.BranchPathUtils;
+import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.attachments.Attachment;
+import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
-import com.b2international.snowowl.core.codesystem.CodeSystemVersion;
-import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
-import com.b2international.snowowl.core.codesystem.CodeSystemVersions;
 import com.b2international.snowowl.core.codesystem.CodeSystems;
 import com.b2international.snowowl.core.jobs.JobRequests;
-import com.b2international.snowowl.core.repository.RepositoryRequests;
+import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
-import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.core.util.PlatformUtil;
+import com.b2international.snowowl.core.version.Version;
+import com.b2international.snowowl.core.version.VersionDocument;
+import com.b2international.snowowl.core.version.Versions;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.request.rf2.SnomedRf2Requests;
 import com.b2international.snowowl.test.commons.rest.RestExtensions;
@@ -54,96 +48,77 @@ import com.b2international.snowowl.test.commons.rest.RestExtensions;
  */
 public class SnomedContentRule extends ExternalResource {
 
-	private final File importArchive;
+	public static final ResourceURI SNOMEDCT = CodeSystem.uri("SNOMEDCT");
+	
+	private final Path importArchive;
 	private final Rf2ReleaseType contentType;
-	private final String codeSystemShortName;
-	private final String codeSystemBranchPath;
+	private final ResourceURI codeSystemId;
 
-	public SnomedContentRule(final String codeSystemShortName, final String branchPath, final String importArchivePath, final Rf2ReleaseType contentType) {
-		this(codeSystemShortName, branchPath, SnomedContentRule.class, importArchivePath, contentType);
+	public SnomedContentRule(final ResourceURI codeSystemId, final String importArchivePath, final Rf2ReleaseType contentType) {
+		this(codeSystemId, SnomedContentRule.class, importArchivePath, contentType);
 	}
 	
-	public SnomedContentRule(final String codeSystemShortName, final String branchPath, final Class<?> relativeClass, final String importArchivePath, final Rf2ReleaseType contentType) {
-		this(codeSystemShortName, branchPath, relativeClass, false, importArchivePath, contentType);
+	public SnomedContentRule(final ResourceURI codeSystemId, final Class<?> relativeClass, final String importArchivePath, final Rf2ReleaseType contentType) {
+		this(codeSystemId, relativeClass, false, importArchivePath, contentType);
 	}
 	
-	public SnomedContentRule(final String codeSystemShortName, final String branchPath, final Class<?> relativeClass, final boolean isFragment, final String importArchivePath, final Rf2ReleaseType contentType) {
-		this.codeSystemShortName = checkNotNull(codeSystemShortName, "codeSystem");
-		this.codeSystemBranchPath = checkNotNull(branchPath, "branchPath");
+	public SnomedContentRule(final ResourceURI codeSystemId, final Class<?> relativeClass, final boolean isFragment, final String importArchivePath, final Rf2ReleaseType contentType) {
+		this.codeSystemId = checkNotNull(codeSystemId, "codeSystem");
 		this.contentType = checkNotNull(contentType, "contentType");
-		this.importArchive = isFragment ? PlatformUtil.toAbsolutePath(relativeClass, importArchivePath).toFile() : PlatformUtil.toAbsolutePathBundleEntry(relativeClass, importArchivePath).toFile();
+		this.importArchive = isFragment ? PlatformUtil.toAbsolutePath(relativeClass, importArchivePath) : PlatformUtil.toAbsolutePathBundleEntry(relativeClass, importArchivePath);
 	}
 
 	@Override
 	protected void before() throws Throwable {
-		createBranch();
 		createCodeSystemIfNotExist();
-		UUID rf2ArchiveId = UUID.randomUUID();
-		ApplicationContext.getServiceForClass(AttachmentRegistry.class).upload(rf2ArchiveId, new FileInputStream(importArchive));
+		Attachment attachment = Attachment.upload(Services.context(), importArchive);
 		String jobId = SnomedRequests.rf2().prepareImport()
-			.setRf2ArchiveId(rf2ArchiveId)
+			.setRf2Archive(attachment)
 			.setReleaseType(contentType)
 			.setCreateVersions(true)
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, codeSystemBranchPath)
-			.runAsJobWithRestart(SnomedRf2Requests.importJobKey(codeSystemBranchPath), "Initial SNOMEDCT import for tests")
+			.build(codeSystemId)
+			.runAsJobWithRestart(SnomedRf2Requests.importJobKey(codeSystemId), "Initial SNOMEDCT import for tests")
 			.execute(Services.bus())
 			.getSync(1, TimeUnit.MINUTES);
 		JobRequests.waitForJob(Services.bus(), jobId, 2000 /* 2 seconds */);
 	}
 	
-	private void createBranch() {
-		if (!IBranchPath.MAIN_BRANCH.equals(codeSystemBranchPath)) {
-			final IBranchPath csPath = BranchPathUtils.createPath(codeSystemBranchPath);
-			RepositoryRequests.branching().prepareCreate()
-				.setParent(csPath.getParentPath())
-				.setName(csPath.lastSegment())
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
-				.execute(Services.bus())
-				.getSync();
-		}
-	}
-
 	private void createCodeSystemIfNotExist() {
-		if (!SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME.equals(codeSystemShortName)) {
-			final IEventBus eventBus = Services.bus();
-			final CodeSystems codeSystems = CodeSystemRequests.prepareSearchCodeSystem()
-					.setLimit(0)
-					.filterById(codeSystemShortName)
-					.build(SnomedDatastoreActivator.REPOSITORY_UUID)
-					.execute(eventBus)
-					.getSync();
-			
-			if (codeSystems.getTotal() > 0) {
-				return;
-			}
-			
-			final CodeSystemVersions snomedVersions = CodeSystemRequests.prepareSearchVersion()
-				.filterByCodeSystemShortName(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME)
-				.sortBy(SortField.descending(CodeSystemVersionEntry.Fields.EFFECTIVE_DATE))
-				.setLimit(1)
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
+		final IEventBus eventBus = Services.bus();
+		final CodeSystems codeSystems = CodeSystemRequests.prepareSearchCodeSystem()
+				.setLimit(0)
+				.filterById(codeSystemId.toString())
+				.buildAsync()
 				.execute(eventBus)
 				.getSync();
-				
-			final CodeSystemURI extensionOf = snomedVersions.first()
-				.map(CodeSystemVersion::getUri)
-				.orElse(null);
-				
-			CodeSystemRequests.prepareNewCodeSystem()
-				.setBranchPath(codeSystemBranchPath)
-				.setCitation("citation")
-				.setExtensionOf(extensionOf)
-				.setIconPath("iconPath")
-				.setLanguage("language")
-				.setLink("organizationLink")
-				.setName("Extension " + codeSystemShortName)
-				.setOid("oid:" + codeSystemShortName)
-				.setRepositoryId(SnomedDatastoreActivator.REPOSITORY_UUID)
-				.setShortName(codeSystemShortName)
-				.setTerminologyId(SnomedTerminologyComponentConstants.TERMINOLOGY_ID)
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, Branch.MAIN_PATH, RestExtensions.USER, String.format("Create code system %s", codeSystemShortName))
-				.execute(eventBus)
-				.getSync();
+		
+		if (codeSystems.getTotal() > 0) {
+			return;
 		}
+		
+		final Versions snomedVersions = ResourceRequests.prepareSearchVersion()
+			.filterByResource(SNOMEDCT)
+			.sortBy(SortField.descending(VersionDocument.Fields.EFFECTIVE_TIME))
+			.setLimit(1)
+			.buildAsync()
+			.execute(eventBus)
+			.getSync();
+			
+		final ResourceURI extensionOf = snomedVersions.first()
+			.map(Version::getVersionResourceURI)
+			.orElse(null);
+			
+		CodeSystemRequests.prepareNewCodeSystem()
+			.setId(codeSystemId.toString())
+			.setUrl("organizationLink")
+			.setDescription("description")
+			.setExtensionOf(extensionOf)
+			.setLanguage("language")
+			.setTitle("Extension " + codeSystemId)
+			.setOid("oid:" + codeSystemId)
+			.setToolingId(SnomedTerminologyComponentConstants.TERMINOLOGY_ID)
+			.build(RestExtensions.USER, String.format("Create code system %s", codeSystemId))
+			.execute(eventBus)
+			.getSync(1, TimeUnit.MINUTES);
 	}
 }

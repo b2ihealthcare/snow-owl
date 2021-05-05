@@ -19,12 +19,11 @@ import static com.b2international.snowowl.test.commons.rest.RestExtensions.given
 
 import java.util.Map;
 
+import com.b2international.commons.json.Json;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.test.commons.ApiTestConstants;
-import com.google.common.collect.ImmutableMap;
 
 import io.restassured.http.ContentType;
 import io.restassured.response.ValidatableResponse;
@@ -38,31 +37,31 @@ public abstract class CodeSystemRestRequests {
 		return createCodeSystem(null, branchPath, shortName);
 	}
 
-	public static ValidatableResponse createCodeSystem(CodeSystemURI extensionOf, String shortName) {
+	public static ValidatableResponse createCodeSystem(ResourceURI extensionOf, String shortName) {
 		return createCodeSystem(extensionOf, null, shortName);
 	}
 	
-	private static ValidatableResponse createCodeSystem(CodeSystemURI extensionOf, IBranchPath branchPath, String shortName) {
-		ImmutableMap.Builder<String, Object> requestBody = ImmutableMap.<String, Object>builder()
-				.put("name", shortName)
-				.put("shortName", shortName)
-				.put("citation", "citation")
-				.put("iconPath", "iconPath")
-				.put("repositoryId", SnomedDatastoreActivator.REPOSITORY_UUID)
-				.put("terminologyId", SnomedTerminologyComponentConstants.TERMINOLOGY_ID)
-				.put("oid", "oid_" + shortName)
-				.put("primaryLanguage", "primaryLanguage")
-				.put("organizationLink", "organizationLink");
+	private static ValidatableResponse createCodeSystem(ResourceURI extensionOf, IBranchPath branchPath, String shortName) {
+		Json requestBody = Json.object(
+			"id", shortName,
+			"title", shortName,
+			"url", "organizationLink",
+			"description", "citation",
+			"toolingId", SnomedTerminologyComponentConstants.TERMINOLOGY_ID,
+			"oid", "oid_" + shortName,
+			"language", "primaryLanguage"
+		);
+				
 		
 		if (extensionOf != null) {
-			requestBody.put("extensionOf", extensionOf);
+			requestBody = requestBody.with("extensionOf", extensionOf);
 		} else if (branchPath != null) {
-			requestBody.put("branchPath", branchPath.getPath());
+			requestBody = requestBody.with("branchPath", branchPath.getPath());
 		}
 		
 		return givenAuthenticatedRequest(ApiTestConstants.ADMIN_API)
 				.contentType(ContentType.JSON)
-				.body(requestBody.build())
+				.body(requestBody)
 				.post("/codesystems")
 				.then();
 	}
@@ -81,7 +80,7 @@ public abstract class CodeSystemRestRequests {
 				.then();
 	}
 	
-	public static ValidatableResponse upgrade(CodeSystemURI codeSystem, CodeSystemURI extensionOf) {
+	public static ValidatableResponse upgrade(ResourceURI codeSystem, ResourceURI extensionOf) {
 		return givenAuthenticatedRequest(ApiTestConstants.ADMIN_API)
 				.contentType(ContentType.JSON)
 				.body(Map.of(
