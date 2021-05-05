@@ -26,11 +26,11 @@ import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.ConflictException;
 import com.b2international.index.revision.RevisionBranch.BranchNameValidator;
 import com.b2international.snowowl.core.ResourceURI;
-import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.identity.User;
+import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.core.merge.MergeConflict;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
@@ -40,7 +40,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * @since 7.14.0 
  */
-final class CodeSystemUpgradeRequest implements Request<ServiceProvider, String> {
+final class CodeSystemUpgradeRequest implements Request<RepositoryContext, String>, RepositoryAccessControl {
 
 	private static final long serialVersionUID = 1L;
 
@@ -65,7 +65,7 @@ final class CodeSystemUpgradeRequest implements Request<ServiceProvider, String>
 	}
 	
 	@Override
-	public String execute(ServiceProvider context) {
+	public String execute(RepositoryContext context) {
 		if (!resource.isHead()) {
 			throw new BadRequestException("Upgrades can not be started from versions.")
 				.withDeveloperMessage("Use '%s' only instead of '%s'", resource.getResourceId(), resource);
@@ -136,29 +136,38 @@ final class CodeSystemUpgradeRequest implements Request<ServiceProvider, String>
 			
 			// and lastly create the actual CodeSystem so users will be able to browse, access and complete the upgrade
 			return CodeSystemRequests.prepareNewCodeSystem()
-						.setShortName(upgradeResourceId)
-						.setBranchPath(upgradeBranch)
-						// copy shared properties from the original CodeSystem
-						.setSettings(currentCodeSystem.getAdditionalProperties())
-						.setCitation(currentCodeSystem.getCitation())
-						.setExtensionOf(extensionOf)
-						.setUpgradeOf(resource)
-						.setIconPath(currentCodeSystem.getIconPath())
-						.setLocales(currentCodeSystem.getLocales())
-						.setLink(currentCodeSystem.getOrganizationLink())
-						.setName(String.format("Upgrade of '%s' to '%s'", currentCodeSystem.getName(), extensionOf))
-						.setRepositoryId(context.id())
-						.setTerminologyId(currentCodeSystem.getTerminologyId())
-						.build(context.id(), Branch.MAIN_PATH, context.service(User.class).getUsername(), String.format("Start upgrade of '%s' to '%s'", resource, extensionOf))
-						.getRequest()
-						.execute(context)
-						.getResultAs(String.class);			
+				.setId(upgradeResourceId)
+				.setBranchPath(upgradeBranch)
+				.setTitle(String.format("Upgrade of '%s' to '%s'", currentCodeSystem.getTitle(), extensionOf))
+				// copy shared properties from the original CodeSystem
+				.setUrl(currentCodeSystem.getUrl())
+				.setLanguage(currentCodeSystem.getLanguage())
+				.setDescription(currentCodeSystem.getDescription())
+				.setStatus("draft")
+				.setCopyright(currentCodeSystem.getCopyright())
+				.setOwner(currentCodeSystem.getOwner())
+				.setContact(currentCodeSystem.getContact())
+				.setUsage(currentCodeSystem.getUsage())
+				.setPurpose(currentCodeSystem.getPurpose())
+				.setToolingId(currentCodeSystem.getToolingId())
+				.setExtensionOf(extensionOf)
+				.setUpgradeOf(resource)
+				.setSettings(currentCodeSystem.getSettings())
+				.commit()
+				.setCommitComment(String.format("Start upgrade of '%s' to '%s'", resource, extensionOf))
+				.build()
+				.execute(context.openBranch(context, Branch.MAIN_PATH))
+				.getResultAs(String.class);
 		} catch (Throwable e) {
 			// delete upgrade branch if any exception have been thrown during the upgrade
 			RepositoryRequests.branching().prepareDelete(upgradeBranch).build().execute(context);
 			throw e;
 		}
 	}
-	
+
+	@Override
+	public String getOperation() {
+		return Permission.OPERATION_EDIT;
+	}
 
 }

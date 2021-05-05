@@ -18,19 +18,17 @@ package com.b2international.snowowl.core.codesystem;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.exceptions.BadRequestException;
-import com.b2international.index.revision.TimestampProvider;
 import com.b2international.index.revision.RevisionBranch.BranchState;
-import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.context.ResourceRepositoryCommitRequestBuilder;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.internal.ResourceRepository;
-import com.b2international.snowowl.core.repository.RepositoryRequests;
+import com.b2international.snowowl.core.request.BranchRequest;
 
 /**
  * @since 7.15.0
  */
-final class CodeSystemCompleteUpgradeRequest implements Request<ServiceProvider, Boolean> {
+final class CodeSystemCompleteUpgradeRequest implements Request<RepositoryContext, Boolean> {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -42,7 +40,7 @@ final class CodeSystemCompleteUpgradeRequest implements Request<ServiceProvider,
 	}
 	
 	@Override
-	public Boolean execute(ServiceProvider context) {
+	public Boolean execute(RepositoryContext context) {
 		CodeSystem codeSystem = CodeSystemRequests.prepareGetCodeSystem(codeSystemId)
 				.setExpand(CodeSystem.Expand.UPGRADE_OF_BRANCH_INFO + "()")
 				.build()
@@ -56,22 +54,23 @@ final class CodeSystemCompleteUpgradeRequest implements Request<ServiceProvider,
 			}
 		}
 		
-		ResourceRepository resourceRepository = context.service(ResourceRepository.class);
-		
-		// TODO create ResourceContext, ResourceRequest and ResourceTransactionContext 
 		// mark the upgrade Code System completed by removing it from the index and updating the upgradeOf CodeSystem branch to the branch of the Upgrade
-		final long timestamp = context.service(TimestampProvider.class).getTimestamp();
-		resourceRepository.prepareCommit()
-			.commit(timestamp, author, String.format("Complete upgrade of %s to %s", codeSystem.getUpgradeOf().getResourceId(), codeSystem.getExtensionOf()));
-		
-		CodeSystemRequests.prepareUpdateCodeSystem(codeSystem.getUpgradeOf().getResourceId())
-			.setBranchPath(codeSystem.getBranchPath())
-			.setExtensionOf(codeSystem.getExtensionOf())
-			.build()
-			.execute(tx);
-	
-		tx.delete(codeSystem);
-		return Boolean.TRUE;
+		return new BranchRequest<>(Branch.MAIN_PATH,
+			new ResourceRepositoryCommitRequestBuilder()
+				.setBody((tx) -> {
+					CodeSystemRequests.prepareUpdateCodeSystem(codeSystem.getUpgradeOf().getResourceId())
+						.setBranchPath(codeSystem.getBranchPath())
+						.setExtensionOf(codeSystem.getExtensionOf())
+						.build()
+						.execute(tx);
+					
+					tx.delete(codeSystem);
+					
+					return Boolean.TRUE;
+				})
+				.setCommitComment(String.format("Complete upgrade of %s to %s", codeSystem.getUpgradeOf().getResourceId(), codeSystem.getExtensionOf()))
+				.build()
+		).execute(context).getResultAs(Boolean.class);
 	}
 
 }

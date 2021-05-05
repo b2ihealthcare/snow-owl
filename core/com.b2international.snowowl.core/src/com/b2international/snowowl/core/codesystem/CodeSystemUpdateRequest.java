@@ -21,6 +21,7 @@ import java.util.Set;
 
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.identity.Permission;
@@ -33,7 +34,7 @@ import com.google.common.collect.Maps;
 /**
  * @since 4.7
  */
-final class CodeSystemUpdateRequest extends UpdateRequest<TransactionContext> {
+final class CodeSystemUpdateRequest extends UpdateRequest<TransactionContext> implements RepositoryAccessControl {
 
 	private static final long serialVersionUID = 1L;
 
