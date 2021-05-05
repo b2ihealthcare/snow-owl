@@ -25,6 +25,7 @@ import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.ResourceRequests;
+import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
 
 /**
  * @since 8.0
@@ -37,6 +38,9 @@ public final class TerminologyResourceRequest<R> extends DelegatingRequest<Servi
 	@NotEmpty
 	private final ResourceURI resourceURI;
 
+	private transient TerminologyResource resource;
+	private transient String branchPath;
+	
 	public TerminologyResourceRequest(final ResourceURI resourceURI, final Request<TerminologyResourceContext, R> next) {
 		super(next);
 		this.resourceURI = resourceURI;
@@ -48,16 +52,28 @@ public final class TerminologyResourceRequest<R> extends DelegatingRequest<Servi
 	
 	@Override
 	public R execute(ServiceProvider context) {
-		final Resource resource = ResourceRequests.prepareGet(resourceURI.toString()).buildAsync().getRequest().execute(context);
-		if (!(resource instanceof TerminologyResource)) {
-			throw new NotFoundException("Terminology Resource", resourceURI.toString());
-		}
-		final TerminologyResource terminologyResource = (TerminologyResource) resource;
-		
 		final DefaultTerminologyResourceContext resourceContext = new DefaultTerminologyResourceContext(context);
-		resourceContext.bind(ResourceURI.class, terminologyResource.getResourceURI());
-		resourceContext.bind(TerminologyResource.class, terminologyResource);
+		resourceContext.bind(ResourceURI.class, resource.getResourceURI());
+		resourceContext.bind(TerminologyResource.class, resource);
 		return next(resourceContext);
+	}
+	
+	public TerminologyResource getResource(ServiceProvider context) {
+		if (resource == null) {
+			Resource resource = ResourceRequests.prepareGet(resourceURI.toString()).buildAsync().getRequest().execute(context);
+			if (!(resource instanceof TerminologyResource)) {
+				throw new NotFoundException("Terminology Resource", resourceURI.toString());
+			}
+			this.resource = (TerminologyResource) resource;
+		}
+		return resource;
+	}
+
+	public String getBranchPath(ServiceProvider context) {
+		if (branchPath == null) {
+			branchPath = context.service(ResourceURIPathResolver.class).resolve(context, resourceURI, resource);
+		}
+		return branchPath;
 	}
 
 }

@@ -19,16 +19,18 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.index.revision.RevisionBranch.BranchState;
+import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.context.ResourceRepositoryCommitRequestBuilder;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.request.BranchRequest;
 
 /**
  * @since 7.15.0
  */
-final class CodeSystemCompleteUpgradeRequest implements Request<RepositoryContext, Boolean> {
+final class CodeSystemCompleteUpgradeRequest implements Request<RepositoryContext, Boolean>, RepositoryAccessControl {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -71,6 +73,11 @@ final class CodeSystemCompleteUpgradeRequest implements Request<RepositoryContex
 				.setCommitComment(String.format("Complete upgrade of %s to %s", codeSystem.getUpgradeOf().getResourceId(), codeSystem.getExtensionOf()))
 				.build()
 		).execute(context).getResultAs(Boolean.class);
+	}
+	
+	@Override
+	public String getOperation() {
+		return Permission.OPERATION_EDIT;
 	}
 
 }

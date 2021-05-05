@@ -20,6 +20,8 @@ import java.util.Collection;
 import com.b2international.commons.exceptions.ForbiddenException;
 import com.b2international.commons.exceptions.UnauthorizedException;
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.context.ResourceRepositoryRequest;
 import com.b2international.snowowl.core.context.TerminologyResourceRequest;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
@@ -40,6 +42,8 @@ import com.google.common.collect.Iterables;
  */
 public final class AuthorizedRequest<R> extends DelegatingRequest<ServiceProvider, ServiceProvider, R> {
 
+	private static final long serialVersionUID = 1L;
+	
 	public static final String AUTHORIZATION_HEADER = "Authorization";
 	
 	public AuthorizedRequest(Request<ServiceProvider, R> next) {
@@ -79,6 +83,7 @@ public final class AuthorizedRequest<R> extends DelegatingRequest<ServiceProvide
 			}
 			
 			RepositoryRequest<?> repositoryRequest = Request.getNestedRequest(next(), RepositoryRequest.class);
+			ResourceRepositoryRequest<?> resourceRepositoryRequest = Request.getNestedRequest(next(), ResourceRepositoryRequest.class);
 			BranchRequest<?> branchRequest = Request.getNestedRequest(next(), BranchRequest.class);
 			TerminologyResourceRequest<?> codeSystemResourceRequest = Request.getNestedRequest(next(), TerminologyResourceRequest.class);
 			
@@ -93,8 +98,10 @@ public final class AuthorizedRequest<R> extends DelegatingRequest<ServiceProvide
 					if (newResource.contains(RepositoryAccessControl.REPOSITORY_TEMPLATE)) {
 						if (repositoryRequest != null) {
 							newResource = newResource.replace(RepositoryAccessControl.REPOSITORY_TEMPLATE, repositoryRequest.getContextId());
+						} else if (resourceRepositoryRequest != null) {
+							newResource = newResource.replace(RepositoryAccessControl.REPOSITORY_TEMPLATE, resourceRepositoryRequest.getContextId());
 						} else if (codeSystemResourceRequest != null) {
-							newResource = newResource.replace(RepositoryAccessControl.REPOSITORY_TEMPLATE, codeSystemResourceRequest.getToolingId(context));
+							newResource = newResource.replace(RepositoryAccessControl.REPOSITORY_TEMPLATE, codeSystemResourceRequest.getResource(context).getToolingId());
 						} else {
 							throw new IllegalArgumentException("Repository context is missing from request: " + next());
 						}
@@ -105,6 +112,8 @@ public final class AuthorizedRequest<R> extends DelegatingRequest<ServiceProvide
 							newResource = newResource.replace(BranchAccessControl.BRANCH_TEMPLATE, branchRequest.getBranchPath());
 						} else if (codeSystemResourceRequest != null) {
 							newResource = newResource.replace(BranchAccessControl.BRANCH_TEMPLATE, codeSystemResourceRequest.getBranchPath(context));
+						} else if (resourceRepositoryRequest != null) {
+							newResource = newResource.replace(BranchAccessControl.BRANCH_TEMPLATE, Branch.MAIN_PATH);
 						} else {
 							throw new IllegalArgumentException("Branch context is missing from request: " + next());
 						}

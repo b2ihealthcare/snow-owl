@@ -32,12 +32,17 @@ import com.b2international.snowowl.core.repository.DefaultRepositoryContext;
  * @since 8.0
  * @param <R>
  */
-final class ResourceRepositoryRequest<R> extends DelegatingRequest<ServiceProvider, RepositoryContext, R> {
+public final class ResourceRepositoryRequest<R> extends DelegatingRequest<ServiceProvider, RepositoryContext, R> {
 
 	private static final long serialVersionUID = 1L;
 	
 	public ResourceRepositoryRequest(Request<RepositoryContext, R> next) {
 		super(next);
+	}
+	
+	@Override
+	public String getContextId() {
+		return "resources";
 	}
 
 	@Override
