@@ -18,6 +18,7 @@ package com.b2international.snowowl.core.request;
 import com.b2international.snowowl.core.Resources;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.context.ResourceRepositoryRequestBuilder;
+import com.b2international.snowowl.core.request.ResourceSearchRequest.OptionKey;
 
 /**
  * @since 8.0
@@ -26,6 +27,26 @@ public final class ResourceSearchRequestBuilder
 		extends SearchResourceRequestBuilder<ResourceSearchRequestBuilder, ServiceProvider, Resources>
 		implements ResourceRepositoryRequestBuilder<Resources> {
 
+	/**
+	 * Filters matches by the given resource type.
+	 * 
+	 * @param resourceType
+	 * @return this builder
+	 */
+	public ResourceSearchRequestBuilder filterByResourceType(String resourceType) {
+		return addOption(OptionKey.RESOURCE_TYPE, resourceType);
+	}
+	
+	/**
+	 * Filters matches to have at least one of the specified resource types.
+	 * 
+	 * @param resourceTypes
+	 * @return this builder
+	 */
+	public ResourceSearchRequestBuilder filterByResourceType(Iterable<String> resourceTypes) {
+		return addOption(OptionKey.RESOURCE_TYPE, resourceTypes);
+	}
+	
 	@Override
 	protected SearchResourceRequest<ServiceProvider, Resources> createSearch() {
 		return new ResourceSearchRequest();

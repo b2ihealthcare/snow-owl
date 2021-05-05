@@ -29,6 +29,15 @@ final class ResourceSearchRequest extends SearchIndexResourceRequest<ServiceProv
 
 	private static final long serialVersionUID = 1L;
 
+	enum OptionKey {
+		
+		/**
+		 * Filter matches by their resource type.
+		 */
+		RESOURCE_TYPE
+		
+	}
+	
 	@Override
 	protected Expression prepareQuery(ServiceProvider context) {
 		return Expressions.matchAll();
