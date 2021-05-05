@@ -83,16 +83,11 @@ public class FhirUriSearchParameterDefinition extends FhirUriParameterDefinition
 	
 	private Set<String> supportedModifiers = Sets.newHashSet();
 	
-	public FhirUriSearchParameterDefinition(final String requestParameterKey, final String type, final String[] supportedModifiers, final boolean isMultipleValuesSupported) {
+	public FhirUriSearchParameterDefinition(final String requestParameterKey, final String type, final Set<String> supportedModifiers, final boolean isMultipleValuesSupported) {
 		super(requestParameterKey, type, isMultipleValuesSupported);
 		this.supportedModifiers = Sets.newHashSet(supportedModifiers);
 	}
 	
-	public FhirUriSearchParameterDefinition(final String requestParameterKey, final FhirRequestParameterType type, final String[] supportedModifiers) {
-		super(requestParameterKey, type);
-		this.supportedModifiers = Sets.newHashSet(supportedModifiers);
-	}
-
 	public boolean hasSupportedModifier(String parameterModifier) {
 		return supportedModifiers.contains(parameterModifier);
 	}

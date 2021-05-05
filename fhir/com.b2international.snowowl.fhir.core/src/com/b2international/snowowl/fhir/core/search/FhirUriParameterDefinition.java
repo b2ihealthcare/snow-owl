@@ -114,19 +114,14 @@ public class FhirUriParameterDefinition {
 	
 	public FhirUriParameterDefinition(final String name, final String type, final boolean isMultipleValuesSupported) {
 		this.name = name;
-		this.isMultipleValuesSupported = isMultipleValuesSupported;
 		this.type = FhirRequestParameterType.fromRequestParameter(type);
+		this.isMultipleValuesSupported = isMultipleValuesSupported;
 	}
 
-	public FhirUriParameterDefinition(final String name, final FhirRequestParameterType type) {
+	public FhirUriParameterDefinition(final String name, final FhirRequestParameterType type, final boolean isMultipleValuesSupported, Set<String> supportedValues) {
 		this.name = name;
 		this.type = type;
-	}
-	
-	public FhirUriParameterDefinition(final String name, final FhirRequestParameterType type, Set<String> supportedValues, final boolean isMultipleValuesSupported) {
-		this.name = name;
 		this.isMultipleValuesSupported = isMultipleValuesSupported;
-		this.type = type;
 		this.supportedValues = supportedValues;
 	}
 	

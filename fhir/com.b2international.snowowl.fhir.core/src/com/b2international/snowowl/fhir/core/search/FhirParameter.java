@@ -17,7 +17,9 @@ package com.b2international.snowowl.fhir.core.search;
 
 import java.util.Collection;
 
+import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.b2international.snowowl.fhir.core.search.FhirUriParameterDefinition.FhirRequestParameterType;
+import com.google.common.collect.Sets;
 
 /**
  * FHIR URI request parameter
@@ -68,7 +70,7 @@ public abstract class FhirParameter {
 	
 	protected Collection<String> values;
 	
-	public FhirParameter(final FhirUriParameterDefinition parameterDefinition, Collection<String> values) {
+	FhirParameter(final FhirUriParameterDefinition parameterDefinition, Collection<String> values) {
 		this.parameterDefinition = parameterDefinition;
 		this.values = values;
 	}
@@ -89,9 +91,22 @@ public abstract class FhirParameter {
 		return parameterDefinition;
 	}
 
-	/**
-	 * Validate this FHIR URI parameter
-	 */
-	public abstract void validate();
+	public static abstract class Builder<B extends Builder<B, T>, T extends FhirParameter> extends ValidatingBuilder<T> {
+		
+		protected Collection<String> values = Sets.newHashSet();
+		
+		public B values(final Collection<String> values) {
+			this.values.addAll(values);
+			return getSelf();
+		}
+		
+		public B value(final String value) {
+			this.values.add(value);
+			return getSelf();
+		}
+		
+		protected abstract B getSelf();
+	
+	}
 
 }

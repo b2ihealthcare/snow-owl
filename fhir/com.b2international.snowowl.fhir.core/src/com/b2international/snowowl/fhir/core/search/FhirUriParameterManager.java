@@ -96,15 +96,21 @@ public class FhirUriParameterManager {
 		String parameterName = fhirParameter.getName();
 		if (supportedSearchParameters.containsKey(parameterName)) {
 			FhirUriSearchParameterDefinition supportedSearchParameter = supportedSearchParameters.get(parameterName);
-			FhirSearchParameter fhirSearchParameter = new FhirSearchParameter(supportedSearchParameter, fhirParameter.getModifier(), fhirParameter.getValues());
-			return fhirSearchParameter;
-		
+			
+			return FhirSearchParameter.builder()
+					.parameterDefinition(supportedSearchParameter)
+					.modifier(fhirParameter.getModifier())
+					.values(fhirParameter.getValues())
+					.build();
+			
 		} else if (supportedFilterParameters.containsKey(parameterName)) {
 			FhirUriFilterParameterDefinition supportedFilterParameter = supportedFilterParameters.get(parameterName);
-			FhirFilterParameter fhirFilterParameter = new FhirFilterParameter(supportedFilterParameter, fhirParameter.getValues());
-			fhirFilterParameter.validate();
-			return fhirFilterParameter; 
-		
+			
+			return FhirFilterParameter.builder()
+					.parameterDefinition(supportedFilterParameter)
+					.values(fhirParameter.getValues())
+					.build();
+			
 		} else if (FhirCommonSearchKey.hasParameter(parameterName)) {
 			throw FhirException.createFhirError(String.format("Search parameter %s is not supported. Supported search parameters are %s.", parameterName, Arrays.toString(supportedSearchParameters.keySet().toArray())), OperationOutcomeCode.MSG_PARAM_UNKNOWN, SEARCH_REQUEST_PARAMETER_MARKER);
 		
@@ -211,11 +217,12 @@ public class FhirUriParameterManager {
 			}
 			
 			Searchable simpleParameterAnnotation = declaredAnnotationsByType[0];
+			Set<String> supportedModifiers = Sets.newHashSet(simpleParameterAnnotation.modifiers());
 			
 			if (!StringUtils.isEmpty(simpleParameterAnnotation.name())) {
-				return new FhirUriSearchParameterDefinition(simpleParameterAnnotation.name(), simpleParameterAnnotation.type(), simpleParameterAnnotation.modifiers(), simpleParameterAnnotation.supportsMultipleValues());
+				return new FhirUriSearchParameterDefinition(simpleParameterAnnotation.name(), simpleParameterAnnotation.type(), supportedModifiers, simpleParameterAnnotation.supportsMultipleValues());
 			} else {
-				return new FhirUriSearchParameterDefinition("_" + f.getName(), simpleParameterAnnotation.type(), simpleParameterAnnotation.modifiers(), simpleParameterAnnotation.supportsMultipleValues()); 
+				return new FhirUriSearchParameterDefinition("_" + f.getName(), simpleParameterAnnotation.type(), supportedModifiers, simpleParameterAnnotation.supportsMultipleValues()); 
 			}
 		}).collect(Collectors.toMap(k -> k.getName(), Function.identity()));
 	}

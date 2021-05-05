@@ -169,34 +169,6 @@ public class FhirRequestParameterTest extends FhirTest {
 		parameterManager.processParameters(paramMap);
 	}
 	
-	
-	//@Test
-	public void testPrefix() {
-		//SearchRequestParameters parameters = getSearchRequestParameters("http://localhost?_lastUpdated=gt20120131");
-		//assertThat(parameters.getLastUpdatedParameter().getPrefix(), equalTo(SearchRequestParameterValuePrefix.gt));
-		//assertThat(parameters.getLastUpdatedParameter().getValues(), hasItems("20120131"));
-	}
-	
-	//@Test
-	public void testModifierAndPrefix() {
-		//SearchRequestParameters parameters = getSearchRequestParameters("http://localhost?_lastUpdated:missing=gt20120131");
-		//assertThat(parameters.getLastUpdatedParameter().getModifier(), equalTo(SearchRequestParameterModifier.missing));
-		//assertThat(parameters.getLastUpdatedParameter().getPrefix(), equalTo(SearchRequestParameterValuePrefix.gt));
-		//assertThat(parameters.getLastUpdatedParameter().getValues(), hasItems("20120131"));
-	}
-	
-	
-		
-	//private SearchRequestParameters getSearchRequestParameters(final String urlString) {
-		//MultiValueMap<String,String> queryParams = UriComponentsBuilder.fromHttpUrl(urlString)
-		//	.build()
-		//	.getQueryParams();
-		
-		//Multimap<String, String> multiMap = HashMultimap.create();
-		//queryParams.keySet().forEach(k -> multiMap.putAll(k, queryParams.get(k)));
-		//return new SearchRequestParameters(multiMap);
-	//}
-	
 	//URI->Raw -> filter
 	@Test
 	public void filterParameterTest() {
@@ -228,22 +200,6 @@ public class FhirRequestParameterTest extends FhirTest {
 		assertThat(fhirParameter.getName(), equalTo("_id"));
 		assertThat(fhirParameter.getType(), equalTo(FhirRequestParameterType.STRING));
 		assertThat(fhirParameter.getValues(), contains("1"));
-	}
-	
-	//@Test
-	public void validationTest() {
-		
-		Multimap<String, String> paramMap = convertToMultimap("http://localhost?_summary=data");
-		String key = paramMap.keySet().iterator().next();
-		Collection<String> values = paramMap.get(key);
-		RawRequestParameter fhirParameter = new RawRequestParameter(key, values);
-		
-		FhirUriParameterManager definitions = FhirUriParameterManager.createFor(CodeSystem.class);
-		System.out.println(definitions);
-		
-		
-		definitions.processParameters(paramMap);
-		
 	}
 	
 	//Not really a test case - to check Spring/Guava parameter processing

@@ -34,18 +34,39 @@ public class FhirFilterParameter extends FhirParameter {
 	public FhirFilterParameter(FhirUriFilterParameterDefinition supportedFilterParameter, Collection<String> values) {
 		super(supportedFilterParameter, values);
 	}
-
-	@Override
-	public void validate() {
+	
+	public static Builder builder() {
+		return new Builder();
+	}
+	
+	public static class Builder extends FhirParameter.Builder<Builder, FhirFilterParameter> {
+	
+		private FhirUriFilterParameterDefinition filterParameterDefinition;
 		
-		//No restriction in the definition
-		Set<String> supportedValues = parameterDefinition.getSupportedValues();
-		if (supportedValues.isEmpty()) return;
+		public Builder parameterDefinition(final FhirUriFilterParameterDefinition parameterDefinition) {
+			this.filterParameterDefinition = parameterDefinition;
+			return getSelf();
+		}
 		
-		Set<String> uppercaseValues = values.stream().map(String::toUpperCase).collect(Collectors.toSet());
-		if (supportedValues.containsAll(uppercaseValues)) return;
+		@Override
+		protected Builder getSelf() {
+			return this;
+		}
+		
+		@Override
+		protected FhirFilterParameter doBuild() {
 			
-		throw FhirException.createFhirError(String.format("Filter parameter value %s is not supported. Supported parameter values are %s.", Arrays.toString(values.toArray()), Arrays.toString(supportedValues.toArray())), OperationOutcomeCode.MSG_PARAM_UNKNOWN, "SEARCH_REQUEST_PARAMETER_MARKER");
+			//No restriction in the definition
+			Set<String> supportedValues = filterParameterDefinition.getSupportedValues();
+			Set<String> uppercaseValues = values.stream().map(String::toUpperCase).collect(Collectors.toSet());
+			if (!supportedValues.isEmpty() && !supportedValues.containsAll(uppercaseValues)) {
+				
+				throw FhirException.createFhirError(String.format("Filter parameter value %s is not supported. Supported parameter values are %s.", Arrays.toString(values.toArray()), Arrays.toString(supportedValues.toArray())), 
+					OperationOutcomeCode.MSG_PARAM_UNKNOWN, "SEARCH_REQUEST_PARAMETER_MARKER");
+			}
+			
+			return new FhirFilterParameter(filterParameterDefinition, values);
+		}
 	}
 
 }
