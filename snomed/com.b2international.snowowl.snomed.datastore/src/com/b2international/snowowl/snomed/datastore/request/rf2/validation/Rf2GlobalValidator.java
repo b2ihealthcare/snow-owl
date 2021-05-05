@@ -15,6 +15,17 @@
  */
 package com.b2international.snowowl.snomed.datastore.request.rf2.validation;
 
+import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.REFSET_DESCRIPTION_TYPE;
+import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.REFSET_DESCRIPTOR_REFSET;
+import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.REFSET_HISTORICAL_ASSOCIATION;
+import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.REFSET_LANGUAGE_TYPE;
+import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.REFSET_MODULE_DEPENDENCY_TYPE;
+import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.REFSET_MRCM_ATTRIBUTE_DOMAIN_INTERNATIONAL;
+import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.REFSET_MRCM_ATTRIBUTE_RANGE_INTERNATIONAL;
+import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.REFSET_MRCM_DOMAIN_INTERNATIONAL;
+import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.REFSET_MRCM_MODULE_SCOPE;
+import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.REFSET_OWL_AXIOM;
+import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.REFSET_OWL_ONTOLOGY;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
@@ -26,6 +37,7 @@ import org.slf4j.Logger;
 
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongSet;
+import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
@@ -33,12 +45,13 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.repository.RevisionDocument;
 import com.b2international.snowowl.core.request.io.ImportDefectAcceptor;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
-import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2EffectiveTimeSlice;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSet.Builder;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -52,7 +65,7 @@ public class Rf2GlobalValidator {
 
 	private static final int RAW_QUERY_PAGE_SIZE = 500_000;
 	private final Logger log;
-	
+		
 	private Map<String, String> dependenciesByEffectiveTime;
 	private Map<String, String> skippableMemberDependenciesByEffectiveTime;
 
@@ -60,11 +73,41 @@ public class Rf2GlobalValidator {
 		this.log = log;
 	}
 	
+	private Set<String> collectMetaDataReferenceSets(final BranchContext context) {		
+		try {
+			Builder<String> referenceSets = ImmutableSet.builder();
+			
+			Query<String> query = Query.select(String.class)
+					.from(SnomedConceptDocument.class)
+					.fields(SnomedConceptDocument.Fields.ID)
+					.where(Expressions.builder()
+							.filter(Expressions.exists(SnomedConceptDocument.Fields.REFSET_TYPE))
+							.should(SnomedConceptDocument.Expressions.ancestors(ImmutableSet.of(REFSET_HISTORICAL_ASSOCIATION, REFSET_LANGUAGE_TYPE)))
+							.build())
+					.build();
+			
+			referenceSets.addAll(context.service(RevisionSearcher.class).search(query).getHits());
+			referenceSets.add(REFSET_DESCRIPTOR_REFSET,	
+					REFSET_DESCRIPTION_TYPE,
+					REFSET_MODULE_DEPENDENCY_TYPE,
+					REFSET_MRCM_MODULE_SCOPE,
+					REFSET_MRCM_DOMAIN_INTERNATIONAL,
+					REFSET_MRCM_ATTRIBUTE_DOMAIN_INTERNATIONAL,
+					REFSET_MRCM_ATTRIBUTE_RANGE_INTERNATIONAL,
+					REFSET_OWL_AXIOM, 
+					REFSET_OWL_ONTOLOGY);
+			return referenceSets.build();
+		} catch (IOException e) {
+			throw new SnowowlRuntimeException(e);
+		}
+	}
+
 	public void validateTerminologyComponents(
 			final List<Rf2EffectiveTimeSlice> slices, 
 			final ImportDefectAcceptor globalDefectAcceptor, 
 			final BranchContext context) {
 		
+		Set<String> metadataReferenceSets = collectMetaDataReferenceSets(context);
 		dependenciesByEffectiveTime = Maps.newHashMap();
 		skippableMemberDependenciesByEffectiveTime = Maps.newHashMap();
 		
@@ -108,7 +151,7 @@ public class Rf2GlobalValidator {
 					for (String memberId : referringMembers) {
 						String[] referringMember = slice.getContent().get(memberId);
 						String referenceSet = referringMember[5];
-						isStructuralRefSetMember = Concepts.METADATA_REFSETS.contains(referenceSet);						
+						isStructuralRefSetMember = metadataReferenceSets.contains(referenceSet);					
 					}
 					
 					if (isStructuralRefSetMember) {					

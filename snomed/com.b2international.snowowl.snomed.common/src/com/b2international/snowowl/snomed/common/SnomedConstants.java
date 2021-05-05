@@ -138,15 +138,6 @@ public abstract class SnomedConstants {
 		public static final String REFSET_MRCM_ATTRIBUTE_RANGE_ROOT = "723592007";
 		public static final String REFSET_MRCM_ATTRIBUTE_RANGE_INTERNATIONAL = "723562003";
 		
-		public static final Set<String> METADATA_REFSETS = ImmutableSet.of(
-				REFSET_DESCRIPTOR_REFSET,
-				REFSET_DESCRIPTION_TYPE,
-				REFSET_MODULE_DEPENDENCY_TYPE,
-				REFSET_MRCM_MODULE_SCOPE,
-				REFSET_MRCM_DOMAIN_INTERNATIONAL,
-				REFSET_MRCM_ATTRIBUTE_DOMAIN_INTERNATIONAL,
-				REFSET_MRCM_ATTRIBUTE_RANGE_INTERNATIONAL);
-		
 		//CMT reference sets
 		public static final String REFSET_B2I_EXAMPLE = "780716481000154104"; //for more details see: https://github.com/b2ihealthcare/snowowl/issues/368
 		public static final String REFSET_KP_CONVERGENT_MEDICAL_TERMINOLOGY = "494287621000154107"; //for more details see: https://github.com/b2ihealthcare/snowowl/issues/368
