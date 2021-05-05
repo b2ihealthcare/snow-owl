@@ -15,12 +15,12 @@
  */
 package com.b2international.snowowl.snomed.core.rest.io;
 
-import static com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests.createCodeSystem;
-import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.createVersion;
-import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getVersion;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.getComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedImportRestRequests.doImport;
 import static com.b2international.snowowl.snomed.core.rest.SnomedImportRestRequests.waitForImportJob;
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests.createCodeSystem;
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.createVersion;
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getVersion;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -66,10 +66,15 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 		importArchive(branchPath, false, Rf2ReleaseType.DELTA, fileName);
 	}
 	
-	private void importArchive(IBranchPath path, boolean createVersion, Rf2ReleaseType releaseType, final String fileName) { 
+	private void importArchive(IBranchPath path, boolean createVersion, Rf2ReleaseType releaseType, final String fileName) {
+		importArchive(path, false, createVersion, releaseType, fileName);
+	}
+	
+	private void importArchive(IBranchPath path, boolean skipMissingComponents, boolean createVersion, Rf2ReleaseType releaseType, final String fileName) {
 		final Map<String, ?> importConfiguration = ImmutableMap.<String, Object>builder()
 				.put("type", releaseType.name())
 				.put("createVersions", createVersion)
+				.put("skipMissingComponents", skipMissingComponents)
 				.build();
 		importArchive(path, importConfiguration, fileName);
 	}
@@ -120,6 +125,36 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 		assertArrayEquals(new long[] { Long.valueOf(Concepts.ROOT_CONCEPT) }, concept.getStatedParentIds());
 		assertArrayEquals(new long[] { IComponent.ROOT_IDL }, concept.getStatedAncestorIds());
 		
+	}
+	
+	@Test
+	public void import29MissingComponentsWithSkip() {		
+		getComponent(branchPath, SnomedComponentType.CONCEPT, "63961392103").statusCode(404);
+		importArchive(branchPath, true, false, Rf2ReleaseType.DELTA, "SnomedCT_Release_INT_20150131_missing_component.zip");
+		
+		//Assert that concept is imported while member with missing reference is skipped when skipMissingComponents is turned on
+		getComponent(branchPath, SnomedComponentType.CONCEPT, "63961392103").statusCode(200);
+		getComponent(branchPath, SnomedComponentType.MEMBER, "5312ec36-8baf-4768-8c4b-2d6f91094d4b").statusCode(404);
+	}
+	
+	@Test
+	public void import30MissingComponentsWithoutSkip() {
+		final String importFileName = "SnomedCT_Release_INT_20150131_missing_component.zip";
+		
+		//Assert that import fails when skipMissingComponents is turned on
+		final Map<String, ?> importConfiguration = ImmutableMap.<String, Object>builder()
+				.put("type", Rf2ReleaseType.DELTA.name())
+				.put("createVersions", false)
+				.put("skipMissingComponents", false)
+				.build();
+		
+		final String importId = lastPathSegment(doImport(branchPath, importConfiguration, getClass(), importFileName).statusCode(201)
+				.extract().header("Location"));
+		waitForImportJob(branchPath, importId).statusCode(200)
+			.body("status", equalTo(RemoteJobState.FINISHED.name()));
+			//.extract().as(SnomedRf2Import.class);
+		getComponent(branchPath, SnomedComponentType.CONCEPT, "63961392103").statusCode(404);
+		getComponent(branchPath, SnomedComponentType.MEMBER, "5312ec36-8baf-4768-8c4b-2d6f91094d4b").statusCode(404);
 	}
 
 	@Test
