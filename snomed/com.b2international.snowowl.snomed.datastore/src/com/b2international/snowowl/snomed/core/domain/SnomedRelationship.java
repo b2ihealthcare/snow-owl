@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.core.domain;
 
 import java.util.Set;
+import java.util.function.Function;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
@@ -30,6 +31,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationsh
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -66,7 +68,7 @@ import com.google.common.collect.ImmutableSet;
 public final class SnomedRelationship extends SnomedCoreComponent {
 
 	private static final long serialVersionUID = -1131388567716570593L;
-	
+
 	/**
 	 * Enumerates expandable property keys.
 	 * 
@@ -80,36 +82,45 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 		public static final String MODIFIER = "modifier";
 	}
 
- /*
-	* @since 6.16 
-	*/
- public static final class Fields extends SnomedCoreComponent.Fields {
+	/**
+	 * @since 6.16 
+	 */
+	public static final class Fields extends SnomedCoreComponent.Fields {
 
-	 public static final String SOURCE_ID = SnomedRf2Headers.FIELD_SOURCE_ID;
-	 public static final String DESTINATION_ID = SnomedRf2Headers.FIELD_DESTINATION_ID;
-	 public static final String GROUP = "group";
-	 public static final String UNION_GROUP = "unionGroup";
-	 public static final String CHARACTERISTIC_TYPE_ID = SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID;
-	 public static final String TYPE_ID = SnomedRf2Headers.FIELD_TYPE_ID;
-	 public static final String MODIFIER_ID = SnomedRf2Headers.FIELD_MODIFIER_ID;
-	 
-	 public static final Set<String> ALL = ImmutableSet.of(
-			 // RF2 fields
-			 ID,
-			 ACTIVE,
-			 EFFECTIVE_TIME,
-			 MODULE_ID,
-			 SOURCE_ID,
-			 DESTINATION_ID,
-			 GROUP,
-			 UNION_GROUP,
-			 TYPE_ID,
-			 CHARACTERISTIC_TYPE_ID,
-			 MODIFIER_ID,
-			 // additional fields
-			 RELEASED);
+		public static final String SOURCE_ID = SnomedRf2Headers.FIELD_SOURCE_ID;
+		public static final String DESTINATION_ID = SnomedRf2Headers.FIELD_DESTINATION_ID;
+		public static final String VALUE = SnomedRf2Headers.FIELD_VALUE;
+		public static final String GROUP = "group";
+		public static final String UNION_GROUP = "unionGroup";
+		public static final String CHARACTERISTIC_TYPE_ID = SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID;
+		public static final String TYPE_ID = SnomedRf2Headers.FIELD_TYPE_ID;
+		public static final String MODIFIER_ID = SnomedRf2Headers.FIELD_MODIFIER_ID;
 
- }
+		public static final Set<String> ALL = ImmutableSet.of(
+			// RF2 fields
+			ID,
+			ACTIVE,
+			EFFECTIVE_TIME,
+			MODULE_ID,
+			SOURCE_ID,
+			DESTINATION_ID,
+			VALUE,
+			GROUP,
+			UNION_GROUP,
+			TYPE_ID,
+			CHARACTERISTIC_TYPE_ID,
+			MODIFIER_ID,
+			// additional fields
+			RELEASED);
+	}
+	
+	private static <T, U> U ifNotNull(final T value, final Function<T, U> mapper) {
+		if (value != null) {
+			return mapper.apply(value);
+		} else {
+			return null;
+		}
+	}
 	
 	private boolean destinationNegated;
 	private Integer group;
@@ -117,8 +128,9 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 	private SnomedConcept characteristicType;
 	private SnomedConcept modifier;
 	private SnomedConcept source;
-	private SnomedConcept destination;
 	private SnomedConcept type;
+	private SnomedConcept destination;
+	private RelationshipValue value;
 
 	public SnomedRelationship() {
 	}
@@ -132,9 +144,12 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 		return SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER;
 	}
 
+	/**
+	 * @return
+	 */
 	@JsonProperty
 	public String getSourceId() {
-		return getSource() == null ? null : getSource().getId();
+		return ifNotNull(getSource(), SnomedConcept::getId);
 	}
 	
 	/**
@@ -146,9 +161,12 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 		return source;
 	}
 
+	/**
+	 * @return
+	 */
 	@JsonProperty
 	public String getDestinationId() {
-		return getDestination() == null ? null : getDestination().getId();
+		return ifNotNull(getDestination(), SnomedConcept::getId);
 	}
 
 	/**
@@ -158,6 +176,24 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 	 */
 	public SnomedConcept getDestination() {
 		return destination;
+	}
+	
+	/**
+	 * Returns the value associated with this relationship.
+	 * 
+	 * @return
+	 */
+	@JsonIgnore
+	public RelationshipValue getValueAsObject() {
+		return value;
+	}
+
+	/**
+	 * @return
+	 */
+	// Literal form is used when transferring data over JSON
+	public String getValue() {
+		return ifNotNull(getValueAsObject(), RelationshipValue::toLiteral);
 	}
 
 	/**
@@ -176,7 +212,7 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 	 */
 	@JsonProperty
 	public String getTypeId() {
-		return getType() == null ? null : getType().getId();
+		return ifNotNull(getType(), SnomedConcept::getId);
 	}
 
 	/**
@@ -219,7 +255,7 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 	 * @return the characteristicType ID of the relationship
 	 */
 	public String getCharacteristicTypeId() {
-		return getCharacteristicType() == null ? null : getCharacteristicType().getId();
+		return ifNotNull(getCharacteristicType(), SnomedConcept::getId);
 	}
 	
 	/**
@@ -236,44 +272,86 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 	 * @return the modifierId of the relationship.
 	 */
 	public String getModifierId() {
-		return getModifier() == null ? null : getModifier().getId();
+		return ifNotNull(getModifier(), SnomedConcept::getId);
 	}
 
+	/**
+	 * @param source
+	 */
 	public void setSource(SnomedConcept source) {
 		this.source = source;
 	}
-	
+
+	/**
+	 * @param sourceId
+	 */
 	@JsonIgnore
 	public void setSourceId(String sourceId) {
 		setSource(new SnomedConcept(sourceId));
 	}
 
+	/**
+	 * @param destination
+	 */
 	public void setDestination(SnomedConcept destination) {
 		this.destination = destination;
 	}
-	
+
+	/**
+	 * @param destinationId
+	 */
 	@JsonIgnore
 	public void setDestinationId(String destinationId) {
 		setDestination(new SnomedConcept(destinationId));
 	}
-	
+
+	/**
+	 * @param value
+	 */
+	@JsonIgnore
+	public void setValueAsObject(final RelationshipValue value) {
+		this.value = value;
+	}
+
+	/**
+	 * @param literal
+	 */
+	public void setValue(final String literal) {
+		setValueAsObject(RelationshipValue.fromLiteral(literal));
+	}
+
+	/**
+	 * @param type
+	 */
 	public void setType(SnomedConcept type) {
 		this.type = type;
 	}
-	
+
+	/**
+	 * @param typeId
+	 */
 	@JsonIgnore
 	public void setTypeId(String typeId) {
 		setType(new SnomedConcept(typeId));
 	}
-	
+
+	/**
+	 * @param destinationNegated
+	 */
 	public void setDestinationNegated(final boolean destinationNegated) {
 		this.destinationNegated = destinationNegated;
 	}
 
+	/**
+	 * @param group
+	 */
 	public void setGroup(final Integer group) {
 		this.group = group;
 	}
 
+	/**
+	 * @param unionGroup
+	 */
 	public void setUnionGroup(final Integer unionGroup) {
 		this.unionGroup = unionGroup;
 	}
@@ -305,68 +383,60 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 	public void setModifierId(final String modifierId) {
 		setModifier(new SnomedConcept(modifierId));
 	}
-
+	
 	@Override
 	public Request<TransactionContext, String> toCreateRequest(String containerId) {
 		return SnomedRequests.prepareNewRelationship()
-				.setActive(isActive())
-				.setCharacteristicTypeId(getCharacteristicTypeId())
-				.setDestinationId(getDestinationId())
-				.setDestinationNegated(isDestinationNegated())
-				.setGroup(getGroup())
-				.setId(getId())
-				.setModifierId(getModifierId())
-				.setModuleId(getModuleId())
-				.setSourceId(containerId)
-				.setTypeId(getTypeId())
-				.setUnionGroup(getUnionGroup())
-				.build();
+			.setActive(isActive())
+			.setCharacteristicTypeId(getCharacteristicTypeId())
+			.setDestinationId(getDestinationId())
+			.setDestinationNegated(isDestinationNegated())
+			.setGroup(getGroup())
+			.setId(getId())
+			.setModifierId(getModifierId())
+			.setModuleId(getModuleId())
+			.setSourceId(containerId)
+			.setTypeId(getTypeId())
+			.setUnionGroup(getUnionGroup())
+			.setValue(getValueAsObject())
+			.build();
 	}
 	
 	@Override
 	public Request<TransactionContext, Boolean> toUpdateRequest() {
 		return SnomedRequests.prepareUpdateRelationship(getId())
-				.setActive(isActive())
-				.setGroup(getGroup())
-				.setCharacteristicTypeId(getCharacteristicTypeId())
-				.setModifierId(getModifierId())
-				.setModuleId(getModuleId())
-				.setUnionGroup(getUnionGroup())
-				.setTypeId(getTypeId())
-				.setDestinationId(getDestinationId())
-				.build();
+			.setActive(isActive())
+			.setCharacteristicTypeId(getCharacteristicTypeId())
+			.setDestinationId(getDestinationId())
+			// TODO: add setDestinationNegated(...) here?
+			.setGroup(getGroup())
+			// no setId(...) - SCTID should not be updated
+			.setModifierId(getModifierId())
+			.setModuleId(getModuleId())
+			// no setSourceId(...) - source concept SCTID should not be updated
+			.setTypeId(getTypeId())
+			.setUnionGroup(getUnionGroup())
+			.setValue(getValueAsObject())
+			.build();
 	}
 	
 	@Override
 	public String toString() {
-		final StringBuilder builder = new StringBuilder();
-		builder.append("SnomedRelationship [getId()=");
-		builder.append(getId());
-		builder.append(", isReleased()=");
-		builder.append(isReleased());
-		builder.append(", isActive()=");
-		builder.append(isActive());
-		builder.append(", getEffectiveTime()=");
-		builder.append(getEffectiveTime());
-		builder.append(", getModuleId()=");
-		builder.append(getModuleId());
-		builder.append(", getSourceId()=");
-		builder.append(getSourceId());
-		builder.append(", getDestinationId()=");
-		builder.append(getDestinationId());
-		builder.append(", isDestinationNegated()=");
-		builder.append(isDestinationNegated());
-		builder.append(", getTypeId()=");
-		builder.append(getTypeId());
-		builder.append(", getGroup()=");
-		builder.append(getGroup());
-		builder.append(", getUnionGroup()=");
-		builder.append(getUnionGroup());
-		builder.append(", getCharacteristicType()=");
-		builder.append(getCharacteristicType());
-		builder.append(", getModifier()=");
-		builder.append(getModifier());
-		builder.append("]");
-		return builder.toString();
+		return MoreObjects.toStringHelper(this)
+			.add("id", getId())
+			.add("effectiveTime", getEffectiveTime())
+			.add("released", isReleased())
+			.add("active", isActive())
+			.add("moduleId", getModuleId())
+			.add("sourceId", getSourceId())
+			.add("destinationId", getDestinationId())
+			.add("destinationNegated", isDestinationNegated())
+			.add("value", getValue())
+			.add("typeId", getTypeId())
+			.add("group", getGroup())
+			.add("unionGroup", getUnionGroup())
+			.add("characteristicTypeId", getCharacteristicTypeId())
+			.add("modifierId", getModifierId())
+			.toString();
 	}
 }
