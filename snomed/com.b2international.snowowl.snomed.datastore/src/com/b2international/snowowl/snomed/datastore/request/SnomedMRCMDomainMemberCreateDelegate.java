@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ final class SnomedMRCMDomainMemberCreateDelegate extends SnomedRefSetMemberCreat
 		final SnomedRefSetMemberIndexEntry member = SnomedComponents.newMRCMDomainReferenceSetMember()
 				.withId(getId())
 				.withActive(isActive())
-				.withModule(getModuleId())
+				.withModuleId(getModuleId())
 				.withRefSet(getReferenceSetId())
 				.withReferencedComponent(getReferencedComponentId())
 				.withDomainConstraint(getProperty(SnomedRf2Headers.FIELD_MRCM_DOMAIN_CONSTRAINT))

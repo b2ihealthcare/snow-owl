@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,7 +63,7 @@ final class SnomedConcreteDomainMemberCreateDelegate extends SnomedRefSetMemberC
 				.withActive(isActive())
 				.withCharacteristicTypeId(getComponentId(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID))
 				.withGroup(getProperty(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP, Integer.class))
-				.withModule(getModuleId())
+				.withModuleId(getModuleId())
 				.withReferencedComponent(getReferencedComponentId())
 				.withRefSet(getReferenceSetId())
 				.withSerializedValue(getProperty(SnomedRf2Headers.FIELD_VALUE))
