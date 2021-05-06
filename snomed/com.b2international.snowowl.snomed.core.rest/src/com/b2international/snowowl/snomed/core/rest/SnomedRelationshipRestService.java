@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
+import com.b2international.snowowl.snomed.core.domain.RelationshipValue;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedRelationshipRestInput;
@@ -88,6 +89,8 @@ public class SnomedRelationshipRestService extends AbstractSnomedRestService {
 					.filterByDestination(params.getDestination())
 					.filterByGroup(params.getGroup())
 					.filterByUnionGroup(params.getUnionGroup())
+					.filterByValueType(params.getValueType())
+					.filterByValue(params.getOperator(), RelationshipValue.fromLiteral(params.getValue()))
 					.setLimit(params.getLimit())
 					.setSearchAfter(params.getSearchAfter())
 					.setExpand(params.getExpand())

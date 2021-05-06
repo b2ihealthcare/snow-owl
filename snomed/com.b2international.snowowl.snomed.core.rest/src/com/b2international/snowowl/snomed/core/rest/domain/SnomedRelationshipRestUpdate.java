@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.core.rest.domain;
 
+import com.b2international.snowowl.snomed.core.domain.RelationshipValue;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipUpdateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
@@ -23,73 +24,83 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
  */
 public class SnomedRelationshipRestUpdate extends AbstractSnomedComponentRestUpdate {
 
+	private String typeId;
+	private String destinationId;
+	private String value;
 	private Integer group;
 	private Integer unionGroup;
 	private String characteristicTypeId;
 	private String modifierId;
-	private String destinationId;
-	private String typeId;
+
+	public String getTypeId() {
+		return typeId;
+	}
+
+	public String getDestinationId() {
+		return destinationId;
+	}
+
+	public String getValue() {
+		return value;
+	}
 
 	public Integer getGroup() {
 		return group;
-	}
-
-	public void setGroup(final Integer group) {
-		this.group = group;
 	}
 
 	public Integer getUnionGroup() {
 		return unionGroup;
 	}
 
-	public void setUnionGroup(final Integer unionGroup) {
-		this.unionGroup = unionGroup;
-	}
-
 	public String getCharacteristicTypeId() {
 		return characteristicTypeId;
-	}
-
-	public void setCharacteristicTypeId(final String characteristicTypeId) {
-		this.characteristicTypeId = characteristicTypeId;
 	}
 
 	public String getModifierId() {
 		return modifierId;
 	}
 
-	public void setModifierId(final String modifierId) {
-		this.modifierId = modifierId;
-	}
-	
-	public String getDestinationId() {
-		return destinationId;
-	}
-	
-	public void setDestinationId(String destinationId) {
-		this.destinationId = destinationId;
-	}
-	
-	public String getTypeId() {
-		return typeId;
-	}
-	
-	public void setTypeId(String typeId) {
+	public void setTypeId(final String typeId) {
 		this.typeId = typeId;
 	}
 
-	public SnomedRelationshipUpdateRequestBuilder toRequestBuilder(String relationshipId) {
-		return SnomedRequests
-				.prepareUpdateRelationship(relationshipId)
-				.setActive(isActive())
-				.setEffectiveTime(getEffectiveTime())
-				.setModuleId(getModuleId())
-				.setCharacteristicTypeId(getCharacteristicTypeId())
-				.setGroup(getGroup())
-				.setUnionGroup(getUnionGroup())
-				.setModifierId(getModifierId())
-				.setTypeId(getTypeId())
-				.setDestinationId(getDestinationId());
+	public void setDestinationId(final String destinationId) {
+		this.destinationId = destinationId;
+	}
+
+	public void setValue(final String value) {
+		this.value = value;
+	}
+
+	public void setGroup(final Integer group) {
+		this.group = group;
+	}
+
+	public void setUnionGroup(final Integer unionGroup) {
+		this.unionGroup = unionGroup;
+	}
+
+	public void setCharacteristicTypeId(final String characteristicTypeId) {
+		this.characteristicTypeId = characteristicTypeId;
+	}
+
+	public void setModifierId(final String modifierId) {
+		this.modifierId = modifierId;
+	}
+
+	public SnomedRelationshipUpdateRequestBuilder toRequestBuilder(final String relationshipId) {
+		return SnomedRequests.prepareUpdateRelationship(relationshipId)
+			.setActive(isActive())
+			.setEffectiveTime(getEffectiveTime())
+			.setModuleId(getModuleId())
+			// .setSource(...) is not called
+			.setTypeId(typeId)
+			.setDestinationId(destinationId)
+			.setValue(RelationshipValue.fromLiteral(value))
+			.setGroup(group)
+			.setUnionGroup(unionGroup)
+			.setCharacteristicTypeId(characteristicTypeId)
+			.setModifierId(modifierId);
 	}
 
 }
