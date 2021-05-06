@@ -989,12 +989,6 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		assertEquals(upgradeVersion, upgradeCodeSystem.getExtensionOf());
 		
 		getComponent(upgradeCodeSystem.getCodeSystemURI().toString(), SnomedComponentType.CONCEPT, newConceptId).statusCode(200);
-		
-		Boolean success = CodeSystemRequests.prepareComplete(upgradeCodeSystem.getShortName())
-				.build(upgradeCodeSystem.getRepositoryId())
-				.execute(getBus())
-				.getSync(1, TimeUnit.MINUTES);
-		assertTrue(success);
 	}
 	
 	@Test
@@ -1025,13 +1019,6 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		
 		getComponent(upgradeCodeSystem.getCodeSystemURI().toString(), SnomedComponentType.CONCEPT, newConceptId).statusCode(200);
 		getComponent(upgradeCodeSystem.getCodeSystemURI().toString(), SnomedComponentType.CONCEPT, newConceptId2).statusCode(200);
-
-		Boolean success = CodeSystemRequests.prepareComplete(upgradeCodeSystem.getShortName())
-				.build(upgradeCodeSystem.getRepositoryId())
-				.execute(getBus())
-				.getSync(1, TimeUnit.MINUTES);
-		assertTrue(success);
-		
 	}
 	
 	@Test
@@ -1063,12 +1050,6 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		
 		getComponent(upgradeCodeSystem.getCodeSystemURI().toString(), SnomedComponentType.CONCEPT, newConceptId).statusCode(200);
 		getComponent(upgradeCodeSystem.getCodeSystemURI().toString(), SnomedComponentType.CONCEPT, newConceptId2).statusCode(404);
-		
-		Boolean success = CodeSystemRequests.prepareComplete(upgradeCodeSystem.getShortName())
-				.build(upgradeCodeSystem.getRepositoryId())
-				.execute(getBus())
-				.getSync(1, TimeUnit.MINUTES);
-		assertTrue(success);
 	}
 	
 	@Test
@@ -1104,12 +1085,6 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		getComponent(upgradeCodeSystem.getCodeSystemURI().toString(), SnomedComponentType.CONCEPT, newConceptId).statusCode(200);
 		getComponent(upgradeCodeSystem.getCodeSystemURI().toString(), SnomedComponentType.CONCEPT, newConceptId2).statusCode(200);
 		getComponent(upgradeCodeSystem.getCodeSystemURI().toString(), SnomedComponentType.CONCEPT, newConceptId3).statusCode(404);
-		
-		Boolean success = CodeSystemRequests.prepareComplete(upgradeCodeSystem.getShortName())
-				.build(upgradeCodeSystem.getRepositoryId())
-				.execute(getBus())
-				.getSync(1, TimeUnit.MINUTES);
-		assertTrue(success);
 	}
 	
 	private String getFirstRelationshipId(SnomedConcept concept, String characteristicTypeId) {
