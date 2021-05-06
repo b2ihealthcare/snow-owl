@@ -117,7 +117,7 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 		final SnomedConceptDocument.Builder updatedConcept = SnomedConceptDocument.builder(concept);
 
 		boolean changed = false;
-		changed |= updateModule(context, concept, updatedConcept);
+		changed |= updateModuleId(context, concept, updatedConcept);
 		changed |= updateDefinitionStatus(context, concept, updatedConcept);
 		changed |= updateEffectiveTime(concept, updatedConcept);
 		

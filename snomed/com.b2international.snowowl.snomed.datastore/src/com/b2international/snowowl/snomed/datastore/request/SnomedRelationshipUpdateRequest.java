@@ -99,7 +99,7 @@ public final class SnomedRelationshipUpdateRequest extends SnomedComponentUpdate
 
 		boolean changed = false;
 		changed |= updateStatus(context, relationship, updatedRelationship);
-		changed |= updateModule(context, relationship, updatedRelationship);
+		changed |= updateModuleId(context, relationship, updatedRelationship);
 		changed |= updateTypeId(context, relationship, updatedRelationship);
 		changed |= updateDestinationId(context, relationship, updatedRelationship);
 		changed |= updateValue(context, relationship, updatedRelationship);

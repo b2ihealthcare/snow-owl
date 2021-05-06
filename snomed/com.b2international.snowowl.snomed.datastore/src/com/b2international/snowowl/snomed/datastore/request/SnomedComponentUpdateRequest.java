@@ -76,7 +76,7 @@ public abstract class SnomedComponentUpdateRequest extends SnomedComponentUpdate
 		return effectiveTime;
 	}
 	
-	protected boolean updateModule(final TransactionContext context, final SnomedComponentDocument original, final SnomedComponentDocument.Builder<?, ?> component) {
+	protected boolean updateModuleId(final TransactionContext context, final SnomedComponentDocument original, final SnomedComponentDocument.Builder<?, ?> component) {
 		return updateProperty(moduleId, original::getModuleId, moduleId -> {
 			component.moduleId(context.lookup(moduleId, SnomedConceptDocument.class).getId());
 		});
