@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,101 +17,56 @@ package com.b2international.snowowl.snomed.core.store;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.core.domain.RelationshipValue;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 
 /**
  * @since 4.5
  */
-public final class SnomedRelationshipBuilder extends SnomedComponentBuilder<SnomedRelationshipBuilder, SnomedRelationshipIndexEntry.Builder, SnomedRelationshipIndexEntry> {
+public final class SnomedRelationshipBuilder 
+	extends SnomedComponentBuilder<SnomedRelationshipBuilder, SnomedRelationshipIndexEntry.Builder, SnomedRelationshipIndexEntry> {
 
-	private String characteristicTypeId = Concepts.STATED_RELATIONSHIP;
-	private String modifierId = Concepts.EXISTENTIAL_RESTRICTION_MODIFIER;
-	private String type;
-	private String source;
-	private String destination;
+	private String sourceId;
+	private String typeId;
+	private String destinationId;
+	private boolean destinationNegated = false;
+	private RelationshipValue value;
 	private int group = 0;
 	private int unionGroup = 0;
-	private boolean destinationNegated = false;
+	private String characteristicTypeId = Concepts.STATED_RELATIONSHIP;
+	private String modifierId = Concepts.EXISTENTIAL_RESTRICTION_MODIFIER;
 
 	/**
-	 * Specifies the characteristic type of the new SNOMED CT Relationship.
+	 * Specifies the source of the SNOMED CT Relationship.
 	 * 
-	 * @param characteristicTypeId
-	 *            - the characteristic type to use
+	 * @param sourceId - the source concept ID
 	 * @return
 	 */
-	public final SnomedRelationshipBuilder withCharacteristicTypeId(String characteristicTypeId) {
-		this.characteristicTypeId = characteristicTypeId;
+	public SnomedRelationshipBuilder withSourceId(final String sourceId) {
+		this.sourceId = sourceId;
 		return getSelf();
-	}
-
-	/**
-	 * Specifies the modifier of the new SNOMED CT Relationship.
-	 * 
-	 * @param modifierId
-	 *            - the modifier to use
-	 * @return
-	 */
-	public final SnomedRelationshipBuilder withModifierId(String modifierId) {
-		this.modifierId = modifierId;
-		return getSelf();
-	}
-
-	/**
-	 * Specifies that the new SNOMED CT Relationship will be an IS A relationship.
-	 * 
-	 * @return
-	 */
-	public final SnomedRelationshipBuilder isa() {
-		return withType(Concepts.IS_A);
 	}
 
 	/**
 	 * Specifies the type of the new SNOMED CT Relationship.
 	 * 
-	 * @param type
-	 *            - the type concept's SNOMED CT identifier
+	 * @param typeId - the type concept ID
 	 * @return
 	 */
-	public final SnomedRelationshipBuilder withType(String type) {
-		this.type = type;
+	public SnomedRelationshipBuilder withTypeId(final String typeId) {
+		this.typeId = typeId;
 		return getSelf();
 	}
 
 	/**
 	 * Specifies the destination of the new SNOMED CT Relationship.
 	 * 
-	 * @param destination
-	 *            - the destination to point this relationship to
+	 * @param destination - the destination concept Id
 	 * @return
 	 */
-	public final SnomedRelationshipBuilder withDestination(String destination) {
-		this.destination = destination;
-		return getSelf();
-	}
-
-	/**
-	 * Specifies the group of the new SNOMED CT Relationship.
-	 * 
-	 * @param group
-	 *            - the group number to use
-	 * @return
-	 */
-	public final SnomedRelationshipBuilder withGroup(int group) {
-		this.group = group;
-		return getSelf();
-	}
-
-	/**
-	 * Specifies the union group of the new SNOMED CT Relationship.
-	 * 
-	 * @param unionGroup
-	 *            - the union group to use
-	 * @return
-	 */
-	public final SnomedRelationshipBuilder withUnionGroup(int unionGroup) {
-		this.unionGroup = unionGroup;
+	public SnomedRelationshipBuilder withDestinationId(final String destinationId) {
+		this.destinationId = destinationId;
 		return getSelf();
 	}
 
@@ -121,19 +76,63 @@ public final class SnomedRelationshipBuilder extends SnomedComponentBuilder<Snom
 	 * @param destinationNegated
 	 * @return
 	 */
-	public final SnomedRelationshipBuilder withDestinationNegated(boolean destinationNegated) {
+	public SnomedRelationshipBuilder withDestinationNegated(final boolean destinationNegated) {
 		this.destinationNegated = destinationNegated;
 		return getSelf();
 	}
 
 	/**
-	 * Specifies the source of the SNOMED CT Relationship.
+	 * Specifies the relationship value for the new SNOMED CT Relationship.
 	 * 
-	 * @param source
+	 * @param value
 	 * @return
 	 */
-	public SnomedRelationshipBuilder withSource(String source) {
-		this.source = source;
+	public SnomedRelationshipBuilder withValue(final RelationshipValue value) {
+		this.value = value;
+		return getSelf();
+	}
+
+	/**
+	 * Specifies the group of the new SNOMED CT Relationship.
+	 * 
+	 * @param group - the group number to use
+	 * @return
+	 */
+	public SnomedRelationshipBuilder withGroup(final int group) {
+		this.group = group;
+		return getSelf();
+	}
+
+	/**
+	 * Specifies the union group of the new SNOMED CT Relationship.
+	 * 
+	 * @param unionGroup - the union group to use
+	 * @return
+	 */
+	public SnomedRelationshipBuilder withUnionGroup(final int unionGroup) {
+		this.unionGroup = unionGroup;
+		return getSelf();
+	}
+
+	/**
+	 * Specifies the characteristic type of the new SNOMED CT Relationship.
+	 * 
+	 * @param characteristicTypeId - the characteristic type to use
+	 * @return
+	 */
+	public SnomedRelationshipBuilder withCharacteristicTypeId(final String characteristicTypeId) {
+		this.characteristicTypeId = characteristicTypeId;
+		return getSelf();
+	}
+
+	/**
+	 * Specifies the modifier of the new SNOMED CT Relationship.
+	 * 
+	 * @param modifierId - the modifier to use
+	 * @return
+	 */
+	public SnomedRelationshipBuilder withModifierId(final String modifierId) {
+		this.modifierId = modifierId;
 		return getSelf();
 	}
 
@@ -141,20 +140,29 @@ public final class SnomedRelationshipBuilder extends SnomedComponentBuilder<Snom
 	protected SnomedRelationshipIndexEntry.Builder create() {
 		return SnomedRelationshipIndexEntry.builder();
 	}
-
-	@Override
-	public void init(SnomedRelationshipIndexEntry.Builder component, TransactionContext context) {
-		super.init(component, context);
-		component.characteristicTypeId(context.lookup(characteristicTypeId, SnomedConceptDocument.class).getId());
-		component.modifierId(context.lookup(modifierId, SnomedConceptDocument.class).getId());
-		component.typeId(context.lookup(type, SnomedConceptDocument.class).getId());
-		if (source != null) {
-			component.sourceId(context.lookup(source, SnomedConceptDocument.class).getId());
-		}
-		component.destinationId(context.lookup(destination, SnomedConceptDocument.class).getId());
-		component.destinationNegated(destinationNegated);
-		component.group(group);
-		component.unionGroup(unionGroup);
+	
+	private String ensureConceptExists(final String conceptId, final TransactionContext context) {
+		return context.lookup(conceptId, SnomedConceptDocument.class).getId();
 	}
 
+	@Override
+	public void init(final SnomedRelationshipIndexEntry.Builder component, final TransactionContext context) {
+		super.init(component, context);
+		
+		if (sourceId != null) { 
+			component.sourceId(ensureConceptExists(sourceId, context)); 
+		}
+		
+		if (destinationId != null) { 
+			component.destinationId(ensureConceptExists(destinationId, context)); 
+		}
+		
+		component.typeId(ensureConceptExists(typeId, context));
+		component.destinationNegated(destinationNegated);
+		component.value(value);
+		component.group(group);
+		component.unionGroup(unionGroup);
+		component.characteristicTypeId(ensureConceptExists(characteristicTypeId, context));
+		component.modifierId(ensureConceptExists(modifierId, context));
+	}
 }
