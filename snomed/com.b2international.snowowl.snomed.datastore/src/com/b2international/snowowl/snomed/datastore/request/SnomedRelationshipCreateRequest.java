@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,34 +27,36 @@ import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.snomed.core.domain.ConstantIdStrategy;
+import com.b2international.snowowl.snomed.core.domain.RelationshipValue;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSet.Builder;
 
 /**
  * @since 4.0
  */
 public final class SnomedRelationshipCreateRequest extends BaseSnomedComponentCreateRequest {
 
+	// Not @NotEmpty, it can be populated after the request is validated
 	private String sourceId;
-
-	@NotEmpty
-	private String destinationId;
 
 	@NotEmpty
 	private String typeId;
 
+	// Not @NotEmpty, it will be null if a value is set
+	private String destinationId;
+
 	private boolean destinationNegated;
 
-	@Min(0)
-	@Max(Byte.MAX_VALUE)
-	private int group;
+	// Not @NotNull, it will be null if a destination ID is set
+	private RelationshipValue value; 
 
-	@Min(0)
-	@Max(Byte.MAX_VALUE)
-	private int unionGroup;
+	@NotNull @Min(0) @Max(Byte.MAX_VALUE)
+	private Integer group;
+
+	@NotNull @Min(0) @Max(Byte.MAX_VALUE)
+	private Integer unionGroup;
 
 	@NotNull
 	private String characteristicTypeId;
@@ -63,41 +65,76 @@ public final class SnomedRelationshipCreateRequest extends BaseSnomedComponentCr
 	private String modifierId;
 
 	SnomedRelationshipCreateRequest() {}
-	
+
+	/**
+	 * @return
+	 */
 	public String getSourceId() {
 		return sourceId;
 	}
 
-	public String getDestinationId() {
-		return destinationId;
-	}
-
-	public boolean isDestinationNegated() {
-		return destinationNegated;
-	}
-
+	/**
+	 * @return
+	 */
 	public String getTypeId() {
 		return typeId;
 	}
 
-	public int getGroup() {
+	/**
+	 * @return
+	 */
+	public String getDestinationId() {
+		return destinationId;
+	}
+
+	/**
+	 * @return
+	 */
+	public boolean isDestinationNegated() {
+		return destinationNegated;
+	}
+
+	/**
+	 * @return
+	 */
+	public RelationshipValue getValue() {
+		return value;
+	}
+
+	/**
+	 * @return
+	 */
+	public Integer getGroup() {
 		return group;
 	}
 
-	public int getUnionGroup() {
+	/**
+	 * @return
+	 */
+	public Integer getUnionGroup() {
 		return unionGroup;
 	}
 
+	/**
+	 * @return
+	 */
 	public String getCharacteristicTypeId() {
 		return characteristicTypeId;
 	}
 
+	/**
+	 * @return
+	 */
 	public String getModifierId() {
 		return modifierId;
 	}
-	
+
 	void setSourceId(final String sourceId) {
 		this.sourceId = sourceId;
+	}
+
+	void setTypeId(final String typeId) {
+		this.typeId = typeId;
 	}
 
 	void setDestinationId(final String destinationId) {
@@ -108,15 +145,15 @@ public final class SnomedRelationshipCreateRequest extends BaseSnomedComponentCr
 		this.destinationNegated = destinationNegated;
 	}
 
-	void setTypeId(final String typeId) {
-		this.typeId = typeId;
+	void setValue(final RelationshipValue value) {
+		this.value = value;
 	}
 
-	void setGroup(final int group) {
+	void setGroup(final Integer group) {
 		this.group = group;
 	}
 
-	void setUnionGroup(final int unionGroup) {
+	void setUnionGroup(final Integer unionGroup) {
 		this.unionGroup = unionGroup;
 	}
 
@@ -124,55 +161,61 @@ public final class SnomedRelationshipCreateRequest extends BaseSnomedComponentCr
 		this.characteristicTypeId = characteristicTypeId;
 	}
 
-	void setModifier(final String modifierId) {
+	void setModifierId(final String modifierId) {
 		this.modifierId = modifierId;
 	}
-	
+
 	@Override
-	public Set<String> getRequiredComponentIds(TransactionContext context) {
-		Builder<String> result = ImmutableSet.<String>builder()
-				.add(getModifierId())
-				.add(getCharacteristicTypeId())
-				.add(getTypeId())
-				.add(getDestinationId());
-		if (getModuleId() != null) {
-			result.add(getModuleId());
-		}
-		if (getSourceId() != null) {
-			result.add(getSourceId());
-		}
+	public Set<String> getRequiredComponentIds(final TransactionContext context) {
+		final ImmutableSet.Builder<String> result = ImmutableSet.builder();
+		result.add(getModifierId());
+		result.add(getCharacteristicTypeId());
+		result.add(getTypeId());
+
+		if (getDestinationId() != null) { result.add(getDestinationId()); }
+		if (getModuleId() != null) { result.add(getModuleId()); }
+		if (getSourceId() != null) { result.add(getSourceId()); }
+
 		return result.build();
 	}
-	
+
 	@Override
-	public String execute(TransactionContext context) {
+	public String execute(final TransactionContext context) {
 		if (Strings.isNullOrEmpty(getSourceId())) {
-			throw new BadRequestException("'sourceId' may not be empty (was '%s')", getSourceId());
+			throw new BadRequestException("'sourceId' may not be empty");
 		}
-		
+
+		if (Strings.isNullOrEmpty(getDestinationId()) && getValue() == null) {
+			throw new BadRequestException("'destinationId' or 'value' should be specified");
+		}
+
+		if (!Strings.isNullOrEmpty(getDestinationId()) && getValue() != null) {
+			throw new BadRequestException("'destinationId' and 'value' can not be set for the same relationship");
+		}
+
 		try {
-			
+
 			final String relationshipId = ((ConstantIdStrategy) getIdGenerationStrategy()).getId();
 			final SnomedRelationshipIndexEntry relationship = SnomedComponents.newRelationship()
-					.withActive(isActive())
-					.withId(relationshipId)
-					.withModule(getModuleId())
-					.withSource(getSourceId())
-					.withDestination(getDestinationId())
-					.withType(getTypeId())
-					.withGroup(getGroup())
-					.withUnionGroup(getUnionGroup())
-					.withCharacteristicTypeId(getCharacteristicTypeId())
-					.withModifierId(getModifierId())
-					.withDestinationNegated(isDestinationNegated())
-					.build(context);
-			
+				.withId(relationshipId)
+				.withActive(isActive())
+				.withModuleId(getModuleId())
+				.withSourceId(getSourceId())
+				.withTypeId(getTypeId())
+				.withDestinationId(getDestinationId())
+				.withDestinationNegated(isDestinationNegated())
+				.withValue(getValue())
+				.withGroup(getGroup())
+				.withUnionGroup(getUnionGroup())
+				.withCharacteristicTypeId(getCharacteristicTypeId())
+				.withModifierId(getModifierId())
+				.build(context);
+
 			convertMembers(context, relationshipId);
 			context.add(relationship);
-			
 			return relationship.getId();
-			
-		} catch (ComponentNotFoundException e) {
+
+		} catch (final ComponentNotFoundException e) {
 			throw e.toBadRequestException();
 		}
 	}
