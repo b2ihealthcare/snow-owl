@@ -43,6 +43,7 @@ import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
+import com.b2international.snowowl.snomed.core.domain.RelationshipValue;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.refset.DataType;
@@ -238,6 +239,49 @@ public abstract class SnomedRestFixtures {
 		);
 	}
 
+	public static String createNewConcreteValue(IBranchPath concreteValuePath) {
+		return createNewConcreteValue(concreteValuePath, Concepts.ROOT_CONCEPT, Concepts.PART_OF, new RelationshipValue("Hello World!"));
+	}
+
+	public static String createNewConcreteValue(IBranchPath concreteValuePath, String sourceId, String typeId, RelationshipValue value) {
+		return createNewConcreteValue(concreteValuePath, sourceId, typeId, value, Concepts.INFERRED_RELATIONSHIP);
+	}
+
+	public static String createNewConcreteValue(IBranchPath concreteValuePath, String sourceId, String typeId, RelationshipValue value, String characteristicTypeId) {
+		return createNewConcreteValue(concreteValuePath, sourceId, typeId, value, characteristicTypeId, 0);
+	}
+
+	public static String createNewConcreteValue(IBranchPath concreteValuePath, String sourceId, String typeId, RelationshipValue value, String characteristicTypeId, int relationshipGroup) {
+		Map<?, ?> concreteValueRequestBody = Json.assign(createConcreteValueRequestBody(
+			sourceId, typeId, value, Concepts.MODULE_SCT_CORE, characteristicTypeId, relationshipGroup))
+			.with("commitComment", "Created new relationship with value");
+
+		return assertCreated(createComponent(concreteValuePath, SnomedComponentType.RELATIONSHIP, concreteValueRequestBody));
+	}
+
+	public static Json createConcreteValueRequestBody(String sourceId, String typeId, RelationshipValue value) {
+		return createConcreteValueRequestBody(sourceId, typeId, value, Concepts.INFERRED_RELATIONSHIP);
+	}
+
+	public static Json createConcreteValueRequestBody(String sourceId, String typeId, RelationshipValue value, String characteristicTypeId) {
+		return createConcreteValueRequestBody(sourceId, typeId, value, characteristicTypeId, Concepts.MODULE_SCT_CORE);
+	}
+
+	public static Json createConcreteValueRequestBody(String sourceId, String typeId, RelationshipValue value, String characteristicTypeId, String moduleId) {
+		return createConcreteValueRequestBody(sourceId, typeId, value, characteristicTypeId, moduleId, 0);
+	}
+
+	public static Json createConcreteValueRequestBody(String sourceId, String typeId, RelationshipValue value, String characteristicTypeId, String moduleId, int relationshipGroup) {
+		return Json.object(
+			"moduleId", moduleId,
+			"sourceId", sourceId,
+			"typeId", typeId,
+			"value", value.toLiteral(),
+			"characteristicTypeId", characteristicTypeId,
+			"group", relationshipGroup
+		);
+	}
+	
 	public static String createNewRefSet(IBranchPath refSetPath) {
 		return createNewRefSet(refSetPath, SnomedRefSetType.SIMPLE);
 	}
