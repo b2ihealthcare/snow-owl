@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.core.domain;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -185,5 +186,29 @@ public final class RelationshipValue {
 		if (booleanValue != null) { return booleanFn.apply(booleanValue); }
 
 		throw new IllegalStateException("All stored values were null, can not map to value");
+	}
+	
+	@Override
+	public boolean equals(final Object obj) {
+		if (obj == this) { return true; }
+		if (obj == null) { return false; }
+		if (!(obj instanceof RelationshipValue)) { return false; }
+		
+		final RelationshipValue other = (RelationshipValue) obj;
+		return map(
+			i -> i.equals(other.integerValue),
+			d -> d.equals(other.decimalValue),
+			s -> s.equals(other.stringValue),
+			b -> b.equals(other.booleanValue));
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(integerValue, decimalValue, stringValue, booleanValue);
+	}
+	
+	@Override
+	public String toString() {
+		return toLiteral();
 	}
 }
