@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,7 +59,7 @@ public abstract class SnomedRf2Headers {
 	public static final String FIELD_DESCRIPTION_FORMAT = "descriptionFormat";
 	public static final String FIELD_DESCRIPTION_LENGTH = "descriptionLength";
 	
-	// Field names introduced in concrete domain reference set files
+	// Field names introduced in concrete domain reference set and relationship concrete value files
 	public static final String FIELD_VALUE = "value";
 	
 	// Field names introduced in attribute value type reference set files
@@ -155,14 +155,14 @@ public abstract class SnomedRf2Headers {
 		FIELD_MRCM_RULE_REFSET_ID
 	);
 
-	public static final String[] CONCEPT_HEADER = new String[] { 
+	public static final String[] CONCEPT_HEADER = { 
 		FIELD_ID, 
 		FIELD_EFFECTIVE_TIME, 
 		FIELD_ACTIVE, 
 		FIELD_MODULE_ID, 
 		FIELD_DEFINITION_STATUS_ID };
 
-	public static final String[] DESCRIPTION_HEADER = new String[] { 
+	public static final String[] DESCRIPTION_HEADER = { 
 		FIELD_ID, 
 		FIELD_EFFECTIVE_TIME, 
 		FIELD_ACTIVE, 
@@ -173,7 +173,7 @@ public abstract class SnomedRf2Headers {
 		FIELD_TERM, 
 		FIELD_CASE_SIGNIFICANCE_ID };
 	
-	public static final String[] RELATIONSHIP_HEADER = new String[] { 
+	public static final String[] RELATIONSHIP_HEADER = { 
 		FIELD_ID, 
 		FIELD_EFFECTIVE_TIME, 
 		FIELD_ACTIVE, 
@@ -185,7 +185,19 @@ public abstract class SnomedRf2Headers {
 		FIELD_CHARACTERISTIC_TYPE_ID, 
 		FIELD_MODIFIER_ID };
 	
-	public static final String[] SIMPLE_TYPE_HEADER = new String[] {
+	public static final String[] CONCRETE_VALUE_HEADER = { 
+		FIELD_ID, 
+		FIELD_EFFECTIVE_TIME, 
+		FIELD_ACTIVE, 
+		FIELD_MODULE_ID, 
+		FIELD_SOURCE_ID, 
+		FIELD_VALUE, 
+		FIELD_RELATIONSHIP_GROUP, 
+		FIELD_TYPE_ID, 
+		FIELD_CHARACTERISTIC_TYPE_ID, 
+		FIELD_MODIFIER_ID };
+	
+	public static final String[] SIMPLE_TYPE_HEADER = {
 		FIELD_ID, 
 		FIELD_EFFECTIVE_TIME, 
 		FIELD_ACTIVE, 
@@ -193,7 +205,7 @@ public abstract class SnomedRf2Headers {
 		FIELD_REFSET_ID, 
 		FIELD_REFERENCED_COMPONENT_ID };
 	
-	public static final String[] QUERY_TYPE_HEADER = new String[] {
+	public static final String[] QUERY_TYPE_HEADER = {
 		FIELD_ID, 
 		FIELD_EFFECTIVE_TIME, 
 		FIELD_ACTIVE, 
@@ -202,7 +214,7 @@ public abstract class SnomedRf2Headers {
 		FIELD_REFERENCED_COMPONENT_ID,
 		FIELD_QUERY };
 	
-	public static final String[] LANGUAGE_TYPE_HEADER = new String[] { 
+	public static final String[] LANGUAGE_TYPE_HEADER = { 
 		FIELD_ID, 
 		FIELD_EFFECTIVE_TIME, 
 		FIELD_ACTIVE, 
@@ -211,7 +223,7 @@ public abstract class SnomedRf2Headers {
 		FIELD_REFERENCED_COMPONENT_ID,
 		FIELD_ACCEPTABILITY_ID };
 
-	public static final String[] DESCRIPTION_TYPE_HEADER = new String[] {
+	public static final String[] DESCRIPTION_TYPE_HEADER = {
 		FIELD_ID, 
 		FIELD_EFFECTIVE_TIME, 
 		FIELD_ACTIVE, 
@@ -221,7 +233,7 @@ public abstract class SnomedRf2Headers {
 		FIELD_DESCRIPTION_FORMAT, 
 		FIELD_DESCRIPTION_LENGTH };
 
-	public static final String[] CONCRETE_DATA_TYPE_HEADER = new String[] {
+	public static final String[] CONCRETE_DATA_TYPE_HEADER = {
 		FIELD_ID, 
 		FIELD_EFFECTIVE_TIME, 
 		FIELD_ACTIVE, 
@@ -233,7 +245,7 @@ public abstract class SnomedRf2Headers {
 		FIELD_TYPE_ID, 
 		FIELD_CHARACTERISTIC_TYPE_ID };
 
-	public static final String[] ATTRIBUTE_VALUE_TYPE_HEADER = new String[] { 
+	public static final String[] ATTRIBUTE_VALUE_TYPE_HEADER = { 
 		FIELD_ID, 
 		FIELD_EFFECTIVE_TIME, 
 		FIELD_ACTIVE, 
@@ -242,7 +254,7 @@ public abstract class SnomedRf2Headers {
 		FIELD_REFERENCED_COMPONENT_ID,
 		FIELD_VALUE_ID };
 	
-	public static final String[] ASSOCIATION_TYPE_HEADER = new String[] {
+	public static final String[] ASSOCIATION_TYPE_HEADER = {
 		FIELD_ID, 
 		FIELD_EFFECTIVE_TIME, 
 		FIELD_ACTIVE, 
@@ -251,7 +263,7 @@ public abstract class SnomedRf2Headers {
 		FIELD_REFERENCED_COMPONENT_ID,
 		FIELD_TARGET_COMPONENT_ID };
 	
-	public static final String[] SIMPLE_MAP_TYPE_HEADER = new String[] {
+	public static final String[] SIMPLE_MAP_TYPE_HEADER = {
 		FIELD_ID, 
 		FIELD_EFFECTIVE_TIME, 
 		FIELD_ACTIVE, 
@@ -260,7 +272,7 @@ public abstract class SnomedRf2Headers {
 		FIELD_REFERENCED_COMPONENT_ID,
 		FIELD_MAP_TARGET };
 	
-	public static final String[] SIMPLE_MAP_TYPE_HEADER_WITH_DESCRIPTION = new String[] {
+	public static final String[] SIMPLE_MAP_TYPE_HEADER_WITH_DESCRIPTION = {
 		FIELD_ID, 
 		FIELD_EFFECTIVE_TIME, 
 		FIELD_ACTIVE, 
@@ -270,7 +282,7 @@ public abstract class SnomedRf2Headers {
 		FIELD_MAP_TARGET,
 		FIELD_MAP_TARGET_DESCRIPTION };
 
-	public static final String[] COMPLEX_MAP_TYPE_HEADER = new String[] {
+	public static final String[] COMPLEX_MAP_TYPE_HEADER = {
 		FIELD_ID, 
 		FIELD_EFFECTIVE_TIME, 
 		FIELD_ACTIVE, 
@@ -284,7 +296,7 @@ public abstract class SnomedRf2Headers {
 		FIELD_MAP_TARGET, 
 		FIELD_CORRELATION_ID };
 	
-	public static final String[] EXTENDED_MAP_TYPE_HEADER = new String[] {
+	public static final String[] EXTENDED_MAP_TYPE_HEADER = {
 		FIELD_ID, 
 		FIELD_EFFECTIVE_TIME, 
 		FIELD_ACTIVE, 
@@ -299,7 +311,7 @@ public abstract class SnomedRf2Headers {
 		FIELD_CORRELATION_ID,
 		FIELD_MAP_CATEGORY_ID };
 	
-	public static final String[] MODULE_DEPENDENCY_HEADER = new String[] {
+	public static final String[] MODULE_DEPENDENCY_HEADER = {
 		FIELD_ID, 
 		FIELD_EFFECTIVE_TIME, 
 		FIELD_ACTIVE, 
@@ -309,7 +321,7 @@ public abstract class SnomedRf2Headers {
 		FIELD_SOURCE_EFFECTIVE_TIME,
 		FIELD_TARGET_EFFECTIVE_TIME	};
 	
-	public static final String[] OWL_EXPRESSION_HEADER = new String[] {
+	public static final String[] OWL_EXPRESSION_HEADER = {
 		FIELD_ID, 
 		FIELD_EFFECTIVE_TIME, 
 		FIELD_ACTIVE, 
@@ -318,7 +330,7 @@ public abstract class SnomedRf2Headers {
 		FIELD_REFERENCED_COMPONENT_ID,
 		FIELD_OWL_EXPRESSION };
 	
-	public static final String[] MRCM_DOMAIN_HEADER = new String[] {
+	public static final String[] MRCM_DOMAIN_HEADER = {
 		FIELD_ID, 
 		FIELD_EFFECTIVE_TIME, 
 		FIELD_ACTIVE, 
@@ -331,10 +343,9 @@ public abstract class SnomedRf2Headers {
 		FIELD_MRCM_PROXIMAL_PRIMITIVE_REFINEMENT,
 		FIELD_MRCM_DOMAIN_TEMPLATE_FOR_PRECOORDINATION,
 		FIELD_MRCM_DOMAIN_TEMPLATE_FOR_POSTCOORDINATION,
-		FIELD_MRCM_EDITORIAL_GUIDE_REFERENCE
-	};
+		FIELD_MRCM_EDITORIAL_GUIDE_REFERENCE };
 	
-	public static final String[] MRCM_ATTRIBUTE_DOMAIN_HEADER = new String[] {
+	public static final String[] MRCM_ATTRIBUTE_DOMAIN_HEADER = {
 		FIELD_ID, 
 		FIELD_EFFECTIVE_TIME, 
 		FIELD_ACTIVE, 
@@ -346,10 +357,9 @@ public abstract class SnomedRf2Headers {
 		FIELD_MRCM_ATTRIBUTE_CARDINALITY,
 		FIELD_MRCM_ATTRIBUTE_IN_GROUP_CARDINALITY,
 		FIELD_MRCM_RULE_STRENGTH_ID,
-		FIELD_MRCM_CONTENT_TYPE_ID
-	};
+		FIELD_MRCM_CONTENT_TYPE_ID };
 	
-	public static final String[] MRCM_ATTRIBUTE_RANGE_HEADER = new String[] {
+	public static final String[] MRCM_ATTRIBUTE_RANGE_HEADER = {
 		FIELD_ID, 
 		FIELD_EFFECTIVE_TIME, 
 		FIELD_ACTIVE, 
@@ -359,18 +369,16 @@ public abstract class SnomedRf2Headers {
 		FIELD_MRCM_RANGE_CONSTRAINT,
 		FIELD_MRCM_ATTRIBUTE_RULE,
 		FIELD_MRCM_RULE_STRENGTH_ID,
-		FIELD_MRCM_CONTENT_TYPE_ID
-	};
+		FIELD_MRCM_CONTENT_TYPE_ID };
 	
-	public static final String[] MRCM_MODULE_SCOPE_HEADER = new String[] {
+	public static final String[] MRCM_MODULE_SCOPE_HEADER = {
 		FIELD_ID, 
 		FIELD_EFFECTIVE_TIME, 
 		FIELD_ACTIVE, 
 		FIELD_MODULE_ID, 
 		FIELD_REFSET_ID, 
 		FIELD_REFERENCED_COMPONENT_ID,
-		FIELD_MRCM_RULE_REFSET_ID
-	};
+		FIELD_MRCM_RULE_REFSET_ID };
 	
 	public static final String[] REFSET_DESCRIPTOR_TYPE_HEADER = {
 		FIELD_ID, 
@@ -381,23 +389,22 @@ public abstract class SnomedRf2Headers {
 		FIELD_REFERENCED_COMPONENT_ID,
 		ATTRIBUTE_DESCRIPTION,
 		ATTRIBUTE_TYPE,
-		ATTRIBUTE_ORDER
-	};
+		ATTRIBUTE_ORDER };
 	
-	public static final String[] COMPLEX_BLOCK_MAP_TYPE_HEADER = new String[] {
-			FIELD_ID, 
-			FIELD_EFFECTIVE_TIME, 
-			FIELD_ACTIVE, 
-			FIELD_MODULE_ID, 
-			FIELD_REFSET_ID, 
-			FIELD_REFERENCED_COMPONENT_ID,
-			FIELD_MAP_GROUP, 
-			FIELD_MAP_PRIORITY, 
-			FIELD_MAP_RULE, 
-			FIELD_MAP_ADVICE, 
-			FIELD_MAP_TARGET, 
-			FIELD_CORRELATION_ID,
-			FIELD_MAP_BLOCK };
+	public static final String[] COMPLEX_BLOCK_MAP_TYPE_HEADER = {
+		FIELD_ID, 
+		FIELD_EFFECTIVE_TIME, 
+		FIELD_ACTIVE, 
+		FIELD_MODULE_ID, 
+		FIELD_REFSET_ID, 
+		FIELD_REFERENCED_COMPONENT_ID,
+		FIELD_MAP_GROUP, 
+		FIELD_MAP_PRIORITY, 
+		FIELD_MAP_RULE, 
+		FIELD_MAP_ADVICE, 
+		FIELD_MAP_TARGET, 
+		FIELD_CORRELATION_ID,
+		FIELD_MAP_BLOCK };
 	
 	private SnomedRf2Headers() {
 		// Prevent instantiation
