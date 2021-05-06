@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,20 +15,26 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.*;
 
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.group;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.unionGroup;
+import java.util.Collection;
 
+import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.exceptions.NotImplementedException;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.repository.RevisionDocument;
+import com.b2international.snowowl.core.request.SearchResourceRequest;
+import com.b2international.snowowl.snomed.core.domain.RelationshipValue;
+import com.b2international.snowowl.snomed.core.domain.RelationshipValueType;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.datastore.converter.SnomedConverters;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.google.common.collect.Iterables;
 
 /**
  * @since 4.5
@@ -43,7 +49,10 @@ final class SnomedRelationshipSearchRequest extends SnomedComponentSearchRequest
 		GROUP_MIN,
 		GROUP_MAX,
 		UNION_GROUP,
-		MODIFIER
+		MODIFIER,
+		VALUE_TYPE,
+		OPERATOR,
+		VALUE
 	}
 	
 	SnomedRelationshipSearchRequest() {}
@@ -81,6 +90,43 @@ final class SnomedRelationshipSearchRequest extends SnomedComponentSearchRequest
 			queryBuilder.filter(unionGroup(get(OptionKey.UNION_GROUP, Integer.class)));
 		}
 		
+		if (containsKey(OptionKey.VALUE_TYPE)) {
+			final Collection<RelationshipValueType> valueTypes = getCollection(OptionKey.VALUE_TYPE, RelationshipValueType.class);
+			queryBuilder.filter(valueTypes(valueTypes));
+		}
+		
+		if (containsKey(OptionKey.VALUE)) {
+			final SearchResourceRequest.Operator op = get(OptionKey.OPERATOR, SearchResourceRequest.Operator.class);
+			final Collection<RelationshipValue> values = getCollection(OptionKey.VALUE, RelationshipValue.class);
+			
+			switch (op) {
+				case EQUALS:
+					queryBuilder.filter(values(values));
+					break;
+				case NOT_EQUALS:
+					queryBuilder.mustNot(values(values));
+					break;
+				case LESS_THAN:
+					checkRangeValue(values);
+					queryBuilder.filter(valueLessThan(Iterables.getOnlyElement(values), false));
+					break;
+				case LESS_THAN_EQUALS:
+					checkRangeValue(values);
+					queryBuilder.filter(valueLessThan(Iterables.getOnlyElement(values), true));
+					break;
+				case GREATER_THAN:
+					checkRangeValue(values);
+					queryBuilder.filter(valueGreaterThan(Iterables.getOnlyElement(values), false));
+					break;
+				case GREATER_THAN_EQUALS:
+					checkRangeValue(values);
+					queryBuilder.filter(valueGreaterThan(Iterables.getOnlyElement(values), true));
+					break;
+				default: 
+					throw new NotImplementedException("Unsupported concrete value operator %s", op);
+			}
+		}
+		
 		return queryBuilder.build();
 	}
 	
@@ -99,4 +145,9 @@ final class SnomedRelationshipSearchRequest extends SnomedComponentSearchRequest
 		return new SnomedRelationships(limit, 0);
 	}
 
+	private static void checkRangeValue(final Collection<RelationshipValue> values) {
+		if (values.size() != 1) {
+			throw new BadRequestException("Exactly one relationship value is required for range queries");
+		}
+	}
 }

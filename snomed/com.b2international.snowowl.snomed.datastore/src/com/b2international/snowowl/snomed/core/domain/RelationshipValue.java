@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.core.domain;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.io.Serializable;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -28,7 +29,7 @@ import com.b2international.commons.exceptions.BadRequestException;
  * 
  * @since 7.17
  */
-public final class RelationshipValue {
+public final class RelationshipValue implements Serializable {
 
 	// Only one of these fields should be set to non-null
 	private final Integer integerValue;

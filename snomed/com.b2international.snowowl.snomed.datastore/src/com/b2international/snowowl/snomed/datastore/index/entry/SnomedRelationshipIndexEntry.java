@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.entry;
 
+import static com.b2international.index.query.Expressions.exactMatch;
 import static com.b2international.index.query.Expressions.exists;
 import static com.b2international.index.query.Expressions.match;
 import static com.b2international.index.query.Expressions.matchAny;
@@ -22,10 +23,12 @@ import static com.b2international.index.query.Expressions.matchAnyDouble;
 import static com.b2international.index.query.Expressions.matchAnyInt;
 import static com.b2international.index.query.Expressions.matchRange;
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.index.Doc;
@@ -154,39 +157,72 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 			return match(Fields.DESTINATION_NEGATED, true);
 		}
 
-		public static <T> Expression values(final RelationshipValueType type, final Collection<T> values) {
-			switch (type) {
-				case BOOLEAN:
-					if (values.size() > 1) { throw new BadRequestException("Only one boolean filter value (either true or false) is allowed. Got: %s", values); }
-					return match(Fields.BOOLEAN_VALUE, (Boolean) Iterables.getOnlyElement(values));
-				case STRING: 
-					return matchAny(Fields.STRING_VALUE, FluentIterable.from(values).filter(String.class).toSet());
-				case INTEGER:
-					return matchAnyInt(Fields.INTEGER_VALUE, FluentIterable.from(values).filter(Integer.class).toSet());
-				case DECIMAL:
-					return matchAnyDouble(Fields.DECIMAL_VALUE, FluentIterable.from(values).filter(Double.class).toSet());
-				default:
-					throw new UnsupportedOperationException("Unsupported data type when filtering by values, " + type);
+		public static Expression values(final Collection<RelationshipValue> values) {
+			final long types = values.stream()
+				.map(RelationshipValue::type)
+				.distinct()
+				.count();
+			
+			if (types != 1L) {
+				throw new BadRequestException("All relationship values should have the same type");
 			}
+			
+			final Set<Integer> integerValues = newHashSet();
+			final Set<Double> decimalValues = newHashSet();
+			final Set<String> stringValues = newHashSet();
+			final Set<Boolean> booleanValues = newHashSet();
+			
+			values.forEach(value -> value
+				.ifInteger(integerValues::add) 
+				.ifDecimal(decimalValues::add) 
+				.ifString(stringValues::add) 
+				.ifBoolean(booleanValues::add));
+			
+			if (booleanValues.size() > 1) {
+				throw new BadRequestException("Only one boolean filter value (either true or false) is allowed.");
+			} else if (!booleanValues.isEmpty()) {
+				return match(Fields.BOOLEAN_VALUE, Iterables.getOnlyElement(booleanValues));
+			}
+			
+			if (!stringValues.isEmpty()) {
+				return matchAny(Fields.STRING_VALUE, stringValues);
+			}
+			
+			if (!integerValues.isEmpty()) {
+				return matchAnyInt(Fields.INTEGER_VALUE, integerValues);
+			}
+
+			if (!decimalValues.isEmpty()) {
+				return matchAnyDouble(Fields.DECIMAL_VALUE, decimalValues);
+			}
+			
+			throw new IllegalStateException("Unreachable code");
 		}
 
-		public static <T> Expression valueRange(final RelationshipValueType type, final T lower, final T upper, final boolean includeLower, final boolean includeUpper) {
-			switch (type) {
-				case STRING: 
-					return matchRange(Fields.STRING_VALUE, (String) lower, (String) upper, includeLower, includeUpper);
-				case INTEGER:
-					return matchRange(Fields.INTEGER_VALUE, (Integer) lower, (Integer) upper, includeLower, includeUpper);
-				case DECIMAL:
-					return matchRange(Fields.DECIMAL_VALUE, (Double) lower, (Double) upper, includeLower, includeUpper);
-				default:
-					throw new UnsupportedOperationException("Unsupported data type when filtering by values, " + type);
-			}
+		public static Expression valueLessThan(final RelationshipValue upper, final boolean includeUpper) {
+			return upper.map(
+				i -> matchRange(Fields.INTEGER_VALUE, null, i, true, includeUpper), 
+				d -> matchRange(Fields.DECIMAL_VALUE, null, d, true, includeUpper), 
+				s -> matchRange(Fields.STRING_VALUE, null, s, true, includeUpper), 
+				b -> { throw new IllegalArgumentException("Boolean values can not be included in range queries"); });
+		}
+		
+		public static Expression valueGreaterThan(final RelationshipValue lower, final boolean includeLower) {
+			return lower.map(
+				i -> matchRange(Fields.INTEGER_VALUE, i, null, includeLower, true), 
+				d -> matchRange(Fields.DECIMAL_VALUE, d, null, includeLower, true), 
+				s -> matchRange(Fields.STRING_VALUE, s, null, includeLower, true), 
+				b -> { throw new IllegalArgumentException("Boolean values can not be included in range queries"); });
 		}
 
 		public static Expression withValueType() {
 			return exists(Fields.VALUE_TYPE);
 		}
 
+		public static Expression valueType(final RelationshipValueType valueType) {
+			return exactMatch(Fields.VALUE_TYPE, valueType.name());
+		}
+		
 		public static Expression valueTypes(final Iterable<RelationshipValueType> valueTypes) {
 			return matchAny(Fields.VALUE_TYPE, FluentIterable.from(valueTypes)
 				.transform(RelationshipValueType::name)

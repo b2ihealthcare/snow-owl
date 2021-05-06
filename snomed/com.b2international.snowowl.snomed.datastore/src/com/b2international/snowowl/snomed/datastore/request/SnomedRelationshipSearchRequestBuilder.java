@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
+import com.b2international.snowowl.snomed.core.domain.RelationshipValue;
+import com.b2international.snowowl.snomed.core.domain.RelationshipValueType;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipSearchRequest.OptionKey;
 
@@ -86,9 +88,32 @@ public final class SnomedRelationshipSearchRequestBuilder extends SnomedComponen
 		return addOption(OptionKey.MODIFIER, modifier);
 	}
 	
+	public SnomedRelationshipSearchRequestBuilder filterByValueType(RelationshipValueType valueType) {
+		return addOption(OptionKey.VALUE_TYPE, valueType);
+	}
+	
+	public SnomedRelationshipSearchRequestBuilder filterByValueType(Iterable<RelationshipValueType> valueTypes) {
+		return addOption(OptionKey.VALUE_TYPE, valueTypes);
+	}
+
+	public SnomedRelationshipSearchRequestBuilder filterByValue(RelationshipValue value) {
+		return filterByValue(SearchResourceRequest.Operator.EQUALS, value);
+	}
+	
+	public SnomedRelationshipSearchRequestBuilder filterByValue(Iterable<RelationshipValue> values) {
+		return filterByValue(SearchResourceRequest.Operator.EQUALS, values);
+	}
+
+	public SnomedRelationshipSearchRequestBuilder filterByValue(SearchResourceRequest.Operator op, RelationshipValue value) {
+		return addOption(OptionKey.OPERATOR, op).addOption(OptionKey.VALUE, value);
+	}
+
+	public SnomedRelationshipSearchRequestBuilder filterByValue(SearchResourceRequest.Operator op, Iterable<RelationshipValue> values) {
+		return addOption(OptionKey.OPERATOR, op).addOption(OptionKey.VALUE, values);
+	}
+	
 	@Override
 	protected SearchResourceRequest<BranchContext, SnomedRelationships> createSearch() {
 		return new SnomedRelationshipSearchRequest();
 	}
-
 }
