@@ -96,6 +96,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedConceptSearchR
 import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.request.rf2.exporter.Rf2ConceptExporter;
+import com.b2international.snowowl.snomed.datastore.request.rf2.exporter.Rf2ConcreteValueExporter;
 import com.b2international.snowowl.snomed.datastore.request.rf2.exporter.Rf2DescriptionExporter;
 import com.b2international.snowowl.snomed.datastore.request.rf2.exporter.Rf2LanguageRefSetExporter;
 import com.b2international.snowowl.snomed.datastore.request.rf2.exporter.Rf2RefSetDescriptorRefSetExporter;
@@ -637,6 +638,14 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 							effectiveTimeFilterStart,
 							effectiveTimeFilterEnd,
 							visitedComponentEffectiveTimes);
+					
+					exportConcreteValues(releaseDirectory, 
+							context,
+							branch,
+							archiveEffectiveTime,
+							effectiveTimeFilterStart,
+							effectiveTimeFilterEnd,
+							visitedComponentEffectiveTimes);
 					break;
 	
 				case SnomedTerminologyComponentConstants.REFSET_MEMBER:
@@ -798,6 +807,24 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 
 		statedRelationshipExporter.exportBranch(releaseDirectory, context, branch, effectiveTimeFilterStart, effectiveTimeFilterEnd, visitedComponentEffectiveTimes);
 		relationshipExporter.exportBranch(releaseDirectory, context, branch, effectiveTimeFilterStart, effectiveTimeFilterEnd, visitedComponentEffectiveTimes);
+	}
+	
+	private void exportConcreteValues(final Path releaseDirectory, 
+			final RepositoryContext context, 
+			final String branch,
+			final String archiveEffectiveTime, 
+			final long effectiveTimeFilterStart,
+			final long effectiveTimeFilterEnd,
+			final Set<String> visitedComponentEffectiveTimes) throws IOException {
+		
+		final Rf2ConcreteValueExporter concreteValueExporter = new Rf2ConcreteValueExporter(releaseType, 
+				countryNamespaceElement, 
+				namespaceFilter, 
+				transientEffectiveTime,
+				archiveEffectiveTime, 
+				modules);
+		
+		concreteValueExporter.exportBranch(releaseDirectory, context, branch, effectiveTimeFilterStart, effectiveTimeFilterEnd, visitedComponentEffectiveTimes);
 	}
 
 	private void exportCombinedRefSets(final Path releaseDirectory, 
