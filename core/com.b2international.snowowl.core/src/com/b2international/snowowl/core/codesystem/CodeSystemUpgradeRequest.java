@@ -100,7 +100,7 @@ final class CodeSystemUpgradeRequest implements Request<RepositoryContext, Strin
 		// auto-generated upgrade IDs consist of the original CodeSystem's name and the new extensionOf dependency's URI
 		final String upgradeCodeSystemId;
 		if (codeSystemId == null) {
-			upgradeCodeSystemId = String.format("%s-%s-UPGRADE", codeSystem.getPath(), extensionOf.getPath() /*versionId*/); 
+			upgradeCodeSystemId = String.format("%s-%s-UPGRADE", codeSystem.getCodeSystem(), extensionOf.getPath() /*versionId*/); 
 		} else if (codeSystemId.isBlank()) {
 			throw new BadRequestException("'codeSystemId' property should not be empty, if provided");
 		} else {
