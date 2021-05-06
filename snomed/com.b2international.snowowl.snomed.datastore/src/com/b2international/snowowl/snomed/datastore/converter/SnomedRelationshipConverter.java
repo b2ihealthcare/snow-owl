@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.google.common.base.Predicates;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Maps;
 
@@ -58,9 +59,10 @@ final class SnomedRelationshipConverter extends BaseRevisionResourceConverter<Sn
 		result.setReleased(input.isReleased());
 		result.setGroup(input.getGroup());
 		result.setUnionGroup(input.getUnionGroup());
-		result.setDestination(new SnomedConcept(input.getDestinationId()));
-		result.setSource(new SnomedConcept(input.getSourceId()));
-		result.setType(new SnomedConcept(input.getTypeId()));
+		result.setDestinationId(input.getDestinationId());
+		result.setValueAsObject(input.getValue());
+		result.setSourceId(input.getSourceId());
+		result.setTypeId(input.getTypeId());
 		result.setScore(input.getScore());
 		return result;
 	}
@@ -145,7 +147,11 @@ final class SnomedRelationshipConverter extends BaseRevisionResourceConverter<Sn
 	private void expandDestination(List<SnomedRelationship> results) {
 		if (expand().containsKey(SnomedRelationship.Expand.DESTINATION)) {
 			final Options destinationOptions = expand().get(SnomedRelationship.Expand.DESTINATION, Options.class);
-			final Set<String> destinationConceptIds = FluentIterable.from(results).transform(SnomedRelationship::getDestinationId).toSet();
+			final Set<String> destinationConceptIds = FluentIterable.from(results)
+				.transform(SnomedRelationship::getDestinationId)
+				.filter(Predicates.notNull()) // skip expand on relationships with value
+				.toSet();
+			
 			final SnomedConcepts destinationConcepts = SnomedRequests
 				.prepareSearchConcept()
 				.filterByIds(destinationConceptIds)
@@ -154,6 +160,7 @@ final class SnomedRelationshipConverter extends BaseRevisionResourceConverter<Sn
 				.setLocales(locales())
 				.build()
 				.execute(context());
+			
 			final Map<String, SnomedConcept> destinationConceptsById = Maps.uniqueIndex(destinationConcepts, SnomedConcept::getId);
 			for (SnomedRelationship relationship : results) {
 				final String destinationId = relationship.getDestinationId();
