@@ -34,11 +34,11 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.LockedException;
+import com.b2international.index.revision.Commit;
 import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
@@ -200,7 +200,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 
 		applyChanges(subMonitor, context, bulkRequestBuilder);
 		
-		long resultTimeStamp = -1L;
+		long resultTimeStamp = Commit.NO_COMMIT_TIMESTAMP;
 		for (List<RequestBuilder<TransactionContext, ?>> partition : Iterables.partition(bulkRequestBuilder, getCommitLimit(context))) {
 			final BulkRequestBuilder<TransactionContext> bulkRequest = BulkRequest.create();
 			partition.forEach(request -> bulkRequest.add(request));
@@ -216,7 +216,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 			resultTimeStamp = commitResult.getCommitTimestamp();
 		}
 
-		if (EffectiveTimes.UNSET_EFFECTIVE_TIME == resultTimeStamp) {
+		if (Commit.NO_COMMIT_TIMESTAMP == resultTimeStamp) {
 			classificationTracker.classificationSaveFailed(classificationId);				
 			return Boolean.FALSE;
 		} else {
