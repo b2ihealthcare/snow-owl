@@ -365,8 +365,10 @@ public abstract class BaseRevisionBranching {
 	 * @return
 	 */
 	public final BranchState getBranchState(RevisionBranch left, RevisionBranch right) {
-    	long leftBaseTimestamp = left.getBaseTimestamp();
-    	long leftHeadTimestamp = left.getHeadTimestamp();
+		final RevisionBranchRef diff = left.ref().difference(right.ref());
+		
+    	long leftBaseTimestamp = diff.segments().isEmpty() ? left.getBaseTimestamp() : diff.segments().first().start();
+    	long leftHeadTimestamp = diff.segments().isEmpty() ? left.getHeadTimestamp() : diff.segments().last().end();
     	long rightBaseTimestamp = leftBaseTimestamp;
     	long rightHeadTimestamp = right.getHeadTimestamp();
     	
