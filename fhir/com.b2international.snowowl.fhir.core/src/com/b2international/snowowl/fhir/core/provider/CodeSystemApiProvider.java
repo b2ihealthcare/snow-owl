@@ -17,6 +17,9 @@ package com.b2international.snowowl.fhir.core.provider;
 
 import static com.google.common.collect.Sets.newHashSet;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
@@ -25,6 +28,7 @@ import java.util.stream.Stream;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.codesystem.*;
+import com.b2international.snowowl.core.codesystem.version.CodeSystemVersionSearchRequestBuilder;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
@@ -50,6 +54,8 @@ import com.google.common.collect.Lists;
  */
 public abstract class CodeSystemApiProvider extends FhirApiProvider implements ICodeSystemApiProvider {
 	
+	private static final String CODE_SYSTEM_LOCATION_MARKER = "CodeSystem";
+
 	private final String repositoryId;
 	
 	private Collection<IConceptProperty> supportedProperties;
@@ -93,10 +99,11 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 		
 		Optional<com.b2international.snowowl.core.codesystem.CodeSystem> optionalCodeSystem = codeSystems.first();
 		if (optionalCodeSystem.isEmpty()) {
-			throw FhirException.createFhirError(String.format("No code system version found for code system %s", codeSystemURI.getUri()), OperationOutcomeCode.MSG_PARAM_INVALID, "CodeSystem");
+			throw FhirException.createFhirError(String.format("No code system version found for code system %s", codeSystemURI.getUri()), OperationOutcomeCode.MSG_PARAM_INVALID, CODE_SYSTEM_LOCATION_MARKER);
 		}
 		
 		com.b2international.snowowl.core.codesystem.CodeSystem codeSystem = optionalCodeSystem.get();
+		
 		CodeSystemVersions codeSystemVersions = CodeSystemRequests.prepareSearchCodeSystemVersion()
 			.one()
 			.filterByCodeSystemShortName(codeSystem.getShortName())
@@ -107,7 +114,7 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 		
 		Optional<CodeSystemVersion> codeSystemVersionsOptional = codeSystemVersions.first();
 		if (codeSystemVersionsOptional.isEmpty()) {
-			throw FhirException.createFhirError(String.format("No code system version found for code system %s", codeSystemURI.getUri()), OperationOutcomeCode.MSG_PARAM_INVALID, "CodeSystem");
+			throw FhirException.createFhirError(String.format("No code system version found for code system %s", codeSystemURI.getUri()), OperationOutcomeCode.MSG_PARAM_INVALID, CODE_SYSTEM_LOCATION_MARKER);
 		}
 		
 		CodeSystemVersion codeSystemVersionEntry = codeSystemVersionsOptional.get();
@@ -138,8 +145,21 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 			.getSync();
 		
 		//fetch all the versions
-		CodeSystemVersions codeSystemVersions = CodeSystemRequests.prepareSearchCodeSystemVersion()
-			.all()
+		CodeSystemVersionSearchRequestBuilder versionSearchRequestBuilder = CodeSystemRequests.prepareSearchCodeSystemVersion().all();
+		
+		Optional<FhirSearchParameter> lastUpdatedOptional = getSearchParam(searchParameters, "_lastUpdated"); //date type
+		if (lastUpdatedOptional.isPresent()) {
+			String lastUpdatedDateString = lastUpdatedOptional.get().getValues().iterator().next();
+			try {
+				LocalDate localDate = LocalDate.parse(lastUpdatedDateString);
+				long localLong = localDate.atStartOfDay(ZoneId.systemDefault()).toEpochSecond(); //?
+				versionSearchRequestBuilder.filterByCreatedAt(localLong, Long.MAX_VALUE);
+			} catch (DateTimeParseException dtpe) {
+				throw FhirException.createFhirError(String.format("Invalid _lastUpdate search parameter value '%'.", lastUpdatedDateString), OperationOutcomeCode.MSG_PARAM_INVALID, CODE_SYSTEM_LOCATION_MARKER);
+			}
+		}
+		
+		CodeSystemVersions codeSystemVersions = versionSearchRequestBuilder
 			.sortBy(SearchResourceRequest.SortField.descending(CodeSystemVersionEntry.Fields.EFFECTIVE_DATE))
 			.build(repositoryId)
 			.execute(getBus())
