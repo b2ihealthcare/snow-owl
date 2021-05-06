@@ -18,10 +18,8 @@ package com.b2international.snowowl.snomed.fhir;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.provider.FhirApiProvider;
@@ -86,13 +84,6 @@ public abstract class SnomedFhirApiProvider extends FhirApiProvider {
 	
 	protected final String getPreferredTermOrId(SnomedConcept concept) {
 		return concept.getPt() != null ? concept.getPt().getTerm() : concept.getId();
-	}
-	
-	protected Collection<String> collectIds(Collection<String> uris) {
-		return uris.stream()
-			.filter(u -> u.contains("/"))
-			.map(u -> u.substring(u.lastIndexOf('/') + 1, u.length()))
-			.collect(Collectors.toSet());
 	}
 	
 }
