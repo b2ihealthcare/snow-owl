@@ -287,7 +287,7 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 	 */
 	@JsonIgnore
 	public void setSourceId(String sourceId) {
-		setSource(new SnomedConcept(sourceId));
+		setSource(ifNotNull(sourceId, SnomedConcept::new));
 	}
 
 	/**
@@ -302,7 +302,7 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 	 */
 	@JsonIgnore
 	public void setDestinationId(String destinationId) {
-		setDestination(new SnomedConcept(destinationId));
+		setDestination(ifNotNull(destinationId, SnomedConcept::new));
 	}
 
 	/**
@@ -332,7 +332,7 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 	 */
 	@JsonIgnore
 	public void setTypeId(String typeId) {
-		setType(new SnomedConcept(typeId));
+		setType(ifNotNull(typeId, SnomedConcept::new));
 	}
 
 	/**
@@ -367,7 +367,7 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 	 * @param characteristicTypeId
 	 */
 	public void setCharacteristicTypeId(final String characteristicTypeId) {
-		setCharacteristicType(new SnomedConcept(characteristicTypeId));
+		setCharacteristicType(ifNotNull(characteristicTypeId, SnomedConcept::new));
 	}
 
 	/**
@@ -381,7 +381,7 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 	 * @param modifierId
 	 */
 	public void setModifierId(final String modifierId) {
-		setModifier(new SnomedConcept(modifierId));
+		setModifier(ifNotNull(modifierId, SnomedConcept::new));
 	}
 	
 	@Override
