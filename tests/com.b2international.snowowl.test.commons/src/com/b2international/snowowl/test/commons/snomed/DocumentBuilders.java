@@ -117,7 +117,7 @@ public abstract class DocumentBuilders {
 		final List<SnomedOWLRelationshipDocument> classAxioms = newArrayListWithCapacity(numberOfAxioms);
 		for (int i = 0; i < numberOfAxioms; i++) {
 			int offset = i * 3;
-			classAxioms.add(new SnomedOWLRelationshipDocument((String) axioms[offset], (String) axioms[offset + 1], (int) axioms[offset + 2]));
+			classAxioms.add(SnomedOWLRelationshipDocument.create((String) axioms[offset], (String) axioms[offset + 1], (int) axioms[offset + 2]));
 		}
 		
 		return SnomedRefSetMemberIndexEntry.builder()

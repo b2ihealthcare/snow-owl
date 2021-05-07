@@ -21,6 +21,8 @@ import java.util.Objects;
 import com.b2international.index.Doc;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
+import com.b2international.snowowl.snomed.datastore.StatementFragmentWithDestination;
+import com.b2international.snowowl.snomed.datastore.StatementFragmentWithValue;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -32,32 +34,47 @@ import com.google.common.base.MoreObjects;
 @Doc(type = "owlRelationship", nested = true)
 public final class SnomedOWLRelationshipDocument implements Serializable {
 
-	private final String typeId;
-	private final String destinationId;
-	private final int group;
-	
-	@JsonCreator
-	public SnomedOWLRelationshipDocument(
-			@JsonProperty("typeId") String typeId, 
-			@JsonProperty("destinationId") String destinationId, 
-			@JsonProperty("group") int group) {
-		this.typeId = typeId;
-		this.destinationId = destinationId;
-		this.group = group;
+	public static SnomedOWLRelationshipDocument create(final String typeId, final String destinationId, final int group) {
+		return new SnomedOWLRelationshipDocument(typeId, destinationId, null, group);
 	}
 	
+	public static SnomedOWLRelationshipDocument createValue(final String typeId, final String value, final int group) {
+		return new SnomedOWLRelationshipDocument(typeId, null, value, group);
+	}
+
+	private final String typeId;
+	private final String destinationId;
+	private final String value;
+	private final int group;
+
+	@JsonCreator
+	private SnomedOWLRelationshipDocument(
+			@JsonProperty("typeId") final String typeId, 
+			@JsonProperty("destinationId") final String destinationId,
+			@JsonProperty("value") final String value,
+			@JsonProperty("group") final int group) {
+		this.typeId = typeId;
+		this.destinationId = destinationId;
+		this.value = value;
+		this.group = group;
+	}
+
 	public String getTypeId() {
 		return typeId;
 	}
-	
+
 	public String getDestinationId() {
 		return destinationId;
 	}
-	
+
+	public String getValue() {
+		return value;
+	}
+
 	public int getGroup() {
 		return group;
 	}
-	
+
 	@JsonIgnore
 	public boolean isIsa() {
 		return Concepts.IS_A.equals(typeId);
@@ -71,33 +88,58 @@ public final class SnomedOWLRelationshipDocument implements Serializable {
 		} else {
 			adjustedGroup = group + groupOffset;
 		}
-		
-		return new StatementFragment(Long.parseLong(typeId), Long.parseLong(destinationId), false, adjustedGroup, 0, false, -1L, null, false, null);
+
+		if (destinationId != null) {
+			return new StatementFragmentWithDestination(
+				Long.parseLong(typeId),         // typeId        
+				adjustedGroup,                  // adjustedGroup
+				0,                              // unionGroup   
+				false,                          // universal    
+				-1L,                            // statementId  
+				-1L,                            // moduleId     
+				false,                          // released     
+				false,                          // hasStatedPair
+				Long.parseLong(destinationId)); // destinationId	
+		} else {
+			return new StatementFragmentWithValue(
+				Long.parseLong(typeId), // typeId        
+				adjustedGroup,          // adjustedGroup
+				0,                      // unionGroup   
+				false,                  // universal    
+				-1L,                    // statementId  
+				-1L,                    // moduleId     
+				false,                  // released     
+				false,                  // hasStatedPair
+				value);                 // value	
+		}
 	}
-	
+
 	@Override
 	public int hashCode() {
-		return Objects.hash(typeId, destinationId, group);
+		return Objects.hash(typeId, destinationId, value, group);
 	}
-	
+
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) return true;
-		if (obj == null) return false;
-		if (getClass() != obj.getClass()) return false;
-		SnomedOWLRelationshipDocument other = (SnomedOWLRelationshipDocument) obj;
+	public boolean equals(final Object obj) {
+		if (this == obj) { return true; }
+		if (obj == null) { return false; }
+		if (getClass() != obj.getClass()) { return false; }
+
+		final SnomedOWLRelationshipDocument other = (SnomedOWLRelationshipDocument) obj;
+
 		return Objects.equals(typeId, other.typeId)
-				&& Objects.equals(destinationId, other.destinationId)
-				&& Objects.equals(group, other.group);
+			&& Objects.equals(destinationId, other.destinationId)
+			&& Objects.equals(value, other.value)
+			&& Objects.equals(group, other.group);
 	}
-	
+
 	@Override
 	public String toString() {
 		return MoreObjects.toStringHelper(this)
-				.add("typeId", typeId)
-				.add("destinationId", destinationId)
-				.add("group", group)
-				.toString();
+			.add("typeId", typeId)
+			.add("destinationId", destinationId)
+			.add("value", value)
+			.add("group", group)
+			.toString();
 	}
-	
 }

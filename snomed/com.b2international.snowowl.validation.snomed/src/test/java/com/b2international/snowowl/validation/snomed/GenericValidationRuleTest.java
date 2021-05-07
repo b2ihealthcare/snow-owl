@@ -262,7 +262,7 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		SnomedRelationshipIndexEntry relationshipOnValidConcept = relationship(validConcept1.getId(), Concepts.IS_A, invalidConcept.getId()).build();
 		
 		SnomedRefSetMemberIndexEntry owlAxiomMemberOnValidConcpet = member(validConcept2.getId(), Concepts.REFSET_OWL_AXIOM)
-				.classAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(Concepts.IS_A, validConcept1.getId(), 0)))
+				.classAxiomRelationships(Lists.newArrayList(SnomedOWLRelationshipDocument.create(Concepts.IS_A, validConcept1.getId(), 0)))
 				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
 				.build();
 		
@@ -296,7 +296,7 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		
 		SnomedRefSetMemberIndexEntry owlAxiomMember1 = member(validConcept.getId(), Concepts.REFSET_OWL_AXIOM)
 				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
-				.classAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(Concepts.IS_A, Concepts.PHYSICAL_OBJECT, 0)))
+				.classAxiomRelationships(Lists.newArrayList(SnomedOWLRelationshipDocument.create(Concepts.IS_A, Concepts.PHYSICAL_OBJECT, 0)))
 				.build();
 		
 		SnomedConceptDocument concept = concept(generateConceptId())
@@ -304,7 +304,7 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		
 		SnomedRefSetMemberIndexEntry owlAxiomMember2 = member(concept.getId(), Concepts.REFSET_OWL_AXIOM)
 				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
-				.classAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(Concepts.SYNONYM, Concepts.PHYSICAL_OBJECT, 0)))
+				.classAxiomRelationships(Lists.newArrayList(SnomedOWLRelationshipDocument.create(Concepts.SYNONYM, Concepts.PHYSICAL_OBJECT, 0)))
 				.build();
 		
 		SnomedRefSetMemberIndexEntry owlAxiomMemberWithoutClassAxioms = member(concept.getId(), Concepts.REFSET_OWL_AXIOM)
@@ -567,26 +567,26 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		SnomedConceptDocument activeDestinationConcept = concept(generateConceptId()).active(true).build();
 
 		SnomedRefSetMemberIndexEntry invalidSourceAxiomMember = member(inactiveSourceConcept.getId(), Concepts.REFSET_OWL_AXIOM)
-				.classAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(Concepts.IS_A, activeDestinationConcept.getId(), 0)))
+				.classAxiomRelationships(Lists.newArrayList(SnomedOWLRelationshipDocument.create(Concepts.IS_A, activeDestinationConcept.getId(), 0)))
 				.build();
 		
 		SnomedRefSetMemberIndexEntry validSourceAxiomMember = member(activeSourceConcept.getId(), Concepts.REFSET_OWL_AXIOM)
-				.classAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(Concepts.IS_A, activeDestinationConcept.getId(), 0)))
+				.classAxiomRelationships(Lists.newArrayList(SnomedOWLRelationshipDocument.create(Concepts.IS_A, activeDestinationConcept.getId(), 0)))
 				.build();
 		
 		SnomedRefSetMemberIndexEntry invalidDestinationAxiomMember = member(activeSourceConcept.getId(), Concepts.REFSET_OWL_AXIOM)
-				.classAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(Concepts.IS_A, inactiveDestinationConcept.getId(), 0)))
+				.classAxiomRelationships(Lists.newArrayList(SnomedOWLRelationshipDocument.create(Concepts.IS_A, inactiveDestinationConcept.getId(), 0)))
 				.build();
 		
 		SnomedRefSetMemberIndexEntry invalidDestinationGciAxiomMember = member(activeSourceConcept.getId(), Concepts.REFSET_OWL_AXIOM)
-				.gciAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(activeTypeConcept.getId(), inactiveDestinationConcept.getId(), 0)))
+				.gciAxiomRelationships(Lists.newArrayList(SnomedOWLRelationshipDocument.create(activeTypeConcept.getId(), inactiveDestinationConcept.getId(), 0)))
 				.build();
 		
 		SnomedRefSetMemberIndexEntry invalidTypeAxiomMember = member(activeSourceConcept.getId(), Concepts.REFSET_OWL_AXIOM)
-				.classAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(inactiveTypeConcept.getId(), activeDestinationConcept.getId(), 0)))
+				.classAxiomRelationships(Lists.newArrayList(SnomedOWLRelationshipDocument.create(inactiveTypeConcept.getId(), activeDestinationConcept.getId(), 0)))
 				.build();
 		SnomedRefSetMemberIndexEntry validGciAxiomMember = member(activeSourceConcept.getId(), Concepts.REFSET_OWL_AXIOM)
-				.gciAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(activeTypeConcept.getId(), activeDestinationConcept.getId(), 0)))
+				.gciAxiomRelationships(Lists.newArrayList(SnomedOWLRelationshipDocument.create(activeTypeConcept.getId(), activeDestinationConcept.getId(), 0)))
 				.build();
 
 		indexRevision(MAIN, 
@@ -754,19 +754,19 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 				.group(2).build();
 		
 		SnomedRefSetMemberIndexEntry axiomMember1 = member(Concepts.CONCEPT_MODEL_ATTRIBUTE, Concepts.REFSET_OWL_AXIOM)
-				.classAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(Concepts.FINDING_SITE, Concepts.CONCEPT_MODEL_ATTRIBUTE, 0)))
+				.classAxiomRelationships(Lists.newArrayList(SnomedOWLRelationshipDocument.create(Concepts.FINDING_SITE, Concepts.CONCEPT_MODEL_ATTRIBUTE, 0)))
 				.owlExpression(String.format("ObjectSomeValuesFrom(:%s :%s)", Concepts.FINDING_SITE, Concepts.CONCEPT_MODEL_ATTRIBUTE))
 				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
 				.build();
 		
 		SnomedRefSetMemberIndexEntry axiomMember2 = member(Concepts.CONCEPT_MODEL_ATTRIBUTE, Concepts.REFSET_OWL_AXIOM)
-				.classAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(Concepts.FINDING_SITE, Concepts.PHYSICAL_OBJECT, 0)))
+				.classAxiomRelationships(Lists.newArrayList(SnomedOWLRelationshipDocument.create(Concepts.FINDING_SITE, Concepts.PHYSICAL_OBJECT, 0)))
 				.owlExpression(String.format("ObjectSomeValuesFrom(:%s :%s)", Concepts.FINDING_SITE, Concepts.PHYSICAL_OBJECT))
 				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
 				.build();
 		
 		SnomedRefSetMemberIndexEntry axiomMember3 = member(Concepts.ROOT_CONCEPT, Concepts.REFSET_OWL_AXIOM)
-				.classAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(Concepts.FINDING_SITE, Concepts.CONCEPT_MODEL_ATTRIBUTE, 0)))
+				.classAxiomRelationships(Lists.newArrayList(SnomedOWLRelationshipDocument.create(Concepts.FINDING_SITE, Concepts.CONCEPT_MODEL_ATTRIBUTE, 0)))
 				.owlExpression(String.format("ObjectSomeValuesFrom(:%s :%s)", Concepts.FINDING_SITE, Concepts.CONCEPT_MODEL_ATTRIBUTE))
 				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
 				.build();
@@ -817,19 +817,19 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		// OWL axioms
 		SnomedRefSetMemberIndexEntry axiomMember1 = member(Concepts.CONCEPT_MODEL_ATTRIBUTE, Concepts.REFSET_OWL_AXIOM)
 				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
-				.classAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(Concepts.FINDING_SITE, Concepts.CONCEPT_MODEL_ATTRIBUTE, 0)))
+				.classAxiomRelationships(Lists.newArrayList(SnomedOWLRelationshipDocument.create(Concepts.FINDING_SITE, Concepts.CONCEPT_MODEL_ATTRIBUTE, 0)))
 				.owlExpression(String.format("ObjectSomeValuesFrom(:%s :%s)", Concepts.FINDING_SITE, Concepts.CONCEPT_MODEL_ATTRIBUTE))
 				.build();
 		
 		SnomedRefSetMemberIndexEntry axiomMember2 = member(Concepts.TEXT_DEFINITION, Concepts.REFSET_OWL_AXIOM)
 				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
-				.classAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(Concepts.FINDING_SITE, Concepts.PHYSICAL_OBJECT, 0)))
+				.classAxiomRelationships(Lists.newArrayList(SnomedOWLRelationshipDocument.create(Concepts.FINDING_SITE, Concepts.PHYSICAL_OBJECT, 0)))
 				.owlExpression(String.format("ObjectSomeValuesFrom(:%s :%s)", Concepts.FINDING_SITE, Concepts.PHYSICAL_OBJECT))
 				.build();
 		
 		SnomedRefSetMemberIndexEntry axiomMember3 = member(Concepts.ROOT_CONCEPT, Concepts.REFSET_OWL_AXIOM)
 				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
-				.classAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(Concepts.PHYSICAL_OBJECT, Concepts.CONCEPT_MODEL_ATTRIBUTE, 0)))
+				.classAxiomRelationships(Lists.newArrayList(SnomedOWLRelationshipDocument.create(Concepts.PHYSICAL_OBJECT, Concepts.CONCEPT_MODEL_ATTRIBUTE, 0)))
 				.owlExpression(String.format("ObjectSomeValuesFrom(:%s :%s)", Concepts.PHYSICAL_OBJECT, Concepts.CONCEPT_MODEL_ATTRIBUTE))
 				.build();
 		

@@ -157,7 +157,7 @@ public class ConceptChangeProcessorAxiomTest extends BaseConceptPreCommitHookTes
 				.build();
 		SnomedConceptDocument parentConcept2 = concept().build();
 		SnomedRefSetMemberIndexEntry member = createOwlAxiom(concept.getId(), String.format("SubClassOf(:%s :%s)", concept.getId(), parentConcept.getId()))
-				.classAxiomRelationships(ImmutableList.of(new SnomedOWLRelationshipDocument(Concepts.IS_A, parentConcept.getId(), 0)))
+				.classAxiomRelationships(ImmutableList.of(SnomedOWLRelationshipDocument.create(Concepts.IS_A, parentConcept.getId(), 0)))
 				.build();
 		
 		indexRevision(MAIN, concept, parentConcept, parentConcept2, member);
@@ -214,7 +214,7 @@ public class ConceptChangeProcessorAxiomTest extends BaseConceptPreCommitHookTes
 				.statedAncestors(IComponent.ROOT_IDL)
 				.build();
 		SnomedRefSetMemberIndexEntry member = createOwlAxiom(concept.getId(), String.format("SubClassOf(:%s :%s)", concept.getId(), parentConcept.getId()))
-				.classAxiomRelationships(ImmutableList.of(new SnomedOWLRelationshipDocument(Concepts.IS_A, parentConcept.getId(), 0)))
+				.classAxiomRelationships(ImmutableList.of(SnomedOWLRelationshipDocument.create(Concepts.IS_A, parentConcept.getId(), 0)))
 				.build();
 		
 		indexRevision(MAIN, concept, parentConcept, member);
@@ -245,7 +245,7 @@ public class ConceptChangeProcessorAxiomTest extends BaseConceptPreCommitHookTes
 				.statedAncestors(IComponent.ROOT_IDL)
 				.build();
 		final SnomedRefSetMemberIndexEntry member = createOwlAxiom(concept.getId(), String.format("SubClassOf(:%s ObjectIntersectionOf(:%s :%s))", concept.getId(), parentConcept.getId(), parentConcept2.getId()))
-				.classAxiomRelationships(ImmutableList.of(new SnomedOWLRelationshipDocument(Concepts.IS_A, parentConcept.getId(), 0)))
+				.classAxiomRelationships(ImmutableList.of(SnomedOWLRelationshipDocument.create(Concepts.IS_A, parentConcept.getId(), 0)))
 				.build();
 		
 		indexRevision(MAIN, concept, parentConcept, parentConcept2, member);
@@ -313,7 +313,7 @@ public class ConceptChangeProcessorAxiomTest extends BaseConceptPreCommitHookTes
 				.build();
 		SnomedRelationshipIndexEntry isaRelationship = SnomedRelationshipIndexEntry.builder(createStatedRelationship(concept.getId(), Concepts.IS_A, parentConcept.getId())).active(false).build();
 		SnomedRefSetMemberIndexEntry member = createOwlAxiom(concept.getId(), String.format("SubClassOf(:%s :%s)", concept.getId(), parentConcept.getId()))
-				.classAxiomRelationships(ImmutableList.of(new SnomedOWLRelationshipDocument(Concepts.IS_A, parentConcept.getId(), 0)))
+				.classAxiomRelationships(ImmutableList.of(SnomedOWLRelationshipDocument.create(Concepts.IS_A, parentConcept.getId(), 0)))
 				.build();
 		
 		indexRevision(MAIN, concept, parentConcept, isaRelationship, member);

@@ -433,8 +433,8 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		
 		assertThat(member.getClassOWLRelationships())
 			.containsOnly(
-				new SnomedOWLRelationshipDocument(Concepts.IS_A, "410680006", 0),
-				new SnomedOWLRelationshipDocument("734136001", "900000000000470007", 1)
+				SnomedOWLRelationshipDocument.create(Concepts.IS_A, "410680006", 0),
+				SnomedOWLRelationshipDocument.create("734136001", "900000000000470007", 1)
 			);
 		
 		final Json updateRequestBody = Json.object(
@@ -452,9 +452,9 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		
 		assertThat(updatedMember.getClassOWLRelationships())
 			.containsOnly(
-				new SnomedOWLRelationshipDocument(Concepts.IS_A, "410680006", 0),
-				new SnomedOWLRelationshipDocument("734136001", "900000000000470007", 1),
-				new SnomedOWLRelationshipDocument("371881003", "900000000000450001", 1)
+				SnomedOWLRelationshipDocument.create(Concepts.IS_A, "410680006", 0),
+				SnomedOWLRelationshipDocument.create("734136001", "900000000000470007", 1),
+				SnomedOWLRelationshipDocument.create("371881003", "900000000000450001", 1)
 			);
 	}
 	
