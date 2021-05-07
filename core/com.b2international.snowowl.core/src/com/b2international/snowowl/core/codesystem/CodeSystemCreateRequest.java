@@ -67,20 +67,17 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 	ResourceURI upgradeOf;
 	Map<String, Object> settings;
 	
-	private String parentPath;
-	private boolean createBranch = true;
+	private transient String parentPath;
+	private transient boolean createBranch;
 	
 	CodeSystemCreateRequest() {}
-
-	void setBranchPath(final String branchPath) {
-		this.branchPath = branchPath;
-		// Branch should not be created if a path was specified from the outside
-		createBranch = StringUtils.isEmpty(branchPath);
-	}
 
 	@Override
 	public String execute(final TransactionContext context) {
 		final Optional<Version> extensionOfVersion = checkCodeSystem(context);
+
+		// Create branch if null or empty path was specified in the request
+		createBranch = StringUtils.isEmpty(branchPath);
 		
 		// Set the parent path if a branch needs to be created
 		if (createBranch) {
