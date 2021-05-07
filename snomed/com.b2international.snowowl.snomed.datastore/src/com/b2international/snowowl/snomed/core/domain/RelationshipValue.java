@@ -35,7 +35,6 @@ public final class RelationshipValue implements Serializable {
 	private final Integer integerValue;
 	private final Double decimalValue;
 	private final String stringValue;
-	private final Boolean booleanValue;
 
 	/**
 	 * @param literal
@@ -63,14 +62,6 @@ public final class RelationshipValue implements Serializable {
 			return new RelationshipValue(unescapedLiteral);
 		}
 
-		if (literal.equals("true")) {
-			return new RelationshipValue(Boolean.TRUE);
-		}
-
-		if (literal.equals("false")) {
-			return new RelationshipValue(Boolean.FALSE);
-		}
-
 		throw new BadRequestException("Couldn't convert literal <" + literal + "> to a concrete value.");
 	}
 
@@ -78,35 +69,27 @@ public final class RelationshipValue implements Serializable {
 	 * @param integerValue
 	 */
 	public RelationshipValue(final Integer integerValue) {
-		this(checkNotNull(integerValue, "Value may not be null."), null, null, null);
+		this(checkNotNull(integerValue, "Value may not be null."), null, null);
 	}
 
 	/**
 	 * @param doubleValue
 	 */
 	public RelationshipValue(final Double doubleValue) {
-		this(null, checkNotNull(doubleValue, "Value may not be null."), null, null);
+		this(null, checkNotNull(doubleValue, "Value may not be null."), null);
 	}
 
 	/**
 	 * @param stringValue
 	 */
 	public RelationshipValue(final String stringValue) {
-		this(null, null, checkNotNull(stringValue, "Value may not be null."), null);
+		this(null, null, checkNotNull(stringValue, "Value may not be null."));
 	}
 
-	/**
-	 * @param booleanValue
-	 */
-	public RelationshipValue(final Boolean booleanValue) {
-		this(null, null, null, checkNotNull(booleanValue, "Value may not be null."));
-	}
-
-	private RelationshipValue(final Integer integerValue, final Double decimalValue, final String stringValue, final Boolean booleanValue) {
+	private RelationshipValue(final Integer integerValue, final Double decimalValue, final String stringValue) {
 		this.integerValue = integerValue;
 		this.decimalValue = decimalValue;
 		this.stringValue = stringValue;
-		this.booleanValue = booleanValue;
 	}
 
 	/**
@@ -116,8 +99,7 @@ public final class RelationshipValue implements Serializable {
 		return map(
 			i -> RelationshipValueType.INTEGER,
 			d -> RelationshipValueType.DECIMAL,
-			s -> RelationshipValueType.STRING,
-			b -> RelationshipValueType.BOOLEAN);
+			s -> RelationshipValueType.STRING);
 	}
 
 	/**
@@ -125,10 +107,9 @@ public final class RelationshipValue implements Serializable {
 	 */
 	public String toLiteral() {
 		return map(
-			i -> "#" + i,                               // add "#" prefix
-			d -> "#" + d,                               // add "#" prefix
-			s -> "\"" + s.replace("\"", "\\\"") + "\"", // add leading and trailing quote, escape inner quotes
-			b -> b ? "true" : "false");                 // use lowercase literals
+			i -> "#" + i,                                // add "#" prefix
+			d -> "#" + d,                                // add "#" prefix
+			s -> "\"" + s.replace("\"", "\\\"") + "\""); // add leading and trailing quote, escape inner quotes
 	}
 
 	/**
@@ -159,32 +140,20 @@ public final class RelationshipValue implements Serializable {
 	}
 
 	/**
-	 * @param booleanConsumer
-	 * @return this instance, for method chaining
-	 */
-	public RelationshipValue ifBoolean(final Consumer<Boolean> booleanConsumer) {
-		if (booleanValue != null) { booleanConsumer.accept(booleanValue); }
-		return this;
-	}
-
-	/**
 	 * @param <T>
 	 * @param integerFn
 	 * @param decimalFn
 	 * @param stringFn
-	 * @param booleanFn
 	 * @return
 	 */
 	public <T> T map(
 		final Function<Integer, T> integerFn, 
 		final Function<Double, T> decimalFn, 
-		final Function<String, T> stringFn, 
-		final Function<Boolean, T> booleanFn) {
+		final Function<String, T> stringFn) {
 
 		if (integerValue != null) { return integerFn.apply(integerValue); }
 		if (decimalValue != null) { return decimalFn.apply(decimalValue); }
 		if (stringValue != null) { return stringFn.apply(stringValue); }
-		if (booleanValue != null) { return booleanFn.apply(booleanValue); }
 
 		throw new IllegalStateException("All stored values were null, can not map to value");
 	}
@@ -199,13 +168,12 @@ public final class RelationshipValue implements Serializable {
 		return map(
 			i -> i.equals(other.integerValue),
 			d -> d.equals(other.decimalValue),
-			s -> s.equals(other.stringValue),
-			b -> b.equals(other.booleanValue));
+			s -> s.equals(other.stringValue));
 	}
 	
 	@Override
 	public int hashCode() {
-		return Objects.hash(integerValue, decimalValue, stringValue, booleanValue);
+		return Objects.hash(integerValue, decimalValue, stringValue);
 	}
 	
 	@Override

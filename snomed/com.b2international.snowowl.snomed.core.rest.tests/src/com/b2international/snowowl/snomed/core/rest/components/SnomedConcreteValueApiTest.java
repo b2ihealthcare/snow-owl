@@ -79,7 +79,7 @@ public class SnomedConcreteValueApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void createConcreteValueInvalidType() {
 		Json requestBody = createConcreteValueRequestBody(
-			Concepts.ROOT_CONCEPT, "11110000", new RelationshipValue(false))
+			Concepts.ROOT_CONCEPT, "11110000", new RelationshipValue(10))
 			.with("commitComment", "Created new concrete value with invalid typeId");
 
 		createComponent(branchPath, SnomedComponentType.RELATIONSHIP, requestBody).statusCode(400);
@@ -88,7 +88,7 @@ public class SnomedConcreteValueApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void createConcreteValueInvalidValue() {
 		Json requestBody = createConcreteValueRequestBody(
-			Concepts.ROOT_CONCEPT, Concepts.PART_OF, new RelationshipValue(false))
+			Concepts.ROOT_CONCEPT, Concepts.PART_OF, new RelationshipValue(20))
 			/*
 			 * XXX: need to set literal again here, as the request body creation method above 
 			 * does not allow invalid values.

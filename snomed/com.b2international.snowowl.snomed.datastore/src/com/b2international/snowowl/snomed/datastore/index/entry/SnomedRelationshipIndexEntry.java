@@ -42,7 +42,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.MoreObjects.ToStringHelper;
 import com.google.common.collect.FluentIterable;
-import com.google.common.collect.Iterables;
 
 /**
  * A transfer object representing a SNOMED CT description.
@@ -63,8 +62,7 @@ import com.google.common.collect.Iterables;
 		SnomedRelationshipIndexEntry.Fields.DESTINATION_NEGATED,
 		SnomedRelationshipIndexEntry.Fields.INTEGER_VALUE,
 		SnomedRelationshipIndexEntry.Fields.DECIMAL_VALUE,
-		SnomedRelationshipIndexEntry.Fields.STRING_VALUE,
-		SnomedRelationshipIndexEntry.Fields.BOOLEAN_VALUE
+		SnomedRelationshipIndexEntry.Fields.STRING_VALUE
 	}
 )
 @JsonDeserialize(builder = SnomedRelationshipIndexEntry.Builder.class)
@@ -164,19 +162,11 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 			final Set<Integer> integerValues = newHashSet();
 			final Set<Double> decimalValues = newHashSet();
 			final Set<String> stringValues = newHashSet();
-			final Set<Boolean> booleanValues = newHashSet();
 			
 			values.forEach(value -> value
 				.ifInteger(integerValues::add) 
 				.ifDecimal(decimalValues::add) 
-				.ifString(stringValues::add) 
-				.ifBoolean(booleanValues::add));
-			
-			if (booleanValues.size() > 1) {
-				throw new BadRequestException("Only one boolean filter value (either true or false) is allowed.");
-			} else if (!booleanValues.isEmpty()) {
-				return match(Fields.BOOLEAN_VALUE, Iterables.getOnlyElement(booleanValues));
-			}
+				.ifString(stringValues::add));
 			
 			if (!stringValues.isEmpty()) {
 				return matchAny(Fields.STRING_VALUE, stringValues);
@@ -197,16 +187,14 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 			return upper.map(
 				i -> matchRange(Fields.INTEGER_VALUE, null, i, true, includeUpper), 
 				d -> matchRange(Fields.DECIMAL_VALUE, null, d, true, includeUpper), 
-				s -> matchRange(Fields.STRING_VALUE, null, s, true, includeUpper), 
-				b -> { throw new IllegalArgumentException("Boolean values can not be included in range queries"); });
+				s -> matchRange(Fields.STRING_VALUE, null, s, true, includeUpper)); 
 		}
 		
 		public static Expression valueGreaterThan(final RelationshipValue lower, final boolean includeLower) {
 			return lower.map(
 				i -> matchRange(Fields.INTEGER_VALUE, i, null, includeLower, true), 
 				d -> matchRange(Fields.DECIMAL_VALUE, d, null, includeLower, true), 
-				s -> matchRange(Fields.STRING_VALUE, s, null, includeLower, true), 
-				b -> { throw new IllegalArgumentException("Boolean values can not be included in range queries"); });
+				s -> matchRange(Fields.STRING_VALUE, s, null, includeLower, true)); 
 		}
 		
 		public static Expression hasDestinationId() {
@@ -266,7 +254,6 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 		public static final String INTEGER_VALUE = "integerValue";
 		public static final String DECIMAL_VALUE = "decimalValue";
 		public static final String STRING_VALUE = "stringValue";
-		public static final String BOOLEAN_VALUE = "booleanValue";
 		public static final String GROUP = "group"; // XXX different than RF2 header
 		public static final String UNION_GROUP = "unionGroup";
 		public static final String CHARACTERISTIC_TYPE_ID = SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID;
@@ -343,8 +330,7 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 				value
 					.ifInteger(i -> { valueType = RelationshipValueType.INTEGER; integerValue = i; })
 					.ifDecimal(d -> { valueType = RelationshipValueType.DECIMAL; decimalValue = d; })
-					.ifString(s -> { valueType = RelationshipValueType.STRING; stringValue = s; })
-					.ifBoolean(b -> { valueType = RelationshipValueType.BOOLEAN; booleanValue = b; });
+					.ifString(s -> { valueType = RelationshipValueType.STRING; stringValue = s; });
 			}
 
 			return getSelf();
@@ -449,7 +435,6 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 	private final Integer integerValue;
 	private final Double decimalValue;
 	private final String stringValue;
-	private final Boolean booleanValue;
 
 	private final RelationshipValueType valueType;
 
@@ -498,7 +483,6 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 		this.integerValue = integerValue;
 		this.decimalValue = decimalValue;
 		this.stringValue = stringValue;
-		this.booleanValue = booleanValue;
 		this.characteristicTypeId = characteristicTypeId;
 		this.modifierId = modifierId;
 		this.group = group;
@@ -540,12 +524,20 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 
 	@JsonIgnore
 	public RelationshipValue getValue() {
+		return getValue(valueType, decimalValue, integerValue, stringValue);
+	}
+
+	public static RelationshipValue getValue(
+		final RelationshipValueType valueType, 
+		final Double decimalValue, 
+		final Integer integerValue, 
+		final String stringValue) {
+
 		if (valueType == null) {
 			return null;
 		}
-		
+
 		switch (valueType) {
-			case BOOLEAN: return new RelationshipValue(booleanValue);
 			case DECIMAL: return new RelationshipValue(decimalValue);
 			case INTEGER: return new RelationshipValue(integerValue);
 			case STRING: return new RelationshipValue(stringValue);
@@ -556,11 +548,6 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 	@JsonProperty
 	Double getDecimalValue() {
 		return decimalValue;
-	}
-
-	@JsonProperty
-	Boolean getBooleanValue() {
-		return booleanValue;
 	}
 
 	@JsonProperty

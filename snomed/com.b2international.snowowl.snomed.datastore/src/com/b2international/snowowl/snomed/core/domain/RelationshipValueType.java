@@ -24,6 +24,5 @@ package com.b2international.snowowl.snomed.core.domain;
 public enum RelationshipValueType {
 	INTEGER,
 	DECIMAL, // XXX: stored as double-precision floating point
-	STRING,
-	BOOLEAN;
+	STRING;
 }

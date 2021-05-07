@@ -111,15 +111,4 @@ public class SnomedRelationshipIndexEntrySerializationTest extends BaseRevisionI
 		final SnomedRelationshipIndexEntry actual = assertDocEquals(stringValue);
 		assertEquals(RelationshipValueType.STRING, actual.getValueType());
 	}
-	
-	@Test
-	public void indexBoolean() throws Exception {
-		final SnomedRelationshipIndexEntry booleanValue = createBuilder()
-			.value(new RelationshipValue(false))
-			.build();
-		
-		indexRevision(RevisionBranch.MAIN_PATH, booleanValue);
-		final SnomedRelationshipIndexEntry actual = assertDocEquals(booleanValue);
-		assertEquals(RelationshipValueType.BOOLEAN, actual.getValueType());
-	}
 }
