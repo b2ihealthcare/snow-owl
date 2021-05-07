@@ -28,7 +28,7 @@ public class FhirSearchParameter extends FhirParameter {
 	
 	private SearchRequestParameterModifier modifier;
 	
-	FhirSearchParameter(FhirUriSearchParameterDefinition searchParameterDefinition, SearchRequestParameterModifier modifier, Collection<String> values) {
+	FhirSearchParameter(FhirUriSearchParameterDefinition searchParameterDefinition, SearchRequestParameterModifier modifier, Collection<PrefixedValue> values) {
 		super(searchParameterDefinition, values);
 		this.modifier = modifier;
 	}

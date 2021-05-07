@@ -48,6 +48,7 @@ import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.provider.FhirApiProvider;
 import com.b2international.snowowl.fhir.core.provider.IConceptMapApiProvider;
 import com.b2international.snowowl.fhir.core.search.FhirSearchParameter;
+import com.b2international.snowowl.fhir.core.search.FhirParameter.PrefixedValue;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
@@ -110,14 +111,19 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 					SnomedRefSetSearchRequestBuilder requestBuilder = SnomedRequests.prepareSearchRefSet().all();
 					
 					if (idParamOptional.isPresent()) {
-						Collection<String> uris = idParamOptional.get().getValues();
+						Collection<String> uris = idParamOptional.get().getValues().stream()
+							.map(PrefixedValue::getValue)
+							.collect(Collectors.toSet());
+						
 						Collection<String> ids = collectIds(uris);
 						requestBuilder.filterByIds(ids);
 					}
 					
 					//TODO - referenced component name?
 					if (nameOptional.isPresent()) {
-						Collection<String> names = nameOptional.get().getValues();
+						Collection<String> names = nameOptional.get().getValues().stream()
+								.map(PrefixedValue::getValue)
+								.collect(Collectors.toSet());
 						//requestBuilder.filterByNameExact(names);
 					}
 					

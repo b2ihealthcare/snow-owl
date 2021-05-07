@@ -24,7 +24,9 @@ import com.b2international.commons.Pair;
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.core.exceptions.FhirException;
+import com.b2international.snowowl.fhir.core.search.FhirParameter.PrefixedValue;
 import com.b2international.snowowl.fhir.core.search.FhirUriFilterParameterDefinition.FhirFilterParameterKey;
+import com.b2international.snowowl.fhir.core.search.FhirUriParameterDefinition.FhirRequestParameterType;
 import com.b2international.snowowl.fhir.core.search.FhirUriSearchParameterDefinition.FhirCommonSearchKey;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -97,18 +99,38 @@ public class FhirUriParameterManager {
 		if (supportedSearchParameters.containsKey(parameterName)) {
 			FhirUriSearchParameterDefinition supportedSearchParameter = supportedSearchParameters.get(parameterName);
 			
+			Collection<PrefixedValue> prefixedValues = Sets.newHashSet();
+			
+			//try to parse the prefixes number, date, and quantity,
+			FhirRequestParameterType type = supportedSearchParameter.getType();
+			if (type == FhirRequestParameterType.NUMBER ||
+					type == FhirRequestParameterType.DATE || 
+					type == FhirRequestParameterType.DATETIME || 
+					type == FhirRequestParameterType.QUANTITY) {
+			
+				prefixedValues = fhirParameter.getValues().stream()
+						.map(PrefixedValue::of)
+						.collect(Collectors.toSet());
+			} else {
+				prefixedValues = fhirParameter.getValues().stream().map(PrefixedValue::witoutPrefix).collect(Collectors.toSet());
+			}
+			
 			return FhirSearchParameter.builder()
 					.parameterDefinition(supportedSearchParameter)
 					.modifier(fhirParameter.getModifier())
-					.values(fhirParameter.getValues())
+					.values(prefixedValues)
 					.build();
 			
 		} else if (supportedFilterParameters.containsKey(parameterName)) {
+			
 			FhirUriFilterParameterDefinition supportedFilterParameter = supportedFilterParameters.get(parameterName);
+			
+			//No prefix support for filters
+			Collection<PrefixedValue> prefixedValues = fhirParameter.getValues().stream().map(PrefixedValue::witoutPrefix).collect(Collectors.toSet());
 			
 			return FhirFilterParameter.builder()
 					.parameterDefinition(supportedFilterParameter)
-					.values(fhirParameter.getValues())
+					.values(prefixedValues)
 					.build();
 			
 		} else if (FhirCommonSearchKey.hasParameter(parameterName)) {
@@ -134,13 +156,6 @@ public class FhirUriParameterManager {
 	
 	private void validateFilterParameters(Set<FhirFilterParameter> filterParameters) {
 		
-//		filterParameters.forEach(p -> {
-//			if (!p.getParameterDefinition().isMultipleValuesSupported() && p.getValues().size() > 1) {
-//				throw FhirException.createFhirError(String.format("Too many filter parameter values %s are submitted for parameter %s.", Arrays.toString(p.getValues().toArray()), p.getName()), OperationOutcomeCode.MSG_PARAM_INVALID, SEARCH_REQUEST_PARAMETER_MARKER);
-//			}
-//		});
-		
-		
 		if (filterParameters.stream().anyMatch(p -> p.getName().equals(FhirFilterParameterKey._summary.name())) && 
 			filterParameters.stream().anyMatch(p -> p.getName().equals(FhirFilterParameterKey._elements.name()))) {
 			
@@ -148,13 +163,8 @@ public class FhirUriParameterManager {
 		}
 	}
 	
+	//Cross-parameter validation for search parameters come here
 	private void validateSearchParameters(Set<FhirSearchParameter> searchParameters) {
-		
-		searchParameters.forEach(p -> {
-			if (!p.getParameterDefinition().isMultipleValuesSupported() && p.getValues().size() > 1) {
-				throw FhirException.createFhirError(String.format("Too many search parameter values %s are submitted for parameter %s.", Arrays.toString(p.getValues().toArray()), p.getName()), OperationOutcomeCode.MSG_PARAM_INVALID, SEARCH_REQUEST_PARAMETER_MARKER);
-			}
-		});
 	}
 	
 	private static List<Filterable> collectFilterParameters(Class<?> model) {

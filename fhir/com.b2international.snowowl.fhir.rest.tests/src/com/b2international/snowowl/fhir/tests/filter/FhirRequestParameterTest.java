@@ -19,6 +19,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Collection;
@@ -27,7 +28,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import org.assertj.core.util.Sets;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -38,9 +38,16 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.b2international.commons.Pair;
 import com.b2international.snowowl.fhir.core.exceptions.FhirException;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
-import com.b2international.snowowl.fhir.core.search.*;
+import com.b2international.snowowl.fhir.core.search.FhirFilterParameter;
+import com.b2international.snowowl.fhir.core.search.FhirParameter.PrefixedValue;
+import com.b2international.snowowl.fhir.core.search.FhirSearchParameter;
 import com.b2international.snowowl.fhir.core.search.FhirSearchParameter.Builder;
+import com.b2international.snowowl.fhir.core.search.FhirUriFilterParameterDefinition;
 import com.b2international.snowowl.fhir.core.search.FhirUriParameterDefinition.FhirRequestParameterType;
+import com.b2international.snowowl.fhir.core.search.FhirUriSearchParameterDefinition.SearchRequestParameterValuePrefix;
+import com.b2international.snowowl.fhir.core.search.FhirUriParameterManager;
+import com.b2international.snowowl.fhir.core.search.FhirUriSearchParameterDefinition;
+import com.b2international.snowowl.fhir.core.search.RawRequestParameter;
 import com.b2international.snowowl.fhir.tests.FhirTest;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSet;
@@ -70,6 +77,23 @@ public class FhirRequestParameterTest extends FhirTest {
 		assertThat(fhirParameter.getName(), equalTo("_summary"));
 		assertThat(fhirParameter.getValues(), contains("1", "2", "3"));
 		assertThat(fhirParameter.getModifier(), equalTo("data"));
+	}
+	
+	@Test
+	public void testPrefixParsing() {
+		
+		PrefixedValue pv = PrefixedValue.of("");
+		assertNull(pv.getPrefix());
+		assertThat(pv.getValue(), equalTo(""));
+		
+		//SearchRequestParameterValuePrefix
+		pv = PrefixedValue.of("eq");
+		assertThat(pv.getPrefix(), equalTo(SearchRequestParameterValuePrefix.eq));
+		assertThat(pv.getValue(), equalTo(""));
+		
+		pv = PrefixedValue.of("gt2012-01-01");
+		assertThat(pv.getPrefix(), equalTo(SearchRequestParameterValuePrefix.gt));
+		assertThat(pv.getValue(), equalTo("2012-01-01"));
 	}
 	
 	//URI -> Raw unprocessed parameter
@@ -103,7 +127,7 @@ public class FhirRequestParameterTest extends FhirTest {
 		FhirUriSearchParameterDefinition definition = new FhirUriSearchParameterDefinition("_dateTimeParameter", "DATETIME", Collections.emptySet(), false);
 		FhirSearchParameter.builder()
 				.parameterDefinition(definition)
-				.values(ImmutableSet.of("A")).build();
+				.values(ImmutableSet.of(PrefixedValue.of("A"))).build();
 	}
 	
 	/*
@@ -121,38 +145,37 @@ public class FhirRequestParameterTest extends FhirTest {
 		FhirUriSearchParameterDefinition definition = new FhirUriSearchParameterDefinition(keyString, "DATETIME", Collections.emptySet(), false);
 		Builder parameter = FhirSearchParameter.builder().parameterDefinition(definition);
 		
-		String value = "2021";
+		PrefixedValue value = PrefixedValue.of("2021");
 		FhirSearchParameter searchParameter = parameter.values(ImmutableSet.of(value)).build();
 		assertThat(searchParameter.getValues().iterator().next(), equalTo(value));
 		
-		value = "2021-05";
+		value = PrefixedValue.of("2021-05");
 		searchParameter = parameter.values(ImmutableSet.of(value)).build();
 		assertThat(searchParameter.getValues().iterator().next(), equalTo(value));
 		
-		value = "2021-05-09";
+		value = PrefixedValue.of("2021-05-09");
 		searchParameter = parameter.values(ImmutableSet.of(value)).build();
 		assertThat(searchParameter.getValues().iterator().next(), equalTo(value));
 		
-		value = "2021-05-09T13:24:24-05:00";
+		value = PrefixedValue.of("2021-05-09T13:24:24-05:00");
 		searchParameter = parameter.values(ImmutableSet.of(value)).build();
 		assertThat(searchParameter.getValues().iterator().next(), equalTo(value));
 		
-		value = "2021-05-09T13:24:24.000-05:00";
+		value = PrefixedValue.of("2021-05-09T13:24:24.000-05:00");
 		searchParameter = parameter.values(ImmutableSet.of(value)).build();
 		assertThat(searchParameter.getValues().iterator().next(), equalTo(value));
 		
-		value = "2021-05-09T13:24:24-0500";
+		value = PrefixedValue.of("2021-05-09T13:24:24-0500");
 		searchParameter = parameter.values(ImmutableSet.of(value)).build();
 		assertThat(searchParameter.getValues().iterator().next(), equalTo(value));
 
-		value = "2021-05-09T13:24:24.000-0500";
+		value = PrefixedValue.of("2021-05-09T13:24:24.000-0500");
 		searchParameter = parameter.values(ImmutableSet.of(value)).build();
 		assertThat(searchParameter.getValues().iterator().next(), equalTo(value));
 		
-		value = "2017-01-01T00:00:00.000Z";
+		value = PrefixedValue.of("2017-01-01T00:00:00.000Z");
 		searchParameter = parameter.values(ImmutableSet.of(value)).build();
 		assertThat(searchParameter.getValues().iterator().next(), equalTo(value));
-		
 	}
 	
 	@Test
@@ -246,7 +269,7 @@ public class FhirRequestParameterTest extends FhirTest {
 		FhirFilterParameter fhirParameter = parameters.getA().iterator().next();
 		assertThat(fhirParameter.getName(), equalTo("_summary"));
 		assertThat(fhirParameter.getType(), equalTo(FhirRequestParameterType.STRING));
-		assertThat(fhirParameter.getValues(), contains("true"));
+		assertThat(fhirParameter.getValues(), contains(PrefixedValue.of("true")));
 	}
 	
 	//URI->Raw -> filter
@@ -264,7 +287,7 @@ public class FhirRequestParameterTest extends FhirTest {
 		assertThat(fhirParameter.getClass(), equalTo(FhirSearchParameter.class));
 		assertThat(fhirParameter.getName(), equalTo("_id"));
 		assertThat(fhirParameter.getType(), equalTo(FhirRequestParameterType.STRING));
-		assertThat(fhirParameter.getValues(), contains("1"));
+		assertThat(fhirParameter.getValues(), contains(PrefixedValue.witoutPrefix("1")));
 	}
 	
 	@Test

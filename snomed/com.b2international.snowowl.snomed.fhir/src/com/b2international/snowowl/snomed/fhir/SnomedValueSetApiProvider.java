@@ -50,6 +50,7 @@ import com.b2international.snowowl.fhir.core.model.valueset.expansion.Expansion;
 import com.b2international.snowowl.fhir.core.model.valueset.expansion.UriParameter;
 import com.b2international.snowowl.fhir.core.provider.IValueSetApiProvider;
 import com.b2international.snowowl.fhir.core.search.FhirSearchParameter;
+import com.b2international.snowowl.fhir.core.search.FhirParameter.PrefixedValue;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
@@ -802,7 +803,10 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 			SnomedRefSetSearchRequestBuilder requestBuilder = SnomedRequests.prepareSearchRefSet().all();
 			
 			if (idParamOptional.isPresent()) {
-				Collection<String> uris = idParamOptional.get().getValues();
+				Collection<String> uris = idParamOptional.get().getValues().stream()
+						.map(PrefixedValue::getValue)
+						.collect(Collectors.toSet());
+				
 				Collection<String> ids = collectIds(uris);
 				
 				requestBuilder.filterByIds(ids);
@@ -810,7 +814,9 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 			
 			//TODO - referenced component name?
 			if (nameOptional.isPresent()) {
-				Collection<String> names = nameOptional.get().getValues();
+				Collection<String> names = nameOptional.get().getValues().stream()
+						.map(PrefixedValue::getValue)
+						.collect(Collectors.toSet());
 				//requestBuilder.filterByNameExact(names);SNOMEDCT/FHIR_SIMPLE_TYPE_REFSET_VERSION/103/11000154102
 			}
 			
@@ -849,14 +855,19 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 			SnomedRefSetMemberSearchRequestBuilder requestBuilder = SnomedRequests.prepareSearchMember().all();
 			
 			if (idParamOptional.isPresent()) {
-				Collection<String> uris = idParamOptional.get().getValues();
+				Collection<String> uris = idParamOptional.get().getValues().stream()
+						.map(PrefixedValue::getValue)
+						.collect(Collectors.toSet());
+				
 				Collection<String> ids = collectIds(uris);
 				requestBuilder.filterByIds(ids);
 			}
 			
 			//TODO - referenced component name?
 			if (nameOptional.isPresent()) {
-				Collection<String> names = nameOptional.get().getValues();
+				Collection<String> names = nameOptional.get().getValues().stream()
+						.map(PrefixedValue::getValue)
+						.collect(Collectors.toSet());
 				//requestBuilder.filterByNameExact(names);
 			}
 			

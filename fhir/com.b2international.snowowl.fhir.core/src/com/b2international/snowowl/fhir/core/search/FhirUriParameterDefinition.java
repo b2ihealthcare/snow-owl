@@ -31,6 +31,7 @@ import org.apache.commons.lang3.time.DateUtils;
 
 import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.core.exceptions.FhirException;
+import com.b2international.snowowl.fhir.core.search.FhirParameter.PrefixedValue;
 import com.google.common.collect.Sets;
 
 /**
@@ -41,17 +42,6 @@ import com.google.common.collect.Sets;
 public class FhirUriParameterDefinition {
 	
 	protected static final String SEARCH_REQUEST_PARAMETER_MARKER = "SearchRequestParameter"; //$NON-NLS-N$
-	
-	private String[] dateTimePatters = new String[] {
-							"yyyy", 
-							"yyyy-MM", 
-							"yyyy-MM-dd",
-							"yyyy-MM-dd'T'HH:mm:ss",
-							"yyyy-MM-dd'T'HH:mm:ssZ",
-							"yyyy-MM-dd'T'HH:mm:ss.SSSZ",
-							"yyyy-MM-dd'T'HH:mm:ssXXX", 
-							"yyyy-MM-dd'T'HH:mm:ss.SSSSXXX",
-							"yyyy-MM-dd'T'HH:mm:ss.SSSX"};
 	
 	public enum SearchRequestParameterModifier {
 		missing,
@@ -126,6 +116,17 @@ public class FhirUriParameterDefinition {
 		}
 	}
 	
+	private static String[] DATETIME_PATTERNS = new String[] {
+			"yyyy", 
+			"yyyy-MM", 
+			"yyyy-MM-dd",
+			"yyyy-MM-dd'T'HH:mm:ss",
+			"yyyy-MM-dd'T'HH:mm:ssZ",
+			"yyyy-MM-dd'T'HH:mm:ss.SSSZ",
+			"yyyy-MM-dd'T'HH:mm:ssXXX", 
+			"yyyy-MM-dd'T'HH:mm:ss.SSSSXXX",
+			"yyyy-MM-dd'T'HH:mm:ss.SSSX"};
+	
 	protected String name;
 	
 	protected FhirRequestParameterType type;
@@ -179,16 +180,21 @@ public class FhirUriParameterDefinition {
 		}
 	}
 	
-	public void validateValues(final Collection<String> values) {
+	public void validateValues(final Collection<PrefixedValue> prefixedValues) {
 		
-		if (!isMultipleValuesSupported() && values.size() > 1) {
-			throw FhirException.createFhirError(String.format("Too many filter parameter values %s are submitted for parameter '%s'.", Arrays.toString(values.toArray()), getName()), OperationOutcomeCode.MSG_PARAM_INVALID, SEARCH_REQUEST_PARAMETER_MARKER);
+		if (!isMultipleValuesSupported() && prefixedValues.size() > 1) {
+			String values = Arrays.toString(prefixedValues.stream().map(PrefixedValue::getValue).collect(Collectors.toSet()).toArray());
+			throw FhirException.createFhirError(String.format("Too many filter parameter values %s are submitted for parameter '%s'.", values, getName()), OperationOutcomeCode.MSG_PARAM_INVALID, SEARCH_REQUEST_PARAMETER_MARKER);
 		}
 		
 		Set<String> supportedValues = getSupportedValues();
-		Set<String> uppercaseValues = values.stream().map(String::toUpperCase).collect(Collectors.toSet());
+		Set<String> values = prefixedValues.stream().map(PrefixedValue::getValue).collect(Collectors.toSet());
+		
+		Set<String> uppercaseValues = values.stream()
+				.map(String::toUpperCase)
+				.collect(Collectors.toSet());
+		
 		if (!supportedValues.isEmpty() && !supportedValues.containsAll(uppercaseValues)) {
-			
 			throw FhirException.createFhirError(String.format("Filter parameter value %s is not supported. Supported parameter values are %s.", Arrays.toString(values.toArray()), Arrays.toString(supportedValues.toArray())), 
 				OperationOutcomeCode.MSG_PARAM_UNKNOWN, "SEARCH_REQUEST_PARAMETER_MARKER");
 		}
@@ -211,7 +217,7 @@ public class FhirUriParameterDefinition {
 				break;
 			case DATETIME:
 				try {
-					DateUtils.parseDate(value, dateTimePatters);
+					DateUtils.parseDate(value, DATETIME_PATTERNS);
 				} catch (NullPointerException | ParseException e) {
 					throw FhirException.createFhirError(String.format("Invalid %s type parameter value '%s' are submitted for parameter '%s'.", type, value, name), OperationOutcomeCode.MSG_PARAM_INVALID, SEARCH_REQUEST_PARAMETER_MARKER);
 				}

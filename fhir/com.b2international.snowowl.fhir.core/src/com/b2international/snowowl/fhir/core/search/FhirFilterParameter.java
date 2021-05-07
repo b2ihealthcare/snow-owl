@@ -25,7 +25,7 @@ import java.util.Collection;
  */
 public class FhirFilterParameter extends FhirParameter {
 
-	public FhirFilterParameter(FhirUriFilterParameterDefinition supportedFilterParameter, Collection<String> values) {
+	public FhirFilterParameter(FhirUriFilterParameterDefinition supportedFilterParameter, Collection<PrefixedValue> values) {
 		super(supportedFilterParameter, values);
 	}
 	

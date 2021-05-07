@@ -51,12 +51,11 @@ import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.search.FhirBeanPropertyFilter;
 import com.b2international.snowowl.fhir.core.search.FhirFilterParameter;
-import com.b2international.snowowl.fhir.core.search.FhirParameter;
+import com.b2international.snowowl.fhir.core.search.FhirParameter.PrefixedValue;
 import com.b2international.snowowl.fhir.core.search.FhirSearchParameter;
 import com.b2international.snowowl.fhir.core.search.FhirUriFilterParameterDefinition.FhirFilterParameterKey;
 import com.b2international.snowowl.fhir.core.search.FhirUriFilterParameterDefinition.SummaryParameterValue;
 import com.b2international.snowowl.fhir.core.search.FhirUriParameterManager;
-import com.b2international.snowowl.fhir.core.search.RawRequestParameter;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
@@ -112,12 +111,12 @@ public abstract class BaseFhirResourceRestService<R extends FhirResource> extend
 		return fhirParameters;
 	}
 	
-	protected Optional<String> getParameterSingleValue(Set<FhirSearchParameter> requestParameters, String parameterName) {
+	protected Optional<PrefixedValue> getParameterSingleValue(Set<FhirSearchParameter> requestParameters, String parameterName) {
 		
 		Optional<FhirSearchParameter> parameterOptional = requestParameters.stream().filter(p -> parameterName.equals(p.getName())).findAny();
 		
 		if (parameterOptional.isPresent()) {
-			Collection<String> parameterValues = parameterOptional.get().getValues();
+			Collection<PrefixedValue> parameterValues = parameterOptional.get().getValues();
 			if (parameterValues.size() != 1) {
 				throw new IllegalArgumentException("There should only be a single value for '" + parameterName + "'");
 			} else {
@@ -152,11 +151,13 @@ public abstract class BaseFhirResourceRestService<R extends FhirResource> extend
 		
 		if (summaryFilterParameterOptional.isPresent()) {
 			FhirFilterParameter summaryParameter = summaryFilterParameterOptional.get();
-			filterProvider.addFilter(FhirBeanPropertyFilter.FILTER_NAME, FhirBeanPropertyFilter.createFilter(SummaryParameterValue.fromRequestParameter(summaryParameter.getValues().iterator().next())));
+			String paramValue = summaryParameter.getValues().iterator().next().getValue();
+			filterProvider.addFilter(FhirBeanPropertyFilter.FILTER_NAME, FhirBeanPropertyFilter.createFilter(SummaryParameterValue.fromRequestParameter(paramValue)));
 			filteredFhirResource.setSubsetted();
 		} else if (elementsFilterParameterOptional.isPresent()) {
 			FhirFilterParameter elementsParameter = elementsFilterParameterOptional.get();
-			filterProvider.addFilter(FhirBeanPropertyFilter.FILTER_NAME, FhirBeanPropertyFilter.createFilter(getRequestedFields(elementsParameter.getValues())));
+			Collection<String> values = elementsParameter.getValues().stream().map(PrefixedValue::getValue).collect(Collectors.toSet());
+			filterProvider.addFilter(FhirBeanPropertyFilter.FILTER_NAME, FhirBeanPropertyFilter.createFilter(getRequestedFields(values)));
 			filteredFhirResource.setSubsetted();
 		}
 		

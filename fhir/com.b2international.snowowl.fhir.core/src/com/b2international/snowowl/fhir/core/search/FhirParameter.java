@@ -16,10 +16,11 @@
 package com.b2international.snowowl.fhir.core.search;
 
 import java.util.Collection;
-import java.util.Collections;
+import java.util.Objects;
 
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.b2international.snowowl.fhir.core.search.FhirUriParameterDefinition.FhirRequestParameterType;
+import com.b2international.snowowl.fhir.core.search.FhirUriSearchParameterDefinition.SearchRequestParameterValuePrefix;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
@@ -68,11 +69,75 @@ import com.google.common.collect.Sets;
  */
 public abstract class FhirParameter {
 	
+	public static class PrefixedValue {
+		
+		private SearchRequestParameterValuePrefix prefix;
+		
+		private String value;
+		
+		private PrefixedValue(SearchRequestParameterValuePrefix prefix, String value) {
+			this.prefix = prefix;
+			this.value = value;
+		}
+		
+		public static PrefixedValue of(final String valueString) {
+			if (valueString == null) {
+				return new PrefixedValue(null, null);
+			} else if (valueString.length() < 2) {
+				return new PrefixedValue(null, valueString);
+			} else {
+				String prefixCandidate = valueString.substring(0, 2);
+				String valuePart = valueString.substring(2);
+				try {
+					SearchRequestParameterValuePrefix valueOf = SearchRequestParameterValuePrefix.valueOf(prefixCandidate);
+					return new PrefixedValue(valueOf, valuePart);
+				} catch(IllegalArgumentException iae) {
+					return new PrefixedValue(null, valueString);
+				}
+			}
+		}
+		
+		public static PrefixedValue witoutPrefix(final String valueString) {
+			return new PrefixedValue(null, valueString);
+		}
+		
+		public SearchRequestParameterValuePrefix getPrefix() {
+			return prefix;
+		}
+		
+		public String getValue() {
+			return value;
+		}
+		
+		@Override
+		public String toString() {
+			return "PrefixedValue [prefix=" + prefix + ", value=" + value + "]";
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(prefix, value);
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			PrefixedValue other = (PrefixedValue) obj;
+			return prefix == other.prefix && Objects.equals(value, other.value);
+		}
+		
+	}
+	
 	protected FhirUriParameterDefinition parameterDefinition;
 	
-	protected Collection<String> values;
+	protected Collection<PrefixedValue> values;
 	
-	FhirParameter(final FhirUriParameterDefinition parameterDefinition, Collection<String> values) {
+	FhirParameter(final FhirUriParameterDefinition parameterDefinition, Collection<PrefixedValue> values) {
 		this.parameterDefinition = parameterDefinition;
 		this.values = values;
 	}
@@ -85,7 +150,7 @@ public abstract class FhirParameter {
 		return parameterDefinition.getType();
 	}
 	
-	public Collection<String> getValues() {
+	public Collection<PrefixedValue> getValues() {
 		return values;
 	}
 	
@@ -95,14 +160,14 @@ public abstract class FhirParameter {
 
 	public static abstract class Builder<B extends Builder<B, T>, T extends FhirParameter> extends ValidatingBuilder<T> {
 		
-		protected Collection<String> values = Sets.newHashSet();
+		protected Collection<PrefixedValue> values = Sets.newHashSet();
 		
-		public B values(final Collection<String> values) {
+		public B values(final Collection<PrefixedValue> values) {
 			this.values = values;
 			return getSelf();
 		}
 		
-		public B value(final String value) {
+		public B value(final PrefixedValue value) {
 			this.values = ImmutableSet.of(value);
 			return getSelf();
 		}

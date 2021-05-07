@@ -44,6 +44,7 @@ import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Instant;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.search.FhirSearchParameter;
+import com.b2international.snowowl.fhir.core.search.FhirParameter.PrefixedValue;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 
@@ -130,13 +131,19 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 		//TODO: what should we do with the hardcoded names of these dynamic properties?
 		Optional<FhirSearchParameter> idParamOptional = getSearchParam(searchParameters, "_id");
 		if (idParamOptional.isPresent()) {
-			Collection<String> ids = idParamOptional.get().getValues();
+			Collection<String> ids = idParamOptional.get().getValues().stream()
+					.map(PrefixedValue::getValue)
+					.collect(Collectors.toSet());
+			
 			requestBuilder.filterByIds(ids);
 		}
 
 		Optional<FhirSearchParameter> nameOptional = getSearchParam(searchParameters, "_name"); 
 		if (nameOptional.isPresent()) {
-			Collection<String> names = nameOptional.get().getValues();
+			Collection<String> names = nameOptional.get().getValues().stream()
+					.map(PrefixedValue::getValue)
+					.collect(Collectors.toSet());
+			
 			requestBuilder.filterByNameExact(names);
 		}
 		
@@ -149,7 +156,8 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 		
 		Optional<FhirSearchParameter> lastUpdatedOptional = getSearchParam(searchParameters, "_lastUpdated"); //date type
 		if (lastUpdatedOptional.isPresent()) {
-			String lastUpdatedDateString = lastUpdatedOptional.get().getValues().iterator().next();
+			//TODO: support prefix!
+			String lastUpdatedDateString = lastUpdatedOptional.get().getValues().iterator().next().getValue();
 			try {
 				LocalDate localDate = LocalDate.parse(lastUpdatedDateString);
 				long localLong = localDate.atStartOfDay(ZoneId.systemDefault()).toEpochSecond(); //?
