@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
+import static com.google.common.collect.Sets.newHashSet;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -24,6 +26,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.snomed.otf.owltoolkit.conversion.AxiomRelationshipConversionService;
+import org.snomed.otf.owltoolkit.conversion.ConversionException;
 import org.snomed.otf.owltoolkit.domain.AxiomRepresentation;
 import org.snomed.otf.owltoolkit.domain.Relationship;
 
@@ -32,6 +35,7 @@ import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.options.Options;
 import com.b2international.commons.time.TimeUtil;
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.request.SearchResourceRequestIterator;
 import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
@@ -40,18 +44,25 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemb
 import com.google.common.base.*;
 
 /**
+ * @see AxiomRelationshipConversionService
+ * @see <a href="https://www.w3.org/TR/owl2-syntax/#Axioms">OWL 2 Structural Specification and 
+ *      Functional-Style Syntax</a>
  * @since 6.14 
  */
 public final class SnomedOWLExpressionConverter {
 
 	private static final Logger LOG = LoggerFactory.getLogger(SnomedOWLExpressionConverter.class);
+
+	private static final Set<String> AXIOM_TYPES = Set.of(
+		"SubClassOf", 
+		"EquivalentClasses", 
+		"SubObjectPropertyOf", 
+		"SubDataPropertyOf");
 	
 	private final Supplier<AxiomRelationshipConversionService> conversionService;
 	
 	public SnomedOWLExpressionConverter(BranchContext context) {
-		this(Suppliers.memoize(() -> {
-			return getUngroupedAttributes(context);
-		}));
+		this(Suppliers.memoize(() -> getUngroupedAttributes(context)));
 	}
 	
 	public SnomedOWLExpressionConverter(Supplier<Set<Long>> ungroupedAttributes) {
@@ -63,72 +74,109 @@ public final class SnomedOWLExpressionConverter {
 		});
 	}
 
-	public SnomedOWLExpressionConverterResult toSnomedOWLRelationships(String referencedComponentId, String owlExpression) {
-		// skip empty or unparseable axioms
-		if (Strings.isNullOrEmpty(owlExpression) || owlExpression.startsWith("Prefix") || owlExpression.startsWith("Ontology")) {
+	private boolean isAxiomSupported(final String axiomExpression) {
+		return AXIOM_TYPES.stream().anyMatch(axiomExpression::startsWith);
+	}
+
+	private AxiomRepresentation convertAxiom(final String conceptId, final String axiomExpression) {
+		try {
+			return conversionService.get().convertAxiomToRelationships(axiomExpression);
+		} catch (final ConversionException e) {
+			LOG.error("Failed to convert OWL axiom '{}' to relationship representations for concept '{}'", axiomExpression, conceptId, e);
+			return null;
+		}
+	}
+
+	public SnomedOWLExpressionConverterResult toSnomedOWLRelationships(String conceptId, String axiomExpression) {
+		// Only attempt to convert axioms which the OWL toolkit supports
+		if (Strings.isNullOrEmpty(axiomExpression) || !isAxiomSupported(axiomExpression)) {
 			return SnomedOWLExpressionConverterResult.EMPTY;
 		}
 		
 		try {
 			
-			final Long referencedComponentIdLong = Long.valueOf(referencedComponentId);
-			final AxiomRepresentation axiomRepresentation = conversionService.get().convertAxiomToRelationships(owlExpression);
+			final Long conceptIdLong = Long.valueOf(conceptId);
+			final AxiomRepresentation axiomRepresentation = convertAxiom(conceptId, axiomExpression);
+			if (axiomRepresentation == null) {
+				return SnomedOWLExpressionConverterResult.EMPTY;
+			}
 			
-			boolean gci = false;
-			Map<Integer, List<Relationship>> relationships = null;
-			if (axiomRepresentation != null) {
-				if (referencedComponentIdLong.equals(axiomRepresentation.getLeftHandSideNamedConcept())) {
-					gci = false;
-					relationships = axiomRepresentation.getRightHandSideRelationships();
-				} else if (referencedComponentIdLong.equals(axiomRepresentation.getRightHandSideNamedConcept())) {
-					gci = true;
-					relationships = axiomRepresentation.getLeftHandSideRelationships();
-				} else if (axiomRepresentation.getLeftHandSideNamedConcept() != null || axiomRepresentation.getRightHandSideNamedConcept() != null) {
-					throw new BadRequestException("ReferencedComponentId '%s' does not match focus concept ID '%s' in expression.", referencedComponentId, axiomRepresentation.getLeftHandSideNamedConcept() != null ? axiomRepresentation.getLeftHandSideNamedConcept() : axiomRepresentation.getRightHandSideNamedConcept());
-				}
+			final boolean gci;
+			final Map<Integer, List<Relationship>> relationships;
+			
+			if (conceptIdLong.equals(axiomRepresentation.getLeftHandSideNamedConcept())) {
+				gci = false;
+				relationships = axiomRepresentation.getRightHandSideRelationships();
+			} else if (conceptIdLong.equals(axiomRepresentation.getRightHandSideNamedConcept())) {
+				/*
+				 * XXX: EquivalentClasses axioms are not ordered in any meaningful way, so it
+				 * can happen that the class expression representing relationships falls on the left-hand side
+				 */
+				gci = axiomRepresentation.isPrimitive();
+				relationships = axiomRepresentation.getLeftHandSideRelationships();
+			} else {
+				throw new BadRequestException("Focus concept ID '%s' was not referenced on either side of axiom '%s'", conceptId, axiomExpression);
 			}
 			
 			if (relationships == null) {
 				return SnomedOWLExpressionConverterResult.EMPTY;
 			}
 			
-			List<SnomedOWLRelationshipDocument> axiomRelationships = relationships
-				.values()
+			final List<SnomedOWLRelationshipDocument> convertedRelationships = relationships.values()
 				.stream()
 				.flatMap(List::stream)
-				.map(r -> {
-					return new SnomedOWLRelationshipDocument(Long.toString(r.getTypeId()), Long.toString(r.getDestinationId()), r.getGroup());
+				.map(relationship -> {
+					if (relationship.isConcrete()) {
+						return SnomedOWLRelationshipDocument.createValue(
+							Long.toString(relationship.getTypeId()), 
+							relationship.getValueAsString(), 
+							relationship.getGroup());
+					} else {
+						return SnomedOWLRelationshipDocument.create(
+							Long.toString(relationship.getTypeId()), 
+							Long.toString(relationship.getDestinationId()), 
+							relationship.getGroup());
+					}
 				})
 				.collect(Collectors.toList());
 			
-			return new SnomedOWLExpressionConverterResult(gci ? null : axiomRelationships, gci ? axiomRelationships : null);
+			return new SnomedOWLExpressionConverterResult(
+				gci ? null : convertedRelationships, 
+				gci ? convertedRelationships : null);
+			
 		} catch (ApiException e) {
 			throw e;
 		} catch (Exception e) {
-			LOG.error("Failed to convert OWL axiom '{}' to relationship representations for concept '{}'", owlExpression, referencedComponentId, e);
+			LOG.error("Failed to convert OWL axiom '{}' to relationship representations for concept '{}'", axiomExpression, conceptId, e);
 			return SnomedOWLExpressionConverterResult.EMPTY;
 		}
 	}
 
 	private static Set<Long> getUngroupedAttributes(BranchContext context) {
-		return SnomedRequests.prepareSearchMember()
-			.all()
+		final SnomedRefSetMemberSearchRequestBuilder searchRequestBuilder = SnomedRequests.prepareSearchMember()
+			.setLimit(1000)
 			.filterByActive(true)
 			.filterByProps(Options.builder()
-					.put(SnomedRefSetMemberIndexEntry.Fields.MRCM_GROUPED, false)
-					.build())
-			.filterByRefSetType(SnomedRefSetType.MRCM_ATTRIBUTE_DOMAIN)
-			.build()
-			.execute(context)
-			.stream()
-			.map(SnomedReferenceSetMember::getReferencedComponent)
-			.map(SnomedCoreComponent::getId)
-			.map(Long::valueOf)
-			.collect(Collectors.toSet());
+				.put(SnomedRefSetMemberIndexEntry.Fields.MRCM_GROUPED, false)
+				.build())
+			.filterByRefSetType(SnomedRefSetType.MRCM_ATTRIBUTE_DOMAIN);
+			
+		final var iterator = new SearchResourceRequestIterator<>(searchRequestBuilder, 
+			b -> b.build().execute(context));
+			
+		final Set<Long> ungroupedAttributeIds = newHashSet();
+		iterator.forEachRemaining(batch -> {
+			batch.stream()
+				.map(SnomedReferenceSetMember::getReferencedComponent)
+				.map(SnomedCoreComponent::getId)
+				.map(Long::valueOf)
+				.forEachOrdered(ungroupedAttributeIds::add);
+		});
+		
+		return ungroupedAttributeIds;
 	}
 	
 	private static <T> T withTccl(final Callable<T> callable) {
-
 		final ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
 
 		try {
@@ -137,15 +185,14 @@ public final class SnomedOWLExpressionConverter {
 
 			try {
 				return callable.call();
+			} catch (final RuntimeException e) {
+				throw e;
 			} catch (final Exception e) {
-				Throwables.propagateIfPossible(e);
 				throw new RuntimeException(e);
 			}
 
 		} finally {
 			Thread.currentThread().setContextClassLoader(contextClassLoader);
 		}
-
 	}
-	
 }
