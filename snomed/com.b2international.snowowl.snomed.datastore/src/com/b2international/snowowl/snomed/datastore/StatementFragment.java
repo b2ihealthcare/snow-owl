@@ -17,65 +17,54 @@ package com.b2international.snowowl.snomed.datastore;
 
 import java.io.Serializable;
 
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+
+import com.google.common.base.MoreObjects;
+import com.google.common.base.MoreObjects.ToStringHelper;
+
 /**
  * Represents the bare minimum of a SNOMED CT relationship (without binding the source concept).
  * 
  * @since 1.0
+ * @see StatementFragmentWithDestination
+ * @see StatementFragmentWithValue
  */
-public final class StatementFragment implements Serializable {
-
-	private static final long serialVersionUID = 2L;
+public abstract class StatementFragment implements Serializable {
 
 	private final long typeId;
-	private final long destinationId;
-	private final boolean destinationNegated;
 	private final int group;
 	private final int unionGroup;
 	private final boolean universal;
 
 	// Only stored if the original relationship is known
-	private final String moduleId;
 	private final long statementId;
+	private final long moduleId;
 	private final boolean released;
+	private final boolean hasStatedPair;
 
-	private String statedStatementId;
-
-	public StatementFragment(final long typeId, final long destinationId) {
-		this(typeId, destinationId, false, 0, 0, false, -1L, null, false, null);
-	}
-
-	public StatementFragment(final long typeId,
-			final long destinationId,
-			final boolean destinationNegated,
-			final int group,
-			final int unionGroup,
-			final boolean universal,
-			final long statementId,
-			final String moduleId,
-			final boolean released,
-			final String statedStatementId) {
+	protected StatementFragment(
+		final long typeId, 
+		final int group, 
+		final int unionGroup, 
+		final boolean universal, 
+		final long statementId, 
+		final long moduleId,
+		final boolean released, 
+		final boolean hasStatedPair) {
+		
 		this.typeId = typeId;
-		this.destinationId = destinationId;
-		this.destinationNegated = destinationNegated;
 		this.group = group;
 		this.unionGroup = unionGroup;
 		this.universal = universal;
+		
 		this.statementId = statementId;
 		this.moduleId = moduleId;
 		this.released = released;
-		this.statedStatementId = statedStatementId;
+		this.hasStatedPair = hasStatedPair;
 	}
 
 	public long getTypeId() {
 		return typeId;
-	}
-
-	public long getDestinationId() {
-		return destinationId;
-	}
-
-	public boolean isDestinationNegated() {
-		return destinationNegated;
 	}
 
 	public int getGroup() {
@@ -89,12 +78,12 @@ public final class StatementFragment implements Serializable {
 	public boolean isUniversal() {
 		return universal;
 	}
-	
+
 	public long getStatementId() {
 		return statementId;
 	}
-	
-	public String getModuleId() {
+
+	public long getModuleId() {
 		return moduleId;
 	}
 
@@ -102,38 +91,43 @@ public final class StatementFragment implements Serializable {
 		return released;
 	}
 
-	public String getStatedStatementId() {
-		return statedStatementId;
+	public boolean hasStatedPair() {
+		return hasStatedPair;
 	}
 	
-	public boolean hasStatedPair() {
-		return statedStatementId != null;
+	/*
+	 * XXX: hashCode and equals is context-specific for statements; locking them to
+	 * the default implementation here.
+	 * 
+	 * Define an Equivalence and use com.google.common.base.Equivalence#wrap to
+	 * create instances that behave as expected in that particular setting, when eg.
+	 * added to a Set.
+	 */
+	@Override
+	public final int hashCode() {
+		return super.hashCode();
 	}
 	
 	@Override
-	public String toString() {
-		final StringBuilder builder = new StringBuilder();
-		builder.append("StatementFragment [typeId=");
-		builder.append(typeId);
-		builder.append(", destinationId=");
-		builder.append(destinationId);
-		builder.append(", destinationNegated=");
-		builder.append(destinationNegated);
-		builder.append(", group=");
-		builder.append(group);
-		builder.append(", unionGroup=");
-		builder.append(unionGroup);
-		builder.append(", universal=");
-		builder.append(universal);
-		builder.append(", statementId=");
-		builder.append(statementId);
-		builder.append(", moduleId=");
-		builder.append(moduleId);
-		builder.append(", released=");
-		builder.append(released);
-		builder.append(", statedStatementId=");
-		builder.append(statedStatementId);
-		builder.append("]");
-		return builder.toString();
+	public final boolean equals(Object obj) {
+		return super.equals(obj);
+	}
+
+	@OverridingMethodsMustInvokeSuper
+	protected ToStringHelper toStringHelper() {
+		return MoreObjects.toStringHelper(this)
+			.add("typeId", typeId)
+			.add("group", group)
+			.add("unionGroup", unionGroup)
+			.add("universal", universal)
+			.add("statementId", statementId)
+			.add("moduleId", moduleId)
+			.add("released", released)
+			.add("hasStatedPair", hasStatedPair);
+	}
+
+	@Override
+	public final String toString() {
+		return toStringHelper().toString();
 	}
 }
