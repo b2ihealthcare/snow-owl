@@ -140,10 +140,19 @@ public final class CodeSystemConverter extends BaseResourceConverter<CodeSystemE
 		for (final CodeSystem result : results) {
 			final CodeSystemURI extensionOf = result.getExtensionOf();
 			
+			final List<CodeSystemURI> codeSystemVersions = CodeSystemRequests.prepareSearchCodeSystemVersion()
+					.all()
+					.filterByCodeSystemShortName(result.getShortName())
+					.build()
+					.execute(context())
+					.stream()
+					.map(cs -> cs.getUri())
+					.collect(Collectors.toList());
+			
 			// skip if there is not dependency set in extensionOf
 			// or if this is an upgrade CodeSystem
 			// or the CodeSystem already has an upgrade
-			if (extensionOf == null || result.getUpgradeOf() != null || hasUpgrade(result, results)) {
+			if (extensionOf == null || result.getUpgradeOf() != null || hasUpgrade(result, results, codeSystemVersions)) {
 				// always set the field if user expands it
 				result.setAvailableUpgrades(List.of());
 				continue;
@@ -169,7 +178,7 @@ public final class CodeSystemConverter extends BaseResourceConverter<CodeSystemE
 		}			
 	}
 
-	private boolean hasUpgrade(CodeSystem result, List<CodeSystem> results) {
+	private boolean hasUpgrade(CodeSystem result, List<CodeSystem> results, List<CodeSystemURI> codeSystemVersions) {
 		// first check the results
 		return results
 			.stream()
@@ -183,6 +192,14 @@ public final class CodeSystemConverter extends BaseResourceConverter<CodeSystemE
 					.build()
 					.execute(context())
 					.first();
+			})
+			.or(() -> {
+				// then the index
+				return 	CodeSystemRequests.prepareSearchCodeSystem()
+						.filterByUpgradeOf(codeSystemVersions)
+						.build()
+						.execute(context())
+						.first();
 			})
 			.isPresent();
 	}
