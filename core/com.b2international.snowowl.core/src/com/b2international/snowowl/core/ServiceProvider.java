@@ -23,6 +23,7 @@ import java.util.Optional;
 import java.util.function.Predicate;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.DelegatingContext;
@@ -49,7 +50,7 @@ public interface ServiceProvider {
 	 * @return the {@link Logger} instance associated with this service provider.
 	 */
 	default Logger log() {
-		return service(Logger.class);
+		return optionalService(Logger.class).orElseGet(() -> LoggerFactory.getLogger("request"));
 	}
 	
 	/**
