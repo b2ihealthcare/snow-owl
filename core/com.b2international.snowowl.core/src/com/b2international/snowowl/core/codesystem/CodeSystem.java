@@ -32,7 +32,7 @@ public class CodeSystem extends TerminologyResource {
 	
 	private static final long serialVersionUID = 5L;
 	
-	public static final String CODESYSTEM_RESOURCE_TYPE = "codesystem";
+	public static final String CODESYSTEM_RESOURCE_TYPE = "codesystems";
 	
 	/**
 	 * @since 8.0
