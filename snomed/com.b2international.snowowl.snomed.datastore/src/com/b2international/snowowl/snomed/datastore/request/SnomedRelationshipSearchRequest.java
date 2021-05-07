@@ -52,7 +52,8 @@ final class SnomedRelationshipSearchRequest extends SnomedComponentSearchRequest
 		MODIFIER,
 		VALUE_TYPE,
 		OPERATOR,
-		VALUE
+		VALUE,
+		HAS_DESTINATION_ID
 	}
 	
 	SnomedRelationshipSearchRequest() {}
@@ -88,6 +89,11 @@ final class SnomedRelationshipSearchRequest extends SnomedComponentSearchRequest
 		
 		if (containsKey(OptionKey.UNION_GROUP)) {
 			queryBuilder.filter(unionGroup(get(OptionKey.UNION_GROUP, Integer.class)));
+		}
+		
+		if (containsKey(OptionKey.HAS_DESTINATION_ID)) {
+			// No need to check the value for the option key here, as it can only be set to "true" in the builder
+			queryBuilder.filter(hasDestinationId());
 		}
 		
 		if (containsKey(OptionKey.VALUE_TYPE)) {

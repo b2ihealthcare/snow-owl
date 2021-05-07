@@ -15,13 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.entry;
 
-import static com.b2international.index.query.Expressions.exactMatch;
-import static com.b2international.index.query.Expressions.exists;
-import static com.b2international.index.query.Expressions.match;
-import static com.b2international.index.query.Expressions.matchAny;
-import static com.b2international.index.query.Expressions.matchAnyDouble;
-import static com.b2international.index.query.Expressions.matchAnyInt;
-import static com.b2international.index.query.Expressions.matchRange;
+import static com.b2international.index.query.Expressions.*;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Sets.newHashSet;
 
@@ -214,9 +208,9 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 				s -> matchRange(Fields.STRING_VALUE, s, null, includeLower, true), 
 				b -> { throw new IllegalArgumentException("Boolean values can not be included in range queries"); });
 		}
-
-		public static Expression withValueType() {
-			return exists(Fields.VALUE_TYPE);
+		
+		public static Expression hasDestinationId() {
+			return exists(Fields.DESTINATION_ID);
 		}
 
 		public static Expression valueType(final RelationshipValueType valueType) {

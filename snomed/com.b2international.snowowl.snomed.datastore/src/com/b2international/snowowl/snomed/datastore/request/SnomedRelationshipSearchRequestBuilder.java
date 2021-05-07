@@ -112,6 +112,10 @@ public final class SnomedRelationshipSearchRequestBuilder extends SnomedComponen
 		return addOption(OptionKey.OPERATOR, op).addOption(OptionKey.VALUE, values);
 	}
 	
+	public SnomedRelationshipSearchRequestBuilder hasDestinationId() {
+		return addOption(OptionKey.HAS_DESTINATION_ID, true);
+	}
+	
 	@Override
 	protected SearchResourceRequest<BranchContext, SnomedRelationships> createSearch() {
 		return new SnomedRelationshipSearchRequest();

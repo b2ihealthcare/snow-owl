@@ -71,6 +71,7 @@ public final class Rf2RelationshipExporter extends Rf2CoreComponentExporter<Snom
 	protected SnomedRelationshipSearchRequestBuilder createComponentSearchRequestBuilder() {
 		return SnomedRequests
 				.prepareSearchRelationship()
+				.hasDestinationId()
 				.filterByCharacteristicTypes(characteristicTypes)
 				.sortBy(SortField.ascending(SnomedRelationshipIndexEntry.Fields.ID));
 	}
