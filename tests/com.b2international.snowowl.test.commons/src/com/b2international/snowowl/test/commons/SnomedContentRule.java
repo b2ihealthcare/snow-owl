@@ -24,6 +24,7 @@ import org.junit.rules.ExternalResource;
 
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.attachments.Attachment;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.codesystem.CodeSystems;
@@ -87,7 +88,7 @@ public class SnomedContentRule extends ExternalResource {
 		final IEventBus eventBus = Services.bus();
 		final CodeSystems codeSystems = CodeSystemRequests.prepareSearchCodeSystem()
 				.setLimit(0)
-				.filterById(codeSystemId.toString())
+				.filterById(codeSystemId.getResourceId())
 				.buildAsync()
 				.execute(eventBus)
 				.getSync();
@@ -109,7 +110,8 @@ public class SnomedContentRule extends ExternalResource {
 			.orElse(null);
 			
 		CodeSystemRequests.prepareNewCodeSystem()
-			.setId(codeSystemId.toString())
+			.setId(codeSystemId.getResourceId())
+			.setBranchPath(SNOMEDCT.equals(codeSystemId) ? Branch.MAIN_PATH : null)
 			.setUrl("organizationLink")
 			.setDescription("description")
 			.setExtensionOf(extensionOf)
