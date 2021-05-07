@@ -73,7 +73,7 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 	@JsonProperty
 	LocalDate effectiveTime;
 	
-	@NotEmpty
+	@NotNull
 	@JsonProperty
 	ResourceURI resource;
 	
