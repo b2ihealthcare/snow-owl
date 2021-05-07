@@ -137,7 +137,11 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 					@Override
 					public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
 						for (String filePrefix : filePrefixes.keySet()) {
-							if (file.getFileName().toString().startsWith(filePrefix)) {
+							/* 
+							 * XXX: Need to add underscore to the end of each prefix here, as some file names 
+							 * are prefixes of each other.
+							 */
+							if (file.getFileName().toString().startsWith(filePrefix + "_")) {
 								existingFiles.add(filePrefix);
 								break;
 							}
@@ -170,7 +174,11 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 					@Override
 					public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
 						for (String filePrefix : fileToLinesMap.asMap().keySet()) {
-							if (file.getFileName().toString().startsWith(filePrefix)) {
+							/* 
+							 * XXX: Need to add underscore to the end of each prefix here, as some file names 
+							 * are prefixes of each other.
+							 */
+							if (file.getFileName().toString().startsWith(filePrefix + "_")) {
 								collectLines(resultMap, file, filePrefix, fileToLinesMap.get(filePrefix));
 								break;
 							}
@@ -672,7 +680,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		final Map<String, Boolean> files = ImmutableMap.<String, Boolean>builder()
 				.put("sct2_Description", true)
 				.put("sct2_TextDefinition", true)
-				.put("der2_cRefset_Language", true)
+				.put("der2_cRefset_LanguageDelta-en", true)
 				.build();
 				
 		assertArchiveContainsFiles(exportArchive, files);
