@@ -84,7 +84,7 @@ public final class CodeSystemConverter extends BaseResourceConverter<CodeSystemE
 		
 		final List<CodeSystemURI> upgradeOfURIs = results.stream()
 				.filter(codeSystem -> codeSystem.getUpgradeOf() != null)
-				.map(codeSystem -> codeSystem.getUpgradeOf())
+				.map(codeSystem -> new CodeSystemURI(codeSystem.getUpgradeOf().getCodeSystem()))
 				.collect(Collectors.toList());
 		
 		// nothing to expand, quit early
@@ -105,7 +105,7 @@ public final class CodeSystemConverter extends BaseResourceConverter<CodeSystemE
 
 		BaseRevisionBranching branching = context().service(BaseRevisionBranching.class);
 		for (CodeSystem result : results) {
-			String upgradeOfBranchPath = branchesByUpgradeOf.get(result.getUpgradeOf());
+			String upgradeOfBranchPath = branchesByUpgradeOf.get(new CodeSystemURI(result.getUpgradeOf().getCodeSystem()));
 			if (!Strings.isNullOrEmpty(upgradeOfBranchPath)) {
 				RevisionBranch branch = branching.getBranch(result.getBranchPath());
 				BranchState branchState = branching.getBranchState(result.getBranchPath(), upgradeOfBranchPath);
