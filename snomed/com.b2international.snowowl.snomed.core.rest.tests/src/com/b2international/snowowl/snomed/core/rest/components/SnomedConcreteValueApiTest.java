@@ -102,7 +102,7 @@ public class SnomedConcreteValueApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void createConcreteValueInvalidModule() {
 		Json requestBody = createConcreteValueRequestBody(
-			Concepts.ROOT_CONCEPT, Concepts.PART_OF, new RelationshipValue(5), Concepts.INFERRED_RELATIONSHIP, "11110000")
+			Concepts.ROOT_CONCEPT, Concepts.PART_OF, new RelationshipValue(5), Concepts.INFERRED_RELATIONSHIP, 0, "11110000")
 			.with("commitComment", "Created new concrete value with invalid moduleId");
 
 		createComponent(branchPath, SnomedComponentType.RELATIONSHIP, requestBody).statusCode(400);

@@ -253,7 +253,7 @@ public abstract class SnomedRestFixtures {
 
 	public static String createNewConcreteValue(IBranchPath concreteValuePath, String sourceId, String typeId, RelationshipValue value, String characteristicTypeId, int relationshipGroup) {
 		Map<?, ?> concreteValueRequestBody = Json.assign(createConcreteValueRequestBody(
-			sourceId, typeId, value, Concepts.MODULE_SCT_CORE, characteristicTypeId, relationshipGroup))
+			sourceId, typeId, value, characteristicTypeId, relationshipGroup))
 			.with("commitComment", "Created new relationship with value");
 
 		return assertCreated(createComponent(concreteValuePath, SnomedComponentType.RELATIONSHIP, concreteValueRequestBody));
@@ -264,14 +264,14 @@ public abstract class SnomedRestFixtures {
 	}
 
 	public static Json createConcreteValueRequestBody(String sourceId, String typeId, RelationshipValue value, String characteristicTypeId) {
-		return createConcreteValueRequestBody(sourceId, typeId, value, characteristicTypeId, Concepts.MODULE_SCT_CORE);
+		return createConcreteValueRequestBody(sourceId, typeId, value, characteristicTypeId, 0);
 	}
 
-	public static Json createConcreteValueRequestBody(String sourceId, String typeId, RelationshipValue value, String characteristicTypeId, String moduleId) {
-		return createConcreteValueRequestBody(sourceId, typeId, value, characteristicTypeId, moduleId, 0);
+	public static Json createConcreteValueRequestBody(String sourceId, String typeId, RelationshipValue value, String characteristicTypeId, int relationshipGroup) {
+		return createConcreteValueRequestBody(sourceId, typeId, value, characteristicTypeId, relationshipGroup, Concepts.MODULE_SCT_CORE);
 	}
 
-	public static Json createConcreteValueRequestBody(String sourceId, String typeId, RelationshipValue value, String characteristicTypeId, String moduleId, int relationshipGroup) {
+	public static Json createConcreteValueRequestBody(String sourceId, String typeId, RelationshipValue value, String characteristicTypeId, int relationshipGroup, String moduleId) {
 		return Json.object(
 			"moduleId", moduleId,
 			"sourceId", sourceId,

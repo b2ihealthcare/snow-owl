@@ -17,8 +17,6 @@ package com.b2international.snowowl.snomed.core.rest.io;
 
 import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.MODULE_SCT_CORE;
 import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.ROOT_CONCEPT;
-import static com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests.createCodeSystem;
-import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.createVersion;
 import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.UK_ACCEPTABLE_MAP;
 import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.UK_PREFERRED_MAP;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.createComponent;
@@ -28,14 +26,9 @@ import static com.b2international.snowowl.snomed.core.rest.SnomedExportRestReque
 import static com.b2international.snowowl.snomed.core.rest.SnomedExportRestRequests.export;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRefSetRestRequests.updateRefSetComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRefSetRestRequests.updateRefSetMemberEffectiveTime;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.DEFAULT_TERM;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.changeToDefining;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewConcept;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewDescription;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewRefSet;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewRefSetMember;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewRelationship;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createRefSetMemberRequestBody;
+import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.*;
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests.createCodeSystem;
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.createVersion;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.assertCreated;
 import static com.google.common.collect.Sets.newHashSet;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -45,12 +38,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
+import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Collection;
 import java.util.List;
@@ -76,10 +64,7 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.Rf2RefSetExportLayout;
-import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.*;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
@@ -217,7 +202,8 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		String statedRelationshipId = createNewRelationship(branchPath, Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT, Concepts.STATED_RELATIONSHIP);
 		String inferredRelationshipId = createNewRelationship(branchPath, Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT, Concepts.INFERRED_RELATIONSHIP);
 		String additionalRelationshipId = createNewRelationship(branchPath, Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT, Concepts.ADDITIONAL_RELATIONSHIP);
-
+		String valueRelationshipId = createNewConcreteValue(branchPath, Concepts.ROOT_CONCEPT, Concepts.PART_OF, new RelationshipValue(99));
+		
 		String transientEffectiveTime = "20170301";
 
 		Map<String, ?> config = ImmutableMap.<String, Object>builder()
@@ -259,15 +245,32 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 				Concepts.PART_OF,
 				Concepts.ADDITIONAL_RELATIONSHIP,
 				Concepts.EXISTENTIAL_RESTRICTION_MODIFIER); 
+		
+		String valueLine = TAB_JOINER.join(valueRelationshipId, 
+				transientEffectiveTime, 
+				"1", 
+				Concepts.MODULE_SCT_CORE, 
+				Concepts.ROOT_CONCEPT, 
+				"#99",
+				"0",
+				Concepts.PART_OF,
+				Concepts.INFERRED_RELATIONSHIP,
+				Concepts.EXISTENTIAL_RESTRICTION_MODIFIER); 
 
 		Multimap<String, Pair<Boolean, String>> fileToLinesMap = ArrayListMultimap.<String, Pair<Boolean, String>>create();
 
 		fileToLinesMap.put("sct2_StatedRelationship", Pair.of(true, statedLine));
 		fileToLinesMap.put("sct2_StatedRelationship", Pair.of(false, inferredLine));
 		fileToLinesMap.put("sct2_StatedRelationship", Pair.of(false, additionalLine));
+		fileToLinesMap.put("sct2_StatedRelationship", Pair.of(false, valueLine));
 		fileToLinesMap.put("sct2_Relationship", Pair.of(false, statedLine));
 		fileToLinesMap.put("sct2_Relationship", Pair.of(true, inferredLine));
 		fileToLinesMap.put("sct2_Relationship", Pair.of(true, additionalLine));
+		fileToLinesMap.put("sct2_Relationship", Pair.of(false, valueLine));
+		fileToLinesMap.put("sct2_RelationshipConcreteValues", Pair.of(false, statedLine));
+		fileToLinesMap.put("sct2_RelationshipConcreteValues", Pair.of(false, inferredLine));
+		fileToLinesMap.put("sct2_RelationshipConcreteValues", Pair.of(false, additionalLine));
+		fileToLinesMap.put("sct2_RelationshipConcreteValues", Pair.of(true, valueLine));
 
 		assertArchiveContainsLines(exportArchive, fileToLinesMap);
 	}
