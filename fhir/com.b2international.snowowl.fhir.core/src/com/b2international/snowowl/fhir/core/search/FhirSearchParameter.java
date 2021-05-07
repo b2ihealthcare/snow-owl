@@ -68,24 +68,11 @@ public class FhirSearchParameter extends FhirParameter {
 			return this;
 		}
 		
-		/**
-		 * Request parameter types
-		 * 	<li>number (missing)
-		 * 	<li>date (missing)
-		 * 	<li>string (missing, exact, contains)
-		 * 	<li>token (missing, text, in, below, above, not-in)
-		 * 	<li>reference (missing, type)
-		 * 	<li>composite (missing)
-		 * 	<li>quantity (missing)
-		 * 	<li>uri (missing, below, above) 
-		 */
 		@Override
 		protected FhirSearchParameter doBuild() {
-			
-			//additional validation comes here
-			fhirUriSearchParameterDefinition.isValidModifier(modifier);
+			fhirUriSearchParameterDefinition.validateModifier(modifier);
+			fhirUriSearchParameterDefinition.validateValues(values);
 			return new FhirSearchParameter(fhirUriSearchParameterDefinition, modifier, values);
-			
 		}
 	
 	}

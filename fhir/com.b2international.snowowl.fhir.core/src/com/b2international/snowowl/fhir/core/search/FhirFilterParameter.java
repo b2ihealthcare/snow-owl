@@ -15,13 +15,7 @@
  */
 package com.b2international.snowowl.fhir.core.search;
 
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
-import com.b2international.snowowl.fhir.core.exceptions.FhirException;
 
 /**
  * Class to represent a FHIR URI filter parameter.
@@ -55,16 +49,7 @@ public class FhirFilterParameter extends FhirParameter {
 		
 		@Override
 		protected FhirFilterParameter doBuild() {
-			
-			//No restriction in the definition
-			Set<String> supportedValues = filterParameterDefinition.getSupportedValues();
-			Set<String> uppercaseValues = values.stream().map(String::toUpperCase).collect(Collectors.toSet());
-			if (!supportedValues.isEmpty() && !supportedValues.containsAll(uppercaseValues)) {
-				
-				throw FhirException.createFhirError(String.format("Filter parameter value %s is not supported. Supported parameter values are %s.", Arrays.toString(values.toArray()), Arrays.toString(supportedValues.toArray())), 
-					OperationOutcomeCode.MSG_PARAM_UNKNOWN, "SEARCH_REQUEST_PARAMETER_MARKER");
-			}
-			
+			filterParameterDefinition.validateValues(values);
 			return new FhirFilterParameter(filterParameterDefinition, values);
 		}
 	}

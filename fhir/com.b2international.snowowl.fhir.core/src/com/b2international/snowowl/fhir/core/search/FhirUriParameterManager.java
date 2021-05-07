@@ -134,11 +134,11 @@ public class FhirUriParameterManager {
 	
 	private void validateFilterParameters(Set<FhirFilterParameter> filterParameters) {
 		
-		filterParameters.forEach(p -> {
-			if (!p.getParameterDefinition().isMultipleValuesSupported() && p.getValues().size() > 1) {
-				throw FhirException.createFhirError(String.format("Too many filter parameter values %s are submitted for parameter %s.", Arrays.toString(p.getValues().toArray()), p.getName()), OperationOutcomeCode.MSG_PARAM_INVALID, SEARCH_REQUEST_PARAMETER_MARKER);
-			}
-		});
+//		filterParameters.forEach(p -> {
+//			if (!p.getParameterDefinition().isMultipleValuesSupported() && p.getValues().size() > 1) {
+//				throw FhirException.createFhirError(String.format("Too many filter parameter values %s are submitted for parameter %s.", Arrays.toString(p.getValues().toArray()), p.getName()), OperationOutcomeCode.MSG_PARAM_INVALID, SEARCH_REQUEST_PARAMETER_MARKER);
+//			}
+//		});
 		
 		
 		if (filterParameters.stream().anyMatch(p -> p.getName().equals(FhirFilterParameterKey._summary.name())) && 

@@ -15,10 +15,19 @@
  */
 package com.b2international.snowowl.fhir.core.search;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.text.ParseException;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.time.DateUtils;
 
 import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.core.exceptions.FhirException;
@@ -30,6 +39,19 @@ import com.google.common.collect.Sets;
  * @since 7.14
  */
 public class FhirUriParameterDefinition {
+	
+	protected static final String SEARCH_REQUEST_PARAMETER_MARKER = "SearchRequestParameter"; //$NON-NLS-N$
+	
+	private String[] dateTimePatters = new String[] {
+							"yyyy", 
+							"yyyy-MM", 
+							"yyyy-MM-dd",
+							"yyyy-MM-dd'T'HH:mm:ss",
+							"yyyy-MM-dd'T'HH:mm:ssZ",
+							"yyyy-MM-dd'T'HH:mm:ss.SSSZ",
+							"yyyy-MM-dd'T'HH:mm:ssXXX", 
+							"yyyy-MM-dd'T'HH:mm:ss.SSSSXXX",
+							"yyyy-MM-dd'T'HH:mm:ss.SSSX"};
 	
 	public enum SearchRequestParameterModifier {
 		missing,
@@ -145,7 +167,7 @@ public class FhirUriParameterDefinition {
 		return supportedValues;
 	}
 	
-	public void isValidModifier(SearchRequestParameterModifier modifier) {
+	public void validateModifier(SearchRequestParameterModifier modifier) {
 		if (modifier == null) return;
 		
 		if (!Sets.newHashSet(SearchRequestParameterModifier.values()).contains(modifier)) {
@@ -154,6 +176,55 @@ public class FhirUriParameterDefinition {
 		
 		if (!type.availableModifiers.contains(modifier)) {
 			throw FhirException.createFhirError(String.format("Invalid modifier '%s' for parameter [%s:%s].", modifier, name, type.name()), OperationOutcomeCode.MSG_PARAM_INVALID);
+		}
+	}
+	
+	public void validateValues(final Collection<String> values) {
+		
+		if (!isMultipleValuesSupported() && values.size() > 1) {
+			throw FhirException.createFhirError(String.format("Too many filter parameter values %s are submitted for parameter '%s'.", Arrays.toString(values.toArray()), getName()), OperationOutcomeCode.MSG_PARAM_INVALID, SEARCH_REQUEST_PARAMETER_MARKER);
+		}
+		
+		Set<String> supportedValues = getSupportedValues();
+		Set<String> uppercaseValues = values.stream().map(String::toUpperCase).collect(Collectors.toSet());
+		if (!supportedValues.isEmpty() && !supportedValues.containsAll(uppercaseValues)) {
+			
+			throw FhirException.createFhirError(String.format("Filter parameter value %s is not supported. Supported parameter values are %s.", Arrays.toString(values.toArray()), Arrays.toString(supportedValues.toArray())), 
+				OperationOutcomeCode.MSG_PARAM_UNKNOWN, "SEARCH_REQUEST_PARAMETER_MARKER");
+		}
+		
+		for (String value : values) {
+			switch (type) {
+			case NUMBER:
+				try {
+					Double.parseDouble(value);
+				} catch (NullPointerException | NumberFormatException e) {
+					throw FhirException.createFhirError(String.format("Invalid %s type parameter value '%s' are submitted for parameter '%s'.", type, value, name), OperationOutcomeCode.MSG_PARAM_INVALID, SEARCH_REQUEST_PARAMETER_MARKER);
+				}
+				break;
+			case DATE:
+				try {
+					LocalDate.parse(value);
+				} catch (NullPointerException | DateTimeParseException e) {
+					throw FhirException.createFhirError(String.format("Invalid %s type parameter value '%s' are submitted for parameter '%s'.", type, value, name), OperationOutcomeCode.MSG_PARAM_INVALID, SEARCH_REQUEST_PARAMETER_MARKER);
+				}
+				break;
+			case DATETIME:
+				try {
+					DateUtils.parseDate(value, dateTimePatters);
+				} catch (NullPointerException | ParseException e) {
+					throw FhirException.createFhirError(String.format("Invalid %s type parameter value '%s' are submitted for parameter '%s'.", type, value, name), OperationOutcomeCode.MSG_PARAM_INVALID, SEARCH_REQUEST_PARAMETER_MARKER);
+				}
+				break;
+			case URI:
+				try {
+					new URI(value);
+				} catch (URISyntaxException e) {
+					throw FhirException.createFhirError(String.format("Invalid %s type parameter value '%s' are submitted for parameter '%s'.", type, value, name), OperationOutcomeCode.MSG_PARAM_INVALID, SEARCH_REQUEST_PARAMETER_MARKER);
+				}
+			default:
+				break;
+			}
 		}
 		
 	}

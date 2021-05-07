@@ -22,10 +22,12 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import org.assertj.core.util.Sets;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -37,6 +39,7 @@ import com.b2international.commons.Pair;
 import com.b2international.snowowl.fhir.core.exceptions.FhirException;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.search.*;
+import com.b2international.snowowl.fhir.core.search.FhirSearchParameter.Builder;
 import com.b2international.snowowl.fhir.core.search.FhirUriParameterDefinition.FhirRequestParameterType;
 import com.b2international.snowowl.fhir.tests.FhirTest;
 import com.google.common.collect.HashMultimap;
@@ -88,6 +91,68 @@ public class FhirRequestParameterTest extends FhirTest {
 		assertThat(fhirParameter.getName(), equalTo("_text"));
 		assertThat(fhirParameter.getValues(), contains("test"));
 		assertThat(fhirParameter.getModifier(), equalTo("exact"));
+	}
+	
+	//yyyy-mm-ddThh:mm:ss[Z|(+|-)hh:mm]
+	@Test
+	public void invalidDateTimeParseTest() {
+		
+		exception.expect(FhirException.class);
+		exception.expectMessage("Invalid DATETIME type parameter value 'A' are submitted for parameter '_dateTimeParameter'.");
+		
+		FhirUriSearchParameterDefinition definition = new FhirUriSearchParameterDefinition("_dateTimeParameter", "DATETIME", Collections.emptySet(), false);
+		FhirSearchParameter.builder()
+				.parameterDefinition(definition)
+				.values(ImmutableSet.of("A")).build();
+	}
+	
+	/*
+	 * yyyy-mm-ddThh:mm:ss[Z|(+|-)hh:mm]
+	 * A date, date-time or partial date (e.g. just year or year + month) as used in human communication. 
+	 * The format is YYYY, YYYY-MM, YYYY-MM-DD or YYYY-MM-DDThh:mm:ss+zz:zz, e.g. 2018, 1973-06, 1905-08-23, 2015-02-07T13:28:17-05:00 or 2017-01-01T00:00:00.000Z. 
+	 * If hours and minutes are specified, a time zone SHALL be populated. 
+	 * Seconds must be provided due to schema type constraints but may be zero-filled and may be ignored at receiver discretion. 
+	 * Dates SHALL be valid dates. The time "24:00" is not allowed. Leap Seconds are allowed
+	 */
+	@Test
+	public void validDateTimeParseTest() {
+		
+		String keyString = "_dateTimeParameter";
+		FhirUriSearchParameterDefinition definition = new FhirUriSearchParameterDefinition(keyString, "DATETIME", Collections.emptySet(), false);
+		Builder parameter = FhirSearchParameter.builder().parameterDefinition(definition);
+		
+		String value = "2021";
+		FhirSearchParameter searchParameter = parameter.values(ImmutableSet.of(value)).build();
+		assertThat(searchParameter.getValues().iterator().next(), equalTo(value));
+		
+		value = "2021-05";
+		searchParameter = parameter.values(ImmutableSet.of(value)).build();
+		assertThat(searchParameter.getValues().iterator().next(), equalTo(value));
+		
+		value = "2021-05-09";
+		searchParameter = parameter.values(ImmutableSet.of(value)).build();
+		assertThat(searchParameter.getValues().iterator().next(), equalTo(value));
+		
+		value = "2021-05-09T13:24:24-05:00";
+		searchParameter = parameter.values(ImmutableSet.of(value)).build();
+		assertThat(searchParameter.getValues().iterator().next(), equalTo(value));
+		
+		value = "2021-05-09T13:24:24.000-05:00";
+		searchParameter = parameter.values(ImmutableSet.of(value)).build();
+		assertThat(searchParameter.getValues().iterator().next(), equalTo(value));
+		
+		value = "2021-05-09T13:24:24-0500";
+		searchParameter = parameter.values(ImmutableSet.of(value)).build();
+		assertThat(searchParameter.getValues().iterator().next(), equalTo(value));
+
+		value = "2021-05-09T13:24:24.000-0500";
+		searchParameter = parameter.values(ImmutableSet.of(value)).build();
+		assertThat(searchParameter.getValues().iterator().next(), equalTo(value));
+		
+		value = "2017-01-01T00:00:00.000Z";
+		searchParameter = parameter.values(ImmutableSet.of(value)).build();
+		assertThat(searchParameter.getValues().iterator().next(), equalTo(value));
+		
 	}
 	
 	@Test
@@ -145,7 +210,7 @@ public class FhirRequestParameterTest extends FhirTest {
 	public void tooManyFilterParameterValuesTest() {
 		
 		exception.expect(FhirException.class);
-		exception.expectMessage("Too many filter parameter values [true, false] are submitted for parameter _summary.");
+		exception.expectMessage("Too many filter parameter values [true, false] are submitted for parameter '_summary'.");
 		
 		Multimap<String, String> paramMap = convertToMultimap("http://localhost?_summary=true, false");
 		parameterManager.processParameters(paramMap);
@@ -200,6 +265,17 @@ public class FhirRequestParameterTest extends FhirTest {
 		assertThat(fhirParameter.getName(), equalTo("_id"));
 		assertThat(fhirParameter.getType(), equalTo(FhirRequestParameterType.STRING));
 		assertThat(fhirParameter.getValues(), contains("1"));
+	}
+	
+	@Test
+	public void invalidDateParameterValueTest() {
+		
+		exception.expect(FhirException.class);
+		exception.expectMessage("Invalid DATE type parameter value '1' are submitted for parameter '_lastUpdated'.");
+		
+		Multimap<String, String> paramMap = convertToMultimap("http://localhost?_lastUpdated=1");
+		parameterManager.processParameters(paramMap);
+		
 	}
 	
 	//Not really a test case - to check Spring/Guava parameter processing

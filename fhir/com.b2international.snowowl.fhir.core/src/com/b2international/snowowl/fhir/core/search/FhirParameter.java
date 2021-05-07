@@ -16,9 +16,11 @@
 package com.b2international.snowowl.fhir.core.search;
 
 import java.util.Collection;
+import java.util.Collections;
 
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.b2international.snowowl.fhir.core.search.FhirUriParameterDefinition.FhirRequestParameterType;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
 /**
@@ -96,17 +98,16 @@ public abstract class FhirParameter {
 		protected Collection<String> values = Sets.newHashSet();
 		
 		public B values(final Collection<String> values) {
-			this.values.addAll(values);
+			this.values = values;
 			return getSelf();
 		}
 		
 		public B value(final String value) {
-			this.values.add(value);
+			this.values = ImmutableSet.of(value);
 			return getSelf();
 		}
 		
 		protected abstract B getSelf();
-	
 	}
 
 }
