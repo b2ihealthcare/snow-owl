@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 package com.b2international.snowowl.snomed.reasoner.converter;
+
+import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.Collection;
 import java.util.List;
@@ -31,6 +33,7 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.BaseResourceConverter;
 import com.b2international.snowowl.core.request.BranchRequest;
 import com.b2international.snowowl.core.request.RevisionIndexReadRequest;
+import com.b2international.snowowl.core.request.SearchResourceRequestIterator;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
@@ -38,12 +41,12 @@ import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.reasoner.domain.ChangeNature;
-import com.b2international.snowowl.snomed.reasoner.domain.ClassificationTask;
 import com.b2international.snowowl.snomed.reasoner.domain.ReasonerRelationship;
 import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChange;
 import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChanges;
 import com.b2international.snowowl.snomed.reasoner.index.RelationshipChangeDocument;
 import com.b2international.snowowl.snomed.reasoner.request.ClassificationRequests;
+import com.b2international.snowowl.snomed.reasoner.request.ClassificationSearchRequestBuilder;
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Maps;
@@ -56,6 +59,8 @@ import com.google.common.collect.Multimaps;
 public final class RelationshipChangeConverter 
 	extends BaseResourceConverter<RelationshipChangeDocument, RelationshipChange, RelationshipChanges> {
 
+	private static final int BATCH_LIMIT = 10_000;
+	
 	private static final String MEMBERS = "members";
 	
 	public RelationshipChangeConverter(final RepositoryContext context, final Options expand, final List<ExtendedLocale> locales) {
@@ -74,8 +79,8 @@ public final class RelationshipChangeConverter
 		resource.setChangeNature(entry.getNature());
 
 		/*
-		 * Inferred IS A relationships: ID is null (information is coming from the reasoner)
-		 * Inferred non-IS A relationships: ID refers to the "origin" relationship's ID
+		 * Inferred relationships from OWL member and reasoner: ID is null
+		 * Inferred relationships from stated non-IS A relationships: ID refers to the "origin" relationship's ID
 		 * Updated relationships: ID refers to the relationship that should be updated in place 
 		 * Redundant relationships: ID refers to the relationship that should be removed or deactivated
 		 */
@@ -102,11 +107,12 @@ public final class RelationshipChangeConverter
 				relationship.setCharacteristicTypeId(entry.getCharacteristicTypeId());
 				
 				/*
-				 * Inferred IS A relationships have even more stored information, which we set on the response object.
+				 * Inferred relationships not derived from a stated relationship will need more stored information
 				 */
 				if (entry.getRelationshipId() == null) {
 					relationship.setTypeId(entry.getTypeId());
 					relationship.setDestinationId(entry.getDestinationId());
+					relationship.setValue(entry.getValue());
 				}
 				break;
 				
@@ -230,6 +236,7 @@ public final class RelationshipChangeConverter
 							// reasonerRelationship.setSource(...) is already set
 							// reasonerRelationship.setType(...) is already set
 							// reasonerRelationship.setUnionGroup(...) is already set
+							// reasonerRelationship.setValue(...) is already set
 							
 						} else {
 						
@@ -244,6 +251,7 @@ public final class RelationshipChangeConverter
 							// reasonerRelationship.setSource(...) is already set
 							reasonerRelationship.setType(expandedRelationship.getType());
 							// reasonerRelationship.setUnionGroup(...) is already set
+							reasonerRelationship.setValueAsObject(expandedRelationship.getValueAsObject());
 						}
 						break;
 						
@@ -260,6 +268,7 @@ public final class RelationshipChangeConverter
 							reasonerRelationship.setSource(expandedRelationship.getSource());
 							reasonerRelationship.setType(expandedRelationship.getType());
 							reasonerRelationship.setUnionGroup(expandedRelationship.getUnionGroup());
+							reasonerRelationship.setValueAsObject(expandedRelationship.getValueAsObject());
 						}
 						break;
 						
@@ -275,7 +284,9 @@ public final class RelationshipChangeConverter
 							// reasonerRelationship.setReleased(...) is already set
 							reasonerRelationship.setSource(expandedRelationship.getSource());
 							reasonerRelationship.setType(expandedRelationship.getType());
-							reasonerRelationship.setUnionGroup(expandedRelationship.getUnionGroup());						}
+							reasonerRelationship.setUnionGroup(expandedRelationship.getUnionGroup());
+							reasonerRelationship.setValueAsObject(expandedRelationship.getValueAsObject());
+						}
 						break;
 						
 					default:
@@ -292,13 +303,16 @@ public final class RelationshipChangeConverter
 				.map(RelationshipChange::getClassificationId)
 				.collect(Collectors.toSet());
 
-		final Map<String, String> branchesByClassificationIdMap = ClassificationRequests.prepareSearchClassification()
+		final Map<String, String> branchesByClassificationIdMap = newHashMap();
+		final ClassificationSearchRequestBuilder requestBuilder = ClassificationRequests.prepareSearchClassification()
 				.filterByIds(classificationTaskIds)
-				.all()
-				.build()
-				.execute(context())
-				.stream()
-				.collect(Collectors.toMap(ClassificationTask::getId, ClassificationTask::getBranch));
+				.setLimit(BATCH_LIMIT);
+		
+		final var requestIterator = new SearchResourceRequestIterator<>(requestBuilder, 
+				b -> b.build().execute(context()));
+		
+		requestIterator.forEachRemaining(tasks -> tasks.stream()
+				.forEachOrdered(t -> branchesByClassificationIdMap.put(t.getId(), t.getBranch())));
 
 		final Multimap<String, RelationshipChange> itemsByBranch = Multimaps.index(results, 
 				r -> branchesByClassificationIdMap.get(r.getClassificationId()));

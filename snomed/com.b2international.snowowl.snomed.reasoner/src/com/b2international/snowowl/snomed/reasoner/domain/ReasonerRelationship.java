@@ -16,10 +16,13 @@
 package com.b2international.snowowl.snomed.reasoner.domain;
 
 import java.io.Serializable;
+import java.util.function.Function;
 
+import com.b2international.snowowl.snomed.core.domain.RelationshipValue;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 
 /**
  * @since 7.0
@@ -41,8 +44,17 @@ public final class ReasonerRelationship implements Serializable {
 	private String modifierId;
 	private SnomedConcept source;
 	private SnomedConcept destination;
+	private RelationshipValue value;
 	private SnomedConcept type;
 
+	private static <T, U> U ifNotNull(final T value, final Function<T, U> mapper) {
+		if (value != null) {
+			return mapper.apply(value);
+		} else {
+			return null;
+		}
+	}
+	
 	// Default constructor is used in JSON de-serialization
 	public ReasonerRelationship() {	}
 	
@@ -73,7 +85,7 @@ public final class ReasonerRelationship implements Serializable {
 	
 	@JsonProperty
 	public String getSourceId() {
-		return getSource() == null ? null : getSource().getId();
+		return ifNotNull(getSource(), SnomedConcept::getId);
 	}
 	
 	/**
@@ -85,7 +97,7 @@ public final class ReasonerRelationship implements Serializable {
 
 	@JsonProperty
 	public String getDestinationId() {
-		return getDestination() == null ? null : getDestination().getId();
+		return ifNotNull(getDestination(), SnomedConcept::getId);
 	}
 
 	/**
@@ -93,6 +105,15 @@ public final class ReasonerRelationship implements Serializable {
 	 */
 	public SnomedConcept getDestination() {
 		return destination;
+	}
+	
+	@JsonIgnore
+	public RelationshipValue getValueAsObject() {
+		return value;
+	}
+	
+	public String getValue() {
+		return ifNotNull(getValueAsObject(), RelationshipValue::toLiteral);
 	}
 
 	/**
@@ -109,7 +130,7 @@ public final class ReasonerRelationship implements Serializable {
 	 */
 	@JsonProperty
 	public String getTypeId() {
-		return getType() == null ? null : getType().getId();
+		return ifNotNull(getType(), SnomedConcept::getId);
 	}
 
 	/**
@@ -161,7 +182,7 @@ public final class ReasonerRelationship implements Serializable {
 	
 	@JsonIgnore
 	public void setSourceId(final String sourceId) {
-		setSource(new SnomedConcept(sourceId));
+		setSource(ifNotNull(sourceId, SnomedConcept::new));
 	}
 
 	public void setDestination(final SnomedConcept destination) {
@@ -170,7 +191,16 @@ public final class ReasonerRelationship implements Serializable {
 	
 	@JsonIgnore
 	public void setDestinationId(final String destinationId) {
-		setDestination(new SnomedConcept(destinationId));
+		setDestination(ifNotNull(destinationId, SnomedConcept::new));
+	}
+	
+	@JsonIgnore
+	public void setValueAsObject(final RelationshipValue value) {
+		this.value = value;
+	}
+
+	public void setValue(final String literal) {
+		setValueAsObject(RelationshipValue.fromLiteral(literal));
 	}
 	
 	public void setType(final SnomedConcept type) {
@@ -179,7 +209,7 @@ public final class ReasonerRelationship implements Serializable {
 	
 	@JsonIgnore
 	public void setTypeId(final String typeId) {
-		setType(new SnomedConcept(typeId));
+		setType(ifNotNull(typeId, SnomedConcept::new));
 	}
 	
 	public void setDestinationNegated(final Boolean destinationNegated) {
@@ -204,28 +234,18 @@ public final class ReasonerRelationship implements Serializable {
 
 	@Override
 	public String toString() {
-		final StringBuilder builder = new StringBuilder();
-		builder.append("ReasonerRelationship [originId=");
-		builder.append(originId);
-		builder.append(", released=");
-		builder.append(released);
-		builder.append(", destinationNegated=");
-		builder.append(destinationNegated);
-		builder.append(", group=");
-		builder.append(group);
-		builder.append(", unionGroup=");
-		builder.append(unionGroup);
-		builder.append(", characteristicTypeId=");
-		builder.append(characteristicTypeId);
-		builder.append(", modifierId=");
-		builder.append(modifierId);
-		builder.append(", source=");
-		builder.append(source);
-		builder.append(", destination=");
-		builder.append(destination);
-		builder.append(", type=");
-		builder.append(type);
-		builder.append("]");
-		return builder.toString();
+		return MoreObjects.toStringHelper(this)
+			.add("originId", originId)
+			.add("released", released)
+			.add("destinationNegated", destinationNegated)
+			.add("group", group)
+			.add("unionGroup", unionGroup)
+			.add("characteristicTypeId", characteristicTypeId)
+			.add("modifierId", modifierId)
+			.add("sourceId", getSourceId())
+			.add("typeId", getTypeId())
+			.add("destinationId", getDestinationId())
+			.add("value", getValue())
+			.toString();
 	}
 }
