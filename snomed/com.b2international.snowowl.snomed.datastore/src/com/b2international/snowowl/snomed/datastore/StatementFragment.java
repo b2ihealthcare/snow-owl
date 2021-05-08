@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.datastore;
 
 import java.io.Serializable;
+import java.util.function.Function;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
@@ -95,6 +96,10 @@ public abstract class StatementFragment implements Serializable {
 		return hasStatedPair;
 	}
 	
+	public abstract <T> T map(
+		final Function<StatementFragmentWithDestination, T> destinationFn, 
+		final Function<StatementFragmentWithValue, T> valueFn);
+
 	/*
 	 * XXX: hashCode and equals is context-specific for statements; locking them to
 	 * the default implementation here.

@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore;
 
+import java.util.function.Function;
+
 import com.google.common.base.MoreObjects.ToStringHelper;
 
 /**
@@ -43,6 +45,13 @@ public final class StatementFragmentWithValue extends StatementFragment {
 
 	public String getValue() {
 		return value;
+	}
+	
+	@Override
+	public <T> T map(
+		final Function<StatementFragmentWithDestination, T> destinationFn,
+		final Function<StatementFragmentWithValue, T> valueFn) {
+		return valueFn.apply(this);
 	}
 
 	@Override
