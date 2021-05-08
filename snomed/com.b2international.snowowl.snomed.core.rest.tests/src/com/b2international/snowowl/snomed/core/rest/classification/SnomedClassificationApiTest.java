@@ -15,20 +15,10 @@
  */
 package com.b2international.snowowl.snomed.core.rest.classification;
 
-import static com.b2international.snowowl.snomed.core.rest.SnomedClassificationRestRequests.beginClassification;
-import static com.b2international.snowowl.snomed.core.rest.SnomedClassificationRestRequests.beginClassificationSave;
-import static com.b2international.snowowl.snomed.core.rest.SnomedClassificationRestRequests.getClassification;
-import static com.b2international.snowowl.snomed.core.rest.SnomedClassificationRestRequests.getClassificationJobId;
-import static com.b2international.snowowl.snomed.core.rest.SnomedClassificationRestRequests.getEquivalentConceptSets;
-import static com.b2international.snowowl.snomed.core.rest.SnomedClassificationRestRequests.getRelationshipChanges;
-import static com.b2international.snowowl.snomed.core.rest.SnomedClassificationRestRequests.waitForClassificationJob;
-import static com.b2international.snowowl.snomed.core.rest.SnomedClassificationRestRequests.waitForClassificationSaveJob;
+import static com.b2international.snowowl.snomed.core.rest.SnomedClassificationRestRequests.*;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.createComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.getComponent;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.changeToDefining;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewConcept;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewRelationship;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createRelationshipRequestBody;
+import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.*;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests.createCodeSystem;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.createVersion;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getNextAvailableEffectiveDateAsString;
@@ -39,6 +29,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.io.InputStream;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -48,16 +39,13 @@ import org.junit.Test;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.repository.JsonSupport;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.core.domain.RelationshipValue;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
-import com.b2international.snowowl.snomed.reasoner.domain.ChangeNature;
-import com.b2international.snowowl.snomed.reasoner.domain.ClassificationStatus;
-import com.b2international.snowowl.snomed.reasoner.domain.EquivalentConceptSets;
-import com.b2international.snowowl.snomed.reasoner.domain.ReasonerRelationship;
-import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChange;
-import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChanges;
+import com.b2international.snowowl.snomed.reasoner.domain.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Iterables;
@@ -184,6 +172,91 @@ public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 		.statusCode(200)
 		.body("status", equalTo(ClassificationStatus.SAVED.name()));
 
+		assertEquals(2, getPersistedInferredRelationshipCount(branchPath, parentConceptId));
+		assertEquals(2, getPersistedInferredRelationshipCount(branchPath, childConceptId));
+	}
+	
+	@Test
+	public void persistDataHasValueAxiom() throws Exception {
+		String parentConceptId = createNewConcept(branchPath);
+		String childConceptId = createNewConcept(branchPath, parentConceptId);
+
+		createNewRefSetMember(branchPath, parentConceptId, Concepts.REFSET_OWL_AXIOM, Map.of(
+			SnomedRf2Headers.FIELD_OWL_EXPRESSION, "SubClassOf("
+			+ ":" + parentConceptId 
+			+ " ObjectIntersectionOf(" 
+			+ ":" + Concepts.ROOT_CONCEPT
+			+ " ObjectSomeValuesFrom(:609096000 "
+			+ "DataHasValue(:" + Concepts.MORPHOLOGY + " \"99\"^^xsd:integer))))"));
+		
+		RelationshipValue value = new RelationshipValue(99);
+		verifyRelationshipValueChanges(parentConceptId, childConceptId, value );
+	}
+	
+	@Test
+	public void persistInferredRelationshipWithValue() throws Exception {
+		String parentConceptId = createNewConcept(branchPath);
+		String childConceptId = createNewConcept(branchPath, parentConceptId);
+		RelationshipValue value = new RelationshipValue("testing");
+		
+		// Add _stated_ relationship with value (unlikely to be encountered in a dataset)
+		createNewConcreteValue(branchPath, parentConceptId, Concepts.MORPHOLOGY, value, Concepts.STATED_RELATIONSHIP, 1);
+		
+		verifyRelationshipValueChanges(parentConceptId, childConceptId, value);
+	}
+
+	private void verifyRelationshipValueChanges(String parentConceptId, String childConceptId, RelationshipValue value) throws Exception {
+		String classificationId = getClassificationJobId(beginClassification(branchPath));
+		waitForClassificationJob(branchPath, classificationId)
+			.statusCode(200)
+			.body("status", equalTo(ClassificationStatus.COMPLETED.name()));
+		
+		InputStream inputStream = getRelationshipChanges(branchPath, classificationId)
+			.statusCode(200)
+			.extract()
+			.asInputStream();
+			
+		Collection<RelationshipChange> changes = MAPPER.readValue(inputStream, RelationshipChanges.class)
+			.getItems();
+		
+		Multimap<String, RelationshipChange> changesBySource = Multimaps.index(changes, c -> c.getRelationship().getSourceId());
+		Collection<RelationshipChange> parentRelationshipChanges = changesBySource.get(parentConceptId);
+		Collection<RelationshipChange> childRelationshipChanges = changesBySource.get(childConceptId);
+		
+		// parent concept should have two inferred relationships, one ISA and one MORPHOLOGY, both inferred
+		assertEquals(2, parentRelationshipChanges.size());
+		// child concept should have two inferred relationships, one ISA and one MORPHOLOGY from parent, both inferred
+		assertEquals(2, childRelationshipChanges.size());
+		
+		for (RelationshipChange change : parentRelationshipChanges) {
+			assertEquals(ChangeNature.NEW, change.getChangeNature());
+			switch (change.getRelationship().getTypeId()) {
+				case Concepts.IS_A:
+					assertEquals(Concepts.ROOT_CONCEPT, change.getRelationship().getDestinationId());
+					break;
+				case Concepts.MORPHOLOGY:
+					assertEquals(value, change.getRelationship().getValueAsObject());
+					break;
+			}
+		}
+		
+		for (RelationshipChange change : childRelationshipChanges) {
+			assertEquals(ChangeNature.NEW, change.getChangeNature());
+			switch (change.getRelationship().getTypeId()) {
+				case Concepts.IS_A:
+					assertEquals(parentConceptId, change.getRelationship().getDestinationId());
+					break;
+				case Concepts.MORPHOLOGY:
+					assertEquals(value, change.getRelationship().getValueAsObject());
+					break;
+			}
+		}
+		
+		beginClassificationSave(branchPath, classificationId);
+		waitForClassificationSaveJob(branchPath, classificationId)
+			.statusCode(200)
+			.body("status", equalTo(ClassificationStatus.SAVED.name()));
+		
 		assertEquals(2, getPersistedInferredRelationshipCount(branchPath, parentConceptId));
 		assertEquals(2, getPersistedInferredRelationshipCount(branchPath, childConceptId));
 	}
