@@ -99,7 +99,8 @@ public final class SnomedOWLRelationshipDocument implements Serializable {
 				-1L,                            // moduleId     
 				false,                          // released     
 				false,                          // hasStatedPair
-				Long.parseLong(destinationId)); // destinationId	
+				Long.parseLong(destinationId),  // destinationId
+				false);                         // destinationNegated	
 		} else {
 			return new StatementFragmentWithValue(
 				Long.parseLong(typeId), // typeId        

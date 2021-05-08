@@ -25,9 +25,10 @@ import com.google.common.base.MoreObjects.ToStringHelper;
 public final class StatementFragmentWithDestination extends StatementFragment {
 
 	private final long destinationId;
+	private final boolean destinationNegated;
 
 	public StatementFragmentWithDestination(final long typeId, final long destinationId) {
-		this(typeId, 0, 0, false, -1L, -1L, false, false, destinationId);
+		this(typeId, 0, 0, false, -1L, -1L, false, false, destinationId, false);
 	}
 
 	public StatementFragmentWithDestination(
@@ -39,19 +40,26 @@ public final class StatementFragmentWithDestination extends StatementFragment {
 		final long moduleId, 
 		final boolean released, 
 		final boolean hasStatedPair,
-		final long destinationId) {
+		final long destinationId, 
+		final boolean destinationNegated) {
 
 		super(typeId, group, unionGroup, universal, statementId, moduleId, released, hasStatedPair);
 		this.destinationId = destinationId;
+		this.destinationNegated = destinationNegated;
 	}
 
 	public long getDestinationId() {
 		return destinationId;
 	}
-
+	
+	public boolean isDestinationNegated() {
+		return destinationNegated;
+	}
+	
 	@Override
 	protected ToStringHelper toStringHelper() {
 		return super.toStringHelper()
-			.add("destinationId", destinationId);
+			.add("destinationId", destinationId)
+			.add("destinationNegated", destinationNegated);
 	}
 }
