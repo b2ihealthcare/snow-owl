@@ -98,7 +98,6 @@ public final class SnomedOWLRelationshipDocument implements Serializable {
 				-1L,                            // statementId  
 				-1L,                            // moduleId     
 				false,                          // released     
-				false,                          // hasStatedPair
 				Long.parseLong(destinationId),  // destinationId
 				false);                         // destinationNegated	
 		} else {
@@ -110,7 +109,6 @@ public final class SnomedOWLRelationshipDocument implements Serializable {
 				-1L,                    // statementId  
 				-1L,                    // moduleId     
 				false,                  // released     
-				false,                  // hasStatedPair
 				value);                 // value	
 		}
 	}

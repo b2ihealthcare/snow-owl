@@ -41,7 +41,6 @@ public abstract class StatementFragment implements Serializable {
 	private final long statementId;
 	private final long moduleId;
 	private final boolean released;
-	private final boolean hasStatedPair;
 
 	protected StatementFragment(
 		final long typeId, 
@@ -50,8 +49,7 @@ public abstract class StatementFragment implements Serializable {
 		final boolean universal, 
 		final long statementId, 
 		final long moduleId,
-		final boolean released, 
-		final boolean hasStatedPair) {
+		final boolean released) {
 		
 		this.typeId = typeId;
 		this.group = group;
@@ -61,7 +59,6 @@ public abstract class StatementFragment implements Serializable {
 		this.statementId = statementId;
 		this.moduleId = moduleId;
 		this.released = released;
-		this.hasStatedPair = hasStatedPair;
 	}
 
 	public long getTypeId() {
@@ -92,10 +89,6 @@ public abstract class StatementFragment implements Serializable {
 		return released;
 	}
 
-	public boolean hasStatedPair() {
-		return hasStatedPair;
-	}
-	
 	public abstract <T> T map(
 		final Function<StatementFragmentWithDestination, T> destinationFn, 
 		final Function<StatementFragmentWithValue, T> valueFn);
@@ -127,8 +120,7 @@ public abstract class StatementFragment implements Serializable {
 			.add("universal", universal)
 			.add("statementId", statementId)
 			.add("moduleId", moduleId)
-			.add("released", released)
-			.add("hasStatedPair", hasStatedPair);
+			.add("released", released);
 	}
 
 	@Override

@@ -30,7 +30,7 @@ public final class StatementFragmentWithDestination extends StatementFragment {
 	private final boolean destinationNegated;
 
 	public StatementFragmentWithDestination(final long typeId, final long destinationId) {
-		this(typeId, 0, 0, false, -1L, -1L, false, false, destinationId, false);
+		this(typeId, 0, 0, false, -1L, -1L, false, destinationId, false);
 	}
 
 	public StatementFragmentWithDestination(
@@ -41,11 +41,10 @@ public final class StatementFragmentWithDestination extends StatementFragment {
 		final long statementId,
 		final long moduleId, 
 		final boolean released, 
-		final boolean hasStatedPair,
-		final long destinationId, 
+		final long destinationId,
 		final boolean destinationNegated) {
 
-		super(typeId, group, unionGroup, universal, statementId, moduleId, released, hasStatedPair);
+		super(typeId, group, unionGroup, universal, statementId, moduleId, released);
 		this.destinationId = destinationId;
 		this.destinationNegated = destinationNegated;
 	}

@@ -36,10 +36,9 @@ public final class StatementFragmentWithValue extends StatementFragment {
 		final long statementId,
 		final long moduleId, 
 		final boolean released, 
-		final boolean hasStatedPair,
 		final String value) {
 
-		super(typeId, group, unionGroup, universal, statementId, moduleId, released, hasStatedPair);
+		super(typeId, group, unionGroup, universal, statementId, moduleId, released);
 		this.value = value;
 	}
 
