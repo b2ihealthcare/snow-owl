@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +15,14 @@
  */
 package com.b2international.snowowl.core;
 
-import com.b2international.snowowl.core.events.Notifications;
-import com.b2international.snowowl.core.events.RepositoryEvent;
+import com.b2international.snowowl.core.domain.Bindable;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import io.reactivex.Observable;
 
 /**
  * @since 4.5
  */
-public interface Repository extends ServiceProvider, IDisposableService {
+public interface Repository extends ServiceProvider, IDisposableService, Bindable {
 
 	/**
 	 * @return the ID of the repository
@@ -44,21 +41,5 @@ public interface Repository extends ServiceProvider, IDisposableService {
 	 * @return
 	 */
 	IEventBus events();
-	
-	/**
-	 * @return an {@link Observable} of {@link RepositoryEvent}s sent by this {@link Repository}.
-	 */
-	default Observable<RepositoryEvent> notifications() {
-		return service(Notifications.class)
-				.ofType(RepositoryEvent.class)
-				.filter(notification -> id().equals(notification.getRepositoryId()));
-	}
- 
-	/**
-	 * Send a {@link RepositoryEvent notification} to each and every listener of this repository.
-	 * 
-	 * @param event
-	 */
-	void sendNotification(RepositoryEvent event);
 
 }

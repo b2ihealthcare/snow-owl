@@ -22,73 +22,23 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.b2international.snowowl.core.IDisposableService;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.MapMaker;
+import com.b2international.snowowl.core.context.ServiceContext;
 import com.google.common.collect.Maps;
-import com.google.inject.Provider;
 
 /**
  * A service registry that delegates calls to another {@link ServiceProvider} if the underlying registry does not have the required service.
  * 
  * @since 5.0
  */
-public class DelegatingContext implements ServiceProvider, Bindable, IDisposableService {
+public class DelegatingContext extends ServiceContext {
 
-	private final Map<Class<?>, Object> bindings = new MapMaker().makeMap();
 	private final ServiceProvider delegate;
-	private final AtomicBoolean disposed = new AtomicBoolean(false);
 
 	protected DelegatingContext(ServiceProvider delegate) {
 		this.delegate = checkNotNull(delegate, "delegate");
-	}
-	
-	@Override
-	public final boolean isDisposed() {
-		return disposed.get();
-	}
-	
-	@Override
-	public final void dispose() {
-		if (disposed.compareAndSet(false, true)) {
-			doDispose();
-			FluentIterable.from(bindings.values()).filter(IDisposableService.class).forEach(IDisposableService::dispose);
-		}
-	}
-
-	/**
-	 * Subclasses may override this method to do additional work before disposing this {@link DelegatingContext}. 
-	 */
-	protected void doDispose() {
-	}
-
-	/**
-	 * Method to bind a service interface to an implementation. Mainly used by the builder, but subclasses are allowed to change the underlying
-	 * registry.
-	 * 
-	 * @param type
-	 * @param object
-	 * @return
-	 */
-	@Override
-	public final <T> void bind(Class<T> type, T object) {
-		bindings.put(type, object);
-	}
-	
-	/**
-	 * Method to bind all bindings available in the given {@link Map}. Mainly used by the builder, but subclasses are allowed to change the underlying
-	 * registry.
-	 * 
-	 * @param source
-	 * @return
-	 */
-	@Override
-	public final void bindAll(Map<Class<?>, Object> source) {
-		bindings.putAll(source);
 	}
 	
 	@Override
@@ -97,14 +47,14 @@ public class DelegatingContext implements ServiceProvider, Bindable, IDisposable
 		if (delegate instanceof Bindable) {
 			aggregatedBindings.putAll(((Bindable) delegate).getBindings());
 		}
-		aggregatedBindings.putAll(bindings);
+		aggregatedBindings.putAll(super.getBindings());
 		return Map.copyOf(aggregatedBindings);
 	}
 
 	@Override
 	public <T> T service(Class<T> type) {
-		if (bindings.containsKey(type)) {
-			return type.cast(bindings.get(type));
+		if (hasBinding(type)) {
+			return super.service(type);
 		} else {
 			return delegate.service(type);
 		}
@@ -112,16 +62,11 @@ public class DelegatingContext implements ServiceProvider, Bindable, IDisposable
 	
 	@Override
 	public <T> Optional<T> optionalService(Class<T> type) {
-		if (bindings.containsKey(type)) {
-			return Optional.ofNullable(type.cast(bindings.get(type)));
+		if (hasBinding(type)) {
+			return super.optionalService(type);
 		} else {
 			return delegate.optionalService(type);
 		} 
-	}
-
-	@Override
-	public <T> Provider<T> provider(final Class<T> type) {
-		return () -> service(type);
 	}
 
 	protected ServiceProvider getDelegate() {

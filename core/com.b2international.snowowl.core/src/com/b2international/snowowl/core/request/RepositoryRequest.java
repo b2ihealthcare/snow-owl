@@ -24,13 +24,13 @@ import com.b2international.commons.exceptions.IllegalQueryParameterException;
 import com.b2international.index.Index;
 import com.b2international.index.Searcher;
 import com.b2international.index.query.QueryParseException;
+import com.b2international.snowowl.core.Repository;
+import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.domain.Bindable;
-import com.b2international.snowowl.core.domain.DelegatingContext;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.domain.RepositoryContextProvider;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.repository.DefaultRepositoryContext;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -38,6 +38,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public final class RepositoryRequest<B> extends DelegatingRequest<ServiceProvider, RepositoryContext, B> {
 
+	private static final long serialVersionUID = 1L;
+	
 	@JsonProperty
 	private final String repositoryId;
 
@@ -53,23 +55,20 @@ public final class RepositoryRequest<B> extends DelegatingRequest<ServiceProvide
 	
 	@Override
 	public B execute(final ServiceProvider context) {
-		RepositoryContext originalRepositoryContext = context.service(RepositoryContextProvider.class).getContext(repositoryId);
-		DelegatingContext.Builder<? extends RepositoryContext> repositoryContext = originalRepositoryContext.inject();
+		Repository repository = context.service(RepositoryManager.class).get(repositoryId);
+		
+		DefaultRepositoryContext repositoryContext = new DefaultRepositoryContext(context, repository.status());
 		
 		// by default add a NullProgressMonitor binding to the context
 		// if the previous context is a delegate context, injecting all services can override this safely 
 		repositoryContext.bind(IProgressMonitor.class, new NullProgressMonitor());
+		repositoryContext.bindAll(repository);
 		
-		if (context instanceof Bindable) {
-			repositoryContext.bindAll((Bindable) context);
-		}
-
 		// always "open" an index read context when executing requests inside a repository
-		return originalRepositoryContext.service(Index.class).read(index -> {
+		return repository.service(Index.class).read(index -> {
 			try {
-				return next(repositoryContext
-						.bind(Searcher.class, index)
-						.build());
+				repositoryContext.bind(Searcher.class, index);
+				return next(repositoryContext);
 			} catch (QueryParseException e) {
 				throw new IllegalQueryParameterException(e.getMessage());
 			}

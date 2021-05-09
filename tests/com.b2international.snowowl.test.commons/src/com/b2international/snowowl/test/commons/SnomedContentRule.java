@@ -16,6 +16,7 @@
 package com.b2international.snowowl.test.commons;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
@@ -29,6 +30,7 @@ import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.codesystem.CodeSystems;
 import com.b2international.snowowl.core.jobs.JobRequests;
+import com.b2international.snowowl.core.jobs.RemoteJobEntry;
 import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
 import com.b2international.snowowl.core.util.PlatformUtil;
@@ -81,7 +83,8 @@ public class SnomedContentRule extends ExternalResource {
 			.runAsJobWithRestart(SnomedRf2Requests.importJobKey(codeSystemId), "Initial SNOMEDCT import for tests")
 			.execute(Services.bus())
 			.getSync(1, TimeUnit.MINUTES);
-		JobRequests.waitForJob(Services.bus(), jobId, 2000 /* 2 seconds */);
+		RemoteJobEntry job = JobRequests.waitForJob(Services.bus(), jobId, 2000 /* 2 seconds */);
+		assertTrue("Failed to import RF2 archive", job.isSuccessful());
 	}
 	
 	private void createCodeSystemIfNotExist() {

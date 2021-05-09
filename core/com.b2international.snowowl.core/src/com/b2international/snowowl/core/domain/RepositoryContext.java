@@ -32,7 +32,7 @@ import com.b2international.snowowl.core.repository.RepositoryRequests;
  *
  * @since 4.5
  */
-public interface RepositoryContext extends ServiceProvider {
+public interface RepositoryContext extends ServiceProvider, Bindable {
 
 	default RepositoryInfo info() {
 		return service(RepositoryInfo.class);

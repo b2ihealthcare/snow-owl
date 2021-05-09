@@ -26,7 +26,6 @@ import org.slf4j.Logger;
 
 import com.b2international.commons.exceptions.RequestTimeoutException;
 import com.b2international.index.*;
-import com.b2international.index.es.client.EsClient;
 import com.b2international.index.es.client.EsClusterStatus;
 import com.b2international.index.mapping.Mappings;
 import com.b2international.index.revision.BaseRevisionBranching;
@@ -39,14 +38,9 @@ import com.b2international.snowowl.core.RepositoryInfo.Health;
 import com.b2international.snowowl.core.branch.BranchChangedEvent;
 import com.b2international.snowowl.core.config.IndexConfiguration;
 import com.b2international.snowowl.core.config.IndexSettings;
-import com.b2international.snowowl.core.config.RepositoryConfiguration;
-import com.b2international.snowowl.core.config.SnowOwlConfiguration;
-import com.b2international.snowowl.core.domain.DelegatingContext;
-import com.b2international.snowowl.core.events.RepositoryEvent;
-import com.b2international.snowowl.core.setup.Environment;
+import com.b2international.snowowl.core.context.ServiceContext;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.MapMaker;
 
 import net.jodah.failsafe.Failsafe;
 import net.jodah.failsafe.RetryPolicy;
@@ -54,16 +48,27 @@ import net.jodah.failsafe.RetryPolicy;
 /**
  * @since 4.1
  */
-public final class TerminologyRepository extends DelegatingContext implements Repository {
+public final class TerminologyRepository extends ServiceContext implements Repository {
 
 	private final String repositoryId;
+	private final ClassLoader classLoader;
+	private final IndexSettings indexSettings;
+	private final IndexConfiguration indexConfiguration;
 	private final Mappings mappings;
 	private final Logger log;
-	private final Map<Long, RepositoryCommitNotification> commitNotifications = new MapMaker().makeMap();
 	
-	TerminologyRepository(String repositoryId, int mergeMaxResults, Environment env, Mappings mappings, Logger log) {
-		super(env);
+	TerminologyRepository(
+			final String repositoryId,
+			final ClassLoader classLoader,
+			final IndexSettings indexSettings,
+			final IndexConfiguration indexConfiguration,
+			final Mappings mappings, 
+			final Logger log) {
+		super();
 		this.repositoryId = repositoryId;
+		this.classLoader = classLoader;
+		this.indexSettings = indexSettings;
+		this.indexConfiguration = indexConfiguration;
 		this.mappings = mappings;
 		this.log = log;
 	}
@@ -75,7 +80,7 @@ public final class TerminologyRepository extends DelegatingContext implements Re
 		RevisionIndex index = initIndex(mapper, mappings);
 		bind(Repository.class, this);
 		bind(Mappings.class, mappings);
-		bind(ClassLoader.class, getDelegate().plugins().getCompositeClassLoader());
+		bind(ClassLoader.class, classLoader);
 		// initialize the index
 		index.admin().create();
 	}
@@ -87,45 +92,26 @@ public final class TerminologyRepository extends DelegatingContext implements Re
 	
 	@Override
 	public IEventBus events() {
-		return getDelegate().service(IEventBus.class);
-	}
-	
-	@Override
-	public void sendNotification(RepositoryEvent event) {
-		if (event instanceof RepositoryCommitNotification) {
-			final RepositoryCommitNotification notification = (RepositoryCommitNotification) event;
-			// enqueue and wait until the actual CDO commit notification arrives
-			commitNotifications.put(notification.getCommitTimestamp(), notification);
-		} else {
-			event.publish(events());
-		}
+		return service(IEventBus.class);
 	}
 	
 	private RevisionIndex initIndex(final ObjectMapper mapper, Mappings mappings) {
-		final Map<String, Object> indexSettings = newHashMap(getDelegate().service(IndexSettings.class));
-		final IndexConfiguration repositoryIndexConfiguration = getDelegate().service(SnowOwlConfiguration.class).getModuleConfig(RepositoryConfiguration.class).getIndexConfiguration();
-		indexSettings.put(IndexClientFactory.NUMBER_OF_SHARDS, repositoryIndexConfiguration.getNumberOfShards());
+		final Map<String, Object> indexSettings = newHashMap(this.indexSettings);
+		indexSettings.put(IndexClientFactory.NUMBER_OF_SHARDS, this.indexConfiguration.getNumberOfShards());
 		final IndexClient indexClient = Indexes.createIndexClient(repositoryId, mapper, mappings, indexSettings);
 		final Index index = new DefaultIndex(indexClient);
 		final RevisionIndex revisionIndex = new DefaultRevisionIndex(index, service(TimestampProvider.class), mapper);
 		revisionIndex.branching().addBranchChangeListener(path -> {
-			sendNotification(new BranchChangedEvent(repositoryId, path));
+			new BranchChangedEvent(repositoryId, path).publish(events());
 		});
 		// register IndexClient per terminology
 		bind(IndexClient.class, indexClient);
-		// but register EsClient globally
-		getDelegate().services().registerService(EsClient.class, indexClient.client());
 		// register index and revision index access, the underlying index is the same
 		bind(Index.class, index);
 		bind(RevisionIndex.class, revisionIndex);
 		// register branching services
 		bind(BaseRevisionBranching.class, revisionIndex.branching());
 		return revisionIndex;
-	}
-
-	@Override
-	protected Environment getDelegate() {
-		return (Environment) super.getDelegate();
 	}
 
 	@Override

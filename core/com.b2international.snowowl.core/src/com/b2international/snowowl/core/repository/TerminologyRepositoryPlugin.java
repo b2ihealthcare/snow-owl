@@ -22,12 +22,13 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.b2international.index.IndexClient;
+import com.b2international.index.es.client.EsClient;
 import com.b2international.index.revision.Hooks;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.core.RepositoryInfo.Health;
 import com.b2international.snowowl.core.RepositoryManager;
-import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.ContextConfigurer;
 import com.b2international.snowowl.core.merge.ComponentRevisionConflictProcessor;
@@ -56,13 +57,10 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 		
 		if (env.isServer()) {
 			final DefaultRepositoryManager repositories = (DefaultRepositoryManager) env.service(RepositoryManager.class);
-			final RepositoryConfiguration repositoryConfig = configuration.getModuleConfig(RepositoryConfiguration.class);
 			final RepositoryBuilder builder = repositories.prepareCreate(getToolingId());
-			
 			
 			final Repository repo = builder
 					.withPreCommitHook(getTerminologyRepositoryPreCommitHook(builder.log()))
-					.setMergeMaxResults(repositoryConfig.getMergeMaxResults())
 					.addTerminologyComponents(getTerminologyComponents())
 					.addTerminologyComponents(getAdditionalTerminologyComponents())
 					.addMappings(getAdditionalMappings())
@@ -77,12 +75,16 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 					.bind(ContextConfigurer.class, getRequestConfigurer())
 					.bind(RepositoryCommitNotificationSender.class, new RepositoryCommitNotificationSender())
 					.build(env);
+			
 			RepositoryInfo status = repo.status();
 			if (status.health() == Health.GREEN) {
 				LOG.info("Started repository '{}' with status '{}'", repo.id(), status.health());
 			} else {
 				LOG.warn("Started repository '{}' with status '{}'. Diagnosis: {}.", status.id(), status.health(), status.diagnosis());
 			}
+			
+			// register EsClient from repository globally
+			env.services().registerService(EsClient.class, repo.service(IndexClient.class).client());
 		}
 		afterRun(configuration, env);
 	}
