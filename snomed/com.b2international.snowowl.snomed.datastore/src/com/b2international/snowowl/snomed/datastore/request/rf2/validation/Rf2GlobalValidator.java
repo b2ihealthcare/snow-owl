@@ -220,7 +220,7 @@ public class Rf2GlobalValidator {
 						&& !Rf2AttributeValueRefSetContentType.TYPE.equals(type);
 				
 				if (invalidHistoricalAssociationMember || invalidAttributeTypeMember) {
-					String message = String.format("%s %s with id '%s '%s", Rf2ValidationDefects.INVALID_REFSET_MEMBER_FIELD, type, memberId, effectiveTimeLabel);
+					String message = String.format("%s %s with id '%s '%s", Rf2ValidationDefects.INVALID_REFSET_MEMBER_TYPE, type, memberId, effectiveTimeLabel);
 					globalDefectAcceptor.error(message);
 				} 
 			});
