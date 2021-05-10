@@ -783,10 +783,7 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLM
 		final RelationshipValue relationshipValue = RelationshipValue.fromLiteral(literal);
 		final OWL2Datatype owl2Datatype = getOWL2Datatype(relationshipValue.type());
 		// Remove prefix and quoting from literals
-		final String serializedValue = relationshipValue.map(
-			i -> i.toString(),
-			d -> d.toString(),
-			s -> s);
+		final String serializedValue = relationshipValue.toObject().toString();
 		
 		final OWLDataProperty property = getConceptDataProperty(typeId);
 		final OWLLiteral owlLiteral = getOWLLiteral(serializedValue, owl2Datatype);

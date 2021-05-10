@@ -113,6 +113,10 @@ public final class RelationshipValue implements Serializable {
 			s -> "\"" + s.replace("\"", "\\\"") + "\""); // add leading and trailing quote, escape inner quotes
 	}
 
+	public Object toObject() {
+		return map(i -> i, d -> d, s -> s);
+	}
+
 	/**
 	 * @param integerConsumer
 	 * @return this instance, for method chaining
