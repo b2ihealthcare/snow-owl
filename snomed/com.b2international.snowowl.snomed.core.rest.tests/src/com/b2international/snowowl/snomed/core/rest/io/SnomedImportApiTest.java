@@ -30,6 +30,8 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.StreamSupport;
@@ -67,14 +69,14 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 	}
 	
 	private void importArchive(IBranchPath path, boolean createVersion, Rf2ReleaseType releaseType, final String fileName) {
-		importArchive(path, false, createVersion, releaseType, fileName);
+		importArchive(path, Collections.emptyList(), createVersion, releaseType, fileName);
 	}
 	
-	private void importArchive(IBranchPath path, boolean skipMissingComponents, boolean createVersion, Rf2ReleaseType releaseType, final String fileName) {
+	private void importArchive(IBranchPath path, List<String> ignoreMissingReferencesIn, boolean createVersion, Rf2ReleaseType releaseType, final String fileName) {
 		final Map<String, ?> importConfiguration = ImmutableMap.<String, Object>builder()
 				.put("type", releaseType.name())
 				.put("createVersions", createVersion)
-				.put("skipMissingComponents", skipMissingComponents)
+				.put("ignoreMissingReferencesIn", ignoreMissingReferencesIn)
 				.build();
 		importArchive(path, importConfiguration, fileName);
 	}
@@ -130,28 +132,19 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void import29MissingComponentsWithSkip() {		
 		getComponent(branchPath, SnomedComponentType.CONCEPT, "63961392103").statusCode(404);
-		importArchive(branchPath, true, false, Rf2ReleaseType.DELTA, "SnomedCT_Release_INT_20150131_missing_component.zip");
+		importArchive(branchPath, Collections.singletonList("900000000000490003"), false, Rf2ReleaseType.DELTA, "SnomedCT_Release_INT_20150131_missing_component.zip");
 		
-		//Assert that concept is imported while member with missing reference is skipped when skipMissingComponents is turned on
+		//Assert that concept is imported while member with missing reference is skipped when ignoreMissingReferencesIn lists its reference set
 		getComponent(branchPath, SnomedComponentType.CONCEPT, "63961392103").statusCode(200);
 		getComponent(branchPath, SnomedComponentType.MEMBER, "5312ec36-8baf-4768-8c4b-2d6f91094d4b").statusCode(404);
 	}
 	
 	@Test
 	public void import30MissingComponentsWithoutSkip() {
-		final String importFileName = "SnomedCT_Release_INT_20150131_missing_component.zip";
+		final String importFileName = "SnomedCT_Release_INT_20150131_missing_component.zip";	
+		importArchive(importFileName);
 		
-		//Assert that import fails when skipMissingComponents is turned on
-		final Map<String, ?> importConfiguration = ImmutableMap.<String, Object>builder()
-				.put("type", Rf2ReleaseType.DELTA.name())
-				.put("createVersions", false)
-				.put("skipMissingComponents", false)
-				.build();
-		
-		final String importId = lastPathSegment(doImport(branchPath, importConfiguration, getClass(), importFileName).statusCode(201)
-				.extract().header("Location"));
-		waitForImportJob(branchPath, importId).statusCode(200)
-			.body("status", equalTo(RemoteJobState.FINISHED.name()));
+		//Assert that import fails if ignoreMissingReferencesIn is not set on a member referring to a missing component
 		getComponent(branchPath, SnomedComponentType.CONCEPT, "63961392103").statusCode(404);
 		getComponent(branchPath, SnomedComponentType.MEMBER, "5312ec36-8baf-4768-8c4b-2d6f91094d4b").statusCode(404);
 	}
