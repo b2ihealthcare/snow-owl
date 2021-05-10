@@ -31,13 +31,11 @@ import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.repository.RevisionDocument;
 import com.b2international.snowowl.core.request.io.ImportDefectAcceptor;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
-import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
@@ -62,11 +60,11 @@ public class Rf2GlobalValidator {
 	private Map<String, String> dependenciesByEffectiveTime;
 	private Map<String, String> skippableMemberDependenciesByEffectiveTime;
 	
-	private boolean skipMissingComponents;
+	private final List<String> ignoreMissingReferencesIn;
 
-	public Rf2GlobalValidator(Logger log, boolean skipMissingComponents) {
+	public Rf2GlobalValidator(Logger log, List<String> ignoreMissingReferencesIn) {
 		this.log = log;
-		this.skipMissingComponents = skipMissingComponents;
+		this.ignoreMissingReferencesIn = ignoreMissingReferencesIn;
 	}
 	
 	public void validateTerminologyComponents(
@@ -74,7 +72,6 @@ public class Rf2GlobalValidator {
 			final ImportDefectAcceptor globalDefectAcceptor, 
 			final BranchContext context) {
 		
-		Set<String> metadataReferenceSets = ApplicationContext.getServiceForClass(SnomedCoreConfiguration.class).getExcludeFromImportSkipRefsetIds();
 		dependenciesByEffectiveTime = Maps.newHashMap();
 		skippableMemberDependenciesByEffectiveTime = Maps.newHashMap();
 		
@@ -113,15 +110,15 @@ public class Rf2GlobalValidator {
 				
 				if (!contentInSlice.contains(stringReferencedComponentId)) {
 					Set<String> referringMembers = slice.getMembersByReferencedComponent().get(referencedComponentId);
-					boolean isStructuralRefSetMember = false;
+					boolean failOnMissingReferences = false;
 					
 					for (String memberId : referringMembers) {
 						String[] referringMember = slice.getContent().get(memberId);
 						String referenceSet = referringMember[5];
-						isStructuralRefSetMember = metadataReferenceSets.contains(referenceSet);
+						failOnMissingReferences = !ignoreMissingReferencesIn.contains(referenceSet);
 					}
 					
-					if (isStructuralRefSetMember || !skipMissingComponents) {					
+					if (failOnMissingReferences) {		
 						dependenciesByEffectiveTime.put(stringReferencedComponentId, slice.getEffectiveTime());						
 					} else {
 						skippableMemberDependenciesByEffectiveTime.put(stringReferencedComponentId, slice.getEffectiveTime());
@@ -231,7 +228,7 @@ public class Rf2GlobalValidator {
 	}
 	
 	private boolean canBeSkipped(final String id) {
-		return skipMissingComponents && skippableMemberDependenciesByEffectiveTime.containsKey(id) && !dependenciesByEffectiveTime.containsKey(id);
+		return skippableMemberDependenciesByEffectiveTime.containsKey(id) && !dependenciesByEffectiveTime.containsKey(id);
 	}
 	
 	private void removeSkippableMembers(List<Rf2EffectiveTimeSlice> slices) {

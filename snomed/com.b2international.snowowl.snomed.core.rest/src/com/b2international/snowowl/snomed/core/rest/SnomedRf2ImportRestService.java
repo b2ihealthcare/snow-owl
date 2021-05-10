@@ -16,21 +16,14 @@
 package com.b2international.snowowl.snomed.core.rest;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.b2international.commons.exceptions.ApiError;
@@ -51,11 +44,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.request.rf2.SnomedRf2Requests;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.*;
 
 /**
  * @since 7.5
@@ -94,9 +83,9 @@ public class SnomedRf2ImportRestService extends AbstractSnomedRestService {
 			@RequestParam(name = "createVersions", defaultValue = "true")
 			final Boolean createVersions,
 			
-			@ApiParam(value = "Allow import to progress when non-structural reference set members have missing referenced components", defaultValue = "false")
-			@RequestParam(name = "skipMissingComponents", defaultValue = "false")
-			final Boolean skipMissingComponents,
+			@ApiParam(value = "Import should be allowed to progress when members of listed reference sets have missing referenced components", defaultValue = "false")
+			@RequestParam(name = "ignoreMissingReferencesIn", required = false)
+			final List<String> ignoreMissingReferencesIn,
 			
 			@ApiParam(value = "Enable to run the import content integrity validations without pushing any changes", defaultValue = "false")
 			@RequestParam(name = "dryRun", defaultValue = "false")
@@ -115,7 +104,7 @@ public class SnomedRf2ImportRestService extends AbstractSnomedRestService {
 			.setRf2ArchiveId(rf2ArchiveId)
 			.setReleaseType(Rf2ReleaseType.getByNameIgnoreCase(type))
 			.setCreateVersions(createVersions)
-			.setSkipMissingComponents(skipMissingComponents)
+			.setignoreMissingReferencesIn(ignoreMissingReferencesIn)
 			.setDryRun(dryRun)
 			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
 			.runAsJobWithRestart(importJobId, String.format("Importing SNOMED CT RF2 file '%s'", file.getOriginalFilename()))

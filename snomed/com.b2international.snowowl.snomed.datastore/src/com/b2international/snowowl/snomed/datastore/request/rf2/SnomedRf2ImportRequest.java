@@ -78,6 +78,7 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 
 /**
  * @since 6.0.0
@@ -102,7 +103,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 	private boolean createVersions = true;
 	
 	@JsonProperty
-	private boolean skipMissingComponents = false;
+	private List<String> ignoreMissingReferencesIn = Lists.newArrayList();
 	
 	@JsonProperty
 	private boolean dryRun = false;
@@ -119,8 +120,8 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 		this.createVersions = createVersions;
 	}
 	
-	void setSkipMissingComponents(boolean skipMissingComponents) {
-		this.skipMissingComponents = skipMissingComponents;
+	void setIgnoreMissingReferencesIn(List<String> ignoreMissingReferencesIn) {
+		this.ignoreMissingReferencesIn = ignoreMissingReferencesIn;
 	}
 	
 	void setDryRun(boolean dryRun) {
@@ -182,7 +183,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 			
 			// Run validation that takes current terminology content into account
 			final List<Rf2EffectiveTimeSlice> orderedEffectiveTimeSlices = effectiveTimeSlices.consumeInOrder();
-			final Rf2GlobalValidator globalValidator = new Rf2GlobalValidator(LOG, skipMissingComponents);
+			final Rf2GlobalValidator globalValidator = new Rf2GlobalValidator(LOG, ignoreMissingReferencesIn);
 			
 			/* 
 			 * TODO: Use Attachment to get the release file name and/or track file and line number sources for each row 
