@@ -69,7 +69,6 @@ public class FhirRequestParameterTest extends FhirTest {
 		LOGGER.info(parameterManager.toString());
 	}
 	
-	//Raw unprocessed parameter
 	@Test
 	public void rawRequestParameterTest() {
 		
@@ -77,6 +76,26 @@ public class FhirRequestParameterTest extends FhirTest {
 		assertThat(fhirParameter.getName(), equalTo("_summary"));
 		assertThat(fhirParameter.getValues(), contains("1", "2", "3"));
 		assertThat(fhirParameter.getModifier(), equalTo("data"));
+		
+		Multimap<String, String> paramMap = convertToMultimap("http://localhost?_summary=1, 2");
+		String key = paramMap.keySet().iterator().next();
+		Collection<String> values = paramMap.get(key);
+		
+		fhirParameter = new RawRequestParameter(key, values);
+		
+		assertThat(fhirParameter.getName(), equalTo("_summary"));
+		assertThat(fhirParameter.getValues(), contains("1", "2"));
+		assertThat(fhirParameter.getModifier(), equalTo(null));
+		
+		paramMap = convertToMultimap("http://localhost?_text:exact=test");
+		key = paramMap.keySet().iterator().next();
+		values = paramMap.get(key);
+		
+		fhirParameter = new RawRequestParameter(key, values);
+		
+		assertThat(fhirParameter.getName(), equalTo("_text"));
+		assertThat(fhirParameter.getValues(), contains("test"));
+		assertThat(fhirParameter.getModifier(), equalTo("exact"));
 	}
 	
 	@Test
@@ -96,31 +115,10 @@ public class FhirRequestParameterTest extends FhirTest {
 		assertThat(pv.getValue(), equalTo("2012-01-01"));
 	}
 	
-	//URI -> Raw unprocessed parameter
-	@Test
-	public void parameterParseTest() {
-		
-		Multimap<String, String> paramMap = convertToMultimap("http://localhost?_summary=1, 2");
-		String key = paramMap.keySet().iterator().next();
-		Collection<String> values = paramMap.get(key);
-		RawRequestParameter fhirParameter = new RawRequestParameter(key, values);
-		assertThat(fhirParameter.getName(), equalTo("_summary"));
-		assertThat(fhirParameter.getValues(), contains("1", "2"));
-		assertThat(fhirParameter.getModifier(), equalTo(null));
-		
-		paramMap = convertToMultimap("http://localhost?_text:exact=test");
-		key = paramMap.keySet().iterator().next();
-		values = paramMap.get(key);
-		fhirParameter = new RawRequestParameter(key, values);
-		assertThat(fhirParameter.getName(), equalTo("_text"));
-		assertThat(fhirParameter.getValues(), contains("test"));
-		assertThat(fhirParameter.getModifier(), equalTo("exact"));
-	}
-	
-	//yyyy-mm-ddThh:mm:ss[Z|(+|-)hh:mm]
 	@Test
 	public void invalidDateTimeParseTest() {
 		
+		//yyyy-mm-ddThh:mm:ss[Z|(+|-)hh:mm]
 		exception.expect(FhirException.class);
 		exception.expectMessage("Invalid DATETIME type parameter value 'A' are submitted for parameter '_dateTimeParameter'.");
 		
@@ -197,7 +195,6 @@ public class FhirRequestParameterTest extends FhirTest {
 		assertThat(summaryFilterParameter.getType(), equalTo(FhirRequestParameterType.STRING));
 	}
 	
-	//URI->Raw -> unknown param
 	@Test
 	public void unknownParameterTest() {
 		
@@ -257,9 +254,8 @@ public class FhirRequestParameterTest extends FhirTest {
 		parameterManager.processParameters(paramMap);
 	}
 	
-	//URI->Raw -> filter
 	@Test
-	public void filterParameterTest() {
+	public void summaryFilterParameterTest() {
 		
 		Multimap<String, String> paramMap = convertToMultimap("http://localhost?_summary=true");
 		Pair<Set<FhirFilterParameter>,Set<FhirSearchParameter>> parameters = parameterManager.processParameters(paramMap);
@@ -272,9 +268,8 @@ public class FhirRequestParameterTest extends FhirTest {
 		assertThat(fhirParameter.getValues(), contains(PrefixedValue.of("true")));
 	}
 	
-	//URI->Raw -> filter
 	@Test
-	public void searchParameterTest() {
+	public void idSearchParameterTest() {
 		
 		Multimap<String, String> paramMap = convertToMultimap("http://localhost?_id=1");
 		Pair<Set<FhirFilterParameter>,Set<FhirSearchParameter>> parameters = parameterManager.processParameters(paramMap);

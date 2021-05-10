@@ -23,7 +23,7 @@ import java.lang.annotation.Retention;
  * Container annotation for {@link Filterable} to allow multiple
  * annotation for the same resource class.
  * 
- * @since 7.14
+ * @since 7.17.0
  *
  */
 @Retention(RUNTIME)

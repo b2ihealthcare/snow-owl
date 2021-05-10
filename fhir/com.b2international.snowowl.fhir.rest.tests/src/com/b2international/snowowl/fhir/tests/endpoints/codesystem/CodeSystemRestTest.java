@@ -26,7 +26,6 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import org.junit.Test;
 
 import com.b2international.snowowl.fhir.tests.FhirRestTest;
-import com.b2international.snowowl.test.commons.rest.RestExtensions;
 
 /**
  * CodeSystem REST end-point test cases
@@ -50,7 +49,6 @@ public class CodeSystemRestTest extends FhirRestTest {
 		.when().get("/CodeSystem").prettyPrint();
 	}
 	
-	//All code systems fully detailed
 	@Test
 	public void getAllFullCodeSystemsTest() {
 		
@@ -86,7 +84,6 @@ public class CodeSystemRestTest extends FhirRestTest {
 			.statusCode(200);
 	}
 	
-	//Invalid ID parameter
 	@Test
 	public void getCodeSystemsInvalidIdParamTest() {
 		
@@ -99,7 +96,6 @@ public class CodeSystemRestTest extends FhirRestTest {
 			.statusCode(200);
 	}
 	
-	//Id parameter
 	@Test
 	public void getCodeSystemsIdParamTest() {
 		
@@ -114,7 +110,6 @@ public class CodeSystemRestTest extends FhirRestTest {
 			.statusCode(200);
 	}
 	
-	//Id parameters
 	@Test
 	public void getCodeSystemsIdsParamTest() {
 		
@@ -136,7 +131,6 @@ public class CodeSystemRestTest extends FhirRestTest {
 		}
 	
 	
-	//Name parameter
 	@Test
 	public void getCodeSystemsByNameParamTest() {
 		
@@ -152,7 +146,6 @@ public class CodeSystemRestTest extends FhirRestTest {
 			.statusCode(200);
 	}
 	
-	//Multiple name parameter
 	@Test
 	public void getCodeSystemsByNamesParamTest() {
 		
@@ -173,7 +166,6 @@ public class CodeSystemRestTest extends FhirRestTest {
 			.statusCode(200);
 	}
 
-	//Fully detailed SNOMED CT code system
 	@Test
 	public void getSnomedCodeSystemTest() {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
@@ -186,7 +178,6 @@ public class CodeSystemRestTest extends FhirRestTest {
 			.statusCode(200);
 	}
 	
-	//Full FHIR code system
 	@Test
 	public void getFhirCodeSystemTest() {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
@@ -202,7 +193,6 @@ public class CodeSystemRestTest extends FhirRestTest {
 			.statusCode(200);
 	}
 	
-	//Summary-only FHIR code system
 	@Test
 	public void getFhirCodeSystemSummaryTest() {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
@@ -223,7 +213,7 @@ public class CodeSystemRestTest extends FhirRestTest {
 	//Summary-count should not be allowed for non-search type operations?
 	//https://www.hl7.org/fhir/search.html#summary
 	//@Test
-	public void getFhirCodeSystemCountTest() {
+	public void getFhirCodeSystemSummaryCountTest() {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.param("_summary", "count")
 		 	.pathParam("id", FHIR_ISSUE_TYPE_CODESYSTEM_ID) 
@@ -235,9 +225,8 @@ public class CodeSystemRestTest extends FhirRestTest {
 			.statusCode(400);
 	}
 	
-	//Summary-data FHIR code system (remove text element)
 	@Test
-	public void getFhirCodeSystemDataTest() {
+	public void getFhirCodeSystemSummaryDataTest() {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.param("_summary", "data")
 		 	.pathParam("id", FHIR_ISSUE_TYPE_CODESYSTEM_ID) 
@@ -259,7 +248,7 @@ public class CodeSystemRestTest extends FhirRestTest {
 	
 	//Summary-text FHIR code system (text, id, meta, mandatory)
 	@Test
-	public void getFhirCodeSystemTextTest() {
+	public void getFhirCodeSystemSummaryTextTest() {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.param("_summary", "text")
 		 	.pathParam("id", FHIR_ISSUE_TYPE_CODESYSTEM_ID) 
@@ -279,9 +268,6 @@ public class CodeSystemRestTest extends FhirRestTest {
 			.statusCode(200);
 	}
 	
-	/*
-	 * ?elements=name, url means
-	 */
 	@Test
 	public void getFhirCodeSystemElementsTest() {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
@@ -306,9 +292,6 @@ public class CodeSystemRestTest extends FhirRestTest {
 			.statusCode(200);
 	}
 	
-	/*
-	 * Incorrect elements should be ignored.
-	 */
 	@Test
 	public void getFhirCodeSystemIncorrectElementsTest() {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)

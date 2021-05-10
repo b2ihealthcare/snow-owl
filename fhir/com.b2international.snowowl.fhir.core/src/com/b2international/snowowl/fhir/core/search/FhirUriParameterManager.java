@@ -36,7 +36,7 @@ import com.google.common.collect.Sets.SetView;
 
 /**
  * FHIR URI request parameter manager.
- * @since 7.14
+ * @since 7.17.0
  */
 public class FhirUriParameterManager {
 	

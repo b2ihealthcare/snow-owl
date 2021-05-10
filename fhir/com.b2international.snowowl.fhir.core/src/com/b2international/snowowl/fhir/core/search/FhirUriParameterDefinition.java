@@ -37,7 +37,7 @@ import com.google.common.collect.Sets;
 /**
  * Superclass to represent the definition of a valid and supported FHIR URI request parameter.
  * 
- * @since 7.14
+ * @since 7.17.0
  */
 public class FhirUriParameterDefinition {
 	

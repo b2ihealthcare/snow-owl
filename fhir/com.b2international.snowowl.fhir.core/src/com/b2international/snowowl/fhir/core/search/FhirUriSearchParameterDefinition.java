@@ -19,13 +19,13 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.google.common.collect.Sets;
+import com.b2international.commons.collections.Collections3;
 
 /**
  * Class to represent the definition of a valid and supported FHIR URI request parameter
  * used for searching.
  * 
- * @since 7.14
+ * @since 7.17.0
  */
 public class FhirUriSearchParameterDefinition extends FhirUriParameterDefinition {
 	
@@ -81,11 +81,11 @@ public class FhirUriSearchParameterDefinition extends FhirUriParameterDefinition
 		}
 	}
 	
-	private Set<String> supportedModifiers = Sets.newHashSet();
+	private final Set<String> supportedModifiers;
 	
 	public FhirUriSearchParameterDefinition(final String requestParameterKey, final String type, final Set<String> supportedModifiers, final boolean isMultipleValuesSupported) {
 		super(requestParameterKey, type, isMultipleValuesSupported);
-		this.supportedModifiers = Sets.newHashSet(supportedModifiers);
+		this.supportedModifiers = Collections3.toImmutableSet(supportedModifiers);
 	}
 	
 	public boolean hasSupportedModifier(String parameterModifier) {

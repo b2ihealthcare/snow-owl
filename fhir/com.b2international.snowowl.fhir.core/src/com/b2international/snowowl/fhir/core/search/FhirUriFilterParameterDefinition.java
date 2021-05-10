@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
  * Class to represent the definition of a valid and supported FHIR URI request parameter
  * used for filtering.
  * 
- * @since 7.14
+ * @since 7.17.0
  */
 public class FhirUriFilterParameterDefinition extends FhirUriParameterDefinition {
 	
@@ -76,15 +76,9 @@ public class FhirUriFilterParameterDefinition extends FhirUriParameterDefinition
 			return Arrays.stream(values()).map(k -> k.name()).collect(Collectors.toSet());
 		}
 	}
-	
-	public FhirUriFilterParameterDefinition(final String requestParameterKey, final boolean isMultipleValuesSupported, final Set<String> supportedValues) {
-		super(requestParameterKey, FhirFilterParameterKey.valueOf(requestParameterKey).getParameterType(), isMultipleValuesSupported, supportedValues);
-	}
 
-	private FhirFilterParameterKey requestParameterKey;
-	
-	public FhirFilterParameterKey getKey() {
-		return requestParameterKey;
+	public FhirUriFilterParameterDefinition(final String requestParameterKey, final boolean isMultipleValuesSupported, final Set<String> supportedValues) {
+		super(requestParameterKey, FhirFilterParameterKey.fromRequestParameter(requestParameterKey).getParameterType(), isMultipleValuesSupported, supportedValues);
 	}
 	
 }

@@ -17,15 +17,17 @@ package com.b2international.snowowl.fhir.core.search;
 
 import java.util.Collection;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * Class to represent a FHIR URI filter parameter.
  * 
- * @since 7.14
+ * @since 7.17.0
  *
  */
-public class FhirFilterParameter extends FhirParameter {
+public final class FhirFilterParameter extends FhirParameter {
 
-	public FhirFilterParameter(FhirUriFilterParameterDefinition supportedFilterParameter, Collection<PrefixedValue> values) {
+	FhirFilterParameter(FhirUriFilterParameterDefinition supportedFilterParameter, Collection<PrefixedValue> values) {
 		super(supportedFilterParameter, values);
 	}
 	
@@ -35,6 +37,7 @@ public class FhirFilterParameter extends FhirParameter {
 	
 	public static class Builder extends FhirParameter.Builder<Builder, FhirFilterParameter> {
 	
+		@NotNull
 		private FhirUriFilterParameterDefinition filterParameterDefinition;
 		
 		public Builder parameterDefinition(final FhirUriFilterParameterDefinition parameterDefinition) {
@@ -49,8 +52,9 @@ public class FhirFilterParameter extends FhirParameter {
 		
 		@Override
 		protected FhirFilterParameter doBuild() {
+			FhirFilterParameter fhirFilterParameter = new FhirFilterParameter(filterParameterDefinition, values);
 			filterParameterDefinition.validateValues(values);
-			return new FhirFilterParameter(filterParameterDefinition, values);
+			return fhirFilterParameter;
 		}
 	}
 

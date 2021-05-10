@@ -22,9 +22,9 @@ import com.b2international.snowowl.fhir.core.search.FhirUriParameterDefinition.S
 
 /**
  * FHIR URI request parameter for searching.
- * @since 7.14
+ * @since 7.17.0
  */
-public class FhirSearchParameter extends FhirParameter {
+public final class FhirSearchParameter extends FhirParameter {
 	
 	private SearchRequestParameterModifier modifier;
 	

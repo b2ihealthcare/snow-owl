@@ -23,7 +23,7 @@ import java.lang.annotation.Retention;
 /**
  * Annotation to mark resources with the supported filter parameters
  * 
- * @since 7.14
+ * @since 7.17.0
  */
 @Retention(RUNTIME)
 @Repeatable(value = Filterables.class)

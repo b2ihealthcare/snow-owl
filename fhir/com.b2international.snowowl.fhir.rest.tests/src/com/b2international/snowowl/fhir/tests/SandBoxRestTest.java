@@ -79,7 +79,7 @@ public class SandBoxRestTest extends FhirRestTest {
 		.around(new BundleStartRule("com.b2international.snowowl.core.rest"));
 	
 	
-	@Test
+	//@Test
 	public void printAllCodesystems() {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 		.when().get("/CodeSystem").prettyPrint();
@@ -95,7 +95,7 @@ public class SandBoxRestTest extends FhirRestTest {
 			.body("resourceType", equalTo("Bundle"))
 			.body("total", equalTo(41))
 			.body("type", equalTo("searchset"))
-			.body("entry[0].resource.concept", notNullValue())
+			//.body("entry[0].resource.concept", notNullValue())
 			.statusCode(200);
 	}
 	

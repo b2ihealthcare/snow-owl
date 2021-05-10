@@ -65,7 +65,7 @@ import com.google.common.collect.Sets;
  * 		<li>ap
  * 
  * https://www.hl7.org/fhir/searchparameter-registry.html
- * @since 7.14
+ * @since 7.17.0
  */
 public abstract class FhirParameter {
 	
@@ -133,9 +133,9 @@ public abstract class FhirParameter {
 		
 	}
 	
-	protected FhirUriParameterDefinition parameterDefinition;
+	private final FhirUriParameterDefinition parameterDefinition;
 	
-	protected Collection<PrefixedValue> values;
+	private final Collection<PrefixedValue> values;
 	
 	FhirParameter(final FhirUriParameterDefinition parameterDefinition, Collection<PrefixedValue> values) {
 		this.parameterDefinition = parameterDefinition;
@@ -160,7 +160,7 @@ public abstract class FhirParameter {
 
 	public static abstract class Builder<B extends Builder<B, T>, T extends FhirParameter> extends ValidatingBuilder<T> {
 		
-		protected Collection<PrefixedValue> values = Sets.newHashSet();
+		protected Collection<PrefixedValue> values = ImmutableSet.of();
 		
 		public B values(final Collection<PrefixedValue> values) {
 			this.values = values;

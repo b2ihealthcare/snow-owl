@@ -25,7 +25,7 @@ import com.b2international.snowowl.fhir.core.search.FhirUriParameterDefinition.S
 
 /**
  * Annotation to mark a resource field to support search.
- * @since 7.14
+ * @since 7.17.0
  */
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)

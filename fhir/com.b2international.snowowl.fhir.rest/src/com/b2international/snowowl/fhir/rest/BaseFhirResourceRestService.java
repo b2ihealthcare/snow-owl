@@ -86,6 +86,9 @@ public abstract class BaseFhirResourceRestService<R extends FhirResource> extend
 	
 	public static final String APPLICATION_FHIR_JSON = "application/fhir+json;charset=utf-8";
 	
+	//cache supported parameters
+	private FhirUriParameterManager parameterManager = FhirUriParameterManager.createFor(getModelClass());
+	
 	@Autowired
 	protected ObjectMapper mapper;
 	
@@ -104,8 +107,6 @@ public abstract class BaseFhirResourceRestService<R extends FhirResource> extend
 		//Convert it to Guava's multimap
 		Multimap<String, String> multiMap = HashMultimap.create();
 		parameters.keySet().forEach(k -> multiMap.putAll(k, parameters.get(k)));
-		
-		FhirUriParameterManager parameterManager = FhirUriParameterManager.createFor(getModelClass());
 		
 		Pair<Set<FhirFilterParameter>, Set<FhirSearchParameter>> fhirParameters = parameterManager.processParameters(multiMap);
 		return fhirParameters;
