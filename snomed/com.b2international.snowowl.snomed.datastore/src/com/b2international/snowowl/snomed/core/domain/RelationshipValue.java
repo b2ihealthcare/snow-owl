@@ -23,6 +23,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.snowowl.core.request.SearchResourceRequest.Operator;
 
 /**
  * Represents a "union class" holder for all supported relationship value types.
@@ -158,6 +159,29 @@ public final class RelationshipValue implements Serializable {
 		throw new IllegalStateException("All stored values were null, can not map to value");
 	}
 	
+	public boolean matches(final Operator operator, final RelationshipValue other) {
+		checkNotNull(operator, "Comparison operator may not be null");
+		if (!type().equals(other.type())) {
+			// Automatic type conversion is not supported; #5 is not equal to #5.0
+			return false;
+		}
+		
+		final int comparison = map(
+			i -> i.compareTo(other.integerValue), 
+			d -> d.compareTo(other.decimalValue), 
+			s -> s.compareTo(other.stringValue));
+		
+		switch (operator) {
+			case EQUALS: return (comparison == 0); 
+			case GREATER_THAN: return (comparison > 0);
+			case GREATER_THAN_EQUALS: return (comparison >= 0);
+			case LESS_THAN: return (comparison < 0);
+			case LESS_THAN_EQUALS: return (comparison <= 0);
+			case NOT_EQUALS: return (comparison != 0);
+			default: throw new IllegalStateException("Unexpected operator '" + operator +  "'.");
+		}
+	}
+
 	@Override
 	public boolean equals(final Object obj) {
 		if (obj == this) { return true; }
