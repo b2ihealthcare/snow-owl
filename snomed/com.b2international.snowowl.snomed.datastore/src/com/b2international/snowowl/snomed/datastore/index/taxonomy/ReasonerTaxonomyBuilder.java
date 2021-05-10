@@ -752,7 +752,7 @@ public final class ReasonerTaxonomyBuilder {
 							throw new IllegalStateException("OWL member has too many groups");
 						}
 						
-						if (relationship.getValue() != null) {
+						if (relationship.hasValue()) {
 							// Add relationships with value
 							statementFragments.add(relationship.toStatementFragment(groupOffset));
 							continue;

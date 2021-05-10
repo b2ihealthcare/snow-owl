@@ -78,7 +78,7 @@ public final class SnomedOWLRelationshipConverter {
 				relationship = new Relationship(
 					owlRelationship.getGroup(),
 					Long.valueOf(owlRelationship.getTypeId()),
-					new ConcreteValue(owlRelationship.getValue()));
+					new ConcreteValue(owlRelationship.getValueAsObject().toLiteral()));
 			}
 			
 			relationships.put(relationship.getGroup(), relationship);

@@ -36,12 +36,16 @@ import com.b2international.commons.options.Options;
 import com.b2international.commons.time.TimeUtil;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.SearchResourceRequestIterator;
+import com.b2international.snowowl.snomed.core.domain.RelationshipValue;
 import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedOWLRelationshipDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.google.common.base.*;
+import com.google.common.base.Stopwatch;
+import com.google.common.base.Strings;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 
 /**
  * @see AxiomRelationshipConversionService
@@ -129,7 +133,7 @@ public final class SnomedOWLExpressionConverter {
 					if (relationship.isConcrete()) {
 						return SnomedOWLRelationshipDocument.createValue(
 							Long.toString(relationship.getTypeId()), 
-							relationship.getValueAsString(), 
+							RelationshipValue.fromLiteral(relationship.getValueAsString()), 
 							relationship.getGroup());
 					} else {
 						return SnomedOWLRelationshipDocument.create(

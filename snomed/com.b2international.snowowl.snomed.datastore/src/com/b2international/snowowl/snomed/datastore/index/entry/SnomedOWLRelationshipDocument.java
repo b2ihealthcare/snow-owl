@@ -20,6 +20,8 @@ import java.util.Objects;
 
 import com.b2international.index.Doc;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.core.domain.RelationshipValue;
+import com.b2international.snowowl.snomed.core.domain.RelationshipValueType;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.b2international.snowowl.snomed.datastore.StatementFragmentWithDestination;
 import com.b2international.snowowl.snomed.datastore.StatementFragmentWithValue;
@@ -35,27 +37,39 @@ import com.google.common.base.MoreObjects;
 public final class SnomedOWLRelationshipDocument implements Serializable {
 
 	public static SnomedOWLRelationshipDocument create(final String typeId, final String destinationId, final int group) {
-		return new SnomedOWLRelationshipDocument(typeId, destinationId, null, group);
+		return new SnomedOWLRelationshipDocument(typeId, destinationId, null, null, null, null, group);
 	}
 	
-	public static SnomedOWLRelationshipDocument createValue(final String typeId, final String value, final int group) {
-		return new SnomedOWLRelationshipDocument(typeId, null, value, group);
+	public static SnomedOWLRelationshipDocument createValue(final String typeId, final RelationshipValue value, final int group) {
+		return value.map(
+			i -> new SnomedOWLRelationshipDocument(typeId, null, i, null, null, RelationshipValueType.INTEGER, group),
+			d -> new SnomedOWLRelationshipDocument(typeId, null, null, d, null, RelationshipValueType.DECIMAL, group),
+			s -> new SnomedOWLRelationshipDocument(typeId, null, null, null, s, RelationshipValueType.STRING, group));
 	}
 
 	private final String typeId;
 	private final String destinationId;
-	private final String value;
+	private final Integer integerValue;
+	private final Double decimalValue;
+	private final String stringValue;
+	private final RelationshipValueType valueType;
 	private final int group;
 
 	@JsonCreator
 	private SnomedOWLRelationshipDocument(
 			@JsonProperty("typeId") final String typeId, 
 			@JsonProperty("destinationId") final String destinationId,
-			@JsonProperty("value") final String value,
+			@JsonProperty("integerValue") final Integer integerValue,
+			@JsonProperty("decimalValue") final Double decimalValue,
+			@JsonProperty("stringValue") final String stringValue,
+			@JsonProperty("valueType") final RelationshipValueType valueType,
 			@JsonProperty("group") final int group) {
 		this.typeId = typeId;
 		this.destinationId = destinationId;
-		this.value = value;
+		this.integerValue = integerValue;
+		this.decimalValue = decimalValue;
+		this.stringValue = stringValue;
+		this.valueType = valueType;
 		this.group = group;
 	}
 
@@ -67,8 +81,20 @@ public final class SnomedOWLRelationshipDocument implements Serializable {
 		return destinationId;
 	}
 
-	public String getValue() {
-		return value;
+	public Integer getIntegerValue() {
+		return integerValue;
+	}
+	
+	public Double getDecimalValue() {
+		return decimalValue;
+	}
+	
+	public String getStringValue() {
+		return stringValue;
+	}
+	
+	public RelationshipValueType getValueType() {
+		return valueType;
 	}
 
 	public int getGroup() {
@@ -78,6 +104,16 @@ public final class SnomedOWLRelationshipDocument implements Serializable {
 	@JsonIgnore
 	public boolean isIsa() {
 		return Concepts.IS_A.equals(typeId);
+	}
+
+	@JsonIgnore
+	public RelationshipValue getValueAsObject() {
+		return SnomedRelationshipIndexEntry.getValue(valueType, decimalValue, integerValue, stringValue);
+	}
+
+	@JsonIgnore
+	public boolean hasValue() {
+		return valueType != null;
 	}
 
 	@JsonIgnore
@@ -102,20 +138,27 @@ public final class SnomedOWLRelationshipDocument implements Serializable {
 				false);                         // destinationNegated	
 		} else {
 			return new StatementFragmentWithValue(
-				Long.parseLong(typeId), // typeId        
-				adjustedGroup,          // adjustedGroup
-				0,                      // unionGroup   
-				false,                  // universal    
-				-1L,                    // statementId  
-				-1L,                    // moduleId     
-				false,                  // released     
-				value);                 // value	
+				Long.parseLong(typeId),          // typeId        
+				adjustedGroup,                   // adjustedGroup
+				0,                               // unionGroup   
+				false,                           // universal    
+				-1L,                             // statementId  
+				-1L,                             // moduleId     
+				false,                           // released     
+				getValueAsObject().toLiteral()); // value	
 		}
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(typeId, destinationId, value, group);
+		return Objects.hash(
+			typeId, 
+			destinationId, 
+			integerValue, 
+			decimalValue, 
+			stringValue, 
+			valueType, 
+			group);
 	}
 
 	@Override
@@ -128,7 +171,10 @@ public final class SnomedOWLRelationshipDocument implements Serializable {
 
 		return Objects.equals(typeId, other.typeId)
 			&& Objects.equals(destinationId, other.destinationId)
-			&& Objects.equals(value, other.value)
+			&& Objects.equals(integerValue, other.integerValue)
+			&& Objects.equals(decimalValue, other.decimalValue)
+			&& Objects.equals(stringValue, other.stringValue)
+			&& Objects.equals(valueType, other.valueType)
 			&& Objects.equals(group, other.group);
 	}
 
@@ -137,7 +183,7 @@ public final class SnomedOWLRelationshipDocument implements Serializable {
 		return MoreObjects.toStringHelper(this)
 			.add("typeId", typeId)
 			.add("destinationId", destinationId)
-			.add("value", value)
+			.add("value", getValueAsObject())
 			.add("group", group)
 			.toString();
 	}
