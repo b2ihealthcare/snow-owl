@@ -19,7 +19,7 @@ import static com.google.common.collect.Sets.newHashSet;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.time.format.DateTimeParseException;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
@@ -55,7 +55,7 @@ import com.google.common.collect.Lists;
  */
 public abstract class CodeSystemApiProvider extends FhirApiProvider implements ICodeSystemApiProvider {
 	
-	private static final String CODE_SYSTEM_LOCATION_MARKER = "CodeSystem";
+	protected static final String CODE_SYSTEM_LOCATION_MARKER = "CodeSystem";
 
 	private final String repositoryId;
 	
@@ -159,10 +159,10 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 			//TODO: support prefix!
 			String lastUpdatedDateString = lastUpdatedOptional.get().getValues().iterator().next().getValue();
 			try {
-				LocalDate localDate = LocalDate.parse(lastUpdatedDateString);
-				long localLong = localDate.atStartOfDay(ZoneId.systemDefault()).toEpochSecond(); //?
+				LocalDate parameterDate = LocalDate.parse(lastUpdatedDateString);
+				long localLong = parameterDate.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli();
 				versionSearchRequestBuilder.filterByCreatedAt(localLong, Long.MAX_VALUE);
-			} catch (DateTimeParseException dtpe) {
+			} catch (Exception e) {
 				throw FhirException.createFhirError(String.format("Invalid _lastUpdate search parameter value '%'.", lastUpdatedDateString), OperationOutcomeCode.MSG_PARAM_INVALID, CODE_SYSTEM_LOCATION_MARKER);
 			}
 		}

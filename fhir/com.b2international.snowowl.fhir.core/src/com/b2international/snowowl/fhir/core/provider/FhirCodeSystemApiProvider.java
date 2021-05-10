@@ -17,10 +17,10 @@ package com.b2international.snowowl.fhir.core.provider;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeParseException;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.osgi.framework.Bundle;
@@ -35,10 +35,8 @@ import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.fhir.core.FhirCoreActivator;
 import com.b2international.snowowl.fhir.core.ResourceNarrative;
-import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
-import com.b2international.snowowl.fhir.core.codesystems.FhirCodeSystem;
-import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
-import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
+import com.b2international.snowowl.fhir.core.codesystems.*;
+import com.b2international.snowowl.fhir.core.exceptions.FhirException;
 import com.b2international.snowowl.fhir.core.model.codesystem.*;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem.Builder;
 import com.b2international.snowowl.fhir.core.model.dt.Narrative;
@@ -106,6 +104,25 @@ public final class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 				return idParamOptional.get().getValues().contains(cs.getId().getIdValue());
 			}).collect(Collectors.toSet());
 		}
+		
+		Optional<FhirSearchParameter> lastUpdatedParamOptional = getSearchParam(searchParameters, "_lastUpdated");
+		if (lastUpdatedParamOptional.isPresent()) {
+			String lastUpdatedDateString = lastUpdatedParamOptional.get().getValues().iterator().next();
+
+			codeSystems = codeSystems.stream().filter(cs -> {
+				try {
+					if (cs.getDate() == null) return false;
+
+					LocalDate localDate = LocalDate.parse(lastUpdatedDateString);
+					LocalDate csDate = cs.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+					return localDate.isEqual(csDate);
+
+				} catch (DateTimeParseException dtpe) {
+					throw FhirException.createFhirError(String.format("Invalid _lastUpdate search parameter value '%'.", lastUpdatedDateString), OperationOutcomeCode.MSG_PARAM_INVALID, CODE_SYSTEM_LOCATION_MARKER);
+				}
+			}).collect(Collectors.toSet());
+		}
+		
 		
 		Optional<FhirSearchParameter> nameOptional = getSearchParam(searchParameters, "_name");
 

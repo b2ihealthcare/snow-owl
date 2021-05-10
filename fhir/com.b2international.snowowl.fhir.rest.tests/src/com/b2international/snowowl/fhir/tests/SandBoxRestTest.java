@@ -85,10 +85,37 @@ public class SandBoxRestTest extends FhirRestTest {
 		.when().get("/CodeSystem").prettyPrint();
 	}
 	
+	@Test
+	public void getCodeSystemLastUpdatedParamTest() {
+		
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.param("_lastUpdated", "2002-01-31")
+			.when().get("/CodeSystem")
+			.then()
+			.body("resourceType", equalTo("Bundle"))
+			.body("total", equalTo(41))
+			.body("type", equalTo("searchset"))
+			.body("entry[0].resource.concept", notNullValue())
+			.statusCode(200);
+	}
+	
+	@Test
+	public void getCodeSystemLastUpdatedParamTest2() {
+		
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.param("_lastUpdated", "2002-01-30")
+			.when().get("/CodeSystem")
+			.then()
+			.body("resourceType", equalTo("Bundle"))
+			.body("total", equalTo(0))
+			.body("type", equalTo("searchset"))
+			.statusCode(200);
+	}
+	
 	/*
 	 * the name, _id, description and publisher parameters (these 3 additionally support the :exact, :contains and :missing modifiers)
 	 */
-	@Test
+	//@Test
 	public void searchCodeSystemByName() {
 			
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)

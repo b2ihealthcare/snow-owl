@@ -153,6 +153,10 @@ public abstract class MetadataResource extends DomainResource {
 		return name;
 	}
 	
+	public Date getDate() {
+		return date;
+	}
+	
 	public static abstract class Builder<B extends Builder<B, T>, T extends FhirResource> extends DomainResource.Builder<B, T> {
 
 		protected Uri url; //ORG_LINK or hardcoded provider value
