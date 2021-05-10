@@ -15,19 +15,21 @@
  */
 package com.b2international.snowowl.core.rest.codesystem;
 
+import com.b2international.snowowl.core.ResourceURI;
+
 /**
  * @since 1.0
  */
 public class VersionRestInput {
 
-	private String codeSystemId;
+	private ResourceURI resource;
 	private String version;
 	private String description = "";
-	private Boolean force = Boolean.FALSE;
 	private String effectiveTime;
+	private Boolean force = Boolean.FALSE;
 	
-	public String getCodeSystemId() {
-		return codeSystemId;
+	public ResourceURI getResource() {
+		return resource;
 	}
 	
 	public String getDescription() {
@@ -45,9 +47,9 @@ public class VersionRestInput {
 	public Boolean isForce() {
 		return force;
 	}
-	
-	public void setCodeSystemId(String codeSystemId) {
-		this.codeSystemId = codeSystemId;
+
+	public void setResource(ResourceURI resource) {
+		this.resource = resource;
 	}
 	
 	public void setDescription(String description) {

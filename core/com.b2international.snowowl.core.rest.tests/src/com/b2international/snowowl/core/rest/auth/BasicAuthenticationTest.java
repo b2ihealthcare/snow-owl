@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,21 +29,21 @@ import io.restassured.specification.RequestSpecification;
 public class BasicAuthenticationTest {
 
 	private void assertResponseStatus(final RequestSpecification request, final int statusCode) {
-		request.when().get("/repositories").then().assertThat().statusCode(statusCode);
+		request.get().then().assertThat().statusCode(statusCode);
 	}
 
 	@Test
 	public void denyUnauthenticated() {
-		assertResponseStatus(givenUnauthenticatedRequest("/admin"), 401);
+		assertResponseStatus(givenUnauthenticatedRequest("/codesystems"), 401);
 	}
 
 	@Test
 	public void denyIncorrectCredentials() {
-		assertResponseStatus(givenInvalidPasswordRequest("/admin"), 401);
+		assertResponseStatus(givenInvalidPasswordRequest("/codesystems"), 401);
 	}
 
 	@Test
 	public void allowAuthenticated() {
-		assertResponseStatus(givenAuthenticatedRequest("/admin"), 200);
+		assertResponseStatus(givenAuthenticatedRequest("/codesystems"), 200);
 	}
 }

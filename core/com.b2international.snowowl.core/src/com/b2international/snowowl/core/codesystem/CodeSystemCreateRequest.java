@@ -68,16 +68,15 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 	Map<String, Object> settings;
 	
 	private transient String parentPath;
-	private transient boolean createBranch;
 	
 	CodeSystemCreateRequest() {}
 
 	@Override
 	public String execute(final TransactionContext context) {
-		final Optional<Version> extensionOfVersion = checkCodeSystem(context);
-
 		// Create branch if null or empty path was specified in the request
-		createBranch = StringUtils.isEmpty(branchPath);
+		final boolean createBranch = StringUtils.isEmpty(branchPath);
+		
+		final Optional<Version> extensionOfVersion = checkCodeSystem(context, createBranch);
 		
 		// Set the parent path if a branch needs to be created
 		if (createBranch) {
@@ -86,7 +85,7 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 				.orElse(Branch.MAIN_PATH); // TODO totally separate branching system?? MAIN could be removed
 		}
 
-		checkBranchPath(context);
+		checkBranchPath(context, createBranch);
 		checkSettings();
 		
 		// Set branchPath to the path of the created branch 
@@ -112,14 +111,14 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 		return id;
 	}
 
-	private void checkBranchPath(final RepositoryContext context) {
+	private void checkBranchPath(final RepositoryContext context, final boolean create) {
 		// If no branch is created, the branch should already exist
-		if (!createBranch && !branchExists(branchPath, context)) {
+		if (!create && !branchExists(branchPath, context)) {
 			throw new BadRequestException("Branch path '%s' should point to an existing branch if given.", branchPath);
 		}
 		
 		// If the branch should be created, it branch should not exist, however 
-		if (createBranch) {
+		if (create) {
 			final String newBranchPath = Branch.get(parentPath, title);
 			if (branchExists(newBranchPath, context)) {
 				throw new AlreadyExistsException("Code system branch", newBranchPath);
@@ -127,7 +126,7 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 		}
 	}
 
-	private Optional<Version> checkCodeSystem(final RepositoryContext context) {
+	private Optional<Version> checkCodeSystem(final RepositoryContext context, final boolean create) {
 		// OID must be unique if defined
 		if (!StringUtils.isEmpty(oid) && codeSystemExists(oid, context)) {
 			throw new AlreadyExistsException("Resource", oid);
@@ -163,7 +162,7 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 			final String newResourceBranchPath = Branch.get(extensionOfVersion.get().getBranchPath(), id);
 			
 			// CodeSystem Upgrade branches are managed by CodeSystemUpgradeRequest and they can have different paths than the usual extension branch paths, skip check
-			if (upgradeOf == null && !createBranch && !branchPath.equals(newResourceBranchPath)) {
+			if (upgradeOf == null && !create && !branchPath.equals(newResourceBranchPath)) {
 				throw new BadRequestException("Branch path is inconsistent with extensionOf URI ('%s' given, should be '%s').",
 						branchPath, newResourceBranchPath);
 			}

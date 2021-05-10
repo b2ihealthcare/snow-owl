@@ -37,8 +37,9 @@ import io.swagger.annotations.*;
 /**
  * @since 1.0
  */
-@Api(value = "CodeSystem", description="Code Systems", tags = { "code-systems" })
+@Api(value = "Resources", description="Resources", tags = { "resources" })
 @RestController
+@RequestMapping("/codesystems")
 public class CodeSystemRestService extends AbstractRestService {
 
 	@ApiOperation(
@@ -142,7 +143,7 @@ public class CodeSystemRestService extends AbstractRestService {
 		@ApiResponse(code = 204, message = "No content", response = Void.class),
 		@ApiResponse(code = 400, message = "Code System cannot be updated", response = RestApiError.class)
 	})
-	@PutMapping(value = "/{shortNameOrOid}", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
+	@PutMapping(value = "/{codeSystemId}", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void update(
 			@ApiParam(value="The code system identifier")

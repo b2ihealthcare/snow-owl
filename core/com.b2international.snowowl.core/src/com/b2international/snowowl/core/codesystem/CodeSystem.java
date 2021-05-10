@@ -28,7 +28,7 @@ import com.b2international.snowowl.core.internal.ResourceDocument;
  * 
  * @since 1.0
  */
-public class CodeSystem extends TerminologyResource {
+public final class CodeSystem extends TerminologyResource {
 	
 	private static final long serialVersionUID = 5L;
 	
@@ -47,10 +47,10 @@ public class CodeSystem extends TerminologyResource {
 	}
 	
 	/**
-	 * @return the list of {@link ExtendedLocale} instances representing the language content this code system carries (can be {@code null})
+	 * @return the list of {@link String} formatted as {@link ExtendedLocale} representing the language content this code system carries (can be {@code null})
 	 */
-	public List<ExtendedLocale> getLocales() {
-		return (List<ExtendedLocale>) getSettings().get(CommonSettings.LOCALES);
+	public List<String> getLocales() {
+		return getSettings() == null ? null : (List<String>) getSettings().get(CommonSettings.LOCALES);
 	}
 	
 	public static ResourceURI uri(String codeSystemId) {

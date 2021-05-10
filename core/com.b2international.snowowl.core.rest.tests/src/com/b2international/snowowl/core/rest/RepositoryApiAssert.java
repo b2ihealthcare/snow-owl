@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import io.restassured.response.ValidatableResponse;
  */
 public abstract class RepositoryApiAssert {
 
-	private static final String ADMIN = "/admin";
 	private static final String REPOSITORIES = "/repositories";
 
 	public static ValidatableResponse assertRepositoryInfoForExistingRepository(final String repositoryId, final String status) {
@@ -41,8 +40,8 @@ public abstract class RepositoryApiAssert {
 	
 	public static ValidatableResponse assertRepositoryInfoReadWithStatus(final String repositoryId, final String health, final int statusCode) {
 		assertNotNull(repositoryId);
-		return givenAuthenticatedRequest(ADMIN)
-				.when().get(REPOSITORIES + "/{repositoryId}", repositoryId)
+		return givenAuthenticatedRequest(REPOSITORIES)
+				.when().get("/{repositoryId}", repositoryId)
 				.then().assertThat()
 					.statusCode(statusCode)
 				.and()
@@ -50,8 +49,8 @@ public abstract class RepositoryApiAssert {
 	}
 
 	public static ValidatableResponse assertAllRepositoryInfo() {
-		return givenAuthenticatedRequest(ADMIN)
-				.when().get(REPOSITORIES)
+		return givenAuthenticatedRequest(REPOSITORIES)
+				.when().get()
 				.then().assertThat().statusCode(200);
 	}
 	

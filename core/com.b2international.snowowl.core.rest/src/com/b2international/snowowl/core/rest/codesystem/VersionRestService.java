@@ -16,6 +16,7 @@
 package com.b2international.snowowl.core.rest.codesystem;
 
 import java.net.URI;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.http.HttpStatus;
@@ -29,8 +30,6 @@ import com.b2international.commons.validation.ApiValidation;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.core.codesystem.CodeSystem;
-import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.jobs.JobRequests;
 import com.b2international.snowowl.core.jobs.RemoteJobEntry;
@@ -47,51 +46,51 @@ import io.swagger.annotations.*;
 /**
  * @since 1.0
  */
-@Api(value = "CodeSystem", description="Code Systems", tags = { "code-systems" })
+@Api(value = "Resources", description="Resources", tags = { "resources" })
 @RestController
 @RequestMapping(value = "/versions")
 public class VersionRestService extends AbstractRestService {
 	
 	@ApiOperation(
-			value="Retrieve all code system versions",
-			notes="Returns a list containing all released code system versions for the specified code system.")
+			value="Retrieve all resource versions",
+			notes="Returns a list containing all published resource versions.")
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Code system not found", response = RestApiError.class)
+		@ApiResponse(code = 400, message = "Invalid search config", response = RestApiError.class)
 	})
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public Promise<Versions> searchVersions(
-			@ApiParam(value="The code system identifier")
-			@PathVariable(value="codeSystemId") 
-			final String codeSystemId) {
+			@ApiParam(value="Resource identifier(s)")
+			@RequestParam(value="resourceUris") 
+			final List<ResourceURI> resourceUris) {
 		
 		return ResourceRequests.prepareSearchVersion()
-				.filterByResource(CodeSystem.uri(codeSystemId))
+				.filterByResources(resourceUris)
 				.buildAsync()
 				.execute(getBus());
 		
 	}
 
 	@ApiOperation(
-			value="Retrieve code system version by identifier (<codeSystemId/version>)",
-			notes="Returns a released code system version for the specified code system with the given version identifier.")
+			value="Retrieve a resource version by identifier (<resourceType/resourceId/version>)",
+			notes="Returns a published resource version for the specified resource with the given version identifier.")
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Code system or version not found", response = RestApiError.class)
+		@ApiResponse(code = 404, message = "Version Not Found", response = RestApiError.class)
 	})
-	@GetMapping(value = "/{versionId}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
+	@GetMapping(value = "/{versionUri:**}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public Promise<Version> getVersion(
-			@ApiParam(value="The code system version identifer")
-			@PathVariable(value="versionId") 
-			final String versionId) {
-		return ResourceRequests.prepareGetVersion(CodeSystem.uri(versionId)).buildAsync().execute(getBus());
+			@ApiParam(value="The resource version uri")
+			@PathVariable(value="versionUri") 
+			final ResourceURI versionUri) {
+		return ResourceRequests.prepareGetVersion(versionUri).buildAsync().execute(getBus());
 
 	}
 	
 	@ApiOperation(
-			value="Create a new code system version",
-			notes="Creates a new code system version in the specified terminology.  "
-					+ "The version tag (represented by an empty branch) is created on the specified parent branch. "
+			value="Create a new resource version",
+			notes="Creates a new resource version. "
+					+ "The version tag (represented by an empty branch) is created on the resource's current working branch. "
 					+ "Where applicable, effective times are set on the unpublished content as part of this operation.")
 	@ApiResponses({
 		@ApiResponse(code = 201, message = "Created"),
@@ -104,22 +103,21 @@ public class VersionRestService extends AbstractRestService {
 			@ApiParam(value="Version parameters")
 			@RequestBody final VersionRestInput input) {
 		ApiValidation.checkInput(input);
-		ResourceURI codeSystemUri = CodeSystem.uri(input.getCodeSystemId());
 		String jobId = ResourceRequests.prepareNewVersion()
-				.setResource(codeSystemUri)
+				.setResource(input.getResource())
 				.setVersion(input.getVersion())
 				.setDescription(input.getDescription())
 				.setEffectiveTime(input.getEffectiveTime())
 				.setForce(input.isForce())
 				.buildAsync()
-				.runAsJobWithRestart(CodeSystemRequests.versionJobKey(codeSystemUri), String.format("Creating version '%s/%s'", codeSystemUri, input.getVersion()))
+				.runAsJobWithRestart(ResourceRequests.versionJobKey(input.getResource()), String.format("Creating version '%s/%s'", input.getResource(), input.getVersion()))
 				.execute(getBus())
 				.getSync(1, TimeUnit.MINUTES);
 		
 		RemoteJobEntry job = JobRequests.waitForJob(getBus(), jobId, 500);
 		
 		if (job.isSuccessful()) {
-			final URI location = MvcUriComponentsBuilder.fromMethodName(VersionRestService.class, "getVersion", codeSystemUri.withPath(input.getVersion())).build().toUri();
+			final URI location = MvcUriComponentsBuilder.fromMethodName(VersionRestService.class, "getVersion", input.getResource().withPath(input.getVersion())).build().toUri();
 			return ResponseEntity.created(location).build();
 		} else if (!Strings.isNullOrEmpty(job.getResult())) {
 			ApiError error = job.getResultAs(ApplicationContext.getServiceForClass(ObjectMapper.class), ApiError.class);

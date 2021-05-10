@@ -16,6 +16,7 @@
 package com.b2international.snowowl.core.request;
 
 import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.jobs.RemoteJobEntry;
 import com.b2international.snowowl.core.request.version.VersionCreateRequestBuilder;
 import com.b2international.snowowl.core.request.version.VersionGetRequestBuilder;
 import com.b2international.snowowl.core.request.version.VersionSearchRequestBuilder;
@@ -25,6 +26,8 @@ import com.b2international.snowowl.core.request.version.VersionSearchRequestBuil
  */
 public final class ResourceRequests {
 
+	public static final String VERSION_JOB_KEY_PREFIX = "version-";
+	
 	public static ResourceGetRequestBuilder prepareGet(String resourceId) {
 		return new ResourceGetRequestBuilder(resourceId);
 	}
@@ -43,6 +46,14 @@ public final class ResourceRequests {
 	
 	public static VersionCreateRequestBuilder prepareNewVersion() {
 		return new VersionCreateRequestBuilder();
+	}
+	
+	public static String versionJobKey(ResourceURI codeSystemUri) {
+		return VERSION_JOB_KEY_PREFIX.concat(codeSystemUri.toString());
+	}
+	
+	public static boolean isVersionJob(RemoteJobEntry job) {
+		return job != null && job.getKey().startsWith(VERSION_JOB_KEY_PREFIX);
 	}
 	
 }

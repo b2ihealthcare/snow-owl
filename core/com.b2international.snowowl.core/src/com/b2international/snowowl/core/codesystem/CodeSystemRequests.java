@@ -19,7 +19,6 @@ import java.util.List;
 
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.compare.ConceptMapCompareResultItem;
-import com.b2international.snowowl.core.jobs.RemoteJobEntry;
 import com.b2international.snowowl.core.request.*;
 import com.b2international.snowowl.core.uri.ComponentURI;
 
@@ -28,8 +27,6 @@ import com.b2international.snowowl.core.uri.ComponentURI;
  */
 public class CodeSystemRequests {
 
-	public static final String VERSION_JOB_KEY_PREFIX = "version-";
-	
 	private CodeSystemRequests() {}
 	
 	public static CodeSystemCreateRequestBuilder prepareNewCodeSystem() {
@@ -103,14 +100,4 @@ public class CodeSystemRequests {
 		return new ConceptMapCompareDsvExportRequestBuilder(items, filePath);
 	}
 
-	public static String versionJobKey(ResourceURI codeSystemUri) {
-		return VERSION_JOB_KEY_PREFIX.concat(codeSystemUri.toString());
-	}
-	
-	public static boolean isVersionJob(RemoteJobEntry job) {
-		return job != null && job.getKey().startsWith(VERSION_JOB_KEY_PREFIX);
-	}
-
-	
-	
 }

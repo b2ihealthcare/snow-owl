@@ -30,11 +30,12 @@ import org.junit.Test;
 
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.commons.json.Json;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.test.commons.Services;
-import com.google.common.collect.ImmutableMap;
 
 /**
  * @since 1.0
@@ -47,7 +48,7 @@ public class CodeSystemApiTest {
 	}
 
 	@Test
-	public void getCodeSystemByOid() {
+	public void searchCodeSystemByOid() {
 		final String oid = "2.16.840.1.113883.6.96";
 		assertCodeSystemExists(oid)
 			.and().body("oid", equalTo(oid));
@@ -55,9 +56,9 @@ public class CodeSystemApiTest {
 
 	@Test
 	public void getCodeSystemByShortName() {
-		final String shortName = "SNOMEDCT";
-		assertCodeSystemExists(shortName)
-			.and().body("shortName", equalTo(shortName));
+		final String codeSystemId = "SNOMEDCT";
+		assertCodeSystemExists(codeSystemId)
+			.and().body("id", equalTo(codeSystemId));
 	}
 	
 	@Test
@@ -67,12 +68,12 @@ public class CodeSystemApiTest {
 	
 	@Test
 	public void createCodeSystem() {
-		final String shortName = "cs";
-		final Map<?, ?> requestBody = newCodeSystemRequestBody(shortName);
+		final String codeSystemId = "cs";
+		final Map<?, ?> requestBody = newCodeSystemRequestBody(codeSystemId);
 		final String lastPathSegment = assertCodeSystemCreated(requestBody);
 		
-		assertEquals(shortName, lastPathSegment);
-		assertCodeSystemExists(shortName);
+		assertEquals(codeSystemId, lastPathSegment);
+		assertCodeSystemExists(codeSystemId);
 	}
 	
 	@Test
@@ -83,33 +84,31 @@ public class CodeSystemApiTest {
 	
 	@Test
 	public void createCodeSystemWithMetadata() {
-		final String shortName = "cs6";
-		final Map<String, Object> requestBody = newHashMap(newCodeSystemRequestBody(shortName));
-		requestBody.put("additionalProperties", Map.of(
+		final String codeSystemId = "cs6";
+		final Map<String, Object> requestBody = newHashMap(newCodeSystemRequestBody(codeSystemId));
+		requestBody.put("settings", Map.of(
 				SnomedTerminologyComponentConstants.CODESYSTEM_NAMESPACE_CONFIG_KEY, "1000198",
 				SnomedTerminologyComponentConstants.CODESYSTEM_MODULES_CONFIG_KEY, List.of("123456781000198103", "876543211000198107")));
 		
 		assertCodeSystemCreated(requestBody);
-		assertCodeSystemExists(shortName);
-		assertCodeSystemHasAttributeValue(shortName, "additionalProperties." + SnomedTerminologyComponentConstants.CODESYSTEM_NAMESPACE_CONFIG_KEY, "1000198");
-		assertCodeSystemHasAttributeValue(shortName, "additionalProperties." + SnomedTerminologyComponentConstants.CODESYSTEM_MODULES_CONFIG_KEY, List.of("123456781000198103", "876543211000198107"));
+		assertCodeSystemExists(codeSystemId);
+		assertCodeSystemHasAttributeValue(codeSystemId, "settings." + SnomedTerminologyComponentConstants.CODESYSTEM_NAMESPACE_CONFIG_KEY, "1000198");
+		assertCodeSystemHasAttributeValue(codeSystemId, "settings." + SnomedTerminologyComponentConstants.CODESYSTEM_MODULES_CONFIG_KEY, List.of("123456781000198103", "876543211000198107"));
 	}
 	
 	@Test
 	public void createCodeSystemWithLocales() {
-		final String shortName = "cs7";
-		final Map<String, Object> requestBody = newHashMap(newCodeSystemRequestBody(shortName));
-		requestBody.put("locales", ExtendedLocale.parseLocales("en-x-123456781000198103,en-x-876543211000198107"));
+		final String codeSystemId = "cs7";
+		final Json requestBody = newCodeSystemRequestBody(codeSystemId).with(Json.object("settings", Json.object("locales", ExtendedLocale.parseLocales("en-x-123456781000198103,en-x-876543211000198107"))));
 		
 		assertCodeSystemCreated(requestBody);
-		assertCodeSystemExists(shortName);
-		assertCodeSystemHasAttributeValue(shortName, "locales", List.of("en-x-123456781000198103", "en-x-876543211000198107"));
+		assertCodeSystemHasAttributeValue(codeSystemId, "settings", Json.object("locales", List.of("en-x-123456781000198103", "en-x-876543211000198107")));
 	}
 	
 	@Test
 	public void createCodeSystemWithoutPath() {
-		final String shortName = "cs10";
-		final String expectedBranchPath = Branch.get(Branch.MAIN_PATH, shortName);
+		final String codeSystemId = "cs10";
+		final String expectedBranchPath = Branch.get(Branch.MAIN_PATH, codeSystemId);
 
 		try {
 			
@@ -125,11 +124,11 @@ public class CodeSystemApiTest {
 			// Branch does not exist, continue
 		}
 		
-		final Map<String, Object> requestBody = newHashMap(newCodeSystemRequestBody(shortName));
+		final Map<String, Object> requestBody = newHashMap(newCodeSystemRequestBody(codeSystemId));
 		requestBody.remove("branchPath");
 		
 		assertCodeSystemCreated(requestBody);
-		assertCodeSystemExists(shortName);
+		assertCodeSystemExists(codeSystemId);
 		
 		try {
 			
@@ -147,22 +146,22 @@ public class CodeSystemApiTest {
 	
 	@Test
 	public void createCodeSystemWithoutPathWithExtensionOf() {
-		final String parentName = "cs11";
-		final Map<String, String> parentRequestBody = newCodeSystemRequestBody(parentName);
+		final String parentCodeSystemId = "cs11";
+		final Map<String, Object> parentRequestBody = newCodeSystemRequestBody(parentCodeSystemId);
 		assertCodeSystemCreated(parentRequestBody);
-		assertCodeSystemExists(parentName);
+		assertCodeSystemExists(parentCodeSystemId);
 		
-		final Map<String, String> versionRequestBody = newCodeSystemVersionRequestBody("v1", "20200415");
-		assertCodeSystemVersionCreated(parentName, versionRequestBody);
+		final Map<String, Object> versionRequestBody = newCodeSystemVersionRequestBody(CodeSystem.uri(parentCodeSystemId), "v1", "20200415");
+		assertCodeSystemVersionCreated(versionRequestBody);
 
-		final String shortName = "cs12";
-		final Map<String, String> requestBody = newHashMap(newCodeSystemRequestBody(shortName));
+		final String codeSystemId = "cs12";
+		final Map<String, Object> requestBody = newHashMap(newCodeSystemRequestBody(codeSystemId));
 		requestBody.remove("branchPath");
-		requestBody.put("extensionOf", "cs11/v1");
+		requestBody.put("extensionOf", CodeSystem.uri("cs11/v1"));
 		
 		assertCodeSystemCreated(requestBody);
 		
-		final String expectedBranchPath = Branch.get(Branch.MAIN_PATH, "v1", shortName);
+		final String expectedBranchPath = Branch.get(Branch.MAIN_PATH, "v1", codeSystemId);
 		
 		try {
 			
@@ -180,24 +179,21 @@ public class CodeSystemApiTest {
 	
 	@Test
 	public void updateCodeSystem() {
-		final String shortName = "cs2";
-		final Map<String, String> requestBody = newCodeSystemRequestBody(shortName);
+		final String codeSystemId = "cs2";
+		final Map<String, Object> requestBody = newCodeSystemRequestBody(codeSystemId);
 		assertCodeSystemCreated(requestBody);
 		
-		final ImmutableMap<String, String> updateRequestBody = ImmutableMap.<String, String>builder()
-				.put("name", "updated name")
-				.put("repositoryId", "snomedStore")
-				.build();
+		final Json updateRequestBody = Json.object("title", "updated name");
 		
-		assertCodeSystemUpdated(shortName, updateRequestBody);
-		assertCodeSystemHasAttributeValue(shortName, "name", "updated name");
+		assertCodeSystemUpdated(codeSystemId, updateRequestBody);
+		assertCodeSystemHasAttributeValue(codeSystemId, "title", "updated name");
 	}
 	
 	@Test
-	public void updateCodeSystemWithMetadata() {
-		final String shortName = "cs5";
-		final Map<String, Object> requestBody = newHashMap(newCodeSystemRequestBody(shortName));
-		requestBody.put("additionalProperties", Map.of(
+	public void updateCodeSystemSettings() {
+		final String codeSystemId = "cs5";
+		final Map<String, Object> requestBody = newHashMap(newCodeSystemRequestBody(codeSystemId));
+		requestBody.put("settings", Map.of(
 			SnomedTerminologyComponentConstants.CODESYSTEM_NAMESPACE_CONFIG_KEY, "1000198",
 			SnomedTerminologyComponentConstants.CODESYSTEM_MODULES_CONFIG_KEY, List.of("1234567891000198103", "9876543211000198107"),
 			"locked", true));
@@ -208,88 +204,83 @@ public class CodeSystemApiTest {
 		updatedProperties.put(SnomedTerminologyComponentConstants.CODESYSTEM_NAMESPACE_CONFIG_KEY, "1000197");
 		updatedProperties.put("locked", null);
 		
-		final Map<String, Object> updateRequestBody = Map.of(
-			"repositoryId", "snomedStore",
-			"additionalProperties", updatedProperties);
+		final Map<String, Object> updateRequestBody = Map.of("settings", updatedProperties);
 		
-		assertCodeSystemUpdated(shortName, updateRequestBody);
-		assertCodeSystemHasAttributeValue(shortName, "additionalProperties." + SnomedTerminologyComponentConstants.CODESYSTEM_NAMESPACE_CONFIG_KEY, "1000197");
-		assertCodeSystemHasAttributeValue(shortName, "additionalProperties." + SnomedTerminologyComponentConstants.CODESYSTEM_MODULES_CONFIG_KEY, List.of("1234567891000198103", "9876543211000198107"));
-		assertCodeSystemExists(shortName).and().body("additionalProperties", not(hasKey("locked")));
+		assertCodeSystemUpdated(codeSystemId, updateRequestBody);
+		assertCodeSystemHasAttributeValue(codeSystemId, "settings." + SnomedTerminologyComponentConstants.CODESYSTEM_NAMESPACE_CONFIG_KEY, "1000197");
+		assertCodeSystemHasAttributeValue(codeSystemId, "settings." + SnomedTerminologyComponentConstants.CODESYSTEM_MODULES_CONFIG_KEY, List.of("1234567891000198103", "9876543211000198107"));
+		assertCodeSystemExists(codeSystemId).and().body("settings", not(hasKey("locked")));
 	}
 	
 	@Test
-	public void updateCodeSystemWithLocales() {
-		final String shortName = "cs9";
-		final Map<String, Object> requestBody = newHashMap(newCodeSystemRequestBody(shortName));
-		requestBody.put("locales", ExtendedLocale.parseLocales("en-x-123456781000198103,en-x-876543211000198107"));
+	public void updateCodeSystemSettingsWithLocales() {
+		final String codeSystemId = "cs9";
 		
-		assertCodeSystemCreated(requestBody);
+		assertCodeSystemCreated(Json.assign(
+			newCodeSystemRequestBody(codeSystemId), 
+			Json.object("settings", Json.object(
+				"locales", ExtendedLocale.parseLocales("en-x-123456781000198103,en-x-876543211000198107")
+			))
+		));
 		
-		final Map<String, Object> updateRequestBody = Map.of(
-			"repositoryId", "snomedStore",
-			"locales", List.of("en-us", "en-gb"));
+		assertCodeSystemUpdated(codeSystemId, 
+			Json.object("settings", Json.object(
+				"locales", List.of("en-us", "en-gb")
+			))
+		);
 		
-		assertCodeSystemUpdated(shortName, updateRequestBody);
-		assertCodeSystemHasAttributeValue(shortName, "locales", List.of("en-us", "en-gb"));
+		assertCodeSystemHasAttributeValue(codeSystemId, "settings", Json.object("locales", List.of("en-us", "en-gb")));
 	}
 	
 	@Test
 	public void updateCodeSystemWithInvalidBranchPath() {
-		final String shortName = "cs3";
-		final Map<String, String> requestBody = newCodeSystemRequestBody(shortName);
+		final String codeSystemId = "cs3";
+		final Map<String, Object> requestBody = newCodeSystemRequestBody(codeSystemId);
 		
 		assertCodeSystemCreated(requestBody);
 		
-		final ImmutableMap<String, String> updateRequestBody = ImmutableMap.<String, String>builder()
-				.put("branchPath", "non-existent-branch-path")
-				.put("repositoryId", "snomedStore")
-				.build();
+		final Json updateRequestBody = Json.object("branchPath", "non-existent-branch-path");
 		
-		assertCodeSystemUpdatedWithStatus(shortName, updateRequestBody, 404);
+		assertCodeSystemUpdatedWithStatus(codeSystemId, updateRequestBody, 404);
 	}
 	
 	@Test
 	public void updateCodeSystemWithExtensionOf() {
-		final String parentName = "cs13";
-		final Map<String, String> parentRequestBody = newCodeSystemRequestBody(parentName);
+		final String parentCodeSystemId = "cs13";
+		final Map<String, Object> parentRequestBody = newCodeSystemRequestBody(parentCodeSystemId);
 		assertCodeSystemCreated(parentRequestBody);
-		assertCodeSystemExists(parentName);
+		assertCodeSystemExists(parentCodeSystemId);
 		
-		final Map<String, String> v3RequestBody = newCodeSystemVersionRequestBody("v3", "20200416");
-		assertCodeSystemVersionCreated(parentName, v3RequestBody);
-		final Map<String, String> v4RequestBody = newCodeSystemVersionRequestBody("v4", "20200417");
-		assertCodeSystemVersionCreated(parentName, v4RequestBody);
-
-		final String shortName = "cs14";
-		final Map<String, String> requestBody = newHashMap(newCodeSystemRequestBody(shortName));
+		final Map<String, Object> v3RequestBody = newCodeSystemVersionRequestBody(CodeSystem.uri(parentCodeSystemId), "v3", "20200416");
+		assertCodeSystemVersionCreated(v3RequestBody);
+		final Map<String, Object> v4RequestBody = newCodeSystemVersionRequestBody(CodeSystem.uri(parentCodeSystemId), "v4", "20200417");
+		assertCodeSystemVersionCreated(v4RequestBody);
+		
+		final String codeSystemId = "cs14";
+		final Map<String, Object> requestBody = newHashMap(newCodeSystemRequestBody(codeSystemId));
 		requestBody.remove("branchPath");
-		requestBody.put("extensionOf", "cs13/v3");
+		requestBody.put("extensionOf", CodeSystem.uri("cs13/v3"));
 		
 		assertCodeSystemCreated(requestBody);
 		
-		final Map<String, Object> updateRequestBody = Map.of(
-				"repositoryId", "snomedStore",
-				"extensionOf", "cs13/v4");
+		final Map<String, Object> updateRequestBody = Json.object("extensionOf", CodeSystem.uri("cs13/v4"));
 			
-		assertCodeSystemUpdated(shortName, updateRequestBody);
+		assertCodeSystemUpdated(codeSystemId, updateRequestBody);
 		
-		final String expectedBranchPath = Branch.get(Branch.MAIN_PATH, "v4", shortName);
-		assertCodeSystemHasAttributeValue(shortName, "extensionOf", "cs13/v4");
-		assertCodeSystemHasAttributeValue(shortName, "branchPath", expectedBranchPath);
+		final String expectedBranchPath = Branch.get(Branch.MAIN_PATH, "v4", codeSystemId);
+		assertCodeSystemHasAttributeValue(codeSystemId, "extensionOf", "codesystems/cs13/v4");
+		assertCodeSystemHasAttributeValue(codeSystemId, "branchPath", expectedBranchPath);
 	}
 	
 	@Test
 	public void noUpdateCodeSystem() {
-		final String shortName = "cs4";
-		final Map<String, String> requestBody = newCodeSystemRequestBody(shortName);
+		final String codeSystemId = "cs4";
+		final Map<String, Object> requestBody = newCodeSystemRequestBody(codeSystemId);
 		assertCodeSystemCreated(requestBody);
 		
-		final ImmutableMap<String, String> updateRequestBody = ImmutableMap.<String, String>builder()
-				.put("name", "updated name")
-				.build();
+		final Map<String, Object> updateRequestBody = Json.object("title", "updated name");
 		
-		assertCodeSystemNotUpdated(shortName, updateRequestBody);
+		assertCodeSystemNotUpdated(codeSystemId, updateRequestBody);
 	}
 	
 }

@@ -13,12 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.rest.codesystem;
+package com.b2international.snowowl.core.rest;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import com.b2international.snowowl.core.rest.BaseApiConfig;
 
 import springfox.documentation.spring.web.plugins.Docket;
 
@@ -26,25 +24,25 @@ import springfox.documentation.spring.web.plugins.Docket;
  * @since 8.0
  */
 @Configuration
-public class CodeSystemApiConfig extends BaseApiConfig {
+public class CoreApiConfig extends BaseApiConfig {
 
 	@Override
 	public String getApiBaseUrl() {
-		return "/codesystems";
+		return "/";
 	}
 	
 	@Bean
 	public Docket codeSystemDocs() {
 		return docs(
 			getApiBaseUrl(),
-			"codesystems",
-			"1.0",
-			"CodeSystem API",
+			"core",
+			"2.0",
+			"Core API",
 			"https://b2i.sg",
 			"support@b2i.sg",
 			"API License",
 			"https://b2i.sg",
-			"This describes the resources that make up the official Snow Owl® CodeSystem API. <br > Detailed documentation is available at the [official documentation site](https://docs.b2i.sg/snow-owl/api/codesystems)."
+			"This describes the resources that make up the official Snow Owl® Core API. <br > Detailed documentation is available at the [official documentation site](https://docs.b2i.sg/snow-owl/api/core)."
 		);
 	}
 

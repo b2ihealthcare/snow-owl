@@ -10,12 +10,12 @@ const { Content, Sider } = Layout;
 class App extends React.Component {
 
   state = {
-    selectedKey: 'admin',
+    selectedKey: 'core',
     apis: []
   }
 
   componentDidMount() {
-    fetch(`${process.env.REACT_APP_SO_BASE_URL}/admin/apis`)
+    fetch(`${process.env.REACT_APP_SO_BASE_URL}/apis`)
       .then(response => response.json())
       .then(data => this.setState({ apis: data.items }));
   }
