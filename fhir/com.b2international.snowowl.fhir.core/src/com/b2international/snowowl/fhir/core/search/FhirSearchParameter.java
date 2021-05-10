@@ -26,7 +26,7 @@ import com.b2international.snowowl.fhir.core.search.FhirUriParameterDefinition.S
  */
 public final class FhirSearchParameter extends FhirParameter {
 	
-	private SearchRequestParameterModifier modifier;
+	private final SearchRequestParameterModifier modifier;
 	
 	FhirSearchParameter(FhirUriSearchParameterDefinition searchParameterDefinition, SearchRequestParameterModifier modifier, Collection<PrefixedValue> values) {
 		super(searchParameterDefinition, values);
