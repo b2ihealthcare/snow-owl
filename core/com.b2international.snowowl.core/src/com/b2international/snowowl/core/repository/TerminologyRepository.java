@@ -35,10 +35,13 @@ import com.b2international.index.revision.TimestampProvider;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryInfo;
 import com.b2international.snowowl.core.RepositoryInfo.Health;
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.branch.BranchChangedEvent;
-import com.b2international.snowowl.core.config.IndexConfiguration;
 import com.b2international.snowowl.core.config.IndexSettings;
+import com.b2international.snowowl.core.config.RepositoryConfiguration;
+import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.context.ServiceContext;
+import com.b2international.snowowl.core.setup.Plugins;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -51,36 +54,23 @@ import net.jodah.failsafe.RetryPolicy;
 public final class TerminologyRepository extends ServiceContext implements Repository {
 
 	private final String repositoryId;
-	private final ClassLoader classLoader;
-	private final IndexSettings indexSettings;
-	private final IndexConfiguration indexConfiguration;
 	private final Mappings mappings;
 	private final Logger log;
 	
-	TerminologyRepository(
-			final String repositoryId,
-			final ClassLoader classLoader,
-			final IndexSettings indexSettings,
-			final IndexConfiguration indexConfiguration,
-			final Mappings mappings, 
-			final Logger log) {
+	TerminologyRepository(final String repositoryId, final Mappings mappings, final Logger log) {
 		super();
 		this.repositoryId = repositoryId;
-		this.classLoader = classLoader;
-		this.indexSettings = indexSettings;
-		this.indexConfiguration = indexConfiguration;
 		this.mappings = mappings;
 		this.log = log;
 	}
 	
-	public void activate() {
+	public void activate(ServiceProvider context) {
 		bind(Logger.class, log);
 		
-		final ObjectMapper mapper = service(ObjectMapper.class);
-		RevisionIndex index = initIndex(mapper, mappings);
+		RevisionIndex index = initIndex(context, mappings);
 		bind(Repository.class, this);
 		bind(Mappings.class, mappings);
-		bind(ClassLoader.class, classLoader);
+		bind(ClassLoader.class, context.service(Plugins.class).getCompositeClassLoader());
 		// initialize the index
 		index.admin().create();
 	}
@@ -90,19 +80,16 @@ public final class TerminologyRepository extends ServiceContext implements Repos
 		return repositoryId;
 	}
 	
-	@Override
-	public IEventBus events() {
-		return service(IEventBus.class);
-	}
-	
-	private RevisionIndex initIndex(final ObjectMapper mapper, Mappings mappings) {
-		final Map<String, Object> indexSettings = newHashMap(this.indexSettings);
-		indexSettings.put(IndexClientFactory.NUMBER_OF_SHARDS, this.indexConfiguration.getNumberOfShards());
+	private RevisionIndex initIndex(final ServiceProvider context, Mappings mappings) {
+		final ObjectMapper mapper = context.service(ObjectMapper.class);
+		
+		final Map<String, Object> indexSettings = newHashMap(context.service(IndexSettings.class));
+		indexSettings.put(IndexClientFactory.NUMBER_OF_SHARDS, context.service(SnowOwlConfiguration.class).getModuleConfig(RepositoryConfiguration.class).getIndexConfiguration().getNumberOfShards());
 		final IndexClient indexClient = Indexes.createIndexClient(repositoryId, mapper, mappings, indexSettings);
 		final Index index = new DefaultIndex(indexClient);
-		final RevisionIndex revisionIndex = new DefaultRevisionIndex(index, service(TimestampProvider.class), mapper);
+		final RevisionIndex revisionIndex = new DefaultRevisionIndex(index, context.service(TimestampProvider.class), mapper);
 		revisionIndex.branching().addBranchChangeListener(path -> {
-			new BranchChangedEvent(repositoryId, path).publish(events());
+			new BranchChangedEvent(repositoryId, path).publish(context.service(IEventBus.class));
 		});
 		// register IndexClient per terminology
 		bind(IndexClient.class, indexClient);

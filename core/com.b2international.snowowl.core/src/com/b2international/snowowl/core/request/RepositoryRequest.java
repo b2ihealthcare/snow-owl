@@ -57,6 +57,11 @@ public final class RepositoryRequest<B> extends DelegatingRequest<ServiceProvide
 	public B execute(final ServiceProvider context) {
 		Repository repository = context.service(RepositoryManager.class).get(repositoryId);
 		
+		if (repository == null) {
+			throw new IllegalArgumentException(String.format("Unknown repositoryId '%s'", repositoryId));
+		}
+		
+		
 		DefaultRepositoryContext repositoryContext = new DefaultRepositoryContext(context, repository.status());
 		
 		// by default add a NullProgressMonitor binding to the context

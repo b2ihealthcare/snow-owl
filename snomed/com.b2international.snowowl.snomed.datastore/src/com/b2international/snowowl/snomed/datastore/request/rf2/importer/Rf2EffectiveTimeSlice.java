@@ -41,7 +41,6 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
-import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.request.io.ImportDefectAcceptor.ImportDefectBuilder;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
@@ -237,14 +236,6 @@ public final class Rf2EffectiveTimeSlice {
 					.setEffectiveTime(effectiveDate)
 					.buildAsync()
 					.getRequest()
-					.execute(context);
-				// do actually create a branch with the effective time name
-				RepositoryRequests
-					.branching()
-					.prepareCreate()
-					.setParent(context.branch().path())
-					.setName(effectiveTime)
-					.build()
 					.execute(context);
 			}
 		}

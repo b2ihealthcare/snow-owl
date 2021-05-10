@@ -32,9 +32,6 @@ import com.b2international.index.revision.Hooks;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryInfo.Health;
-import com.b2international.snowowl.core.config.IndexSettings;
-import com.b2international.snowowl.core.config.RepositoryConfiguration;
-import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.plugin.ClassPathScanner;
 import com.b2international.snowowl.core.setup.Environment;
@@ -121,17 +118,10 @@ public final class RepositoryBuilder {
 			repositoryConfigurers.forEach(configurer -> ((CompositeComponentDeletionPolicy) deletionPolicy).mergeWith(configurer.getComponentDeletionPolicy()));
 		}
 		
-		final TerminologyRepository repository = new TerminologyRepository(
-			repositoryId, 
-			env.plugins().getCompositeClassLoader(),
-			env.service(IndexSettings.class), 
-			env.service(SnowOwlConfiguration.class).getModuleConfig(RepositoryConfiguration.class).getIndexConfiguration(),
-			mappings, 
-			log
-		);
+		final TerminologyRepository repository = new TerminologyRepository(repositoryId, mappings, log);
 		// attach all custom bindings
 		repository.bindAll(bindings);
-		repository.activate();
+		repository.activate(env);
 		repository.service(RevisionIndex.class).hooks().addHook(hook);
 		manager.put(repositoryId, repository);
 		

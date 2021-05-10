@@ -15,26 +15,18 @@
  */
 package com.b2international.snowowl.core.request.version;
 
-import javax.annotation.Nullable;
-
 import org.slf4j.Logger;
 
-import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.commons.exceptions.ApiException;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.authorization.BranchAccessControl;
-import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.CappedTransactionContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.repository.TerminologyRepositoryPlugin;
-import com.b2international.snowowl.core.request.ResourceRequests;
-import com.b2international.snowowl.core.version.Version;
-import com.b2international.snowowl.core.version.VersionDocument;
 
 /**
  * {@link VersioningRequest} that will create a {@link CodeSystemVersionEntry} without modifying any of the available terminology components. 
@@ -59,24 +51,12 @@ public class VersioningRequest implements Request<TransactionContext, Boolean>, 
 	public final Boolean execute(TransactionContext context) {
 		final Logger log = context.log();
 		
-		Version version = getVersion(context);
-		if (version != null && !config.isForce()) {
-			throw new AlreadyExistsException("Version", config.getVersion());
-		}
-
 		log.info("Versioning components of '{}' resource...", config.getResource());
 		try {
 			// capped context to commit versioned components in the configured low watermark bulks
 			try (CappedTransactionContext versioningContext = new CappedTransactionContext(context, getCommitLimit(context))) {
 				doVersionComponents(versioningContext);
 			}
-
-			// FIXME remove when fixing _id field value for version documents
-			if (version != null && config.isForce()) {
-				context.delete(version);
-			}
-			
-			context.add(createVersion(context, config));
 		} catch (Exception e) {
 			if (e instanceof ApiException) {
 				throw (ApiException) e;
@@ -98,30 +78,6 @@ public class VersioningRequest implements Request<TransactionContext, Boolean>, 
 	protected void doVersionComponents(TransactionContext context) throws Exception {
 	}
 
-	@Nullable
-	private Version getVersion(TransactionContext context) {
-		return ResourceRequests
-				.prepareSearchVersion()
-				.setLimit(2)
-				.filterByResource(config.getResource())
-				.filterByVersionId(config.getVersion())
-				.build()
-				.execute(context)
-				.first()
-				.orElse(null);
-	}
-	
-	private final VersionDocument createVersion(final TransactionContext context, final VersioningConfiguration config) {
-		return VersionDocument.builder()
-				.id(config.getResource().withPath(config.getVersion()).toString())
-				.version(config.getVersion())
-				.description(config.getDescription())
-				.effectiveTime(EffectiveTimes.getEffectiveTime(config.getEffectiveTime()))
-				.resource(config.getResource())
-				.branchPath(Branch.get(context.path(), config.getVersion()))
-				.build();
-	}
-	
 	@Override
 	public String getOperation() {
 		return Permission.OPERATION_EDIT;

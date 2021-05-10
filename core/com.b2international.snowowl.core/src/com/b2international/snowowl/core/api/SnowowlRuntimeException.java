@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import javax.annotation.Nullable;
 /**
  * Snow Owl specific runtime exception wrapping and indicating a lower level {@link Throwable exception}.
  * 
+ * @since 1.0
  */
 public class SnowowlRuntimeException extends RuntimeException implements Serializable {
 
@@ -31,10 +32,9 @@ public class SnowowlRuntimeException extends RuntimeException implements Seriali
 	 * @param throwable the {@link Throwable} to wrap
 	 * @return the wrapped exception
 	 */
-	public static SnowowlRuntimeException wrap(final @Nullable Throwable throwable) {
-		
-		if (throwable instanceof SnowowlRuntimeException) {
-			return (SnowowlRuntimeException) throwable;
+	public static RuntimeException wrap(final @Nullable Throwable throwable) {
+		if (throwable instanceof RuntimeException) {
+			return (RuntimeException) throwable;
 		} else {
 			return new SnowowlRuntimeException(throwable);
 		}

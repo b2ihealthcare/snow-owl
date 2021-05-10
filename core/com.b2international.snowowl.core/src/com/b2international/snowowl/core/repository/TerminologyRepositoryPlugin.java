@@ -73,7 +73,6 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 					.bind(QueryOptimizer.class, getQueryOptimizer())
 					.bind(ContentAvailabilityInfoProvider.class, getContentAvailabilityInfoProvider())
 					.bind(ContextConfigurer.class, getRequestConfigurer())
-					.bind(RepositoryCommitNotificationSender.class, new RepositoryCommitNotificationSender())
 					.build(env);
 			
 			RepositoryInfo status = repo.status();

@@ -115,7 +115,7 @@ public class CodeSystemApiTest {
 			
 			RepositoryRequests.branching()
 				.prepareGet(expectedBranchPath)
-				.build(REPOSITORY_ID)
+				.build(TOOLING_ID)
 				.execute(Services.bus())
 				.getSync();
 			
@@ -136,7 +136,7 @@ public class CodeSystemApiTest {
 			// Check if the branch has been created
 			RepositoryRequests.branching()
 				.prepareGet(expectedBranchPath)
-				.build(REPOSITORY_ID)
+				.build(TOOLING_ID)
 				.execute(Services.bus())
 				.getSync();
 			
@@ -169,7 +169,7 @@ public class CodeSystemApiTest {
 			// Check if the branch has been created
 			RepositoryRequests.branching()
 				.prepareGet(expectedBranchPath)
-				.build(REPOSITORY_ID)
+				.build(TOOLING_ID)
 				.execute(Services.bus())
 				.getSync();
 			

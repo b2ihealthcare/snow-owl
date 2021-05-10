@@ -36,6 +36,8 @@ import com.b2international.index.revision.RevisionBranch;
 import com.b2international.snowowl.core.*;
 import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.context.ResourceRepositoryCommitRequestBuilder;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.Permission;
@@ -99,6 +101,9 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 		// validate new path
 		RevisionBranch.BranchNameValidator.DEFAULT.checkName(version);
 		
+		TerminologyResource resourceToVersion = resourcesById.get(resource);
+		
+		// TODO resurrect or eliminate tooling dependencies
 		final List<TerminologyResource> resourcesToVersion = List.of(resourcesById.get(resource));
 //		final List<CodeSystem> resourcesToVersion = codeSystem.getDependenciesAndSelf()
 //				.stream()
@@ -128,7 +133,7 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 						.getSync(1, TimeUnit.MINUTES);
 					
 					if (!branch.isDeleted()) {
-						throw new ConflictException("An existing branch with path '%s' conflicts with the specified version identifier.", newVersionPath);
+						throw new ConflictException("An existing version or branch with path '%s' conflicts with the specified version identifier.", newVersionPath);
 					}
 
 				} catch (NotFoundException e) {
@@ -146,9 +151,10 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 		final IProgressMonitor monitor = SubMonitor.convert(context.service(IProgressMonitor.class), TASK_WORK_STEP);
 		try {
 			
-			resourcesToVersion.forEach(resourceToVersion -> {
+//			resourcesToVersion.forEach(resourceToVersion -> {
 				// check that the specified effective time is valid in this code system
 				validateVersion(context, resourceToVersion);
+				// version components in the given repository
 				new RepositoryRequest<>(resourceToVersion.getToolingId(),
 					new BranchRequest<>(resourceToVersion.getBranchPath(),
 						new RevisionIndexReadRequest<CommitResult>(
@@ -161,9 +167,25 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 				
 				// tag the repository
 				doTag(context, resourceToVersion, monitor);
-			});
+//			});
 			
-			return Boolean.TRUE;
+			// create a version for the resource
+			return new BranchRequest<>(Branch.MAIN_PATH,
+				new ResourceRepositoryCommitRequestBuilder()
+				.setBody(tx -> {
+					tx.add(VersionDocument.builder()
+							.id(resource.withPath(version).toString())
+							.version(version)
+							.description(description)
+							.effectiveTime(EffectiveTimes.getEffectiveTime(effectiveTime))
+							.resource(resource)
+							.branchPath(resourceToVersion.getRelativeBranchPath(version))
+							.build());
+					return Boolean.TRUE;
+				})
+				.setCommitComment(String.format("Version '%s' as of '%s'", resource, version))
+				.build()
+			).execute(context).getResultAs(Boolean.class);
 		} finally {
 			releaseLocks(context);
 			if (null != monitor) {

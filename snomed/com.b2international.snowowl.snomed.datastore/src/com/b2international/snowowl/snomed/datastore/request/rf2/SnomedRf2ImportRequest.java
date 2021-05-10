@@ -23,6 +23,7 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -48,9 +49,9 @@ import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.Permission;
+import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.core.locks.Locks;
 import com.b2international.snowowl.core.repository.ContentAvailabilityInfoProvider;
@@ -59,6 +60,7 @@ import com.b2international.snowowl.core.request.io.ImportDefectAcceptor;
 import com.b2international.snowowl.core.request.io.ImportDefectAcceptor.ImportDefectBuilder;
 import com.b2international.snowowl.core.request.io.ImportResponse;
 import com.b2international.snowowl.core.uri.ComponentURI;
+import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
@@ -334,33 +336,28 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 	}
 	
 	private void updateLocales(final BranchContext context, final ResourceURI codeSystemUri) throws Exception {
-		try (final TransactionContext tx = context.openTransaction(context, DatastoreLockContextDescriptions.IMPORT)) {
-			/*
-			 * XXX: The default language in locales is always "en", as there is no
-			 * machine-readable information about what language code each language type
-			 * reference set is associated with.
-			 */
-			final List<ExtendedLocale> locales = SnomedRequests.prepareSearchRefSet()
-				.all()
-				.filterByType(SnomedRefSetType.LANGUAGE)
-				.filterByActive(true)
-				.setFields(SnomedConceptDocument.Fields.ID)
-				.sortBy(SortField.ascending(SnomedConceptDocument.Fields.ID))
-				.build()
-				.execute(tx)
-				.stream()
-				.map(refSet -> new ExtendedLocale("en", "", refSet.getId()))
-				.collect(Collectors.toList());
-			
-			final boolean changed = CodeSystemRequests.prepareUpdateCodeSystem(codeSystemUri.getResourceId())
+		/*
+		 * XXX: The default language in locales is always "en", as there is no
+		 * machine-readable information about what language code each language type
+		 * reference set is associated with.
+		 */
+		final List<ExtendedLocale> locales = SnomedRequests.prepareSearchRefSet()
+			.all()
+			.filterByType(SnomedRefSetType.LANGUAGE)
+			.filterByActive(true)
+			.setFields(SnomedConceptDocument.Fields.ID)
+			.sortBy(SortField.ascending(SnomedConceptDocument.Fields.ID))
+			.build()
+			.execute(context)
+			.stream()
+			.map(refSet -> new ExtendedLocale("en", "", refSet.getId()))
+			.collect(Collectors.toList());
+		
+		CodeSystemRequests.prepareUpdateCodeSystem(codeSystemUri.getResourceId())
 				.setSettings(Map.of(CodeSystem.CommonSettings.LOCALES, locales))
-				.build()
-				.execute(tx);
-			
-			if (changed) {
-				tx.commit("Update available list of locales on code system");
-			}
-		}
+				.build(context.service(User.class).getUsername(), "Update available list of locales on " + codeSystemUri.getResourceId())
+				.execute(context.service(IEventBus.class))
+				.getSync(2, TimeUnit.MINUTES);
 	}
 
 	@Override

@@ -32,7 +32,6 @@ import com.b2international.index.Index;
 import com.b2international.index.IndexClientFactory;
 import com.b2international.index.Indexes;
 import com.b2international.index.mapping.Mappings;
-import com.b2international.index.revision.TimestampProvider;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.api.SnowowlServiceException;
@@ -96,11 +95,11 @@ public final class RepositoryPlugin extends Plugin {
 		env.services().registerService(ObjectMapper.class, mapper);
 		// initialize Notification support
 		env.services().registerService(Notifications.class, new Notifications(env.service(IEventBus.class), env.plugins().getCompositeClassLoader()));
+		env.services().registerService(RepositoryCommitNotificationSender.class, new RepositoryCommitNotificationSender());
 		// initialize Index Settings
 		final IndexSettings indexSettings = new IndexSettings();
 		indexSettings.putAll(initIndexSettings(env));
 		env.services().registerService(IndexSettings.class, indexSettings);
-		env.services().registerService(TimestampProvider.class, new TimestampProvider.Default());
 	}
 	
 	private Map<String, Object> initIndexSettings(Environment env) {

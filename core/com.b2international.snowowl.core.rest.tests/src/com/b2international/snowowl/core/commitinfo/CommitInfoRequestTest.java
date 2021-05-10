@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ import com.google.common.collect.Iterables;
 public class CommitInfoRequestTest {
 	
 	private static final String USER_ID = "system";
-	private static final String REPOSITORY_ID = "snomedStore";
+	private static final String REPOSITORY_ID = SnomedTerminologyComponentConstants.TERMINOLOGY_ID;
 	private static final String BRANCH = IBranchPath.MAIN_BRANCH;
 	
 	private IEventBus bus;

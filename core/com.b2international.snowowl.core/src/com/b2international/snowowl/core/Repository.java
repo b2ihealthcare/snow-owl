@@ -16,7 +16,6 @@
 package com.b2international.snowowl.core;
 
 import com.b2international.snowowl.core.domain.Bindable;
-import com.b2international.snowowl.eventbus.IEventBus;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -35,11 +34,4 @@ public interface Repository extends ServiceProvider, IDisposableService, Bindabl
 	 */
 	RepositoryInfo status();
 	
-	/**
-	 * Returns the global singleton {@link IEventBus} to send events to it.
-	 * 
-	 * @return
-	 */
-	IEventBus events();
-
 }

@@ -48,6 +48,7 @@ import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescr
 import com.b2international.snowowl.core.internal.locks.DatastoreLockTarget;
 import com.b2international.snowowl.core.locks.IOperationLockManager;
 import com.b2international.snowowl.core.locks.Locks;
+import com.b2international.snowowl.core.version.VersionDocument;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
@@ -165,7 +166,12 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 
 	@Override
 	public String add(Object o) {
-		if (o instanceof Revision) {
+		if (o instanceof VersionDocument) { 
+			final VersionDocument version = (VersionDocument) o;
+			staging.stageNew(version.getId(), version);
+			resolvedObjectsById.put(createComponentKey(version.getId(), version.getClass()), version);
+			return version.getId();
+		} else if (o instanceof Revision) {
 			Revision rev = (Revision) o;
 			staging.stageNew(rev);
 			resolvedObjectsById.put(createComponentKey(rev.getId(), rev.getClass()), rev);
