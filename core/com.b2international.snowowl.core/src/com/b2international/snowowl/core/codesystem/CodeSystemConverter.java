@@ -194,7 +194,7 @@ public final class CodeSystemConverter extends BaseResourceConverter<CodeSystemE
 					.first();
 			})
 			.or(() -> {
-				// then the index
+				// then the code system versions
 				return 	CodeSystemRequests.prepareSearchCodeSystem()
 						.filterByUpgradeOf(codeSystemVersions)
 						.build()
