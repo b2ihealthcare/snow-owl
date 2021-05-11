@@ -16,23 +16,28 @@
 package com.b2international.snowowl.core.rest.codesystem;
 
 import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.*;
-import static com.google.common.collect.Maps.newHashMap;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.Matchers.hasKey;
-import static org.junit.Assert.assertEquals;
+import static org.hamcrest.Matchers.iterableWithSize;
 import static org.junit.Assert.fail;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.json.Json;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
+import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.test.commons.Services;
@@ -40,73 +45,152 @@ import com.b2international.snowowl.test.commons.Services;
 /**
  * @since 1.0
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class CodeSystemApiTest {
 
+	private static final Json SNOMED = Json.object(
+		ResourceDocument.Fields.ID, "SNOMEDCT",
+		ResourceDocument.Fields.TITLE, "SNOMED CT",
+		ResourceDocument.Fields.URL, "http://snomed.info/sct",
+		ResourceDocument.Fields.TOOLING_ID, SnomedTerminologyComponentConstants.TERMINOLOGY_ID,
+		ResourceDocument.Fields.OID, SnomedTerminologyComponentConstants.SNOMED_INT_OID
+	);
+	
 	@Test
-	public void getAllCodeSystems() {
-		assertCodeSystemHasAttributeValue("SNOMEDCT", "oid", "2.16.840.1.113883.6.96");
+	public void codesystem01_NoCodeSystemsPresent() {
+		assertCodeSystemSearch()
+			.statusCode(200)
+			.body("items", iterableWithSize(0));
 	}
 
 	@Test
-	public void searchCodeSystemByOid() {
-		final String oid = "2.16.840.1.113883.6.96";
-		assertCodeSystemExists(oid)
-			.and().body("oid", equalTo(oid));
-	}
-
-	@Test
-	public void getCodeSystemByShortName() {
-		final String codeSystemId = "SNOMEDCT";
-		assertCodeSystemExists(codeSystemId)
-			.and().body("id", equalTo(codeSystemId));
+	public void codesystem02_CreateEmptyBody() throws Exception {
+		assertCodeSystemCreate(
+			Json.object()
+		).statusCode(400).body("violations", hasItem("'id' may not be empty (was 'null')"));
 	}
 	
 	@Test
-	public void getCodeSystemByNonExistentOid() {
-		assertCodeSystemNotExists("1.2.3.4.10000");
+	public void codesystem03_CreateNoTitle() throws Exception {
+		assertCodeSystemCreate(
+			Json.object(
+				ResourceDocument.Fields.ID, "SNOMEDCT"
+			)
+		).statusCode(400).body("violations", hasItem("'title' may not be empty (was 'null')"));
 	}
 	
 	@Test
-	public void createCodeSystem() {
-		final String codeSystemId = "cs";
-		final Map<?, ?> requestBody = newCodeSystemRequestBody(codeSystemId);
-		final String lastPathSegment = assertCodeSystemCreated(requestBody);
-		
-		assertEquals(codeSystemId, lastPathSegment);
-		assertCodeSystemExists(codeSystemId);
+	public void codesystem04_CreateNoUrl() throws Exception {
+		assertCodeSystemCreate(
+			Json.object(
+				ResourceDocument.Fields.ID, "SNOMEDCT",
+				ResourceDocument.Fields.TITLE, "SNOMED CT"
+			)
+		).statusCode(400).body("violations", hasItem("'url' may not be empty (was 'null')"));
 	}
 	
 	@Test
-	public void createCodeSystemWithNonUniqueShortName() {
-		final Map<?, ?> requestBody = newCodeSystemRequestBody("cs");
-		assertCodeSystemNotCreated(requestBody);
+	public void codesystem05_CreateNoToolingId() throws Exception {
+		assertCodeSystemCreate(
+			Json.object(
+				ResourceDocument.Fields.ID, "SNOMEDCT",
+				ResourceDocument.Fields.TITLE, "SNOMED CT",
+				ResourceDocument.Fields.URL, "http://snomed.info/sct"
+			)
+		).statusCode(400).body("violations", hasItem("'toolingId' may not be empty (was 'null')"));
 	}
 	
 	@Test
-	public void createCodeSystemWithMetadata() {
+	public void codesystem06_CreateUnknownToolingId() throws Exception {
+		assertCodeSystemCreate(SNOMED.with(ResourceDocument.Fields.TOOLING_ID, "unknown"))
+			.statusCode(400)
+			.body("message", containsString("ToolingId 'unknown' is not supported by this server."));
+	}
+	
+	@Test
+	public void codesystem07_Create() throws Exception {
+		assertCodeSystemCreate(SNOMED)
+			.statusCode(201)
+			.header("Location", containsString("/codesystems/SNOMEDCT"));
+	}
+	
+	
+	@Test
+	public void codesystem08_CreateNonUniqueId() throws Exception {
+		assertCodeSystemCreate(SNOMED)
+			.statusCode(409)
+			.body("message", containsString("Resource with 'SNOMEDCT' identifier already exists."));
+	}
+	
+	@Test
+	public void codesystem09_CreateNonUniqueTitle() throws Exception {
+		assertCodeSystemCreate(SNOMED.with(ResourceDocument.Fields.ID, "SNOMEDCT-other"))
+			.statusCode(409)
+			.body("message", containsString("Resource with 'SNOMED CT' title already exists."));
+	}
+	
+	@Test
+	public void codesystem10_CreateNonUniqueOid() throws Exception {
+		assertCodeSystemCreate(SNOMED.with(ResourceDocument.Fields.ID, "SNOMEDCT-other").with("title", "SNOMED CT-other"))
+			.statusCode(409)
+			.body("message", containsString("Resource with '2.16.840.1.113883.6.96' oid already exists."));
+	}
+	
+	@Test
+	public void codesystem11_SearchById() throws Exception {
+		assertCodeSystemCreate(prepareCodeSystemCreateRequestBody(UUID.randomUUID().toString())).statusCode(201);
+		assertCodeSystemSearch(
+			Map.of(
+				ResourceDocument.Fields.ID, "SNOMEDCT"
+			)
+		).statusCode(200).body("items", iterableWithSize(1));
+	}
+	
+	@Test
+	public void codesystem12_SearchByTitle() throws Exception {
+		assertCodeSystemCreate(prepareCodeSystemCreateRequestBody(UUID.randomUUID().toString())).statusCode(201);
+		assertCodeSystemSearch(
+			Map.of(
+				ResourceDocument.Fields.TITLE, "SNOMED CT"
+			)
+		).statusCode(200).body("items", iterableWithSize(1));
+	}
+	
+	@Test
+	public void codesystem13_SearchByOid() throws Exception {
+		assertCodeSystemCreate(prepareCodeSystemCreateRequestBody(UUID.randomUUID().toString())).statusCode(201);
+		assertCodeSystemSearch(
+			Map.of(
+				ResourceDocument.Fields.OID, "2.16.840.1.113883.6.96"
+			)
+		).statusCode(200).body("items", iterableWithSize(1));
+	}
+	
+	// TODO add other searches here
+	
+	@Test
+	public void codesystem14_CreateWithSettings() throws Exception {
 		final String codeSystemId = "cs6";
-		final Map<String, Object> requestBody = newHashMap(newCodeSystemRequestBody(codeSystemId));
-		requestBody.put("settings", Map.of(
-				SnomedTerminologyComponentConstants.CODESYSTEM_NAMESPACE_CONFIG_KEY, "1000198",
-				SnomedTerminologyComponentConstants.CODESYSTEM_MODULES_CONFIG_KEY, List.of("123456781000198103", "876543211000198107")));
+		final Json body = prepareCodeSystemCreateRequestBody(codeSystemId)
+			.with(Json.object(
+				"settings", Json.object(
+					SnomedTerminologyComponentConstants.CODESYSTEM_NAMESPACE_CONFIG_KEY, "1000198",
+					SnomedTerminologyComponentConstants.CODESYSTEM_MODULES_CONFIG_KEY, List.of("123456781000198103", "876543211000198107"),
+					CodeSystem.CommonSettings.LOCALES, List.of("en-us", "en-gb")
+				)
+			));
+
+		assertCodeSystemCreate(body).statusCode(201);
 		
-		assertCodeSystemCreated(requestBody);
-		assertCodeSystemExists(codeSystemId);
-		assertCodeSystemHasAttributeValue(codeSystemId, "settings." + SnomedTerminologyComponentConstants.CODESYSTEM_NAMESPACE_CONFIG_KEY, "1000198");
-		assertCodeSystemHasAttributeValue(codeSystemId, "settings." + SnomedTerminologyComponentConstants.CODESYSTEM_MODULES_CONFIG_KEY, List.of("123456781000198103", "876543211000198107"));
+		assertCodeSystemGet(codeSystemId)
+			.statusCode(200)
+			.body("settings." + SnomedTerminologyComponentConstants.CODESYSTEM_NAMESPACE_CONFIG_KEY, equalTo("1000198"))
+			.body("settings." + SnomedTerminologyComponentConstants.CODESYSTEM_MODULES_CONFIG_KEY, equalTo(List.of("123456781000198103", "876543211000198107")))
+			.body("settings." + CodeSystem.CommonSettings.LOCALES, equalTo(List.of("en-us", "en-gb")));
 	}
 	
 	@Test
-	public void createCodeSystemWithLocales() {
-		final String codeSystemId = "cs7";
-		final Json requestBody = newCodeSystemRequestBody(codeSystemId).with(Json.object("settings", Json.object("locales", ExtendedLocale.parseLocales("en-x-123456781000198103,en-x-876543211000198107"))));
-		
-		assertCodeSystemCreated(requestBody);
-		assertCodeSystemHasAttributeValue(codeSystemId, "settings", Json.object("locales", List.of("en-x-123456781000198103", "en-x-876543211000198107")));
-	}
-	
-	@Test
-	public void createCodeSystemWithoutPath() {
+	public void codesystem15_CreateWithDedicatedBranchPath() {
 		final String codeSystemId = "cs10";
 		final String expectedBranchPath = Branch.get(Branch.MAIN_PATH, codeSystemId);
 
@@ -124,11 +208,10 @@ public class CodeSystemApiTest {
 			// Branch does not exist, continue
 		}
 		
-		final Map<String, Object> requestBody = newHashMap(newCodeSystemRequestBody(codeSystemId));
-		requestBody.remove("branchPath");
+		final Json requestBody = prepareCodeSystemCreateRequestBody(codeSystemId).without("branchPath");
 		
 		assertCodeSystemCreated(requestBody);
-		assertCodeSystemExists(codeSystemId);
+		assertCodeSystemGet(codeSystemId).statusCode(200);
 		
 		try {
 			
@@ -145,19 +228,20 @@ public class CodeSystemApiTest {
 	}
 	
 	@Test
-	public void createCodeSystemWithoutPathWithExtensionOf() {
+	public void codesystem16_CreateWithExtensionOf() {
 		final String parentCodeSystemId = "cs11";
-		final Map<String, Object> parentRequestBody = newCodeSystemRequestBody(parentCodeSystemId);
+		final Json parentRequestBody = prepareCodeSystemCreateRequestBody(parentCodeSystemId);
 		assertCodeSystemCreated(parentRequestBody);
-		assertCodeSystemExists(parentCodeSystemId);
+		assertCodeSystemGet(parentCodeSystemId).statusCode(200);
 		
-		final Map<String, Object> versionRequestBody = newCodeSystemVersionRequestBody(CodeSystem.uri(parentCodeSystemId), "v1", "20200415");
-		assertCodeSystemVersionCreated(versionRequestBody);
+		final Json versionRequestBody = prepareVersionCreateRequestBody(CodeSystem.uri(parentCodeSystemId), "v1", "20200415");
+		assertVersionCreated(versionRequestBody);
 
 		final String codeSystemId = "cs12";
-		final Map<String, Object> requestBody = newHashMap(newCodeSystemRequestBody(codeSystemId));
-		requestBody.remove("branchPath");
-		requestBody.put("extensionOf", CodeSystem.uri("cs11/v1"));
+		
+		final Json requestBody = prepareCodeSystemCreateRequestBody(codeSystemId)
+				.without("branchPath")
+				.with("extensionOf", CodeSystem.uri("cs11/v1"));
 		
 		assertCodeSystemCreated(requestBody);
 		
@@ -178,9 +262,9 @@ public class CodeSystemApiTest {
 	}
 	
 	@Test
-	public void updateCodeSystem() {
+	public void codesystem17_UpdateTitle() {
 		final String codeSystemId = "cs2";
-		final Map<String, Object> requestBody = newCodeSystemRequestBody(codeSystemId);
+		final Map<String, Object> requestBody = prepareCodeSystemCreateRequestBody(codeSystemId);
 		assertCodeSystemCreated(requestBody);
 		
 		final Json updateRequestBody = Json.object("title", "updated name");
@@ -188,38 +272,40 @@ public class CodeSystemApiTest {
 		assertCodeSystemUpdated(codeSystemId, updateRequestBody);
 		assertCodeSystemHasAttributeValue(codeSystemId, "title", "updated name");
 	}
+
+	// TODO add other property update tests as well
 	
 	@Test
-	public void updateCodeSystemSettings() {
+	public void codesystem18_UpdateSettings() {
 		final String codeSystemId = "cs5";
-		final Map<String, Object> requestBody = newHashMap(newCodeSystemRequestBody(codeSystemId));
-		requestBody.put("settings", Map.of(
-			SnomedTerminologyComponentConstants.CODESYSTEM_NAMESPACE_CONFIG_KEY, "1000198",
-			SnomedTerminologyComponentConstants.CODESYSTEM_MODULES_CONFIG_KEY, List.of("1234567891000198103", "9876543211000198107"),
-			"locked", true));
 		
-		assertCodeSystemCreated(requestBody);
+		final Json requestBody = prepareCodeSystemCreateRequestBody(codeSystemId).with(
+				"settings", Map.of(
+					SnomedTerminologyComponentConstants.CODESYSTEM_NAMESPACE_CONFIG_KEY, "1000198",
+					SnomedTerminologyComponentConstants.CODESYSTEM_MODULES_CONFIG_KEY, List.of("1234567891000198103", "9876543211000198107"),
+					"locked", true)
+				);
+		assertCodeSystemCreate(requestBody).statusCode(201);
 		
-		final Map<String, Object> updatedProperties = newHashMap();
-		updatedProperties.put(SnomedTerminologyComponentConstants.CODESYSTEM_NAMESPACE_CONFIG_KEY, "1000197");
-		updatedProperties.put("locked", null);
-		
-		final Map<String, Object> updateRequestBody = Map.of("settings", updatedProperties);
-		
+		final Json updateRequestBody = Json.object("settings", Json.object(
+			SnomedTerminologyComponentConstants.CODESYSTEM_NAMESPACE_CONFIG_KEY, "1000197"
+		).with("locked", null));
 		assertCodeSystemUpdated(codeSystemId, updateRequestBody);
-		assertCodeSystemHasAttributeValue(codeSystemId, "settings." + SnomedTerminologyComponentConstants.CODESYSTEM_NAMESPACE_CONFIG_KEY, "1000197");
-		assertCodeSystemHasAttributeValue(codeSystemId, "settings." + SnomedTerminologyComponentConstants.CODESYSTEM_MODULES_CONFIG_KEY, List.of("1234567891000198103", "9876543211000198107"));
-		assertCodeSystemExists(codeSystemId).and().body("settings", not(hasKey("locked")));
+		assertCodeSystemGet(codeSystemId)
+			.statusCode(200)
+			.and().body("settings." + SnomedTerminologyComponentConstants.CODESYSTEM_NAMESPACE_CONFIG_KEY, equalTo("1000197"))
+			.and().body("settings." + SnomedTerminologyComponentConstants.CODESYSTEM_MODULES_CONFIG_KEY, equalTo(List.of("1234567891000198103", "9876543211000198107")))
+			.and().body("settings", not(hasKey("locked")));
 	}
 	
 	@Test
-	public void updateCodeSystemSettingsWithLocales() {
+	public void codesystem19_UpdateLocales() {
 		final String codeSystemId = "cs9";
 		
 		assertCodeSystemCreated(Json.assign(
-			newCodeSystemRequestBody(codeSystemId), 
+			prepareCodeSystemCreateRequestBody(codeSystemId), 
 			Json.object("settings", Json.object(
-				"locales", ExtendedLocale.parseLocales("en-x-123456781000198103,en-x-876543211000198107")
+				CodeSystem.CommonSettings.LOCALES, ExtendedLocale.parseLocales("en-x-123456781000198103,en-x-876543211000198107")
 			))
 		));
 		
@@ -233,54 +319,40 @@ public class CodeSystemApiTest {
 	}
 	
 	@Test
-	public void updateCodeSystemWithInvalidBranchPath() {
+	public void codesystem20_UpdateInvalidBranchPath() {
 		final String codeSystemId = "cs3";
-		final Map<String, Object> requestBody = newCodeSystemRequestBody(codeSystemId);
+		final Map<String, Object> requestBody = prepareCodeSystemCreateRequestBody(codeSystemId);
 		
 		assertCodeSystemCreated(requestBody);
 		
 		final Json updateRequestBody = Json.object("branchPath", "non-existent-branch-path");
 		
-		assertCodeSystemUpdatedWithStatus(codeSystemId, updateRequestBody, 404);
+		assertCodeSystemUpdatedWithStatus(codeSystemId, updateRequestBody, 400);
 	}
 	
 	@Test
-	public void updateCodeSystemWithExtensionOf() {
+	public void codesystem21_UpdateExtensionOf() {
 		final String parentCodeSystemId = "cs13";
-		final Map<String, Object> parentRequestBody = newCodeSystemRequestBody(parentCodeSystemId);
+		final Json parentRequestBody = prepareCodeSystemCreateRequestBody(parentCodeSystemId);
 		assertCodeSystemCreated(parentRequestBody);
-		assertCodeSystemExists(parentCodeSystemId);
+		assertCodeSystemGet(parentCodeSystemId).statusCode(200);
 		
-		final Map<String, Object> v3RequestBody = newCodeSystemVersionRequestBody(CodeSystem.uri(parentCodeSystemId), "v3", "20200416");
-		assertCodeSystemVersionCreated(v3RequestBody);
-		final Map<String, Object> v4RequestBody = newCodeSystemVersionRequestBody(CodeSystem.uri(parentCodeSystemId), "v4", "20200417");
-		assertCodeSystemVersionCreated(v4RequestBody);
+		final Json v3RequestBody = prepareVersionCreateRequestBody(CodeSystem.uri(parentCodeSystemId), "v3", "20200416");
+		assertVersionCreated(v3RequestBody);
+		final Json v4RequestBody = prepareVersionCreateRequestBody(CodeSystem.uri(parentCodeSystemId), "v4", "20200417");
+		assertVersionCreated(v4RequestBody);
 		
 		final String codeSystemId = "cs14";
-		final Map<String, Object> requestBody = newHashMap(newCodeSystemRequestBody(codeSystemId));
-		requestBody.remove("branchPath");
-		requestBody.put("extensionOf", CodeSystem.uri("cs13/v3"));
+		final Json requestBody = prepareCodeSystemCreateRequestBody(codeSystemId)
+				.without("branchPath")
+				.with("extensionOf", CodeSystem.uri("cs13/v3"));
 		
 		assertCodeSystemCreated(requestBody);
-		
-		final Map<String, Object> updateRequestBody = Json.object("extensionOf", CodeSystem.uri("cs13/v4"));
-			
-		assertCodeSystemUpdated(codeSystemId, updateRequestBody);
+		assertCodeSystemUpdated(codeSystemId, Json.object("extensionOf", CodeSystem.uri("cs13/v4")));
 		
 		final String expectedBranchPath = Branch.get(Branch.MAIN_PATH, "v4", codeSystemId);
 		assertCodeSystemHasAttributeValue(codeSystemId, "extensionOf", "codesystems/cs13/v4");
 		assertCodeSystemHasAttributeValue(codeSystemId, "branchPath", expectedBranchPath);
-	}
-	
-	@Test
-	public void noUpdateCodeSystem() {
-		final String codeSystemId = "cs4";
-		final Map<String, Object> requestBody = newCodeSystemRequestBody(codeSystemId);
-		assertCodeSystemCreated(requestBody);
-		
-		final Map<String, Object> updateRequestBody = Json.object("title", "updated name");
-		
-		assertCodeSystemNotUpdated(codeSystemId, updateRequestBody);
 	}
 	
 }

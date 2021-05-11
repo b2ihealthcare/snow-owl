@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,8 +26,6 @@ import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.request.SearchResourceRequest.OptionKey;
 import com.b2international.snowowl.core.request.SearchResourceRequest.Sort;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 
 /**
@@ -76,7 +74,7 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	 * @return this builder instance
 	 */
 	public final B filterById(String id) {
-		return filterByIds(id == null ? null : ImmutableSet.of(id));
+		return filterByIds(id == null ? null : Set.of(id));
 	}
 	
 	/**
@@ -85,7 +83,7 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	 * @return this builder instance
 	 */
 	public final B filterByIds(Collection<String> ids) {
-		this.componentIds = ids == null ? null : ImmutableSet.copyOf(ids);
+		this.componentIds = ids == null ? null : Set.copyOf(ids);
 		return getSelf();
 	}
 	
@@ -120,7 +118,7 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	 */
 	public final B sortBy(List<Sort> sorts) {
 		if (sorts != null) {
-			optionsBuilder.put(OptionKey.SORT_BY, ImmutableList.copyOf(sorts));
+			optionsBuilder.put(OptionKey.SORT_BY, List.copyOf(sorts));
 		}
 		return getSelf();
 	}

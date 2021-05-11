@@ -58,6 +58,9 @@ public class CodeSystemRestService extends AbstractRestService {
 	public Promise<CodeSystems> searchByGet(final CodeSystemRestSearch params) {
 		return CodeSystemRequests.prepareSearchCodeSystem()
 				.filterByIds(params.getId())
+				.filterByOids(params.getOid())
+				.filterByTitle(params.getTitle())
+				.filterByToolingIds(params.getToolingId())
 				.setLimit(params.getLimit())
 				.setExpand(params.getExpand())
 				.setSearchAfter(params.getSearchAfter())

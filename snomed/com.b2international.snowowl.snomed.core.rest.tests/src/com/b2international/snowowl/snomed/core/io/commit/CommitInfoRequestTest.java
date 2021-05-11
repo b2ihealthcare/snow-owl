@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.commitinfo;
+package com.b2international.snowowl.snomed.core.io.commit;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -24,7 +24,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.b2international.commons.exceptions.NotFoundException;
-import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.commit.CommitInfo;
 import com.b2international.snowowl.core.commit.CommitInfos;
@@ -41,7 +41,7 @@ public class CommitInfoRequestTest {
 	
 	private static final String USER_ID = "system";
 	private static final String REPOSITORY_ID = SnomedTerminologyComponentConstants.TERMINOLOGY_ID;
-	private static final String BRANCH = IBranchPath.MAIN_BRANCH;
+	private static final String BRANCH = Branch.MAIN_PATH;
 	
 	private IEventBus bus;
 	
@@ -139,7 +139,7 @@ public class CommitInfoRequestTest {
 		final CommitInfos commitInfos = RepositoryRequests
 				.commitInfos()
 				.prepareSearchCommitInfo()
-				.filterByBranch(IBranchPath.MAIN_BRANCH)
+				.filterByBranch(BRANCH)
 				.build(REPOSITORY_ID)
 				.execute(bus)
 				.getSync();
@@ -179,7 +179,7 @@ public class CommitInfoRequestTest {
 			.setUrl("www.ihtsdo.org")
 			.setTitle(String.format("%s - %s", shortName, oid))
 			.setLanguage("en")
-			.setBranchPath(IBranchPath.MAIN_BRANCH)
+			.setBranchPath(BRANCH)
 			.setDescription("citation")
 			.setToolingId(SnomedTerminologyComponentConstants.TERMINOLOGY_ID)
 			.build(userId, comment)

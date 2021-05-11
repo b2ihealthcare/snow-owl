@@ -40,11 +40,31 @@ public final class ResourceSearchRequestBuilder
 	/**
 	 * Filters matches to have at least one of the specified resource types.
 	 * 
-	 * @param resourceTypes
+	 * @param resourceTypes - the resource types to match
 	 * @return this builder
 	 */
 	public ResourceSearchRequestBuilder filterByResourceType(Iterable<String> resourceTypes) {
 		return addOption(OptionKey.RESOURCE_TYPE, resourceTypes);
+	}
+	
+	/**
+	 * Filters matches by their title (exact match).
+	 * 
+	 * @param title - the single to match
+	 * @return this builder
+	 */
+	public ResourceSearchRequestBuilder filterByTitleExact(String title) {
+		return addOption(OptionKey.TITLE_EXACT, title);
+	}
+	
+	/**
+	 * Filters matches by their title (exact match).
+	 * 
+	 * @param titles - at least one of these titles match
+	 * @return this builder
+	 */
+	public ResourceSearchRequestBuilder filterByTitleExact(Iterable<String> titles) {
+		return addOption(OptionKey.TITLE_EXACT, titles);
 	}
 	
 	@Override

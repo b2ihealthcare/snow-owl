@@ -19,12 +19,13 @@ import static com.b2international.snowowl.test.commons.rest.RestExtensions.given
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertNotNull;
 
+import java.util.Collections;
 import java.util.Map;
 
 import com.b2international.commons.json.Json;
 import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 
 import io.restassured.http.ContentType;
@@ -37,83 +38,82 @@ import io.restassured.response.ValidatableResponse;
 public abstract class CodeSystemApiAssert {
 	
 	public static final String TOOLING_ID = SnomedTerminologyComponentConstants.TERMINOLOGY_ID;
+	
+	private static final String CODESYSTEMS_API = "/codesystems";
 
-	public static ValidatableResponse assertCodeSystemExists(final String uniqueId) {
-		return assertGetCodeSystem(uniqueId, 200);
+	public static ValidatableResponse assertCodeSystemSearch() {
+		return assertCodeSystemSearch(Collections.emptyMap());
 	}
 	
-	public static ValidatableResponse assertCodeSystemNotExists(final String uniqueId) {
-		return assertGetCodeSystem(uniqueId, 404);
+	public static ValidatableResponse assertCodeSystemSearch(final Map<String, Object> filters) {
+		return givenAuthenticatedRequest(CODESYSTEMS_API)
+				.when().queryParams(filters).get()
+				.then().assertThat();
 	}
 	
-	public static ValidatableResponse assertGetCodeSystem(final String uniqueId, final int statusCode) {
-		assertNotNull(uniqueId);
-		
-		return givenAuthenticatedRequest("/codesystems")
-			.when().get("/{id}", uniqueId)
-			.then().assertThat().statusCode(statusCode);
+	public static ValidatableResponse assertCodeSystemGet(final String codeSystemId) {
+		return givenAuthenticatedRequest(CODESYSTEMS_API)
+			.when().get("/{id}", codeSystemId)
+			.then().assertThat();
 	}
 	
-	public static String assertCodeSystemCreated(final Map<?, ?> requestBody) {
-		final String path = assertCodeSystemCreatedWithStatus(requestBody, 201)
-			.and().header("Location", containsString(String.format("%s/%s", "codesystems", requestBody.get("id"))))
-			.and().body(equalTo(""))
-			.and().extract().response().getHeader("Location");
+	public static String assertCodeSystemCreated(final Map<String, Object> requestBody) {
+		final String path = assertCodeSystemCreate(requestBody)
+				.statusCode(201)
+				.and().header("Location", containsString(String.format("%s/%s", "codesystems", requestBody.get("id"))))
+				.and().body(equalTo(""))
+				.and().extract().response().getHeader("Location");
 		
 		return lastPathSegment(path);
 	}
 	
-	public static ValidatableResponse assertCodeSystemNotCreated(final Map<?, ?> requestBody) {
-		return assertCodeSystemCreatedWithStatus(requestBody, 409);
+	public static ValidatableResponse assertCodeSystemNotCreated(final Map<String, Object> requestBody) {
+		return assertCodeSystemCreate(requestBody).statusCode(409);
 	}
 	
-	public static ValidatableResponse assertCodeSystemCreatedWithStatus(final Map<?, ?> requestBody, final int statusCode) {
-		return whenCreatingCodeSystem(requestBody)
-			.then().assertThat().statusCode(statusCode);
-	}
-	
-	private static Response whenCreatingCodeSystem(final Map<?, ?> requestBody) {
-		return givenAuthenticatedRequest("/codesystems")
+	public static ValidatableResponse assertCodeSystemCreate(final Map<String, Object> requestBody) {
+		return givenAuthenticatedRequest(CODESYSTEMS_API)
 				.with().contentType(ContentType.JSON)
 				.and().body(requestBody)
-				.when().post();
+				.when().post()
+				.then().assertThat();
 	}
 	
-	public static void assertCodeSystemUpdated(final String uniqueId, final Map<?, ?> requestBody) {
+	public static void assertCodeSystemUpdated(final String uniqueId, final Map<String, Object> requestBody) {
 		assertCodeSystemUpdatedWithStatus(uniqueId, requestBody, 204);
 	}
 	
-	public static void assertCodeSystemNotUpdated(final String uniqueId, final Map<?, ?> requestBody) {
+	public static void assertCodeSystemNotUpdated(final String uniqueId, final Map<String, Object> requestBody) {
 		assertCodeSystemUpdatedWithStatus(uniqueId, requestBody, 400);
 	}
 	
-	public static void assertCodeSystemUpdatedWithStatus(final String uniqueId, final Map<?, ?> requestBody, final int statusCode) {
+	public static void assertCodeSystemUpdatedWithStatus(final String uniqueId, final Map<String, Object> requestBody, final int statusCode) {
 		whenUpdatingCodeSystem(uniqueId, requestBody)
 			.then().assertThat().statusCode(statusCode);
 	}
 	
-	private static Response whenUpdatingCodeSystem(final String codeSystemId, final Map<?, ?> requestBody) {
-		return givenAuthenticatedRequest("/codesystems")
+	private static Response whenUpdatingCodeSystem(final String codeSystemId, final Map<String, Object> requestBody) {
+		return givenAuthenticatedRequest(CODESYSTEMS_API)
 			.with().contentType(ContentType.JSON)
 			.and().body(requestBody)
 			.when().put("/{id}", codeSystemId);
 	}
 	
 	public static void assertCodeSystemHasAttributeValue(final String codeSystemId, final String attributeName, final Object attributeValue) {
-		givenAuthenticatedRequest("/codesystems")
+		givenAuthenticatedRequest(CODESYSTEMS_API)
 			.when().get("/{id}", codeSystemId)
 			.then().assertThat().statusCode(200)
 			.and().body(attributeName, equalTo(attributeValue));
 	}
 	
-	public static Json newCodeSystemRequestBody(final String codeSystemId) {
-		return newCodeSystemRequestBody(codeSystemId, "MAIN");
+	public static Json prepareCodeSystemCreateRequestBody(final String codeSystemId) {
+		return prepareCodeSystemCreateRequestBody(codeSystemId, Branch.MAIN_PATH);
 	}
 	
-	public static Json newCodeSystemRequestBody(final String codeSystemId, final String branchPath) {
+	public static Json prepareCodeSystemCreateRequestBody(final String codeSystemId, final String branchPath) {
 		return Json.object(
 			"id", codeSystemId,
-			"title", "CodeSystem",
+			"title", "Code System " + codeSystemId,
 			"branchPath", branchPath,
 			"description", "description",
 			"toolingId", TOOLING_ID,
@@ -123,7 +123,7 @@ public abstract class CodeSystemApiAssert {
 		);
 	}
 	
-	public static Json newCodeSystemVersionRequestBody(final ResourceURI resourceUri, final String versionId, final String effectiveTime) {
+	public static Json prepareVersionCreateRequestBody(final ResourceURI resourceUri, final String versionId, final String effectiveTime) {
 		return Json.object(
 			"resource", resourceUri.toString(),
 			"version", versionId,
@@ -132,7 +132,7 @@ public abstract class CodeSystemApiAssert {
 		);
 	}
 
-	public static ValidatableResponse assertCodeSystemVersionCreated(final Map<?, ?> requestBody) {
+	public static ValidatableResponse assertVersionCreated(final Map<String, Object> requestBody) {
 		return givenAuthenticatedRequest("/versions")
 			.with().contentType(ContentType.JSON)
 			.and().body(requestBody)

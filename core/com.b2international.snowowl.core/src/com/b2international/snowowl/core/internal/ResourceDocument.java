@@ -96,12 +96,24 @@ public final class ResourceDocument extends RevisionDocument {
 	 */
 	public static final class Expressions extends RevisionDocument.Expressions {
 		
-		public static Expression matchNameExact(String term) {
+		public static Expression resourceType(String resourceType) {
+			return exactMatch(Fields.RESOURCE_TYPE, resourceType);
+		}
+		
+		public static Expression resourceTypes(Iterable<String> resourceTypes) {
+			return matchAny(Fields.RESOURCE_TYPE, resourceTypes);
+		}
+		
+		public static Expression matchTitleExact(String term) {
 			return matchTextAll(Fields.TITLE_EXACT, term);
 		}
 		
-		public static Expression matchNameOriginal(String term) {
-			return exactMatch(Fields.TITLE, term);
+		public static Expression title(String title) {
+			return exactMatch(Fields.TITLE, title);
+		}
+		
+		public static Expression titles(Iterable<String> titles) {
+			return matchAny(Fields.TITLE, titles);
 		}
 		
 		public static Expression matchNameRegex(String regex) {
@@ -132,7 +144,7 @@ public final class ResourceDocument extends RevisionDocument {
 			return matchAny(Fields.EXTENSION_OF, Collections3.toImmutableSet(extensionOfs).stream().map(ResourceURI::toString).collect(Collectors.toSet()));
 		}
 		
-		public static Expression upgradeOf(Iterable<ResourceURI> upgradeOfs) {
+		public static Expression upgradeOfs(Iterable<ResourceURI> upgradeOfs) {
 			return matchAny(Fields.UPGRADE_OF, Collections3.toImmutableSet(upgradeOfs).stream().map(ResourceURI::toString).collect(Collectors.toSet()));
 		}
 		

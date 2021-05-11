@@ -36,4 +36,5 @@ public final class CodeSystems extends PageableCollectionResource<CodeSystem> {
 			@JsonProperty("total") final int total) {
 		super(items, searchAfter, limit, total);
 	}
+
 }

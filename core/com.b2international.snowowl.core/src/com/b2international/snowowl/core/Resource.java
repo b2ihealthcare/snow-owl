@@ -17,6 +17,8 @@ package com.b2international.snowowl.core;
 
 import java.io.Serializable;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  * @since 8.0
  */
@@ -60,6 +62,7 @@ public abstract class Resource implements Serializable {
 	/**
 	 * @return the type of the resource
 	 */
+	@JsonIgnore
 	public abstract String getResourceType();
 	
 	public String getId() {

@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
-import java.util.Collection;
 import java.util.Collections;
 
 import com.b2international.index.Hits;
@@ -69,19 +68,14 @@ final class CodeSystemSearchRequest
 		
 		addIdFilter(queryBuilder, ResourceDocument.Expressions::ids);
 		
-		addToolingIdFilter(queryBuilder);
+		addFilter(queryBuilder, OptionKey.TOOLING_ID, String.class, ResourceDocument.Expressions::toolingIds);
+		addFilter(queryBuilder, OptionKey.OID, String.class, ResourceDocument.Expressions::oids);
+		addFilter(queryBuilder, OptionKey.TITLE_EXACT, String.class, ResourceDocument.Expressions::titles);
+		addFilter(queryBuilder, OptionKey.UPGRADE_OF, ResourceURI.class, ResourceDocument.Expressions::upgradeOfs);
+
 		addNameFilter(queryBuilder);
-		addNameExactFilter(queryBuilder);
-		addOidFilter(queryBuilder);
-		addUpgradeOfFilter(queryBuilder);
 		
 		return queryBuilder.build();
-	}
-
-	private void addToolingIdFilter(final ExpressionBuilder queryBuilder) {
-		if (containsKey(OptionKey.TOOLING_ID)) {
-			queryBuilder.filter(ResourceDocument.Expressions.toolingIds(getCollection(OptionKey.TOOLING_ID, String.class)));
-		}
 	}
 
 	private void addNameFilter(ExpressionBuilder queryBuilder) {
@@ -89,31 +83,12 @@ final class CodeSystemSearchRequest
 			final String searchTerm = getString(OptionKey.TITLE);
 			ExpressionBuilder termFilter = Expressions.builder();
 			termFilter.should(Expressions.dismaxWithScoreCategories(
-				ResourceDocument.Expressions.matchNameExact(searchTerm),
+				ResourceDocument.Expressions.matchTitleExact(searchTerm),
 				ResourceDocument.Expressions.matchNameAllTermsPresent(searchTerm),
 				ResourceDocument.Expressions.matchNameAllPrefixesPresent(searchTerm)
 			));
 			termFilter.should(Expressions.boost(ResourceDocument.Expressions.id(searchTerm), 1000.0f));
 			queryBuilder.must(termFilter.build());
-		}
-	}
-	
-	private void addNameExactFilter(ExpressionBuilder queryBuilder) {
-		if (containsKey(OptionKey.TITLE_EXACT)) {
-			queryBuilder.must(ResourceDocument.Expressions.matchNameOriginal(getString(OptionKey.TITLE_EXACT)));
-		}		
-	}
-	
-	private void addOidFilter(final ExpressionBuilder queryBuilder) {
-		if (containsKey(OptionKey.OID)) {
-			queryBuilder.filter(ResourceDocument.Expressions.oids(getCollection(OptionKey.OID, String.class)));
-		}
-	}
-	
-	private void addUpgradeOfFilter(ExpressionBuilder queryBuilder) {
-		if (containsKey(OptionKey.UPGRADE_OF)) {
-			Collection<ResourceURI> upgradeOfs = getCollection(OptionKey.UPGRADE_OF, ResourceURI.class);
-			queryBuilder.filter(ResourceDocument.Expressions.upgradeOf(upgradeOfs));
 		}
 	}
 	

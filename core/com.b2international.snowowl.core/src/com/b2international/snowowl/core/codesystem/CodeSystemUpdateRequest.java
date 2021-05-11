@@ -20,6 +20,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.branch.Branch;
@@ -196,15 +197,21 @@ final class CodeSystemUpdateRequest extends UpdateRequest<TransactionContext> im
 		
 		// if extensionOf is set, branch path changes are already handled in updateExtensionOf
 		if (extensionOf == null && branchPath != null && !currentBranchPath.equals(branchPath)) {
-			final Branch branch = RepositoryRequests
-					.branching()
-					.prepareGet(branchPath)
-					.build()
-					.execute(context);
-			
-			if (branch.isDeleted()) {
-				throw new BadRequestException("Branch with identifier %s is deleted.", branchPath);
+			try {
+				final Branch branch = RepositoryRequests
+						.branching()
+						.prepareGet(branchPath)
+						.build()
+						.execute(context);
+				
+				if (branch.isDeleted()) {
+					throw new BadRequestException("Branch with identifier '%s' is deleted.", branchPath);
+				}
+				
+			} catch (NotFoundException e) {
+				throw e.toBadRequestException();
 			}
+			
 
 			// TODO: check if update branch path coincides with a version working path 
 			// and update extensionOf accordingly?

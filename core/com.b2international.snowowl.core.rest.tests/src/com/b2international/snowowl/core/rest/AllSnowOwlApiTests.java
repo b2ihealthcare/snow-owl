@@ -21,15 +21,9 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
-import com.b2international.snowowl.core.codesystem.CodeSystemRequestTest;
-import com.b2international.snowowl.core.commitinfo.CommitInfoRequestTest;
 import com.b2international.snowowl.core.rest.auth.BasicAuthenticationTest;
 import com.b2international.snowowl.core.rest.codesystem.CodeSystemApiTest;
-import com.b2international.snowowl.core.rest.info.RepositoryApiTest;
-import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.test.commons.BundleStartRule;
-import com.b2international.snowowl.test.commons.Resources;
-import com.b2international.snowowl.test.commons.SnomedContentRule;
 import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 
 /**
@@ -39,9 +33,6 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 @SuiteClasses({ 
 	BasicAuthenticationTest.class,
 	CodeSystemApiTest.class,
-	CodeSystemRequestTest.class,
-	CommitInfoRequestTest.class,
-	RepositoryApiTest.class
 })
 public class AllSnowOwlApiTests {
 	
@@ -49,6 +40,6 @@ public class AllSnowOwlApiTests {
 	public static final RuleChain appRule = RuleChain
 			.outerRule(SnowOwlAppRule.snowOwl(AllSnowOwlApiTests.class))
 			.around(new BundleStartRule("org.eclipse.jetty.osgi.boot"))
-			.around(new BundleStartRule("com.b2international.snowowl.core.rest"))
-			.around(new SnomedContentRule(SnomedContentRule.SNOMEDCT, Resources.Snomed.MINI_RF2_INT, Rf2ReleaseType.FULL));
+			.around(new BundleStartRule("com.b2international.snowowl.core.rest"));
+
 }

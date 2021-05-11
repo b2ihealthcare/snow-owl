@@ -52,7 +52,7 @@ import io.swagger.annotations.ApiResponses;
  * 
  * @since 7.0
  */
-@Api("Exchange")
+@Api(value = "Exchange", hidden = true)
 @Controller
 @RequestMapping(
 		value="/exchange/{shortName}", 

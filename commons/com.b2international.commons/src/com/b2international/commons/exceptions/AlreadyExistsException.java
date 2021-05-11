@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,13 +27,29 @@ public class AlreadyExistsException extends ConflictException {
 	private static final long serialVersionUID = 6347436684320140303L;
 
 	/**
-	 * Creates a new exception instance with the specified arguments. 
+	 * Creates a new exception instance with the specified arguments.
 	 * 
-	 * @param type the type of the existing item
-	 * @param id   the identifier of the existing item
+	 * @param type
+	 *            - the type of the existing item
+	 * @param id
+	 *            - the identifier of the existing item
 	 */
 	public AlreadyExistsException(final String type, final String id) {
-		super("%s with '%s' identifier already exists.", checkNotNull(type, "type"), checkNotNull(id, "id"));
+		this(type, "identifier", id);
+	}
+
+	/**
+	 * Creates a new exception instance with the specified arguments.
+	 * 
+	 * @param type
+	 *            - the type of the existing item
+	 * @param property
+	 *            - the conflicting non-unique property's name
+	 * @param propertyValue
+	 *            - the conflicting non-unique property value
+	 */
+	public AlreadyExistsException(final String type, final String property, final String propertyValue) {
+		super("%s with '%s' %s already exists.", checkNotNull(type, "type"), checkNotNull(propertyValue, "propertyValue"), checkNotNull(property, "property"));
 	}
 
 }

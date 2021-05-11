@@ -18,9 +18,12 @@ package com.b2international.snowowl.core.codesystem;
 import java.util.Map;
 import java.util.Optional;
 
+import org.hibernate.validator.constraints.NotEmpty;
+
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.branch.Branch;
@@ -32,6 +35,7 @@ import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.version.Version;
+import com.google.common.base.Strings;
 
 /**
  * @since 4.7
@@ -41,11 +45,16 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 	private static final long serialVersionUID = 2L;
 
 	// the new codesystem's ID, if not specified, it will be auto-generated
+	@NotEmpty
 	String id;
 	
 	// common resource fields TODO move to superclass
+	@NotEmpty
 	String url;
+	
+	@NotEmpty
 	String title;
+	
 	String language;
 	String description;
 	String status;
@@ -56,9 +65,14 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 	String purpose;
 	
 	// specialized resource fields
+	// optional OID, but if defined it must be unique
 	String oid;
+	
 	String branchPath;
+	
+	@NotEmpty
 	String toolingId;
+	
 	ResourceURI extensionOf;
 	ResourceURI upgradeOf;
 	Map<String, Object> settings;
@@ -115,15 +129,50 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 	}
 
 	private Optional<Version> checkCodeSystem(final RepositoryContext context, final boolean create) {
-		// OID must be unique if defined
-		if (!StringUtils.isEmpty(oid) && codeSystemExists(oid, context)) {
-			throw new AlreadyExistsException("Resource", oid);
-		}
-
-		// Short name is always checked against existing code systems
-		if (codeSystemExists(id, context)) {
+		// codeSystemId checked against all resources
+		final boolean existingId = ResourceRequests.prepareSearch()
+			.setLimit(0)
+			.filterById(id)
+			.build()
+			.execute(context)
+			.getTotal() > 0;
+			
+		if (existingId) {
 			throw new AlreadyExistsException("Resource", id);
 		}
+		
+		// title should be unique across all resources
+		final boolean existingTitle = ResourceRequests.prepareSearch()
+			.setLimit(0)
+			.filterByTitleExact(title)
+			.build()
+			.execute(context)
+			.getTotal() > 0;
+			
+		if (existingTitle) {
+			throw new AlreadyExistsException("Resource", "title", title);
+		}
+
+		// OID must be unique if defined
+		if (!Strings.isNullOrEmpty(oid)) {
+			final boolean existingOid = CodeSystemRequests.prepareSearchCodeSystem()
+					.setLimit(0)
+					.filterByOid(oid)
+					.build()
+					.execute(context)
+					.getTotal() > 0;
+			if (existingOid) {
+				throw new AlreadyExistsException("Resource", "oid", oid);
+			}
+		}
+		
+		// toolingId must be supported
+		context.service(RepositoryManager.class)
+			.repositories()
+			.stream()
+			.filter(repository -> repository.id().equals(toolingId))
+			.findFirst()
+			.orElseThrow(() -> new BadRequestException("ToolingId '%s' is not supported by this server.", toolingId));
 		
 		if (extensionOf != null) {
 			
@@ -173,15 +222,6 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 				throw new BadRequestException("Setting value for key '%s' is null.", key);	
 			});
 		}
-	}
-	
-	private boolean codeSystemExists(final String uniqeId, final RepositoryContext context) {
-		return CodeSystemRequests.prepareSearchCodeSystem()
-				.setLimit(0)
-				.filterById(uniqeId)
-				.build()
-				.execute(context)
-				.getTotal() > 0;
 	}
 	
 	private boolean branchExists(final String path, final ServiceProvider context) {

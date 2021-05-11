@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -85,6 +85,22 @@ public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B, D
 
 	protected final ExpressionBuilder addIdFilter(ExpressionBuilder queryBuilder, Function<Collection<String>, Expression> expressionFactory) {
 		return applyIdFilter(queryBuilder, (qb, ids) -> qb.filter(expressionFactory.apply(ids)));
+	}
+	
+	/**
+	 * Applies a filter clause to the given queryBuilder if the specified optionKey holds any value, otherwise this method does nothing.
+	 *  
+	 * @param <T> - the expected type of the filter values
+	 * @param queryBuilder - the query builder to apply the filter to
+	 * @param optionKey - the search option key
+	 * @param filterType - the expected type of the filter values
+	 * @param expressionFactory - the factory that creates the index clause based on the filter values
+	 */
+	protected final <T> void addFilter(ExpressionBuilder queryBuilder, Enum<?> optionKey, Class<T> filterType, Function<Collection<T>, Expression> expressionFactory) {
+		if (containsKey(optionKey)) {
+			Collection<T> filterValues = getCollection(optionKey, filterType);
+			queryBuilder.filter(expressionFactory.apply(filterValues));
+		}
 	}
 	
 	/**

@@ -18,6 +18,7 @@ package com.b2international.snowowl.core.request;
 import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.Resources;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.internal.ResourceDocument;
@@ -34,7 +35,12 @@ final class ResourceSearchRequest extends SearchIndexResourceRequest<RepositoryC
 		/**
 		 * Filter matches by their resource type.
 		 */
-		RESOURCE_TYPE
+		RESOURCE_TYPE, 
+		
+		/**
+		 * Filter matches by their title (exact match).
+		 */
+		TITLE_EXACT
 		
 	}
 	
@@ -45,7 +51,11 @@ final class ResourceSearchRequest extends SearchIndexResourceRequest<RepositoryC
 	
 	@Override
 	protected Expression prepareQuery(RepositoryContext context) {
-		return Expressions.matchAll();
+		final ExpressionBuilder queryBuilder = Expressions.builder();
+		addIdFilter(queryBuilder, ResourceDocument.Expressions::ids);
+		addFilter(queryBuilder, OptionKey.RESOURCE_TYPE, String.class, ResourceDocument.Expressions::resourceTypes);
+		addFilter(queryBuilder, OptionKey.TITLE_EXACT, String.class, ResourceDocument.Expressions::titles);
+		return queryBuilder.build();
 	}
 
 	@Override

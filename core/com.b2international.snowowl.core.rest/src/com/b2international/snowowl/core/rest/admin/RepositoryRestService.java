@@ -57,7 +57,7 @@ import io.swagger.annotations.ApiResponses;
  * Spring controller for exposing repository related administration functionalities.
  * @since 7.0
  */
-@Api(value = "Repositories", description="Repositories", tags = { "repositories" })
+@Api(value = "Repositories", description="Repositories", tags = { "repositories" }, hidden = true)
 @RestController
 @RequestMapping(value = "/repositories") 
 public class RepositoryRestService extends AbstractRestService {
