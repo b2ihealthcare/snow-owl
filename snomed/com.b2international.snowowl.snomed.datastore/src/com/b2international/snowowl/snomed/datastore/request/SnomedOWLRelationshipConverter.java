@@ -30,6 +30,7 @@ import org.snomed.otf.owltoolkit.domain.Relationship;
 import org.snomed.otf.owltoolkit.domain.Relationship.ConcreteValue;
 
 import com.b2international.commons.time.TimeUtil;
+import com.b2international.snowowl.snomed.core.domain.RelationshipValue;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedOWLRelationshipDocument;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Supplier;
@@ -78,7 +79,7 @@ public final class SnomedOWLRelationshipConverter {
 				relationship = new Relationship(
 					owlRelationship.getGroup(),
 					Long.valueOf(owlRelationship.getTypeId()),
-					new ConcreteValue(owlRelationship.getValueAsObject().toLiteral()));
+					toConcreteValue(owlRelationship.getValueAsObject()));
 			}
 			
 			relationships.put(relationship.getGroup(), relationship);
@@ -96,6 +97,13 @@ public final class SnomedOWLRelationshipConverter {
 
 		axiomRepresentation.setPrimitive(isPrimitive);
 		return convertRelationshipToAxiom(conceptId, axiomRepresentation);
+	}
+
+	private ConcreteValue toConcreteValue(final RelationshipValue value) {
+		return value.map(
+			i -> new ConcreteValue(ConcreteValue.Type.INTEGER, i.toString()), 
+			d -> new ConcreteValue(ConcreteValue.Type.DECIMAL, d.toString()), 
+			s -> new ConcreteValue(ConcreteValue.Type.STRING, s));
 	}
 
 	private String convertRelationshipToAxiom(final String conceptId, final AxiomRepresentation axiomRepresentation) {

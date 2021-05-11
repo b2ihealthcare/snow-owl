@@ -355,10 +355,11 @@ public final class Rf2TransactionContext extends DelegatingTransactionContext {
 					.withSourceId(relationship.getSourceId())
 					.withTypeId(relationship.getTypeId())
 					.withDestinationId(relationship.getDestinationId())
+					.withDestinationNegated(false)
+					.withValue(relationship.getValueAsObject())
 					.withCharacteristicTypeId(relationship.getCharacteristicTypeId())
 					.withGroup(relationship.getGroup())
 					.withUnionGroup(relationship.getUnionGroup())
-					.withDestinationNegated(false)
 					.withModifierId(relationship.getModifierId());
 		} else {
 			throw new UnsupportedOperationException("Cannot prepare unknown core component: " + component);

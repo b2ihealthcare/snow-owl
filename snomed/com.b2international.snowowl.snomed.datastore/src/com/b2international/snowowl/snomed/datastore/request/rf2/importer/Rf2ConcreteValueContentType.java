@@ -54,6 +54,7 @@ final class Rf2ConcreteValueContentType implements Rf2ContentType<SnomedRelation
 		component.setTypeId(values[7]);
 		component.setCharacteristicTypeId(values[8]);
 		component.setModifierId(values[9]);
+		component.setUnionGroup(0);
 	}
 
 	@Override

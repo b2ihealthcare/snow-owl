@@ -22,6 +22,7 @@ import com.b2international.index.Doc;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.RelationshipValue;
 import com.b2international.snowowl.snomed.core.domain.RelationshipValueType;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
 import com.b2international.snowowl.snomed.datastore.StatementFragmentWithDestination;
 import com.b2international.snowowl.snomed.datastore.StatementFragmentWithValue;
@@ -45,6 +46,14 @@ public final class SnomedOWLRelationshipDocument implements Serializable {
 			i -> new SnomedOWLRelationshipDocument(typeId, null, i, null, null, RelationshipValueType.INTEGER, group),
 			d -> new SnomedOWLRelationshipDocument(typeId, null, null, d, null, RelationshipValueType.DECIMAL, group),
 			s -> new SnomedOWLRelationshipDocument(typeId, null, null, null, s, RelationshipValueType.STRING, group));
+	}
+	
+	public static SnomedOWLRelationshipDocument createFrom(final SnomedRelationship r) {
+		if (r.hasValue()) {
+			return createValue(r.getTypeId(), r.getValueAsObject(), r.getGroup());
+		} else {
+			return create(r.getTypeId(), r.getDestinationId(), r.getGroup());
+		}
 	}
 
 	private final String typeId;

@@ -193,6 +193,11 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 	public RelationshipValue getValueAsObject() {
 		return value;
 	}
+	
+	@JsonIgnore
+	public boolean hasValue() {
+		return (value != null);
+	}
 
 	/**
 	 * @return

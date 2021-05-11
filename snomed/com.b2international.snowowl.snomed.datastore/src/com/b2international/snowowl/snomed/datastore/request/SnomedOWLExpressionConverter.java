@@ -29,6 +29,7 @@ import org.snomed.otf.owltoolkit.conversion.AxiomRelationshipConversionService;
 import org.snomed.otf.owltoolkit.conversion.ConversionException;
 import org.snomed.otf.owltoolkit.domain.AxiomRepresentation;
 import org.snomed.otf.owltoolkit.domain.Relationship;
+import org.snomed.otf.owltoolkit.domain.Relationship.ConcreteValue;
 
 import com.b2international.commons.exceptions.ApiException;
 import com.b2international.commons.exceptions.BadRequestException;
@@ -133,7 +134,7 @@ public final class SnomedOWLExpressionConverter {
 					if (relationship.isConcrete()) {
 						return SnomedOWLRelationshipDocument.createValue(
 							Long.toString(relationship.getTypeId()), 
-							RelationshipValue.fromLiteral(relationship.getValueAsString()), 
+							toRelationshipValue(relationship.getValue()), 
 							relationship.getGroup());
 					} else {
 						return SnomedOWLRelationshipDocument.create(
@@ -153,6 +154,16 @@ public final class SnomedOWLExpressionConverter {
 		} catch (Exception e) {
 			LOG.error("Failed to convert OWL axiom '{}' to relationship representations for concept '{}'", axiomExpression, conceptId, e);
 			return SnomedOWLExpressionConverterResult.EMPTY;
+		}
+	}
+
+	private RelationshipValue toRelationshipValue(ConcreteValue value) {
+		final ConcreteValue.Type type = value.getType();
+		switch (type) {
+			case DECIMAL: return new RelationshipValue(value.asDecimal());
+			case INTEGER: return new RelationshipValue(value.asInt());
+			case STRING: return new RelationshipValue(value.asString());
+			default: throw new IllegalStateException("Unexpected concrete value type '" + type + "'.");
 		}
 	}
 
