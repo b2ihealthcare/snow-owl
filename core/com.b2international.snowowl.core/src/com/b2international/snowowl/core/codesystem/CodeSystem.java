@@ -21,6 +21,7 @@ import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.internal.ResourceDocument;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * Captures metadata about a code system, which holds a set of concepts of medical significance (optionally with other, supporting components that
@@ -49,6 +50,7 @@ public final class CodeSystem extends TerminologyResource {
 	/**
 	 * @return the list of {@link String} formatted as {@link ExtendedLocale} representing the language content this code system carries (can be {@code null})
 	 */
+	@JsonIgnore
 	public List<String> getLocales() {
 		return getSettings() == null ? null : (List<String>) getSettings().get(CommonSettings.LOCALES);
 	}

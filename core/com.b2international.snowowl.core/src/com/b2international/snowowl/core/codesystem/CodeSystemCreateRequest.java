@@ -21,8 +21,6 @@ import java.util.Optional;
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.commons.exceptions.BadRequestException;
-import com.b2international.index.revision.Commit;
-import com.b2international.index.revision.TimestampProvider;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.branch.Branch;
@@ -30,9 +28,7 @@ import com.b2international.snowowl.core.branch.Branches;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.internal.ResourceDocument;
-import com.b2international.snowowl.core.internal.ResourceRepository;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.version.Version;
@@ -99,15 +95,7 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 				.execute(context);
 		}
 
-		final long timestamp = context.service(TimestampProvider.class).getTimestamp();
-		final String username = context.service(User.class).getUsername();
-		
-		Commit commit = context.service(ResourceRepository.class).prepareCommit()
-			.stageNew(createCodeSystemEntry())
-			.commit(timestamp, username, "Create new Code System: " + id);
-		
-		// TODO notification about the new code system
-		
+		context.add(createCodeSystemEntry());
 		return id;
 	}
 
