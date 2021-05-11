@@ -10,11 +10,7 @@ import com.b2international.snowowl.core.ComponentIdentifier
 import com.b2international.snowowl.core.date.EffectiveTimes
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry
+import com.b2international.snowowl.snomed.datastore.index.entry.*
 import com.google.common.collect.Lists
 
 

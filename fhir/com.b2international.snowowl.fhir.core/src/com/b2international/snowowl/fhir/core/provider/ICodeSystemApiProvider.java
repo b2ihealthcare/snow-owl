@@ -21,8 +21,8 @@ import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.plugin.ClassPathScanner;
+import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.fhir.core.LogicalId;
 import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
@@ -60,15 +60,15 @@ public interface ICodeSystemApiProvider extends IFhirApiProvider {
 		 * Returns the matching {@link ICodeSystemApiProvider} for the given logical id (repository:branchPath).
 		 * @param bus
 		 * @param locales
-		 * @param logicalId - the logical id (e.g. icd10Store:20140101)
+		 * @param codeSystemId - the logical id (e.g. icd10Store:20140101)
 		 * @return FHIR code system provider
 		 * @throws com.b2international.snowowl.fhir.core.exceptions.BadRequestException - if provider is not found with the given path
 		 */
-		public ICodeSystemApiProvider getCodeSystemProvider(IEventBus bus, List<ExtendedLocale> locales, LogicalId logicalId) {
+		public ICodeSystemApiProvider getCodeSystemProvider(IEventBus bus, List<ExtendedLocale> locales, CodeSystemURI codeSystemId) {
 			return getProviders(bus, locales).stream()
-				.filter(provider -> provider.isSupported(logicalId))
+				.filter(provider -> provider.isSupported(codeSystemId))
 				.findFirst()
-				.orElseThrow(() -> new BadRequestException("Did not find FHIR module for code system: " + logicalId, OperationOutcomeCode.MSG_NO_MODULE, "system=" + logicalId));
+				.orElseThrow(() -> new BadRequestException("Did not find FHIR module for code system: " + codeSystemId, OperationOutcomeCode.MSG_NO_MODULE, "system=" + codeSystemId));
 		}
 		
 		/**
@@ -108,6 +108,8 @@ public interface ICodeSystemApiProvider extends IFhirApiProvider {
 	 */
 	LookupResult lookup(LookupRequest lookupRequest);
 	
+	boolean isSupported(CodeSystemURI codeSystemId);
+
 	/**
 	 * Test the subsumption relationship between code/Coding A and code/Coding B given the semantics of subsumption in the underlying code system (see hierarchyMeaning).
 	 * See <a href="http://hl7.org/fhir/codesystem-operations.html#subsumes">docs</a> for more details.  
@@ -134,11 +136,11 @@ public interface ICodeSystemApiProvider extends IFhirApiProvider {
 	CodeSystem getCodeSystem(String codeSystemUri);
 
 	/**
-	 * Returns the code system for the passed in logical id @see {@link LogicalId}
+	 * Returns the code system for the passed in logical id @see {@link CodeSystemURI}
 	 * @param codeSystemId
 	 * @return {@link CodeSystem}
 	 * @throws BadRequestException if the code system is not supported by this provider
 	 */
-	CodeSystem getCodeSystem(LogicalId codeSystemId);
+	CodeSystem getCodeSystem(CodeSystemURI codeSystemId);
 
 }

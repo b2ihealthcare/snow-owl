@@ -27,7 +27,6 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipSe
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests
 import com.google.common.base.Strings
 import com.google.common.collect.ImmutableMultimap
-import com.google.common.collect.Lists
 import com.google.common.collect.Multimap
 import com.google.common.collect.Sets
 

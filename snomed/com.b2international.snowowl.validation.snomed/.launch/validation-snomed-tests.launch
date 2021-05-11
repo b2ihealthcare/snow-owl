@@ -39,6 +39,8 @@
         <setEntry value="assertj-core@default:default"/>
         <setEntry value="ch.qos.logback.classic@default:default"/>
         <setEntry value="ch.qos.logback.core@default:default"/>
+        <setEntry value="com.b2international.snomed.ecl@default:default"/>
+        <setEntry value="com.b2international.snomed.ql@default:default"/>
         <setEntry value="com.diffplug.osgi.extension.sun.misc@default:false"/>
         <setEntry value="com.diffplug.osgi.extension.sun.reflect@default:false"/>
         <setEntry value="com.fasterxml.classmate@default:default"/>
@@ -94,6 +96,7 @@
         <setEntry value="org.apache.commons.logging@default:default"/>
         <setEntry value="org.apache.felix.gogo.command@default:default"/>
         <setEntry value="org.apache.felix.gogo.runtime@default:default"/>
+        <setEntry value="org.apache.felix.scr@default:default"/>
         <setEntry value="org.apache.httpcomponents.httpasyncclient@default:default"/>
         <setEntry value="org.apache.httpcomponents.httpclient*4.5.3@default:default"/>
         <setEntry value="org.apache.httpcomponents.httpcore*4.4.10@default:default"/>
@@ -119,6 +122,7 @@
         <setEntry value="org.eclipse.emf.ecore@default:default"/>
         <setEntry value="org.eclipse.equinox.app@default:default"/>
         <setEntry value="org.eclipse.equinox.common@2:true"/>
+        <setEntry value="org.eclipse.equinox.ds@1:true"/>
         <setEntry value="org.eclipse.equinox.launcher.win32.win32.x86_64@default:false"/>
         <setEntry value="org.eclipse.equinox.launcher@default:default"/>
         <setEntry value="org.eclipse.equinox.preferences@default:default"/>
@@ -172,7 +176,6 @@
         <setEntry value="com.b2international.index@default:default"/>
         <setEntry value="com.b2international.mapdb@default:default"/>
         <setEntry value="com.b2international.restassured-all@default:default"/>
-        <setEntry value="com.b2international.snomed.ecl@default:default"/>
         <setEntry value="com.b2international.snowowl.core.rest@default:default"/>
         <setEntry value="com.b2international.snowowl.core@default:default"/>
         <setEntry value="com.b2international.snowowl.eventbus@default:default"/>
@@ -183,9 +186,7 @@
         <setEntry value="com.b2international.snowowl.snomed.common@default:default"/>
         <setEntry value="com.b2international.snowowl.snomed.datastore@default:default"/>
         <setEntry value="com.b2international.snowowl.snomed.icons@default:default"/>
-        <setEntry value="com.b2international.snowowl.snomed.ql@default:default"/>
         <setEntry value="com.b2international.snowowl.snomed.reasoner@default:default"/>
-        <setEntry value="com.b2international.snowowl.snomed.scg@default:default"/>
         <setEntry value="com.b2international.snowowl.test.commons@default:default"/>
         <setEntry value="com.b2international.snowowl.test.dependencies@default:default"/>
         <setEntry value="com.b2international.snowowl.validation.snomed@default:default"/>
