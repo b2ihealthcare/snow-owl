@@ -25,6 +25,8 @@
     <setAttribute key="selected_target_bundles">
         <setEntry value="ch.qos.logback.classic@default:default"/>
         <setEntry value="ch.qos.logback.core@default:default"/>
+        <setEntry value="com.b2international.snomed.ecl@default:default"/>
+        <setEntry value="com.b2international.snomed.ql@default:default"/>
         <setEntry value="com.diffplug.osgi.extension.sun.misc@default:false"/>
         <setEntry value="com.diffplug.osgi.extension.sun.reflect@default:false"/>
         <setEntry value="com.fasterxml.classmate@default:default"/>
@@ -202,12 +204,9 @@
         <setEntry value="com.b2international.snowowl.snomed.cis@default:default"/>
         <setEntry value="com.b2international.snowowl.snomed.common@default:default"/>
         <setEntry value="com.b2international.snowowl.snomed.datastore@default:default"/>
-        <setEntry value="com.b2international.snowowl.snomed.ecl@default:default"/>
         <setEntry value="com.b2international.snowowl.snomed.fhir@default:default"/>
         <setEntry value="com.b2international.snowowl.snomed.icons@default:default"/>
-        <setEntry value="com.b2international.snowowl.snomed.ql@default:default"/>
         <setEntry value="com.b2international.snowowl.snomed.reasoner@default:default"/>
-        <setEntry value="com.b2international.snowowl.snomed.scg@default:default"/>
     </setAttribute>
     <booleanAttribute key="show_selected_only" value="false"/>
     <booleanAttribute key="tracing" value="false"/>
