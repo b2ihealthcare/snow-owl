@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,12 +20,11 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 
-import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraint;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraints;
 import com.b2international.snowowl.snomed.core.mrcm.ConceptModelComponentRenderer;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
@@ -39,13 +38,12 @@ class CsvMrcmExporter {
 
 	private static final Joiner TAB_JOINER = Joiner.on('\t').useForNull("");
 
-	public void doExport(IEventBus bus, OutputStream stream) {
-		final String branch = Branch.MAIN_PATH;
-		final ConceptModelComponentRenderer renderer = new ConceptModelComponentRenderer(branch);
+	public void doExport(ResourceURI resourceUri, IEventBus bus, OutputStream stream) {
+		final ConceptModelComponentRenderer renderer = new ConceptModelComponentRenderer();
 
 		final SnomedConstraints constraints = SnomedRequests.prepareSearchConstraint()
 			.all()
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
+			.build(resourceUri)
 			.execute(bus)
 			.getSync();
 

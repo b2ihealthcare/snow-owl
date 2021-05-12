@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import java.util.Map;
 
 import com.b2international.snowowl.snomed.core.domain.constraint.*;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableMap;
 
 /**
  * Utility class to render MRCM objects into a more-or-less human readable String.
@@ -30,11 +29,11 @@ public class ConceptModelComponentRenderer {
 	
 	private final Map<String, String> componentLabelMap;
 	
-	public ConceptModelComponentRenderer(final String branch) {
-		this(branch, ImmutableMap.<String, String>of());
+	public ConceptModelComponentRenderer() {
+		this(Map.of());
 	}
 	
-	public ConceptModelComponentRenderer(final String branch, Map<String, String> componentLabelMap) {
+	public ConceptModelComponentRenderer(Map<String, String> componentLabelMap) {
 		this.componentLabelMap = componentLabelMap;
 	}
 	

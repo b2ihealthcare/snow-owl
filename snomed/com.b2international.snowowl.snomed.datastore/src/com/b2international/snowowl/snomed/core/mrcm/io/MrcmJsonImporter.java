@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,10 +21,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.authorization.AuthorizedEventBus;
 import com.b2international.snowowl.core.authorization.AuthorizedRequest;
-import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
@@ -32,7 +32,6 @@ import com.b2international.snowowl.core.identity.JWTGenerator;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraint;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MappingIterator;
@@ -52,16 +51,15 @@ public class MrcmJsonImporter implements MrcmImporter {
 	}
 	
 	@Override
-	public void doImport(String authorizationToken, String username, InputStream source) {
+	public void doImport(ResourceURI resourceUri, String authorizationToken, String username, InputStream source) {
 		
-		final String branch = Branch.MAIN_PATH;
 		ObjectMapper mapper = ApplicationContext.getServiceForClass(ObjectMapper.class);
 		
 		final IEventBus bus = new AuthorizedEventBus(this.bus.get(), ImmutableMap.of(AuthorizedRequest.AUTHORIZATION_HEADER, authorizationToken));
 		
 		Set<String> existingConstraints = SnomedRequests.prepareSearchConstraint()
 				.all()
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
+				.build(resourceUri)
 				.execute(bus)
 				.getSync()
 				.stream()
@@ -81,12 +79,12 @@ public class MrcmJsonImporter implements MrcmImporter {
 			}
 			
 			SnomedRequests.prepareCommit()
-			.setAuthor(username)
-			.setCommitComment("Imported MRCM from JSON file.")
-			.setBody(bulk)
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch)
-			.execute(bus)
-			.getSync();
+				.setAuthor(username)
+				.setCommitComment("Imported MRCM from JSON file.")
+				.setBody(bulk)
+				.build(resourceUri)
+				.execute(bus)
+				.getSync();
 			
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException("Failed to import MRCM from JSON file.", e);
@@ -95,9 +93,9 @@ public class MrcmJsonImporter implements MrcmImporter {
 	}
 	
 	@Override
-	public void doImport(User user, InputStream source) {
+	public void doImport(ResourceURI resourceUri, User user, InputStream source) {
 		String authorizationToken = ApplicationContext.getServiceForClass(JWTGenerator.class).generate(user);
-		doImport(authorizationToken, user.getUsername(), source);
+		doImport(resourceUri, authorizationToken, user.getUsername(), source);
 	}
 
 }

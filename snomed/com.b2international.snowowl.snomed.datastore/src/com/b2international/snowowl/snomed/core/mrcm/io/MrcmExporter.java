@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.core.mrcm.io;
 
 import java.io.OutputStream;
 
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.identity.User;
 
 /**
@@ -27,6 +28,7 @@ public interface MrcmExporter {
 	/**
 	 * Exports the current state of the MRCM rules.
 	 * 
+	 * @param resourceUri - the context from where MRCM rules should be exported
 	 * @param authorizationToken
 	 *            - the token to use to authenticate and authorize the user before performing the export
 	 * @param content
@@ -35,8 +37,8 @@ public interface MrcmExporter {
 	 * @param exportFormat the export format to use           
 	 * @return - the exported file path
 	 */
-	void doExport(String authorizationToken, OutputStream content, final MrcmExportFormat exportFormat);
+	void doExport(ResourceURI resourceUri, String authorizationToken, OutputStream content, final MrcmExportFormat exportFormat);
 	
-	void doExport(User user, OutputStream content, MrcmExportFormat exportFormat);
+	void doExport(ResourceURI resourceUri, User user, OutputStream content, MrcmExportFormat exportFormat);
 
 }

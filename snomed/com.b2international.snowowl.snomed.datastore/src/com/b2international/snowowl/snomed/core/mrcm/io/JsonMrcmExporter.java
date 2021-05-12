@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,11 @@ package com.b2international.snowowl.snomed.core.mrcm.io;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraint;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraints;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SequenceWriter;
@@ -33,11 +32,11 @@ import com.fasterxml.jackson.databind.SequenceWriter;
  */
 final class JsonMrcmExporter {
 
-	public void doExport(IEventBus bus, OutputStream stream) {
+	public void doExport(ResourceURI resourceUri, IEventBus bus, OutputStream stream) {
 		
 		SnomedConstraints constraints = SnomedRequests.prepareSearchConstraint()
 			.all()
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, Branch.MAIN_PATH)
+			.build(resourceUri)
 			.execute(bus)
 			.getSync();
 		

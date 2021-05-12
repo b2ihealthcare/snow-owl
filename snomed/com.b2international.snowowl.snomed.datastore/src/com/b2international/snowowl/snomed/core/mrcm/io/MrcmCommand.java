@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,7 @@
  */
 package com.b2international.snowowl.snomed.core.mrcm.io;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintStream;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -27,13 +23,12 @@ import java.nio.file.StandardOpenOption;
 
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.console.Command;
 import com.b2international.snowowl.core.console.CommandLineStream;
 import com.b2international.snowowl.core.date.Dates;
-import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.plugin.Component;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 
 import picocli.CommandLine;
 import picocli.CommandLine.HelpCommand;
@@ -68,6 +63,9 @@ public final class MrcmCommand extends Command {
 	)
 	private static final class ImportCommand extends Command {
 
+		@Parameters(paramLabel = "URI", description = "The target SNOMED CT CodeSystem where the content of the specified JSON file will be imported.")
+		String resourceUri;
+		
 		@Parameters(paramLabel = "FILE", description = "The JSON file with MRCM rules to import")
 		String file;
 		
@@ -75,13 +73,9 @@ public final class MrcmCommand extends Command {
 		public void run(CommandLineStream out) {
 			final User user = out.authenticate(getBus());
 			
-			if (user == null || !user.hasPermission(Permission.toImport(SnomedDatastoreActivator.REPOSITORY_UUID))) { // TODO add branch permission
-				out.println("User is unauthorized to import MRCM rules.");
-				return;
-			}
-			
+			// TODO add branch permission
 			try (final InputStream content = Files.newInputStream(Paths.get(file), StandardOpenOption.READ)) {
-				ApplicationContext.getServiceForClass(MrcmImporter.class).doImport(user, content);
+				ApplicationContext.getServiceForClass(MrcmImporter.class).doImport(new ResourceURI(resourceUri), user, content);
 			} catch (IOException e) {
 				out.println("Failed to import MRCM JSON file: " + file);
 			}			
@@ -97,6 +91,9 @@ public final class MrcmCommand extends Command {
 	)
 	private static final class ExportCommand extends Command {
 
+		@Parameters(paramLabel = "URI", description = "The target SNOMED CT CodeSystem from where MRCM rules will be exported.")
+		String resourceUri;
+		
 		@Parameters(paramLabel = "PATH", description = "Output directory to export the MRCM rules to. The output file will be automatically created.")
 		String path;
 		
@@ -107,11 +104,7 @@ public final class MrcmCommand extends Command {
 		public void run(CommandLineStream out) {
 			final User user = out.authenticate(getBus());
 			
-			if (user == null || !user.hasPermission(Permission.toExport(SnomedDatastoreActivator.REPOSITORY_UUID))) { // TODO add branch permission
-				out.println("User is unauthorized to export MRCM rules.");
-				return;
-			}
-			
+			// TODO add branch permission
 			out.println("Exporting MRCM rules (%s)...", format);
 			
 			final Path outputFolder = Paths.get(path);
@@ -119,7 +112,7 @@ public final class MrcmCommand extends Command {
 			final Path exportPath = outputFolder.resolve("mrcm_" + Dates.now() + "." + format.name().toLowerCase());
 			
 			try (final OutputStream stream = Files.newOutputStream(exportPath, StandardOpenOption.CREATE)) {
-				ApplicationContext.getServiceForClass(MrcmExporter.class).doExport(user, stream, format);
+				ApplicationContext.getServiceForClass(MrcmExporter.class).doExport(new ResourceURI(resourceUri), user, stream, format);
 				out.println("Exported MRCM rules to " + exportPath + " in " + format.name() + " format.");
 			} catch (IOException e) {
 				e.printStackTrace();

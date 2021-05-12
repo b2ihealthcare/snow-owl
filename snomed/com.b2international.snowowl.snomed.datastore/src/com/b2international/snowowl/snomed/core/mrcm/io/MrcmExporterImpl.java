@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.core.mrcm.io;
 import java.io.OutputStream;
 
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.authorization.AuthorizedEventBus;
 import com.b2international.snowowl.core.authorization.AuthorizedRequest;
 import com.b2international.snowowl.core.identity.JWTGenerator;
@@ -41,18 +42,18 @@ public class MrcmExporterImpl implements MrcmExporter {
 	}
 	
 	@Override
-	public void doExport(User user, OutputStream content, MrcmExportFormat exportFormat) {
+	public void doExport(ResourceURI resourceUri, User user, OutputStream content, MrcmExportFormat exportFormat) {
 		String authorizationToken = ApplicationContext.getServiceForClass(JWTGenerator.class).generate(user);
-		doExport(authorizationToken, content, exportFormat);
+		doExport(resourceUri, authorizationToken, content, exportFormat);
 	}
 	
 	@Override
-	public void doExport(String authorizationToken, OutputStream content, MrcmExportFormat exportFormat) {
+	public void doExport(ResourceURI resourceUri, String authorizationToken, OutputStream content, MrcmExportFormat exportFormat) {
 		final AuthorizedEventBus bus = new AuthorizedEventBus(this.bus.get(), ImmutableMap.of(AuthorizedRequest.AUTHORIZATION_HEADER, authorizationToken));
 		if (exportFormat == MrcmExportFormat.JSON) {
-			new JsonMrcmExporter().doExport(bus, content);
+			new JsonMrcmExporter().doExport(resourceUri, bus, content);
 		} else if (exportFormat == MrcmExportFormat.CSV) {
-			new CsvMrcmExporter().doExport(bus, content);
+			new CsvMrcmExporter().doExport(resourceUri, bus, content);
 		} else {
 			throw new UnsupportedOperationException("No exporter is registered for " + exportFormat);
 		}
