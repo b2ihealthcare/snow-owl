@@ -530,7 +530,7 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 
 	@JsonIgnore
 	public RelationshipValue getValueAsObject() {
-		return RelationshipValue.fromTypeAndObjects(valueType, decimalValue, integerValue, stringValue);
+		return RelationshipValue.fromTypeAndObjects(valueType, integerValue, decimalValue, stringValue);
 	}
 
 	@JsonProperty

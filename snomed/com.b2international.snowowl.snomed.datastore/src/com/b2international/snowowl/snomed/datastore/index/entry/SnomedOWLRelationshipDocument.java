@@ -117,7 +117,7 @@ public final class SnomedOWLRelationshipDocument implements Serializable {
 
 	@JsonIgnore
 	public RelationshipValue getValueAsObject() {
-		return RelationshipValue.fromTypeAndObjects(valueType, decimalValue, integerValue, stringValue);
+		return RelationshipValue.fromTypeAndObjects(valueType, integerValue, decimalValue, stringValue);
 	}
 
 	@JsonIgnore

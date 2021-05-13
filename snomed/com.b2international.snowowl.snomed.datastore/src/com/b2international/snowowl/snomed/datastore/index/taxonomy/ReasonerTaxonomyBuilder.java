@@ -572,7 +572,7 @@ public final class ReasonerTaxonomyBuilder {
 						typeId, group, unionGroup, universal, statementId, -1L, released, destinationId, destinationNegated);
 				} else {
 					final RelationshipValue value = RelationshipValue.fromTypeAndObjects(
-						valueType, decimalValue, integerValue, stringValue);
+						valueType, integerValue, decimalValue, stringValue);
 					
 					statement = new StatementFragmentWithValue(
 						typeId, group, unionGroup, universal, statementId, -1L, released, value.toLiteral());

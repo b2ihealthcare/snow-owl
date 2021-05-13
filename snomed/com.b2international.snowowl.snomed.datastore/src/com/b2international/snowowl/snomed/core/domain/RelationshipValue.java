@@ -68,15 +68,15 @@ public final class RelationshipValue implements Serializable {
 
 	/**
 	 * @param valueType
-	 * @param decimalValue
 	 * @param integerValue
+	 * @param decimalValue
 	 * @param stringValue
 	 * @return
 	 */
 	public static RelationshipValue fromTypeAndObjects(
 		final RelationshipValueType valueType, 
-		final Double decimalValue, 
 		final Integer integerValue, 
+		final Double decimalValue, 
 		final String stringValue) {
 	
 		if (valueType == null) {
@@ -84,8 +84,8 @@ public final class RelationshipValue implements Serializable {
 		}
 	
 		switch (valueType) {
-			case DECIMAL: return new RelationshipValue(decimalValue);
 			case INTEGER: return new RelationshipValue(integerValue);
+			case DECIMAL: return new RelationshipValue(decimalValue);
 			case STRING: return new RelationshipValue(stringValue);
 			default: throw new IllegalArgumentException("Unexpected relationship value type: " + valueType);
 		}
