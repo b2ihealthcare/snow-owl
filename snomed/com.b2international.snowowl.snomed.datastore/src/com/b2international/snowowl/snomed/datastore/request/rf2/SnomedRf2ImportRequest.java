@@ -23,6 +23,7 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -85,6 +86,8 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 	private static final Logger LOG = LoggerFactory.getLogger("import");
 	
 	private static final String TXT_EXT = ".txt";
+	
+	public static final AtomicBoolean disableVersionsOnChildBranches = new AtomicBoolean(true); 
 	
 	@NotNull
 	@JsonProperty
@@ -150,11 +153,13 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 					+ "Please perform either a Full or a Snapshot import instead.");
 		}
 		
-		String codeSystemWorkingBranchPath = context.service(RepositoryCodeSystemProvider.class).get(context.branch().path()).getBranchPath();
-		
-		if (!codeSystemWorkingBranchPath.equals(context.branch().path()) && importConfig.isCreateVersions()) {
-			throw new BadRequestException("Creating a version during RF2 import from a branch is not supported. "
-					+ "Please perform the import process from the corresponding CodeSystem's working branch, '%s'.", codeSystemWorkingBranchPath);
+		if (disableVersionsOnChildBranches.get()) {
+			String codeSystemWorkingBranchPath = context.service(RepositoryCodeSystemProvider.class).get(context.branch().path()).getBranchPath();
+			
+			if (!codeSystemWorkingBranchPath.equals(context.branch().path()) && importConfig.isCreateVersions()) {
+				throw new BadRequestException("Creating a version during RF2 import from a branch is not supported. "
+						+ "Please perform the import process from the corresponding CodeSystem's working branch, '%s'.", codeSystemWorkingBranchPath);
+			}
 		}
 	}
 
