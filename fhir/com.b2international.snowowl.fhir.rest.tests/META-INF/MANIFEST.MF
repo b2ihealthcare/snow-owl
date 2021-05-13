@@ -14,3 +14,4 @@ Require-Bundle: org.junit;bundle-version="4.12.0",
 Import-Package: org.assertj.core.api;version="3.16.1",
  org.assertj.core.api.iterable;version="3.16.1",
  org.slf4j;version="1.7.30"
+Export-Package: com.b2international.snowowl.fhir.tests

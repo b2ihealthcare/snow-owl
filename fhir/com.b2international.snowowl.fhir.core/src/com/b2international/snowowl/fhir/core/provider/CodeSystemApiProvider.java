@@ -17,9 +17,6 @@ package com.b2international.snowowl.fhir.core.provider;
 
 import static com.google.common.collect.Sets.newHashSet;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
@@ -43,11 +40,11 @@ import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem.Builder
 import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Instant;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
-import com.b2international.snowowl.fhir.core.search.FhirSearchParameter;
-import com.b2international.snowowl.fhir.core.search.FhirUriSearchParameterDefinition;
 import com.b2international.snowowl.fhir.core.search.FhirParameter.PrefixedValue;
+import com.b2international.snowowl.fhir.core.search.FhirSearchParameter;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 /**
  * FHIR provider base class.
@@ -56,7 +53,7 @@ import com.google.common.collect.Lists;
  */
 public abstract class CodeSystemApiProvider extends FhirApiProvider implements ICodeSystemApiProvider {
 	
-	private static final String CODE_SYSTEM_LOCATION_MARKER = "CodeSystem";
+	protected static final String CODE_SYSTEM_LOCATION_MARKER = "CodeSystem";
 
 	private final String repositoryId;
 	
@@ -124,91 +121,210 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 		return createCodeSystemBuilder(codeSystem, codeSystemVersionEntry).build();
 	}
 	
-	@Override
-	public Collection<CodeSystem> getCodeSystems(final Set<FhirSearchParameter> searchParameters) {
+	public Collection<CodeSystem> getCodeSystems3(final Set<FhirSearchParameter> searchParameters) {
 		
-		CodeSystemSearchRequestBuilder requestBuilder = CodeSystemRequests.prepareSearchCodeSystem().all();
-		
-		//TODO: what should we do with the hardcoded names of these dynamic properties?
-		Optional<FhirSearchParameter> idParamOptional = getSearchParam(searchParameters, "_id");
-		if (idParamOptional.isPresent()) {
-			Collection<String> ids = idParamOptional.get().getValues().stream()
-					.map(PrefixedValue::getValue)
-					.collect(Collectors.toSet());
-			
-			requestBuilder.filterByIds(ids);
-		}
-
-		Optional<FhirSearchParameter> nameOptional = getSearchParam(searchParameters, "_name"); 
-		if (nameOptional.isPresent()) {
-			Collection<String> names = nameOptional.get().getValues().stream()
-					.map(PrefixedValue::getValue)
-					.collect(Collectors.toSet());
-			
-			requestBuilder.filterByNameExact(names);
-		}
-		
-		CodeSystems codeSystems = requestBuilder.build(repositoryId)
-			.execute(getBus())
-			.getSync();
-		
-		//fetch all the versions
 		CodeSystemVersionSearchRequestBuilder versionSearchRequestBuilder = CodeSystemRequests.prepareSearchCodeSystemVersion().all();
 		
-		Optional<FhirSearchParameter> lastUpdatedOptional = getSearchParam(searchParameters, "_lastUpdated"); //date type
-		if (lastUpdatedOptional.isPresent()) {
-
-			PrefixedValue lastUpdatedPrefixedValue = lastUpdatedOptional.get().getValues().iterator().next();
-			String lastUpdatedDateString = lastUpdatedPrefixedValue.getValue();
+		Optional<FhirSearchParameter> idParamOptional = getSearchParam(searchParameters, "_id");
+		
+		if (idParamOptional.isPresent()) {
+			Set<CodeSystemURI> codeSystemUris = idParamOptional.get().getValues().stream()
+					.map(PrefixedValue::getValue)
+					.map(v -> new CodeSystemURI(v))
+					.collect(Collectors.toSet());
 			
-			//validate the date value
-			long localLong = Long.MAX_VALUE;
-			try {
-				LocalDate localDate = LocalDate.parse(lastUpdatedDateString);
-				localLong = localDate.atStartOfDay(ZoneId.systemDefault()).toEpochSecond(); //?
-			} catch (DateTimeParseException dtpe) {
-				throw FhirException.createFhirError(String.format("Invalid _lastUpdate search parameter value '%s'.", lastUpdatedDateString), OperationOutcomeCode.MSG_PARAM_INVALID, CODE_SYSTEM_LOCATION_MARKER);
-			}
-
-			//TODO: filterByCreated at searches for importDates as opposed to lastModificationDates
-			if (lastUpdatedPrefixedValue.getPrefix() == null || 
-					FhirUriSearchParameterDefinition.SearchRequestParameterValuePrefix.eq == lastUpdatedPrefixedValue.getPrefix()) {
-					
-				versionSearchRequestBuilder.filterByCreatedAt(localLong);
-			} else {
-				switch (lastUpdatedPrefixedValue.getPrefix()) {
-				case eb:
-					versionSearchRequestBuilder.filterByCreatedAt(0, localLong);
-					break;
-				case sa:
-					versionSearchRequestBuilder.filterByCreatedAt(localLong, Long.MAX_VALUE);
-					break;
-				default:
-					throw FhirException.createFhirError(String.format("Unsupported _lastUpdate search parameter modifier '%s' for value '%s'.", lastUpdatedPrefixedValue.getPrefix().name(), lastUpdatedDateString), OperationOutcomeCode.MSG_PARAM_INVALID, CODE_SYSTEM_LOCATION_MARKER);
+			codeSystemUris.forEach(uri -> {
+				
+				if (!uri.isHead()) {
+					versionSearchRequestBuilder.filterByCodeSystemShortName(uri.getCodeSystem());
+					versionSearchRequestBuilder.filterByVersionId(uri.getPath());
+				} else {
+					//only code system request is needed
 				}
-			}
+				
+			});
 		}
 		
 		CodeSystemVersions codeSystemVersions = versionSearchRequestBuilder
-			.sortBy(SearchResourceRequest.SortField.descending(CodeSystemVersionEntry.Fields.EFFECTIVE_DATE))
-			.build(repositoryId)
-			.execute(getBus())
-			.getSync();
+				.sortBy(SearchResourceRequest.SortField.descending(CodeSystemVersionEntry.Fields.EFFECTIVE_DATE))
+				.build(repositoryId)
+				.execute(getBus())
+				.getSync();
 		
-		List<CodeSystem> fhirCodeSystemList = Lists.newArrayList();
-		
-		codeSystems.forEach(cse -> { 
-			List<CodeSystem> fhirCodeSystems = codeSystemVersions.stream()
-				.filter(csv -> csv.getUri().getCodeSystem().equals(cse.getShortName()))
-				.map(csve -> createCodeSystemBuilder(cse, csve))
-				.map(Builder::build)
-				.collect(Collectors.toList());
-			
-			fhirCodeSystemList.addAll(fhirCodeSystems);
+		codeSystemVersions.forEach(v -> {
+			CodeSystemSearchRequestBuilder codeSystemsRequestBuilder = CodeSystemRequests.prepareSearchCodeSystem().all();
+			CodeSystems codeSystems = codeSystemsRequestBuilder.build(repositoryId)
+					.execute(getBus())
+					.getSync();
 			
 		});
+		
+		
+		Map<CodeSystemURI, CodeSystem> map = Maps.newHashMap();
+		
+		
+		
+		return null;
+	}
+	
+	@Override
+	public Collection<CodeSystem> getCodeSystems(final Set<FhirSearchParameter> searchParameters) {
+	
+		List<CodeSystem> fhirCodeSystemList = Lists.newArrayList();
+		
+		CodeSystemSearchRequestBuilder codeSystemsRequestBuilder = CodeSystemRequests.prepareSearchCodeSystem().all();
+		
+		handleIdParameter(searchParameters, codeSystemsRequestBuilder);
+		
+		handleNameParameter(searchParameters, codeSystemsRequestBuilder);
+		
+		CodeSystems codeSystems = codeSystemsRequestBuilder.build(repositoryId)
+				.execute(getBus())
+				.getSync();
+		
+		for (com.b2international.snowowl.core.codesystem.CodeSystem codeSystem : codeSystems) {
+			
+//			Optional<FhirSearchParameter> idParamOptional = getSearchParam(searchParameters, "_id");
+//			if (idParamOptional.isPresent()) {
+//				FhirSearchParameter idParameter = idParamOptional.get();
+//				Collection<CodeSystemURI> codeSystemUris = idParameter.getValues().stream()
+//						.map(PrefixedValue::getValue)
+//						.map(v -> new CodeSystemURI(v))
+//						.collect(Collectors.toSet());
+//				
+//			}
+			
+			
+			if (codeSystem.getCodeSystemURI().isHead()) {
+				
+				//create a 'fake' version for the head revision
+				CodeSystemVersion codeSystemVersion = new CodeSystemVersion();
+				codeSystemVersion.setDescription("Latest (HEAD) revision, prone to change.");
+				codeSystemVersion.setPath(codeSystem.getCodeSystemURI().getPath());
+				codeSystemVersion.setRepositoryId(repositoryId);
+				codeSystemVersion.setVersion("HEAD");
+				codeSystemVersion.setUri(codeSystem.getCodeSystemURI());
+				
+				//This should be the last revision's date, dummy for now
+				codeSystemVersion.setLastModificationDate(new Date());
+				
+				Builder codeSystemBuilder = createCodeSystemBuilder(codeSystem, codeSystemVersion);
+				fhirCodeSystemList.add(codeSystemBuilder.build());
+			} else {
+			
+				//fetch all the versions as each version is considered as a separate FHIR code system
+				CodeSystemVersionSearchRequestBuilder versionSearchRequestBuilder = CodeSystemRequests.prepareSearchCodeSystemVersion().all();
+				
+				CodeSystemVersions codeSystemVersions = versionSearchRequestBuilder
+						.sortBy(SearchResourceRequest.SortField.descending(CodeSystemVersionEntry.Fields.EFFECTIVE_DATE))
+						.build(repositoryId)
+						.execute(getBus())
+						.getSync();
+				
+				List<CodeSystem> fhirCodeSystems = codeSystemVersions.stream()
+						.filter(csv -> csv.getUri().getCodeSystem().equals(codeSystem.getShortName()))
+						.map(csve -> createCodeSystemBuilder(codeSystem, csve))
+						.map(Builder::build)
+						.collect(Collectors.toList());
+						
+				fhirCodeSystemList.addAll(fhirCodeSystems);
+			}
+			
+		}
 		return fhirCodeSystemList;
 	}
+
+//	@Override
+//	public Collection<CodeSystem> getCodeSystems2(final Set<FhirSearchParameter> searchParameters) {
+//		
+//		CodeSystemSearchRequestBuilder requestBuilder = CodeSystemRequests.prepareSearchCodeSystem().all();
+//		Set<String> versions = Sets.newHashSet();
+//		Set<String> codeSystemIds = Sets.newHashSet();
+//		
+//		//TODO: what should we do with the hardcoded names of these dynamic properties?
+//		Optional<FhirSearchParameter> idParamOptional = getSearchParam(searchParameters, "_id");
+//		if (idParamOptional.isPresent()) {
+//			
+//			
+//			idParamOptional.get().getValues().stream()
+//					.map(PrefixedValue::getValue)
+//					.map(v -> new CodeSystemURI(v))
+//					.forEach(uri -> {
+//						System.out.println("CS: " + uri.getCodeSystem() + " : " + uri.getPath());
+//						codeSystemIds.add(uri.getCodeSystem());
+//						versions.add(uri.getPath());
+//					});
+//					//.map(uri -> uri.getCodeSystem())
+//					//.collect(Collectors.toSet());
+//			
+//			requestBuilder.filterByIds(codeSystemIds);
+//		}
+//
+//		handleNameParameter(searchParameters, requestBuilder);
+//		
+//		CodeSystems codeSystems = requestBuilder.build(repositoryId)
+//			.execute(getBus())
+//			.getSync();
+//		
+//		//fetch all the versions as each version is considered as a separate FHIR code system
+//		CodeSystemVersionSearchRequestBuilder versionSearchRequestBuilder = CodeSystemRequests.prepareSearchCodeSystemVersion().all();
+//		
+//		//versionSearchRequestBuilder.filterByCodeSystemShortNames(codeSystemIds);
+//		
+//		Optional<FhirSearchParameter> lastUpdatedOptional = getSearchParam(searchParameters, "_lastUpdated"); //date type
+//		if (lastUpdatedOptional.isPresent()) {
+//
+//			PrefixedValue lastUpdatedPrefixedValue = lastUpdatedOptional.get().getValues().iterator().next();
+//			String lastUpdatedDateString = lastUpdatedPrefixedValue.getValue();
+//			
+//			//validate the date value
+//			long localLong = Long.MAX_VALUE;
+//			try {
+//				LocalDate localDate = LocalDate.parse(lastUpdatedDateString);
+//				localLong = localDate.atStartOfDay(ZoneId.systemDefault()).toEpochSecond(); //?
+//			} catch (DateTimeParseException dtpe) {
+//				throw FhirException.createFhirError(String.format("Invalid _lastUpdate search parameter value '%s'.", lastUpdatedDateString), OperationOutcomeCode.MSG_PARAM_INVALID, CODE_SYSTEM_LOCATION_MARKER);
+//			}
+//
+//			//TODO: filterByCreated at searches for importDates as opposed to lastModificationDates
+//			if (lastUpdatedPrefixedValue.getPrefix() == null || 
+//					FhirUriSearchParameterDefinition.SearchRequestParameterValuePrefix.eq == lastUpdatedPrefixedValue.getPrefix()) {
+//					
+//				versionSearchRequestBuilder.filterByCreatedAt(localLong);
+//			} else {
+//				switch (lastUpdatedPrefixedValue.getPrefix()) {
+//				case eb:
+//					versionSearchRequestBuilder.filterByCreatedAt(0, localLong);
+//					break;
+//				case sa:
+//					versionSearchRequestBuilder.filterByCreatedAt(localLong, Long.MAX_VALUE);
+//					break;
+//				default:
+//					throw FhirException.createFhirError(String.format("Unsupported _lastUpdate search parameter modifier '%s' for value '%s'.", lastUpdatedPrefixedValue.getPrefix().name(), lastUpdatedDateString), OperationOutcomeCode.MSG_PARAM_INVALID, CODE_SYSTEM_LOCATION_MARKER);
+//				}
+//			}
+//		}
+//		
+//		CodeSystemVersions codeSystemVersions = versionSearchRequestBuilder
+//			.sortBy(SearchResourceRequest.SortField.descending(CodeSystemVersionEntry.Fields.EFFECTIVE_DATE))
+//			.build(repositoryId)
+//			.execute(getBus())
+//			.getSync();
+//		
+//		List<CodeSystem> fhirCodeSystemList = Lists.newArrayList();
+//		
+//		codeSystems.forEach(cse -> { 
+//			List<CodeSystem> fhirCodeSystems = codeSystemVersions.stream()
+//				.filter(csv -> csv.getUri().getCodeSystem().equals(cse.getShortName()))
+//				.map(csve -> createCodeSystemBuilder(cse, csve))
+//				.map(Builder::build)
+//				.collect(Collectors.toList());
+//			
+//			fhirCodeSystemList.addAll(fhirCodeSystems);
+//			
+//		});
+//		return fhirCodeSystemList;
+//	}
 	
 	/**
 	 * Returns the designated FHIR Uri for the given code system
@@ -224,7 +340,7 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 	 * @param codeSystemVersion
 	 * @return FHIR Code system
 	 */
-	protected final Builder createCodeSystemBuilder(final com.b2international.snowowl.core.codesystem.CodeSystem codeSystem, 
+	protected Builder createCodeSystemBuilder(final com.b2international.snowowl.core.codesystem.CodeSystem codeSystem, 
 			final CodeSystemVersion codeSystemVersion) {
 		
 		Identifier identifier = Identifier.builder()
@@ -280,16 +396,20 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 		return builder;
 	}
 	
-	/*
+	/**
 	 * Returns the logical ID of the code system resource
+	 * @param codeSystem
+	 * @param codeSystemVersion
+	 * @return
 	 */
-	private String getId(com.b2international.snowowl.core.codesystem.CodeSystem codeSystem, CodeSystemVersion codeSystemVersion) {
-		//in theory there should always be at least one version present
-		if (codeSystemVersion != null) {
-			return codeSystem.getRepositoryId() + ":" + codeSystemVersion.getPath();
-		} else {
-			return codeSystem.getRepositoryId() + ":" + codeSystem.getBranchPath();
-		}
+	protected String getId(com.b2international.snowowl.core.codesystem.CodeSystem codeSystem, CodeSystemVersion codeSystemVersion) {
+		return codeSystemVersion.getUri().getUri();
+//		//in theory there should always be at least one version present
+//		if (codeSystemVersion != null) {
+//			return codeSystem.getRepositoryId() + ":" + codeSystemVersion.getPath();
+//		} else {
+//			return codeSystem.getRepositoryId() + ":" + codeSystem.getBranchPath();
+//		}
 	}
 
 	protected Collection<Concept> getConcepts(com.b2international.snowowl.core.codesystem.CodeSystem codeSystem) {
@@ -455,5 +575,32 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 
 	protected String getLanguage(com.b2international.snowowl.core.codesystem.CodeSystem codeSystem) {
 		return getLanguageCode(codeSystem.getPrimaryLanguage());
+	}
+	
+	private void handleNameParameter(final Set<FhirSearchParameter> searchParameters,
+			CodeSystemSearchRequestBuilder codeSystemsRequestBuilder) {
+		Optional<FhirSearchParameter> nameOptional = getSearchParam(searchParameters, "_name"); 
+		if (nameOptional.isPresent()) {
+			Collection<String> names = nameOptional.get().getValues().stream()
+					.map(PrefixedValue::getValue)
+					.collect(Collectors.toSet());
+			
+			codeSystemsRequestBuilder.filterByNameExact(names);
+		}
+	}
+
+	private void handleIdParameter(final Set<FhirSearchParameter> searchParameters, 
+			CodeSystemSearchRequestBuilder codeSystemsRequestBuilder) {
+		
+		Optional<FhirSearchParameter> idParamOptional = getSearchParam(searchParameters, "_id");
+		
+		if (idParamOptional.isPresent()) {
+			Set<String> codeSystems = idParamOptional.get().getValues().stream()
+					.map(PrefixedValue::getValue)
+					.map(v -> new CodeSystemURI(v).getCodeSystem())
+					.collect(Collectors.toSet());
+			
+			codeSystemsRequestBuilder.filterByIds(codeSystems);
+		}
 	}
 }
