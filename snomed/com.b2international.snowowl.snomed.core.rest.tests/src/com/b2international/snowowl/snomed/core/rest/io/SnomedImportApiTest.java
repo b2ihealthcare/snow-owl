@@ -37,6 +37,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.StreamSupport;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
@@ -54,6 +56,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetM
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
+import com.b2international.snowowl.snomed.datastore.request.rf2.SnomedRf2ImportRequestBuilder;
 import com.google.common.collect.ImmutableMap;
 
 import io.restassured.response.ValidatableResponse;
@@ -66,6 +69,16 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 
 	private static final String OWL_EXPRESSION = "SubClassOf(ObjectIntersectionOf(:73211009 ObjectSomeValuesFrom(:42752001 :64572001)) :"+Concepts.ROOT_CONCEPT+")";
 
+	@Before
+	public void before() {
+		SnomedRf2ImportRequestBuilder.enableVersionsOnChildBranches();
+	}
+	
+	@After
+	public void after() {
+		SnomedRf2ImportRequestBuilder.disableVersionsOnChildBranches();
+	}
+	
 	private void importArchive(final String fileName) {
 		importArchive(branchPath, false, Rf2ReleaseType.DELTA, fileName);
 	}

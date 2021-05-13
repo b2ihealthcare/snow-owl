@@ -25,6 +25,7 @@ import com.b2international.snowowl.core.request.RevisionIndexRequestBuilder;
 import com.b2international.snowowl.core.request.io.ImportResponse;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.google.common.collect.Lists;
+import com.google.common.annotations.VisibleForTesting;
 
 /**
  * @since 6.0.0
@@ -80,6 +81,16 @@ public final class SnomedRf2ImportRequestBuilder
 	@Override
 	public boolean snapshot() {
 		return false;
+	}
+
+	@VisibleForTesting
+	public static void enableVersionsOnChildBranches() {
+		SnomedRf2ImportRequest.disableVersionsOnChildBranches.set(false);
+	}
+	
+	@VisibleForTesting
+	public static void disableVersionsOnChildBranches() {
+		SnomedRf2ImportRequest.disableVersionsOnChildBranches.set(true);
 	}
 
 }
