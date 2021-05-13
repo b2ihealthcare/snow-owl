@@ -107,32 +107,34 @@ public final class CodeSystemConverter extends BaseResourceConverter<CodeSystemE
 		BaseRevisionBranching branching = context().service(BaseRevisionBranching.class);
 		for (CodeSystem result : results) {
 			String upgradeOfBranchPath = branchesByUpgradeOf.get(new CodeSystemURI(result.getUpgradeOf().getCodeSystem()));
+			
 			if (!Strings.isNullOrEmpty(upgradeOfBranchPath)) {
 				RevisionBranch branch = branching.getBranch(result.getBranchPath());
 				BranchState branchState = branching.getBranchState(result.getBranchPath(), upgradeOfBranchPath);
 				BranchInfo mainInfo = new BranchInfo(branch.getPath(), branchState, branch.getBaseTimestamp(), branch.getHeadTimestamp());
 				
 				List<CodeSystemURI> blockedURIs = Lists.newArrayList();
-				
 				List<BranchInfo> versionBranchInfo = Lists.newArrayList();
 				
-				versionBranchInfo = CodeSystemRequests.prepareSearchCodeSystemVersion()
-						.all()
-						.filterByCodeSystemShortName(result.getUpgradeOf().getCodeSystem())
-						.filterByEffectiveDate(result.getExtensionOfBranchInfo().getBaseTimestamp(), Long.MAX_VALUE)
-						.build()
-						.execute(context())
-						.stream()
-						.filter(csv -> !csv.getUri().isHead())
-						.map(csv -> {
-							RevisionBranch versionBranch = branching.getBranch(csv.getPath());
-							BranchState versionBranchState = branching.getBranchState(result.getBranchPath(), versionBranch.getPath());
-							if (versionBranchState == BranchState.BEHIND || versionBranchState == BranchState.DIVERGED) {
-								blockedURIs.add(csv.getUri());
-							}
-							return new BranchInfo(branch.getPath(), versionBranchState, versionBranch.getBaseTimestamp(), versionBranch.getHeadTimestamp());
-						})
-						.collect(Collectors.toList());
+				if (!result.getUpgradeOf().isHead()) {
+					versionBranchInfo = CodeSystemRequests.prepareSearchCodeSystemVersion()
+							.all()
+							.filterByCodeSystemShortName(result.getUpgradeOf().getCodeSystem())
+							.filterByEffectiveDate(result.getExtensionOfBranchInfo().getBaseTimestamp(), Long.MAX_VALUE)
+							.build()
+							.execute(context())
+							.stream()
+							.filter(csv -> !csv.getUri().isHead())
+							.map(csv -> {
+								RevisionBranch versionBranch = branching.getBranch(csv.getPath());
+								BranchState versionBranchState = branching.getBranchState(result.getBranchPath(), versionBranch.getPath());
+								if (versionBranchState == BranchState.BEHIND || versionBranchState == BranchState.DIVERGED) {
+									blockedURIs.add(csv.getUri());
+								}
+								return new BranchInfo(branch.getPath(), versionBranchState, versionBranch.getBaseTimestamp(), versionBranch.getHeadTimestamp());
+							})
+							.collect(Collectors.toList());
+				}
 				
 				result.setUpgradeOfBranchInfo(new UpgradeInfo(mainInfo, versionBranchInfo, blockedURIs));
 			}
