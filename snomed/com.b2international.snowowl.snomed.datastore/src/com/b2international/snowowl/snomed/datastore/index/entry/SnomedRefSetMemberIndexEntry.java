@@ -480,6 +480,13 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			return query.build();
 		}
 		
+		public static Expression owlExpressionWithDestinationId() {
+			final ExpressionBuilder query = com.b2international.index.query.Expressions.builder();
+			query.should(nestedMatch("classAxiomRelationships", exists("destinationId")));
+			query.should(nestedMatch("gciAxiomRelationships", exists("destinationId")));
+			return query.build();
+		}
+		
 		public static Expression owlExpressionDestination(Iterable<String> destinationIds) {
 			final ExpressionBuilder query = com.b2international.index.query.Expressions.builder();
 			query.should(nestedMatch("classAxiomRelationships", matchAny("destinationId", destinationIds)));
