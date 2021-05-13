@@ -22,8 +22,8 @@ import java.util.stream.Collectors;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.plugin.ClassPathScanner;
+import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.fhir.core.LogicalId;
 import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.core.model.conceptmap.ConceptMap;
 import com.b2international.snowowl.fhir.core.model.conceptmap.Match;
@@ -59,15 +59,15 @@ public interface IConceptMapApiProvider extends IFhirApiProvider {
 		 * Returns the matching {@link IConceptMapApiProvider} for the given path (repository:branchPath).
 		 * @param bus
 		 * @param locales
-		 * @param logicalId code system path (e.g.icd10Store:20140101)
+		 * @param componentUri code system path (e.g.ICD10/20140101/A10)
 		 * @return FHIR concept map provider
 		 * @throws com.b2international.snowowl.fhir.core.exceptions.BadRequestException - if provider is not found with the given path
 		 */
-		public IConceptMapApiProvider getConceptMapProvider(IEventBus bus, List<ExtendedLocale> locales, LogicalId logicalId) {
+		public IConceptMapApiProvider getConceptMapProvider(IEventBus bus, List<ExtendedLocale> locales, ComponentURI componentUri) {
 			return getProviders(bus, locales).stream()
-				.filter(provider -> provider.isSupported(logicalId))
+				.filter(provider -> provider.isSupported(componentUri))
 				.findFirst()
-				.orElseThrow(() -> new BadRequestException("Did not find FHIR module for managing concept map: " + logicalId, OperationOutcomeCode.MSG_NO_MODULE, "system=" + logicalId));
+				.orElseThrow(() -> new BadRequestException("Did not find FHIR module for managing concept map: " + componentUri, OperationOutcomeCode.MSG_NO_MODULE, "system=" + componentUri));
 		}
 		
 		/**
@@ -99,20 +99,26 @@ public interface IConceptMapApiProvider extends IFhirApiProvider {
 	Collection<ConceptMap> getConceptMaps();
 
 	/**
-	 * Returns the concept map for the passed in logical id (repositoryId:branchPath/conceptMapId)
-	 * @param logicalId
+	 * @param componentUri - logical code system path (codeSystemShortName/version/typeId/componentId)
+	 * @return true if this provider supports the code system represented by the logical id
+	 */
+	boolean isSupported(ComponentURI componentUri);
+
+	/**
+	 * Returns the concept map for the passed in logical id (codesystemname/branchPath/conceptMapId)
+	 * @param componentUri
 	 * @return {@link ConceptMap}
 	 * @throws BadRequestException if the concept map is not supported by this provider
 	 */
-	ConceptMap getConceptMap(LogicalId logicalId);
+	ConceptMap getConceptMap(ComponentURI componentUri);
 
 	/**
 	 * Returns a the collection of mapping matches as a translate result from a given Concept Map
-	 * @param logicalId - logical if of the {@link ConceptMap}
+	 * @param componentUri - logical if of the {@link ConceptMap}
 	 * @param translateRequest - {@link TranslateRequest}
 	 * @return a {@link TranslateResult} instance
 	 */
-	TranslateResult translate(LogicalId logicalId, TranslateRequest translateRequest);
+	TranslateResult translate(ComponentURI componentUri, TranslateRequest translateRequest);
 
 	/**
 	 * Returns a collection of mapping matches for the given translate request

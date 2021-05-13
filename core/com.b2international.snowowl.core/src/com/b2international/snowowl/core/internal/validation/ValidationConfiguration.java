@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ public class ValidationConfiguration {
 	public static final String IS_UNPUBLISHED_ONLY = "isUnpublishedOnly";
 	public static final String USE_FSN = "useFsn";
 	public static final String LOCALES = "extendedLocales";
+	public static final String MODULES = "modules";
 	
 	// default values for thread management
 	private static final int DEFAULT_NUMBER_OF_VALIDATION_THREADS = Math.max(4, Runtime.getRuntime().availableProcessors() / 2); 

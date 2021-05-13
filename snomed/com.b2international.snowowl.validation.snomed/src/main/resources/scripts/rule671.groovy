@@ -9,17 +9,9 @@ import com.b2international.snowowl.core.ComponentIdentifier
 import com.b2international.snowowl.core.date.EffectiveTimes
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts
-import com.b2international.snowowl.snomed.core.domain.SnomedDescription
-import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry
-import com.b2international.snowowl.snomed.datastore.request.SnomedRequests
-import com.google.common.collect.ArrayListMultimap
-import com.google.common.collect.HashMultimap
-import com.google.common.collect.ImmutableList
-import com.google.common.collect.Lists
-import com.google.common.collect.Multimap
 import com.google.common.collect.Sets
 
 def Set<ComponentIdentifier> issues = []

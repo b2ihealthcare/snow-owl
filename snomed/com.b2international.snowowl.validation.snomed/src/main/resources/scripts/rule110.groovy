@@ -1,7 +1,6 @@
 package scripts
 
 import static com.b2international.index.query.Expressions.*
-import static com.b2international.index.query.Expressions.nestedMatch
 
 import com.b2international.index.Hits
 import com.b2international.index.query.Expressions

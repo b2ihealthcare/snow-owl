@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.validation.snomed;
 
+import static com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator.generateDescriptionId;
+
 import java.util.*;
 
 import org.eclipse.xtext.parser.IParser;
@@ -92,7 +94,8 @@ public abstract class BaseGenericValidationRuleTest extends BaseValidationTest {
 	@Override
 	protected void configureValidationRequest(ValidateRequestBuilder req) {
 		req.setRuleParameters(Map.of(
-			ValidationConfiguration.IS_UNPUBLISHED_ONLY, effectiveTime == EffectiveTimes.UNSET_EFFECTIVE_TIME
+			ValidationConfiguration.IS_UNPUBLISHED_ONLY, effectiveTime == EffectiveTimes.UNSET_EFFECTIVE_TIME,
+			ValidationConfiguration.MODULES, "<<" + Concepts.MODULE_B2I_EXTENSION
 		));
 	}
 	
@@ -140,7 +143,7 @@ public abstract class BaseGenericValidationRuleTest extends BaseValidationTest {
 			.stageNew(concept(Concepts.ONLY_INITIAL_CHARACTER_CASE_INSENSITIVE).parents(CASE_SIGNIFICANCEL).build())
 			.stageNew(concept(Concepts.ENTIRE_TERM_CASE_SENSITIVE).parents(CASE_SIGNIFICANCEL).build())
 			// Modules
-			.stageNew(concept(Concepts.UK_DRUG_EXTENSION_MODULE).parents(ROOT_CONCEPTL).build())
+			.stageNew(concept(Concepts.MODULE_B2I_EXTENSION).parents(ROOT_CONCEPTL).build())
 			.stageNew(concept(Concepts.PHYSICAL_OBJECT).parents(ROOT_CONCEPTL).build())
 			.stageNew(concept(HISTORICAL_ASSOCIATION).parents(ROOT_CONCEPTL).build()) // Historical association
 			// Refsets
@@ -160,6 +163,10 @@ public abstract class BaseGenericValidationRuleTest extends BaseValidationTest {
 	
 	protected final SnomedDescriptionIndexEntry.Builder description(final String id, final String type, final String term) {
 		return DocumentBuilders.description(id, type, term).effectiveTime(effectiveTime);
+	}
+	
+	protected final SnomedDescriptionIndexEntry.Builder fsn(final String term) {
+		return DocumentBuilders.description(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, term).effectiveTime(generateRandomEffectiveTime());
 	}
 	
 	protected final SnomedRelationshipIndexEntry.Builder relationship(final String source, final String type, final String destination) {
