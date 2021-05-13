@@ -60,9 +60,9 @@ public class Rf2GlobalValidator {
 	private Map<String, String> dependenciesByEffectiveTime;
 	private Map<String, String> skippableMemberDependenciesByEffectiveTime;
 	
-	private final List<String> ignoreMissingReferencesIn;
+	private final Set<String> ignoreMissingReferencesIn;
 
-	public Rf2GlobalValidator(Logger log, List<String> ignoreMissingReferencesIn) {
+	public Rf2GlobalValidator(Logger log, Set<String> ignoreMissingReferencesIn) {
 		this.log = log;
 		this.ignoreMissingReferencesIn = ignoreMissingReferencesIn;
 	}

@@ -22,6 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -101,8 +102,9 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 	@JsonProperty
 	private boolean createVersions = true;
 	
+	@NotNull
 	@JsonProperty
-	private List<String> ignoreMissingReferencesIn = Lists.newArrayList();
+	private Set<String> ignoreMissingReferencesIn;
 	
 	@JsonProperty
 	private boolean dryRun = false;
@@ -119,7 +121,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 		this.createVersions = createVersions;
 	}
 	
-	void setIgnoreMissingReferencesIn(List<String> ignoreMissingReferencesIn) {
+	void setIgnoreMissingReferencesIn(Set<String> ignoreMissingReferencesIn) {
 		this.ignoreMissingReferencesIn = ignoreMissingReferencesIn;
 	}
 	
