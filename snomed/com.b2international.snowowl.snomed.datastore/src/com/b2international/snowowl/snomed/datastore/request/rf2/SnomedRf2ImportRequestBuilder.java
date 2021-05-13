@@ -58,7 +58,7 @@ public final class SnomedRf2ImportRequestBuilder
 		return getSelf();
 	}
 	
-	public SnomedRf2ImportRequestBuilder setignoreMissingReferencesIn(List<String> ignoreMissingReferencesIn) {
+	public SnomedRf2ImportRequestBuilder setIgnoreMissingReferencesIn(List<String> ignoreMissingReferencesIn) {
 		this.ignoreMissingReferencesIn = ignoreMissingReferencesIn;
 		return getSelf();
 	}
