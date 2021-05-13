@@ -90,14 +90,17 @@ public final class SnomedOWLRelationshipDocument implements Serializable {
 		return destinationId;
 	}
 
+	@JsonProperty
 	Integer getIntegerValue() {
 		return integerValue;
 	}
 	
+	@JsonProperty
 	Double getDecimalValue() {
 		return decimalValue;
 	}
 	
+	@JsonProperty
 	String getStringValue() {
 		return stringValue;
 	}
