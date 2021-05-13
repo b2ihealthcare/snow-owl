@@ -15,9 +15,9 @@
  */
 package com.b2international.snowowl.snomed.datastore.request.rf2;
 
-import java.util.Collections;
 import java.util.UUID;
 
+import com.b2international.commons.collections.Collections3;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
@@ -25,7 +25,6 @@ import com.b2international.snowowl.core.request.RevisionIndexRequestBuilder;
 import com.b2international.snowowl.core.request.io.ImportResponse;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 6.0.0
@@ -73,7 +72,7 @@ public final class SnomedRf2ImportRequestBuilder
 		final SnomedRf2ImportRequest req = new SnomedRf2ImportRequest(rf2ArchiveId);
 		req.setReleaseType(releaseType);
 		req.setCreateVersions(createVersions);
-		req.setIgnoreMissingReferencesIn(ignoreMissingReferencesIn != null ? ImmutableSet.copyOf(ignoreMissingReferencesIn) : Collections.emptySet());
+		req.setIgnoreMissingReferencesIn(Collections3.toImmutableSet(ignoreMissingReferencesIn));
 		req.setDryRun(dryRun);
 		return req;
 	}
