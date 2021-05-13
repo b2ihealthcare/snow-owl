@@ -24,11 +24,7 @@ import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVers
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.util.Collections;
 import java.util.List;
@@ -42,6 +38,7 @@ import org.junit.runners.MethodSorters;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.BranchPathUtils;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.jobs.RemoteJobState;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
@@ -473,6 +470,38 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 		assertArrayEquals(new long[] { IComponent.ROOT_IDL }, concept.getStatedParentIds());
 		assertArrayEquals(new long[0], concept.getStatedAncestorIds());
 		
+	}
+	
+	@Test
+	public void import29ImportExistingConceptAsUnpublished() {
+		getComponent(branchPath, SnomedComponentType.CONCEPT, "100005").statusCode(404);
+		
+		importArchive("SnomedCT_Release_INT_20210502_concept_w_eff_time.zip");
+		SnomedConcept conceptBefore = getComponent(branchPath, SnomedComponentType.CONCEPT, "100005").statusCode(200).extract().as(SnomedConcept.class);
+		
+		importArchive("SnomedCT_Release_INT_20210502_concept_wo_eff_time.zip");
+		SnomedConcept conceptAfter = getComponent(branchPath, SnomedComponentType.CONCEPT, "100005").statusCode(200).extract().as(SnomedConcept.class);
+		
+		assertEquals(EffectiveTimes.parse("2021-05-02"), conceptBefore.getEffectiveTime());
+		assertTrue(conceptBefore.isReleased());
+		assertEquals(EffectiveTimes.toDate(EffectiveTimes.UNSET_EFFECTIVE_TIME), conceptAfter.getEffectiveTime());
+		assertTrue(conceptAfter.isReleased());
+	}
+	
+	@Test
+	public void import30ImportExistingConceptAsPublished() {
+		getComponent(branchPath, SnomedComponentType.CONCEPT, "100005").statusCode(404);
+		
+		importArchive("SnomedCT_Release_INT_20210502_concept_wo_eff_time.zip");
+		SnomedConcept conceptBefore = getComponent(branchPath, SnomedComponentType.CONCEPT, "100005").statusCode(200).extract().as(SnomedConcept.class);
+		
+		importArchive("SnomedCT_Release_INT_20210502_concept_w_eff_time.zip");
+		SnomedConcept conceptAfter = getComponent(branchPath, SnomedComponentType.CONCEPT, "100005").statusCode(200).extract().as(SnomedConcept.class);
+		
+		assertEquals(EffectiveTimes.toDate(EffectiveTimes.UNSET_EFFECTIVE_TIME), conceptBefore.getEffectiveTime());
+		assertFalse(conceptBefore.isReleased());
+		assertEquals(EffectiveTimes.parse("2021-05-02"), conceptAfter.getEffectiveTime());
+		assertTrue(conceptAfter.isReleased());
 	}
 	
 	private void validateBranchHeadtimestampUpdate(IBranchPath branch, String importArchiveFileName,
