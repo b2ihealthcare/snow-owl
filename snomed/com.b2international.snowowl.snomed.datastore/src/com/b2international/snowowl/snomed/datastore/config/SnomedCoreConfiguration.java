@@ -353,7 +353,7 @@ public class SnomedCoreConfiguration {
 	public void setReasonerExcludedModuleIds(Set<String> reasonerExcludedModuleIds) {
 		this.reasonerExcludedModuleIds = reasonerExcludedModuleIds;
 	}
-	
+
 	public List<SnomedLanguageConfig> getLanguages() {
 		return languages;
 	}

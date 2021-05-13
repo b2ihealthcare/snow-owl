@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.datastore.request.rf2;
 
 import java.util.UUID;
 
+import com.b2international.commons.collections.Collections3;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
@@ -35,6 +36,7 @@ public final class SnomedRf2ImportRequestBuilder
 	private UUID rf2ArchiveId;
 	private Rf2ReleaseType releaseType = Rf2ReleaseType.DELTA;
 	private boolean createVersions = true;
+	private Iterable<String> ignoreMissingReferencesIn;
 	private boolean dryRun = false;
 	
 	SnomedRf2ImportRequestBuilder() {
@@ -55,6 +57,11 @@ public final class SnomedRf2ImportRequestBuilder
 		return getSelf();
 	}
 	
+	public SnomedRf2ImportRequestBuilder setIgnoreMissingReferencesIn(Iterable<String> ignoreMissingReferencesIn) {
+		this.ignoreMissingReferencesIn = ignoreMissingReferencesIn;
+		return getSelf();
+	}
+	
 	public SnomedRf2ImportRequestBuilder setDryRun(boolean dryRun) {
 		this.dryRun = dryRun;
 		return getSelf();
@@ -65,6 +72,7 @@ public final class SnomedRf2ImportRequestBuilder
 		final SnomedRf2ImportRequest req = new SnomedRf2ImportRequest(rf2ArchiveId);
 		req.setReleaseType(releaseType);
 		req.setCreateVersions(createVersions);
+		req.setIgnoreMissingReferencesIn(Collections3.toImmutableSet(ignoreMissingReferencesIn));
 		req.setDryRun(dryRun);
 		return req;
 	}

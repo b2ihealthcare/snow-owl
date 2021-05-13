@@ -22,6 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -75,6 +76,7 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 
 /**
  * @since 6.0.0
@@ -100,6 +102,10 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 	@JsonProperty
 	private boolean createVersions = true;
 	
+	@NotNull
+	@JsonProperty
+	private Set<String> ignoreMissingReferencesIn;
+	
 	@JsonProperty
 	private boolean dryRun = false;
 
@@ -113,6 +119,10 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 	
 	void setCreateVersions(boolean createVersions) {
 		this.createVersions = createVersions;
+	}
+	
+	void setIgnoreMissingReferencesIn(Set<String> ignoreMissingReferencesIn) {
+		this.ignoreMissingReferencesIn = ignoreMissingReferencesIn;
 	}
 	
 	void setDryRun(boolean dryRun) {
@@ -185,7 +195,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 			
 			// Run validation that takes current terminology content into account
 			final List<Rf2EffectiveTimeSlice> orderedEffectiveTimeSlices = effectiveTimeSlices.consumeInOrder();
-			final Rf2GlobalValidator globalValidator = new Rf2GlobalValidator(LOG);
+			final Rf2GlobalValidator globalValidator = new Rf2GlobalValidator(LOG, ignoreMissingReferencesIn);
 			
 			/* 
 			 * TODO: Use Attachment to get the release file name and/or track file and line number sources for each row 

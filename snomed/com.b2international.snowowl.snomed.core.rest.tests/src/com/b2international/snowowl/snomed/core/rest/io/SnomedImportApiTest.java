@@ -24,8 +24,15 @@ import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVers
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.StreamSupport;
@@ -76,10 +83,15 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 		importArchive(branchPath, false, Rf2ReleaseType.DELTA, fileName);
 	}
 	
-	private void importArchive(IBranchPath path, boolean createVersion, Rf2ReleaseType releaseType, final String fileName) { 
+	private void importArchive(IBranchPath path, boolean createVersion, Rf2ReleaseType releaseType, final String fileName) {
+		importArchive(path, Collections.emptyList(), createVersion, releaseType, fileName);
+	}
+	
+	private void importArchive(IBranchPath path, List<String> ignoreMissingReferencesIn, boolean createVersion, Rf2ReleaseType releaseType, final String fileName) {
 		final Map<String, ?> importConfiguration = ImmutableMap.<String, Object>builder()
 				.put("type", releaseType.name())
 				.put("createVersions", createVersion)
+				.put("ignoreMissingReferencesIn", ignoreMissingReferencesIn)
 				.build();
 		importArchive(path, importConfiguration, fileName);
 	}
@@ -131,7 +143,7 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 		assertArrayEquals(new long[] { IComponent.ROOT_IDL }, concept.getStatedAncestorIds());
 		
 	}
-
+	
 	@Test
 	public void import05NewDescription() {
 		getComponent(branchPath, SnomedComponentType.DESCRIPTION, "11320138110").statusCode(404);
@@ -488,6 +500,26 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 		assertFalse(conceptBefore.isReleased());
 		assertEquals(EffectiveTimes.parse("2021-05-02"), conceptAfter.getEffectiveTime());
 		assertTrue(conceptAfter.isReleased());
+	}
+	
+	@Test
+	public void import31MissingComponentsWithSkip() {		
+		getComponent(branchPath, SnomedComponentType.CONCEPT, "63961392103").statusCode(404);
+		importArchive(branchPath, Collections.singletonList("900000000000490003"), false, Rf2ReleaseType.DELTA, "SnomedCT_Release_INT_20150131_missing_component.zip");
+		
+		//Assert that concept is imported while member with missing reference is skipped when ignoreMissingReferencesIn lists its reference set
+		getComponent(branchPath, SnomedComponentType.CONCEPT, "63961392103").statusCode(200);
+		getComponent(branchPath, SnomedComponentType.MEMBER, "5312ec36-8baf-4768-8c4b-2d6f91094d4b").statusCode(404);
+	}
+	
+	@Test
+	public void import32MissingComponentsWithoutSkip() {
+		final String importFileName = "SnomedCT_Release_INT_20150131_missing_component.zip";	
+		importArchive(importFileName);
+		
+		//Assert that import fails if ignoreMissingReferencesIn is not set on a member referring to a missing component
+		getComponent(branchPath, SnomedComponentType.CONCEPT, "63961392103").statusCode(404);
+		getComponent(branchPath, SnomedComponentType.MEMBER, "5312ec36-8baf-4768-8c4b-2d6f91094d4b").statusCode(404);
 	}
 	
 	private void validateBranchHeadtimestampUpdate(IBranchPath branch, String importArchiveFileName,
