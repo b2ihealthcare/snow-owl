@@ -143,7 +143,7 @@ public final class SnomedRelationshipUpdateRequest extends SnomedComponentUpdate
 	}
 
 	private boolean updateValue(final TransactionContext context, final SnomedRelationshipIndexEntry relationship, final SnomedRelationshipIndexEntry.Builder updatedRelationship) {
-		return updateProperty(value, () -> relationship.getValue(), newValue -> {
+		return updateProperty(value, () -> relationship.getValueAsObject(), newValue -> {
 			checkUpdateOnReleased(relationship, SnomedRf2Headers.FIELD_VALUE, newValue);
 			updatedRelationship.value(newValue);
 		});

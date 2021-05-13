@@ -67,6 +67,31 @@ public final class RelationshipValue implements Serializable {
 	}
 
 	/**
+	 * @param valueType
+	 * @param decimalValue
+	 * @param integerValue
+	 * @param stringValue
+	 * @return
+	 */
+	public static RelationshipValue fromTypeAndObjects(
+		final RelationshipValueType valueType, 
+		final Double decimalValue, 
+		final Integer integerValue, 
+		final String stringValue) {
+	
+		if (valueType == null) {
+			return null;
+		}
+	
+		switch (valueType) {
+			case DECIMAL: return new RelationshipValue(decimalValue);
+			case INTEGER: return new RelationshipValue(integerValue);
+			case STRING: return new RelationshipValue(stringValue);
+			default: throw new IllegalArgumentException("Unexpected relationship value type: " + valueType);
+		}
+	}
+
+	/**
 	 * @param integerValue
 	 */
 	public RelationshipValue(final Integer integerValue) {

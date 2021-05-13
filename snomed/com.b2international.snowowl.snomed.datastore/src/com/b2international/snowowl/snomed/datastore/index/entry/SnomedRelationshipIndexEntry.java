@@ -106,7 +106,7 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 			.typeId(input.getTypeId())
 			.destinationId(input.getDestinationId())
 			.destinationNegated(input.isDestinationNegated())
-			.value(input.getValue())
+			.value(input.getValueAsObject())
 			.group(input.getGroup())
 			.unionGroup(input.getUnionGroup())
 			.characteristicTypeId(input.getCharacteristicTypeId())
@@ -271,7 +271,6 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 		private Integer integerValue;
 		private Double decimalValue;
 		private String stringValue;
-		private Boolean booleanValue;
 		private int group = DEFAULT_GROUP;
 		private int unionGroup = DEFAULT_UNION_GROUP;
 		private String characteristicTypeId;
@@ -298,13 +297,17 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 		}
 
 		public Builder destinationId(final String destinationId) {
+			/*
+			 * XXX: We need to ignore null values here, as usually both destination ID and
+			 * value is passed in to the builder, and the "last" non-null value decides
+			 * which form will be built.
+			 */
 			if (destinationId != null) {
 				valueType = null;
 				
 				integerValue = null;
 				decimalValue = null;
 				stringValue = null;
-				booleanValue = null;
 
 				this.destinationId = destinationId;
 			}
@@ -324,6 +327,11 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 		}
 
 		public Builder value(final RelationshipValue value) {
+			/*
+			 * XXX: We need to ignore null values here, as usually both destination ID and
+			 * value is passed in to the builder, and the "last" non-null value decides
+			 * which form will be built.
+			 */
 			if (value != null) {
 				destinationId = null;
 				
@@ -354,11 +362,6 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 
 		Builder stringValue(final String stringValue) {
 			this.stringValue = stringValue;
-			return getSelf();
-		}
-
-		Builder booleanValue(final Boolean booleanValue) {
-			this.booleanValue = booleanValue;
 			return getSelf();
 		}
 
@@ -409,7 +412,6 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 				integerValue,
 				decimalValue,
 				stringValue,
-				booleanValue,
 				characteristicTypeId, 
 				modifierId, 
 				group, 
@@ -452,7 +454,6 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 		final Integer integerValue, 
 		final Double decimalValue,
 		final String stringValue,
-		final Boolean booleanValue,
 		final String characteristicTypeId,
 		final String modifierId,
 		final int group,
@@ -523,26 +524,13 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 	}
 
 	@JsonIgnore
-	public RelationshipValue getValue() {
-		return getValue(valueType, decimalValue, integerValue, stringValue);
+	public boolean hasValue() {
+		return (valueType != null);
 	}
 
-	public static RelationshipValue getValue(
-		final RelationshipValueType valueType, 
-		final Double decimalValue, 
-		final Integer integerValue, 
-		final String stringValue) {
-
-		if (valueType == null) {
-			return null;
-		}
-
-		switch (valueType) {
-			case DECIMAL: return new RelationshipValue(decimalValue);
-			case INTEGER: return new RelationshipValue(integerValue);
-			case STRING: return new RelationshipValue(stringValue);
-			default: throw new UnsupportedOperationException("Unexpected relationship value type: " + valueType);
-		}
+	@JsonIgnore
+	public RelationshipValue getValueAsObject() {
+		return RelationshipValue.fromTypeAndObjects(valueType, decimalValue, integerValue, stringValue);
 	}
 
 	@JsonProperty
@@ -649,7 +637,7 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 			.add("sourceId", sourceId)
 			.add("typeId", typeId)
 			.add("destinationId", destinationId)
-			.add("value", getValue())
+			.add("value", getValueAsObject())
 			.add("characteristicTypeId", characteristicTypeId)
 			.add("modifierId", modifierId)
 			.add("group", group)

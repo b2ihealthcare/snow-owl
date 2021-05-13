@@ -90,15 +90,15 @@ public final class SnomedOWLRelationshipDocument implements Serializable {
 		return destinationId;
 	}
 
-	public Integer getIntegerValue() {
+	Integer getIntegerValue() {
 		return integerValue;
 	}
 	
-	public Double getDecimalValue() {
+	Double getDecimalValue() {
 		return decimalValue;
 	}
 	
-	public String getStringValue() {
+	String getStringValue() {
 		return stringValue;
 	}
 	
@@ -117,7 +117,7 @@ public final class SnomedOWLRelationshipDocument implements Serializable {
 
 	@JsonIgnore
 	public RelationshipValue getValueAsObject() {
-		return SnomedRelationshipIndexEntry.getValue(valueType, decimalValue, integerValue, stringValue);
+		return RelationshipValue.fromTypeAndObjects(valueType, decimalValue, integerValue, stringValue);
 	}
 
 	@JsonIgnore

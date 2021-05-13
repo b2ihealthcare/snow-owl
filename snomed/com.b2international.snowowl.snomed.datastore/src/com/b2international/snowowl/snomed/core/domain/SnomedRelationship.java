@@ -202,7 +202,7 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 	/**
 	 * @return
 	 */
-	// Literal form is used when transferring data over JSON
+	// XXX: Literal form is used when transferring data over JSON
 	public String getValue() {
 		return ifNotNull(getValueAsObject(), RelationshipValue::toLiteral);
 	}
