@@ -774,8 +774,9 @@ final class SnomedEclRefinementEvaluator {
 
 	static Set<Property> evalAxiomStatements(final BranchContext context, final boolean groupedRelationshipsOnly, final Collection<String> sourceIds, final Collection<String> typeIds, final Collection<String> destinationIds) {
 		try {
-			// search existing axioms defined for the given set of conceptIds
-			ExpressionBuilder axiomFilter = Expressions.builder();
+			// search existing axioms (no values!) defined for the given set of conceptIds
+			ExpressionBuilder axiomFilter = Expressions.builder()
+				.filter(hasDestinationId());
 
 			if (typeIds != null) {
 				axiomFilter.filter(typeIds(typeIds));

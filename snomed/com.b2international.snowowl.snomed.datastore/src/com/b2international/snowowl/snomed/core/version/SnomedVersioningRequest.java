@@ -167,9 +167,9 @@ public final class SnomedVersioningRequest extends VersioningRequest {
 				final SnomedRelationshipIndexEntry relationship = (SnomedRelationshipIndexEntry) componentToVersion;
 				componentIdsByReferringModule.put(relationship.getModuleId(), relationship.getSourceId());
 				componentIdsByReferringModule.put(relationship.getModuleId(), relationship.getTypeId());
-				final String destinationId = relationship.getDestinationId();
-				if (destinationId != null) {
-					componentIdsByReferringModule.put(relationship.getModuleId(), destinationId);
+				if (!relationship.hasValue()) {
+					// Values do not contribute to module dependencies
+					componentIdsByReferringModule.put(relationship.getModuleId(), relationship.getDestinationId());
 				}
 				componentIdsByReferringModule.put(relationship.getModuleId(), relationship.getModifierId());
 				componentIdsByReferringModule.put(relationship.getModuleId(), relationship.getCharacteristicTypeId());

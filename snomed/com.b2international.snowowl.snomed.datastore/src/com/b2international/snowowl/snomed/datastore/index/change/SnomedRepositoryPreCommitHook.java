@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.change;
 
+import static com.google.common.base.Preconditions.checkState;
+
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
@@ -101,6 +103,9 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 		staging.getRemovedObjects(SnomedRelationshipIndexEntry.class)
 			.filter(detachedRelationship -> Concepts.IS_A.equals(detachedRelationship.getTypeId()))
 			.forEach(detachedRelationship -> {
+				// XXX: IS A relationships are expected to have a destination ID, not a value
+				checkState(!detachedRelationship.hasValue(), "IS A relationship found with value: %s", detachedRelationship.getId());
+				
 				if (Concepts.STATED_RELATIONSHIP.equals(detachedRelationship.getCharacteristicTypeId())) {
 					statedSourceIds.add(detachedRelationship.getSourceId());
 					statedDestinationIds.add(detachedRelationship.getDestinationId());
@@ -113,7 +118,7 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 		staging.getRemovedObjects(SnomedRefSetMemberIndexEntry.class)
 			.filter(detachedMember -> SnomedRefSetType.OWL_AXIOM == detachedMember.getReferenceSetType())
 			.forEach(detachedOwlMember -> {
-				collectIds(statedSourceIds, statedDestinationIds, detachedOwlMember.getReferencedComponentId(), detachedOwlMember.getOwlExpression(), expressionConverter);
+				collectIds(statedSourceIds, statedDestinationIds, detachedOwlMember, expressionConverter);
 			});
 		
 		final LongSet statedConceptIds = PrimitiveSets.newLongOpenHashSet();
@@ -271,6 +276,9 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 			.filter(relationship -> Concepts.IS_A.equals(relationship.getTypeId()))
 			.filter(relationship -> relationship.getCharacteristicTypeId().equals(characteristicTypeId))
 			.forEach(relationship -> {
+				// XXX: IS A relationships are expected to have a destination ID, not a value
+				checkState(!relationship.hasValue(), "IS A relationship found with value: %s", relationship.getId());
+				
 				sourceIds.add(relationship.getSourceId());
 				destinationIds.add(relationship.getDestinationId());
 			});
@@ -278,17 +286,24 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 	
 	private void collectIds(Set<String> sourceIds, Set<String> destinationIds, Stream<SnomedRefSetMemberIndexEntry> owlMembers, SnomedOWLExpressionConverter expressionConverter) {
 		owlMembers.forEach(owlMember -> {
-			collectIds(sourceIds, destinationIds, owlMember.getReferencedComponentId(), owlMember.getOwlExpression(), expressionConverter);
+			collectIds(sourceIds, destinationIds, owlMember, expressionConverter);
 		});
 	}
 
-	private void collectIds(Set<String> sourceIds, Set<String> destinationIds, String referencedComponentId, String owlExpression, SnomedOWLExpressionConverter expressionConverter) {
+	private void collectIds(Set<String> sourceIds, Set<String> destinationIds, SnomedRefSetMemberIndexEntry owlMember, SnomedOWLExpressionConverter expressionConverter) {
+		final String memberId = owlMember.getId();
+		final String referencedComponentId = owlMember.getReferencedComponentId();
+		final String owlExpression = owlMember.getOwlExpression();
+		
 		SnomedOWLExpressionConverterResult result = expressionConverter.toSnomedOWLRelationships(referencedComponentId, owlExpression);
 		if (!CompareUtils.isEmpty(result.getClassAxiomRelationships())) {
-			for (SnomedOWLRelationshipDocument classAxiom : result.getClassAxiomRelationships()) {
-				if (Concepts.IS_A.equals(classAxiom.getTypeId())) {
+			for (SnomedOWLRelationshipDocument owlRelationship : result.getClassAxiomRelationships()) {
+				if (Concepts.IS_A.equals(owlRelationship.getTypeId())) {
+					// XXX: IS A relationships are expected to have a destination ID, not a value
+					checkState(!owlRelationship.hasValue(), "IS A relationship found with value on OWL member: %s", memberId);
+					
 					sourceIds.add(referencedComponentId);
-					destinationIds.add(classAxiom.getDestinationId());
+					destinationIds.add(owlRelationship.getDestinationId());
 				}
 			}
 		}

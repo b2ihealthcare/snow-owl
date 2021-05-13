@@ -70,16 +70,16 @@ public final class SnomedOWLRelationshipConverter {
 		for (final SnomedOWLRelationshipDocument owlRelationship : owlRelationships) {
 
 			final Relationship relationship;
-			if (owlRelationship.getDestinationId() != null) {
+			if (owlRelationship.hasValue()) {
 				relationship = new Relationship(
-					owlRelationship.getGroup(),
-					Long.valueOf(owlRelationship.getTypeId()),
-					Long.valueOf(owlRelationship.getDestinationId()));
+						owlRelationship.getGroup(),
+						Long.valueOf(owlRelationship.getTypeId()),
+						toConcreteValue(owlRelationship.getValueAsObject()));
 			} else {
 				relationship = new Relationship(
-					owlRelationship.getGroup(),
-					Long.valueOf(owlRelationship.getTypeId()),
-					toConcreteValue(owlRelationship.getValueAsObject()));
+						owlRelationship.getGroup(),
+						Long.valueOf(owlRelationship.getTypeId()),
+						Long.valueOf(owlRelationship.getDestinationId()));
 			}
 			
 			relationships.put(relationship.getGroup(), relationship);

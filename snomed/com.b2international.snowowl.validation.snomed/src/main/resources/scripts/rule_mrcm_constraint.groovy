@@ -101,6 +101,7 @@ def getOWLRelationships = { SnomedReferenceSetMember owlMember ->
 
 if (params.isUnpublishedOnly) {
 	SnomedRelationshipSearchRequestBuilder requestBuilder = SnomedRequests.prepareSearchRelationship()
+			.hasDestinationId()
 			.filterByActive(true)
 			.filterByEffectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
 			.all()
@@ -161,7 +162,8 @@ if (params.isUnpublishedOnly) {
 			
 		for (SnomedRelationshipPredicate predicate : applicableRulePredicates) {
 			for (SnomedOWLRelationshipDocument relationship : getOWLRelationships(owlAxiomMember)) {
-				if (getApplicableConcepts(predicate.getAttributeExpression()).contains(relationship.getTypeId()) &&
+				if (!relationship.hasValue() &&
+					getApplicableConcepts(predicate.getAttributeExpression()).contains(relationship.getTypeId()) &&
 					!getApplicableConcepts(predicate.getRangeExpression()).contains(relationship.getDestinationId())) {
 					issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, owlAxiomMember.getId()))
 				}
@@ -182,6 +184,7 @@ if (params.isUnpublishedOnly) {
 
 			final ExpressionBuilder expressionBuilder = Expressions.builder()
 					.filter(SnomedRelationshipIndexEntry.Expressions.active())
+					.filter(SnomedRelationshipIndexEntry.Expressions.withDestinationId())
 					.filter(SnomedRelationshipIndexEntry.Expressions.sourceIds(domain))
 					.filter(SnomedRelationshipIndexEntry.Expressions.typeIds(getApplicableConcepts(attributeExpression)))
 					.mustNot(SnomedRelationshipIndexEntry.Expressions.destinationIds(getApplicableConcepts(rangeExpression)))
@@ -226,6 +229,7 @@ if (params.isUnpublishedOnly) {
 			final ExpressionBuilder expressionBuilder = Expressions.builder()
 					.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
 					.filter(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(domain))
+					.filter(SnomedRefSetMemberIndexEntry.Expressions.owlExpressionWithDestinationId())
 					.filter(SnomedRefSetMemberIndexEntry.Expressions.owlExpressionType(attribute))
 					.mustNot(SnomedRefSetMemberIndexEntry.Expressions.owlExpressionDestination(range))
 			

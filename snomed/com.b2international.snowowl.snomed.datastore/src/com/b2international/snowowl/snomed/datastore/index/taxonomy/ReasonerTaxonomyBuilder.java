@@ -298,7 +298,8 @@ public final class ReasonerTaxonomyBuilder {
 	public ReasonerTaxonomyBuilder addActiveStatedEdges(final Stream<SnomedRelationship> relationships) {
 		entering("Registering active stated IS A graph edges from relationship stream");
 
-		Stream<SnomedRelationship> filteredRelationships = relationships.filter(r -> r.isActive() 
+		Stream<SnomedRelationship> filteredRelationships = relationships.filter(r -> r.isActive()
+				&& !r.hasValue() // Not strictly needed for IS A-s, just to be sure
 				&& Concepts.IS_A.equals(r.getTypeId())
 				&& Concepts.STATED_RELATIONSHIP.equals(r.getCharacteristicTypeId())
 				&& !excludedModuleIds.contains(r.getModuleId()));
@@ -570,14 +571,8 @@ public final class ReasonerTaxonomyBuilder {
 					statement = new StatementFragmentWithDestination(
 						typeId, group, unionGroup, universal, statementId, -1L, released, destinationId, destinationNegated);
 				} else {
-					
-					final RelationshipValue value;
-					switch (valueType) {
-						case DECIMAL: value = new RelationshipValue(decimalValue); break;
-						case INTEGER: value = new RelationshipValue(integerValue); break;
-						case STRING: value = new RelationshipValue(stringValue); break;
-						default: throw new IllegalStateException("Unexpected value type '" + valueType + "'.");
-					}
+					final RelationshipValue value = RelationshipValue.fromTypeAndObjects(
+						valueType, decimalValue, integerValue, stringValue);
 					
 					statement = new StatementFragmentWithValue(
 						typeId, group, unionGroup, universal, statementId, -1L, released, value.toLiteral());
@@ -753,7 +748,7 @@ public final class ReasonerTaxonomyBuilder {
 						}
 						
 						if (relationship.hasValue()) {
-							// Add relationships with value
+							// Add relationship with value
 							statementFragments.add(relationship.toStatementFragment(groupOffset));
 							continue;
 						}
@@ -767,7 +762,7 @@ public final class ReasonerTaxonomyBuilder {
 						}
 							
 						if (relationship.getGroup() > 0) {
-							// Add grouped relationships with destination
+							// Add grouped relationship with destination
 							statementFragments.add(relationship.toStatementFragment(groupOffset));
 							continue;
 						}
