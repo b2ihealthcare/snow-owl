@@ -62,7 +62,7 @@ public final class SnomedRelationshipBuilder
 	/**
 	 * Specifies the destination of the new SNOMED CT Relationship.
 	 * 
-	 * @param destination - the destination concept Id
+	 * @param destinationId - the destination concept Id
 	 * @return
 	 */
 	public SnomedRelationshipBuilder withDestinationId(final String destinationId) {
