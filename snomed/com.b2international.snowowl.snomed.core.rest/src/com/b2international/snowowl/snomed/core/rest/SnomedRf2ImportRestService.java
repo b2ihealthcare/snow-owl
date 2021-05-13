@@ -83,7 +83,7 @@ public class SnomedRf2ImportRestService extends AbstractSnomedRestService {
 			@RequestParam(name = "createVersions", defaultValue = "true")
 			final Boolean createVersions,
 			
-			@ApiParam(value = "Import should be allowed to progress when members of listed reference sets have missing referenced components", defaultValue = "false")
+			@ApiParam(value = "Import should be allowed to progress when members of listed reference sets have missing referenced components")
 			@RequestParam(name = "ignoreMissingReferencesIn", required = false)
 			final List<String> ignoreMissingReferencesIn,
 			
