@@ -29,6 +29,7 @@ import com.b2international.snowowl.core.request.BaseResourceConverter;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.TreeMultimap;
@@ -109,7 +110,31 @@ public final class CodeSystemConverter extends BaseResourceConverter<CodeSystemE
 			if (!Strings.isNullOrEmpty(upgradeOfBranchPath)) {
 				RevisionBranch branch = branching.getBranch(result.getBranchPath());
 				BranchState branchState = branching.getBranchState(result.getBranchPath(), upgradeOfBranchPath);
-				result.setUpgradeOfBranchInfo(new BranchInfo(branch.getPath(), branchState, branch.getBaseTimestamp(), branch.getHeadTimestamp()));
+				BranchInfo mainInfo = new BranchInfo(branch.getPath(), branchState, branch.getBaseTimestamp(), branch.getHeadTimestamp());
+				
+				List<CodeSystemURI> blockedURIs = Lists.newArrayList();
+				
+				List<BranchInfo> versionBranchInfo = Lists.newArrayList();
+				
+				versionBranchInfo = CodeSystemRequests.prepareSearchCodeSystemVersion()
+						.all()
+						.filterByCodeSystemShortName(result.getUpgradeOf().getCodeSystem())
+						.filterByEffectiveDate(result.getExtensionOfBranchInfo().getBaseTimestamp(), Long.MAX_VALUE)
+						.build()
+						.execute(context())
+						.stream()
+						.filter(csv -> !csv.getUri().isHead())
+						.map(csv -> {
+							RevisionBranch versionBranch = branching.getBranch(csv.getPath());
+							BranchState versionBranchState = branching.getBranchState(result.getBranchPath(), versionBranch.getPath());
+							if (versionBranchState == BranchState.BEHIND || versionBranchState == BranchState.DIVERGED) {
+								blockedURIs.add(csv.getUri());
+							}
+							return new BranchInfo(branch.getPath(), versionBranchState, versionBranch.getBaseTimestamp(), versionBranch.getHeadTimestamp());
+						})
+						.collect(Collectors.toList());
+				
+				result.setUpgradeOfBranchInfo(new UpgradeInfo(mainInfo, versionBranchInfo, blockedURIs));
 			}
 		}
 	}

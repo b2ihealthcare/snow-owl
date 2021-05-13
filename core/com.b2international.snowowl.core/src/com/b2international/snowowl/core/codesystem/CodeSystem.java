@@ -216,7 +216,7 @@ public class CodeSystem implements Serializable {
 	private Map<String, Object> additionalProperties;
 	private List<CodeSystemURI> availableUpgrades;
 	private BranchInfo extensionOfBranchInfo;
-	private BranchInfo upgradeOfBranchInfo;
+	private UpgradeInfo upgradeOfBranchInfo;
 	
 	// extension related fields
 	private CodeSystemURI extensionOf;
@@ -368,7 +368,7 @@ public class CodeSystem implements Serializable {
 		return extensionOfBranchInfo;
 	}
 	
-	public BranchInfo getUpgradeOfBranchInfo() {
+	public UpgradeInfo getUpgradeOfBranchInfo() {
 		return upgradeOfBranchInfo;
 	}
 
@@ -437,7 +437,7 @@ public class CodeSystem implements Serializable {
 		this.extensionOfBranchInfo = extensionOfBranchInfo;
 	}
 	
-	public void setUpgradeOfBranchInfo(BranchInfo upgradeOfBranchInfo) {
+	public void setUpgradeOfBranchInfo(UpgradeInfo upgradeOfBranchInfo) {
 		this.upgradeOfBranchInfo = upgradeOfBranchInfo;
 	}
 	
