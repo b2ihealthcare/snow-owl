@@ -522,6 +522,11 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 		getComponent(branchPath, SnomedComponentType.MEMBER, "5312ec36-8baf-4768-8c4b-2d6f91094d4b").statusCode(404);
 	}
 	
+	@Test
+	public void import33CreateVersionFromBranch() throws Exception {
+		importArchive(branchPath, Collections.emptyList(), true, Rf2ReleaseType.DELTA, "SnomedCT_Release_INT_20210502_concept_wo_eff_time.zip");
+	}
+	
 	private void validateBranchHeadtimestampUpdate(IBranchPath branch, String importArchiveFileName,
 			boolean createVersions) {
 
