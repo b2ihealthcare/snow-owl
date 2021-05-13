@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,9 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -61,11 +63,7 @@ import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2ContentType;
-import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2EffectiveTimeSlice;
-import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2EffectiveTimeSlices;
-import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2Format;
-import com.b2international.snowowl.snomed.datastore.request.rf2.importer.Rf2ImportConfiguration;
+import com.b2international.snowowl.snomed.datastore.request.rf2.importer.*;
 import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2GlobalValidator;
 import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationIssueReporter;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -78,6 +76,7 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 
 /**
  * @since 6.0.0
@@ -90,6 +89,8 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 	
 	private static final String TXT_EXT = ".txt";
 	
+	public static final AtomicBoolean disableVersionsOnChildBranches = new AtomicBoolean(true); 
+	
 	@NotNull
 	@JsonProperty
 	private final UUID rf2ArchiveId;
@@ -100,6 +101,10 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 	
 	@JsonProperty
 	private boolean createVersions = true;
+	
+	@NotNull
+	@JsonProperty
+	private Set<String> ignoreMissingReferencesIn;
 	
 	@JsonProperty
 	private boolean dryRun = false;
@@ -116,18 +121,23 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 		this.createVersions = createVersions;
 	}
 	
+	void setIgnoreMissingReferencesIn(Set<String> ignoreMissingReferencesIn) {
+		this.ignoreMissingReferencesIn = ignoreMissingReferencesIn;
+	}
+	
 	void setDryRun(boolean dryRun) {
 		this.dryRun = dryRun;
 	}
 	
 	@Override
 	public ImportResponse execute(BranchContext context) {
-		validate(context);
+		Rf2ImportConfiguration importConfig = new Rf2ImportConfiguration(releaseType, createVersions);
+		validate(context, importConfig);
 		final InternalAttachmentRegistry fileReg = (InternalAttachmentRegistry) context.service(AttachmentRegistry.class);
 		final File rf2Archive = fileReg.getAttachment(rf2ArchiveId);
 		
 		try (Locks locks = Locks.on(context).lock(DatastoreLockContextDescriptions.IMPORT)) {
-			return doImport(context, rf2Archive, new Rf2ImportConfiguration(releaseType, createVersions));
+			return doImport(context, rf2Archive, importConfig);
 		} catch (Exception e) {
 			if (e instanceof ApiException) {
 				throw (ApiException) e;
@@ -136,7 +146,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 		}
 	}
 
-	private void validate(BranchContext context) {
+	private void validate(BranchContext context, final Rf2ImportConfiguration importConfig) {
 		final boolean contentAvailable = context.service(ContentAvailabilityInfoProvider.class).isAvailable(context);
 		
 		if (contentAvailable && Rf2ReleaseType.FULL.equals(releaseType)) {
@@ -152,10 +162,20 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 					+ "ontology is not available on the terminology server. "
 					+ "Please perform either a Full or a Snapshot import instead.");
 		}
+		
+		if (disableVersionsOnChildBranches.get()) {
+			String codeSystemWorkingBranchPath = context.service(RepositoryCodeSystemProvider.class).get(context.branch().path()).getBranchPath();
+			
+			if (!codeSystemWorkingBranchPath.equals(context.branch().path()) && importConfig.isCreateVersions()) {
+				throw new BadRequestException("Creating a version during RF2 import from a branch is not supported. "
+						+ "Please perform the import process from the corresponding CodeSystem's working branch, '%s'.", codeSystemWorkingBranchPath);
+			}
+		}
 	}
 
 	ImportResponse doImport(final BranchContext context, final File rf2Archive, final Rf2ImportConfiguration importconfig) throws Exception {
 		final String codeSystem = context.service(RepositoryCodeSystemProvider.class).get(context.branch().path()).getShortName();
+		
 		final Rf2ValidationIssueReporter reporter = new Rf2ValidationIssueReporter();
 		
 		try (final DB db = createDb()) {
@@ -175,7 +195,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 			
 			// Run validation that takes current terminology content into account
 			final List<Rf2EffectiveTimeSlice> orderedEffectiveTimeSlices = effectiveTimeSlices.consumeInOrder();
-			final Rf2GlobalValidator globalValidator = new Rf2GlobalValidator(LOG);
+			final Rf2GlobalValidator globalValidator = new Rf2GlobalValidator(LOG, ignoreMissingReferencesIn);
 			
 			/* 
 			 * TODO: Use Attachment to get the release file name and/or track file and line number sources for each row 

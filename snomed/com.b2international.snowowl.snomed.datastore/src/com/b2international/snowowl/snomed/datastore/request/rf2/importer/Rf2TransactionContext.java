@@ -247,9 +247,13 @@ public final class Rf2TransactionContext extends DelegatingTransactionContext {
 					add(newRevision.build());
 				} else {
 					// in this case, recalculate the released flag based on the currently available revision
-					update(existingRevision, newRevision
-							.released(existingRevision.isReleased())
-							.build());
+					if (existingRevision.isReleased()) {
+						update(existingRevision, newRevision
+								.released(existingRevision.isReleased())
+								.build());
+					} else {
+						update(existingRevision, newRevision.build());
+					}
 				}
 			}
 			

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,29 +41,12 @@ import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
 import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
-import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
+import com.b2international.snowowl.snomed.core.domain.*;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
-import com.b2international.snowowl.snomed.datastore.request.SnomedComponentSearchRequestBuilder;
-import com.b2international.snowowl.snomed.datastore.request.SnomedConceptSearchRequestBuilder;
-import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionSearchRequestBuilder;
-import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberSearchRequestBuilder;
-import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipSearchRequestBuilder;
-import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snowowl.snomed.datastore.request.SnomedSearchRequestBuilder;
+import com.b2international.snowowl.snomed.datastore.index.entry.*;
+import com.b2international.snowowl.snomed.datastore.request.*;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -89,6 +72,16 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 		SnomedSearchRequestBuilder<?, PageableCollectionResource<SnomedComponent>> req = validationQuery
 				.prepareSearch();
 		
+		String extensionModules = params != null && params.containsKey(ValidationConfiguration.MODULES) ? Strings.nullToEmpty((String) params.get(ValidationConfiguration.MODULES)) : "";
+		String module = validationQuery.module;
+		
+		if (!Strings.isNullOrEmpty(module)) {
+			//If there is a module given assume that it must be more specific and provided on purpose
+			req.filterByModule(module);
+		} else if (Boolean.TRUE.equals(validationQuery.extensionScope) && !Strings.isNullOrEmpty(extensionModules)) {
+			req.filterByModule(extensionModules);
+		}
+			
 		SearchIndexResourceRequest<BranchContext, ?, ? extends SnomedDocument> searchReq = (SearchIndexResourceRequest<BranchContext, ?, ? extends SnomedDocument>) req.build();
 		
 		final ExpressionBuilder expressionBuilder = Expressions.builder().filter(searchReq.toRawQuery(context));
@@ -143,6 +136,7 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 		@JsonProperty private Boolean active;
 		@JsonProperty private String effectiveTime;
 		@JsonProperty private String module;
+		@JsonProperty private Boolean extensionScope = Boolean.FALSE;
 		@JsonProperty private Boolean released;
 
 		public final SB prepareSearch() {
@@ -157,9 +151,7 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 		protected SB prepareSearch(SB req) {
 			return req.filterByActive(active)
 					.filterByReleased(released)
-					.filterByModule(module)
 					.filterByEffectiveTime(effectiveTime);
-			
 		}		
 	}
 	

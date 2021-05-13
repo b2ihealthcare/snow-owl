@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.InputStream;
 import java.net.URL;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
@@ -53,6 +51,7 @@ import com.b2international.snowowl.core.validation.issue.ValidationIssueDetailEx
 import com.b2international.snowowl.core.validation.issue.ValidationIssues;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
 import com.b2international.snowowl.core.validation.whitelist.ValidationWhiteList;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.test.commons.TestMethodNameRule;
 import com.b2international.snowowl.test.commons.snomed.TestBranchContext;
 import com.b2international.snowowl.test.commons.snomed.TestBranchContext.Builder;
@@ -63,6 +62,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
 
 /**
  * @since 7.12
@@ -101,7 +101,9 @@ public abstract class BaseValidationTest extends BaseRevisionIndexTest {
 					Preconditions.checkArgument(registry.containsValue(branchPath), "Missing branchPath '%s' from CodeSystem registry", branchPath);
 					for (String codeSystem : registry.keySet()) {
 						if (registry.get(codeSystem).equals(branchPath)) {
-							return CodeSystem.builder().branchPath(branchPath).shortName(codeSystem).build();
+							HashMap<String, Object> additionalProperties = Maps.newHashMap();
+							additionalProperties.put("moduleIds", List.of(Concepts.MODULE_B2I_EXTENSION));
+							return CodeSystem.builder().branchPath(branchPath).shortName(codeSystem).additionalProperties(additionalProperties).build();
 						}
 					}
 					return null; // should not happen

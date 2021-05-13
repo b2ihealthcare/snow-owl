@@ -375,7 +375,7 @@ public class RevisionBranchMergeTest extends BaseRevisionIndexTest {
 		assertState(MAIN, branchA, BranchState.BEHIND);
 		
 		// merge, revision should be visible from MAIN
-		branching().prepareMerge(branchA, MAIN).merge();
+		branching().prepareMerge(branchA, MAIN).squash(true).merge();
 		RevisionData mainRev = getRevision(MAIN, RevisionData.class, NEW_DATA.getId());
 		assertNotNull(mainRev);
 		assertState(branchA, MAIN, BranchState.BEHIND);
@@ -563,6 +563,27 @@ public class RevisionBranchMergeTest extends BaseRevisionIndexTest {
 		RevisionData actual = getRevision(newBranch, RevisionData.class, STORAGE_KEY1);
 		assertEquals("change", actual.getDerivedField());
 		assertEquals(List.of("term"), afterFirstSync.getTerms());
+	}
+	
+	@Test
+	public void mergeOlderTagBranchToNewerBranch() throws Exception {
+		// create tagged/versioned data
+		final String oldParent = createBranch(MAIN, "oldParent");
+		indexRevision(oldParent, NEW_DATA);
+		final String tag = createBranch(oldParent, "tag");
+		RevisionData updatedAfterTag = NEW_DATA.toBuilder().terms(List.of("term")).build();
+		indexChange(oldParent, NEW_DATA, updatedAfterTag);
+		
+		// index new change on MAIN
+		indexRevision(MAIN, NEW_DATA2);
+		final String target = createBranch(MAIN, "target");
+		
+		assertNotNull("Failed to merge tag to target", branching().prepareMerge(tag, target).squash(false).merge());
+		
+		RevisionData afterMerge = getRevision(target, RevisionData.class, STORAGE_KEY1);
+		assertDocEquals(NEW_DATA, afterMerge);
+		RevisionData existingDoc = getRevision(target, RevisionData.class, STORAGE_KEY2);
+		assertDocEquals(NEW_DATA2, existingDoc);
 	}
 	
 	private void assertState(String branchPath, String compareWith, BranchState expectedState) {
