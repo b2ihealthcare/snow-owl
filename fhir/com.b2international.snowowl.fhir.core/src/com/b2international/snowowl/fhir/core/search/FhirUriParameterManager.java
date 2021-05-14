@@ -163,7 +163,7 @@ public class FhirUriParameterManager {
 		}
 	}
 	
-	//Cross-parameter validation for search parameters come here
+	//Cross-parameter validation for search parameters comes here
 	private void validateSearchParameters(Set<FhirSearchParameter> searchParameters) {
 	}
 	
