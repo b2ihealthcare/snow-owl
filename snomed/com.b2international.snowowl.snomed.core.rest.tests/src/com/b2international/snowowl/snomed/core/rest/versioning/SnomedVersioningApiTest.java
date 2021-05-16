@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.core.rest.versioning;
 
-import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.INT_CODESYSTEM;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.createVersion;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getNextAvailableEffectiveDateAsString;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getVersion;
@@ -23,18 +22,21 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures;
+import com.b2international.snowowl.test.commons.SnomedContentRule;
 
 /**
  * @since 2.0
  */
 public class SnomedVersioningApiTest extends AbstractSnomedApiTest {
 
+	private static final String INT_CODESYSTEM = SnomedContentRule.SNOMEDCT.getResourceId();
+	
 	@Test
 	public void getNonExistentVersion() {
 		getVersion(INT_CODESYSTEM, "nonexistent-version-id").statusCode(404);
@@ -81,13 +83,13 @@ public class SnomedVersioningApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void forceCreateVersionShouldUpdateEffectiveTime() {
 		final String versionName = "forceCreateVersionShouldUpdateEffectiveTime";
-		CodeSystemURI codeSystemVersionURI = CodeSystemURI.branch(INT_CODESYSTEM, versionName);
+		ResourceURI codeSystemVersionURI = SnomedContentRule.SNOMEDCT.withPath(versionName);
 		
 		String versionEffectiveDate = getNextAvailableEffectiveDateAsString(INT_CODESYSTEM);
 		createVersion(INT_CODESYSTEM, versionName, versionEffectiveDate).statusCode(201);
-		String conceptId = createConcept(new CodeSystemURI(INT_CODESYSTEM), SnomedRestFixtures.childUnderRootWithDefaults());
+		String conceptId = createConcept(SnomedContentRule.SNOMEDCT, SnomedRestFixtures.childUnderRootWithDefaults());
 		
-		SnomedConcept afterFailedVersioning = getConcept(new CodeSystemURI(INT_CODESYSTEM), conceptId);
+		SnomedConcept afterFailedVersioning = getConcept(SnomedContentRule.SNOMEDCT, conceptId);
 		assertEquals(null, afterFailedVersioning.getEffectiveTime());
 		
 		//Should succeed to recreate version with the force flag set

@@ -13,26 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.test.commons;
+package com.b2international.snowowl.core.rest.codesystem;
+
+import java.util.List;
+
+import com.b2international.snowowl.core.rest.domain.ResourceRestSearch;
+
+import io.swagger.annotations.ApiParam;
 
 /**
- * @since 7.15
+ * @since 8.0
  */
-public interface ApiTestConstants {
+public class VersionRestSearch extends ResourceRestSearch {
 
-	/**
-	 * The context-relative base URL for the administrative controller. 
-	 */
-//	String ADMIN_API = "/admin";
+	@ApiParam(value="Resource identifier(s)")
+	private List<String> resource;
 	
-	/**
-	 * The context-relative base URL for the codesystems controller.
-	 */
-	String CODESYSTEMS_API = "/codesystems";
+	public List<String> getResource() {
+		return resource;
+	}
 	
-	/**
-	 * The context-relative base URL for the version controller.
-	 */
-	String VERSIONS_API = "/versions";
+	public void setResource(List<String> resource) {
+		this.resource = resource;
+	}
 	
 }

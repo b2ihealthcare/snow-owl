@@ -84,7 +84,7 @@ public final class DefaultResourceURIPathResolver implements ResourceURIPathReso
 						.map(Version::getBranchPath)
 						.orElseGet(() -> {
 							if (uriToResolve.isLatest()) {
-								throw new BadRequestException("No CodeSystem version is present in '%s'. Explicit '%s/HEAD' can be used to retrieve the latest work in progress version of the CodeSystem.", terminologyResource.getId(), terminologyResource.getId());
+								throw new BadRequestException("No CodeSystem version is present in '%s'. Explicit '%s' can be used to retrieve the latest work in progress version of the CodeSystem.", terminologyResource.getId(), terminologyResource.getId());
 							} else {
 								return terminologyResource.getRelativeBranchPath(uriToResolve.getPath()); 
 							}

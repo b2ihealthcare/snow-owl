@@ -16,7 +16,6 @@
 package com.b2international.snowowl.core.rest.codesystem;
 
 import java.net.URI;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.http.HttpStatus;
@@ -37,6 +36,7 @@ import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
 import com.b2international.snowowl.core.version.Version;
+import com.b2international.snowowl.core.version.VersionDocument;
 import com.b2international.snowowl.core.version.Versions;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
@@ -51,6 +51,10 @@ import io.swagger.annotations.*;
 @RequestMapping(value = "/versions")
 public class VersionRestService extends AbstractRestService {
 	
+	public VersionRestService() {
+		super(VersionDocument.Fields.SORT_FIELDS);
+	}
+	
 	@ApiOperation(
 			value="Retrieve all resource versions",
 			notes="Returns a list containing all published resource versions.")
@@ -60,12 +64,13 @@ public class VersionRestService extends AbstractRestService {
 	})
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public Promise<Versions> searchVersions(
-			@ApiParam(value="Resource identifier(s)")
-			@RequestParam(value="resourceUris") 
-			final List<ResourceURI> resourceUris) {
-		
+			VersionRestSearch config) {
 		return ResourceRequests.prepareSearchVersion()
-				.filterByResources(resourceUris)
+				.filterByResources(config.getResource())
+				.setLimit(config.getLimit())
+				.setExpand(config.getExpand())
+				.setSearchAfter(config.getSearchAfter())
+				.sortBy(extractSortFields(config.getSort()))
 				.buildAsync()
 				.execute(getBus());
 		

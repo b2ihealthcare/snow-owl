@@ -38,10 +38,14 @@ public final class VersionSearchRequestBuilder
 	}
 
 	public VersionSearchRequestBuilder filterByResource(ResourceURI resourceUri) {
+		return addOption(OptionKey.RESOURCE, resourceUri == null ? null : resourceUri.toString());
+	}
+	
+	public VersionSearchRequestBuilder filterByResource(String resourceUri) {
 		return addOption(OptionKey.RESOURCE, resourceUri);
 	}
 	
-	public VersionSearchRequestBuilder filterByResources(Iterable<ResourceURI> resourceUris) {
+	public VersionSearchRequestBuilder filterByResources(Iterable<String> resourceUris) {
 		return addOption(OptionKey.RESOURCE, resourceUris);
 	}
 	

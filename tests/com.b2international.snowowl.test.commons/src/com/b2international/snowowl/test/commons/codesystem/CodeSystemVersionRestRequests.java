@@ -23,14 +23,14 @@ import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import java.util.Optional;
 
+import com.b2international.commons.json.Json;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.version.Version;
 import com.b2international.snowowl.core.version.Versions;
 import com.b2international.snowowl.test.commons.ApiTestConstants;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Iterables;
 
 import io.restassured.http.ContentType;
 import io.restassured.response.ValidatableResponse;
@@ -40,65 +40,66 @@ import io.restassured.response.ValidatableResponse;
  */
 public abstract class CodeSystemVersionRestRequests {
 
-	public static String getLatestVersion(String codeSystemId) {
-		// TODO add proper version API to control version searches
-		return Iterables.getLast(getVersions(codeSystemId)).getVersion();
+	public static Optional<Version> getLatestVersion(String codeSystemId) {
+		return givenAuthenticatedRequest(ApiTestConstants.VERSIONS_API)
+				.when()
+				.queryParams(Map.of(
+					"resource", CodeSystem.uri(codeSystemId).toString(),
+					"sort", "version:desc",
+					"limit", 1
+				))
+				.get()
+				.then()
+				.extract()
+				.as(Versions.class)
+				.first();
 	}
 	
 	public static ValidatableResponse getVersion(String codeSystemId, String version) {
-		return givenAuthenticatedRequest(ApiTestConstants.ADMIN_API)
-				.get("/codesystems/{codeSystemId}/versions/{id}", codeSystemId, version)
+		return givenAuthenticatedRequest(ApiTestConstants.VERSIONS_API)
+				.get("/{id}", CodeSystem.uri(codeSystemId, version).toString())
 				.then();
 	}
 
-	public static ValidatableResponse createVersion(String codeSystemId, String version, String effectiveDate) {
-		Map<?, ?> requestBody = ImmutableMap.builder()
-				.put("version", version)
-				.put("description", version)
-				.put("effectiveDate", effectiveDate)
-				.build();
-
-		return givenAuthenticatedRequest(ApiTestConstants.ADMIN_API)
-				.contentType(ContentType.JSON)
-				.body(requestBody)
-				.post("/codesystems/{codeSystemId}/versions", codeSystemId)
-				.then();
+	public static ValidatableResponse createVersion(String codeSystemId, String version, String effectiveTime) {
+		return createVersion(codeSystemId, version, effectiveTime, false);
 	}
 	
-	public static ValidatableResponse createVersion(String codeSystemId, String version, String effectiveDate, boolean force) {
-		Map<?, ?> requestBody = ImmutableMap.builder()
-				.put("version", version)
-				.put("description", version)
-				.put("effectiveDate", effectiveDate)
-				.put("force", force)
-				.build();
-		
-		return givenAuthenticatedRequest(ApiTestConstants.ADMIN_API)
+	public static ValidatableResponse createVersion(String codeSystemId, String version, String effectiveTime, boolean force) {
+		return givenAuthenticatedRequest(ApiTestConstants.VERSIONS_API)
 				.contentType(ContentType.JSON)
-				.body(requestBody)
-				.post("/codesystems/{codeSystemId}/versions", codeSystemId)
+				.body(Json.object(
+					"resource", CodeSystem.uri(codeSystemId).toString(),
+					"version", version,
+					"description", version,
+					"effectiveTime", effectiveTime,
+					"force", force
+				))
+				.post()
 				.then();
 	}
 
-	public static ValidatableResponse createVersion(String codeSystemId, String version, String description, String effectiveDate) {
-		Map<?, ?> requestBody = ImmutableMap.builder()
-				.put("version", version)
-				.put("description", description)
-				.put("effectiveDate", effectiveDate)
-				.build();
-
-		return givenAuthenticatedRequest(ApiTestConstants.ADMIN_API)
+	public static ValidatableResponse createVersion(String codeSystemId, String version, String description, String effectiveTime) {
+		return givenAuthenticatedRequest(ApiTestConstants.VERSIONS_API)
 				.contentType(ContentType.JSON)
-				.body(requestBody)
-				.post("/codesystems/{codeSystemId}/versions", codeSystemId)
+				.body(Json.object(
+					"resource", CodeSystem.uri(codeSystemId).toString(),
+					"version", version,
+					"description", description,
+					"effectiveTime", effectiveTime
+				))
+				.post()
 				.then();
 	}
 	
 	public static Versions getVersions(String codeSystemId) {
-		return givenAuthenticatedRequest(ApiTestConstants.ADMIN_API)
-				.and().contentType(ContentType.JSON)
+		return givenAuthenticatedRequest(ApiTestConstants.VERSIONS_API)
 				.when()
-				.get("/codesystems/{codeSystemId}/versions", codeSystemId)
+				.queryParams(Map.of(
+					"resource", CodeSystem.uri(codeSystemId).toString(),
+					"limit", Integer.MAX_VALUE
+				))
+				.get()
 				.then()
 				.extract()
 				.as(Versions.class);
@@ -109,7 +110,7 @@ public abstract class CodeSystemVersionRestRequests {
 		// This ensures that all versions created by tests will be in chronological order, even if some of the pre-imported content we are relying on is in the past
 		// and adding one day to that historical version would mean a historical effective time version, which is unfortunate and can lead to inconsistencies in tests
 		LocalDate today = LocalDate.now();
-		return Optional.ofNullable(Iterables.getLast(getVersions(codeSystemId), null))
+		return getLatestVersion(codeSystemId)
 				.map(Version::getEffectiveTime)
 				.map(latestVersion -> latestVersion.isBefore(today) ? today : latestVersion.plus(1, ChronoUnit.DAYS))
 				.orElse(today);

@@ -23,7 +23,7 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Objects;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 import com.b2international.index.Doc;
 import com.b2international.index.ID;
@@ -59,10 +59,16 @@ public final class VersionDocument implements Serializable {
 		public static final String EFFECTIVE_TIME = "effectiveTime";
 		public static final String RESOURCE = "resource";
 		public static final String BRANCH_PATH = "branchPath";
+		
+		public static final Set<String> SORT_FIELDS = Set.of(ID, VERSION, DESCRIPTION, EFFECTIVE_TIME, RESOURCE, BRANCH_PATH);
 	}
 
 	public static class Expressions {
 
+		public static Expression ids(Iterable<String> ids) {
+			return matchAny(Fields.ID, ids);
+		}
+		
 		public static Expression version(String version) {
 			return exactMatch(Fields.VERSION, version);
 		}
@@ -71,12 +77,12 @@ public final class VersionDocument implements Serializable {
 			return matchAny(Fields.VERSION, versions);
 		}
 
-		public static Expression resource(ResourceURI resourceUri) {
-			return exactMatch(Fields.RESOURCE, resourceUri.toString());
+		public static Expression resource(String resourceUri) {
+			return exactMatch(Fields.RESOURCE, resourceUri);
 		}
 		
-		public static Expression resources(Collection<ResourceURI> resourceUris) {
-			return matchAny(Fields.RESOURCE, resourceUris.stream().map(ResourceURI::toString).collect(Collectors.toSet()));
+		public static Expression resources(Collection<String> resourceUris) {
+			return matchAny(Fields.RESOURCE, resourceUris);
 		}
 		
 		public static Expression effectiveTime(long effectiveTime) {

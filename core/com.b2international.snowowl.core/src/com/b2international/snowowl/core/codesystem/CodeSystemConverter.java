@@ -156,7 +156,7 @@ public final class CodeSystemConverter extends BaseResourceConverter<ResourceDoc
 		
 		final Versions parentVersions = ResourceRequests.prepareSearchVersion()
 			.all()
-			.filterByResources(parentResources)
+			.filterByResources(parentResources.stream().map(ResourceURI::toString).collect(Collectors.toSet()))
 			.build()
 			.execute(context());
 		

@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.core.request.version;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,7 +23,6 @@ import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
-import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.identity.Permission;
@@ -73,24 +71,14 @@ public final class VersionSearchRequest
 	protected Expression prepareQuery(RepositoryContext context) {
 		final ExpressionBuilder query = Expressions.builder();
 
-		if (containsKey(OptionKey.RESOURCE)) {
-			final Collection<ResourceURI> resourceUris = getCollection(OptionKey.RESOURCE, ResourceURI.class);
-			query.filter(VersionDocument.Expressions.resources(resourceUris));
-		}
-		
-		if (containsKey(OptionKey.VERSION)) {
-			final Collection<String> versions = getCollection(OptionKey.VERSION, String.class);
-			query.filter(VersionDocument.Expressions.versions(versions));
-		}
+		addIdFilter(query, VersionDocument.Expressions::ids);
+		addFilter(query, OptionKey.RESOURCE, String.class, VersionDocument.Expressions::resources);
+		addFilter(query, OptionKey.VERSION, String.class, VersionDocument.Expressions::versions);
 
 		if (containsKey(OptionKey.EFFECTIVE_TIME_START) || containsKey(OptionKey.EFFECTIVE_TIME_END)) {
 			final long from = containsKey(OptionKey.EFFECTIVE_TIME_START) ? get(OptionKey.EFFECTIVE_TIME_START, Long.class) : 0;
 			final long to = containsKey(OptionKey.EFFECTIVE_TIME_END) ? get(OptionKey.EFFECTIVE_TIME_END, Long.class) : Long.MAX_VALUE;
 			query.filter(VersionDocument.Expressions.effectiveTime(from, to));
-		}
-		
-		if (containsKey(OptionKey.EFFECTIVE_TIME_START) || containsKey(OptionKey.EFFECTIVE_TIME_END)) {
-			
 		}
 		
 		return query.build();

@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.rest;
 
+import static com.b2international.snowowl.test.commons.ApiTestConstants.CODESYSTEMS_API;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -37,10 +38,8 @@ import io.restassured.response.ValidatableResponse;
  */
 public abstract class CodeSystemApiAssert {
 	
-	public static final String TOOLING_ID = SnomedTerminologyComponentConstants.TERMINOLOGY_ID;
+	public static final String TOOLING_ID = SnomedTerminologyComponentConstants.TOOLING_ID;
 	
-	private static final String CODESYSTEMS_API = "/codesystems";
-
 	public static ValidatableResponse assertCodeSystemSearch() {
 		return assertCodeSystemSearch(Collections.emptyMap());
 	}
