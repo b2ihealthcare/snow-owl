@@ -107,6 +107,8 @@ public interface ICodeSystemApiProvider extends IFhirApiProvider {
 	 * </p>
 	 * @param lookupRequest
 	 * @return result of the lookup
+	 * @see LookupRequest
+	 * @see LookupResult
 	 */
 	LookupResult lookup(LookupRequest lookupRequest);
 	

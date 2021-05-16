@@ -17,6 +17,9 @@ package com.b2international.snowowl.fhir.core.provider;
 
 import static com.google.common.collect.Sets.newHashSet;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -67,6 +70,7 @@ import com.b2international.snowowl.fhir.core.model.dt.Instant;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.search.FhirParameter.PrefixedValue;
 import com.b2international.snowowl.fhir.core.search.FhirSearchParameter;
+import com.b2international.snowowl.fhir.core.search.FhirUriSearchParameterDefinition;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -137,18 +141,14 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 			.getSync(1000, TimeUnit.MILLISECONDS);
 		
 		Optional<CodeSystemVersion> codeSystemVersionsOptional = codeSystemVersions.first();
-		if (codeSystemVersionsOptional.isEmpty()) {
-			throw FhirException.createFhirError(String.format("No code system version found for code system %s", codeSystemURI.getUri()), OperationOutcomeCode.MSG_PARAM_INVALID, CODE_SYSTEM_LOCATION_MARKER);
-		}
-		
-		CodeSystemVersion codeSystemVersionEntry = codeSystemVersionsOptional.get();
-		
+		CodeSystemVersion codeSystemVersionEntry = codeSystemVersionsOptional.orElse(getFakeVersion(codeSystem));
 		return createCodeSystemBuilder(codeSystem, codeSystemVersionEntry).build();
 	}
 	
 	@Override
 	public Collection<CodeSystem> getCodeSystems(final Set<FhirSearchParameter> searchParameters) {
 		
+		//Pre-fetch code systems based on ES filters available
 		Map<CodeSystemVersion, com.b2international.snowowl.core.codesystem.CodeSystem> versionMap = fetchCodeSystems(searchParameters);
 		
 		//Perform the search from here
@@ -186,38 +186,38 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 		}
 		
 		Optional<FhirSearchParameter> lastUpdatedOptional = getSearchParam(searchParameters, "_lastUpdated"); //date type
-//		if (lastUpdatedOptional.isPresent()) {
-//
-//			PrefixedValue lastUpdatedPrefixedValue = lastUpdatedOptional.get().getValues().iterator().next();
-//			String lastUpdatedDateString = lastUpdatedPrefixedValue.getValue();
-//			
-//			//validate the date value
-//			long localLong = Long.MAX_VALUE;
-//			try {
-//				LocalDate localDate = LocalDate.parse(lastUpdatedDateString);
-//				localLong = localDate.atStartOfDay(ZoneId.systemDefault()).toEpochSecond(); //?
-//			} catch (DateTimeParseException dtpe) {
-//				throw FhirException.createFhirError(String.format("Invalid _lastUpdate search parameter value '%s'.", lastUpdatedDateString), OperationOutcomeCode.MSG_PARAM_INVALID, CODE_SYSTEM_LOCATION_MARKER);
-//			}
-//
-//			//TODO: filterByCreated at searches for importDates as opposed to lastModificationDates
-//			if (lastUpdatedPrefixedValue.getPrefix() == null || 
-//					FhirUriSearchParameterDefinition.SearchRequestParameterValuePrefix.eq == lastUpdatedPrefixedValue.getPrefix()) {
-//					
-//				versionSearchRequestBuilder.filterByCreatedAt(localLong);
-//			} else {
-//				switch (lastUpdatedPrefixedValue.getPrefix()) {
-//				case eb:
-//					versionSearchRequestBuilder.filterByCreatedAt(0, localLong);
-//					break;
-//				case sa:
-//					versionSearchRequestBuilder.filterByCreatedAt(localLong, Long.MAX_VALUE);
-//					break;
-//				default:
-//					throw FhirException.createFhirError(String.format("Unsupported _lastUpdate search parameter modifier '%s' for value '%s'.", lastUpdatedPrefixedValue.getPrefix().name(), lastUpdatedDateString), OperationOutcomeCode.MSG_PARAM_INVALID, CODE_SYSTEM_LOCATION_MARKER);
-//				}
-//			}
-//		}
+		if (lastUpdatedOptional.isPresent()) {
+
+			PrefixedValue lastUpdatedPrefixedValue = lastUpdatedOptional.get().getValues().iterator().next();
+			String lastUpdatedDateString = lastUpdatedPrefixedValue.getValue();
+			
+			//validate the date value
+			long localLong = Long.MAX_VALUE;
+			try {
+				LocalDate localDate = LocalDate.parse(lastUpdatedDateString);
+				localLong = localDate.atStartOfDay(ZoneId.systemDefault()).toEpochSecond(); //?
+			} catch (DateTimeParseException dtpe) {
+				throw FhirException.createFhirError(String.format("Invalid _lastUpdate search parameter value '%s'.", lastUpdatedDateString), OperationOutcomeCode.MSG_PARAM_INVALID, CODE_SYSTEM_LOCATION_MARKER);
+			}
+
+			//TODO: filterByCreated at searches for importDates as opposed to lastModificationDates
+			if (lastUpdatedPrefixedValue.getPrefix() == null || 
+					FhirUriSearchParameterDefinition.SearchRequestParameterValuePrefix.eq == lastUpdatedPrefixedValue.getPrefix()) {
+					
+				//versionSearchRequestBuilder.filterByCreatedAt(localLong);
+			} else {
+				switch (lastUpdatedPrefixedValue.getPrefix()) {
+				case eb:
+					//versionSearchRequestBuilder.filterByCreatedAt(0, localLong);
+					break;
+				case sa:
+					//versionSearchRequestBuilder.filterByCreatedAt(localLong, Long.MAX_VALUE);
+					break;
+				default:
+					throw FhirException.createFhirError(String.format("Unsupported _lastUpdate search parameter modifier '%s' for value '%s'.", lastUpdatedPrefixedValue.getPrefix().name(), lastUpdatedDateString), OperationOutcomeCode.MSG_PARAM_INVALID, CODE_SYSTEM_LOCATION_MARKER);
+				}
+			}
+		}
 		
 		//build the FHIR code systems
 		return filteredVersions.stream()
@@ -473,7 +473,7 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 		return getLanguageCode(codeSystem.getPrimaryLanguage());
 	}
 	
-private Map<CodeSystemVersion, com.b2international.snowowl.core.codesystem.CodeSystem> fetchCodeSystems(final Set<FhirSearchParameter> searchParameters) {
+	private Map<CodeSystemVersion, com.b2international.snowowl.core.codesystem.CodeSystem> fetchCodeSystems(final Set<FhirSearchParameter> searchParameters) {
 		
 		CodeSystemSearchRequestBuilder codeSystemRequestBuilder = CodeSystemRequests.prepareSearchCodeSystem()
 				.all();

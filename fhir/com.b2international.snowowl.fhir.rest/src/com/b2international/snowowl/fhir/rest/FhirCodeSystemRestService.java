@@ -358,21 +358,6 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 		return "Ping!";
 	}
 	
-	private Collection<CodeSystem> searchCodeSystems(Set<FhirSearchParameter> searchParameters) {
-		
-		Set<CodeSystem> results = Sets.newHashSet();
-
-		//collect the hits from the providers
-		Collection<ICodeSystemApiProvider> providers = codeSystemProviderRegistry.getProviders(getBus(), locales);
-		
-		for (ICodeSystemApiProvider codeSystemProvider : providers) {
-			Collection<CodeSystem> codeSystems = codeSystemProvider.getCodeSystems(searchParameters);
-			results.addAll(codeSystems);
-		}
-		
-		return results;
-	}
-	
 	/*
 	 * Perform the actual lookup by deferring the operation to the matching code system provider.
 	 */
