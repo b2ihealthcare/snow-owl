@@ -962,8 +962,8 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 				.all()
 				.filterByResource(resource)
 				.sortBy(SearchResourceRequest.SortField.descending(VersionDocument.Fields.EFFECTIVE_TIME))
-				.build()
-				.execute(context);
+				.buildAsync()
+				.get(context);
 	}
 
 	private static Branch getBranch(final RepositoryContext context, final String path) {
