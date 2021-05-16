@@ -305,7 +305,7 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 	 * @return
 	 */
 	protected String getId(com.b2international.snowowl.core.codesystem.CodeSystem codeSystem, CodeSystemVersion codeSystemVersion) {
-		return codeSystemVersion.getUri().toString(); //already fixed on a different branch
+		return codeSystemVersion.getUri().getCodeSystem() + "/" + codeSystemVersion.getUri().getPath();
 	}
 
 	protected Collection<Concept> getConcepts(com.b2international.snowowl.core.codesystem.CodeSystem codeSystem) {

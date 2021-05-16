@@ -66,7 +66,9 @@ public interface IConceptProperty extends FhirCodeSystem {
 	 * @return
 	 */
 	default Property propertyOf(Object value) {
-		Builder prop = Property.builder().code(getCodeValue());
+		Builder prop = Property.builder()
+				.description(getDisplayName())
+				.code(getCodeValue());
 
 		switch (getConceptPropertyType()) {
 		case CODE:
@@ -92,7 +94,9 @@ public interface IConceptProperty extends FhirCodeSystem {
 	 */
 	default Property propertyOf(Supplier<?> function) {
 
-		Builder prop = Property.builder().code(getCodeValue());
+		Builder prop = Property.builder()
+				.description(getDisplayName())
+				.code(getCodeValue());
 
 		switch (getConceptPropertyType()) {
 		case CODE:
