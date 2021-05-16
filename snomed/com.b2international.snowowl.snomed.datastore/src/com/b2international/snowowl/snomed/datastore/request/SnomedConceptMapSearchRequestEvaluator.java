@@ -140,9 +140,11 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 	}
 
 	private Map<String, ComponentURI> getTargetComponentsByRefSetId(BranchContext context, Map<String, SnomedConcept> refSetsById) {
+		// TODO figure out a better way to access codesystems from the perspective of a refset/mapset
 		final List<CodeSystem> codeSystemList = CodeSystemRequests.prepareSearchCodeSystem()
 				.all()
-				.build()
+				.buildAsync()
+				.getRequest()
 				.execute(context)
 				.getItems();
 		
