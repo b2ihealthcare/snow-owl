@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.datastore.request;
 import java.util.Date;
 
 import com.b2international.commons.CompareUtils;
-import com.b2international.snowowl.core.context.TerminologyResourceContentRequestBuilder;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -32,7 +31,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedSearchRequest.
  */
 public abstract class SnomedSearchRequestBuilder<B extends SnomedSearchRequestBuilder<B, R>, R> 
 		extends SearchResourceRequestBuilder<B, BranchContext, R>
-		implements TerminologyResourceContentRequestBuilder<R> {
+		implements SnomedContentRequestBuilder<R> {
 
 	/**
 	 * Filter to return components with the specified module id. 

@@ -16,19 +16,19 @@
 package com.b2international.snowowl.snomed.datastore.request.rf2;
 
 import com.b2international.snowowl.core.attachments.Attachment;
-import com.b2international.snowowl.core.context.TerminologyResourceContentRequestBuilder;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.io.ImportResponse;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
+import com.b2international.snowowl.snomed.datastore.request.SnomedContentRequestBuilder;
 
 /**
  * @since 6.0.0
  */
 public final class SnomedRf2ImportRequestBuilder 
 		extends BaseRequestBuilder<SnomedRf2ImportRequestBuilder, BranchContext, ImportResponse> 
-		implements TerminologyResourceContentRequestBuilder<ImportResponse> {
+		implements SnomedContentRequestBuilder<ImportResponse> {
 
 	private Attachment rf2Archive;
 	private Rf2ReleaseType releaseType = Rf2ReleaseType.DELTA;

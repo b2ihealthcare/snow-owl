@@ -28,19 +28,22 @@ import com.b2international.snowowl.core.request.RevisionIndexReadRequest;
  */
 public interface TerminologyResourceContentRequestBuilder<R> extends RequestBuilder<BranchContext, R>, AllowedHealthStates {
 
-	default AsyncRequest<R> build(String resourceUri) {
-		return build(new ResourceURI(resourceUri));
-	}
-	
-	default AsyncRequest<R> build(ResourceURI resourceUri) {
+	default AsyncRequest<R> build(String toolingId, String resourceUriOrPath) {
 		return new AsyncRequest<>(
-			new TerminologyResourceRequest<>(resourceUri,
+			new TerminologyResourceRequest<>(toolingId, resourceUriOrPath,
 				new TerminologyResourceContentRequest<>(
-					resourceUri.getPath(),
 					wrap(build())
 				)
 			)
 		);
+	}
+	
+	default AsyncRequest<R> build(String resourceUriOrPath) {
+		return build(getToolingId(), resourceUriOrPath);
+	}
+	
+	default AsyncRequest<R> build(ResourceURI resourceUri) {
+		return build(resourceUri.toString());
 	}
 	
 	default Request<BranchContext, R> wrap(Request<BranchContext, R> req) {
@@ -49,6 +52,15 @@ public interface TerminologyResourceContentRequestBuilder<R> extends RequestBuil
 	
 	default boolean snapshot() {
 		return true;
+	}
+	
+	/**
+	 * When required subclasses can provide reflective access by providing their unique tooling id. This method by default returns <code>null</code>.
+	 * 
+	 * @return the unique tooling id of the API that allows reflective access to its content
+	 */
+	default String getToolingId() {
+		return null;
 	}
 	
 }

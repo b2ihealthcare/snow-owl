@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.context;
 
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.DelegatingRequest;
@@ -30,17 +31,15 @@ public final class TerminologyResourceContentRequest<R> extends DelegatingReques
 
 	private static final long serialVersionUID = 1L;
 	
-	private final String relativePath;
-	
-	public TerminologyResourceContentRequest(final String relativePath, final Request<BranchContext, R> next) {
+	public TerminologyResourceContentRequest(final Request<BranchContext, R> next) {
 		super(next);
-		this.relativePath = relativePath;
 	}
 
 	@Override
 	public R execute(TerminologyResourceContext context) {
+		final ResourceURI resourceURI = context.resourceURI();
 		final TerminologyResource resource = context.resource();
-		final String branchPath = context.service(ResourceURIPathResolver.class).resolve(context, resource.getResourceURI().withPath(relativePath), resource);
+		final String branchPath = context.service(ResourceURIPathResolver.class).resolve(context, resourceURI, resource);
 		return new RepositoryRequest<R>(resource.getToolingId(),
 			new BranchRequest<R>(branchPath,
 				next()

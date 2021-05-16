@@ -20,19 +20,19 @@ import static com.google.common.collect.Lists.newArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import com.b2international.snowowl.core.context.TerminologyResourceContentRequestBuilder;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.datastore.request.SnomedContentRequestBuilder;
 
 /**
  * @since 5.7
  */
 public final class ClassificationCreateRequestBuilder 
 		extends BaseRequestBuilder<ClassificationCreateRequestBuilder, BranchContext, String>
-		implements TerminologyResourceContentRequestBuilder<String> {
+		implements SnomedContentRequestBuilder<String> {
 
 	private String classificationId = UUID.randomUUID().toString();
 	private String reasonerId;
@@ -82,4 +82,5 @@ public final class ClassificationCreateRequestBuilder
 		request.setParentLockContext(parentLockContext);
 		return request;
 	}
+	
 }

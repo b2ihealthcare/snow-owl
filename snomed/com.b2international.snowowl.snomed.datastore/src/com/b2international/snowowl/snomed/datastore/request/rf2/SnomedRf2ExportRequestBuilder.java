@@ -19,7 +19,6 @@ import java.time.LocalDate;
 import java.util.Collection;
 
 import com.b2international.snowowl.core.attachments.Attachment;
-import com.b2international.snowowl.core.context.TerminologyResourceContentRequestBuilder;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -27,13 +26,14 @@ import com.b2international.snowowl.core.request.ResourceRequest;
 import com.b2international.snowowl.core.request.ResourceRequestBuilder;
 import com.b2international.snowowl.snomed.core.domain.Rf2RefSetExportLayout;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
+import com.b2international.snowowl.snomed.datastore.request.SnomedContentRequestBuilder;
 
 /**
  * @since 5.7
  */
 public final class SnomedRf2ExportRequestBuilder 
 		extends ResourceRequestBuilder<SnomedRf2ExportRequestBuilder, BranchContext, Attachment> 
-		implements TerminologyResourceContentRequestBuilder<Attachment> {
+		implements SnomedContentRequestBuilder<Attachment> {
 
 	private Rf2ReleaseType releaseType;
 	private Rf2RefSetExportLayout refSetExportLayout;

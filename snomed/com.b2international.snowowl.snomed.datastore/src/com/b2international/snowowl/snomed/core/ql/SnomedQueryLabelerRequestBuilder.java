@@ -17,18 +17,18 @@ package com.b2international.snowowl.snomed.core.ql;
 
 import java.util.List;
 
-import com.b2international.snowowl.core.context.TerminologyResourceContentRequestBuilder;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.ResourceRequest;
 import com.b2international.snowowl.core.request.ResourceRequestBuilder;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.datastore.request.SnomedContentRequestBuilder;
 import com.google.common.collect.ImmutableList;
 
 /**
  * @since 7.6
  */
 public final class SnomedQueryLabelerRequestBuilder extends ResourceRequestBuilder<SnomedQueryLabelerRequestBuilder, BranchContext, Expressions>
-		implements TerminologyResourceContentRequestBuilder<Expressions> {
+		implements SnomedContentRequestBuilder<Expressions> {
 
 	private final List<String> expressions;
 	private String descriptionType = SnomedConcept.Expand.FULLY_SPECIFIED_NAME;

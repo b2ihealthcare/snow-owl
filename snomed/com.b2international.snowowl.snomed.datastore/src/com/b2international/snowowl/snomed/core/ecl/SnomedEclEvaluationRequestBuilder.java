@@ -16,12 +16,12 @@
 package com.b2international.snowowl.snomed.core.ecl;
 
 import com.b2international.index.query.Expression;
-import com.b2international.snowowl.core.context.TerminologyResourceContentRequestBuilder;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.snomed.core.tree.Trees;
+import com.b2international.snowowl.snomed.datastore.request.SnomedContentRequestBuilder;
 import com.google.common.base.Preconditions;
 
 /**
@@ -29,7 +29,7 @@ import com.google.common.base.Preconditions;
  */
 public final class SnomedEclEvaluationRequestBuilder 
 		extends BaseRequestBuilder<SnomedEclEvaluationRequestBuilder, BranchContext, Promise<Expression>> 
-		implements TerminologyResourceContentRequestBuilder<Promise<Expression>> {
+		implements SnomedContentRequestBuilder<Promise<Expression>> {
 
 	private String expression;
 	private String expressionForm = Trees.INFERRED_FORM;

@@ -15,18 +15,18 @@
  */
 package com.b2international.snowowl.snomed.reasoner.request;
 
-import com.b2international.snowowl.core.context.TerminologyResourceContentRequestBuilder;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.datastore.request.SnomedContentRequestBuilder;
 
 /**
  * @since 7.0
  */
 public final class OntologyExportRequestBuilder 
 		extends BaseRequestBuilder<OntologyExportRequestBuilder, BranchContext, String> 
-		implements TerminologyResourceContentRequestBuilder<String> {
+		implements SnomedContentRequestBuilder<String> {
 
 	private OntologyExportType exportType;
 	private String ontologyModuleId = Concepts.MODULE_SCT_CORE;
@@ -50,4 +50,5 @@ public final class OntologyExportRequestBuilder
 		exportRequest.setOntologyModuleId(ontologyModuleId);
 		return exportRequest;
 	}
+	
 }

@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import com.b2international.snowowl.core.context.TerminologyResourceContentRequestBuilder;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.GetResourceRequestBuilder;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
@@ -28,7 +27,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
  */
 public final class SnomedConceptGetRequestBuilder 
 		extends GetResourceRequestBuilder<SnomedConceptGetRequestBuilder, SnomedConceptSearchRequestBuilder, BranchContext, SnomedConcept>
-		implements TerminologyResourceContentRequestBuilder<SnomedConcept> {
+		implements SnomedContentRequestBuilder<SnomedConcept> {
 
 	SnomedConceptGetRequestBuilder(String conceptId) {
 		super(new SnomedConceptGetRequest(conceptId));

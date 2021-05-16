@@ -25,7 +25,7 @@ import com.b2international.snowowl.core.request.TerminologyResourceCommitRequest
 /**
  * @since 4.5
  */
-public final class SnomedRepositoryCommitRequestBuilder extends TerminologyResourceCommitRequestBuilder {
+public final class SnomedRepositoryCommitRequestBuilder extends TerminologyResourceCommitRequestBuilder implements SnomedContentRequestBuilder<CommitResult> {
 
 	private String defaultModuleId = null;
 	

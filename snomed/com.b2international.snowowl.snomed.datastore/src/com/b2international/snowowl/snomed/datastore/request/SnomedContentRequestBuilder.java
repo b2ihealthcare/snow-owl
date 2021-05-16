@@ -13,22 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.context;
+package com.b2international.snowowl.snomed.datastore.request;
 
-import com.b2international.snowowl.core.ResourceURI;
-import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.TerminologyResource;
-import com.b2international.snowowl.core.domain.DelegatingContext;
+import com.b2international.snowowl.core.context.TerminologyResourceContentRequestBuilder;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 
 /**
  * @since 8.0
+ * @param <R>
  */
-final class DefaultTerminologyResourceContext extends DelegatingContext implements TerminologyResourceContext {
+public interface SnomedContentRequestBuilder<R> extends TerminologyResourceContentRequestBuilder<R> {
 
-	public DefaultTerminologyResourceContext(final ServiceProvider delegate, ResourceURI resourceUri, TerminologyResource resource) {
-		super(delegate);
-		bind(ResourceURI.class, resourceUri);
-		bind(TerminologyResource.class, resource);
+	@Override
+	default String getToolingId() {
+		return SnomedTerminologyComponentConstants.TOOLING_ID;
 	}
-
+	
 }

@@ -16,18 +16,18 @@
 package com.b2international.snowowl.snomed.core.ql;
 
 import com.b2international.index.query.Expression;
-import com.b2international.snowowl.core.context.TerminologyResourceContentRequestBuilder;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.util.Promise;
+import com.b2international.snowowl.snomed.datastore.request.SnomedContentRequestBuilder;
 
 /**
  * @since 6.12
  */
 public final class SnomedQueryEvaluationRequestBuilder 
 		extends BaseRequestBuilder<SnomedQueryEvaluationRequestBuilder, BranchContext, Promise<Expression>> 
-		implements TerminologyResourceContentRequestBuilder<Promise<Expression>> {
+		implements SnomedContentRequestBuilder<Promise<Expression>> {
 
 	private final String expression;
 	

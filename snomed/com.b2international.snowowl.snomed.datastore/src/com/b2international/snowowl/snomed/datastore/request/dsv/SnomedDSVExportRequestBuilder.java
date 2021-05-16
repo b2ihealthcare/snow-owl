@@ -19,11 +19,11 @@ import java.util.List;
 import java.util.UUID;
 
 import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.snowowl.core.context.TerminologyResourceContentRequestBuilder;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.snomed.datastore.internal.rf2.AbstractSnomedDsvExportItem;
+import com.b2international.snowowl.snomed.datastore.request.SnomedContentRequestBuilder;
 
 
 /**
@@ -31,7 +31,7 @@ import com.b2international.snowowl.snomed.datastore.internal.rf2.AbstractSnomedD
  */
 public final class SnomedDSVExportRequestBuilder 
 		extends BaseRequestBuilder<SnomedDSVExportRequestBuilder, BranchContext, UUID> 
-		implements TerminologyResourceContentRequestBuilder<UUID> {
+		implements SnomedContentRequestBuilder<UUID> {
 
 	private String refSetId;
 	private boolean descriptionIdExpected;
