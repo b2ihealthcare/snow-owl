@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -129,10 +129,10 @@ public class ConceptMapCompareDsvExportTest {
 		return new String[] {
 				item.getChangeKind().name(),
 				ConceptMapCompareChangeKind.SAME.equals(item.getChangeKind()) ? "Both" : mapping .getContainerTerm(),
-				mapping.getSourceComponentURI().codeSystem(),
+				mapping.getSourceComponentURI().resourceId(),
 				mapping.getSourceComponentURI().identifier(),
 				mapping.getSourceTerm(),
-				mapping.getTargetComponentURI().codeSystem(),
+				mapping.getTargetComponentURI().resourceId(),
 				mapping.getTargetComponentURI().identifier(),
 				mapping.getTargetTerm()};
 	}

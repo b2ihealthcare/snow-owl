@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,15 +23,15 @@ import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.domain.Concept;
 import com.b2international.snowowl.core.domain.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedConstants;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.test.commons.Services;
+import com.b2international.snowowl.test.commons.SnomedContentRule;
 
 /**
  * @since 7.5
  */
 public class ConceptSearchRequestSnomedTest {
 
-	private static final String CODESYSTEM = SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME + "/2018-01-31";
+	private static final String CODESYSTEM = SnomedContentRule.SNOMEDCT.withPath("2018-01-31").toString();
 	
 	private static final String ID = "105590001";
 	private static final String PT = "Substance";

@@ -22,10 +22,11 @@ import java.time.LocalDate;
 
 import org.junit.Test;
 
-import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
+import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.jobs.JobRequests;
+import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 
 /**
@@ -41,11 +42,11 @@ public class IssueSO2503RemoteJobDynamicMappingFix extends AbstractSnomedApiTest
 		
 		// 1. create a version with a datelike versionId
 		LocalDate nextAvailableEffectiveDate1 = getNextAvailableEffectiveDate(codeSystemShortName);
-		CodeSystemRequests.prepareNewVersion()
-			.setCodeSystemShortName(codeSystemShortName)
+		ResourceRequests.prepareNewVersion()
+			.setResource(CodeSystem.uri(codeSystemShortName))
 			// XXX use default format, ES will likely try to convert this to a date field, unless we disable it in the mapping
 			.setVersion(nextAvailableEffectiveDate1.toString())
-			.setEffectiveTime(EffectiveTimes.format(nextAvailableEffectiveDate1, DateFormats.SHORT))
+			.setEffectiveTime(nextAvailableEffectiveDate1)
 			.buildAsync()
 			.runAsJob("Creating version with datelike versionId")
 			.execute(getBus())
@@ -53,8 +54,8 @@ public class IssueSO2503RemoteJobDynamicMappingFix extends AbstractSnomedApiTest
 			.thenWith(unused -> {
 				// 2. create another version with a non-datelike versionId
 				LocalDate nextAvailableEffectiveDate2 = getNextAvailableEffectiveDate(codeSystemShortName);
-				return CodeSystemRequests.prepareNewVersion()
-					.setCodeSystemShortName(codeSystemShortName)
+				return ResourceRequests.prepareNewVersion()
+					.setResource(CodeSystem.uri(codeSystemShortName))
 					.setVersion("xx-" + nextAvailableEffectiveDate2.toString())
 					.setEffectiveTime(EffectiveTimes.format(nextAvailableEffectiveDate2, DateFormats.SHORT))
 					.buildAsync()

@@ -32,7 +32,7 @@ import springfox.documentation.spring.web.plugins.Docket;
 @ComponentScan("com.b2international.snowowl.snomed.core.rest")
 public class SnomedApiConfig extends BaseApiConfig {
 	
-	public static final String REPOSITORY_ID = SnomedTerminologyComponentConstants.TERMINOLOGY_ID;
+	public static final String REPOSITORY_ID = SnomedTerminologyComponentConstants.TOOLING_ID;
 
 	@Override
 	public String getApiBaseUrl() {

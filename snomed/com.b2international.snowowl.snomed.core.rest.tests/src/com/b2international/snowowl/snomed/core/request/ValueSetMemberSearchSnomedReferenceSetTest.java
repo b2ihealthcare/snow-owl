@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.core.request;
 
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -26,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.domain.SetMembers;
 import com.b2international.snowowl.core.uri.ComponentURI;
@@ -41,6 +41,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionCre
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.test.commons.Services;
+import com.b2international.snowowl.test.commons.SnomedContentRule;
 import com.b2international.snowowl.test.commons.rest.RestExtensions;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
@@ -51,7 +52,7 @@ import com.google.common.collect.ImmutableSet;
  */
 public class ValueSetMemberSearchSnomedReferenceSetTest {
 
-	private static final String CODESYSTEM = "SNOMEDCT/LATEST";
+	private static final String CODESYSTEM = SnomedContentRule.SNOMEDCT.withPath(ResourceURI.LATEST).toString();
 	
 	private static final String SYNONYM = "Synonym (core metadata concept)";
 	private static final String FSN = "Fully specified name (core metadata concept)";
@@ -75,7 +76,7 @@ public class ValueSetMemberSearchSnomedReferenceSetTest {
 			.getSync(1, TimeUnit.MINUTES);
 				
 		assertThat(setMembers.getTotal()).isEqualTo(members.getTotal());
-		assertThat(setMembers.stream().allMatch(m -> SNOMED_SHORT_NAME.equals(m.getReferencedComponentURI().codeSystem())));
+		assertThat(setMembers.stream().allMatch(m -> SnomedContentRule.SNOMEDCT.equals(m.getReferencedComponentURI().resourceUri())));
 		
 		Set<String> setMemberSourceCodes = FluentIterable.from(setMembers).transform(m -> m.getReferencedComponentURI().identifier()).toSet();
 		Set<String> setMemberSourceTerms = FluentIterable.from(setMembers).transform(m -> m.getReferencedComponentURI().identifier()).toSet();

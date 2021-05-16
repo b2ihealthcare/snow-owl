@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,12 +34,12 @@ import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.CommitResult;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.AllSnomedApiTests;
 import com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.test.commons.Services;
@@ -65,7 +65,7 @@ public class SnomedMergePerformanceTest extends AbstractSnomedApiTest {
 		try {
 			RepositoryRequests.branching()
 				.prepareDelete("MAIN/SnomedMergePerformanceTest/testPerf")
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID)
+				.build(SnomedTerminologyComponentConstants.TOOLING_ID)
 				.execute(Services.bus())
 				.getSync();
 		} catch (NotFoundException e) {
@@ -108,7 +108,7 @@ public class SnomedMergePerformanceTest extends AbstractSnomedApiTest {
 		CommitResult createCommitResult = SnomedRequests.prepareCommit()
 			.setBody(bulk)
 			.setCommitComment("Commit large bulk request")
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch.getPath())
+			.build(branch.getPath())
 			.execute(getBus())
 			.getSync();
 		System.err.println("Bulk create 10_000 concepts commit took: " + w);
@@ -125,7 +125,7 @@ public class SnomedMergePerformanceTest extends AbstractSnomedApiTest {
 		SnomedConcepts first100 = SnomedRequests.prepareSearchConcept()
 			.setLimit(100)
 			.filterByIds(idsOfCreatedConcepts)
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch.getPath())
+			.build(branch.getPath())
 			.execute(getBus())
 			.getSync();
 		
@@ -138,7 +138,7 @@ public class SnomedMergePerformanceTest extends AbstractSnomedApiTest {
 		int totalDescendants = SnomedRequests.prepareSearchConcept()
 			.setLimit(0)
 			.filterByStatedParent(Concepts.ROOT_CONCEPT)
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch.getPath())
+			.build(branch.getPath())
 			.execute(getBus())
 			.getSync()
 			.getTotal();
@@ -151,7 +151,7 @@ public class SnomedMergePerformanceTest extends AbstractSnomedApiTest {
 				.filterBySource(idsOfCreatedConcepts)
 				.filterByDestination(Concepts.ROOT_CONCEPT)
 				.setFields(SnomedRelationshipIndexEntry.Fields.ID)
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch.getPath())
+				.build(branch.getPath())
 				.execute(getBus())
 				.getSync()
 				.stream()
@@ -174,7 +174,7 @@ public class SnomedMergePerformanceTest extends AbstractSnomedApiTest {
 		SnomedRequests.prepareCommit()
 			.setBody(bulk)
 			.setCommitComment("Commit update bulk request")
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch.getPath())
+			.build(branch.getPath())
 			.execute(getBus())
 			.getSync();
 		System.err.println("Bulk update 10_000 concepts commit took: " + w);
@@ -202,7 +202,7 @@ public class SnomedMergePerformanceTest extends AbstractSnomedApiTest {
 		SnomedRequests.prepareCommit()
 			.setBody(bulk)
 			.setCommitComment("Commit update bulk request")
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch.getPath())
+			.build(branch.getPath())
 			.execute(getBus())
 			.getSync();
 		System.err.println("Bulk move 10_000 concepts to Clinical Finding took: " + w);

@@ -47,7 +47,6 @@ import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.test.commons.Services;
 import com.b2international.snowowl.test.commons.TestMethodNameRule;
@@ -61,7 +60,7 @@ public class BranchCompareRequestTest {
 	@Rule
 	public final TestMethodNameRule methodName = new TestMethodNameRule();
 	
-	private static final String REPOSITORY_ID = SnomedDatastoreActivator.REPOSITORY_UUID;
+	private static final String REPOSITORY_ID = SnomedTerminologyComponentConstants.TOOLING_ID;
 	
 	private IEventBus bus;
 	private String branchPath;
@@ -114,7 +113,7 @@ public class BranchCompareRequestTest {
 		
 		SnomedRequests.prepareUpdateConcept(concept.getId())
 			.setModuleId(Concepts.MODULE_SCT_MODEL_COMPONENT)
-			.build(REPOSITORY_ID, taskBranchPath, RestExtensions.USER, "Change module ID")
+			.build(taskBranchPath, RestExtensions.USER, "Change module ID")
 			.execute(bus)
 			.getSync();
 		
@@ -137,7 +136,7 @@ public class BranchCompareRequestTest {
 				.get();
 		
 		SnomedRequests.prepareDeleteConcept(concept.getComponentId())
-			.build(REPOSITORY_ID, taskBranchPath, RestExtensions.USER, "Delete concept on task branch")
+			.build(taskBranchPath, RestExtensions.USER, "Delete concept on task branch")
 			.execute(bus)
 			.getSync();
 		
@@ -150,7 +149,7 @@ public class BranchCompareRequestTest {
 		assertTrue("branchPath^ expression search should return the original concept state", SnomedRequests.prepareSearchConcept()
 			.one()
 			.filterById(concept.getComponentId())
-			.build(REPOSITORY_ID, taskBranchPath + RevisionIndex.BASE_REF_CHAR)
+			.build(taskBranchPath + RevisionIndex.BASE_REF_CHAR)
 			.execute(bus)
 			.getSync()
 			.first()
@@ -159,7 +158,7 @@ public class BranchCompareRequestTest {
 		assertTrue("branchPath expression search should return nothing", SnomedRequests.prepareSearchConcept()
 			.one()
 			.filterById(concept.getComponentId())
-			.build(REPOSITORY_ID, taskBranchPath)
+			.build(taskBranchPath)
 			.execute(bus)
 			.getSync()
 			.first()
@@ -184,7 +183,7 @@ public class BranchCompareRequestTest {
 				.setModuleId(Concepts.MODULE_SCT_CORE)
 				.setLanguageCode("en")
 				.setTypeId(Concepts.FULLY_SPECIFIED_NAME)
-				.build(REPOSITORY_ID, taskBranchPath, RestExtensions.USER, "Create new Description on Concept: " + concept.getComponentId())
+				.build(taskBranchPath, RestExtensions.USER, "Create new Description on Concept: " + concept.getComponentId())
 				.execute(bus)
 				.getSync(1, TimeUnit.MINUTES)
 				.getResultAs(String.class);

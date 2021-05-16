@@ -21,8 +21,6 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
-import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.branch.BranchCompareRequestTest;
 import com.b2international.snowowl.snomed.core.branch.SnomedBranchRequestTest;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
@@ -58,57 +56,57 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
  */
 @RunWith(Suite.class)
 @SuiteClasses({ 
-	SnomedRf2ContentImportTest.class,
-	// High-level issue test cases, Java API test cases
-	IssueSO2503RemoteJobDynamicMappingFix.class,
-	Issue3019FixDeletionOfReferringMembersTest.class,
-	EclSerializerTest.class,
-	// RESTful API test cases
-	// Branch API tests
-	SnomedBranchRequestTest.class,
-	BranchCompareRequestTest.class,
-	SnomedCompareRestRequestTest.class,
-	SnomedBranchingApiTest.class,
-	// Component API test cases
-	SnomedConceptApiTest.class,
-	SnomedConceptInactivationApiTest.class,
-	SnomedDescriptionApiTest.class,
-	SnomedRelationshipApiTest.class,
-	SnomedPartialLoadingApiTest.class,
-	SnomedComponentInactivationApiTest.class,
-	SnomedRefSetApiTest.class,
-	SnomedReferenceSetDeletionPerformanceTest.class,
-	SnomedRefSetParameterizedTest.class,
-	SnomedRefSetMemberParameterizedTest.class,
-	SnomedRefSetMemberApiTest.class,
-	SnomedRefSetBulkApiTest.class,
+//	SnomedRf2ContentImportTest.class,
+//	// High-level issue test cases, Java API test cases
+//	IssueSO2503RemoteJobDynamicMappingFix.class,
+//	Issue3019FixDeletionOfReferringMembersTest.class,
+//	EclSerializerTest.class,
+//	// RESTful API test cases
+//	// Branch API tests
+//	SnomedBranchRequestTest.class,
+//	BranchCompareRequestTest.class,
+//	SnomedCompareRestRequestTest.class,
+//	SnomedBranchingApiTest.class,
+//	// Component API test cases
+//	SnomedConceptApiTest.class,
+//	SnomedConceptInactivationApiTest.class,
+//	SnomedDescriptionApiTest.class,
+//	SnomedRelationshipApiTest.class,
+//	SnomedPartialLoadingApiTest.class,
+//	SnomedComponentInactivationApiTest.class,
+//	SnomedRefSetApiTest.class,
+//	SnomedReferenceSetDeletionPerformanceTest.class,
+//	SnomedRefSetParameterizedTest.class,
+//	SnomedRefSetMemberParameterizedTest.class,
+//	SnomedRefSetMemberApiTest.class,
+//	SnomedRefSetBulkApiTest.class,
 	// Generic API
-	ConceptSearchRequestSnomedTest.class,
-	ValueSetMemberSearchSnomedReferenceSetTest.class,
-	ConceptMapCompareSnomedMapTypeReferenceSetTest.class,
-	ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest.class,
-	ConceptMapCompareDsvExportTest.class,
+//	ConceptSearchRequestSnomedTest.class,
+//	ValueSetMemberSearchSnomedReferenceSetTest.class,
+//	ConceptMapCompareSnomedMapTypeReferenceSetTest.class,
+//	ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest.class,
+//	ConceptMapCompareDsvExportTest.class,
 	// Branch Merge API test cases
-	SnomedMergeApiTest.class,
-	SnomedMergeConflictTest.class,
+//	SnomedMergeApiTest.class,
+//	SnomedMergeConflictTest.class,
 	// Import-Export-Versioning-Classification
-	SnomedClassificationApiTest.class,
+//	SnomedClassificationApiTest.class,
 	SnomedImportApiTest.class,
-	SnomedImportRowValidatorTest.class,
-	SnomedExportApiTest.class,
-	SnomedRefSetDSVExportTest.class,
+//	SnomedImportRowValidatorTest.class,
+//	SnomedExportApiTest.class,
+//	SnomedRefSetDSVExportTest.class,
 	// Module dependecy test cases - they modify the MAIN branch so should be executed after tests that rely on MAIN branch stuff
-	SnomedModuleDependencyRefsetTest.class,
-	SnomedVersioningApiTest.class,
+//	SnomedModuleDependencyRefsetTest.class,
+//	SnomedVersioningApiTest.class,
 	// Extension test cases
-	SnomedComponentEffectiveTimeRestoreTest.class,
-	SnomedExtensionCreationTest.class,
-	SnomedExtensionUpgradeTest.class, 
+//	SnomedComponentEffectiveTimeRestoreTest.class,
+//	SnomedExtensionCreationTest.class,
+//	SnomedExtensionUpgradeTest.class, 
 	// MRCM export/import
-	MrcmImportExportTest.class,
-	// Performance test cases, should be the last tests to perform
-	SnomedConceptCreatePerformanceTest.class,
-	SnomedMergePerformanceTest.class,
+//	MrcmImportExportTest.class,
+//	// Performance test cases, should be the last tests to perform
+//	SnomedConceptCreatePerformanceTest.class,
+//	SnomedMergePerformanceTest.class,
 })
 public class AllSnomedApiTests {
 
@@ -117,7 +115,7 @@ public class AllSnomedApiTests {
 			.outerRule(SnowOwlAppRule.snowOwl(AllSnomedApiTests.class))
 			.around(new BundleStartRule("org.eclipse.jetty.osgi.boot"))
 			.around(new BundleStartRule("com.b2international.snowowl.core.rest"))
-			.around(new SnomedContentRule(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, Branch.MAIN_PATH, Resources.Snomed.MINI_RF2_INT, Rf2ReleaseType.FULL))
-			.around(new SnomedContentRule(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, Branch.MAIN_PATH, Resources.Snomed.MINI_RF2_COMPLEX_BLOCK_MAP, Rf2ReleaseType.DELTA));
+			.around(new SnomedContentRule(SnomedContentRule.SNOMEDCT, Resources.Snomed.MINI_RF2_INT, Rf2ReleaseType.FULL))
+			.around(new SnomedContentRule(SnomedContentRule.SNOMEDCT, Resources.Snomed.MINI_RF2_COMPLEX_BLOCK_MAP, Rf2ReleaseType.DELTA));
 
 }

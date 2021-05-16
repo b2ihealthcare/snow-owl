@@ -20,12 +20,7 @@ import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRe
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.getComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRefSetRestRequests.executeMemberAction;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRefSetRestRequests.updateRefSetComponent;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createConcreteDomainParentConcept;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createConcreteDomainRefSet;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewConcept;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewRefSet;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewRelationship;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createRefSetMemberRequestBody;
+import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.*;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.assertCreated;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static com.google.common.collect.Lists.newArrayList;
@@ -61,7 +56,6 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetM
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedOWLRelationshipDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -427,7 +421,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 
 		final SnomedReferenceSetMember member = SnomedRequests.prepareGetMember(memberId)
 				.setExpand("owlRelationships()")
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+				.build(branchPath.getPath())
 				.execute(getBus())
 				.getSync();
 		
@@ -446,7 +440,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 
 		final SnomedReferenceSetMember updatedMember = SnomedRequests.prepareGetMember(memberId)
 				.setExpand("owlRelationships()")
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+				.build(branchPath.getPath())
 				.execute(getBus())
 				.getSync();
 		
@@ -878,7 +872,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 			.setBody(bulk)
 			.setCommitComment("Delete reference set members in ascending index order")
 			.setAuthor("test")
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+			.build(branchPath.getPath())
 			.execute(Services.bus())
 			.getSync();
 		
@@ -896,7 +890,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 			.setModuleId(Concepts.MODULE_SCT_CORE)
 			.setReferenceSetId(simpleRefSetId)
 			.setReferencedComponentId(simpleRefSetId)
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath(), RestExtensions.USER, "Creating refset member")
+			.build(branchPath.getPath(), RestExtensions.USER, "Creating refset member")
 			.execute(getBus())
 			.getSync();
 		
@@ -908,7 +902,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 			.setModuleId(Concepts.MODULE_SCT_CORE)
 			.setReferenceSetId(simpleRefSetId)
 			.setReferencedComponentId(simpleRefSetId)
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath(), RestExtensions.USER, "Creating refset member")
+			.build(branchPath.getPath(), RestExtensions.USER, "Creating refset member")
 			.execute(getBus())
 			.getSync();	
 	}

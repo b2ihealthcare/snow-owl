@@ -47,7 +47,7 @@ public abstract class CodeSystemRestRequests {
 			"title", shortName,
 			"url", "organizationLink",
 			"description", "citation",
-			"toolingId", SnomedTerminologyComponentConstants.TERMINOLOGY_ID,
+			"toolingId", SnomedTerminologyComponentConstants.TOOLING_ID,
 			"oid", "oid_" + shortName,
 			"language", "primaryLanguage"
 		);
@@ -59,34 +59,34 @@ public abstract class CodeSystemRestRequests {
 			requestBody = requestBody.with("branchPath", branchPath.getPath());
 		}
 		
-		return givenAuthenticatedRequest(ApiTestConstants.ADMIN_API)
+		return givenAuthenticatedRequest(ApiTestConstants.CODESYSTEMS_API)
 				.contentType(ContentType.JSON)
 				.body(requestBody)
-				.post("/codesystems")
+				.post()
 				.then();
 	}
 
 	public static ValidatableResponse getCodeSystem(String id) {
-		return givenAuthenticatedRequest(ApiTestConstants.ADMIN_API)
-				.get("/codesystems/{id}", id)
+		return givenAuthenticatedRequest(ApiTestConstants.CODESYSTEMS_API)
+				.get("/{id}", id)
 				.then();
 	}
 
 	public static ValidatableResponse updateCodeSystem(String id, Map<?, ?> requestBody) {
-		return givenAuthenticatedRequest(ApiTestConstants.ADMIN_API)
+		return givenAuthenticatedRequest(ApiTestConstants.CODESYSTEMS_API)
 				.contentType(ContentType.JSON)
 				.body(requestBody)
-				.put("codesystems/{id}", id)
+				.put("/{id}", id)
 				.then();
 	}
 	
 	public static ValidatableResponse upgrade(ResourceURI codeSystem, ResourceURI extensionOf) {
-		return givenAuthenticatedRequest(ApiTestConstants.ADMIN_API)
+		return givenAuthenticatedRequest(ApiTestConstants.CODESYSTEMS_API)
 				.contentType(ContentType.JSON)
 				.body(Map.of(
 					"extensionOf", extensionOf.toString()
 				))
-				.post("codesystems/{id}/upgrades", codeSystem.toString())
+				.post("/{id}/upgrades", codeSystem.toString())
 				.then();
 	}
 

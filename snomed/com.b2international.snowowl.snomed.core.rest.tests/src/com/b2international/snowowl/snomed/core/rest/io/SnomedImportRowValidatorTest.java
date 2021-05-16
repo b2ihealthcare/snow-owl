@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,11 +19,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.Collection;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.junit.Before;
@@ -31,17 +28,18 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.b2international.commons.exceptions.NotFoundException;
-import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.attachments.AttachmentRegistry;
+import com.b2international.snowowl.core.attachments.Attachment;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.request.io.ImportDefect;
 import com.b2international.snowowl.core.request.io.ImportResponse;
 import com.b2international.snowowl.core.util.PlatformUtil;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.datastore.request.rf2.validation.Rf2ValidationDefects;
+import com.b2international.snowowl.test.commons.Services;
+import com.b2international.snowowl.test.commons.rest.RestExtensions;
 import com.google.common.collect.Iterables;
 
 /**
@@ -51,10 +49,8 @@ public class SnomedImportRowValidatorTest extends AbstractSnomedApiTest {
 	
 	// TODO: Implement tests for every reference set type
 	
-	private static final String REPOSITORY_ID = SnomedDatastoreActivator.REPOSITORY_UUID;
+	private static final String REPOSITORY_ID = SnomedTerminologyComponentConstants.TOOLING_ID;
 	private static String codeSystemShortName;
-	private UUID archiveId;
-	
 	
 	@BeforeClass
 	public static void beforeClass() {
@@ -63,7 +59,6 @@ public class SnomedImportRowValidatorTest extends AbstractSnomedApiTest {
 	
 	@Before
 	public void init() {
-		archiveId = UUID.randomUUID();
 		createCodeSystemIfNotExists();
 	}
 	
@@ -140,23 +135,20 @@ public class SnomedImportRowValidatorTest extends AbstractSnomedApiTest {
 	private void createCodeSystemIfNotExists() {
 		try {
 			CodeSystemRequests.prepareGetCodeSystem(codeSystemShortName)
-				.build(REPOSITORY_ID)
+				.buildAsync()
 				.execute(getBus())
 				.getSync();
-			
 		} catch (NotFoundException e) {
 			CodeSystemRequests.prepareNewCodeSystem()
-				.setShortName(codeSystemShortName)
+				.setId(codeSystemShortName)
 				.setOid("oid")
-				.setName(String.format("%s - %s", codeSystemShortName, "oid"))
+				.setTitle(String.format("%s - %s", codeSystemShortName, "oid"))
 				.setLanguage("en")
 				.setBranchPath(branchPath.getPath())
-				.setCitation("citation")
-				.setIconPath("snomed.png")
-				.setRepositoryId(REPOSITORY_ID)
-				.setTerminologyId("concept")
-				.setLink("www.ihtsdo.org")
-				.build(REPOSITORY_ID, branchPath.getPath(), "system", String.format("New code system %s", codeSystemShortName))
+				.setDescription("description")
+				.setToolingId(REPOSITORY_ID)
+				.setUrl("www.ihtsdo.org")
+				.build(RestExtensions.USER, String.format("New code system %s", codeSystemShortName))
 				.execute(getBus())
 				.getSync();
 				
@@ -165,14 +157,12 @@ public class SnomedImportRowValidatorTest extends AbstractSnomedApiTest {
 	}
 	
 	private ImportResponse importArchive(String archiveFilePath, Rf2ReleaseType releaseType) throws FileNotFoundException {
-		final File importArchive = PlatformUtil.toAbsolutePath(this.getClass(), archiveFilePath).toFile();
-		ApplicationContext.getServiceForClass(AttachmentRegistry.class).upload(archiveId, new FileInputStream(importArchive));
-		
+		Attachment attachment = Attachment.upload(Services.context(), PlatformUtil.toAbsolutePath(this.getClass(), archiveFilePath));
 		return SnomedRequests.rf2().prepareImport()
 			.setCreateVersions(false)
 			.setReleaseType(releaseType)
-			.setRf2ArchiveId(archiveId)
-			.build(REPOSITORY_ID, branchPath.getPath())
+			.setRf2Archive(attachment)
+			.build(branchPath.getPath())
 			.execute(getBus())
 			.getSync();
 	}

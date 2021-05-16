@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,18 +19,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.text.MessageFormat;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 
 import com.b2international.commons.FileUtils;
 import com.b2international.commons.http.ExtendedLocale;
@@ -47,28 +39,15 @@ import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
-import com.b2international.snowowl.snomed.core.domain.constraint.SnomedCardinalityPredicate;
-import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConcreteDomainPredicate;
-import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraint;
-import com.b2international.snowowl.snomed.core.domain.constraint.SnomedDescriptionPredicate;
-import com.b2international.snowowl.snomed.core.domain.constraint.SnomedPredicate;
-import com.b2international.snowowl.snomed.core.domain.constraint.SnomedRelationshipPredicate;
+import com.b2international.snowowl.snomed.core.domain.constraint.*;
 import com.b2international.snowowl.snomed.core.domain.refset.DataType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
-import com.b2international.snowowl.snomed.datastore.internal.rf2.AbstractSnomedDsvExportItem;
-import com.b2international.snowowl.snomed.datastore.internal.rf2.ComponentIdSnomedDsvExportItem;
-import com.b2international.snowowl.snomed.datastore.internal.rf2.DatatypeSnomedDsvExportItem;
-import com.b2international.snowowl.snomed.datastore.internal.rf2.SimpleSnomedDsvExportItem;
-import com.b2international.snowowl.snomed.datastore.internal.rf2.SnomedDsvExportItemType;
-import com.b2international.snowowl.snomed.datastore.request.SnomedConceptCreateRequestBuilder;
-import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionCreateRequestBuilder;
-import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetCreateRequestBuilder;
-import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipCreateRequestBuilder;
-import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.snomed.datastore.internal.rf2.*;
+import com.b2international.snowowl.snomed.datastore.request.*;
 import com.b2international.snowowl.test.commons.Services;
 import com.b2international.snowowl.test.commons.TestMethodNameRule;
+import com.b2international.snowowl.test.commons.rest.RestExtensions;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -79,7 +58,7 @@ import com.google.common.io.Files;
  */
 public class SnomedRefSetDSVExportTest {
 
-	private static final String REPOSITORY_ID = SnomedDatastoreActivator.REPOSITORY_UUID;
+	private static final String REPOSITORY_ID = SnomedTerminologyComponentConstants.TOOLING_ID;
 	
 	private static final List<ExtendedLocale> LOCALES = ImmutableList.of(ExtendedLocale.valueOf("en-gb"));
 
@@ -124,7 +103,7 @@ public class SnomedRefSetDSVExportTest {
 				.setRelationshipTargetExpected(true)
 				.setRefSetId(refsetId)
 				.setExportItems(createExportItems(branchPath, refsetId))
-				.build(REPOSITORY_ID, branchPath)
+				.build(branchPath)
 				.execute(bus)
 				.getSync();
 
@@ -151,7 +130,7 @@ public class SnomedRefSetDSVExportTest {
 				.setRelationshipTargetExpected(true)
 				.setRefSetId(refsetId)
 				.setExportItems(createExportItems(branchPath, refsetId))
-				.build(REPOSITORY_ID, branchPath)
+				.build(branchPath)
 				.execute(bus)
 				.getSync();
 
@@ -173,7 +152,7 @@ public class SnomedRefSetDSVExportTest {
 				.all()
 				.filterByEcl(String.format("^%s", refsetId))
 				.setExpand("relationships()")
-				.build(REPOSITORY_ID, branchPath)
+				.build(branchPath)
 				.execute(bus)
 				.getSync();
 		
@@ -226,7 +205,7 @@ public class SnomedRefSetDSVExportTest {
 				.setReferencedComponentId(referencedComponentId)
 				.setProperties(properties)
 				.setId(UUID.randomUUID().toString())
-				.build(REPOSITORY_ID, branchPath, "test", "test")
+				.build(branchPath, RestExtensions.USER, "test")
 				.execute(bus)
 				.getSync();
 	}
@@ -273,7 +252,7 @@ public class SnomedRefSetDSVExportTest {
 			builder.setRefSet(refSet);
 		
 		return builder
-					.build(REPOSITORY_ID, branchPath, "test", "test")
+					.build(branchPath, "test", "test")
 					.execute(bus)
 					.getSync();
 	}

@@ -228,7 +228,7 @@ public class SnomedQueryValidationRuleEvaluatorTest extends BaseValidationTest {
 			.setMessageTemplate("Error")
 			.setSeverity(Severity.ERROR)
 			.setImplementation(context().service(ObjectMapper.class).writeValueAsString(ruleQuery))
-			.setToolingId(SnomedTerminologyComponentConstants.TERMINOLOGY_ID)
+			.setToolingId(SnomedTerminologyComponentConstants.TOOLING_ID)
 			.build()
 			.execute(context());
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,16 +30,15 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
-import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.branch.BranchPathUtils;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.util.PlatformUtil;
 import com.b2international.snowowl.snomed.core.mrcm.io.MrcmExportFormat;
 import com.b2international.snowowl.snomed.core.mrcm.io.MrcmExporter;
 import com.b2international.snowowl.snomed.core.mrcm.io.MrcmImporter;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.test.commons.Services;
+import com.b2international.snowowl.test.commons.SnomedContentRule;
 import com.b2international.snowowl.test.commons.rest.RestExtensions;
 
 /**
@@ -51,17 +50,17 @@ public class MrcmImportExportTest {
 	@Test
 	public void _01_importTest() throws Exception {
 		// default/old MRCM import file contains 58 rules
-		final IBranchPath branch = BranchPathUtils.createMainPath();
+		final ResourceURI resource = SnomedContentRule.SNOMEDCT;
 		final Path path = PlatformUtil.toAbsolutePath(MrcmImportExportTest.class, "mrcm_import_test.json");
 		
 		try (final InputStream stream = Files.newInputStream(path, StandardOpenOption.READ)) {
-			Services.service(MrcmImporter.class).doImport(Services.getAuthorizationToken(), RestExtensions.USER, stream);
+			Services.service(MrcmImporter.class).doImport(resource, Services.getAuthorizationToken(), RestExtensions.USER, stream);
 		} 
 		
 		// verify content
 		int numberOfConstraints = SnomedRequests.prepareSearchConstraint()
 			.setLimit(0)
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branch.getPath())
+			.build(resource)
 			.execute(Services.bus())
 			.getSync()
 			.getTotal();
@@ -75,7 +74,7 @@ public class MrcmImportExportTest {
 		Path exportedFile = target.resolve("mrcm_" + Dates.now() + ".csv");
 		assertFalse(exportedFile.toFile().exists());
 		try (final OutputStream stream = Files.newOutputStream(exportedFile, StandardOpenOption.CREATE_NEW)) {
-			Services.service(MrcmExporter.class).doExport(Services.getAuthorizationToken(), stream, MrcmExportFormat.CSV);
+			Services.service(MrcmExporter.class).doExport(SnomedContentRule.SNOMEDCT, Services.getAuthorizationToken(), stream, MrcmExportFormat.CSV);
 		}
 		assertTrue(exportedFile.toFile().exists());
 	}

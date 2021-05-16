@@ -38,7 +38,7 @@ public class RepositoryApiTest {
 
 	@Test
 	public void getSingleRepositoryInfo() {
-		assertRepositoryInfoForExistingRepository(SnomedTerminologyComponentConstants.TERMINOLOGY_ID, Health.GREEN.name());
+		assertRepositoryInfoForExistingRepository(SnomedTerminologyComponentConstants.TOOLING_ID, Health.GREEN.name());
 	}
 
 	@Test

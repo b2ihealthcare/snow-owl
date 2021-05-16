@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.reasoner.domain.ClassificationStatus;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import io.restassured.http.ContentType;
@@ -49,9 +48,10 @@ public abstract class SnomedClassificationRestRequests {
 			ClassificationStatus.SAVE_FAILED.name());
 
 	public static ValidatableResponse beginClassification(IBranchPath branchPath) {
-		Map<String, Object> requestBody = ImmutableMap.of(
-				"reasonerId", SnomedCoreConfiguration.ELK_REASONER_ID,
-				"branch", branchPath.getPath());
+		Map<String, Object> requestBody = Map.of(
+			"reasonerId", SnomedCoreConfiguration.ELK_REASONER_ID,
+			"branch", branchPath.getPath()
+		);
 
 		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 				.contentType(ContentType.JSON)
@@ -91,7 +91,7 @@ public abstract class SnomedClassificationRestRequests {
 	}
 
 	public static ValidatableResponse beginClassificationSave(IBranchPath branchPath, String classificationId) {
-		Map<String, Object> requestBody = ImmutableMap.<String, Object>of(
+		Map<String, Object> requestBody = Map.of(
 			"status", ClassificationStatus.SAVED.toString(),
 			"module", Concepts.MODULE_SCT_CORE,
 			"namespace", ""

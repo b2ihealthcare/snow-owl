@@ -20,21 +20,12 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
+import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Stream;
 
 import org.junit.AfterClass;
@@ -47,7 +38,6 @@ import com.b2international.snowowl.test.commons.Resources;
 import com.google.common.base.Splitter;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 
@@ -59,10 +49,7 @@ public class SnomedRf2ContentImportTest extends AbstractSnomedApiTest {
 	private static final Splitter TAB_SPLITTER = Splitter.on('\t');
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyyMMdd");
 
-	private static final Set<String> UNSUPPORTED_FILE_TYPES = ImmutableSet.<String>builder()
-			.add("sct2_Identifier")
-			.add("der2_cciRefset")
-			.build();
+	private static final Set<String> UNSUPPORTED_FILE_TYPES = Set.of("sct2_Identifier", "der2_cciRefset");
 
 	private static Multimap<String, String> originalLines;
 
@@ -221,7 +208,6 @@ public class SnomedRf2ContentImportTest extends AbstractSnomedApiTest {
 	}
 
 	private static Multimap<String, String> getLines(final File input) throws IOException {
-
 		final Multimap<String, String> lines = HashMultimap.create();
 
 		try (FileSystem fs = FileSystems.newFileSystem(input.toPath(), SnomedRf2ContentImportTest.class.getClassLoader())) {

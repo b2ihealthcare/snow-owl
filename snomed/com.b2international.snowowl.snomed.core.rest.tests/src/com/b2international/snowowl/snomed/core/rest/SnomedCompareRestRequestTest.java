@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,6 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.test.commons.Services;
 import com.b2international.snowowl.test.commons.rest.RestExtensions;
@@ -74,7 +73,7 @@ public class SnomedCompareRestRequestTest extends AbstractSnomedApiTest {
 	public void setup() {
 		parentBranch = BranchPathUtils.createPath("MAIN/SnomedCompareRestRequestTest");
 		bus = Services.bus();
-		repositoryUuid = SnomedDatastoreActivator.REPOSITORY_UUID;
+		repositoryUuid = SnomedTerminologyComponentConstants.TOOLING_ID;
 	}
 	
 	@Test
@@ -124,7 +123,7 @@ public class SnomedCompareRestRequestTest extends AbstractSnomedApiTest {
 		
 		SnomedRequests.prepareUpdateConcept(concept.getId())
 			.setModuleId(Concepts.MODULE_SCT_MODEL_COMPONENT)
-			.build(repositoryUuid, childBranchPath, RestExtensions.USER, "Change module ID")
+			.build(childBranchPath, RestExtensions.USER, "Change module ID")
 			.execute(bus)
 			.getSync();
 		
@@ -148,7 +147,7 @@ public class SnomedCompareRestRequestTest extends AbstractSnomedApiTest {
 				.get();
 		
 		SnomedRequests.prepareDeleteConcept(concept.getComponentId())
-			.build(repositoryUuid, childBranchPath, RestExtensions.USER, "Delete concept on child branch")
+			.build(childBranchPath, RestExtensions.USER, "Delete concept on child branch")
 			.execute(bus)
 			.getSync();
 		

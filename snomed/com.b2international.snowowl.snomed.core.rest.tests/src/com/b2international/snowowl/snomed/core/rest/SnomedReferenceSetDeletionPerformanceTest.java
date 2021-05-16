@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,12 +37,7 @@ import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.cis.domain.SctId;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
-import com.b2international.snowowl.snomed.datastore.request.SnomedConceptCreateRequestBuilder;
-import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionCreateRequestBuilder;
-import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberCreateRequestBuilder;
-import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipCreateRequestBuilder;
-import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.snomed.datastore.request.*;
 import com.b2international.snowowl.test.commons.rest.RestExtensions;
 import com.google.common.collect.Sets;
 
@@ -73,7 +68,7 @@ public class SnomedReferenceSetDeletionPerformanceTest extends AbstractSnomedApi
 		SnomedRequests.prepareCommit()
 			.setBody(bulk)
 			.setCommitComment("Bulk request of " + CONCEPT_CREATION_LIMIT +  "reference set member creation and id generation")
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+			.build(branchPath.getPath())
 			.execute(getBus())
 			.getSync();
 		
@@ -81,7 +76,7 @@ public class SnomedReferenceSetDeletionPerformanceTest extends AbstractSnomedApi
 			.all()
 			.filterById(refSetId)
 			.setExpand("members(limit:0)")
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+			.build(branchPath.getPath())
 			.execute(getBus())
 			.getSync()
 			.first()
@@ -90,7 +85,7 @@ public class SnomedReferenceSetDeletionPerformanceTest extends AbstractSnomedApi
 		
 		assertEquals(refsetMemberSizeAfterCreation, membersIds.size());
 		SnomedRequests.prepareDeleteReferenceSet(refSetId, false)
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath(), RestExtensions.USER, "Deleting large refset")
+			.build(branchPath.getPath(), RestExtensions.USER, "Deleting large refset")
 			.execute(getBus())
 			.getSync();
 		

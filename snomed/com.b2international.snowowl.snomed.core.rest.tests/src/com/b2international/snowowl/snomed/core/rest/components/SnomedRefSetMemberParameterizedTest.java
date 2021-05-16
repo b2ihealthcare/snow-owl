@@ -25,15 +25,7 @@ import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRe
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.searchComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRefSetRestRequests.updateRefSetComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRefSetRestRequests.updateRefSetMemberEffectiveTime;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewComponent;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewRefSet;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createRefSetMemberRequestBody;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createReferencedComponent;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.getFirstAllowedReferencedComponentCategory;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.getFirstAllowedReferencedComponentType;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.getFirstMatchingComponent;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.getValidProperties;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.reserveComponentId;
+import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.*;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests.createCodeSystem;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.createVersion;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getNextAvailableEffectiveDate;
@@ -67,6 +59,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
+import com.b2international.snowowl.test.commons.SnomedContentRule;
 import com.b2international.snowowl.test.commons.rest.BranchBase;
 import com.google.common.collect.Maps;
 
@@ -240,7 +233,7 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 	public void updateMemberEffectiveTime() throws Exception {
 		final Pair<String, String> member = createRefSetMember();
 		final String memberId = member.getA();
-		String effectiveTime = getNextAvailableEffectiveDateAsString(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME);
+		String effectiveTime = getNextAvailableEffectiveDateAsString(SnomedContentRule.SNOMEDCT_ID);
 
 		Json updateRequest = Json.object(
 			"effectiveTime", effectiveTime,
@@ -256,7 +249,7 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 	public void forceUpdateMemberEffectiveTime() throws Exception {
 		final Pair<String, String> member = createRefSetMember();
 		final String memberId = member.getA();
-		LocalDate effectiveTime = getNextAvailableEffectiveDate(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME);
+		LocalDate effectiveTime = getNextAvailableEffectiveDate(SnomedContentRule.SNOMEDCT_ID);
 
 		updateRefSetMemberEffectiveTime(branchPath, memberId, effectiveTime);
 		getComponent(branchPath, SnomedComponentType.MEMBER, memberId).statusCode(200)
@@ -276,7 +269,7 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 	public void deleteReleasedMember() throws Exception {
 		final Pair<String, String> member = createRefSetMember();
 		final String memberId = member.getA();
-		LocalDate effectiveTime = getNextAvailableEffectiveDate(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME);
+		LocalDate effectiveTime = getNextAvailableEffectiveDate(SnomedContentRule.SNOMEDCT_ID);
 		updateRefSetMemberEffectiveTime(branchPath, memberId, effectiveTime);
 
 		// A published component can not be deleted without the force flag enabled
@@ -288,7 +281,7 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 	public void forceDeleteReleasedMember() throws Exception {
 		final Pair<String, String> member = createRefSetMember();
 		final String memberId = member.getA();
-		LocalDate effectiveTime = getNextAvailableEffectiveDate(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME);
+		LocalDate effectiveTime = getNextAvailableEffectiveDate(SnomedContentRule.SNOMEDCT_ID);
 		updateRefSetMemberEffectiveTime(branchPath, memberId, effectiveTime);
 
 		deleteComponent(branchPath, SnomedComponentType.MEMBER, memberId, true).statusCode(204);

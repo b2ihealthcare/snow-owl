@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,13 +26,13 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.compare.ConceptMapCompareChangeKind;
 import com.b2international.snowowl.core.compare.ConceptMapCompareResult;
 import com.b2international.snowowl.core.compare.ConceptMapCompareResultItem;
 import com.b2international.snowowl.core.domain.ConceptMapMapping;
 import com.b2international.snowowl.core.request.MappingCorrelation;
-import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.snomed.common.SnomedConstants;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
@@ -40,14 +40,13 @@ import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.test.commons.AbstractCoreApiTest;
+import com.b2international.snowowl.test.commons.SnomedContentRule;
 import com.b2international.snowowl.test.commons.rest.RestExtensions;
-import com.google.common.collect.ImmutableMap;
 
 /**
  * @since 7.8
@@ -65,11 +64,11 @@ public class ConceptMapCompareSnomedMapTypeReferenceSetTest extends AbstractCore
 
 	private ComponentURI baseReferenceSetURI;
 	private ComponentURI compareReferenceSetURI;
-	private CodeSystemURI codeSystemURI;
+	private ResourceURI codeSystemURI;
 
 	@Before
 	public void createMappingSets() {
-		codeSystemURI = CodeSystemURI.branch(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, branchPath.getPath().replace("MAIN/", ""));
+		codeSystemURI = SnomedContentRule.SNOMEDCT.withPath(branchPath.getPath().replace("MAIN/", ""));
 		baseReferenceSetURI = createURI(createSimpleMapTypeRefSet("rf1"));
 		compareReferenceSetURI = createURI(createSimpleMapTypeRefSet("rf2"));
 	}
@@ -110,8 +109,8 @@ public class ConceptMapCompareSnomedMapTypeReferenceSetTest extends AbstractCore
 	public void compareLargeSimpleMapTypeReferenceSets() {
 		final String baseSimpleMapReferenceSet = "900000000000497000";
 		final String  compareSimpleMapReferenceSet = "447562003";
-		ComponentURI baseURI = ComponentURI.of(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, SnomedTerminologyComponentConstants.REFSET_NUMBER, baseSimpleMapReferenceSet);
-		ComponentURI compareURI = ComponentURI.of(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, SnomedTerminologyComponentConstants.REFSET_NUMBER, compareSimpleMapReferenceSet);
+		ComponentURI baseURI = ComponentURI.of(SnomedContentRule.SNOMEDCT, SnomedTerminologyComponentConstants.REFSET_NUMBER, baseSimpleMapReferenceSet);
+		ComponentURI compareURI = ComponentURI.of(SnomedContentRule.SNOMEDCT, SnomedTerminologyComponentConstants.REFSET_NUMBER, compareSimpleMapReferenceSet);
 		
 		compare(baseURI, compareURI);
 	}
@@ -127,15 +126,15 @@ public class ConceptMapCompareSnomedMapTypeReferenceSetTest extends AbstractCore
 	
 	private ConceptMapMapping mapping(String memberId, ComponentURI containerURI, String sourceCode, String targetCode) {
 		return ConceptMapMapping.builder()
-				.uri(ComponentURI.of(codeSystemURI.getCodeSystem(), SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, memberId))
+				.uri(ComponentURI.of(codeSystemURI.withoutPath(), SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, memberId))
 				.active(true)
 				.containerSetURI(containerURI)
 				.containerTerm(baseReferenceSetURI == containerURI ? "rf1" : "rf2")
 				.containerIconId(Concepts.REFSET_SIMPLE_MAP_TYPE)
-				.sourceComponentURI(ComponentURI.of(codeSystemURI.getCodeSystem(), SnomedTerminologyComponentConstants.CONCEPT_NUMBER, sourceCode))
+				.sourceComponentURI(ComponentURI.of(codeSystemURI.withoutPath(), SnomedTerminologyComponentConstants.CONCEPT_NUMBER, sourceCode))
 				.sourceTerm(sourceCode)
 				.sourceIconId("attribute")
-				.targetComponentURI(ComponentURI.of(codeSystemURI.getCodeSystem(), SnomedTerminologyComponentConstants.CONCEPT_NUMBER, targetCode))
+				.targetComponentURI(ComponentURI.of(codeSystemURI.withoutPath(), SnomedTerminologyComponentConstants.CONCEPT_NUMBER, targetCode))
 				.targetTerm(targetCode)
 				.targetIconId("attribute")
 				.mapGroup(0)
@@ -145,7 +144,7 @@ public class ConceptMapCompareSnomedMapTypeReferenceSetTest extends AbstractCore
 	}
 	
 	private ComponentURI createURI(String referenceSetId) {
-		return ComponentURI.of(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, SnomedTerminologyComponentConstants.REFSET_NUMBER, referenceSetId);
+		return ComponentURI.of(codeSystemURI.withoutPath(), SnomedTerminologyComponentConstants.REFSET_NUMBER, referenceSetId);
 	}
 	
 	private String createSimpleMapTypeRefSet(String refSetName) {
@@ -161,7 +160,7 @@ public class ConceptMapCompareSnomedMapTypeReferenceSetTest extends AbstractCore
 						.setReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
 						.setMapTargetComponentType(SnomedTerminologyComponentConstants.CONCEPT)
 						.setType(SnomedRefSetType.SIMPLE_MAP))
-				.build(codeSystemURI.toString(), RestExtensions.USER, "New Reference Set")
+				.build(codeSystemURI, RestExtensions.USER, "New Reference Set")
 				.execute(getBus())
 				.getSync()
 				.getResultAs(String.class);
@@ -178,7 +177,7 @@ public class ConceptMapCompareSnomedMapTypeReferenceSetTest extends AbstractCore
 			.setTypeId(type)
 			.setTerm(term)
 			.setCaseSignificanceId(Concepts.ENTIRE_TERM_CASE_INSENSITIVE)
-			.setAcceptability(ImmutableMap.of(SnomedConstants.Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.PREFERRED));
+			.setAcceptability(Map.of(SnomedConstants.Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.PREFERRED));
 	}
 	
 	private static SnomedRelationshipCreateRequestBuilder createIsaRelationship(final String characteristicTypeId, String destinationId) {
@@ -199,9 +198,9 @@ public class ConceptMapCompareSnomedMapTypeReferenceSetTest extends AbstractCore
 			.setActive(true)
 			.setModuleId(Concepts.MODULE_SCT_CORE)
 			.setProperties(Map.of(
-				SnomedRf2Headers.FIELD_MAP_TARGET, ComponentURI.of(codeSystemURI.getCodeSystem(), SnomedTerminologyComponentConstants.CONCEPT_NUMBER, targetCode).toString()
+				SnomedRf2Headers.FIELD_MAP_TARGET, ComponentURI.of(codeSystemURI.withoutPath(), SnomedTerminologyComponentConstants.CONCEPT_NUMBER, targetCode).toString()
 			))
-			.build(codeSystemURI.toString(), RestExtensions.USER, "New Member")
+			.build(codeSystemURI, RestExtensions.USER, "New Member")
 			.execute(getBus())
 			.getSync()
 			.getResultAs(String.class);
@@ -209,7 +208,7 @@ public class ConceptMapCompareSnomedMapTypeReferenceSetTest extends AbstractCore
 	
 	@Override
 	protected String getRepositoryId() {
-		return SnomedDatastoreActivator.REPOSITORY_UUID;
+		return SnomedTerminologyComponentConstants.TOOLING_ID;
 	}
 	
 }

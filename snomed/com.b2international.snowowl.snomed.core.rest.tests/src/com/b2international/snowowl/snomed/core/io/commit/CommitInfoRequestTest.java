@@ -40,7 +40,7 @@ import com.google.common.collect.Iterables;
 public class CommitInfoRequestTest {
 	
 	private static final String USER_ID = "system";
-	private static final String REPOSITORY_ID = SnomedTerminologyComponentConstants.TERMINOLOGY_ID;
+	private static final String REPOSITORY_ID = SnomedTerminologyComponentConstants.TOOLING_ID;
 	private static final String BRANCH = Branch.MAIN_PATH;
 	
 	private IEventBus bus;
@@ -181,7 +181,7 @@ public class CommitInfoRequestTest {
 			.setLanguage("en")
 			.setBranchPath(BRANCH)
 			.setDescription("citation")
-			.setToolingId(SnomedTerminologyComponentConstants.TERMINOLOGY_ID)
+			.setToolingId(SnomedTerminologyComponentConstants.TOOLING_ID)
 			.build(userId, comment)
 			.execute(bus)
 			.getSync();

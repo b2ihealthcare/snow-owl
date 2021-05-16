@@ -28,7 +28,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -39,6 +42,7 @@ import org.junit.Test;
 import com.b2international.commons.exceptions.ConflictException;
 import com.b2international.commons.json.Json;
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchPathUtils;
@@ -48,13 +52,11 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.events.bulk.BulkRequest;
 import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.snomed.cis.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.cis.domain.IdentifierStatus;
 import com.b2international.snowowl.snomed.cis.domain.SctId;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.*;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
@@ -62,8 +64,8 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetM
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.test.commons.SnomedContentRule;
 import com.b2international.snowowl.test.commons.rest.RestExtensions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
@@ -542,7 +544,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 			.setBody(bulk)
 			.setCommitComment("Delete multiple concepts")
 			.setAuthor("test")
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+			.build(branchPath.getPath())
 			.execute(getBus())
 			.getSync();
 		
@@ -558,7 +560,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 			.all()
 			.filterById(conceptId)
 			.setExpand("inboundRelationships()")
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+			.build(branchPath.getPath())
 			.execute(getBus())
 			.getSync()
 			.stream().findFirst().get();
@@ -580,7 +582,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 			.all()
 			.filterById(conceptId)
 			.setExpand("inboundRelationships(limit:1)")
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+			.build(branchPath.getPath())
 			.execute(getBus())
 			.getSync()
 			.stream().findFirst().get();
@@ -602,7 +604,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 			.all()
 			.filterById(conceptId)
 			.setExpand(inboundRelationshipExpandWithTypeFilter)
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+			.build(branchPath.getPath())
 			.execute(getBus())
 			.getSync()
 			.stream().findFirst().get();
@@ -626,7 +628,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 				.all()
 				.filterById(conceptId)
 				.setExpand(inboundRelationshipExpandWithSourceIdFilter)
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+				.build(branchPath.getPath())
 				.execute(getBus())
 				.getSync()
 				.stream().findFirst().get();
@@ -645,7 +647,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		
 		final SnomedConcept conceptWithInboundRelationship = SnomedRequests.prepareGetConcept(conceptId)
 			.setExpand("inboundRelationships()")
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+			.build(branchPath.getPath())
 			.execute(getBus())
 			.getSync();
 		 
@@ -676,7 +678,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		
 		final SnomedConcept conceptWithAxiomMember = SnomedRequests.prepareGetConcept(conceptId)
 				.setExpand("members()")
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+				.build(branchPath.getPath())
 				.execute(getBus())
 				.getSync(1, TimeUnit.MINUTES);
 		
@@ -706,7 +708,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		
 		final SnomedConcept conceptWithAxiomMember = SnomedRequests.prepareGetConcept(conceptId)
 				.setExpand("members()")
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+				.build(branchPath.getPath())
 				.execute(getBus())
 				.getSync();
 		
@@ -738,7 +740,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		
 		final SnomedConcept conceptWithAxiomMember = SnomedRequests.prepareGetConcept(conceptId)
 				.setExpand("members()")
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+				.build(branchPath.getPath())
 				.execute(getBus())
 				.getSync();
 		
@@ -755,7 +757,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		final String conceptId = assertCreated(createComponent(branchPath, SnomedComponentType.CONCEPT, conceptRequestBody));
 		
 		final SnomedConcept concept = SnomedRequests.prepareGetConcept(conceptId)
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+				.build(branchPath.getPath())
 				.execute(getBus())
 				.getSync();
 		
@@ -897,7 +899,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		final String conceptId = createNewConcept(branchPath);
 		final SnomedConcept conceptBeforeDescriptionPendingMoveChanges = SnomedRequests.prepareGetConcept(conceptId)
 			.setExpand("descriptions()")
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+			.build(branchPath.getPath())
 			.execute(getBus())
 			.getSync();
 		
@@ -911,13 +913,13 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 			
 		SnomedRequests.prepareUpdateConcept(conceptId)
 			.setDescriptions(descriptions)
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath(), RestExtensions.USER, "Update concept inactivation indicator and its descriptions indicator")
+			.build(branchPath.getPath(), RestExtensions.USER, "Update concept inactivation indicator and its descriptions indicator")
 			.execute(getBus())
 			.getSync();
 		
 		final SnomedConcept conceptAfterDescriptionPendingMoveChanges = SnomedRequests.prepareGetConcept(conceptId)
 				.setExpand("descriptions(expand(inactivationProperties()))")
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+				.build(branchPath.getPath())
 				.execute(getBus())
 				.getSync();
 		
@@ -933,7 +935,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		final String moduleConceptId = createNewConcept(branchPath);
 		String sourceRelationshipId = createNewRelationship(branchPath, conceptId, Concepts.HAS_DOSE_FORM, Concepts.MODULE_SCT_MODEL_COMPONENT);
 		String destinationRelationshipId = createNewRelationship(branchPath, Concepts.MODULE_SCT_MODEL_COMPONENT, Concepts.HAS_DOSE_FORM, conceptId);
-		CodeSystemURI codeSystemURI = new CodeSystemURI(branchPath.getPath().replace(Branch.MAIN_PATH, SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME));
+		ResourceURI codeSystemURI = SnomedContentRule.SNOMEDCT.withPath(branchPath.getPath().replace(Branch.MAIN_PATH + "/", ""));
 
 		SnomedRelationship sourceRelationship = SnomedRequests.prepareGetRelationship(sourceRelationshipId)
 				.build(codeSystemURI)

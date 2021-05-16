@@ -295,7 +295,7 @@ public class SnomedValidationIssueDetailTest extends BaseRevisionIndexTest {
 			.setMessageTemplate("Error")
 			.setSeverity(Severity.ERROR)
 			.setImplementation(context.service(ObjectMapper.class).writeValueAsString(ruleQuery))
-			.setToolingId(SnomedTerminologyComponentConstants.TERMINOLOGY_ID)
+			.setToolingId(SnomedTerminologyComponentConstants.TOOLING_ID)
 			.build()
 			.execute(context);
 	}

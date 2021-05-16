@@ -52,7 +52,7 @@ public class CodeSystemApiTest {
 		ResourceDocument.Fields.ID, "SNOMEDCT",
 		ResourceDocument.Fields.TITLE, "SNOMED CT",
 		ResourceDocument.Fields.URL, "http://snomed.info/sct",
-		ResourceDocument.Fields.TOOLING_ID, SnomedTerminologyComponentConstants.TERMINOLOGY_ID,
+		ResourceDocument.Fields.TOOLING_ID, SnomedTerminologyComponentConstants.TOOLING_ID,
 		ResourceDocument.Fields.OID, SnomedTerminologyComponentConstants.SNOMED_INT_OID
 	);
 	

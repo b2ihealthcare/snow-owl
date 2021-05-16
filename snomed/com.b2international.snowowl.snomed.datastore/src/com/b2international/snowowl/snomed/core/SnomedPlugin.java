@@ -170,7 +170,7 @@ public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 	
 	@Override
 	public String getToolingId() {
-		return SnomedTerminologyComponentConstants.TERMINOLOGY_ID;
+		return SnomedTerminologyComponentConstants.TOOLING_ID;
 	}
 	
 	@Override

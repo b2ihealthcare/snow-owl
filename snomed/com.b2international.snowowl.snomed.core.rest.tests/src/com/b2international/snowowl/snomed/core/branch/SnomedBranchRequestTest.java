@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,12 +50,13 @@ import com.b2international.snowowl.core.request.CommitResult;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.test.commons.Services;
 import com.b2international.snowowl.test.commons.TestMethodNameRule;
+import com.b2international.snowowl.test.commons.rest.RestExtensions;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -63,7 +64,7 @@ import com.google.common.collect.ImmutableMap;
  */
 public class SnomedBranchRequestTest {
 
-	private static final String REPOSITORY_ID = SnomedDatastoreActivator.REPOSITORY_UUID;
+	private static final String REPOSITORY_ID = SnomedTerminologyComponentConstants.TOOLING_ID;
 	
 	@Rule
 	public TestMethodNameRule methodName = new TestMethodNameRule(); 
@@ -177,7 +178,7 @@ public class SnomedBranchRequestTest {
 				.addParent(Concepts.ROOT_CONCEPT)
 				.addDescription(fsnBuilder)
 				.addDescription(ptBuilder)
-				.build(REPOSITORY_ID, first, "user", "Created new concept");
+				.build(first, RestExtensions.USER, "Created new concept");
 		
 		final CommitResult info = conceptRequest.execute(bus).getSync();
 		final String conceptId = info.getResultAs(String.class);
@@ -219,7 +220,7 @@ public class SnomedBranchRequestTest {
 			
 		// Check that the concept is visible on parent
 		SnomedRequests.prepareGetConcept(conceptId)
-				.build(REPOSITORY_ID, firstParentPath)
+				.build(firstParentPath)
 				.execute(bus)
 				.getSync();
 		

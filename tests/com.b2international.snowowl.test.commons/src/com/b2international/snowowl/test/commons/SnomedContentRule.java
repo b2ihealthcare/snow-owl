@@ -51,7 +51,8 @@ import com.b2international.snowowl.test.commons.rest.RestExtensions;
  */
 public class SnomedContentRule extends ExternalResource {
 
-	public static final ResourceURI SNOMEDCT = CodeSystem.uri("SNOMEDCT");
+	public static final String SNOMEDCT_ID = "SNOMEDCT";
+	public static final ResourceURI SNOMEDCT = CodeSystem.uri(SNOMEDCT_ID);
 	
 	private final Path importArchive;
 	private final Rf2ReleaseType contentType;
@@ -121,7 +122,7 @@ public class SnomedContentRule extends ExternalResource {
 			.setLanguage("language")
 			.setTitle("Extension " + codeSystemId)
 			.setOid("oid:" + codeSystemId)
-			.setToolingId(SnomedTerminologyComponentConstants.TERMINOLOGY_ID)
+			.setToolingId(SnomedTerminologyComponentConstants.TOOLING_ID)
 			.build(RestExtensions.USER, String.format("Create code system %s", codeSystemId))
 			.execute(eventBus)
 			.getSync(1, TimeUnit.MINUTES);

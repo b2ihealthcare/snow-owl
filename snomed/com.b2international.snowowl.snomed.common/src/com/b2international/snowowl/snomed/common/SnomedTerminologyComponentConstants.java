@@ -25,10 +25,7 @@ public abstract class SnomedTerminologyComponentConstants {
 	// suppress constructor
 	private SnomedTerminologyComponentConstants() {}
 
-	/**
-	 * @deprecated - TODO rename to TOOLING_ID and make it shorter, just snomed is enough
-	 */
-	public static final String TERMINOLOGY_ID = "snomed";
+	public static final String TOOLING_ID = "snomed";
 	
 	public static final String CONCEPT = "com.b2international.snowowl.terminology.snomed.concept";
 	public static final short CONCEPT_NUMBER = 100;

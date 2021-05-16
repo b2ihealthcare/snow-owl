@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,14 +23,13 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 
-import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.test.commons.SnomedContentRule;
 import com.google.common.base.Throwables;
 
 /**
@@ -46,7 +45,7 @@ public class EclSerializerTest extends AbstractSnomedApiTest {
 			AsyncRequest<SnomedConcepts> eclRequest = SnomedRequests.prepareSearchConcept()
 					.all()
 					.filterByEcl("<<" + Concepts.ROOT_CONCEPT + ":" + Concepts.MORPHOLOGY + " = " + Concepts.ROOT_CONCEPT)
-					.build(SnomedDatastoreActivator.REPOSITORY_UUID, Branch.MAIN_PATH);
+					.build(SnomedContentRule.SNOMEDCT);
 			
 			List<Promise<SnomedConcepts>> promises = newArrayList();
 			

@@ -414,6 +414,6 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 
 	@Override
 	public String getToolingId() {
-		return SnomedTerminologyComponentConstants.TERMINOLOGY_ID;
+		return SnomedTerminologyComponentConstants.TOOLING_ID;
 	}
 }

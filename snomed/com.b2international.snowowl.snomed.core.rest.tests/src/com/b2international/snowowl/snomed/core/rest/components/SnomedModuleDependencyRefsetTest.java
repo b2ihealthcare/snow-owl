@@ -49,7 +49,6 @@ import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.collect.Maps;
 
@@ -92,7 +91,7 @@ public class SnomedModuleDependencyRefsetTest extends AbstractSnomedApiTest {
 				.filterByActive(true)
 				.filterByModule(Concepts.MODULE_SCT_CORE) // filter for members where the module id is the SCT core module
 				.filterByRefSet(Concepts.REFSET_MODULE_DEPENDENCY_TYPE)
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, mainPath.getPath())
+				.build(mainPath.getPath())
 				.execute(getBus())
 				.getSync();
 		
@@ -117,7 +116,7 @@ public class SnomedModuleDependencyRefsetTest extends AbstractSnomedApiTest {
 				.filterByRefSet(Concepts.REFSET_MODULE_DEPENDENCY_TYPE)
 				.filterByModules(INT_MODULE_IDS)
 				.filterByReferencedComponent(INT_MODULE_IDS)
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+				.build(branchPath.getPath())
 				.execute(getBus())
 				.getSync();
 
@@ -150,7 +149,7 @@ public class SnomedModuleDependencyRefsetTest extends AbstractSnomedApiTest {
 		// check for the newly created module concept to have effective set to null
 		SnomedRequests.prepareSearchConcept()
 			.filterById(NORWEGIAN_MODULE_CONCEPT_ID)
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+			.build(branchPath.getPath())
 			.execute(getBus())
 			.getSync()
 			.forEach(c -> assertEquals("Effective time must still be null", null, c.getEffectiveTime()));
@@ -164,7 +163,7 @@ public class SnomedModuleDependencyRefsetTest extends AbstractSnomedApiTest {
 		
 		// check for the newly created module concept after versioning to have effectiveTime set to the correct date
 		SnomedConcept norwegianModule = SnomedRequests.prepareGetConcept(NORWEGIAN_MODULE_CONCEPT_ID)
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+			.build(branchPath.getPath())
 			.execute(getBus())
 			.getSync();
 		assertEquals("Effective time should have been set to the date of versioning", effectiveDate, norwegianModule.getEffectiveTime());
@@ -173,7 +172,7 @@ public class SnomedModuleDependencyRefsetTest extends AbstractSnomedApiTest {
 				.all()
 				.filterByActive(true)
 				.filterByRefSet(Concepts.REFSET_MODULE_DEPENDENCY_TYPE)
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+				.build(branchPath.getPath())
 				.execute(getBus())
 				.getSync();
 

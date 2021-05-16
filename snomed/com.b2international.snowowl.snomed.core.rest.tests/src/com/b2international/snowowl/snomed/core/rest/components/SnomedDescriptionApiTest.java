@@ -63,6 +63,7 @@ import com.b2international.snowowl.snomed.cis.domain.IdentifierStatus;
 import com.b2international.snowowl.snomed.cis.domain.SctId;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.AssociationTarget;
 import com.b2international.snowowl.snomed.core.domain.InactivationProperties;
@@ -74,7 +75,6 @@ import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.ModuleRequest.ModuleIdProvider;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -654,9 +654,9 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 				.field(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID, Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED)
 				.build();
 		
-		new RepositoryRequest<>(SnomedDatastoreActivator.REPOSITORY_UUID, context -> {
+		new RepositoryRequest<>(SnomedTerminologyComponentConstants.TOOLING_ID, context -> {
 			ApplicationContext.getServiceForClass(RepositoryManager.class)
-				.get(SnomedDatastoreActivator.REPOSITORY_UUID)
+				.get(SnomedTerminologyComponentConstants.TOOLING_ID)
 				.service(RevisionIndex.class)
 				.prepareCommit(branchPath.getPath())
 				.stageNew(member)
@@ -847,7 +847,7 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 			.setBody(bulk)
 			.setCommitComment("Delete multiple descriptions")
 			.setAuthor("test")
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+			.build(branchPath.getPath())
 			.execute(getBus())
 			.getSync();
 		
@@ -881,7 +881,7 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 		int numberOfResults = SnomedRequests.prepareSearchDescription()
 			.setLimit(0)
 			.filterByTerm(TermFilter.fuzzyMatch(TextConstants.DELIMITERS))
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+			.build(branchPath.getPath())
 			.execute(getBus())
 			.getSync()
 			.getTotal();

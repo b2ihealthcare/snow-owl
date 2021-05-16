@@ -67,7 +67,7 @@ public final class SnomedReasonerPlugin extends Plugin implements TerminologyRep
 	
 	@Override
 	public String getToolingId() {
-		return SnomedTerminologyComponentConstants.TERMINOLOGY_ID;
+		return SnomedTerminologyComponentConstants.TOOLING_ID;
 	}
 	
 	@Override

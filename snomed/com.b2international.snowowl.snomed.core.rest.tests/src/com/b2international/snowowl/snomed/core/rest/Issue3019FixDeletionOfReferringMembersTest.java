@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import org.junit.Test;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.test.commons.rest.RestExtensions;
 import com.google.common.collect.ImmutableMap;
@@ -55,14 +54,9 @@ public class Issue3019FixDeletionOfReferringMembersTest extends AbstractSnomedAp
 		
 		// delete query refset member's corresponding refset
 		SnomedRequests.prepareDeleteConcept(queryMemberRefsetId)
-		.build(
-				SnomedDatastoreActivator.REPOSITORY_UUID,
-				branchPath.getPath(),
-				RestExtensions.USER, 
-				"Deleted reference set which was member of query type refset"
-			  )
-		.execute(getBus())
-		.getSync();
+			.build(branchPath.getPath(), RestExtensions.USER, "Deleted reference set which was member of query type refset")
+			.execute(getBus())
+			.getSync();
 
 		// check if refset was deleted after request
 		getComponent(branchPath, SnomedComponentType.REFSET, queryMemberRefsetId).statusCode(404);
