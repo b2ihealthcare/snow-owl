@@ -132,6 +132,10 @@ public final class ResourceDocument extends RevisionDocument {
 			return matchAny(Fields.TOOLING_ID, toolingIds);
 		}
 		
+		public static Expression branchPaths(Iterable<String> branchPaths) {
+			return matchAny(Fields.BRANCH_PATH, branchPaths);
+		}
+		
 		public static Expression oid(String oid) {
 			return exactMatch(Fields.OID, oid);
 		}

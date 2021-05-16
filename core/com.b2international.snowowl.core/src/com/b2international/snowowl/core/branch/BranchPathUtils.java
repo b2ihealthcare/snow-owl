@@ -21,6 +21,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.unmodifiableList;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -190,5 +191,15 @@ public abstract class BranchPathUtils {
 	
 	private static IBranchPath getOrCache(final IBranchPath branchPath) {
 		return BRANCH_PATH_INTERNER.intern(branchPath);
+	}
+
+	public static List<String> getAllPaths(String branchPath) {
+		final List<String> allPaths = new ArrayList<>(3);
+		IBranchPath path = createPath(branchPath);
+		Iterator<IBranchPath> it = bottomToTopIterator(path);
+		while (it.hasNext()) {
+			allPaths.add(it.next().getPath());
+		}
+		return allPaths;
 	}
 }

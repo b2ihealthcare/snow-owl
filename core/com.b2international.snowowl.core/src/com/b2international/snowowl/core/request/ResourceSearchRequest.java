@@ -40,7 +40,17 @@ final class ResourceSearchRequest extends SearchIndexResourceRequest<RepositoryC
 		/**
 		 * Filter matches by their title (exact match).
 		 */
-		TITLE_EXACT
+		TITLE_EXACT, 
+		
+		/**
+		 * Filter matches by their tooling id property.
+		 */
+		TOOLING_ID,
+		
+		/**
+		 * Filter matches by their currently associated working branch (exact match).
+		 */
+		BRANCH,
 		
 	}
 	
@@ -55,6 +65,8 @@ final class ResourceSearchRequest extends SearchIndexResourceRequest<RepositoryC
 		addIdFilter(queryBuilder, ResourceDocument.Expressions::ids);
 		addFilter(queryBuilder, OptionKey.RESOURCE_TYPE, String.class, ResourceDocument.Expressions::resourceTypes);
 		addFilter(queryBuilder, OptionKey.TITLE_EXACT, String.class, ResourceDocument.Expressions::titles);
+		addFilter(queryBuilder, OptionKey.TOOLING_ID, String.class, ResourceDocument.Expressions::toolingIds);
+		addFilter(queryBuilder, OptionKey.BRANCH, String.class, ResourceDocument.Expressions::branchPaths);
 		return queryBuilder.build();
 	}
 

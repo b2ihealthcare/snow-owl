@@ -35,6 +35,7 @@ import com.b2international.snowowl.core.config.IndexSettings;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.monitoring.MonitoringConfiguration;
 import com.b2international.snowowl.core.plugin.Component;
+import com.b2international.snowowl.core.repository.PathTerminologyResourceResolver;
 import com.b2international.snowowl.core.repository.TerminologyComponents;
 import com.b2international.snowowl.core.setup.ConfigurationRegistry;
 import com.b2international.snowowl.core.setup.Environment;
@@ -69,6 +70,7 @@ public final class SnowOwlPlugin extends Plugin {
 	public void init(SnowOwlConfiguration configuration, Environment env) {
 		env.services().registerService(TerminologyRegistry.class, TerminologyRegistry.INSTANCE);
 		env.services().registerService(ResourceURIPathResolver.class, new DefaultResourceURIPathResolver());
+		env.services().registerService(PathTerminologyResourceResolver.class, new PathTerminologyResourceResolver.Default());
 		env.services().registerService(TimestampProvider.class, new TimestampProvider.Default());
 		
 		// configure monitoring support

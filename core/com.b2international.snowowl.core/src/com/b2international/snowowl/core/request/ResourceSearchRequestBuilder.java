@@ -67,6 +67,22 @@ public final class ResourceSearchRequestBuilder
 		return addOption(OptionKey.TITLE_EXACT, titles);
 	}
 	
+	public ResourceSearchRequestBuilder filterByToolingId(String toolingId) {
+		return addOption(OptionKey.TOOLING_ID, toolingId);
+	}
+	
+	public ResourceSearchRequestBuilder filterByToolingIds(Iterable<String> toolingIds) {
+		return addOption(OptionKey.TOOLING_ID, toolingIds);
+	}
+	
+	public ResourceSearchRequestBuilder filterByBranch(String branchPath) {
+		return addOption(OptionKey.BRANCH, branchPath);
+	}
+	
+	public ResourceSearchRequestBuilder filterByBranches(Iterable<String> branchPaths) {
+		return addOption(OptionKey.BRANCH, branchPaths);
+	}
+	
 	@Override
 	protected SearchResourceRequest<RepositoryContext, Resources> createSearch() {
 		return new ResourceSearchRequest();

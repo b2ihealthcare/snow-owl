@@ -28,6 +28,10 @@ public final class ResourceRequests {
 
 	public static final String VERSION_JOB_KEY_PREFIX = "version-";
 	
+	public static ResourceGetRequestBuilder prepareGet(ResourceURI resourceUri) {
+		return prepareGet(resourceUri.getResourceId());
+	}
+	
 	public static ResourceGetRequestBuilder prepareGet(String resourceId) {
 		return new ResourceGetRequestBuilder(resourceId);
 	}
