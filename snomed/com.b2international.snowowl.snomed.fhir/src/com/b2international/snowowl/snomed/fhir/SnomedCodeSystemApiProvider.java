@@ -176,9 +176,9 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 	}
 	
 	@Override
-	protected Set<String> fetchAncestors(String branchPath, String componentId) {
+	protected Set<String> fetchAncestors(final CodeSystemURI codeSystemUri, final String componentId) {
 		return SnomedConcept.GET_ANCESTORS.apply(SnomedRequests.prepareGetConcept(componentId)
-			.build(getRepositoryId(), branchPath)
+			.build(codeSystemUri)
 			.execute(getBus())
 			.getSync());
 	}
@@ -186,7 +186,7 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 	@Override
 	protected int getCount(CodeSystemVersion codeSystemVersion) {
 		return SnomedRequests.prepareSearchConcept().setLimit(0)
-			.build(getRepositoryId(), codeSystemVersion.getPath())
+			.build(codeSystemVersion.getUri())
 			.execute(getBus()).getSync().getTotal();
 	}
 	

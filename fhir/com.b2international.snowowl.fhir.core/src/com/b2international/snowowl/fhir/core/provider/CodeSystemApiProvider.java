@@ -33,6 +33,8 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.codesystem.CodeSystemSearchRequestBuilder;
@@ -317,8 +319,7 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 	@Override
 	public SubsumptionResult subsumes(SubsumptionRequest subsumptionRequest) {
 		
-		final String version = getVersion(subsumptionRequest);
-		final String branchPath = getBranchPath(version);
+		final CodeSystemURI codeSystemUri = getCodeSystemUri(subsumptionRequest);
 		
 		String codeA = null;
 		String codeB = null;
@@ -330,8 +331,8 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 			codeB = subsumptionRequest.getCodingB().getCodeValue();
 		}
 		
-		final Set<String> ancestorsA = fetchAncestors(branchPath, codeA);
-		final Set<String> ancestorsB = fetchAncestors(branchPath, codeB);
+		final Set<String> ancestorsA = fetchAncestors(codeSystemUri, codeA);
+		final Set<String> ancestorsB = fetchAncestors(codeSystemUri, codeB);
 		
 		if (codeA.equals(codeB)) {
 			return SubsumptionResult.equivalent();
@@ -344,6 +345,16 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 		}
 	}
 	
+	protected CodeSystemURI getCodeSystemUri(SubsumptionRequest subsumptionRequest) {
+		
+		String version = subsumptionRequest.getVersion();
+		if (!StringUtils.isEmpty(version)) {
+			return new CodeSystemURI(getCodeSystemShortName() + "/" + version);
+		} else {
+			return new CodeSystemURI(getCodeSystemShortName());
+		}
+	}
+
 	/**
 	 * Returns the version information from the request
 	 * @param subsumptionRequest 
@@ -390,10 +401,10 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 	 * Returns all ancestors up to the terminology's root component (in terms of Snow Owl, this means {@link IComponent#ROOT_ID}).
 	 * 
 	 * @param branchPath
-	 * @param componentId
+	 * @param codeSystemUri
 	 * @return
 	 */
-	protected abstract Set<String> fetchAncestors(String branchPath, String componentId);
+	protected abstract Set<String> fetchAncestors(final CodeSystemURI codeSystemUri, String componentId);
 
 	/**
 	 * Returns the supported properties

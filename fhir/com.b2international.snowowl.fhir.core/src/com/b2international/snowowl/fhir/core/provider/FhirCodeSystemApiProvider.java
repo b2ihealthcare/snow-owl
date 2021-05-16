@@ -172,7 +172,7 @@ public final class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 	}
 	
 	@Override
-	protected Set<String> fetchAncestors(String branchPath, String componentId) {
+	protected Set<String> fetchAncestors(final CodeSystemURI codeSystemUri, String componentId) {
 		throw new UnsupportedOperationException();
 	}
 	
