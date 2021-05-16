@@ -31,7 +31,7 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.merge.ComponentRevisionConflictProcessor;
 import com.b2international.snowowl.core.merge.IMergeConflictRule;
-import com.b2international.snowowl.core.repository.RepositoryCodeSystemProvider;
+import com.b2international.snowowl.core.repository.PathTerminologyResourceResolver;
 import com.b2international.snowowl.core.repository.RevisionDocument;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.datastore.index.entry.*;
@@ -136,8 +136,8 @@ public final class SnomedComponentRevisionConflictProcessor extends ComponentRev
 		String extensionBranch = staging.getMergeFromBranchPath();
 		String donationBranch = staging.getBranchPath();
 		
-		CodeSystem extensionCodeSystem = context.service(RepositoryCodeSystemProvider.class).get(extensionBranch);
-		CodeSystem donationCodeSystem = context.service(RepositoryCodeSystemProvider.class).get(donationBranch);
+		CodeSystem extensionCodeSystem = context.service(PathTerminologyResourceResolver.class).resolve(context, context.info().id(), extensionBranch);
+		CodeSystem donationCodeSystem = context.service(PathTerminologyResourceResolver.class).resolve(context, context.info().id(), donationBranch);
 		
 		// donation Code System should be marked as extension CodeSystem to be able to detect donation changes, otherwise skip donation check and report all conflicts
 		// extensionOf is a required property for Code Systems that would like to participate in content donation
