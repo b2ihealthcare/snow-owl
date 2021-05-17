@@ -36,8 +36,7 @@ public enum Rf2ValidationDefects {
 	INVALID_UUID("Invalid UUID in release file"),
 	RELATIONSHIP_VALUE_INVALID_DECIMAL("Relationship value can not be parsed as a decimal"),
 	RELATIONSHIP_VALUE_INVALID_INTEGER("Relationship value can not be parsed as an integer"),
-	RELATIONSHIP_VALUE_INVALID_STRING("Relationship value can not be parsed as a string"),
-	RELATIONSHIP_VALUE_INVALID_BOOLEAN("Relationship value can not be parsed as a boolean");
+	RELATIONSHIP_VALUE_INVALID_STRING("Relationship value can not be parsed as a string");
 	
 	private final String label;
 	
