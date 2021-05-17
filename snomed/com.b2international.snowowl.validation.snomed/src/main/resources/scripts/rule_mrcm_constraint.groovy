@@ -240,8 +240,8 @@ if (params.isUnpublishedOnly) {
 			final ExpressionBuilder expressionBuilder = Expressions.builder()
 					.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
 					.filter(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(domain))
-					.should(nestedMatch(SnomedRefSetMemberIndexEntry.Fields.CLASS_AXIOM_RELATIONSHIP, nestedBuilder))
-					.should(nestedMatch(SnomedRefSetMemberIndexEntry.Fields.GCI_AXIOM_RELATIONSHIP, nestedBuilder))
+					.should(nestedMatch(SnomedRefSetMemberIndexEntry.Fields.CLASS_AXIOM_RELATIONSHIP, nestedBuilder.build()))
+					.should(nestedMatch(SnomedRefSetMemberIndexEntry.Fields.GCI_AXIOM_RELATIONSHIP, nestedBuilder.build()))
 					.setMinimumNumberShouldMatch(1)
 		
 			final Query<String> query = Query.select(String.class)
