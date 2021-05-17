@@ -223,7 +223,7 @@ public final class NormalFormGenerator implements INormalFormGenerator {
 
 		candidateNonIsARelationships.put(conceptId, ImmutableList.<StatementFragment>builder()
 				.addAll(ownStatedNonIsaRelationships)
-				.addAll(reasonerTaxonomy.getAxiomGroupedRelationships().get(conceptId))
+				.addAll(reasonerTaxonomy.getAxiomNonIsARelationships().get(conceptId))
 				.addAll(reasonerTaxonomy.getAdditionalGroupedRelationships().get(conceptId))
 				.build());
 

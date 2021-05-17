@@ -99,7 +99,7 @@ public final class ReasonerTaxonomyBuilder {
 	// Holds statement fragments collected from stated relationships (including IS A relationships)
 	private InternalIdMultimap.Builder<StatementFragment> statedRelationships;
 	// Holds statement fragments extracted from OWL axioms (_not_ including IS A, as we only need this information for the normal form)
-	private InternalIdMultimap.Builder<StatementFragment> axiomGroupedRelationships;
+	private InternalIdMultimap.Builder<StatementFragment> axiomNonIsaRelationships;
 	private InternalIdMultimap.Builder<StatementFragment> existingInferredRelationships;
 	private InternalIdMultimap.Builder<StatementFragment> additionalGroupedRelationships;
 
@@ -190,7 +190,7 @@ public final class ReasonerTaxonomyBuilder {
 		exhaustiveConcepts = InternalSctIdSet.builder(conceptMap);
 		
 		statedRelationships = InternalIdMultimap.builder(conceptMap);
-		axiomGroupedRelationships = InternalIdMultimap.builder(conceptMap);
+		axiomNonIsaRelationships = InternalIdMultimap.builder(conceptMap);
 		additionalGroupedRelationships = InternalIdMultimap.builder(conceptMap);
 		existingInferredRelationships = InternalIdMultimap.builder(conceptMap);
 		
@@ -676,7 +676,7 @@ public final class ReasonerTaxonomyBuilder {
 				.build();
 		
 		// XXX: we can only guess the lower limit here (1 relationship for each OWL axiom)
-		final List<StatementFragment> statementFragments = new ArrayList<>(SCROLL_LIMIT);
+		final List<StatementFragment> nonIsAFragments = new ArrayList<>(SCROLL_LIMIT);
 		final List<String> axioms = new ArrayList<>(SCROLL_LIMIT);
 		String lastReferencedComponentId = "";
 		int groupOffset = AXIOM_GROUP_BASE;
@@ -689,12 +689,12 @@ public final class ReasonerTaxonomyBuilder {
 					lastReferencedComponentId = referencedComponentId;
 				} else if (!lastReferencedComponentId.equals(referencedComponentId)) {
 					if (conceptMap.containsKey(lastReferencedComponentId)) {
-						axiomGroupedRelationships.putAll(lastReferencedComponentId, statementFragments);
+						axiomNonIsaRelationships.putAll(lastReferencedComponentId, nonIsAFragments);
 						statedAxioms.putAll(lastReferencedComponentId, axioms);
 					} else {
 						LOGGER.debug("Not registering OWL axioms for concept {} as it is inactive.", lastReferencedComponentId);
 					}
-					statementFragments.clear();
+					nonIsAFragments.clear();
 					axioms.clear();
 					
 					lastReferencedComponentId = referencedComponentId;
@@ -749,7 +749,7 @@ public final class ReasonerTaxonomyBuilder {
 						
 						if (relationship.hasValue()) {
 							// Add relationship with value
-							statementFragments.add(relationship.toStatementFragment(groupOffset));
+							nonIsAFragments.add(relationship.toStatementFragment(groupOffset));
 							continue;
 						}
 							
@@ -761,9 +761,9 @@ public final class ReasonerTaxonomyBuilder {
 
 						}
 							
-						if (relationship.getGroup() > 0) {
-							// Add grouped relationship with destination
-							statementFragments.add(relationship.toStatementFragment(groupOffset));
+						if (!relationship.getTypeId().equals(Concepts.IS_A)) {
+							// Add non-IS_A relationships with destination
+							nonIsAFragments.add(relationship.toStatementFragment(groupOffset));
 							continue;
 						}
 					}
@@ -779,12 +779,12 @@ public final class ReasonerTaxonomyBuilder {
 		
 		if (!lastReferencedComponentId.isEmpty()) {
 			if (conceptMap.containsKey(lastReferencedComponentId)) {
-				axiomGroupedRelationships.putAll(lastReferencedComponentId, statementFragments);
+				axiomNonIsaRelationships.putAll(lastReferencedComponentId, nonIsAFragments);
 				statedAxioms.putAll(lastReferencedComponentId, axioms);
 			} else {
 				LOGGER.debug("Not registering OWL axioms for concept {} as it is inactive.", lastReferencedComponentId);
 			}
-			statementFragments.clear();
+			nonIsAFragments.clear();
 			axioms.clear();
 		}
 		
@@ -1009,7 +1009,7 @@ public final class ReasonerTaxonomyBuilder {
 				exhaustiveConcepts.build(),
 				
 				statedRelationships.build(),
-				axiomGroupedRelationships.build(),
+				axiomNonIsaRelationships.build(),
 				existingInferredRelationships.build(),
 				additionalGroupedRelationships.build(),
 				

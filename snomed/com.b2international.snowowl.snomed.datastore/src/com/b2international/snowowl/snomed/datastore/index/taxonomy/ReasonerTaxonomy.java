@@ -43,7 +43,7 @@ public final class ReasonerTaxonomy implements IReasonerTaxonomy {
 	private final InternalSctIdSet exhaustiveConcepts;
 
 	private final InternalIdMultimap<StatementFragment> statedRelationships;
-	private final InternalIdMultimap<StatementFragment> axiomGroupedRelationships;
+	private final InternalIdMultimap<StatementFragment> axiomNonIsARelationships;
 	private final InternalIdMultimap<StatementFragment> existingInferredRelationships;
 	private final InternalIdMultimap<StatementFragment> additionalGroupedRelationships;
 	
@@ -71,7 +71,7 @@ public final class ReasonerTaxonomy implements IReasonerTaxonomy {
 			final InternalSctIdSet exhaustiveConcepts, 
 			
 			final InternalIdMultimap<StatementFragment> statedRelationships,
-			final InternalIdMultimap<StatementFragment> axiomGroupedRelationships,
+			final InternalIdMultimap<StatementFragment> axiomNonIsARelationships,
 			final InternalIdMultimap<StatementFragment> existingInferredRelationships,
 			final InternalIdMultimap<StatementFragment> additionalGroupedRelationships, 
 			
@@ -98,7 +98,7 @@ public final class ReasonerTaxonomy implements IReasonerTaxonomy {
 		this.exhaustiveConcepts = exhaustiveConcepts;
 		
 		this.statedRelationships = statedRelationships;
-		this.axiomGroupedRelationships = axiomGroupedRelationships;
+		this.axiomNonIsARelationships = axiomNonIsARelationships;
 		this.existingInferredRelationships = existingInferredRelationships;
 		this.additionalGroupedRelationships = additionalGroupedRelationships;
 		
@@ -158,8 +158,8 @@ public final class ReasonerTaxonomy implements IReasonerTaxonomy {
 		return statedRelationships;
 	}
 	
-	public InternalIdMultimap<StatementFragment> getAxiomGroupedRelationships() {
-		return axiomGroupedRelationships;
+	public InternalIdMultimap<StatementFragment> getAxiomNonIsARelationships() {
+		return axiomNonIsARelationships;
 	}
 	
 	public InternalIdMultimap<StatementFragment> getExistingInferredRelationships() {
@@ -223,7 +223,7 @@ public final class ReasonerTaxonomy implements IReasonerTaxonomy {
 				exhaustiveConcepts,
 				
 				statedRelationships,
-				axiomGroupedRelationships,
+				axiomNonIsARelationships,
 				existingInferredRelationships,
 				additionalGroupedRelationships,
 				
