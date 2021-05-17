@@ -52,10 +52,10 @@ public final class SnomedRelationshipCreateRequest extends BaseSnomedComponentCr
 	// Not @NotNull, it will be null if a destination ID is set
 	private RelationshipValue value; 
 
-	@NotNull @Min(0) @Max(Byte.MAX_VALUE)
+	@NotNull @Min(0) @Max(Short.MAX_VALUE)
 	private Integer group;
 
-	@NotNull @Min(0) @Max(Byte.MAX_VALUE)
+	@NotNull @Min(0) @Max(Short.MAX_VALUE)
 	private Integer unionGroup;
 
 	@NotNull

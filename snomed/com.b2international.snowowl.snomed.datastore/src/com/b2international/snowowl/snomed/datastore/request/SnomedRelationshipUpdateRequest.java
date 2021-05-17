@@ -44,10 +44,10 @@ public final class SnomedRelationshipUpdateRequest extends SnomedComponentUpdate
 	// Not @NotNull, update of relationship value is optional
 	private RelationshipValue value;
 
-	@Min(0)	@Max(Integer.MAX_VALUE)
+	@Min(0)	@Max(Short.MAX_VALUE)
 	private Integer group;
 
-	@Min(0)	@Max(Integer.MAX_VALUE)
+	@Min(0)	@Max(Short.MAX_VALUE)
 	private Integer unionGroup;
 
 	// Not @NotEmpty, update of characteristic type ID is optional
