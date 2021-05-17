@@ -183,7 +183,7 @@ if (params.isUnpublishedOnly) {
 
 			final ExpressionBuilder expressionBuilder = Expressions.builder()
 					.filter(SnomedRelationshipIndexEntry.Expressions.active())
-					.filter(SnomedRelationshipIndexEntry.Expressions.withDestinationId())
+					.filter(SnomedRelationshipIndexEntry.Expressions.hasDestinationId())
 					.filter(SnomedRelationshipIndexEntry.Expressions.sourceIds(domain))
 					.filter(SnomedRelationshipIndexEntry.Expressions.typeIds(getApplicableConcepts(attributeExpression)))
 					.mustNot(SnomedRelationshipIndexEntry.Expressions.destinationIds(getApplicableConcepts(rangeExpression)))
@@ -228,7 +228,7 @@ if (params.isUnpublishedOnly) {
 			final ExpressionBuilder expressionBuilder = Expressions.builder()
 					.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
 					.filter(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(domain))
-					.filter(SnomedRefSetMemberIndexEntry.Expressions.owlExpressionWithDestinationId())
+					.filter(SnomedRefSetMemberIndexEntry.Expressions.owlExpressionHasDestinationId())
 					.filter(SnomedRefSetMemberIndexEntry.Expressions.owlExpressionType(attribute))
 					.mustNot(SnomedRefSetMemberIndexEntry.Expressions.owlExpressionDestination(range))
 			

@@ -133,16 +133,16 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 			return matchAny(Fields.TYPE_ID, typeIds);
 		}
 
+		public static Expression hasDestinationId() {
+			return exists(Fields.DESTINATION_ID);
+		}
+
 		public static Expression destinationId(final String destinationId) {
 			return destinationIds(Collections.singleton(destinationId));
 		}
 
 		public static Expression destinationIds(final Collection<String> destinationIds) {
 			return matchAny(Fields.DESTINATION_ID, destinationIds);
-		}
-
-		public static Expression withDestinationId() {
-			return exists(Fields.DESTINATION_ID);
 		}
 
 		public static Expression destinationNegated() {
@@ -197,10 +197,6 @@ public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument 
 				s -> matchRange(Fields.STRING_VALUE, s, null, includeLower, true)); 
 		}
 		
-		public static Expression hasDestinationId() {
-			return exists(Fields.DESTINATION_ID);
-		}
-
 		public static Expression valueType(final RelationshipValueType valueType) {
 			return exactMatch(Fields.VALUE_TYPE, valueType.name());
 		}
