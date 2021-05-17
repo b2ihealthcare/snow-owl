@@ -177,7 +177,21 @@ public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 	}
 	
 	@Test
-	public void persistDataHasValueAxiom() throws Exception {
+	public void persistDataHasValueAxiom_Integer() throws Exception {
+		persistDataHasValueAxiom("\"99\"^^xsd:integer", new RelationshipValue(99));
+	}
+	
+	@Test
+	public void persistDataHasValueAxiom_Decimal() throws Exception {
+		persistDataHasValueAxiom("\"3.6\"^^xsd:decimal", new RelationshipValue(3.6d));
+	}
+	
+	@Test
+	public void persistDataHasValueAxiom_String() throws Exception {
+		persistDataHasValueAxiom("\"Hello world\"^^xsd:string", new RelationshipValue("Hello world"));
+	}
+
+	private void persistDataHasValueAxiom(String owlValueLiteral, RelationshipValue value) throws Exception {
 		String parentConceptId = createNewConcept(branchPath);
 		String childConceptId = createNewConcept(branchPath, parentConceptId);
 
@@ -187,17 +201,29 @@ public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 			+ " ObjectIntersectionOf(" 
 			+ ":" + Concepts.ROOT_CONCEPT
 			+ " ObjectSomeValuesFrom(:609096000 "
-			+ "DataHasValue(:" + Concepts.MORPHOLOGY + " \"99\"^^xsd:integer))))"));
+			+ "DataHasValue(:" + Concepts.MORPHOLOGY + " " + owlValueLiteral + "))))"));
 		
-		RelationshipValue value = new RelationshipValue(99);
-		verifyRelationshipValueChanges(parentConceptId, childConceptId, value );
+		verifyRelationshipValueChanges(parentConceptId, childConceptId, value);
 	}
 	
 	@Test
-	public void persistInferredRelationshipWithValue() throws Exception {
+	public void persistInferredRelationshipWithValue_Integer() throws Exception {
+		persistInferredRelationshipWithValue(new RelationshipValue(99));
+	}
+	
+	@Test
+	public void persistInferredRelationshipWithValue_Decimal() throws Exception {
+		persistInferredRelationshipWithValue(new RelationshipValue(3.6d));
+	}
+	
+	@Test
+	public void persistInferredRelationshipWithValue_String() throws Exception {
+		persistInferredRelationshipWithValue(new RelationshipValue("Hello world"));
+	}
+
+	private void persistInferredRelationshipWithValue(RelationshipValue value) throws Exception {
 		String parentConceptId = createNewConcept(branchPath);
 		String childConceptId = createNewConcept(branchPath, parentConceptId);
-		RelationshipValue value = new RelationshipValue("testing");
 		
 		// Add _stated_ relationship with value (unlikely to be encountered in a dataset)
 		createNewConcreteValue(branchPath, parentConceptId, Concepts.MORPHOLOGY, value, Concepts.STATED_RELATIONSHIP, 1);
@@ -205,7 +231,7 @@ public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 		verifyRelationshipValueChanges(parentConceptId, childConceptId, value);
 	}
 
-	private void verifyRelationshipValueChanges(String parentConceptId, String childConceptId, RelationshipValue value) throws Exception {
+	private void verifyRelationshipValueChanges(String parentConceptId, String childConceptId, RelationshipValue expectedValue) throws Exception {
 		String classificationId = getClassificationJobId(beginClassification(branchPath));
 		waitForClassificationJob(branchPath, classificationId)
 			.statusCode(200)
@@ -235,7 +261,7 @@ public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 					assertEquals(Concepts.ROOT_CONCEPT, change.getRelationship().getDestinationId());
 					break;
 				case Concepts.MORPHOLOGY:
-					assertEquals(value, change.getRelationship().getValueAsObject());
+					assertEquals(expectedValue, change.getRelationship().getValueAsObject());
 					break;
 			}
 		}
@@ -247,7 +273,7 @@ public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 					assertEquals(parentConceptId, change.getRelationship().getDestinationId());
 					break;
 				case Concepts.MORPHOLOGY:
-					assertEquals(value, change.getRelationship().getValueAsObject());
+					assertEquals(expectedValue, change.getRelationship().getValueAsObject());
 					break;
 			}
 		}
