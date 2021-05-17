@@ -52,6 +52,9 @@ public final class TerminologyResourceRequest<R> extends DelegatingRequest<Servi
 		super(next);
 		this.toolingId = toolingId;
 		this.resourceUriOrPath = resourceUriOrPath;
+		if (resourceUriOrPath.startsWith(Branch.MAIN_PATH) && Strings.isNullOrEmpty(toolingId)) {
+			throw new BadRequestException("Reflective access ('repositoryId/path') to terminology resource content is not supported in this request builder.");
+		}
 	}
 	
 	public ResourceURI getResourceURI(ServiceProvider context) {
@@ -83,9 +86,6 @@ public final class TerminologyResourceRequest<R> extends DelegatingRequest<Servi
 	
 	private void initialize(ServiceProvider context) {
 		if (resourceUriOrPath.startsWith(Branch.MAIN_PATH)) {
-			if (Strings.isNullOrEmpty(toolingId)) {
-				throw new BadRequestException("Reflective access ('repositoryId/path') to terminology resource content is not supported in this request builder");
-			}
 			context.log().warn("Reflective access of terminology resources ('{}/{}') is not the recommended way. Consider using ResourceURIs when sending requested to work on resources.", toolingId, resourceUriOrPath);
 			this.resource = context.service(PathTerminologyResourceResolver.class).resolve(context, toolingId, resourceUriOrPath);
 			this.resourceUri = resource.getResourceURI(resourceUriOrPath);
