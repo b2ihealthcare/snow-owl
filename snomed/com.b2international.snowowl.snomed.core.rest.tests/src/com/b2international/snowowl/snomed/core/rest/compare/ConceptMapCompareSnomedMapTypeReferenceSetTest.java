@@ -126,15 +126,15 @@ public class ConceptMapCompareSnomedMapTypeReferenceSetTest extends AbstractCore
 	
 	private ConceptMapMapping mapping(String memberId, ComponentURI containerURI, String sourceCode, String targetCode) {
 		return ConceptMapMapping.builder()
-				.uri(ComponentURI.of(codeSystemURI.withoutPath(), SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, memberId))
+				.uri(ComponentURI.of(codeSystemURI, SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, memberId))
 				.active(true)
 				.containerSetURI(containerURI)
 				.containerTerm(baseReferenceSetURI == containerURI ? "rf1" : "rf2")
 				.containerIconId(Concepts.REFSET_SIMPLE_MAP_TYPE)
-				.sourceComponentURI(ComponentURI.of(codeSystemURI.withoutPath(), SnomedTerminologyComponentConstants.CONCEPT_NUMBER, sourceCode))
+				.sourceComponentURI(ComponentURI.of(codeSystemURI, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, sourceCode))
 				.sourceTerm(sourceCode)
 				.sourceIconId("attribute")
-				.targetComponentURI(ComponentURI.of(codeSystemURI.withoutPath(), SnomedTerminologyComponentConstants.CONCEPT_NUMBER, targetCode))
+				.targetComponentURI(ComponentURI.of(codeSystemURI, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, targetCode))
 				.targetTerm(targetCode)
 				.targetIconId("attribute")
 				.mapGroup(0)
@@ -144,7 +144,7 @@ public class ConceptMapCompareSnomedMapTypeReferenceSetTest extends AbstractCore
 	}
 	
 	private ComponentURI createURI(String referenceSetId) {
-		return ComponentURI.of(codeSystemURI.withoutPath(), SnomedTerminologyComponentConstants.REFSET_NUMBER, referenceSetId);
+		return ComponentURI.of(codeSystemURI, SnomedTerminologyComponentConstants.REFSET_NUMBER, referenceSetId);
 	}
 	
 	private String createSimpleMapTypeRefSet(String refSetName) {
@@ -198,7 +198,7 @@ public class ConceptMapCompareSnomedMapTypeReferenceSetTest extends AbstractCore
 			.setActive(true)
 			.setModuleId(Concepts.MODULE_SCT_CORE)
 			.setProperties(Map.of(
-				SnomedRf2Headers.FIELD_MAP_TARGET, ComponentURI.of(codeSystemURI.withoutPath(), SnomedTerminologyComponentConstants.CONCEPT_NUMBER, targetCode).toString()
+				SnomedRf2Headers.FIELD_MAP_TARGET, ComponentURI.of(codeSystemURI, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, targetCode).toString()
 			))
 			.build(codeSystemURI, RestExtensions.USER, "New Member")
 			.execute(getBus())

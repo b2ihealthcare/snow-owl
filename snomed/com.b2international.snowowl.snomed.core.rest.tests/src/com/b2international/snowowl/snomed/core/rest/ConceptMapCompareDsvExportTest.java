@@ -35,6 +35,7 @@ import java.util.Set;
 import org.assertj.core.util.Files;
 import org.junit.Test;
 
+import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.compare.ConceptMapCompareChangeKind;
 import com.b2international.snowowl.core.compare.ConceptMapCompareResultItem;
@@ -42,24 +43,24 @@ import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.domain.ConceptMapMapping;
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.test.commons.Services;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 7.13
  */
 public class ConceptMapCompareDsvExportTest {
-	private static final Set<ConceptMapCompareChangeKind> ALL = ImmutableSet.copyOf(ConceptMapCompareChangeKind.values());
+	
+	private static final Set<ConceptMapCompareChangeKind> ALL = Set.of(ConceptMapCompareChangeKind.values());
 
-	private static final List<ConceptMapCompareResultItem> ITEMS = ImmutableList.of(
-			createItem(DIFFERENT_TARGET, "A", "123037004", "Body structure", "H00-H59", "Chapter VII - Diseases of the eye and adnexa"),
-			createItem(DIFFERENT_TARGET, "B", "123037004", "Body structure", "H60-H95", "Chapter VII - Diseases of the ear and mastoid process"),
-			createItemUnspecifiedTarget(PRESENT, "B", "361083003", "Normal anatomy"),
-			createItem(PRESENT, "B", "442083009", "Anatomical or acquired body structure", "P00-P96", "Chapter XVI - Certain conditions originating in the perinatal preioid"),
-			createItemUnspecifiedTarget(MISSING, "A", "14734007", "Administrative procedure (procedure)"),
-			createItem(SAME, "A", "91832008", "Anatomical organizational pattern", "I00-I99", "Chapter IX - Diseases of the circulatory system"),
-			createItem(SAME, "B", "258331007", "Anatomical site notations for tumor staging", "C00-D48", "Chapter II - Neoplasms"),
-			createItemUnspecifiedTarget(SAME, "B", "278001007", "Nonspecific site"));
+	private static final List<ConceptMapCompareResultItem> ITEMS = List.of(
+		createItem(DIFFERENT_TARGET, "A", "123037004", "Body structure", "H00-H59", "Chapter VII - Diseases of the eye and adnexa"),
+		createItem(DIFFERENT_TARGET, "B", "123037004", "Body structure", "H60-H95", "Chapter VII - Diseases of the ear and mastoid process"),
+		createItemUnspecifiedTarget(PRESENT, "B", "361083003", "Normal anatomy"),
+		createItem(PRESENT, "B", "442083009", "Anatomical or acquired body structure", "P00-P96", "Chapter XVI - Certain conditions originating in the perinatal preioid"),
+		createItemUnspecifiedTarget(MISSING, "A", "14734007", "Administrative procedure (procedure)"),
+		createItem(SAME, "A", "91832008", "Anatomical organizational pattern", "I00-I99", "Chapter IX - Diseases of the circulatory system"),
+		createItem(SAME, "B", "258331007", "Anatomical site notations for tumor staging", "C00-D48", "Chapter II - Neoplasms"),
+		createItemUnspecifiedTarget(SAME, "B", "278001007", "Nonspecific site")
+	);
 	
 	@Test
 	public void testExport() throws IOException {
@@ -77,15 +78,16 @@ public class ConceptMapCompareDsvExportTest {
 	public void testFilteredExport() throws IOException {
 		final File file = CodeSystemRequests.prepareConceptMapCompareDsvExport(ITEMS, Paths.get(System.getProperty("user.home"), String.format("concept-map-compare-results-%s.txt", Dates.now())).toString())
 				.delimiter(';')
-				.changeKids(ImmutableSet.of(DIFFERENT_TARGET, MISSING))
+				.changeKids(Set.of(DIFFERENT_TARGET, MISSING))
 				.build()
 				.execute(Services.context());
 		
 		assertNotNull(file);
-		assertFile(file, ImmutableList.of(
-				createItem(DIFFERENT_TARGET, "A", "123037004", "Body structure", "H00-H59", "Chapter VII - Diseases of the eye and adnexa"),
-				createItem(DIFFERENT_TARGET, "B", "123037004", "Body structure", "H60-H95", "Chapter VII - Diseases of the ear and mastoid process"),
-				createItemUnspecifiedTarget(MISSING, "A", "14734007", "Administrative procedure (procedure)")));
+		assertFile(file, List.of(
+			createItem(DIFFERENT_TARGET, "A", "123037004", "Body structure", "H00-H59", "Chapter VII - Diseases of the eye and adnexa"),
+			createItem(DIFFERENT_TARGET, "B", "123037004", "Body structure", "H60-H95", "Chapter VII - Diseases of the ear and mastoid process"),
+			createItemUnspecifiedTarget(MISSING, "A", "14734007", "Administrative procedure (procedure)"))
+		);
 	}
 	
 	@Test
@@ -140,7 +142,7 @@ public class ConceptMapCompareDsvExportTest {
 	private static ConceptMapCompareResultItem createItemUnspecifiedTarget(ConceptMapCompareChangeKind changeKind, String containerTerm, String sourceId, String sourceTerm) {
 		ConceptMapMapping mapping = ConceptMapMapping.builder()
 				.containerTerm(containerTerm)
-				.sourceComponentURI(ComponentURI.of("SNOMEDCT-CA", (short)100, sourceId))
+				.sourceComponentURI(ComponentURI.of(CodeSystem.uri("SNOMEDCT-CA"), (short) 100, sourceId))
 				.sourceTerm(sourceTerm)
 				.targetComponentURI(ComponentURI.UNSPECIFIED)
 				.targetTerm("")
@@ -151,9 +153,9 @@ public class ConceptMapCompareDsvExportTest {
 	private static ConceptMapCompareResultItem createItem(ConceptMapCompareChangeKind changeKind, String containerTerm, String sourceId, String sourceTerm, String targetId, String targetTerm) {
 		ConceptMapMapping mapping = ConceptMapMapping.builder()
 				.containerTerm(containerTerm)
-				.sourceComponentURI(ComponentURI.of("SNOMEDCT-CA", (short)100, sourceId))
+				.sourceComponentURI(ComponentURI.of(CodeSystem.uri("SNOMEDCT-CA"), (short) 100, sourceId))
 				.sourceTerm(sourceTerm)
-				.targetComponentURI(ComponentURI.of("ICD-10-CA", (short)300, targetId))
+				.targetComponentURI(ComponentURI.of(CodeSystem.uri("ICD-10-CA"), (short) 300, targetId))
 				.targetTerm(targetTerm)
 				.build();
 		return new ConceptMapCompareResultItem(changeKind, mapping);

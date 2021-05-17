@@ -100,7 +100,7 @@ public class ValueSetMemberSearchSnomedReferenceSetTest {
 		createSimpleMapTypeRefSetMember(refSetId, Concepts.IS_A, filteredId);
 		createSimpleMapTypeRefSetMember(refSetId, Concepts.IS_A, Concepts.IS_A);
 		
-		final ComponentURI uri = ComponentURI.of(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, filteredId);
+		final ComponentURI uri = ComponentURI.of(SnomedContentRule.SNOMEDCT, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, filteredId);
 		
 		final SnomedReferenceSetMembers refSetMembers = SnomedRequests.prepareSearchMember()
 			.filterByRefSet(refSetId)

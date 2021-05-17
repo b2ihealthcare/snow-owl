@@ -33,13 +33,14 @@ import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
-import com.google.common.collect.ImmutableList;
 
 /**
  * @since 7.7
  */
 public final class SnomedMemberSearchRequestEvaluator implements SetMemberSearchRequestEvaluator {
 
+	private static final List<SnomedRefSetType> SUPPORTED_REFSET_TYPES = List.of(SnomedRefSetType.SIMPLE, SnomedRefSetType.DESCRIPTION_TYPE); 
+	
 	@Override
 	public SetMembers evaluate(ResourceURI uri, BranchContext context, Options search) {
 		SnomedReferenceSetMembers referenceSetMembers = fetchRefsetMembers(uri, context, search);
@@ -69,9 +70,11 @@ public final class SnomedMemberSearchRequestEvaluator implements SetMemberSearch
 		default: term = member.getReferencedComponentId();
 		}
 
-		return new SetMember(ComponentURI.of(codeSystemURI.getResourceId(), terminologyComponentId, member.getReferencedComponentId()),
-				term, 
-				iconId);
+		return new SetMember(
+			ComponentURI.of(codeSystemURI, terminologyComponentId, member.getReferencedComponentId()),
+			term, 
+			iconId
+		);
 	}
 
 	private SnomedReferenceSetMembers fetchRefsetMembers(ResourceURI uri, BranchContext context, Options search) {
@@ -89,17 +92,13 @@ public final class SnomedMemberSearchRequestEvaluator implements SetMemberSearch
 		
 		return requestBuilder
 				.filterByActive(true)
-				.filterByRefSetType(getSympleTypeRefSets())
+				.filterByRefSetType(SUPPORTED_REFSET_TYPES)
 				.setLocales(locales)
 				.setExpand("referencedComponent(expand(fsn()))")
 				.setLimit(limit)
 				.setSearchAfter(searchAfter)
 				.build()
 				.execute(context);
-	}
-
-	private List<SnomedRefSetType> getSympleTypeRefSets() {
-		return ImmutableList.of(SnomedRefSetType.SIMPLE, SnomedRefSetType.DESCRIPTION_TYPE);
 	}
 
 }

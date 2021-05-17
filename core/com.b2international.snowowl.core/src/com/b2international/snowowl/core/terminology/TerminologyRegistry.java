@@ -24,11 +24,9 @@ import java.util.stream.Collectors;
 
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.revision.Revision;
-import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 
 /**
@@ -38,9 +36,7 @@ public enum TerminologyRegistry {
 
 	INSTANCE;
 	
-	
 	public static final String UNSPECIFIED = "UNSPECIFIED";
-	public static final ResourceURI UNSPECIFIED_URI = ResourceURI.of("resource", "UNSPECIFIED");
 	public static final int UNSPECIFIED_NUMBER = -1;
 	public static final short UNSPECIFIED_NUMBER_SHORT = -1;
 	
@@ -71,7 +67,7 @@ public enum TerminologyRegistry {
 	}
 	
 	public Set<String> getTerminologies() {
-		return ImmutableSet.copyOf(terminologies.keySet());
+		return Set.copyOf(terminologies.keySet());
 	}
 	
 	public void register(Terminology terminology) {
@@ -125,7 +121,7 @@ public enum TerminologyRegistry {
 	
 	public Collection<String> getTerminologyComponentIdsByTerminology(String terminologyId) {
 		checkArgument(terminologyComponentIdsByTerminology.containsKey(terminologyId), "Missing terminology '%s'.", terminologyId);
-		return ImmutableSet.copyOf(terminologyComponentIdsByTerminology.get(terminologyId));
+		return Set.copyOf(terminologyComponentIdsByTerminology.get(terminologyId));
 	}
 	
 	/**

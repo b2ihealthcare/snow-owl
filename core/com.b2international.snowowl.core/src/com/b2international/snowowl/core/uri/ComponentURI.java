@@ -25,6 +25,7 @@ import java.util.Objects;
 
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -72,8 +73,7 @@ public final class ComponentURI implements Serializable {
 	protected static final Splitter SLASH_SPLITTER = Splitter.on('/');
 	protected static final Joiner SLASH_JOINER = Joiner.on('/');
 		
-	@JsonIgnore
-	public static final ComponentURI UNSPECIFIED = ComponentURI.of(TerminologyRegistry.UNSPECIFIED_URI, TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT, "");
+	public static final ComponentURI UNSPECIFIED = ComponentURI.of(CodeSystem.uri(TerminologyRegistry.UNSPECIFIED), TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT, "");
 	
 	private final ResourceURI resourceUri;
 	private final short terminologyComponentId;
@@ -97,7 +97,7 @@ public final class ComponentURI implements Serializable {
 
 	@JsonIgnore
 	public final boolean isUnspecified() {
-		return TerminologyRegistry.UNSPECIFIED_URI == resourceUri();
+		return CodeSystem.uri(TerminologyRegistry.UNSPECIFIED).equals(resourceUri());
 	}
 	
 	public final ComponentIdentifier toComponentIdentifier() {
@@ -108,7 +108,7 @@ public final class ComponentURI implements Serializable {
 		checkNotNull(resourceUri, "ResourceURI argument should not be null.");
 		checkArgument(terminologyComponentId >= TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT, 
 				"TerminologyComponentId should be either unspecified (-1) or greater than zero. Got: '%s'.", terminologyComponentId);
-		checkArgument(TerminologyRegistry.UNSPECIFIED_URI == resourceUri || !Strings.isNullOrEmpty(identifier), "Identifier should not be null or empty.");
+		checkArgument(CodeSystem.uri(TerminologyRegistry.UNSPECIFIED).equals(resourceUri) || !Strings.isNullOrEmpty(identifier), "Identifier should not be null or empty.");
 		this.resourceUri = resourceUri;
 		this.terminologyComponentId = terminologyComponentId;
 		this.identifier = Strings.nullToEmpty(identifier);
@@ -151,6 +151,10 @@ public final class ComponentURI implements Serializable {
 		Short terminologyComponentId = Short.valueOf(parts.get(terminologyComponentTypeIndex));
 		String componentId = parts.get(componentIdIndex);
 		return new ComponentURI(resourceURI, terminologyComponentId, componentId);
+	}
+	
+	public static ComponentURI unspecified(String identifier) {
+		return of(CodeSystem.uri(TerminologyRegistry.UNSPECIFIED), TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT, identifier);
 	}
 
 	@JsonValue

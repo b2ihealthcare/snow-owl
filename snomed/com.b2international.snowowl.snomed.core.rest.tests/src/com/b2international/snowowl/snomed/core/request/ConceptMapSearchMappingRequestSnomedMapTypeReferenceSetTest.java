@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,10 +27,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.domain.ConceptMapMapping;
 import com.b2international.snowowl.core.domain.ConceptMapMappings;
-import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.snomed.common.SnomedConstants;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
@@ -43,6 +43,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionCre
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.test.commons.Services;
+import com.b2international.snowowl.test.commons.SnomedContentRule;
 import com.b2international.snowowl.test.commons.rest.RestExtensions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -53,7 +54,7 @@ import com.google.common.collect.Sets;
  */
 public class ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest {
 	
-	private static final String CODESYSTEM = "SNOMEDCT/LATEST";
+	private static final ResourceURI CODESYSTEM = SnomedContentRule.SNOMEDCT.withPath(ResourceURI.LATEST);
 	
 	private static final String REFERENCED_COMPONENT = Concepts.SUBSTANCE;
 	
@@ -106,8 +107,8 @@ public class ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest {
 	public void filterByComponentUri() {
 		final String refSetId = createSimpleMapTypeRefSet();
 		final String filterId = "12345";
-		final ComponentURI uri = ComponentURI.of(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, filterId);
-		final ComponentURI sourceUri = ComponentURI.of(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, REFERENCED_COMPONENT);
+		final ComponentURI uri = ComponentURI.of(CODESYSTEM, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, filterId);
+		final ComponentURI sourceUri = ComponentURI.of(CODESYSTEM, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, REFERENCED_COMPONENT);
 		
 		createSimpleMapTypeRefSetMember(refSetId, REFERENCED_COMPONENT, filterId);
 		createSimpleMapTypeRefSetMember(refSetId, REFERENCED_COMPONENT, "Random map target");
@@ -124,16 +125,16 @@ public class ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest {
 
 		assertEquals(2, conceptMaps.getTotal());
 		Set<ComponentURI> componentUris = getComponentUris(conceptMaps);
-		assertThat(componentUris).containsOnly(sourceUri, uri, ComponentURI.of(TerminologyRegistry.UNSPECIFIED, TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT, filterId));
+		assertThat(componentUris).containsOnly(sourceUri, uri, ComponentURI.unspecified(filterId));
 	}
 	
 	@Test
 	public void filterByComponentUris() {
 		final String refSetId = createSimpleMapTypeRefSet();
 
-		final ComponentURI uri = ComponentURI.of(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, "12345");
-		final ComponentURI uri2 = ComponentURI.of(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, "54321");
-		final ComponentURI sourceUri = ComponentURI.of(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, REFERENCED_COMPONENT);
+		final ComponentURI uri = ComponentURI.of(CODESYSTEM, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, "12345");
+		final ComponentURI uri2 = ComponentURI.of(CODESYSTEM, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, "54321");
+		final ComponentURI sourceUri = ComponentURI.of(CODESYSTEM, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, REFERENCED_COMPONENT);
 		
 		createSimpleMapTypeRefSetMember(refSetId, REFERENCED_COMPONENT, uri.toString());
 		createSimpleMapTypeRefSetMember(refSetId, REFERENCED_COMPONENT, uri2.toString());
@@ -141,7 +142,7 @@ public class ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest {
 		
 		final ConceptMapMappings conceptMaps = CodeSystemRequests.prepareSearchConceptMapMappings()
 				.all()
-				.filterByComponentIds(ImmutableSet.of(uri.toString(), uri2.toString()))
+				.filterByComponentIds(Set.of(uri.toString(), uri2.toString()))
 				.filterByConceptMap(refSetId)
 				.setLocales("en")
 				.build(CODESYSTEM)
