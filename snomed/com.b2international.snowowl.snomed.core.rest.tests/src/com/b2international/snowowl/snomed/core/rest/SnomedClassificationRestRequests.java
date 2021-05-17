@@ -50,7 +50,7 @@ public abstract class SnomedClassificationRestRequests {
 	public static ValidatableResponse beginClassification(IBranchPath branchPath) {
 		Map<String, Object> requestBody = Map.of(
 			"reasonerId", SnomedCoreConfiguration.ELK_REASONER_ID,
-			"branch", branchPath.getPath()
+			"path", branchPath.getPath()
 		);
 
 		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
