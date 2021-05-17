@@ -15,17 +15,27 @@
  */
 package com.b2international.snowowl.snomed.fhir;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.b2international.commons.StringUtils;
+import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.codesystem.CodeSystem;
+import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersion;
+import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
+import com.b2international.snowowl.core.codesystem.CodeSystems;
+import com.b2international.snowowl.core.codesystem.version.CodeSystemVersionSearchRequestBuilder;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.plugin.Component;
+import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.fhir.core.codesystems.CommonConceptProperties;
@@ -55,6 +65,7 @@ import com.b2international.snowowl.snomed.fhir.codesystems.CoreSnomedConceptProp
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 
 /**
  * Provider for the SNOMED CT FHIR support
@@ -170,9 +181,7 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 		//extension and version is part of the URI
 		boolean extensionUri = uri.startsWith(SnomedUri.SNOMED_BASE_URI_STRING);
 		
-		boolean logicalId = uri.startsWith(SnomedDatastoreActivator.REPOSITORY_UUID);
-		
-		return foundInList || extensionUri || logicalId;
+		return foundInList || extensionUri;
 	}
 	
 	@Override
@@ -226,10 +235,99 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 	 * @param subsumptionRequest 
 	 * @return version string
 	 */
+	@Deprecated
 	protected String getVersion(SubsumptionRequest subsumptionRequest) {
 		SnomedUri snomedUri = SnomedUri.fromUriString(subsumptionRequest.getSystem(), "CodeSystem$subsumes.system");
 		validateVersion(snomedUri, subsumptionRequest.getVersion());
 		return getCodeSystemVersion(snomedUri.getVersionTag()).getVersion();
+	}
+	
+	protected CodeSystemURI getCodeSystemUri(final String system, final String version) {
+		
+		SnomedUri snomedUri = SnomedUri.fromUriString(system, "CodeSystem$subsumes.system");
+		validateVersion(snomedUri, version);
+		
+		String extensionModuleId = snomedUri.getExtensionModuleId();
+		
+		if (StringUtils.isEmpty(extensionModuleId)) {
+			extensionModuleId = Concepts.MODULE_SCT_CORE;
+		}
+		
+		CodeSystems codeSystems = CodeSystemRequests.prepareSearchCodeSystem()
+				.all()
+				.filterByToolingId(SnomedTerminologyComponentConstants.TERMINOLOGY_ID)
+				.build(getRepositoryId())
+				.execute(getBus())
+				.getSync();
+		 
+		CodeSystem moduleCodeSystem = null;
+		
+		for (CodeSystem codeSystem : codeSystems) {
+			
+			Map<String, Object> additionalProperties = codeSystem.getAdditionalProperties();
+			
+			if (additionalProperties == null) continue;
+			if (!additionalProperties.containsKey(SnomedTerminologyComponentConstants.CODESYSTEM_MODULES_CONFIG_KEY)) continue;
+			
+			Object modules = additionalProperties.get(SnomedTerminologyComponentConstants.CODESYSTEM_MODULES_CONFIG_KEY);
+			
+			if (modules instanceof Iterable) {
+				@SuppressWarnings("unchecked")
+				Iterable<String> moduleIterable  = (Iterable<String>) modules;
+				if (moduleIterable != null && moduleIterable.iterator().hasNext()) {
+					String firstModule = moduleIterable.iterator().next();
+					if (extensionModuleId.equals(firstModule)) {
+						moduleCodeSystem = codeSystem;
+					}
+				}
+			} else if (modules instanceof String) {
+				if (extensionModuleId.equals(modules)) {
+					moduleCodeSystem = codeSystem;
+				}
+			};
+		}
+		
+		if (moduleCodeSystem == null) {
+			throw new NotFoundException(null, null);
+		}
+		
+		CodeSystemVersionSearchRequestBuilder versionSearchRequestBuilder = CodeSystemRequests.prepareSearchCodeSystemVersion()
+			.one()
+			.filterByCodeSystemShortName(moduleCodeSystem.getShortName())
+			.sortBy(SearchResourceRequest.SortField.descending(CodeSystemVersionEntry.Fields.EFFECTIVE_DATE));
+		
+		if (version != null) {
+			versionSearchRequestBuilder.filterByEffectiveDate(EffectiveTimes.parse(version, DateFormats.SHORT));
+		}
+		
+		CodeSystemURI codeSystemURI = versionSearchRequestBuilder
+				.build(getRepositoryId())
+				.execute(getBus())
+				.getSync()
+				.first()
+				.map(CodeSystemVersion::getUri)
+				//never been versioned, return 'HEAD'
+				.orElse(moduleCodeSystem.getCodeSystemURI());
+		
+		return codeSystemURI;
+		
+	}
+	
+	@Deprecated
+	protected CodeSystemURI getCodeSystemUri2(SubsumptionRequest subsumptionRequest) {
+		
+		SnomedUri snomedUri = SnomedUri.fromUriString(subsumptionRequest.getSystem(), "CodeSystem$subsumes.system");
+		validateVersion(snomedUri, subsumptionRequest.getVersion());
+		String versionTag = snomedUri.getVersionTag();
+		
+		
+		if (!StringUtils.isEmpty(versionTag)) {
+			LocalDate localDateEffectiveDate = EffectiveTimes.parse(versionTag, DateFormats.SHORT);
+			String defaultEffectiveDate = EffectiveTimes.format(localDateEffectiveDate, DateFormats.DEFAULT);
+			return new CodeSystemURI(getCodeSystemShortName() + "/" + defaultEffectiveDate);
+		} else {
+			return new CodeSystemURI(getCodeSystemShortName());
+		}
 	}
 	
 	private LookupResult mapToLookupResult(SnomedConcept concept, LookupRequest lookupRequest, String version) {
@@ -328,7 +426,7 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 	 */
 	private void validateVersion(SnomedUri snomedUri, String version) {
 		
-		if (version != null) {
+		if (!StringUtils.isEmpty(version)) {
 			if (snomedUri.getVersionTag() == null) {
 				throw new BadRequestException(String.format("Version is not specified in the URI [%s], while it is set in the request [%s]", snomedUri.toString(), version), "LookupRequest.version");
 			} else if (!snomedUri.getVersionTag().equals(version)) {

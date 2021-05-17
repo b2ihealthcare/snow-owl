@@ -17,7 +17,9 @@ package com.b2international.snowowl.snomed.datastore.internal;
 
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.repository.TerminologyRepositoryInitializer;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * Repository initializer for the SNOMED CT tooling.
@@ -26,6 +28,9 @@ public final class SnomedRepositoryInitializer extends TerminologyRepositoryInit
 
 	@Override
 	protected CodeSystem createPrimaryCodeSystem() {
+		
+		final ImmutableMap<String,Object> additionalProperties = ImmutableMap.of(SnomedTerminologyComponentConstants.CODESYSTEM_MODULES_CONFIG_KEY, Concepts.MODULE_SCT_CORE);
+		
 		return CodeSystem.builder()
 				.name(SnomedTerminologyComponentConstants.SNOMED_NAME)
 				.shortName(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME)
@@ -35,6 +40,7 @@ public final class SnomedRepositoryInitializer extends TerminologyRepositoryInit
 				.organizationLink(SnomedTerminologyComponentConstants.SNOMED_INT_LINK)
 				.oid(SnomedTerminologyComponentConstants.SNOMED_INT_OID)
 				.terminologyId(SnomedTerminologyComponentConstants.TERMINOLOGY_ID)
+				.additionalProperties(additionalProperties)
 				.build();
 	}
 

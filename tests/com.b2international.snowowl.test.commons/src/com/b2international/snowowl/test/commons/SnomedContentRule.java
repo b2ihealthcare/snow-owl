@@ -19,6 +19,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -58,6 +59,7 @@ public class SnomedContentRule extends ExternalResource {
 	private final Rf2ReleaseType contentType;
 	private final String codeSystemShortName;
 	private final String codeSystemBranchPath;
+	private final Map<String, Object> additionalProperties;
 
 	public SnomedContentRule(final String codeSystemShortName, final String branchPath, final String importArchivePath, final Rf2ReleaseType contentType) {
 		this(codeSystemShortName, branchPath, SnomedContentRule.class, importArchivePath, contentType);
@@ -68,10 +70,16 @@ public class SnomedContentRule extends ExternalResource {
 	}
 	
 	public SnomedContentRule(final String codeSystemShortName, final String branchPath, final Class<?> relativeClass, final boolean isFragment, final String importArchivePath, final Rf2ReleaseType contentType) {
+		this(codeSystemShortName, branchPath, relativeClass, isFragment, importArchivePath, contentType, null);
+	}
+	
+	public SnomedContentRule(final String codeSystemShortName, final String branchPath, final Class<?> relativeClass, final boolean isFragment, 
+			final String importArchivePath, final Rf2ReleaseType contentType, final Map<String, Object> additionalProperties) {
 		this.codeSystemShortName = checkNotNull(codeSystemShortName, "codeSystem");
 		this.codeSystemBranchPath = checkNotNull(branchPath, "branchPath");
 		this.contentType = checkNotNull(contentType, "contentType");
 		this.importArchive = isFragment ? PlatformUtil.toAbsolutePath(relativeClass, importArchivePath).toFile() : PlatformUtil.toAbsolutePathBundleEntry(relativeClass, importArchivePath).toFile();
+		this.additionalProperties = additionalProperties;
 	}
 
 	@Override
@@ -140,6 +148,7 @@ public class SnomedContentRule extends ExternalResource {
 				.setOid("oid:" + codeSystemShortName)
 				.setRepositoryId(SnomedDatastoreActivator.REPOSITORY_UUID)
 				.setShortName(codeSystemShortName)
+				.setAdditionalProperties(additionalProperties)
 				.setTerminologyId(SnomedTerminologyComponentConstants.TERMINOLOGY_ID)
 				.build(SnomedDatastoreActivator.REPOSITORY_UUID, Branch.MAIN_PATH, RestExtensions.USER, String.format("Create code system %s", codeSystemShortName))
 				.execute(eventBus)

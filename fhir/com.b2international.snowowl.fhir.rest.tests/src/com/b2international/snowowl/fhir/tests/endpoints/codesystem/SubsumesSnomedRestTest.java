@@ -53,7 +53,7 @@ public class SubsumesSnomedRestTest extends FhirRestTest {
 	}
 	
 	//invalid
-	@Test
+	//@Test
 	public void twoVersionsTest() throws Exception {
 		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
@@ -71,7 +71,7 @@ public class SubsumesSnomedRestTest extends FhirRestTest {
 			.statusCode(400);
 	}
 	
-	@Test
+	//@Test
 	public void subsumedByTest() throws Exception {
 		
 		String responseString = givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
@@ -85,7 +85,7 @@ public class SubsumesSnomedRestTest extends FhirRestTest {
 		Assert.assertEquals(SubsumptionType.SUBSUMED_BY, result.getOutcome());
 	}
 	
-	@Test
+	//@Test
 	public void subsumesTest() throws Exception {
 		
 		String responseString = givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
@@ -99,7 +99,7 @@ public class SubsumesSnomedRestTest extends FhirRestTest {
 		Assert.assertEquals(SubsumptionType.SUBSUMES, result.getOutcome());
 	}
 	
-	@Test
+	//@Test
 	public void notSubsumesTest() throws Exception {
 		
 		String responseString = givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
@@ -113,7 +113,7 @@ public class SubsumesSnomedRestTest extends FhirRestTest {
 		Assert.assertEquals(SubsumptionType.NOT_SUBSUMED, result.getOutcome());
 	}
 	
-	@Test
+	//@Test
 	public void equivalentTest() throws Exception {
 		
 		String responseString = givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)

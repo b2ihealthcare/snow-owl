@@ -319,7 +319,7 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 	@Override
 	public SubsumptionResult subsumes(SubsumptionRequest subsumptionRequest) {
 		
-		final CodeSystemURI codeSystemUri = getCodeSystemUri(subsumptionRequest);
+		final CodeSystemURI codeSystemUri = getCodeSystemUri(subsumptionRequest.getSystem(), subsumptionRequest.getVersion());
 		
 		String codeA = null;
 		String codeB = null;
@@ -345,9 +345,8 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 		}
 	}
 	
-	protected CodeSystemURI getCodeSystemUri(SubsumptionRequest subsumptionRequest) {
+	protected CodeSystemURI getCodeSystemUri(final String system, final String version) {
 		
-		String version = subsumptionRequest.getVersion();
 		if (!StringUtils.isEmpty(version)) {
 			return new CodeSystemURI(getCodeSystemShortName() + "/" + version);
 		} else {
@@ -355,32 +354,6 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 		}
 	}
 
-	/**
-	 * Returns the version information from the request
-	 * @param subsumptionRequest 
-	 * @return version string
-	 */
-	protected String getVersion(SubsumptionRequest subsumptionRequest) {
-		String version = subsumptionRequest.getVersion();
-
-		//get the latest version
-		if (version == null) {
-			return CodeSystemRequests.prepareSearchCodeSystemVersion()
-				.one()
-				.filterByCodeSystemShortName(getCodeSystemShortName())
-				.sortBy(SearchResourceRequest.SortField.descending(CodeSystemVersionEntry.Fields.EFFECTIVE_DATE))
-				.build(getRepositoryId())
-				.execute(getBus())
-				.getSync()
-				.first()
-				.map(CodeSystemVersion::getVersion)
-				//never been versioned
-				.orElse(null);
-		}
-		
-		return version;
-	}
-	
 	/**
 	 * Builds a lookup result property for the given @see {@link IConceptProperty} based on the supplier's value
 	 * @param supplier
