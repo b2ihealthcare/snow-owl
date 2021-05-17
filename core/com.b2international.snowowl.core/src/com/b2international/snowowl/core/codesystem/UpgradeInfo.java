@@ -29,18 +29,19 @@ public final class UpgradeInfo implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
 	
-	BranchInfo mainBranchInfo;
+	BranchInfo upgradeOfBranchInfo;
 	List<BranchInfo> versionBranchInfos;
 	List<CodeSystemURI> blockedURIs;
 	
 	public UpgradeInfo(BranchInfo mainBranchInfo, List<BranchInfo> versionBranchInfos, List<CodeSystemURI> blockedURIs) {
-		this.mainBranchInfo = mainBranchInfo;
+		this.upgradeOfBranchInfo = mainBranchInfo;
 		this.versionBranchInfos = versionBranchInfos;
 		this.blockedURIs = blockedURIs;
 	}
 	
-	public BranchInfo getMainBranchInfo() {
-		return mainBranchInfo;
+	// returns the BranchInfo of the upgradeOf Code System's HEAD
+	public BranchInfo getUpgradeOfBranchInfo() {
+		return upgradeOfBranchInfo;
 	}
 	
 	public List<BranchInfo> getVersionBranchInfos() {
@@ -52,7 +53,7 @@ public final class UpgradeInfo implements Serializable {
 	}
 	
 	public boolean isBlocked() {
-		return mainBranchInfo.getState()  == BranchState.DIVERGED || mainBranchInfo.getState()  == BranchState.BEHIND;
+		return upgradeOfBranchInfo.getState()  == BranchState.DIVERGED || upgradeOfBranchInfo.getState()  == BranchState.BEHIND;
 	}
 	
 }
