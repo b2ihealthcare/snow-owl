@@ -31,12 +31,12 @@ public final class UpgradeInfo implements Serializable {
 	
 	BranchInfo upgradeOfBranchInfo;
 	List<BranchInfo> versionBranchInfos;
-	List<CodeSystemURI> blockedURIs;
+	List<CodeSystemURI> availableVersions;
 	
-	public UpgradeInfo(BranchInfo mainBranchInfo, List<BranchInfo> versionBranchInfos, List<CodeSystemURI> blockedURIs) {
+	public UpgradeInfo(BranchInfo mainBranchInfo, List<BranchInfo> versionBranchInfos, List<CodeSystemURI> availableVersions) {
 		this.upgradeOfBranchInfo = mainBranchInfo;
 		this.versionBranchInfos = versionBranchInfos;
-		this.blockedURIs = blockedURIs;
+		this.availableVersions = availableVersions;
 	}
 	
 	// returns the BranchInfo of the upgradeOf Code System's HEAD
@@ -48,8 +48,8 @@ public final class UpgradeInfo implements Serializable {
 		return versionBranchInfos;
 	}
 	
-	public List<CodeSystemURI> getBlockedURIs() {
-		return blockedURIs;
+	public List<CodeSystemURI> getAvailableVersions() {
+		return availableVersions;
 	}
 	
 	public boolean isBlocked() {
