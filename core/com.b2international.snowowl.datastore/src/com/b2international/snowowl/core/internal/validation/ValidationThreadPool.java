@@ -17,7 +17,7 @@ package com.b2international.snowowl.core.internal.validation;
 
 import java.util.UUID;
 
-import javax.xml.bind.ValidationException;
+import javax.validation.ValidationException;
 
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
