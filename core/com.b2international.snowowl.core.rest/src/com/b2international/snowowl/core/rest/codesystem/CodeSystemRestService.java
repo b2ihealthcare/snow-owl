@@ -31,6 +31,7 @@ import com.b2international.snowowl.core.codesystem.CodeSystems;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
+import com.b2international.snowowl.eventbus.IEventBus;
 
 import io.swagger.annotations.*;
 
@@ -199,20 +200,21 @@ public class CodeSystemRestService extends AbstractRestService {
 			
 			@RequestBody
 			final UpgradeRestInput body) {
-		final CodeSystem codeSystem = CodeSystemRequests.prepareGetCodeSystem(codeSystemId)
-			.buildAsync()
-			.execute(getBus())
-			.getSync(1, TimeUnit.MINUTES);
-			
 		final UriComponentsBuilder uriBuilder = createURIBuilder();
 		
-		return CodeSystemRequests.prepareUpgrade(codeSystem.getResourceURI(), ResourceURI.of(codeSystem.getResourceType(), body.getExtensionOf()))
-				.setResourceId(body.getCodeSystemId())
-				.buildAsync()
-				.execute(getBus())
-				.then(upgradeCodeSystemId -> {
-					return ResponseEntity.created(uriBuilder.pathSegment(upgradeCodeSystemId).build().toUri()).build();
-				});
+		final IEventBus bus = getBus();
+		return CodeSystemRequests.prepareGetCodeSystem(codeSystemId)
+			.buildAsync()
+			.execute(bus)
+			.thenWith(codeSystem -> {
+				return CodeSystemRequests.prepareUpgrade(codeSystem.getResourceURI(), new ResourceURI(body.getExtensionOf()))
+						.setResourceId(body.getCodeSystemId())
+						.buildAsync()
+						.execute(bus);
+			})
+			.then(upgradeCodeSystemId -> {
+				return ResponseEntity.created(uriBuilder.pathSegment(upgradeCodeSystemId).build().toUri()).build();
+			});
 	}
 
 }

@@ -43,12 +43,12 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import com.b2international.commons.json.Json;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
@@ -57,6 +57,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
+import com.b2international.snowowl.test.commons.SnomedContentRule;
 import com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests;
 
 /**
@@ -65,11 +66,11 @@ import com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequest
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 
-	private CodeSystemURI latestInternationalVersion;
+	private ResourceURI latestInternationalVersion;
 
 	@Before
 	public void setup() {
-		latestInternationalVersion = CodeSystemURI.branch(SNOMEDCT, getLatestVersion(SNOMEDCT));
+		latestInternationalVersion = SnomedContentRule.SNOMEDCT.withPath(getLatestVersion(SnomedContentRule.SNOMEDCT_ID).get().getVersion());
 	}
 	
 	@Test
@@ -82,8 +83,8 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		createVersion(SNOMEDCT, effectiveDate, effectiveDate).statusCode(201);
 		
 		// start upgrade
-		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getCodeSystemURI(), CodeSystemURI.branch(SNOMEDCT, effectiveDate));
-		assertEquals(CodeSystemURI.branch(SNOMEDCT, effectiveDate), upgradeCodeSystem.getExtensionOf());
+		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getResourceURI(), CodeSystem.uri(SNOMEDCT, effectiveDate));
+		assertEquals(CodeSystem.uri(SNOMEDCT, effectiveDate), upgradeCodeSystem.getExtensionOf());
 	}
 	
 	@Test
@@ -94,17 +95,17 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		// create a new INT version without any changes
 		String effectiveDate = getNextAvailableEffectiveDateAsString(SNOMEDCT);
 		createVersion(SNOMEDCT, effectiveDate, effectiveDate).statusCode(201);
-		CodeSystemURI upgradeVersion = CodeSystemURI.branch(SNOMEDCT, effectiveDate);
+		ResourceURI upgradeVersion = CodeSystem.uri(SNOMEDCT, effectiveDate);
 		
 		// create new extension version with one new concept, module in this case
 		String moduleId = createModule(extension);
-		createVersion(extension.getCodeSystemURI().getCodeSystem(), "v1", Dates.now(DateFormats.SHORT)).statusCode(201);
+		createVersion(extension.getId(), "v1", Dates.now(DateFormats.SHORT)).statusCode(201);
 		
 		// start upgrade to the new available upgrade version
-		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getCodeSystemURI(), upgradeVersion);
+		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getResourceURI(), upgradeVersion);
 		assertEquals(upgradeVersion, upgradeCodeSystem.getExtensionOf());
 		
-		getComponent(upgradeCodeSystem.getCodeSystemURI().toString(), SnomedComponentType.CONCEPT, moduleId).statusCode(200);
+		getComponent(upgradeCodeSystem.getResourceURI().toString(), SnomedComponentType.CONCEPT, moduleId).statusCode(200);
 	}
 
 	@Test
@@ -113,18 +114,18 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		CodeSystem extension = createExtension(latestInternationalVersion, branchPath.lastSegment());
 		
 		// new SI concept
-		String newConceptId = createConcept(new CodeSystemURI(SNOMEDCT), createConceptRequestBody(Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE));
+		String newConceptId = createConcept(new ResourceURI(SNOMEDCT), createConceptRequestBody(Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE));
 		
 		// create a new INT version
 		String effectiveDate = getNextAvailableEffectiveDateAsString(SNOMEDCT);
 		createVersion(SNOMEDCT, effectiveDate, effectiveDate).statusCode(201);
-		CodeSystemURI upgradeVersion = CodeSystemURI.branch(SNOMEDCT, effectiveDate);
+		ResourceURI upgradeVersion = CodeSystem.uri(SNOMEDCT, effectiveDate);
 		
 		// start upgrade to the new available upgrade version
-		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getCodeSystemURI(), upgradeVersion);
+		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getResourceURI(), upgradeVersion);
 		assertEquals(upgradeVersion, upgradeCodeSystem.getExtensionOf());
 		
-		getComponent(upgradeCodeSystem.getCodeSystemURI().toString(), SnomedComponentType.CONCEPT, newConceptId).statusCode(200);
+		getComponent(upgradeCodeSystem.getResourceURI().toString(), SnomedComponentType.CONCEPT, newConceptId).statusCode(200);
 	}
 
 	@Test
@@ -133,19 +134,19 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		CodeSystem extension = createExtension(latestInternationalVersion, branchPath.lastSegment());
 		
 		// new SI concept
-		String newConceptId = createConcept(new CodeSystemURI(SNOMEDCT), createConceptRequestBody(Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE));
+		String newConceptId = createConcept(new ResourceURI(SNOMEDCT), createConceptRequestBody(Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE));
 		
 		// create a new INT version
 		String effectiveDate = getNextAvailableEffectiveDateAsString(SNOMEDCT);
 		createVersion(SNOMEDCT, effectiveDate, effectiveDate).statusCode(201);
-		CodeSystemURI upgradeVersion = CodeSystemURI.branch(SNOMEDCT, effectiveDate);
+		ResourceURI upgradeVersion = CodeSystem.uri(SNOMEDCT, effectiveDate);
 		
 		// replay SI concept on extension branch, simulating direct import of a preview or release SI RF2
-		createConcept(extension.getCodeSystemURI(), createConceptRequestBody(Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE).with("id", newConceptId));
-		createVersion(extension.getCodeSystemURI().getCodeSystem(), "v1", Dates.now(DateFormats.SHORT)).statusCode(201);
+		createConcept(extension.getResourceURI(), createConceptRequestBody(Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE).with("id", newConceptId));
+		createVersion(extension.getId(), "v1", Dates.now(DateFormats.SHORT)).statusCode(201);
 		
 		// start upgrade but it fails due to same content present on both sides
-		assertCodeSystemUpgrade(extension.getCodeSystemURI(), upgradeVersion).statusCode(409);
+		assertCodeSystemUpgrade(extension.getResourceURI(), upgradeVersion).statusCode(409);
 	}
 	
 	@Test
@@ -154,34 +155,34 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		CodeSystem extension = createExtension(latestInternationalVersion, branchPath.lastSegment());
 		
 		String extensionModuleId = createModule(extension);
-		String extensionConceptId = createConcept(extension.getCodeSystemURI(), createConceptRequestBody(Concepts.ROOT_CONCEPT, extensionModuleId)
+		String extensionConceptId = createConcept(extension.getResourceURI(), createConceptRequestBody(Concepts.ROOT_CONCEPT, extensionModuleId)
 				.with("namespaceId", Concepts.B2I_NAMESPACE));
 		// put additional relationships and acceptable synonym on the concept
-		String additionalSynonymId = createDescription(extension.getCodeSystemURI(), createDescriptionRequestBody(extensionConceptId)
+		String additionalSynonymId = createDescription(extension.getResourceURI(), createDescriptionRequestBody(extensionConceptId)
 				.with("moduleId", extensionModuleId)
 				.with("namespaceId", Concepts.B2I_NAMESPACE)
 				.with("term", "Additional Synonym"));
-		String additionalRelationshipId = createRelationship(extension.getCodeSystemURI(), createRelationshipRequestBody(extensionConceptId, Concepts.FINDING_SITE, Concepts.ROOT_CONCEPT)
+		String additionalRelationshipId = createRelationship(extension.getResourceURI(), createRelationshipRequestBody(extensionConceptId, Concepts.FINDING_SITE, Concepts.ROOT_CONCEPT)
 				.with("moduleId", extensionModuleId)
 				.with(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, Concepts.ADDITIONAL_RELATIONSHIP)
 				.with("namespaceId", Concepts.B2I_NAMESPACE));
 		
-		SnomedConcept extensionConcept = getConcept(extension.getCodeSystemURI(), extensionConceptId, "descriptions()", "relationships()", "fsn()", "pt()");
+		SnomedConcept extensionConcept = getConcept(extension.getResourceURI(), extensionConceptId, "descriptions()", "relationships()", "fsn()", "pt()");
 
 		// create new extension version
-		createVersion(extension.getShortName(), "v1", Dates.now(DateFormats.SHORT)).statusCode(201);
+		createVersion(extension.getId(), "v1", Dates.now(DateFormats.SHORT)).statusCode(201);
 		
 		// simulate donation to SI and new version import
-		String donatedConceptId = createConcept(new CodeSystemURI(SNOMEDCT), createConceptRequestBody(Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE)
+		String donatedConceptId = createConcept(new ResourceURI(SNOMEDCT), createConceptRequestBody(Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE)
 				.with("id", extensionConceptId));
 		
 		String effectiveDate = getNextAvailableEffectiveDateAsString(SNOMEDCT);
 		createVersion(SNOMEDCT, effectiveDate, effectiveDate).statusCode(201);
 		
 		// start upgrade to the new available upgrade version
-		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getCodeSystemURI(), CodeSystemURI.branch(SNOMEDCT, effectiveDate));
+		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getResourceURI(), CodeSystem.uri(SNOMEDCT, effectiveDate));
 
-		SnomedConcept donatedConceptAfterUpgrade = getConcept(upgradeCodeSystem.getCodeSystemURI(), donatedConceptId, "descriptions()", "relationships()", "fsn()", "pt()");
+		SnomedConcept donatedConceptAfterUpgrade = getConcept(upgradeCodeSystem.getResourceURI(), donatedConceptId, "descriptions()", "relationships()", "fsn()", "pt()");
 		
 		// validate components of donated concept on extension branch
 		
@@ -213,10 +214,10 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 			"commitComment", "Created new extension synonym"
 		);
 
-		String extensionDescriptionId = createDescription(extension.getCodeSystemURI(), extensionDescriptionRequest);
+		String extensionDescriptionId = createDescription(extension.getResourceURI(), extensionDescriptionRequest);
 		
 		// create new extension version
-		createVersion(extension.getShortName(), "v1", Dates.now(DateFormats.SHORT)).statusCode(201);
+		createVersion(extension.getId(), "v1", Dates.now(DateFormats.SHORT)).statusCode(201);
 
 		// simulate donation to SI with same ID but with slightly different properties
 		Json donatedDescriptionRequest = Json.assign(
@@ -230,7 +231,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 				"commitComment", "Created new donated synonym"
 			)
 		);
-		String donatedDescriptionId = createDescription(new CodeSystemURI(SNOMEDCT), donatedDescriptionRequest);
+		String donatedDescriptionId = createDescription(new ResourceURI(SNOMEDCT), donatedDescriptionRequest);
 		
 		String effectiveDate = getNextAvailableEffectiveDateAsString(SNOMEDCT);
 		createVersion(SNOMEDCT, effectiveDate, effectiveDate).statusCode(201);
@@ -238,9 +239,9 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		assertEquals(extensionDescriptionId, donatedDescriptionId);
 		
 		// start upgrade to the new available upgrade version
-		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getCodeSystemURI(), CodeSystemURI.branch(SNOMEDCT, effectiveDate));
+		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getResourceURI(), CodeSystem.uri(SNOMEDCT, effectiveDate));
 
-		SnomedDescription donatedDescriptionOnUpgrade = getDescription(upgradeCodeSystem.getCodeSystemURI(), donatedDescriptionId);
+		SnomedDescription donatedDescriptionOnUpgrade = getDescription(upgradeCodeSystem.getResourceURI(), donatedDescriptionId);
 		
 		assertEquals(Concepts.MODULE_SCT_CORE, donatedDescriptionOnUpgrade.getModuleId());
 		assertEquals(Concepts.ENTIRE_TERM_CASE_SENSITIVE, donatedDescriptionOnUpgrade.getCaseSignificanceId());
@@ -269,10 +270,10 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 			"commitComment", "Created new extension relationship"
 		);
 		
-		String extensionRelationshipId = createRelationship(extension.getCodeSystemURI(), extensionRelationshipRequest);
+		String extensionRelationshipId = createRelationship(extension.getResourceURI(), extensionRelationshipRequest);
 		
 		// create new extension version
-		createVersion(extension.getShortName(), "v1", Dates.now(DateFormats.SHORT)).statusCode(201);
+		createVersion(extension.getId(), "v1", Dates.now(DateFormats.SHORT)).statusCode(201);
 
 		// simulate donation of relationship to INT with slightly different props but same ID
 		Json donatedRelationshipRequest = Json.assign(
@@ -286,7 +287,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 			)
 		);
 		
-		String donatedRelationshipId = createRelationship(new CodeSystemURI(SNOMEDCT), donatedRelationshipRequest);
+		String donatedRelationshipId = createRelationship(new ResourceURI(SNOMEDCT), donatedRelationshipRequest);
 		
 		String effectiveDate = getNextAvailableEffectiveDateAsString(SNOMEDCT);
 		createVersion(SNOMEDCT, effectiveDate, effectiveDate).statusCode(201);
@@ -294,9 +295,9 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		assertEquals(extensionRelationshipId, donatedRelationshipId);
 		
 		// start upgrade to the new available upgrade version
-		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getCodeSystemURI(), CodeSystemURI.branch(SNOMEDCT, effectiveDate));
+		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getResourceURI(), CodeSystem.uri(SNOMEDCT, effectiveDate));
 		
-		SnomedRelationship donatedRelationshipOnUpgrade = getRelationship(upgradeCodeSystem.getCodeSystemURI(), donatedRelationshipId);
+		SnomedRelationship donatedRelationshipOnUpgrade = getRelationship(upgradeCodeSystem.getResourceURI(), donatedRelationshipId);
 		
 		assertEquals(Concepts.MODULE_SCT_CORE, donatedRelationshipOnUpgrade.getModuleId());
 		assertEquals(Concepts.INFERRED_RELATIONSHIP, donatedRelationshipOnUpgrade.getCharacteristicTypeId());
@@ -319,13 +320,13 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 			"commitComment", "Created new synonym"
 		);
 		
-		String internationalDescriptionId = createDescription(new CodeSystemURI(SNOMEDCT), initialInternationalDescriptionRequest);
+		String internationalDescriptionId = createDescription(new ResourceURI(SNOMEDCT), initialInternationalDescriptionRequest);
 		
 		String effectiveDate = getNextAvailableEffectiveDateAsString(SNOMEDCT);
 		createVersion(SNOMEDCT, effectiveDate, effectiveDate).statusCode(201);
 		
 		// create extension on the latest SI VERSION
-		CodeSystem extension = createExtension(CodeSystemURI.branch(SNOMEDCT, effectiveDate), branchPath.lastSegment());
+		CodeSystem extension = createExtension(CodeSystem.uri(SNOMEDCT, effectiveDate), branchPath.lastSegment());
 		String extensionModuleId = createModule(extension);
 		
 		// update international description on extension, changing module and case significance
@@ -336,32 +337,32 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 			"commitComment", "Changed case significance on description"
 		);
 		
-		updateDescription(extension.getCodeSystemURI(), internationalDescriptionId, extensionDescriptionUpdateRequest);
+		updateDescription(extension.getResourceURI(), internationalDescriptionId, extensionDescriptionUpdateRequest);
 		
-		SnomedDescription updatedInternationalDescription = getDescription(extension.getCodeSystemURI(), internationalDescriptionId);
+		SnomedDescription updatedInternationalDescription = getDescription(extension.getResourceURI(), internationalDescriptionId);
 		assertEquals(true, updatedInternationalDescription.isReleased());
 		assertEquals(null, updatedInternationalDescription.getEffectiveTime());
 		assertEquals(extensionModuleId, updatedInternationalDescription.getModuleId());
 		assertEquals(Concepts.ENTIRE_TERM_CASE_SENSITIVE, updatedInternationalDescription.getCaseSignificanceId());
 
 		// create new extension version
-		createVersion(extension.getShortName(), "v1", Dates.now(DateFormats.SHORT)).statusCode(201);
+		createVersion(extension.getId(), "v1", Dates.now(DateFormats.SHORT)).statusCode(201);
 		
 		// donate extension changes to international via RF2 update simulation 
 		Json descriptionDonateRequest = Json.object(
 			"caseSignificanceId", Concepts.ENTIRE_TERM_CASE_SENSITIVE,
 			"commitComment", "Changed case significance on description"
 		);
-		updateDescription(new CodeSystemURI(SNOMEDCT), internationalDescriptionId, descriptionDonateRequest);
+		updateDescription(new ResourceURI(SNOMEDCT), internationalDescriptionId, descriptionDonateRequest);
 		String donationEffectiveDate = getNextAvailableEffectiveDateAsString(SNOMEDCT);
 		createVersion(SNOMEDCT, donationEffectiveDate, donationEffectiveDate).statusCode(201);
 		
 		// upgrade extension to new INT version with donations
 
 		// start upgrade to the new available upgrade version
-		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getCodeSystemURI(), CodeSystemURI.branch(SNOMEDCT, donationEffectiveDate));
+		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getResourceURI(), CodeSystem.uri(SNOMEDCT, donationEffectiveDate));
 
-		SnomedDescription updatedInternationalDescriptionOnUpgrade = getDescription(upgradeCodeSystem.getCodeSystemURI(), internationalDescriptionId);
+		SnomedDescription updatedInternationalDescriptionOnUpgrade = getDescription(upgradeCodeSystem.getResourceURI(), internationalDescriptionId);
 		assertEquals(true, updatedInternationalDescriptionOnUpgrade.isReleased());
 		assertEquals(EffectiveTimes.parse(donationEffectiveDate, DateFormats.SHORT), updatedInternationalDescriptionOnUpgrade.getEffectiveTime());
 		assertEquals(Concepts.MODULE_SCT_CORE, updatedInternationalDescriptionOnUpgrade.getModuleId());
@@ -413,12 +414,12 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 			"relationships", Json.array(statedIsa, inferredIsa)
 		);
 		
-		String extensionConceptId = createConcept(extension.getCodeSystemURI(), extensionConceptRequestBody);
+		String extensionConceptId = createConcept(extension.getResourceURI(), extensionConceptRequestBody);
 		
 		// create new extension version
-		createVersion(extension.getShortName(), "v1", Dates.now(DateFormats.SHORT)).statusCode(201);
+		createVersion(extension.getId(), "v1", Dates.now(DateFormats.SHORT)).statusCode(201);
 		
-		SnomedConcept extensionConcept = getConcept(extension.getCodeSystemURI(), extensionConceptId, "descriptions()", "relationships()");
+		SnomedConcept extensionConcept = getConcept(extension.getResourceURI(), extensionConceptId, "descriptions()", "relationships()");
 
 		String extensionFsnId = getFirstMatchingDescription(extensionConcept, extensionFsnTerm).getId();
 		String extensionPtId = getFirstMatchingDescription(extensionConcept, extensionPtTerm).getId();
@@ -428,7 +429,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 
 		// simulate donation via concept create and versioning
 		// create INT concept with same ID and with same description and relationship IDs
-		String intConceptId = createConcept(new CodeSystemURI(SNOMEDCT), Json.object(
+		String intConceptId = createConcept(new ResourceURI(SNOMEDCT), Json.object(
 			"id", extensionConceptId,
 			"moduleId", Concepts.MODULE_SCT_CORE,
 			"descriptions", Json.array(
@@ -445,9 +446,9 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		createVersion(SNOMEDCT, effectiveDate, effectiveDate).statusCode(201);
 		
 		// start upgrade to the new available upgrade version
-		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getCodeSystemURI(), CodeSystemURI.branch(SNOMEDCT, effectiveDate));
+		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getResourceURI(), CodeSystem.uri(SNOMEDCT, effectiveDate));
 
-		SnomedConcept donatedConceptInExtension = getConcept(upgradeCodeSystem.getCodeSystemURI(), intConceptId, "descriptions()", "relationships()");
+		SnomedConcept donatedConceptInExtension = getConcept(upgradeCodeSystem.getResourceURI(), intConceptId, "descriptions()", "relationships()");
 		
 		// validate components of donated concept on extension branch
 		// same ID, different module
@@ -517,12 +518,12 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 			"relationships", Json.array(statedIsa, inferredIsa)
 		);
 		
-		String extensionConceptId = createConcept(extension.getCodeSystemURI(), extensionConceptRequestBody);
+		String extensionConceptId = createConcept(extension.getResourceURI(), extensionConceptRequestBody);
 		
 		// create new extension version
-		createVersion(extension.getShortName(), "v1", Dates.now(DateFormats.SHORT)).statusCode(201);
+		createVersion(extension.getId(), "v1", Dates.now(DateFormats.SHORT)).statusCode(201);
 		
-		SnomedConcept extensionConcept = getConcept(extension.getCodeSystemURI(), extensionConceptId, "descriptions()", "relationships()");
+		SnomedConcept extensionConcept = getConcept(extension.getResourceURI(), extensionConceptId, "descriptions()", "relationships()");
 
 		String extensionFsnId = getFirstMatchingDescription(extensionConcept, extensionFsnTerm).getId();
 		String extensionPtId = getFirstMatchingDescription(extensionConcept, extensionPtTerm).getId();
@@ -532,7 +533,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 
 		// simulate donation via concept create and versioning
 		// create INT concept with same ID and with same description and relationship IDs
-		String intConceptId = createConcept(new CodeSystemURI(SNOMEDCT), Json.object(
+		String intConceptId = createConcept(new ResourceURI(SNOMEDCT), Json.object(
 			"id", extensionConceptId,
 			"moduleId", Concepts.MODULE_SCT_CORE,
 			"descriptions", Json.array(
@@ -549,9 +550,9 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		createVersion(SNOMEDCT, effectiveDate, effectiveDate).statusCode(201);
 		
 		// start upgrade to the new available upgrade version
-		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getCodeSystemURI(), CodeSystemURI.branch(SNOMEDCT, effectiveDate));
+		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getResourceURI(), CodeSystem.uri(SNOMEDCT, effectiveDate));
 
-		SnomedConcept donatedConceptInExtension = getConcept(upgradeCodeSystem.getCodeSystemURI(), intConceptId, "descriptions()", "relationships()");
+		SnomedConcept donatedConceptInExtension = getConcept(upgradeCodeSystem.getResourceURI(), intConceptId, "descriptions()", "relationships()");
 		
 		// validate components of donated concept on extension branch
 		// same ID, different module
@@ -622,7 +623,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 			"relationships", Json.array(statedIsa, inferredIsa)
 		);
 		
-		String extensionConceptId1 = createConcept(extension.getCodeSystemURI(), extensionConceptRequestBody);
+		String extensionConceptId1 = createConcept(extension.getResourceURI(), extensionConceptRequestBody);
 
 		// create another extension concept which references the previous one
 		String extensionFsnTerm2 = "FSN of concept 2";
@@ -635,7 +636,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 			"characteristicTypeId", Concepts.ADDITIONAL_RELATIONSHIP
 		);
 		
-		String extensionConceptId2 = createConcept(extension.getCodeSystemURI(), extensionConceptRequestBody.with(Json.object(
+		String extensionConceptId2 = createConcept(extension.getResourceURI(), extensionConceptRequestBody.with(Json.object(
 			"descriptions", Json.array(
 				fsnRequestBody1.with("term", extensionFsnTerm2), 
 				ptRequestBody1.with("term", extensionPtTerm2), 
@@ -645,9 +646,9 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		)));
 		
 		// create new extension version
-		createVersion(extension.getShortName(), "v1", Dates.now(DateFormats.SHORT)).statusCode(201);
+		createVersion(extension.getId(), "v1", Dates.now(DateFormats.SHORT)).statusCode(201);
 
-		SnomedConcept extensionConcept1 = getConcept(extension.getCodeSystemURI(), extensionConceptId1, "descriptions()", "relationships()");
+		SnomedConcept extensionConcept1 = getConcept(extension.getResourceURI(), extensionConceptId1, "descriptions()", "relationships()");
 
 		String extensionFsnId1 = getFirstMatchingDescription(extensionConcept1, extensionFsnTerm1).getId();
 		String extensionPtId1 = getFirstMatchingDescription(extensionConcept1, extensionPtTerm1).getId();
@@ -655,7 +656,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		String extensionStatedIsaId1 = getFirstRelationshipId(extensionConcept1, Concepts.STATED_RELATIONSHIP);
 		String extensionInferredIsaId1 = getFirstRelationshipId(extensionConcept1, Concepts.INFERRED_RELATIONSHIP);
 		
-		SnomedConcept extensionConcept2 = getConcept(extension.getCodeSystemURI(), extensionConceptId2, "descriptions()", "relationships()");
+		SnomedConcept extensionConcept2 = getConcept(extension.getResourceURI(), extensionConceptId2, "descriptions()", "relationships()");
 		
 		String extensionFsnId2 = getFirstMatchingDescription(extensionConcept2, extensionFsnTerm2).getId();
 		String extensionPtId2 = getFirstMatchingDescription(extensionConcept2, extensionPtTerm2).getId();
@@ -666,7 +667,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 
 		// simulate donation via concept create and versioning
 		// donate both concepts without the PART OF relationship reference between them
-		String intConceptId1 = createConcept(new CodeSystemURI(SNOMEDCT), Json.object(
+		String intConceptId1 = createConcept(new ResourceURI(SNOMEDCT), Json.object(
 			"id", extensionConceptId1,
 			"moduleId", Concepts.MODULE_SCT_CORE,
 			"descriptions", Json.array(
@@ -678,7 +679,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 				inferredIsa.with("id", extensionInferredIsaId1)
 			)
 		));
-		String intConceptId2 = createConcept(new CodeSystemURI(SNOMEDCT), Json.object(
+		String intConceptId2 = createConcept(new ResourceURI(SNOMEDCT), Json.object(
 			"id", extensionConceptId2,
 			"moduleId", Concepts.MODULE_SCT_CORE,
 			"descriptions", Json.array(
@@ -695,10 +696,10 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		createVersion(SNOMEDCT, effectiveDate, effectiveDate).statusCode(201);
 
 		// start upgrade to the new available upgrade version
-		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getCodeSystemURI(), CodeSystemURI.branch(SNOMEDCT, effectiveDate));
+		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getResourceURI(), CodeSystem.uri(SNOMEDCT, effectiveDate));
 		
-		SnomedConcept donatedConceptInExtension1 = getConcept(upgradeCodeSystem.getCodeSystemURI(), intConceptId1, "descriptions()", "relationships()");
-		SnomedConcept donatedConceptInExtension2 = getConcept(upgradeCodeSystem.getCodeSystemURI(), intConceptId2, "descriptions()", "relationships()");
+		SnomedConcept donatedConceptInExtension1 = getConcept(upgradeCodeSystem.getResourceURI(), intConceptId1, "descriptions()", "relationships()");
+		SnomedConcept donatedConceptInExtension2 = getConcept(upgradeCodeSystem.getResourceURI(), intConceptId2, "descriptions()", "relationships()");
 		
 		// validate components of donated concepts on extension branch
 		// same IDs, different modules
@@ -771,7 +772,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 			"relationships", Json.array(statedIsa, inferredIsa)
 		);
 		
-		String extensionConceptId1 = createConcept(extension.getCodeSystemURI(), extensionConceptRequestBody);
+		String extensionConceptId1 = createConcept(extension.getResourceURI(), extensionConceptRequestBody);
 
 		// create another extension concept which references the previous one
 		String extensionFsnTerm2 = "FSN of concept 2";
@@ -784,7 +785,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 			"characteristicTypeId", Concepts.ADDITIONAL_RELATIONSHIP
 		);
 		
-		String extensionConceptId2 = createConcept(extension.getCodeSystemURI(), extensionConceptRequestBody.with(Json.object(
+		String extensionConceptId2 = createConcept(extension.getResourceURI(), extensionConceptRequestBody.with(Json.object(
 			"descriptions", Json.array(
 				fsnRequestBody1.with("term", extensionFsnTerm2), 
 				ptRequestBody1.with("term", extensionPtTerm2), 
@@ -794,9 +795,9 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		)));
 		
 		// create new extension version
-		createVersion(extension.getShortName(), "v1", Dates.now(DateFormats.SHORT)).statusCode(201);
+		createVersion(extension.getId(), "v1", Dates.now(DateFormats.SHORT)).statusCode(201);
 
-		SnomedConcept extensionConcept1 = getConcept(extension.getCodeSystemURI(), extensionConceptId1, "descriptions()", "relationships()");
+		SnomedConcept extensionConcept1 = getConcept(extension.getResourceURI(), extensionConceptId1, "descriptions()", "relationships()");
 
 		String extensionFsnId1 = getFirstMatchingDescription(extensionConcept1, extensionFsnTerm1).getId();
 		String extensionPtId1 = getFirstMatchingDescription(extensionConcept1, extensionPtTerm1).getId();
@@ -804,7 +805,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		String extensionStatedIsaId1 = getFirstRelationshipId(extensionConcept1, Concepts.STATED_RELATIONSHIP);
 		String extensionInferredIsaId1 = getFirstRelationshipId(extensionConcept1, Concepts.INFERRED_RELATIONSHIP);
 		
-		SnomedConcept extensionConcept2 = getConcept(extension.getCodeSystemURI(), extensionConceptId2, "descriptions()", "relationships()");
+		SnomedConcept extensionConcept2 = getConcept(extension.getResourceURI(), extensionConceptId2, "descriptions()", "relationships()");
 		
 		String extensionFsnId2 = getFirstMatchingDescription(extensionConcept2, extensionFsnTerm2).getId();
 		String extensionPtId2 = getFirstMatchingDescription(extensionConcept2, extensionPtTerm2).getId();
@@ -815,7 +816,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 
 		// simulate donation via concept create and versioning
 		// donate both concepts without the PART OF relationship reference between them
-		String intConceptId = createConcept(new CodeSystemURI(SNOMEDCT), Json.object(
+		String intConceptId = createConcept(new ResourceURI(SNOMEDCT), Json.object(
 			"id", extensionConceptId1,
 			"moduleId", Concepts.MODULE_SCT_CORE,
 			"descriptions", Json.array(
@@ -832,10 +833,10 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		createVersion(SNOMEDCT, effectiveDate, effectiveDate).statusCode(201);
 
 		// start upgrade to the new available upgrade version
-		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getCodeSystemURI(), CodeSystemURI.branch(SNOMEDCT, effectiveDate));
+		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getResourceURI(), CodeSystem.uri(SNOMEDCT, effectiveDate));
 		
-		SnomedConcept donatedConceptInExtension1 = getConcept(upgradeCodeSystem.getCodeSystemURI(), intConceptId, "descriptions()", "relationships()");
-		SnomedConcept extensionConcept2OnUpgrade = getConcept(upgradeCodeSystem.getCodeSystemURI(), extensionConceptId2, "descriptions()", "relationships()");
+		SnomedConcept donatedConceptInExtension1 = getConcept(upgradeCodeSystem.getResourceURI(), intConceptId, "descriptions()", "relationships()");
+		SnomedConcept extensionConcept2OnUpgrade = getConcept(upgradeCodeSystem.getResourceURI(), extensionConceptId2, "descriptions()", "relationships()");
 		
 		// validate components of donated concepts on extension branch
 		// same IDs, different modules
@@ -871,7 +872,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		SnomedConcept concept = searchConcept(baseInternationalCodeSystem, Map.of("module", Concepts.MODULE_SCT_CORE, "expand", "descriptions()"), 1).stream().findFirst().get();
 		String descriptionId = concept.getDescriptions().stream().findFirst().get().getId();
 		// create new inactivation indicator for one of the description, pending move
-		createMember(extension.getCodeSystemURI(), Map.of(
+		createMember(extension.getResourceURI(), Map.of(
 			"moduleId", moduleId,
 			"referenceSetId", Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR,
 			"referencedComponentId", descriptionId,
@@ -879,10 +880,10 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		));
 		
 		// version extension
-		createVersion(extension.getCodeSystemURI().getCodeSystem(), "v1", Dates.now(DateFormats.SHORT)).statusCode(201);		
+		createVersion(extension.getId(), "v1", Dates.now(DateFormats.SHORT)).statusCode(201);		
 		
 		// add another member on INT representing a change in INT and allow extension to upgrade
-		createMember(new CodeSystemURI(SNOMEDCT), Map.of(
+		createMember(new ResourceURI(SNOMEDCT), Map.of(
 			"moduleId", Concepts.MODULE_SCT_CORE,
 			"referenceSetId", Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR,
 			"referencedComponentId", descriptionId,
@@ -891,13 +892,13 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		
 		String effectiveDate = getNextAvailableEffectiveDateAsString(SNOMEDCT);
 		createVersion(SNOMEDCT, effectiveDate, effectiveDate).statusCode(201);
-		CodeSystemURI upgradeVersion = CodeSystemURI.branch(SNOMEDCT, effectiveDate);
+		ResourceURI upgradeVersion = CodeSystem.uri(SNOMEDCT, effectiveDate);
 		
 		// start the upgrade
-		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getCodeSystemURI(), upgradeVersion);
+		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getResourceURI(), upgradeVersion);
 		
 		// add another extension member to the same int concept with same meaning to the original extension branch
-		createMember(extension.getCodeSystemURI(), Map.of(
+		createMember(extension.getResourceURI(), Map.of(
 			"moduleId", moduleId,
 			"referenceSetId", Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR,
 			"referencedComponentId", descriptionId,
@@ -913,7 +914,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		waitForMergeJob(lastPathSegment(mergeLocation));
 		
 		// each component should have a single revision after successful sync
-		getConcept(upgradeCodeSystem.getCodeSystemURI(), concept.getId());
+		getConcept(upgradeCodeSystem.getResourceURI(), concept.getId());
 		
 	}
 	
@@ -925,28 +926,28 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		// create a new INT version without any changes
 		String effectiveDate = getNextAvailableEffectiveDateAsString(SNOMEDCT);
 		createVersion(SNOMEDCT, effectiveDate, effectiveDate).statusCode(201);
-		CodeSystemURI upgradeVersion = CodeSystemURI.branch(SNOMEDCT, effectiveDate);
+		ResourceURI upgradeVersion = CodeSystem.uri(SNOMEDCT, effectiveDate);
 		
 		// create new extension version with one new concept, module in this case
 		String moduleId = createModule(extension);
-		createVersion(extension.getCodeSystemURI().getCodeSystem(), "v1", Dates.now(DateFormats.SHORT)).statusCode(201);
+		createVersion(extension.getId(), "v1", Dates.now(DateFormats.SHORT)).statusCode(201);
 		
 		// start upgrade to the new available upgrade version
-		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getCodeSystemURI(), upgradeVersion);
+		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getResourceURI(), upgradeVersion);
 		assertEquals(upgradeVersion, upgradeCodeSystem.getExtensionOf());
 		
-		getComponent(upgradeCodeSystem.getCodeSystemURI().toString(), SnomedComponentType.CONCEPT, moduleId).statusCode(200);
+		getComponent(upgradeCodeSystem.getResourceURI().toString(), SnomedComponentType.CONCEPT, moduleId).statusCode(200);
 		
-		Boolean success = CodeSystemRequests.prepareComplete(upgradeCodeSystem.getShortName())
-			.build(upgradeCodeSystem.getRepositoryId())
+		Boolean success = CodeSystemRequests.prepareComplete(upgradeCodeSystem.getId())
+			.buildAsync()
 			.execute(getBus())
 			.getSync(1, TimeUnit.MINUTES);
 		assertTrue(success);
 		
 		// after upgrade completion, the upgrade Code System is no longer available
-		CodeSystemRestRequests.getCodeSystem(upgradeCodeSystem.getShortName()).assertThat().statusCode(404);
+		CodeSystemRestRequests.getCodeSystem(upgradeCodeSystem.getId()).assertThat().statusCode(404);
 		// the extension should use the upgrade's branch
-		CodeSystemRestRequests.getCodeSystem(upgradeCodeSystem.getUpgradeOf().getCodeSystem())
+		CodeSystemRestRequests.getCodeSystem(upgradeCodeSystem.getUpgradeOf().getResourceId())
 			.assertThat().statusCode(200)
 			.and().body("branchPath", is(upgradeCodeSystem.getBranchPath()))
 			.and().body("extensionOf", is(upgradeCodeSystem.getExtensionOf().toString()));
@@ -956,12 +957,12 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 	public void upgrade15Version() {
 		CodeSystem extension = createExtension(latestInternationalVersion, branchPath.lastSegment());
 		
-		String effectiveDate = getNextAvailableEffectiveDateAsString(INT_CODESYSTEM);
-		createVersion(INT_CODESYSTEM, effectiveDate, effectiveDate).statusCode(201);
+		String effectiveDate = getNextAvailableEffectiveDateAsString(SNOMEDCT);
+		createVersion(SNOMEDCT, effectiveDate, effectiveDate).statusCode(201);
 		
-		String newEffectiveDate = getNextAvailableEffectiveDateAsString(INT_CODESYSTEM);
-		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getCodeSystemURI(), CodeSystemURI.branch(INT_CODESYSTEM, effectiveDate));
-		createVersion(upgradeCodeSystem.getShortName(), newEffectiveDate, newEffectiveDate).statusCode(400);
+		String newEffectiveDate = getNextAvailableEffectiveDateAsString(SNOMEDCT);
+		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getResourceURI(), CodeSystem.uri(SNOMEDCT, effectiveDate));
+		createVersion(upgradeCodeSystem.getId(), newEffectiveDate, newEffectiveDate).statusCode(400);
 	}
 	
 	private String getFirstRelationshipId(SnomedConcept concept, String characteristicTypeId) {

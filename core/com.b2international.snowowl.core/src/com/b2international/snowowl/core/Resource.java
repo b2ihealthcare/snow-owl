@@ -18,6 +18,7 @@ package com.b2international.snowowl.core;
 import java.io.Serializable;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonSetter;
 
 /**
  * @since 8.0
@@ -76,6 +77,10 @@ public abstract class Resource implements Serializable {
 	public ResourceURI getResourceURI() {
 		return ResourceURI.of(getResourceType(), getId());
 	}
+
+	// XXX empty setter to make Jackson happy when deserializing 
+	@JsonSetter
+	final void setResourceURI(ResourceURI resourceUri) {}
 
 	public String getUrl() {
 		return url;

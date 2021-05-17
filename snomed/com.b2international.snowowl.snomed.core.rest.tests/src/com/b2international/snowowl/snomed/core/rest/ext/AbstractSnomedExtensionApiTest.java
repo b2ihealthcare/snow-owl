@@ -19,14 +19,14 @@ import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.cr
 
 import java.util.concurrent.TimeUnit;
 
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.snomed.cis.domain.SctId;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.test.commons.SnomedContentRule;
 import com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests;
 import com.b2international.snowowl.test.commons.rest.RestExtensions;
 
@@ -37,10 +37,10 @@ import io.restassured.response.ValidatableResponse;
  */
 public abstract class AbstractSnomedExtensionApiTest extends AbstractSnomedApiTest {
 	
+	protected static final String SNOMEDCT = SnomedContentRule.SNOMEDCT_ID;
 	protected static final String EXT_BASE_SI_VERSION = "2019-07-31";
-	protected static final String SNOMEDCT = SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME;
 	
-	protected final CodeSystemURI baseInternationalCodeSystem = CodeSystemURI.branch(SNOMEDCT, EXT_BASE_SI_VERSION);
+	protected final ResourceURI baseInternationalCodeSystem = SnomedContentRule.SNOMEDCT.withPath(EXT_BASE_SI_VERSION);
 	
 	protected final String createModule(CodeSystem extension) {
 		// generate ID for the module first
@@ -56,24 +56,24 @@ public abstract class AbstractSnomedExtensionApiTest extends AbstractSnomedApiTe
 				.orElseThrow();
 		// then create the module concept
 		return createConcept(
-			extension.getCodeSystemURI(), 
+			extension.getResourceURI(), 
 			createConceptRequestBody(Concepts.MODULE_ROOT, moduleId).with("id", moduleId)
 		);
 	}
 
 	// branch have been already created by the outer rules, so we are just reusing it to create an extension branch
-	protected final CodeSystem createExtension(CodeSystemURI extensionOf, String codeSystemId) {
+	protected final CodeSystem createExtension(ResourceURI extensionOf, String codeSystemId) {
 		CodeSystemRestRequests.createCodeSystem(extensionOf, codeSystemId)
 			.assertThat()
 			.statusCode(201);
 		return CodeSystemRestRequests.getCodeSystem(codeSystemId).extract().as(CodeSystem.class);
 	}
 
-	protected final ValidatableResponse assertCodeSystemUpgrade(CodeSystemURI upgradeOf, CodeSystemURI extensionOf) {
+	protected final ValidatableResponse assertCodeSystemUpgrade(ResourceURI upgradeOf, ResourceURI extensionOf) {
 		return CodeSystemRestRequests.upgrade(upgradeOf, extensionOf).assertThat();
 	}
 	
-	protected final CodeSystem createExtensionUpgrade(CodeSystemURI upgradeOf, CodeSystemURI extensionOf) {
+	protected final CodeSystem createExtensionUpgrade(ResourceURI upgradeOf, ResourceURI extensionOf) {
 		final String upgradeCodeSystemId = RestExtensions.lastPathSegment(assertCodeSystemUpgrade(upgradeOf, extensionOf).statusCode(201).extract().header("Location"));
 		return CodeSystemRestRequests.getCodeSystem(upgradeCodeSystemId).extract().as(CodeSystem.class);
 	}

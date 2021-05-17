@@ -86,7 +86,7 @@ public abstract class CodeSystemRestRequests {
 				.body(Map.of(
 					"extensionOf", extensionOf.toString()
 				))
-				.post("/{id}/upgrades", codeSystem.toString())
+				.post("/{id}/upgrades", codeSystem.getResourceId().toString())
 				.then();
 	}
 
