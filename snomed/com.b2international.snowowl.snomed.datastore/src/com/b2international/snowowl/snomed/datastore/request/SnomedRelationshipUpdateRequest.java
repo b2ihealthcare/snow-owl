@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import java.util.Set;
 
-import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 
 import com.b2international.commons.exceptions.BadRequestException;
@@ -44,10 +43,10 @@ public final class SnomedRelationshipUpdateRequest extends SnomedComponentUpdate
 	// Not @NotNull, update of relationship value is optional
 	private RelationshipValue value;
 
-	@Min(0)	@Max(Short.MAX_VALUE)
+	@Min(0)
 	private Integer group;
 
-	@Min(0)	@Max(Short.MAX_VALUE)
+	@Min(0)
 	private Integer unionGroup;
 
 	// Not @NotEmpty, update of characteristic type ID is optional

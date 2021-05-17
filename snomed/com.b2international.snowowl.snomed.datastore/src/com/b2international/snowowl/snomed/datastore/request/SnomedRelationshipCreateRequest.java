@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import java.util.Set;
 
-import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
@@ -52,10 +51,10 @@ public final class SnomedRelationshipCreateRequest extends BaseSnomedComponentCr
 	// Not @NotNull, it will be null if a destination ID is set
 	private RelationshipValue value; 
 
-	@NotNull @Min(0) @Max(Short.MAX_VALUE)
+	@NotNull @Min(0)
 	private Integer group;
 
-	@NotNull @Min(0) @Max(Short.MAX_VALUE)
+	@NotNull @Min(0)
 	private Integer unionGroup;
 
 	@NotNull
