@@ -92,7 +92,7 @@ public final class SnomedRelationshipSearchRequestBuilder extends SnomedComponen
 		return addOption(OptionKey.VALUE_TYPE, valueType);
 	}
 	
-	public SnomedRelationshipSearchRequestBuilder filterByValueType(Iterable<RelationshipValueType> valueTypes) {
+	public SnomedRelationshipSearchRequestBuilder filterByValueTypes(Iterable<RelationshipValueType> valueTypes) {
 		return addOption(OptionKey.VALUE_TYPE, valueTypes);
 	}
 
@@ -100,15 +100,15 @@ public final class SnomedRelationshipSearchRequestBuilder extends SnomedComponen
 		return filterByValue(SearchResourceRequest.Operator.EQUALS, value);
 	}
 	
-	public SnomedRelationshipSearchRequestBuilder filterByValue(Iterable<RelationshipValue> values) {
-		return filterByValue(SearchResourceRequest.Operator.EQUALS, values);
+	public SnomedRelationshipSearchRequestBuilder filterByValues(Iterable<RelationshipValue> values) {
+		return filterByValues(SearchResourceRequest.Operator.EQUALS, values);
 	}
 
 	public SnomedRelationshipSearchRequestBuilder filterByValue(SearchResourceRequest.Operator op, RelationshipValue value) {
 		return addOption(OptionKey.OPERATOR, op).addOption(OptionKey.VALUE, value);
 	}
 
-	public SnomedRelationshipSearchRequestBuilder filterByValue(SearchResourceRequest.Operator op, Iterable<RelationshipValue> values) {
+	public SnomedRelationshipSearchRequestBuilder filterByValues(SearchResourceRequest.Operator op, Iterable<RelationshipValue> values) {
 		return addOption(OptionKey.OPERATOR, op).addOption(OptionKey.VALUE, values);
 	}
 	

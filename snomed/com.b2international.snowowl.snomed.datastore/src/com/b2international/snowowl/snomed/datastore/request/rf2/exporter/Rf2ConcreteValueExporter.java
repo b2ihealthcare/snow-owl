@@ -70,7 +70,7 @@ public final class Rf2ConcreteValueExporter
 	protected SnomedRelationshipSearchRequestBuilder createComponentSearchRequestBuilder() {
 		return SnomedRequests
 			.prepareSearchRelationship()
-			.filterByValueType(VALUE_TYPES)
+			.filterByValueTypes(VALUE_TYPES)
 			.sortBy(SortField.ascending(SnomedRelationshipIndexEntry.Fields.ID));
 	}
 
