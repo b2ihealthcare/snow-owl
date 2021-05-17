@@ -80,7 +80,7 @@ public final class CodeSystemConverter extends BaseResourceConverter<CodeSystemE
 	}
 	
 	private void expandUpgradeOfBranchState(List<CodeSystem> results) {
-		if (!expand().containsKey(CodeSystem.Expand.UPGRADE_OF_BRANCH_INFO)) {
+		if (!expand().containsKey(CodeSystem.Expand.UPGRADE_INFO)) {
 			return;
 		}
 		
@@ -147,7 +147,7 @@ public final class CodeSystemConverter extends BaseResourceConverter<CodeSystemE
 							.collect(Collectors.toList());
 				}
 				
-				result.setUpgradeOfBranchInfo(new UpgradeInfo(mainInfo, versionBranchInfo, blockedURIs));
+				result.setUpgradeInfo(new UpgradeInfo(mainInfo, versionBranchInfo, blockedURIs));
 			}
 		}
 	}
