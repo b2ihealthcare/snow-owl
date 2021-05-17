@@ -107,7 +107,6 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 			MODULE_ID,
 			SOURCE_ID,
 			DESTINATION_ID,
-			VALUE_TYPE,
 			INTEGER_VALUE,
 			DECIMAL_VALUE,
 			STRING_VALUE,
@@ -117,6 +116,7 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 			CHARACTERISTIC_TYPE_ID,
 			MODIFIER_ID,
 			// additional fields
+			VALUE_TYPE,
 			RELEASED);
 	}
 	
