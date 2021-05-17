@@ -94,7 +94,6 @@ final class Rf2ConcreteValueContentType implements Rf2ContentType<SnomedRelation
 		 * - starts with # and contains a . -> should be a valid decimal (double) number 
 		 * - starts with #                  -> should be a valid integer
 		 * - starts and ends with "         -> should be a quoted string, with other double quotes escaped
-		 * - otherwise                      -> should be a boolean literal "true" or "false", without quotes
 		 */
 		if (value.startsWith("#")) {
 			// Remove prefix
@@ -133,14 +132,5 @@ final class Rf2ConcreteValueContentType implements Rf2ContentType<SnomedRelation
 			
 			return;
 		}
-		
-		/* 
-		 * The two allowed literals for boolean values are case sensitive, if neither of 
-		 * them match, the value is not a valid boolean literal. (This also means that any literals
-		 * making it through to here will be classified as "invalid boolean" values.)
-		 */
-		defectBuilder
-			.when(!value.equals("true") && !value.equals("false"))
-			.error("%s %s", relationshipId, Rf2ValidationDefects.RELATIONSHIP_VALUE_INVALID_BOOLEAN);
 	}
 }
