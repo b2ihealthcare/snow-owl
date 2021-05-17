@@ -17,10 +17,7 @@ package com.b2international.snowowl.snomed.core.ecl;
 
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument.Expressions.active;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.*;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Fields.DESTINATION_ID;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Fields.GROUP;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Fields.SOURCE_ID;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Fields.TYPE_ID;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Fields.*;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
@@ -575,6 +572,7 @@ final class SnomedEclRefinementEvaluator {
 				.filterByValueType(value.type()) 
 				.filterByValue(operator, value)
 				.setEclExpressionForm(expressionForm)
+				.setFields(ID, SOURCE_ID, TYPE_ID, GROUP, VALUE_TYPE, INTEGER_VALUE, DECIMAL_VALUE, STRING_VALUE)
 				.build(context.id(), context.path())
 				.execute(context.service(IEventBus.class))
 				.then(matchingMembers -> FluentIterable.from(matchingMembers)
