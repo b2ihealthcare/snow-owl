@@ -678,9 +678,11 @@ public final class ReasonerTaxonomyBuilder {
 		// XXX: we can only guess the lower limit here (1 relationship for each OWL axiom)
 		final List<StatementFragment> nonIsAFragments = new ArrayList<>(SCROLL_LIMIT);
 		final List<String> axioms = new ArrayList<>(SCROLL_LIMIT);
+		final List<String> sourceIds = new ArrayList<>(SCROLL_LIMIT);
+		final List<String> destinationIds = new ArrayList<>(SCROLL_LIMIT);
 		String lastReferencedComponentId = "";
 		int groupOffset = AXIOM_GROUP_BASE;
-		
+
 		for (final Hits<SnomedRefSetMemberIndexEntry> hits : searcher.scroll(query)) {
 			for (final SnomedRefSetMemberIndexEntry member : hits) {
 				final String referencedComponentId = member.getReferencedComponentId();
@@ -691,11 +693,15 @@ public final class ReasonerTaxonomyBuilder {
 					if (conceptMap.containsKey(lastReferencedComponentId)) {
 						axiomNonIsaRelationships.putAll(lastReferencedComponentId, nonIsAFragments);
 						statedAxioms.putAll(lastReferencedComponentId, axioms);
+						statedAncestors.addEdges(sourceIds, destinationIds);
+						statedDescendants.addEdges(destinationIds, sourceIds);
 					} else {
 						LOGGER.debug("Not registering OWL axioms for concept {} as it is inactive.", lastReferencedComponentId);
 					}
 					nonIsAFragments.clear();
 					axioms.clear();
+					sourceIds.clear();
+					destinationIds.clear();
 					
 					lastReferencedComponentId = referencedComponentId;
 					groupOffset = AXIOM_GROUP_BASE;
@@ -710,12 +716,15 @@ public final class ReasonerTaxonomyBuilder {
 
 				final String expression = member.getOwlExpression();
 				final StringTokenizer tok = new StringTokenizer(expression.toLowerCase(Locale.ENGLISH), "(): ");
-
-				// OWL axiom types that we are expecting here, only two of which requires special handling:
+				boolean isSubPropertyOf = false;
+				
+				// OWL axiom types that we are expecting here, four of which requires special handling:
 				// 
 				// [ ] SubClassOf(...)
 				// [ ] EquivalentClasses(...)
 				// [+] SubObjectPropertyOf(ObjectPropertyChain(:246093002 :738774007) :246093002)
+				// [+] SubObjectPropertyOf(:x :y)
+				// [+] SubDataPropertyOf(:x :y)
 				// [+] TransitiveObjectProperty(:774081006)
 				// [ ] ReflexiveObjectProperty(...)
 				try {
@@ -731,11 +740,17 @@ public final class ReasonerTaxonomyBuilder {
 							long destinationType = Long.parseLong(tok.nextToken());
 							long inferredType = Long.parseLong(tok.nextToken());
 							propertyChains.add(new PropertyChain(sourceType, destinationType, inferredType));
+						} else {
+							isSubPropertyOf = true;
 						}
+					} else if ("subdatapropertyof".equals(firstToken)) {
+						isSubPropertyOf = true;
 					}
 					
-					// Always collect the OWL axiom, regardless of type
-					axioms.add(expression);
+					// Collect the OWL axiom only if it is not of type "Sub<Object|Data>PropertyOf"
+					if (!isSubPropertyOf) {
+						axioms.add(expression);
+					}
 					
 				} catch (NoSuchElementException | NumberFormatException e) {
 					// skip
@@ -766,6 +781,17 @@ public final class ReasonerTaxonomyBuilder {
 							nonIsAFragments.add(relationship.toStatementFragment(groupOffset));
 							continue;
 						}
+						
+						if (isSubPropertyOf) {
+							/*
+							 * XXX: Register "Sub<Object|Data>PropertyOf" axioms as "stated parents", so that we
+							 * can create both the original axiom _and_ a SubClassOf axiom for a (punted)
+							 * OWL class representing the property concept.
+							 */
+							sourceIds.add(referencedComponentId);
+							destinationIds.add(relationship.getDestinationId());
+							continue;
+						}
 					}
 				}
 
@@ -781,11 +807,15 @@ public final class ReasonerTaxonomyBuilder {
 			if (conceptMap.containsKey(lastReferencedComponentId)) {
 				axiomNonIsaRelationships.putAll(lastReferencedComponentId, nonIsAFragments);
 				statedAxioms.putAll(lastReferencedComponentId, axioms);
+				statedAncestors.addEdges(sourceIds, destinationIds);
+				statedDescendants.addEdges(destinationIds, sourceIds);
 			} else {
 				LOGGER.debug("Not registering OWL axioms for concept {} as it is inactive.", lastReferencedComponentId);
 			}
 			nonIsAFragments.clear();
 			axioms.clear();
+			sourceIds.clear();
+			destinationIds.clear();
 		}
 		
 		leaving("Registering active stated OWL axioms using revision searcher");

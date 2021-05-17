@@ -187,7 +187,6 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLM
 	}
 
 	private final class SubPropertyOfAxiomIterator<R extends OWLPropertyRange, P extends OWLPropertyExpression, A extends OWLSubPropertyAxiom<P>> extends AbstractIterator<A> {
-		private final long attributeRootId;
 		private final LongIterator childIterator;
 		private final LongFunction<P> propertyFactory;
 		private final BiFunction<P, P, A> subPropertyAxiomFactory;
@@ -195,11 +194,10 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLM
 		private long childId = -1L;
 		private LongIterator parentIterator;
 
-		public SubPropertyOfAxiomIterator(final long attributeRootId,
+		public SubPropertyOfAxiomIterator(
 				final LongIterator childIterator,
 				final LongFunction<P> propertyFactory,
 				final BiFunction<P, P, A> subPropertyAxiomFactory) {
-			this.attributeRootId = attributeRootId;
 			this.childIterator = childIterator;
 			this.propertyFactory = propertyFactory;
 			this.subPropertyAxiomFactory = subPropertyAxiomFactory;
@@ -221,10 +219,7 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLM
 			// Check if there are more parents to return for the current value of "childId"
 			if (parentIterator != null) {
 				while (parentIterator.hasNext()) {
-					final long parentId = parentIterator.next();
-					if (parentId != attributeRootId) {
-						return parentId;
-					}
+					return parentIterator.next();
 				}
 			}
 
@@ -236,10 +231,7 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLM
 						.iterator();
 
 				while (parentIterator.hasNext()) {
-					final long parentId = parentIterator.next();
-					if (parentId != attributeRootId) {
-						return parentId;
-					}
+					return parentIterator.next();
 				}
 			}
 
@@ -247,6 +239,52 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLM
 		}
 	}
 
+	private final class SubClassOfAxiomIterator extends AbstractIterator<OWLSubClassOfAxiom> {
+		private final LongIterator childIterator;
+		
+		private long childId = -1L;
+		private LongIterator parentIterator;
+		
+		public SubClassOfAxiomIterator(final LongIterator childIterator) {
+			this.childIterator = childIterator;
+		}
+		
+		@Override
+		protected OWLSubClassOfAxiom computeNext() {
+			final long parentId = nextApplicableParentId(); 
+			if (parentId == -1L) {
+				return endOfData();
+			}
+			
+			final OWLClass childClass = getConceptClass(childId);
+			final OWLClass parentClass = getConceptClass(parentId);
+			return getOWLSubClassOfAxiom(childClass, parentClass);	
+		}
+		
+		private long nextApplicableParentId() {
+			// Check if there are more parents to return for the current value of "childId"
+			if (parentIterator != null) {
+				while (parentIterator.hasNext()) {
+					return parentIterator.next();
+				}
+			}
+			
+			// Otherwise, look for the next child which has parents
+			while (childIterator.hasNext()) {
+				childId = childIterator.next();
+				parentIterator = taxonomy.getStatedAncestors()
+						.getDestinations(childId, true)
+						.iterator();
+				
+				while (parentIterator.hasNext()) {
+					return parentIterator.next();
+				}
+			}
+			
+			return -1L;
+		}
+	}
+	
 	private final class DisjointUnionAxiomIterator extends AbstractIterator<OWLDisjointUnionAxiom> {
 		private final LongIterator idIterator;
 
@@ -262,8 +300,7 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLM
 
 			final long parentId = idIterator.next();
 			final OWLClass parentClass = getConceptClass(parentId);
-			final LongSet directChildIds = taxonomy.getStatedDescendants()
-					.getDestinations(parentId, true);
+			final LongSet directChildIds = getSubTypes(parentId);
 
 			final Set<OWLClass> childClasses = newHashSet();
 
@@ -499,7 +536,9 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLM
 						owlReferenceSetAxioms(),
 						conceptDefinitionAxioms(),
 						objectAttributeSubPropertyOfAxioms(),
+						objectAttributeSubClassOfAxioms(),
 						dataAttributeSubPropertyOfAxioms(),
+						dataAttributeSubClassOfAxioms(),
 						disjointUnionAxioms());
 			}
 
@@ -530,7 +569,9 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLM
 		return owlReferenceSetAxiomCount()      // owlReferenceSetAxioms()
 				+ conceptDefinitionAxiomCount() // conceptDefinitionAxioms()
 				+ objectHierarchyCount()        // objectAttributeSubPropertyOfAxioms()
+				+ objectHierarchyCount()        // objectAttributeSubClassOfAxioms()
 				+ dataHierarchyCount()          // dataAttributeSubPropertyOfAxioms()
+				+ dataHierarchyCount()          // dataAttributeSubClassOfAxioms()
 				+ disjointUnionCount();         // disjointUnionAxioms()
 	}
 
@@ -609,10 +650,14 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLM
 	////////////////////////////////////////////
 	
 	private Iterator<OWLSubObjectPropertyOfAxiom> objectAttributeSubPropertyOfAxioms() {
-		return new SubPropertyOfAxiomIterator<>(objectAttributeId, 
+		return new SubPropertyOfAxiomIterator<>( 
 				objectAttributeIdIterator(), 
 				this::getConceptObjectProperty, 
 				this::getOWLSubObjectPropertyOfAxiom);
+	}
+	
+	private Iterator<OWLSubClassOfAxiom> objectAttributeSubClassOfAxioms() {
+		return new SubClassOfAxiomIterator(objectAttributeIdIterator());
 	}
 
 	private int objectHierarchyCount() {
@@ -620,34 +665,22 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLM
 	}
 
 	private Iterator<OWLSubDataPropertyOfAxiom> dataAttributeSubPropertyOfAxioms() {
-		return new SubPropertyOfAxiomIterator<>(dataAttributeId, 
+		return new SubPropertyOfAxiomIterator<>( 
 				dataAttributeIdIterator(), 
 				this::getConceptDataProperty, 
 				this::getOWLSubDataPropertyOfAxiom);
 	}
-	
+
+	private Iterator<OWLSubClassOfAxiom> dataAttributeSubClassOfAxioms() {
+		return new SubClassOfAxiomIterator(dataAttributeIdIterator());
+	}
+
 	private int dataHierarchyCount() {
 		return hierarchyCount(dataAttributeId);
 	}
 	
 	private int hierarchyCount(final long ancestorId) {
-		int parentsCount = 0;
-
-		if (taxonomy.getConceptMap().getInternalId(ancestorId) != InternalIdMap.NO_INTERNAL_ID) {
-			// Get the direct children of the attribute root concept
-			for (final LongIterator directItr = getSubTypes(ancestorId).iterator(); directItr.hasNext(); /* empty */) {
-				// Descendants of each direct child will contribute as many "SubPropertyOf" axioms as they have stated (direct) parents
-				for (final LongIterator descendantItr = getAllSubTypes(directItr.next()).iterator(); descendantItr.hasNext(); /* empty */) {
-					final int parents = taxonomy.getStatedAncestors()
-							.getDestinations(descendantItr.next(), true)
-							.size();
-
-					parentsCount += parents;
-				}
-			}
-		}
-
-		return parentsCount;
+		return getAllSubTypes(ancestorId).size();
 	}
 
 	///////////////////////////////////////////////////
