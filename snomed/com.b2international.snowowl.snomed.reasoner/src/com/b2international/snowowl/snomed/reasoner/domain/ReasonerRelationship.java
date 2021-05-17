@@ -116,6 +116,11 @@ public final class ReasonerRelationship implements Serializable {
 		return ifNotNull(getValueAsObject(), RelationshipValue::toLiteral);
 	}
 
+	@JsonIgnore
+	public boolean hasValue() {
+		return (value != null);
+	}
+
 	/**
 	 * Checks whether the destination concept's meaning should be negated ({@code ObjectComplementOf} semantics in OWL2).
 	 * 
