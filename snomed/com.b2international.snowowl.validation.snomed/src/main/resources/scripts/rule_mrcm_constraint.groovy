@@ -1,5 +1,8 @@
 package scripts
 
+import static com.b2international.index.query.Expressions.matchAny
+import static com.b2international.index.query.Expressions.nestedMatch
+
 import java.util.stream.Collectors
 
 import com.b2international.index.Hits
@@ -225,13 +228,22 @@ if (params.isUnpublishedOnly) {
 			def attribute = getApplicableConcepts(predicate.getAttributeExpression())
 			def range = getApplicableConcepts(predicate.getRangeExpression())
 			
+			/* 
+			 * XXX: These are nested OWL relationship documents, but we can use relationship query expressions
+			 * as long as the field naming convention stays the same.
+			 */
+			final ExpressionBuilder nestedBuilder = Expressions.builder()
+					.filter(SnomedRelationshipIndexEntry.Expressions.hasDestinationId())
+					.filter(SnomedRelationshipIndexEntry.Expressions.typeIds(attribute))
+					.mustNot(SnomedRelationshipIndexEntry.Expressions.destinationIds(range))
+			
 			final ExpressionBuilder expressionBuilder = Expressions.builder()
 					.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
 					.filter(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(domain))
-					.filter(SnomedRefSetMemberIndexEntry.Expressions.owlExpressionHasDestinationId())
-					.filter(SnomedRefSetMemberIndexEntry.Expressions.owlExpressionType(attribute))
-					.mustNot(SnomedRefSetMemberIndexEntry.Expressions.owlExpressionDestination(range))
-			
+					.should(nestedMatch(SnomedRefSetMemberIndexEntry.Fields.CLASS_AXIOM_RELATIONSHIP, nestedBuilder))
+					.should(nestedMatch(SnomedRefSetMemberIndexEntry.Fields.GCI_AXIOM_RELATIONSHIP, nestedBuilder))
+					.setMinimumNumberShouldMatch(1)
+		
 			final Query<String> query = Query.select(String.class)
 					.from(SnomedRefSetMemberIndexEntry.class)
 					.fields(SnomedRelationshipIndexEntry.Fields.ID)
