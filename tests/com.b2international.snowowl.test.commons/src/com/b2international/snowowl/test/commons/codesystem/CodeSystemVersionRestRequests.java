@@ -45,7 +45,7 @@ public abstract class CodeSystemVersionRestRequests {
 				.when()
 				.queryParams(Map.of(
 					"resource", CodeSystem.uri(codeSystemId).toString(),
-					"sort", "version:desc",
+					"sort", "effectiveTime:desc",
 					"limit", 1
 				))
 				.get()
