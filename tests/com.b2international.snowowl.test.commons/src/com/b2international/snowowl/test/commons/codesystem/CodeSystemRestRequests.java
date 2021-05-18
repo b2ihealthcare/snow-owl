@@ -81,13 +81,13 @@ public abstract class CodeSystemRestRequests {
 	}
 	
 	public static ValidatableResponse upgrade(ResourceURI codeSystem, ResourceURI extensionOf) {
-		return givenAuthenticatedRequest(ApiTestConstants.CODESYSTEMS_API)
+		return givenAuthenticatedRequest("/upgrade")
 				.contentType(ContentType.JSON)
 				.body(Map.of(
 					"extensionOf", extensionOf.toString(),
-					"upgradeOf", codeSystem.getResourceId().toString()
+					"upgradeOf", codeSystem.withoutResourceType()
 				))
-				.post("/upgrade")
+				.post()
 				.then();
 	}
 

@@ -125,6 +125,11 @@ public final class ResourceURI implements Serializable, Comparable<ResourceURI> 
 		return new ResourceURI(String.join(Branch.SEPARATOR, resourceType, resourceId));
 	}
 	
+	@JsonIgnore
+	public String withoutResourceType() {
+		return Strings.isNullOrEmpty(path) ? resourceId : String.join(Branch.SEPARATOR, resourceId, path);
+	}
+	
 	public ResourceURI asLatest() {
 		return ResourceURI.latest(resourceType, resourceId);
 	}

@@ -90,13 +90,6 @@ final class CodeSystemUpgradeRequest implements Request<RepositoryContext, Strin
 				.withDeveloperMessage("Use '%s/<VERSION_ID>', where <VERSION_ID> is one of: '%s'", extensionOf.getResourceId(), availableUpgrades);
 		}
 		
-		String branchPath = currentCodeSystem.getBranchPath();
-		
-		// only allow HEAD or valid code system versions
-		if (!resource.isHead()) {
-			branchPath = ((DefaultResourceURIPathResolver) context.service(ResourceURIPathResolver.class)).resolveBranches(false).resolve(context, List.of(resource)).stream().findFirst().get();
-		}
-		
 		// auto-generate the resourceId if not provided
 		// auto-generated upgrade IDs consist of the original Resource's ID and the new extensionOf dependency's path, which is version at this point
 		final String upgradeResourceId;
@@ -107,6 +100,13 @@ final class CodeSystemUpgradeRequest implements Request<RepositoryContext, Strin
 		} else {
 			BranchNameValidator.DEFAULT.checkName(resourceId);
 			upgradeResourceId = resourceId;
+		}
+		
+		String mergeContentFromBranchPath = currentCodeSystem.getBranchPath();
+		
+		// only allow HEAD or valid code system versions
+		if (!resource.isHead()) {
+			mergeContentFromBranchPath = ((DefaultResourceURIPathResolver) context.service(ResourceURIPathResolver.class)).resolveBranches(false).resolve(context, List.of(resource)).stream().findFirst().get();
 		}
 		
 		// create the same branch name under the new extensionOf path
@@ -123,7 +123,7 @@ final class CodeSystemUpgradeRequest implements Request<RepositoryContext, Strin
 		try {
 			// merge branch content from the current code system to the new upgradeBranch
 			Merge merge = RepositoryRequests.merging().prepareCreate()
-				.setSource(branchPath)
+				.setSource(mergeContentFromBranchPath)
 				.setTarget(upgradeBranch)
 				.setSquash(false)
 				.build(currentCodeSystem.getToolingId())
@@ -136,10 +136,10 @@ final class CodeSystemUpgradeRequest implements Request<RepositoryContext, Strin
 				Collection<MergeConflict> conflicts = merge.getConflicts();
 				context.log().error("Failed to sync source CodeSystem content to upgrade CodeSystem. Error: {}. Conflicts: {}", apiError.getMessage(), conflicts);
 				throw new ConflictException("Upgrade can not be performed due to content synchronization errors.")
-				.withAdditionalInfo(Map.of(
+					.withAdditionalInfo(Map.of(
 						"conflicts", conflicts,
 						"mergeError", apiError.getMessage()
-						));
+					));
 			}
 		
 			// and lastly create the actual CodeSystem so users will be able to browse, access and complete the upgrade
