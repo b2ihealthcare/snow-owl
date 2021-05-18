@@ -20,7 +20,10 @@ import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
 
 import java.text.ParseException;
-import java.util.*;
+import java.util.Collection;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.converter.json.MappingJacksonValue;
@@ -42,20 +45,21 @@ import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.Entry;
 import com.b2international.snowowl.fhir.core.model.OperationOutcome;
+import com.b2international.snowowl.fhir.core.model.ValidateCodeResult;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest.Builder;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupResult;
 import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionRequest;
 import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionResult;
+import com.b2international.snowowl.fhir.core.model.codesystem.ValidateCodeRequest;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
 import com.b2international.snowowl.fhir.core.provider.ICodeSystemApiProvider;
 import com.b2international.snowowl.fhir.core.search.FhirFilterParameter;
 import com.b2international.snowowl.fhir.core.search.FhirSearchParameter;
-import com.b2international.snowowl.fhir.core.search.FhirUriSearchParameterDefinition.FhirCommonSearchKey;
-import com.google.common.collect.Sets;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -234,6 +238,57 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 		final LookupRequest req = toRequest(in, LookupRequest.class);
 		
 		LookupResult result = lookup(req);
+		return toResponse(result);
+	}
+	
+	/**
+	 * HTTP Get request to validate that a coded value is in the code system.
+	 * The code system is identified by its Code System ID
+	 * If the operation is not called at the instance level, one of the parameters "url" or "codeSystem" must be provided. 
+	 * The operation returns a result (true / false), an error message, and the recommended display for the code.
+     * When invoking this operation, a client SHALL provide one (and only one) of the parameters (code+system, coding, or codeableConcept). 
+     * Other parameters (including version and display) are optional.
+	 * 
+	 * @param codeSystemUri the code system to validate against
+	 * @param code to code to validate
+	 * @param version the version of the code system to validate against
+	 * @param date the date for which the validation should be checked
+	 * @param abstract If this parameter has a value of true, the client is stating that the validation is being performed in a context 
+	 * 			where a concept designated as 'abstract' is appropriate/allowed.
+	 *
+	 * @return validation results as {@link OperationOutcome}
+	 */
+	@ApiOperation(
+			response=ValueSet.class,
+			value="Validate a code in a code system",
+			notes="Validate that a coded value is in a code system.")
+	@ApiResponses({
+		@ApiResponse(code = HTTP_OK, message = "OK"),
+		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
+		@ApiResponse(code = HTTP_NOT_FOUND, message = "Code system not found", response = OperationOutcome.class)
+	})
+	@RequestMapping(value="/{codeSystemId:**}/$validate-code", method=RequestMethod.GET)
+	public Parameters.Fhir validateCode(
+			
+			@ApiParam(value="The id of the code system to validate against") @PathVariable("codeSystemId") String codeSystemId, 
+			@ApiParam(value="The code to be validated") @RequestParam(value="code") final String code,
+			@ApiParam(value="The version of the code system") @RequestParam(value="version") final Optional<String> version,
+			@ApiParam(value="The display string of the code") @RequestParam(value="display") final Optional<String> display,
+			@ApiParam(value="The date stamp of the code system to validate against") @RequestParam(value="date") final Optional<String> date,
+			@ApiParam(value="The abstract status of the code") @RequestParam(value="abstract") final Optional<Boolean> isAbstract) {
+		
+		CodeSystemURI codeSystemURI = new CodeSystemURI(codeSystemId);
+		
+		ValidateCodeRequest validateCodeRequest = ValidateCodeRequest.builder()
+				.code(code)
+				.version(version.orElse(null))
+				.display(display.orElse(null))
+				.date(date.orElse(null))
+				.isAbstract(isAbstract.orElse(null))
+				.build();
+		
+		ICodeSystemApiProvider codeSystemProvider = codeSystemProviderRegistry.getCodeSystemProvider(getBus(), locales, codeSystemId);
+		ValidateCodeResult result = codeSystemProvider.validateCode(validateCodeRequest);
 		return toResponse(result);
 	}
 

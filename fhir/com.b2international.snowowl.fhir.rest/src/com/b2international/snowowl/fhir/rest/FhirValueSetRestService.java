@@ -26,7 +26,12 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import com.b2international.commons.Pair;
@@ -36,17 +41,21 @@ import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.Entry;
 import com.b2international.snowowl.fhir.core.model.OperationOutcome;
+import com.b2international.snowowl.fhir.core.model.ValidateCodeResult;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.valueset.ExpandValueSetRequest;
 import com.b2international.snowowl.fhir.core.model.valueset.ValidateCodeRequest;
-import com.b2international.snowowl.fhir.core.model.valueset.ValidateCodeResult;
 import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
 import com.b2international.snowowl.fhir.core.provider.IValueSetApiProvider;
 import com.b2international.snowowl.fhir.core.search.FhirFilterParameter;
 import com.b2international.snowowl.fhir.core.search.FhirSearchParameter;
 
-import io.swagger.annotations.*;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 /**
  * Value Set contains codes from one or more code systems.
@@ -253,7 +262,7 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 	})
 	@RequestMapping(value="/{valueSetId:**}/$validate-code", method=RequestMethod.GET)
 	public Parameters.Fhir validateCode(
-			@ApiParam(value="The id of the value set to validate") @PathVariable("valueSetId") String valueSetId, 
+			@ApiParam(value="The id of the value set to validate against") @PathVariable("valueSetId") String valueSetId, 
 			@ApiParam(value="The code to to be validated") @RequestParam(value="code") final String code,
 			@ApiParam(value="The system uri of the code to be validated") @RequestParam(value="system") final String system,
 			@ApiParam(value="The code system version of the code to be validated") @RequestParam(value="version", required=false) final String systemVersion) {

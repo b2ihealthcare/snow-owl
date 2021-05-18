@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,13 +35,13 @@ import com.b2international.snowowl.fhir.core.codesystems.IdentifierUse;
 import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
+import com.b2international.snowowl.fhir.core.model.ValidateCodeResult;
 import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Narrative;
 import com.b2international.snowowl.fhir.core.model.valueset.Compose;
 import com.b2international.snowowl.fhir.core.model.valueset.ExpandValueSetRequest;
 import com.b2international.snowowl.fhir.core.model.valueset.Include;
 import com.b2international.snowowl.fhir.core.model.valueset.ValidateCodeRequest;
-import com.b2international.snowowl.fhir.core.model.valueset.ValidateCodeResult;
 import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
 import com.b2international.snowowl.fhir.core.model.valueset.ValueSet.Builder;
 import com.b2international.snowowl.fhir.core.model.valueset.ValueSetFilter;
@@ -49,8 +49,8 @@ import com.b2international.snowowl.fhir.core.model.valueset.expansion.Contains;
 import com.b2international.snowowl.fhir.core.model.valueset.expansion.Expansion;
 import com.b2international.snowowl.fhir.core.model.valueset.expansion.UriParameter;
 import com.b2international.snowowl.fhir.core.provider.IValueSetApiProvider;
-import com.b2international.snowowl.fhir.core.search.FhirSearchParameter;
 import com.b2international.snowowl.fhir.core.search.FhirParameter.PrefixedValue;
+import com.b2international.snowowl.fhir.core.search.FhirSearchParameter;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;

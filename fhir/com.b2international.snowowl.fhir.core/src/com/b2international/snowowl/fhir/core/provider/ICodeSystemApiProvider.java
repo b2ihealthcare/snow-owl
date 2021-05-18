@@ -26,11 +26,13 @@ import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
+import com.b2international.snowowl.fhir.core.model.ValidateCodeResult;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupResult;
 import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionRequest;
 import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionResult;
+import com.b2international.snowowl.fhir.core.model.codesystem.ValidateCodeRequest;
 import com.b2international.snowowl.fhir.core.search.FhirSearchParameter;
 
 /**
@@ -143,6 +145,13 @@ public interface ICodeSystemApiProvider extends IFhirApiProvider {
 	 * @throws BadRequestException if the code system is not supported by this provider
 	 */
 	CodeSystem getCodeSystem(CodeSystemURI codeSystemId);
+
+	/**
+	 * Validates a code system code against a code system specified in the request.
+	 * @param validateCodeRequest
+	 * @return validation result
+	 */
+	ValidateCodeResult validateCode(ValidateCodeRequest validateCodeRequest);
 
 
 }

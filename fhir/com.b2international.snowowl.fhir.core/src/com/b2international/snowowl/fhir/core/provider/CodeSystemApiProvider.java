@@ -56,6 +56,7 @@ import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.exceptions.FhirException;
 import com.b2international.snowowl.fhir.core.model.Meta;
+import com.b2international.snowowl.fhir.core.model.ValidateCodeResult;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem.Builder;
 import com.b2international.snowowl.fhir.core.model.codesystem.Concept;
@@ -67,6 +68,7 @@ import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionRequest
 import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionResult;
 import com.b2international.snowowl.fhir.core.model.codesystem.SupportedCodeSystemRequestProperties;
 import com.b2international.snowowl.fhir.core.model.codesystem.SupportedConceptProperty;
+import com.b2international.snowowl.fhir.core.model.codesystem.ValidateCodeRequest;
 import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Instant;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
@@ -228,7 +230,10 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 				.collect(Collectors.toList());
 	}
 
-	
+	@Override
+	public ValidateCodeResult validateCode(final ValidateCodeRequest validationRequest) {
+		return null;
+	}
 
 	/**
 	 * Returns the designated FHIR Uri for the given code system

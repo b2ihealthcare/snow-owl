@@ -53,6 +53,7 @@ import com.b2international.snowowl.fhir.tests.serialization.parameterized.*;
 	DesignationSerializationTest.class,
 	LookupRequestDeserializationTest.class,
 	LookupResultSerializationTest.class,
+	ValidateCodeSystemCodeRequestDeserializationTest.class,
 	TranslateRequestDeserializationTest.class,
 	TranslateResultSerializationTest.class,
 	SubsumptionRequestDeserializationTest.class,
