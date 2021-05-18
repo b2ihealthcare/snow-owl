@@ -156,7 +156,7 @@ public final class CodeSystemConverter extends BaseResourceConverter<ResourceDoc
 		
 		final Versions parentVersions = ResourceRequests.prepareSearchVersion()
 			.all()
-			.filterByResources(parentResources.stream().map(ResourceURI::toString).collect(Collectors.toSet()))
+			.filterByResources(parentResources.stream().map(ResourceURI::withoutPath).map(ResourceURI::toString).collect(Collectors.toSet()))
 			.build()
 			.execute(context());
 		
@@ -190,7 +190,7 @@ public final class CodeSystemConverter extends BaseResourceConverter<ResourceDoc
 			final Optional<List<ResourceURI>> upgradeUris = currentExtensionVersion.map(currentVersion -> {
 				final SortedSet<Version> upgradeVersions = candidates.tailSet(currentVersion, false);
 				return upgradeVersions.stream()
-						.map(upgradeVersion -> upgradeVersion.getResource())
+						.map(upgradeVersion -> upgradeVersion.getVersionResourceURI())
 						.collect(Collectors.toList());
 			});
 	
