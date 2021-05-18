@@ -234,7 +234,7 @@ public class CodeSystemApiTest {
 		assertCodeSystemCreated(parentRequestBody);
 		assertCodeSystemGet(parentCodeSystemId).statusCode(200);
 		
-		final Json versionRequestBody = prepareVersionCreateRequestBody(CodeSystem.uri(parentCodeSystemId), "v1", "20200415");
+		final Json versionRequestBody = prepareVersionCreateRequestBody(CodeSystem.uri(parentCodeSystemId), "v1", "2020-04-15");
 		assertVersionCreated(versionRequestBody);
 
 		final String codeSystemId = "cs12";
@@ -337,9 +337,9 @@ public class CodeSystemApiTest {
 		assertCodeSystemCreated(parentRequestBody);
 		assertCodeSystemGet(parentCodeSystemId).statusCode(200);
 		
-		final Json v3RequestBody = prepareVersionCreateRequestBody(CodeSystem.uri(parentCodeSystemId), "v3", "20200416");
+		final Json v3RequestBody = prepareVersionCreateRequestBody(CodeSystem.uri(parentCodeSystemId), "v3", "2020-04-16");
 		assertVersionCreated(v3RequestBody);
-		final Json v4RequestBody = prepareVersionCreateRequestBody(CodeSystem.uri(parentCodeSystemId), "v4", "20200417");
+		final Json v4RequestBody = prepareVersionCreateRequestBody(CodeSystem.uri(parentCodeSystemId), "v4", "2020-04-17");
 		assertVersionCreated(v4RequestBody);
 		
 		final String codeSystemId = "cs14";
