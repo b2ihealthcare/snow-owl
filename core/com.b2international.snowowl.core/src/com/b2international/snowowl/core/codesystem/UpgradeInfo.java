@@ -33,8 +33,8 @@ public final class UpgradeInfo implements Serializable {
 	List<BranchInfo> versionBranchInfos;
 	List<CodeSystemURI> availableVersions;
 	
-	public UpgradeInfo(BranchInfo mainBranchInfo, List<BranchInfo> versionBranchInfos, List<CodeSystemURI> availableVersions) {
-		this.upgradeOfBranchInfo = mainBranchInfo;
+	public UpgradeInfo(BranchInfo upgradeOfBranchInfo, List<BranchInfo> versionBranchInfos, List<CodeSystemURI> availableVersions) {
+		this.upgradeOfBranchInfo = upgradeOfBranchInfo;
 		this.versionBranchInfos = versionBranchInfos;
 		this.availableVersions = availableVersions;
 	}
