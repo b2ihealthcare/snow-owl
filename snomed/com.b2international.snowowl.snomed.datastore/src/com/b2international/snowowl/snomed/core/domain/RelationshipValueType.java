@@ -15,6 +15,10 @@
  */
 package com.b2international.snowowl.snomed.core.domain;
 
+import java.util.Locale;
+
+import com.b2international.commons.StringUtils;
+
 /**
  * Enumerates supported relationship value types.
  * 
@@ -25,4 +29,8 @@ public enum RelationshipValueType {
 	INTEGER,
 	DECIMAL, // XXX: stored as double-precision floating point
 	STRING;
+	
+	public String getDisplayName() {
+		return StringUtils.capitalizeFirstLetter(name().toLowerCase(Locale.ENGLISH));
+	}
 }
