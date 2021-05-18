@@ -19,6 +19,7 @@ import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.repository.TerminologyRepositoryInitializer;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -29,7 +30,7 @@ public final class SnomedRepositoryInitializer extends TerminologyRepositoryInit
 	@Override
 	protected CodeSystem createPrimaryCodeSystem() {
 		
-		final ImmutableMap<String,Object> additionalProperties = ImmutableMap.of(SnomedTerminologyComponentConstants.CODESYSTEM_MODULES_CONFIG_KEY, Concepts.MODULE_SCT_CORE);
+		final ImmutableMap<String,Object> additionalProperties = ImmutableMap.of(SnomedTerminologyComponentConstants.CODESYSTEM_MODULES_CONFIG_KEY, ImmutableList.of(Concepts.MODULE_SCT_CORE));
 		
 		return CodeSystem.builder()
 				.name(SnomedTerminologyComponentConstants.SNOMED_NAME)
