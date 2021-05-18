@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,20 +26,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.web.bind.annotation.*;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.exceptions.BadRequestException;
-import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.commons.validation.ApiValidation;
 import com.b2international.snowowl.core.Repositories;
 import com.b2international.snowowl.core.RepositoryInfo;
@@ -56,11 +46,7 @@ import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
 import com.b2international.snowowl.eventbus.IEventBus;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.*;
 
 /**
  * @since 1.0
@@ -265,42 +251,6 @@ public class CodeSystemRestService extends AbstractRestService {
 				.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);
 	}
 	
-	@ApiOperation(
-		value="Start a Code System dependency upgrade (EXPERIMENTAL)",
-		notes="Starts the upgrade process of a Code System to a newer extensionOf Code System dependency than the current extensionOf."
-	)
-	@ApiResponses({
-		@ApiResponse(code = 204, message = "Upgrade ", response = Void.class),
-		@ApiResponse(code = 400, message = "Code System cannot be upgraded", response = RestApiError.class)
-	})
-	@PostMapping(value = "/{codeSystemId}/upgrades", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
-	@ResponseStatus(HttpStatus.CREATED)
-	public Promise<ResponseEntity<Void>> upgrade(
-			@ApiParam(value="The code system identifier (short name only (OID is not supported))")
-			@PathVariable(value="codeSystemId") 
-			final String codeSystemId,
-			
-			@RequestBody
-			final CodeSystemUpgradeRestInput body) {
-		final CodeSystem codeSystem = CodeSystemRequests.prepareSearchAllCodeSystems()
-			.filterById(codeSystemId)
-			.buildAsync()
-			.execute(getBus())
-			.getSync(1, TimeUnit.MINUTES)
-			.first()
-			.orElseThrow(() -> new NotFoundException("Code System", codeSystemId));
-			
-		final UriComponentsBuilder uriBuilder = createURIBuilder();
-		
-		return CodeSystemRequests.prepareUpgrade(codeSystem.getCodeSystemURI(), body.getExtensionOf())
-				.setCodeSystemId(body.getCodeSystemId())
-				.build(codeSystem.getRepositoryId())
-				.execute(getBus())
-				.then(upgradeCodeSystemId -> {
-					return ResponseEntity.created(uriBuilder.pathSegment(upgradeCodeSystemId).build().toUri()).build();
-				});
-	}
-
 	private void validateUpdateInput(final String shortNameOrOId, final String repositoryUuid) {
 		if (StringUtils.isEmpty(shortNameOrOId)) {
 			throw new BadRequestException("Unique ID cannot be empty for Code System update.");

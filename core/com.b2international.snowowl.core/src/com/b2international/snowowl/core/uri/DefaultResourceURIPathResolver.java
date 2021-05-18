@@ -34,7 +34,9 @@ import com.b2international.snowowl.core.request.SearchResourceRequest;
  * @since 7.12
  */
 public final class DefaultResourceURIPathResolver implements ResourceURIPathResolver {
-
+	
+	private boolean allowBranches = true;
+	
 	@Override
 	public List<String> resolve(ServiceProvider context, List<CodeSystemURI> codeSystemURIs) {
 		if (CompareUtils.isEmpty(codeSystemURIs)) {
@@ -75,7 +77,7 @@ public final class DefaultResourceURIPathResolver implements ResourceURIPathReso
 					.findFirst()
 					.map(CodeSystemVersion::getPath)
 					.orElseGet(() -> {
-						if (uriToResolve.isLatest()) {
+						if (uriToResolve.isLatest() || !allowBranches) {
 							throw new BadRequestException("No CodeSystem version is present in '%s'. Explicit '%s/HEAD' can be used to retrieve the latest work in progress version of the CodeSystem.", codeSystem.getShortName(), codeSystem.getShortName());
 						} else {
 							return codeSystem.getRelativeBranchPath(uriToResolve.getPath()); 
@@ -83,5 +85,10 @@ public final class DefaultResourceURIPathResolver implements ResourceURIPathReso
 					});
 		}
 	}
-	
+
+	public DefaultResourceURIPathResolver resolveBranches(boolean allowBranches) {
+		this.allowBranches = allowBranches;
+		return this;
+	}
+
 }

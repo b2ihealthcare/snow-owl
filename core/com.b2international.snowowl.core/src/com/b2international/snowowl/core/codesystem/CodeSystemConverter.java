@@ -16,6 +16,7 @@
 package com.b2international.snowowl.core.codesystem;
 
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
@@ -29,6 +30,7 @@ import com.b2international.snowowl.core.request.BaseResourceConverter;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.TreeMultimap;
@@ -78,13 +80,13 @@ public final class CodeSystemConverter extends BaseResourceConverter<CodeSystemE
 	}
 	
 	private void expandUpgradeOfBranchState(List<CodeSystem> results) {
-		if (!expand().containsKey(CodeSystem.Expand.UPGRADE_OF_BRANCH_INFO)) {
+		if (!expand().containsKey(CodeSystem.Expand.UPGRADE_INFO)) {
 			return;
 		}
 		
 		final List<CodeSystemURI> upgradeOfURIs = results.stream()
 				.filter(codeSystem -> codeSystem.getUpgradeOf() != null)
-				.map(codeSystem -> codeSystem.getUpgradeOf())
+				.map(codeSystem -> new CodeSystemURI(codeSystem.getUpgradeOf().getCodeSystem()))
 				.collect(Collectors.toList());
 		
 		// nothing to expand, quit early
@@ -105,11 +107,47 @@ public final class CodeSystemConverter extends BaseResourceConverter<CodeSystemE
 
 		BaseRevisionBranching branching = context().service(BaseRevisionBranching.class);
 		for (CodeSystem result : results) {
-			String upgradeOfBranchPath = branchesByUpgradeOf.get(result.getUpgradeOf());
+			String upgradeOfBranchPath = branchesByUpgradeOf.get(new CodeSystemURI(result.getUpgradeOf().getCodeSystem()));
+			
 			if (!Strings.isNullOrEmpty(upgradeOfBranchPath)) {
 				RevisionBranch branch = branching.getBranch(result.getBranchPath());
 				BranchState branchState = branching.getBranchState(result.getBranchPath(), upgradeOfBranchPath);
-				result.setUpgradeOfBranchInfo(new BranchInfo(branch.getPath(), branchState, branch.getBaseTimestamp(), branch.getHeadTimestamp()));
+				BranchInfo mainInfo = new BranchInfo(branch.getPath(), branchState, branch.getBaseTimestamp(), branch.getHeadTimestamp());
+				
+				List<CodeSystemURI> blockedURIs = Lists.newArrayList();
+				List<BranchInfo> versionBranchInfo = Lists.newArrayList();
+				
+				if (!result.getUpgradeOf().isHead()) {
+
+					String extensionOfBranchPath = context().service(ResourceURIPathResolver.class).resolve(context(), List.of(result.getExtensionOf())).stream()
+							.findFirst()
+							.orElse("");
+
+					long extensionBaseTimestamp = Long.MIN_VALUE;
+					if (!Strings.isNullOrEmpty(extensionOfBranchPath)) {
+						extensionBaseTimestamp = branching.getBranch(extensionOfBranchPath).getBaseTimestamp();
+					}
+
+					versionBranchInfo = CodeSystemRequests.prepareSearchCodeSystemVersion()
+							.all()
+							.filterByCodeSystemShortName(result.getUpgradeOf().getCodeSystem())
+							.filterByEffectiveDate(extensionBaseTimestamp, Long.MAX_VALUE)
+							.build()
+							.execute(context())
+							.stream()
+							.filter(csv -> !csv.getUri().isHead())
+							.map(csv -> {
+								RevisionBranch versionBranch = branching.getBranch(csv.getPath());
+								BranchState versionBranchState = branching.getBranchState(result.getBranchPath(), versionBranch.getPath());
+								if (versionBranchState == BranchState.BEHIND || versionBranchState == BranchState.DIVERGED) {
+									blockedURIs.add(csv.getUri());
+								}
+								return new BranchInfo(branch.getPath(), versionBranchState, versionBranch.getBaseTimestamp(), versionBranch.getHeadTimestamp());
+							})
+							.collect(Collectors.toList());
+				}
+				
+				result.setUpgradeInfo(new UpgradeInfo(mainInfo, versionBranchInfo, blockedURIs));
 			}
 		}
 	}
@@ -183,6 +221,23 @@ public final class CodeSystemConverter extends BaseResourceConverter<CodeSystemE
 					.build()
 					.execute(context())
 					.first();
+			})
+			.or(() -> {
+				// then the code system versions
+				final List<CodeSystemURI> codeSystemVersions = CodeSystemRequests.prepareSearchCodeSystemVersion()
+						.all()
+						.filterByCodeSystemShortName(result.getShortName())
+						.build()
+						.execute(context())
+						.stream()
+						.map(cs -> cs.getUri())
+						.collect(Collectors.toList());
+				
+				return 	CodeSystemRequests.prepareSearchCodeSystem()
+						.filterByUpgradeOf(codeSystemVersions)
+						.build()
+						.execute(context())
+						.first();
 			})
 			.isPresent();
 	}

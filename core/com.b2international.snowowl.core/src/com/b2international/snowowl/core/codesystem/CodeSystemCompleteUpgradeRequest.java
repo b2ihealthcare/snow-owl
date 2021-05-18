@@ -18,7 +18,6 @@ package com.b2international.snowowl.core.codesystem;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.exceptions.BadRequestException;
-import com.b2international.index.revision.RevisionBranch.BranchState;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
@@ -41,14 +40,14 @@ final class CodeSystemCompleteUpgradeRequest implements Request<RepositoryContex
 	@Override
 	public Boolean execute(RepositoryContext context) {
 		CodeSystem codeSystem = CodeSystemRequests.prepareGetCodeSystem(codeSystemId)
-				.setExpand(CodeSystem.Expand.UPGRADE_OF_BRANCH_INFO + "()")
+				.setExpand(CodeSystem.Expand.UPGRADE_INFO + "()")
 				.build()
 				.execute(context);
 		
-		if (codeSystem.getUpgradeOfBranchInfo() == null) {
+		if (codeSystem.getUpgradeInfo() == null) {
 			throw new BadRequestException("Code System '%s' is not an upgrade Code System", codeSystemId);
 		} else {
-			if (codeSystem.getUpgradeOfBranchInfo().getState() == BranchState.DIVERGED || codeSystem.getUpgradeOfBranchInfo().getState() == BranchState.BEHIND) {
+			if (codeSystem.getUpgradeInfo().isBlocked()) {
 				throw new BadRequestException("Cannot complete upgrade '%s' because it is not in sync with the original source", codeSystemId);
 			}
 		}

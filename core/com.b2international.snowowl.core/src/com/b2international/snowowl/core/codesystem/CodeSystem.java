@@ -57,7 +57,7 @@ public class CodeSystem implements Serializable {
 	public static final class Expand {
 		public static final String AVAILABLE_UPGRADES = "availableUpgrades";
 		public static final String EXTENSION_OF_BRANCH_INFO = "extensionOfBranchInfo";
-		public static final String UPGRADE_OF_BRANCH_INFO = "upgradeOfBranchInfo";
+		public static final String UPGRADE_INFO = "upgradeInfo";
 	}
 	
 	public static Builder builder() {
@@ -216,7 +216,7 @@ public class CodeSystem implements Serializable {
 	private Map<String, Object> additionalProperties;
 	private List<CodeSystemURI> availableUpgrades;
 	private BranchInfo extensionOfBranchInfo;
-	private BranchInfo upgradeOfBranchInfo;
+	private UpgradeInfo upgradeInfo;
 	
 	// extension related fields
 	private CodeSystemURI extensionOf;
@@ -368,8 +368,8 @@ public class CodeSystem implements Serializable {
 		return extensionOfBranchInfo;
 	}
 	
-	public BranchInfo getUpgradeOfBranchInfo() {
-		return upgradeOfBranchInfo;
+	public UpgradeInfo getUpgradeInfo() {
+		return upgradeInfo;
 	}
 
 	public void setOid(final String oid) {
@@ -437,8 +437,8 @@ public class CodeSystem implements Serializable {
 		this.extensionOfBranchInfo = extensionOfBranchInfo;
 	}
 	
-	public void setUpgradeOfBranchInfo(BranchInfo upgradeOfBranchInfo) {
-		this.upgradeOfBranchInfo = upgradeOfBranchInfo;
+	public void setUpgradeInfo(UpgradeInfo upgradeInfo) {
+		this.upgradeInfo = upgradeInfo;
 	}
 	
 	/**

@@ -33,6 +33,7 @@ import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.core.merge.MergeConflict;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
+import com.b2international.snowowl.core.uri.DefaultResourceURIPathResolver;
 import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -65,10 +66,6 @@ final class CodeSystemUpgradeRequest implements Request<RepositoryContext, Strin
 	
 	@Override
 	public String execute(RepositoryContext context) {
-		if (!codeSystem.isHead()) {
-			throw new BadRequestException("Upgrades can not be started from CodeSystem versions.")
-				.withDeveloperMessage("Use '%s' only instead of '%s'", codeSystem.getCodeSystem(), codeSystem);
-		}
 
 		// get available upgrades 
 		final CodeSystem currentCodeSystem = CodeSystemRequests.prepareGetCodeSystem(codeSystem.getCodeSystem())
@@ -90,6 +87,13 @@ final class CodeSystemUpgradeRequest implements Request<RepositoryContext, Strin
 		if (!availableUpgrades.contains(extensionOf)) {
 			throw new BadRequestException("Upgrades can only be performed to the next available version dependency.")
 				.withDeveloperMessage("Use '%s/<VERSION_ID>', where <VERSION_ID> is one of: '%s'", extensionOf.getCodeSystem(), availableUpgrades);
+		}
+		
+		String branchPath = currentCodeSystem.getBranchPath();
+		
+		// only allow HEAD or valid code system versions
+		if (!codeSystem.isHead()) {
+			branchPath = ((DefaultResourceURIPathResolver) context.service(ResourceURIPathResolver.class)).resolveBranches(false).resolve(context, List.of(codeSystem)).stream().findFirst().get();
 		}
 		
 		// auto-generate the codeSystemId if not provided
@@ -116,7 +120,7 @@ final class CodeSystemUpgradeRequest implements Request<RepositoryContext, Strin
 		try {
 			// merge branch content from the current code system to the new upgradeBranch
 			Merge merge = RepositoryRequests.merging().prepareCreate()
-				.setSource(currentCodeSystem.getBranchPath())
+				.setSource(branchPath)
 				.setTarget(upgradeBranch)
 				.setSquash(false)
 				.build()

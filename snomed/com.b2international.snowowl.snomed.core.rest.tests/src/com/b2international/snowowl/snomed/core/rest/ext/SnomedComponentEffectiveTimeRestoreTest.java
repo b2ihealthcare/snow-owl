@@ -32,6 +32,7 @@ import java.util.Map;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.codesystem.CodeSystem;
+import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
@@ -179,6 +180,47 @@ public class SnomedComponentEffectiveTimeRestoreTest extends AbstractSnomedExten
 		));
 		concept = getConcept(upgradeCodeSystem.getCodeSystemURI(), moduleId);
 		assertEquals(EffectiveTimes.parse(EXT_VERSION), concept.getEffectiveTime());
+	}
+	
+	@Test
+	public void restoreExtensionEffectiveTimeOnExtensionVersionUpgrade() throws Exception {
+		// create extension on the base SI VERSION
+		final CodeSystem extension = createExtension(baseInternationalCodeSystem, branchPath.lastSegment());
+		// create the module concept to represent the extension
+		String moduleId = createModule(extension);
+		// create an extension version, concept receives effective time
+		
+		String effectiveDate = getNextAvailableEffectiveDateAsString(branchPath.lastSegment());
+		createVersion(branchPath.lastSegment(), effectiveDate, effectiveDate).statusCode(201);
+		CodeSystemURI upgradeExtVersion = CodeSystemURI.branch(branchPath.lastSegment(), effectiveDate);
+		
+		SnomedConcept concept = getConcept(extension.getCodeSystemURI(), moduleId);
+		assertEquals(EffectiveTimes.parse(effectiveDate, DateFormats.SHORT), concept.getEffectiveTime());
+		
+		//Update extension concept
+		updateConcept(extension.getCodeSystemURI(), concept.getId(), Map.of(
+				"moduleId", Concepts.MODULE_SCT_MODEL_COMPONENT
+			));
+		
+		//Create second version
+		String effectiveDate2 = getNextAvailableEffectiveDateAsString(branchPath.lastSegment());
+		createVersion(branchPath.lastSegment(), effectiveDate2, effectiveDate2).statusCode(201);
+		
+		// start the extension upgrade process
+		CodeSystem upgradeCodeSystem = createExtensionUpgrade(upgradeExtVersion, upgradeInternationalCodeSystem);
+		
+		// create a change on the concept, like change the definition status
+		updateConcept(upgradeCodeSystem.getCodeSystemURI(), concept.getId(), Map.of(
+				"definitionStatusId", Concepts.FULLY_DEFINED
+				));
+		concept = getConcept(upgradeCodeSystem.getCodeSystemURI(), moduleId);
+		assertEquals(null, concept.getEffectiveTime());
+		// revert the change, so it reverts the effective time to the 'effectiveDate' effective time
+		updateConcept(upgradeCodeSystem.getCodeSystemURI(), moduleId, Map.of(
+				"definitionStatusId", Concepts.PRIMITIVE
+				));
+		concept = getConcept(upgradeCodeSystem.getCodeSystemURI(), moduleId);
+		assertEquals(EffectiveTimes.parse(effectiveDate, DateFormats.SHORT), concept.getEffectiveTime());
 	}
 	
 }

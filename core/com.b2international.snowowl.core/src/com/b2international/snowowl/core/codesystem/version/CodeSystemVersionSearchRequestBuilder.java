@@ -78,22 +78,6 @@ public final class CodeSystemVersionSearchRequestBuilder
 	}
 	
 	/**
-	 * Returns the code system versions that have matching branch paths
-	 * @param branchPath - branch path to filter by
-	 */
-	public CodeSystemVersionSearchRequestBuilder filterByBranchPath(String branchPath) {
-		
-		Path path = Paths.get(branchPath);
-		if (path.getNameCount() == 0) {
-			throw new IllegalArgumentException("Invalid branch path, only root element exists" + branchPath);
-		}
-		
-		parentBranchPath = path.subpath(0, path.getNameCount() - 1).toString();
-		versionId = path.getFileName().toString();
-		return getSelf();
-	}
-	
-	/**
 	 * Returns the code system versions that have matching parent branch paths
 	 * @param parentBranchPath - parent branch path to filter by
 	 */
