@@ -15,20 +15,16 @@
  */
 package com.b2international.snowowl.snomed.core.rest.io;
 
-import static com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests.createCodeSystem;
-import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.createVersion;
-import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getVersion;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.getComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedImportRestRequests.doImport;
 import static com.b2international.snowowl.snomed.core.rest.SnomedImportRestRequests.waitForImportJob;
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests.createCodeSystem;
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.assertGetVersion;
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.createVersion;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.util.Map;
 import java.util.Optional;
@@ -40,6 +36,8 @@ import org.junit.runners.MethodSorters;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.BranchPathUtils;
+import com.b2international.snowowl.core.date.DateFormats;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.jobs.RemoteJobState;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
@@ -172,7 +170,7 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 			.body("pt.id", equalTo("11320138110"));
 
 		createCodeSystem(branchPath, "SNOMEDCT-EXT").statusCode(201);
-		createVersion("SNOMEDCT-EXT", "v1", "20170301").statusCode(201);
+		createVersion("SNOMEDCT-EXT", "v1", EffectiveTimes.parse("20170301", DateFormats.SHORT)).statusCode(201);
 		
 		// sanity check that versioning did not mess with the descriptions
 		getComponent(branchPath, SnomedComponentType.CONCEPT, "63961392103", "pt()").statusCode(200)
@@ -207,7 +205,7 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 
 		importArchive(branchPath, importConfiguration, "SnomedCT_Release_INT_20150205_new_extension_concept.zip");
 		getComponent(branchPath, SnomedComponentType.CONCEPT, "555231000005107").statusCode(200);
-		getVersion("SNOMEDCT-NE", "2015-02-05").statusCode(200);
+		assertGetVersion("SNOMEDCT-NE", "2015-02-05").statusCode(200);
 	}
 	
 	@Test

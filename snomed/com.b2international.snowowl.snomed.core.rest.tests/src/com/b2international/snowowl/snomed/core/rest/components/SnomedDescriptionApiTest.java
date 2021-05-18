@@ -23,7 +23,7 @@ import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.*;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests.createCodeSystem;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.createCodeSystemAndVersion;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.createVersion;
-import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getNextAvailableEffectiveDateAsString;
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getNextAvailableEffectiveDate;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.assertCreated;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static com.google.common.collect.Lists.newArrayList;
@@ -34,6 +34,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -219,7 +221,7 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 
 		String shortName = "SNOMEDCT-DSC-3";
 		createCodeSystem(branchPath, shortName).statusCode(201);
-		String effectiveDate = getNextAvailableEffectiveDateAsString(shortName);
+		LocalDate effectiveDate = getNextAvailableEffectiveDate(shortName);
 		createVersion(shortName, "v1", effectiveDate).statusCode(201);
 
 		deleteComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, false).statusCode(409);
@@ -231,7 +233,7 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 
 		String shortName = "SNOMEDCT-DSC-4";
 		createCodeSystem(branchPath, shortName).statusCode(201);
-		String effectiveDate = getNextAvailableEffectiveDateAsString(shortName);
+		LocalDate effectiveDate = getNextAvailableEffectiveDate(shortName);
 		createVersion(shortName, "v1", effectiveDate).statusCode(201);
 
 		deleteComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, true).statusCode(204);
@@ -260,7 +262,7 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 
 		String shortName = "SNOMEDCT-DSC-1";
 		createCodeSystem(branchPath, shortName).statusCode(201);
-		String effectiveDate = getNextAvailableEffectiveDateAsString(shortName);
+		LocalDate effectiveDate = getNextAvailableEffectiveDate(shortName);
 		createVersion(shortName, "v1", effectiveDate).statusCode(201);
 
 		Json requestBody = Json.object(
@@ -286,7 +288,7 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 
 		String shortName = "SNOMEDCT-DSC-2";
 		createCodeSystem(branchPath, shortName).statusCode(201);
-		String effectiveDate = getNextAvailableEffectiveDateAsString(shortName);
+		LocalDate effectiveDate = getNextAvailableEffectiveDate(shortName);
 		createVersion(shortName, "v1", effectiveDate).statusCode(201);
 
 		Json reactivateRequestBody = Json.object(
@@ -309,7 +311,7 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, "members()")
 			.body("active", equalTo(false))
 			.body("released", equalTo(true))
-			.body("effectiveTime", equalTo(effectiveDate))
+			.body("effectiveTime", equalTo(effectiveDate.format(DateTimeFormatter.BASIC_ISO_DATE)))
 			.body("members.items.active", not(hasItem(true)))
 			.body("members.items.effectiveTime", not(hasItem(not(equalTo(effectiveDate)))));
 	}
@@ -364,7 +366,7 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 		);
 		
 		// release component
-		createCodeSystemAndVersion(branchPath, "SNOMEDCT-RELDESC-INACTIVATIONINDICATOR", "v1", "20180701");
+		createCodeSystemAndVersion(branchPath, "SNOMEDCT-RELDESC-INACTIVATIONINDICATOR", "v1", LocalDate.parse("2018-07-01"));
 		
 		SnomedDescription description = assertInactivation(
 			branchPath, 
@@ -774,7 +776,7 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 		String descriptionId = createNewDescription(branchPath);
 		
 		// release component
-		createCodeSystemAndVersion(branchPath, "SNOMEDCT-RELDESC-TYPEID", "v1", "20170301");
+		createCodeSystemAndVersion(branchPath, "SNOMEDCT-RELDESC-TYPEID", "v1", LocalDate.parse("2017-03-01"));
 		
 		Json update = Json.object(
 			SnomedRf2Headers.FIELD_TYPE_ID, Concepts.TEXT_DEFINITION,
@@ -799,7 +801,7 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 		);
 		
 		// release component
-		createCodeSystemAndVersion(branchPath, "SNOMEDCT-RELDESC-TERM", "v1", "20170301");
+		createCodeSystemAndVersion(branchPath, "SNOMEDCT-RELDESC-TERM", "v1", LocalDate.parse("2017-03-01"));
 
 		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, update).statusCode(204);
 		
@@ -817,7 +819,7 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 		);
 
 		// release component
-		createCodeSystemAndVersion(branchPath, "SNOMEDCT-RELDESC-LANGCODE", "v1", "20170301");
+		createCodeSystemAndVersion(branchPath, "SNOMEDCT-RELDESC-LANGCODE", "v1", LocalDate.parse("2017-03-01"));
 		
 		updateComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, update).statusCode(400);
 		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId)
@@ -894,22 +896,22 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 
 		final String shortName = "SNOMEDCT-DESC-1";
 		createCodeSystem(branchPath, shortName).statusCode(201);
-		final String effectiveDate = getNextAvailableEffectiveDateAsString(shortName);
+		final LocalDate effectiveDate = getNextAvailableEffectiveDate(shortName);
 		createVersion(shortName, "v1", effectiveDate).statusCode(201);
 
 		// After versioning, the description should be released and have an effective time set on it
 		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(200)
-		.body("active", equalTo(true))
-		.body("released", equalTo(true))
-		.body("effectiveTime", equalTo(effectiveDate));
+			.body("active", equalTo(true))
+			.body("released", equalTo(true))
+			.body("effectiveTime", equalTo(effectiveDate.format(DateTimeFormatter.BASIC_ISO_DATE)));
 
 		inactivateDescription(branchPath, descriptionId);
 
 		// An inactivation should unset the effective time field
 		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(200)
-		.body("active", equalTo(false))
-		.body("released", equalTo(true))
- 		.body("effectiveTime", nullValue());
+			.body("active", equalTo(false))
+			.body("released", equalTo(true))
+	 		.body("effectiveTime", nullValue());
 
 		Json reactivationRequestBody = Json.object(
 			"active", true,
@@ -920,9 +922,9 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 
 		// Getting the description back to its originally released state should restore the effective time
 		getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId).statusCode(200)
-		.body("active", equalTo(true))
-		.body("released", equalTo(true))
-		.body("effectiveTime", equalTo(effectiveDate));
+			.body("active", equalTo(true))
+			.body("released", equalTo(true))
+			.body("effectiveTime", equalTo(effectiveDate.format(DateTimeFormatter.BASIC_ISO_DATE)));
 	}
 	
 }

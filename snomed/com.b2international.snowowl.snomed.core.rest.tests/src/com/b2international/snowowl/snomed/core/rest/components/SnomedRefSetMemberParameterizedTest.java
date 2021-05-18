@@ -29,11 +29,11 @@ import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.*;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests.createCodeSystem;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.createVersion;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getNextAvailableEffectiveDate;
-import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getNextAvailableEffectiveDateAsString;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static org.hamcrest.CoreMatchers.equalTo;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -233,10 +233,10 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 	public void updateMemberEffectiveTime() throws Exception {
 		final Pair<String, String> member = createRefSetMember();
 		final String memberId = member.getA();
-		String effectiveTime = getNextAvailableEffectiveDateAsString(SnomedContentRule.SNOMEDCT_ID);
+		LocalDate effectiveTime = getNextAvailableEffectiveDate(SnomedContentRule.SNOMEDCT_ID);
 
 		Json updateRequest = Json.object(
-			"effectiveTime", effectiveTime,
+			"effectiveTime", EffectiveTimes.format(effectiveTime, DateFormats.SHORT),
 			"commitComment", "Updated effective time on reference set member without force flag"
 		);
 		
@@ -300,8 +300,8 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 		final String memberId = member.getA();
 		final String referencedComponentId = member.getB();
 
-		final String effectiveTime = getNextAvailableEffectiveDateAsString(shortName);
-		createVersion(shortName, effectiveTime, effectiveTime).statusCode(201);
+		final LocalDate effectiveTime = getNextAvailableEffectiveDate(shortName);
+		createVersion(shortName, effectiveTime).statusCode(201);
 
 		// update properties
 		final Json updateRequest = getUpdateProperties(referencedComponentId)
@@ -329,7 +329,7 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 		// Getting the member back to its originally released state should restore the effective time
 		ValidatableResponse revertResponse = getComponent(branchPath, SnomedComponentType.MEMBER, memberId).statusCode(200)
 			.body("released", equalTo(true))
-			.body("effectiveTime", equalTo(effectiveTime));
+			.body("effectiveTime", equalTo(effectiveTime.format(DateTimeFormatter.BASIC_ISO_DATE)));
 
 		for (Entry<String, Object> validProperty : getValidProperties(refSetType, referencedComponentId).entrySet()) {
 			revertResponse.body(validProperty.getKey(), equalTo(validProperty.getValue()));

@@ -315,7 +315,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		String additionalRelationshipId = createNewRelationship(branchPath, Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT, Concepts.ADDITIONAL_RELATIONSHIP);
 
 		String versionEffectiveTime = "20170302";
-		createVersion("SNOMEDCT-DELTA", "v1", versionEffectiveTime).statusCode(201);
+		createVersion("SNOMEDCT-DELTA", "v1", EffectiveTimes.parse(versionEffectiveTime, DateFormats.SHORT)).statusCode(201);
 		IBranchPath versionPath = BranchPathUtils.createPath(branchPath, "v1");
 
 		Map<String, ?> config = ImmutableMap.<String, Object>builder()
@@ -380,11 +380,11 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		String additionalRelationshipId = createNewRelationship(branchPath, Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT, Concepts.ADDITIONAL_RELATIONSHIP);
 
 		String relationshipEffectiveTime = "20170303";
-		createVersion("SNOMEDCT-GAMMA", "v1", relationshipEffectiveTime).statusCode(201);
+		createVersion("SNOMEDCT-GAMMA", "v1", EffectiveTimes.parse(relationshipEffectiveTime, DateFormats.SHORT)).statusCode(201);
 
 		String conceptId = createNewConcept(branchPath);
 		String conceptEffectiveTime = "20170304";
-		createVersion("SNOMEDCT-GAMMA", "v2", conceptEffectiveTime).statusCode(201);
+		createVersion("SNOMEDCT-GAMMA", "v2", EffectiveTimes.parse(conceptEffectiveTime, DateFormats.SHORT)).statusCode(201);
 
 		String descriptionId = createNewDescription(branchPath, conceptId);
 		// do not version description
@@ -473,7 +473,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		final String memberId = createNewRefSetMember(branchPath, createdConceptId, createdRefSetId);
 		
 		final String versionEffectiveTime = "20170301";
-		createVersion(codeSystemShortName, "v1", versionEffectiveTime).statusCode(201);
+		createVersion(codeSystemShortName, "v1", EffectiveTimes.parse(versionEffectiveTime, DateFormats.SHORT)).statusCode(201);
 
 		IBranchPath versionPath = BranchPathUtils.createPath(branchPath, "v1");
 		IBranchPath taskBranch = BranchPathUtils.createPath(versionPath, "Fix01");
@@ -531,7 +531,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		final String memberId = createNewRefSetMember(branchPath, createdConceptId, createdRefSetId);
 		
 		final String versionEffectiveTime = "20170301";
-		createVersion(codeSystemShortName, "v1", versionEffectiveTime).statusCode(201);
+		createVersion(codeSystemShortName, "v1", EffectiveTimes.parse(versionEffectiveTime, DateFormats.SHORT)).statusCode(201);
 		
 		IBranchPath versionPath = BranchPathUtils.createPath(branchPath, "v1");
 		IBranchPath taskBranch = BranchPathUtils.createPath(versionPath, "Fix01");
@@ -593,7 +593,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 
 		// version new concept
 		final String versionEffectiveTime = "20170301";
-		createVersion(codeSystemShortName, "v1", versionEffectiveTime).statusCode(201);
+		createVersion(codeSystemShortName, "v1", EffectiveTimes.parse(versionEffectiveTime, DateFormats.SHORT)).statusCode(201);
 
 		// create new text definition
 		final String unpublishedTextDefinitionId = createNewDescription(branchPath, conceptId, Concepts.TEXT_DEFINITION, UK_ACCEPTABLE_MAP);
@@ -634,7 +634,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		final String conceptId = createNewConcept(branchPath);
 		final String versionEffectiveTime = "20170301";
 		
-		createVersion(codeSystemShortName, "v1", versionEffectiveTime).statusCode(201);
+		createVersion(codeSystemShortName, "v1", EffectiveTimes.parse(versionEffectiveTime, DateFormats.SHORT)).statusCode(201);
 
 		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId).statusCode(200)
 			.body("definitionStatusId", equalTo(Concepts.PRIMITIVE));
@@ -646,7 +646,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		
 		// create new version
 		final String newVersionEffectiveTime = "20170302";
-		createVersion(codeSystemShortName, "v2", newVersionEffectiveTime).statusCode(201);
+		createVersion(codeSystemShortName, "v2", EffectiveTimes.parse(newVersionEffectiveTime, DateFormats.SHORT)).statusCode(201);
 		
 		final Map<String, Object> config = ImmutableMap.<String, Object>builder()
 				.put("type", Rf2ReleaseType.DELTA.name())
@@ -679,7 +679,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		
 		// version new concept
 		final String versionEffectiveTime = "20170301";
-		createVersion(codeSystemShortName, "v1", versionEffectiveTime).statusCode(201);
+		createVersion(codeSystemShortName, "v1", EffectiveTimes.parse(versionEffectiveTime, DateFormats.SHORT)).statusCode(201);
 
 		final String unpublishedEnglishTextDefinitionId = createNewDescription(branchPath, conceptId, Concepts.TEXT_DEFINITION, UK_ACCEPTABLE_MAP, "en");
 		final String unpublishedDanishTextDefinitionId = createNewDescription(branchPath, conceptId, Concepts.TEXT_DEFINITION, UK_ACCEPTABLE_MAP, "da");
@@ -811,7 +811,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		
 		// version new concept
 		final String versionEffectiveTime = "20170801";
-		createVersion(codeSystemShortName, "v1", versionEffectiveTime).statusCode(201);
+		createVersion(codeSystemShortName, "v1", EffectiveTimes.parse(versionEffectiveTime, DateFormats.SHORT)).statusCode(201);
 		
 		SnomedReferenceSetMembers versionedMembers = getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, "members()")
 				.statusCode(200)
@@ -881,7 +881,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		
 		// version new concept
 		final String versionEffectiveTime = "20170801";
-		createVersion(codeSystemShortName, "v1", versionEffectiveTime).statusCode(201);
+		createVersion(codeSystemShortName, "v1", EffectiveTimes.parse(versionEffectiveTime, DateFormats.SHORT)).statusCode(201);
 		
 		Map<?, ?> caseSignificanceChangeRequestBody = ImmutableMap.builder()
 				.put("caseSignificance", Concepts.ENTIRE_TERM_CASE_SENSITIVE)

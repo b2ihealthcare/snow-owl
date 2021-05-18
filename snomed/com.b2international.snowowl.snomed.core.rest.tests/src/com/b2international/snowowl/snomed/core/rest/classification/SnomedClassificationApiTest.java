@@ -15,14 +15,7 @@
  */
 package com.b2international.snowowl.snomed.core.rest.classification;
 
-import static com.b2international.snowowl.snomed.core.rest.SnomedClassificationRestRequests.beginClassification;
-import static com.b2international.snowowl.snomed.core.rest.SnomedClassificationRestRequests.beginClassificationSave;
-import static com.b2international.snowowl.snomed.core.rest.SnomedClassificationRestRequests.getClassification;
-import static com.b2international.snowowl.snomed.core.rest.SnomedClassificationRestRequests.getClassificationJobId;
-import static com.b2international.snowowl.snomed.core.rest.SnomedClassificationRestRequests.getEquivalentConceptSets;
-import static com.b2international.snowowl.snomed.core.rest.SnomedClassificationRestRequests.getRelationshipChanges;
-import static com.b2international.snowowl.snomed.core.rest.SnomedClassificationRestRequests.waitForClassificationJob;
-import static com.b2international.snowowl.snomed.core.rest.SnomedClassificationRestRequests.waitForClassificationSaveJob;
+import static com.b2international.snowowl.snomed.core.rest.SnomedClassificationRestRequests.*;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.createComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.getComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.changeToDefining;
@@ -31,7 +24,7 @@ import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.cr
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createRelationshipRequestBody;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests.createCodeSystem;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.createVersion;
-import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getNextAvailableEffectiveDateAsString;
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getNextAvailableEffectiveDate;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.assertCreated;
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -39,6 +32,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -52,12 +46,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
-import com.b2international.snowowl.snomed.reasoner.domain.ChangeNature;
-import com.b2international.snowowl.snomed.reasoner.domain.ClassificationStatus;
-import com.b2international.snowowl.snomed.reasoner.domain.EquivalentConceptSets;
-import com.b2international.snowowl.snomed.reasoner.domain.ReasonerRelationship;
-import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChange;
-import com.b2international.snowowl.snomed.reasoner.domain.RelationshipChanges;
+import com.b2international.snowowl.snomed.reasoner.domain.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Iterables;
@@ -252,7 +241,7 @@ public class SnomedClassificationApiTest extends AbstractSnomedApiTest {
 			.body("moduleId", equalTo(Concepts.MODULE_SCT_MODEL_COMPONENT));
 		
 		// Create version
-		String effectiveDate = getNextAvailableEffectiveDateAsString(codeSystemShortName);
+		LocalDate effectiveDate = getNextAvailableEffectiveDate(codeSystemShortName);
 		createVersion(codeSystemShortName, "v1", effectiveDate).statusCode(201);
 		
 		String classificationId = getClassificationJobId(beginClassification(branchPath));

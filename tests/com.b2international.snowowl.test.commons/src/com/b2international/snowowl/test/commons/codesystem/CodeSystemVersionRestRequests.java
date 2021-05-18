@@ -55,38 +55,49 @@ public abstract class CodeSystemVersionRestRequests {
 				.first();
 	}
 	
-	public static ValidatableResponse getVersion(String codeSystemId, String version) {
+	public static Version getVersion(String codeSystemId, String version) {
+		return assertGetVersion(codeSystemId, version)
+				.statusCode(200)
+				.extract()
+				.as(Version.class);
+	}
+	
+	public static ValidatableResponse assertGetVersion(String codeSystemId, String version) {
 		return givenAuthenticatedRequest(ApiTestConstants.VERSIONS_API)
 				.get("/{id}", CodeSystem.uri(codeSystemId, version).toString())
 				.then();
 	}
 
-	public static ValidatableResponse createVersion(String codeSystemId, String version, String effectiveTime) {
+	public static ValidatableResponse createVersion(String codeSystemId, LocalDate effectiveTime) {
+		return createVersion(codeSystemId, effectiveTime.toString(), effectiveTime);
+	}
+	
+	public static ValidatableResponse createVersion(String codeSystemId, String version, LocalDate effectiveTime) {
 		return createVersion(codeSystemId, version, effectiveTime, false);
 	}
 	
-	public static ValidatableResponse createVersion(String codeSystemId, String version, String effectiveTime, boolean force) {
+	public static ValidatableResponse createVersion(String codeSystemId, String version, LocalDate effectiveTime, boolean force) {
 		return givenAuthenticatedRequest(ApiTestConstants.VERSIONS_API)
 				.contentType(ContentType.JSON)
 				.body(Json.object(
 					"resource", CodeSystem.uri(codeSystemId).toString(),
 					"version", version,
 					"description", version,
-					"effectiveTime", effectiveTime,
+					"effectiveTime", effectiveTime.toString(),
 					"force", force
 				))
 				.post()
 				.then();
 	}
 
-	public static ValidatableResponse createVersion(String codeSystemId, String version, String description, String effectiveTime) {
+	public static ValidatableResponse createVersion(String codeSystemId, String version, String description, LocalDate effectiveTime) {
 		return givenAuthenticatedRequest(ApiTestConstants.VERSIONS_API)
 				.contentType(ContentType.JSON)
 				.body(Json.object(
 					"resource", CodeSystem.uri(codeSystemId).toString(),
 					"version", version,
 					"description", description,
-					"effectiveTime", effectiveTime
+					"effectiveTime", effectiveTime.toString()
 				))
 				.post()
 				.then();
@@ -116,11 +127,7 @@ public abstract class CodeSystemVersionRestRequests {
 				.orElse(today);
 	}
 
-	public static String getNextAvailableEffectiveDateAsString(String codeSystemId) {
-		return EffectiveTimes.format(getNextAvailableEffectiveDate(codeSystemId), DateFormats.SHORT);
-	}
-	
-	public static void createCodeSystemAndVersion(final IBranchPath branchPath, String codeSystemId, String versionId, String effectiveTime) {
+	public static void createCodeSystemAndVersion(final IBranchPath branchPath, String codeSystemId, String versionId, LocalDate effectiveTime) {
 		createCodeSystem(branchPath, codeSystemId).statusCode(201);
 		createVersion(codeSystemId, versionId, effectiveTime).statusCode(201);
 	}

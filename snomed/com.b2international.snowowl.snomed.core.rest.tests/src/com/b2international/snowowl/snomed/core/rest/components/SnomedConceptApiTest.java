@@ -21,7 +21,7 @@ import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRe
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.*;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests.createCodeSystem;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.createVersion;
-import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getNextAvailableEffectiveDateAsString;
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getNextAvailableEffectiveDate;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.assertCreated;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -33,6 +33,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -374,7 +375,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 
 		String shortName = "SNOMEDCT-CON-2";
 		createCodeSystem(branchPath, shortName).statusCode(201);
-		String effectiveDate = getNextAvailableEffectiveDateAsString(shortName);
+		LocalDate effectiveDate = getNextAvailableEffectiveDate(shortName);
 		createVersion(shortName, "v1", effectiveDate).statusCode(201);
 
 		deleteComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, false).statusCode(409);
@@ -386,7 +387,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 
 		String shortName = "SNOMEDCT-CON-3";
 		createCodeSystem(branchPath, shortName).statusCode(201);
-		String effectiveDate = getNextAvailableEffectiveDateAsString(shortName);
+		LocalDate effectiveDate = getNextAvailableEffectiveDate(shortName);
 		createVersion(shortName, "v1", effectiveDate).statusCode(201);
 
 		deleteComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, true).statusCode(204);

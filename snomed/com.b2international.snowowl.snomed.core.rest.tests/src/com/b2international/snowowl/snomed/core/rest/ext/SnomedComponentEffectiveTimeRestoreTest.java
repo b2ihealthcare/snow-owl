@@ -21,12 +21,13 @@ import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.in
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.reactivateConcept;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests.createCodeSystem;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.createVersion;
-import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getNextAvailableEffectiveDateAsString;
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getNextAvailableEffectiveDate;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertEquals;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
 import org.junit.Test;
@@ -55,14 +56,14 @@ public class SnomedComponentEffectiveTimeRestoreTest extends AbstractSnomedExten
 
 		String shortName = "SNOMEDCT-CON-1";
 		createCodeSystem(branchPath, shortName).statusCode(201);
-		String effectiveDate = getNextAvailableEffectiveDateAsString(shortName);
+		LocalDate effectiveDate = getNextAvailableEffectiveDate(shortName);
 		createVersion(shortName, "v1", effectiveDate).statusCode(201);
 
 		// After versioning, the concept should be released and have an effective time set on it
 		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId).statusCode(200)
 			.body("active", equalTo(true))
 			.body("released", equalTo(true))
-			.body("effectiveTime", equalTo(effectiveDate));
+			.body("effectiveTime", equalTo(effectiveDate.format(DateTimeFormatter.BASIC_ISO_DATE)));
 
 		inactivateConcept(branchPath, conceptId);
 
@@ -78,7 +79,7 @@ public class SnomedComponentEffectiveTimeRestoreTest extends AbstractSnomedExten
 		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId).statusCode(200)
 			.body("active", equalTo(true))
 			.body("released", equalTo(true))
-			.body("effectiveTime", equalTo(effectiveDate));
+			.body("effectiveTime", equalTo(effectiveDate.format(DateTimeFormatter.BASIC_ISO_DATE)));
 	}
 	
 	@Test
@@ -88,7 +89,7 @@ public class SnomedComponentEffectiveTimeRestoreTest extends AbstractSnomedExten
 		// create the module to represent the extension
 		String moduleId = createModule(extension);
 		// create an extension version, concept receives effective time
-		createVersion(extension.getId(), EXT_VERSION, "20191031") // TODO support yyyy-MM-dd effective dates
+		createVersion(extension.getId(), EXT_VERSION, LocalDate.parse("2019-10-31"))
 			.statusCode(201);
 		SnomedConcept concept = getConcept(extension.getResourceURI(), moduleId);
 		assertEquals(EffectiveTimes.parse(EXT_VERSION), concept.getEffectiveTime());
@@ -160,7 +161,7 @@ public class SnomedComponentEffectiveTimeRestoreTest extends AbstractSnomedExten
 		// create the module concept to represent the extension
 		String moduleId = createModule(extension);
 		// create an extension version, concept receives effective time
-		createVersion(extension.getId(), EXT_VERSION, "20191031") // TODO support yyyy-MM-dd effective dates
+		createVersion(extension.getId(), EXT_VERSION, LocalDate.parse("2019-10-31"))
 			.statusCode(201);
 		SnomedConcept concept = getConcept(extension.getResourceURI(), moduleId);
 		assertEquals(EffectiveTimes.parse(EXT_VERSION), concept.getEffectiveTime());

@@ -23,8 +23,6 @@ import java.time.LocalDate;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.codesystem.CodeSystem;
-import com.b2international.snowowl.core.date.DateFormats;
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.jobs.JobRequests;
 import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
@@ -57,7 +55,7 @@ public class IssueSO2503RemoteJobDynamicMappingFix extends AbstractSnomedApiTest
 				return ResourceRequests.prepareNewVersion()
 					.setResource(CodeSystem.uri(codeSystemShortName))
 					.setVersion("xx-" + nextAvailableEffectiveDate2.toString())
-					.setEffectiveTime(EffectiveTimes.format(nextAvailableEffectiveDate2, DateFormats.SHORT))
+					.setEffectiveTime(nextAvailableEffectiveDate2)
 					.buildAsync()
 					.runAsJob("Creating version with non-datelike versionId")
 					.execute(getBus());

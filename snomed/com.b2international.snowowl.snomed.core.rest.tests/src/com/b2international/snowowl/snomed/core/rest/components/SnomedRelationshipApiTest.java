@@ -26,7 +26,7 @@ import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.cr
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests.createCodeSystem;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.createCodeSystemAndVersion;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.createVersion;
-import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getNextAvailableEffectiveDateAsString;
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getNextAvailableEffectiveDate;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.assertCreated;
 import static com.google.common.collect.Lists.newArrayList;
 import static org.hamcrest.CoreMatchers.endsWith;
@@ -35,6 +35,8 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -405,7 +407,7 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 		);
 
 		// release component
-		createCodeSystemAndVersion(branchPath, "SNOMEDCT-RELREL-TYPEID", "v1", "20170301");
+		createCodeSystemAndVersion(branchPath, "SNOMEDCT-RELREL-TYPEID", "v1", LocalDate.parse("2017-03-01"));
 		
 		updateComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, update)
 			.statusCode(400);
@@ -424,7 +426,7 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 		);
 
 		// release component
-		createCodeSystemAndVersion(branchPath, "SNOMEDCT-RELREL-DESTID", "v1", "20170301");
+		createCodeSystemAndVersion(branchPath, "SNOMEDCT-RELREL-DESTID", "v1", LocalDate.parse("2017-03-01"));
 		
 		updateComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, update)
 			.statusCode(400);
@@ -467,14 +469,14 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 
 		final String shortName = "SNOMEDCT-REL-1";
 		createCodeSystem(branchPath, shortName).statusCode(201);
-		final String effectiveDate = getNextAvailableEffectiveDateAsString(shortName);
+		final LocalDate effectiveDate = getNextAvailableEffectiveDate(shortName);
 		createVersion(shortName, "v1", effectiveDate).statusCode(201);
 
 		// After versioning, the relationship should be released and have an effective time set on it
 		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200)
 		.body("active", equalTo(true))
 		.body("released", equalTo(true))
-		.body("effectiveTime", equalTo(effectiveDate));
+		.body("effectiveTime", equalTo(effectiveDate.format(DateTimeFormatter.BASIC_ISO_DATE)));
 		
 		Json inactivationRequestBody = Json.object(
 			"active", false,
@@ -498,9 +500,9 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 
 		// Getting the relationship back to its originally released state should restore the effective time
 		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId).statusCode(200)
-		.body("active", equalTo(true))
-		.body("released", equalTo(true))
-		.body("effectiveTime", equalTo(effectiveDate));
+			.body("active", equalTo(true))
+			.body("released", equalTo(true))
+			.body("effectiveTime", equalTo(effectiveDate.format(DateTimeFormatter.BASIC_ISO_DATE)));
 	}
 	
 	@Test

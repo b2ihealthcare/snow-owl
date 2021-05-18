@@ -20,16 +20,16 @@ import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.cr
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests.createCodeSystem;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.createVersion;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getVersion;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.equalTo;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 import org.junit.Test;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.BranchPathUtils;
-import com.b2international.snowowl.core.date.DateFormats;
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
 
@@ -43,30 +43,29 @@ public class SnomedExtensionCreationTest extends AbstractSnomedApiTest {
 		String conceptId = createNewConcept(branchPath);
 
 		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId).statusCode(200)
-		.body("released", equalTo(false));
+			.body("released", equalTo(false));
 
-		String shortName = "SNOMEDCT-CV1";
-		createCodeSystem(branchPath, shortName).statusCode(201);
+		String codeSystemId = "SNOMEDCT-CV1";
+		createCodeSystem(branchPath, codeSystemId).statusCode(201);
 
 		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId).statusCode(200)
-		.body("released", equalTo(false));
+			.body("released", equalTo(false));
 
 		String versionId = "v1";
-		String effectiveDate = EffectiveTimes.format(LocalDate.now(), DateFormats.SHORT);
-		createVersion(shortName, versionId, effectiveDate).statusCode(201);
+		LocalDate effectiveTime = LocalDate.now();
+		createVersion(codeSystemId, versionId, effectiveTime).statusCode(201);
 
-		getVersion(shortName, versionId).statusCode(200)
-		.body("effectiveDate", equalTo(effectiveDate));
+		assertThat(getVersion(codeSystemId, versionId).getEffectiveTime()).isEqualTo(effectiveTime);
 
 		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId).statusCode(200)
-		.body("released", equalTo(true))
-		.body("effectiveTime", equalTo(effectiveDate));
+			.body("released", equalTo(true))
+			.body("effectiveTime", equalTo(effectiveTime.format(DateTimeFormatter.BASIC_ISO_DATE)));
 
 		IBranchPath versionPath = BranchPathUtils.createPath(branchPath, versionId);
 
 		getComponent(versionPath, SnomedComponentType.CONCEPT, conceptId).statusCode(200)
-		.body("released", equalTo(true))
-		.body("effectiveTime", equalTo(effectiveDate));
+			.body("released", equalTo(true))
+			.body("effectiveTime", equalTo(effectiveTime.format(DateTimeFormatter.BASIC_ISO_DATE)));
 	}
 
 	@Test
@@ -78,23 +77,22 @@ public class SnomedExtensionCreationTest extends AbstractSnomedApiTest {
 
 		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId).statusCode(404);
 
-		String shortName = "SNOMEDCT-CV2";
-		createCodeSystem(a, shortName).statusCode(201);
+		String codeSystemId = "SNOMEDCT-CV2";
+		createCodeSystem(a, codeSystemId).statusCode(201);
 
 		getComponent(a, SnomedComponentType.CONCEPT, conceptId).statusCode(200)
-		.body("released", equalTo(false));
+			.body("released", equalTo(false));
 
 		String versionId = "v1";
-		String effectiveDate = EffectiveTimes.format(LocalDate.now(), DateFormats.SHORT);
-		createVersion(shortName, versionId, effectiveDate).statusCode(201);
+		LocalDate effectiveTime = LocalDate.now();
+		createVersion(codeSystemId, versionId, effectiveTime).statusCode(201);
 
-		getVersion(shortName, versionId).statusCode(200)
-		.body("effectiveDate", equalTo(effectiveDate));
+		assertThat(getVersion(codeSystemId, versionId).getEffectiveTime()).isEqualTo(effectiveTime);
 
 		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId).statusCode(404);
 		getComponent(a, SnomedComponentType.CONCEPT, conceptId).statusCode(200)
-		.body("released", equalTo(true))
-		.body("effectiveTime", equalTo(effectiveDate));
+			.body("released", equalTo(true))
+			.body("effectiveTime", equalTo(effectiveTime.format(DateTimeFormatter.BASIC_ISO_DATE)));
 	}
 
 }

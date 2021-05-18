@@ -16,15 +16,12 @@
 package com.b2international.snowowl.snomed.core.rest.components;
 
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.createComponent;
-import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.getComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createConceptRequestBody;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests.createCodeSystem;
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.assertGetVersion;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.createVersion;
-import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getNextAvailableEffectiveDateAsString;
-import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getVersion;
-import static com.b2international.snowowl.test.commons.rest.RestExtensions.assertCreated;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.nullValue;
+import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getNextAvailableEffectiveDate;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import java.time.LocalDate;
@@ -36,12 +33,7 @@ import org.eclipse.xtext.util.Tuples;
 import org.junit.Test;
 
 import com.b2international.commons.json.Json;
-import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.branch.BranchPathUtils;
-import com.b2international.snowowl.core.date.DateFormats;
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
@@ -50,6 +42,7 @@ import com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.test.commons.SnomedContentRule;
 import com.google.common.collect.Maps;
 
 public class SnomedModuleDependencyRefsetTest extends AbstractSnomedApiTest {
@@ -60,43 +53,33 @@ public class SnomedModuleDependencyRefsetTest extends AbstractSnomedApiTest {
 	@Test
 	public void updateExistingModuleDependencyMembers() {
 
-		IBranchPath mainPath = BranchPathUtils.createMainPath();
-
 		Json conceptRequestBody = createConceptRequestBody(Concepts.MODULE_ROOT, Concepts.MODULE_SCT_CORE, // it must belong to the core module
 				SnomedApiTestConstants.UK_PREFERRED_MAP)
 				.with("commitComment", "Created concept with INT core module");
 
-		String conceptId = assertCreated(createComponent(mainPath, SnomedComponentType.CONCEPT, conceptRequestBody));
+		String conceptId = createConcept(SnomedContentRule.SNOMEDCT, conceptRequestBody);
 
-		getComponent(mainPath, SnomedComponentType.CONCEPT, conceptId)
-			.statusCode(200)
-			.body("effectiveTime", nullValue());
+		assertThat(getConcept(SnomedContentRule.SNOMEDCT, conceptId).getEffectiveTime()).isNull();
 
 		// version branch
-		final String versionEffectiveTime = getNextAvailableEffectiveDateAsString(
-				SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME);
-		
-		final LocalDate	versionEffectiveDate = EffectiveTimes.parse(versionEffectiveTime, DateFormats.SHORT);
-		
+		final LocalDate versionEffectiveTime = getNextAvailableEffectiveDate(SnomedContentRule.SNOMEDCT_ID);
 		final String versionId = "updateExistingModuleDependencyMembers";
-		createVersion(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, versionId, versionEffectiveTime).statusCode(201);
-		getVersion(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, versionId).statusCode(200);
+		createVersion(SnomedContentRule.SNOMEDCT_ID, versionId, versionEffectiveTime).statusCode(201);
+		assertGetVersion(SnomedContentRule.SNOMEDCT_ID, versionId).statusCode(200);
 
-		getComponent(mainPath, SnomedComponentType.CONCEPT, conceptId)
-			.statusCode(200)
-			.body("effectiveTime", equalTo(versionEffectiveTime));
+		assertThat(getConcept(SnomedContentRule.SNOMEDCT, conceptId).getEffectiveTime()).isEqualTo(versionEffectiveTime);
 		
 		SnomedReferenceSetMembers coreModuleDependencyMembersAfterVersioning = SnomedRequests.prepareSearchMember()
 				.all()
 				.filterByActive(true)
 				.filterByModule(Concepts.MODULE_SCT_CORE) // filter for members where the module id is the SCT core module
 				.filterByRefSet(Concepts.REFSET_MODULE_DEPENDENCY_TYPE)
-				.build(mainPath.getPath())
+				.build(SnomedContentRule.SNOMEDCT)
 				.execute(getBus())
 				.getSync();
 		
 		for (SnomedReferenceSetMember member : coreModuleDependencyMembersAfterVersioning) {
-			assertEquals(versionEffectiveDate, member.getEffectiveTime());
+			assertEquals(versionEffectiveTime, member.getEffectiveTime());
 		}
 		
 	}
@@ -155,18 +138,17 @@ public class SnomedModuleDependencyRefsetTest extends AbstractSnomedApiTest {
 			.forEach(c -> assertEquals("Effective time must still be null", null, c.getEffectiveTime()));
 				
 		// version branch
-		final String effectiveTime = getNextAvailableEffectiveDateAsString(shortName);
-		final LocalDate effectiveDate = EffectiveTimes.parse(effectiveTime, DateFormats.SHORT);
+		final LocalDate effectiveTime = getNextAvailableEffectiveDate(shortName);
 		final String versionId = "testForModuleDependencyMembers";
 		createVersion(shortName, versionId, effectiveTime).statusCode(201);
-		getVersion(shortName, versionId).statusCode(200);
+		assertGetVersion(shortName, versionId).statusCode(200);
 		
 		// check for the newly created module concept after versioning to have effectiveTime set to the correct date
 		SnomedConcept norwegianModule = SnomedRequests.prepareGetConcept(NORWEGIAN_MODULE_CONCEPT_ID)
 			.build(branchPath.getPath())
 			.execute(getBus())
 			.getSync();
-		assertEquals("Effective time should have been set to the date of versioning", effectiveDate, norwegianModule.getEffectiveTime());
+		assertEquals("Effective time should have been set to the date of versioning", effectiveTime, norwegianModule.getEffectiveTime());
 		
 		SnomedReferenceSetMembers moduleDependencyMembersAfterVersioning = SnomedRequests.prepareSearchMember()
 				.all()
@@ -182,7 +164,7 @@ public class SnomedModuleDependencyRefsetTest extends AbstractSnomedApiTest {
 			if (originalMemberEffectiveTime != null) {
 				assertEquals(String.format("Effective dates on unaffected existing module dependency members shouldn't be updated after versioning. ModuleID: %s", member.getReferencedComponentId()), originalMemberEffectiveTime,  member.getEffectiveTime());
 			} else {
-				assertEquals("The new members effective time should match the versionDate", effectiveDate, member.getEffectiveTime());
+				assertEquals("The new members effective time should match the versionDate", effectiveTime, member.getEffectiveTime());
 			}
 
 		});

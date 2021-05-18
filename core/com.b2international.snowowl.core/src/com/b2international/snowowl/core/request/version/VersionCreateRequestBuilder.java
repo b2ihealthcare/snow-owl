@@ -16,10 +16,10 @@
 package com.b2international.snowowl.core.request.version;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.context.ResourceRepositoryRequestBuilder;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
@@ -53,7 +53,7 @@ public final class VersionCreateRequestBuilder
 	 * @return
 	 */
 	public VersionCreateRequestBuilder setEffectiveTime(String effectiveTime) {
-		return setEffectiveTime(LocalDate.parse(effectiveTime, DateTimeFormatter.BASIC_ISO_DATE));
+		return setEffectiveTime(EffectiveTimes.parse(effectiveTime));
 	}
 	
 	public VersionCreateRequestBuilder setEffectiveTime(LocalDate effectiveTime) {
