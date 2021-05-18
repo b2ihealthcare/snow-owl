@@ -19,8 +19,8 @@ import java.io.Serializable;
 import java.util.List;
 
 import com.b2international.index.revision.RevisionBranch.BranchState;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.branch.BranchInfo;
-import com.b2international.snowowl.core.uri.CodeSystemURI;
 
 /**
  * @since 7.17.0
@@ -31,9 +31,9 @@ public final class UpgradeInfo implements Serializable {
 	
 	BranchInfo upgradeOfBranchInfo;
 	List<BranchInfo> versionBranchInfos;
-	List<CodeSystemURI> availableVersions;
+	List<ResourceURI> availableVersions;
 	
-	public UpgradeInfo(BranchInfo upgradeOfBranchInfo, List<BranchInfo> versionBranchInfos, List<CodeSystemURI> availableVersions) {
+	public UpgradeInfo(BranchInfo upgradeOfBranchInfo, List<BranchInfo> versionBranchInfos, List<ResourceURI> availableVersions) {
 		this.upgradeOfBranchInfo = upgradeOfBranchInfo;
 		this.versionBranchInfos = versionBranchInfos;
 		this.availableVersions = availableVersions;
@@ -48,7 +48,7 @@ public final class UpgradeInfo implements Serializable {
 		return versionBranchInfos;
 	}
 	
-	public List<CodeSystemURI> getAvailableVersions() {
+	public List<ResourceURI> getAvailableVersions() {
 		return availableVersions;
 	}
 	

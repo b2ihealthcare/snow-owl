@@ -31,6 +31,8 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
@@ -48,7 +50,6 @@ import com.b2international.snowowl.snomed.core.domain.RelationshipValue;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.test.commons.Services;
 import com.google.common.collect.Iterables;
@@ -320,7 +321,7 @@ public class SnomedConcreteValueApiTest extends AbstractSnomedApiTest {
 			"commitComment", "Updated released concrete value typeId");
 
 		// release component first
-		createCodeSystemAndVersion(branchPath, "SNOMEDCT-CONCVAL-TYPEID", "v1", "20170301");
+		createCodeSystemAndVersion(branchPath, "SNOMEDCT-CONCVAL-TYPEID", "v1", LocalDate.parse("2017-03-01"));
 		
 		// then try to update - it should fail as typeId is immutable
 		updateComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, update)
@@ -340,7 +341,7 @@ public class SnomedConcreteValueApiTest extends AbstractSnomedApiTest {
 		);
 
 		// release component
-		createCodeSystemAndVersion(branchPath, "SNOMEDCT-CONCVAL-VALUE", "v1", "20170301");
+		createCodeSystemAndVersion(branchPath, "SNOMEDCT-CONCVAL-VALUE", "v1", LocalDate.parse("2017-03-01"));
 		
 		updateComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, update)
 			.statusCode(400);
@@ -357,12 +358,12 @@ public class SnomedConcreteValueApiTest extends AbstractSnomedApiTest {
 			.statusCode(200)
 			.body("released", equalTo(false));
 
-		createCodeSystemAndVersion(branchPath, "SNOMEDCT-CONCVAL-RELEASE", "v1", "20210505");
+		createCodeSystemAndVersion(branchPath, "SNOMEDCT-CONCVAL-RELEASE", "v1", LocalDate.parse("2021-05-05"));
 		
 		SnomedRequests.prepareCommit()
 			.setBody(SnomedRequests.prepareDeleteRelationship(relationshipId))
 			.setCommitComment("Delete released concrete value")
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+			.build(branchPath.getPath())
 			.execute(Services.bus())
 			.getSync();
 	}
@@ -372,7 +373,7 @@ public class SnomedConcreteValueApiTest extends AbstractSnomedApiTest {
 		final String relationshipId = createNewConcreteValue(branchPath);
 	
 		// Create code system and version
-		final String effectiveTime = "20170301";
+		final LocalDate effectiveTime = LocalDate.parse("2017-03-01");
 		createCodeSystemAndVersion(branchPath, "SNOMEDCT-CONCVAL-EFFTIME", "v1", effectiveTime);
 
 		// After versioning, the concrete value should be released and have an effective time set on it
@@ -380,7 +381,7 @@ public class SnomedConcreteValueApiTest extends AbstractSnomedApiTest {
 			.statusCode(200)
 			.body("active", equalTo(true))
 			.body("released", equalTo(true))
-			.body("effectiveTime", equalTo(effectiveTime));
+			.body("effectiveTime", equalTo(effectiveTime.format(DateTimeFormatter.BASIC_ISO_DATE)));
 		
 		Json inactivationRequestBody = Json.object(
 			"active", false,
@@ -406,7 +407,7 @@ public class SnomedConcreteValueApiTest extends AbstractSnomedApiTest {
 			.statusCode(200)
 			.body("active", equalTo(true))
 			.body("released", equalTo(true))
-			.body("effectiveTime", equalTo(effectiveTime));
+			.body("effectiveTime", equalTo(effectiveTime.format(DateTimeFormatter.BASIC_ISO_DATE)));
 	}
 	
 	@Test
@@ -420,7 +421,7 @@ public class SnomedConcreteValueApiTest extends AbstractSnomedApiTest {
 		Boolean updated = SnomedRequests.prepareCommit()
 			.setCommitComment("Update concrete value")
 			.setBody(concreteValue.toUpdateRequest())
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath.getPath())
+			.build(branchPath.getPath())
 			.execute(getBus())
 			.getSync(1, TimeUnit.MINUTES)
 			.getResultAs(Boolean.class);

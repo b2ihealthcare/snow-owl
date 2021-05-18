@@ -21,6 +21,7 @@ package com.b2international.snowowl.core.rest.codesystem;
 public class UpgradeRestInput {
 
 	private String extensionOf;
+	private String upgradeOf;
 	private String codeSystemId;
 	
 	public String getExtensionOf() {
@@ -31,6 +32,14 @@ public class UpgradeRestInput {
 		this.extensionOf = extensionOf;
 	}
 
+	public String getUpgradeOf() {
+		return upgradeOf;
+	}
+	
+	public void setUpgradeOf(String upgradeOf) {
+		this.upgradeOf = upgradeOf;
+	}
+	
 	public String getCodeSystemId() {
 		return codeSystemId;
 	}

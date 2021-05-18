@@ -15,21 +15,22 @@
  */
 package com.b2international.snowowl.core.rest.codesystem;
 
-import java.util.concurrent.TimeUnit;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.b2international.commons.exceptions.NotFoundException;
-import com.b2international.snowowl.core.codesystem.CodeSystem;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
+import com.b2international.snowowl.eventbus.IEventBus;
 
-import io.swagger.annotations.*;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 /**
  * @since 7.17
@@ -51,24 +52,23 @@ public class CodeSystemUpgradeRestService extends AbstractRestService {
 	@ResponseStatus(HttpStatus.CREATED)
 	public Promise<ResponseEntity<Void>> upgrade(
 			@RequestBody
-			final CodeSystemUpgradeRestInput body) {
-		final CodeSystem codeSystem = CodeSystemRequests.prepareSearchAllCodeSystems()
-				.filterById(body.getUpgradeOf().getCodeSystem())
-				.buildAsync()
-				.execute(getBus())
-				.getSync(1, TimeUnit.MINUTES)
-				.first()
-				.orElseThrow(() -> new NotFoundException("Code System", body.getUpgradeOf().getCodeSystem()));
-
+			final UpgradeRestInput body) {
+		
 		final UriComponentsBuilder uriBuilder = createURIBuilder();
-
-		return CodeSystemRequests.prepareUpgrade(body.getUpgradeOf(), body.getExtensionOf())
-				.setCodeSystemId(body.getCodeSystemId())
-				.build(codeSystem.getRepositoryId())
-				.execute(getBus())
-				.then(upgradeCodeSystemId -> {
-					return ResponseEntity.created(uriBuilder.pathSegment(upgradeCodeSystemId).build().toUri()).build();
-				});
+		
+		final IEventBus bus = getBus();
+		return CodeSystemRequests.prepareGetCodeSystem(body.getUpgradeOf())
+			.buildAsync()
+			.execute(bus)
+			.thenWith(codeSystem -> {
+				return CodeSystemRequests.prepareUpgrade(codeSystem.getResourceURI(), new ResourceURI(body.getExtensionOf()))
+						.setResourceId(body.getCodeSystemId())
+						.buildAsync()
+						.execute(bus);
+			})
+			.then(upgradeCodeSystemId -> {
+				return ResponseEntity.created(uriBuilder.pathSegment(upgradeCodeSystemId).build().toUri()).build();
+			});
 	}
-
+	
 }

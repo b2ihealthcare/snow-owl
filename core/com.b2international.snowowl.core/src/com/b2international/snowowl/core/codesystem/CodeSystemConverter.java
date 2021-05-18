@@ -16,7 +16,6 @@
 package com.b2international.snowowl.core.codesystem;
 
 import java.util.*;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
@@ -116,7 +115,7 @@ public final class CodeSystemConverter extends BaseResourceConverter<ResourceDoc
 		
 		final List<ResourceURI> upgradeOfURIs = results.stream()
 				.filter(codeSystem -> codeSystem.getUpgradeOf() != null)
-				.map(codeSystem -> new CodeSystemURI(codeSystem.getUpgradeOf().getCodeSystem()))
+				.map(codeSystem -> codeSystem.getUpgradeOf().withoutPath())
 				.collect(Collectors.toList());
 		
 		// nothing to expand, quit early
@@ -137,14 +136,14 @@ public final class CodeSystemConverter extends BaseResourceConverter<ResourceDoc
 
 		BaseRevisionBranching branching = context().service(BaseRevisionBranching.class);
 		for (CodeSystem result : results) {
-			String upgradeOfBranchPath = branchesByUpgradeOf.get(new CodeSystemURI(result.getUpgradeOf().getCodeSystem()));
+			String upgradeOfBranchPath = branchesByUpgradeOf.get(result.getUpgradeOf().withoutPath());
 			
 			if (!Strings.isNullOrEmpty(upgradeOfBranchPath)) {
 				RevisionBranch branch = branching.getBranch(result.getBranchPath());
 				BranchState branchState = branching.getBranchState(result.getBranchPath(), upgradeOfBranchPath);
 				BranchInfo mainInfo = new BranchInfo(branch.getPath(), branchState, branch.getBaseTimestamp(), branch.getHeadTimestamp());
 				
-				List<CodeSystemURI> blockedURIs = Lists.newArrayList();
+				List<ResourceURI> availableVersions = Lists.newArrayList();
 				List<BranchInfo> versionBranchInfo = Lists.newArrayList();
 				
 				if (!result.getUpgradeOf().isHead()) {
@@ -158,26 +157,26 @@ public final class CodeSystemConverter extends BaseResourceConverter<ResourceDoc
 						extensionBaseTimestamp = branching.getBranch(extensionOfBranchPath).getBaseTimestamp();
 					}
 
-					versionBranchInfo = CodeSystemRequests.prepareSearchCodeSystemVersion()
+					versionBranchInfo = ResourceRequests.prepareSearchVersion()
 							.all()
-							.filterByCodeSystemShortName(result.getUpgradeOf().getCodeSystem())
-							.filterByEffectiveDate(extensionBaseTimestamp, Long.MAX_VALUE)
+							.filterByResource(result.getUpgradeOf().withoutPath())
+							.filterByEffectiveTime(extensionBaseTimestamp, Long.MAX_VALUE)
 							.build()
 							.execute(context())
 							.stream()
-							.filter(csv -> !csv.getUri().isHead())
+							.filter(csv -> !csv.getVersionResourceURI().isHead())
 							.map(csv -> {
-								RevisionBranch versionBranch = branching.getBranch(csv.getPath());
+								RevisionBranch versionBranch = branching.getBranch(csv.getBranchPath());
 								BranchState versionBranchState = branching.getBranchState(result.getBranchPath(), versionBranch.getPath());
 								if (versionBranchState == BranchState.BEHIND || versionBranchState == BranchState.DIVERGED) {
-									blockedURIs.add(csv.getUri());
+									availableVersions.add(csv.getVersionResourceURI());
 								}
 								return new BranchInfo(branch.getPath(), versionBranchState, versionBranch.getBaseTimestamp(), versionBranch.getHeadTimestamp());
 							})
 							.collect(Collectors.toList());
 				}
 				
-				result.setUpgradeInfo(new UpgradeInfo(mainInfo, versionBranchInfo, blockedURIs));
+				result.setUpgradeInfo(new UpgradeInfo(mainInfo, versionBranchInfo, availableVersions));
 			}
 		}
 	}
@@ -253,16 +252,16 @@ public final class CodeSystemConverter extends BaseResourceConverter<ResourceDoc
 			})
 			.or(() -> {
 				// then the code system versions
-				final List<CodeSystemURI> codeSystemVersions = CodeSystemRequests.prepareSearchCodeSystemVersion()
+				final List<ResourceURI> codeSystemVersions = ResourceRequests.prepareSearchVersion()
 						.all()
-						.filterByCodeSystemShortName(result.getShortName())
+						.filterByResource(result.getResourceURI())
 						.build()
 						.execute(context())
 						.stream()
-						.map(cs -> cs.getUri())
+						.map(cs -> cs.getVersionResourceURI())
 						.collect(Collectors.toList());
 				
-				return 	CodeSystemRequests.prepareSearchCodeSystem()
+				return CodeSystemRequests.prepareSearchCodeSystem()
 						.filterByUpgradeOf(codeSystemVersions)
 						.build()
 						.execute(context())

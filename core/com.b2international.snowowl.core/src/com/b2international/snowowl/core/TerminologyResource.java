@@ -20,6 +20,7 @@ import java.util.Map;
 
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchInfo;
+import com.b2international.snowowl.core.codesystem.UpgradeInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -37,7 +38,7 @@ public abstract class TerminologyResource extends Resource {
 	public static final class Expand {
 		public static final String AVAILABLE_UPGRADES = "availableUpgrades";
 		public static final String EXTENSION_OF_BRANCH_INFO = "extensionOfBranchInfo";
-		public static final String UPGRADE_OF_BRANCH_INFO = "upgradeOfBranchInfo";
+		public static final String UPGRADE_INFO = "upgradeInfo";
 	}
 	
 	// standard oid
@@ -61,7 +62,7 @@ public abstract class TerminologyResource extends Resource {
 	// expandable
 	private BranchInfo extensionOfBranchInfo;
 	
-	private BranchInfo upgradeOfBranchInfo;
+	private UpgradeInfo upgradeInfo;
 	
 	private List<ResourceURI> availableUpgrades;
 
@@ -95,10 +96,10 @@ public abstract class TerminologyResource extends Resource {
 		return upgradeOf;
 	}
 	
-	public BranchInfo getUpgradeOfBranchInfo() {
-		return upgradeOfBranchInfo;
+	public UpgradeInfo getUpgradeInfo() {
+		return upgradeInfo;
 	}
-
+	
 	/**
 	 * A configuration map storing additional key-value pairs specific to this terminology resource (can be {@code null}). Interpretation of values is
 	 * implementation-dependent.
@@ -141,8 +142,8 @@ public abstract class TerminologyResource extends Resource {
 		this.upgradeOf = upgradeOf;
 	}
 	
-	public void setUpgradeOfBranchInfo(BranchInfo upgradeOfBranchInfo) {
-		this.upgradeOfBranchInfo = upgradeOfBranchInfo;
+	public void setUpgradeInfo(UpgradeInfo upgradeInfo) {
+		this.upgradeInfo = upgradeInfo;
 	}
 	
 	public void setSettings(Map<String, Object> settings) {

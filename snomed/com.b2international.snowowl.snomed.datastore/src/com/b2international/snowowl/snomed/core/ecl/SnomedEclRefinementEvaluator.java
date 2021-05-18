@@ -573,7 +573,7 @@ final class SnomedEclRefinementEvaluator {
 				.filterByValue(operator, value)
 				.setEclExpressionForm(expressionForm)
 				.setFields(ID, SOURCE_ID, TYPE_ID, GROUP, VALUE_TYPE, INTEGER_VALUE, DECIMAL_VALUE, STRING_VALUE)
-				.build(context.id(), context.path())
+				.build(context.path())
 				.execute(context.service(IEventBus.class))
 				.then(matchingMembers -> FluentIterable.from(matchingMembers)
 						.transform(input -> new Property(
