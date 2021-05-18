@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,18 +74,22 @@ public class SnomedComponentReferencingDetachedConceptRule implements IMergeConf
 			.read(searcher -> searcher.get(SnomedDescriptionIndexEntry.class, newAndChangedDescriptions))
 			.forEach(description -> {
 				final String conflictingReference;
+				final String conflictingId;
 				if (detachedConceptIds.contains(description.getTypeId())) {
 					conflictingReference = SnomedDescriptionIndexEntry.Fields.TYPE_ID;
+					conflictingId = description.getTypeId();
 				} else if (detachedConceptIds.contains(description.getCaseSignificanceId())) {
 					conflictingReference = SnomedDescriptionIndexEntry.Fields.CASE_SIGNIFICANCE_ID;
+					conflictingId = description.getCaseSignificanceId();
 				} else {
 					conflictingReference = "";
+					conflictingId = "";
 				}
 				if (!Strings.isNullOrEmpty(conflictingReference)) {
 					if (addedInSource) {
-						conflicts.add(new AddedInSourceAndDetachedInTargetConflict(ObjectId.of("description", description.getId()), ObjectId.of("concept", description.getTypeId()), conflictingReference));
+						conflicts.add(new AddedInSourceAndDetachedInTargetConflict(ObjectId.of("description", description.getId()), ObjectId.of("concept", conflictingId), conflictingReference));
 					} else {
-						conflicts.add(new AddedInTargetAndDetachedInSourceConflict(ObjectId.of("concept", description.getTypeId()), ObjectId.of("description", description.getId()), conflictingReference));
+						conflicts.add(new AddedInTargetAndDetachedInSourceConflict(ObjectId.of("concept", conflictingId), ObjectId.of("description", description.getId()), conflictingReference));
 					}
 				}
 			});
@@ -102,22 +106,28 @@ public class SnomedComponentReferencingDetachedConceptRule implements IMergeConf
 			.read(searcher -> searcher.get(SnomedRelationshipIndexEntry.class, newAndChangedRelationships))
 			.forEach(relationship -> {
 				final String conflictingReference;
-				if (detachedConceptIds.contains(relationship.getDestinationId())) {
+				final String conflictingId;
+				if (!relationship.hasValue() && detachedConceptIds.contains(relationship.getDestinationId())) {
 					conflictingReference = SnomedRelationshipIndexEntry.Fields.DESTINATION_ID;
+					conflictingId = relationship.getDestinationId();
 				} else if (detachedConceptIds.contains(relationship.getTypeId())) {
-					conflictingReference = SnomedRelationshipIndexEntry.Fields.TYPE_ID;	
+					conflictingReference = SnomedRelationshipIndexEntry.Fields.TYPE_ID;
+					conflictingId = relationship.getTypeId();
 				} else if (detachedConceptIds.contains(relationship.getModifierId())) {
 					conflictingReference = SnomedRelationshipIndexEntry.Fields.MODIFIER_ID;
+					conflictingId = relationship.getModifierId();
 				} else if (detachedConceptIds.contains(relationship.getCharacteristicTypeId())) {
 					conflictingReference = SnomedRelationshipIndexEntry.Fields.CHARACTERISTIC_TYPE_ID;
+					conflictingId = relationship.getCharacteristicTypeId();
 				} else {
 					conflictingReference = "";
+					conflictingId = "";
 				}
 				if (!Strings.isNullOrEmpty(conflictingReference)) {
 					if (addedInSource) {
-						conflicts.add(new AddedInSourceAndDetachedInTargetConflict(ObjectId.of("relationship", relationship.getId()), ObjectId.of("concept", relationship.getDestinationId()), conflictingReference));
+						conflicts.add(new AddedInSourceAndDetachedInTargetConflict(ObjectId.of("relationship", relationship.getId()), ObjectId.of("concept", conflictingId), conflictingReference));
 					} else {
-						conflicts.add(new AddedInTargetAndDetachedInSourceConflict(ObjectId.of("concept", relationship.getDestinationId()), ObjectId.of("relationship", relationship.getId()), conflictingReference));
+						conflicts.add(new AddedInTargetAndDetachedInSourceConflict(ObjectId.of("concept", conflictingId), ObjectId.of("relationship", relationship.getId()), conflictingReference));
 					}
 				}
 			});

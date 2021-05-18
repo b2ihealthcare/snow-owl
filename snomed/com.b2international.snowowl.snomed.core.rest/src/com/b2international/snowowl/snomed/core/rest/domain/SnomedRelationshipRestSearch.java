@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,9 @@
  */
 package com.b2international.snowowl.snomed.core.rest.domain;
 
+import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.rest.domain.ResourceRestSearch;
+import com.b2international.snowowl.snomed.core.domain.RelationshipValueType;
 
 import io.swagger.annotations.ApiParam;
 
@@ -44,6 +46,15 @@ public final class SnomedRelationshipRestSearch extends ResourceRestSearch {
 
 	@ApiParam(value = "The destination concept to match")
 	private String destination;
+	
+	@ApiParam(value = "The value type to match")
+	private RelationshipValueType valueType;
+
+	@ApiParam(value = "The value comparison operator")
+	private SearchResourceRequest.Operator operator;
+
+	@ApiParam(value = "The value to match (in literal form)")
+	private String value;
 
 	@ApiParam(value = "The characteristic type to match")
 	private String characteristicType;
@@ -110,6 +121,30 @@ public final class SnomedRelationshipRestSearch extends ResourceRestSearch {
 		this.destination = destination;
 	}
 
+	public RelationshipValueType getValueType() {
+		return valueType;
+	}
+
+	public void setValueType(RelationshipValueType valueType) {
+		this.valueType = valueType;
+	}
+
+	public SearchResourceRequest.Operator getOperator() {
+		return operator;
+	}
+
+	public void setOperator(SearchResourceRequest.Operator operator) {
+		this.operator = operator;
+	}
+
+	public String getValue() {
+		return value;
+	}
+
+	public void setValue(String value) {
+		this.value = value;
+	}
+
 	public String getCharacteristicType() {
 		return characteristicType;
 	}
@@ -133,5 +168,4 @@ public final class SnomedRelationshipRestSearch extends ResourceRestSearch {
 	public void setUnionGroup(Integer unionGroup) {
 		this.unionGroup = unionGroup;
 	}
-
 }

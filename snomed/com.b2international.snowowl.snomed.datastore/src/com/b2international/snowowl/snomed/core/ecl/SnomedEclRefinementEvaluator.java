@@ -16,13 +16,8 @@
 package com.b2international.snowowl.snomed.core.ecl;
 
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument.Expressions.active;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.destinationIds;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.group;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.typeIds;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Fields.DESTINATION_ID;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Fields.GROUP;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Fields.SOURCE_ID;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Fields.TYPE_ID;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.*;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Fields.*;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
@@ -50,9 +45,11 @@ import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
+import com.b2international.snowowl.core.request.SearchResourceRequest.Operator;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.core.domain.RelationshipValue;
 import com.b2international.snowowl.snomed.core.domain.refset.DataType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
@@ -72,6 +69,8 @@ import com.google.common.collect.*;
  */
 final class SnomedEclRefinementEvaluator {
 
+	private static final int SCROLL_LIMIT = 10_000;
+	
 	static final Set<String> STATED_CHARACTERISTIC_TYPES = ImmutableSet.of(Concepts.STATED_RELATIONSHIP, Concepts.ADDITIONAL_RELATIONSHIP);
 	static final Set<String> INFERRED_CHARACTERISTIC_TYPES = ImmutableSet.of(Concepts.INFERRED_RELATIONSHIP, Concepts.ADDITIONAL_RELATIONSHIP);
 	private static final int UNBOUNDED_CARDINALITY = -1;
@@ -369,7 +368,13 @@ final class SnomedEclRefinementEvaluator {
 			if (refinement.isReversed()) {
 				throw new BadRequestException("Reversed flag is not supported in data type based comparison (string/numeric)");
 			} else {
-				return evalMembers(context, focusConceptIds, typeConceptFilter, (DataTypeComparison) comparison);
+				final Promise<Collection<Property>> statementsWithValue = evalStatementsWithValue(context, focusConceptIds, typeConceptFilter, (DataTypeComparison) comparison);
+				final Promise<Collection<Property>> members = evalMembers(context, focusConceptIds, typeConceptFilter, (DataTypeComparison) comparison);
+				return Promise.all(statementsWithValue, members).then(results -> {
+					final Collection<Property> s = (Collection<Property>) results.get(0);
+					final Collection<Property> m = (Collection<Property>) results.get(1);
+					return FluentIterable.concat(s, m).toSet();
+				});
 			}
 		} else {
 			return SnomedEclEvaluationRequest.throwUnsupported(comparison);
@@ -485,6 +490,170 @@ final class SnomedEclRefinementEvaluator {
 				.setEclExpressionForm(expressionForm)
 				.build(context.id(), context.path())
 				.execute(context.service(IEventBus.class));
+	}
+
+	private Promise<Collection<Property>> evalStatementsWithValue(
+		BranchContext context, 
+		Set<String> focusConceptIds, 
+		Collection<String> typeIds, 
+		DataTypeComparison comparison) {
+		
+		final RelationshipValue value;
+		final SearchResourceRequest.Operator operator;
+
+		// XXX: no boolean comparison for relationships with value!
+		if (comparison instanceof BooleanValueEquals) {
+			return Promise.immediate(List.of());
+		} else if (comparison instanceof BooleanValueNotEquals) {
+			return Promise.immediate(List.of());
+		} else if (comparison instanceof StringValueEquals) {
+			value = new RelationshipValue(((StringValueEquals) comparison).getValue());
+			operator = SearchResourceRequest.Operator.EQUALS;
+		} else if (comparison instanceof StringValueNotEquals) {
+			value = new RelationshipValue(((StringValueNotEquals) comparison).getValue());
+			operator = SearchResourceRequest.Operator.NOT_EQUALS;
+		} else if (comparison instanceof IntegerValueEquals) {
+			value = new RelationshipValue(((IntegerValueEquals) comparison).getValue());
+			operator = SearchResourceRequest.Operator.EQUALS;
+		} else if (comparison instanceof IntegerValueNotEquals) {
+			value = new RelationshipValue(((IntegerValueNotEquals) comparison).getValue());
+			operator = SearchResourceRequest.Operator.NOT_EQUALS;
+		} else if (comparison instanceof DecimalValueEquals) {
+			value = new RelationshipValue(((DecimalValueEquals) comparison).getValue().doubleValue());
+			operator = SearchResourceRequest.Operator.EQUALS;
+		} else if (comparison instanceof DecimalValueNotEquals) {
+			value = new RelationshipValue(((DecimalValueNotEquals) comparison).getValue().doubleValue());
+			operator = SearchResourceRequest.Operator.NOT_EQUALS;
+		} else if (comparison instanceof IntegerValueLessThan) {
+			value = new RelationshipValue(((IntegerValueLessThan) comparison).getValue());
+			operator = SearchResourceRequest.Operator.LESS_THAN;
+		} else if (comparison instanceof DecimalValueLessThan) {
+			value = new RelationshipValue(((DecimalValueLessThan) comparison).getValue().doubleValue());
+			operator = SearchResourceRequest.Operator.LESS_THAN;
+		} else if (comparison instanceof IntegerValueLessThanEquals) {
+			value = new RelationshipValue(((IntegerValueLessThanEquals) comparison).getValue());
+			operator = SearchResourceRequest.Operator.LESS_THAN_EQUALS;
+		} else if (comparison instanceof DecimalValueLessThanEquals) {
+			value = new RelationshipValue(((DecimalValueLessThanEquals) comparison).getValue().doubleValue());
+			operator = SearchResourceRequest.Operator.LESS_THAN_EQUALS;
+		} else if (comparison instanceof IntegerValueGreaterThan) {
+			value = new RelationshipValue(((IntegerValueGreaterThan) comparison).getValue());
+			operator = SearchResourceRequest.Operator.GREATER_THAN;
+		} else if (comparison instanceof DecimalValueGreaterThan) {
+			value = new RelationshipValue(((DecimalValueGreaterThan) comparison).getValue().doubleValue());
+			operator = SearchResourceRequest.Operator.GREATER_THAN;
+		} else if (comparison instanceof IntegerValueGreaterThanEquals) {
+			value = new RelationshipValue(((IntegerValueGreaterThanEquals) comparison).getValue());
+			operator = SearchResourceRequest.Operator.GREATER_THAN_EQUALS;
+		} else if (comparison instanceof DecimalValueGreaterThanEquals) {
+			value = new RelationshipValue(((DecimalValueGreaterThanEquals) comparison).getValue().doubleValue());
+			operator = SearchResourceRequest.Operator.GREATER_THAN_EQUALS;
+		} else {
+			return SnomedEclEvaluationRequest.throwUnsupported(comparison);
+		}
+		
+		return evalStatementsWithValue(context, focusConceptIds, typeIds, value, operator);
+	}
+
+	private Promise<Collection<Property>> evalStatementsWithValue(
+		final BranchContext context, 
+		final Set<String> focusConceptIds,
+		final Collection<String> typeIds, 
+		final RelationshipValue value, 
+		final SearchResourceRequest.Operator operator) {
+
+		// TODO: does this request need to support filtering by group?
+		Promise<Collection<Property>> relationships = SnomedRequests.prepareSearchRelationship()
+				.all()
+				.filterByActive(true)
+				.filterByCharacteristicTypes(getCharacteristicTypes(expressionForm))
+				.filterBySource(focusConceptIds)
+				.filterByType(typeIds)
+				.filterByValueType(value.type()) 
+				.filterByValue(operator, value)
+				.setEclExpressionForm(expressionForm)
+				.setFields(ID, SOURCE_ID, TYPE_ID, GROUP, VALUE_TYPE, INTEGER_VALUE, DECIMAL_VALUE, STRING_VALUE)
+				.build(context.id(), context.path())
+				.execute(context.service(IEventBus.class))
+				.then(matchingMembers -> FluentIterable.from(matchingMembers)
+						.transform(input -> new Property(
+								input.getSourceId(), 
+								input.getTypeId(),
+								input.getValueAsObject().toObject(),
+								input.getGroup()))
+						.toSet());
+		
+		if (Trees.STATED_FORM.equals(expressionForm)) {
+			final Promise<Collection<Property>> axioms = evalAxiomsWithValue(context, focusConceptIds, typeIds, value, operator);
+			return Promise.all(relationships, axioms).then(results -> {
+				final Collection<Property> r = (Collection<Property>) results.get(0);
+				final Collection<Property> a = (Collection<Property>) results.get(1);
+				return FluentIterable.concat(r, a).toSet();
+			});
+		} else {
+			return relationships;
+		}
+	}
+
+	private Promise<Collection<Property>> evalAxiomsWithValue(
+			BranchContext context, 
+			Set<String> focusConceptIds,
+			Collection<String> typeIds, 
+			RelationshipValue value, 
+			Operator operator) {
+		
+		// search existing axioms defined for the given set of conceptIds
+		ExpressionBuilder axiomFilter = Expressions.builder();
+
+		if (typeIds != null) {
+			axiomFilter.filter(typeIds(typeIds));
+		}
+		
+		switch (operator) {
+			case EQUALS: axiomFilter.filter(values(List.of(value))); break;
+			case GREATER_THAN: axiomFilter.filter(valueGreaterThan(value, false)); break;
+			case GREATER_THAN_EQUALS: axiomFilter.filter(valueGreaterThan(value, true)); break;
+			case LESS_THAN: axiomFilter.filter(valueLessThan(value, false)); break;
+			case LESS_THAN_EQUALS: axiomFilter.filter(valueLessThan(value, true)); break;
+			case NOT_EQUALS: axiomFilter.mustNot(values(List.of(value))); break;
+			default: throw new IllegalStateException("Unexpected operator '" + operator +  "'.");
+		}
+		
+		ExpressionBuilder activeOwlAxiomMemberQuery = Expressions.builder()
+			.filter(active())
+			.filter(Expressions.nestedMatch(SnomedRefSetMemberIndexEntry.Fields.CLASS_AXIOM_RELATIONSHIP, axiomFilter.build()));
+		
+		if (focusConceptIds != null) {
+			activeOwlAxiomMemberQuery.filter(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(focusConceptIds));
+		}
+		
+		final Query<SnomedRefSetMemberIndexEntry> activeAxiomStatementsQuery = Query.select(SnomedRefSetMemberIndexEntry.class)
+			.where(activeOwlAxiomMemberQuery.build())
+			.limit(SCROLL_LIMIT)
+			.build();
+		
+		final Set<Property> axiomProperties = newHashSet();
+		
+		context.service(RevisionSearcher.class)
+			.scroll(activeAxiomStatementsQuery)
+			.forEach(chunk -> {
+				chunk.stream()
+					.filter(owlMember -> !CompareUtils.isEmpty(owlMember.getClassAxiomRelationships()))
+					.forEachOrdered(owlMember -> {
+						owlMember.getClassAxiomRelationships().stream()
+							.filter(r -> typeIds == null || typeIds.contains(r.getTypeId()))
+							// We need to find matching OWL relationships in Java
+							.filter(r -> r.getValueAsObject().matches(operator, value))
+							.map(r -> new Property(
+								owlMember.getReferencedComponentId(), 
+								r.getTypeId(), 
+								r.getValueAsObject().toObject(), 
+								r.getGroup()))
+							.forEachOrdered(axiomProperties::add);
+					});
+			});
+		
+		return Promise.immediate(axiomProperties);
 	}
 
 	/*package*/ static Function<Collection<Property>, Collection<Property>> filterByCardinality(final boolean grouped, final Range<Long> groupCardinality, final Range<Long> cardinality, final Function<Property, Object> idProvider) {
@@ -603,8 +772,9 @@ final class SnomedEclRefinementEvaluator {
 
 	static Set<Property> evalAxiomStatements(final BranchContext context, final boolean groupedRelationshipsOnly, final Collection<String> sourceIds, final Collection<String> typeIds, final Collection<String> destinationIds) {
 		try {
-			// search existing axioms defined for the given set of conceptIds
-			ExpressionBuilder axiomFilter = Expressions.builder();
+			// search existing axioms (no values!) defined for the given set of conceptIds
+			ExpressionBuilder axiomFilter = Expressions.builder()
+				.filter(hasDestinationId());
 
 			if (typeIds != null) {
 				axiomFilter.filter(typeIds(typeIds));

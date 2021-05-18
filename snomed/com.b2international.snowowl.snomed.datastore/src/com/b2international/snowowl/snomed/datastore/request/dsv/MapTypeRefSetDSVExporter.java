@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.request.dsv;
 
+import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Strings.nullToEmpty;
 import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
 
@@ -142,7 +143,11 @@ public final class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 				labels.put(id, ((SnomedDescription) referencedComponent).getTerm());
 			} else if (referencedComponent instanceof SnomedRelationship) {
 				SnomedRelationship relationship = (SnomedRelationship) referencedComponent;
-				labels.put(id, String.format("%s - %s - %s",relationship.getSourceId(), relationship.getTypeId(), relationship.getDestinationId()));
+				if (relationship.hasValue()) {
+					labels.put(id, String.format("%s - %s - %s",relationship.getSourceId(), relationship.getTypeId(), relationship.getValue()));
+				} else {
+					labels.put(id, String.format("%s - %s - %s",relationship.getSourceId(), relationship.getTypeId(), relationship.getDestinationId()));
+				}
 			}
 		}
 		
@@ -211,6 +216,8 @@ public final class MapTypeRefSetDSVExporter implements IRefSetDSVExporter {
 						.execute(context)
 						.first()
 						.map(relationship -> {
+							// XXX: SDD class relationships are not supposed to have a value
+							checkState(!relationship.hasValue(), "SDD class relationship found with value: %s", relationship.getId());
 							SnomedDescription pt = relationship.getDestination().getPt();
 							return pt != null ? pt.getTerm() : relationship.getDestinationId();
 						})

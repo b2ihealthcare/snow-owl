@@ -145,6 +145,7 @@ if (params.isUnpublishedOnly) {
 					.filter(SnomedRelationshipIndexEntry.Expressions.active())
 					.filter(SnomedRelationshipIndexEntry.Expressions.sourceIds(domain))
 					.filter(SnomedRelationshipIndexEntry.Expressions.typeId(attributeExpression))
+					.filter(SnomedRelationshipIndexEntry.Expressions.hasDestinationId())
 					.mustNot(SnomedRelationshipIndexEntry.Expressions.destinationIds(getCachedApplicableConcepts(rangeExpression)))
 
 			if (!Strings.isNullOrEmpty(charType)) {

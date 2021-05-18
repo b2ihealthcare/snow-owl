@@ -447,6 +447,8 @@ public final class EsIndexAdmin implements IndexAdmin {
 	private void addFieldProperties(Map<String, Object> fieldProperties, Class<?> fieldType) {
 		if (Enum.class.isAssignableFrom(fieldType) || NumericClassUtils.isBigDecimal(fieldType) || String.class.isAssignableFrom(fieldType)) {
 			fieldProperties.put("type", "keyword");
+		} else if (NumericClassUtils.isDouble(fieldType)) {
+			fieldProperties.put("type", "double");
 		} else if (NumericClassUtils.isFloat(fieldType)) {
 			fieldProperties.put("type", "float");
 		} else if (NumericClassUtils.isInt(fieldType)) {

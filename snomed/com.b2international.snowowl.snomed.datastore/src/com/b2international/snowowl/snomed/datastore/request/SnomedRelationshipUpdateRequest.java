@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,80 +15,97 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import java.util.Objects;
 import java.util.Set;
 
-import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.core.domain.RelationshipValue;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSet.Builder;
 
 /**
  * @since 4.5
  */
 public final class SnomedRelationshipUpdateRequest extends SnomedComponentUpdateRequest {
 
-	@Min(0)
-	@Max(Integer.MAX_VALUE)
-	private Integer group;
-	
-	@Min(0)
-	@Max(Integer.MAX_VALUE)
-	private Integer unionGroup;
-	
-	private String characteristicTypeId;
-	private String modifierId;
-	private String destinationId;
+	// Not @NotEmpty, update of type ID is optional
 	private String typeId;
 
-	SnomedRelationshipUpdateRequest(String componentId) {
+	// Not @NotEmpty, update of destination ID is optional
+	private String destinationId;
+
+	// Not @NotNull, update of relationship value is optional
+	private RelationshipValue value;
+
+	@Min(0)
+	private Integer group;
+
+	@Min(0)
+	private Integer unionGroup;
+
+	// Not @NotEmpty, update of characteristic type ID is optional
+	private String characteristicTypeId;
+
+	// Not @NotEmpty, update of modifier ID is optional
+	private String modifierId;
+
+	SnomedRelationshipUpdateRequest(final String componentId) {
 		super(componentId);
 	}
-	
-	void setCharacteristicTypeId(String characteristicTypeId) {
-		this.characteristicTypeId = characteristicTypeId;
-	}
-	
-	void setGroup(Integer group) {
-		this.group = group;
-	}
-	
-	void setModifierId(String modifierId) {
-		this.modifierId = modifierId;
-	}
-	
-	void setUnionGroup(Integer unionGroup) {
-		this.unionGroup = unionGroup;
-	}
-	
-	void setDestinationId(String destinationId) {
-		this.destinationId = destinationId;
-	}
-	
-	void setTypeId(String typeId) {
+
+	void setTypeId(final String typeId) {
 		this.typeId = typeId;
 	}
-	
+
+	void setDestinationId(final String destinationId) {
+		this.destinationId = destinationId;
+	}
+
+	void setValue(final RelationshipValue value) {
+		this.value = value;
+	}
+
+	void setGroup(final Integer group) {
+		this.group = group;
+	}
+
+	void setUnionGroup(final Integer unionGroup) {
+		this.unionGroup = unionGroup;
+	}
+
+	void setCharacteristicTypeId(final String characteristicTypeId) {
+		this.characteristicTypeId = characteristicTypeId;
+	}
+
+	void setModifierId(final String modifierId) {
+		this.modifierId = modifierId;
+	}
+
 	@Override
-	public Boolean execute(TransactionContext context) {
+	public Boolean execute(final TransactionContext context) {
+		if (!Strings.isNullOrEmpty(destinationId) && value != null) {
+			throw new BadRequestException("'destinationId' and 'value' can not be updated at same time");
+		}
+
 		final SnomedRelationshipIndexEntry relationship = context.lookup(componentId(), SnomedRelationshipIndexEntry.class);
 		final SnomedRelationshipIndexEntry.Builder updatedRelationship = SnomedRelationshipIndexEntry.builder(relationship);
 
 		boolean changed = false;
 		changed |= updateStatus(context, relationship, updatedRelationship);
-		changed |= updateModule(context, relationship, updatedRelationship);
-		changed |= updateGroup(group, relationship, updatedRelationship, context);
-		changed |= updateUnionGroup(unionGroup, relationship, updatedRelationship, context);
-		changed |= updateCharacteristicTypeId(characteristicTypeId, relationship, updatedRelationship, context);
-		changed |= updateModifier(modifierId, relationship, updatedRelationship, context);
-		changed |= updateDestinationId(context, relationship, updatedRelationship);
+		changed |= updateModuleId(context, relationship, updatedRelationship);
 		changed |= updateTypeId(context, relationship, updatedRelationship);
+		changed |= updateDestinationId(context, relationship, updatedRelationship);
+		changed |= updateValue(context, relationship, updatedRelationship);
+		changed |= updateGroup(context, relationship, updatedRelationship);
+		changed |= updateUnionGroup(context, relationship, updatedRelationship);
+		changed |= updateCharacteristicTypeId(context, relationship, updatedRelationship);
+		changed |= updateModifierId(context, relationship, updatedRelationship);
 		changed |= updateEffectiveTime(relationship, updatedRelationship);
 
 		if (changed) {
@@ -97,114 +114,74 @@ public final class SnomedRelationshipUpdateRequest extends SnomedComponentUpdate
 			}
 			context.update(relationship, updatedRelationship.build());
 		}
-		
+
 		return changed;
 	}
-	
+
 	@Override
 	protected String getInactivationIndicatorRefSetId() {
 		throw new UnsupportedOperationException("Relationship inactivation does not support inactivationProperties yet");
 	}
-	
-	private boolean updateTypeId(TransactionContext context, SnomedRelationshipIndexEntry original, SnomedRelationshipIndexEntry.Builder relationship) {
-		if (null == typeId) {
-			return false;
-		}
-		
-		if (!original.getTypeId().equals(typeId)) {
-			checkUpdateOnReleased(original, SnomedRf2Headers.FIELD_TYPE_ID, typeId);
-			relationship.typeId(context.lookup(typeId, SnomedConceptDocument.class).getId());
-			return true;
-		}
-		
-		return false;
-	}
-	
-	private boolean updateDestinationId(TransactionContext context, SnomedRelationshipIndexEntry original, SnomedRelationshipIndexEntry.Builder relationship) {
-		if (null == destinationId) {
-			return false;
-		}
-		
-		if (!original.getDestinationId().equals(destinationId)) {
-			checkUpdateOnReleased(original, SnomedRf2Headers.FIELD_DESTINATION_ID, destinationId);
-			relationship.destinationId(context.lookup(destinationId, SnomedConceptDocument.class).getId());
-			return true;
-		}
-		
-		return false;
+
+	private String ensureConceptExists(final String conceptId, final TransactionContext context) {
+		return context.lookup(conceptId, SnomedConceptDocument.class).getId();
 	}
 
-	private boolean updateGroup(final Integer newGroup, final SnomedRelationshipIndexEntry original, SnomedRelationshipIndexEntry.Builder relationship, final TransactionContext context) {
-		if (null == newGroup) {
-			return false;
-		}
-
-		if (!Objects.equals(original.getGroup(), newGroup)) {
-			relationship.group(newGroup);
-			return true;
-		} else {
-			return false;
-		}
+	private boolean updateTypeId(final TransactionContext context, final SnomedRelationshipIndexEntry relationship, final SnomedRelationshipIndexEntry.Builder updatedRelationship) {
+		return updateProperty(typeId, () -> relationship.getTypeId(), newTypeId -> {
+			checkUpdateOnReleased(relationship, SnomedRf2Headers.FIELD_TYPE_ID, newTypeId);
+			updatedRelationship.typeId(ensureConceptExists(newTypeId, context));
+		});
 	}
 
-	private boolean updateUnionGroup(final Integer newUnionGroup, final SnomedRelationshipIndexEntry original, SnomedRelationshipIndexEntry.Builder relationship, final TransactionContext context) {
-		if (null == newUnionGroup) {
-			return false;
-		}
-
-		if (!Objects.equals(original.getUnionGroup(), newUnionGroup)) {
-			relationship.unionGroup(newUnionGroup);
-			return true;
-		} else {
-			return false;
-		}
+	private boolean updateDestinationId(final TransactionContext context, final SnomedRelationshipIndexEntry relationship, final SnomedRelationshipIndexEntry.Builder updatedRelationship) {
+		return updateProperty(destinationId, () -> relationship.getDestinationId(), newDestinationId -> {
+			checkUpdateOnReleased(relationship, SnomedRf2Headers.FIELD_DESTINATION_ID, newDestinationId);
+			updatedRelationship.destinationId(ensureConceptExists(newDestinationId, context));
+		});
 	}
 
-	private boolean updateCharacteristicTypeId(final String newCharacteristicTypeId, final SnomedRelationshipIndexEntry original, SnomedRelationshipIndexEntry.Builder relationship, final TransactionContext context) {
-		if (null == newCharacteristicTypeId) {
-			return false;
-		}
-
-		final String currentCharacteristicType = original.getCharacteristicTypeId();
-		if (!currentCharacteristicType.equals(newCharacteristicTypeId)) {
-			relationship.characteristicTypeId(context.lookup(newCharacteristicTypeId, SnomedConceptDocument.class).getId());
-			return true;
-		} else {
-			return false;
-		}
+	private boolean updateValue(final TransactionContext context, final SnomedRelationshipIndexEntry relationship, final SnomedRelationshipIndexEntry.Builder updatedRelationship) {
+		return updateProperty(value, () -> relationship.getValueAsObject(), newValue -> {
+			checkUpdateOnReleased(relationship, SnomedRf2Headers.FIELD_VALUE, newValue);
+			updatedRelationship.value(newValue);
+		});
 	}
 
-	private boolean updateModifier(final String newModifierId, final SnomedRelationshipIndexEntry original, SnomedRelationshipIndexEntry.Builder relationship, final TransactionContext context) {
-		if (null == newModifierId) {
-			return false;
-		}
-
-		final String currentModifier = original.getModifierId();
-		if (!currentModifier.equals(newModifierId)) {
-			relationship.modifierId(context.lookup(newModifierId, SnomedConceptDocument.class).getId());
-			return true;
-		} else {
-			return false;
-		}
+	private boolean updateGroup(final TransactionContext context, final SnomedRelationshipIndexEntry relationship, final SnomedRelationshipIndexEntry.Builder updatedRelationship) {
+		return updateProperty(group, () -> relationship.getGroup(), newGroup -> {
+			updatedRelationship.group(newGroup);
+		});
 	}
-	
+
+	private boolean updateUnionGroup(final TransactionContext context, final SnomedRelationshipIndexEntry relationship, final SnomedRelationshipIndexEntry.Builder updatedRelationship) {
+		return updateProperty(unionGroup, () -> relationship.getUnionGroup(), newUnionGroup -> {
+			updatedRelationship.unionGroup(newUnionGroup);
+		});
+	}
+
+	private boolean updateCharacteristicTypeId(final TransactionContext context, final SnomedRelationshipIndexEntry relationship, final SnomedRelationshipIndexEntry.Builder updatedRelationship) {
+		return updateProperty(characteristicTypeId, () -> relationship.getCharacteristicTypeId(), newCharacteristicTypeId -> {
+			updatedRelationship.characteristicTypeId(ensureConceptExists(newCharacteristicTypeId, context));
+		});
+	}
+
+	private boolean updateModifierId(final TransactionContext context, final SnomedRelationshipIndexEntry relationship, final SnomedRelationshipIndexEntry.Builder updatedRelationship) {
+		return updateProperty(modifierId, () -> relationship.getModifierId(), newModifierId -> {
+			updatedRelationship.modifierId(ensureConceptExists(newModifierId, context));
+		});
+	}
+
 	@Override
-	public Set<String> getRequiredComponentIds(TransactionContext context) {
-		final Builder<String> ids = ImmutableSet.<String>builder();
+	public Set<String> getRequiredComponentIds(final TransactionContext context) {
+		final ImmutableSet.Builder<String> ids = ImmutableSet.builder();
 		ids.add(componentId());
-		if (characteristicTypeId != null) {
-			ids.add(characteristicTypeId);
-		}
-		if (destinationId != null) {
-			ids.add(destinationId);
-		}
-		if (typeId != null) {
-			ids.add(typeId);
-		}
-		if (modifierId != null) {
-			ids.add(modifierId);
-		}
+
+		if (typeId != null) { ids.add(typeId); }
+		if (destinationId != null) { ids.add(destinationId); }
+		if (characteristicTypeId != null) { ids.add(characteristicTypeId); }
+		if (modifierId != null) { ids.add(modifierId); }
+
 		return ids.build();
 	}
-	
 }

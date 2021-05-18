@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ package com.b2international.snowowl.snomed.reasoner.diff.relationship;
 import com.b2international.index.Writer;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
+import com.b2international.snowowl.snomed.datastore.StatementFragmentWithDestination;
+import com.b2international.snowowl.snomed.datastore.StatementFragmentWithValue;
 import com.b2international.snowowl.snomed.reasoner.diff.OntologyChangeWriter;
 import com.b2international.snowowl.snomed.reasoner.domain.ChangeNature;
 import com.b2international.snowowl.snomed.reasoner.index.RelationshipChangeDocument;
@@ -27,8 +29,6 @@ import com.b2international.snowowl.snomed.reasoner.index.RelationshipChangeDocum
  */
 public final class RelationshipWriter extends OntologyChangeWriter<StatementFragment> {
 
-	private boolean hasRedundantStatedChanges;
-	
 	public RelationshipWriter(final String classificationId, final Writer writer) {
 		super(classificationId, writer);
 	}
@@ -39,8 +39,15 @@ public final class RelationshipWriter extends OntologyChangeWriter<StatementFrag
 		final RelationshipChangeDocument.Builder builder = RelationshipChangeDocument.builder()
 			.nature(nature)
 			.classificationId(classificationId)
-			.sourceId(conceptId)
-			.destinationId(Long.toString(fragment.getDestinationId()));
+			.sourceId(conceptId);
+		
+		if (fragment instanceof StatementFragmentWithDestination) {
+			final long destinationId = ((StatementFragmentWithDestination) fragment).getDestinationId();
+			builder.destinationId(Long.toString(destinationId));
+		} else {
+			final String value = ((StatementFragmentWithValue) fragment).getValue();
+			builder.value(value);
+		}
 		
 		switch (nature) {
 			case NEW:
@@ -74,14 +81,11 @@ public final class RelationshipWriter extends OntologyChangeWriter<StatementFrag
 						fragment.getStatementId()));
 		}
 		
-		if (ChangeNature.REDUNDANT.equals(nature) && fragment.hasStatedPair()) {
-			hasRedundantStatedChanges = true;
-		}
-
 		indexChange(builder.build());
 	}
 
+	@Deprecated
 	public boolean hasRedundantStatedChanges() {
-		return hasRedundantStatedChanges;
+		return false;
 	}
 }

@@ -28,7 +28,7 @@ import java.util.Objects;
 import com.b2international.collections.longs.LongIterator;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.collect.LongSets;
-import com.b2international.snowowl.snomed.datastore.StatementFragment;
+import com.b2international.snowowl.snomed.datastore.StatementFragmentWithDestination;
 import com.b2international.snowowl.snomed.datastore.index.taxonomy.InternalIdEdges;
 import com.b2international.snowowl.snomed.datastore.index.taxonomy.ReasonerTaxonomy;
 
@@ -40,7 +40,7 @@ import com.b2international.snowowl.snomed.datastore.index.taxonomy.ReasonerTaxon
  */
 final class NormalFormRelationship implements NormalFormProperty {
 
-	private final StatementFragment fragment;
+	private final StatementFragmentWithDestination fragment;
 	private final ReasonerTaxonomy reasonerTaxonomy;
 	private final Map<Long, NodeGraph> transitiveNodeGraphs;
 	private final boolean useNodeGraphs;
@@ -55,7 +55,7 @@ final class NormalFormRelationship implements NormalFormProperty {
 	 *
 	 * @throws NullPointerException if the given relationship is <code>null</code>
 	 */
-	public NormalFormRelationship(final StatementFragment fragment, final ReasonerTaxonomy reasonerTaxonomy, final Map<Long, NodeGraph> transitiveNodeGraphs, final boolean useNodeGraphs) {
+	public NormalFormRelationship(final StatementFragmentWithDestination fragment, final ReasonerTaxonomy reasonerTaxonomy, final Map<Long, NodeGraph> transitiveNodeGraphs, final boolean useNodeGraphs) {
 		this.fragment = checkNotNull(fragment, "fragment");
 		this.reasonerTaxonomy = checkNotNull(reasonerTaxonomy, "reasonerTaxonomy");
 		this.transitiveNodeGraphs = checkNotNull(transitiveNodeGraphs, "transitiveNodeGraphs");
@@ -84,14 +84,6 @@ final class NormalFormRelationship implements NormalFormProperty {
 
 	public boolean isReleased() {
 		return fragment.isReleased();
-	}
-
-	public boolean hasStatedPair() {
-		return fragment.hasStatedPair();
-	}
-	
-	public String getStatedStatementId() {
-		return fragment.getStatedStatementId();
 	}
 
 	@Override

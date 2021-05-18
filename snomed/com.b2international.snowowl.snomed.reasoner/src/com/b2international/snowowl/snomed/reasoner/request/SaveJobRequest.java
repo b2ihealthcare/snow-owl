@@ -53,10 +53,7 @@ import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.CommitResult;
 import com.b2international.snowowl.core.request.SearchResourceRequestIterator;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.core.domain.InactivationProperties;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.*;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.assigner.SnomedNamespaceAndModuleAssigner;
@@ -724,13 +721,14 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 		final String typeId = relationship.getTypeId();
 		final String destinationId = relationship.getDestinationId();
 		final boolean destinationNegated = relationship.isDestinationNegated();
+		final RelationshipValue value = relationship.getValueAsObject();
 		final String characteristicTypeId = relationship.getCharacteristicTypeId();
 		final int group = relationship.getGroup();
 		final int unionGroup = relationship.getUnionGroup();
 		final String modifier = relationship.getModifierId();
 		
 		addComponent(bulkRequestBuilder, namespaceAndModuleAssigner, 
-				sourceId, typeId, destinationId, destinationNegated,
+				sourceId, typeId, destinationId, destinationNegated, value,
 				characteristicTypeId, group, unionGroup, modifier);
 	}
 
@@ -742,13 +740,14 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 		final String typeId = relationship.getTypeId();
 		final String destinationId = relationship.getDestinationId();
 		final boolean destinationNegated = relationship.isDestinationNegated();
+		final RelationshipValue value = relationship.getValueAsObject();
 		final String characteristicTypeId = relationship.getCharacteristicTypeId();
 		final int group = relationship.getGroup();
 		final int unionGroup = relationship.getUnionGroup();
 		final String modifier = relationship.getModifierId();
 		
 		addComponent(bulkRequestBuilder, namespaceAndModuleAssigner, 
-				sourceId, typeId, destinationId, destinationNegated,
+				sourceId, typeId, destinationId, destinationNegated, value,
 				characteristicTypeId, group, unionGroup, modifier);
 	}
 
@@ -758,6 +757,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 			final String typeId, 
 			final String destinationId, 
 			final boolean destinationNegated,
+			final RelationshipValue value,
 			final String characteristicTypeId, 
 			final int group, 
 			final int unionGroup,
@@ -774,6 +774,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 				.setSourceId(sourceId)
 				.setDestinationId(destinationId)
 				.setDestinationNegated(destinationNegated)
+				.setValue(value)
 				.setGroup(group)
 				.setUnionGroup(unionGroup)
 				.setModifierId(modifier)

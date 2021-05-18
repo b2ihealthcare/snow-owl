@@ -20,6 +20,7 @@ import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRel
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.destinationIds;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.sourceIds;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.typeId;
+import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.IOException;
@@ -231,6 +232,9 @@ public final class Taxonomies {
 		if (!relationship.isActive()) {
 			graphToUpdate.removeEdge(relationship.getId());
 		} else if (Concepts.IS_A.equals(relationship.getTypeId())) {
+			// XXX: IS A relationships are expected to have a destination ID, not a value
+			checkState(!relationship.hasValue(), "IS A relationship found with value: %s", relationship.getId());
+			
 			graphToUpdate.addEdge(
 				relationship.getId(),
 				Long.parseLong(relationship.getSourceId()),
@@ -243,6 +247,11 @@ public final class Taxonomies {
 		if (member.isActive()) {
 			SnomedOWLExpressionConverterResult result = expressionConverter.toSnomedOWLRelationships(member.getReferencedComponentId(), member.getOwlExpression());
 			if (!CompareUtils.isEmpty(result.getClassAxiomRelationships())) {
+				/*
+				 * XXX: IS A relationships are expected to have a destination ID, not a value,
+				 * but we do not check this explicitly here -- Long#parseLong will throw a
+				 * NumberFormatException if it encounters a null value.
+				 */
 				final long[] destinationIds = result.getClassAxiomRelationships().stream()
 					.filter(r -> Concepts.IS_A.equals(r.getTypeId()))
 					.map(SnomedOWLRelationshipDocument::getDestinationId)
@@ -319,6 +328,7 @@ public final class Taxonomies {
 			Hits<SnomedRefSetMemberIndexEntry> activeAxiomISARelationships = searcher.search(activeAxiomISARelationshipsQuery);
 			activeAxiomISARelationships.forEach(owlMember -> {
 				if (!CompareUtils.isEmpty(owlMember.getClassAxiomRelationships())) {
+					// XXX: breaks with a NumberFormatException if any of the IS A relationships has a value
 					long[] destinationIds = owlMember.getClassAxiomRelationships()
 						.stream()
 						.filter(classAxiom -> Concepts.IS_A.equals(classAxiom.getTypeId()))

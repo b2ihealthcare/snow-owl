@@ -1,5 +1,8 @@
 package scripts
 
+import static com.b2international.index.query.Expressions.matchAny
+import static com.b2international.index.query.Expressions.nestedMatch
+
 import java.util.stream.Collectors
 
 import com.b2international.index.Hits
@@ -100,6 +103,7 @@ def getOWLRelationships = { SnomedReferenceSetMember owlMember ->
 
 if (params.isUnpublishedOnly) {
 	SnomedRelationshipSearchRequestBuilder requestBuilder = SnomedRequests.prepareSearchRelationship()
+			.hasDestinationId()
 			.filterByActive(true)
 			.filterByEffectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
 			.all()
@@ -160,7 +164,8 @@ if (params.isUnpublishedOnly) {
 			
 		for (SnomedRelationshipPredicate predicate : applicableRulePredicates) {
 			for (SnomedOWLRelationshipDocument relationship : getOWLRelationships(owlAxiomMember)) {
-				if (getApplicableConcepts(predicate.getAttributeExpression()).contains(relationship.getTypeId()) &&
+				if (!relationship.hasValue() &&
+					getApplicableConcepts(predicate.getAttributeExpression()).contains(relationship.getTypeId()) &&
 					!getApplicableConcepts(predicate.getRangeExpression()).contains(relationship.getDestinationId())) {
 					issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, owlAxiomMember.getId()))
 				}
@@ -181,6 +186,7 @@ if (params.isUnpublishedOnly) {
 
 			final ExpressionBuilder expressionBuilder = Expressions.builder()
 					.filter(SnomedRelationshipIndexEntry.Expressions.active())
+					.filter(SnomedRelationshipIndexEntry.Expressions.hasDestinationId())
 					.filter(SnomedRelationshipIndexEntry.Expressions.sourceIds(domain))
 					.filter(SnomedRelationshipIndexEntry.Expressions.typeIds(getApplicableConcepts(attributeExpression)))
 					.mustNot(SnomedRelationshipIndexEntry.Expressions.destinationIds(getApplicableConcepts(rangeExpression)))
@@ -222,12 +228,22 @@ if (params.isUnpublishedOnly) {
 			def attribute = getApplicableConcepts(predicate.getAttributeExpression())
 			def range = getApplicableConcepts(predicate.getRangeExpression())
 			
+			/* 
+			 * XXX: These are nested OWL relationship documents, but we can use relationship query expressions
+			 * as long as the field naming convention stays the same.
+			 */
+			final ExpressionBuilder nestedBuilder = Expressions.builder()
+					.filter(SnomedRelationshipIndexEntry.Expressions.hasDestinationId())
+					.filter(SnomedRelationshipIndexEntry.Expressions.typeIds(attribute))
+					.mustNot(SnomedRelationshipIndexEntry.Expressions.destinationIds(range))
+			
 			final ExpressionBuilder expressionBuilder = Expressions.builder()
 					.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
 					.filter(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(domain))
-					.filter(SnomedRefSetMemberIndexEntry.Expressions.owlExpressionType(attribute))
-					.mustNot(SnomedRefSetMemberIndexEntry.Expressions.owlExpressionDestination(range))
-			
+					.should(nestedMatch(SnomedRefSetMemberIndexEntry.Fields.CLASS_AXIOM_RELATIONSHIP, nestedBuilder.build()))
+					.should(nestedMatch(SnomedRefSetMemberIndexEntry.Fields.GCI_AXIOM_RELATIONSHIP, nestedBuilder.build()))
+					.setMinimumNumberShouldMatch(1)
+		
 			final Query<String> query = Query.select(String.class)
 					.from(SnomedRefSetMemberIndexEntry.class)
 					.fields(SnomedRelationshipIndexEntry.Fields.ID)

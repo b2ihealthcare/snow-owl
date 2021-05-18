@@ -27,6 +27,7 @@ import static com.b2international.snowowl.test.commons.snomed.DocumentBuilders.*
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeFalse;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -123,17 +124,25 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	private BranchContext context;
 	
 	private final String expressionForm;
+	private final boolean statementsWithValue;
 	
-	public SnomedEclEvaluationRequestTest(String expressionForm) {
+	public SnomedEclEvaluationRequestTest(String expressionForm, boolean statementsWithValue) {
 		this.expressionForm = expressionForm;
+		this.statementsWithValue = statementsWithValue;
 	}
 	
-	@Parameters(name = "{0}")
+	@Parameters(name = "{0} {1}")
 	public static Collection<Object[]> data() {
 		return Arrays.asList(new Object[][] {
-			{ Trees.INFERRED_FORM },
-			{ Trees.STATED_FORM },
-			{ AXIOM } // special test parameter to indicate stated form on axiom members
+			// Test CD members in all three forms
+			{ Trees.INFERRED_FORM, false },
+			{ Trees.STATED_FORM,   false },
+			{ AXIOM,               false }, // special test parameter to indicate stated form on axiom members
+			
+			// New statements with value are expected to 
+			// appear in axiom and inferred form only
+			{ Trees.INFERRED_FORM, true  },
+			{ AXIOM,               true  }, 
 		});
 	}
 
@@ -873,6 +882,9 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	
 	@Test
 	public void refinementBooleanValueEquals() throws Exception {
+		// Boolean evaluation only works with CD members; skip test in value mode
+		assumeFalse(statementsWithValue);
+		
 		generateDrugHierarchy();
 		
 		final Expression actual = eval(String.format("<%s: %s = true", DRUG_ROOT, MANUFACTURED));
@@ -885,6 +897,9 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	
 	@Test
 	public void refinementBooleanValueNotEquals() throws Exception {
+		// Boolean evaluation only works with CD members; skip test in value mode
+		assumeFalse(statementsWithValue);
+
 		generateDrugHierarchy();
 		
 		final Expression actual = eval(String.format("<%s: %s != true", DRUG_ROOT, MANUFACTURED));
@@ -1290,8 +1305,40 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 				.characteristicTypeId(isInferred() ? Concepts.STATED_RELATIONSHIP : Concepts.INFERRED_RELATIONSHIP) // inverse!
 				.build());
 		
+		if (statementsWithValue) {
+			if (isAxiom()) {
+				staging
+				// trade names and strength as combined axioms
+				.stageNew(classAxiomsWithValue(PANADOL_TABLET, 
+					HAS_TRADE_NAME, "PANADOL", 0,
+					PREFERRED_STRENGTH, 500, 0).build())
+				.stageNew(classAxiomsWithValue(TRIPHASIL_TABLET, 
+					HAS_TRADE_NAME, "TRIPHASIL", 0,
+					PREFERRED_STRENGTH, -500, 0).build())
+				.stageNew(classAxiomsWithValue(AMOXICILLIN_TABLET, 
+					HAS_TRADE_NAME, "AMOXICILLIN", 0,
+					PREFERRED_STRENGTH, 5.5d, 0).build())
+				// strengths as axioms
+				.stageNew(classAxiomsWithValue(ABACAVIR_TABLET, 
+					PREFERRED_STRENGTH, -5.5d, 0).build());
+
+			} else {
+				staging
+				// trade names
+				.stageNew(stringValue(PANADOL_TABLET, HAS_TRADE_NAME, "PANADOL", getCharacteristicType()).build())
+				.stageNew(stringValue(TRIPHASIL_TABLET, HAS_TRADE_NAME, "TRIPHASIL", getCharacteristicType()).build())
+				.stageNew(stringValue(AMOXICILLIN_TABLET, HAS_TRADE_NAME, "AMOXICILLIN", getCharacteristicType()).build())
+				// strengths
+				.stageNew(integerValue(PANADOL_TABLET, PREFERRED_STRENGTH, 500, getCharacteristicType()).build())
+				.stageNew(integerValue(TRIPHASIL_TABLET, PREFERRED_STRENGTH, -500, getCharacteristicType()).build())
+				.stageNew(decimalValue(AMOXICILLIN_TABLET, PREFERRED_STRENGTH, 5.5d, getCharacteristicType()).build())
+				.stageNew(decimalValue(ABACAVIR_TABLET, PREFERRED_STRENGTH, -5.5d, getCharacteristicType()).build());
+				// XXX: manufactured flags are not indexed as relationships do not support boolean values
+			}
+		} else {
+			staging
 			// trade names
-		staging.stageNew(stringMember(PANADOL_TABLET, HAS_TRADE_NAME, "PANADOL", getCharacteristicType()).build())
+			.stageNew(stringMember(PANADOL_TABLET, HAS_TRADE_NAME, "PANADOL", getCharacteristicType()).build())
 			.stageNew(stringMember(TRIPHASIL_TABLET, HAS_TRADE_NAME, "TRIPHASIL", getCharacteristicType()).build())
 			.stageNew(stringMember(AMOXICILLIN_TABLET, HAS_TRADE_NAME, "AMOXICILLIN", getCharacteristicType()).build())
 			// strengths
@@ -1299,15 +1346,13 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 			.stageNew(integerMember(TRIPHASIL_TABLET, PREFERRED_STRENGTH, -500, getCharacteristicType()).build())
 			.stageNew(decimalMember(AMOXICILLIN_TABLET, PREFERRED_STRENGTH, BigDecimal.valueOf(5.5d), getCharacteristicType()).build())
 			.stageNew(decimalMember(ABACAVIR_TABLET, PREFERRED_STRENGTH, BigDecimal.valueOf(-5.5d), getCharacteristicType()).build())
-			.stageNew(integerMember(PANADOL_TABLET, PREFERRED_STRENGTH, 500, getCharacteristicType()).build())
-			.stageNew(integerMember(TRIPHASIL_TABLET, PREFERRED_STRENGTH, -500, getCharacteristicType()).build())
-			.stageNew(decimalMember(AMOXICILLIN_TABLET, PREFERRED_STRENGTH, BigDecimal.valueOf(5.5d), getCharacteristicType()).build())
-			.stageNew(decimalMember(ABACAVIR_TABLET, PREFERRED_STRENGTH, BigDecimal.valueOf(-5.5d), getCharacteristicType()).build())
 			// manufactured flags
 			.stageNew(booleanMember(PANADOL_TABLET, MANUFACTURED, true, getCharacteristicType()).build())
 			.stageNew(booleanMember(TRIPHASIL_TABLET, MANUFACTURED, true, getCharacteristicType()).build())
-			.stageNew(booleanMember(AMOXICILLIN_TABLET, MANUFACTURED, false, getCharacteristicType()).build())
-			.commit(currentTime(), UUID.randomUUID().toString(), "Initialize generated drugs");
+			.stageNew(booleanMember(AMOXICILLIN_TABLET, MANUFACTURED, false, getCharacteristicType()).build());
+		}
+		
+		staging.commit(currentTime(), UUID.randomUUID().toString(), "Initialize generated drugs");
 	}
 
 	private boolean isAxiom() {
@@ -1527,7 +1572,10 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 				.parents(DRUG_ROOTL)
 				.statedParents(DRUG_ROOTL)
 				.build(),
-			integerMember(DRUG_1_MG, PREFERRED_STRENGTH, 1, getCharacteristicType()).build()
+				
+			statementsWithValue 
+				? integerValue(DRUG_1_MG, PREFERRED_STRENGTH, 1, getCharacteristicType()).build()
+				: integerMember(DRUG_1_MG, PREFERRED_STRENGTH, 1, getCharacteristicType()).build()
 		);
 	}
 	
@@ -1537,7 +1585,10 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 				.parents(DRUG_ROOTL)
 				.statedParents(DRUG_ROOTL)	
 				.build(),
-			decimalMember(DRUG_1D_MG, PREFERRED_STRENGTH, BigDecimal.valueOf(1.0d), getCharacteristicType()).build()
+				
+			statementsWithValue
+				? decimalValue(DRUG_1D_MG, PREFERRED_STRENGTH, 1.0d, getCharacteristicType()).build()
+				: decimalMember(DRUG_1D_MG, PREFERRED_STRENGTH, BigDecimal.valueOf(1.0d), getCharacteristicType()).build()
 		);
 	}
 	

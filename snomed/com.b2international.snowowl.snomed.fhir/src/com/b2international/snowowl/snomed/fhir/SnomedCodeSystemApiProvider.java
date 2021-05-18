@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,6 +59,7 @@ import com.b2international.snowowl.fhir.core.provider.CodeSystemApiProvider;
 import com.b2international.snowowl.fhir.core.provider.ICodeSystemApiProvider;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.RelationshipValue;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
@@ -394,11 +395,20 @@ public class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 				.execute(getBus())
 				.getSync()
 				.forEach(r -> {
-					Property property = Property.builder()
-						.code(r.getTypeId())
-						.valueCode(r.getDestinationId())
-						.build();
-					resultBuilder.addProperty(property);
+					Property.Builder propertyBuilder = Property.builder()
+						.code(r.getTypeId());
+					
+					if (r.hasValue()) {
+						RelationshipValue value = r.getValueAsObject();
+						value.map(
+							i -> propertyBuilder.valueInteger(i),
+							d -> propertyBuilder.valueDecimal(d),
+							s -> propertyBuilder.valueString(s));
+					} else {
+						propertyBuilder.valueCode(r.getDestinationId());
+					}
+					
+					resultBuilder.addProperty(propertyBuilder.build());
 				});
 		}
 		

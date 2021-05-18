@@ -23,6 +23,7 @@ import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -42,6 +43,8 @@ import com.b2international.commons.collect.LongSets;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.b2international.snowowl.snomed.datastore.StatementFragment;
+import com.b2international.snowowl.snomed.datastore.StatementFragmentWithDestination;
+import com.b2international.snowowl.snomed.datastore.StatementFragmentWithValue;
 import com.b2international.snowowl.snomed.datastore.index.taxonomy.PropertyChain;
 import com.b2international.snowowl.snomed.datastore.index.taxonomy.ReasonerTaxonomy;
 import com.b2international.snowowl.snomed.reasoner.classification.INormalFormGenerator;
@@ -49,6 +52,7 @@ import com.b2international.snowowl.snomed.reasoner.classification.ReasonerTaxono
 import com.b2international.snowowl.snomed.reasoner.diff.OntologyChangeProcessor;
 import com.b2international.snowowl.snomed.reasoner.diff.concretedomain.ConcreteDomainChangeOrdering;
 import com.b2international.snowowl.snomed.reasoner.diff.relationship.StatementFragmentOrdering;
+import com.google.common.base.Predicates;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
@@ -134,6 +138,8 @@ public final class NormalFormGenerator implements INormalFormGenerator {
 					final Collection<StatementFragment> inferredNonIsAFragments = statementCache.get(conceptId);
 					inferredNonIsAFragments.stream()
 						.filter(r -> transitiveNodeGraphs.keySet().contains(r.getTypeId()))
+						.filter(StatementFragmentWithDestination.class::isInstance)
+						.map(StatementFragmentWithDestination.class::cast)
 						.forEachOrdered(r -> transitiveNodeGraphs.get(r.getTypeId())
 								.addParent(conceptId, r.getDestinationId()));
 				}
@@ -209,9 +215,15 @@ public final class NormalFormGenerator implements INormalFormGenerator {
 			candidateNonIsARelationships.put(parentId, statementCache.get(parentId));
 		}
 
+		// Stated axiom fragments are non-IS A, but any stated relationships need to be filtered (if they are still present)
+		final Collection<StatementFragment> ownStatedRelationships = reasonerTaxonomy.getStatedRelationships().get(conceptId);
+		final Collection<StatementFragment> ownStatedNonIsaRelationships = ownStatedRelationships.stream()
+				.filter(r -> r.getTypeId() != IS_A)
+				.collect(Collectors.toList());
+
 		candidateNonIsARelationships.put(conceptId, ImmutableList.<StatementFragment>builder()
-				.addAll(reasonerTaxonomy.getSubclassOfStatements().get(conceptId))
-				.addAll(reasonerTaxonomy.getEquivalentStatements().get(conceptId))
+				.addAll(ownStatedNonIsaRelationships)
+				.addAll(reasonerTaxonomy.getAxiomNonIsARelationships().get(conceptId))
 				.addAll(reasonerTaxonomy.getAdditionalGroupedRelationships().get(conceptId))
 				.build());
 
@@ -384,8 +396,8 @@ public final class NormalFormGenerator implements INormalFormGenerator {
 		final ImmutableList.Builder<NormalFormUnionGroup> zeroUnionGroups = ImmutableList.builder();
 
 		for (final StatementFragment unionGroupRelationship : unionGroupRelationships) {
-			final NormalFormRelationship normalFormRelationship = new NormalFormRelationship(unionGroupRelationship, reasonerTaxonomy, transitiveNodeGraphs, useNodeGraphs);
-			zeroUnionGroups.add(new NormalFormUnionGroup(normalFormRelationship));
+			final NormalFormProperty normalFormProperty = toProperty(unionGroupRelationship, useNodeGraphs);
+			zeroUnionGroups.add(new NormalFormUnionGroup(normalFormProperty));
 		}
 
 		for (final ConcreteDomainFragment unionGroupMember : unionGroupMembers) {
@@ -403,7 +415,7 @@ public final class NormalFormGenerator implements INormalFormGenerator {
 
 		final Iterable<NormalFormProperty> properties = FluentIterable
 				.from(unionGroupRelationships)
-				.transform(ugr -> new NormalFormRelationship(ugr, reasonerTaxonomy, transitiveNodeGraphs, useNodeGraphs));
+				.transform(ugr -> toProperty(ugr, useNodeGraphs));
 
 		final NormalFormUnionGroup unionGroup = new NormalFormUnionGroup(properties);
 		if (preserveNumbers) {
@@ -412,6 +424,12 @@ public final class NormalFormGenerator implements INormalFormGenerator {
 		return unionGroup;
 	}
 
+
+	private NormalFormProperty toProperty(final StatementFragment statementFragment, final boolean useNodeGraphs) {
+		return statementFragment.map(
+			d -> new NormalFormRelationship(d, reasonerTaxonomy, transitiveNodeGraphs, useNodeGraphs),
+			v -> new NormalFormValue(v, reasonerTaxonomy));
+	}
 
 	/**
 	 * Filters {@link NormalFormProperty}s so that the returned Iterable only
@@ -479,43 +497,41 @@ public final class NormalFormGenerator implements INormalFormGenerator {
 
 		return FluentIterable
 				.from(unionGroup.getProperties())
-				.filter(NormalFormRelationship.class)
-				.transform(property -> new StatementFragment(
-						property.getTypeId(),
-						property.getDestinationId(),
-						property.isDestinationNegated(),
-						groupNumber,
-						unionGroupNumber,
-						property.isUniversal(),
-						property.getStatementId(),
-						null, /*moduleId is not supported here*/
-						property.isReleased(),
-						property.getStatedStatementId()));
+				.filter(Predicates.or(
+					Predicates.instanceOf(NormalFormRelationship.class),
+					Predicates.instanceOf(NormalFormValue.class)))
+				.transform(property -> {
+					if (property instanceof NormalFormRelationship) {
+						final NormalFormRelationship r = (NormalFormRelationship) property;
+						return new StatementFragmentWithDestination(
+							r.getTypeId(),
+							groupNumber, 
+							unionGroupNumber, 
+							r.isUniversal(), 
+							r.getStatementId(), 
+							-1L, 
+							r.isReleased(), 
+							r.getDestinationId(), 
+							r.isDestinationNegated());
+					} else {
+						final NormalFormValue v = (NormalFormValue) property;
+						return new StatementFragmentWithValue(
+							v.getTypeId(), 
+							groupNumber, 
+							unionGroupNumber, 
+							false, 
+							v.getStatementId(), 
+							-1L, 
+							v.isReleased(), 
+							v.getValue().toLiteral());
+					}
+				});
 	}
 
+	@Deprecated
 	private Iterable<ConcreteDomainFragment> membersFromGroupSet(final NormalFormGroupSet targetGroupSet) {
-		return FluentIterable.from(targetGroupSet).transformAndConcat(this::membersFromGroup);
-	}
-
-	private Iterable<ConcreteDomainFragment> membersFromGroup(final NormalFormGroup group) {
-		return FluentIterable
-				.from(group.getUnionGroups())
-				.transformAndConcat(unionGroup -> membersFromUnionGroup(unionGroup, 
-						group.getGroupNumber(), 
-						unionGroup.getUnionGroupNumber()));
-	}
-
-	private Iterable<ConcreteDomainFragment> membersFromUnionGroup(final NormalFormUnionGroup unionGroup, final int groupNumber, final int unionGroupNumber) {
-		return FluentIterable
-				.from(unionGroup.getProperties())
-				.filter(NormalFormValue.class)
-				.transform(property -> new ConcreteDomainFragment(
-						property.getMemberId(),
-						property.getRefSetId(),
-						groupNumber,
-						property.getSerializedValue(),
-						property.getTypeId(),
-						property.isReleased()));
+		// We will consume CD member fragments, but no longer suggest to create new ones.
+		return List.of();
 	}
 
 	private Collection<StatementFragment> getTargetRelationships(final long conceptId) {
@@ -530,7 +546,7 @@ public final class NormalFormGenerator implements INormalFormGenerator {
 
 	private Iterable<StatementFragment> getTargetIsARelationships(final long conceptId) {
 		final LongSet parentIds = reasonerTaxonomy.getInferredAncestors().getDestinations(conceptId, true);
-		return LongSets.transform(parentIds, parentId -> new StatementFragment(IS_A, parentId));
+		return LongSets.transform(parentIds, parentId -> new StatementFragmentWithDestination(IS_A, parentId));
 	}
 
 	private Collection<ConcreteDomainFragment> getTargetMembers(final long conceptId) {

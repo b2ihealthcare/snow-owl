@@ -290,7 +290,7 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 		indexRevision(RevisionBranch.MAIN_PATH, member);
 		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, member.getId());
 		assertEquals(owlExpression, actual.getOwlExpression());
-		assertEquals(ImmutableList.of(new SnomedOWLRelationshipDocument(Concepts.IS_A, Concepts.ROOT_CONCEPT, 0)), actual.getClassAxiomRelationships());
+		assertEquals(ImmutableList.of(SnomedOWLRelationshipDocument.create(Concepts.IS_A, Concepts.ROOT_CONCEPT, 0)), actual.getClassAxiomRelationships());
 		assertThat(actual.getGciAxiomRelationships()).isEmpty();
 		assertDocEquals(member, actual);
 	}
@@ -304,10 +304,10 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 		assertEquals(
 			// expected
 			ImmutableList.of(
-				new SnomedOWLRelationshipDocument(Concepts.IS_A, "245565004", 0),
-				new SnomedOWLRelationshipDocument(Concepts.IS_A, "420479003", 0),
-				new SnomedOWLRelationshipDocument(Concepts.IS_A, "7121006", 0),
-				new SnomedOWLRelationshipDocument("272741003", "24028007", 0)
+				SnomedOWLRelationshipDocument.create(Concepts.IS_A, "245565004", 0),
+				SnomedOWLRelationshipDocument.create(Concepts.IS_A, "420479003", 0),
+				SnomedOWLRelationshipDocument.create(Concepts.IS_A, "7121006", 0),
+				SnomedOWLRelationshipDocument.create("272741003", "24028007", 0)
 			), 
 			// actual
 			actual.getClassAxiomRelationships()
@@ -352,11 +352,11 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 		assertEquals(
 			// expected
 			ImmutableList.of(
-				new SnomedOWLRelationshipDocument(Concepts.IS_A, "384723003", 0),
-				new SnomedOWLRelationshipDocument("260686004", "129304002", 1),
-				new SnomedOWLRelationshipDocument("405813007", "245269009", 1),
-				new SnomedOWLRelationshipDocument("260686004", "129304002", 2),
-				new SnomedOWLRelationshipDocument("405813007", "81802002", 2)
+				SnomedOWLRelationshipDocument.create(Concepts.IS_A, "384723003", 0),
+				SnomedOWLRelationshipDocument.create("260686004", "129304002", 1),
+				SnomedOWLRelationshipDocument.create("405813007", "245269009", 1),
+				SnomedOWLRelationshipDocument.create("260686004", "129304002", 2),
+				SnomedOWLRelationshipDocument.create("405813007", "81802002", 2)
 			), 
 			// actual
 			actual.getClassAxiomRelationships()
@@ -375,11 +375,11 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 		assertEquals(
 			// expected
 			ImmutableList.of(
-				new SnomedOWLRelationshipDocument(Concepts.IS_A, "193783008", 0),
-				new SnomedOWLRelationshipDocument("116676008", "23583003", 1),
-				new SnomedOWLRelationshipDocument("246075003", "19551004", 1),
-				new SnomedOWLRelationshipDocument("363698007", "65431007", 1),
-				new SnomedOWLRelationshipDocument("370135005", "441862004", 1)
+				SnomedOWLRelationshipDocument.create(Concepts.IS_A, "193783008", 0),
+				SnomedOWLRelationshipDocument.create("116676008", "23583003", 1),
+				SnomedOWLRelationshipDocument.create("246075003", "19551004", 1),
+				SnomedOWLRelationshipDocument.create("363698007", "65431007", 1),
+				SnomedOWLRelationshipDocument.create("370135005", "441862004", 1)
 			), 
 			// actual
 			actual.getGciAxiomRelationships()

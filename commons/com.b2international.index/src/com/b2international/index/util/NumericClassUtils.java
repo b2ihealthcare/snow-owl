@@ -82,6 +82,10 @@ public class NumericClassUtils {
 	public static boolean isFloat(final Class<?> fieldType) {
 		return fieldType == Float.class || fieldType == float.class;
 	}
+	
+	public static boolean isDouble(final Class<?> fieldType) {
+		return fieldType == Double.class || fieldType == double.class;
+	}
 
 	public static boolean isLong(final Class<?> fieldType) {
 		return fieldType == Long.class || fieldType == long.class;

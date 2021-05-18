@@ -85,8 +85,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 	public void createConceptEmptyParent() {
 		assertCreateConcept(branchPath, createConceptRequestBody(""))
 			.statusCode(400)
-			.body("message", equalTo("1 validation error"))
-			.body("violations", hasItem("'destinationId' may not be empty (was '')"));
+			.body("message", equalTo("'destinationId' or 'value' should be specified"));
 	}
 
 	@Test

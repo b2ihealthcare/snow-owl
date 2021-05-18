@@ -68,7 +68,7 @@ public abstract class SnomedComponentBuilder<B extends SnomedComponentBuilder<B,
 	 * @param moduleId
 	 * @return
 	 */
-	public final B withModule(String moduleId) {
+	public final B withModuleId(String moduleId) {
 		this.moduleId = moduleId;
 		return getSelf();
 	}

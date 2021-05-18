@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -207,7 +207,7 @@ public class SnomedRefSetDSVExportTest {
 		return concepts.getItems()
 				.stream()
 				.flatMap(concept -> concept.getRelationships().stream())
-				.filter(r -> r.isActive() && 
+				.filter(r -> r.isActive() && !r.hasValue() &&
 						(Concepts.STATED_RELATIONSHIP.equals(r.getCharacteristicTypeId())
 						|| Concepts.ADDITIONAL_RELATIONSHIP.equals(r.getCharacteristicTypeId())))
 				.map(r -> String.format("%s=%s", r.getTypeId(), r.getDestinationId()))
