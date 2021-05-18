@@ -20,6 +20,7 @@ import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Id;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
+import com.b2international.snowowl.fhir.core.search.Searchable;
 import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
@@ -45,6 +46,7 @@ public abstract class FhirResource {
 	 * Set the ID to -1 when submitting for creation.
 	 */
 	@Mandatory
+	@Searchable(type = "String", modifiers = {"exact"}, supportsMultipleValues = true)
 	private final Id id;
 	
 	/**

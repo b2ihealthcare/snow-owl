@@ -34,6 +34,7 @@ import com.b2international.snowowl.fhir.tests.FhirRestTest;
 public class CodeSystemRestTest extends FhirRestTest {
 	
 	private static final String FHIR_ISSUE_TYPE_CODESYSTEM_ID = "fhir/issue-type";
+	private static final String FHIR_ISSUE_TYPE_NAME = "issue-type";
 	
 	//@Test
 	public void pingTest() {
@@ -48,7 +49,6 @@ public class CodeSystemRestTest extends FhirRestTest {
 		.when().get("/CodeSystem").prettyPrint();
 	}
 	
-	//All code systems fully detailed
 	@Test
 	public void getAllFullCodeSystemsTest() {
 		
@@ -84,7 +84,18 @@ public class CodeSystemRestTest extends FhirRestTest {
 			.statusCode(200);
 	}
 	
-	//Id parameter
+	@Test
+	public void getCodeSystemsInvalidIdParamTest() {
+		
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.param("_id", "whatever")
+			.when().get("/CodeSystem")
+			.then()
+			.body("resourceType", equalTo("Bundle"))
+			.body("total", equalTo(0))
+			.statusCode(200);
+	}
+	
 	@Test
 	public void getCodeSystemsIdParamTest() {
 		
@@ -99,20 +110,62 @@ public class CodeSystemRestTest extends FhirRestTest {
 			.statusCode(200);
 	}
 	
-	//Invalid ID parameter
 	@Test
-	public void getCodeSystemsInvalidIdParamTest() {
+	public void getCodeSystemsIdsParamTest() {
+		
+		final String narrativeStatusId = "fhir/narrative-status";
 		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.param("_id", "whatever")
-			.when().get("/CodeSystem").then()
-			.body("resourceType", equalTo("OperationOutcome"))
-			.body("issue.severity", hasItem("error"))
-			.body("issue.code", hasItem("invalid"))
-			.statusCode(400);
+			.param("_id", FHIR_ISSUE_TYPE_CODESYSTEM_ID, narrativeStatusId)
+			.when().get("/CodeSystem")
+			.then()
+			.body("resourceType", equalTo("Bundle"))
+			.body("total", equalTo(2))
+			.body("type", equalTo("searchset"))
+			.root("entry.find { it.resource.id == '" + FHIR_ISSUE_TYPE_CODESYSTEM_ID + "'}")
+			.body("resource.id", equalTo(FHIR_ISSUE_TYPE_CODESYSTEM_ID))
+			.body("resource.concept", notNullValue())
+			.root("entry.find { it.resource.id == '" + narrativeStatusId + "'}")
+			.body("resource.id", equalTo(narrativeStatusId))
+			.statusCode(200);
+		}
+	
+	
+	@Test
+	public void getCodeSystemsByNameParamTest() {
+		
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.param("_name", FHIR_ISSUE_TYPE_NAME)
+			.when().get("/CodeSystem")
+			.then()
+			.body("resourceType", equalTo("Bundle"))
+			.body("total", equalTo(1))
+			.body("type", equalTo("searchset"))
+			.body("entry[0].resource.id", equalTo(FHIR_ISSUE_TYPE_CODESYSTEM_ID))
+			.body("entry[0].resource.concept", notNullValue())
+			.statusCode(200);
 	}
 	
-	//Fully detailed SNOMED CT code system
+	@Test
+	public void getCodeSystemsByNamesParamTest() {
+		
+		final String narrativeStatus = "narrative-status";
+		
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.param("_name", FHIR_ISSUE_TYPE_NAME, narrativeStatus)
+			.when().get("/CodeSystem")
+			.then()
+			.body("resourceType", equalTo("Bundle"))
+			.body("total", equalTo(2))
+			.body("type", equalTo("searchset"))
+			.root("entry.find { it.resource.id == '" + FHIR_ISSUE_TYPE_CODESYSTEM_ID + "'}")
+			.body("resource.id", equalTo(FHIR_ISSUE_TYPE_CODESYSTEM_ID))
+			.body("resource.concept", notNullValue())
+			.root("entry.find { it.resource.id == 'fhir/" + narrativeStatus + "'}")
+			.body("resource.id", equalTo("fhir/" + narrativeStatus))
+			.statusCode(200);
+	}
+
 	@Test
 	public void getSnomedCodeSystemTest() {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
@@ -125,7 +178,6 @@ public class CodeSystemRestTest extends FhirRestTest {
 			.statusCode(200);
 	}
 	
-	//Full FHIR code system
 	@Test
 	public void getFhirCodeSystemTest() {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
@@ -135,13 +187,12 @@ public class CodeSystemRestTest extends FhirRestTest {
 			.then()
 			.body("resourceType", equalTo("CodeSystem"))
 			.body("status", equalTo("active")) //mandatory
-			.body("name", equalTo("IssueType")) //summary
+			.body("name", equalTo(FHIR_ISSUE_TYPE_NAME)) //summary
 			.body("concept", notNullValue()) //optional
 			.body("copyright", containsString("2011+ HL7")) //optional
 			.statusCode(200);
 	}
 	
-	//Summary-only FHIR code system
 	@Test
 	public void getFhirCodeSystemSummaryTest() {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
@@ -152,16 +203,17 @@ public class CodeSystemRestTest extends FhirRestTest {
 			.body("resourceType", equalTo("CodeSystem"))
 			.body("meta.tag.code", hasItem("SUBSETTED"))
 			.body("status", equalTo("active"))
-			.body("name", equalTo("IssueType"))
+			.body("name", equalTo(FHIR_ISSUE_TYPE_NAME))
 			//NOT part of the summary
 			.body("concept", nullValue()) 
 			.body("copyright", nullValue()) 
 			.statusCode(200);
 	}
 	
-	//Summary-count should not be allowed for non-search type operations
-	@Test
-	public void getFhirCodeSystemCountTest() {
+	//Summary-count should not be allowed for non-search type operations?
+	//https://www.hl7.org/fhir/search.html#summary
+	//@Test
+	public void getFhirCodeSystemSummaryCountTest() {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.param("_summary", "count")
 		 	.pathParam("id", FHIR_ISSUE_TYPE_CODESYSTEM_ID) 
@@ -173,9 +225,8 @@ public class CodeSystemRestTest extends FhirRestTest {
 			.statusCode(400);
 	}
 	
-	//Summary-data FHIR code system (remove text element)
 	@Test
-	public void getFhirCodeSystemDataTest() {
+	public void getFhirCodeSystemSummaryDataTest() {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.param("_summary", "data")
 		 	.pathParam("id", FHIR_ISSUE_TYPE_CODESYSTEM_ID) 
@@ -197,7 +248,7 @@ public class CodeSystemRestTest extends FhirRestTest {
 	
 	//Summary-text FHIR code system (text, id, meta, mandatory)
 	@Test
-	public void getFhirCodeSystemTextTest() {
+	public void getFhirCodeSystemSummaryTextTest() {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.param("_summary", "text")
 		 	.pathParam("id", FHIR_ISSUE_TYPE_CODESYSTEM_ID) 
@@ -217,9 +268,6 @@ public class CodeSystemRestTest extends FhirRestTest {
 			.statusCode(200);
 	}
 	
-	/*
-	 * ?elements=name, url means
-	 */
 	@Test
 	public void getFhirCodeSystemElementsTest() {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
@@ -232,21 +280,18 @@ public class CodeSystemRestTest extends FhirRestTest {
 			.body("meta.tag.code", hasItem("SUBSETTED"))
 			.body("status", equalTo("active"))
 			.body("content", equalTo("complete"))
-			.body("id", equalTo("issue-type"))
+			.body("id", equalTo(FHIR_ISSUE_TYPE_CODESYSTEM_ID))
 			//summary and optional fields
 			.body("text", nullValue())
 			.body("count", nullValue())
 			.body("concept", nullValue()) 
 			.body("copyright", nullValue()) 
 			//requested fields
-			.body("name", notNullValue())
+			.body("name", equalTo(FHIR_ISSUE_TYPE_NAME))
 			.body("url", notNullValue()) 
 			.statusCode(200);
 	}
 	
-	/*
-	 * Incorrect elements should be ignored.
-	 */
 	@Test
 	public void getFhirCodeSystemIncorrectElementsTest() {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
@@ -259,7 +304,7 @@ public class CodeSystemRestTest extends FhirRestTest {
 			.body("meta.tag.code", hasItem("SUBSETTED"))
 			.body("status", equalTo("active"))
 			.body("content", equalTo("complete"))
-			.body("id", equalTo("issue-type"))
+			.body("id", equalTo(FHIR_ISSUE_TYPE_CODESYSTEM_ID))
 			//summary and optional fields
 			.body("text", nullValue())
 			.body("count", nullValue())

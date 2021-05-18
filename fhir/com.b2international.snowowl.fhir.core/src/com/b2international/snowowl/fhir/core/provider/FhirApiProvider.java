@@ -15,10 +15,7 @@
  */
 package com.b2international.snowowl.fhir.core.provider;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
@@ -34,6 +31,7 @@ import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
+import com.b2international.snowowl.fhir.core.search.FhirSearchParameter;
 import com.google.common.collect.Lists;
 
 /**
@@ -199,6 +197,23 @@ public abstract class FhirApiProvider {
 	    		})
 	    		.findFirst()
 	    		.orElse(null);
+	}
+	
+	protected Optional<FhirSearchParameter> getSearchParam(final Set<FhirSearchParameter> searchParameters, String parameterName) {
+		return searchParameters.stream().filter(p -> parameterName.equals(p.getName())).findFirst();
+	}
+	
+	/**
+	 * Returns the collection of the Snow Owl identifier part (last segment) of 
+	 * the passed in URIs.
+	 * @param uris
+	 * @return collection of identifiers
+	 */
+	protected Collection<String> collectIds(Collection<String> uris) {
+		return uris.stream()
+			.filter(u -> u.contains("/"))
+			.map(u -> u.substring(u.lastIndexOf('/') + 1, u.length()))
+			.collect(Collectors.toSet());
 	}
 
 }

@@ -155,7 +155,7 @@ public class Expressions {
 	public static TextPredicate matchTextAll(String field, String term) {
 		return new TextPredicate(field, term, MatchType.ALL);
 	}
-	
+
 	public static TextPredicate matchTextAny(String field, String term) {
 		return new TextPredicate(field, term, MatchType.ANY);
 	}

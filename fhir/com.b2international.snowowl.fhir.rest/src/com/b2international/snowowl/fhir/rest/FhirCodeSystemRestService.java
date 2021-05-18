@@ -20,10 +20,7 @@ import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
 
 import java.text.ParseException;
-import java.util.Collection;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.converter.json.MappingJacksonValue;
@@ -38,6 +35,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
+import com.b2international.commons.Pair;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
@@ -54,9 +52,10 @@ import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.provider.ICodeSystemApiProvider;
-import com.b2international.snowowl.fhir.core.search.SearchRequestParameters;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
+import com.b2international.snowowl.fhir.core.search.FhirFilterParameter;
+import com.b2international.snowowl.fhir.core.search.FhirSearchParameter;
+import com.b2international.snowowl.fhir.core.search.FhirUriSearchParameterDefinition.FhirCommonSearchKey;
+import com.google.common.collect.Sets;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -86,6 +85,11 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 	@Autowired
 	private ICodeSystemApiProvider.Registry codeSystemProviderRegistry;
 	
+	@Override
+	protected Class<CodeSystem> getModelClass() {
+		return CodeSystem.class;
+	}
+	
 	/**
 	 * CodeSystems
 	 * @param parameters - request parameters
@@ -100,9 +104,8 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 	@GetMapping
 	public Bundle getCodeSystems(@RequestParam(required=false) MultiValueMap<String, String> parameters) {
 		
-		Multimap<String, String> multiMap = HashMultimap.create();
-		parameters.keySet().forEach(k -> multiMap.putAll(k, parameters.get(k)));
-		SearchRequestParameters requestParameters = new SearchRequestParameters(multiMap); 
+		Pair<Set<FhirFilterParameter>, Set<FhirSearchParameter>> requestParameters = processParameters(parameters);
+		Set<FhirFilterParameter> filterParameters = requestParameters.getA();
 		
 		//TODO: replace this with something more general as described in
 		//https://docs.spring.io/spring-hateoas/docs/current/reference/html/
@@ -113,22 +116,18 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 			.addLink(uri);
 		
 		int total = 0;
+
+		//collect the hits from the providers
+		Collection<ICodeSystemApiProvider> providers = codeSystemProviderRegistry.getProviders(getBus(), locales);
 		
-		//single code system
-		String id = requestParameters.getId();
-		if (id != null) {
-			CodeSystem codeSystem = getCodeSystemById(id);
-			applyResponseContentFilter(codeSystem, requestParameters);
-			String resourceUrl = String.join("/", uri, codeSystem.getId().getIdValue());
-			Entry entry = new Entry(new Uri(resourceUrl), codeSystem);
-			builder.addEntry(entry);
-			total = 1;
-		
-		//all code systems
-		} else {
-			for (ICodeSystemApiProvider fhirProvider : codeSystemProviderRegistry.getProviders(getBus(), locales)) {
-				Collection<CodeSystem> codeSystems = fhirProvider.getCodeSystems();
-				total = total + applySearchParameters(builder, uri, codeSystems,requestParameters);
+		for (ICodeSystemApiProvider codeSystemProvider : providers) {
+			Collection<CodeSystem> codeSystems = codeSystemProvider.getCodeSystems(requestParameters.getB());
+			for (CodeSystem codeSystem : codeSystems) {
+				applyResponseContentFilter(codeSystem, filterParameters);
+				String resourceUrl = String.join("/", uri, codeSystem.getId().getIdValue());
+				Entry entry = new Entry(new Uri(resourceUrl), codeSystem);
+				builder.addEntry(entry);
+				total++;
 			}
 		}
 		return builder.total(total).build();
@@ -153,12 +152,13 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 	public MappingJacksonValue getCodeSystem(@PathVariable("codeSystemId") String codeSystemId, 
 			@RequestParam(required=false) MultiValueMap<String, String> parameters) {
 		
-		Multimap<String, String> multiMap = HashMultimap.create();
-		parameters.keySet().forEach(k -> multiMap.putAll(k, parameters.get(k)));
-		SearchRequestParameters requestParameters = new SearchRequestParameters(multiMap); 
+		Pair<Set<FhirFilterParameter>, Set<FhirSearchParameter>> fhirParameters = processParameters(parameters);
 		
-		CodeSystem codeSystem = getCodeSystemById(codeSystemId);
-		return applyResponseContentFilter(codeSystem, requestParameters);
+		CodeSystemURI codeSystemURI = new CodeSystemURI(codeSystemId);
+		ICodeSystemApiProvider codeSystemProvider = codeSystemProviderRegistry.getCodeSystemProvider(getBus(), locales, codeSystemURI);
+		CodeSystem codeSystem = codeSystemProvider.getCodeSystem(codeSystemURI);
+		
+		return applyResponseContentFilter(codeSystem, fhirParameters.getA());
 	}
 	
 	/**
@@ -358,13 +358,6 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 		return "Ping!";
 	}
 	
-	private CodeSystem getCodeSystemById(String codeSystemId) {
-		//LogicalId logicalId = LogicalId.fromIdString(codeSystemId);
-		CodeSystemURI codeSystemURI = new CodeSystemURI(codeSystemId);
-		ICodeSystemApiProvider codeSystemProvider = codeSystemProviderRegistry.getCodeSystemProvider(getBus(), locales, codeSystemURI);
-		return codeSystemProvider.getCodeSystem(codeSystemURI);
-	}
-	
 	/*
 	 * Perform the actual lookup by deferring the operation to the matching code system provider.
 	 */
@@ -437,5 +430,5 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 			}
 		}
 	}
-	
+
 }

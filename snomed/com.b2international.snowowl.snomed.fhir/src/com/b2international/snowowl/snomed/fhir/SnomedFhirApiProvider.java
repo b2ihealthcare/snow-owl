@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Set;
 
 import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.provider.FhirApiProvider;

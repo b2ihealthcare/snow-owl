@@ -17,6 +17,9 @@ package com.b2international.snowowl.fhir.rest;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,10 +27,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.json.MappingJacksonValue;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
+import com.b2international.commons.Pair;
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.exceptions.ConflictException;
 import com.b2international.commons.exceptions.NotFoundException;
@@ -45,14 +50,20 @@ import com.b2international.snowowl.fhir.core.model.OperationOutcome;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.search.FhirBeanPropertyFilter;
-import com.b2international.snowowl.fhir.core.search.SearchRequestParameter.SummaryParameterValue;
-import com.b2international.snowowl.fhir.core.search.SearchRequestParameters;
+import com.b2international.snowowl.fhir.core.search.FhirFilterParameter;
+import com.b2international.snowowl.fhir.core.search.FhirParameter.PrefixedValue;
+import com.b2international.snowowl.fhir.core.search.FhirSearchParameter;
+import com.b2international.snowowl.fhir.core.search.FhirUriFilterParameterDefinition.FhirFilterParameterKey;
+import com.b2international.snowowl.fhir.core.search.FhirUriFilterParameterDefinition.SummaryParameterValue;
+import com.b2international.snowowl.fhir.core.search.FhirUriParameterManager;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.google.common.base.Throwables;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 
 /**
@@ -75,6 +86,9 @@ public abstract class BaseFhirResourceRestService<R extends FhirResource> extend
 	
 	public static final String APPLICATION_FHIR_JSON = "application/fhir+json;charset=utf-8";
 	
+	//cache supported parameters
+	private FhirUriParameterManager parameterManager = FhirUriParameterManager.createFor(getModelClass());
+	
 	@Autowired
 	protected ObjectMapper mapper;
 	
@@ -84,6 +98,34 @@ public abstract class BaseFhirResourceRestService<R extends FhirResource> extend
 	
 	protected final Parameters.Fhir toResponse(Object response) {
 		return new Parameters.Fhir(Parameters.from(response));
+	}
+	
+	protected abstract Class<R> getModelClass();
+	
+	protected Pair<Set<FhirFilterParameter>, Set<FhirSearchParameter>> processParameters(MultiValueMap<String, String> parameters) {
+		
+		//Convert it to Guava's multimap
+		Multimap<String, String> multiMap = HashMultimap.create();
+		parameters.keySet().forEach(k -> multiMap.putAll(k, parameters.get(k)));
+		
+		Pair<Set<FhirFilterParameter>, Set<FhirSearchParameter>> fhirParameters = parameterManager.processParameters(multiMap);
+		return fhirParameters;
+	}
+	
+	protected Optional<PrefixedValue> getParameterSingleValue(Set<FhirSearchParameter> requestParameters, String parameterName) {
+		
+		Optional<FhirSearchParameter> parameterOptional = requestParameters.stream().filter(p -> parameterName.equals(p.getName())).findAny();
+		
+		if (parameterOptional.isPresent()) {
+			Collection<PrefixedValue> parameterValues = parameterOptional.get().getValues();
+			if (parameterValues.size() != 1) {
+				throw new IllegalArgumentException("There should only be a single value for '" + parameterName + "'");
+			} else {
+				return Optional.of(parameterValues.iterator().next());
+			}
+		} else {
+			return Optional.empty();
+		}
 	}
 	
 	/**
@@ -96,17 +138,27 @@ public abstract class BaseFhirResourceRestService<R extends FhirResource> extend
 		mapper.setFilterProvider(filterProvider);
 	}
 	
-	protected MappingJacksonValue applyResponseContentFilter(FhirResource filteredFhirResource, SearchRequestParameters parameters) {
+	protected MappingJacksonValue applyResponseContentFilter(FhirResource filteredFhirResource, Set<FhirFilterParameter> filterParameters) {
 
 		SimpleFilterProvider filterProvider = new SimpleFilterProvider().setFailOnUnknownId(false);
-		SummaryParameterValue summaryParameter = parameters.getSummary();
-		Collection<String> elementsParameters = parameters.getElements();
+
+		Optional<FhirFilterParameter> summaryFilterParameterOptional = filterParameters.stream()
+			.filter(p -> FhirFilterParameterKey._summary.name().equals(p.getName()))
+			.findAny();
 		
-		if (summaryParameter !=null) {
-			filterProvider.addFilter(FhirBeanPropertyFilter.FILTER_NAME, FhirBeanPropertyFilter.createFilter(summaryParameter));
+		Optional<FhirFilterParameter> elementsFilterParameterOptional = filterParameters.stream()
+				.filter(p -> FhirFilterParameterKey._elements.name().equals(p.getName()))
+				.findAny();
+		
+		if (summaryFilterParameterOptional.isPresent()) {
+			FhirFilterParameter summaryParameter = summaryFilterParameterOptional.get();
+			String paramValue = summaryParameter.getValues().iterator().next().getValue();
+			filterProvider.addFilter(FhirBeanPropertyFilter.FILTER_NAME, FhirBeanPropertyFilter.createFilter(SummaryParameterValue.fromRequestParameter(paramValue)));
 			filteredFhirResource.setSubsetted();
-		} else if (elementsParameters != null) {
-			filterProvider.addFilter(FhirBeanPropertyFilter.FILTER_NAME, FhirBeanPropertyFilter.createFilter(getRequestedFields(elementsParameters)));
+		} else if (elementsFilterParameterOptional.isPresent()) {
+			FhirFilterParameter elementsParameter = elementsFilterParameterOptional.get();
+			Collection<String> values = elementsParameter.getValues().stream().map(PrefixedValue::getValue).collect(Collectors.toSet());
+			filterProvider.addFilter(FhirBeanPropertyFilter.FILTER_NAME, FhirBeanPropertyFilter.createFilter(getRequestedFields(values)));
 			filteredFhirResource.setSubsetted();
 		}
 		
@@ -117,13 +169,15 @@ public abstract class BaseFhirResourceRestService<R extends FhirResource> extend
 		return mappingJacksonValue;
 	}
 	
-	protected int applySearchParameters(Bundle.Builder builder, String uri, Collection<R> fhirResources, SearchRequestParameters parameters) {
+	//TODO: replace it with a query
+	//protected int applySearchParameters(Bundle.Builder builder, String uri, Collection<R> fhirResources, SearchRequestParameters parameters) {
+	protected int applyFilterParameters(Bundle.Builder builder, String uri, Collection<R> fhirResources, Set<FhirFilterParameter> filterParameters) {
 		
 		Collection<FhirResource> filteredResources = Sets.newHashSet(fhirResources);
 		int total = 0;
 		
 		for (FhirResource fhirResource : filteredResources) {
-			applyResponseContentFilter(fhirResource, parameters);
+			applyResponseContentFilter(fhirResource, filterParameters);
 			String resourceUrl = String.join("/", uri, fhirResource.getId().getIdValue());
 			Entry entry = new Entry(new Uri(resourceUrl), fhirResource);
 			builder.addEntry(entry);

@@ -102,7 +102,8 @@ final class CodeSystemSearchRequest
 	
 	private void addNameExactFilter(ExpressionBuilder queryBuilder) {
 		if (containsKey(OptionKey.NAME_EXACT)) {
-			queryBuilder.must(CodeSystemEntry.Expressions.matchNameOriginal(getString(OptionKey.NAME_EXACT)));
+			final Collection<String> names = getCollection(OptionKey.NAME_EXACT, String.class);
+			queryBuilder.must(CodeSystemEntry.Expressions.matchNamesExact(names));
 		}		
 	}
 	

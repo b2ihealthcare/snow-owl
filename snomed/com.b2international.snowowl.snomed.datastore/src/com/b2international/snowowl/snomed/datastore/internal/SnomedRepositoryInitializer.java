@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,15 +17,25 @@ package com.b2international.snowowl.snomed.datastore.internal;
 
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.repository.TerminologyRepositoryInitializer;
+import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * Repository initializer for the SNOMED CT tooling.
  */
 public final class SnomedRepositoryInitializer extends TerminologyRepositoryInitializer {
 
+	private static final long serialVersionUID = 1L;
+
 	@Override
 	protected CodeSystem createPrimaryCodeSystem() {
+		
+		final ImmutableMap<String,Object> additionalProperties = ImmutableMap.of(
+				SnomedTerminologyComponentConstants.CODESYSTEM_MODULES_CONFIG_KEY, ImmutableList.of(Concepts.MODULE_SCT_CORE),
+				SnomedTerminologyComponentConstants.CODESYSTEM_NAMESPACE_CONFIG_KEY, Concepts.CORE_NAMESPACE);
+		
 		return CodeSystem.builder()
 				.name(SnomedTerminologyComponentConstants.SNOMED_NAME)
 				.shortName(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME)
@@ -35,6 +45,7 @@ public final class SnomedRepositoryInitializer extends TerminologyRepositoryInit
 				.organizationLink(SnomedTerminologyComponentConstants.SNOMED_INT_LINK)
 				.oid(SnomedTerminologyComponentConstants.SNOMED_INT_OID)
 				.terminologyId(SnomedTerminologyComponentConstants.TERMINOLOGY_ID)
+				.additionalProperties(additionalProperties)
 				.build();
 	}
 

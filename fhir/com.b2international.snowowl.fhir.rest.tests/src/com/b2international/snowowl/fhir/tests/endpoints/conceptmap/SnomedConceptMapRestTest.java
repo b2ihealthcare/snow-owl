@@ -222,7 +222,6 @@ public class SnomedConceptMapRestTest extends FhirRestTest {
 	@Test
 	public void conceptMapsSummaryTest() throws Exception {
 		
-		
 		String simpleMapTypeRefsetId = mapTypeRefSetIds.get(0);
 		String mapTypeRefsetUri = "SNOMEDCT/" + FHIR_MAP_TYPE_REFSET_VERSION + "/" + 
 				SnomedTerminologyComponentConstants.REFSET_NUMBER + "/" + simpleMapTypeRefsetId;
@@ -247,5 +246,77 @@ public class SnomedConceptMapRestTest extends FhirRestTest {
 			.body("group", nullValue())
 			.statusCode(200);
 	}
+	
+	@Test
+	public void getConceptMapByIdParam() {
+		
+		String simpleMapTypeRefsetId = mapTypeRefSetIds.get(0);
+		String simpleMapTypeRefsetURI = "SNOMEDCT/" + FHIR_MAP_TYPE_REFSET_VERSION + "/103/" + simpleMapTypeRefsetId;
+		
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+		 	.param("_id", simpleMapTypeRefsetURI) 
+			.when().get("/ConceptMap")
+			.then()
+			.statusCode(200)
+			.body("resourceType", equalTo("Bundle"))
+			.body("type", equalTo("searchset"))
+			.body("total", equalTo(1))
+			.root("entry.find { it.resource.id == '" + simpleMapTypeRefsetURI + "'}")
+			
+			.body("resource.resourceType", equalTo("ConceptMap"))
+			.body("resource.id", equalTo(simpleMapTypeRefsetURI))
+			.body("resource.url", startsWith("http://snomed.info/sct/version"))
+			.body("resource.version", equalTo(FHIR_MAP_TYPE_REFSET_VERSION))
+			.body("resource.title", equalTo(SIMPLE_MAP_TYPE_REFSET_NAME))
+			.body("resource.name", equalTo(SIMPLE_MAP_TYPE_REFSET_NAME))
+			.body("resource.status", equalTo("active"))
+			
+			.body("resource.language", equalTo("en-us"))
+			.body("resource.identifier.use", equalTo("official"))
+			.body("resource.identifier.system", startsWith("http://snomed.info/sct/version"))
+			.body("resource.identifier.value", equalTo("41000154101"))
+			
+			.appendRoot("resource.group[0]")
+			.body("source", equalTo("http://snomed.info/sct"))
+			//.body("sourceVersion", equalTo("20210507"))
+			.body("target", equalTo("http://snomed.info/sct"));
+	}
+	
+	@Test
+	public void getConceptMapsByIdsParam() {
+		
+		String simpleMapTypeRefsetId = mapTypeRefSetIds.get(0);
+		String simpleMapTypeRefsetURI = "SNOMEDCT/" + FHIR_MAP_TYPE_REFSET_VERSION + "/103/" + simpleMapTypeRefsetId;
+		String complexMapRefsetId = mapTypeRefSetIds.get(1);
+		
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+		 	.param("_id", simpleMapTypeRefsetURI, "SNOMEDCT/" + FHIR_MAP_TYPE_REFSET_VERSION + "/" + complexMapRefsetId) 
+			.when().get("/ConceptMap")
+			.then()
+			.statusCode(200)
+			.body("resourceType", equalTo("Bundle"))
+			.body("type", equalTo("searchset"))
+			.body("total", equalTo(2))
+			.root("entry.find { it.resource.id == '" + simpleMapTypeRefsetURI + "'}")
+			
+			.body("resource.resourceType", equalTo("ConceptMap"))
+			.body("resource.id", equalTo(simpleMapTypeRefsetURI))
+			.body("resource.url", startsWith("http://snomed.info/sct/version"))
+			.body("resource.version", equalTo(FHIR_MAP_TYPE_REFSET_VERSION))
+			.body("resource.title", equalTo(SIMPLE_MAP_TYPE_REFSET_NAME))
+			.body("resource.name", equalTo(SIMPLE_MAP_TYPE_REFSET_NAME))
+			.body("resource.status", equalTo("active"))
+			
+			.body("resource.language", equalTo("en-us"))
+			.body("resource.identifier.use", equalTo("official"))
+			.body("resource.identifier.system", startsWith("http://snomed.info/sct/version"))
+			.body("resource.identifier.value", equalTo("41000154101"))
+			
+			.appendRoot("resource.group[0]")
+			.body("source", equalTo("http://snomed.info/sct"))
+			//.body("sourceVersion", equalTo("20210507"))
+			.body("target", equalTo("http://snomed.info/sct"));
+	}
+
 	
 }

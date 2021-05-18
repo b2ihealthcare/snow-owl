@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,8 +35,8 @@ import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Narrative;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.usagecontext.UsageContext;
-import com.b2international.snowowl.fhir.core.search.Mandatory;
-import com.b2international.snowowl.fhir.core.search.Summary;
+import com.b2international.snowowl.fhir.core.search.*;
+import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -48,6 +48,9 @@ import com.google.common.collect.Sets;
  * 
  * @since 6.3
  */
+@Filterable(filter = "_summary", values = {"TRUE", "TEXT", "DATA", "COUNT", "FALSE"})
+@Filterable(filter = "_elements", supportsMultipleValues = true)
+@JsonFilter(FhirBeanPropertyFilter.FILTER_NAME)
 public abstract class MetadataResource extends DomainResource {
 	
 	//same as logical id
@@ -65,6 +68,7 @@ public abstract class MetadataResource extends DomainResource {
 	
 	@Summary
 	@JsonProperty
+	@Searchable(type = "String", modifiers = {"exact"}, supportsMultipleValues = true)
 	private String name;
 	
 	@Summary
@@ -143,6 +147,14 @@ public abstract class MetadataResource extends DomainResource {
 	
 	public Uri getUrl() {
 		return url;
+	}
+	
+	public String getName() {
+		return name;
+	}
+	
+	public Date getDate() {
+		return date;
 	}
 	
 	public static abstract class Builder<B extends Builder<B, T>, T extends FhirResource> extends DomainResource.Builder<B, T> {

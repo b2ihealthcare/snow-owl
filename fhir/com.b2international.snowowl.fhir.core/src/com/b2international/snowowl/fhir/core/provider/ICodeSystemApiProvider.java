@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.b2international.snowowl.fhir.core.provider;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
@@ -30,6 +31,7 @@ import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupResult;
 import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionRequest;
 import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionResult;
+import com.b2international.snowowl.fhir.core.search.FhirSearchParameter;
 
 /**
  * Extension point interface for code system specific FHIR API support. 
@@ -105,9 +107,16 @@ public interface ICodeSystemApiProvider extends IFhirApiProvider {
 	 * </p>
 	 * @param lookupRequest
 	 * @return result of the lookup
+	 * @see LookupRequest
+	 * @see LookupResult
 	 */
 	LookupResult lookup(LookupRequest lookupRequest);
 	
+	/**
+	 * Returns true if the given code system URI is supported by this provider
+	 * @param codeSystemId
+	 * @return
+	 */
 	boolean isSupported(CodeSystemURI codeSystemId);
 
 	/**
@@ -120,20 +129,12 @@ public interface ICodeSystemApiProvider extends IFhirApiProvider {
 	SubsumptionResult subsumes(SubsumptionRequest subsumption);
 
 	/**
-	 * Returns the code systems supported by this provider
-	 * @return collection of code systems supported
+	 * Returns the code systems based on the search parameters provided.
+	 * Passing in an empty collection as parameters returns all the available code systems.
+	 * @param searchParameters
+	 * @return collection of code systems found based on the parameters
 	 */
-	Collection<CodeSystem> getCodeSystems();
-
-	/**
-	 * Returns the code system for the passed in code system URI
-	 * @param codeSystemUri
-	 * @return {@link CodeSystem}
-	 * @throws BadRequestException if the code system is not supported by this provider
-	 * 
-	 * TODO: Is this used anywhere?  Should be probably as a filter.
-	 */
-	CodeSystem getCodeSystem(String codeSystemUri);
+	Collection<CodeSystem> getCodeSystems(Set<FhirSearchParameter> searchParameters);
 
 	/**
 	 * Returns the code system for the passed in logical id @see {@link CodeSystemURI}
@@ -142,5 +143,6 @@ public interface ICodeSystemApiProvider extends IFhirApiProvider {
 	 * @throws BadRequestException if the code system is not supported by this provider
 	 */
 	CodeSystem getCodeSystem(CodeSystemURI codeSystemId);
+
 
 }

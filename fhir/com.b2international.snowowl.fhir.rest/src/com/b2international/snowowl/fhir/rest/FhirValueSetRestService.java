@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,19 +20,16 @@ import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
 
 import java.util.Collection;
+import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
+import com.b2international.commons.Pair;
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
@@ -46,15 +43,10 @@ import com.b2international.snowowl.fhir.core.model.valueset.ValidateCodeRequest;
 import com.b2international.snowowl.fhir.core.model.valueset.ValidateCodeResult;
 import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
 import com.b2international.snowowl.fhir.core.provider.IValueSetApiProvider;
-import com.b2international.snowowl.fhir.core.search.SearchRequestParameters;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
+import com.b2international.snowowl.fhir.core.search.FhirFilterParameter;
+import com.b2international.snowowl.fhir.core.search.FhirSearchParameter;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.*;
 
 /**
  * Value Set contains codes from one or more code systems.
@@ -71,6 +63,11 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 	@Autowired
 	private IValueSetApiProvider.Registry valueSetProviderRegistry;
 	
+	@Override
+	protected Class<ValueSet> getModelClass() {
+		return ValueSet.class;
+	}
+	
 	/**
 	 * ValueSets
 	 * @param parameters - request parameters
@@ -85,9 +82,7 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 	@RequestMapping(method=RequestMethod.GET)
 	public Bundle getValueSets(@RequestParam(required=false) MultiValueMap<String, String> parameters) {
 		
-		Multimap<String, String> multiMap = HashMultimap.create();
-		parameters.keySet().forEach(k -> multiMap.putAll(k, parameters.get(k)));
-		SearchRequestParameters requestParameters = new SearchRequestParameters(multiMap); 
+		Pair<Set<FhirFilterParameter>, Set<FhirSearchParameter>> requestParameters = processParameters(parameters); 
 		
 		//TODO: replace this with something more general as described in
 		//https://docs.spring.io/spring-hateoas/docs/current/reference/html/
@@ -98,13 +93,14 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 			.addLink(uri);
 		
 		int total = 0;
-		for (IValueSetApiProvider fhirProvider : valueSetProviderRegistry.getProviders(getBus(), locales)) {
-			Collection<ValueSet> valueSets = fhirProvider.getValueSets();
+		
+		Collection<IValueSetApiProvider> providers = valueSetProviderRegistry.getProviders(getBus(), locales);
+
+		for (IValueSetApiProvider fhirProvider : providers) {
+			Collection<ValueSet> valueSets = fhirProvider.getValueSets(requestParameters.getB());
 			for (ValueSet valueSet : valueSets) {
-				applyResponseContentFilter(valueSet, requestParameters);
-				
+				applyResponseContentFilter(valueSet, requestParameters.getA());
 				String resourceUrl = String.join("/", uri, valueSet.getId().getIdValue());
-				
 				Entry entry = new Entry(new Uri(resourceUrl), valueSet);
 				builder.addEntry(entry);
 				total++;
@@ -132,9 +128,7 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 	public MappingJacksonValue getValueSet(@PathVariable("valueSetId") String valueSetId, 
 			@RequestParam(required=false) MultiValueMap<String, String> parameters) {
 		
-		Multimap<String, String> multiMap = HashMultimap.create();
-		parameters.keySet().forEach(k -> multiMap.putAll(k, parameters.get(k)));
-		SearchRequestParameters requestParameters = new SearchRequestParameters(multiMap);
+		Pair<Set<FhirFilterParameter>, Set<FhirSearchParameter>> fhirParameters = processParameters(parameters); 
 		
 		ComponentURI componentURI = ComponentURI.of(valueSetId);
 		
@@ -142,7 +136,7 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 			.getValueSetProvider(getBus(), locales, componentURI) 
 			.getValueSet(componentURI);
 
-		return applyResponseContentFilter(valueSet, requestParameters);
+		return applyResponseContentFilter(valueSet, fhirParameters.getA());
 	}
 	
 	/**

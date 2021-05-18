@@ -16,12 +16,7 @@
 package com.b2international.snowowl.snomed.fhir;
 
 import java.time.ZoneOffset;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.CompareUtils;
@@ -52,6 +47,8 @@ import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.provider.FhirApiProvider;
 import com.b2international.snowowl.fhir.core.provider.IConceptMapApiProvider;
+import com.b2international.snowowl.fhir.core.search.FhirSearchParameter;
+import com.b2international.snowowl.fhir.core.search.FhirParameter.PrefixedValue;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
@@ -61,6 +58,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberSearchRequestBuilder;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
@@ -99,7 +97,10 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 	}
 	
 	@Override
-	public Collection<ConceptMap> getConceptMaps() {
+	public Collection<ConceptMap> getConceptMaps(final Set<FhirSearchParameter> searchParameters) {
+		
+		Optional<FhirSearchParameter> idParamOptional = getSearchParam(searchParameters, "_id");
+		Optional<FhirSearchParameter> nameOptional = getSearchParam(searchParameters, "_name");
 		
 		//Collect every version on every extension
 		List<CodeSystemVersion> codeSystemVersionList = collectCodeSystemVersions(repositoryId);
@@ -107,8 +108,26 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 		//might be nicer to maintain the order by version
 		List<ConceptMap> conceptMaps = codeSystemVersionList.stream()
 				.map(csve -> {
-					return SnomedRequests.prepareSearchRefSet()
-						.all()
+					SnomedRefSetSearchRequestBuilder requestBuilder = SnomedRequests.prepareSearchRefSet().all();
+					
+					if (idParamOptional.isPresent()) {
+						Collection<String> uris = idParamOptional.get().getValues().stream()
+							.map(PrefixedValue::getValue)
+							.collect(Collectors.toSet());
+						
+						Collection<String> ids = collectIds(uris);
+						requestBuilder.filterByIds(ids);
+					}
+					
+					//TODO - referenced component name?
+					if (nameOptional.isPresent()) {
+						Collection<String> names = nameOptional.get().getValues().stream()
+								.map(PrefixedValue::getValue)
+								.collect(Collectors.toSet());
+						//requestBuilder.filterByNameExact(names);
+					}
+					
+					return requestBuilder
 						.filterByTypes(CONCEPT_MAP_TYPES)
 						// TODO figure out how to expand members on a ConceptMap in a pageable fashion (there is no official API for it right now)
 //						.setExpand("members(expand(referencedComponent(expand(pt()))), limit:"+ Integer.MAX_VALUE +")")

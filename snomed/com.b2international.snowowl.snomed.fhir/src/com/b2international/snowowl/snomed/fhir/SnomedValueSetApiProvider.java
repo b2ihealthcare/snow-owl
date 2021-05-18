@@ -49,6 +49,8 @@ import com.b2international.snowowl.fhir.core.model.valueset.expansion.Contains;
 import com.b2international.snowowl.fhir.core.model.valueset.expansion.Expansion;
 import com.b2international.snowowl.fhir.core.model.valueset.expansion.UriParameter;
 import com.b2international.snowowl.fhir.core.provider.IValueSetApiProvider;
+import com.b2international.snowowl.fhir.core.search.FhirSearchParameter;
+import com.b2international.snowowl.fhir.core.search.FhirParameter.PrefixedValue;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
@@ -61,6 +63,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetM
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptSearchRequestBuilder;
+import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.fhir.SnomedUri.QueryPart;
@@ -97,7 +100,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 	}
 
 	@Override
-	public Collection<ValueSet> getValueSets() {
+	public Collection<ValueSet> getValueSets(final Set<FhirSearchParameter> searchParameters) {
 		
 		//might be nicer to maintain the order by version
 		Collection<ValueSet> valueSets = Lists.newArrayList();
@@ -105,10 +108,10 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 		//Collect every version on every extension
 		List<CodeSystemVersion> codeSystemVersionList = collectCodeSystemVersions(repositoryId);
 		
-		List<ValueSet> simpleTypevalueSets = collectSimpleTypeRefsets(codeSystemVersionList);
+		List<ValueSet> simpleTypevalueSets = collectSimpleTypeRefsets(codeSystemVersionList, searchParameters);
 		valueSets.addAll(simpleTypevalueSets);
 		
-		List<ValueSet> queryTypeVirtualRefsets = collectQueryTypeVirtualRefsets(codeSystemVersionList);
+		List<ValueSet> queryTypeVirtualRefsets = collectQueryTypeVirtualRefsets(codeSystemVersionList, searchParameters);
 		valueSets.addAll(queryTypeVirtualRefsets);
 		
 		return valueSets;
@@ -504,7 +507,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 			.filterByType(SnomedRefSetType.SIMPLE)
 			.setLocales(getLocales())
 			.setExpand("members(expand(referencedComponent(expand(pt()))), limit:"+ Integer.MAX_VALUE +")")
-			.build(repositoryId, branchPath)
+			.build(componentURI.codeSystemUri())
 			.execute(getBus())
 			.getSync();
 		
@@ -790,12 +793,34 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 	}
 	
 	//Collect every version on every extension
-	private List<ValueSet> collectSimpleTypeRefsets(List<CodeSystemVersion> codeSystemVersionList) {
+	private List<ValueSet> collectSimpleTypeRefsets(List<CodeSystemVersion> codeSystemVersionList, Set<FhirSearchParameter> searchParameters) {
 		
+		Optional<FhirSearchParameter> idParamOptional = getSearchParam(searchParameters, "_id");
+		Optional<FhirSearchParameter> nameOptional = getSearchParam(searchParameters, "_name"); 
+
 		List<ValueSet> simpleTypevalueSets = codeSystemVersionList.stream().map(csve -> {
 			
-			return SnomedRequests.prepareSearchRefSet()
-				.all()
+			SnomedRefSetSearchRequestBuilder requestBuilder = SnomedRequests.prepareSearchRefSet().all();
+			
+			if (idParamOptional.isPresent()) {
+				Collection<String> uris = idParamOptional.get().getValues().stream()
+						.map(PrefixedValue::getValue)
+						.collect(Collectors.toSet());
+				
+				Collection<String> ids = collectIds(uris);
+				
+				requestBuilder.filterByIds(ids);
+			}
+			
+			//TODO - referenced component name?
+			if (nameOptional.isPresent()) {
+				Collection<String> names = nameOptional.get().getValues().stream()
+						.map(PrefixedValue::getValue)
+						.collect(Collectors.toSet());
+				//requestBuilder.filterByNameExact(names);SNOMEDCT/FHIR_SIMPLE_TYPE_REFSET_VERSION/103/11000154102
+			}
+			
+			return requestBuilder
 				.filterByType(SnomedRefSetType.SIMPLE)
 				.filterByReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
 				.build(csve.getUri())
@@ -820,12 +845,33 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 	 * We assign their member id as part of the logical id
 	 * Collect every version on every extension
 	 */
-	private List<ValueSet> collectQueryTypeVirtualRefsets(List<CodeSystemVersion> codeSystemVersionList) {
+	private List<ValueSet> collectQueryTypeVirtualRefsets(List<CodeSystemVersion> codeSystemVersionList, Set<FhirSearchParameter> searchParameters) {
+		
+		Optional<FhirSearchParameter> idParamOptional = getSearchParam(searchParameters, "_id");
+		Optional<FhirSearchParameter> nameOptional = getSearchParam(searchParameters, "_name"); 
 		
 		List<ValueSet> simpleTypevalueSets = codeSystemVersionList.stream().map(csve -> {
 		
-			return SnomedRequests.prepareSearchMember()
-				.all()
+			SnomedRefSetMemberSearchRequestBuilder requestBuilder = SnomedRequests.prepareSearchMember().all();
+			
+			if (idParamOptional.isPresent()) {
+				Collection<String> uris = idParamOptional.get().getValues().stream()
+						.map(PrefixedValue::getValue)
+						.collect(Collectors.toSet());
+				
+				Collection<String> ids = collectIds(uris);
+				requestBuilder.filterByIds(ids);
+			}
+			
+			//TODO - referenced component name?
+			if (nameOptional.isPresent()) {
+				Collection<String> names = nameOptional.get().getValues().stream()
+						.map(PrefixedValue::getValue)
+						.collect(Collectors.toSet());
+				//requestBuilder.filterByNameExact(names);
+			}
+			
+			return requestBuilder
 				.filterByRefSetType(ImmutableList.of(SnomedRefSetType.QUERY))
 				.filterByReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
 				.filterByActive(true)
@@ -937,7 +983,6 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 			.name(pt)
 			.title(pt)
 			.compose(compose);
-		
 	}
-
+	
 }
