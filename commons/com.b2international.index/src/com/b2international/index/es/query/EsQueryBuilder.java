@@ -143,6 +143,12 @@ public final class EsQueryBuilder {
 			visit((DecimalRangePredicate) expression);
 		} else if (expression instanceof DecimalSetPredicate) {
 			visit((DecimalSetPredicate) expression);
+		} else if (expression instanceof DoublePredicate) {
+			visit((DoublePredicate) expression);
+		} else if (expression instanceof DoubleRangePredicate) {
+			visit((DoubleRangePredicate) expression);
+		} else if (expression instanceof DoubleSetPredicate) {
+			visit((DoubleSetPredicate) expression);
 		} else if (expression instanceof ScriptQueryExpression){
 			visit((ScriptQueryExpression)expression);
 		} else {

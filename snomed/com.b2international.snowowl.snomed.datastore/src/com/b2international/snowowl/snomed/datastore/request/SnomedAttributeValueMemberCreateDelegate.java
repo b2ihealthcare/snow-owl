@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,7 +47,7 @@ final class SnomedAttributeValueMemberCreateDelegate extends SnomedRefSetMemberC
 				.withId(getId())
 				.withActive(isActive())
 				.withReferencedComponent(getReferencedComponentId())
-				.withModule(getModuleId())
+				.withModuleId(getModuleId())
 				.withRefSet(getReferenceSetId())
 				.withValueId(getComponentId(SnomedRf2Headers.FIELD_VALUE_ID))
 				.addTo(context);

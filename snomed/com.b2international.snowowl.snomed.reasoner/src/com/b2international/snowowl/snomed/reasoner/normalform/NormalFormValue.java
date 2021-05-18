@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,50 +20,89 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.text.MessageFormat;
 import java.util.Objects;
 
+import com.b2international.snowowl.snomed.core.domain.RelationshipValue;
 import com.b2international.snowowl.snomed.core.domain.refset.DataType;
 import com.b2international.snowowl.snomed.datastore.ConcreteDomainFragment;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
+import com.b2international.snowowl.snomed.datastore.StatementFragmentWithValue;
 import com.b2international.snowowl.snomed.datastore.index.taxonomy.ReasonerTaxonomy;
 
 /**
- * Wraps concept concrete domain members, used in the normal form generation process.
+ * Wraps property values, used in the normal form generation process.
  */
 final class NormalFormValue implements NormalFormProperty {
 
-	private final ConcreteDomainFragment fragment;
+	private final long typeId;
+	private final RelationshipValue value;
+	private final boolean released;
 	private final ReasonerTaxonomy reasonerTaxonomy;
+	private final long statementId;
+
+	private static RelationshipValue relationshipValue(final long refSetId, final String serializedValue) {
+		final DataType dataType = SnomedRefSetUtil.getDataType(Long.toString(refSetId));
+		switch (dataType) {
+			case DECIMAL: return new RelationshipValue(Double.valueOf(serializedValue));
+			case INTEGER: return new RelationshipValue(Integer.valueOf(serializedValue));
+			case STRING: return new RelationshipValue(serializedValue);
+			default: throw new IllegalArgumentException("Unsupported data type '" + dataType + "'.");
+		}
+	}
+
+	public NormalFormValue(final StatementFragmentWithValue statement, final ReasonerTaxonomy reasonerTaxonomy) {
+		this(
+			statement.getTypeId(), 
+			RelationshipValue.fromLiteral(statement.getValue()), 
+			statement.isReleased(), 
+			statement.getStatementId(),
+			reasonerTaxonomy);
+	}
+
+	public NormalFormValue(final ConcreteDomainFragment member, final ReasonerTaxonomy reasonerTaxonomy) {
+		this(
+			member.getTypeId(),
+			relationshipValue(member.getRefSetId(), member.getSerializedValue()),
+			member.isReleased(),
+			-1L,
+			reasonerTaxonomy);
+	}
 
 	/**
-	 * Creates a new instance from the specified concrete domain member.
+	 * Creates a new instance from the specified arguments.
 	 *
-	 * @param fragment the concrete domain fragment to wrap (may not be <code>null</code>)
+	 * @param typeId the type ID of the property value
+	 * @param value the property value
 	 * @param reasonerTaxonomy
 	 *
 	 * @throws NullPointerException if the given concrete domain member is <code>null</code>
 	 */
-	public NormalFormValue(final ConcreteDomainFragment fragment, final ReasonerTaxonomy reasonerTaxonomy) {
-		this.fragment = checkNotNull(fragment, "fragment");
+	private NormalFormValue(
+		final long typeId, 
+		final RelationshipValue value, 
+		final boolean released, 
+		final long statementId,
+		final ReasonerTaxonomy reasonerTaxonomy) {
+		
+		this.typeId = typeId;
+		this.value = checkNotNull(value, "value");
+		this.released = released;
+		this.statementId = statementId;
 		this.reasonerTaxonomy = checkNotNull(reasonerTaxonomy, "reasonerTaxonomy");
 	}
 
-	public String getSerializedValue() {
-		return fragment.getSerializedValue();
-	}
-
 	public long getTypeId() {
-		return fragment.getTypeId();
+		return typeId;
 	}
-
-	public long getRefSetId() {
-		return fragment.getRefSetId();
+	
+	public RelationshipValue getValue() {
+		return value;
 	}
-
-	public String getMemberId() {
-		return fragment.getMemberId();
-	}
-
+	
 	public boolean isReleased() {
-		return fragment.isReleased();
+		return released;
+	}
+
+	public long getStatementId() {
+		return statementId;
 	}
 
 	@Override
@@ -75,9 +114,8 @@ final class NormalFormValue implements NormalFormProperty {
 
 		// Check type SCTID subsumption, data type (reference set SCTID) and value equality 
 		return true
-				&& getRefSetId() == other.getRefSetId()
 				&& closureContains(getTypeId(), other.getTypeId())
-				&& getSerializedValue().equals(other.getSerializedValue());
+				&& getValue().equals(other.getValue());
 	}
 
 	private boolean ancestorsContains(final long conceptId1, final long conceptId2) {
@@ -95,22 +133,19 @@ final class NormalFormValue implements NormalFormProperty {
 
 		final NormalFormValue other = (NormalFormValue) obj;
 
-		if (getRefSetId() != other.getRefSetId()) { return false; }
 		if (getTypeId() != other.getTypeId()) { return false; }
-		if (!getSerializedValue().equals(other.getSerializedValue())) { return false; }
+		if (!getValue().equals(other.getValue())) { return false; }
 
 		return true;
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(getSerializedValue(), getRefSetId(), getTypeId());
+		return Objects.hash(getTypeId(), getValue());
 	}
 
 	@Override
 	public String toString() {
-		final String refSetId = Long.toString(getRefSetId());
-		final DataType dataType = SnomedRefSetUtil.getDataType(refSetId);
-		return MessageFormat.format("{0,number,#} : {1} [{2}]", getTypeId(), getSerializedValue(), dataType);
+		return MessageFormat.format("{0,number,#} : {1}]", getTypeId(), getValue());
 	}
 }

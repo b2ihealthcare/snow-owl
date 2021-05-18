@@ -58,9 +58,10 @@ public final class SnomedRelationshipConverter extends BaseRevisionResourceConve
 		result.setReleased(input.isReleased());
 		result.setGroup(input.getGroup());
 		result.setUnionGroup(input.getUnionGroup());
-		result.setDestination(new SnomedConcept(input.getDestinationId()));
-		result.setSource(new SnomedConcept(input.getSourceId()));
-		result.setType(new SnomedConcept(input.getTypeId()));
+		result.setDestinationId(input.getDestinationId());
+		result.setValueAsObject(input.getValueAsObject());
+		result.setSourceId(input.getSourceId());
+		result.setTypeId(input.getTypeId());
 		result.setScore(input.getScore());
 		return result;
 	}
@@ -145,7 +146,11 @@ public final class SnomedRelationshipConverter extends BaseRevisionResourceConve
 	private void expandDestination(List<SnomedRelationship> results) {
 		if (expand().containsKey(SnomedRelationship.Expand.DESTINATION)) {
 			final Options destinationOptions = expand().get(SnomedRelationship.Expand.DESTINATION, Options.class);
-			final Set<String> destinationConceptIds = FluentIterable.from(results).transform(SnomedRelationship::getDestinationId).toSet();
+			final Set<String> destinationConceptIds = FluentIterable.from(results)
+				.filter(r -> !r.hasValue()) // skip expand on relationships with value
+				.transform(SnomedRelationship::getDestinationId)
+				.toSet();
+			
 			final SnomedConcepts destinationConcepts = SnomedRequests
 				.prepareSearchConcept()
 				.filterByIds(destinationConceptIds)
@@ -154,9 +159,11 @@ public final class SnomedRelationshipConverter extends BaseRevisionResourceConve
 				.setLocales(locales())
 				.build()
 				.execute(context());
+			
 			final Map<String, SnomedConcept> destinationConceptsById = Maps.uniqueIndex(destinationConcepts, SnomedConcept::getId);
 			for (SnomedRelationship relationship : results) {
 				final String destinationId = relationship.getDestinationId();
+				// containsKey handles any null values here
 				if (destinationConceptsById.containsKey(destinationId)) {
 					final SnomedConcept destinationConcept = destinationConceptsById.get(destinationId);
 					((SnomedRelationship) relationship).setDestination(destinationConcept);

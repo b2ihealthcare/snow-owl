@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
+import com.b2international.snowowl.snomed.core.domain.RelationshipValue;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedRelationshipRestInput;
@@ -84,6 +85,8 @@ public class SnomedRelationshipRestService extends AbstractRestService {
 					.filterByDestination(params.getDestination())
 					.filterByGroup(params.getGroup())
 					.filterByUnionGroup(params.getUnionGroup())
+					.filterByValueType(params.getValueType())
+					.filterByValue(params.getOperator(), RelationshipValue.fromLiteral(params.getValue()))
 					.setLimit(params.getLimit())
 					.setSearchAfter(params.getSearchAfter())
 					.setExpand(params.getExpand())

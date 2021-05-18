@@ -96,7 +96,7 @@ public class SnomedContentRule extends ExternalResource {
 				.buildAsync()
 				.execute(eventBus)
 				.getSync();
-		
+
 		if (codeSystems.getTotal() > 0) {
 			return;
 		}

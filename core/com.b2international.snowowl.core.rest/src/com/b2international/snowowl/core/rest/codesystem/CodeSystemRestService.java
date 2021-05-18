@@ -20,18 +20,15 @@ import java.util.concurrent.TimeUnit;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.validation.ApiValidation;
-import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.codesystem.CodeSystems;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
-import com.b2international.snowowl.eventbus.IEventBus;
 
 import io.swagger.annotations.*;
 
@@ -183,38 +180,4 @@ public class CodeSystemRestService extends AbstractRestService {
 				.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);
 	}
 	
-	@ApiOperation(
-		value="Start a Code System dependency upgrade (EXPERIMENTAL)",
-		notes="Starts the upgrade process of a Code System to a newer extensionOf Code System dependency than the current extensionOf."
-	)
-	@ApiResponses({
-		@ApiResponse(code = 204, message = "Upgrade ", response = Void.class),
-		@ApiResponse(code = 400, message = "Code System cannot be upgraded", response = RestApiError.class)
-	})
-	@PostMapping(value = "/{codeSystemId}/upgrades", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
-	@ResponseStatus(HttpStatus.CREATED)
-	public Promise<ResponseEntity<Void>> upgrade(
-			@ApiParam(value="The code system identifier")
-			@PathVariable(value="codeSystemId") 
-			final String codeSystemId,
-			
-			@RequestBody
-			final UpgradeRestInput body) {
-		final UriComponentsBuilder uriBuilder = createURIBuilder();
-		
-		final IEventBus bus = getBus();
-		return CodeSystemRequests.prepareGetCodeSystem(codeSystemId)
-			.buildAsync()
-			.execute(bus)
-			.thenWith(codeSystem -> {
-				return CodeSystemRequests.prepareUpgrade(codeSystem.getResourceURI(), new ResourceURI(body.getExtensionOf()))
-						.setResourceId(body.getCodeSystemId())
-						.buildAsync()
-						.execute(bus);
-			})
-			.then(upgradeCodeSystemId -> {
-				return ResponseEntity.created(uriBuilder.pathSegment(upgradeCodeSystemId).build().toUri()).build();
-			});
-	}
-
 }

@@ -26,10 +26,14 @@ import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastP
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.*;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.StreamSupport;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
@@ -48,6 +52,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetM
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
+import com.b2international.snowowl.snomed.datastore.request.rf2.SnomedRf2ImportRequestBuilder;
 import com.google.common.collect.ImmutableMap;
 
 import io.restassured.response.ValidatableResponse;
@@ -60,14 +65,29 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 
 	private static final String OWL_EXPRESSION = "SubClassOf(ObjectIntersectionOf(:73211009 ObjectSomeValuesFrom(:42752001 :64572001)) :"+Concepts.ROOT_CONCEPT+")";
 
+	@Before
+	public void before() {
+		SnomedRf2ImportRequestBuilder.enableVersionsOnChildBranches();
+	}
+	
+	@After
+	public void after() {
+		SnomedRf2ImportRequestBuilder.disableVersionsOnChildBranches();
+	}
+	
 	private void importArchive(final String fileName) {
 		importArchive(branchPath, false, Rf2ReleaseType.DELTA, fileName);
 	}
 	
-	private void importArchive(IBranchPath path, boolean createVersion, Rf2ReleaseType releaseType, final String fileName) { 
+	private void importArchive(IBranchPath path, boolean createVersion, Rf2ReleaseType releaseType, final String fileName) {
+		importArchive(path, Collections.emptyList(), createVersion, releaseType, fileName);
+	}
+	
+	private void importArchive(IBranchPath path, List<String> ignoreMissingReferencesIn, boolean createVersion, Rf2ReleaseType releaseType, final String fileName) {
 		final Map<String, ?> importConfiguration = ImmutableMap.<String, Object>builder()
 				.put("type", releaseType.name())
 				.put("createVersions", createVersion)
+				.put("ignoreMissingReferencesIn", ignoreMissingReferencesIn)
 				.build();
 		importArchive(path, importConfiguration, fileName);
 	}
@@ -79,7 +99,7 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 	}
 
 	@Test
-	public void import01InvalidBranchPath() {
+	public void import01InvalidBranchPath() throws Exception {
 		final IBranchPath branchPath = BranchPathUtils.createPath("MAIN/notfound");
 		final Map<String, ?> importConfiguration = ImmutableMap.<String, Object>builder()
 				.put("type", Rf2ReleaseType.DELTA.name())
@@ -100,7 +120,7 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 	}
 
 	@Test
-	public void import04NewConcept() {
+	public void import04NewConcept() throws Exception {
 		
 		getComponent(branchPath, SnomedComponentType.CONCEPT, "63961392103").statusCode(404);
 		
@@ -119,9 +139,9 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 		assertArrayEquals(new long[] { IComponent.ROOT_IDL }, concept.getStatedAncestorIds());
 		
 	}
-
+	
 	@Test
-	public void import05NewDescription() {
+	public void import05NewDescription() throws Exception {
 		getComponent(branchPath, SnomedComponentType.DESCRIPTION, "11320138110").statusCode(404);
 		importArchive("SnomedCT_Release_INT_20150131_new_concept.zip");
 		importArchive("SnomedCT_Release_INT_20150201_new_description.zip");
@@ -137,7 +157,7 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 	}
 
 	@Test
-	public void import07NewPreferredTerm() {
+	public void import07NewPreferredTerm() throws Exception {
 		getComponent(branchPath, SnomedComponentType.CONCEPT, "63961392103").statusCode(404);
 		importArchive("SnomedCT_Release_INT_20150131_new_concept.zip");
 		importArchive("SnomedCT_Release_INT_20150201_new_description.zip");
@@ -146,7 +166,7 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 	}
 
 	@Test
-	public void import08ConceptInactivation() {
+	public void import08ConceptInactivation() throws Exception {
 		getComponent(branchPath, SnomedComponentType.CONCEPT, "63961392103").statusCode(404);
 		importArchive("SnomedCT_Release_INT_20150131_new_concept.zip");
 		importArchive("SnomedCT_Release_INT_20150201_new_description.zip");
@@ -194,7 +214,7 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 	}
 
 	@Test
-	public void import11ExtensionConceptWithVersion() {
+	public void import11ExtensionConceptWithVersion() throws Exception {
 		createCodeSystem(branchPath, "SNOMEDCT-NE").statusCode(201);
 		getComponent(branchPath, SnomedComponentType.CONCEPT, "555231000005107").statusCode(404);
 
@@ -209,79 +229,79 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 	}
 	
 	@Test
-	public void import12OnlyPubContentWithVersioning() {
+	public void import12OnlyPubContentWithVersioning() throws Exception {
 		validateBranchHeadtimestampUpdate(branchPath,
 				"SnomedCT_RF2Release_INT_20180223_content_with_effective_time.zip", true);
 	}
 
 	@Test
-	public void import13OnlyPubContentWithOutVersioning() {
+	public void import13OnlyPubContentWithOutVersioning() throws Exception {
 		validateBranchHeadtimestampUpdate(branchPath,
 				"SnomedCT_RF2Release_INT_20180223_content_with_effective_time.zip", false);
 	}
 
 	@Test
-	public void import14PubAndUnpubContentWithVersioning() {
+	public void import14PubAndUnpubContentWithVersioning() throws Exception {
 		validateBranchHeadtimestampUpdate(branchPath,
 				"SnomedCT_RF2Release_INT_20180223_content_w_and_wo_effective_time.zip", true);
 	}
 
 	@Test
-	public void import15PubAndUnpubContentWithOutVersioning() {
+	public void import15PubAndUnpubContentWithOutVersioning() throws Exception {
 		validateBranchHeadtimestampUpdate(branchPath,
 				"SnomedCT_RF2Release_INT_20180223_content_w_and_wo_effective_time.zip", false);
 	}
 
 	@Test
-	public void import16OnlyUnpubContentWithoutVersioning() {
+	public void import16OnlyUnpubContentWithoutVersioning() throws Exception {
 		validateBranchHeadtimestampUpdate(branchPath,
 				"SnomedCT_RF2Release_INT_20180223_content_without_effective_time.zip", false);
 	}
 
 	@Test
-	public void import17OnlyUnpubContentWithVersioning() {
+	public void import17OnlyUnpubContentWithVersioning() throws Exception {
 		validateBranchHeadtimestampUpdate(branchPath,
 				"SnomedCT_RF2Release_INT_20180223_content_without_effective_time.zip", true);
 	}
 
 	@Test
-	public void import18OnlyPubRefsetMembersWithVersioning() {
+	public void import18OnlyPubRefsetMembersWithVersioning() throws Exception {
 		validateBranchHeadtimestampUpdate(branchPath,
 				"SnomedCT_RF2Release_INT_20180223_only_refset_w_effective_time.zip", true);
 	}
 
 	@Test
-	public void import19OnlyPubRefsetMembersWithoutVersioning() {
+	public void import19OnlyPubRefsetMembersWithoutVersioning() throws Exception {
 		validateBranchHeadtimestampUpdate(branchPath,
 				"SnomedCT_RF2Release_INT_20180223_only_refset_w_effective_time.zip", false);
 	}
 
 	@Test
-	public void import20PubAndUnpubRefsetMembersWithVersioning() {
+	public void import20PubAndUnpubRefsetMembersWithVersioning() throws Exception {
 		validateBranchHeadtimestampUpdate(branchPath,
 				"SnomedCT_RF2Release_INT_20180223_only_refset_w_and_wo_effective_time.zip", true);
 	}
 
 	@Test
-	public void import21PubAndUnpubRefsetMembersWithoutVersioning() {
+	public void import21PubAndUnpubRefsetMembersWithoutVersioning() throws Exception {
 		validateBranchHeadtimestampUpdate(branchPath,
 				"SnomedCT_RF2Release_INT_20180223_only_refset_w_and_wo_effective_time.zip", false);
 	}
 
 	@Test
-	public void import22OnlyUnpubRefsetMembersWithoutVersioning() {
+	public void import22OnlyUnpubRefsetMembersWithoutVersioning() throws Exception {
 		validateBranchHeadtimestampUpdate(branchPath,
 				"SnomedCT_RF2Release_INT_20180223_only_refset_wo_effective_time.zip", false);
 	}
 
 	@Test
-	public void import23OnlyUnpubRefsetMembersWithVersioning() {
+	public void import23OnlyUnpubRefsetMembersWithVersioning() throws Exception {
 		validateBranchHeadtimestampUpdate(branchPath,
 				"SnomedCT_RF2Release_INT_20180223_only_refset_wo_effective_time.zip", true);
 	}
 
 	@Test
-	public void import24IncompleteTaxonomyMustBeImported() {
+	public void import24IncompleteTaxonomyMustBeImported() throws Exception {
 		getComponent(branchPath, SnomedComponentType.CONCEPT, "882169191000154107").statusCode(404);
 		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, "955630781000154129").statusCode(404);
 		importArchive("SnomedCT_RF2Release_INT_20180227_incomplete_taxonomy.zip");
@@ -290,7 +310,7 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 	}
 
 	@Test
-	public void import25WithMultipleLanguageCodes() {
+	public void import25WithMultipleLanguageCodes() throws Exception {
 		final String enDescriptionId = "41320138114";
 		final String svDescriptionId = "24688171113";
 		final String enLanguageRefsetMemberId = "34d07985-48a0-41e7-b6ec-b28e6b00adfc";
@@ -308,7 +328,7 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 	}
 	
 	@Test
-	public void import26OWLExpressionReferenceSetMembers() {
+	public void import26OWLExpressionReferenceSetMembers() throws Exception {
 		
 		SnomedConcept oldRoot = getComponent(branchPath, SnomedComponentType.CONCEPT, Concepts.ROOT_CONCEPT, "members()").extract().as(SnomedConcept.class);
 		assertTrue(oldRoot.getMembers().getItems().stream()
@@ -341,7 +361,7 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 	}
 
 	@Test
-	public void import27MRCMReferenceSetMembers() {
+	public void import27MRCMReferenceSetMembers() throws Exception {
 		
 		SnomedConcept rootConcept = getComponent(branchPath, SnomedComponentType.CONCEPT, Concepts.ROOT_CONCEPT, "members()")
 				.extract()
@@ -431,7 +451,7 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 	}
 
 	@Test
-	public void import28ImportConceptAsInactive() {
+	public void import28ImportConceptAsInactive() throws Exception {
 		
 		getComponent(branchPath, SnomedComponentType.CONCEPT, "100005").statusCode(404);
 		
@@ -444,6 +464,74 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 		assertArrayEquals(new long[] { IComponent.ROOT_IDL }, concept.getStatedParentIds());
 		assertArrayEquals(new long[0], concept.getStatedAncestorIds());
 		
+	}
+	
+	@Test
+	public void import29ImportExistingConceptAsUnpublished() throws Exception {
+		getComponent(branchPath, SnomedComponentType.CONCEPT, "100005").statusCode(404);
+		
+		importArchive("SnomedCT_Release_INT_20210502_concept_w_eff_time.zip");
+		SnomedConcept conceptBefore = getComponent(branchPath, SnomedComponentType.CONCEPT, "100005").statusCode(200).extract().as(SnomedConcept.class);
+		
+		importArchive("SnomedCT_Release_INT_20210502_concept_wo_eff_time.zip");
+		SnomedConcept conceptAfter = getComponent(branchPath, SnomedComponentType.CONCEPT, "100005").statusCode(200).extract().as(SnomedConcept.class);
+		
+		assertEquals(EffectiveTimes.parse("2021-05-02"), conceptBefore.getEffectiveTime());
+		assertTrue(conceptBefore.isReleased());
+		assertEquals(EffectiveTimes.toDate(EffectiveTimes.UNSET_EFFECTIVE_TIME), conceptAfter.getEffectiveTime());
+		assertTrue(conceptAfter.isReleased());
+	}
+	
+	@Test
+	public void import30ImportExistingConceptAsPublished() throws Exception {
+		getComponent(branchPath, SnomedComponentType.CONCEPT, "100005").statusCode(404);
+		
+		importArchive("SnomedCT_Release_INT_20210502_concept_wo_eff_time.zip");
+		SnomedConcept conceptBefore = getComponent(branchPath, SnomedComponentType.CONCEPT, "100005").statusCode(200).extract().as(SnomedConcept.class);
+		
+		importArchive("SnomedCT_Release_INT_20210502_concept_w_eff_time.zip");
+		SnomedConcept conceptAfter = getComponent(branchPath, SnomedComponentType.CONCEPT, "100005").statusCode(200).extract().as(SnomedConcept.class);
+		
+		assertEquals(EffectiveTimes.toDate(EffectiveTimes.UNSET_EFFECTIVE_TIME), conceptBefore.getEffectiveTime());
+		assertFalse(conceptBefore.isReleased());
+		assertEquals(EffectiveTimes.parse("2021-05-02"), conceptAfter.getEffectiveTime());
+		assertTrue(conceptAfter.isReleased());
+	}
+	
+	@Test
+	public void import31MissingComponentsWithSkip() throws Exception {		
+		getComponent(branchPath, SnomedComponentType.CONCEPT, "63961392103").statusCode(404);
+		importArchive(branchPath, Collections.singletonList("900000000000490003"), false, Rf2ReleaseType.DELTA, "SnomedCT_Release_INT_20150131_missing_component.zip");
+		
+		//Assert that concept is imported while member with missing reference is skipped when ignoreMissingReferencesIn lists its reference set
+		getComponent(branchPath, SnomedComponentType.CONCEPT, "63961392103").statusCode(200);
+		getComponent(branchPath, SnomedComponentType.MEMBER, "5312ec36-8baf-4768-8c4b-2d6f91094d4b").statusCode(404);
+	}
+	
+	@Test
+	public void import32MissingComponentsWithoutSkip() throws Exception {
+		final String importFileName = "SnomedCT_Release_INT_20150131_missing_component.zip";	
+		importArchive(importFileName);
+		
+		//Assert that import fails if ignoreMissingReferencesIn is not set on a member referring to a missing component
+		getComponent(branchPath, SnomedComponentType.CONCEPT, "63961392103").statusCode(404);
+		getComponent(branchPath, SnomedComponentType.MEMBER, "5312ec36-8baf-4768-8c4b-2d6f91094d4b").statusCode(404);
+	}
+	
+	@Test
+	public void import33CreateVersionFromBranch() throws Exception {
+		try {
+			SnomedRf2ImportRequestBuilder.disableVersionsOnChildBranches();
+			final Map<String, ?> importConfiguration = ImmutableMap.<String, Object>builder()
+					.put("type", Rf2ReleaseType.DELTA.name())
+					.put("createVersions", true)
+					.build();
+			final String importId = lastPathSegment(doImport(branchPath, importConfiguration, getClass(), "SnomedCT_Release_INT_20210502_concept_wo_eff_time.zip").statusCode(201)
+					.extract().header("Location"));
+			waitForImportJob(branchPath, importId).statusCode(200).body("status", equalTo(RemoteJobState.FAILED.name()));
+		} finally {
+			SnomedRf2ImportRequestBuilder.enableVersionsOnChildBranches();
+		}
 	}
 	
 	private void validateBranchHeadtimestampUpdate(IBranchPath branch, String importArchiveFileName,

@@ -71,7 +71,7 @@ public final class SnomedDescriptionUpdateRequest extends SnomedComponentUpdateR
 		final SnomedDescriptionIndexEntry.Builder updatedDescription = SnomedDescriptionIndexEntry.builder(description); 
 
 		boolean changed = false;
-		changed |= updateModule(context, description, updatedDescription);
+		changed |= updateModuleId(context, description, updatedDescription);
 		changed |= updateCaseSignificanceId(context, description, updatedDescription, caseSignificanceId);
 		changed |= updateTypeId(context, description, updatedDescription);
 		changed |= updateTerm(context, description, updatedDescription);

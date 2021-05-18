@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import com.b2international.snowowl.core.commit.CommitInfos;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
+import com.google.common.base.Strings;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -116,6 +117,7 @@ public abstract class RepositoryCommitRestService extends AbstractRestService {
 					.filterByBranches(branch)
 					.filterByTimestamp(timestamp)
 					.filterByTimestamp(timestampFrom, timestampTo)
+					.setFields(Strings.isNullOrEmpty(expand) ? List.of(Commit.Fields.ID, Commit.Fields.AUTHOR, Commit.Fields.BRANCH, Commit.Fields.COMMENT, Commit.Fields.TIMESTAMP, Commit.Fields.GROUP_ID) : null)
 					.setExpand(expand)
 					.setSearchAfter(searchAfter)
 					.setLimit(limit)

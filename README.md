@@ -20,7 +20,8 @@ Features include:
     * Independent work branches offer work-in-process isolation, external business workflow integration and team collaboration
 * SNOMED CT and others
     * SNOMED CT terminology support
-        * RF2 Specification as of 2021-01-31
+        * RF2 Release File Specification as of 2021-07-31
+        * :new: Support for Relationships with concrete values
         * Official and Custom Reference Sets
         * Expression Constraint Language v1.4.0 [spec](https://confluence.ihtsdotools.org/download/attachments/33493263/doc_ExpressionConstraintLanguage_v1.4-en-US_INT_20200617.pdf%09?api=v2), [implementation](https://github.com/b2ihealthcare/snomed-ecl)
         * Compositional Grammar 2.3.1 [spec](https://confluence.ihtsdotools.org/download/attachments/33496020/doc_CompositionalGrammar_v2.3.1-en-US_INT_20161118.pdf?api=v2), [implementation](https://github.com/b2ihealthcare/snomed-scg)

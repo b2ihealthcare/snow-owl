@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,12 +27,16 @@ public enum Rf2ValidationDefects {
 	NOT_UNIQUE_DESCRIPTION_ID("Description identifier is not unique"),
 	CONCEPT_DEFINITION_STATUS_NOT_EXIST("Concept refers to a non-existing concept in column 'definitionStatusId'"),
 	EMPTY_REFSET_MEMBER_FIELD("Reference set member field is empty"),
+	INVALID_REFSET_MEMBER_TYPE("Invalid reference set value for member type"),
 	ENCOUNTER_UNKNOWN_RELEASE_FILE("Encountered unknown release file"), 
 	UNEXPECTED_COMPONENT_CATEGORY("Unexpected component category found in column of the release file"),
 	MISSING_DESCRIPTION_TERM("Description term is missing from release file"), 
 	RELATIONSHIP_SOURCE_DESTINATION_EQUALS("Relationships source and target id are equivalent"), 
 	MISSING_ACTIVE_FLAG("Missing active flag from release file"), 
-	INVALID_UUID("Invalid UUID in release file");
+	INVALID_UUID("Invalid UUID in release file"),
+	RELATIONSHIP_VALUE_INVALID_DECIMAL("Relationship value can not be parsed as a decimal"),
+	RELATIONSHIP_VALUE_INVALID_INTEGER("Relationship value can not be parsed as an integer"),
+	RELATIONSHIP_VALUE_INVALID_STRING("Relationship value can not be parsed as a string");
 	
 	private final String label;
 	

@@ -45,7 +45,7 @@ import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.property.CodeConceptProperty;
 import com.b2international.snowowl.fhir.core.search.FhirBeanPropertyFilter;
-import com.b2international.snowowl.fhir.core.search.SearchRequestParameter.SummaryParameterValue;
+import com.b2international.snowowl.fhir.core.search.FhirUriFilterParameterDefinition.SummaryParameterValue;
 import com.b2international.snowowl.fhir.tests.FhirTest;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.google.common.collect.Lists;

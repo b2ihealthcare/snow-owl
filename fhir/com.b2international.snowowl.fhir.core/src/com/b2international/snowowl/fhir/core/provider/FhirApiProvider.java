@@ -15,10 +15,7 @@
  */
 package com.b2international.snowowl.fhir.core.provider;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
@@ -31,9 +28,10 @@ import com.b2international.snowowl.core.codesystem.CodeSystems;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
+import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.fhir.core.LogicalId;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
+import com.b2international.snowowl.fhir.core.search.FhirSearchParameter;
 import com.google.common.collect.Lists;
 
 /**
@@ -88,19 +86,24 @@ public abstract class FhirApiProvider {
 	}
 	
 	/**
-	 * Returns the code system version for the logical id
-	 * @param logicalId
+	 * Returns the code system version for the component URI
+	 * @param componentURI
+	 * @param location for logging the location in case of an exception
 	 * @return
 	 */
-	protected CodeSystemVersion findCodeSystemVersion(LogicalId logicalId, String location) {
-		return CodeSystemRequests.prepareSearchVersion()
+	protected CodeSystemVersion findCodeSystemVersion(ComponentURI componentURI, String location) {
+		
+		Optional<CodeSystemVersion> codeSystemOptional = CodeSystemRequests.prepareSearchCodeSystemVersion()
 			.one()
-			.filterByBranchPath(logicalId.getBranchPath())
+			.filterByVersionId(componentURI.codeSystemUri().getPath())
+			.filterByCodeSystemShortName(componentURI.codeSystemUri().getCodeSystem())
 			.build(getRepositoryId())
 			.execute(getBus())
 			.getSync()
-			.first()
-			.orElseThrow(() -> new BadRequestException(String.format("Could not find corresponding version [%s] for logical id [%s].", logicalId.getBranchPath(), logicalId), location));
+			.first();
+			
+		return codeSystemOptional.orElseThrow(() -> 
+			new BadRequestException(String.format("Could not find corresponding version [%s] for the component id [%s].", componentURI.codeSystemUri(), componentURI.identifier()), location));
 	}
 	
 	/**
@@ -194,6 +197,23 @@ public abstract class FhirApiProvider {
 	    		})
 	    		.findFirst()
 	    		.orElse(null);
+	}
+	
+	protected Optional<FhirSearchParameter> getSearchParam(final Set<FhirSearchParameter> searchParameters, String parameterName) {
+		return searchParameters.stream().filter(p -> parameterName.equals(p.getName())).findFirst();
+	}
+	
+	/**
+	 * Returns the collection of the Snow Owl identifier part (last segment) of 
+	 * the passed in URIs.
+	 * @param uris
+	 * @return collection of identifiers
+	 */
+	protected Collection<String> collectIds(Collection<String> uris) {
+		return uris.stream()
+			.filter(u -> u.contains("/"))
+			.map(u -> u.substring(u.lastIndexOf('/') + 1, u.length()))
+			.collect(Collectors.toSet());
 	}
 
 }

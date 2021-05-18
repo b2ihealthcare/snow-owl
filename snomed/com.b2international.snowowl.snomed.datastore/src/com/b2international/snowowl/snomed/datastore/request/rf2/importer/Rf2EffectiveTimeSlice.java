@@ -160,6 +160,10 @@ public final class Rf2EffectiveTimeSlice {
 		}
 	}
 	
+	public void unregisterDependencies(String componentId) {
+		dependenciesByComponent.remove(Long.valueOf(componentId));
+	}
+	
 	public LongKeyMap<LongSet> getDependenciesByComponent() {
 		return dependenciesByComponent;
 	}

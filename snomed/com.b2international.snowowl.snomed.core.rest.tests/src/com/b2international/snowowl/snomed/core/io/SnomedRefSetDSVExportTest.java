@@ -186,7 +186,7 @@ public class SnomedRefSetDSVExportTest {
 		return concepts.getItems()
 				.stream()
 				.flatMap(concept -> concept.getRelationships().stream())
-				.filter(r -> r.isActive() && 
+				.filter(r -> r.isActive() && !r.hasValue() &&
 						(Concepts.STATED_RELATIONSHIP.equals(r.getCharacteristicTypeId())
 						|| Concepts.ADDITIONAL_RELATIONSHIP.equals(r.getCharacteristicTypeId())))
 				.map(r -> String.format("%s=%s", r.getTypeId(), r.getDestinationId()))

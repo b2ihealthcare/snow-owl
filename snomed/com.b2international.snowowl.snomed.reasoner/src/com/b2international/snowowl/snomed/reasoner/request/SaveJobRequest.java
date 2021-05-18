@@ -34,8 +34,11 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.LockedException;
+import com.b2international.index.revision.Commit;
 import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.config.RepositoryConfiguration;
+import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
@@ -50,21 +53,12 @@ import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.CommitResult;
 import com.b2international.snowowl.core.request.SearchResourceRequestIterator;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.core.domain.InactivationProperties;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.*;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.id.assigner.SnomedNamespaceAndModuleAssigner;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
-import com.b2international.snowowl.snomed.datastore.request.IdRequest;
-import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionCreateRequestBuilder;
-import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberCreateRequestBuilder;
-import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberUpdateRequestBuilder;
-import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipCreateRequestBuilder;
-import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipUpdateRequestBuilder;
-import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.snomed.datastore.request.*;
 import com.b2international.snowowl.snomed.reasoner.classification.ClassificationTracker;
 import com.b2international.snowowl.snomed.reasoner.domain.*;
 import com.b2international.snowowl.snomed.reasoner.equivalence.IEquivalentConceptMerger;
@@ -72,6 +66,7 @@ import com.b2international.snowowl.snomed.reasoner.exceptions.ReasonerApiExcepti
 import com.google.common.base.Strings;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 
 /**
@@ -203,18 +198,34 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 		final BulkRequestBuilder<TransactionContext> bulkRequestBuilder = BulkRequest.create();
 
 		applyChanges(subMonitor, context, bulkRequestBuilder);
-		final Request<BranchContext, CommitResult> commitRequest = SnomedRequests.prepareCommit()
-			.setBody(bulkRequestBuilder)
-			.setCommitComment(commitComment)
-			.setParentContextDescription(DatastoreLockContextDescriptions.SAVE_CLASSIFICATION_RESULTS)
-			.setAuthor(userId)
-			.build();
-
-		final CommitResult commitResult = new IdRequest<>(commitRequest)  
-			.execute(context);
-
-		classificationTracker.classificationSaved(classificationId, commitResult.getCommitTimestamp());
-		return Boolean.TRUE;
+	
+		long resultTimeStamp = Commit.NO_COMMIT_TIMESTAMP;
+		for (List<Request<TransactionContext, ?>> partition : Iterables.partition(bulkRequestBuilder.build().getRequests(), getCommitLimit(context))) {
+			final BulkRequestBuilder<TransactionContext> batchRequest = BulkRequest.create();
+			partition.forEach(request -> batchRequest.add(request));
+			
+			final Request<BranchContext, CommitResult> commitRequest = SnomedRequests.prepareCommit()
+					.setBody(batchRequest.build())
+					.setCommitComment(commitComment)
+					.setParentContextDescription(DatastoreLockContextDescriptions.SAVE_CLASSIFICATION_RESULTS)
+					.setAuthor(userId)
+					.build();
+			
+			final CommitResult commitResult = new IdRequest<>(commitRequest).execute(context);
+			resultTimeStamp = commitResult.getCommitTimestamp();
+		}
+		
+		if (Commit.NO_COMMIT_TIMESTAMP == resultTimeStamp) {
+			classificationTracker.classificationSaveFailed(classificationId);				
+			return Boolean.FALSE;
+		} else {
+			classificationTracker.classificationSaved(classificationId, resultTimeStamp);			
+			return Boolean.TRUE;
+		}		
+	}
+	
+	private final int getCommitLimit(BranchContext context) {
+		return context.service(SnowOwlConfiguration.class).getModuleConfig(RepositoryConfiguration.class).getIndexConfiguration().getCommitWatermarkLow();
 	}
 
 	private void applyChanges(final SubMonitor subMonitor, 
@@ -710,13 +721,14 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 		final String typeId = relationship.getTypeId();
 		final String destinationId = relationship.getDestinationId();
 		final boolean destinationNegated = relationship.isDestinationNegated();
+		final RelationshipValue value = relationship.getValueAsObject();
 		final String characteristicTypeId = relationship.getCharacteristicTypeId();
 		final int group = relationship.getGroup();
 		final int unionGroup = relationship.getUnionGroup();
 		final String modifier = relationship.getModifierId();
 		
 		addComponent(bulkRequestBuilder, namespaceAndModuleAssigner, 
-				sourceId, typeId, destinationId, destinationNegated,
+				sourceId, typeId, destinationId, destinationNegated, value,
 				characteristicTypeId, group, unionGroup, modifier);
 	}
 
@@ -728,13 +740,14 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 		final String typeId = relationship.getTypeId();
 		final String destinationId = relationship.getDestinationId();
 		final boolean destinationNegated = relationship.isDestinationNegated();
+		final RelationshipValue value = relationship.getValueAsObject();
 		final String characteristicTypeId = relationship.getCharacteristicTypeId();
 		final int group = relationship.getGroup();
 		final int unionGroup = relationship.getUnionGroup();
 		final String modifier = relationship.getModifierId();
 		
 		addComponent(bulkRequestBuilder, namespaceAndModuleAssigner, 
-				sourceId, typeId, destinationId, destinationNegated,
+				sourceId, typeId, destinationId, destinationNegated, value,
 				characteristicTypeId, group, unionGroup, modifier);
 	}
 
@@ -744,6 +757,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 			final String typeId, 
 			final String destinationId, 
 			final boolean destinationNegated,
+			final RelationshipValue value,
 			final String characteristicTypeId, 
 			final int group, 
 			final int unionGroup,
@@ -760,6 +774,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 				.setSourceId(sourceId)
 				.setDestinationId(destinationId)
 				.setDestinationNegated(destinationNegated)
+				.setValue(value)
 				.setGroup(group)
 				.setUnionGroup(unionGroup)
 				.setModifierId(modifier)

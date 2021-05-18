@@ -64,10 +64,7 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.Rf2RefSetExportLayout;
-import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.*;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
@@ -124,7 +121,11 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 					@Override
 					public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
 						for (String filePrefix : filePrefixes.keySet()) {
-							if (file.getFileName().toString().startsWith(filePrefix)) {
+							/* 
+							 * XXX: Need to add underscore to the end of each prefix here, as some file names 
+							 * are prefixes of each other.
+							 */
+							if (file.getFileName().toString().startsWith(filePrefix + "_")) {
 								existingFiles.add(filePrefix);
 								break;
 							}
@@ -157,7 +158,11 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 					@Override
 					public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
 						for (String filePrefix : fileToLinesMap.asMap().keySet()) {
-							if (file.getFileName().toString().startsWith(filePrefix)) {
+							/* 
+							 * XXX: Need to add underscore to the end of each prefix here, as some file names 
+							 * are prefixes of each other.
+							 */
+							if (file.getFileName().toString().startsWith(filePrefix + "_")) {
 								collectLines(resultMap, file, filePrefix, fileToLinesMap.get(filePrefix));
 								break;
 							}
@@ -196,7 +201,8 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		String statedRelationshipId = createNewRelationship(branchPath, Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT, Concepts.STATED_RELATIONSHIP);
 		String inferredRelationshipId = createNewRelationship(branchPath, Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT, Concepts.INFERRED_RELATIONSHIP);
 		String additionalRelationshipId = createNewRelationship(branchPath, Concepts.ROOT_CONCEPT, Concepts.PART_OF, Concepts.NAMESPACE_ROOT, Concepts.ADDITIONAL_RELATIONSHIP);
-
+		String valueRelationshipId = createNewConcreteValue(branchPath, Concepts.ROOT_CONCEPT, Concepts.PART_OF, new RelationshipValue(99));
+		
 		String transientEffectiveTime = "20170301";
 
 		Map<String, ?> config = ImmutableMap.<String, Object>builder()
@@ -238,15 +244,32 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 				Concepts.PART_OF,
 				Concepts.ADDITIONAL_RELATIONSHIP,
 				Concepts.EXISTENTIAL_RESTRICTION_MODIFIER); 
+		
+		String valueLine = TAB_JOINER.join(valueRelationshipId, 
+				transientEffectiveTime, 
+				"1", 
+				Concepts.MODULE_SCT_CORE, 
+				Concepts.ROOT_CONCEPT, 
+				"#99",
+				"0",
+				Concepts.PART_OF,
+				Concepts.INFERRED_RELATIONSHIP,
+				Concepts.EXISTENTIAL_RESTRICTION_MODIFIER); 
 
 		Multimap<String, Pair<Boolean, String>> fileToLinesMap = ArrayListMultimap.<String, Pair<Boolean, String>>create();
 
 		fileToLinesMap.put("sct2_StatedRelationship", Pair.of(true, statedLine));
 		fileToLinesMap.put("sct2_StatedRelationship", Pair.of(false, inferredLine));
 		fileToLinesMap.put("sct2_StatedRelationship", Pair.of(false, additionalLine));
+		fileToLinesMap.put("sct2_StatedRelationship", Pair.of(false, valueLine));
 		fileToLinesMap.put("sct2_Relationship", Pair.of(false, statedLine));
 		fileToLinesMap.put("sct2_Relationship", Pair.of(true, inferredLine));
 		fileToLinesMap.put("sct2_Relationship", Pair.of(true, additionalLine));
+		fileToLinesMap.put("sct2_Relationship", Pair.of(false, valueLine));
+		fileToLinesMap.put("sct2_RelationshipConcreteValues", Pair.of(false, statedLine));
+		fileToLinesMap.put("sct2_RelationshipConcreteValues", Pair.of(false, inferredLine));
+		fileToLinesMap.put("sct2_RelationshipConcreteValues", Pair.of(false, additionalLine));
+		fileToLinesMap.put("sct2_RelationshipConcreteValues", Pair.of(true, valueLine));
 
 		assertArchiveContainsLines(exportArchive, fileToLinesMap);
 	}
@@ -659,7 +682,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		final Map<String, Boolean> files = ImmutableMap.<String, Boolean>builder()
 				.put("sct2_Description", true)
 				.put("sct2_TextDefinition", true)
-				.put("der2_cRefset_Language", true)
+				.put("der2_cRefset_LanguageDelta-en", true)
 				.build();
 				
 		assertArchiveContainsFiles(exportArchive, files);

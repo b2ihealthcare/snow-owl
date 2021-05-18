@@ -79,6 +79,7 @@ public final class RelationshipChangeDocument {
 		private String sourceId;
 		private String typeId;
 		private String destinationId;
+		private String value;
 		private Integer group;
 		private Integer unionGroup;
 		private Boolean released;
@@ -119,6 +120,11 @@ public final class RelationshipChangeDocument {
 			return this;
 		}
 
+		public Builder value(final String value) {
+			this.value = value;
+			return this;
+		}
+
 		public Builder group(final Integer group) {
 			this.group = group;
 			return this;
@@ -146,6 +152,7 @@ public final class RelationshipChangeDocument {
 					sourceId, 
 					typeId,
 					destinationId,
+					value,
 					group, 
 					unionGroup,
 					released,
@@ -162,11 +169,12 @@ public final class RelationshipChangeDocument {
 	/** {@code true} if the description has been released, {@code false} otherwise */
 	private final Boolean released;
 	
-	// Values that should be changed on the "origin" CD member, before saving/presenting it as an inference
+	// Values that should be changed on the "origin" relationship, before saving/presenting it as an inference
 
 	private final String sourceId; 
 	private final String typeId;
 	private final String destinationId; 
+	private final String value;
 	private final Integer group;
 	private final Integer unionGroup;
 	private final String characteristicTypeId;
@@ -177,6 +185,7 @@ public final class RelationshipChangeDocument {
 			final String sourceId, 
 			final String typeId, 
 			final String destinationId, 
+			final String value,
 			final Integer group, 
 			final Integer unionGroup,
 			final Boolean released, 
@@ -188,6 +197,7 @@ public final class RelationshipChangeDocument {
 		this.sourceId = sourceId;
 		this.typeId = typeId;
 		this.destinationId = destinationId;
+		this.value = value;
 		this.group = group;
 		this.unionGroup = unionGroup;
 		this.released = released;
@@ -216,6 +226,10 @@ public final class RelationshipChangeDocument {
 
 	public String getDestinationId() {
 		return destinationId;
+	}
+	
+	public String getValue() {
+		return value;
 	}
 
 	public Integer getGroup() {

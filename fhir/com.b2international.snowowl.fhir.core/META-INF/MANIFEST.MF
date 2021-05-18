@@ -23,7 +23,8 @@ Export-Package: com.b2international.snowowl.fhir.core,
  com.b2international.snowowl.fhir.core.search,
  com.b2international.snowowl.fhir.core.valueset
 Require-Bundle: com.b2international.snowowl.core;visibility:=reexport,
- io.swagger.annotations;bundle-version="1.5.14"
+ io.swagger.annotations;bundle-version="1.5.14",
+ org.apache.commons.lang3;bundle-version="3.1.0"
 Bundle-ClassPath: .
 Import-Package: org.osgi.framework;version="1.7.0",
  org.osgi.framework.wiring;version="1.1.0"

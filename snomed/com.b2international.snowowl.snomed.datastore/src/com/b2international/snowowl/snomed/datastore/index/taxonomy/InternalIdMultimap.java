@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import com.b2international.collections.PrimitiveMaps;
 import com.b2international.collections.ints.IntIterator;
 import com.b2international.collections.ints.IntKeyMap;
 import com.b2international.collections.ints.IntSet;
+import com.b2international.collections.longs.LongSet;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -122,5 +123,9 @@ public final class InternalIdMultimap<T> {
 				.flatMap(obj -> {
 					return ((ImmutableList<T>) obj).stream();
 				});
+	}
+
+	public LongSet keySet() {
+		return internalIdMap.keySet();
 	}
 }

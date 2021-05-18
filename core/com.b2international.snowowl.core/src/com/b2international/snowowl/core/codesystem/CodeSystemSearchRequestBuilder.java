@@ -49,6 +49,10 @@ public final class CodeSystemSearchRequestBuilder
 		return addOption(OptionKey.TITLE_EXACT, term);
 	}
 	
+	public CodeSystemSearchRequestBuilder filterByTitleExact(Iterable<String> titles) {
+		return addOption(OptionKey.TITLE_EXACT, titles);
+	}
+	
 	public CodeSystemSearchRequestBuilder filterByOid(String oid) {
 		return addOption(OptionKey.OID, oid);
 	}

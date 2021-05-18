@@ -19,7 +19,9 @@ import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
 
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.util.MultiValueMap;
@@ -30,14 +32,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
-import com.b2international.snowowl.fhir.core.LogicalId;
+import com.b2international.commons.Pair;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.OperationOutcome;
 import com.b2international.snowowl.fhir.core.model.structuredefinition.StructureDefinition;
-import com.b2international.snowowl.fhir.core.search.SearchRequestParameters;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
+import com.b2international.snowowl.fhir.core.search.FhirFilterParameter;
+import com.b2international.snowowl.fhir.core.search.FhirParameter;
+import com.b2international.snowowl.fhir.core.search.FhirSearchParameter;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -57,6 +59,11 @@ import io.swagger.annotations.ApiResponses;
 @RequestMapping(value="/StructureDefinition", produces = { BaseFhirResourceRestService.APPLICATION_FHIR_JSON })
 public class StructureDefinitionService extends BaseFhirResourceRestService<StructureDefinition> {
 	
+	@Override
+	protected Class<StructureDefinition> getModelClass() {
+		return StructureDefinition.class;
+	}
+	
 	/**
 	 * StructureDefinitions
 	 * @param parameters
@@ -71,9 +78,7 @@ public class StructureDefinitionService extends BaseFhirResourceRestService<Stru
 	@RequestMapping(method=RequestMethod.GET)
 	public Bundle getStructureDefinitions(@RequestParam(required=false) MultiValueMap<String, String> parameters) {
 		
-		Multimap<String, String> multiMap = HashMultimap.create();
-		parameters.keySet().forEach(k -> multiMap.putAll(k, parameters.get(k)));
-		SearchRequestParameters requestParameters = new SearchRequestParameters(multiMap); 
+		Pair<Set<FhirFilterParameter>, Set<FhirSearchParameter>> fhirParameters = processParameters(parameters); 
 		
 		String uri = MvcUriComponentsBuilder.fromController(StructureDefinitionService.class).build().toString();
 		
@@ -106,15 +111,11 @@ public class StructureDefinitionService extends BaseFhirResourceRestService<Stru
 	public MappingJacksonValue getStructureDefinition(@PathVariable("structureDefinitionId") String structureDefinitionId, 
 			@RequestParam(required=false) MultiValueMap<String, String> parameters) {
 		
-		Multimap<String, String> multiMap = HashMultimap.create();
-		parameters.keySet().forEach(k -> multiMap.putAll(k, parameters.get(k)));
-		SearchRequestParameters requestParameters = new SearchRequestParameters(multiMap);
+		Pair<Set<FhirFilterParameter>, Set<FhirSearchParameter>> fhirParameters = processParameters(parameters); 
 		
-		LogicalId logicalId = LogicalId.fromIdString(structureDefinitionId);
-		
-		StructureDefinition structureDefinition = StructureDefinition.builder(logicalId.toString()).build();
+		StructureDefinition structureDefinition = StructureDefinition.builder(structureDefinitionId).build();
 
-		return applyResponseContentFilter(structureDefinition, requestParameters);
+		return applyResponseContentFilter(structureDefinition, fhirParameters.getA());
 	}
 	
 }

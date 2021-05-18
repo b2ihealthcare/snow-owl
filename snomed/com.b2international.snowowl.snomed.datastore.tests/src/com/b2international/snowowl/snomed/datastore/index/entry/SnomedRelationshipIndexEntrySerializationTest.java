@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,8 @@ import com.b2international.collections.PrimitiveCollectionModule;
 import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.index.revision.RevisionBranch;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.core.domain.RelationshipValue;
+import com.b2international.snowowl.snomed.core.domain.RelationshipValueType;
 import com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -45,28 +47,68 @@ public class SnomedRelationshipIndexEntrySerializationTest extends BaseRevisionI
 		mapper.registerModule(new PrimitiveCollectionModule());
 	}
 	
+	private static SnomedRelationshipIndexEntry.Builder createBuilder() {
+		return SnomedRelationshipIndexEntry.builder()
+			.id(RandomSnomedIdentiferGenerator.generateRelationshipId())
+			.active(true)
+			.released(true)
+			.effectiveTime(new Date().getTime())
+			.moduleId(Concepts.MODULE_ROOT)
+			.sourceId(Concepts.ROOT_CONCEPT)
+			.destinationId(Concepts.ROOT_CONCEPT)
+			.typeId(Concepts.IS_A)
+			.characteristicTypeId(Concepts.STATED_RELATIONSHIP)
+			.modifierId(Concepts.EXISTENTIAL_RESTRICTION_MODIFIER)
+			.destinationNegated(true)
+			.group(1)
+			.unionGroup(1);
+	}
+
+	private SnomedRelationshipIndexEntry assertDocEquals(final SnomedRelationshipIndexEntry expected) {
+		final SnomedRelationshipIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRelationshipIndexEntry.class, expected.getId());
+		assertDocEquals(expected, actual);
+		return actual;
+	}
+
 	@Test
 	public void indexRelationship() throws Exception {
-		String id = RandomSnomedIdentiferGenerator.generateRelationshipId();
-		final SnomedRelationshipIndexEntry relationship = SnomedRelationshipIndexEntry.builder()
-				.id(id)
-				.active(true)
-				.released(true)
-				.effectiveTime(new Date().getTime())
-				.moduleId(Concepts.MODULE_ROOT)
-				.sourceId(Concepts.ROOT_CONCEPT)
-				.destinationId(Concepts.ROOT_CONCEPT)
-				.typeId(Concepts.IS_A)
-				.characteristicTypeId(Concepts.STATED_RELATIONSHIP)
-				.modifierId(Concepts.EXISTENTIAL_RESTRICTION_MODIFIER)
-				.destinationNegated(true)
-				.group(1)
-				.unionGroup(1)
-				.build();
+		final SnomedRelationshipIndexEntry relationship = createBuilder().build();
 		indexRevision(RevisionBranch.MAIN_PATH, relationship);
-		final SnomedRelationshipIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRelationshipIndexEntry.class, id);
+		
+		final SnomedRelationshipIndexEntry actual = assertDocEquals(relationship);
 		assertEquals("", actual.getNamespace());
-		assertDocEquals(relationship, actual);
+	}
+
+	@Test
+	public void indexInteger() throws Exception {
+		final SnomedRelationshipIndexEntry integerValue = createBuilder()
+			.value(new RelationshipValue(5))
+			.build();
+		
+		indexRevision(RevisionBranch.MAIN_PATH, integerValue);
+		final SnomedRelationshipIndexEntry actual = assertDocEquals(integerValue);
+		assertEquals(RelationshipValueType.INTEGER, actual.getValueType());
 	}
 	
+	@Test
+	public void indexDecimal() throws Exception {
+		final SnomedRelationshipIndexEntry decimalValue = createBuilder()
+			.value(new RelationshipValue(3.333d))
+			.build();
+		
+		indexRevision(RevisionBranch.MAIN_PATH, decimalValue);
+		final SnomedRelationshipIndexEntry actual = assertDocEquals(decimalValue);
+		assertEquals(RelationshipValueType.DECIMAL, actual.getValueType());
+	}
+	
+	@Test
+	public void indexString() throws Exception {
+		final SnomedRelationshipIndexEntry stringValue = createBuilder()
+			.value(new RelationshipValue("Hello, world!"))
+			.build();
+		
+		indexRevision(RevisionBranch.MAIN_PATH, stringValue);
+		final SnomedRelationshipIndexEntry actual = assertDocEquals(stringValue);
+		assertEquals(RelationshipValueType.STRING, actual.getValueType());
+	}
 }

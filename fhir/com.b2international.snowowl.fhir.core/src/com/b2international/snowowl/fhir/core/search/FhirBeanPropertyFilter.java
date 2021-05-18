@@ -17,7 +17,7 @@ package com.b2international.snowowl.fhir.core.search;
 
 import java.util.List;
 
-import com.b2international.snowowl.fhir.core.search.SearchRequestParameter.SummaryParameterValue;
+import com.b2international.snowowl.fhir.core.search.FhirUriFilterParameterDefinition.SummaryParameterValue;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.SerializerProvider;

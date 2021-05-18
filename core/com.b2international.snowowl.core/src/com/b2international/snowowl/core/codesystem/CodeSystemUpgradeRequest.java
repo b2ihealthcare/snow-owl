@@ -34,6 +34,7 @@ import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.core.merge.MergeConflict;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
+import com.b2international.snowowl.core.uri.DefaultResourceURIPathResolver;
 import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -66,10 +67,6 @@ final class CodeSystemUpgradeRequest implements Request<RepositoryContext, Strin
 	
 	@Override
 	public String execute(RepositoryContext context) {
-		if (!resource.isHead()) {
-			throw new BadRequestException("Upgrades can not be started from versions.")
-				.withDeveloperMessage("Use '%s' only instead of '%s'", resource.getResourceId(), resource);
-		}
 
 		// get available upgrades 
 		final CodeSystem currentCodeSystem = CodeSystemRequests.prepareGetCodeSystem(resource.getResourceId())
@@ -91,6 +88,13 @@ final class CodeSystemUpgradeRequest implements Request<RepositoryContext, Strin
 		if (!availableUpgrades.contains(extensionOf)) {
 			throw new BadRequestException("Upgrades can only be performed to the next available version dependency.")
 				.withDeveloperMessage("Use '%s/<VERSION_ID>', where <VERSION_ID> is one of: '%s'", extensionOf.getResourceId(), availableUpgrades);
+		}
+		
+		String branchPath = currentCodeSystem.getBranchPath();
+		
+		// only allow HEAD or valid code system versions
+		if (!resource.isHead()) {
+			branchPath = ((DefaultResourceURIPathResolver) context.service(ResourceURIPathResolver.class)).resolveBranches(false).resolve(context, List.of(resource)).stream().findFirst().get();
 		}
 		
 		// auto-generate the resourceId if not provided
@@ -116,29 +120,28 @@ final class CodeSystemUpgradeRequest implements Request<RepositoryContext, Strin
 				.getRequest()
 				.execute(context);
 		
-		// merge branch content from the current code system to the new upgradeBranch
-		Merge merge = RepositoryRequests.merging().prepareCreate()
-				.setSource(currentCodeSystem.getBranchPath())
+		try {
+			// merge branch content from the current code system to the new upgradeBranch
+			Merge merge = RepositoryRequests.merging().prepareCreate()
+				.setSource(branchPath)
 				.setTarget(upgradeBranch)
 				.setSquash(false)
 				.build(currentCodeSystem.getToolingId())
 				.getRequest()
 				.execute(context);
 		
-		if (merge.getStatus() != Merge.Status.COMPLETED) {
-			// report conflicts
-			ApiError apiError = merge.getApiError();
-			Collection<MergeConflict> conflicts = merge.getConflicts();
-			context.log().error("Failed to sync source CodeSystem content to upgrade CodeSystem. Error: {}. Conflicts: {}", apiError.getMessage(), conflicts);
-			throw new ConflictException("Upgrade can not be performed due to content synchronization errors.")
-			.withAdditionalInfo(Map.of(
-					"conflicts", conflicts,
-					"mergeError", apiError.getMessage()
-					));
-		}
+			if (merge.getStatus() != Merge.Status.COMPLETED) {
+				// report conflicts
+				ApiError apiError = merge.getApiError();
+				Collection<MergeConflict> conflicts = merge.getConflicts();
+				context.log().error("Failed to sync source CodeSystem content to upgrade CodeSystem. Error: {}. Conflicts: {}", apiError.getMessage(), conflicts);
+				throw new ConflictException("Upgrade can not be performed due to content synchronization errors.")
+				.withAdditionalInfo(Map.of(
+						"conflicts", conflicts,
+						"mergeError", apiError.getMessage()
+						));
+			}
 		
-		// save upgrade Code System
-		try {
 			// and lastly create the actual CodeSystem so users will be able to browse, access and complete the upgrade
 			return CodeSystemRequests.prepareNewCodeSystem()
 				.setId(upgradeResourceId)

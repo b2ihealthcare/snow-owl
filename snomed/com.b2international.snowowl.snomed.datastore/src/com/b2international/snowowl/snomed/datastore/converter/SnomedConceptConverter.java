@@ -326,6 +326,7 @@ public final class SnomedConceptConverter extends BaseRevisionResourceConverter<
 			.build()
 			.execute(context());
 		
+		// filterByDestination above ensures that all relationships have a destinationId
 		final ListMultimap<String, SnomedRelationship> inboundRelationshipsByConceptId = Multimaps.index(inboundRelationships,
 				inboundRelationship -> inboundRelationship.getDestinationId());
 		

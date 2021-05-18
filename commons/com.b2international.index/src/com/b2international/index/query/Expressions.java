@@ -82,6 +82,10 @@ public class Expressions {
 	public static Expression match(String field, BigDecimal value) {
 		return new DecimalPredicate(field, value);
 	}
+	
+	public static Expression match(String field, Double value) {
+		return new DoublePredicate(field, value);
+	}
 
 	public static Expression matchAll() {
 		return MatchAll.INSTANCE;
@@ -126,6 +130,14 @@ public class Expressions {
 	public static Expression matchRange(String field, BigDecimal from, BigDecimal to, boolean includeFrom, boolean includeTo) {
 		return new DecimalRangePredicate(field, from, to, includeFrom, includeTo);
 	}
+	
+	public static Expression matchRange(String field, Double from, Double to) {
+		return matchRange(field, from, to, true, true);
+	}
+	
+	public static Expression matchRange(String field, Double from, Double to, boolean includeFrom, boolean includeTo) {
+		return new DoubleRangePredicate(field, from, to, includeFrom, includeTo);
+	}
 
 	public static Expression matchAnyInt(String field, Iterable<Integer> values) {
 		return new IntSetPredicate(field, values);
@@ -147,6 +159,10 @@ public class Expressions {
 	public static Expression matchAnyDecimal(String field, Iterable<BigDecimal> values) {
 		return new DecimalSetPredicate(field, values);
 	}
+	
+	public static Expression matchAnyDouble(String field, Iterable<Double> values) {
+		return new DoubleSetPredicate(field, values);
+	}
 
 	public static Expression boost(Expression expression, float boost) {
 		return new BoostPredicate(expression, boost);
@@ -155,7 +171,7 @@ public class Expressions {
 	public static TextPredicate matchTextAll(String field, String term) {
 		return new TextPredicate(field, term, MatchType.ALL);
 	}
-	
+
 	public static TextPredicate matchTextAny(String field, String term) {
 		return new TextPredicate(field, term, MatchType.ANY);
 	}

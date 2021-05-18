@@ -35,7 +35,7 @@
 		<fastutil.version>8.3.1</fastutil.version>
 		<jaxb.api.version>2.3.0</jaxb.api.version>
 		<javax.activation.version>1.2.0</javax.activation.version>
-		<snomed.owl.toolkit.version>2.9.1</snomed.owl.toolkit.version>
+		<snomed.owl.toolkit.version>3.0.2</snomed.owl.toolkit.version>
 		<failsafe.version>2.3.1</failsafe.version>
 		<osgi.versionRange>[3.16.0,3.17.0]</osgi.versionRange>
 		

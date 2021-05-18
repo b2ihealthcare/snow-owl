@@ -246,9 +246,13 @@ public final class Rf2TransactionContext extends DelegatingTransactionContext {
 					add(newRevision.build());
 				} else {
 					// in this case, recalculate the released flag based on the currently available revision
-					update(existingRevision, newRevision
-							.released(existingRevision.isReleased())
-							.build());
+					if (existingRevision.isReleased()) {
+						update(existingRevision, newRevision
+								.released(existingRevision.isReleased())
+								.build());
+					} else {
+						update(existingRevision, newRevision.build());
+					}
 				}
 			}
 			
@@ -329,7 +333,7 @@ public final class Rf2TransactionContext extends DelegatingTransactionContext {
 					.withId(component.getId())
 					.withActive(concept.isActive())
 					.withEffectiveTime(concept.getEffectiveTime())
-					.withModule(concept.getModuleId())
+					.withModuleId(concept.getModuleId())
 					.withDefinitionStatusId(concept.getDefinitionStatusId())
 					.withExhaustive(concept.getSubclassDefinitionStatus().isExhaustive());
 		} else if (component instanceof SnomedDescription) { 
@@ -338,7 +342,7 @@ public final class Rf2TransactionContext extends DelegatingTransactionContext {
 					.withId(component.getId())
 					.withActive(description.isActive())
 					.withEffectiveTime(description.getEffectiveTime())
-					.withModule(description.getModuleId())
+					.withModuleId(description.getModuleId())
 					.withCaseSignificanceId(description.getCaseSignificanceId())
 					.withLanguageCode(description.getLanguageCode())
 					.withType(description.getTypeId())
@@ -350,14 +354,15 @@ public final class Rf2TransactionContext extends DelegatingTransactionContext {
 					.withId(component.getId())
 					.withActive(relationship.isActive())
 					.withEffectiveTime(relationship.getEffectiveTime())
-					.withModule(relationship.getModuleId())
-					.withSource(relationship.getSourceId())
-					.withType(relationship.getTypeId())
-					.withDestination(relationship.getDestinationId())
+					.withModuleId(relationship.getModuleId())
+					.withSourceId(relationship.getSourceId())
+					.withTypeId(relationship.getTypeId())
+					.withDestinationId(relationship.getDestinationId())
+					.withDestinationNegated(false)
+					.withValue(relationship.getValueAsObject())
 					.withCharacteristicTypeId(relationship.getCharacteristicTypeId())
 					.withGroup(relationship.getGroup())
 					.withUnionGroup(relationship.getUnionGroup())
-					.withDestinationNegated(false)
 					.withModifierId(relationship.getModifierId());
 		} else {
 			throw new UnsupportedOperationException("Cannot prepare unknown core component: " + component);
@@ -476,7 +481,7 @@ public final class Rf2TransactionContext extends DelegatingTransactionContext {
 				.withId(rf2Component.getId())
 				.withActive(rf2Component.isActive())
 				.withEffectiveTime(rf2Component.getEffectiveTime())
-				.withModule(rf2Component.getModuleId())
+				.withModuleId(rf2Component.getModuleId())
 				.withReferencedComponent(rf2Component.getReferencedComponent().getId())
 				.withRefSet(rf2Component.getReferenceSetId());
 	}

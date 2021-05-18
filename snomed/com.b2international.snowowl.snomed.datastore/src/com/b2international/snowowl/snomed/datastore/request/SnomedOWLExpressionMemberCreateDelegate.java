@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,7 +47,7 @@ final class SnomedOWLExpressionMemberCreateDelegate extends SnomedRefSetMemberCr
 				.withId(getId())
 				.withActive(isActive())
 				.withReferencedComponent(getReferencedComponentId())
-				.withModule(getModuleId())
+				.withModuleId(getModuleId())
 				.withRefSet(getReferenceSetId())
 				.withOWLExpression(getProperty(SnomedRf2Headers.FIELD_OWL_EXPRESSION))
 				.addTo(context);

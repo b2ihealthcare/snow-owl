@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.datastore.request;
 
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
+import com.b2international.snowowl.snomed.core.domain.RelationshipValue;
 
 /**
  * <i>Builder</i> class to build requests responsible for creating SNOMED CT relationships.
@@ -24,76 +25,118 @@ import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
  * @since 4.5
  */
 public final class SnomedRelationshipCreateRequestBuilder extends SnomedComponentCreateRequestBuilder<SnomedRelationshipCreateRequestBuilder> {
-
-	private String characteristicTypeId = Concepts.STATED_RELATIONSHIP;
-	private String destinationId;
+	
 	private String sourceId;
-	private boolean destinationNegated;
-	private int group = 0;
-	private String modifierId = Concepts.EXISTENTIAL_RESTRICTION_MODIFIER;
-	private Integer unionGroup = 0;
 	private String typeId;
+	private String destinationId;
+	private boolean destinationNegated;
+	private RelationshipValue value;
+	private Integer group = 0;
+	private Integer unionGroup = 0;
+	private String characteristicTypeId = Concepts.STATED_RELATIONSHIP;
+	private String modifierId = Concepts.EXISTENTIAL_RESTRICTION_MODIFIER;
 
 	SnomedRelationshipCreateRequestBuilder() { 
 		super();
 	}
-	
-	public SnomedRelationshipCreateRequestBuilder setDestinationId(String destinationId) {
-		this.destinationId = destinationId;
-		return getSelf();
-	}
-	
-	public SnomedRelationshipCreateRequestBuilder setSourceId(String sourceId) {
+
+	/**
+	 * @param sourceId
+	 * @return
+	 */
+	public SnomedRelationshipCreateRequestBuilder setSourceId(final String sourceId) {
 		this.sourceId = sourceId;
 		return getSelf();
 	}
-	
-	public SnomedRelationshipCreateRequestBuilder setCharacteristicTypeId(String characteristicTypeId) {
-		this.characteristicTypeId = characteristicTypeId;
-		return getSelf();
-	}
-	
-	public SnomedRelationshipCreateRequestBuilder setDestinationNegated(boolean destinationNegated) {
-		this.destinationNegated = destinationNegated;
-		return getSelf();
-	}
-	
-	public SnomedRelationshipCreateRequestBuilder setGroup(Integer group) {
-		this.group = group == null ? 0 : group;
-		return getSelf();
-	}
-	
-	public SnomedRelationshipCreateRequestBuilder setModifierId(String modifierid) {
-		this.modifierId = modifierid;
-		return getSelf();
-	}
-	
-	public SnomedRelationshipCreateRequestBuilder setTypeId(String typeId) {
+
+	/**
+	 * @param typeId
+	 * @return
+	 */
+	public SnomedRelationshipCreateRequestBuilder setTypeId(final String typeId) {
 		this.typeId = typeId;
 		return getSelf();
 	}
-	
-	public SnomedRelationshipCreateRequestBuilder setUnionGroup(Integer unionGroup) {
-		this.unionGroup = unionGroup == null ? 0 : unionGroup;
+
+	/**
+	 * @param destinationId
+	 * @return
+	 */
+	public SnomedRelationshipCreateRequestBuilder setDestinationId(final String destinationId) {
+		this.destinationId = destinationId;
 		return getSelf();
 	}
-	
-	@Override
-	protected void init(BaseSnomedComponentCreateRequest request) {
-		final SnomedRelationshipCreateRequest req = (SnomedRelationshipCreateRequest) request;
-		req.setCharacteristicTypeId(characteristicTypeId);
-		req.setDestinationId(destinationId);
-		req.setSourceId(sourceId);
-		req.setDestinationNegated(destinationNegated);
-		req.setGroup(group);
-		req.setModifier(modifierId);
-		req.setUnionGroup(unionGroup);
-		req.setTypeId(typeId);
+
+	/**
+	 * @param destinationNegated
+	 * @return
+	 */
+	public SnomedRelationshipCreateRequestBuilder setDestinationNegated(final boolean destinationNegated) {
+		this.destinationNegated = destinationNegated;
+		return getSelf();
+	}
+
+	/**
+	 * @param value
+	 * @return
+	 */
+	public SnomedRelationshipCreateRequestBuilder setValue(final RelationshipValue value) {
+		this.value = value;
+		return getSelf();
+	}
+
+	/**
+	 * @param group
+	 * @return
+	 */
+	public SnomedRelationshipCreateRequestBuilder setGroup(final Integer group) {
+		this.group = group;
+		return getSelf();
+	}
+
+	/**
+	 * @param unionGroup
+	 * @return
+	 */
+	public SnomedRelationshipCreateRequestBuilder setUnionGroup(final Integer unionGroup) {
+		this.unionGroup = unionGroup;
+		return getSelf();
+	}
+
+	/**
+	 * @param characteristicTypeId
+	 * @return
+	 */
+	public SnomedRelationshipCreateRequestBuilder setCharacteristicTypeId(final String characteristicTypeId) {
+		this.characteristicTypeId = characteristicTypeId;
+		return getSelf();
+	}
+
+	/**
+	 * @param modifierId
+	 * @return
+	 */
+	public SnomedRelationshipCreateRequestBuilder setModifierId(final String modifierId) {
+		this.modifierId = modifierId;
+		return getSelf();
 	}
 
 	@Override
-	protected BaseSnomedComponentCreateRequest createRequest() {
+	protected void init(final BaseSnomedComponentCreateRequest request) {
+		final SnomedRelationshipCreateRequest req = (SnomedRelationshipCreateRequest) request;
+		req.setSourceId(sourceId);
+		req.setTypeId(typeId);
+		req.setDestinationId(destinationId);
+		req.setDestinationNegated(destinationNegated);
+		req.setValue(value);
+		req.setGroup(group);
+		req.setUnionGroup(unionGroup);
+		req.setCharacteristicTypeId(characteristicTypeId);
+		req.setModifierId(modifierId);
+	}
+
+	@Override
+	protected SnomedRelationshipCreateRequest createRequest() {
 		return new SnomedRelationshipCreateRequest();
 	}
-
 }

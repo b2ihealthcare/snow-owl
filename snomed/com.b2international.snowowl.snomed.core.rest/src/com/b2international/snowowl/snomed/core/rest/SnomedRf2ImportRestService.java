@@ -16,6 +16,7 @@
 package com.b2international.snowowl.snomed.core.rest;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -82,6 +83,10 @@ public class SnomedRf2ImportRestService extends AbstractRestService {
 			@RequestParam(name = "createVersions", defaultValue = "true")
 			final Boolean createVersions,
 			
+			@ApiParam(value = "Import should be allowed to progress when members of listed reference sets have missing referenced components")
+			@RequestParam(name = "ignoreMissingReferencesIn", required = false)
+			final List<String> ignoreMissingReferencesIn,
+			
 			@ApiParam(value = "Enable to run the import content integrity validations without pushing any changes", defaultValue = "false")
 			@RequestParam(name = "dryRun", defaultValue = "false")
 			final Boolean dryRun,
@@ -99,6 +104,7 @@ public class SnomedRf2ImportRestService extends AbstractRestService {
 			.setRf2Archive(new Attachment(rf2ArchiveId, file.getName()))
 			.setReleaseType(Rf2ReleaseType.getByNameIgnoreCase(type))
 			.setCreateVersions(createVersions)
+			.setIgnoreMissingReferencesIn(ignoreMissingReferencesIn)
 			.setDryRun(dryRun)
 			.build(path)
 			.runAsJobWithRestart(importJobId, String.format("Importing SNOMED CT RF2 file '%s'", file.getOriginalFilename()))

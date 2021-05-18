@@ -23,7 +23,9 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -40,6 +42,7 @@ import com.b2international.commons.exceptions.ApiException;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.attachments.Attachment;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
@@ -90,6 +93,8 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 	
 	private static final String TXT_EXT = ".txt";
 	
+	public static final AtomicBoolean disableVersionsOnChildBranches = new AtomicBoolean(true); 
+	
 	@NotNull
 	@JsonProperty
 	private final Attachment rf2Archive;
@@ -100,6 +105,10 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 	
 	@JsonProperty
 	private boolean createVersions = true;
+	
+	@NotNull
+	@JsonProperty
+	private Set<String> ignoreMissingReferencesIn;
 	
 	@JsonProperty
 	private boolean dryRun = false;
@@ -116,18 +125,23 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 		this.createVersions = createVersions;
 	}
 	
+	void setIgnoreMissingReferencesIn(Set<String> ignoreMissingReferencesIn) {
+		this.ignoreMissingReferencesIn = ignoreMissingReferencesIn;
+	}
+	
 	void setDryRun(boolean dryRun) {
 		this.dryRun = dryRun;
 	}
 	
 	@Override
 	public ImportResponse execute(BranchContext context) {
-		validate(context);
+		Rf2ImportConfiguration importConfig = new Rf2ImportConfiguration(releaseType, createVersions);
+		validate(context, importConfig);
 		final InternalAttachmentRegistry fileReg = (InternalAttachmentRegistry) context.service(AttachmentRegistry.class);
 		final File rf2Archive = fileReg.getAttachment(this.rf2Archive.getAttachmentId());
 		
 		try (Locks locks = Locks.on(context).lock(DatastoreLockContextDescriptions.IMPORT)) {
-			return doImport(context, rf2Archive, new Rf2ImportConfiguration(releaseType, createVersions));
+			return doImport(context, rf2Archive, importConfig);
 		} catch (Exception e) {
 			if (e instanceof ApiException) {
 				throw (ApiException) e;
@@ -136,7 +150,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 		}
 	}
 
-	private void validate(BranchContext context) {
+	private void validate(BranchContext context, final Rf2ImportConfiguration importConfig) {
 		final boolean contentAvailable = context.service(ContentAvailabilityInfoProvider.class).isAvailable(context);
 		
 		if (contentAvailable && Rf2ReleaseType.FULL.equals(releaseType)) {
@@ -151,6 +165,15 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 					+ "from an archive to any branch is prohibited when SNOMED CT "
 					+ "ontology is not available on the terminology server. "
 					+ "Please perform either a Full or a Snapshot import instead.");
+		}
+		
+		if (disableVersionsOnChildBranches.get()) {
+			String codeSystemWorkingBranchPath = context.service(TerminologyResource.class).getBranchPath();
+			
+			if (!codeSystemWorkingBranchPath.equals(context.branch().path()) && importConfig.isCreateVersions()) {
+				throw new BadRequestException("Creating a version during RF2 import from a branch is not supported. "
+						+ "Please perform the import process from the corresponding CodeSystem's working branch, '%s'.", codeSystemWorkingBranchPath);
+			}
 		}
 	}
 
@@ -175,7 +198,7 @@ final class SnomedRf2ImportRequest implements Request<BranchContext, ImportRespo
 			
 			// Run validation that takes current terminology content into account
 			final List<Rf2EffectiveTimeSlice> orderedEffectiveTimeSlices = effectiveTimeSlices.consumeInOrder();
-			final Rf2GlobalValidator globalValidator = new Rf2GlobalValidator(LOG);
+			final Rf2GlobalValidator globalValidator = new Rf2GlobalValidator(LOG, ignoreMissingReferencesIn);
 			
 			/* 
 			 * TODO: Use Attachment to get the release file name and/or track file and line number sources for each row 

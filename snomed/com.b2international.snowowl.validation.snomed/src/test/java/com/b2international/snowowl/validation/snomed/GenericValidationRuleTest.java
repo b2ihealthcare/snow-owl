@@ -23,6 +23,7 @@ import static com.b2international.snowowl.test.commons.snomed.RandomSnomedIdenti
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Instant;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.assertj.core.api.Assertions;
@@ -33,9 +34,11 @@ import org.junit.runners.MethodSorters;
 import org.junit.runners.Parameterized;
 
 import com.b2international.snowowl.core.ComponentIdentifier;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.core.validation.issue.ValidationIssue;
 import com.b2international.snowowl.core.validation.issue.ValidationIssues;
+import com.b2international.snowowl.snomed.common.SnomedConstants;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
@@ -217,6 +220,106 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 	}
 	
 	@Test
+	public void rule54() throws Exception {
+		final String ruleId = "54";
+		indexRule(ruleId);
+
+		// index term with case insensitive case significance
+		SnomedDescriptionIndexEntry description = description(generateDescriptionId(), Concepts.SYNONYM, "hello")
+				.moduleId(Concepts.MODULE_B2I_EXTENSION)
+				.caseSignificanceId(Concepts.ENTIRE_TERM_CASE_INSENSITIVE)
+				.build();
+
+		SnomedDescriptionIndexEntry description2 = description(generateDescriptionId(), Concepts.SYNONYM, "Hello")
+				.moduleId(Concepts.MODULE_B2I_EXTENSION)
+				.caseSignificanceId(Concepts.ENTIRE_TERM_CASE_INSENSITIVE)
+				.build();
+
+		indexRevision(MAIN, description, description2);
+		ValidationIssues issues = validate(ruleId);
+
+		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, description.getId()));
+	}
+	
+	@Test
+	public void rule55() throws Exception {
+		final String ruleId = "55";
+		indexRule(ruleId);
+		
+		//wrong examples
+		SnomedConceptDocument invalidDescriptionConcept = concept(generateConceptId()).build();
+		SnomedDescriptionIndexEntry descWithInvalidHypenSpacing = description(generateDescriptionId(), Concepts.SYNONYM, "Hello -Cruel!")
+				.moduleId(Concepts.MODULE_B2I_EXTENSION)
+				.conceptId(invalidDescriptionConcept.getId())
+				.build();
+		
+		SnomedConceptDocument invalidDescriptionConcept2 = concept(generateConceptId()).build();
+		SnomedDescriptionIndexEntry descWithMultipleInvalidHypenSpacing = description(generateDescriptionId(), Concepts.SYNONYM, "Hello -Cruel- World!")
+				.moduleId(Concepts.MODULE_B2I_EXTENSION)
+				.conceptId(invalidDescriptionConcept2.getId())
+				.build();
+		
+		SnomedConceptDocument invalidDescriptionConcept3 = concept(generateConceptId()).build();
+		SnomedDescriptionIndexEntry descWithSymbolAndInvalidHypenSpacing = description(generateDescriptionId(), Concepts.SYNONYM, "Hello -? -a")
+				.moduleId(Concepts.MODULE_B2I_EXTENSION)
+				.conceptId(invalidDescriptionConcept3.getId())
+				.build();
+
+		//good examples
+		SnomedConceptDocument validDescriptionConcept = concept(generateConceptId()).build();
+		SnomedDescriptionIndexEntry descWithValidHypenSpacing= description(generateDescriptionId(), Concepts.SYNONYM, "Hello-Cruel!")
+				.moduleId(Concepts.MODULE_B2I_EXTENSION)
+				.conceptId(validDescriptionConcept.getId())
+				.build();
+		
+		SnomedConceptDocument validDescriptionConcept2 = concept(generateConceptId()).build();
+		SnomedDescriptionIndexEntry descWithSymbolNextToHypen = description(generateDescriptionId(), Concepts.SYNONYM, "Hello -?")
+				.moduleId(Concepts.MODULE_B2I_EXTENSION)
+				.conceptId(validDescriptionConcept2.getId())
+				.build();
+		
+		indexRevision(Branch.MAIN_PATH, invalidDescriptionConcept, invalidDescriptionConcept2, invalidDescriptionConcept3,
+				descWithInvalidHypenSpacing, descWithMultipleInvalidHypenSpacing, descWithSymbolAndInvalidHypenSpacing,
+				descWithSymbolNextToHypen, descWithValidHypenSpacing, validDescriptionConcept, validDescriptionConcept2);
+
+		ValidationIssues issues = validate(ruleId);
+
+		assertAffectedComponents(issues,
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, descWithInvalidHypenSpacing.getId()),
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, descWithMultipleInvalidHypenSpacing.getId()),
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, descWithSymbolAndInvalidHypenSpacing.getId())
+		);
+	}
+	
+	@Test
+	public void rule74() throws Exception {
+		final String ruleId = "74";
+		indexRule(ruleId);
+
+		// index concept without bracketed suffix.
+		SnomedConceptDocument concept1 = concept(generateConceptId()).active(true)
+				.parents(Long.parseLong(Concepts.ROOT_CONCEPT)).build();
+		SnomedDescriptionIndexEntry description1 = description(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, "Hello Cruel")
+				.moduleId(Concepts.MODULE_B2I_EXTENSION)
+				.conceptId(concept1.getId())
+				.build();
+
+		// index concept with bracketed suffix.
+		SnomedConceptDocument concept2 = concept(generateConceptId()).active(true)
+				.parents(Long.parseLong(Concepts.ROOT_CONCEPT)).build();
+		SnomedDescriptionIndexEntry description2 = description(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, "Hello Cruel(Coco)")
+				.moduleId(Concepts.MODULE_B2I_EXTENSION)
+				.conceptId(concept2.getId())
+				.build();
+		
+		indexRevision(MAIN, concept1, concept2, description1, description2);
+
+		ValidationIssues issues = validate(ruleId);
+
+		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, description1.getId()));
+	}
+	
+	@Test
 	public void rule75() throws Exception {
 		// Message: Relationships in group 0 should not be duplicated in any other group.
 		final String ruleId = "75";
@@ -262,7 +365,7 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		SnomedRelationshipIndexEntry relationshipOnValidConcept = relationship(validConcept1.getId(), Concepts.IS_A, invalidConcept.getId()).build();
 		
 		SnomedRefSetMemberIndexEntry owlAxiomMemberOnValidConcpet = member(validConcept2.getId(), Concepts.REFSET_OWL_AXIOM)
-				.classAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(Concepts.IS_A, validConcept1.getId(), 0)))
+				.classAxiomRelationships(Lists.newArrayList(SnomedOWLRelationshipDocument.create(Concepts.IS_A, validConcept1.getId(), 0)))
 				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
 				.build();
 		
@@ -275,7 +378,60 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 			.doesNotContainAnyElementsOf(ImmutableList.of(ComponentIdentifier.of(CONCEPT_NUMBER, validConcept1.getId()),
 					ComponentIdentifier.of(CONCEPT_NUMBER, validConcept2.getId())));
 	}
+	
+	@Test
+	public void rule84() throws Exception {
+		final String ruleId = "84";
+		indexRule(ruleId);
+		
+		// index term containing space before ":"
+		SnomedDescriptionIndexEntry description1 = description(generateDescriptionId(), Concepts.SYNONYM, "hello :")
+				.moduleId(Concepts.MODULE_B2I_EXTENSION)
+				.build();
 
+		// index term containing space before "."
+		SnomedDescriptionIndexEntry description2 = description(generateDescriptionId(), Concepts.SYNONYM, "hello .")
+				.moduleId(Concepts.MODULE_B2I_EXTENSION)
+				.build();
+
+		// index correct term.
+		SnomedDescriptionIndexEntry description3 = description(generateDescriptionId(), Concepts.SYNONYM, "hello")
+				.moduleId(Concepts.MODULE_B2I_EXTENSION)
+				.build();
+		
+		indexRevision(MAIN, description1, description2, description3);
+		
+		ValidationIssues issues = validate(ruleId);
+		
+		assertAffectedComponents(issues, 
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, description1.getId()),
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, description2.getId())
+		);
+  }
+  
+	@Test
+	public void rule83() throws Exception {
+		final String ruleId = "83";
+		indexRule(ruleId);
+
+		// index terms containing double spaces
+		SnomedDescriptionIndexEntry description1 = description(generateDescriptionId(), Concepts.SYNONYM, "Hello  world")
+				.build();
+		
+		SnomedDescriptionIndexEntry description2 = description(generateDescriptionId(), Concepts.SYNONYM, "Hello  world")
+			.build();
+
+		// index correct term
+		SnomedDescriptionIndexEntry description3 = description(generateDescriptionId(), Concepts.SYNONYM, "Hello world")
+				.build();
+		
+		indexRevision(MAIN, description1, description2, description3);
+
+		ValidationIssues issues = validate(ruleId);
+
+		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, description1.getId()),
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, description2.getId()));
+	}
 	
 	@Test	
 	public void rule110() throws Exception {	
@@ -296,7 +452,7 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		
 		SnomedRefSetMemberIndexEntry owlAxiomMember1 = member(validConcept.getId(), Concepts.REFSET_OWL_AXIOM)
 				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
-				.classAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(Concepts.IS_A, Concepts.PHYSICAL_OBJECT, 0)))
+				.classAxiomRelationships(Lists.newArrayList(SnomedOWLRelationshipDocument.create(Concepts.IS_A, Concepts.PHYSICAL_OBJECT, 0)))
 				.build();
 		
 		SnomedConceptDocument concept = concept(generateConceptId())
@@ -304,7 +460,7 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		
 		SnomedRefSetMemberIndexEntry owlAxiomMember2 = member(concept.getId(), Concepts.REFSET_OWL_AXIOM)
 				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
-				.classAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(Concepts.SYNONYM, Concepts.PHYSICAL_OBJECT, 0)))
+				.classAxiomRelationships(Lists.newArrayList(SnomedOWLRelationshipDocument.create(Concepts.SYNONYM, Concepts.PHYSICAL_OBJECT, 0)))
 				.build();
 		
 		SnomedRefSetMemberIndexEntry owlAxiomMemberWithoutClassAxioms = member(concept.getId(), Concepts.REFSET_OWL_AXIOM)
@@ -321,6 +477,316 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 			ComponentIdentifier.of(RELATIONSHIP_NUMBER, relationship1.getId()),
 			ComponentIdentifier.of(REFSET_MEMBER_NUMBER, owlAxiomMember2.getId())
 		);	
+	}
+  
+  @Test
+  	public void rule115a() throws Exception {
+		// Reference Sets should not contain retired concepts
+		final String ruleId = "115a";
+		indexRule(ruleId);
+
+		SnomedConceptDocument r1 = concept(generateConceptId())
+				.refSetType(SnomedRefSetType.SIMPLE)
+				.referencedComponentType(CONCEPT_NUMBER)
+				.parents(Long.parseLong(SnomedConstants.Concepts.REFSET_ROOT_CONCEPT))
+				.build();
+
+		SnomedConceptDocument badConcept = concept(generateConceptId())
+				.active(false)
+				.activeMemberOf(ImmutableList.of(r1.getId()))
+				.build();
+
+		SnomedConceptDocument goodConcept = concept(generateConceptId())
+				.active(true)
+				.activeMemberOf(ImmutableList.of(r1.getId()))
+				.build();
+		
+		indexRevision(MAIN, r1, badConcept, goodConcept);
+
+		ValidationIssues issues = validate(ruleId);
+
+		assertAffectedComponents(issues, ComponentIdentifier.of(CONCEPT_NUMBER, badConcept.getId()));
+	}
+	
+	@Test
+	public void rule115b() throws Exception {
+		// Reference Sets should not contain retired descriptions
+		final String ruleId = "115b";
+		indexRule(ruleId);
+
+		SnomedConceptDocument r1 = concept(generateConceptId())
+				.refSetType(SnomedRefSetType.DESCRIPTION_TYPE)
+				.referencedComponentType(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER)
+				.parents(Long.parseLong(SnomedConstants.Concepts.REFSET_ROOT_CONCEPT))
+				.build();
+
+		SnomedDescriptionIndexEntry badDesc = description(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, "I've been bad, i deserve this")
+				.active(false)
+				.activeMemberOf(ImmutableList.of(r1.getId()))
+				.build();
+
+		SnomedDescriptionIndexEntry goodDesc = description(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, "I've been good, i deserve this")
+				.active(true)
+				.activeMemberOf(ImmutableList.of(r1.getId()))
+				.build();
+		
+		indexRevision(MAIN, r1, badDesc, goodDesc);
+
+		ValidationIssues issues = validate(ruleId);
+
+		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, badDesc.getId()));
+  }
+	
+	@Test
+	public void rule266() throws Exception {
+		final String ruleId = "266";
+		indexRule(ruleId);
+		
+		SnomedConceptDocument concept = concept(generateConceptId()).build();
+
+		SnomedDescriptionIndexEntry validDescription1 = description(generateDescriptionId(), Concepts.FULLY_SPECIFIED_NAME, "Clinical finding (semantic tag)")
+				.moduleId(Concepts.MODULE_B2I_EXTENSION)
+				.conceptId(concept.getId())
+				.build();
+		
+		SnomedDescriptionIndexEntry irrelevantDescription1 = description(generateDescriptionId(), Concepts.TEXT_DEFINITION, "Clinical finding (semantic tag)")
+				.moduleId(Concepts.MODULE_B2I_EXTENSION)
+				.conceptId(concept.getId())
+				.build();
+		
+		SnomedDescriptionIndexEntry validDescription2 = description(generateDescriptionId(), Concepts.SYNONYM, "Clinical finding ( regime/therapy )")
+				.moduleId(Concepts.MODULE_B2I_EXTENSION)
+				.conceptId(concept.getId())
+				.build();
+
+		SnomedDescriptionIndexEntry invalidDescription1 = description(generateDescriptionId(), Concepts.SYNONYM, "Clinical finding (regime/therapy)")
+				.moduleId(Concepts.MODULE_B2I_EXTENSION)
+				.conceptId(concept.getId())
+				.build();
+
+		SnomedDescriptionIndexEntry invalidDescription2 = description(generateDescriptionId(), Concepts.SYNONYM, "Clinical finding (specimen)")
+				.moduleId(Concepts.MODULE_B2I_EXTENSION)
+				.conceptId(concept.getId())
+				.build();
+		
+		indexRevision(MAIN, concept, validDescription1, irrelevantDescription1, validDescription2,
+				invalidDescription1, invalidDescription2);
+
+		ValidationIssues issues = validate(ruleId);
+
+		assertAffectedComponents(issues, 
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, invalidDescription1.getId()),
+				ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, invalidDescription2.getId())
+		);
+	}
+	
+	@Test
+	public void rule326() throws Exception {
+		final String ruleId = "326";
+		indexRule(ruleId);
+
+		SnomedConceptDocument concept1 = concept(generateConceptId()).effectiveTime(effectiveTime).build();
+		SnomedDescriptionIndexEntry description1 = description(generateDescriptionId(), Concepts.SYNONYM, "Good       synonym!?+$*~~~~")
+				.moduleId(Concepts.MODULE_B2I_EXTENSION)
+				.conceptId(concept1.getId()).build();
+		
+		SnomedConceptDocument concept2 = concept(generateConceptId()).effectiveTime(effectiveTime).build();
+		SnomedDescriptionIndexEntry description2 = description(generateDescriptionId(), Concepts.SYNONYM, "Bád synonym ©")
+				.conceptId(concept2.getId()).build();
+		
+		SnomedConceptDocument concept3 = concept(generateConceptId()).effectiveTime(effectiveTime).build();
+		SnomedDescriptionIndexEntry description3 = description(generateDescriptionId(), Concepts.SYNONYM, "Bád synonym ©")
+				.moduleId(Concepts.MODULE_B2I_EXTENSION)
+				.conceptId(concept3.getId()).build();
+		
+		indexRevision(MAIN, concept1, concept2, concept3, description1, description2, description3);
+		
+		ValidationIssues issues = validate(ruleId);
+		
+		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, description3.getId()));
+	}
+	
+	@Test
+	public void rule327() throws Exception {
+		final String ruleId = "327";
+		indexRule(ruleId);
+
+		SnomedConceptDocument concept1 = concept(generateConceptId()).effectiveTime(effectiveTime).build();
+		
+		SnomedDescriptionIndexEntry description1 = fsn("Good FSN")
+				.moduleId(Concepts.MODULE_B2I_EXTENSION)
+				.conceptId(concept1.getId()).build();
+		
+		SnomedConceptDocument concept2 = concept(generateConceptId()).effectiveTime(effectiveTime).build();
+		SnomedDescriptionIndexEntry description2 = fsn("Bad FSN <test>")
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.conceptId(concept2.getId()).build();
+		
+		SnomedConceptDocument concept3 = concept(generateConceptId()).effectiveTime(effectiveTime).build();
+		SnomedDescriptionIndexEntry description3 = fsn("Bad FSN %")
+				.moduleId(Concepts.MODULE_B2I_EXTENSION)
+				.conceptId(concept3.getId()).build();
+		
+		indexRevision(MAIN, concept1, concept2, concept3, description1, description2, description3);
+		
+		ValidationIssues issues = validate(ruleId);
+		
+		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, description3.getId()));
+	}
+	
+	@Test
+	public void rule328() throws Exception {
+		final String ruleId = "328";
+		indexRule(ruleId);
+
+		SnomedConceptDocument concept1 = concept(generateConceptId()).effectiveTime(effectiveTime).build();
+		SnomedDescriptionIndexEntry description1 = description(generateDescriptionId(), Concepts.SYNONYM, "Good synonym!")
+				.moduleId(Concepts.MODULE_B2I_EXTENSION)
+				.conceptId(concept1.getId()).build();
+		
+		SnomedConceptDocument concept2 = concept(generateConceptId()).effectiveTime(effectiveTime).build();
+		SnomedDescriptionIndexEntry description2 = description(generateDescriptionId(), Concepts.SYNONYM, "Bád synonym @")
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.conceptId(concept2.getId()).build();
+		
+		SnomedConceptDocument concept3 = concept(generateConceptId()).effectiveTime(effectiveTime).build();
+		SnomedDescriptionIndexEntry description3 = description(generateDescriptionId(), Concepts.SYNONYM, "Bád synonym $")
+				.moduleId(Concepts.MODULE_B2I_EXTENSION)
+				.conceptId(concept3.getId()).build();
+		
+		indexRevision(MAIN, concept1, concept2, concept3, description1, description2, description3);
+		
+		ValidationIssues issues = validate(ruleId);
+		
+		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, description3.getId()));
+	}
+	
+	@Test
+	public void rule482() throws Exception {
+		// Brackets in active terms should balance and be sequentially valid
+		final String ruleId = "482";
+		indexRule(ruleId);
+
+		SnomedDescriptionIndexEntry baadDesc1 = fsn("They are billions (game))").moduleId(Concepts.MODULE_B2I_EXTENSION).build();
+		SnomedDescriptionIndexEntry baadDesc2 = fsn("They are billions ((awesome) (game)").moduleId(Concepts.MODULE_B2I_EXTENSION).build();
+		SnomedDescriptionIndexEntry baadDesc3 = fsn("They are billions (awe( some) [game]").moduleId(Concepts.MODULE_B2I_EXTENSION).build();
+		SnomedDescriptionIndexEntry baadDesc4 = fsn("They are billions (awesome {quite indeed}").moduleId(Concepts.MODULE_B2I_EXTENSION).build();
+		SnomedDescriptionIndexEntry baadDesc5 = fsn("They are billions {awesome game").moduleId(Concepts.MODULE_B2I_EXTENSION).build();
+		SnomedDescriptionIndexEntry baadDesc6 = fsn("They are billions awesome] (game)").moduleId(Concepts.MODULE_B2I_EXTENSION).build();
+		SnomedDescriptionIndexEntry goodDesc1 = fsn("They are billions {game}").moduleId(Concepts.MODULE_B2I_EXTENSION).build();
+		SnomedDescriptionIndexEntry goodDesc2 = fsn("They are billions [awesome] (game)").moduleId(Concepts.MODULE_B2I_EXTENSION).build();
+		SnomedDescriptionIndexEntry goodDesc3 = fsn("{They are billions} (game)").moduleId(Concepts.MODULE_B2I_EXTENSION).build();
+		
+		indexRevision(MAIN, baadDesc1, baadDesc2, baadDesc3, baadDesc4, baadDesc5,
+			baadDesc6, goodDesc1, goodDesc2, goodDesc3);
+
+		ValidationIssues issues = validate(ruleId);
+
+		assertAffectedComponents(issues, 
+			ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, baadDesc1.getId()),
+			ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, baadDesc2.getId()),
+			ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, baadDesc3.getId()),
+			ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, baadDesc4.getId()),
+			ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, baadDesc5.getId()),
+			ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, baadDesc6.getId())
+		);
+	}
+	
+	@Test
+	public void rule532a_pharmacy_1() throws Exception {
+		rule532("532a", Concepts.FULLY_SPECIFIED_NAME, Concepts.MODULE_B2I_EXTENSION);
+	}
+
+	@Test
+	public void rule532a_pharmacy_2() throws Exception {
+		rule532("532a", Concepts.FULLY_SPECIFIED_NAME, Concepts.MODULE_B2I_EXTENSION);
+	}
+	
+	@Test
+	public void rule532b_pharmacy_1() throws Exception {
+		rule532("532b", Concepts.SYNONYM, Concepts.MODULE_B2I_EXTENSION);
+	}
+
+	@Test
+	public void rule532b_pharmacy_2() throws Exception {
+		rule532("532b", Concepts.SYNONYM, Concepts.MODULE_B2I_EXTENSION);
+	}
+	
+	private void rule532(String ruleId, String descriptionType, String moduleId) throws Exception {
+		indexRule(ruleId);
+		
+		SnomedDescriptionIndexEntry validDescription = description(generateDescriptionId(), descriptionType, "Not duplicate term")
+				.conceptId(generateConceptId())
+				.build();
+		
+		SnomedDescriptionIndexEntry invalidDescription1 = description(generateDescriptionId(), descriptionType, "Duplicate description")
+				.conceptId(generateConceptId())
+				.moduleId(moduleId)
+				.build();
+		
+		SnomedRefSetMemberIndexEntry inactivationIndicator1 = member(invalidDescription1.getId(), Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR)
+			.active(true)
+			.field(SnomedRf2Headers.FIELD_VALUE_ID, Concepts.PENDING_MOVE)
+			.build();
+		
+		SnomedDescriptionIndexEntry invalidDescription2 = description(generateDescriptionId(), descriptionType, "duplicate description")
+				.conceptId(generateConceptId())
+				.moduleId(moduleId)
+				.build();
+		
+		SnomedDescriptionIndexEntry invalidIntDescription1 = description(generateDescriptionId(), descriptionType, "Duplicate description")
+				.conceptId(generateConceptId())
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.build();
+		
+		SnomedDescriptionIndexEntry invalidIntDescription2 = description(generateDescriptionId(), descriptionType, "Duplicate of International description")
+				.conceptId(generateConceptId())
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.build();
+		
+		SnomedDescriptionIndexEntry invalidIntDescription3 = description(generateDescriptionId(), descriptionType, "Duplicate of International description")
+				.conceptId(generateConceptId())
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.build();
+		
+		SnomedDescriptionIndexEntry invalidDescription3 = description(generateDescriptionId(), descriptionType, "This is fine")
+				.conceptId(generateConceptId())
+				.moduleId(moduleId)
+				.build();
+		
+		SnomedDescriptionIndexEntry invalidDescription4 = description(generateDescriptionId(), descriptionType, "this is fine")
+				.conceptId(generateConceptId())
+				.moduleId(moduleId)
+				.build();
+		
+		SnomedDescriptionIndexEntry shouldNotCauseIssueDescription3 = description(generateDescriptionId(), descriptionType, "duplicate description")
+				.activeMemberOf(ImmutableList.of(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR))
+				.conceptId(generateConceptId())
+				.build();
+		
+		index()
+			.prepareCommit(MAIN)
+			.stageNew(validDescription)
+			.stageNew(invalidDescription1)
+			.stageNew(inactivationIndicator1)
+			.stageNew(invalidDescription2)
+			.stageNew(invalidIntDescription1)
+			.stageNew(invalidIntDescription2)
+			.stageNew(invalidIntDescription3)
+			.stageNew(invalidDescription3)
+			.stageNew(invalidDescription4)
+			.stageNew(shouldNotCauseIssueDescription3)
+			.commit(currentTime(), UUID.randomUUID().toString(), "Indexing data for rule 532 test");
+		
+		ValidationIssues issues = validate(ruleId);
+		
+		assertAffectedComponents(issues,
+			ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, invalidDescription1.getId()),
+			ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, invalidIntDescription1.getId()),
+			ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, invalidDescription2.getId()),
+			ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, invalidDescription3.getId()),
+			ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, invalidDescription4.getId())
+		);
 	}
 	
 	@Test
@@ -567,26 +1033,26 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		SnomedConceptDocument activeDestinationConcept = concept(generateConceptId()).active(true).build();
 
 		SnomedRefSetMemberIndexEntry invalidSourceAxiomMember = member(inactiveSourceConcept.getId(), Concepts.REFSET_OWL_AXIOM)
-				.classAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(Concepts.IS_A, activeDestinationConcept.getId(), 0)))
+				.classAxiomRelationships(Lists.newArrayList(SnomedOWLRelationshipDocument.create(Concepts.IS_A, activeDestinationConcept.getId(), 0)))
 				.build();
 		
 		SnomedRefSetMemberIndexEntry validSourceAxiomMember = member(activeSourceConcept.getId(), Concepts.REFSET_OWL_AXIOM)
-				.classAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(Concepts.IS_A, activeDestinationConcept.getId(), 0)))
+				.classAxiomRelationships(Lists.newArrayList(SnomedOWLRelationshipDocument.create(Concepts.IS_A, activeDestinationConcept.getId(), 0)))
 				.build();
 		
 		SnomedRefSetMemberIndexEntry invalidDestinationAxiomMember = member(activeSourceConcept.getId(), Concepts.REFSET_OWL_AXIOM)
-				.classAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(Concepts.IS_A, inactiveDestinationConcept.getId(), 0)))
+				.classAxiomRelationships(Lists.newArrayList(SnomedOWLRelationshipDocument.create(Concepts.IS_A, inactiveDestinationConcept.getId(), 0)))
 				.build();
 		
 		SnomedRefSetMemberIndexEntry invalidDestinationGciAxiomMember = member(activeSourceConcept.getId(), Concepts.REFSET_OWL_AXIOM)
-				.gciAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(activeTypeConcept.getId(), inactiveDestinationConcept.getId(), 0)))
+				.gciAxiomRelationships(Lists.newArrayList(SnomedOWLRelationshipDocument.create(activeTypeConcept.getId(), inactiveDestinationConcept.getId(), 0)))
 				.build();
 		
 		SnomedRefSetMemberIndexEntry invalidTypeAxiomMember = member(activeSourceConcept.getId(), Concepts.REFSET_OWL_AXIOM)
-				.classAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(inactiveTypeConcept.getId(), activeDestinationConcept.getId(), 0)))
+				.classAxiomRelationships(Lists.newArrayList(SnomedOWLRelationshipDocument.create(inactiveTypeConcept.getId(), activeDestinationConcept.getId(), 0)))
 				.build();
 		SnomedRefSetMemberIndexEntry validGciAxiomMember = member(activeSourceConcept.getId(), Concepts.REFSET_OWL_AXIOM)
-				.gciAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(activeTypeConcept.getId(), activeDestinationConcept.getId(), 0)))
+				.gciAxiomRelationships(Lists.newArrayList(SnomedOWLRelationshipDocument.create(activeTypeConcept.getId(), activeDestinationConcept.getId(), 0)))
 				.build();
 
 		indexRevision(MAIN, 
@@ -754,19 +1220,19 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 				.group(2).build();
 		
 		SnomedRefSetMemberIndexEntry axiomMember1 = member(Concepts.CONCEPT_MODEL_ATTRIBUTE, Concepts.REFSET_OWL_AXIOM)
-				.classAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(Concepts.FINDING_SITE, Concepts.CONCEPT_MODEL_ATTRIBUTE, 0)))
+				.classAxiomRelationships(Lists.newArrayList(SnomedOWLRelationshipDocument.create(Concepts.FINDING_SITE, Concepts.CONCEPT_MODEL_ATTRIBUTE, 0)))
 				.owlExpression(String.format("ObjectSomeValuesFrom(:%s :%s)", Concepts.FINDING_SITE, Concepts.CONCEPT_MODEL_ATTRIBUTE))
 				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
 				.build();
 		
 		SnomedRefSetMemberIndexEntry axiomMember2 = member(Concepts.CONCEPT_MODEL_ATTRIBUTE, Concepts.REFSET_OWL_AXIOM)
-				.classAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(Concepts.FINDING_SITE, Concepts.PHYSICAL_OBJECT, 0)))
+				.classAxiomRelationships(Lists.newArrayList(SnomedOWLRelationshipDocument.create(Concepts.FINDING_SITE, Concepts.PHYSICAL_OBJECT, 0)))
 				.owlExpression(String.format("ObjectSomeValuesFrom(:%s :%s)", Concepts.FINDING_SITE, Concepts.PHYSICAL_OBJECT))
 				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
 				.build();
 		
 		SnomedRefSetMemberIndexEntry axiomMember3 = member(Concepts.ROOT_CONCEPT, Concepts.REFSET_OWL_AXIOM)
-				.classAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(Concepts.FINDING_SITE, Concepts.CONCEPT_MODEL_ATTRIBUTE, 0)))
+				.classAxiomRelationships(Lists.newArrayList(SnomedOWLRelationshipDocument.create(Concepts.FINDING_SITE, Concepts.CONCEPT_MODEL_ATTRIBUTE, 0)))
 				.owlExpression(String.format("ObjectSomeValuesFrom(:%s :%s)", Concepts.FINDING_SITE, Concepts.CONCEPT_MODEL_ATTRIBUTE))
 				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
 				.build();
@@ -817,19 +1283,19 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		// OWL axioms
 		SnomedRefSetMemberIndexEntry axiomMember1 = member(Concepts.CONCEPT_MODEL_ATTRIBUTE, Concepts.REFSET_OWL_AXIOM)
 				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
-				.classAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(Concepts.FINDING_SITE, Concepts.CONCEPT_MODEL_ATTRIBUTE, 0)))
+				.classAxiomRelationships(Lists.newArrayList(SnomedOWLRelationshipDocument.create(Concepts.FINDING_SITE, Concepts.CONCEPT_MODEL_ATTRIBUTE, 0)))
 				.owlExpression(String.format("ObjectSomeValuesFrom(:%s :%s)", Concepts.FINDING_SITE, Concepts.CONCEPT_MODEL_ATTRIBUTE))
 				.build();
 		
 		SnomedRefSetMemberIndexEntry axiomMember2 = member(Concepts.TEXT_DEFINITION, Concepts.REFSET_OWL_AXIOM)
 				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
-				.classAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(Concepts.FINDING_SITE, Concepts.PHYSICAL_OBJECT, 0)))
+				.classAxiomRelationships(Lists.newArrayList(SnomedOWLRelationshipDocument.create(Concepts.FINDING_SITE, Concepts.PHYSICAL_OBJECT, 0)))
 				.owlExpression(String.format("ObjectSomeValuesFrom(:%s :%s)", Concepts.FINDING_SITE, Concepts.PHYSICAL_OBJECT))
 				.build();
 		
 		SnomedRefSetMemberIndexEntry axiomMember3 = member(Concepts.ROOT_CONCEPT, Concepts.REFSET_OWL_AXIOM)
 				.referenceSetType(SnomedRefSetType.OWL_AXIOM)
-				.classAxiomRelationships(Lists.newArrayList(new SnomedOWLRelationshipDocument(Concepts.PHYSICAL_OBJECT, Concepts.CONCEPT_MODEL_ATTRIBUTE, 0)))
+				.classAxiomRelationships(Lists.newArrayList(SnomedOWLRelationshipDocument.create(Concepts.PHYSICAL_OBJECT, Concepts.CONCEPT_MODEL_ATTRIBUTE, 0)))
 				.owlExpression(String.format("ObjectSomeValuesFrom(:%s :%s)", Concepts.PHYSICAL_OBJECT, Concepts.CONCEPT_MODEL_ATTRIBUTE))
 				.build();
 		

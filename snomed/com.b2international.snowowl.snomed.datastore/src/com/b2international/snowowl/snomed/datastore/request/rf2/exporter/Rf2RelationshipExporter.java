@@ -26,7 +26,7 @@ import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.collect.ImmutableList;
@@ -71,8 +71,9 @@ public final class Rf2RelationshipExporter extends Rf2CoreComponentExporter<Snom
 	protected SnomedRelationshipSearchRequestBuilder createComponentSearchRequestBuilder() {
 		return SnomedRequests
 				.prepareSearchRelationship()
+				.hasDestinationId()
 				.filterByCharacteristicTypes(characteristicTypes)
-				.sortBy(SortField.ascending(SnomedConceptDocument.Fields.ID));
+				.sortBy(SortField.ascending(SnomedRelationshipIndexEntry.Fields.ID));
 	}
 
 	@Override

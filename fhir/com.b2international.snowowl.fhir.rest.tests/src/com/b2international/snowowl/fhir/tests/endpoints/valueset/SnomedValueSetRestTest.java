@@ -24,6 +24,7 @@ import org.hamcrest.core.StringStartsWith;
 import org.junit.Test;
 
 import com.b2international.snowowl.fhir.tests.SnomedFhirRestTest;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.fhir.SnomedUri;
 import com.b2international.snowowl.test.commons.rest.RestExtensions;
 
@@ -33,12 +34,15 @@ import com.b2international.snowowl.test.commons.rest.RestExtensions;
  */
 public class SnomedValueSetRestTest extends SnomedFhirRestTest {
 	
+	private String simpleTypeRefsetId = "SNOMEDCT/" + FHIR_SIMPLE_TYPE_REFSET_VERSION + "/" + 
+			SnomedTerminologyComponentConstants.REFSET_NUMBER + "/" + simpleTypeRefSetId;
+	
 	//@Test
 	public void printValueSets() throws Exception {
 		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-		.when().get("/ValueSet")
-		.prettyPrint();
+			.when().get("/ValueSet")
+			.prettyPrint();
 	}
 	
 	@Test
@@ -53,15 +57,15 @@ public class SnomedValueSetRestTest extends SnomedFhirRestTest {
 			.body("total", notNullValue())
 			
 			//SNOMED CT
-			.root("entry.find { it.fullUrl == 'http://localhost:"+RestExtensions.getPort()+"/snowowl/fhir/ValueSet/snomedStore:MAIN/FHIR_SIMPLE_TYPE_REFSET_VERSION:" + simpleTypeRefSetId + "'}")
+			.root("entry.find { it.fullUrl == 'http://localhost:"+RestExtensions.getPort() + "/snowowl/fhir/ValueSet/" + simpleTypeRefsetId + "'}")
 			.body("resource.resourceType", equalTo("ValueSet"))
-			.body("resource.id", equalTo("snomedStore:MAIN/FHIR_SIMPLE_TYPE_REFSET_VERSION:" + simpleTypeRefSetId))
+			.body("resource.id", equalTo(simpleTypeRefsetId))
 			.body("resource.url", startsWith("http://snomed.info/sct/version"))
 			.body("resource.version", equalTo(FHIR_SIMPLE_TYPE_REFSET_VERSION))
 			.body("resource.title", equalTo(SIMPLE_TYPE_REFSET_NAME))
 			.body("resource.name", equalTo(SIMPLE_TYPE_REFSET_NAME))
 			.body("resource.status", equalTo("active"))
-			.root("entry.find { it.fullUrl == 'http://localhost:"+RestExtensions.getPort()+"/snowowl/fhir/ValueSet/snomedStore:MAIN/FHIR_SIMPLE_TYPE_REFSET_VERSION:" + simpleTypeRefSetId+ "'}.resource.compose.include[0]")
+			.root("entry.find { it.fullUrl == 'http://localhost:"+RestExtensions.getPort()+"/snowowl/fhir/ValueSet/" + simpleTypeRefsetId + "'}.resource.compose.include[0]")
 			.body("system", equalTo(SnomedUri.SNOMED_BASE_URI_STRING))
 			.body("filter.size()", equalTo(1))
 			.body("filter[0].property", equalTo("expression"))
@@ -82,9 +86,9 @@ public class SnomedValueSetRestTest extends SnomedFhirRestTest {
 			.body("total", notNullValue())
 			
 			//SNOMED CT
-			.root("entry.find { it.fullUrl == 'http://localhost:"+RestExtensions.getPort()+"/snowowl/fhir/ValueSet/snomedStore:MAIN/FHIR_SIMPLE_TYPE_REFSET_VERSION:" + simpleTypeRefSetId + "'}")
+			.root("entry.find { it.fullUrl == 'http://localhost:"+RestExtensions.getPort()+"/snowowl/fhir/ValueSet/" + simpleTypeRefsetId + "'}")
 			.body("resource.resourceType", equalTo("ValueSet"))
-			.body("resource.id", equalTo("snomedStore:MAIN/FHIR_SIMPLE_TYPE_REFSET_VERSION:" + simpleTypeRefSetId))
+			.body("resource.id", equalTo(simpleTypeRefsetId))
 			.body("resource.url", startsWith("http://snomed.info/sct/version"))
 			.body("resource.version", equalTo(FHIR_SIMPLE_TYPE_REFSET_VERSION))
 			.body("resource.title", equalTo(SIMPLE_TYPE_REFSET_NAME))
@@ -99,14 +103,15 @@ public class SnomedValueSetRestTest extends SnomedFhirRestTest {
 	@Test
 	public void getSingleQueryTypeValueSetTest() {
 		
-		System.out.println("Refset concept ID: " + queryTypeRefsetLogicalId);
+		String qtid = "SNOMEDCT/" + FHIR_QUERY_TYPE_REFSET_VERSION + "/" + 
+			SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER + "/" + queryTypeRefsetLogicalId;
 		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-		 	.pathParam("id", "snomedStore:MAIN/" + FHIR_QUERY_TYPE_REFSET_VERSION + ":" + queryTypeRefsetLogicalId) 
+		 	.pathParam("id", qtid) 
 			.when().get("/ValueSet/{id}")
 			.then()
 			.body("resourceType", equalTo("ValueSet"))
-			.body("id", StringStartsWith.startsWith("snomedStore:MAIN/FHIR_QUERY_TYPE_REFSET_VERSION"))
+			.body("id", StringStartsWith.startsWith(qtid))
 			.body("version", equalTo("FHIR_QUERY_TYPE_REFSET_VERSION"))
 			.body("name", equalTo("FHIR Automated Test Simple Type Refset"))
 			.body("status", equalTo("active"))
@@ -118,16 +123,16 @@ public class SnomedValueSetRestTest extends SnomedFhirRestTest {
 			.statusCode(200);
 	}
 	
-	
 	@Test
 	public void getSingleSnomedValueSetTest() {
+		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-		 	.pathParam("id", "snomedStore:MAIN/" + FHIR_SIMPLE_TYPE_REFSET_VERSION + ":" + simpleTypeRefSetId) 
+		 	.pathParam("id", simpleTypeRefsetId) 
 			.when().get("/ValueSet/{id}")
 			.then()
 			.statusCode(200)
 			.body("resourceType", equalTo("ValueSet"))
-			.body("id", equalTo("snomedStore:MAIN/FHIR_SIMPLE_TYPE_REFSET_VERSION" + ":" + simpleTypeRefSetId))
+			.body("id", equalTo(simpleTypeRefsetId))
 			.body("language", equalTo("en-us"))
 			.body("url", startsWith("http://snomed.info/sct/version"))
 			.body("identifier.use", equalTo("official"))
@@ -139,6 +144,70 @@ public class SnomedValueSetRestTest extends SnomedFhirRestTest {
 			.body("title", equalTo("FHIR Automated Test Simple Type Reference Set"))
 			.body("status", equalTo("active"))
 			.root("compose.include[0]")
+			.body("system", equalTo("http://snomed.info/sct"))
+			.body("filter[0].property", equalTo("expression"))
+			.body("filter[0].value", equalTo("^" + simpleTypeRefSetId))
+			.body("filter[0].op", equalTo("="));
+	}
+	
+	@Test
+	public void getValueSetByIdParam() {
+		
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+		 	.param("_id", simpleTypeRefsetId) 
+			.when().get("/ValueSet")
+			.then()
+			.statusCode(200)
+			.body("resourceType", equalTo("Bundle"))
+			.body("type", equalTo("searchset"))
+			.body("total", equalTo(2)) //2 versions of the same refset
+			.root("entry.find { it.resource.id == '" + simpleTypeRefsetId + "'}")
+			.body("resource.resourceType", equalTo("ValueSet"))
+			.body("resource.id", equalTo(simpleTypeRefsetId))
+			.body("resource.url", startsWith("http://snomed.info/sct/version"))
+			.body("resource.version", equalTo(FHIR_SIMPLE_TYPE_REFSET_VERSION))
+			.body("resource.title", equalTo(SIMPLE_TYPE_REFSET_NAME))
+			.body("resource.name", equalTo(SIMPLE_TYPE_REFSET_NAME))
+			.body("resource.status", equalTo("active"))
+			
+			.body("resource.language", equalTo("en-us"))
+			.body("resource.identifier.use", equalTo("official"))
+			.body("resource.identifier.system", startsWith("http://snomed.info/sct/version"))
+			.body("resource.identifier.value", equalTo("11000154102"))
+			
+			.appendRoot("resource.compose.include[0]")
+			.body("system", equalTo("http://snomed.info/sct"))
+			.body("filter[0].property", equalTo("expression"))
+			.body("filter[0].value", equalTo("^" + simpleTypeRefSetId))
+			.body("filter[0].op", equalTo("="));
+	}
+	
+	@Test
+	public void getValueSetsByIdsParam() {
+		
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+		 	.param("_id", simpleTypeRefsetId, "SNOMEDCT/FHIR_QUERY_TYPE_REFSET_VERSION/104/" +  queryTypeRefsetLogicalId) 
+			.when().get("/ValueSet")
+			.then()
+			.statusCode(200)
+			.body("resourceType", equalTo("Bundle"))
+			.body("type", equalTo("searchset"))
+			.body("total", equalTo(3)) //3 versions (2 s + 1 q)
+			.root("entry.find { it.resource.id == '" + simpleTypeRefsetId + "'}")
+			.body("resource.resourceType", equalTo("ValueSet"))
+			.body("resource.id", equalTo(simpleTypeRefsetId))
+			.body("resource.url", startsWith("http://snomed.info/sct/version"))
+			.body("resource.version", equalTo(FHIR_SIMPLE_TYPE_REFSET_VERSION))
+			.body("resource.title", equalTo(SIMPLE_TYPE_REFSET_NAME))
+			.body("resource.name", equalTo(SIMPLE_TYPE_REFSET_NAME))
+			.body("resource.status", equalTo("active"))
+			
+			.body("resource.language", equalTo("en-us"))
+			.body("resource.identifier.use", equalTo("official"))
+			.body("resource.identifier.system", startsWith("http://snomed.info/sct/version"))
+			.body("resource.identifier.value", equalTo("11000154102"))
+			
+			.appendRoot("resource.compose.include[0]")
 			.body("system", equalTo("http://snomed.info/sct"))
 			.body("filter[0].property", equalTo("expression"))
 			.body("filter[0].value", equalTo("^" + simpleTypeRefSetId))
