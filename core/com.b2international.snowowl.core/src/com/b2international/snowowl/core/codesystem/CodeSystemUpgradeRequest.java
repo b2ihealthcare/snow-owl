@@ -108,32 +108,37 @@ final class CodeSystemUpgradeRequest implements Request<RepositoryContext, Strin
 		// create the same branch name under the new extensionOf path
 		String parentBranch = context.service(ResourceURIPathResolver.class).resolve(context, List.of(extensionOf)).stream().findFirst().get();
 		
-		String upgradeBranch = RepositoryRequests.branching().prepareCreate()
-			.setParent(parentBranch)
-			.setName(resource.getResourceId())
-			.build()
-			.execute(context);
+		// merge content in the tooling repository from the current resource's to the upgrade resource's branch
+		final String upgradeBranch = RepositoryRequests.branching().prepareCreate()
+				.setParent(parentBranch)
+				.setName(resource.getResourceId())
+				.build(currentCodeSystem.getToolingId())
+				.getRequest()
+				.execute(context);
 		
-		try {
-			// merge branch content from the current code system to the new upgradeBranch
-			Merge merge = RepositoryRequests.merging().prepareCreate()
+		// merge branch content from the current code system to the new upgradeBranch
+		Merge merge = RepositoryRequests.merging().prepareCreate()
 				.setSource(currentCodeSystem.getBranchPath())
 				.setTarget(upgradeBranch)
 				.setSquash(false)
-				.build()
+				.build(currentCodeSystem.getToolingId())
+				.getRequest()
 				.execute(context);
-			if (merge.getStatus() != Merge.Status.COMPLETED) {
-				// report conflicts
-				ApiError apiError = merge.getApiError();
-				Collection<MergeConflict> conflicts = merge.getConflicts();
-				context.log().error("Failed to sync source CodeSystem content to upgrade CodeSystem. Error: {}. Conflicts: {}", apiError.getMessage(), conflicts);
-				throw new ConflictException("Upgrade can not be performed due to content synchronization errors.")
-					.withAdditionalInfo(Map.of(
-						"conflicts", conflicts,
-						"mergeError", apiError.getMessage()
+		
+		if (merge.getStatus() != Merge.Status.COMPLETED) {
+			// report conflicts
+			ApiError apiError = merge.getApiError();
+			Collection<MergeConflict> conflicts = merge.getConflicts();
+			context.log().error("Failed to sync source CodeSystem content to upgrade CodeSystem. Error: {}. Conflicts: {}", apiError.getMessage(), conflicts);
+			throw new ConflictException("Upgrade can not be performed due to content synchronization errors.")
+			.withAdditionalInfo(Map.of(
+					"conflicts", conflicts,
+					"mergeError", apiError.getMessage()
 					));
-			}
-			
+		}
+		
+		// save upgrade Code System
+		try {
 			// and lastly create the actual CodeSystem so users will be able to browse, access and complete the upgrade
 			return CodeSystemRequests.prepareNewCodeSystem()
 				.setId(upgradeResourceId)
@@ -160,7 +165,10 @@ final class CodeSystemUpgradeRequest implements Request<RepositoryContext, Strin
 				.getResultAs(String.class);
 		} catch (Throwable e) {
 			// delete upgrade branch if any exception have been thrown during the upgrade
-			RepositoryRequests.branching().prepareDelete(upgradeBranch).build().execute(context);
+			RepositoryRequests.branching().prepareDelete(upgradeBranch)
+				.build(currentCodeSystem.getToolingId())
+				.getRequest()
+				.execute(context);
 			throw e;
 		}
 	}
