@@ -373,9 +373,9 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 	/**
 	 * Returns all ancestors up to the terminology's root component (in terms of Snow Owl, this means {@link IComponent#ROOT_ID}).
 	 * 
-	 * @param branchPath
 	 * @param codeSystemUri
-	 * @return
+	 * @param componentId
+	 * @return set of parent IDs
 	 */
 	protected abstract Set<String> fetchAncestors(final CodeSystemURI codeSystemUri, String componentId);
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.fhir.tests.endpoints.codesystem.CodeSystemRestTest;
 import com.b2international.snowowl.fhir.tests.endpoints.codesystem.LookupFhirCodeSystemRestTest;
 import com.b2international.snowowl.fhir.tests.endpoints.codesystem.LookupSnomedRestTest;
+import com.b2international.snowowl.fhir.tests.endpoints.codesystem.SnomedCodeSystemProviderTest;
 import com.b2international.snowowl.fhir.tests.endpoints.codesystem.SubsumesSnomedRestTest;
 import com.b2international.snowowl.fhir.tests.endpoints.conceptmap.SnomedConceptMapRestTest;
 import com.b2international.snowowl.fhir.tests.endpoints.conceptmap.TranslateSnomedConceptMapRestTest;
@@ -46,6 +47,7 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	
 	CodeSystemRestTest.class,
 	LookupFhirCodeSystemRestTest.class,
+	SnomedCodeSystemProviderTest.class,
 	LookupSnomedRestTest.class,
 	SubsumesSnomedRestTest.class,
 	SnomedValueSetRestTest.class,
@@ -63,7 +65,7 @@ public class AllFhirRestTests {
 	 * Execute the tests with this rule if the dataset needs to be imported
 	 */
 	@ClassRule
-	public static final RuleChain appRule = RuleChain
+	public static final RuleChain APPRULE = RuleChain
 		.outerRule(SnowOwlAppRule.snowOwl(AllFhirRestTests.class))
 		.around(new BundleStartRule("org.eclipse.jetty.osgi.boot"))
 		.around(new BundleStartRule("com.b2international.snowowl.core.rest"))
@@ -74,7 +76,7 @@ public class AllFhirRestTests {
 	 * Execute the tests with this rule if the dataset does not need to be imported
 	 */
 	//@ClassRule
-	public static final RuleChain appRuleWithNoImport = RuleChain
+	public static final RuleChain APPRULE_NO_IMPORT = RuleChain
 		.outerRule(SnowOwlAppRule.snowOwl(AllFhirRestTests.class).clearResources(false))
 		.around(new BundleStartRule("org.eclipse.jetty.osgi.boot"))
 		.around(new BundleStartRule("com.b2international.snowowl.core.rest"));

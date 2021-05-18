@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,10 +27,14 @@ import com.google.common.collect.ImmutableMap;
  */
 public final class SnomedRepositoryInitializer extends TerminologyRepositoryInitializer {
 
+	private static final long serialVersionUID = 1L;
+
 	@Override
 	protected CodeSystem createPrimaryCodeSystem() {
 		
-		final ImmutableMap<String,Object> additionalProperties = ImmutableMap.of(SnomedTerminologyComponentConstants.CODESYSTEM_MODULES_CONFIG_KEY, ImmutableList.of(Concepts.MODULE_SCT_CORE));
+		final ImmutableMap<String,Object> additionalProperties = ImmutableMap.of(
+				SnomedTerminologyComponentConstants.CODESYSTEM_MODULES_CONFIG_KEY, ImmutableList.of(Concepts.MODULE_SCT_CORE),
+				SnomedTerminologyComponentConstants.CODESYSTEM_NAMESPACE_CONFIG_KEY, Concepts.CORE_NAMESPACE);
 		
 		return CodeSystem.builder()
 				.name(SnomedTerminologyComponentConstants.SNOMED_NAME)

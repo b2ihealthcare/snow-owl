@@ -77,7 +77,7 @@ import com.google.common.collect.Iterables;
  * @see ICodeSystemApiProvider
  * @see CodeSystemApiProvider
  */
-public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
+public class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 
 	private static final String LOCATION_MARKER_SUBSUMES = "CodeSystem$subsumes.system";
 
@@ -236,6 +236,7 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 		return builder.build().toUri();
 	}
 	
+	@Override
 	protected CodeSystemURI getCodeSystemUri(final String system, final String version) {
 		
 		SnomedUri snomedUri = SnomedUri.fromUriString(system, LOCATION_MARKER_SUBSUMES);
@@ -293,7 +294,7 @@ public final class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 			if (modules instanceof Iterable) {
 				@SuppressWarnings("unchecked")
 				Iterable<String> moduleIterable  = (Iterable<String>) modules;
-				if (moduleIterable != null && moduleIterable.iterator().hasNext()) {
+				if (moduleIterable.iterator().hasNext()) {
 					String firstModule = moduleIterable.iterator().next();
 					if (extensionModuleId.equals(firstModule)) {
 						return codeSystem;
