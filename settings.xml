@@ -4,16 +4,32 @@
                       http://maven.apache.org/xsd/settings-1.0.0.xsd">
 	<profiles>
 		<profile>
-			<id>repositories</id>
 			<activation>
 				<activeByDefault>true</activeByDefault>
 			</activation>
-			<properties>
-				<!-- Nexus instance URL, example: http://example:8081/nexus -->
-				<nexus.url>url/to/local/nexus/instance</nexus.url>
-				<nexus.snapshots.url>${nexus.url}/content/repositories/snapshots</nexus.snapshots.url>
-				<nexus.releases.url>${nexus.url}/content/repositories/releases</nexus.releases.url>
-			</properties>
+			<repositories>
+				<repository>
+					<id>b2i-releases</id>
+					<url>https://nexus.b2i.sg/repository/maven-releases</url>
+					<releases>
+						<enabled>true</enabled>
+					</releases>
+					<snapshots>
+						<enabled>false</enabled>
+					</snapshots>
+				</repository>
+				<repository>
+					<id>b2i-snapshots</id>
+					<url>https://nexus.b2i.sg/repository/maven-snapshots</url>
+					<releases>
+						<enabled>false</enabled>
+					</releases>
+					<snapshots>
+						<enabled>true</enabled>
+						<updatePolicy>always</updatePolicy>
+					</snapshots>
+				</repository>
+			</repositories>
 		</profile>
 	</profiles>
 	<servers>
