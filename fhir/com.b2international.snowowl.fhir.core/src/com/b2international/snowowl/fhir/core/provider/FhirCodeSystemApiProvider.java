@@ -39,6 +39,8 @@ import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
 import com.b2international.snowowl.fhir.core.model.ValidateCodeResult;
 import com.b2international.snowowl.fhir.core.model.codesystem.*;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem.Builder;
+import com.b2international.snowowl.fhir.core.model.dt.CodeableConcept;
+import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Narrative;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.search.FhirParameter.PrefixedValue;
@@ -149,20 +151,52 @@ public final class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 	}
 	
 	@Override
-	public ValidateCodeResult validateCode(final ValidateCodeRequest validationRequest) {
+	public ValidateCodeResult validateCode(final CodeSystemURI codeSystemUri, final ValidateCodeRequest validationRequest) {
 		
-		String url = validationRequest.getUrl().getUriValue();
-		String code = validationRequest.getCode();
+		Set<Coding> codings = Sets.newHashSet(Coding.builder()
+			.code(validationRequest.getCode())
+			.display(validationRequest.getDisplay()).build());
 		
-		FhirCodeSystem fhirCodeSystem = findCodeSystemById(url);
+		if (validationRequest.getCoding() != null) {
+			codings.add(validationRequest.getCoding());
+		}
 		
-		Optional<FhirCodeSystem> enumConstantOptional = getEnumConstant(fhirCodeSystem, code);
+		CodeableConcept codeableConcept = validationRequest.getCodeableConcept();
+		if (codeableConcept != null) {
+			if (codeableConcept.getCodings() != null) { 
+				codeableConcept.getCodings().forEach(c -> codings.add(c));
+			}
+		}
 		
-		if (enumConstantOptional.isPresent()) {
-			return ValidateCodeResult.builder().result(true).build();
+		FhirCodeSystem fhirCodeSystem = findCodeSystemById(codeSystemUri);
+		
+		Map<Coding, FhirCodeSystem> codingEnumMap = codings.stream()
+			.filter(coding -> {
+				Optional<FhirCodeSystem> enumConstant = getEnumConstant(fhirCodeSystem, coding.getCodeValue());
+				return enumConstant.isPresent();
+			}).collect(Collectors.toMap(c -> c, c -> getEnumConstant(fhirCodeSystem, c.getCodeValue()).get()));
+		
+		//Return true if any of the coding code found
+		if (!codingEnumMap.isEmpty()) {
+			
+			Coding coding = codingEnumMap.keySet().iterator().next();
+			if (!StringUtils.isEmpty(coding.getDisplay())) {
+				FhirCodeSystem enumCode = codingEnumMap.get(coding);
+				if (coding.getDisplay().equals(enumCode.getDisplayName())) {
+					return ValidateCodeResult.builder().result(true).build();
+				} else {
+					return ValidateCodeResult.builder()
+							.result(false)
+							.display(enumCode.getDisplayName())
+							.message(String.format("Incorrect display '%s' for code '%s'", coding.getDisplay(), coding.getCodeValue()))
+							.build();
+				}
+ 			} else {
+				return ValidateCodeResult.builder().result(true).build();
+			}
 		} else {
 			return ValidateCodeResult.builder().result(false)
-					.message(String.format("Could not find code '%s'", code))
+					.message(String.format("Could not find code(s) '%s'", Arrays.toString(codings.toArray())))
 					.build();
 		}
 
@@ -219,18 +253,20 @@ public final class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 			.orElseThrow(() -> new BadRequestException("Could not find code system for ID [%s].", systemUri));
 	}
 	
-	private FhirCodeSystem findCodeSystemById(String id) {
+	private FhirCodeSystem findCodeSystemById(CodeSystemURI codeSystemUri) {
 		
+		String id = codeSystemUri.getUri();
 		Collection<Class<?>> codeSystemClasses = getCodeSystemClasses();
 		
 		return codeSystemClasses.stream()
 			.map(csc -> createCodeSystemEnum(csc))
-			.filter(fcs -> fcs.getCodeSystemUri().endsWith(id))
+			.filter(fcs -> {
+				return fcs.getCodeSystemUri().endsWith(id);
+			})
 			.findFirst()
 			.orElseThrow(() -> new BadRequestException("Could not find code system for ID [%s].", id));
 	}
 	
-	/* private methods */
 	private CodeSystem buildCodeSystem(FhirCodeSystem fhirCodeSystem) {
 		
 		String supportedUri = fhirCodeSystem.getCodeSystemUri();

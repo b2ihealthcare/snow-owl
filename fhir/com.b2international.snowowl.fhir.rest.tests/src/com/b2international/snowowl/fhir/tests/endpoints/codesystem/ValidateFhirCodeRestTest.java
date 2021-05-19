@@ -54,6 +54,28 @@ public class ValidateFhirCodeRestTest extends FhirRestTest {
 			assertEquals(true, result.getResult());
 	}
 	
+	@Test
+	public void validateFhirCodeSystemCodeWithDisplayTest() throws Exception {
+		
+		String responseString = givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.pathParam("id", FHIR_ISSUE_TYPE_CODESYSTEM_ID)
+			.param("code", "login")
+			.param("display", "invalid")
+			.param("_format", "json")
+			.when().get("/CodeSystem/{id}/$validate-code")
+			.then().assertThat()
+			.statusCode(200)
+			.extract()
+			.body()
+			.asString();
+			
+			ValidateCodeResult result = convertToValidateCodeResult(responseString);
+			
+			assertEquals(false, result.getResult());
+			assertEquals("Incorrect display 'invalid' for code 'login'", result.getMessage());
+			assertEquals("Login Required", result.getDisplay());
+	}
+	
 	private ValidateCodeResult convertToValidateCodeResult(String responseString) throws Exception {
 		Fhir parameters = objectMapper.readValue(responseString, Parameters.Fhir.class);
 		Json json = new Parameters.Json(parameters);

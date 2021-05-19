@@ -148,10 +148,11 @@ public interface ICodeSystemApiProvider extends IFhirApiProvider {
 
 	/**
 	 * Validates a code system code against a code system specified in the request.
+	 * @param codeSystemUri the URI representing the code system to check the code against
 	 * @param validateCodeRequest
 	 * @return validation result
 	 */
-	ValidateCodeResult validateCode(ValidateCodeRequest validateCodeRequest);
+	ValidateCodeResult validateCode(CodeSystemURI codeSystemUri, ValidateCodeRequest validateCodeRequest);
 
 
 }

@@ -63,6 +63,8 @@ public class ValidateCodeRequest {
 	private final Coding coding;
 	
 	// A full codeableConcept to validate (0..1)
+	//The server returns true if one of the coding values is in the code system, and may also validate
+	//that the codings are not in conflict with each other if more than one is present.
 	private final CodeableConcept codeableConcept;
 	
 	// The date for which the validation should be checked (0..1)
@@ -149,19 +151,19 @@ public class ValidateCodeRequest {
 		return true;
 	}
 	
-	@AssertTrue(message = "System is missing for provided code")
-	private boolean isSystemMissing() {
-
-		if (url == null && code != null) {
-			return false;
-		}
-
-		if (coding != null && coding.getSystem() == null) {
-			return false;
-		}
-		
-		return true;
-	}
+//	@AssertTrue(message = "System is missing for provided code")
+//	private boolean isSystemMissing() {
+//
+//		if (url == null && code != null) {
+//			return false;
+//		}
+//
+//		if (coding != null && coding.getSystem() == null) {
+//			return false;
+//		}
+//		
+//		return true;
+//	}
 	
 	@AssertTrue(message = "System URL and Coding.system are different")
 	private boolean isSystemsDifferent() {

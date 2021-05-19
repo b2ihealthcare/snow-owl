@@ -276,12 +276,11 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 			@ApiParam(value="The date stamp of the code system to validate against") @RequestParam(value="date") final Optional<String> date,
 			@ApiParam(value="The abstract status of the code") @RequestParam(value="abstract") final Optional<Boolean> isAbstract) {
 		
-		CodeSystemURI codeSystemURI = new CodeSystemURI(codeSystemId);
+		CodeSystemURI codeSystemUri = new CodeSystemURI(codeSystemId);
 		
 		ValidateCodeRequest.Builder builder = ValidateCodeRequest.builder();
 		
-		builder.url(codeSystemId)
-				.code(code)
+		builder.code(code)
 				.version(version.orElse(null))
 				.display(display.orElse(null))
 				.isAbstract(isAbstract.orElse(null));
@@ -292,8 +291,8 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 				
 		ValidateCodeRequest validateCodeRequest = builder.build();
 		
-		ICodeSystemApiProvider codeSystemProvider = codeSystemProviderRegistry.getCodeSystemProvider(getBus(), locales, codeSystemURI);
-		ValidateCodeResult result = codeSystemProvider.validateCode(validateCodeRequest);
+		ICodeSystemApiProvider codeSystemProvider = codeSystemProviderRegistry.getCodeSystemProvider(getBus(), locales, codeSystemUri);
+		ValidateCodeResult result = codeSystemProvider.validateCode(codeSystemUri, validateCodeRequest);
 		return toResponse(result);
 	}
 
@@ -451,6 +450,7 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 			throw new BadRequestException("Parameter 'system' is not specified for subsumption testing.", "SubsumptionRequest.system");
 		}
 		
+		//TODO: this probably incorrect as codeSystemId is an internal id vs. system that is external
 		if (!StringUtils.isEmpty(system) && !StringUtils.isEmpty(codeSystemId)) {
 			if (!codeSystemId.equals(system)) {
 				throw new BadRequestException(String.format("Parameter 'system: %s' and path parameter 'codeSystem: %s' are not the same.", system, codeSystemId), "SubsumptionRequest.system");

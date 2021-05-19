@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.fhir.tests.serialization.parameterized;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Optional;
@@ -62,25 +63,14 @@ public class ValidateCodeSystemCodeRequestTest extends FhirTest {
 	}
 	
 	@Test
-	public void missingSystemTest() {
+	public void onlyCodeSpecifiedTest() {
 		
-		Builder builder = Issue.builder()
-			.code(IssueType.INVALID)
-			.severity(IssueSeverity.ERROR)
-			.diagnostics("1 validation error");
-		
-		Issue expectedIssue = builder.addLocation("ValidateCodeRequest.systemMissing")
-			.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'systemMissing' content is invalid [false]."
-					+ " Violation: System is missing for provided code.")
-			.build();
-		
-		exception.expect(ValidationException.class);
-		exception.expectMessage("1 validation error");
-		exception.expect(FhirExceptionIssueMatcher.issue(expectedIssue));
-		
-		ValidateCodeRequest.builder()
+		//This is valid as the code system can also be provided as a path parameter
+		ValidateCodeRequest request = ValidateCodeRequest.builder()
 			.code("A")
 			.build();
+		
+		assertEquals("A", request.getCode());
 	}
 	
 	@Test
