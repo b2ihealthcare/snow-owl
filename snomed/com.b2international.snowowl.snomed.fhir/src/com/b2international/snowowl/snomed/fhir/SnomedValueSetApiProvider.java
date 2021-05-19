@@ -346,7 +346,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 						.display(snomedConcept.getPt().getTerm()).build();
 				}
 			} catch (NotFoundException nfex) {
-				return ValidateCodeResult.builder().valueSetNotFoundResult(snomedUri.toString()).build();
+				return ValidateCodeResult.builder().artefactNotFoundResult(snomedUri.toString()).build();
 			}
 			
 			//refset is valid, is there an active member?

@@ -28,6 +28,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 
+import com.b2international.snowowl.fhir.core.model.codesystem.Concept;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionResult;
 import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionResult.SubsumptionType;
@@ -40,34 +41,13 @@ import com.b2international.snowowl.test.commons.BundleStartRule;
 import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 
 /**
- * CodeSystem REST end-point test cases
- * 
- * parameter: [ {
- *      "name" : "version",
- *      "valueString" : "v1"
- *    },
- *    {
- *      "name": "property",
- *      "valueCode" : "whateverCode"
- *    },
- *    {
- *       "name" : "property",
- *       "part" : [
- *           "name" : "code"
- *           "valueCode" : "whateverCode"
- *       ]
- *     },
- *     ..
- * ]
- * 
- * 
  * @since 6.6
  */
 public class SandBoxRestTest extends FhirRestTest {
 	
 	private static final String FHIR_ISSUE_TYPE_CODESYSTEM_URI = "http://hl7.org/fhir/issue-type";
 	
-	private static final String FHIR_ISSUE_TYPE_CODESYSTEM_ID = "fhir:issue-type";
+	private static final String FHIR_ISSUE_TYPE_CODESYSTEM_ID = "fhir/issue-type";
 	
 	/**
 	 * Execute the tests with this rule if the no dataset needs to be imported
@@ -78,6 +58,23 @@ public class SandBoxRestTest extends FhirRestTest {
 		.around(new BundleStartRule("org.eclipse.jetty.osgi.boot"))
 		.around(new BundleStartRule("com.b2international.snowowl.core.rest"));
 	
+	
+	@Test
+	public void validateFhirCodeSystemCodeTest() {
+		
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.pathParam("id", FHIR_ISSUE_TYPE_CODESYSTEM_ID)
+			.param("code", "login")
+			.param("_format", "json")
+			.when().get("/CodeSystem/{id}/$validate-code")
+			.then()
+			.body("resourceType", equalTo("Parameters"))
+			.body("parameter[0].name", equalTo("name"))
+			.body("parameter[0].valueString", equalTo("IssueType"))
+			.body("parameter[1].name", equalTo("display"))
+			.body("parameter[1].valueString", equalTo("Login Required"))
+			.statusCode(200);
+	}
 	
 	//@Test
 	public void printAllCodesystems() {

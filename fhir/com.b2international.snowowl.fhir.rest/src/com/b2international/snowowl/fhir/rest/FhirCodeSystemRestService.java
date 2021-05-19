@@ -269,7 +269,6 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 	})
 	@RequestMapping(value="/{codeSystemId:**}/$validate-code", method=RequestMethod.GET)
 	public Parameters.Fhir validateCode(
-			
 			@ApiParam(value="The id of the code system to validate against") @PathVariable("codeSystemId") String codeSystemId, 
 			@ApiParam(value="The code to be validated") @RequestParam(value="code") final String code,
 			@ApiParam(value="The version of the code system") @RequestParam(value="version") final Optional<String> version,
@@ -279,15 +278,21 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 		
 		CodeSystemURI codeSystemURI = new CodeSystemURI(codeSystemId);
 		
-		ValidateCodeRequest validateCodeRequest = ValidateCodeRequest.builder()
+		ValidateCodeRequest.Builder builder = ValidateCodeRequest.builder();
+		
+		builder.url(codeSystemId)
 				.code(code)
 				.version(version.orElse(null))
 				.display(display.orElse(null))
-				.date(date.orElse(null))
-				.isAbstract(isAbstract.orElse(null))
-				.build();
+				.isAbstract(isAbstract.orElse(null));
 		
-		ICodeSystemApiProvider codeSystemProvider = codeSystemProviderRegistry.getCodeSystemProvider(getBus(), locales, codeSystemId);
+		if (date.isPresent()) {
+			builder.date(date.get());
+		}
+				
+		ValidateCodeRequest validateCodeRequest = builder.build();
+		
+		ICodeSystemApiProvider codeSystemProvider = codeSystemProviderRegistry.getCodeSystemProvider(getBus(), locales, codeSystemURI);
 		ValidateCodeResult result = codeSystemProvider.validateCode(validateCodeRequest);
 		return toResponse(result);
 	}

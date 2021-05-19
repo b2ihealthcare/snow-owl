@@ -189,7 +189,7 @@ public class ValidateCodeRequest {
 		return true;
 	}
 	
-	@AssertTrue(message = "Either code, coding or codeable can be defined at a time")
+	@AssertTrue(message = "System URL and a Coding.system in Codeable are different")
 	private boolean isInvalidCodeableSystem() {
 
 		if (codeableConcept != null) {

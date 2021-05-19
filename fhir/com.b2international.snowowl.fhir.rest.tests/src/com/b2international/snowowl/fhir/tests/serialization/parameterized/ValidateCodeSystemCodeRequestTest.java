@@ -27,11 +27,8 @@ import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.core.exceptions.ValidationException;
 import com.b2international.snowowl.fhir.core.model.Issue;
 import com.b2international.snowowl.fhir.core.model.Issue.Builder;
-import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.codesystem.ValidateCodeRequest;
-import com.b2international.snowowl.fhir.core.model.dt.Coding;
-import com.b2international.snowowl.fhir.core.model.dt.Parameter;
-import com.b2international.snowowl.fhir.core.model.dt.Parameters;
+import com.b2international.snowowl.fhir.core.model.dt.*;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Json;
 import com.b2international.snowowl.fhir.tests.FhirExceptionIssueMatcher;
@@ -42,7 +39,7 @@ import com.b2international.snowowl.fhir.tests.FhirTest;
  * 
  * @since 7.17.0
  */
-public class ValidateCodeSystemCodeRequestDeserializationTest extends FhirTest {
+public class ValidateCodeSystemCodeRequestTest extends FhirTest {
 	
 	@Test
 	public void missingCodeTest() {
@@ -158,6 +155,31 @@ public class ValidateCodeSystemCodeRequestDeserializationTest extends FhirTest {
 	}
 	
 	@Test
+	public void differentSystemsInCodeableTest() {
+		
+		Builder builder = Issue.builder()
+			.code(IssueType.INVALID)
+			.severity(IssueSeverity.ERROR)
+			.diagnostics("1 validation error");
+		
+		Issue expectedIssue = builder.addLocation("ValidateCodeRequest.invalidCodeableSystem")
+			.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'invalidCodeableSystem' content is invalid [false]."
+					+ " Violation: System URL and a Coding.system in Codeable are different.")
+			.build();
+		
+		exception.expect(ValidationException.class);
+		exception.expectMessage("1 validation error");
+		exception.expect(FhirExceptionIssueMatcher.issue(expectedIssue));
+		
+		ValidateCodeRequest.builder()
+			.url("systemURI")
+			.codeableConcept(CodeableConcept.builder()
+					.addCoding(Coding.builder().code("A").system("systemURI2").build())
+					.build())
+			.build();
+	}
+	
+	@Test
 	public void fullCircleTest() throws Exception {
 		
 		Coding coding = Coding.builder()
@@ -186,10 +208,9 @@ public class ValidateCodeSystemCodeRequestDeserializationTest extends FhirTest {
 		Json json = new Parameters.Json(parameters);
 		ValidateCodeRequest validateRequest = objectMapper.convertValue(json, ValidateCodeRequest.class);
 		System.out.println("... and back to the object representation we started from:" + validateRequest);
-		
 	}
 	
-	//@Test
+	@Test
 	public void testDeserialization() {
 
 		Coding coding = Coding.builder()
@@ -206,8 +227,8 @@ public class ValidateCodeSystemCodeRequestDeserializationTest extends FhirTest {
 		Fhir fhirParameters = new Parameters.Fhir(request);
 		Optional<Parameter> findFirst = fhirParameters.getParameters().stream()
 				.filter(p -> {
-					Coding pCoding = (Coding) p.getValue();
-					return pCoding.getSystemValue().equals("http://hl7.org/fhir/issue-severity");
+					Uri uri = (Uri) p.getValue();
+					return uri.getUriValue().equals("http://hl7.org/fhir/issue-severity");
 				})
 				.findFirst();
 

@@ -17,7 +17,7 @@ package com.b2international.snowowl.fhir.tests.serialization.parameterized;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItems;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import org.junit.Test;
 
@@ -48,7 +48,7 @@ import io.restassured.path.json.JsonPath;
  */
 public class LookupResultSerializationTest extends FhirTest {
 	
-	//@Test
+	@Test
 	public void missingNameTest() throws Exception {
 
 		Builder builder = Issue.builder()
@@ -67,7 +67,7 @@ public class LookupResultSerializationTest extends FhirTest {
 		LookupResult.builder().display("display").build();
 	}
 	
-	//@Test
+	@Test
 	public void emptyNameTest() throws Exception {
 
 		Builder builder = Issue.builder()
@@ -86,7 +86,7 @@ public class LookupResultSerializationTest extends FhirTest {
 		LookupResult.builder().display("display").name("").build();
 	}
 	
-	//@Test
+	@Test
 	public void missingDisplayTest() throws Exception {
 
 		Builder builder = Issue.builder()
@@ -105,7 +105,7 @@ public class LookupResultSerializationTest extends FhirTest {
 		LookupResult.builder().name("name").build();
 	}
 	
-	//@Test
+	@Test
 	public void missingEverythingTest() throws Exception {
 
 		exception.expect(ValidationException.class);

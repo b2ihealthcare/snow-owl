@@ -36,6 +36,7 @@ import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
 import com.b2international.snowowl.fhir.core.codesystems.FhirCodeSystem;
 import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
+import com.b2international.snowowl.fhir.core.model.ValidateCodeResult;
 import com.b2international.snowowl.fhir.core.model.codesystem.*;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem.Builder;
 import com.b2international.snowowl.fhir.core.model.dt.Narrative;
@@ -169,6 +170,48 @@ public final class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 	@Override
 	public SubsumptionResult subsumes(SubsumptionRequest subsumption) {
 		throw new UnsupportedOperationException();
+	}
+	
+	@Override
+	public ValidateCodeResult validateCode(final ValidateCodeRequest validationRequest) {
+		
+		String url = validationRequest.getUrl().getUriValue();
+		String code = validationRequest.getCode();
+		
+		Set<FhirCodeSystem> fhirCodeSystems = getCodeSystemClasses().stream()
+			.map(c -> {
+				Object enumObject = createCodeSystemEnum(c);
+				System.out.println(enumObject);
+				return (FhirCodeSystem) enumObject;
+			})
+			.filter(fcs -> {
+				String codeSystemName = fcs.getCodeSystemUri().replace("http://hl7.org/", "");
+				return url.equalsIgnoreCase(codeSystemName);
+			}).collect(Collectors.toSet());
+		
+		if (fhirCodeSystems.isEmpty()) {
+			throw new BadRequestException("Could not find FHIR code system for URI [%s].", url);
+		}
+		
+		if (fhirCodeSystems.size() > 1) {
+			throw new BadRequestException("More than one FHIR code systems found for URI [%s].", url);
+		}
+		
+		FhirCodeSystem fhirCodeSystem = fhirCodeSystems.iterator().next();
+		
+		Set<FhirCodeSystem> codeSystemEnums = Sets.newHashSet(fhirCodeSystem.getClass().getDeclaredFields()).stream()
+				.filter(Field::isEnumConstant)
+				.map(f -> (FhirCodeSystem) createEnumInstance(f.getName(), fhirCodeSystem.getClass()))
+				.collect(Collectors.toSet());
+		
+		FhirCodeSystem fhirCodeSystemValue = codeSystemEnums.stream()
+				.filter(cs -> code.equals(cs.getCodeValue()))
+				.findAny()
+				.orElseThrow(() -> new BadRequestException("Could not find code [%s] for the known code system [%s].", code, url));
+			
+		
+		
+		return null;
 	}
 	
 	@Override

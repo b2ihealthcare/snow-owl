@@ -92,20 +92,20 @@ public class ValidateCodeResult {
 		 * @param componentUri
 		 * @return
 		 */
-		public Builder valueSetNotFoundResult(ComponentURI componentUri) {
+		public Builder componentNotFoundResult(ComponentURI componentUri) {
 			this.result = false;
-			this.message("Could not find a valueset to check against: " + componentUri);
+			this.message("Could not find the component to check code against: " + componentUri);
 			return this;
 		}
 		
 		/**
 		 * Builds a result for errors when value set is not found
-		 * @param valueSetUrl
+		 * @param URL
 		 * @return
 		 */
-		public Builder valueSetNotFoundResult(String valueSetUrl) {
+		public Builder artefactNotFoundResult(String url) {
 			this.result = false;
-			this.message("Could not find a valueset to check against: " + valueSetUrl);
+			this.message("Could not find the artecfact to check code against: " + url);
 			return this;
 		}
 
