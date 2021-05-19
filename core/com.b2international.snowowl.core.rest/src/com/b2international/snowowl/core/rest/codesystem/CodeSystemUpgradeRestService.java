@@ -55,13 +55,13 @@ public class CodeSystemUpgradeRestService extends AbstractRestService {
 			final UpgradeRestInput body) {
 		
 		final UriComponentsBuilder uriBuilder = createURIBuilder();
-		
+		final ResourceURI upgradeOf = new ResourceURI(body.getUpgradeOf());
 		final IEventBus bus = getBus();
-		return CodeSystemRequests.prepareGetCodeSystem(body.getUpgradeOf())
+		return CodeSystemRequests.prepareGetCodeSystem(upgradeOf.getResourceId()) // TODO move this to generic resource controller
 			.buildAsync()
 			.execute(bus)
 			.thenWith(codeSystem -> {
-				return CodeSystemRequests.prepareUpgrade(codeSystem.getResourceURI(), new ResourceURI(body.getExtensionOf()))
+				return CodeSystemRequests.prepareUpgrade(upgradeOf, new ResourceURI(body.getExtensionOf()))
 						.setResourceId(body.getCodeSystemId())
 						.buildAsync()
 						.execute(bus);

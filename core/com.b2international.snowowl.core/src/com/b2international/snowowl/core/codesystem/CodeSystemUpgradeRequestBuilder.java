@@ -28,13 +28,13 @@ public final class CodeSystemUpgradeRequestBuilder
 		extends BaseRequestBuilder<CodeSystemUpgradeRequestBuilder, RepositoryContext, String> 
 		implements ResourceRepositoryRequestBuilder<String> {
 
-	private final ResourceURI codeSystem;
+	private final ResourceURI resource;
 	private final ResourceURI extensionOf;
 	
 	private String resourceId;
 
-	CodeSystemUpgradeRequestBuilder(ResourceURI codeSystem, ResourceURI extensionOf) {
-		this.codeSystem = codeSystem;
+	CodeSystemUpgradeRequestBuilder(ResourceURI resource, ResourceURI extensionOf) {
+		this.resource = resource;
 		this.extensionOf = extensionOf;
 	}
 	
@@ -51,7 +51,7 @@ public final class CodeSystemUpgradeRequestBuilder
 	
 	@Override
 	protected Request<RepositoryContext, String> doBuild() {
-		final CodeSystemUpgradeRequest req = new CodeSystemUpgradeRequest(codeSystem, extensionOf);
+		final CodeSystemUpgradeRequest req = new CodeSystemUpgradeRequest(resource, extensionOf);
 		req.setResourceId(resourceId);
 		return req;
 	}
