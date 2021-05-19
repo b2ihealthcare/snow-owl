@@ -202,7 +202,7 @@ public final class RepositoryTransactionContext extends DelegatingBranchContext 
 		if (o instanceof RevisionDocument) {
 			RevisionDocument doc = (RevisionDocument) o;
 			
-			if (force || service(ComponentDeletionPolicy.class).canDelete(doc)) {
+			if (force || optionalService(ComponentDeletionPolicy.class).map(cdp -> cdp.canDelete(doc)).orElse(Boolean.TRUE)) {
 				staging.stageRemove(doc);
 			} else {
 				throw new ConflictException("'%s' '%s' cannot be deleted.", DocumentMapping.getType(doc.getClass()), doc.getId());
