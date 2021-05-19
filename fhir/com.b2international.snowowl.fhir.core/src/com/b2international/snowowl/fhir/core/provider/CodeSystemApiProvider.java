@@ -231,7 +231,7 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 	}
 
 	@Override
-	public ValidateCodeResult validateCode(final ValidateCodeRequest validationRequest) {
+	public ValidateCodeResult validateCode(final CodeSystemURI codeSystemUri, final ValidateCodeRequest validationRequest) {
 		return null;
 	}
 
