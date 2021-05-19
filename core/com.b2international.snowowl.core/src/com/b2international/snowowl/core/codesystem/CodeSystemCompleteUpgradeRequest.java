@@ -24,6 +24,7 @@ import com.b2international.snowowl.core.context.ResourceRepositoryCommitRequestB
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.Permission;
+import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.request.BranchRequest;
 
 /**
@@ -65,7 +66,10 @@ final class CodeSystemCompleteUpgradeRequest implements Request<RepositoryContex
 						.build()
 						.execute(tx);
 					
-					tx.delete(codeSystem);
+					// delete the corresponding resource document using the ID
+					tx.delete(ResourceDocument.builder()
+							.id(codeSystem.getId())
+							.build());
 					
 					return Boolean.TRUE;
 				})
