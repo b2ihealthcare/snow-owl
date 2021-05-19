@@ -38,7 +38,11 @@ import com.b2international.snowowl.core.version.VersionDocument;
  */
 public final class DefaultResourceURIPathResolver implements ResourceURIPathResolver {
 	
-	private boolean allowBranches = true;
+	private final boolean allowBranches;
+	
+	public DefaultResourceURIPathResolver(boolean allowBranches) {
+		this.allowBranches = allowBranches;
+	}
 	
 	@Override
 	public List<String> resolve(ServiceProvider context, List<ResourceURI> codeSystemURIs) {
@@ -95,11 +99,6 @@ public final class DefaultResourceURIPathResolver implements ResourceURIPathReso
 		} else {
 			return "";
 		}
-	}
-
-	public DefaultResourceURIPathResolver resolveBranches(boolean allowBranches) {
-		this.allowBranches = allowBranches;
-		return this;
 	}
 
 }

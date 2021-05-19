@@ -106,7 +106,7 @@ final class CodeSystemUpgradeRequest implements Request<RepositoryContext, Strin
 		
 		// only allow HEAD or valid code system versions
 		if (!resource.isHead()) {
-			mergeContentFromBranchPath = ((DefaultResourceURIPathResolver) context.service(ResourceURIPathResolver.class)).resolveBranches(false).resolve(context, List.of(resource)).stream().findFirst().get();
+			mergeContentFromBranchPath = new DefaultResourceURIPathResolver(false).resolve(context, List.of(resource)).stream().findFirst().get();
 		}
 		
 		// create the same branch name under the new extensionOf path

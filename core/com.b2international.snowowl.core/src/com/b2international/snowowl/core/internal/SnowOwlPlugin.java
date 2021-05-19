@@ -69,7 +69,7 @@ public final class SnowOwlPlugin extends Plugin {
 	@Override
 	public void init(SnowOwlConfiguration configuration, Environment env) {
 		env.services().registerService(TerminologyRegistry.class, TerminologyRegistry.INSTANCE);
-		env.services().registerService(ResourceURIPathResolver.class, new DefaultResourceURIPathResolver());
+		env.services().registerService(ResourceURIPathResolver.class, new DefaultResourceURIPathResolver(true));
 		env.services().registerService(PathTerminologyResourceResolver.class, new PathTerminologyResourceResolver.Default());
 		env.services().registerService(TimestampProvider.class, new TimestampProvider.Default());
 		
