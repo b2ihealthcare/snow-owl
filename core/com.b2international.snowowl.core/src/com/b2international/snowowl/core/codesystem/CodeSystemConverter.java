@@ -23,6 +23,7 @@ import com.b2international.commons.options.Options;
 import com.b2international.index.revision.BaseRevisionBranching;
 import com.b2international.index.revision.RevisionBranch;
 import com.b2international.index.revision.RevisionBranch.BranchState;
+import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.branch.BranchInfo;
 import com.b2international.snowowl.core.domain.RepositoryContext;
@@ -134,8 +135,8 @@ public final class CodeSystemConverter extends BaseResourceConverter<ResourceDoc
 			branchesByUpgradeOf.put(uri, branch);
 		}
 
-		BaseRevisionBranching branching = context().service(BaseRevisionBranching.class);
 		for (CodeSystem result : results) {
+			BaseRevisionBranching branching = context().service(RepositoryManager.class).get(result.getToolingId()).service(BaseRevisionBranching.class);
 			String upgradeOfBranchPath = branchesByUpgradeOf.get(result.getUpgradeOf().withoutPath());
 			
 			if (!Strings.isNullOrEmpty(upgradeOfBranchPath)) {
