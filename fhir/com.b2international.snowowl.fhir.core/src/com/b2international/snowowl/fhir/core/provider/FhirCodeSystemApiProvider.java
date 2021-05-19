@@ -72,9 +72,7 @@ public final class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 		Collection<CodeSystem> codeSystems = Sets.newHashSet();
 		
 		for (Class<?> codeSystemClass : getCodeSystemClasses()) {
-			
-			Object enumObject = createCodeSystemEnum(codeSystemClass);
-			FhirCodeSystem fhirCodeSystem = (FhirCodeSystem) enumObject;
+			FhirCodeSystem fhirCodeSystem = createCodeSystemEnum(codeSystemClass);
 			CodeSystem codeSystem = buildCodeSystem(fhirCodeSystem);
 			codeSystems.add(codeSystem);
 		}
@@ -84,10 +82,9 @@ public final class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 	@Override
 	public CodeSystem getCodeSystem(CodeSystemURI codeSystemURI) {
 		
-		return getCodeSystemClasses().stream().map(cl-> { 
-				Object enumObject = createCodeSystemEnum(cl);
-				return (FhirCodeSystem) enumObject;
-			}).filter(fcs -> fcs.getCodeSystemUri().endsWith(codeSystemURI.getPath()))
+		return getCodeSystemClasses().stream()
+				.map(cl-> createCodeSystemEnum(cl))
+				.filter(fcs -> fcs.getCodeSystemUri().endsWith(codeSystemURI.getPath()))
 				.map(this::buildCodeSystem)
 				.findFirst()
 				.get();
@@ -134,44 +131,18 @@ public final class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 		}
 		validateRequestedProperties(lookupRequest);
 		
-		Class<?> codeSytemClass = findCodeSystem(system);
+		FhirCodeSystem fhirCodeSystem = findCodeSystemByUri(system);
+		Optional<FhirCodeSystem> enumConstantOptional = getEnumConstant(fhirCodeSystem, code);
 		
-		//map the code system class to enum constants
-		Set<FhirCodeSystem> codeSystemEnums = Sets.newHashSet(codeSytemClass.getDeclaredFields()).stream()
-			.filter(Field::isEnumConstant)
-			.map(f -> (FhirCodeSystem) createEnumInstance(f.getName(), codeSytemClass))
-			.collect(Collectors.toSet());
-			
-		//find the matching enum code
-		FhirCodeSystem fhirCodeSystem = codeSystemEnums.stream()
-			.filter(cs -> code.equals(cs.getCodeValue()))
-			.findAny()
-			.orElseThrow(() -> new BadRequestException("Could not find code [%s] for the known code system [%s].", code, system));
+		FhirCodeSystem enumConstant = enumConstantOptional
+				.orElseThrow(() -> new BadRequestException("Could not find code [%s] for the known code system [%s].", code, fhirCodeSystem.getCodeSystemUri()));
 		
 		LookupResult.Builder resultBuilder = LookupResult.builder();
-		resultBuilder.name(codeSytemClass.getSimpleName());
-		resultBuilder.display(fhirCodeSystem.getDisplayName());
+		resultBuilder.name(enumConstant.getClass().getSimpleName());
+		resultBuilder.display(enumConstant.getDisplayName());
 		return resultBuilder.build();
 	}
 	
-	private Class<?> findCodeSystem(String system) {
-		
-		Collection<Class<?>> codeSystemClasses = getCodeSystemClasses();
-		
-		//find the matching code system first
-		return codeSystemClasses.stream()
-			.filter(csc -> {
-				Object codeSystemEnum = createCodeSystemEnum(csc);
-				if (codeSystemEnum instanceof FhirCodeSystem) {
-					FhirCodeSystem fhirCodeSystem = (FhirCodeSystem) codeSystemEnum;
-					return system.equals(fhirCodeSystem.getCodeSystemUri());
-				}
-				return false;
-			})
-			.findFirst()
-			.orElseThrow(() -> new BadRequestException("Could not find code system [%s].", system));
-	}
-
 	@Override
 	public SubsumptionResult subsumes(SubsumptionRequest subsumption) {
 		throw new UnsupportedOperationException();
@@ -183,48 +154,18 @@ public final class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 		String url = validationRequest.getUrl().getUriValue();
 		String code = validationRequest.getCode();
 		
-		Class<?> codeSystemClass = findCodeSystem(url);
+		FhirCodeSystem fhirCodeSystem = findCodeSystemById(url);
 		
-		//map the code system class to enum constants
-		Set<FhirCodeSystem> codeSystemEnums = Sets.newHashSet(codeSystemClass.getDeclaredFields()).stream()
-			.filter(Field::isEnumConstant)
-			.map(f -> (FhirCodeSystem) createEnumInstance(f.getName(), codeSystemClass))
-			.collect(Collectors.toSet());
+		Optional<FhirCodeSystem> enumConstantOptional = getEnumConstant(fhirCodeSystem, code);
 		
-//		Set<FhirCodeSystem> fhirCodeSystems = getCodeSystemClasses().stream()
-//			.map(c -> {
-//				Object enumObject = createCodeSystemEnum(c);
-//				System.out.println(enumObject);
-//				return (FhirCodeSystem) enumObject;
-//			})
-//			.filter(fcs -> {
-//				String codeSystemName = fcs.getCodeSystemUri().replace("http://hl7.org/", "");
-//				return url.equalsIgnoreCase(codeSystemName);
-//			}).collect(Collectors.toSet());
-		
-		if (codeSystemEnums.isEmpty()) {
-			throw new BadRequestException("Could not find FHIR code system for URI [%s].", url);
+		if (enumConstantOptional.isPresent()) {
+			return ValidateCodeResult.builder().result(true).build();
+		} else {
+			return ValidateCodeResult.builder().result(false)
+					.message(String.format("Could not find code '%s'", code))
+					.build();
 		}
-		
-		if (codeSystemEnums.size() > 1) {
-			throw new BadRequestException("More than one FHIR code systems found for URI [%s].", url);
-		}
-		
-//		FhirCodeSystem fhirCodeSystem = fhirCodeSystems.iterator().next();
-//		
-//		Set<FhirCodeSystem> codeSystemEnums = Sets.newHashSet(fhirCodeSystem.getClass().getDeclaredFields()).stream()
-//				.filter(Field::isEnumConstant)
-//				.map(f -> (FhirCodeSystem) createEnumInstance(f.getName(), fhirCodeSystem.getClass()))
-//				.collect(Collectors.toSet());
-//		
-//		FhirCodeSystem fhirCodeSystemValue = codeSystemEnums.stream()
-//				.filter(cs -> code.equals(cs.getCodeValue()))
-//				.findAny()
-//				.orElseThrow(() -> new BadRequestException("Could not find code [%s] for the known code system [%s].", code, url));
-			
-		
-		
-		return null;
+
 	}
 	
 	@Override
@@ -240,8 +181,7 @@ public final class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 		Collection<Class<?>> codeSystemClasses = getCodeSystemClasses();
 		
 		for (Class<?> codeSystemPackageClass : codeSystemClasses) {
-			Object enumObject = createCodeSystemEnum(codeSystemPackageClass);
-			FhirCodeSystem fhirCodeSystem = (FhirCodeSystem) enumObject;
+			FhirCodeSystem fhirCodeSystem = createCodeSystemEnum(codeSystemPackageClass);
 			codeSytemUris.add(fhirCodeSystem.getCodeSystemUri());
 		}
 		return codeSytemUris;
@@ -255,6 +195,39 @@ public final class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 			.filter(p -> p.equals(codeSystemId.getPath()))
 			.findFirst();
 		return supportedPath.isPresent();
+	}
+	
+	private Optional<FhirCodeSystem> getEnumConstant(FhirCodeSystem fhirCodeSystem, String code) {
+		
+		return Sets.newHashSet(fhirCodeSystem.getClass().getDeclaredFields()).stream()
+				.filter(Field::isEnumConstant)
+				.map(f -> (FhirCodeSystem) createEnumInstance(f.getName(), fhirCodeSystem.getClass()))
+				.filter(cs -> code.equals(cs.getCodeValue()))
+				.findFirst();
+	}
+	
+	private FhirCodeSystem findCodeSystemByUri(String systemUri) {
+		
+		Collection<Class<?>> codeSystemClasses = getCodeSystemClasses();
+		
+		return codeSystemClasses.stream()
+			.map(csc -> createCodeSystemEnum(csc))
+			.filter(fcs -> {
+				return systemUri.equalsIgnoreCase(fcs.getCodeSystemUri());
+			})
+			.findFirst()
+			.orElseThrow(() -> new BadRequestException("Could not find code system for ID [%s].", systemUri));
+	}
+	
+	private FhirCodeSystem findCodeSystemById(String id) {
+		
+		Collection<Class<?>> codeSystemClasses = getCodeSystemClasses();
+		
+		return codeSystemClasses.stream()
+			.map(csc -> createCodeSystemEnum(csc))
+			.filter(fcs -> fcs.getCodeSystemUri().endsWith(id))
+			.findFirst()
+			.orElseThrow(() -> new BadRequestException("Could not find code system for ID [%s].", id));
 	}
 	
 	/* private methods */
@@ -318,13 +291,13 @@ public final class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 	 * @param codeSystemPackageClass
 	 * @return
 	 */
-	private Object createCodeSystemEnum(Class<?> codeSystemPackageClass) {
+	private FhirCodeSystem createCodeSystemEnum(Class<?> codeSystemPackageClass) {
 		
 		Field[] declaredFields = codeSystemPackageClass.getDeclaredFields();
 		
 		//create the first enum constant if exists
 		if (declaredFields.length > 0 && declaredFields[0].isEnumConstant()) {
-			return createEnumInstance(declaredFields[0].getName(), codeSystemPackageClass);
+			return (FhirCodeSystem) createEnumInstance(declaredFields[0].getName(), codeSystemPackageClass);
 		}
 		throw new NullPointerException("Could not create an enum for the class: " + codeSystemPackageClass);
 	}

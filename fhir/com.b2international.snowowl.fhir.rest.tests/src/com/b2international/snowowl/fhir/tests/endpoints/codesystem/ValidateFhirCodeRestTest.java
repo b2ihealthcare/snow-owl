@@ -15,11 +15,50 @@
  */
 package com.b2international.snowowl.fhir.tests.endpoints.codesystem;
 
+import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
+import static org.junit.Assert.assertEquals;
+
+import org.junit.Test;
+
+import com.b2international.snowowl.fhir.core.model.ValidateCodeResult;
+import com.b2international.snowowl.fhir.core.model.dt.Parameters;
+import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
+import com.b2international.snowowl.fhir.core.model.dt.Parameters.Json;
+import com.b2international.snowowl.fhir.tests.FhirRestTest;
+
 /**
  * CodeSystem $validate-code operation for FHIR code systems REST end-point test cases
  * 
  * @since 7.17.0
  */
-public class ValidateFhirCodeRestTest {
+public class ValidateFhirCodeRestTest extends FhirRestTest {
+	
+	private static final String FHIR_ISSUE_TYPE_CODESYSTEM_ID = "fhir/issue-type";
+	
+	@Test
+	public void validateFhirCodeSystemCodeTest() throws Exception {
+		
+		String responseString = givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.pathParam("id", FHIR_ISSUE_TYPE_CODESYSTEM_ID)
+			.param("code", "login")
+			.param("_format", "json")
+			.when().get("/CodeSystem/{id}/$validate-code")
+			.then().assertThat()
+			.statusCode(200)
+			.extract()
+			.body()
+			.asString();
+			
+			ValidateCodeResult result = convertToValidateCodeResult(responseString);
+			
+			assertEquals(true, result.getResult());
+	}
+	
+	private ValidateCodeResult convertToValidateCodeResult(String responseString) throws Exception {
+		Fhir parameters = objectMapper.readValue(responseString, Parameters.Fhir.class);
+		Json json = new Parameters.Json(parameters);
+		return objectMapper.convertValue(json, ValidateCodeResult.class);
+	}
+	
 
 }
