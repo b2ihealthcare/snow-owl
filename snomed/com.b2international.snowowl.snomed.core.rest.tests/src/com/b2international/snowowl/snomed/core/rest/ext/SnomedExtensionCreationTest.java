@@ -30,6 +30,7 @@ import org.junit.Test;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.BranchPathUtils;
+import com.b2international.snowowl.core.version.Version;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
 
@@ -55,15 +56,14 @@ public class SnomedExtensionCreationTest extends AbstractSnomedApiTest {
 		LocalDate effectiveTime = LocalDate.now();
 		createVersion(codeSystemId, versionId, effectiveTime).statusCode(201);
 
-		assertThat(getVersion(codeSystemId, versionId).getEffectiveTime()).isEqualTo(effectiveTime);
+		Version version = getVersion(codeSystemId, versionId);
+		assertThat(version.getEffectiveTime()).isEqualTo(effectiveTime);
 
 		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId).statusCode(200)
 			.body("released", equalTo(true))
 			.body("effectiveTime", equalTo(effectiveTime.format(DateTimeFormatter.BASIC_ISO_DATE)));
 
-		IBranchPath versionPath = BranchPathUtils.createPath(branchPath, versionId);
-
-		getComponent(versionPath, SnomedComponentType.CONCEPT, conceptId).statusCode(200)
+		getComponent(version.getBranchPath(), SnomedComponentType.CONCEPT, conceptId).statusCode(200)
 			.body("released", equalTo(true))
 			.body("effectiveTime", equalTo(effectiveTime.format(DateTimeFormatter.BASIC_ISO_DATE)));
 	}
@@ -87,8 +87,9 @@ public class SnomedExtensionCreationTest extends AbstractSnomedApiTest {
 		LocalDate effectiveTime = LocalDate.now();
 		createVersion(codeSystemId, versionId, effectiveTime).statusCode(201);
 
-		assertThat(getVersion(codeSystemId, versionId).getEffectiveTime()).isEqualTo(effectiveTime);
-
+		Version version = getVersion(codeSystemId, versionId);
+		assertThat(version.getEffectiveTime()).isEqualTo(effectiveTime);
+		
 		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId).statusCode(404);
 		getComponent(a, SnomedComponentType.CONCEPT, conceptId).statusCode(200)
 			.body("released", equalTo(true))

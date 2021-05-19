@@ -980,14 +980,14 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		// version extension
 		LocalDate effectiveDate2 = LocalDate.now();
 		createVersion(extension.getId(), effectiveDate2).statusCode(201);
-		ResourceURI extensionVersion = extension.getResourceURI(effectiveDate2.toString());
+		ResourceURI extensionVersion = CodeSystem.uri(extension.getId(), effectiveDate2.toString());
 		
 		
 		// start upgrade to the new available upgrade version
 		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extensionVersion, upgradeVersion);
 		assertEquals(upgradeVersion, upgradeCodeSystem.getExtensionOf());
 		
-		getComponent(upgradeCodeSystem.getResourceURI().getResourceId(), SnomedComponentType.CONCEPT, newConceptId).statusCode(200);
+		getComponent(upgradeCodeSystem.getResourceURI().toString(), SnomedComponentType.CONCEPT, newConceptId).statusCode(200);
 	}
 	
 	@Test
@@ -1010,7 +1010,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		// version extension
 		LocalDate effectiveDate2 = getNextAvailableEffectiveDate(extension.getId());
 		createVersion(extension.getId(), effectiveDate2).statusCode(201);
-		ResourceURI extensionVersion = extension.getResourceURI(effectiveDate2.toString());
+		ResourceURI extensionVersion = CodeSystem.uri(extension.getId(), effectiveDate2.toString());
 		
 		// start upgrade to the new available upgrade version
 		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extensionVersion, upgradeVersion);
@@ -1037,7 +1037,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		// version extension
 		LocalDate effectiveDate2 = LocalDate.now();
 		createVersion(extension.getId(), effectiveDate2).statusCode(201);
-		ResourceURI extensionVersion = extension.getResourceURI(effectiveDate2.toString());
+		ResourceURI extensionVersion = CodeSystem.uri(extension.getId(), effectiveDate2.toString());
 		
 		// new SE concept
 		String extensionModuleId = createModule(extension);
@@ -1057,7 +1057,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		CodeSystem extension = createExtension(latestInternationalVersion, branchPath.lastSegment());
 		
 		// new SI concept
-		String newConceptId = createConcept(new ResourceURI(SNOMEDCT), createConceptRequestBody(Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE));
+		String newConceptId = createConcept(SnomedContentRule.SNOMEDCT, createConceptRequestBody(Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE));
 		
 		// create a new INT version
 		LocalDate effectiveDate = getNextAvailableEffectiveDate(SNOMEDCT);
@@ -1072,7 +1072,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		// version extension
 		LocalDate effectiveDate2 = LocalDate.now();
 		createVersion(extension.getId(), effectiveDate2).statusCode(201);
-		ResourceURI extensionVersion = extension.getResourceURI(effectiveDate2.toString());
+		ResourceURI extensionVersion = CodeSystem.uri(extension.getId(), effectiveDate2.toString());
 		
 		// start upgrade to the new available upgrade version
 		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extensionVersion, upgradeVersion);
