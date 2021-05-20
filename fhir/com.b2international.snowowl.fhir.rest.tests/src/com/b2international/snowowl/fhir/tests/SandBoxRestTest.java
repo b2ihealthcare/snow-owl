@@ -18,6 +18,8 @@ package com.b2international.snowowl.fhir.tests;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
@@ -28,6 +30,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 
+import com.b2international.snowowl.fhir.core.model.ValidateCodeResult;
 import com.b2international.snowowl.fhir.core.model.codesystem.Concept;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionResult;
@@ -60,20 +63,20 @@ public class SandBoxRestTest extends FhirRestTest {
 	
 	
 	@Test
-	public void validateFhirCodeSystemCodeTest() {
+	public void invalidCodeGetTest2() throws Exception {
 		
-		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.pathParam("id", FHIR_ISSUE_TYPE_CODESYSTEM_ID)
-			.param("code", "login")
+		String responseString = givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.param("code", "unknownCode")
+			.param("url",FHIR_ISSUE_TYPE_CODESYSTEM_URI)
 			.param("_format", "json")
-			.when().get("/CodeSystem/{id}/$validate-code")
-			.then()
-			.body("resourceType", equalTo("Parameters"))
-			.body("parameter[0].name", equalTo("name"))
-			.body("parameter[0].valueString", equalTo("IssueType"))
-			.body("parameter[1].name", equalTo("display"))
-			.body("parameter[1].valueString", equalTo("Login Required"))
-			.statusCode(200);
+			.when().get("/CodeSystem/$validate-code")
+			.prettyPeek()
+			.then().assertThat()
+			.statusCode(200)
+			.extract()
+			.body()
+			.asString();
+			
 	}
 	
 	//@Test

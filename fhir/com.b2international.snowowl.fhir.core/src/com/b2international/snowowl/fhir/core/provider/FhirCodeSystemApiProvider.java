@@ -151,22 +151,17 @@ public final class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 	}
 	
 	@Override
+	public ValidateCodeResult validateCode(final String systemUri, final ValidateCodeRequest validationRequest) {
+		
+		// Convert URI to logical ID: http://hl7.org/fhir/issue-type -> fhir/issue-type
+		String id = systemUri.toLowerCase().replace("http://hl7.org/", "");
+		return validateCode(new CodeSystemURI(id), validationRequest);
+	}
+	
+	@Override
 	public ValidateCodeResult validateCode(final CodeSystemURI codeSystemUri, final ValidateCodeRequest validationRequest) {
 		
-		Set<Coding> codings = Sets.newHashSet(Coding.builder()
-			.code(validationRequest.getCode())
-			.display(validationRequest.getDisplay()).build());
-		
-		if (validationRequest.getCoding() != null) {
-			codings.add(validationRequest.getCoding());
-		}
-		
-		CodeableConcept codeableConcept = validationRequest.getCodeableConcept();
-		if (codeableConcept != null) {
-			if (codeableConcept.getCodings() != null) { 
-				codeableConcept.getCodings().forEach(c -> codings.add(c));
-			}
-		}
+		Set<Coding> codings = collectCodingsToValidate(validationRequest);
 		
 		FhirCodeSystem fhirCodeSystem = findCodeSystemById(codeSystemUri);
 		
@@ -195,8 +190,9 @@ public final class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 				return ValidateCodeResult.builder().result(true).build();
 			}
 		} else {
+			Object[] codeValues = codings.stream().map(c->c.getCodeValue()).collect(Collectors.toSet()).toArray();
 			return ValidateCodeResult.builder().result(false)
-					.message(String.format("Could not find code(s) '%s'", Arrays.toString(codings.toArray())))
+					.message(String.format("Could not find code(s) '%s'", Arrays.toString(codeValues)))
 					.build();
 		}
 
@@ -250,7 +246,7 @@ public final class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 				return systemUri.equalsIgnoreCase(fcs.getCodeSystemUri());
 			})
 			.findFirst()
-			.orElseThrow(() -> new BadRequestException("Could not find code system for ID [%s].", systemUri));
+			.orElseThrow(() -> new BadRequestException("Could not find code system for URI [%s].", systemUri));
 	}
 	
 	private FhirCodeSystem findCodeSystemById(CodeSystemURI codeSystemUri) {
@@ -265,6 +261,25 @@ public final class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 			})
 			.findFirst()
 			.orElseThrow(() -> new BadRequestException("Could not find code system for ID [%s].", id));
+	}
+	
+private Set<Coding> collectCodingsToValidate(ValidateCodeRequest validationRequest) {
+		
+		Set<Coding> codings = Sets.newHashSet(Coding.builder()
+				.code(validationRequest.getCode())
+				.display(validationRequest.getDisplay()).build());
+			
+			if (validationRequest.getCoding() != null) {
+				codings.add(validationRequest.getCoding());
+			}
+			
+			CodeableConcept codeableConcept = validationRequest.getCodeableConcept();
+			if (codeableConcept != null) {
+				if (codeableConcept.getCodings() != null) { 
+					codeableConcept.getCodings().forEach(c -> codings.add(c));
+				}
+			}
+		return codings;
 	}
 	
 	private CodeSystem buildCodeSystem(FhirCodeSystem fhirCodeSystem) {

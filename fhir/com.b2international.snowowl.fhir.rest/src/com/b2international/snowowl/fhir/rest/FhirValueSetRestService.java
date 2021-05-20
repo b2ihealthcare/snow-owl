@@ -252,7 +252,6 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 	 * @return validation results as {@link OperationOutcome}
 	 */
 	@ApiOperation(
-			response=ValueSet.class,
 			value="Validate a code in a value set",
 			notes="Validate that a coded value is in the set of codes allowed by a value set.")
 	@ApiResponses({
@@ -291,7 +290,6 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 	 * @return validation results as {@link OperationOutcome}
 	 */
 	@ApiOperation(
-			response=ValueSet.class,
 			value="Validate a code in a value set defined by its URL",
 			notes="Validate that a coded value is in the set of codes allowed by a value set.")
 	@ApiResponses({

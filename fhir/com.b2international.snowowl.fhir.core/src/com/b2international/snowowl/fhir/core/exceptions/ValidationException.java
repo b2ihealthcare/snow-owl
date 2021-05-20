@@ -16,6 +16,7 @@
 package com.b2international.snowowl.fhir.core.exceptions;
 
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 import javax.validation.ConstraintViolation;
 
@@ -112,4 +113,22 @@ public final class ValidationException extends BadRequestException {
 	public Collection<? extends ConstraintViolation<?>> getViolations() {
 		return violations;
 	}
+	
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder(super.toString());
+        
+        Collection<? extends ConstraintViolation<?>> violations = getViolations();
+        if (!violations.isEmpty()) {
+	        sb.append(" : ");
+	       
+	        String violationMessages = violations.stream()
+                    .map(ConstraintViolation::getMessage)
+                    .collect(Collectors.joining(", "));
+	        
+	       sb.append(violationMessages);
+        }
+        return sb.toString();
+    }
+	
 }

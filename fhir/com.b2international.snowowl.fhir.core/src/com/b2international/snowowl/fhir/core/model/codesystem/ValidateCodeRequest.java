@@ -168,8 +168,21 @@ public class ValidateCodeRequest {
 	@AssertTrue(message = "System URL and Coding.system are different")
 	private boolean isSystemsDifferent() {
 
-		if (coding != null && coding.getSystem() != null && !coding.getSystem().equals(url)) {
-			return false;
+		if (coding != null && url != null) {
+			if (coding.getSystem() != null && !coding.getSystem().equals(url)) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	@AssertTrue(message = "System URL and a Coding.system in Codeable are different")
+	private boolean isInvalidCodeableSystem() {
+
+		if (codeableConcept != null && url != null) {
+			if (codeableConcept.getCodings() != null) {
+				return !codeableConcept.getCodings().stream().anyMatch(c -> !c.getSystem().equals(url));
+			}
 		}
 		return true;
 	}
@@ -191,17 +204,6 @@ public class ValidateCodeRequest {
 		return true;
 	}
 	
-	@AssertTrue(message = "System URL and a Coding.system in Codeable are different")
-	private boolean isInvalidCodeableSystem() {
-
-		if (codeableConcept != null) {
-			if (codeableConcept.getCodings() != null) {
-				return !codeableConcept.getCodings().stream().anyMatch(c -> !c.getSystem().equals(url));
-			}
-		}
-		return true;
-	}
-
 	@JsonPOJOBuilder(withPrefix = "")
 	public static final class Builder extends ValidatingBuilder<ValidateCodeRequest> {
 

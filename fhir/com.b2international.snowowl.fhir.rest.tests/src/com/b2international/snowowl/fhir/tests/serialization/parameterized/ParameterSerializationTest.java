@@ -20,10 +20,7 @@ import java.util.Collection;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.b2international.snowowl.fhir.core.model.dt.Code;
-import com.b2international.snowowl.fhir.core.model.dt.FhirDataType;
-import com.b2international.snowowl.fhir.core.model.dt.FhirType;
-import com.b2international.snowowl.fhir.core.model.dt.Parameters;
+import com.b2international.snowowl.fhir.core.model.dt.*;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
 import com.b2international.snowowl.fhir.tests.FhirTest;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -102,6 +99,74 @@ public class ParameterSerializationTest extends FhirTest {
 		}
 		
 		String expected = buildExpectedJson("{\"name\":\"parameterName\",\"valueCode\":\"test\"}");
+		
+		Fhir fhirParameters = new Parameters.Fhir(new Test());
+		Assert.assertEquals(expected, objectMapper.writeValueAsString(fhirParameters));
+	}
+	
+	@Test
+	public void codingParameterTest() throws Exception {
+		
+		@SuppressWarnings("unused")
+		@JsonPropertyOrder({"parameterName"})
+		class Test {
+			
+			private Coding parameterName = Coding.builder()
+					.code("test")
+					.display("displayTest")
+					.system("systemTest")
+					.build(); 
+
+			public Coding getParameterName() {
+				return parameterName;
+			}
+
+			public void setParameterName(Coding parameterName) {
+				this.parameterName = parameterName;
+			}
+		}
+		
+		String expected = buildExpectedJson("{\"name\":\"parameterName\","
+				+ "\"valueCoding\":{\"code\":\"test\","
+								+ "\"system\":\"systemTest\","
+								+ "\"display\":\"displayTest\"}}");
+		
+		Fhir fhirParameters = new Parameters.Fhir(new Test());
+		Assert.assertEquals(expected, objectMapper.writeValueAsString(fhirParameters));
+	}
+	
+	@Test
+	public void codeableConceptParameterTest() throws Exception {
+		
+		@SuppressWarnings("unused")
+		@JsonPropertyOrder({"parameterName"})
+		class Test {
+			
+			private CodeableConcept parameterName = CodeableConcept.builder()
+					.addCoding(Coding.builder()
+							.code("test")
+							.display("displayTest")
+							.system("systemTest")
+							.build())
+					.text("textTest")
+					.build();
+
+			public CodeableConcept getParameterName() {
+				return parameterName;
+			}
+
+			public void setParameterName(CodeableConcept parameterName) {
+				this.parameterName = parameterName;
+			}
+		}
+		
+		String expected = buildExpectedJson("{\"name\":\"parameterName\","
+				+ "\"valueCodeableConcept\":{\"text\":\"textTest\","
+							+ "\"coding\":[{\"code\":\"test\","
+												+ "\"system\":\"systemTest\","
+												+ "\"display\":\"displayTest\"}]"
+											+ "}"
+										+ "}");
 		
 		Fhir fhirParameters = new Parameters.Fhir(new Test());
 		Assert.assertEquals(expected, objectMapper.writeValueAsString(fhirParameters));
