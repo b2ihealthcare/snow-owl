@@ -21,8 +21,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.plugin.ClassPathScanner;
-import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
@@ -66,7 +66,7 @@ public interface ICodeSystemApiProvider extends IFhirApiProvider {
 		 * @return FHIR code system provider
 		 * @throws com.b2international.snowowl.fhir.core.exceptions.BadRequestException - if provider is not found with the given path
 		 */
-		public ICodeSystemApiProvider getCodeSystemProvider(IEventBus bus, List<ExtendedLocale> locales, CodeSystemURI codeSystemId) {
+		public ICodeSystemApiProvider getCodeSystemProvider(IEventBus bus, List<ExtendedLocale> locales, ResourceURI codeSystemId) {
 			return getProviders(bus, locales).stream()
 				.filter(provider -> provider.isSupported(codeSystemId))
 				.findFirst()
@@ -117,7 +117,7 @@ public interface ICodeSystemApiProvider extends IFhirApiProvider {
 	 * @param codeSystemId
 	 * @return
 	 */
-	boolean isSupported(CodeSystemURI codeSystemId);
+	boolean isSupported(ResourceURI codeSystemId);
 
 	/**
 	 * Test the subsumption relationship between code/Coding A and code/Coding B given the semantics of subsumption in the underlying code system (see hierarchyMeaning).
@@ -137,12 +137,12 @@ public interface ICodeSystemApiProvider extends IFhirApiProvider {
 	Collection<CodeSystem> getCodeSystems(Set<FhirSearchParameter> searchParameters);
 
 	/**
-	 * Returns the code system for the passed in logical id @see {@link CodeSystemURI}
+	 * Returns the code system for the passed in logical id @see {@link ResourceURI}
 	 * @param codeSystemId
 	 * @return {@link CodeSystem}
 	 * @throws BadRequestException if the code system is not supported by this provider
 	 */
-	CodeSystem getCodeSystem(CodeSystemURI codeSystemId);
+	CodeSystem getCodeSystem(ResourceURI codeSystemId);
 
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,13 @@ import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts
 import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.IS_A;
 import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.SYNONYM;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
 import com.b2international.snowowl.fhir.tests.FhirTestConcepts;
-import com.b2international.snowowl.fhir.tests.TestArtifactCreator;
 import com.b2international.snowowl.snomed.common.SnomedConstants;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -33,11 +33,13 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.test.commons.Services;
+import com.b2international.snowowl.test.commons.SnomedContentRule;
+import com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests;
 import com.b2international.snowowl.test.commons.rest.RestExtensions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -46,7 +48,7 @@ import com.google.common.collect.Maps;
 /**
  * @since 7.0
  */
-public class TestMapTypeReferenceSetCreator extends TestArtifactCreator {
+public class TestMapTypeReferenceSetCreator {
 	
 	
 	/**
@@ -99,7 +101,7 @@ public class TestMapTypeReferenceSetCreator extends TestArtifactCreator {
 			
 			//version the created content
 			System.out.println("Versioning content...");
-			createVersion(version, SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME);
+			CodeSystemVersionRestRequests.createVersion(SnomedContentRule.SNOMEDCT_ID, LocalDate.parse(version));
 			return refsetIds;
 		} else {
 			System.out.println("Found existing test map type reference set...");
@@ -127,8 +129,8 @@ public class TestMapTypeReferenceSetCreator extends TestArtifactCreator {
 			.setReferenceSetId(refsetId)
 			.setProperties(properties)
 			.setReferencedComponentId(referencedConceptId)
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath, RestExtensions.USER, "FHIR Automated Test Simple Map Type Refset Member")
-			.execute(getEventBus())
+			.build(branchPath, RestExtensions.USER, "FHIR Automated Test Simple Map Type Refset Member")
+			.execute(Services.bus())
 			.getSync();
 		
 	}
@@ -150,8 +152,8 @@ public class TestMapTypeReferenceSetCreator extends TestArtifactCreator {
 			.setReferenceSetId(refsetId)
 			.setProperties(properties)
 			.setReferencedComponentId(referencedConceptId)
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath, RestExtensions.USER, "FHIR Automated Test Complex Map Type Refset Member")
-			.execute(getEventBus())
+			.build(branchPath, RestExtensions.USER, "FHIR Automated Test Complex Map Type Refset Member")
+			.execute(Services.bus())
 			.getSync();
 		
 	}
@@ -174,8 +176,8 @@ public class TestMapTypeReferenceSetCreator extends TestArtifactCreator {
 			.setReferenceSetId(refsetId)
 			.setProperties(properties)
 			.setReferencedComponentId(referencedConceptId)
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath, RestExtensions.USER, "FHIR Automated Test Complex Block Map Type Refset Member")
-			.execute(getEventBus())
+			.build(branchPath, RestExtensions.USER, "FHIR Automated Test Complex Block Map Type Refset Member")
+			.execute(Services.bus())
 			.getSync();
 		
 	}
@@ -198,8 +200,8 @@ public class TestMapTypeReferenceSetCreator extends TestArtifactCreator {
 			.setReferenceSetId(refsetId)
 			.setProperties(properties)
 			.setReferencedComponentId(referencedConceptId)
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath, RestExtensions.USER, "FHIR Automated Test Extended Map Type Refset Member")
-			.execute(getEventBus())
+			.build(branchPath, RestExtensions.USER, "FHIR Automated Test Extended Map Type Refset Member")
+			.execute(Services.bus())
 			.getSync();
 		
 	}
@@ -211,8 +213,8 @@ public class TestMapTypeReferenceSetCreator extends TestArtifactCreator {
 		return SnomedRequests.prepareSearchDescription()
 			.one()
 			.filterByExactTerm(refsetName)
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
-			.execute(getEventBus())
+			.build(branchPath)
+			.execute(Services.bus())
 			.getSync()
 			.first();
 		
@@ -243,8 +245,8 @@ public class TestMapTypeReferenceSetCreator extends TestArtifactCreator {
 					.setReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
 					.setMapTargetComponentType(SnomedTerminologyComponentConstants.CONCEPT)
 					.setType(refsetType))
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath, RestExtensions.USER, "FHIR Automated Test Simple Type Reference Set")
-			.execute(getEventBus())
+			.build(branchPath, RestExtensions.USER, "FHIR Automated Test Simple Type Reference Set")
+			.execute(Services.bus())
 			.getSync()
 			.getResultAs(String.class);
 	}

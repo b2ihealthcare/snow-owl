@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,5 +55,18 @@ public enum PublicationStatus implements FhirCodeSystem {
 	public String getCodeSystemUri() {
 		return CODE_SYSTEM_URI;
 	}
-
+	
+	/**
+	 * @param statusCodeValue - the string representation of the status' code value
+	 * @return a {@link PublicationStatus} from the string code value representation or {@link #UNKNOWN} if the given value does not match any currently known publication status values. 
+	 */
+	public static PublicationStatus getByCodeValue(String statusCodeValue) {
+		for (PublicationStatus status : values()) {
+			if (status.getCodeValue().equals(statusCodeValue)) {
+				return status;
+			}
+		}
+		return PublicationStatus.UNKNOWN;
+	}
+ 
 }

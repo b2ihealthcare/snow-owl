@@ -25,6 +25,8 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.b2international.commons.http.ExtendedLocale;
+import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.snomed.fhir.SnomedCodeSystemApiProvider;
@@ -60,7 +62,7 @@ public class SnomedCodeSystemProviderTest {
 		}
 		
 		//Change the method visibility for the test
-		public CodeSystemURI getCodeSystemUri(String system, String version) {
+		public ResourceURI getCodeSystemUri(String system, String version) {
 			return super.getCodeSystemUri(system, version);
 		}
 		
@@ -70,14 +72,14 @@ public class SnomedCodeSystemProviderTest {
 	public void getCodeSystemUriTest() {
 		
 		TestProvider provider = new TestProvider();
-		CodeSystemURI codeSystemUri = provider.getCodeSystemUri("http://snomed.info/sct", null);
-		Assert.assertEquals(new CodeSystemURI("SNOMEDCT/2020-02-04"), codeSystemUri);
+		ResourceURI codeSystemUri = provider.getCodeSystemUri("http://snomed.info/sct", null);
+		Assert.assertEquals(CodeSystem.uri("SNOMEDCT", "2020-02-04"), codeSystemUri);
 		
 		codeSystemUri = provider.getCodeSystemUri("http://snomed.info/sct/900000000000207008", null);
-		Assert.assertEquals(new CodeSystemURI("SNOMEDCT/2020-02-04"), codeSystemUri);
+		Assert.assertEquals(CodeSystem.uri("SNOMEDCT", "2020-02-04"), codeSystemUri);
 		
 		codeSystemUri = provider.getCodeSystemUri("http://snomed.info/sct/900000000000207008/version/20180131", null);
-		assertEquals(new CodeSystemURI("SNOMEDCT/2018-01-31"), codeSystemUri);
+		assertEquals(CodeSystem.uri("SNOMEDCT", "2018-01-31"), codeSystemUri);
 	}
 	
 	@Test

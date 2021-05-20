@@ -25,11 +25,11 @@ import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
-import com.b2international.snowowl.core.codesystem.CodeSystemVersion;
 import com.b2international.snowowl.core.codesystem.CodeSystems;
 import com.b2international.snowowl.core.plugin.Component;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.core.uri.ComponentURI;
+import com.b2international.snowowl.core.version.Version;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.fhir.core.codesystems.ConceptMapEquivalence;
 import com.b2international.snowowl.fhir.core.codesystems.IdentifierUse;
@@ -93,7 +93,8 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 	
 	@Override
 	public boolean isSupported(ComponentURI componentURI) {
-		return componentURI.codeSystem().startsWith(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME);
+//		return componentURI.codeSystem().startsWith(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME);
+		return false;
 	}
 	
 	@Override
@@ -103,7 +104,7 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 		Optional<FhirSearchParameter> nameOptional = getSearchParam(searchParameters, "_name");
 		
 		//Collect every version on every extension
-		List<CodeSystemVersion> codeSystemVersionList = collectCodeSystemVersions(repositoryId);
+		List<Version> codeSystemVersionList = collectCodeSystemVersions();
 		
 		//might be nicer to maintain the order by version
 		List<ConceptMap> conceptMaps = codeSystemVersionList.stream()
@@ -133,7 +134,7 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 //						.setExpand("members(expand(referencedComponent(expand(pt()))), limit:"+ Integer.MAX_VALUE +")")
 						.setLocales(getLocales())
 						.filterByReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
-						.build(csve.getUri())
+						.build(csve.getVersionResourceURI())
 						.execute(getBus())
 						.getSync()
 						.stream()
@@ -150,7 +151,7 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 	@Override
 	public ConceptMap getConceptMap(ComponentURI componentURI) {
 		
-		CodeSystemVersion codeSystemVersion = findCodeSystemVersion(componentURI, "ConceptMap.id");
+		Version codeSystemVersion = findCodeSystemVersion(componentURI, "ConceptMap.id");
 		
 		SnomedReferenceSet snomedReferenceSet = SnomedRequests.prepareSearchRefSet()
 			.all()
@@ -160,7 +161,7 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 //			.setExpand("members(expand(referencedComponent(expand(pt()))), limit:" + Integer.MAX_VALUE +")")
 			.setLocales(getLocales())
 			.filterByReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
-			.build(componentURI.codeSystemUri())
+			.build(componentURI.resourceUri())
 			.execute(getBus())
 			.getSync()
 			.stream()
@@ -194,14 +195,14 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 		}
 				
 		//can we find the refset in question?
-		CodeSystemVersion codeSystemVersion = findCodeSystemVersion(componentURI, "ConceptMap.id");
+		Version codeSystemVersion = findCodeSystemVersion(componentURI, "ConceptMap.id");
 
 		SnomedReferenceSet referenceSet = SnomedRequests.prepareSearchRefSet()
 			.one()
 			.filterByActive(true)
 			.filterById(componentURI.identifier())
 			.filterByTypes(CONCEPT_MAP_TYPES)
-			.build(componentURI.codeSystemUri())
+			.build(componentURI.resourceUri())
 			.execute(getBus())
 			.getSync()
 			.first()
@@ -251,7 +252,7 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 					.build());
 		}
 		
-		Set<Match> matches = memberSearchRequestBuilder.build(codeSystemVersion.getUri())
+		Set<Match> matches = memberSearchRequestBuilder.build(codeSystemVersion.getVersionResourceURI())
 				.execute(getBus())
 				.getSync()
 				.stream()
@@ -291,7 +292,7 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 		
 		String locationName = "$translate.system";
 		SnomedUri snomedUri = SnomedUri.fromUriString(sourceSystem, locationName);
-		CodeSystemVersion codeSystemVersion = getCodeSystemVersion(snomedUri.getVersionTag());
+		Version codeSystemVersion = getCodeSystemVersion(snomedUri.getVersionTag());
 		
 		//no target code system is specified on the Map
 		Set<String> refsetIds = SnomedRequests.prepareSearchRefSet()
@@ -300,7 +301,7 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 			.filterByTypes(CONCEPT_MAP_TYPES)
 			.filterByMapTargetComponentType(terminologyComponentIdAsInt)
 			.filterByReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
-			.build(codeSystemVersion.getUri())
+			.build(codeSystemVersion.getVersionResourceURI())
 			.execute(getBus())
 			.getSync()
 			.stream()
@@ -326,7 +327,7 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 					.build());
 		}
 		
-		return memberSearchRequestBuilder.build(codeSystemVersion.getUri())
+		return memberSearchRequestBuilder.build(codeSystemVersion.getVersionResourceURI())
 				.execute(getBus())
 				.then(members -> {
 					return members.stream()
@@ -367,9 +368,9 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 		return builder.build();
 	}
 
-	private ConceptMap.Builder buildConceptMap(SnomedReferenceSet snomedReferenceSet, CodeSystemVersion codeSystemVersion, List<ExtendedLocale> locales) {
+	private ConceptMap.Builder buildConceptMap(SnomedReferenceSet snomedReferenceSet, Version codeSystemVersion, List<ExtendedLocale> locales) {
 		
-		ComponentURI componentURI = ComponentURI.of(codeSystemVersion.getUri(), SnomedTerminologyComponentConstants.REFSET_NUMBER, snomedReferenceSet.getId());
+		ComponentURI componentURI = ComponentURI.of(codeSystemVersion.getVersionResourceURI(), SnomedTerminologyComponentConstants.REFSET_NUMBER, snomedReferenceSet.getId());
 		ConceptMap.Builder conceptMapBuilder = ConceptMap.builder(componentURI.toString());
 
 		String referenceSetId = snomedReferenceSet.getId();
@@ -378,7 +379,7 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 		SnomedConcept refsetConcept = SnomedRequests.prepareGetConcept(referenceSetId)
 			.setExpand("pt()")
 			.setLocales(locales)
-			.build(codeSystemVersion.getUri())
+			.build(codeSystemVersion.getVersionResourceURI())
 			.execute(getBus())
 			.getSync();
 			
@@ -391,7 +392,7 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 			.version(codeSystemVersion.getVersion());
 	
 		//ID metadata
-		SnomedUri uri = SnomedUri.builder().version(codeSystemVersion.getEffectiveDate()).build();
+		SnomedUri uri = SnomedUri.builder().version(codeSystemVersion.getVersion()).build();
 		
 		Identifier identifier = Identifier.builder()
 			.use(IdentifierUse.OFFICIAL)
@@ -545,18 +546,14 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 		return true;
 	}
 	
-	private String getMapTargetComponentType(String codeSystemShortName) {
+	private String getMapTargetComponentType(String codeSystemId) {
 		
-		com.b2international.snowowl.core.codesystem.CodeSystem codeSystem = CodeSystemRequests.prepareSearchCodeSystem()
-			.all()
-			.filterById(codeSystemShortName)
-			.build(repositoryId)
+		com.b2international.snowowl.core.codesystem.CodeSystem codeSystem = CodeSystemRequests.prepareGetCodeSystem(codeSystemId)
+			.buildAsync()
 			.execute(getBus())
-			.getSync()
-			.first()
-			.orElseThrow(() -> new NotFoundException("Code system", codeSystemShortName));
+			.getSync();
 		
-		String toolingId = codeSystem.getTerminologyId();
+		String toolingId = codeSystem.getToolingId();
 		
 		//mighty hack
 		if (toolingId.contains("snomed")) {
@@ -578,23 +575,22 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 			return unknownTargetCodeSystem;
 		}
 		
-		String terminologyId = TerminologyRegistry.INSTANCE.getTerminologyByTerminologyComponentId(mapTargetComponentType).getId();
+		String terminologyId = TerminologyRegistry.INSTANCE.getTerminologyByTerminologyComponentId(mapTargetComponentType).getToolingId();
 		
 		CodeSystems codeSystems = CodeSystemRequests.prepareSearchCodeSystem()
 			.all()
-			.build(repositoryId)
+			.buildAsync()
 			.execute(getBus())
 			.getSync();
 		
-		return codeSystems.getItems().stream()
-			.filter(cs -> cs.getTerminologyId().equals(terminologyId))
+		return codeSystems.stream()
+			.filter(cs -> cs.getToolingId().equals(terminologyId))
 			.map(cs -> {
-				
-				//hack for SNOMED CT until URIs are added to the code system registry
-				if (cs.getShortName().contains("SNOMEDCT")) {
+				// hack for SNOMED CT until URIs are added to the code system registry
+				if (cs.getResourceURI().toString().contains("SNOMEDCT")) {
 					return SnomedUri.SNOMED_BASE_URI_STRING;
 				} else {
-					return cs.getShortName();
+					return cs.getId();
 				}
 			})
 			.findFirst()

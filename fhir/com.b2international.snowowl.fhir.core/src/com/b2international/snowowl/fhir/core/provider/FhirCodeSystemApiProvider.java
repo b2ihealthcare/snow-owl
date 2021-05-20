@@ -17,7 +17,10 @@ package com.b2international.snowowl.fhir.core.provider;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.osgi.framework.Bundle;
@@ -26,9 +29,10 @@ import org.osgi.framework.wiring.BundleWiring;
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.snowowl.core.codesystem.CodeSystemVersion;
+import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.plugin.Component;
-import com.b2international.snowowl.core.uri.CodeSystemURI;
+import com.b2international.snowowl.core.version.Version;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.fhir.core.FhirCoreActivator;
 import com.b2international.snowowl.fhir.core.ResourceNarrative;
@@ -59,11 +63,8 @@ public final class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 		}
 	}
 	
-	/*
-	 * No repository associated with the internal hard-coded FHIR terminologies
-	 */
 	public FhirCodeSystemApiProvider(IEventBus bus, List<ExtendedLocale> locales) {
-		super(bus, locales, null);
+		super(bus, locales);
 	}
 	
 	public final Collection<CodeSystem> getCodeSystems() {
@@ -81,8 +82,7 @@ public final class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 	}
 
 	@Override
-	public CodeSystem getCodeSystem(CodeSystemURI codeSystemURI) {
-		
+	public CodeSystem getCodeSystem(ResourceURI codeSystemURI) {
 		return getCodeSystemClasses().stream().map(cl-> { 
 				Object enumObject = createCodeSystemEnum(cl);
 				return (FhirCodeSystem) enumObject;
@@ -172,7 +172,7 @@ public final class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 	}
 	
 	@Override
-	protected Set<String> fetchAncestors(final CodeSystemURI codeSystemUri, String componentId) {
+	protected Set<String> fetchAncestors(final ResourceURI codeSystemUri, String componentId) {
 		throw new UnsupportedOperationException();
 	}
 	
@@ -192,10 +192,9 @@ public final class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 	}
 	
 	@Override
-	public boolean isSupported(CodeSystemURI codeSystemId) {
-		
+	public boolean isSupported(ResourceURI codeSystemId) {
 		Optional<String> supportedPath = getSupportedURIs().stream()
-			.map(u -> u.substring(u.lastIndexOf("/") + 1))
+			.map(u -> u.substring(u.lastIndexOf(Branch.SEPARATOR) + 1))
 			.filter(p -> p.equals(codeSystemId.getPath()))
 			.findFirst();
 		return supportedPath.isPresent();
@@ -306,25 +305,15 @@ public final class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 	}
 
 	@Override
-	protected Uri getFhirUri(com.b2international.snowowl.core.codesystem.CodeSystem codeSystem, CodeSystemVersion codeSystemVersion) {
+	protected Uri getFhirUri(com.b2international.snowowl.core.codesystem.CodeSystem codeSystem, Version codeSystemVersion) {
 		//handled on the per Core terminology basis (like LCS) 
 		return null;
 	}
 
 	@Override
-	protected int getCount(CodeSystemVersion codeSystemVersion) {
+	protected int getCount(Version codeSystemVersion) {
 		//handled on the per Core terminology basis (like LCS) 
 		return 0;
-	}
-
-	@Override
-	protected String getCodeSystemShortName() {
-		return null;
-	}
-
-	@Override
-	protected String getRepositoryId() {
-		return null;
 	}
 
 }

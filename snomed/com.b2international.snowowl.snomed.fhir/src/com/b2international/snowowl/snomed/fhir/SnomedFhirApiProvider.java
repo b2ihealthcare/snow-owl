@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,11 +23,8 @@ import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.provider.FhirApiProvider;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableSet;
 
 /**
  * Abstract superclass provider for the SNOMED CT FHIR  support
@@ -37,27 +34,12 @@ import com.google.common.collect.ImmutableSet;
  */
 public abstract class SnomedFhirApiProvider extends FhirApiProvider {
 
-	protected static final Set<String> SUPPORTED_URIS = ImmutableSet.of(
-			SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME,
-			SnomedTerminologyComponentConstants.SNOMED_INT_LINK,
-			SnomedUri.SNOMED_BASE_URI_STRING
-		);
-	
-	protected String repositoryId;
+	protected static final Set<String> SUPPORTED_URIS = Set.of(
+		SnomedUri.SNOMED_BASE_URI_STRING
+	);
 	
 	public SnomedFhirApiProvider(IEventBus bus, List<ExtendedLocale> locales) {
 		super(bus, locales);
-		this.repositoryId = SnomedDatastoreActivator.REPOSITORY_UUID;
-	}
-	
-	@Override
-	protected String getRepositoryId() {
-		return repositoryId;
-	}
-	
-	@Override
-	protected String getCodeSystemShortName() {
-		return SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME;
 	}
 	
 	public Collection<String> getSupportedURIs() {
