@@ -52,6 +52,8 @@ import com.b2international.snowowl.test.commons.rest.RestExtensions;
 public class SnomedContentRule extends ExternalResource {
 
 	public static final String SNOMEDCT_ID = "SNOMEDCT";
+	public static final String SNOMEDCT_OID = "2.16.840.1.113883.6.96";
+	
 	public static final ResourceURI SNOMEDCT = CodeSystem.uri(SNOMEDCT_ID);
 	
 	private final Path importArchive;

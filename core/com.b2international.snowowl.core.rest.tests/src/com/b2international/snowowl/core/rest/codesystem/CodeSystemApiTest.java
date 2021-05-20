@@ -41,6 +41,7 @@ import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.test.commons.Services;
+import com.b2international.snowowl.test.commons.SnomedContentRule;
 
 /**
  * @since 1.0
@@ -53,7 +54,7 @@ public class CodeSystemApiTest {
 		ResourceDocument.Fields.TITLE, "SNOMED CT",
 		ResourceDocument.Fields.URL, "http://snomed.info/sct",
 		ResourceDocument.Fields.TOOLING_ID, SnomedTerminologyComponentConstants.TOOLING_ID,
-		ResourceDocument.Fields.OID, SnomedTerminologyComponentConstants.SNOMED_INT_OID
+		ResourceDocument.Fields.OID, SnomedContentRule.SNOMEDCT_OID
 	);
 	
 	@Test

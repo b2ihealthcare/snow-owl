@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemb
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Fields;
 import com.b2international.snowowl.snomed.datastore.request.SnomedOWLExpressionConverter;
 import com.b2international.snowowl.snomed.datastore.request.SnomedOWLExpressionConverterResult;
+import com.b2international.snowowl.test.commons.SnomedContentRule;
 import com.b2international.snowowl.test.commons.snomed.TestBranchContext;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -105,9 +106,7 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 	@Test
 	public void indexSimpleMapMemberWithComponentURITarget() throws Exception {
 		final String mapTargetId = "targetId01";
-		final ComponentURI componentURI = ComponentURI.of(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME,
-				SnomedTerminologyComponentConstants.CONCEPT_NUMBER,
-				mapTargetId);
+		final ComponentURI componentURI = ComponentURI.of(SnomedContentRule.SNOMEDCT, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, mapTargetId);
 		
 		final SnomedRefSetMemberIndexEntry member = createBaseMember()
 				.referenceSetId(Concepts.REFSET_B2I_EXAMPLE)

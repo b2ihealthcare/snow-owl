@@ -20,12 +20,7 @@ import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRe
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.getComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.updateComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRefSetRestRequests.updateRefSetComponent;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.changeCaseSignificance;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewConcept;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewDescription;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewRefSetMember;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewRelationship;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.merge;
+import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.*;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getNextAvailableEffectiveDate;
 import static com.google.common.collect.Maps.newHashMap;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -51,11 +46,11 @@ import com.b2international.snowowl.core.merge.MergeConflict;
 import com.b2international.snowowl.core.merge.MergeConflict.ConflictType;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
+import com.b2international.snowowl.test.commons.SnomedContentRule;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
@@ -160,7 +155,7 @@ public class SnomedMergeConflictTest extends AbstractSnomedApiTest {
 		IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
 		branching.createBranch(a).statusCode(201);
 
-		LocalDate nextEffectiveTime = getNextAvailableEffectiveDate(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME);
+		LocalDate nextEffectiveTime = getNextAvailableEffectiveDate(SnomedContentRule.SNOMEDCT_ID);
 		String nextEffectiveTimeAsString = EffectiveTimes.format(nextEffectiveTime, DateFormats.SHORT);
 
 		Map<?, ?> effectiveTimeUpdateRequest = ImmutableMap.builder()

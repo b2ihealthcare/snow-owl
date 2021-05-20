@@ -40,7 +40,6 @@ import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snomed.ecl.EclStandaloneSetup;
 import com.b2international.snowowl.core.ComponentIdentifier;
-import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -69,6 +68,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptio
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.validation.detail.SnomedValidationIssueDetailExtension;
 import com.b2international.snowowl.snomed.validation.detail.SnomedValidationIssueDetailExtension.SnomedIssueDetailFilterFields;
+import com.b2international.snowowl.test.commons.SnomedContentRule;
 import com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator;
 import com.b2international.snowowl.test.commons.snomed.TestBranchContext;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -222,7 +222,7 @@ public class SnomedValidationIssueDetailTest extends BaseRevisionIndexTest {
 		final ValidationIssue issue = new ValidationIssue(
 			IDs.base64UUID(),
 			TEST_RULE_ID,
-			ComponentURI.of(new ResourceURI(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME), ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, componentId)),
+			ComponentURI.of(SnomedContentRule.SNOMEDCT, ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, componentId)),
 			false
 		);
 		

@@ -42,7 +42,6 @@ import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.merge.Merge;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
 import com.b2international.snowowl.snomed.core.domain.AssociationTarget;
 import com.b2international.snowowl.snomed.core.domain.InactivationProperties;
@@ -50,6 +49,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
+import com.b2international.snowowl.test.commons.SnomedContentRule;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -707,7 +707,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 	public void rebaseUnsetEffectiveTimeOnSource() {
 		final String memberId = createNewRefSetMember(branchPath);
 
-		LocalDate version = getNextAvailableEffectiveDate(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME);
+		LocalDate version = getNextAvailableEffectiveDate(SnomedContentRule.SNOMEDCT_ID);
 		updateRefSetMemberEffectiveTime(branchPath, memberId, version);
 
 		final IBranchPath a = BranchPathUtils.createPath(branchPath, "a");
@@ -740,7 +740,7 @@ public class SnomedMergeApiTest extends AbstractSnomedApiTest {
 	public void rebaseUnsetEffectiveTimeOnTarget() {
 		final String memberId = createNewRefSetMember(branchPath);
 
-		LocalDate version = getNextAvailableEffectiveDate(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME);
+		LocalDate version = getNextAvailableEffectiveDate(SnomedContentRule.SNOMEDCT_ID);
 		updateRefSetMemberEffectiveTime(branchPath, memberId, version);
 
 		final IBranchPath a = BranchPathUtils.createPath(branchPath, "a");

@@ -44,6 +44,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDoc
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snomed.ecl.EclStandaloneSetup;
+import com.b2international.snowowl.test.commons.SnomedContentRule;
 import com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator;
 import com.b2international.snowowl.test.commons.snomed.TestBranchContext.Builder;
 import com.b2international.snowowl.test.commons.validation.BaseValidationTest;
@@ -87,7 +88,7 @@ public class SnomedQueryValidationRuleEvaluatorTest extends BaseValidationTest {
 	
 	@Override
 	protected Map<String, String> getTestCodeSystemPathMap() {
-		return Map.of(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, MAIN);
+		return Map.of(SnomedContentRule.SNOMEDCT_ID, MAIN);
 	}
 	
 	@Test

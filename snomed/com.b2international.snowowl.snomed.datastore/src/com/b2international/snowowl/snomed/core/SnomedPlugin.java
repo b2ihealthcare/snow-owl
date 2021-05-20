@@ -175,7 +175,7 @@ public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 	
 	@Override
 	public String getName() {
-		return SnomedTerminologyComponentConstants.SNOMED_NAME;
+		return "SNOMED CT";
 	}
 	
 	@Override

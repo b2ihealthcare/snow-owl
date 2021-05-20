@@ -42,30 +42,16 @@ public abstract class SnomedTerminologyComponentConstants {
 	public static final String TEMPLATE = "com.b2international.snowowl.terminology.snomed.template";
 	public static final short TEMPLATE_NUMBER = 106;
 	
-	/**
-	 * @deprecated - will be moved to test API in Snow Owl 8.0, using it in business logic might yield incorrect results
-	 */
-	public static final String SNOMED_SHORT_NAME = "SNOMEDCT";
-	public static final String SNOMED_NAME = "SNOMED CT";
+//	public static final String SNOMED_NAME = "SNOMED CT";
+//	public static final String SNOMED_INT_LANGUAGE = "ENG";
+//	public static final String SNOMED_INT_LINK = "http://www.snomed.org";
+//	public static final String SNOMED_INT_ICON_PATH = "icons/snomed.png";
+//	public static final String SNOMED_INT_CITATION = "SNOMED CT contributes to the improvement of patient care by underpinning the " +
+//			"development of Electronic Health Records that record clinical information in ways that enable meaning-based retrieval. " +
+//			"This provides effective access to information required for decision support and consistent reporting and analysis. " +
+//			"Patients benefit from the use of SNOMED CT because it improves the recording of EHR information and facilitates better communication, " +
+//			"leading to improvements in the quality of care.";
 	
-	public static final String SNOMED_INT_OID = "2.16.840.1.113883.6.96";
-	public static final String SNOMED_INT_LANGUAGE = "ENG";
-	public static final String SNOMED_INT_LINK = "http://www.snomed.org";
-	public static final String SNOMED_INT_ICON_PATH = "icons/snomed.png";
-	public static final String SNOMED_INT_CITATION = "SNOMED CT contributes to the improvement of patient care by underpinning the " +
-			"development of Electronic Health Records that record clinical information in ways that enable meaning-based retrieval. " +
-			"This provides effective access to information required for decision support and consistent reporting and analysis. " +
-			"Patients benefit from the use of SNOMED CT because it improves the recording of EHR information and facilitates better communication, " +
-			"leading to improvements in the quality of care.";
-	
-	/**
-	 * @deprecated - will be moved to test API in Snow Owl 8.0, using it in business logic might yield incorrect results
-	 */
-	public static final String SNOMED_B2I_SHORT_NAME = SNOMED_SHORT_NAME + "-B2I";
-	public static final String SNOMED_B2I_NAME = SNOMED_NAME + ", B2i extension";
-	public static final String SNOMED_B2I_OID = SNOMED_INT_OID + ".1000154";
-	public static final String SNOMED_B2I_LINK = "https://b2i.sg";
-
 	private static final Pattern PATTERN = Pattern.compile("^\\d*$");
 
 	// configuration keys for managing Module and Namespace configuration in CodeSystem entries
