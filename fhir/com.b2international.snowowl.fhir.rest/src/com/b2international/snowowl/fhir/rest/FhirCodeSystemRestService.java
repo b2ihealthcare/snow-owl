@@ -228,7 +228,7 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 	}
 	
 	/**
-	 * HTTP Get request to validate that a coded value is in the code system specified by the URI param
+	 * HTTP Get request to validate that a coded value is in the code system specified by the URI parameter
 	 * The code system is identified by its Code System ID within the path
 	 * If the operation is not called at the instance level, one of the parameters "url" or "codeSystem" must be provided.
 	 * The operation returns a result (true / false), an error message, and the recommended display for the code.

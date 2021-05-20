@@ -23,21 +23,13 @@ import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
 
-import com.b2international.snowowl.fhir.core.codesystems.IssueSeverity;
-import com.b2international.snowowl.fhir.core.codesystems.IssueType;
-import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
-import com.b2international.snowowl.fhir.core.exceptions.ValidationException;
-import com.b2international.snowowl.fhir.core.model.Issue;
 import com.b2international.snowowl.fhir.core.model.ValidateCodeResult;
-import com.b2international.snowowl.fhir.core.model.Issue.Builder;
-import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.codesystem.ValidateCodeRequest;
 import com.b2international.snowowl.fhir.core.model.dt.CodeableConcept;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Json;
-import com.b2international.snowowl.fhir.tests.FhirExceptionIssueMatcher;
 import com.b2international.snowowl.fhir.tests.FhirRestTest;
 
 /**
@@ -214,7 +206,11 @@ public class ValidateFhirCodeRestTest extends FhirRestTest {
 			.statusCode(400);
 	}
 	
-	//Non-instance calls (no ID in the path)
+	/*
+	 * Non-instance calls (no ID in the path)
+	 */
+	
+	
 	@Test
 	public void invalidCodeWithUrlGetTest() throws Exception {
 		
@@ -236,21 +232,67 @@ public class ValidateFhirCodeRestTest extends FhirRestTest {
 			assertNull(result.getDisplay());
 	}
 	
+	@Test
+	public void validCodeGetWithUrl() throws Exception {
+		
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.param("code", "login")
+			.param("url", FHIR_ISSUE_TYPE_CODESYSTEM_URI)
+			.param("_format", "json")
+			.when().get("/CodeSystem/$validate-code")
+			.then()
+			.body("resourceType", equalTo("Parameters"))
+			.body("parameter[0].name", equalTo("result"))
+			.body("parameter[0].valueBoolean", equalTo(true))
+			.assertThat()
+			.statusCode(200);
+	}
 	
-	//@Test
+	@Test
 	public void validCodingTestWithPostTest() throws Exception {
 		
+		String system = "http://hl7.org/fhir/issue-severity";
 		Coding coding = Coding.builder()
-				.system("http://hl7.org/fhir/issue-severity")
+				.system(system)
 				.code("fatal")
 				.build();
 
 		ValidateCodeRequest request = ValidateCodeRequest.builder()
+			.url(system)
 			.coding(coding)
 			.build();
 		
 		Fhir fhirParameters = new Parameters.Fhir(request);
+		String jsonBody = objectMapper.writeValueAsString(fhirParameters);
 		
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.contentType(APPLICATION_FHIR_JSON)
+			.body(jsonBody)
+			.when().post("/CodeSystem/$validate-code")
+			.then()
+			.body("resourceType", equalTo("Parameters"))
+			.body("parameter[0].name", equalTo("result"))
+			.body("parameter[0].valueBoolean", equalTo(true))
+			.statusCode(200);
+	}
+	
+	@Test
+	public void validCodeableConceptTestWithPostTest() throws Exception {
+		
+		String system = "http://hl7.org/fhir/issue-severity";
+		Coding coding = Coding.builder()
+				.system(system)
+				.code("fatal")
+				.build();
+		
+		CodeableConcept codeableConcept = CodeableConcept.builder().addCoding(coding).build();
+
+		ValidateCodeRequest request = ValidateCodeRequest.builder()
+			.url(system)
+			.codeableConcept(codeableConcept)
+			.build();
+		
+		Fhir fhirParameters = new Parameters.Fhir(request);
 		String jsonBody = objectMapper.writeValueAsString(fhirParameters);
 		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)

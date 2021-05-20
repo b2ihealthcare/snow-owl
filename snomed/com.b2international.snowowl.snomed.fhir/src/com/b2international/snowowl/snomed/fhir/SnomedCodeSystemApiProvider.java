@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.fhir;
 
-import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -23,7 +22,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.StringUtils;
-import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
@@ -51,7 +49,6 @@ import com.b2international.snowowl.fhir.core.model.codesystem.IConceptProperty;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupResult;
 import com.b2international.snowowl.fhir.core.model.codesystem.Property;
-import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionRequest;
 import com.b2international.snowowl.fhir.core.model.codesystem.SupportedCodeSystemRequestProperties;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
@@ -69,7 +66,6 @@ import com.b2international.snowowl.snomed.fhir.codesystems.CoreSnomedConceptProp
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 
 /**
  * Provider for the SNOMED CT FHIR support
