@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.snomed.core.rest;
 
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import com.b2international.snowowl.core.events.util.Promise;
@@ -30,8 +29,7 @@ import io.swagger.annotations.*;
  * @since 7.17.0
  */
 @Api(value = "label", description="Label", tags = { "label" })
-@Controller
-@RequestMapping(value = "/{path:**}/label") 
+@RestController
 public class SnomedExpressionLabelService extends AbstractSnomedRestService {
 	
 	@ApiOperation(
