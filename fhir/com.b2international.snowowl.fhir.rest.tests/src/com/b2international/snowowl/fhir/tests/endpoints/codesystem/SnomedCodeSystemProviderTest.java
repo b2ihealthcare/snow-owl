@@ -27,7 +27,6 @@ import org.junit.Test;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
-import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.snomed.fhir.SnomedCodeSystemApiProvider;
 import com.b2international.snowowl.test.commons.Services;

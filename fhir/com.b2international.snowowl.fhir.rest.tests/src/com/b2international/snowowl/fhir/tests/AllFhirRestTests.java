@@ -21,17 +21,11 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
-import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.fhir.tests.endpoints.codesystem.CodeSystemRestTest;
-import com.b2international.snowowl.fhir.tests.endpoints.codesystem.LookupFhirCodeSystemRestTest;
-import com.b2international.snowowl.fhir.tests.endpoints.codesystem.LookupSnomedRestTest;
-import com.b2international.snowowl.fhir.tests.endpoints.codesystem.SnomedCodeSystemProviderTest;
-import com.b2international.snowowl.fhir.tests.endpoints.codesystem.SubsumesSnomedRestTest;
+import com.b2international.snowowl.fhir.tests.endpoints.codesystem.*;
 import com.b2international.snowowl.fhir.tests.endpoints.conceptmap.SnomedConceptMapRestTest;
 import com.b2international.snowowl.fhir.tests.endpoints.conceptmap.TranslateSnomedConceptMapRestTest;
 import com.b2international.snowowl.fhir.tests.endpoints.valueset.ExpandSnomedRestTest;
 import com.b2international.snowowl.fhir.tests.endpoints.valueset.SnomedValueSetRestTest;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.test.commons.BundleStartRule;
 import com.b2international.snowowl.test.commons.Resources;
@@ -69,8 +63,8 @@ public class AllFhirRestTests {
 		.outerRule(SnowOwlAppRule.snowOwl(AllFhirRestTests.class))
 		.around(new BundleStartRule("org.eclipse.jetty.osgi.boot"))
 		.around(new BundleStartRule("com.b2international.snowowl.core.rest"))
-		.around(new SnomedContentRule(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, Branch.MAIN_PATH, Resources.Snomed.MINI_RF2_INT, Rf2ReleaseType.FULL))
-		.around(new SnomedContentRule(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME, Branch.MAIN_PATH, Resources.Snomed.MINI_RF2_COMPLEX_BLOCK_MAP, Rf2ReleaseType.DELTA));
+		.around(new SnomedContentRule(SnomedContentRule.SNOMEDCT, Resources.Snomed.MINI_RF2_INT, Rf2ReleaseType.FULL))
+		.around(new SnomedContentRule(SnomedContentRule.SNOMEDCT, Resources.Snomed.MINI_RF2_COMPLEX_BLOCK_MAP, Rf2ReleaseType.DELTA));
 	
 	/**
 	 * Execute the tests with this rule if the dataset does not need to be imported

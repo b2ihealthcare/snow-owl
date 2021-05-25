@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import java.util.UUID;
 
 import com.b2international.snowowl.core.request.CommitResult;
 import com.b2international.snowowl.fhir.tests.FhirTestConcepts;
-import com.b2international.snowowl.fhir.tests.TestArtifactCreator;
 import com.b2international.snowowl.snomed.common.SnomedConstants;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -39,6 +38,7 @@ import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.test.commons.Services;
 import com.b2international.snowowl.test.commons.rest.RestExtensions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
@@ -46,7 +46,7 @@ import com.google.common.collect.Maps;
 /**
  * @since 7.0
  */
-public class TestReferenceSetCreator extends TestArtifactCreator {
+public class TestReferenceSetCreator {
 	
 	/**
 	 * @param branchPath
@@ -84,8 +84,8 @@ public class TestReferenceSetCreator extends TestArtifactCreator {
 			.setActive(true)
 			.setReferenceSetId(refsetId)
 			.setReferencedComponentId(referencedConceptId)
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath, RestExtensions.USER, "FHIR Automated Test Simple Type Refset Member")
-			.execute(getEventBus())
+			.build(branchPath, RestExtensions.USER, "FHIR Automated Test Simple Type Refset Member")
+			.execute(Services.bus())
 			.getSync();
 	}
 
@@ -115,8 +115,8 @@ public class TestReferenceSetCreator extends TestArtifactCreator {
 				SnomedReferenceSetMember firstMember = SnomedRequests.prepareSearchMember()
 					.one()
 					.filterByRefSet(refsetId)
-					.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
-					.execute(getEventBus())
+					.build(branchPath)
+					.execute(Services.bus())
 					.getSync()
 					.stream()
 					.findFirst()
@@ -130,8 +130,8 @@ public class TestReferenceSetCreator extends TestArtifactCreator {
 		Optional<SnomedConcept> refsetConcept = SnomedRequests.prepareSearchConcept()
 				.filterByTerm(refsetName)
 				.all()
-				.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath)
-				.execute(getEventBus())
+				.build(branchPath)
+				.execute(Services.bus())
 				.getSync()
 				.first();
 		return refsetConcept;
@@ -150,8 +150,8 @@ public class TestReferenceSetCreator extends TestArtifactCreator {
 			.setRefSet(SnomedRequests.prepareNewRefSet()
 				.setReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
 				.setType(SnomedRefSetType.QUERY))
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath, RestExtensions.USER, "FHIR Automated Test Query Type Reference Set")
-			.execute(getEventBus())
+			.build(branchPath, RestExtensions.USER, "FHIR Automated Test Query Type Reference Set")
+			.execute(Services.bus())
 			.fail(t -> {
 				t.printStackTrace();
 				return null;
@@ -171,8 +171,8 @@ public class TestReferenceSetCreator extends TestArtifactCreator {
 			.setActive(true)
 			.setProperties(memberMap)
 			.setReferencedComponentId(referencedSimpleTypeRefsetId)
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath, RestExtensions.USER, "FHIR Automated Test Query Type Value Set")
-			.execute(getEventBus())
+			.build(branchPath, RestExtensions.USER, "FHIR Automated Test Query Type Value Set")
+			.execute(Services.bus())
 			.getSync()
 			.getResultAs(String.class);
 		
@@ -191,8 +191,8 @@ public class TestReferenceSetCreator extends TestArtifactCreator {
 			.setRefSet(SnomedRequests.prepareNewRefSet()
 					.setReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
 					.setType(SnomedRefSetType.SIMPLE))
-			.build(SnomedDatastoreActivator.REPOSITORY_UUID, branchPath, RestExtensions.USER, "FHIR Automated Test Simple Type Reference Set")
-			.execute(getEventBus())
+			.build(branchPath, RestExtensions.USER, "FHIR Automated Test Simple Type Reference Set")
+			.execute(Services.bus())
 			.getSync()
 			.getResultAs(String.class);
 	}
