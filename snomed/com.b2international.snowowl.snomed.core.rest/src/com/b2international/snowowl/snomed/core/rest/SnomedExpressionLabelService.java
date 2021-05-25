@@ -28,7 +28,7 @@ import io.swagger.annotations.*;
 /**
  * @since 7.17.0
  */
-@Api(value = "label", description="Label", tags = { "label" })
+@Api(value = "label-expressions", description="Label expressions", tags = { "label-expressions" })
 @RestController
 public class SnomedExpressionLabelService extends AbstractSnomedRestService {
 	
