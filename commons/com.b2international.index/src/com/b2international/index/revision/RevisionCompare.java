@@ -27,8 +27,8 @@ import com.google.common.collect.Sets;
  */
 public final class RevisionCompare {
 
-	static Builder builder(RevisionBranchRef base, RevisionBranchRef compare, int limit) {
-		return new Builder(base, compare, limit);
+	static Builder builder(RevisionBranchRef base, RevisionBranchRef compare, int limit, boolean preserveComponentChange) {
+		return new Builder(base, compare, limit, preserveComponentChange);
 	}
 	
 	static class Builder {
@@ -40,17 +40,20 @@ public final class RevisionCompare {
 		private int removed;
 		
 		private final int limit;
+		private boolean preserveComponentChange;
 	
 		private final TreeMap<String, RevisionCompareDetail> detailsByComponent = new TreeMap<>();
 		
-		Builder(RevisionBranchRef base, RevisionBranchRef compare, int limit) {
+		Builder(RevisionBranchRef base, RevisionBranchRef compare, int limit, boolean preserveComponentChange) {
 			this.base = base;
 			this.compare = compare;
 			this.limit = limit;
+			this.preserveComponentChange = preserveComponentChange;
 		}
 		
 		public Builder apply(Commit commit) {
 			for (CommitDetail detail : commit.getDetails()) {
+								
 				List<String> objects = detail.getObjects();
 				for (int i = 0; i < objects.size(); i++) {
 					String object = objects.get(i);
@@ -70,12 +73,14 @@ public final class RevisionCompare {
 											detail.getProp(), 
 											detail.getFrom(), detail.getTo()));
 						}
-					} else {
+					} else if (preserveComponentChange || !detail.isChange()) {
 						details = detail.getComponents()
 								.get(i)
 								.stream()
 								.map(component -> RevisionCompareDetail.componentChange(detail.getOp(), objectId, ObjectId.of(detail.getComponentType(), component)))
 								.collect(Collectors.toList());
+					} else {
+						details = Collections.emptyList();
 					}
 					
 					details.forEach(compareDetail -> {
@@ -127,7 +132,8 @@ public final class RevisionCompare {
 					details,
 					added,
 					changedObjects.size(),
-					removed);
+					removed,
+					detailsByComponent.values().size());
 		}
 		
 	}
@@ -138,14 +144,16 @@ public final class RevisionCompare {
 	private final int totalAdded;
 	private final int totalChanged;
 	private final int totalRemoved;
+	private final int total;
 
-	private RevisionCompare(RevisionBranchRef base,	RevisionBranchRef compare, List<RevisionCompareDetail> details, int totalAdded, int totalChanged, int totalRemoved) {
+	private RevisionCompare(RevisionBranchRef base,	RevisionBranchRef compare, List<RevisionCompareDetail> details, int totalAdded, int totalChanged, int totalRemoved, int total) {
 		this.base = base;
 		this.compare = compare;
 		this.details = Collections3.toImmutableList(details);
 		this.totalAdded = totalAdded;
 		this.totalChanged = totalChanged;
 		this.totalRemoved = totalRemoved;
+		this.total = total;
 	}
 
 	public RevisionBranchRef getBase() {
@@ -170,6 +178,10 @@ public final class RevisionCompare {
 	
 	public int getTotalRemoved() {
 		return totalRemoved;
+	}
+	
+	public int getTotal() {
+		return total;
 	}
 	
 }

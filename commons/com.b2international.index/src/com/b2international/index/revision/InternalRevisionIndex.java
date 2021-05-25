@@ -31,6 +31,6 @@ interface InternalRevisionIndex extends RevisionIndex {
 	 */
 	List<Commit> history(String id);
 
-	RevisionCompare compare(RevisionBranchRef base, RevisionBranchRef compare, int limit);
+	RevisionCompare compare(RevisionBranchRef base, RevisionBranchRef compare, int limit, boolean preserveComponentChanges);
 	
 }

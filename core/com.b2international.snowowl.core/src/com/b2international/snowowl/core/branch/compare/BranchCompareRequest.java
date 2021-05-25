@@ -81,7 +81,7 @@ final class BranchCompareRequest implements Request<RepositoryContext, BranchCom
 		final RevisionCompare compareResult;
 		final String baseBranchPath;
 		if (base != null) {
-			compareResult = index.compare(base, compare, limit);
+			compareResult = index.compare(base, compare, limit, false);
 			baseBranchPath = base;
 		} else {
 			compareResult = index.compare(compare, limit);
@@ -119,7 +119,7 @@ final class BranchCompareRequest implements Request<RepositoryContext, BranchCom
 				result.putNewComponent(identifier);
 				break;
 			case CHANGE:
-				result.putChangedComponent(identifier);
+				result.putChangedComponent(identifier);			
 				break;
 			case REMOVE:
 				result.putDeletedComponent(identifier);
@@ -131,7 +131,8 @@ final class BranchCompareRequest implements Request<RepositoryContext, BranchCom
 				.totalNew(compareResult.getTotalAdded() - subtractAdded)
 				.totalChanged(compareResult.getTotalChanged())
 				.totalDeleted(compareResult.getTotalRemoved())
-				.build(changedContainers);
+				.total(compareResult.getTotal())
+				.build(changedContainers);		
 	}
 	
 	@Override
