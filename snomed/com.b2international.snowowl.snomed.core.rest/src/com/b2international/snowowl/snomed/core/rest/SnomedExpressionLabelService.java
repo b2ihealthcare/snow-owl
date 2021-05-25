@@ -42,7 +42,8 @@ public class SnomedExpressionLabelService extends AbstractSnomedRestService {
 		@ApiResponse(code = 404, message = "Label not found", response = RestApiError.class)
 	})
 	@GetMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
-	public @ResponseBody Promise<Expressions> getLabel(			
+	public @ResponseBody Promise<Expressions> getLabel(		
+			@ApiParam(value = "The request body", required = true)
 			@RequestBody
 			final SnomedExpressionLabelRestInput body,
 			
