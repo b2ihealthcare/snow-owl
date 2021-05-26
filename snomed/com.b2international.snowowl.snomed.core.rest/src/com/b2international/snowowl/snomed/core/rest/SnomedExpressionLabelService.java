@@ -31,6 +31,7 @@ import io.swagger.annotations.*;
  */
 @Api(value = "label-expressions", description="Label expressions", tags = { "label-expressions" })
 @RestController
+@RequestMapping(value = "/{path:**}/label-expressions") 
 public class SnomedExpressionLabelService extends AbstractSnomedRestService {
 	
 	@ApiOperation(
