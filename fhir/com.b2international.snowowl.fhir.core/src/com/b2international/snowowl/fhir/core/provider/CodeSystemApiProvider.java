@@ -421,7 +421,7 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 	
 	/**
 	 * Returns the internal {@link CodeSystemURI} representation of the passed in systemUri
-	 * @param systemUri external URI 
+	 * @param system external URI foe the code system
 	 * @param version
 	 * @return CodeSystemURI the internal representation of systemUri
 	 */

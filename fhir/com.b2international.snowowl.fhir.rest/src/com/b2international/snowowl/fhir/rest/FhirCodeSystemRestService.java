@@ -235,11 +235,11 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
      * When invoking this operation, a client SHALL provide one (and only one) of the parameters (code+system, coding, or codeableConcept). 
      * Other parameters (including version and display) are optional.
 	 * 
-	 * @param codeSystemUri the code system to validate against
+	 * @param url the code system to validate against
 	 * @param code to code to validate
 	 * @param version the version of the code system to validate against
 	 * @param date the date for which the validation should be checked
-	 * @param abstract If this parameter has a value of true, the client is stating that the validation is being performed in a context 
+	 * @param isAbstract If this parameter has a value of true, the client is stating that the validation is being performed in a context 
 	 * 			where a concept designated as 'abstract' is appropriate/allowed.
 	 *
 	 * @return validation results as {@link OperationOutcome}
@@ -320,11 +320,11 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
      * When invoking this operation, a client SHALL provide one (and only one) of the parameters (code+system, coding, or codeableConcept). 
      * Other parameters (including version and display) are optional.
 	 * 
-	 * @param codeSystemUri the code system to validate against
+	 * @param codeSystemId the code system to validate against
 	 * @param code to code to validate
 	 * @param version the version of the code system to validate against
 	 * @param date the date for which the validation should be checked
-	 * @param abstract If this parameter has a value of true, the client is stating that the validation is being performed in a context 
+	 * @param isAbstract If this parameter has a value of true, the client is stating that the validation is being performed in a context 
 	 * 			where a concept designated as 'abstract' is appropriate/allowed.
 	 *
 	 * @return validation results as {@link OperationOutcome}

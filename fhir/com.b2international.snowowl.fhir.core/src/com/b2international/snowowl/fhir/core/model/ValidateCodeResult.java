@@ -100,7 +100,7 @@ public class ValidateCodeResult {
 		
 		/**
 		 * Builds a result for errors when value set is not found
-		 * @param URL
+		 * @param url
 		 * @return
 		 */
 		public Builder artefactNotFoundResult(String url) {
