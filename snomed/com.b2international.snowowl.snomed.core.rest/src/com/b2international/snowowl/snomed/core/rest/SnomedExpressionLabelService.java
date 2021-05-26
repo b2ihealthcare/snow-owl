@@ -45,13 +45,14 @@ public class SnomedExpressionLabelService extends AbstractSnomedRestService {
 	})
 	@GetMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	public @ResponseBody Promise<Expressions> getLabel(		
-			@ApiParam(value = "The request body", required = true)
-			@RequestBody
-			final SnomedExpressionLabelRestInput body,
 			
 			@ApiParam(value = "The branch path", required = true)
 			@PathVariable(value="path")
 			final String branch,
+			
+			@ApiParam(value = "The request body", required = true)
+			@RequestBody
+			final SnomedExpressionLabelRestInput body,
 			
 			@ApiParam(value = "Accepted language tags, in order of preference")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
