@@ -48,7 +48,7 @@ public class SnomedExpressionLabelService extends AbstractSnomedRestService {
 			
 			@ApiParam(value = "The branch path", required = true)
 			@PathVariable(value="path")
-			final String branch,
+			final String path,
 			
 			@ApiParam(value = "The request body", required = true)
 			@RequestBody
@@ -60,7 +60,7 @@ public class SnomedExpressionLabelService extends AbstractSnomedRestService {
 				return SnomedRequests.prepareQueryLabeler(body.getExpressions())
 						.setDescriptionType(body.getDescriptionType())
 						.setLocales(acceptLanguage)
-						.build(repositoryId, branch)
+						.build(repositoryId, path)
 						.execute(getBus());
 		
 	}
