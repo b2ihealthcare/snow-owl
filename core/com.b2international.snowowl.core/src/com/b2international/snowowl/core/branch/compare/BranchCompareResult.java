@@ -43,7 +43,6 @@ public final class BranchCompareResult implements Serializable {
 		private int totalNew;
 		private int totalChanged;
 		private int totalDeleted;
-		private int total;
 		
 		private Builder(String baseBranch, String compareBranch, long compareHeadTimestamp) {
 			this.baseBranch = baseBranch;
@@ -80,12 +79,7 @@ public final class BranchCompareResult implements Serializable {
 			this.totalDeleted = totalDeleted;
 			return this;
 		}
-		
-		public Builder total(int total) {
-			this.total = total;
-			return this;
-		}
-		
+				
 		public BranchCompareResult build() {
 			return build(Set.of());
 		}
@@ -105,8 +99,7 @@ public final class BranchCompareResult implements Serializable {
 					deletedComponents,
 					totalNew,
 					totalChanged,
-					totalDeleted,
-					total);
+					totalDeleted);
 		}
 
 	}
@@ -120,7 +113,6 @@ public final class BranchCompareResult implements Serializable {
 	private final int totalNew;
 	private final int totalChanged;
 	private final int totalDeleted;
-	private final int total;
 	
 	@JsonCreator
 	private BranchCompareResult(
@@ -132,8 +124,7 @@ public final class BranchCompareResult implements Serializable {
 			@JsonProperty("deletedComponents") Collection<ComponentIdentifier> deletedComponents, 
 			@JsonProperty("totalNew") int totalNew, 
 			@JsonProperty("totalChanged") int totalChanged, 
-			@JsonProperty("totalDeleted") int totalDeleted,
-			@JsonProperty("total") int total) {
+			@JsonProperty("totalDeleted") int totalDeleted) {
 		this.baseBranch = baseBranch;
 		this.compareBranch = compareBranch;
 		this.compareHeadTimestamp = compareHeadTimestamp;
@@ -143,7 +134,6 @@ public final class BranchCompareResult implements Serializable {
 		this.totalNew = totalNew;
 		this.totalChanged = totalChanged;
 		this.totalDeleted = totalDeleted;
-		this.total = total;
 	}
 	
 	public String getBaseBranch() {
@@ -182,11 +172,8 @@ public final class BranchCompareResult implements Serializable {
 		return totalDeleted;
 	}
 	
-	public int getTotal() {
-		return total;
-	}
-
 	public static Builder builder(String baseBranch, String compareBranch, long compareHeadTimestamp) {
 		return new Builder(baseBranch, compareBranch, compareHeadTimestamp);
 	}
+	
 }

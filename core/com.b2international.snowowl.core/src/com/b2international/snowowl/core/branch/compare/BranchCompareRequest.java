@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.core.branch.compare;
 
-import java.util.Set;
-
 import javax.validation.constraints.Min;
 
 import org.hibernate.validator.constraints.NotEmpty;
@@ -37,7 +35,6 @@ import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.repository.TerminologyComponents;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.Sets;
 
 /**
  * @since 5.9
@@ -89,20 +86,12 @@ final class BranchCompareRequest implements Request<RepositoryContext, BranchCom
 		}
 		
 		final BranchCompareResult.Builder result = BranchCompareResult.builder(baseBranchPath, compare, compareHeadTimestamp);
-		
-		final Set<ComponentIdentifier> changedContainers = Sets.newHashSet(); 
-		
+				
 		int subtractAdded = 0;
 		for (RevisionCompareDetail detail : compareResult.getDetails()) {
 			final ObjectId affectedId;
 			if (detail.isComponentChange()) {
 				affectedId = detail.getComponent();
-				if (!detail.getObject().isRoot()) {
-					final short containerTerminologyComponentId = context.service(TerminologyComponents.class).getTerminologyComponentId(DocumentMapping.getClass(detail.getObject().type()));
-					if (CodeSystemEntry.TERMINOLOGY_COMPONENT_ID != containerTerminologyComponentId && CodeSystemVersionEntry.TERMINOLOGY_COMPONENT_ID != containerTerminologyComponentId) {
-						changedContainers.add(ComponentIdentifier.of(containerTerminologyComponentId, detail.getObject().id()));
-					}
-				}
 			} else {
 				affectedId = detail.getObject();
 			}
@@ -131,8 +120,7 @@ final class BranchCompareRequest implements Request<RepositoryContext, BranchCom
 				.totalNew(compareResult.getTotalAdded() - subtractAdded)
 				.totalChanged(compareResult.getTotalChanged())
 				.totalDeleted(compareResult.getTotalRemoved())
-				.total(compareResult.getTotal())
-				.build(changedContainers);		
+				.build();
 	}
 	
 	@Override

@@ -107,8 +107,7 @@ public final class RevisionCompare {
 		public RevisionCompare build() {
 			// count changes only once
 			final Set<ObjectId> changedObjects = Sets.newHashSet();
-			final List<RevisionCompareDetail> details = detailsByComponent.values().stream()
-					.peek(compareDetail -> {
+			detailsByComponent.values().forEach(compareDetail -> {
 						switch (compareDetail.getOp()) {
 						case ADD:
 							added++;
@@ -123,17 +122,16 @@ public final class RevisionCompare {
 							removed++;
 							break;
 						}
-					})
-					.limit(limit)
-					.collect(Collectors.toUnmodifiableList());
+					});
+			final List<RevisionCompareDetail> details = detailsByComponent.values().stream().limit(limit).collect(Collectors.toUnmodifiableList());
+			
 			return new RevisionCompare(
 					base, 
 					compare,
 					details,
 					added,
 					changedObjects.size(),
-					removed,
-					detailsByComponent.values().size());
+					removed);
 		}
 		
 	}
@@ -144,16 +142,14 @@ public final class RevisionCompare {
 	private final int totalAdded;
 	private final int totalChanged;
 	private final int totalRemoved;
-	private final int total;
 
-	private RevisionCompare(RevisionBranchRef base,	RevisionBranchRef compare, List<RevisionCompareDetail> details, int totalAdded, int totalChanged, int totalRemoved, int total) {
+	private RevisionCompare(RevisionBranchRef base,	RevisionBranchRef compare, List<RevisionCompareDetail> details, int totalAdded, int totalChanged, int totalRemoved) {
 		this.base = base;
 		this.compare = compare;
 		this.details = Collections3.toImmutableList(details);
 		this.totalAdded = totalAdded;
 		this.totalChanged = totalChanged;
 		this.totalRemoved = totalRemoved;
-		this.total = total;
 	}
 
 	public RevisionBranchRef getBase() {
@@ -178,10 +174,6 @@ public final class RevisionCompare {
 	
 	public int getTotalRemoved() {
 		return totalRemoved;
-	}
-	
-	public int getTotal() {
-		return total;
 	}
 	
 }
