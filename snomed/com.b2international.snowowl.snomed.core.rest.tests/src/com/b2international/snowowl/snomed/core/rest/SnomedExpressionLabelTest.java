@@ -17,11 +17,10 @@ package com.b2international.snowowl.snomed.core.rest;
 
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewConcept;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests.createCodeSystem;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import java.util.List;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
@@ -43,7 +42,7 @@ public class SnomedExpressionLabelTest extends SnomedExpressionLabelRequests{
 		
 		String validExpression = conceptId + " |" + concept.getFsn().getTerm() + "|";
 		
-		assertThat(expressionLabels.stream().findFirst().get(), equalTo(validExpression));
+		Assertions.assertThat(expressionLabels.stream().findFirst().get()).isEqualTo(validExpression);
 	}
 
 }
