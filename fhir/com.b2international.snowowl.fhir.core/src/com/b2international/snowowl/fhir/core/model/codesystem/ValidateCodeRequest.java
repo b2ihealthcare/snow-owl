@@ -99,9 +99,7 @@ public class ValidateCodeRequest {
 	public String getCode() {
 		if (code != null) {
 			return code.getCodeValue();
-		} else if (coding != null) {
-			return coding.getCode().getCodeValue();
-		}
+		} 
 		return null;
 	}
 
