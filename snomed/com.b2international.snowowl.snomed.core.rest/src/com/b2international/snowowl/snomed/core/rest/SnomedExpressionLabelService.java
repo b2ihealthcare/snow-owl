@@ -40,7 +40,7 @@ public class SnomedExpressionLabelService extends AbstractSnomedRestService {
 		)
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK", response = Expressions.class),
-		@ApiResponse(code = 400, message = "Invalid config", response = BadRequest.class),
+		@ApiResponse(code = 400, message = "Bad request", response = RestApiError.class),
 		@ApiResponse(code = 404, message = "Not found", response = RestApiError.class)
 	})
 	@GetMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
