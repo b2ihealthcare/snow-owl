@@ -17,6 +17,8 @@ package com.b2international.snowowl.snomed.core.rest;
 
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createNewConcept;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests.createCodeSystem;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertThat;
 
 import java.util.List;
 
@@ -39,8 +41,7 @@ public class SnomedExpressionLabelTest extends SnomedExpressionLabelRequests{
 		
 		SnomedConcept concept = getConcept(conceptId, "term()");
 		
-		expressionLabels.stream().findFirst().ifPresent(label -> label.equals(conceptId + " |" + concept.getFsn() + "|" ));
-
+		assertThat(expressionLabels.stream().findFirst().get(), equalTo(conceptId + " |" + concept.getFsn() + "|"));
 	}
 
 }
