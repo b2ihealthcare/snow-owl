@@ -39,9 +39,11 @@ public class SnomedExpressionLabelTest extends SnomedExpressionLabelRequests{
 		
 		List<String> expressionLabels = getExpressionLabels(branchPath.getPath(), List.of(conceptId));
 		
-		SnomedConcept concept = getConcept(conceptId, "term()");
+		SnomedConcept concept = getConcept(conceptId, "fsn()");
 		
-		assertThat(expressionLabels.stream().findFirst().get(), equalTo(conceptId + " |" + concept.getFsn() + "|"));
+		String validExpression = conceptId + " |" + concept.getFsn().getTerm() + "|";
+		
+		assertThat(expressionLabels.stream().findFirst().get(), equalTo(validExpression));
 	}
 
 }
