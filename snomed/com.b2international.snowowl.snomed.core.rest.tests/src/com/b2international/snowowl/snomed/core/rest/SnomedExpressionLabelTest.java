@@ -42,7 +42,7 @@ public class SnomedExpressionLabelTest extends SnomedExpressionLabelRequests{
 		
 		String validExpression = conceptId + " |" + concept.getFsn().getTerm() + "|";
 		
-		Assertions.assertThat(expressionLabels.stream().findFirst().get()).isEqualTo(validExpression);
+		Assertions.assertThat(expressionLabels).containsOnly(validExpression);
 	}
 
 }
