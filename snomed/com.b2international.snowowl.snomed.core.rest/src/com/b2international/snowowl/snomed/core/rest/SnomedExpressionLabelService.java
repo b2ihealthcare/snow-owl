@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.core.rest;
 
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.HttpClientErrorException.BadRequest;
 
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.AbstractRestService;
