@@ -15,10 +15,10 @@
  */
 package com.b2international.snowowl.fhir.tests.serialization.parameterized;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsArrayContainingInAnyOrder.arrayContainingInAnyOrder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Collection;
@@ -29,10 +29,7 @@ import org.junit.Test;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.fhir.core.FhirConstants;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
-import com.b2international.snowowl.fhir.core.model.dt.Coding;
-import com.b2international.snowowl.fhir.core.model.dt.FhirDataType;
-import com.b2international.snowowl.fhir.core.model.dt.Parameter;
-import com.b2international.snowowl.fhir.core.model.dt.Parameters;
+import com.b2international.snowowl.fhir.core.model.dt.*;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
 import com.b2international.snowowl.fhir.tests.FhirTest;
 
@@ -123,6 +120,37 @@ public class ParameterDeserializationTest extends FhirTest {
 		assertEquals("1234", coding.getCodeValue());
 		assertEquals("http://snomed.info/sct/version/20180131", coding.getSystemValue());
 		assertEquals(false, coding.isUserSelected());
+	}
+	
+	@Test
+	public void codeableConceptParameterTest() throws Exception {
+		
+		String jsonParam = "{\"resourceType\":\"Parameters\","
+				+ "\"parameter\":["
+				+ "{\"name\":\"codeableConcept\", \"valueCodeableConcept\":{\"text\":\"textTest\","
+							+ "\"coding\":[{\"code\":\"test\","
+												+ "\"system\":\"systemTest\","
+												+ "\"display\":\"displayTest\"}]"
+											+ "}"
+										+ "}]}";
+		
+		
+		Fhir fhirParameters = objectMapper.readValue(jsonParam, Parameters.Fhir.class);
+		Optional<Parameter> parameterOptional = fhirParameters.getParameters().stream().findFirst();
+		
+		Parameter parameter = parameterOptional.get();
+		
+		assertEquals("codeableConcept", parameter.getName());
+		assertEquals(FhirDataType.CODEABLECONCEPT, parameter.getType());
+		
+		CodeableConcept codeableConcept = (CodeableConcept) parameter.getValue();
+		
+		assertEquals("textTest", codeableConcept.getText());
+		Coding coding = codeableConcept.getCodings().iterator().next();
+		assertEquals("test", coding.getCodeValue());
+		assertEquals("systemTest", coding.getSystemValue());
+		assertEquals("displayTest", coding.getDisplay());
+		
 	}
 	
 	@Test

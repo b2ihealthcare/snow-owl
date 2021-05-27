@@ -43,6 +43,7 @@ import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersions;
 import com.b2international.snowowl.core.codesystem.CodeSystems;
 import com.b2international.snowowl.core.codesystem.version.CodeSystemVersionSearchRequestBuilder;
+import com.b2international.snowowl.core.domain.Concepts;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
@@ -56,6 +57,7 @@ import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.exceptions.FhirException;
 import com.b2international.snowowl.fhir.core.model.Meta;
+import com.b2international.snowowl.fhir.core.model.ValidateCodeResult;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem.Builder;
 import com.b2international.snowowl.fhir.core.model.codesystem.Concept;
@@ -67,6 +69,9 @@ import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionRequest
 import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionResult;
 import com.b2international.snowowl.fhir.core.model.codesystem.SupportedCodeSystemRequestProperties;
 import com.b2international.snowowl.fhir.core.model.codesystem.SupportedConceptProperty;
+import com.b2international.snowowl.fhir.core.model.codesystem.ValidateCodeRequest;
+import com.b2international.snowowl.fhir.core.model.dt.CodeableConcept;
+import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Instant;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
@@ -228,7 +233,49 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 				.collect(Collectors.toList());
 	}
 
+	@Override
+	public ValidateCodeResult validateCode(final String systemUri, final ValidateCodeRequest validationRequest) {
+		
+		//try to convert the system URi to internal code systemUri
+		CodeSystemURI codeSystemUri = getCodeSystemUri(systemUri, validationRequest.getVersion());
+		return validateCode(codeSystemUri, validationRequest);
+	}
 	
+	@Override
+	public ValidateCodeResult validateCode(final CodeSystemURI codeSystemUri, final ValidateCodeRequest validationRequest) {
+		
+		Set<Coding> codings = collectCodingsToValidate(validationRequest);
+		
+		Map<String, Coding> codingMap = codings.stream().collect(Collectors.toMap(c -> c.getCodeValue(), c -> c));
+		
+		Concepts concepts = CodeSystemRequests.prepareSearchConcepts()
+			.all()
+			.filterByIds(codingMap.keySet())
+			.build(codeSystemUri)
+			.execute(getBus())
+			.getSync(1000, TimeUnit.MILLISECONDS);
+		
+		if (concepts.isEmpty()) {
+			return ValidateCodeResult.builder().result(false)
+					.message(String.format("Could not find code(s) '%s'", Arrays.toString(codingMap.keySet().toArray())))
+					.build();
+		} else {
+			for (com.b2international.snowowl.core.domain.Concept concept : concepts) {
+				Coding coding = codingMap.get(concept.getId());
+				if (coding.getDisplay() != null) {
+					//any mismatch is false (?)
+					if (!coding.getDisplay().equals(concept.getTerm())) {
+						return ValidateCodeResult.builder()
+								.result(false)
+								.display(concept.getTerm())
+								.message(String.format("Incorrect display '%s' for code '%s'", coding.getDisplay(), coding.getCodeValue()))
+								.build();
+					}
+				}
+			}
+			return ValidateCodeResult.builder().result(true).build();
+		}
+	}
 
 	/**
 	 * Returns the designated FHIR Uri for the given code system
@@ -237,6 +284,33 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 	 * @return
 	 */
 	protected abstract Uri getFhirUri(com.b2international.snowowl.core.codesystem.CodeSystem codeSystem, CodeSystemVersion codeSystemVersion);
+	
+	protected Set<Coding> collectCodingsToValidate(ValidateCodeRequest validationRequest) {
+		
+		Set<Coding> codings = Sets.newHashSet();
+				
+		if (validationRequest.getCode() != null) {
+			
+			Coding coding = Coding.builder()
+					.code(validationRequest.getCode())
+					.display(validationRequest.getDisplay())
+					.build();
+			
+			codings.add(coding);
+		}
+				
+		if (validationRequest.getCoding() != null) {
+			codings.add(validationRequest.getCoding());
+		}
+			
+		CodeableConcept codeableConcept = validationRequest.getCodeableConcept();
+		if (codeableConcept != null) {
+			if (codeableConcept.getCodings() != null) { 
+				codeableConcept.getCodings().forEach(c -> codings.add(c));
+			}
+		}
+		return codings;
+	}
 	
 	/**
 	 * Creates a FHIR {@link CodeSystem} from a {@link com.b2international.snowowl.core.codesystem.CodeSystem}
@@ -345,6 +419,12 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 		}
 	}
 	
+	/**
+	 * Returns the internal {@link CodeSystemURI} representation of the passed in systemUri
+	 * @param system external URI foe the code system
+	 * @param version
+	 * @return CodeSystemURI the internal representation of systemUri
+	 */
 	protected CodeSystemURI getCodeSystemUri(final String system, final String version) {
 		
 		if (!StringUtils.isEmpty(version)) {
