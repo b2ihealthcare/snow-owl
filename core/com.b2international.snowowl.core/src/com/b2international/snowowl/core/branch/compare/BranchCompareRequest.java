@@ -78,7 +78,7 @@ final class BranchCompareRequest implements Request<RepositoryContext, BranchCom
 		final RevisionCompare compareResult;
 		final String baseBranchPath;
 		if (base != null) {
-			compareResult = index.compare(base, compare, limit, false);
+			compareResult = index.compare(base, compare, limit, true);
 			baseBranchPath = base;
 		} else {
 			compareResult = index.compare(compare, limit);

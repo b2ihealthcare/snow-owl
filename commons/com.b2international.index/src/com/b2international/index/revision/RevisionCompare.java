@@ -27,8 +27,8 @@ import com.google.common.collect.Sets;
  */
 public final class RevisionCompare {
 
-	static Builder builder(RevisionBranchRef base, RevisionBranchRef compare, int limit, boolean preserveComponentChange) {
-		return new Builder(base, compare, limit, preserveComponentChange);
+	static Builder builder(RevisionBranchRef base, RevisionBranchRef compare, int limit, boolean excludeComponentChanges) {
+		return new Builder(base, compare, limit, excludeComponentChanges);
 	}
 	
 	static class Builder {
@@ -40,15 +40,15 @@ public final class RevisionCompare {
 		private int removed;
 		
 		private final int limit;
-		private boolean preserveComponentChange;
+		private boolean excludeComponentChanges;
 	
 		private final TreeMap<String, RevisionCompareDetail> detailsByComponent = new TreeMap<>();
 		
-		Builder(RevisionBranchRef base, RevisionBranchRef compare, int limit, boolean preserveComponentChange) {
+		Builder(RevisionBranchRef base, RevisionBranchRef compare, int limit, boolean excludeComponentChanges) {
 			this.base = base;
 			this.compare = compare;
 			this.limit = limit;
-			this.preserveComponentChange = preserveComponentChange;
+			this.excludeComponentChanges = excludeComponentChanges;
 		}
 		
 		public Builder apply(Commit commit) {
@@ -73,7 +73,7 @@ public final class RevisionCompare {
 											detail.getProp(), 
 											detail.getFrom(), detail.getTo()));
 						}
-					} else if (preserveComponentChange || !detail.isChange()) {
+					} else if (!excludeComponentChanges || !detail.isChange()) {
 						details = detail.getComponents()
 								.get(i)
 								.stream()
