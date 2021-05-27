@@ -91,9 +91,10 @@ public interface RevisionIndex extends Administrable<RevisionIndexAdmin> {
 	 * 
 	 * @param branch
 	 * @param limit
+	 * @param excludeComponentChanges
 	 * @return
 	 */
-	RevisionCompare compare(String branch, int limit);
+	RevisionCompare compare(String branch, int limit, boolean excludeComponentChanges);
 	
 	/**
 	 * Compares the given compare branch with the given base branch. The {@link RevisionCompare} response will contain the difference from the compare

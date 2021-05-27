@@ -137,12 +137,12 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex, Hooks 
 	
 	@Override
 	public RevisionCompare compare(final String branch) {
-		return compare(branch, COMPARE_DEFAULT_LIMIT);
+		return compare(branch, COMPARE_DEFAULT_LIMIT, false);
 	}
 	
 	@Override
-	public RevisionCompare compare(final String branch, final int limit) {
-		return compare(getBaseRef(branch), getBranchRef(branch), limit, false);
+	public RevisionCompare compare(final String branch, final int limit, boolean excludeComponentChanges) {
+		return compare(getBaseRef(branch), getBranchRef(branch), limit, excludeComponentChanges);
 	}
 	
 	@Override

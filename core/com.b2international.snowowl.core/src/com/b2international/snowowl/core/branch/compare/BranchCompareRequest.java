@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 package com.b2international.snowowl.core.branch.compare;
+
+import java.util.Set;
 
 import javax.validation.constraints.Min;
 
@@ -35,6 +37,7 @@ import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.repository.TerminologyComponents;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.Sets;
 
 /**
  * @since 5.9
@@ -54,6 +57,9 @@ final class BranchCompareRequest implements Request<RepositoryContext, BranchCom
 	@JsonProperty
 	private int limit;
 	
+	@JsonProperty
+	private boolean excludeComponentChanges;
+	
 	BranchCompareRequest() {
 	}
 	
@@ -69,6 +75,10 @@ final class BranchCompareRequest implements Request<RepositoryContext, BranchCom
 		this.limit = limit;
 	}
 	
+	void setExcludeComponentChanges(boolean excludeComponentChanges) {
+		this.excludeComponentChanges = excludeComponentChanges;
+	}
+	
 	@Override
 	public BranchCompareResult execute(RepositoryContext context) {
 		final RevisionIndex index = context.service(RevisionIndex.class);
@@ -78,20 +88,27 @@ final class BranchCompareRequest implements Request<RepositoryContext, BranchCom
 		final RevisionCompare compareResult;
 		final String baseBranchPath;
 		if (base != null) {
-			compareResult = index.compare(base, compare, limit, true);
+			compareResult = index.compare(base, compare, limit, excludeComponentChanges);
 			baseBranchPath = base;
 		} else {
-			compareResult = index.compare(compare, limit);
+			compareResult = index.compare(compare, limit, excludeComponentChanges);
 			baseBranchPath = branchToCompare.parentPath();
 		}
 		
 		final BranchCompareResult.Builder result = BranchCompareResult.builder(baseBranchPath, compare, compareHeadTimestamp);
+		final Set<ComponentIdentifier> changedContainers = Sets.newHashSet();
 				
 		int subtractAdded = 0;
 		for (RevisionCompareDetail detail : compareResult.getDetails()) {
 			final ObjectId affectedId;
 			if (detail.isComponentChange()) {
 				affectedId = detail.getComponent();
+				if (!detail.getObject().isRoot()) {
+					final short containerTerminologyComponentId = context.service(TerminologyComponents.class).getTerminologyComponentId(DocumentMapping.getClass(detail.getObject().type()));
+					if (CodeSystemEntry.TERMINOLOGY_COMPONENT_ID != containerTerminologyComponentId && CodeSystemVersionEntry.TERMINOLOGY_COMPONENT_ID != containerTerminologyComponentId) {
+						changedContainers.add(ComponentIdentifier.of(containerTerminologyComponentId, detail.getObject().id()));
+					}
+				}
 			} else {
 				affectedId = detail.getObject();
 			}
@@ -120,7 +137,7 @@ final class BranchCompareRequest implements Request<RepositoryContext, BranchCom
 				.totalNew(compareResult.getTotalAdded() - subtractAdded)
 				.totalChanged(compareResult.getTotalChanged())
 				.totalDeleted(compareResult.getTotalRemoved())
-				.build();
+				.build(changedContainers);
 	}
 	
 	@Override
