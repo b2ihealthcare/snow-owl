@@ -37,7 +37,7 @@ public abstract class SnomedExpressionLabelRequests extends AbstractSnomedApiTes
 		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 				.contentType(ContentType.JSON)
 				.body(requestBody)
-				.get("/{path}/label-expressions", branchPath)
+				.post("/{path}/label-expressions", branchPath)
 				.then()
 				.extract()
 				.jsonPath().getList("items");

@@ -42,7 +42,7 @@ public class SnomedExpressionLabelService extends AbstractSnomedRestService {
 		@ApiResponse(code = 400, message = "Bad request", response = RestApiError.class),
 		@ApiResponse(code = 404, message = "Not found", response = RestApiError.class)
 	})
-	@GetMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
+	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	public @ResponseBody Promise<Expressions> getLabel(		
 			
 			@ApiParam(value = "The branch path", required = true)
