@@ -79,16 +79,11 @@ public final class BranchCompareResult implements Serializable {
 			this.totalDeleted = totalDeleted;
 			return this;
 		}
-		
+				
 		public BranchCompareResult build() {
-			return build(Set.of());
-		}
-		
-		public BranchCompareResult build(Set<ComponentIdentifier> changedContainers) {
 			final Set<ComponentIdentifier> newComponents = this.newComponents.build();
 			final Set<ComponentIdentifier> deletedComponents = this.deletedComponents.build();
 			final Set<ComponentIdentifier> changedComponents = Sets.newHashSet(this.changedComponents.build());
-			changedComponents.addAll(changedContainers);
 			changedComponents.removeAll(newComponents);
 			changedComponents.removeAll(deletedComponents);
 			return new BranchCompareResult(baseBranch, 
@@ -125,7 +120,6 @@ public final class BranchCompareResult implements Serializable {
 			@JsonProperty("totalNew") int totalNew, 
 			@JsonProperty("totalChanged") int totalChanged, 
 			@JsonProperty("totalDeleted") int totalDeleted) {
-		
 		this.baseBranch = baseBranch;
 		this.compareBranch = compareBranch;
 		this.compareHeadTimestamp = compareHeadTimestamp;
@@ -172,8 +166,9 @@ public final class BranchCompareResult implements Serializable {
 	public int getTotalDeleted() {
 		return totalDeleted;
 	}
-
+	
 	public static Builder builder(String baseBranch, String compareBranch, long compareHeadTimestamp) {
 		return new Builder(baseBranch, compareBranch, compareHeadTimestamp);
 	}
+	
 }

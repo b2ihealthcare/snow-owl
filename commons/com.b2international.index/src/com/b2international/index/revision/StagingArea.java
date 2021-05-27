@@ -817,7 +817,7 @@ public final class StagingArea {
 				.collect(Collectors.toCollection(TreeSet::new));
 		this.squashMerge = squash;
 		
-		List<RevisionCompareDetail> fromChangeDetails = index.compare(toRef, fromRef, Integer.MAX_VALUE).getDetails();
+		List<RevisionCompareDetail> fromChangeDetails = index.compare(toRef, fromRef, Integer.MAX_VALUE, false).getDetails();
 		
 		if (!CompareUtils.isEmpty(exclusions)) {
 			// Exclude items from change details of the "from" branch, so they do not participate in conflict processing
@@ -834,7 +834,7 @@ public final class StagingArea {
 			return;
 		}
 		
-		List<RevisionCompareDetail> toChangeDetails = index.compare(fromRef, toRef, Integer.MAX_VALUE).getDetails();
+		List<RevisionCompareDetail> toChangeDetails = index.compare(fromRef, toRef, Integer.MAX_VALUE, false).getDetails();
 		
 		// in case of fast-forward merge only check conflicts when there are changes on the to branch
 		if (toChangeDetails.isEmpty() && !squash) {

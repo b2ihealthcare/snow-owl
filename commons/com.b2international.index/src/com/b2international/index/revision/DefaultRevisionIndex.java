@@ -142,27 +142,27 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex, Hooks 
 	
 	@Override
 	public RevisionCompare compare(final String branch, final int limit) {
-		return compare(getBaseRef(branch), getBranchRef(branch), limit);
+		return compare(getBaseRef(branch), getBranchRef(branch), limit, false);
 	}
 	
 	@Override
 	public RevisionCompare compare(final String baseBranch, final String compareBranch) {
-		return compare(baseBranch, compareBranch, COMPARE_DEFAULT_LIMIT);
+		return compare(baseBranch, compareBranch, COMPARE_DEFAULT_LIMIT, false);
 	}
 	
 	@Override
-	public RevisionCompare compare(final String baseBranch, final String compareBranch, final int limit) {
-		return compare(getBranchRef(baseBranch), getBranchRef(compareBranch), limit);
+	public RevisionCompare compare(final String baseBranch, final String compareBranch, final int limit, boolean excludeComponentChanges) {
+		return compare(getBranchRef(baseBranch), getBranchRef(compareBranch), limit, excludeComponentChanges);
 	}
 	
 	@Override
-	public RevisionCompare compare(final RevisionBranchRef base, final RevisionBranchRef compare, final int limit) {
+	public RevisionCompare compare(final RevisionBranchRef base, final RevisionBranchRef compare, final int limit, boolean excludeComponentChanges) {
 		return index.read(searcher -> {
 			
 			final RevisionBranchRef baseOfCompareRef = base.intersection(compare);
 			final RevisionBranchRef compareRef = compare.difference(base);
 
-			final Builder result = RevisionCompare.builder(baseOfCompareRef, compareRef, limit);
+			final Builder result = RevisionCompare.builder(baseOfCompareRef, compareRef, limit, excludeComponentChanges);
 			
 			if (base.branchId() != compare.branchId()) {
 				Stopwatch w = Stopwatch.createStarted();
@@ -339,5 +339,6 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex, Hooks 
 		}
 		return revisionTypes;
 	}
+
 	
 }
