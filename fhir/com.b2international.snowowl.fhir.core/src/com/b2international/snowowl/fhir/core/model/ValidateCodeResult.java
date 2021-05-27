@@ -105,7 +105,7 @@ public class ValidateCodeResult {
 		 */
 		public Builder artefactNotFoundResult(String url) {
 			this.result = false;
-			this.message("Could not find the artecfact to check code against: " + url);
+			this.message("Could not find the artefact to check code against: " + url);
 			return this;
 		}
 
