@@ -131,9 +131,19 @@ public class ValidateCodeRequest {
 		return new Builder();
 	}
 	
+	public void validate() {
+		if (getCodeSystem() != null) {
+			throw new BadRequestException("Validation against external code systems is not supported", "ValidateCodeRequest.codeSystem");
+		}
+		
+		//If the code is specified, the code system needs to be specified as well
+		if (getCode() != null && getUrl() == null) {
+			throw new BadRequestException(String.format("Parameter 'url' is not specified for code '%s'.", getCode()), "ValidateCodeRequest.url");
+		}
+	}
+	
 	@AssertTrue(message = "Code is missing while display is provided")
 	private boolean isCodeProvidedWithDisplay() {
-
 		if (code == null && display != null) {
 			return false;
 		}
@@ -142,7 +152,6 @@ public class ValidateCodeRequest {
 	
 	@AssertTrue(message = "No code is provided to validate")
 	private boolean isCodeMissing() {
-
 		if (code == null && coding == null && codeableConcept == null) {
 			return false;
 		}

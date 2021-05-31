@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -296,18 +296,10 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 		
 		final ValidateCodeRequest validateCodeRequest = toRequest(in, ValidateCodeRequest.class);
 		
-		//If the code is specified, the code system needs to be specified as well
-		Uri codeSystemUrl = validateCodeRequest.getUrl();
-		if (validateCodeRequest.getCode() != null && codeSystemUrl == null) {
-			throw new BadRequestException(String.format("Parameter 'url' is not specified for code '%s'.", validateCodeRequest.getCode()), "ValidateCodeRequest.url");
-		}
+		validateCodeRequest.validate();
 		
-		if (validateCodeRequest.getCodeSystem() != null) {
-			throw new BadRequestException("Validation against external code systems is not supported", "ValidateCodeRequest.codeSystem");
-		}
-		
-		ICodeSystemApiProvider codeSystemProvider = codeSystemProviderRegistry.getCodeSystemProvider(getBus(), locales, codeSystemUrl.getUriValue());
-		ValidateCodeResult result = codeSystemProvider.validateCode(codeSystemUrl.getUriValue(), validateCodeRequest);
+		ICodeSystemApiProvider codeSystemProvider = codeSystemProviderRegistry.getCodeSystemProvider(getBus(), locales, validateCodeRequest.getUrl().getUriValue());
+		ValidateCodeResult result = codeSystemProvider.validateCode(validateCodeRequest.getUrl().getUriValue(), validateCodeRequest);
 		return toResponse(result);
 	}
 
