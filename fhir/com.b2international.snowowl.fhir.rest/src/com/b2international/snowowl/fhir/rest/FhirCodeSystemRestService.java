@@ -373,7 +373,7 @@ public class FhirCodeSystemRestService extends BaseFhirResourceRestService<CodeS
 			@ApiParam(name = "body", value = "The validate-code request parameters")
 			@RequestBody Parameters.Fhir in) {
 		
-		CodeSystemURI codeSystemUri = new CodeSystemURI(codeSystemId);
+		ResourceURI codeSystemUri = com.b2international.snowowl.core.codesystem.CodeSystem.uri(codeSystemId);
 		
 		final ValidateCodeRequest validateCodeRequest = toRequest(in, ValidateCodeRequest.class);
 

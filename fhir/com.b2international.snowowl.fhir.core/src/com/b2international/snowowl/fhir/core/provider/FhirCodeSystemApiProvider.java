@@ -17,17 +17,7 @@ package com.b2international.snowowl.fhir.core.provider;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
-<<<<<<< HEAD
-import java.util.Collection;
-import java.util.List;
-=======
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
->>>>>>> refs/remotes/origin/7.x
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.osgi.framework.Bundle;
@@ -48,14 +38,8 @@ import com.b2international.snowowl.fhir.core.codesystems.FhirCodeSystem;
 import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
 import com.b2international.snowowl.fhir.core.model.ValidateCodeResult;
-import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
+import com.b2international.snowowl.fhir.core.model.codesystem.*;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem.Builder;
-import com.b2international.snowowl.fhir.core.model.codesystem.Concept;
-import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
-import com.b2international.snowowl.fhir.core.model.codesystem.LookupResult;
-import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionRequest;
-import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionResult;
-import com.b2international.snowowl.fhir.core.model.codesystem.ValidateCodeRequest;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Narrative;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
@@ -95,8 +79,7 @@ public final class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 	}
 
 	@Override
-	public CodeSystem getCodeSystem(CodeSystemURI codeSystemURI) {
-		
+	public CodeSystem getCodeSystem(ResourceURI codeSystemURI) {
 		return getCodeSystemClasses().stream()
 				.map(cl-> createCodeSystemEnum(cl))
 				.filter(fcs -> fcs.getCodeSystemUri().endsWith(codeSystemURI.getPath()))
@@ -164,7 +147,7 @@ public final class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 	}
 	
 	@Override
-	public ValidateCodeResult validateCode(final CodeSystemURI codeSystemUri, final ValidateCodeRequest validationRequest) {
+	public ValidateCodeResult validateCode(final ResourceURI codeSystemUri, final ValidateCodeRequest validationRequest) {
 		
 		Set<Coding> codings = collectCodingsToValidate(validationRequest);
 		
@@ -253,7 +236,7 @@ public final class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 			.orElseThrow(() -> new BadRequestException("Could not find code system for URI [%s].", systemUri));
 	}
 	
-	private FhirCodeSystem findCodeSystemById(CodeSystemURI codeSystemUri) {
+	private FhirCodeSystem findCodeSystemById(ResourceURI codeSystemUri) {
 		
 		String id = codeSystemUri.getUri();
 		Collection<Class<?>> codeSystemClasses = getCodeSystemClasses();
@@ -365,13 +348,12 @@ public final class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 				
 	}
 	
-	@Override
-	protected CodeSystemURI getCodeSystemUri(String system, String version) {
-		
-		//No versioning for FHIR internal code systems
-		String id = system.toLowerCase().replace("http://hl7.org/", "");
-		return new CodeSystemURI(id);
-	}
+//	@Override
+//	protected ResourceURI getCodeSystemUri(String system, String version) {
+//		//No versioning for FHIR internal code systems
+//		String id = system.toLowerCase().replace("http://hl7.org/", "");
+//		return com.b2international.snowowl.core.codesystem.CodeSystem.uri(id);
+//	}
 	
 	@SuppressWarnings("unchecked")
 	private <T extends Enum<T>> T createEnumInstance(String name, Type type) {

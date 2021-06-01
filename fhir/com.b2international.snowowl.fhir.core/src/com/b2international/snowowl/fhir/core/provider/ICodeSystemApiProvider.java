@@ -152,7 +152,7 @@ public interface ICodeSystemApiProvider extends IFhirApiProvider {
 	 * @param validateCodeRequest
 	 * @return validation result
 	 */
-	ValidateCodeResult validateCode(CodeSystemURI codeSystemUri, ValidateCodeRequest validateCodeRequest);
+	ValidateCodeResult validateCode(ResourceURI codeSystemUri, ValidateCodeRequest validateCodeRequest);
 	
 	/**
 	 * Validates a code system code against a code system specified in the request.
