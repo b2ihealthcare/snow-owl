@@ -27,8 +27,8 @@ import com.google.common.collect.Sets;
  */
 public final class RevisionCompare {
 
-	static Builder builder(RevisionBranchRef base, RevisionBranchRef compare, int limit) {
-		return new Builder(base, compare, limit);
+	static Builder builder(RevisionBranchRef base, RevisionBranchRef compare, int limit, boolean excludeComponentChanges) {
+		return new Builder(base, compare, limit, excludeComponentChanges);
 	}
 	
 	static class Builder {
@@ -40,17 +40,20 @@ public final class RevisionCompare {
 		private int removed;
 		
 		private final int limit;
+		private boolean excludeComponentChanges;
 	
 		private final TreeMap<String, RevisionCompareDetail> detailsByComponent = new TreeMap<>();
 		
-		Builder(RevisionBranchRef base, RevisionBranchRef compare, int limit) {
+		Builder(RevisionBranchRef base, RevisionBranchRef compare, int limit, boolean excludeComponentChanges) {
 			this.base = base;
 			this.compare = compare;
 			this.limit = limit;
+			this.excludeComponentChanges = excludeComponentChanges;
 		}
 		
 		public Builder apply(Commit commit) {
 			for (CommitDetail detail : commit.getDetails()) {
+								
 				List<String> objects = detail.getObjects();
 				for (int i = 0; i < objects.size(); i++) {
 					String object = objects.get(i);
@@ -70,12 +73,14 @@ public final class RevisionCompare {
 											detail.getProp(), 
 											detail.getFrom(), detail.getTo()));
 						}
-					} else {
+					} else if (!excludeComponentChanges || !detail.isChange()) {
 						details = detail.getComponents()
 								.get(i)
 								.stream()
 								.map(component -> RevisionCompareDetail.componentChange(detail.getOp(), objectId, ObjectId.of(detail.getComponentType(), component)))
 								.collect(Collectors.toList());
+					} else {
+						details = Collections.emptyList();
 					}
 					
 					details.forEach(compareDetail -> {
@@ -102,8 +107,7 @@ public final class RevisionCompare {
 		public RevisionCompare build() {
 			// count changes only once
 			final Set<ObjectId> changedObjects = Sets.newHashSet();
-			final List<RevisionCompareDetail> details = detailsByComponent.values().stream()
-					.peek(compareDetail -> {
+			detailsByComponent.values().forEach(compareDetail -> {
 						switch (compareDetail.getOp()) {
 						case ADD:
 							added++;
@@ -118,9 +122,9 @@ public final class RevisionCompare {
 							removed++;
 							break;
 						}
-					})
-					.limit(limit)
-					.collect(Collectors.toUnmodifiableList());
+					});
+			final List<RevisionCompareDetail> details = detailsByComponent.values().stream().limit(limit).collect(Collectors.toUnmodifiableList());
+			
 			return new RevisionCompare(
 					base, 
 					compare,

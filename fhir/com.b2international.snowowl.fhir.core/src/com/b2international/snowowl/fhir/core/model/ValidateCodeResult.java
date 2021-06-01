@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,10 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.core.model.valueset;
+package com.b2international.snowowl.fhir.core.model;
 
 import com.b2international.snowowl.core.uri.ComponentURI;
-import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
@@ -25,7 +24,7 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
  * Model class for the ValueSet/$validate-code service request response
  * 
  * @see <a href="https://www.hl7.org/fhir/valueset-operations.html#validate-code">FHIR:ValueSet:Operations:validate-code</a>
- * @since 6.9
+ * @since 7.17.0
  */
 @JsonDeserialize(builder = ValidateCodeResult.Builder.class)
 @JsonPropertyOrder({"result", "message", "display"})
@@ -93,20 +92,20 @@ public class ValidateCodeResult {
 		 * @param componentUri
 		 * @return
 		 */
-		public Builder valueSetNotFoundResult(ComponentURI componentUri) {
+		public Builder componentNotFoundResult(ComponentURI componentUri) {
 			this.result = false;
-			this.message("Could not find a valueset to check against: " + componentUri);
+			this.message("Could not find the component to check code against: " + componentUri);
 			return this;
 		}
 		
 		/**
 		 * Builds a result for errors when value set is not found
-		 * @param valueSetUrl
+		 * @param url
 		 * @return
 		 */
-		public Builder valueSetNotFoundResult(String valueSetUrl) {
+		public Builder artefactNotFoundResult(String url) {
 			this.result = false;
-			this.message("Could not find a valueset to check against: " + valueSetUrl);
+			this.message("Could not find the artefact to check code against: " + url);
 			return this;
 		}
 

@@ -64,7 +64,7 @@ public class LookupRequest {
 
 	/*
 	 * The date for which the information should be returned. Normally, this is the current conditions (which is the default value) but under some
-	 * circumstances, systems need to acccess this information as it would have been in the past. A typical example of this would be where code
+	 * circumstances, systems need to access this information as it would have been in the past. A typical example of this would be where code
 	 * selection is constrained to the set of codes that were available when the patient was treated, not when the record is being edited. Note that
 	 * which date is appropriate is a matter for implementation policy.
 	 */

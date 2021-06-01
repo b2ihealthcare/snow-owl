@@ -293,11 +293,7 @@ public final class StagingArea {
 	 * @return a {@link Stream} of {@link RevisionDiff} objects registered for the given type that have property changes for the given {@link Set} of property names.
 	 */
 	public Stream<RevisionDiff> getChangedRevisions(Class<? extends Revision> type, Set<String> changedPropertyNames) {
-		return stagedObjects.entrySet()
-				.stream()
-				.filter(entry -> entry.getValue().isChanged())
-				.map(entry -> entry.getValue().getDiff())
-				.filter(diff -> type.isAssignableFrom(diff.newRevision.getClass()))
+		return getChangedRevisions(type)
 				.filter(diff -> diff.hasRevisionPropertyChanges(changedPropertyNames));
 	}
 	
@@ -819,7 +815,7 @@ public final class StagingArea {
 				.collect(Collectors.toCollection(TreeSet::new));
 		this.squashMerge = squash;
 		
-		List<RevisionCompareDetail> fromChangeDetails = index.compare(toRef, fromRef, Integer.MAX_VALUE).getDetails();
+		List<RevisionCompareDetail> fromChangeDetails = index.compare(toRef, fromRef, Integer.MAX_VALUE, false).getDetails();
 		
 		if (!CompareUtils.isEmpty(exclusions)) {
 			// Exclude items from change details of the "from" branch, so they do not participate in conflict processing
@@ -836,7 +832,7 @@ public final class StagingArea {
 			return;
 		}
 		
-		List<RevisionCompareDetail> toChangeDetails = index.compare(fromRef, toRef, Integer.MAX_VALUE).getDetails();
+		List<RevisionCompareDetail> toChangeDetails = index.compare(fromRef, toRef, Integer.MAX_VALUE, false).getDetails();
 		
 		// in case of fast-forward merge only check conflicts when there are changes on the to branch
 		if (toChangeDetails.isEmpty() && !squash) {
@@ -1212,7 +1208,7 @@ public final class StagingArea {
 		public boolean hasRevisionPropertyChanges(Set<String> propertyNames) {
 			if (CompareUtils.isEmpty(propertyNames)) return false;
 			final Set<String> knownPropertyDiffs = getRevisionPropertyDiffs().keySet();
-			return propertyNames.stream().filter(knownPropertyDiffs::contains).findFirst().isPresent();
+			return !Sets.intersection(knownPropertyDiffs, propertyNames).isEmpty();
 		}
 		
 	}

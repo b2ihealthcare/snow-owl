@@ -55,6 +55,9 @@ final class BranchCompareRequest implements Request<RepositoryContext, BranchCom
 	@JsonProperty
 	private int limit;
 	
+	@JsonProperty
+	private boolean excludeComponentChanges;
+	
 	BranchCompareRequest() {
 	}
 	
@@ -70,6 +73,10 @@ final class BranchCompareRequest implements Request<RepositoryContext, BranchCom
 		this.limit = limit;
 	}
 	
+	void setExcludeComponentChanges(boolean excludeComponentChanges) {
+		this.excludeComponentChanges = excludeComponentChanges;
+	}
+	
 	@Override
 	public BranchCompareResult execute(RepositoryContext context) {
 		final RevisionIndex index = context.service(RevisionIndex.class);
@@ -79,17 +86,16 @@ final class BranchCompareRequest implements Request<RepositoryContext, BranchCom
 		final RevisionCompare compareResult;
 		final String baseBranchPath;
 		if (base != null) {
-			compareResult = index.compare(base, compare, limit);
+			compareResult = index.compare(base, compare, limit, excludeComponentChanges);
 			baseBranchPath = base;
 		} else {
-			compareResult = index.compare(compare, limit);
+			compareResult = index.compare(compare, limit, excludeComponentChanges);
 			baseBranchPath = branchToCompare.parentPath();
 		}
 		
 		final BranchCompareResult.Builder result = BranchCompareResult.builder(baseBranchPath, compare, compareHeadTimestamp);
 		
 		final Set<ComponentIdentifier> changedContainers = Sets.newHashSet(); 
-		
 		for (RevisionCompareDetail detail : compareResult.getDetails()) {
 			final ObjectId affectedId;
 			if (detail.isComponentChange()) {
@@ -110,7 +116,7 @@ final class BranchCompareRequest implements Request<RepositoryContext, BranchCom
 				result.putNewComponent(identifier);
 				break;
 			case CHANGE:
-				result.putChangedComponent(identifier);
+				result.putChangedComponent(identifier);			
 				break;
 			case REMOVE:
 				result.putDeletedComponent(identifier);

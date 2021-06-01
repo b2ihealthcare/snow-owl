@@ -21,8 +21,15 @@ import java.util.Collection;
 import javax.validation.Valid;
 
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.collect.Lists;
+
+import io.swagger.annotations.ApiModel;
 
 /**
  * {
@@ -33,6 +40,9 @@ import com.google.common.collect.Lists;
  * @see <a href="http://hl7.org/fhir/datatypes.html#CodeableConcept">FHIR:Foundation:Data types</a>
  * @since 6.3
  */
+@ApiModel
+@JsonInclude(Include.NON_NULL)
+@JsonDeserialize(builder = CodeableConcept.Builder.class)
 public class CodeableConcept {
 	
 	// Code defined by a terminology system 0..*
@@ -66,16 +76,19 @@ public class CodeableConcept {
 		return new Builder();
 	}
 	
+	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends ValidatingBuilder<CodeableConcept> {
 		
 		private Collection<Coding> codings = Lists.newArrayList();
 		private String text;
 
+		@JsonIgnore
 		public Builder addCoding(final Coding coding) {
 			codings.add(coding);
 			return this;
 		}
 		
+		@JsonProperty("coding")
 		public Builder codings(final Collection<Coding> codings) {
 			this.codings = codings;
 			return this;

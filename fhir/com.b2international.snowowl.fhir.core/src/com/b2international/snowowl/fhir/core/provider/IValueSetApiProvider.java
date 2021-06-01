@@ -26,9 +26,9 @@ import com.b2international.snowowl.core.plugin.ClassPathScanner;
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
+import com.b2international.snowowl.fhir.core.model.ValidateCodeResult;
 import com.b2international.snowowl.fhir.core.model.valueset.ExpandValueSetRequest;
 import com.b2international.snowowl.fhir.core.model.valueset.ValidateCodeRequest;
-import com.b2international.snowowl.fhir.core.model.valueset.ValidateCodeResult;
 import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
 import com.b2international.snowowl.fhir.core.search.FhirSearchParameter;
 

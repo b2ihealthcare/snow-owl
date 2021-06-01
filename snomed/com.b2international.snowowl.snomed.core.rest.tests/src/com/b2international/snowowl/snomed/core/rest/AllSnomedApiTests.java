@@ -81,6 +81,7 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	SnomedRefSetMemberParameterizedTest.class,
 	SnomedRefSetMemberApiTest.class,
 	SnomedRefSetBulkApiTest.class,
+	SnomedExpressionLabelTest.class,
 	// Generic API
 	ConceptSearchRequestSnomedTest.class,
 	ValueSetMemberSearchSnomedReferenceSetTest.class,
@@ -107,7 +108,7 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	MrcmImportExportTest.class,
 	// Performance test cases, should be the last tests to perform
 	SnomedConceptCreatePerformanceTest.class,
-	SnomedMergePerformanceTest.class,
+	SnomedMergePerformanceTest.class
 })
 public class AllSnomedApiTests {
 

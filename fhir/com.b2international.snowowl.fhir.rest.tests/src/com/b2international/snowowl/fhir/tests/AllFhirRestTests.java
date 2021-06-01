@@ -21,6 +21,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.fhir.tests.endpoints.codesystem.*;
 import com.b2international.snowowl.fhir.tests.endpoints.conceptmap.SnomedConceptMapRestTest;
 import com.b2international.snowowl.fhir.tests.endpoints.conceptmap.TranslateSnomedConceptMapRestTest;
@@ -38,9 +39,10 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
  */
 @RunWith(Suite.class)
 @SuiteClasses({ 
-	
 	CodeSystemRestTest.class,
 	LookupFhirCodeSystemRestTest.class,
+	ValidateFhirCodeRestTest.class,
+	ValidateSnomedCodeRestTest.class,
 	SnomedCodeSystemProviderTest.class,
 	LookupSnomedRestTest.class,
 	SubsumesSnomedRestTest.class,
@@ -48,10 +50,6 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	ExpandSnomedRestTest.class,
 	SnomedConceptMapRestTest.class,
 	TranslateSnomedConceptMapRestTest.class,
-	/*
-	 */
-	
-	//SandBoxRestTest.class,
 })
 public class AllFhirRestTests {
 	

@@ -20,6 +20,7 @@ import static com.google.common.base.Preconditions.checkState;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -59,6 +60,8 @@ import com.google.common.collect.Sets;
  * @see BaseRepositoryPreCommitHook
  */
 public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommitHook {
+
+	private static final Set<String> ACTIVE_AND_TERM_FIELDS = Set.of(SnomedDescriptionIndexEntry.Fields.ACTIVE, SnomedDescriptionIndexEntry.Fields.TERM);
 
 	public SnomedRepositoryPreCommitHook(Logger log) {
 		super(log);
@@ -155,24 +158,21 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 			}
 		});
 		
-		staging.getChangedRevisions(SnomedDescriptionIndexEntry.class, Set.of(
-				SnomedDescriptionIndexEntry.Fields.ACTIVE,
-				SnomedDescriptionIndexEntry.Fields.TERM)).forEach(diff -> {
-
-			SnomedDescriptionIndexEntry newRevision = (SnomedDescriptionIndexEntry) diff.newRevision;
-			
-			if (newRevision.isFsn()) {
+		staging.getChangedRevisions(SnomedDescriptionIndexEntry.class)
+			.filter(diff -> ((SnomedDescriptionIndexEntry) diff.newRevision).isFsn())
+			.filter(diff -> diff.hasRevisionPropertyChanges(ACTIVE_AND_TERM_FIELDS))
+			.forEach(diff -> {
+				SnomedDescriptionIndexEntry newRevision = (SnomedDescriptionIndexEntry) diff.newRevision;
 				statedSourceIds.add(newRevision.getConceptId());
 				inferredSourceIds.add(newRevision.getConceptId());
-			}
-		});
+			});
 
-		staging.getNewObjects(SnomedDescriptionIndexEntry.class).forEach(newDescription -> {
-			if (newDescription.isFsn() && newDescription.isActive()) {
+		staging.getNewObjects(SnomedDescriptionIndexEntry.class)
+			.filter(newDescription -> newDescription.isFsn() && newDescription.isActive())
+			.forEach(newDescription -> {
 				statedSourceIds.add(newDescription.getConceptId());
 				inferredSourceIds.add(newDescription.getConceptId());
-			}
-		});
+			});
 
 		if (!statedSourceIds.isEmpty()) {
 			final Query<SnomedConceptDocument> statedSourceConceptsQuery = Query.select(SnomedConceptDocument.class)
@@ -223,14 +223,15 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 		});
 		
 		// collect all reactivated concepts for the taxonomy to properly re-register them in the tree even if they don't carry stated/inferred information in this commit, but they have something in the index
-		staging.getChangedRevisions(SnomedConceptDocument.class, Set.of(SnomedRf2Headers.FIELD_ACTIVE)).forEach(diff -> {
-			RevisionPropertyDiff propertyDiff = diff.getRevisionPropertyDiff(SnomedRf2Headers.FIELD_ACTIVE);
-			if ("false".equals(propertyDiff.getOldValue()) && "true".equals(propertyDiff.getNewValue())) {
-				long longId = Long.parseLong(diff.newRevision.getId());
-				statedConceptIds.add(longId);
-				inferredConceptIds.add(longId);
-			}
-		});
+		staging.getChangedRevisions(SnomedConceptDocument.class, Set.of(SnomedRf2Headers.FIELD_ACTIVE))
+			.forEach(diff -> {
+				RevisionPropertyDiff propertyDiff = diff.getRevisionPropertyDiff(SnomedRf2Headers.FIELD_ACTIVE);
+				if ("false".equals(propertyDiff.getOldValue()) && "true".equals(propertyDiff.getNewValue())) {
+					long longId = Long.parseLong(diff.newRevision.getId());
+					statedConceptIds.add(longId);
+					inferredConceptIds.add(longId);
+				}
+			});
 		
 		log.trace("Retrieving taxonomic information from store...");
 
@@ -240,13 +241,13 @@ public final class SnomedRepositoryPreCommitHook extends BaseRepositoryPreCommit
 		final Taxonomy statedTaxonomy = Taxonomies.stated(index, expressionConverter, staging, statedConceptIds, checkCycles);
 
 		// XXX change processor execution order is important!!!
-		return ImmutableList.<ChangeSetProcessor>builder()
-				// execute description change processor to get proper acceptabilityMap values before executing other change processors
-				// those values will be used in the ConceptChangeProcessor for example to properly compute the preferredDescriptions derived field
-				.add(new DescriptionChangeProcessor())
-				.add(new ConceptChangeProcessor(DoiDataProvider.INSTANCE, SnomedIconProvider.INSTANCE.getAvailableIconIds(), statedTaxonomy, inferredTaxonomy))
-				.add(new RelationshipChangeProcessor())
-				.build();
+		return List.of(
+			// execute description change processor to get proper acceptabilityMap values before executing other change processors
+			// those values will be used in the ConceptChangeProcessor for example to properly compute the preferredDescriptions derived field
+			new DescriptionChangeProcessor(),
+			new ConceptChangeProcessor(DoiDataProvider.INSTANCE, SnomedIconProvider.INSTANCE.getAvailableIconIds(), statedTaxonomy, inferredTaxonomy),
+			new RelationshipChangeProcessor()
+		);
 	}
 	
 	@Override
