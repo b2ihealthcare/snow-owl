@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import com.b2international.snowowl.core.request.ResourceRequest;
 import com.b2international.snowowl.core.request.ResourceRequestBuilder;
 import com.b2international.snowowl.core.request.RevisionIndexRequestBuilder;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.google.common.collect.ImmutableList;
 
 /**
  * @since 7.6
@@ -34,11 +33,11 @@ public final class SnomedQueryLabelerRequestBuilder extends ResourceRequestBuild
 	private String descriptionType = SnomedConcept.Expand.FULLY_SPECIFIED_NAME;
 
 	public SnomedQueryLabelerRequestBuilder(String expression) {
-		this(ImmutableList.of(expression));
+		this(List.of(expression));
 	}
 	
 	public SnomedQueryLabelerRequestBuilder(List<String> expressions) {
-		this.expressions = ImmutableList.copyOf(expressions);
+		this.expressions = List.copyOf(expressions);
 	}
 
 	/**

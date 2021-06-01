@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ public interface MrcmImporter {
 	 * Imports the given MRCM file impersonating a user given with the user name
 	 * argument.
 	 * 
-	 * @param authorizationToken - the authorization token to authenticate the user
+	 * @param user - the author of the import
 	 * @param source - the MRCM file to process and import.
 	 */
 	void doImport(User user, InputStream source);
