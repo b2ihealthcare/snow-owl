@@ -61,8 +61,8 @@ public final class ResourceRepository implements RevisionIndex {
 	}
 
 	@Override
-	public RevisionCompare compare(String branch, int limit) {
-		return index.compare(branch);
+	public RevisionCompare compare(String branch, int limit, boolean excludeComponentChanges) {
+		return index.compare(branch, limit, excludeComponentChanges);
 	}
 
 	@Override
@@ -71,8 +71,8 @@ public final class ResourceRepository implements RevisionIndex {
 	}
 
 	@Override
-	public RevisionCompare compare(String baseBranch, String compareBranch, int limit) {
-		return index.compare(baseBranch, compareBranch, limit);
+	public RevisionCompare compare(String baseBranch, String compareBranch, int limit, boolean excludeComponentChanges) {
+		return index.compare(baseBranch, compareBranch, limit, excludeComponentChanges);
 	}
 
 	@Override

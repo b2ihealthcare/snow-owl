@@ -31,7 +31,7 @@ import io.swagger.annotations.*;
 @Api(value = "label-expressions", description="Label expressions", tags = { "label-expressions" })
 @RestController
 @RequestMapping(value = "/{path:**}/label-expressions") 
-public class SnomedExpressionLabelService extends AbstractSnomedRestService {
+public class SnomedExpressionLabelService extends AbstractRestService {
 	
 	@ApiOperation(
 			value="Retrieve ECL Labels", 
@@ -59,7 +59,7 @@ public class SnomedExpressionLabelService extends AbstractSnomedRestService {
 				return SnomedRequests.prepareQueryLabeler(body.getExpressions())
 						.setDescriptionType(body.getDescriptionType())
 						.setLocales(acceptLanguage)
-						.build(repositoryId, path)
+						.build(path)
 						.execute(getBus());
 		
 	}
