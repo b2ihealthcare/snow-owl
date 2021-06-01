@@ -302,16 +302,29 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		final long idLong = Long.parseLong(id);
 		final boolean active = newOrDirtyRevision != null ? newOrDirtyRevision.isActive() : cleanRevision.isActive();
 		
-		doc.active(active)
-			.released(newOrDirtyRevision != null ? newOrDirtyRevision.isReleased() : cleanRevision.isReleased())
-			.effectiveTime(newOrDirtyRevision != null ? newOrDirtyRevision.getEffectiveTime() : cleanRevision.getEffectiveTime())
-			.moduleId(newOrDirtyRevision != null ? newOrDirtyRevision.getModuleId() : cleanRevision.getModuleId())
-			.exhaustive(newOrDirtyRevision != null ? newOrDirtyRevision.isExhaustive() : cleanRevision.isExhaustive())
-			.primitive(newOrDirtyRevision != null ? newOrDirtyRevision.isPrimitive() : cleanRevision.isPrimitive())
-			.refSetType(newOrDirtyRevision != null ? newOrDirtyRevision.getRefSetType() : cleanRevision.getRefSetType())
-			.referencedComponentType(newOrDirtyRevision != null ? newOrDirtyRevision.getReferencedComponentType() : cleanRevision.getReferencedComponentType())
-			.mapTargetComponentType(newOrDirtyRevision != null ? newOrDirtyRevision.getMapTargetComponentType() : cleanRevision.getMapTargetComponentType())
-			.doi(doiData.getDoiScore(idLong));
+		if (newOrDirtyRevision != null) {
+			doc.active(active)
+					.released(newOrDirtyRevision.isReleased())
+					.effectiveTime(newOrDirtyRevision.getEffectiveTime())
+					.moduleId(newOrDirtyRevision.getModuleId())
+					.exhaustive(newOrDirtyRevision.isExhaustive())
+					.primitive(newOrDirtyRevision.isPrimitive())
+					.refSetType(newOrDirtyRevision.getRefSetType())
+					.referencedComponentType(newOrDirtyRevision.getReferencedComponentType())
+					.mapTargetComponentType(newOrDirtyRevision.getMapTargetComponentType())
+					.doi(doiData.getDoiScore(idLong));
+		} else {
+			doc.active(active)
+					.released(cleanRevision.isReleased())
+					.effectiveTime(cleanRevision.getEffectiveTime())
+					.moduleId(cleanRevision.getModuleId())
+					.exhaustive(cleanRevision.isExhaustive())
+					.primitive(cleanRevision.isPrimitive())
+					.refSetType(cleanRevision.getRefSetType())
+					.referencedComponentType(cleanRevision.getReferencedComponentType())
+					.mapTargetComponentType(cleanRevision.getMapTargetComponentType())
+					.doi(doiData.getDoiScore(idLong));
+		}
 		
 		final boolean inStated = statedTaxonomy.getNewTaxonomy().containsNode(idLong);
 		final boolean inInferred = inferredTaxonomy.getNewTaxonomy().containsNode(idLong);
