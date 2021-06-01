@@ -291,11 +291,7 @@ public final class StagingArea {
 	 * @return a {@link Stream} of {@link RevisionDiff} objects registered for the given type that have property changes for the given {@link Set} of property names.
 	 */
 	public Stream<RevisionDiff> getChangedRevisions(Class<? extends Revision> type, Set<String> changedPropertyNames) {
-		return stagedObjects.entrySet()
-				.stream()
-				.filter(entry -> entry.getValue().isChanged())
-				.map(entry -> entry.getValue().getDiff())
-				.filter(diff -> type.isAssignableFrom(diff.newRevision.getClass()))
+		return getChangedRevisions(type)
 				.filter(diff -> diff.hasRevisionPropertyChanges(changedPropertyNames));
 	}
 	
@@ -1210,7 +1206,7 @@ public final class StagingArea {
 		public boolean hasRevisionPropertyChanges(Set<String> propertyNames) {
 			if (CompareUtils.isEmpty(propertyNames)) return false;
 			final Set<String> knownPropertyDiffs = getRevisionPropertyDiffs().keySet();
-			return propertyNames.stream().filter(knownPropertyDiffs::contains).findFirst().isPresent();
+			return !Sets.intersection(knownPropertyDiffs, propertyNames).isEmpty();
 		}
 		
 	}
