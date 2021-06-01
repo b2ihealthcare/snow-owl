@@ -132,6 +132,10 @@ public class JsonDiff implements Iterable<JsonDiff.JsonChange> {
 		private final ObjectNode change;
 		private final JsonDiffOperation op;
 		
+		// cached derived fields
+		private String rootFieldPath;
+		private String fieldPath;
+		
 		public JsonChange(ObjectNode change) {
 			this.change = Preconditions.checkNotNull(change, "json diff change object may not be null.");
 			this.op = JsonDiffOperation.valueOfIgnoreCase(change.get("op").asText());
@@ -155,12 +159,15 @@ public class JsonDiff implements Iterable<JsonDiff.JsonChange> {
 		 * @return the root property name that has been changed
 		 */
 		public String getRootFieldPath() {
-			String property = getFieldPath();
-			final int nextSegmentIdx = property.indexOf("/");
-			if (nextSegmentIdx >= 0) {
-				property = property.substring(0, nextSegmentIdx);
+			if (rootFieldPath == null) {
+				String property = getFieldPath();
+				final int nextSegmentIdx = property.indexOf("/");
+				if (nextSegmentIdx >= 0) {
+					property = property.substring(0, nextSegmentIdx);
+				}
+				rootFieldPath = property; 
 			}
-			return property;
+			return rootFieldPath;
 		}
 		
 		/**
@@ -169,7 +176,10 @@ public class JsonDiff implements Iterable<JsonDiff.JsonChange> {
 		 * @return the absolute property name that has been changed
 		 */
 		public String getFieldPath() {
-			return getPath().substring(1);
+			if (fieldPath == null) {
+				fieldPath = getPath().substring(1);
+			}
+			return fieldPath;
 		}
 		
 		public JsonNode getFromValue() {
