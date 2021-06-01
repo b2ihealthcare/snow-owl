@@ -15,9 +15,19 @@
  */
 package com.b2international.snowowl.core.internal;
 
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import com.b2international.index.Index;
 import com.b2international.index.revision.*;
+import com.b2international.snowowl.core.RepositoryManager;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.request.ResourceRequests;
+import com.b2international.snowowl.core.version.VersionDocument;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 
 /**
  * @since 8.0
@@ -29,6 +39,8 @@ public final class ResourceRepository implements RevisionIndex {
 	public ResourceRepository(RevisionIndex index) {
 		this.index = index;
 		this.index.admin().create();
+		// prepare precommit hook to delete associated versions when deleting a resource
+		hooks().addHook(new ResourceRepositoryPreCommitHook());
 	}
 
 	@Override
@@ -101,6 +113,51 @@ public final class ResourceRepository implements RevisionIndex {
 	@Override
 	public Index index() {
 		return index.index();
+	}
+	
+	private static final class ResourceRepositoryPreCommitHook implements Hooks.PreCommitHook {
+
+		@Override
+		public void run(StagingArea staging) {
+			RepositoryContext context = (RepositoryContext) staging.getContext();
+			
+			// stage deletion of all version documents as well when deleting a resource
+			final Multimap<String, ResourceDocument> resourceUrisByTooling = HashMultimap.create();
+			staging.getRemovedObjects(ResourceDocument.class).forEach(deletedResource -> {
+				if (deletedResource.getToolingId() != null) {
+					resourceUrisByTooling.put(deletedResource.getToolingId(), deletedResource);
+				}
+			});
+
+			// perform cleanup per tooling repository
+			for (String toolingId : resourceUrisByTooling.keySet()) {
+				BaseRevisionBranching branching = context.service(RepositoryManager.class).get(toolingId).service(BaseRevisionBranching.class);
+				
+				final Set<String> resources = resourceUrisByTooling.get(toolingId).stream().map(ResourceDocument::getResourceURI).map(ResourceURI::toString).collect(Collectors.toSet());
+				
+				ResourceRequests.prepareSearchVersion()
+					.all()
+					.filterByResources(resources)
+					.build()
+					.execute(context)
+					.forEach(version -> {
+						staging.stageRemove(version.getId(), VersionDocument.builder()
+								.id(version.getId())
+								.build());
+						
+						// delete version branch
+						branching.delete(version.getBranchPath());
+					});
+				
+				// also delete branch of the code system and all possible task or child branches
+				resourceUrisByTooling.get(toolingId)
+					.stream()
+					.map(ResourceDocument::getBranchPath)
+					.forEach(branching::delete);
+				
+			}
+		}
+		
 	}
 	
 }

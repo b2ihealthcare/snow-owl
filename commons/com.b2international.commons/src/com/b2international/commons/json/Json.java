@@ -81,7 +81,9 @@ public final class Json extends ForwardingMap<String, Object> {
 				final Object key = properties[propIdx];
 				Preconditions.checkArgument(key instanceof String, "Property key at index '%s' is not a String object", propIdx);
 				final Object value = properties[propIdx + 1];
-				props.put((String) key, value);
+				if (value != null) {
+					props.put((String) key, value);
+				}
 			}
 		}
 		return new Json(props.build());

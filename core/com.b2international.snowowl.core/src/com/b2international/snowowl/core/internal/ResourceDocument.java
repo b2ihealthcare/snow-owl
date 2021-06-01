@@ -34,6 +34,7 @@ import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.repository.RevisionDocument;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
@@ -394,6 +395,11 @@ public final class ResourceDocument extends RevisionDocument {
 		this.settings = settings;
 	}
 
+	@JsonIgnore
+	public ResourceURI getResourceURI() {
+		return ResourceURI.of(resourceType, getId());
+	}
+	
 	public String getResourceType() {
 		return resourceType;
 	}

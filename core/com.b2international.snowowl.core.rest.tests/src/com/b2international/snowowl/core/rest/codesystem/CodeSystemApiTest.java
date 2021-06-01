@@ -16,14 +16,16 @@
 package com.b2international.snowowl.core.rest.codesystem;
 
 import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.iterableWithSize;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -39,9 +41,12 @@ import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
+import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.test.commons.Services;
 import com.b2international.snowowl.test.commons.SnomedContentRule;
+import com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests;
+import com.b2international.snowowl.test.commons.rest.RestExtensions;
 
 /**
  * @since 1.0
@@ -246,7 +251,7 @@ public class CodeSystemApiTest {
 		
 		assertCodeSystemCreated(requestBody);
 		
-		final String expectedBranchPath = Branch.get(Branch.MAIN_PATH, "v1", codeSystemId);
+		final String expectedBranchPath = Branch.get(Branch.MAIN_PATH, "cs11", "v1", codeSystemId);
 		
 		try {
 			
@@ -351,9 +356,71 @@ public class CodeSystemApiTest {
 		assertCodeSystemCreated(requestBody);
 		assertCodeSystemUpdated(codeSystemId, Json.object("extensionOf", CodeSystem.uri("cs13/v4")));
 		
-		final String expectedBranchPath = Branch.get(Branch.MAIN_PATH, "v4", codeSystemId);
+		final String expectedBranchPath = Branch.get(Branch.MAIN_PATH, "cs13", "v4", codeSystemId);
 		assertCodeSystemHasAttributeValue(codeSystemId, "extensionOf", "codesystems/cs13/v4");
 		assertCodeSystemHasAttributeValue(codeSystemId, "branchPath", expectedBranchPath);
+	}
+	
+	@Test
+	public void codesystem22_Delete() throws Exception {
+		final String codeSystemId = "cs22";
+		assertCodeSystemCreated(prepareCodeSystemCreateRequestBody(codeSystemId));
+		assertCodeSystemGet(codeSystemId).statusCode(200);
+		
+		// TODO add REST API
+		ResourceRequests.prepareDelete(codeSystemId)
+			.build(RestExtensions.USER, "Delete " + codeSystemId)
+			.execute(Services.bus())
+			.getSync();
+		
+		assertCodeSystemGet(codeSystemId).statusCode(404);
+		
+		// Check if the branch has been created
+		String branch = Branch.get(Branch.MAIN_PATH, codeSystemId);
+		assertThat(RepositoryRequests.branching()
+			.prepareGet(branch)
+			.build(TOOLING_ID)
+			.execute(Services.bus())
+			.getSync()
+			.isDeleted()).isTrue();
+	}
+	
+	@Test
+	public void codesystem23_DeleteVersioned() throws Exception {
+		final String codeSystemId = "cs23";
+		assertCodeSystemCreated(prepareCodeSystemCreateRequestBody(codeSystemId));
+		assertCodeSystemGet(codeSystemId).statusCode(200);
+		
+		// version codesystem
+		final Json versionRequestBody = prepareVersionCreateRequestBody(CodeSystem.uri(codeSystemId), "v1", LocalDate.now().toString());
+		assertVersionCreated(versionRequestBody);
+		
+		// TODO add REST API
+		ResourceRequests.prepareDelete(codeSystemId)
+			.build(RestExtensions.USER, "Delete " + codeSystemId)
+			.execute(Services.bus())
+			.getSync();
+		
+		assertCodeSystemGet(codeSystemId).statusCode(404);
+		
+		String branch = Branch.get(Branch.MAIN_PATH, codeSystemId);
+		assertThat(RepositoryRequests.branching()
+				.prepareGet(branch)
+				.build(TOOLING_ID)
+				.execute(Services.bus())
+				.getSync()
+				.isDeleted()).isTrue();
+			
+		CodeSystemVersionRestRequests.assertGetVersion(codeSystemId, "v1").statusCode(404);
+		
+		// Check if the branch has been created
+		String versionBranch = Branch.get(Branch.MAIN_PATH, codeSystemId, "v1");
+		assertThat(RepositoryRequests.branching()
+				.prepareGet(versionBranch)
+				.build(TOOLING_ID)
+				.execute(Services.bus())
+				.getSync()
+				.isDeleted()).isTrue();
 	}
 	
 }

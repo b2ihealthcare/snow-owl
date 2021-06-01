@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.regex.Matcher;
@@ -174,6 +176,8 @@ public final class ResourceURI implements Serializable, Comparable<ResourceURI> 
 	}
 
 	public static ResourceURI of(String resourceType, String resourceId) {
+		checkNotNull(resourceType, "'resourceType' must be specified");
+		checkNotNull(resourceId, "'resourceId' must be specified");
 		return new ResourceURI(String.join(Branch.SEPARATOR, resourceType, resourceId));
 	}
 

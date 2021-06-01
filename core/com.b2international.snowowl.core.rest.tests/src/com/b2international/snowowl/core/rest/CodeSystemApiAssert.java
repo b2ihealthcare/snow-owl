@@ -106,7 +106,7 @@ public abstract class CodeSystemApiAssert {
 	}
 	
 	public static Json prepareCodeSystemCreateRequestBody(final String codeSystemId) {
-		return prepareCodeSystemCreateRequestBody(codeSystemId, Branch.MAIN_PATH);
+		return prepareCodeSystemCreateRequestBody(codeSystemId, null /*let the system create the CodeSystem*/);
 	}
 	
 	public static Json prepareCodeSystemCreateRequestBody(final String codeSystemId, final String branchPath) {

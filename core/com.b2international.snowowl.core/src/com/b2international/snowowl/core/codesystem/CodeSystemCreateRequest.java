@@ -244,6 +244,7 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 	private ResourceDocument createCodeSystemEntry() {
 		return ResourceDocument.builder()
 				.id(id)
+				.resourceType(CodeSystem.CODESYSTEM_RESOURCE_TYPE)
 				.url(url)
 				.title(title)
 				.language(language)
