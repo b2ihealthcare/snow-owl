@@ -93,7 +93,7 @@ final class CodeSystemUpgradeRequest implements Request<RepositoryContext, Strin
 		
 		// only allow HEAD or valid code system versions
 		if (!codeSystem.isHead()) {
-			branchPath = ((DefaultResourceURIPathResolver) context.service(ResourceURIPathResolver.class)).resolveBranches(false).resolve(context, List.of(codeSystem)).stream().findFirst().get();
+			branchPath = new DefaultResourceURIPathResolver().resolveBranches(false).resolve(context, List.of(codeSystem)).stream().findFirst().get();
 		}
 		
 		// auto-generate the codeSystemId if not provided
