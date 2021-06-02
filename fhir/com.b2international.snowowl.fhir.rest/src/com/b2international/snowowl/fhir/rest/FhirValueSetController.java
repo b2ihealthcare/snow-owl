@@ -66,8 +66,8 @@ import io.swagger.annotations.ApiResponses;
  */
 @Api(value = "ValueSet", description="FHIR ValueSet Resource", tags = { "ValueSet" })
 @RestController //no need for method level @ResponseBody annotations
-@RequestMapping(value="/ValueSet", produces = { BaseFhirResourceRestService.APPLICATION_FHIR_JSON })
-public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSet> {
+@RequestMapping(value="/ValueSet", produces = { AbstractFhirResourceController.APPLICATION_FHIR_JSON })
+public class FhirValueSetController extends AbstractFhirResourceController<ValueSet> {
 	
 	@Autowired
 	private IValueSetApiProvider.Registry valueSetProviderRegistry;
@@ -95,7 +95,7 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 		
 		//TODO: replace this with something more general as described in
 		//https://docs.spring.io/spring-hateoas/docs/current/reference/html/
-		String uri = MvcUriComponentsBuilder.fromController(FhirValueSetRestService.class).build().toString();
+		String uri = MvcUriComponentsBuilder.fromController(FhirValueSetController.class).build().toString();
 		
 		Bundle.Builder builder = Bundle.builder(UUID.randomUUID().toString())
 			.type(BundleType.SEARCHSET)
@@ -211,7 +211,7 @@ public class FhirValueSetRestService extends BaseFhirResourceRestService<ValueSe
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
 		@ApiResponse(code = HTTP_NOT_FOUND, message = "Value set not found", response = OperationOutcome.class)
 	})
-	@RequestMapping(value="/$expand", method=RequestMethod.POST, consumes = BaseFhirResourceRestService.APPLICATION_FHIR_JSON)
+	@RequestMapping(value="/$expand", method=RequestMethod.POST, consumes = AbstractFhirResourceController.APPLICATION_FHIR_JSON)
 	public ValueSet expandBodyRequest(@ApiParam(name = "body", value = "The lookup request parameters")
 		@RequestBody Parameters.Fhir in) {
 		

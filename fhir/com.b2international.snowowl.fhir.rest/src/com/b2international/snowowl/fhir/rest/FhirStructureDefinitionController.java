@@ -56,8 +56,8 @@ import io.swagger.annotations.ApiResponses;
  */
 @Api(value = "StructureDefinition", description="FHIR StructureDefinition Resource", tags = { "StructureDefinition" })
 @RestController //no need for method level @ResponseBody annotations
-@RequestMapping(value="/StructureDefinition", produces = { BaseFhirResourceRestService.APPLICATION_FHIR_JSON })
-public class StructureDefinitionService extends BaseFhirResourceRestService<StructureDefinition> {
+@RequestMapping(value="/StructureDefinition", produces = { AbstractFhirResourceController.APPLICATION_FHIR_JSON })
+public class FhirStructureDefinitionController extends AbstractFhirResourceController<StructureDefinition> {
 	
 	@Override
 	protected Class<StructureDefinition> getModelClass() {
@@ -80,7 +80,7 @@ public class StructureDefinitionService extends BaseFhirResourceRestService<Stru
 		
 		Pair<Set<FhirFilterParameter>, Set<FhirSearchParameter>> fhirParameters = processParameters(parameters); 
 		
-		String uri = MvcUriComponentsBuilder.fromController(StructureDefinitionService.class).build().toString();
+		String uri = MvcUriComponentsBuilder.fromController(FhirStructureDefinitionController.class).build().toString();
 		
 		Bundle.Builder builder = Bundle.builder(UUID.randomUUID().toString())
 			.type(BundleType.SEARCHSET)

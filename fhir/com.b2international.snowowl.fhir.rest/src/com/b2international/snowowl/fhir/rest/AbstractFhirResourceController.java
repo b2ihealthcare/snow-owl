@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.json.MappingJacksonValue;
@@ -38,7 +37,6 @@ import com.b2international.commons.exceptions.ConflictException;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.commons.exceptions.NotImplementedException;
 import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
 import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
@@ -47,7 +45,6 @@ import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.Entry;
 import com.b2international.snowowl.fhir.core.model.FhirResource;
 import com.b2international.snowowl.fhir.core.model.OperationOutcome;
-import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.search.FhirBeanPropertyFilter;
 import com.b2international.snowowl.fhir.core.search.FhirFilterParameter;
@@ -57,19 +54,14 @@ import com.b2international.snowowl.fhir.core.search.FhirUriFilterParameterDefini
 import com.b2international.snowowl.fhir.core.search.FhirUriFilterParameterDefinition.SummaryParameterValue;
 import com.b2international.snowowl.fhir.core.search.FhirUriParameterManager;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.google.common.base.Throwables;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
+import com.google.common.collect.*;
 
 /**
  * @since 6.4
  */
-public abstract class BaseFhirResourceRestService<R extends FhirResource> extends AbstractRestService {
+public abstract class AbstractFhirResourceController<R extends FhirResource> extends AbstractFhirController {
 
 	//TODO: should this be grabbed from the server preferences or from the request?
 	public static final String NHS_REALM_LANGUAGE_REFSET_ID = "999000671000001103";
@@ -84,21 +76,8 @@ public abstract class BaseFhirResourceRestService<R extends FhirResource> extend
 	
 	protected List<ExtendedLocale> locales = ImmutableList.of(INT_LOCALE, NHS_REALM_LOCALE, NHS_REALM_CLINICAL_LOCALE, NHS_REALM_PHARMACY_LOCALE);
 	
-	public static final String APPLICATION_FHIR_JSON = "application/fhir+json;charset=utf-8";
-	
 	//cache supported parameters
 	private FhirUriParameterManager parameterManager = FhirUriParameterManager.createFor(getModelClass());
-	
-	@Autowired
-	protected ObjectMapper mapper;
-	
-	protected final <T> T toRequest(Parameters.Fhir in, Class<T> request) {
-		return mapper.convertValue(in.toJson(), request);
-	}
-	
-	protected final Parameters.Fhir toResponse(Object response) {
-		return new Parameters.Fhir(Parameters.from(response));
-	}
 	
 	protected abstract Class<R> getModelClass();
 	
@@ -204,7 +183,7 @@ public abstract class BaseFhirResourceRestService<R extends FhirResource> extend
 	}
 	
 	// custom FHIR exception handling common to all FHIR resources, endpoints
-	private static final Logger LOG = LoggerFactory.getLogger(BaseFhirResourceRestService.class);
+	private static final Logger LOG = LoggerFactory.getLogger(AbstractFhirResourceController.class);
 	private static final String GENERIC_USER_MESSAGE = "Something went wrong during the processing of your request.";
 	
 	/**

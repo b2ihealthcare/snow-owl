@@ -20,7 +20,6 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.fhir.core.provider.ICodeSystemApiProvider;
 import com.b2international.snowowl.fhir.core.provider.IConceptMapApiProvider;
 import com.b2international.snowowl.fhir.core.provider.IValueSetApiProvider;
 
@@ -55,11 +54,6 @@ public class FhirApiConfig extends BaseApiConfig {
 			"Detailed documentation is available at the [official documentation site](https://docs.b2i.sg/snow-owl/api/fhir)."
 		);
 
-	}
-	
-	@Bean
-	public ICodeSystemApiProvider.Registry codeSystemProviderRegistry() {
-		return ApplicationContext.getServiceForClass(ICodeSystemApiProvider.Registry.class);
 	}
 	
 	@Bean

@@ -71,8 +71,8 @@ import io.swagger.annotations.ApiResponses;
  */
 @Api(value = "ConceptMap", description="FHIR ConceptMap Resource", tags = { "ConceptMap" })
 @RestController //no need for method level @ResponseBody annotations
-@RequestMapping(value="/ConceptMap", produces = { BaseFhirResourceRestService.APPLICATION_FHIR_JSON })
-public class FhirConceptMapRestService extends BaseFhirResourceRestService<ConceptMap> {
+@RequestMapping(value="/ConceptMap", produces = { AbstractFhirResourceController.APPLICATION_FHIR_JSON })
+public class FhirConceptMapController extends AbstractFhirResourceController<ConceptMap> {
 	
 	@Autowired
 	private IConceptMapApiProvider.Registry conceptMapProviderRegistry;
@@ -98,7 +98,7 @@ public class FhirConceptMapRestService extends BaseFhirResourceRestService<Conce
 		
 		Pair<Set<FhirFilterParameter>, Set<FhirSearchParameter>> requestParameters = processParameters(parameters);
 		
-		String uri = MvcUriComponentsBuilder.fromController(FhirConceptMapRestService.class).build().toString();
+		String uri = MvcUriComponentsBuilder.fromController(FhirConceptMapController.class).build().toString();
 		
 		Bundle.Builder builder = Bundle.builder(UUID.randomUUID().toString())
 			.type(BundleType.SEARCHSET)
@@ -211,7 +211,7 @@ public class FhirConceptMapRestService extends BaseFhirResourceRestService<Conce
 		@ApiResponse(code = HTTP_NOT_FOUND, message = "Not found", response = OperationOutcome.class),
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class)
 	})
-	@RequestMapping(value="/{conceptMapId:**}/$translate", method=RequestMethod.POST, consumes = BaseFhirResourceRestService.APPLICATION_FHIR_JSON)
+	@RequestMapping(value="/{conceptMapId:**}/$translate", method=RequestMethod.POST, consumes = AbstractFhirResourceController.APPLICATION_FHIR_JSON)
 	public Parameters.Fhir translate(
 		@ApiParam(value="The id of the conceptMap to base the translation on") @PathVariable("conceptMapId") String conceptMapId,
 		@ApiParam(name = "body", value = "The translate request parameters")
@@ -288,7 +288,7 @@ public class FhirConceptMapRestService extends BaseFhirResourceRestService<Conce
 		@ApiResponse(code = HTTP_NOT_FOUND, message = "Not found", response = OperationOutcome.class),
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class)
 	})
-	@RequestMapping(value="/$translate", method=RequestMethod.POST, consumes = BaseFhirResourceRestService.APPLICATION_FHIR_JSON)
+	@RequestMapping(value="/$translate", method=RequestMethod.POST, consumes = AbstractFhirResourceController.APPLICATION_FHIR_JSON)
 	public Parameters.Fhir translate(
 			@ApiParam(name = "body", value = "The translate request parameters")
 			@RequestBody Parameters.Fhir in) {
