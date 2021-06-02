@@ -331,6 +331,15 @@ public final class ConceptMapMapping implements Serializable {
 		return comments;
 	}
 	
+	public ConceptMapMapping mergeComments(String comments) {
+		if (Strings.isNullOrEmpty(comments)) {
+			return this;
+		} else {
+			this.comments = String.join(" ", this.comments, comments);
+			return this;
+		}
+	}
+	
 	@Override
 	public String toString() {
 		return MoreObjects.toStringHelper(getClass())

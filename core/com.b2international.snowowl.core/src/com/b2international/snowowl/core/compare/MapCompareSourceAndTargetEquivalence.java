@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,6 @@ package com.b2international.snowowl.core.compare;
 import java.util.List;
 import java.util.Set;
 
-import org.hibernate.validator.constraints.NotEmpty;
-
 import com.b2international.snowowl.core.domain.ConceptMapMapping;
 import com.google.common.base.Equivalence;
 import com.google.common.base.Objects;
@@ -28,10 +26,9 @@ import com.google.common.collect.Lists;
 /**
  * @since 7.11
  */
-public final class MapCompareSourceAndTargetEquivalence  extends Equivalence<ConceptMapMapping> {
+public final class MapCompareSourceAndTargetEquivalence extends Equivalence<ConceptMapMapping> {
 	
-	@NotEmpty
-	private Set<ConceptMapCompareConfigurationProperties> configProps;
+	private final Set<ConceptMapCompareConfigurationProperties> configProps;
 	
 	public MapCompareSourceAndTargetEquivalence(Set<ConceptMapCompareConfigurationProperties> configProps) {
 		this.configProps = configProps;
