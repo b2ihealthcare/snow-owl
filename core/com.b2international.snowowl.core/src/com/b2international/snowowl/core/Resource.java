@@ -66,6 +66,15 @@ public abstract class Resource implements Serializable {
 	@JsonIgnore
 	public abstract String getResourceType();
 	
+	/**
+	 * Logical id of this resource.
+	 * 
+	 * The logical id on the system that holds the System resource instance - this typically is expected to change as the resource moves from server to server. 
+	 * The location URI is constructed by appending the logical id to the server base address where the instance is found and the resource type. 
+	 * This URI should be a resolvable URL by which the resource instance may be retrieved, usually from a server, and it may be a relative reference typically to the server base URL.
+	 * 
+	 * @return
+	 */
 	public String getId() {
 		return id;
 	}
@@ -82,6 +91,13 @@ public abstract class Resource implements Serializable {
 	@JsonSetter
 	final void setResourceURI(ResourceURI resourceUri) {}
 
+	/**
+	 * The canonical URL that never changes for this resource - it is the same in every copy. This canonical URL is used to refer to all instances of
+	 * this particular code system across all servers and systems. Ideally, this URI should be a URL which resolves to the location of the master
+	 * version of the code system, though this is not always possible.
+	 * 
+	 * @return
+	 */
 	public String getUrl() {
 		return url;
 	}
