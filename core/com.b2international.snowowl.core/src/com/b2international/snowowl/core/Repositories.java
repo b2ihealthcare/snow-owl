@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,12 @@ package com.b2international.snowowl.core;
 import java.util.Collections;
 import java.util.List;
 
-import com.b2international.snowowl.core.domain.CollectionResource;
+import com.b2international.snowowl.core.domain.ListCollectionResource;
 
 /**
  * @since 5.8
  */
-public final class Repositories extends CollectionResource<RepositoryInfo> {
+public final class Repositories extends ListCollectionResource<RepositoryInfo> {
 
 	private static final long serialVersionUID = 1L;
 	

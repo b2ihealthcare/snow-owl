@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,12 +20,13 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.request.GetResourceRequest;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraint;
+import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraints;
 
 /**
  * @since 6.5
  */
 final class SnomedConstraintGetRequest 
-		extends GetResourceRequest<SnomedConstraintSearchRequestBuilder, BranchContext, SnomedConstraint>
+		extends GetResourceRequest<SnomedConstraintSearchRequestBuilder, BranchContext, SnomedConstraints, SnomedConstraint>
 		implements BranchAccessControl {
 
 	private static final long serialVersionUID = 1L;

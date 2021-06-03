@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import com.b2international.snowowl.core.request.SystemRequestBuilder;
  * @since 6.0
  */
 public final class ValidationRuleGetRequestBuilder extends
-		GetResourceRequestBuilder<ValidationRuleGetRequestBuilder, ValidationRuleSearchRequestBuilder, ServiceProvider, ValidationRule>
+		GetResourceRequestBuilder<ValidationRuleGetRequestBuilder, ValidationRuleSearchRequestBuilder, ServiceProvider, ValidationRules, ValidationRule>
 		implements SystemRequestBuilder<ValidationRule> {
 
 	ValidationRuleGetRequestBuilder(final String ruleId) {

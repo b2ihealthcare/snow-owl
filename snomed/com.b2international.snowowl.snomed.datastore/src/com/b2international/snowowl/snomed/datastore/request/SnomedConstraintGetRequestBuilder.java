@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.datastore.request;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.GetResourceRequestBuilder;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraint;
+import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraints;
 
 /**
  * <i>Builder</i> class to build requests responsible for fetching a single SNOMED CT MRCM attribute constraint.
@@ -26,7 +27,7 @@ import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstrain
  * @since 6.5
  */
 public final class SnomedConstraintGetRequestBuilder 
-		extends GetResourceRequestBuilder<SnomedConstraintGetRequestBuilder, SnomedConstraintSearchRequestBuilder, BranchContext, SnomedConstraint>
+		extends GetResourceRequestBuilder<SnomedConstraintGetRequestBuilder, SnomedConstraintSearchRequestBuilder, BranchContext, SnomedConstraints, SnomedConstraint>
 		implements SnomedContentRequestBuilder<SnomedConstraint> {
 
 	SnomedConstraintGetRequestBuilder(String conceptId) {

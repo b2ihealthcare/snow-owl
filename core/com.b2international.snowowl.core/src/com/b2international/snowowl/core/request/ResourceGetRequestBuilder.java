@@ -16,6 +16,7 @@
 package com.b2international.snowowl.core.request;
 
 import com.b2international.snowowl.core.Resource;
+import com.b2international.snowowl.core.Resources;
 import com.b2international.snowowl.core.context.ResourceRepositoryRequestBuilder;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 
@@ -23,7 +24,7 @@ import com.b2international.snowowl.core.domain.RepositoryContext;
  * @since 8.0
  */
 public final class ResourceGetRequestBuilder 
-		extends GetResourceRequestBuilder<ResourceGetRequestBuilder, ResourceSearchRequestBuilder, RepositoryContext, Resource>
+		extends GetResourceRequestBuilder<ResourceGetRequestBuilder, ResourceSearchRequestBuilder, RepositoryContext, Resources, Resource>
 		implements ResourceRepositoryRequestBuilder<Resource> {
 
 	public ResourceGetRequestBuilder(String resourceId) {

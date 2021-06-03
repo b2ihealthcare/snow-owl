@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import java.util.List;
 /**
  * @since 7.7
  */
-public final class QueryExpressionDiffs extends CollectionResource<QueryExpressionDiff> {
+public final class QueryExpressionDiffs extends ListCollectionResource<QueryExpressionDiff> {
 
 	private static final long serialVersionUID = 1L;
 	

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2015 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,14 @@ package com.b2international.snowowl.core.events.bulk;
 
 import java.util.List;
 
-import com.b2international.snowowl.core.domain.CollectionResource;
+import com.b2international.snowowl.core.domain.ListCollectionResource;
 import com.google.common.collect.FluentIterable;
 
 /**
  * @since 4.5
  * @see BulkRequestBuilder
  */
-public final class BulkResponse extends CollectionResource<Object> {
+public final class BulkResponse extends ListCollectionResource<Object> {
 
 	BulkResponse(List<Object> responses) {
 		super(responses);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.request.GetResourceRequest;
 import com.b2international.snowowl.snomed.reasoner.domain.ClassificationTask;
+import com.b2international.snowowl.snomed.reasoner.domain.ClassificationTasks;
 
 /**
  * Retrieves information about a single classification task using its
@@ -28,7 +29,7 @@ import com.b2international.snowowl.snomed.reasoner.domain.ClassificationTask;
  * @since 7.0
  */
 final class ClassificationGetRequest 
-		extends GetResourceRequest<ClassificationSearchRequestBuilder, RepositoryContext, ClassificationTask>
+		extends GetResourceRequest<ClassificationSearchRequestBuilder, RepositoryContext, ClassificationTasks, ClassificationTask>
 		implements RepositoryAccessControl {
 
 	ClassificationGetRequest(final String classificationId) {

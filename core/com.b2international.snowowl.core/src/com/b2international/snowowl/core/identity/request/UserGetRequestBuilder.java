@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.identity.request;
 
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.identity.User;
+import com.b2international.snowowl.core.identity.Users;
 import com.b2international.snowowl.core.request.GetResourceRequestBuilder;
 import com.b2international.snowowl.core.request.SystemRequestBuilder;
 
@@ -24,7 +25,7 @@ import com.b2international.snowowl.core.request.SystemRequestBuilder;
  * @since 5.11
  */
 public final class UserGetRequestBuilder 
-		extends GetResourceRequestBuilder<UserGetRequestBuilder, UserSearchRequestBuilder, ServiceProvider, User>
+		extends GetResourceRequestBuilder<UserGetRequestBuilder, UserSearchRequestBuilder, ServiceProvider, Users, User>
 		implements SystemRequestBuilder<User> {
 
 	UserGetRequestBuilder(String username) {

@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.datastore.request;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.GetResourceRequestBuilder;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 
 /**
  * <i>Builder</i> class to build requests responsible for fetching a single SNOMED CT reference set member.
@@ -26,7 +27,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetM
  * @since 4.5
  */
 public final class SnomedRefSetMemberGetRequestBuilder 
-		extends GetResourceRequestBuilder<SnomedRefSetMemberGetRequestBuilder, SnomedRefSetMemberSearchRequestBuilder, BranchContext, SnomedReferenceSetMember> 
+		extends GetResourceRequestBuilder<SnomedRefSetMemberGetRequestBuilder, SnomedRefSetMemberSearchRequestBuilder, BranchContext, SnomedReferenceSetMembers, SnomedReferenceSetMember> 
 		implements SnomedContentRequestBuilder<SnomedReferenceSetMember> {
 
 	SnomedRefSetMemberGetRequestBuilder(String memberId) {

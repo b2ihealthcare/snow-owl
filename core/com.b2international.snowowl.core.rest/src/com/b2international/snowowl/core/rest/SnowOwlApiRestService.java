@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.b2international.snowowl.core.domain.CollectionResource;
+import com.b2international.snowowl.core.domain.ListCollectionResource;
 import com.google.common.collect.ImmutableMap;
 
 import springfox.documentation.annotations.ApiIgnore;
@@ -48,7 +49,7 @@ public class SnowOwlApiRestService extends AbstractRestService {
 				.sorted((d1, d2) -> d1.getResourceListing().getInfo().getTitle().compareTo(d2.getResourceListing().getInfo().getTitle()))
 				.map(this::toApiDoc)
 				.collect(Collectors.toList());
-		return CollectionResource.of(items);
+		return ListCollectionResource.of(items);
 	}
 	
 	private Map<String, Object> toApiDoc(Documentation doc) {

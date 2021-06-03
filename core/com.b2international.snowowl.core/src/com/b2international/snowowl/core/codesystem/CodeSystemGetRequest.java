@@ -24,7 +24,7 @@ import com.b2international.snowowl.core.request.GetResourceRequest;
  * @since 5.7
  */
 final class CodeSystemGetRequest 
-		extends GetResourceRequest<CodeSystemSearchRequestBuilder, RepositoryContext, CodeSystem>
+		extends GetResourceRequest<CodeSystemSearchRequestBuilder, RepositoryContext, CodeSystems, CodeSystem>
 		implements RepositoryAccessControl {
 
 	private static final long serialVersionUID = 1L;
