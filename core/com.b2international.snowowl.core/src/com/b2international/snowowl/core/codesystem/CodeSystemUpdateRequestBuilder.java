@@ -39,6 +39,7 @@ public final class CodeSystemUpdateRequestBuilder extends BaseRequestBuilder<Cod
 	private String branchPath;
 	private String iconPath;
 	private CodeSystemURI extensionOf;
+	private CodeSystemURI upgradeOf;
 	private List<ExtendedLocale> locales;
 	private Map<String, Object> additionalProperties;
 
@@ -92,6 +93,11 @@ public final class CodeSystemUpdateRequestBuilder extends BaseRequestBuilder<Cod
 		return getSelf();
 	}
 
+	public CodeSystemUpdateRequestBuilder setUpgradeOf(CodeSystemURI upgradeOf) {
+		this.upgradeOf = upgradeOf;
+		return getSelf();
+	}
+	
 	@Override
 	protected Request<TransactionContext, Boolean> doBuild() {
 		final CodeSystemUpdateRequest req = new CodeSystemUpdateRequest(uniqueId);
@@ -102,6 +108,7 @@ public final class CodeSystemUpdateRequestBuilder extends BaseRequestBuilder<Cod
 		req.setBranchPath(branchPath);
 		req.setIconPath(iconPath);
 		req.setExtensionOf(extensionOf);
+		req.setUpgradeOf(upgradeOf);
 		req.setLocales(locales);
 		req.setAdditionalProperties(additionalProperties);
 		return req;

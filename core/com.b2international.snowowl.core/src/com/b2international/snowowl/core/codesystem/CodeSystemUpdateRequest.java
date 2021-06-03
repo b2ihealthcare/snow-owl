@@ -15,11 +15,7 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.http.ExtendedLocale;
@@ -49,6 +45,7 @@ final class CodeSystemUpdateRequest extends UpdateRequest<TransactionContext> im
 	private String branchPath;
 	private String iconPath;
 	private CodeSystemURI extensionOf;
+	private CodeSystemURI upgradeOf;
 	private List<ExtendedLocale> locales;
 	private Map<String, Object> additionalProperties;
 
@@ -84,6 +81,10 @@ final class CodeSystemUpdateRequest extends UpdateRequest<TransactionContext> im
 		this.extensionOf = extensionOf;
 	}
 	
+	void setUpgradeOf(CodeSystemURI upgradeOf) {
+		this.upgradeOf = upgradeOf;
+	}
+	
 	void setLocales(final List<ExtendedLocale> locales) {
 		this.locales = locales;
 	}
@@ -110,6 +111,7 @@ final class CodeSystemUpdateRequest extends UpdateRequest<TransactionContext> im
 		changed |= updateLocales(codeSystem, updated);
 		changed |= updateAdditionalProperties(codeSystem, updated);
 		changed |= updateExtensionOf(context, updated, codeSystem.getExtensionOf(), codeSystem.getShortName());
+		changed |= updateProperty(upgradeOf, codeSystem::getUpgradeOf, updated::upgradeOf);
 		changed |= updateBranchPath(context, updated, codeSystem.getBranchPath());
 		
 		if (changed) {
