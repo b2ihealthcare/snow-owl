@@ -15,7 +15,17 @@
  */
 package com.b2international.snowowl.core.rest.codesystem;
 
-import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.*;
+import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.TOOLING_ID;
+import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertCodeSystemCreate;
+import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertCodeSystemCreated;
+import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertCodeSystemGet;
+import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertCodeSystemHasAttributeValue;
+import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertCodeSystemSearch;
+import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertCodeSystemUpdated;
+import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertCodeSystemUpdatedWithStatus;
+import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertVersionCreated;
+import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.prepareCodeSystemCreateRequestBody;
+import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.prepareVersionCreateRequestBody;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -23,13 +33,15 @@ import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.iterableWithSize;
-import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
+import org.junit.AfterClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
@@ -421,6 +433,22 @@ public class CodeSystemApiTest {
 				.execute(Services.bus())
 				.getSync()
 				.isDeleted()).isTrue();
+	}
+	
+	@AfterClass
+	public static void cleanUp() {
+		ResourceRequests
+		.prepareSearch()
+		.buildAsync()
+		.execute(Services.bus())
+		.getSync(1, TimeUnit.MINUTES)
+		.forEach(resource -> {
+			ResourceRequests
+			.prepareDelete(resource.getId())
+			.build(RestExtensions.USER, "Delete " + resource.getId())
+			.execute(Services.bus())
+			.getSync(1, TimeUnit.MINUTES); 
+		});
 	}
 	
 }
