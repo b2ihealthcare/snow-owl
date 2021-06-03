@@ -36,8 +36,9 @@ public final class TermFilter implements Serializable {
 	private final boolean exact;
 	private final boolean parsed;
 	private final boolean ignoreStopwords;
+	private final boolean isCaseSensitive;
 
-	public TermFilter(final String term, final Integer minShouldMatch, final boolean fuzzy, final boolean exact, final boolean parsed, final boolean ignoreStopwords) {
+	public TermFilter(final String term, final Integer minShouldMatch, final boolean fuzzy, final boolean exact, final boolean parsed, final boolean ignoreStopwords, final boolean isCaseSensitive) {
 		if (term == null) {
 			throw new BadRequestException("'term' filter parameter was null.");
 		}
@@ -47,6 +48,7 @@ public final class TermFilter implements Serializable {
 		this.exact = exact;
 		this.parsed = parsed;
 		this.ignoreStopwords = ignoreStopwords;
+		this.isCaseSensitive = isCaseSensitive;
 	}
 	
 	public String getTerm() {
@@ -71,6 +73,10 @@ public final class TermFilter implements Serializable {
 	
 	public boolean isIgnoreStopwords() {
 		return ignoreStopwords;
+	}
+	
+	public boolean isCaseSensitive() {
+		return isCaseSensitive;
 	}
 	
 	public boolean isAnyMatch() {
@@ -101,6 +107,7 @@ public final class TermFilter implements Serializable {
 		private boolean exact;
 		private boolean parsed;
 		private boolean ignoreStopwords;
+		private boolean isCaseSensitive;
 		
 		private Builder() { }
 		
@@ -137,9 +144,14 @@ public final class TermFilter implements Serializable {
 			this.ignoreStopwords = ignoreStopwords;
 			return this;
 		}
+
+		public Builder caseSensitive(boolean isCaseSensitive) {
+			this.isCaseSensitive = isCaseSensitive;
+			return this;
+		}
 		
 		public TermFilter build() {
-			return new TermFilter(term, minShouldMatch, fuzzy, exact, parsed, ignoreStopwords);
+			return new TermFilter(term, minShouldMatch, fuzzy, exact, parsed, ignoreStopwords, isCaseSensitive);
 		}
 	}
 	
@@ -197,7 +209,7 @@ public final class TermFilter implements Serializable {
 	/**
 	 * The <b>exactTermMatch</b> term filter contains the following elastic search expression:
 	 * 
-	 * <li>Exact term match on a case insensitive, ASCII folded keyword type field (usually the <b>term.exact</b> field)
+	 * <li>Documents that contain an <b>exact</b> term in a provided field (usually the <b>term</b> field)
 	 * 
 	 * @param term
 	 * 			- the term to apply the expressions on
@@ -205,6 +217,20 @@ public final class TermFilter implements Serializable {
 	 */
 	@JsonIgnore
 	public static final TermFilter exactTermMatch(final String term) {
+		return Builder.builder().term(term).exact(true).caseSensitive(true).build();
+	}
+
+	/**
+	 * The <b>exactTermMatch</b> term filter contains the following elastic search expression:
+	 * 
+	 * <li>Exact term match on a case insensitive, ASCII folded keyword type field (usually the <b>term.exact</b> field)
+	 * 
+	 * @param term
+	 * 			- the term to apply the expressions on
+	 * @return {@link TermFilter}
+	 */
+	@JsonIgnore
+	public static final TermFilter exactIgnoreCaseTermMatch(final String term) {
 		return Builder.builder().term(term).exact(true).build();
 	}
 	
