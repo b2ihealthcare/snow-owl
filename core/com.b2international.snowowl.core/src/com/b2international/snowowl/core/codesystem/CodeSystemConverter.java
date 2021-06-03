@@ -118,20 +118,15 @@ public final class CodeSystemConverter extends BaseResourceConverter<CodeSystemE
 				List<BranchInfo> versionBranchInfo = Lists.newArrayList();
 				
 				if (!result.getUpgradeOf().isHead()) {
-
-					String extensionOfBranchPath = context().service(ResourceURIPathResolver.class).resolve(context(), List.of(result.getExtensionOf())).stream()
-							.findFirst()
-							.orElse("");
-
-					long extensionBaseTimestamp = Long.MIN_VALUE;
-					if (!Strings.isNullOrEmpty(extensionOfBranchPath)) {
-						extensionBaseTimestamp = branching.getBranch(extensionOfBranchPath).getBaseTimestamp();
+					long startTimestamp = Long.MIN_VALUE;
+					if (!Strings.isNullOrEmpty(upgradeOfBranchPath)) {
+						startTimestamp = branching.getBranch(upgradeOfBranchPath).getBaseTimestamp() + 1;
 					}
 
 					versionBranchInfo = CodeSystemRequests.prepareSearchCodeSystemVersion()
 							.all()
 							.filterByCodeSystemShortName(result.getUpgradeOf().getCodeSystem())
-							.filterByEffectiveDate(extensionBaseTimestamp, Long.MAX_VALUE)
+							.filterByEffectiveDate(startTimestamp, Long.MAX_VALUE)
 							.build()
 							.execute(context())
 							.stream()
