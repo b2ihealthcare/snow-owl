@@ -343,7 +343,8 @@ public final class DelegateOntology extends DelegateOntologyStub implements OWLM
 				
 			} catch (final NoSuchElementException e) {
 				LOGGER.warn("Encountered non-logical OWL axiom '{}'", axiomString, e);
-				return getOWLSubClassOfAxiom(getOWLNothing(), getOWLThing()); // No-op axiom, just to match the expected axiom count
+				// No-op axiom, just to match the expected axiom count
+				return getOWLSubClassOfAxiom(getOWLNothing(), getOWLThing());
 			} catch (final IOException e) {
 				LOGGER.warn("Couldn't parse OWL axiom '{}'", axiomString, e);
 				return getOWLSubClassOfAxiom(getOWLNothing(), getOWLThing()); // No-op axiom, just to match the expected axiom count
