@@ -16,7 +16,7 @@
 package com.b2international.snowowl.snomed.core.rest.domain;
 
 import com.b2international.snowowl.core.request.SearchResourceRequest;
-import com.b2international.snowowl.core.rest.domain.ResourceRestSearch;
+import com.b2international.snowowl.core.rest.domain.ObjectRestSearch;
 import com.b2international.snowowl.snomed.core.domain.RelationshipValueType;
 
 import io.swagger.annotations.ApiParam;
@@ -24,7 +24,7 @@ import io.swagger.annotations.ApiParam;
 /**
  * @since 6.16
  */
-public final class SnomedRelationshipRestSearch extends ResourceRestSearch {
+public final class SnomedRelationshipRestSearch extends ObjectRestSearch {
 
 	@ApiParam(value = "The effective time to match (yyyyMMdd, exact matches only)")
 	private String effectiveTime;

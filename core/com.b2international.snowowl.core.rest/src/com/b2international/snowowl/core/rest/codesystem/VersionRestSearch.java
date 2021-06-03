@@ -17,14 +17,14 @@ package com.b2international.snowowl.core.rest.codesystem;
 
 import java.util.List;
 
-import com.b2international.snowowl.core.rest.domain.ResourceRestSearch;
+import com.b2international.snowowl.core.rest.domain.ObjectRestSearch;
 
 import io.swagger.annotations.ApiParam;
 
 /**
  * @since 8.0
  */
-public class VersionRestSearch extends ResourceRestSearch {
+public class VersionRestSearch extends ObjectRestSearch {
 
 	@ApiParam(value="Resource identifier(s)")
 	private List<String> resource;
