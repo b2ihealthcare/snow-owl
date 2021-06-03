@@ -114,7 +114,7 @@ public final class CodeSystemConverter extends BaseResourceConverter<CodeSystemE
 				BranchState branchState = branching.getBranchState(result.getBranchPath(), upgradeOfBranchPath);
 				BranchInfo mainInfo = new BranchInfo(branch.getPath(), branchState, branch.getBaseTimestamp(), branch.getHeadTimestamp());
 				
-				List<CodeSystemURI> blockedURIs = Lists.newArrayList();
+				List<CodeSystemURI> availableVersions = Lists.newArrayList();
 				List<BranchInfo> versionBranchInfo = Lists.newArrayList();
 				
 				if (!result.getUpgradeOf().isHead()) {
@@ -140,14 +140,14 @@ public final class CodeSystemConverter extends BaseResourceConverter<CodeSystemE
 								RevisionBranch versionBranch = branching.getBranch(csv.getPath());
 								BranchState versionBranchState = branching.getBranchState(result.getBranchPath(), versionBranch.getPath());
 								if (versionBranchState == BranchState.BEHIND || versionBranchState == BranchState.DIVERGED) {
-									blockedURIs.add(csv.getUri());
+									availableVersions.add(csv.getUri());
 								}
 								return new BranchInfo(branch.getPath(), versionBranchState, versionBranch.getBaseTimestamp(), versionBranch.getHeadTimestamp());
 							})
 							.collect(Collectors.toList());
 				}
 				
-				result.setUpgradeInfo(new UpgradeInfo(mainInfo, versionBranchInfo, blockedURIs));
+				result.setUpgradeInfo(new UpgradeInfo(mainInfo, versionBranchInfo, availableVersions));
 			}
 		}
 	}
