@@ -30,6 +30,7 @@ import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.Preconditions;
@@ -99,6 +100,7 @@ public class CodeSystem implements Serializable {
 		private CodeSystemURI upgradeOf;
 		private List<ExtendedLocale> locales;
 		private Map<String, Object> additionalProperties;
+		private UpgradeInfo upgradeInfo;
 		
 		@JsonCreator
 		private Builder() {}
@@ -179,8 +181,14 @@ public class CodeSystem implements Serializable {
 			return getSelf();
 		}
 		
+		@JsonSetter
+		Builder upgradeInfo(final UpgradeInfo upgradeInfo) {
+			this.upgradeInfo = upgradeInfo;
+			return  getSelf();
+		}
+		
 		public CodeSystem build() {
-			return new CodeSystem(
+			CodeSystem codeSystem = new CodeSystem(
 					oid, 
 					name, 
 					shortName, 
@@ -195,6 +203,11 @@ public class CodeSystem implements Serializable {
 					upgradeOf,
 					locales,
 					additionalProperties);
+
+			if (upgradeInfo != null) {
+				codeSystem.setUpgradeInfo(upgradeInfo);
+			}
+			return codeSystem;
 		}
 		
 		private Builder getSelf() {
