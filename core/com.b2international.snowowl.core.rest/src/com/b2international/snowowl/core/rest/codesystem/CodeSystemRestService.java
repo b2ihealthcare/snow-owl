@@ -142,7 +142,9 @@ public class CodeSystemRestService extends AbstractRestService {
 		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
 	})
 	@PostMapping(value="/search", produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public Promise<CodeSystems> searchByPost(final CodeSystemRestSearch params) {
+	public @ResponseBody Promise<CodeSystems> searchByPost(
+			@RequestBody(required = false)
+			final CodeSystemRestSearch params) {
 		return searchByGet(params);
 	}
 

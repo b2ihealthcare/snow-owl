@@ -18,6 +18,8 @@ package com.b2international.snowowl.core.branch;
 import java.io.Serializable;
 
 import com.b2international.index.revision.RevisionBranch.BranchState;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 7.15.0
@@ -31,7 +33,11 @@ public final class BranchInfo implements Serializable {
 	private long baseTimestamp;
 	private long headTimestamp;
 	
-	public BranchInfo(String path, BranchState state, long baseTimestamp, long headTimestamp) {
+	@JsonCreator
+	public BranchInfo(@JsonProperty("path") String path, 
+			@JsonProperty("state") BranchState state, 
+			@JsonProperty("baseTimestamp") long baseTimestamp, 
+			@JsonProperty("headTimestamp") long headTimestamp) {
 		this.path = path;
 		this.state = state;
 		this.baseTimestamp = baseTimestamp;

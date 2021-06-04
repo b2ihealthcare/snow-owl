@@ -18,6 +18,7 @@ package com.b2international.snowowl.test.commons.codesystem;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 
 import java.util.Map;
+import java.util.Set;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
@@ -89,6 +90,17 @@ public abstract class CodeSystemRestRequests {
 					"upgradeOf", codeSystem.toString()
 				))
 				.post("/upgrade")
+				.then();
+	}
+	
+	public static ValidatableResponse search(String id, String expand) {
+		return givenAuthenticatedRequest(ApiTestConstants.ADMIN_API)
+				.contentType(ContentType.JSON)
+				.body(Map.of(
+						"id", Set.of(id),
+						"expand", expand
+					))
+				.post("/codesystems/search")
 				.then();
 	}
 
