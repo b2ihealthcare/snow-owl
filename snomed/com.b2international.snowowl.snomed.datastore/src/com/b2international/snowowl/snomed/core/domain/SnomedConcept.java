@@ -146,7 +146,7 @@ public final class SnomedConcept extends SnomedCoreComponent {
 	/**
 	 * Helper function to get ancestors of a given {@link SnomedConcept}, both stated and inferred.
 	 */
-	public static final Function<SnomedConcept, Set<String>> GET_ANCESTORS = (concept) -> {
+	public static final Function<SnomedConcept, Set<String>> GET_ANCESTORS = concept -> {
 		final Set<String> ancestors = newHashSet();
 		for (long parent : concept.getParentIds()) {
 			ancestors.add(Long.toString(parent));
@@ -166,7 +166,7 @@ public final class SnomedConcept extends SnomedCoreComponent {
 	/**
 	 * Helper function to get only direct parents of a given {@link SnomedConcept}, both stated and inferred.
 	 */
-	public static final Function<SnomedConcept, Set<String>> GET_PARENTS = (concept) -> {
+	public static final Function<SnomedConcept, Set<String>> GET_PARENTS = concept -> {
 		final Set<String> ancestors = newHashSet();
 		for (long parent : concept.getParentIds()) {
 			ancestors.add(Long.toString(parent));
