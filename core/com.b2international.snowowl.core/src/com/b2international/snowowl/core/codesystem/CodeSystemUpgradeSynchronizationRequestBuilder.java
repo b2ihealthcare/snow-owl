@@ -21,27 +21,24 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.RepositoryRequestBuilder;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
 
+/**
+ * @since 7.17
+ */
 public final class CodeSystemUpgradeSynchronizationRequestBuilder
 		extends BaseRequestBuilder<CodeSystemUpgradeSynchronizationRequestBuilder, RepositoryContext, Boolean>
 		implements RepositoryRequestBuilder<Boolean> {
 
-	private final CodeSystem codeSystem;
+	private final CodeSystemURI codeSystemId;
 	private final CodeSystemURI source;
-	private final String sourceBranchPath;
 
-	public CodeSystemUpgradeSynchronizationRequestBuilder(CodeSystem codeSystem, CodeSystemURI source, String sourceBranchPath) {
-		this.codeSystem = codeSystem;
+	public CodeSystemUpgradeSynchronizationRequestBuilder(CodeSystemURI codeSystemId, CodeSystemURI source) {
+		this.codeSystemId = codeSystemId;
 		this.source = source;
-		this.sourceBranchPath = sourceBranchPath;
 	}
 
 	@Override
 	protected Request<RepositoryContext, Boolean> doBuild() {
-		CodeSystemUpgradeSynchronizationRequest req = new CodeSystemUpgradeSynchronizationRequest();
-		req.setCodeSystem(codeSystem);
-		req.setSource(source);
-		req.setSourceBranchPath(sourceBranchPath);
-		return req;
+		return new CodeSystemUpgradeSynchronizationRequest(codeSystemId, source);
 	}
 
 }

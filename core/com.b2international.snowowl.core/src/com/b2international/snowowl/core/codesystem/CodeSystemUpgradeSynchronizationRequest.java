@@ -15,68 +15,80 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
+import java.util.List;
+
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.validator.constraints.NotEmpty;
-
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.User;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.uri.CodeSystemURI;
+import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * @since 7.17
+ */
 public final class CodeSystemUpgradeSynchronizationRequest implements Request<RepositoryContext, Boolean> {
 
 	private static final long serialVersionUID = 1L;
 	
+	@JsonProperty
 	@NotNull
-	private CodeSystem codeSystem;
+	private CodeSystemURI codeSystemId;
+	
+	@JsonProperty
 	@NotNull
-	private CodeSystemURI sourceURI;
-	@NotEmpty
-	private String sourceBranchPath;
+	private CodeSystemURI source;
 
-	void setCodeSystem(CodeSystem codeSystem) {
-		this.codeSystem = codeSystem;
-	}
-	
-	public void setSource(CodeSystemURI sourceURI) {
-		this.sourceURI = sourceURI;
-	}
-	
-	public void setSourceBranchPath(String sourceBranchPath) {
-		this.sourceBranchPath = sourceBranchPath;
+	CodeSystemUpgradeSynchronizationRequest(CodeSystemURI codeSystemId, CodeSystemURI source) {
+		this.codeSystemId = codeSystemId;
+		this.source = source;
 	}
 	
 	@Override
 	public Boolean execute(RepositoryContext context) {
-
-		final String messageTemplate = String.format("Merge %s into %s", sourceURI, codeSystem.getCodeSystemURI());
-
+		final String message = String.format("Merge %s into %s", source, codeSystemId);
+		
+		CodeSystem codeSystem = CodeSystemRequests.prepareGetCodeSystem(codeSystemId.getCodeSystem()).build().execute(context);
+		
+		if (codeSystem.getUpgradeOf() == null) {
+			throw new BadRequestException("Code System '%s' is not an Upgrade Code System. It cannot be synchronized with '%s'.", codeSystemId, source);
+		} else if (codeSystem.getUpgradeOf().equals(source)) {
+			// TODO patches on version branches might require this to be allowed, if yes, simply remove this restriction
+			throw new BadRequestException("Code System '%s' has been already synchronized with source '%s'.", codeSystemId, source);
+		}
+		
+		final String sourceBranchPath = context.service(ResourceURIPathResolver.class).resolve(context, List.of(source)).stream().findFirst().get();
+		// merge all changes from the source to the current upgrade of branch
 		RepositoryRequests.merging()
 			.prepareCreate()
-			.setSource(sourceBranchPath) // Upgrade Of latest state will be the source branch
-			.setTarget(codeSystem.getBranchPath()) // the current CodeSystem is the Upgrade CodeSystem
+			.setSource(sourceBranchPath) 
+			.setTarget(codeSystem.getBranchPath())
 			.setUserId(context.service(User.class).getUsername())
-			.setCommitComment(messageTemplate)
+			.setCommitComment(message)
 			.setSquash(false)
 			.build()
 			.execute(context);
 
-		return RepositoryRequests.prepareCommit()
-				.setCommitComment(String.format("Update upgradeOf Code System %s to %s", codeSystem.getUpgradeOf(), sourceURI))
-				.setBody((tx) -> {
-					CodeSystemRequests.prepareUpdateCodeSystem(codeSystem.getShortName())
-					.setUpgradeOf(sourceURI)
-					.build()
-					.execute(tx);
-
-					return Boolean.TRUE;
-				})
-				.build(codeSystem.getCodeSystemURI())
-				.getRequest()
-				.execute(context)
-				.getResultAs(Boolean.class);
+		if (!codeSystem.getUpgradeOf().equals(source)) {
+			return RepositoryRequests.prepareCommit()
+					.setCommitComment(String.format("Update upgradeOf from '%s' to '%s'", codeSystem.getUpgradeOf(), source))
+					.setBody((tx) -> {
+						CodeSystemEntry entry = tx.lookup(codeSystemId.getCodeSystem(), CodeSystemEntry.class);
+						tx.add(CodeSystemEntry.builder(entry).upgradeOf(source).build());
+						tx.commit();
+						return Boolean.TRUE;
+					})
+					.build(codeSystem.getCodeSystemURI())
+					.getRequest()
+					.execute(context)
+					.getResultAs(Boolean.class);
+		} else {
+			return Boolean.TRUE;
+		}
 	}
 
 }
