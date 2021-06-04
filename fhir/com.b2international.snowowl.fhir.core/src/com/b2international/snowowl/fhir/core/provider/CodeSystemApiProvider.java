@@ -95,15 +95,6 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 	}
 
 	@Override
-	public boolean isSupported(String uri) {
-		if (Strings.isNullOrEmpty(uri)) return false;
-		return getSupportedURIs().stream()
-			.filter(uri::equalsIgnoreCase)
-			.findAny()
-			.isPresent();
-	}
-	
-	@Override
 	public CodeSystem getCodeSystem(ResourceURI codeSystemURI) {
 
 		final com.b2international.snowowl.core.codesystem.CodeSystem codeSystem;

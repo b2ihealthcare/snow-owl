@@ -66,7 +66,7 @@ public class TestReferenceSetCreator {
 			createMember(branchPath, refsetId, FhirTestConcepts.MICROORGANISM);
 			
 			System.out.println("Versioning content...");
-			createVersion(version, SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME);
+//			createVersion(version, SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME);
 			return refsetId;
 		} else {
 			System.out.println("Found existing test simple type reference set...");
@@ -103,7 +103,7 @@ public class TestReferenceSetCreator {
 				System.out.println("Creating test query type reference set...");
 				String combinedId = createQueryTypeReferenceset(branchPath, refsetName);
 				System.out.println("Versioning content...");
-				createVersion(version, SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME);
+//				createVersion(version, SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME);
 				
 				return combinedId;
 				

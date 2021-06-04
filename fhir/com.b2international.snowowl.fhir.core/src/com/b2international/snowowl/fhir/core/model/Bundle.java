@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,21 +15,20 @@
  */
 package com.b2international.snowowl.fhir.core.model;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
+import com.b2international.commons.collections.Collections3;
+import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
-import com.b2international.snowowl.fhir.core.model.dt.Code;
-import com.b2international.snowowl.fhir.core.model.dt.Id;
-import com.b2international.snowowl.fhir.core.model.dt.Identifier;
-import com.b2international.snowowl.fhir.core.model.dt.Signature;
-import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.b2international.snowowl.fhir.core.model.dt.*;
 import com.b2international.snowowl.fhir.core.search.Summary;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.Lists;
 
 /**
  * FHIR Bundle domain model.
@@ -37,52 +36,45 @@ import com.google.common.collect.Lists;
  * @see <a href="https://www.hl7.org/fhir/bundle.html">FHIR:Bundle</a>
  * @since 6.3
  */
-public class Bundle extends FhirResource {
+public class Bundle extends FhirResource implements CollectionResource<Entry> {
 	
 	//FHIR header "resourceType" : "Bundle",
 	@JsonProperty
 	private String resourceType = "Bundle";
 
 	@Summary
-	@JsonProperty
 	private Identifier identifier;
+	
+	@Valid
+	@Summary
+	private Instant timestamp;
 	
 	@Summary
 	@Valid
 	@NotNull
-	@JsonProperty
 	private Code type;
 	
 	@Summary
 	@Min(value = 0, message = "Total must be equal to or larger than 0")
-	@JsonProperty
 	private int total;
 
 	@Summary
-	@JsonProperty("link")
-	private Collection<Link> links;
+	private Collection<Link> link;
 	
 	@Summary
-	@JsonProperty("entry")
-	private Collection<Entry> entries;
+	private Collection<Entry> entry;
 	
 	@Summary
 	@Valid
-	@JsonProperty
 	private Signature signature;
 	
-	public Bundle(Id id, final Meta meta, final Uri impliciteRules, Code language, Identifier identifier, Code type, int total, Collection<Link> links, Collection<Entry> entries, final Signature signature) {
+	private Bundle(Id id, final Meta meta, final Uri impliciteRules, Code language, Identifier identifier, Code type, int total, Collection<Link> links, Collection<Entry> entries, final Signature signature) {
 		super(id, meta, impliciteRules, language);
-		
 		this.identifier = identifier;
 		this.type = type;
 		this.total = total;
-		this.links = links;
-		this.entries = entries;
-	}
-	
-	public Bundle(final Id id, final Meta meta, final Uri impliciteRules, final Code language) {
-		super(id, meta, impliciteRules, language);
+		this.link = links;
+		this.entry = entries;
 	}
 	
 	public static Builder builder(String bundleId) {
@@ -97,9 +89,9 @@ public class Bundle extends FhirResource {
 		
 		private int total;
 		
-		private Collection<Link> links = Lists.newArrayList();
+		private Collection<Link> links;
 		
-		private Collection<Entry> entries = Lists.newArrayList();
+		private Collection<Entry> entries;
 		
 		private Signature signature;
 		
@@ -123,17 +115,31 @@ public class Bundle extends FhirResource {
 		}
 		
 		public Builder addLink(String relation, String url) {
+			if (links == null) {
+				links = new ArrayList<>();
+			}
 			links.add(new Link(relation, new Uri(url)));
 			return getSelf();
 		}
 
 		public Builder addLink(String url) {
+			if (links == null) {
+				links = new ArrayList<>();
+			}
 			links.add(new Link(url));
 			return getSelf();
 		}
 		
 		public Builder addEntry(Entry entry) {
+			if (entries == null) {
+				entries = new ArrayList<>();
+			}
 			entries.add(entry);
+			return getSelf();
+		}
+		
+		public Builder entry(Iterable<Entry> entry) {
+			this.entries = Collections3.toImmutableList(entry);
 			return getSelf();
 		}
 		
@@ -151,6 +157,41 @@ public class Bundle extends FhirResource {
 		protected Bundle doBuild() {
 			return new Bundle(id, meta, implicitRules, language, identifier, type, total, links, entries, signature);
 		}
+
+	}
+	
+	@JsonIgnore
+	@Override
+	public Collection<Entry> getItems() {
+		return Collections3.toImmutableList(entry);
+	}
+	
+	public Collection<Entry> getEntry() {
+		return entry;
+	}
+	
+	public Identifier getIdentifier() {
+		return identifier;
+	}
+	
+	public Collection<Link> getLink() {
+		return link;
+	}
+	
+	public Signature getSignature() {
+		return signature;
+	}
+	
+	public Instant getTimestamp() {
+		return timestamp;
 	}
 
+	public Code getType() {
+		return type;
+	}
+	
+	public int getTotal() {
+		return total;
+	}
+	
 }

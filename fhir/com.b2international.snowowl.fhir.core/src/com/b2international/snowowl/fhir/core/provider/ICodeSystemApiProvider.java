@@ -41,7 +41,7 @@ import com.b2international.snowowl.fhir.core.search.FhirSearchParameter;
  * @see <a href="https://www.hl7.org/fhir/2016May/terminologies.html#system">FHIR:Terminologies:System</a> to determine whether a code system is supported
  * @since 7.0
  */
-public interface ICodeSystemApiProvider extends IFhirApiProvider {
+public interface ICodeSystemApiProvider {
 
 	/**
 	 * Registry that reads and instantiates FHIR API supporting services registered by the actual terminology plug-ins.

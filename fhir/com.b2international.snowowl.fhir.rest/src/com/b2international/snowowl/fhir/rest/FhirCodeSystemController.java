@@ -19,39 +19,24 @@ import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
 
-import java.text.ParseException;
-import java.util.Collection;
-import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.util.MultiValueMap;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import com.b2international.commons.Pair;
-import com.b2international.snowowl.core.ResourceURI;
-import com.b2international.snowowl.fhir.core.codesystems.BundleType;
-import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
+import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.fhir.core.model.Bundle;
-import com.b2international.snowowl.fhir.core.model.Entry;
 import com.b2international.snowowl.fhir.core.model.OperationOutcome;
-import com.b2international.snowowl.fhir.core.model.ValidateCodeResult;
-import com.b2international.snowowl.fhir.core.model.codesystem.*;
-import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest.Builder;
-import com.b2international.snowowl.fhir.core.model.dt.Coding;
-import com.b2international.snowowl.fhir.core.model.dt.Parameters;
-import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
-import com.b2international.snowowl.fhir.core.model.dt.Parameters.Json;
-import com.b2international.snowowl.fhir.core.model.dt.Uri;
-import com.b2international.snowowl.fhir.core.provider.ICodeSystemApiProvider;
+import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
+import com.b2international.snowowl.fhir.core.request.FhirRequests;
 import com.b2international.snowowl.fhir.core.search.FhirFilterParameter;
 import com.b2international.snowowl.fhir.core.search.FhirSearchParameter;
 
-import io.swagger.annotations.*;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 /**
  * Code system resource REST endpoint.
@@ -88,35 +73,33 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 		@ApiResponse(code = HTTP_OK, message = "OK")
 	})
 	@GetMapping
-	public Bundle getCodeSystems(@RequestParam(required=false) MultiValueMap<String, String> parameters) {
+	public Promise<Bundle> getCodeSystems(@RequestParam(required=false) MultiValueMap<String, String> parameters) {
 		
 		Pair<Set<FhirFilterParameter>, Set<FhirSearchParameter>> requestParameters = processParameters(parameters);
 		Set<FhirFilterParameter> filterParameters = requestParameters.getA();
 		
+		return FhirRequests.prepareSearchCodeSystem()
+				.buildAsync()
+				.execute(getBus());
+		
 		//TODO: replace this with something more general as described in
 		//https://docs.spring.io/spring-hateoas/docs/current/reference/html/
-		String uri = MvcUriComponentsBuilder.fromController(FhirCodeSystemController.class).build().toString();
+//		String uri = MvcUriComponentsBuilder.fromController(FhirCodeSystemController.class).build().toString();
 		
-		Bundle.Builder builder = Bundle.builder(UUID.randomUUID().toString())
-			.type(BundleType.SEARCHSET)
-			.addLink(uri);
-		
-		int total = 0;
-
 		//collect the hits from the providers
-		Collection<ICodeSystemApiProvider> providers = codeSystemProviderRegistry.getProviders(getBus(), locales);
-		
-		for (ICodeSystemApiProvider codeSystemProvider : providers) {
-			Collection<CodeSystem> codeSystems = codeSystemProvider.getCodeSystems(requestParameters.getB());
-			for (CodeSystem codeSystem : codeSystems) {
-				applyResponseContentFilter(codeSystem, filterParameters);
-				String resourceUrl = String.join("/", uri, codeSystem.getId().getIdValue());
-				Entry entry = new Entry(new Uri(resourceUrl), codeSystem);
-				builder.addEntry(entry);
-				total++;
-			}
-		}
-		return builder.total(total).build();
+//		Collection<ICodeSystemApiProvider> providers = codeSystemProviderRegistry.getProviders(getBus(), locales);
+//		
+//		for (ICodeSystemApiProvider codeSystemProvider : providers) {
+//			Collection<CodeSystem> codeSystems = codeSystemProvider.getCodeSystems(requestParameters.getB());
+//			for (CodeSystem codeSystem : codeSystems) {
+//				applyResponseContentFilter(codeSystem, filterParameters);
+//				String resourceUrl = String.join("/", uri, codeSystem.getId().getIdValue());
+//				Entry entry = new Entry(new Uri(resourceUrl), codeSystem);
+//				builder.addEntry(entry);
+//				total++;
+//			}
+//		}
+//		return builder.total(total).build();
 	}
 	
 	/**
@@ -135,16 +118,21 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 		@ApiResponse(code = HTTP_NOT_FOUND, message = "Code system not found", response = OperationOutcome.class)
 	})
 	@RequestMapping(value="/{codeSystemId:**}", method=RequestMethod.GET)
-	public MappingJacksonValue getCodeSystem(@PathVariable("codeSystemId") String codeSystemId, 
+	public Promise<CodeSystem> getCodeSystem(@PathVariable("codeSystemId") String codeSystemId, 
 			@RequestParam(required=false) MultiValueMap<String, String> parameters) {
 		
 		Pair<Set<FhirFilterParameter>, Set<FhirSearchParameter>> fhirParameters = processParameters(parameters);
+		// apply filters, params, etc.
 		
-		ResourceURI codeSystemURI = com.b2international.snowowl.core.codesystem.CodeSystem.uri(codeSystemId);
-		ICodeSystemApiProvider codeSystemProvider = codeSystemProviderRegistry.getCodeSystemProvider(getBus(), locales, codeSystemURI);
-		CodeSystem codeSystem = codeSystemProvider.getCodeSystem(codeSystemURI);
+		return FhirRequests.prepareGetCodeSystem(codeSystemId)
+				.buildAsync()
+				.execute(getBus());
 		
-		return applyResponseContentFilter(codeSystem, fhirParameters.getA());
+//		ResourceURI codeSystemURI = com.b2international.snowowl.core.codesystem.CodeSystem.uri(codeSystemId);
+//		ICodeSystemApiProvider codeSystemProvider = codeSystemProviderRegistry.getCodeSystemProvider(getBus(), locales, codeSystemURI);
+//		CodeSystem codeSystem = codeSystemProvider.getCodeSystem(codeSystemURI);
+		
+//		return applyResponseContentFilter(codeSystem, fhirParameters.getA());
 	}
 	
 }

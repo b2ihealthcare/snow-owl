@@ -20,6 +20,8 @@ Export-Package: com.b2international.snowowl.fhir.core,
  com.b2international.snowowl.fhir.core.model.valueset,
  com.b2international.snowowl.fhir.core.model.valueset.expansion,
  com.b2international.snowowl.fhir.core.provider,
+ com.b2international.snowowl.fhir.core.request,
+ com.b2international.snowowl.fhir.core.request.codesystem,
  com.b2international.snowowl.fhir.core.search,
  com.b2international.snowowl.fhir.core.valueset
 Require-Bundle: com.b2international.snowowl.core;visibility:=reexport,
