@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,7 @@
  */
 package com.b2international.snowowl.fhir.core.exceptions;
 
-import java.util.Collection;
-
+import com.b2international.commons.exceptions.ApiException;
 import com.b2international.snowowl.fhir.core.codesystems.IssueSeverity;
 import com.b2international.snowowl.fhir.core.codesystems.IssueType;
 import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
@@ -26,7 +25,7 @@ import com.b2international.snowowl.fhir.core.model.OperationOutcome;
 /**
  * @since 6.3
  */
-public class FhirException extends RuntimeException {
+public class FhirException extends ApiException {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -35,14 +34,6 @@ public class FhirException extends RuntimeException {
 	
 	private OperationOutcome.Builder operationOutcomeBuilder = OperationOutcome.builder();
 		
-	public FhirException(Issue issue) {
-		operationOutcomeBuilder.addIssue(issue);
-	}
-	
-	public FhirException(Collection<Issue> issues) {
-		operationOutcomeBuilder.addIssues(issues);
-	}
-	
 	public FhirException(IssueSeverity issueSeverity, IssueType issueType, String message, OperationOutcomeCode operationOutcomeCode, String location) {
 		
 		super(message);
@@ -78,6 +69,11 @@ public class FhirException extends RuntimeException {
 	
 	public static FhirException createFhirError(String message, OperationOutcomeCode operationOutcomeCode) {
 		return new FhirException(IssueSeverity.ERROR, IssueType.EXCEPTION, message, operationOutcomeCode);
+	}
+	
+	@Override
+	protected Integer getStatus() {
+		return 0;
 	}
 	
 	/**

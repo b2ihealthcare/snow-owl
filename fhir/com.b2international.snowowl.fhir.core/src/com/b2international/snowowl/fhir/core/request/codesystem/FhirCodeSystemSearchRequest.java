@@ -24,6 +24,8 @@ import com.b2international.snowowl.core.codesystem.CodeSystems;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
+import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
+import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
 import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.Bundle.Builder;
 import com.b2international.snowowl.fhir.core.model.Entry;
@@ -76,6 +78,8 @@ final class FhirCodeSystemSearchRequest extends SearchResourceRequest<Repository
 				// TODO fill out Code System specific properties, if required use tooling specific extensions to fill all fields
 				.id(codeSystem.getId())
 				.url(codeSystem.getUrl())
+				.status(PublicationStatus.getByCodeValue(codeSystem.getStatus()))
+				.content(CodeSystemContentMode.COMPLETE) // treat all CodeSystems complete by default
 				.build();
 	}
 	

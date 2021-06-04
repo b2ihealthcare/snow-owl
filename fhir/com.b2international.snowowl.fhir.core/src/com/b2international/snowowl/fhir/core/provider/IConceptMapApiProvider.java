@@ -81,7 +81,7 @@ public interface IConceptMapApiProvider {
 		 */
 		public IConceptMapApiProvider getConceptMapProvider(IEventBus bus, List<ExtendedLocale> locales, String uriValue) {
 			return getProviders(bus, locales).stream()
-				.filter(provider -> provider.isSupported(uriValue))
+//				.filter(provider -> provider.isSupported(uriValue))
 				.findFirst()
 				.orElseThrow(() -> new BadRequestException("Did not find FHIR module for managing concept map: " + uriValue, OperationOutcomeCode.MSG_NO_MODULE, "system=" + uriValue));
 		}

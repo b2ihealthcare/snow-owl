@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import com.b2international.snowowl.core.plugin.ClassPathScanner;
 import com.b2international.snowowl.core.plugin.Component;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.Plugin;
-import com.b2international.snowowl.fhir.core.provider.ICodeSystemApiProvider;
 import com.b2international.snowowl.fhir.core.provider.IConceptMapApiProvider;
 import com.b2international.snowowl.fhir.core.provider.IValueSetApiProvider;
 
@@ -33,7 +32,6 @@ public final class FhirCorePlugin extends Plugin {
 	@Override
 	public void init(SnowOwlConfiguration configuration, Environment env) throws Exception {
 		ClassPathScanner scanner = env.service(ClassPathScanner.class);
-		env.services().registerService(ICodeSystemApiProvider.Registry.class, new ICodeSystemApiProvider.Registry(scanner));
 		env.services().registerService(IConceptMapApiProvider.Registry.class, new IConceptMapApiProvider.Registry(scanner));
 		env.services().registerService(IValueSetApiProvider.Registry.class, new IValueSetApiProvider.Registry(scanner));
 	}

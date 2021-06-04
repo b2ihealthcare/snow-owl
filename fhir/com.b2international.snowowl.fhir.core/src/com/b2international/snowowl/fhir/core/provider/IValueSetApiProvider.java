@@ -80,7 +80,7 @@ public interface IValueSetApiProvider {
 		 */
 		public IValueSetApiProvider getValueSetProvider(IEventBus bus, List<ExtendedLocale> locales, String uriValue) {
 			return getProviders(bus, locales).stream()
-				.filter(provider -> provider.isSupported(uriValue))
+//				.filter(provider -> provider.isSupported(uriValue))
 				.findFirst()
 				.orElseThrow(() -> new BadRequestException("Did not find FHIR module for managing value set: " + uriValue, OperationOutcomeCode.MSG_NO_MODULE, "system=" + uriValue));
 		}
