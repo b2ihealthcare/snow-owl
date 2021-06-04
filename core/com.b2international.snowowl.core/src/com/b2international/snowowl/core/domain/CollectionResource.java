@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,103 +17,52 @@ package com.b2international.snowowl.core.domain;
 
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 
 /**
- * Represents a collection resource in the RESTful API.
- * 
- * @since 4.0
+ * @since 8.0
  */
-@JsonInclude(Include.NON_NULL)
-public class CollectionResource<T> implements Serializable, Iterable<T> {
+public interface CollectionResource<T> extends Serializable, Iterable<T> {
 
-	private static final long serialVersionUID = -840552452105348114L;
+	/**
+	 * @return the items associated in the collection, never <code>null</code>
+	 */
+	Collection<T> getItems();
 	
-	private final List<T> items;
-
-	protected CollectionResource(List<T> items) {
-		this.items = items == null ? Collections.<T> emptyList() : items;
-	}
-
 	/**
 	 * @return <tt>true</tt> if this {@link CollectionResource} contains no elements
-	 * @since 5.8 
 	 */
 	@JsonIgnore
-	public final boolean isEmpty() {
+	default boolean isEmpty() {
 		return getItems().isEmpty(); 
 	}
-	
-	/**
-	 * @return the items associated in the collection.
-	 */
-	public final List<T> getItems() {
-		return items;
-	}
-	
-	@Override
-	public Iterator<T> iterator() {
-		return items.iterator();
-	}
 
-	/**
-	 * Creates a new {@link CollectionResource} for the given items.
-	 * 
-	 * @param items
-	 * @return
-	 */
-	public static <T> CollectionResource<T> of(List<T> items) {
-		return new CollectionResource<T>(items);
-	}
-	
-	/**
-	 * Creates a new {@link CollectionResource} for the given items.
-	 * 
-	 * @param items
-	 * @return
-	 */
-	@JsonCreator
-	public static <T> CollectionResource<T> of(@JsonProperty("items") Collection<T> items) {
-		if (items instanceof List) {
-			return of((List<T>)items);
-		}
-		return of(ImmutableList.copyOf(items));
-	}
-	
-	@Override
-	public String toString() {
-		return MoreObjects.toStringHelper(CollectionResource.class).add("items", getItems()).toString();
-	}
-	
 	/**
 	 * @return an {@link Optional} item in this collection resource
 	 */
 	@JsonIgnore
-	public Optional<T> first() {
+	default Optional<T> first() {
 		return Optional.ofNullable(Iterables.getFirst(getItems(), null));
 	}
 	
 	/**
 	 * Returns a sequential {@code Stream} with this collection resource as its source.
+	 * 
 	 * @return a {@link Stream} over the items of this collection resource
-	 * @since 6.0
 	 */
 	@JsonIgnore
-	public Stream<T> stream() {
+	default Stream<T> stream() {
 		return getItems().stream();
 	}
-
+	
+	@Override
+	default Iterator<T> iterator() {
+		return getItems().iterator();
+	}
+	
 }

@@ -18,12 +18,13 @@ package com.b2international.snowowl.core.request.version;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.GetResourceRequest;
 import com.b2international.snowowl.core.version.Version;
+import com.b2international.snowowl.core.version.Versions;
 
 /**
  * @since 8.0
  */
 public final class VersionGetRequest extends
-		GetResourceRequest<VersionSearchRequestBuilder, RepositoryContext, Version> {
+		GetResourceRequest<VersionSearchRequestBuilder, RepositoryContext, Versions, Version> {
 
 	private static final long serialVersionUID = 1L;
 

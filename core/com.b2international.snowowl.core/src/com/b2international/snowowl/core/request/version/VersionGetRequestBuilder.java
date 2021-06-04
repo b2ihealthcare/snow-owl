@@ -20,12 +20,13 @@ import com.b2international.snowowl.core.context.ResourceRepositoryRequestBuilder
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.GetResourceRequestBuilder;
 import com.b2international.snowowl.core.version.Version;
+import com.b2international.snowowl.core.version.Versions;
 
 /**
  * @since 8.0
  */
 public final class VersionGetRequestBuilder
-		extends GetResourceRequestBuilder<VersionGetRequestBuilder, VersionSearchRequestBuilder, RepositoryContext, Version>
+		extends GetResourceRequestBuilder<VersionGetRequestBuilder, VersionSearchRequestBuilder, RepositoryContext, Versions, Version>
 		implements ResourceRepositoryRequestBuilder<Version> {
 
 	public VersionGetRequestBuilder(ResourceURI versionUri) {

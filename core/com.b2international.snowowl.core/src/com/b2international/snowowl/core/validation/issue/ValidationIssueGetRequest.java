@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import com.b2international.snowowl.core.request.GetResourceRequest;
 /**
  * @since 6.0
  */
-final class ValidationIssueGetRequest extends GetResourceRequest<ValidationIssueSearchRequestBuilder, ServiceProvider, ValidationIssue> {
+final class ValidationIssueGetRequest extends GetResourceRequest<ValidationIssueSearchRequestBuilder, ServiceProvider, ValidationIssues, ValidationIssue> {
 
 	ValidationIssueGetRequest(String issueId) {
 		super(issueId);

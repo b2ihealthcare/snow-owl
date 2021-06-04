@@ -1,5 +1,5 @@
 /*
- * Copyright 2016-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2016-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,20 +16,20 @@
 package com.b2international.snowowl.core.request;
 
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.domain.CollectionResource;
 
 /**
  * @since 5.2
  */
 public abstract class GetResourceRequestBuilder<
-	B extends GetResourceRequestBuilder<B, SB, C, R>,
-	SB extends SearchResourceRequestBuilder<SB, C, ? extends CollectionResource<R>>,
+	B extends GetResourceRequestBuilder<B, SB, C, SR, R>,
+	SB extends SearchResourceRequestBuilder<SB, C, SR>,
 	C extends ServiceProvider, 
+	SR,
 	R> extends IndexResourceRequestBuilder<B, C, R> {
 	
-	private final GetResourceRequest<SB, C, R> request;
+	private final GetResourceRequest<SB, C, SR, R> request;
 
-	protected GetResourceRequestBuilder(final GetResourceRequest<SB, C, R> request) {
+	protected GetResourceRequestBuilder(final GetResourceRequest<SB, C, SR, R> request) {
 		super();
 		this.request = request;
 	}

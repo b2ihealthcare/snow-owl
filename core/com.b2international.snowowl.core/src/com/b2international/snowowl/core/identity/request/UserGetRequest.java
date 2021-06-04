@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,13 @@ package com.b2international.snowowl.core.identity.request;
 
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.identity.User;
+import com.b2international.snowowl.core.identity.Users;
 import com.b2international.snowowl.core.request.GetResourceRequest;
 
 /**
  * @since 5.11
  */
-final class UserGetRequest extends GetResourceRequest<UserSearchRequestBuilder, ServiceProvider, User> {
+final class UserGetRequest extends GetResourceRequest<UserSearchRequestBuilder, ServiceProvider, Users, User> {
 
 	UserGetRequest(String username) {
 		super(username);

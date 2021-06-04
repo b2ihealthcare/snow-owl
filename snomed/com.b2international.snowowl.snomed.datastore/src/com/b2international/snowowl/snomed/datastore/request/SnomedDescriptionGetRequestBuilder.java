@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.datastore.request;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.GetResourceRequestBuilder;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 
 /**
  * <i>Builder</i> class to build requests responsible for fetching a single SNOMED CT description.
@@ -26,7 +27,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
  * @since 4.5
  */
 public final class SnomedDescriptionGetRequestBuilder 
-		extends GetResourceRequestBuilder<SnomedDescriptionGetRequestBuilder, SnomedDescriptionSearchRequestBuilder, BranchContext, SnomedDescription> 
+		extends GetResourceRequestBuilder<SnomedDescriptionGetRequestBuilder, SnomedDescriptionSearchRequestBuilder, BranchContext, SnomedDescriptions, SnomedDescription> 
 		implements SnomedContentRequestBuilder<SnomedDescription> {
 
 	SnomedDescriptionGetRequestBuilder(String descriptionId) {

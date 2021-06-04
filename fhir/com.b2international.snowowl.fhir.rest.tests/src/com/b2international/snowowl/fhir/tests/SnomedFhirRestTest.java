@@ -38,8 +38,8 @@ public class SnomedFhirRestTest extends FhirRestTest {
 	@BeforeClass
 	public static void setupValueSets() {
 		String mainBranch = IBranchPath.MAIN_BRANCH;
-		simpleTypeRefSetId = TestReferenceSetCreator.createSimpleTypeReferenceSet(mainBranch, SIMPLE_TYPE_REFSET_NAME, FHIR_SIMPLE_TYPE_REFSET_VERSION);
-		queryTypeRefsetLogicalId = TestReferenceSetCreator.createQueryTypeReferenceSet(mainBranch, QUERY_TYPE_REFSET_NAME, FHIR_QUERY_TYPE_REFSET_VERSION);
+//		simpleTypeRefSetId = TestReferenceSetCreator.createSimpleTypeReferenceSet(mainBranch, SIMPLE_TYPE_REFSET_NAME, FHIR_SIMPLE_TYPE_REFSET_VERSION);
+//		queryTypeRefsetLogicalId = TestReferenceSetCreator.createQueryTypeReferenceSet(mainBranch, QUERY_TYPE_REFSET_NAME, FHIR_QUERY_TYPE_REFSET_VERSION);
 	}
 
 }

@@ -13,22 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.request;
+package com.b2international.snowowl.fhir.core.request.codesystem;
 
-import com.b2international.snowowl.core.Resource;
-import com.b2international.snowowl.core.Resources;
 import com.b2international.snowowl.core.context.ResourceRepositoryRequestBuilder;
 import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.request.SearchResourceRequest;
+import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
+import com.b2international.snowowl.fhir.core.model.Bundle;
 
 /**
  * @since 8.0
  */
-public final class ResourceGetRequestBuilder 
-		extends GetResourceRequestBuilder<ResourceGetRequestBuilder, ResourceSearchRequestBuilder, RepositoryContext, Resources, Resource>
-		implements ResourceRepositoryRequestBuilder<Resource> {
+public final class FhirCodeSystemSearchRequestBuilder 
+		extends SearchResourceRequestBuilder<FhirCodeSystemSearchRequestBuilder, RepositoryContext, Bundle>
+		implements ResourceRepositoryRequestBuilder<Bundle> {
 
-	public ResourceGetRequestBuilder(String resourceId) {
-		super(new ResourceGetRequest(resourceId));
+	@Override
+	protected SearchResourceRequest<RepositoryContext, Bundle> createSearch() {
+		return new FhirCodeSystemSearchRequest();
 	}
 
 }

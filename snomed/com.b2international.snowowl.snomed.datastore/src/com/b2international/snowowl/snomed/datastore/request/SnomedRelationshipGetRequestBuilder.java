@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.datastore.request;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.GetResourceRequestBuilder;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
 
 /**
  * <i>Builder</i> class to build requests responsible for fetching a single SNOMED CT relationship.
@@ -26,7 +27,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
  * @since 4.5
  */
 public final class SnomedRelationshipGetRequestBuilder 
-		extends GetResourceRequestBuilder<SnomedRelationshipGetRequestBuilder, SnomedRelationshipSearchRequestBuilder, BranchContext, SnomedRelationship>
+		extends GetResourceRequestBuilder<SnomedRelationshipGetRequestBuilder, SnomedRelationshipSearchRequestBuilder, BranchContext, SnomedRelationships, SnomedRelationship>
 		implements SnomedContentRequestBuilder<SnomedRelationship> {
 
 	SnomedRelationshipGetRequestBuilder(String relationshipId) {

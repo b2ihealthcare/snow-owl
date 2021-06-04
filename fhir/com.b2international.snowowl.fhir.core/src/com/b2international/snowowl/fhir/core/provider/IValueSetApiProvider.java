@@ -37,7 +37,7 @@ import com.b2international.snowowl.fhir.core.search.FhirSearchParameter;
  * 
  * @since 7.0
  */
-public interface IValueSetApiProvider extends IFhirApiProvider {
+public interface IValueSetApiProvider {
 	
 	/**
 	 * Registry that reads and instantiates FHIR API supporting services registered by the actual terminology plug-ins.
