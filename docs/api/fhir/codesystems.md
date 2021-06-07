@@ -11,6 +11,7 @@ Snow Owl Pro:
 *   ICD-10
 *   LOINC
 *   OPCS
+*   Local Code Systems
 
 ### SNOMED CT
 
