@@ -498,10 +498,12 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void import31MissingComponentsWithSkip() throws Exception {		
 		getComponent(branchPath, SnomedComponentType.CONCEPT, "63961392103").statusCode(404);
+		getComponent(branchPath, SnomedComponentType.MEMBER, "5312ec36-8baf-4768-8c4b-2d6f91094d4a").statusCode(404);
 		importArchive(branchPath, Collections.singletonList("900000000000490003"), false, Rf2ReleaseType.DELTA, "SnomedCT_Release_INT_20150131_missing_component.zip");
 		
 		//Assert that concept is imported while member with missing reference is skipped when ignoreMissingReferencesIn lists its reference set
 		getComponent(branchPath, SnomedComponentType.CONCEPT, "63961392103").statusCode(200);
+		getComponent(branchPath, SnomedComponentType.MEMBER, "5312ec36-8baf-4768-8c4b-2d6f91094d4a").statusCode(200);
 		getComponent(branchPath, SnomedComponentType.MEMBER, "5312ec36-8baf-4768-8c4b-2d6f91094d4b").statusCode(404);
 	}
 	
