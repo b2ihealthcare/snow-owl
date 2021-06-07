@@ -17,13 +17,13 @@ All notable changes to this project will be documented in this file.
 - New `POST /:path/label-expressions` endpoint to label up one or more ECL expressions using the selected description type (`FSN` or `PT`) and locales (#814, #817)
 - New validation rules (#801, #804)
   * Active terms should not contain double spaces
-  * Active terms should be capitalised or have Entire term case sensitive case significance
+  * Active terms should be capitalized or have `Entire term case sensitive` case significance
   * Spacing around hyphens should be consistent in active terms
   * In active terms, spaces should not precede commas, colons, semicolons or full stops
   * Descriptions which are not Fully Specified Names should not contain semantic tags
   * The fully specified names of active concept should contain a bracketed suffix (semantic tag)
   * Terms should only contain ASCII characters
-  * Fully specified names shoud not contain <, >, &, %, $, @, # characters
+  * Fully specified names should not contain <, >, &, %, $, @, # characters
   * Synonyms should not contain $, @ characters
   * Brackets in active terms should balance and be sequentially valid (in correct order)
   * FSN terms should not duplicate other FSN terms, regardless of case
@@ -37,7 +37,7 @@ All notable changes to this project will be documented in this file.
 
 ### Bugs/Improvements
 - [index] use segment diff to compute accurate base/head timestamps when merging empty branches (#807)
-- [index] support indexing fields with type `double` type (b275329)
+- [index] support indexing fields with type `double` (b275329)
 - [index] don't create "null" strings when mapping results to String[] (c78a710)
 - [index] support exlucing non-property type changes when comparing branches (#815, #818, #825)
 - [index] cache rootField and fieldPaths to prevent recomputing them when processing larger commits (1cb9e6a)
