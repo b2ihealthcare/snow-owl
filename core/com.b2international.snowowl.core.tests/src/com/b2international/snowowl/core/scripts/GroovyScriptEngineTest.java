@@ -41,14 +41,14 @@ public class GroovyScriptEngineTest {
 	@Test
 	public void emptyScript() throws Exception {
 		final String script = "";
-		Object rv = engines.run("groovy", getClass().getClassLoader(), script, Collections.emptyMap());
+		Object rv = engines.run(GroovyScriptEngine.EXTENSION, getClass().getClassLoader(), script, Collections.emptyMap());
 		assertNull(rv);
 	}
 	
 	@Test
 	public void addTwoNumbers() throws Exception {
 		final String script = "a + b";
-		int rv = engines.run("groovy", getClass().getClassLoader(), script, ImmutableMap.of("a", 1, "b", 2));
+		int rv = engines.run(GroovyScriptEngine.EXTENSION, getClass().getClassLoader(), script, ImmutableMap.of("a", 1, "b", 2));
 		assertEquals(3, rv);
 	}
 	

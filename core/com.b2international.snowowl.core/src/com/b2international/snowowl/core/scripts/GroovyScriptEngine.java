@@ -36,6 +36,8 @@ import groovy.lang.Script;
 @Component
 public final class GroovyScriptEngine implements ScriptEngine {
 	
+	public static final String EXTENSION = "groovy";
+	
 	private final LoadingCache<ClassLoader, GroovyShell> shells = CacheBuilder.newBuilder().build(new CacheLoader<ClassLoader, GroovyShell>() {
 		@Override
 		public GroovyShell load(ClassLoader ctx) throws Exception {
@@ -63,7 +65,7 @@ public final class GroovyScriptEngine implements ScriptEngine {
 
 	@Override
 	public String getExtension() {
-		return "groovy";
+		return EXTENSION;
 	}
 	
 	private Script compile(ClassLoader ctx, ScriptSource script) {
