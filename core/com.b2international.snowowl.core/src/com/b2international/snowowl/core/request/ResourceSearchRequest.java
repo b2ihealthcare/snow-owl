@@ -31,34 +31,37 @@ final class ResourceSearchRequest extends SearchIndexResourceRequest<RepositoryC
 	private static final long serialVersionUID = 1L;
 
 	enum OptionKey {
-		
+
 		/**
 		 * Filter matches by their resource type.
 		 */
-		RESOURCE_TYPE, 
-		
+		RESOURCE_TYPE,
+
 		/**
 		 * Filter matches by their title (exact match).
 		 */
-		TITLE_EXACT, 
-		
+		TITLE_EXACT,
+
+		/** "Smart" search by title (taking prefixes, stemming, etc. into account) */
+		TITLE,
+
 		/**
 		 * Filter matches by their tooling id property.
 		 */
 		TOOLING_ID,
-		
+
 		/**
 		 * Filter matches by their currently associated working branch (exact match).
 		 */
 		BRANCH,
-		
+
 	}
-	
+
 	@Override
 	protected Class<ResourceDocument> getDocumentType() {
 		return ResourceDocument.class;
 	}
-	
+
 	@Override
 	protected Expression prepareQuery(RepositoryContext context) {
 		final ExpressionBuilder queryBuilder = Expressions.builder();
@@ -67,7 +70,26 @@ final class ResourceSearchRequest extends SearchIndexResourceRequest<RepositoryC
 		addFilter(queryBuilder, OptionKey.TITLE_EXACT, String.class, ResourceDocument.Expressions::titles);
 		addFilter(queryBuilder, OptionKey.TOOLING_ID, String.class, ResourceDocument.Expressions::toolingIds);
 		addFilter(queryBuilder, OptionKey.BRANCH, String.class, ResourceDocument.Expressions::branchPaths);
+		
+		addTermFilters(queryBuilder);
+		
 		return queryBuilder.build();
+	}
+
+	private void addTermFilters(ExpressionBuilder queryBuilder) {
+		if (containsKey(OptionKey.TITLE)) {
+			final String searchTerm = getString(OptionKey.TITLE);
+			System.out.println("ResourceSearchRequest.addTermFilters() " + searchTerm);
+			final ExpressionBuilder termFilter = Expressions.builder();
+
+			termFilter.should(Expressions.dismaxWithScoreCategories(ResourceDocument.Expressions.matchTitleExact(searchTerm),
+					ResourceDocument.Expressions.matchTitleAllTermsPresent(searchTerm),
+					ResourceDocument.Expressions.matchTitleAllPrefixesPresent(searchTerm)));
+			
+			termFilter.should(Expressions.boost(ResourceDocument.Expressions.id(searchTerm), 1000.0f));
+			
+			queryBuilder.must(termFilter.build());
+		}
 	}
 
 	@Override
@@ -80,6 +102,4 @@ final class ResourceSearchRequest extends SearchIndexResourceRequest<RepositoryC
 		return new Resources(limit, 0);
 	}
 
-	
-	
 }
