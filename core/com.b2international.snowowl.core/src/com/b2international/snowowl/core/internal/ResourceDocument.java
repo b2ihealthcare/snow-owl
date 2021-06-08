@@ -117,15 +117,15 @@ public final class ResourceDocument extends RevisionDocument {
 			return matchAny(Fields.TITLE, titles);
 		}
 		
-		public static Expression matchNameRegex(String regex) {
+		public static Expression matchTitleRegex(String regex) {
 			return regexp(Fields.TITLE, regex);
 		}
 		
-		public static Expression matchNameAllPrefixesPresent(String term) {
+		public static Expression matchTitleAllPrefixesPresent(String term) {
 			return matchTextAll(Fields.TITLE_PREFIX, term);
 		}
 		
-		public static Expression matchNameAllTermsPresent(String term) {
+		public static Expression matchTitleAllTermsPresent(String term) {
 			return matchTextAll(Fields.TITLE_TEXT, term);
 		}
 		
