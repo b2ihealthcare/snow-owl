@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.scripts.GroovyScriptEngine;
 import com.b2international.snowowl.core.scripts.ScriptEngine;
 import com.b2international.snowowl.core.scripts.ScriptSource;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
@@ -61,7 +62,7 @@ public final class GroovyScriptValidationRuleEvaluator implements ValidationRule
 			}
 			
 			return context.service(ScriptEngine.Registry.class).run(
-				"groovy", 
+				GroovyScriptEngine.EXTENSION, 
 				context.service(ClassLoader.class), 
 				new ScriptSource(validationRuleFilePath.getFileName().toString(), script),
 				ImmutableMap.<String, Object>of(
