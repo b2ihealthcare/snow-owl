@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,9 +36,9 @@ public final class TermFilter implements Serializable {
 	private final boolean exact;
 	private final boolean parsed;
 	private final boolean ignoreStopwords;
-	private final boolean isCaseSensitive;
+	private final boolean caseSensitive;
 
-	public TermFilter(final String term, final Integer minShouldMatch, final boolean fuzzy, final boolean exact, final boolean parsed, final boolean ignoreStopwords, final boolean isCaseSensitive) {
+	public TermFilter(final String term, final Integer minShouldMatch, final boolean fuzzy, final boolean exact, final boolean parsed, final boolean ignoreStopwords, final boolean caseSensitive) {
 		if (term == null) {
 			throw new BadRequestException("'term' filter parameter was null.");
 		}
@@ -48,7 +48,7 @@ public final class TermFilter implements Serializable {
 		this.exact = exact;
 		this.parsed = parsed;
 		this.ignoreStopwords = ignoreStopwords;
-		this.isCaseSensitive = isCaseSensitive;
+		this.caseSensitive = caseSensitive;
 	}
 	
 	public String getTerm() {
@@ -76,7 +76,7 @@ public final class TermFilter implements Serializable {
 	}
 	
 	public boolean isCaseSensitive() {
-		return isCaseSensitive;
+		return caseSensitive;
 	}
 	
 	public boolean isAnyMatch() {
@@ -107,7 +107,7 @@ public final class TermFilter implements Serializable {
 		private boolean exact;
 		private boolean parsed;
 		private boolean ignoreStopwords;
-		private boolean isCaseSensitive;
+		private boolean caseSensitive;
 		
 		private Builder() { }
 		
@@ -145,13 +145,13 @@ public final class TermFilter implements Serializable {
 			return this;
 		}
 
-		public Builder caseSensitive(boolean isCaseSensitive) {
-			this.isCaseSensitive = isCaseSensitive;
+		public Builder caseSensitive(boolean caseSensitive) {
+			this.caseSensitive = caseSensitive;
 			return this;
 		}
 		
 		public TermFilter build() {
-			return new TermFilter(term, minShouldMatch, fuzzy, exact, parsed, ignoreStopwords, isCaseSensitive);
+			return new TermFilter(term, minShouldMatch, fuzzy, exact, parsed, ignoreStopwords, caseSensitive);
 		}
 	}
 	
