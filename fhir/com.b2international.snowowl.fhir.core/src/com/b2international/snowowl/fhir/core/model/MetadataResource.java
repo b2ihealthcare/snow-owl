@@ -50,7 +50,7 @@ import com.google.common.collect.Sets;
  */
 @Filterable(filter = "_summary", values = {"TRUE", "TEXT", "DATA", "COUNT", "FALSE"})
 @Filterable(filter = "_elements", supportsMultipleValues = true)
-@JsonFilter(FhirBeanPropertyFilter.FILTER_NAME)
+//@JsonFilter(FhirBeanPropertyFilter.FILTER_NAME)
 public abstract class MetadataResource extends DomainResource {
 	
 	//same as logical id

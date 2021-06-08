@@ -191,28 +191,28 @@ public final class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 		throw new UnsupportedOperationException();
 	}
 	
-	@Override
-	public Collection<String> getSupportedURIs() {
-
-		Collection<String> codeSytemUris = Sets.newHashSet();
-
-		Collection<Class<?>> codeSystemClasses = getCodeSystemClasses();
-		
-		for (Class<?> codeSystemPackageClass : codeSystemClasses) {
-			FhirCodeSystem fhirCodeSystem = createCodeSystemEnum(codeSystemPackageClass);
-			codeSytemUris.add(fhirCodeSystem.getCodeSystemUri());
-		}
-		return codeSytemUris;
-	}
+//	@Override
+//	public Collection<String> getSupportedURIs() {
+//
+//		Collection<String> codeSytemUris = Sets.newHashSet();
+//
+//		Collection<Class<?>> codeSystemClasses = getCodeSystemClasses();
+//		
+//		for (Class<?> codeSystemPackageClass : codeSystemClasses) {
+//			FhirCodeSystem fhirCodeSystem = createCodeSystemEnum(codeSystemPackageClass);
+//			codeSytemUris.add(fhirCodeSystem.getCodeSystemUri());
+//		}
+//		return codeSytemUris;
+//	}
 	
-	@Override
-	public boolean isSupported(ResourceURI codeSystemId) {
-		Optional<String> supportedPath = getSupportedURIs().stream()
-			.map(u -> u.substring(u.lastIndexOf(Branch.SEPARATOR) + 1))
-			.filter(p -> p.equals(codeSystemId.getPath()))
-			.findFirst();
-		return supportedPath.isPresent();
-	}
+//	@Override
+//	public boolean isSupported(ResourceURI codeSystemId) {
+//		Optional<String> supportedPath = getSupportedURIs().stream()
+//			.map(u -> u.substring(u.lastIndexOf(Branch.SEPARATOR) + 1))
+//			.filter(p -> p.equals(codeSystemId.getPath()))
+//			.findFirst();
+//		return supportedPath.isPresent();
+//	}
 	
 	private Optional<FhirCodeSystem> getEnumConstant(FhirCodeSystem fhirCodeSystem, String code) {
 		

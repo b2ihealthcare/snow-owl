@@ -19,19 +19,14 @@ import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
 
-import java.util.Set;
-
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 
-import com.b2international.commons.Pair;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.OperationOutcome;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
-import com.b2international.snowowl.fhir.core.search.FhirFilterParameter;
-import com.b2international.snowowl.fhir.core.search.FhirSearchParameter;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -73,10 +68,13 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 		@ApiResponse(code = HTTP_OK, message = "OK")
 	})
 	@GetMapping
-	public Promise<Bundle> getCodeSystems(@RequestParam(required=false) MultiValueMap<String, String> parameters) {
+	public Promise<Bundle> getCodeSystems(
+			@RequestParam(required = false) 
+			final MultiValueMap<String, String> parameters
+			) {
 		
-		Pair<Set<FhirFilterParameter>, Set<FhirSearchParameter>> requestParameters = processParameters(parameters);
-		Set<FhirFilterParameter> filterParameters = requestParameters.getA();
+//		Pair<Set<FhirFilterParameter>, Set<FhirSearchParameter>> requestParameters = processParameters(parameters);
+//		Set<FhirFilterParameter> filterParameters = requestParameters.getA();
 		
 		return FhirRequests.prepareSearchCodeSystem()
 				.buildAsync()
@@ -118,10 +116,14 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 		@ApiResponse(code = HTTP_NOT_FOUND, message = "Code system not found", response = OperationOutcome.class)
 	})
 	@RequestMapping(value="/{codeSystemId:**}", method=RequestMethod.GET)
-	public Promise<CodeSystem> getCodeSystem(@PathVariable("codeSystemId") String codeSystemId, 
-			@RequestParam(required=false) MultiValueMap<String, String> parameters) {
+	public Promise<CodeSystem> getCodeSystem(
+			@PathVariable(value = "codeSystemId") 
+			final String codeSystemId,
+			
+			@RequestParam(required = false) 
+			final MultiValueMap<String, String> parameters) {
 		
-		Pair<Set<FhirFilterParameter>, Set<FhirSearchParameter>> fhirParameters = processParameters(parameters);
+//		Pair<Set<FhirFilterParameter>, Set<FhirSearchParameter>> fhirParameters = processParameters(parameters);
 		// apply filters, params, etc.
 		
 		return FhirRequests.prepareGetCodeSystem(codeSystemId)

@@ -186,10 +186,10 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 
 	@Override
 	public ValidateCodeResult validateCode(final String systemUri, final ValidateCodeRequest validationRequest) {
-		
-		//try to convert the system URi to internal code systemUri
-		ResourceURI codeSystemUri = getCodeSystemUri(systemUri, validationRequest.getVersion());
-		return validateCode(codeSystemUri, validationRequest);
+		throw new UnsupportedOperationException();
+//		//try to convert the system URi to internal code systemUri
+//		ResourceURI codeSystemUri = getCodeSystemUri(systemUri, validationRequest.getVersion());
+//		return validateCode(codeSystemUri, validationRequest);
 	}
 	
 	@Override
