@@ -26,6 +26,7 @@ import java.util.stream.Stream;
 
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.plugin.Component;
+import com.b2international.snowowl.core.scripts.GroovyScriptEngine;
 import com.b2international.snowowl.core.scripts.ScriptEngine;
 import com.b2international.snowowl.core.setup.Plugins;
 
@@ -72,7 +73,7 @@ public class ScriptsCommand extends Command {
 				
 				final Map<String, Object> binding = newHashMap();
 				binding.put("ctx", getContext());
-				getContext().service(ScriptEngine.Registry.class).run("groovy", classLoader, script, binding);
+				getContext().service(ScriptEngine.Registry.class).run(GroovyScriptEngine.EXTENSION, classLoader, script, binding);
 
 			} catch (Exception e) {
 				e.printStackTrace();
