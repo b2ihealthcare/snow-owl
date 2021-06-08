@@ -55,9 +55,9 @@ public class ResourceRestService extends AbstractRestService {
 		return ResourceRequests
 				.prepareSearch()
 				.filterByIds(params.getId())
-				.filterByBranches(params.getBranch())
 				.filterByResourceType(params.getResourceType())
 				.filterByTitleExact(params.getTitleExact())
+				.filterByTitle(params.getTitle())
 				.filterByToolingIds(params.getToolingId())
 				.setLimit(params.getLimit())
 				.setExpand(params.getExpand())
@@ -71,7 +71,7 @@ public class ResourceRestService extends AbstractRestService {
 			value = "Retrieve resource by it's unique identifier",
 			notes = "Returns generic information about a single resource associated to the given unique identifier.")
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK", response = Resources.class),
+		@ApiResponse(code = 200, message = "OK"),
 		@ApiResponse(code = 404, message = "Not Found", response = RestApiError.class)
 	})
 	@GetMapping(value = "/{resourceId}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
