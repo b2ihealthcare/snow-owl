@@ -36,6 +36,9 @@ public class ResourceRestSearch extends ObjectRestSearch{
 	private List<String> titleExact;
 	
 	@ApiParam
+	private String title;
+	
+	@ApiParam
 	private List<String> toolingId;
 
 	public List<String> getBranch() {
@@ -68,5 +71,13 @@ public class ResourceRestSearch extends ObjectRestSearch{
 
 	public void setToolingId(List<String> toolingId) {
 		this.toolingId = toolingId;
+	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
 	}
 }
