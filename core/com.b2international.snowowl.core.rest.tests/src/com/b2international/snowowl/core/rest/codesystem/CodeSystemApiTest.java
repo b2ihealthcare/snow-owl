@@ -41,7 +41,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
@@ -136,12 +136,18 @@ public class CodeSystemApiTest {
 	@Test
 	public void codesystem08_CreateNonUniqueId() throws Exception {
 		assertCodeSystemCreate(SNOMED)
+			.statusCode(201);
+		
+		assertCodeSystemCreate(SNOMED)
 			.statusCode(409)
 			.body("message", containsString("Resource with 'SNOMEDCT' identifier already exists."));
 	}
 	
 	@Test
 	public void codesystem09_CreateNonUniqueTitle() throws Exception {
+		assertCodeSystemCreate(SNOMED)
+			.statusCode(201);
+		
 		assertCodeSystemCreate(SNOMED.with(ResourceDocument.Fields.ID, "SNOMEDCT-other"))
 			.statusCode(409)
 			.body("message", containsString("Resource with 'SNOMED CT' title already exists."));
@@ -149,6 +155,9 @@ public class CodeSystemApiTest {
 	
 	@Test
 	public void codesystem10_CreateNonUniqueOid() throws Exception {
+		assertCodeSystemCreate(SNOMED)
+			.statusCode(201);
+		
 		assertCodeSystemCreate(SNOMED.with(ResourceDocument.Fields.ID, "SNOMEDCT-other").with("title", "SNOMED CT-other"))
 			.statusCode(409)
 			.body("message", containsString("Resource with '2.16.840.1.113883.6.96' oid already exists."));
@@ -156,6 +165,8 @@ public class CodeSystemApiTest {
 	
 	@Test
 	public void codesystem11_SearchById() throws Exception {
+		assertCodeSystemCreate(SNOMED)
+			.statusCode(201);
 		assertCodeSystemCreate(prepareCodeSystemCreateRequestBody(UUID.randomUUID().toString())).statusCode(201);
 		assertCodeSystemSearch(
 			Map.of(
@@ -166,6 +177,8 @@ public class CodeSystemApiTest {
 	
 	@Test
 	public void codesystem12_SearchByTitle() throws Exception {
+		assertCodeSystemCreate(SNOMED)
+			.statusCode(201);
 		assertCodeSystemCreate(prepareCodeSystemCreateRequestBody(UUID.randomUUID().toString())).statusCode(201);
 		assertCodeSystemSearch(
 			Map.of(
@@ -176,6 +189,8 @@ public class CodeSystemApiTest {
 	
 	@Test
 	public void codesystem13_SearchByOid() throws Exception {
+		assertCodeSystemCreate(SNOMED)
+			.statusCode(201);
 		assertCodeSystemCreate(prepareCodeSystemCreateRequestBody(UUID.randomUUID().toString())).statusCode(201);
 		assertCodeSystemSearch(
 			Map.of(
@@ -435,8 +450,8 @@ public class CodeSystemApiTest {
 				.isDeleted()).isTrue();
 	}
 	
-	@AfterClass
-	public static void cleanUp() {
+	@After
+	public void cleanUp() {
 		ResourceRequests
 		.prepareSearch()
 		.buildAsync()
