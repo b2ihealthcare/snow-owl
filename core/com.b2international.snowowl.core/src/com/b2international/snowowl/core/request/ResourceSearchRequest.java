@@ -71,15 +71,14 @@ final class ResourceSearchRequest extends SearchIndexResourceRequest<RepositoryC
 		addFilter(queryBuilder, OptionKey.TOOLING_ID, String.class, ResourceDocument.Expressions::toolingIds);
 		addFilter(queryBuilder, OptionKey.BRANCH, String.class, ResourceDocument.Expressions::branchPaths);
 		
-		addTermFilters(queryBuilder);
+		addTitleFilters(queryBuilder);
 		
 		return queryBuilder.build();
 	}
 
-	private void addTermFilters(ExpressionBuilder queryBuilder) {
+	private void addTitleFilters(ExpressionBuilder queryBuilder) {
 		if (containsKey(OptionKey.TITLE)) {
 			final String searchTerm = getString(OptionKey.TITLE);
-			System.out.println("ResourceSearchRequest.addTermFilters() " + searchTerm);
 			final ExpressionBuilder termFilter = Expressions.builder();
 
 			termFilter.should(Expressions.dismaxWithScoreCategories(ResourceDocument.Expressions.matchTitleExact(searchTerm),
