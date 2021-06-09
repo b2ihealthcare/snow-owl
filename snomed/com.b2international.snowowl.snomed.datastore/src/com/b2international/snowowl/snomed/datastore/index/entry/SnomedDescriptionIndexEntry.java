@@ -182,8 +182,8 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 			return matchTextAll(Fields.TERM_EXACT, term);
 		}
 		
-		public static Expression matchTerm(String term) {
-			return exactMatch(Fields.TERM, term);
+		public static Expression matchTerm(String term, boolean isCaseSensitive) {
+			return exactMatch(isCaseSensitive ? Fields.TERM : Fields.TERM_EXACT, term);
 		}
 		
 		public static Expression matchTerm(Iterable<String> terms) {

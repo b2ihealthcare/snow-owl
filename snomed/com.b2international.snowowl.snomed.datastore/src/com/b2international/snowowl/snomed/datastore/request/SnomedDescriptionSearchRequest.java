@@ -138,7 +138,7 @@ final class SnomedDescriptionSearchRequest extends SnomedComponentSearchRequest<
 		if (termFilter.isFuzzy()) {
 			qb.should(fuzzy(termFilter.getTerm()));
 		} else if (termFilter.isExact()) {
-			qb.should(matchTerm(termFilter.getTerm()));
+			qb.should(matchTerm(termFilter.getTerm(), termFilter.isCaseSensitive()));
 		} else if (termFilter.isParsed()) {
 			qb.should(parsedTerm(termFilter.getTerm()));
 		} else if (termFilter.isAnyMatch()) {
