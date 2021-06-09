@@ -73,19 +73,19 @@ final class CodeSystemSearchRequest
 		addFilter(queryBuilder, OptionKey.TITLE_EXACT, String.class, ResourceDocument.Expressions::titles);
 		addFilter(queryBuilder, OptionKey.UPGRADE_OF, ResourceURI.class, ResourceDocument.Expressions::upgradeOfs);
 
-		addNameFilter(queryBuilder);
+		addTitleFilter(queryBuilder);
 		
 		return queryBuilder.build();
 	}
 
-	private void addNameFilter(ExpressionBuilder queryBuilder) {
+	private void addTitleFilter(ExpressionBuilder queryBuilder) {
 		if (containsKey(OptionKey.TITLE)) {
 			final String searchTerm = getString(OptionKey.TITLE);
 			ExpressionBuilder termFilter = Expressions.builder();
 			termFilter.should(Expressions.dismaxWithScoreCategories(
 				ResourceDocument.Expressions.matchTitleExact(searchTerm),
-				ResourceDocument.Expressions.matchNameAllTermsPresent(searchTerm),
-				ResourceDocument.Expressions.matchNameAllPrefixesPresent(searchTerm)
+				ResourceDocument.Expressions.matchTitleAllTermsPresent(searchTerm),
+				ResourceDocument.Expressions.matchTitleAllPrefixesPresent(searchTerm)
 			));
 			termFilter.should(Expressions.boost(ResourceDocument.Expressions.id(searchTerm), 1000.0f));
 			queryBuilder.must(termFilter.build());

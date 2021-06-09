@@ -35,4 +35,9 @@ public interface ApiTestConstants {
 	 */
 	String VERSIONS_API = "/versions";
 	
+	/**
+	 * The context-relative base URL for the resource controller.
+	 */
+	String RESOURCES_API = "/resources";
+	
 }

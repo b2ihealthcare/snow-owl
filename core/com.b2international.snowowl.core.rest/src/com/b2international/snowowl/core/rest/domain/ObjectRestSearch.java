@@ -23,7 +23,7 @@ import io.swagger.annotations.ApiParam;
 /**
  * @since 7.3
  */
-public abstract class ResourceRestSearch {
+public abstract class ObjectRestSearch {
 
 	@ApiParam(value = "The identifier(s) to match")
 	private Set<String> id;

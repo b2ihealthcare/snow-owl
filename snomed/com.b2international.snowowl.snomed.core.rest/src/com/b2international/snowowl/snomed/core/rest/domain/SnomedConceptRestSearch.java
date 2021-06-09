@@ -15,14 +15,14 @@
  */
 package com.b2international.snowowl.snomed.core.rest.domain;
 
-import com.b2international.snowowl.core.rest.domain.ResourceRestSearch;
+import com.b2international.snowowl.core.rest.domain.ObjectRestSearch;
 
 import io.swagger.annotations.ApiParam;
 
 /**
  * @since 6.16
  */
-public final class SnomedConceptRestSearch extends ResourceRestSearch {
+public final class SnomedConceptRestSearch extends ObjectRestSearch {
 
 	// concept filters
 	@ApiParam(value = "The effective time to match (yyyyMMdd, exact matches only)")

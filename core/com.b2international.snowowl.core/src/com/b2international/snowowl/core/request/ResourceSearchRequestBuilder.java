@@ -58,6 +58,16 @@ public final class ResourceSearchRequestBuilder
 	}
 	
 	/**
+	 * "Smart" search by title (taking prefixes, stemming, etc. into account)
+	 * 
+	 * @param title - the title to search for
+	 * @return this builder
+	 */
+	public ResourceSearchRequestBuilder filterByTitle(String title) {
+		return addOption(OptionKey.TITLE, title);
+	}
+	
+	/**
 	 * Filters matches by their title (exact match).
 	 * 
 	 * @param titles - at least one of these titles match

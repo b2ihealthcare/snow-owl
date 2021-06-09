@@ -20,7 +20,7 @@ import java.util.List;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.options.Options;
 import com.b2international.commons.options.OptionsBuilder;
-import com.b2international.snowowl.core.rest.domain.ResourceRestSearch;
+import com.b2international.snowowl.core.rest.domain.ObjectRestSearch;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberSearchRequestBuilder;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -30,7 +30,7 @@ import io.swagger.annotations.ApiParam;
 /**
  * @since 6.16
  */
-public final class SnomedReferenceSetMemberRestSearch extends ResourceRestSearch {
+public final class SnomedReferenceSetMemberRestSearch extends ObjectRestSearch {
 
 	@ApiParam(value="The effective time to match (yyyyMMdd, exact matches only)")
 	private String effectiveTime;

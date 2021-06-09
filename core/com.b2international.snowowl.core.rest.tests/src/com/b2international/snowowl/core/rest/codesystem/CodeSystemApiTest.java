@@ -15,7 +15,17 @@
  */
 package com.b2international.snowowl.core.rest.codesystem;
 
-import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.*;
+import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.TOOLING_ID;
+import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertCodeSystemCreate;
+import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertCodeSystemCreated;
+import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertCodeSystemGet;
+import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertCodeSystemHasAttributeValue;
+import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertCodeSystemSearch;
+import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertCodeSystemUpdated;
+import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertCodeSystemUpdatedWithStatus;
+import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertVersionCreated;
+import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.prepareCodeSystemCreateRequestBody;
+import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.prepareVersionCreateRequestBody;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -23,13 +33,15 @@ import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.iterableWithSize;
-import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
+import org.junit.After;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
@@ -124,12 +136,18 @@ public class CodeSystemApiTest {
 	@Test
 	public void codesystem08_CreateNonUniqueId() throws Exception {
 		assertCodeSystemCreate(SNOMED)
+			.statusCode(201);
+		
+		assertCodeSystemCreate(SNOMED)
 			.statusCode(409)
 			.body("message", containsString("Resource with 'SNOMEDCT' identifier already exists."));
 	}
 	
 	@Test
 	public void codesystem09_CreateNonUniqueTitle() throws Exception {
+		assertCodeSystemCreate(SNOMED)
+			.statusCode(201);
+		
 		assertCodeSystemCreate(SNOMED.with(ResourceDocument.Fields.ID, "SNOMEDCT-other"))
 			.statusCode(409)
 			.body("message", containsString("Resource with 'SNOMED CT' title already exists."));
@@ -137,6 +155,9 @@ public class CodeSystemApiTest {
 	
 	@Test
 	public void codesystem10_CreateNonUniqueOid() throws Exception {
+		assertCodeSystemCreate(SNOMED)
+			.statusCode(201);
+		
 		assertCodeSystemCreate(SNOMED.with(ResourceDocument.Fields.ID, "SNOMEDCT-other").with("title", "SNOMED CT-other"))
 			.statusCode(409)
 			.body("message", containsString("Resource with '2.16.840.1.113883.6.96' oid already exists."));
@@ -144,6 +165,8 @@ public class CodeSystemApiTest {
 	
 	@Test
 	public void codesystem11_SearchById() throws Exception {
+		assertCodeSystemCreate(SNOMED)
+			.statusCode(201);
 		assertCodeSystemCreate(prepareCodeSystemCreateRequestBody(UUID.randomUUID().toString())).statusCode(201);
 		assertCodeSystemSearch(
 			Map.of(
@@ -154,6 +177,8 @@ public class CodeSystemApiTest {
 	
 	@Test
 	public void codesystem12_SearchByTitle() throws Exception {
+		assertCodeSystemCreate(SNOMED)
+			.statusCode(201);
 		assertCodeSystemCreate(prepareCodeSystemCreateRequestBody(UUID.randomUUID().toString())).statusCode(201);
 		assertCodeSystemSearch(
 			Map.of(
@@ -164,6 +189,8 @@ public class CodeSystemApiTest {
 	
 	@Test
 	public void codesystem13_SearchByOid() throws Exception {
+		assertCodeSystemCreate(SNOMED)
+			.statusCode(201);
 		assertCodeSystemCreate(prepareCodeSystemCreateRequestBody(UUID.randomUUID().toString())).statusCode(201);
 		assertCodeSystemSearch(
 			Map.of(
@@ -421,6 +448,22 @@ public class CodeSystemApiTest {
 				.execute(Services.bus())
 				.getSync()
 				.isDeleted()).isTrue();
+	}
+	
+	@After
+	public void cleanUp() {
+		ResourceRequests
+		.prepareSearch()
+		.buildAsync()
+		.execute(Services.bus())
+		.getSync(1, TimeUnit.MINUTES)
+		.forEach(resource -> {
+			ResourceRequests
+			.prepareDelete(resource.getId())
+			.build(RestExtensions.USER, "Delete " + resource.getId())
+			.execute(Services.bus())
+			.getSync(1, TimeUnit.MINUTES); 
+		});
 	}
 	
 }
