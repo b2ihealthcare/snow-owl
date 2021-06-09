@@ -40,6 +40,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.junit.Test;
@@ -927,4 +928,49 @@ public class SnomedDescriptionApiTest extends AbstractSnomedApiTest {
 			.body("effectiveTime", equalTo(effectiveDate.format(DateTimeFormatter.BASIC_ISO_DATE)));
 	}
 	
+	@Test
+	public void testSearchByExactCaseSensitiveTerm() {
+		final String searchTerm = "Body structure";
+		
+		final List<String> exactDescriptions = SnomedRequests.prepareSearchDescription()
+				.filterByExactTerm(searchTerm)
+				.build(branchPath.getPath())
+				.execute(getBus())
+				.getSync(1, TimeUnit.MINUTES)
+				.getItems()
+				.stream()
+				.map(SnomedDescription::getTerm)
+				.collect(Collectors.toList());
+		
+		assertThat(exactDescriptions).hasSameElementsAs(List.of(searchTerm));
+
+		final List<String> upperCaseDescriptions = SnomedRequests.prepareSearchDescription()
+				.filterByExactTerm(searchTerm.toUpperCase())
+				.build(branchPath.getPath())
+				.execute(getBus())
+				.getSync(1, TimeUnit.MINUTES)
+				.getItems()
+				.stream()
+				.map(SnomedDescription::getTerm)
+				.collect(Collectors.toList());
+
+		assertThat(upperCaseDescriptions).isEmpty();
+	}
+	
+	@Test
+	public void testSearchByExactCaseInSensitiveTerm() {
+		final String searchTerm = "Clinical finding";
+		
+		final List<String> descriptions = SnomedRequests.prepareSearchDescription()
+				.filterByExactTermIgnoreCase(searchTerm.toUpperCase())
+				.build(branchPath.getPath())
+				.execute(getBus())
+				.getSync(1, TimeUnit.MINUTES)
+				.getItems()
+				.stream()
+				.map(SnomedDescription::getTerm)
+				.collect(Collectors.toList());
+		
+		assertThat(descriptions).hasSameElementsAs(List.of(searchTerm));
+	}
 }
