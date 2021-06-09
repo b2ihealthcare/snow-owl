@@ -76,6 +76,7 @@ public final class ResourceDocument extends RevisionDocument {
 		public static final String CONTACT = "contact";
 		public static final String USAGE = "usage";
 		public static final String PURPOSE = "purpose";
+		public static final String BUNDLE_ID = "bundleId";
 		
 		// specialized resource fields
 		public static final String OID = "oid";
@@ -174,6 +175,7 @@ public final class ResourceDocument extends RevisionDocument {
 				.contact(from.getContact())
 				.usage(from.getUsage())
 				.purpose(from.getPurpose())
+				.bundleId(from.getBundleId())
 				.oid(from.getOid())
 				.branchPath(from.getBranchPath())
 				.toolingId(from.getToolingId())
@@ -197,6 +199,7 @@ public final class ResourceDocument extends RevisionDocument {
 		private String contact;
 		private String usage;
 		private String purpose;
+		private String bundleId;
 		
 		// specialized resource fields
 		private String oid;
@@ -264,6 +267,11 @@ public final class ResourceDocument extends RevisionDocument {
 			this.purpose = purpose;
 			return getSelf();
 		}
+
+		public Builder bundleId(String bundleId) {
+			this.bundleId = bundleId;
+			return getSelf();
+		}
 		
 		public Builder oid(String oid) {
 			this.oid = oid;
@@ -316,6 +324,7 @@ public final class ResourceDocument extends RevisionDocument {
 				contact, 
 				usage, 
 				purpose,
+				bundleId,
 				oid,
 				branchPath,
 				toolingId,
@@ -346,6 +355,7 @@ public final class ResourceDocument extends RevisionDocument {
 	private final String contact;
 	private final String usage;
 	private final String purpose;
+	private final String bundleId;
 	
 	// specialized resource fields
 	private final String oid;
@@ -369,6 +379,7 @@ public final class ResourceDocument extends RevisionDocument {
 			final String contact,
 			final String usage,
 			final String purpose,
+			final String bundleId,
 			final String oid,
 			final String branchPath,
 			final String toolingId,
@@ -387,6 +398,7 @@ public final class ResourceDocument extends RevisionDocument {
 		this.contact = contact;
 		this.usage = usage;
 		this.purpose = purpose;
+		this.bundleId = bundleId;
 		this.oid = oid;
 		this.branchPath = branchPath;
 		this.toolingId = toolingId;
@@ -442,6 +454,10 @@ public final class ResourceDocument extends RevisionDocument {
 	
 	public String getPurpose() {
 		return purpose;
+	}
+	
+	public String getBundleId() {
+		return bundleId;
 	}
 	
 	public String getOid() {
