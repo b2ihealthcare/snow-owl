@@ -55,12 +55,13 @@ public class SnomedIdentifiers {
 	}
 	
 	/**
-	 * Validates the given componentId by using the rules defined in the latest
-	 * SNOMED CT Identifier specification, which are the following constraints:
+	 * Validates the given componentId by using the rules defined in the latest SNOMED CT Identifier specification, which are the following constraints:
 	 * <ul>
 	 * <li>Can't start with leading zeros</li>
 	 * <li>Lengths should be between 6 and 18 characters</li>
 	 * <li>Should parse to a long value</li>
+	 * <li>Should have partition ID 0 or 1</li>
+	 * <li>Should have a component ID of 0, 1 or 2</li>
 	 * <li>Should pass the Verhoeff check-digit test</li>
 	 * </ul>
 	 * 
@@ -80,6 +81,12 @@ public class SnomedIdentifiers {
 		} catch (final NumberFormatException e) {
 			throw new IllegalArgumentException("SCTID should be parseable to a long value");
 		}
+		
+		// may throw IllegalArgumentException if the componentId has incorrect partition ID
+		isShortForm(componentId);
+		
+		// may throw IllegalArgumentException if the componentId has incorrect component identifier
+		getComponentIdentifier(componentId);
 		
 		final CharSequence idHead = componentId.subSequence(0, componentId.length() - 1);
 		final char originalChecksum = componentId.charAt(componentId.length() - 1);
