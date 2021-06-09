@@ -92,6 +92,14 @@ public final class ResourceSearchRequestBuilder
 	public ResourceSearchRequestBuilder filterByBranches(Iterable<String> branchPaths) {
 		return addOption(OptionKey.BRANCH, branchPaths);
 	}
+
+	public ResourceSearchRequestBuilder filterByBundleId(String bundleId) {
+		return addOption(OptionKey.BUNDLE_ID, bundleId);
+	}
+
+	public ResourceSearchRequestBuilder filterByBundleIds(Iterable<String> bundleIds) {
+		return addOption(OptionKey.BUNDLE_ID, bundleIds);
+	}
 	
 	@Override
 	protected SearchResourceRequest<RepositoryContext, Resources> createSearch() {

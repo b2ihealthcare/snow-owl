@@ -137,6 +137,10 @@ public final class ResourceDocument extends RevisionDocument {
 		public static Expression branchPaths(Iterable<String> branchPaths) {
 			return matchAny(Fields.BRANCH_PATH, branchPaths);
 		}
+
+		public static Expression bundleIds(Iterable<String> bundleIds) {
+			return matchAny(Fields.BUNDLE_ID, bundleIds);
+		}
 		
 		public static Expression oid(String oid) {
 			return exactMatch(Fields.OID, oid);

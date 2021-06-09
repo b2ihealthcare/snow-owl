@@ -55,6 +55,10 @@ final class ResourceSearchRequest extends SearchIndexResourceRequest<RepositoryC
 		 */
 		BRANCH,
 
+		/**
+		 * Filter matches by their bundle ID.
+		 */
+		BUNDLE_ID,
 	}
 
 	@Override
@@ -70,9 +74,8 @@ final class ResourceSearchRequest extends SearchIndexResourceRequest<RepositoryC
 		addFilter(queryBuilder, OptionKey.TITLE_EXACT, String.class, ResourceDocument.Expressions::titles);
 		addFilter(queryBuilder, OptionKey.TOOLING_ID, String.class, ResourceDocument.Expressions::toolingIds);
 		addFilter(queryBuilder, OptionKey.BRANCH, String.class, ResourceDocument.Expressions::branchPaths);
-		
+		addFilter(queryBuilder, OptionKey.BUNDLE_ID, String.class, ResourceDocument.Expressions::bundleIds);
 		addTitleFilters(queryBuilder);
-		
 		return queryBuilder.build();
 	}
 
