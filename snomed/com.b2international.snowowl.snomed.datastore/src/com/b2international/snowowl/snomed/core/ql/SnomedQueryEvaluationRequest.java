@@ -202,7 +202,7 @@ final class SnomedQueryEvaluationRequest implements Request<BranchContext, Promi
 			expression = SnomedDescriptionIndexEntry.Expressions.matchTermRegex(termFilter.getTerm());
 			break;
 		case EXACT:
-			expression = SnomedDescriptionIndexEntry.Expressions.matchEntireTerm(termFilter.getTerm());
+			expression = SnomedDescriptionIndexEntry.Expressions.matchTermCaseInsensitive(termFilter.getTerm());
 			break;
 		default:
 			throw new UnsupportedOperationException("Not implemented lexical search type: " + termFilter.getLexicalSearchType());
