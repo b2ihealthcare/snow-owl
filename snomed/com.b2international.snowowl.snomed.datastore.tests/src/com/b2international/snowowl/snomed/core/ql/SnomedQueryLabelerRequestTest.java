@@ -22,7 +22,9 @@ import static org.junit.Assert.assertEquals;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
+import org.assertj.core.api.Assertions;
 import org.eclipse.xtext.parser.IParser;
 import org.eclipse.xtext.serializer.ISerializer;
 import org.eclipse.xtext.validation.IResourceValidator;
@@ -30,6 +32,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.b2international.collections.PrimitiveCollectionModule;
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.index.Index;
 import com.b2international.index.revision.BaseRevisionIndexTest;
@@ -201,6 +204,22 @@ public class SnomedQueryLabelerRequestTest extends BaseRevisionIndexTest {
 			Concepts.ROOT_CONCEPT + " |" + rootPtUs + "|",
 			Concepts.IS_A + " |" + isaPtUs + "|"
 		);
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Test
+	public void wrongExpression() throws Exception {
+		String ptUk = "SNOMED CT Concept UK";
+		indexRevision(MAIN,
+				DocumentBuilders.concept(Concepts.ROOT_CONCEPT).preferredDescriptions(ImmutableList.of(
+						new SnomedDescriptionFragment(generateDescriptionId(), Concepts.SYNONYM, ptUk, Concepts.REFSET_LANGUAGE_TYPE_UK)))
+						.build());
+
+		try {
+			bulkLabel(List.of("test1", "test2", Concepts.ROOT_CONCEPT), SnomedConcept.Expand.PREFERRED_TERM, ImmutableList.of(ExtendedLocale.valueOf("en-x-" + Concepts.REFSET_LANGUAGE_TYPE_US)));
+		} catch (Exception e) {
+			Assertions.assertThat(((Map<String, Object>) ((BadRequestException) e).getAdditionalInfo().get("erroneousExpressions")).keySet()).containsOnly("test1", "test2");
+		}
 	}
 
 }
