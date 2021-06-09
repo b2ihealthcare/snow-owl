@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,8 +38,7 @@ public interface TermFilterSupport<T> {
 	T filterByTerm(final TermFilter termFilter);
 
 	/**
-	 * Filters results by matching exact terms, as entered (the comparison is case insensitive and folds non-ASCII characters to their closest
-	 * equivalent).
+	 * Filters results by matching exact terms, as entered.
 	 * <p>
 	 * This filter affects the score of each result. If results should be returned in order of relevance, specify {@link SearchResourceRequest#SCORE}
 	 * as one of the sort fields.
@@ -51,6 +50,22 @@ public interface TermFilterSupport<T> {
 	 */
 	default T filterByExactTerm(final String exactTermFilter) {
 		return filterByTerm(exactTermFilter != null ? TermFilter.exactTermMatch(exactTermFilter) : null);
+	}
+
+	/**
+	 * Filters results by matching exact terms as entered (the comparison is case insensitive and folds non-ASCII characters to their closest
+	 * equivalent).
+	 * <p>
+	 * This filter affects the score of each result. If results should be returned in order of relevance, specify {@link SearchResourceRequest#SCORE}
+	 * as one of the sort fields.
+	 * 
+	 * @param exactTermFilter
+	 *            - the expression to match
+	 * @return <code>this</code> for method chaining
+	 * @see TermFilter#exactIgnoreCaseTermMatch(String)
+	 */
+	default T filterByExactTermIgnoreCase(final String exactTermFilter) {
+		return filterByTerm(exactTermFilter != null ? TermFilter.exactIgnoreCaseTermMatch(exactTermFilter) : null);
 	}
 
 	/**

@@ -160,7 +160,7 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 		
 		public static Expression termDisjunctionQuery(final TermFilter termFilter) {
 			return dismaxWithScoreCategories(
-				matchEntireTerm(termFilter.getTerm()),
+				matchTermCaseInsensitive(termFilter.getTerm()),
 				matchTextAll(Fields.TERM_TEXT, termFilter.getTerm()).withIgnoreStopwords(termFilter.isIgnoreStopwords()),
 				matchBooleanPrefix(Fields.TERM_TEXT, termFilter.getTerm()).withIgnoreStopwords(termFilter.isIgnoreStopwords()),
 				matchTextAll(Fields.TERM_PREFIX, termFilter.getTerm()).withIgnoreStopwords(termFilter.isIgnoreStopwords())
@@ -178,12 +178,12 @@ public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 			return matchTextFuzzy(Fields.TERM_TEXT, term);
 		}
 		
-		public static Expression matchEntireTerm(String term) {
-			return matchTextAll(Fields.TERM_EXACT, term);
+		public static Expression matchTerm(String term, boolean isCaseSensitive) {
+			return exactMatch(isCaseSensitive ? Fields.TERM : Fields.TERM_EXACT, term);
 		}
 		
-		public static Expression matchTerm(String term) {
-			return exactMatch(Fields.TERM, term);
+		public static Expression matchTermCaseInsensitive(String term) {
+			return matchTerm(term, false);
 		}
 		
 		public static Expression matchTerm(Iterable<String> terms) {
