@@ -106,4 +106,10 @@ public class BundleSearchRequest
 	public String getOperation() {
 		return Permission.OPERATION_BROWSE;
 	}
+
+	@Override
+	protected Class<ResourceDocument> getSelect() {
+		return ResourceDocument.class;
+	}
+	
 }
