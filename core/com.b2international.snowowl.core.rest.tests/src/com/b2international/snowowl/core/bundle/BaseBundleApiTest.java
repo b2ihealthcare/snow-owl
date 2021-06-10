@@ -43,10 +43,10 @@ abstract class BaseBundleApiTest {
 	static final String CONTACT = "info@b2international.com";
 	static final String USAGE = "Bundle testing sources";
 	static final String PURPOSE = "Testing purpose";
-	
+
 	@Rule 
 	public final TestMethodNameRule testName = new TestMethodNameRule();
-	
+
 	String id;
 	
 	@Before
@@ -80,11 +80,19 @@ abstract class BaseBundleApiTest {
 				.execute(Services.context());
 	}
 	
-	String createBundle(final String id, final String bundleId) {
+	String createBundle(final String id) {
+		return createBundle(id, ROOT, TITLE);
+	}
+
+	String createBundle() {
+		return createBundle(id, ROOT, TITLE);
+	}
+	
+	String createBundle(final String id, final String bundleId, final String title) {
 		return BundleRequests.prepareNewBundle()
 				.setId(id)
 				.setUrl(URL)
-				.setTitle(TITLE)
+				.setTitle(title)
 				.setLanguage(LANGUAGE)
 				.setDescription(DESCRIPTION)
 				.setStatus(STATUS)
