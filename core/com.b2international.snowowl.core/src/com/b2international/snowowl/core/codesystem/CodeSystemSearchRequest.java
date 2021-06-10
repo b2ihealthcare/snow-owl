@@ -83,7 +83,7 @@ final class CodeSystemSearchRequest
 			final String searchTerm = getString(OptionKey.TITLE);
 			ExpressionBuilder termFilter = Expressions.builder();
 			termFilter.should(Expressions.dismaxWithScoreCategories(
-				ResourceDocument.Expressions.matchTitleExact(searchTerm),
+				ResourceDocument.Expressions.matchTitleExactCaseInsensitive(searchTerm),
 				ResourceDocument.Expressions.matchTitleAllTermsPresent(searchTerm),
 				ResourceDocument.Expressions.matchTitleAllPrefixesPresent(searchTerm)
 			));

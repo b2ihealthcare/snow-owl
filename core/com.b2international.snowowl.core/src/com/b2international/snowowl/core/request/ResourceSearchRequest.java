@@ -84,7 +84,7 @@ final class ResourceSearchRequest extends SearchIndexResourceRequest<RepositoryC
 			final String searchTerm = getString(OptionKey.TITLE);
 			final ExpressionBuilder termFilter = Expressions.builder();
 
-			termFilter.should(Expressions.dismaxWithScoreCategories(ResourceDocument.Expressions.matchTitleExact(searchTerm),
+			termFilter.should(Expressions.dismaxWithScoreCategories(ResourceDocument.Expressions.matchTitleExactCaseInsensitive(searchTerm),
 					ResourceDocument.Expressions.matchTitleAllTermsPresent(searchTerm),
 					ResourceDocument.Expressions.matchTitleAllPrefixesPresent(searchTerm)));
 			
