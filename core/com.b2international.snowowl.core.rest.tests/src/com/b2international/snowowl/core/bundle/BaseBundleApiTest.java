@@ -17,9 +17,11 @@ package com.b2international.snowowl.core.bundle;
 
 import java.util.concurrent.TimeUnit;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 
+import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.test.commons.Services;
 import com.b2international.snowowl.test.commons.TestMethodNameRule;
 import com.b2international.snowowl.test.commons.rest.RestExtensions;
@@ -51,6 +53,21 @@ abstract class BaseBundleApiTest {
 	public void setup() {
 		this.id = testName.get();
 	}
+	
+	@After
+	public void cleanUp() {
+		BundleRequests.prepareSearchBundle()
+			.buildAsync()
+			.getRequest()
+			.execute(Services.context())
+			.getItems()
+			.forEach(bundle -> {
+				ResourceRequests.prepareDelete(bundle.getId())
+					.build(USAGE, String.format("Delet bundle: %s", bundle.getId()))
+					.execute(Services.bus())
+					.getSync(1, TimeUnit.MINUTES);
+			});
+	}
 
 	Bundle getBundle() {
 		return getBundle(id);
@@ -81,5 +98,11 @@ abstract class BaseBundleApiTest {
 				.execute(Services.bus())
 				.getSync(1, TimeUnit.MINUTES)
 				.getResultAs(String.class);
+	}
+	
+	Bundles build(final BundleSearchRequestBuilder builder) {
+		return builder.buildAsync()
+				.getRequest()
+				.execute(Services.context());
 	}
 }
