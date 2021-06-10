@@ -235,6 +235,7 @@ final class CodeSystemCreateRequest extends BaseResourceCreateRequest {
 				.contact(contact)
 				.usage(usage)
 				.purpose(purpose)
+				.bundleId(bundleId)
 				.oid(oid)
 				.branchPath(branchPath)
 				.toolingId(toolingId)

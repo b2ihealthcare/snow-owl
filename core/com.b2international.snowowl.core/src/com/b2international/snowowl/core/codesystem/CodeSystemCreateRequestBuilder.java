@@ -81,6 +81,7 @@ public final class CodeSystemCreateRequestBuilder extends BaseResourceCreateRequ
 		req.setContact(contact);
 		req.setUsage(usage);
 		req.setPurpose(purpose);
+		req.setBundleId(bundleId);
 
 		req.oid = oid;
 		req.branchPath = branchPath;

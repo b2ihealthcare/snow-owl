@@ -96,4 +96,8 @@ public abstract class BaseResourceCreateRequestBuilder <RB extends BaseResourceC
 		return getSelf();
 	}
 	
+	public RB bundleId(String bundleId) {
+		this.bundleId = bundleId;
+		return getSelf();
+	}
 }

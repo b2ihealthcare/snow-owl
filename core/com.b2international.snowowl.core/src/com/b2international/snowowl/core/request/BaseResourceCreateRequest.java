@@ -46,6 +46,9 @@ public abstract class BaseResourceCreateRequest implements Request<TransactionCo
 	protected String usage;
 	protected String purpose;
 	
+	@NotEmpty
+	protected String bundleId;
+	
 	public void setId(String id) {
 		this.id = id;
 	}
@@ -90,4 +93,7 @@ public abstract class BaseResourceCreateRequest implements Request<TransactionCo
 		this.purpose = purpose;
 	}
 	
+	public void setBundleId(String bundleId) {
+		this.bundleId = bundleId;
+	}
 }
