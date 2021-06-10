@@ -30,9 +30,9 @@ import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.Branches;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
+import com.b2international.snowowl.core.request.BaseResourceCreateRequest;
 import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.version.Version;
 import com.google.common.base.Strings;
@@ -40,30 +40,10 @@ import com.google.common.base.Strings;
 /**
  * @since 4.7
  */
-final class CodeSystemCreateRequest implements Request<TransactionContext, String> {
+final class CodeSystemCreateRequest extends BaseResourceCreateRequest {
 
 	private static final long serialVersionUID = 2L;
 
-	// the new codesystem's ID, if not specified, it will be auto-generated
-	@NotEmpty
-	String id;
-	
-	// common resource fields TODO move to superclass
-	@NotEmpty
-	String url;
-	
-	@NotEmpty
-	String title;
-	
-	String language;
-	String description;
-	String status;
-	String copyright;
-	String owner;
-	String contact;
-	String usage;
-	String purpose;
-	
 	// specialized resource fields
 	// optional OID, but if defined it must be unique
 	String oid;
