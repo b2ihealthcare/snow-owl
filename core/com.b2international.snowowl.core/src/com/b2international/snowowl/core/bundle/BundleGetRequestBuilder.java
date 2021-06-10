@@ -15,22 +15,19 @@
  */
 package com.b2international.snowowl.core.bundle;
 
+import com.b2international.snowowl.core.context.ResourceRepositoryRequestBuilder;
+import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.request.GetResourceRequestBuilder;
+
 /**
  * @since 8.0
  */
-public final class BundleRequests {
-	
-	private BundleRequests() {}
-	
-	public static BundleCreateRequestBuilder prepareNewBundle() {
-		return new BundleCreateRequestBuilder();
+public class BundleGetRequestBuilder
+		extends GetResourceRequestBuilder<BundleGetRequestBuilder, BundleSearchRequestBuilder, RepositoryContext, Bundles, Bundle>
+		implements ResourceRepositoryRequestBuilder<Bundle> {
+
+	BundleGetRequestBuilder(final String id) {
+		super(new BundleGetRequest(id));
 	}
 
-	public static BundleGetRequestBuilder prepareGetBundle(final String id) {
-		return new BundleGetRequestBuilder(id);
-	}
-	
-	public static BundleSearchRequestBuilder prepareSearchBundle() {
-		return new BundleSearchRequestBuilder();
-	}
 }

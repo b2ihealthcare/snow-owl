@@ -15,22 +15,31 @@
  */
 package com.b2international.snowowl.core.bundle;
 
+import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
+import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.identity.Permission;
+import com.b2international.snowowl.core.request.GetResourceRequest;
+
 /**
  * @since 8.0
  */
-public final class BundleRequests {
-	
-	private BundleRequests() {}
-	
-	public static BundleCreateRequestBuilder prepareNewBundle() {
-		return new BundleCreateRequestBuilder();
+public class BundleGetRequest
+		extends GetResourceRequest<BundleSearchRequestBuilder, RepositoryContext, Bundles, Bundle>
+		implements RepositoryAccessControl {
+
+	private static final long serialVersionUID = 1L;
+
+	BundleGetRequest(String id) {
+		super(id);
 	}
 
-	public static BundleGetRequestBuilder prepareGetBundle(final String id) {
-		return new BundleGetRequestBuilder(id);
-	}
-	
-	public static BundleSearchRequestBuilder prepareSearchBundle() {
+	@Override
+	protected BundleSearchRequestBuilder createSearchRequestBuilder() {
 		return new BundleSearchRequestBuilder();
+	}
+
+	@Override
+	public String getOperation() {
+		return Permission.OPERATION_BROWSE;
 	}
 }
