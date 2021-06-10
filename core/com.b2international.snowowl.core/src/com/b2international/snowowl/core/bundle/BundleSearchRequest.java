@@ -49,9 +49,6 @@ public class BundleSearchRequest
 	public enum OptionKey {
 		/** Search bundles by title */
 		TITLE,
-		
-		/** Filter bundle by the bundle it is contained by */
-		BUNDLE_ID
 	}
 
 	@Override
@@ -59,7 +56,6 @@ public class BundleSearchRequest
 		final ExpressionBuilder queryBuilder = Expressions.builder();
 		
 		addIdFilter(queryBuilder, ResourceDocument.Expressions::ids);
-		addFilter(queryBuilder, OptionKey.BUNDLE_ID, String.class, ResourceDocument.Expressions::bundleIds);
 		addTitleFilter(queryBuilder);
 		
 		return queryBuilder.build();

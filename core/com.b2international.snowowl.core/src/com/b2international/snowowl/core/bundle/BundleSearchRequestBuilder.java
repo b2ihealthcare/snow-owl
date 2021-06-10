@@ -39,26 +39,6 @@ public final class BundleSearchRequestBuilder
 		return addOption(OptionKey.TITLE, termFilter);
 	}
 
-	/**
-	 * Filter bundle by the bundle ID it is contained by.
-	 * 
-	 * @param bundleId
-	 * @return
-	 */
-	public BundleSearchRequestBuilder filterByBundleId(String bundleId) {
-		return addOption(OptionKey.BUNDLE_ID, bundleId);
-	}
-
-	/**
-	 * Filter bundle by the bundle IDs it is contained by.
-	 * 
-	 * @param bundleId
-	 * @return
-	 */
-	public BundleSearchRequestBuilder filterByBundleIds(Iterable<String> bundleIds) {
-		return addOption(OptionKey.BUNDLE_ID, bundleIds);
-	}
-	
 	@Override
 	protected SearchResourceRequest<RepositoryContext, Bundles> createSearch() {
 		return new BundleSearchRequest();
