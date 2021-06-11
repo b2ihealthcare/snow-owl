@@ -22,6 +22,7 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.commons.exceptions.ApiException;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.SyntaxException;
 import com.b2international.commons.tree.NoopTreeVisitor;
@@ -81,11 +82,13 @@ final class SnomedQueryLabelerRequest extends ResourceRequest<BranchContext, Exp
 			try {
 				Query query = queries.computeIfAbsent(expression, (key) -> context.service(SnomedQueryParser.class).parse(key));
 				conceptIdsToLabel.addAll(collect(query));
-			} catch (Exception e) {
+			} catch (ApiException e) {
 				if (e instanceof SyntaxException) {
 					errors.put(expression, ((SyntaxException)e).getAdditionalInfo().values());
 				} else if (e instanceof BadRequestException) {
 					errors.put(expression, e.getMessage());
+				} else {
+					throw e;
 				}
 			}
 		}
