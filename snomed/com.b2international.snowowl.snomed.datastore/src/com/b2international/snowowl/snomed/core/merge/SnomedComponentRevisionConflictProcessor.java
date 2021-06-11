@@ -187,13 +187,13 @@ public final class SnomedComponentRevisionConflictProcessor extends ComponentRev
 	}
 
 	private Set<String> collectDonatedComponents(StagingArea staging, Multimap<Class<?>, String> donatedComponentsByType, Class<? extends SnomedDocument> componentType, String[] fieldsToLoad) {
-		Map<String, String[]> donatedConcepts = readDonatedComponents(staging, donatedComponentsByType, componentType, fieldsToLoad);
-		Map<String, String[]> extensionConcepts = readExtensionComponents(staging, donatedComponentsByType, componentType, fieldsToLoad);
+		Map<String, String[]> donatedComponents = readDonatedComponents(staging, donatedComponentsByType, componentType, fieldsToLoad);
+		Map<String, String[]> extensionComponents = readExtensionComponents(staging, donatedComponentsByType, componentType, fieldsToLoad);
 		
-		return Sets.intersection(donatedConcepts.keySet(), extensionConcepts.keySet()).stream()
+		return Sets.intersection(donatedComponents.keySet(), extensionComponents.keySet()).stream()
 			.filter((donatedComponentId) -> {
-				String[] donatedComponent = donatedConcepts.get(donatedComponentId);
-				String[] extensionComponent = extensionConcepts.get(donatedComponentId);
+				String[] donatedComponent = donatedComponents.get(donatedComponentId);
+				String[] extensionComponent = extensionComponents.get(donatedComponentId);
 				return isDonatedComponent(donatedComponent, extensionComponent);
 			})
 			.collect(Collectors.toSet());
