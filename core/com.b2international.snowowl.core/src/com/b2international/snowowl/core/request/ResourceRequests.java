@@ -34,6 +34,10 @@ public final class ResourceRequests {
 		return prepareGet(resourceUri.getResourceId());
 	}
 	
+	public static ResourceUpdateRequestBuilder prepareUpdate(final String resourceId) {
+		return new ResourceUpdateRequestBuilder(resourceId);
+	}
+	
 	public static ResourceGetRequestBuilder prepareGet(String resourceId) {
 		return new ResourceGetRequestBuilder(resourceId);
 	}
