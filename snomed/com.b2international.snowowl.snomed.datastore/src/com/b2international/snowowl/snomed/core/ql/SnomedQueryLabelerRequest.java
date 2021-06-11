@@ -94,7 +94,7 @@ final class SnomedQueryLabelerRequest extends ResourceRequest<BranchContext, Exp
 		}
 		
 		if (!errors.isEmpty()) {
-			BadRequestException badRequestException = new BadRequestException("One or more QL syntax errors", errors);
+			BadRequestException badRequestException = new BadRequestException("One or more QL syntax errors");
 			badRequestException.withAdditionalInfo("erroneousExpressions", errors);
 
 			throw badRequestException;
