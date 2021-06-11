@@ -15,10 +15,7 @@
  */
 package com.b2international.snowowl.snomed.core.ql;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
@@ -75,7 +72,7 @@ final class SnomedQueryLabelerRequest extends ResourceRequest<BranchContext, Exp
 		SnomedQuerySerializer querySerializer = context.service(SnomedQuerySerializer.class);
 		final Set<String> conceptIdsToLabel = Sets.newHashSetWithExpectedSize(expressions.size());
 		final Map<String, Query> queries = Maps.newHashMapWithExpectedSize(expressions.size());
-		Map<String, Object> errors = Maps.newHashMap();
+		LinkedHashMap <String, Object> errors = Maps.newLinkedHashMap();
 		
 		for (String expression : expressions) {
 			if (Strings.isNullOrEmpty(expression)) {
