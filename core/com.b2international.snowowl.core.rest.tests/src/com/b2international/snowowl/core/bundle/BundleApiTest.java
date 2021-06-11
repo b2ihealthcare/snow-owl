@@ -152,13 +152,13 @@ public final class BundleApiTest extends BaseBundleApiTest {
 		final String title = "Exact bundle title";
 		
 		final String bundleId1 = createBundle("exactId1", ROOT, title);
-		final String bundleId2 = createBundle("exactId1", ROOT, title.toUpperCase());
+		final String bundleId2 = createBundle("exactId2", ROOT, title.toUpperCase());
 		
-		final List<String> bundleNames = build(
-				BundleRequests.prepareSearchBundle().filterByExactTerm(title)).stream().map(Bundle::getId).collect(Collectors.toList());
+		final List<String> bundleIds = build(BundleRequests.prepareSearchBundle().filterByExactTerm(title))
+				.stream().map(Bundle::getId).collect(Collectors.toList());
 		
-		assertThat(bundleNames).contains(bundleId1);
-		assertThat(bundleNames).doesNotContain(bundleId2);
+		assertThat(bundleIds).contains(bundleId1);
+		assertThat(bundleIds).doesNotContain(bundleId2);
 	}
 
 	@Test
@@ -166,25 +166,95 @@ public final class BundleApiTest extends BaseBundleApiTest {
 		final String title = "Exact Case Insensitive Bundle Title";
 		
 		final String bundleId1 = createBundle("exactId1", ROOT, title.toUpperCase());
-		final String bundleId2 = createBundle("exactId1", ROOT, title.toLowerCase());
+		final String bundleId2 = createBundle("exactId2", ROOT, title.toLowerCase());
 		
-		final List<String> bundleNames = build(
-				BundleRequests.prepareSearchBundle().filterByExactTermIgnoreCase(title)).stream().map(Bundle::getId).collect(Collectors.toList());
+		final List<String> bundleIds = build(BundleRequests.prepareSearchBundle().filterByExactTermIgnoreCase(title))
+				.stream().map(Bundle::getId).collect(Collectors.toList());
 		
-		assertThat(bundleNames).hasSameElementsAs(List.of(bundleId1, bundleId2));
+		assertThat(bundleIds).containsOnlyOnce(bundleId1, bundleId2);
 	}
 	
 	@Test
-	public void searchByParsedTitle() {
-		final String title1 = "BundleTitle";
-		final String title2 = "BundleTerm";
+	public void searchByWildCardTitle() {
+		final String title1 = "Bundle title";
+		final String title2 = "Bundle term";
 		
 		final String bundleId1 = createBundle("exactId1", ROOT, title1);
-		final String bundleId2 = createBundle("exactId1", ROOT, title2);
+		final String bundleId2 = createBundle("exactId2", ROOT, title2);
 		
-		final List<String> bundleNames = build(
-				BundleRequests.prepareSearchBundle().filterByTerm(TermFilter.parsedTermMatch("undlet"))).stream().map(Bundle::getId).collect(Collectors.toList());
+		final List<String> bundleIds = build(BundleRequests.prepareSearchBundle().filterByTerm(TermFilter.parsedTermMatch("Bundle*")))
+				.stream().map(Bundle::getId).collect(Collectors.toList());
 		
-		assertThat(bundleNames).hasSameElementsAs(List.of(bundleId1, bundleId2));
+		assertThat(bundleIds).containsOnlyOnce(bundleId1, bundleId2);
+	}
+
+	@Test
+	public void searchByTitle() {
+		final String title = "Text searching algorithms";
+		final String title2 = "Search algorithms";
+		final String title3 = "Term matching algorithms";
+
+		final String id1 = createBundle("title_id_1", ROOT, title);
+		final String id2 = createBundle("title_id_2", ROOT, title2);
+		final String id3 = createBundle("title_id_3", ROOT, title3);
+		
+		// Match all word stop words not ignored
+		final List<String> textSearch = build(BundleRequests.prepareSearchBundle().filterByTerm("search algorithm"))
+				.stream().map(Bundle::getId).collect(Collectors.toList());
+		
+		assertThat(textSearch).containsOnlyOnce(id1, id2);
+
+		// Match all word stop words ignored
+		final List<String> textSearchStopWrodsIgnored = build(BundleRequests.prepareSearchBundle().filterByTerm(TermFilter.defaultTermMatch("the search algorithm of").withIgnoreStopwords()))
+				.stream().map(Bundle::getId).collect(Collectors.toList());
+		
+		assertThat(textSearchStopWrodsIgnored).containsOnlyOnce(id1, id2);
+
+		// Match prefixes
+		final List<String> bundlePrefix = build(BundleRequests.prepareSearchBundle().filterByTerm("te algo"))
+				.stream().map(Bundle::getId).collect(Collectors.toList());
+
+		assertThat(bundlePrefix).containsOnlyOnce(id1, id3);
+
+		// Match boolean prefixes
+		final List<String> bundleBooleanPrefix = build(BundleRequests.prepareSearchBundle().filterByTerm("text search alg"))
+				.stream().map(Bundle::getId).collect(Collectors.toList());
+		
+		assertThat(bundleBooleanPrefix).containsOnlyOnce(id1);
+		
+		// Match exact case insensitive
+		final List<String> bundleExactCaseInsensitive = build(
+				BundleRequests.prepareSearchBundle().filterByTerm(title2.toUpperCase())).stream().map(Bundle::getId).collect(Collectors.toList());
+		
+		assertThat(bundleExactCaseInsensitive).containsOnlyOnce(id2);
+	}
+	
+	@Test
+	public void searchByMinShouldMatch() {
+		final String title = "Clinical finding";
+		final String title2 = "Clinical stage finding";
+		final String title3 = "General clinical state finding";
+
+		final String id1 = createBundle("title_id_1", ROOT, title);
+		final String id2 = createBundle("title_id_2", ROOT, title2);
+		final String id3 = createBundle("title_id_3", ROOT, title3);
+		
+		// 3 word of "General clinical state finding" must present
+		final List<String> threeTermMatch = build(BundleRequests.prepareSearchBundle().filterByTerm(TermFilter.minTermMatch("General clinical state finding", 3)))
+				.stream().map(Bundle::getId).collect(Collectors.toList());
+		
+		assertThat(threeTermMatch).containsOnlyOnce(id3);
+
+		// 2 word of "General clinical state finding" must present
+		final List<String> twoTermMatch = build(BundleRequests.prepareSearchBundle().filterByTerm(TermFilter.minTermMatch("General clinical state finding", 2)))
+				.stream().map(Bundle::getId).collect(Collectors.toList());
+		
+		assertThat(twoTermMatch).containsOnlyOnce(id1, id2, id3);
+		
+		// 3 word prefix of "en cli sta fin" must present
+		final List<String> threePrefixTermMatch = build(BundleRequests.prepareSearchBundle().filterByTerm(TermFilter.minTermMatch("en cli sta fin", 3)))
+				.stream().map(Bundle::getId).collect(Collectors.toList());
+		
+		assertThat(threePrefixTermMatch).containsOnlyOnce(id3, id2);
 	}
 }
