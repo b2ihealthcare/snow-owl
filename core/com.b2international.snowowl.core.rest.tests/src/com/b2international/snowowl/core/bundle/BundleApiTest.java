@@ -348,4 +348,36 @@ public final class BundleApiTest extends BaseBundleApiTest {
 		assertThat(bundle.getPurpose()).isEqualTo(newPurpose);
 		assertThat(bundle.getBundleId()).isEqualTo(newBundleId);
 	}
+
+	@Test
+	public void deleteBundle() {
+		final String rootBundleId = createBundle();
+		
+		final String cs1Id = createCodeSystem(rootBundleId, "cs1");
+		final String cs2Id = createCodeSystem(rootBundleId, "cs2");
+
+		final String subBundleId = createBundle("bundle1", rootBundleId, "subBundle");
+		
+		final String cs3Id = createCodeSystem(subBundleId, "cs3");
+		
+		final Boolean isSuccess = BundleRequests.prepareDeleteBundle(subBundleId)
+				.build(USER, String.format("Delete bundle: %s", rootBundleId))
+				.execute(Services.bus())
+				.getSync(1, TimeUnit.MINUTES)
+				.getResultAs(Boolean.class);
+		
+		assertThat(isSuccess);
+		
+		final Bundles bundles = build(BundleRequests.prepareSearchBundle().filterById(rootBundleId).setExpand("resources()"));
+
+		assertThat(bundles.getItems()).hasSize(1);
+		
+		final Bundle bundle = bundles.getItems().get(0);
+		
+		assertThat(bundle.getResources()).isNotNull();
+		
+		final List<String> resourceIds = bundle.getResources().getItems().stream().map(Resource::getId).collect(Collectors.toList());
+		
+		assertThat(resourceIds).containsOnlyOnce(cs1Id, cs2Id, cs3Id);
+	}
 }
