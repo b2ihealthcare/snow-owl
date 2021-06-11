@@ -26,6 +26,7 @@ import org.junit.Test;
 
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.NotFoundException;
+import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.request.TermFilter;
 import com.b2international.snowowl.test.commons.Services;
 
@@ -256,5 +257,30 @@ public final class BundleApiTest extends BaseBundleApiTest {
 				.stream().map(Bundle::getId).collect(Collectors.toList());
 		
 		assertThat(threePrefixTermMatch).containsOnlyOnce(id3, id2);
+	}
+	
+	@Test
+	public void expandResources() {
+		final String rootBundleId = createBundle();
+		
+		final String cs1Id = createCodeSystem(rootBundleId, "cs1");
+		final String cs2Id = createCodeSystem(rootBundleId, "cs2");
+
+		final String subBundleId = createBundle("bundle1", rootBundleId, "subBundle");
+		
+		final String cs3Id = createCodeSystem(subBundleId, "cs3");
+		
+		final Bundles bundles = build(BundleRequests.prepareSearchBundle().filterById(rootBundleId).setExpand("resources()"));
+
+		assertThat(bundles.getItems()).hasSize(1);
+		
+		final Bundle bundle = bundles.getItems().get(0);
+		
+		assertThat(bundle.getResources()).isNotNull();
+		
+		final List<String> resourceIds = bundle.getResources().getItems().stream().map(Resource::getId).collect(Collectors.toList());
+		
+		assertThat(resourceIds).containsOnlyOnce(cs1Id, cs2Id, subBundleId);
+		assertThat(resourceIds).doesNotContain(cs3Id);
 	}
 }
