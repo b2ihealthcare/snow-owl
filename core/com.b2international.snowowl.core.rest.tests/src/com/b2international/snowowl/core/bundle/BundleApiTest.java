@@ -190,6 +190,24 @@ public final class BundleApiTest extends BaseBundleApiTest {
 	}
 
 	@Test
+	public void searchTitleFuzzy() {
+		final String title = "Bundle title";
+		
+		final String bundleId = createBundle(id, ROOT, title);
+		
+		final List<String> bundleIdsDistance2 = build(BundleRequests.prepareSearchBundle().filterByTerm(TermFilter.fuzzyMatch("uncle title")))
+				.stream().map(Bundle::getId).collect(Collectors.toList());
+		
+		// Only 1 Levenshtein distance is allowed
+		assertThat(bundleIdsDistance2).isEmpty();
+
+		final List<String> bundleIdsDistance1 = build(BundleRequests.prepareSearchBundle().filterByTerm(TermFilter.fuzzyMatch("Buncle title")))
+				.stream().map(Bundle::getId).collect(Collectors.toList());
+		
+		assertThat(bundleIdsDistance1).containsOnly(bundleId);
+	}
+
+	@Test
 	public void searchByTitle() {
 		final String title = "Text searching algorithms";
 		final String title2 = "Search algorithms";
@@ -282,5 +300,52 @@ public final class BundleApiTest extends BaseBundleApiTest {
 		
 		assertThat(resourceIds).containsOnlyOnce(cs1Id, cs2Id, subBundleId);
 		assertThat(resourceIds).doesNotContain(cs3Id);
+	}
+	
+	@Test
+	public void updateBundle() {
+		createBundle();
+
+		final String newUrl = "https://updated.hu";
+		final String newTitle = "Új név";
+		final String newLanguage = "hu";
+		final String newDescription = "Erőforrások rendszerezésére";
+		final String newStatus = "inactive";
+		final String newCopyright = "Szerzői jog";
+		final String newOwner = "tulajdonos";
+		final String newContract = "info@b2international.hu";
+		final String newUsage = "Magyar kódrendszerek csoportosítására";
+		final String newPurpose = "Tesztelési célra";
+		final String newBundleId = "123";
+		
+		BundleRequests.prepareUpdateBundle(id)
+		 	.setUrl(newUrl)
+			.setTitle(newTitle)
+			.setLanguage(newLanguage)
+			.setDescription(newDescription)
+			.setStatus(newStatus)
+			.setCopyright(newCopyright)
+			.setOwner(newOwner)
+			.setContact(newContract)
+			.setUsage(newUsage)
+			.setPurpose(newPurpose)
+			.setBundleId(newBundleId)
+			.build(USER, String.format("Update bundle: %s", id))
+			.execute(Services.bus())
+			.getSync(1, TimeUnit.MINUTES);
+
+		final Bundle bundle = getBundle();
+		
+		assertThat(bundle.getId()).isEqualTo(id);
+		assertThat(bundle.getUrl()).isEqualTo(newUrl);
+		assertThat(bundle.getTitle()).isEqualTo(newTitle);
+		assertThat(bundle.getLanguage()).isEqualTo(newLanguage);
+		assertThat(bundle.getDescription()).isEqualTo(newDescription);
+		assertThat(bundle.getStatus()).isEqualTo(newStatus);
+		assertThat(bundle.getCopyright()).isEqualTo(newCopyright);
+		assertThat(bundle.getOwner()).isEqualTo(newOwner);
+		assertThat(bundle.getUsage()).isEqualTo(newUsage);
+		assertThat(bundle.getPurpose()).isEqualTo(newPurpose);
+		assertThat(bundle.getBundleId()).isEqualTo(newBundleId);
 	}
 }
