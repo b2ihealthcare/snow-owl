@@ -84,7 +84,7 @@ final class SnomedQueryLabelerRequest extends ResourceRequest<BranchContext, Exp
 				conceptIdsToLabel.addAll(collect(query));
 			} catch (ApiException e) {
 				if (e instanceof SyntaxException) {
-					errors.put(expression, ((SyntaxException)e).getAdditionalInfo().values());
+					errors.put(expression, List.copyOf(((SyntaxException)e).getAdditionalInfo().values()));
 				} else if (e instanceof BadRequestException) {
 					errors.put(expression, e.getMessage());
 				} else {

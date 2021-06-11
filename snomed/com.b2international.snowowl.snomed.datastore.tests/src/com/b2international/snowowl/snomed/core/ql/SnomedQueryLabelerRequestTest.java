@@ -19,10 +19,7 @@ import static com.b2international.snowowl.test.commons.snomed.RandomSnomedIdenti
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.assertj.core.api.Assertions;
 import org.eclipse.xtext.parser.IParser;
@@ -55,6 +52,7 @@ import com.b2international.snowowl.test.commons.snomed.TestBranchContext;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Maps;
 import com.google.inject.Injector;
 
 /**
@@ -206,7 +204,6 @@ public class SnomedQueryLabelerRequestTest extends BaseRevisionIndexTest {
 		);
 	}
 	
-	@SuppressWarnings("unchecked")
 	@Test
 	public void wrongExpression() throws Exception {
 		String ptUk = "SNOMED CT Concept UK";
@@ -215,11 +212,17 @@ public class SnomedQueryLabelerRequestTest extends BaseRevisionIndexTest {
 						new SnomedDescriptionFragment(generateDescriptionId(), Concepts.SYNONYM, ptUk, Concepts.REFSET_LANGUAGE_TYPE_UK)))
 						.build());
 
-		try {
-			bulkLabel(List.of("test1", "test2", Concepts.ROOT_CONCEPT), SnomedConcept.Expand.PREFERRED_TERM, ImmutableList.of(ExtendedLocale.valueOf("en-x-" + Concepts.REFSET_LANGUAGE_TYPE_US)));
-		} catch (Exception e) {
-			Assertions.assertThat(((Map<String, Object>) ((BadRequestException) e).getAdditionalInfo().get("erroneousExpressions")).keySet()).containsOnly("test1", "test2");
-		}
+		Throwable exception = Assertions.catchThrowable(() -> bulkLabel(List.of("A", "B", Concepts.ROOT_CONCEPT), SnomedConcept.Expand.PREFERRED_TERM, ImmutableList.of(ExtendedLocale.valueOf("en-x-" + Concepts.REFSET_LANGUAGE_TYPE_US))));
+
+		LinkedHashMap<String, Collection<String>> errors = Maps.newLinkedHashMap();
+		errors.put("A", List.of("no viable alternative at character '<EOF>'"));
+		errors.put("B", List.of("no viable alternative at character 'B'"));
+
+		HashMap<String, Object> erroneousExpressions = Maps.newHashMap();
+		erroneousExpressions.put("erroneousExpressions", errors);
+
+		Assertions.assertThat(exception).isExactlyInstanceOf(BadRequestException.class)
+		.hasFieldOrPropertyWithValue("additionalInfo", erroneousExpressions);
 	}
 
 }
