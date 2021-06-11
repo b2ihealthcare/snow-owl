@@ -15,12 +15,6 @@
  */
 package com.b2international.snowowl.core.bundle;
 
-import static com.b2international.snowowl.core.internal.ResourceDocument.Expressions.defaultTitleDisjunctionQuery;
-import static com.b2international.snowowl.core.internal.ResourceDocument.Expressions.minShouldMatchTermDisjunctionQuery;
-import static com.b2international.snowowl.core.internal.ResourceDocument.Expressions.titleFuzzy;
-import static com.b2international.snowowl.core.internal.ResourceDocument.Expressions.matchTitleExact;
-import static com.b2international.snowowl.core.internal.ResourceDocument.Expressions.parsedTitle;
-
 import java.util.Collections;
 
 import com.b2international.index.Hits;
@@ -71,19 +65,18 @@ final class BundleSearchRequest
 		final ExpressionBuilder expressionBuilder = Expressions.builder();
 		
 		if (termFilter.isFuzzy()) {
-			expressionBuilder.must(titleFuzzy(termFilter.getTerm()));
+			expressionBuilder.should(ResourceDocument.Expressions.titleFuzzy(termFilter.getTerm()));
 		} else if (termFilter.isExact()) {
-			expressionBuilder.must(matchTitleExact(termFilter.getTerm(), termFilter.isCaseSensitive()));
+			expressionBuilder.should(ResourceDocument.Expressions.matchTitleExact(termFilter.getTerm(), termFilter.isCaseSensitive()));
 		} else if (termFilter.isParsed()) {
-			expressionBuilder.should(parsedTitle(termFilter.getTerm()));
+			expressionBuilder.should(ResourceDocument.Expressions.parsedTitle(termFilter.getTerm()));
 		} else if (termFilter.isAnyMatch()) {
-			expressionBuilder.must(minShouldMatchTermDisjunctionQuery(termFilter));
+			expressionBuilder.should(ResourceDocument.Expressions.minShouldMatchTermDisjunctionQuery(termFilter));
 		} else {
-			expressionBuilder.must(defaultTitleDisjunctionQuery(termFilter));
+			expressionBuilder.should(ResourceDocument.Expressions.defaultTitleDisjunctionQuery(termFilter));
 		}
 		
 		expressionBuilder.should(Expressions.boost(ResourceDocument.Expressions.id(termFilter.getTerm()), 1000.0f));
-		
 		queryBuilder.must(expressionBuilder.build());
 	}
 
