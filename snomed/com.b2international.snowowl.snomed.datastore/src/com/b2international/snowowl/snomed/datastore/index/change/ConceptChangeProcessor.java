@@ -236,9 +236,10 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		// add dirty descriptions with relevant changes from tx
 		staging
 			// XXX accepts only relevant property changes, lang member detection should take care about acceptability changes
-			.getChangedRevisions(SnomedDescriptionIndexEntry.class, ALLOWED_DESCRIPTION_CHANGE_FEATURES) 
+			.getChangedRevisions(SnomedDescriptionIndexEntry.class) 
+			.filter(diff -> !Concepts.TEXT_DEFINITION.equals(((SnomedDescriptionIndexEntry) diff.newRevision).getTypeId()))
+			.filter(diff -> diff.hasRevisionPropertyChanges(ALLOWED_DESCRIPTION_CHANGE_FEATURES))
 			.map(diff -> (SnomedDescriptionIndexEntry) diff.newRevision)
-			.filter(description -> !Concepts.TEXT_DEFINITION.equals(description.getTypeId()))
 			.forEach(description -> descriptions.put(description.getId(), description));
 		
 		// add detached descriptions
@@ -253,9 +254,9 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 			.map(member -> member.getReferencedComponentId())
 			.forEach(descriptionsToLoad::add);
 		
-		staging.getChangedRevisions(SnomedRefSetMemberIndexEntry.class, ALLOWED_LANG_MEMBER_CHANGE_FEATURES)
-			.map(diff -> (SnomedRefSetMemberIndexEntry) diff.newRevision)
-			.map(member -> member.getReferencedComponentId())
+		staging.getChangedRevisions(SnomedRefSetMemberIndexEntry.class)
+			.filter(diff -> diff.hasRevisionPropertyChanges(ALLOWED_LANG_MEMBER_CHANGE_FEATURES))
+			.map(diff -> ((SnomedRefSetMemberIndexEntry) diff.newRevision).getReferencedComponentId())
 			.forEach(descriptionsToLoad::add);
 		
 		staging.getRemovedObjects(SnomedRefSetMemberIndexEntry.class)
