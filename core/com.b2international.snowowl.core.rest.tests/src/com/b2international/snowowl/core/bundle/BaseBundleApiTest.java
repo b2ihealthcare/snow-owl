@@ -21,6 +21,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 
+import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.test.commons.Services;
 import com.b2international.snowowl.test.commons.TestMethodNameRule;
@@ -101,11 +102,24 @@ abstract class BaseBundleApiTest {
 				.setContact(CONTACT)
 				.setUsage(USAGE)
 				.setPurpose(PURPOSE)
-				.bundleId(bundleId)
+				.setBundleId(bundleId)
 				.build(USER, String.format("Create bundle: %s", id))
 				.execute(Services.bus())
 				.getSync(1, TimeUnit.MINUTES)
 				.getResultAs(String.class);
+	}
+
+	String createCodeSystem(final String bundleId, final String title) {
+		return CodeSystemRequests.prepareNewCodeSystem()
+				.setTitle(title)
+				.setBundleId(bundleId)
+				.setUrl("https://b2i.sg")
+				.setToolingId("snomed")
+				.build(USER, String.format("Create code system: %s", id))
+				.execute(Services.bus())
+				.getSync(1, TimeUnit.MINUTES)
+				.getResultAs(String.class);
+
 	}
 	
 	Bundles build(final BundleSearchRequestBuilder builder) {
