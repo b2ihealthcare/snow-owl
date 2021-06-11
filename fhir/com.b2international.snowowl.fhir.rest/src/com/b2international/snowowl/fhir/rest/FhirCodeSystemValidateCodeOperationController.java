@@ -24,14 +24,14 @@ import java.util.Optional;
 import org.springframework.web.bind.annotation.*;
 
 import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.OperationOutcome;
-import com.b2international.snowowl.fhir.core.model.ValidateCodeResult;
 import com.b2international.snowowl.fhir.core.model.codesystem.ValidateCodeRequest;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Json;
-import com.b2international.snowowl.fhir.core.provider.ICodeSystemApiProvider;
+import com.b2international.snowowl.fhir.core.request.FhirRequests;
 
 import io.swagger.annotations.*;
 
@@ -69,7 +69,7 @@ public class FhirCodeSystemValidateCodeOperationController extends AbstractFhirC
 		@ApiResponse(code = HTTP_NOT_FOUND, message = "Code system not found", response = OperationOutcome.class)
 	})
 	@RequestMapping(value="/$validate-code", method=RequestMethod.GET)
-	public Parameters.Fhir validateCodeByUrl(
+	public Promise<Parameters.Fhir> validateCodeByUrl(
 			@ApiParam(value="The uri of the code system to validate against") @RequestParam("url") String url, 
 			@ApiParam(value="The code to be validated") @RequestParam(value="code") final String code,
 			@ApiParam(value="The version of the code system") @RequestParam(value="version") final Optional<String> version,
@@ -92,7 +92,7 @@ public class FhirCodeSystemValidateCodeOperationController extends AbstractFhirC
 		Json json = new Parameters.Json(builder.build());
 		Fhir fhir = new Parameters.Fhir(json.parameters());
 		
-		return toResponse(validateCode(fhir));
+		return validateCode(fhir);
 	}
 	
 	/**
@@ -108,15 +108,17 @@ public class FhirCodeSystemValidateCodeOperationController extends AbstractFhirC
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class)
 	})
 	@RequestMapping(value="/$validate-code", method=RequestMethod.POST, consumes = AbstractFhirResourceController.APPLICATION_FHIR_JSON)
-	public Parameters.Fhir validateCode(@ApiParam(name = "body", value = "The validate-code request parameters") @RequestBody Parameters.Fhir in) {
+	public Promise<Parameters.Fhir> validateCode(@ApiParam(name = "body", value = "The validate-code request parameters") @RequestBody Parameters.Fhir in) {
 		
-		final ValidateCodeRequest validateCodeRequest = toRequest(in, ValidateCodeRequest.class);
+		final ValidateCodeRequest request = toRequest(in, ValidateCodeRequest.class);
 		
-		validateCodeRequest.validate();
+		request.validate();
 		
-		ICodeSystemApiProvider codeSystemProvider = codeSystemProviderRegistry.getCodeSystemProvider(getBus(), locales, validateCodeRequest.getUrl().getUriValue());
-		ValidateCodeResult result = codeSystemProvider.validateCode(validateCodeRequest.getUrl().getUriValue(), validateCodeRequest);
-		return toResponse(result);
+		return FhirRequests.codeSystems().prepareValidateCode()
+				.setRequest(request)
+				.buildAsync()
+				.execute(getBus())
+				.then(this::toResponse);
 	}
 
 	
@@ -146,7 +148,7 @@ public class FhirCodeSystemValidateCodeOperationController extends AbstractFhirC
 		@ApiResponse(code = HTTP_NOT_FOUND, message = "Code system not found", response = OperationOutcome.class)
 	})
 	@RequestMapping(value="/{codeSystemId:**}/$validate-code", method=RequestMethod.GET)
-	public Parameters.Fhir validateCode(
+	public Promise<Parameters.Fhir> validateCode(
 			@ApiParam(value="The id of the code system to validate against") @PathVariable("codeSystemId") String codeSystemId, 
 			@ApiParam(value="The code to be validated") @RequestParam(value="code") final String code,
 			@ApiParam(value="The version of the code system") @RequestParam(value="version") final Optional<String> version,
@@ -168,7 +170,7 @@ public class FhirCodeSystemValidateCodeOperationController extends AbstractFhirC
 		Json json = new Parameters.Json(builder.build());
 		Fhir fhir = new Parameters.Fhir(json.parameters());
 		
-		return toResponse(validateCode(codeSystemId, fhir));
+		return validateCode(codeSystemId, fhir);
 	}
 	
 	/**
@@ -184,35 +186,38 @@ public class FhirCodeSystemValidateCodeOperationController extends AbstractFhirC
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class)
 	})
 	@RequestMapping(value="/{codeSystemId:**}/$validate-code", method=RequestMethod.POST, consumes = AbstractFhirResourceController.APPLICATION_FHIR_JSON)
-	public Parameters.Fhir validateCode(
+	public Promise<Parameters.Fhir> validateCode(
 			@ApiParam(value="The id of the code system to validate against") @PathVariable("codeSystemId") String codeSystemId, 
 			@ApiParam(name = "body", value = "The validate-code request parameters")
 			@RequestBody Parameters.Fhir in) {
 		
+		// TODO set codesystem in validate request
 		ResourceURI codeSystemUri = com.b2international.snowowl.core.codesystem.CodeSystem.uri(codeSystemId);
 		
-		final ValidateCodeRequest validateCodeRequest = toRequest(in, ValidateCodeRequest.class);
+		final ValidateCodeRequest request = toRequest(in, ValidateCodeRequest.class);
 
 		//Validate for parameters that are not allowed on the instance level
-		if (validateCodeRequest.getUrl() != null) {
+		if (request.getUrl() != null) {
 			throw new BadRequestException("Parameter 'url' cannot be specified when the code system ID is set.", "ValidateCodeRequest.url");
 		}
 		
-		if (validateCodeRequest.getCoding() != null) {
+		if (request.getCoding() != null) {
 			throw new BadRequestException("Parameter 'coding' cannot be specified when the code system ID is set.", "ValidateCodeRequest.coding");
 		}
 		
-		if (validateCodeRequest.getCodeableConcept() != null) {
+		if (request.getCodeableConcept() != null) {
 			throw new BadRequestException("Parameter 'codeableConcept' cannot be specified when the code system ID is set.", "ValidateCodeRequest.codeableConcept");
 		}
 		
-		if (validateCodeRequest.getCodeSystem() != null) {
+		if (request.getCodeSystem() != null) {
 			throw new BadRequestException("Validation against external code systems is not supported", "ValidateCodeRequest.codeSystem");
 		}
-		
-		ICodeSystemApiProvider codeSystemProvider = codeSystemProviderRegistry.getCodeSystemProvider(getBus(), locales, codeSystemUri);
-		ValidateCodeResult result = codeSystemProvider.validateCode(codeSystemUri, validateCodeRequest);
-		return toResponse(result);
+
+		return FhirRequests.codeSystems().prepareValidateCode()
+				.setRequest(request)
+				.buildAsync()
+				.execute(getBus())
+				.then(this::toResponse);
 	}
 	
 }

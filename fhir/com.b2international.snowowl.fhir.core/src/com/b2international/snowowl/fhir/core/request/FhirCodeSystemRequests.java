@@ -15,13 +15,31 @@
  */
 package com.b2international.snowowl.fhir.core.request;
 
+import com.b2international.snowowl.fhir.core.request.codesystem.*;
+
 /**
  * @since 8.0
  */
-public class FhirRequests {
+public final class FhirCodeSystemRequests {
 
-	public static FhirCodeSystemRequests codeSystems() {
-		return new FhirCodeSystemRequests();
+	public FhirCodeSystemSearchRequestBuilder prepareSearch() {
+		return new FhirCodeSystemSearchRequestBuilder();
+	}
+	
+	public FhirCodeSystemGetRequestBuilder prepareGet(String idOrUrl) {
+		return new FhirCodeSystemGetRequestBuilder(idOrUrl);
+	}
+
+	public FhirLookupRequestBuilder prepareLookup() {
+		return new FhirLookupRequestBuilder();
+	}
+	
+	public FhirSubsumesRequestBuilder prepareSubsumes() {
+		return new FhirSubsumesRequestBuilder();
+	}
+	
+	public FhirValidateCodeRequestBuilder prepareValidateCode() {
+		return new FhirValidateCodeRequestBuilder();
 	}
 	
 }

@@ -43,22 +43,6 @@ public interface ICodeSystemApiProvider {
 	}
 	
 	/**
-	 * Performs the lookup operation based on the parameter-based lookup request.
-	 * 
-	 * <p>
-	 * From the spec:
-	 * If no properties are specified, the server chooses what to return. The following properties are defined for all code systems: url, name, version (code system info) 
-	 * and code information: display, definition, designation, parent and child, and for designations, lang.X where X is a designation language code. 
-	 * Some of the properties are returned explicit in named parameters (when the names match), and the rest (except for lang.X) in the property parameter group
-	 * </p>
-	 * @param lookupRequest
-	 * @return result of the lookup
-	 * @see LookupRequest
-	 * @see LookupResult
-	 */
-	LookupResult lookup(LookupRequest lookupRequest);
-	
-	/**
 	 * Test the subsumption relationship between code/Coding A and code/Coding B given the semantics of subsumption in the underlying code system (see hierarchyMeaning).
 	 * See <a href="http://hl7.org/fhir/codesystem-operations.html#subsumes">docs</a> for more details.  
 	 *  

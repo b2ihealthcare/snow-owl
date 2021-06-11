@@ -25,12 +25,12 @@ import java.util.Set;
 
 import org.springframework.web.bind.annotation.*;
 
+import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.fhir.core.model.OperationOutcome;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
-import com.b2international.snowowl.fhir.core.model.codesystem.LookupResult;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest.Builder;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
-import com.b2international.snowowl.fhir.core.provider.ICodeSystemApiProvider;
+import com.b2international.snowowl.fhir.core.request.FhirRequests;
 
 import io.swagger.annotations.*;
 
@@ -61,7 +61,7 @@ public class FhirCodeSystemLookupOperationController extends AbstractFhirControl
 		@ApiResponse(code = HTTP_NOT_FOUND, message = "Code system not found", response = OperationOutcome.class)
 	})
 	@RequestMapping(value="/$lookup", method=RequestMethod.GET)
-	public Parameters.Fhir lookup(
+	public Promise<Parameters.Fhir> lookup(
 		
 		@ApiParam(value="The code to look up") @RequestParam(value="code") final String code,
 		@ApiParam(value="The code system's uri") @RequestParam(value="system") final String system,
@@ -93,7 +93,7 @@ public class FhirCodeSystemLookupOperationController extends AbstractFhirControl
 		}
 		
 		//all good, now do something
-		return toResponse(lookup(builder.build()));
+		return lookup(builder.build());
 	}
 	
 	/**
@@ -108,22 +108,23 @@ public class FhirCodeSystemLookupOperationController extends AbstractFhirControl
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class)
 	})
 	@RequestMapping(value="/$lookup", method=RequestMethod.POST, consumes = AbstractFhirResourceController.APPLICATION_FHIR_JSON)
-	public Parameters.Fhir lookup(
+	public Promise<Parameters.Fhir> lookup(
 			@ApiParam(name = "body", value = "The lookup request parameters")
 			@RequestBody Parameters.Fhir in) {
 		
 		final LookupRequest req = toRequest(in, LookupRequest.class);
-		
-		LookupResult result = lookup(req);
-		return toResponse(result);
+		return lookup(req);
 	}
 	
 	/*
 	 * Perform the actual lookup by deferring the operation to the matching code system provider.
 	 */
-	private LookupResult lookup(LookupRequest lookupRequest) {
-		ICodeSystemApiProvider codeSystemProvider = codeSystemProviderRegistry.getCodeSystemProvider(getBus(), locales, lookupRequest.getSystem());
-		return codeSystemProvider.lookup(lookupRequest);
+	private Promise<Parameters.Fhir> lookup(LookupRequest lookupRequest) {
+		return FhirRequests.codeSystems().prepareLookup()
+				.setRequest(lookupRequest)
+				.buildAsync()
+				.execute(getBus())
+				.then(this::toResponse);
 	}
 	
 }

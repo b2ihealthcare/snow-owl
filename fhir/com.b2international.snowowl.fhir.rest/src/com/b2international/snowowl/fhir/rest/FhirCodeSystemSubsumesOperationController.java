@@ -22,13 +22,13 @@ import static java.net.HttpURLConnection.HTTP_OK;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
+import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.OperationOutcome;
 import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionRequest;
-import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionResult;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
-import com.b2international.snowowl.fhir.core.provider.ICodeSystemApiProvider;
+import com.b2international.snowowl.fhir.core.request.FhirRequests;
 
 import io.swagger.annotations.*;
 
@@ -52,7 +52,7 @@ public class FhirCodeSystemSubsumesOperationController extends AbstractFhirContr
 		@ApiResponse(code = HTTP_NOT_FOUND, message = "Code system not found", response = OperationOutcome.class)
 	})
 	@RequestMapping(value="/$subsumes", method=RequestMethod.GET)
-	public Parameters.Fhir subsumes(
+	public Promise<Parameters.Fhir> subsumes(
 			@ApiParam(value="The \"A\" code that is to be tested") @RequestParam(value="codeA") final String codeA,
 			@ApiParam(value="The \"B\" code that is to be tested") @RequestParam(value="codeB") final String codeB,
 			@ApiParam(value="The code system's uri") @RequestParam(value="system") final String system,
@@ -66,11 +66,12 @@ public class FhirCodeSystemSubsumesOperationController extends AbstractFhirContr
 				.system(system)
 				.version(version)
 				.build();
-		
-		ICodeSystemApiProvider codeSystemProvider = codeSystemProviderRegistry.getCodeSystemProvider(getBus(), locales, req.getSystem());
-		final SubsumptionResult result = codeSystemProvider.subsumes(req);
-		
-		return toResponse(result);
+
+		return FhirRequests.codeSystems().prepareSubsumes()
+				.setRequest(req)
+				.buildAsync()
+				.execute(getBus())
+				.then(this::toResponse);
 	}
 	
 	/*
@@ -85,7 +86,7 @@ public class FhirCodeSystemSubsumesOperationController extends AbstractFhirContr
 		@ApiResponse(code = HTTP_NOT_FOUND, message = "Code system not found", response = OperationOutcome.class)
 	})
 	@RequestMapping(value="{codeSystemId:**}/$subsumes", method=RequestMethod.GET)
-	public Parameters.Fhir subsumes(
+	public Promise<Parameters.Fhir> subsumes(
 			@ApiParam(value="The id of the code system to invoke the operation on") 	@PathVariable("codeSystemId") String codeSystemId,
 			@ApiParam(value="The \"A\" code that is to be tested") @RequestParam(value="codeA") final String codeA,
 			@ApiParam(value="The \"B\" code that is to be tested") @RequestParam(value="codeB") final String codeB,
@@ -101,10 +102,11 @@ public class FhirCodeSystemSubsumesOperationController extends AbstractFhirContr
 			.version(version)
 			.build();
 		
-		ICodeSystemApiProvider codeSystemProvider = codeSystemProviderRegistry.getCodeSystemProvider(getBus(), locales, req.getSystem());
-		final SubsumptionResult result = codeSystemProvider.subsumes(req);
-		
-		return toResponse(result);
+		return FhirRequests.codeSystems().prepareSubsumes()
+				.setRequest(req)
+				.buildAsync()
+				.execute(getBus())
+				.then(this::toResponse);		
 	}
 	
 	/*
@@ -117,17 +119,19 @@ public class FhirCodeSystemSubsumesOperationController extends AbstractFhirContr
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class)
 	})
 	@RequestMapping(value="/$subsumes", method=RequestMethod.POST, consumes = AbstractFhirResourceController.APPLICATION_FHIR_JSON)
-	public Parameters.Fhir subsumes(
+	public Promise<Parameters.Fhir> subsumes(
 			@ApiParam(name = "body", value = "The lookup request parameters")
 			@RequestBody Parameters.Fhir in) {
 		
 		SubsumptionRequest request = toRequest(in, SubsumptionRequest.class);
 		
 		validateSubsumptionRequest(request);
-		
-		ICodeSystemApiProvider codeSystemProvider = codeSystemProviderRegistry.getCodeSystemProvider(getBus(), locales, request.getSystem());
-		SubsumptionResult result = codeSystemProvider.subsumes(request);
-		return toResponse(result);
+
+		return FhirRequests.codeSystems().prepareSubsumes()
+				.setRequest(request)
+				.buildAsync()
+				.execute(getBus())
+				.then(this::toResponse);
 	}
 	
 	/*
@@ -140,7 +144,7 @@ public class FhirCodeSystemSubsumesOperationController extends AbstractFhirContr
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class)
 	})
 	@RequestMapping(value="{codeSystemId:**}/$subsumes", method=RequestMethod.POST, consumes = AbstractFhirResourceController.APPLICATION_FHIR_JSON)
-	public Parameters.Fhir subsumes(
+	public Promise<Parameters.Fhir> subsumes(
 			@ApiParam(value="The id of the code system to invoke the operation on") @PathVariable("codeSystemId") String codeSystemId,
 			@ApiParam(name = "body", value = "The lookup request parameters") @RequestBody Parameters.Fhir in) {
 		
@@ -149,8 +153,11 @@ public class FhirCodeSystemSubsumesOperationController extends AbstractFhirContr
 		validateSubsumptionRequest(request);
 		
 		//TODO: incorrect as it should use the codeSystemID instead of the systemID!
-		SubsumptionResult result = codeSystemProviderRegistry.getCodeSystemProvider(getBus(), locales, request.getSystem()).subsumes(request);
-		return toResponse(result);
+		return FhirRequests.codeSystems().prepareSubsumes()
+				.setRequest(request)
+				.buildAsync()
+				.execute(getBus())
+				.then(this::toResponse);
 	}
 	
 	private void validateSubsumptionRequest(String codeA, String codeB, String system, String version) {

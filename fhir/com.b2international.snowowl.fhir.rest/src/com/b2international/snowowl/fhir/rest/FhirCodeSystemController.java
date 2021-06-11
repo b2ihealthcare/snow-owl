@@ -76,7 +76,7 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 //		Pair<Set<FhirFilterParameter>, Set<FhirSearchParameter>> requestParameters = processParameters(parameters);
 //		Set<FhirFilterParameter> filterParameters = requestParameters.getA();
 		
-		return FhirRequests.prepareSearchCodeSystem()
+		return FhirRequests.codeSystems().prepareSearch()
 				.buildAsync()
 				.execute(getBus());
 		
@@ -126,7 +126,7 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 //		Pair<Set<FhirFilterParameter>, Set<FhirSearchParameter>> fhirParameters = processParameters(parameters);
 		// apply filters, params, etc.
 		
-		return FhirRequests.prepareGetCodeSystem(codeSystemId)
+		return FhirRequests.codeSystems().prepareGet(codeSystemId)
 				.buildAsync()
 				.execute(getBus());
 		
