@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -206,6 +206,7 @@ public final class Commit implements WithScore {
 		public static final String COMMENT_PREFIX = "comment.prefix";
 		public static final String TIMESTAMP = "timestamp";
 		public static final String GROUP_ID = "groupId";
+		public static final String MERGE_SOURCE = "mergeSource";
 		private static final String DETAILS_OBJECT = "details.objects";
 		private static final String DETAILS_COMPONENT = "details.components";
 		// Sort keys
