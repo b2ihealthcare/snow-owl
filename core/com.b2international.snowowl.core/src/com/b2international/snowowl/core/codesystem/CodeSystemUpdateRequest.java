@@ -22,40 +22,27 @@ import java.util.Set;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.ResourceURI;
-import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.internal.ResourceDocument;
+import com.b2international.snowowl.core.internal.ResourceDocument.Builder;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
+import com.b2international.snowowl.core.request.BaseResourceUpdateRequest;
 import com.b2international.snowowl.core.request.ResourceRequests;
-import com.b2international.snowowl.core.request.UpdateRequest;
 import com.b2international.snowowl.core.version.Version;
 import com.google.common.collect.Maps;
 
 /**
  * @since 4.7
  */
-final class CodeSystemUpdateRequest extends UpdateRequest<TransactionContext> implements RepositoryAccessControl {
+final class CodeSystemUpdateRequest extends BaseResourceUpdateRequest {
 
 	private static final long serialVersionUID = 1L;
 
 //	private String iconPath; // TODO should we support custom icons for resources?? branding??
 	
-	// generic resource update properties, TODO move to super-superclass
-	String url;
-	String title;
-	String language;
-	String description;
-	String status;
-	String copyright;
-	String owner;
-	String contact;
-	String usage;
-	String purpose;
-	String oid;
-	
 	// generic terminology resource update properties, TODO move to superclass 
+	String oid;
 	String branchPath;
 	ResourceURI extensionOf;
 	Map<String, Object> settings;
@@ -69,33 +56,15 @@ final class CodeSystemUpdateRequest extends UpdateRequest<TransactionContext> im
 //	}
 	
 	@Override
-	public Boolean execute(final TransactionContext context) {
-		ResourceDocument codeSystem = context.lookup(componentId(), ResourceDocument.class);
-		final ResourceDocument.Builder updated = ResourceDocument.builder(codeSystem);
-
+	protected boolean updateSpecializedProperties(TransactionContext context, ResourceDocument resource, Builder updated) {
 		boolean changed = false;
-		changed |= updateProperty(url, codeSystem::getUrl, updated::url);
-		changed |= updateProperty(title, codeSystem::getTitle, updated::title);
-		changed |= updateProperty(language, codeSystem::getLanguage, updated::language);
-		changed |= updateProperty(description, codeSystem::getDescription, updated::description);
-		changed |= updateProperty(status, codeSystem::getStatus, updated::status);
-		changed |= updateProperty(copyright, codeSystem::getCopyright, updated::copyright);
-		changed |= updateProperty(owner, codeSystem::getOwner, updated::owner);
-		changed |= updateProperty(contact, codeSystem::getContact, updated::contact);
-		changed |= updateProperty(usage, codeSystem::getUsage, updated::usage);
-		changed |= updateProperty(purpose, codeSystem::getPurpose, updated::purpose);
-		changed |= updateProperty(oid, codeSystem::getOid, updated::oid);
 		
-		changed |= updateBranchPath(context, updated, codeSystem.getBranchPath());
-		changed |= updateExtensionOf(context, updated, codeSystem.getExtensionOf(), codeSystem.getId());
-		changed |= updateSettings(codeSystem, updated);
+		changed |= updateProperty(oid, resource::getOid, updated::oid);
+		changed |= updateBranchPath(context, updated, resource.getBranchPath());
+		changed |= updateExtensionOf(context, updated, resource.getExtensionOf(), resource.getId());
+		changed |= updateSettings(resource, updated);
 		
 //		changed |= updateProperty(iconPath, codeSystem::getIconPath, updated::iconPath);
-		
-		if (changed) {
-			context.add(updated.build());
-		}
-
 		return changed;
 	}
 
@@ -223,8 +192,4 @@ final class CodeSystemUpdateRequest extends UpdateRequest<TransactionContext> im
 		return false;
 	}
 
-	@Override
-	public String getOperation() {
-		return Permission.OPERATION_EDIT;
-	}
 }
