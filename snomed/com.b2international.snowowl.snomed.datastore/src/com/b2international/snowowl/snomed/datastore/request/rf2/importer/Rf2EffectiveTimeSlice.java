@@ -20,13 +20,7 @@ import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.mapdb.DB;
 import org.mapdb.HTreeMap;
@@ -41,6 +35,7 @@ import com.b2international.collections.longs.LongKeyMap;
 import com.b2international.collections.longs.LongSet;
 import com.b2international.commons.collect.LongSets;
 import com.b2international.commons.graph.LongTarjan;
+import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.codesystem.CodeSystemVersionEntry;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
@@ -54,11 +49,7 @@ import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.*;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
@@ -204,7 +195,7 @@ public final class Rf2EffectiveTimeSlice {
 		final Stopwatch w = Stopwatch.createStarted();
 		final String importingMessage = isUnpublishedSlice() ? "Importing unpublished components" : String.format("Importing components from %s", effectiveTime);
 		final String commitMessage = isUnpublishedSlice() ? "Imported unpublished components" : String.format("Imported components from %s", effectiveTime);
-		final boolean doCreateVersion = !isUnpublishedSlice() && !isSnapshotSlice() && importConfig.isCreateVersions();
+		boolean doCreateVersion = !isUnpublishedSlice() && !isSnapshotSlice() && importConfig.isCreateVersions();
 		
 		LOG.info(importingMessage);
 		try (Rf2TransactionContext tx = new Rf2TransactionContext(context.openTransaction(context, DatastoreLockContextDescriptions.IMPORT), loadOnDemand, importConfig)) {
@@ -243,7 +234,15 @@ public final class Rf2EffectiveTimeSlice {
 				tx.add(componentsToImport, getDependencies(componentsToImport));
 				
 				if (doCreateVersion && !importPlan.hasNext()) {
-					tx.add(CodeSystemVersionEntry.builder()
+					boolean needsNewVersionEntry = CodeSystemRequests.prepareSearchCodeSystemVersion()
+						.filterByCodeSystemShortName(codeSystem)
+						.filterByEffectiveDate(effectiveDate)
+						.build()
+						.execute(tx)
+						.isEmpty();
+					
+					if (needsNewVersionEntry) {
+						tx.add(CodeSystemVersionEntry.builder()
 							.id(IDs.base64UUID())
 							.codeSystemShortName(codeSystem)
 							.description("")
@@ -252,7 +251,10 @@ public final class Rf2EffectiveTimeSlice {
 							.versionId(effectiveTime)
 							.importDate(new Date().getTime())
 							.repositoryUuid(SnomedDatastoreActivator.REPOSITORY_UUID)
-							.build());
+							.build());						
+					} else {
+						doCreateVersion = false;
+					}
 				}
 				
 				tx.commit(commitMessage);
