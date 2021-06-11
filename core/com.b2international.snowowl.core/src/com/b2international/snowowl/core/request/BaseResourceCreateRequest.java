@@ -23,7 +23,7 @@ import com.b2international.snowowl.core.events.Request;
 /**
  * @since 8.0
  */
-public abstract class BaseResourceCreateRequest implements Request<TransactionContext, String>  {
+public abstract class BaseResourceCreateRequest implements Request<TransactionContext, String> {
 
 	protected static final long serialVersionUID = 1L;
 
@@ -48,52 +48,52 @@ public abstract class BaseResourceCreateRequest implements Request<TransactionCo
 	
 	@NotEmpty
 	protected String bundleId;
-	
-	public void setId(String id) {
+
+	public final void setId(String id) {
 		this.id = id;
 	}
-	
-	public void setUrl(String url) {
+
+	public final void setUrl(String url) {
 		this.url = url;
 	}
-	
-	public void setTitle(String title) {
+
+	public final void setTitle(String title) {
 		this.title = title;
 	}
-	
-	public void setLanguage(String language) {
+
+	public final void setLanguage(String language) {
 		this.language = language;
 	}
-	
-	public void setDescription(String description) {
+
+	public final void setDescription(String description) {
 		this.description = description;
 	}
-	
-	public void setStatus(String status) {
+
+	public final void setStatus(String status) {
 		this.status = status;
 	}
-	
-	public void setCopyright(String copyright) {
+
+	public final void setCopyright(String copyright) {
 		this.copyright = copyright;
 	}
-	
-	public void setOwner(String owner) {
+
+	public final void setOwner(String owner) {
 		this.owner = owner;
 	}
-	
-	public void setContact(String contact) {
+
+	public final void setContact(String contact) {
 		this.contact = contact;
 	}
-	
-	public void setUsage(String usage) {
+
+	public final void setUsage(String usage) {
 		this.usage = usage;
 	}
-	
-	public void setPurpose(String purpose) {
+
+	public final void setPurpose(String purpose) {
 		this.purpose = purpose;
 	}
-	
-	public void setBundleId(String bundleId) {
+
+	public final void setBundleId(String bundleId) {
 		this.bundleId = bundleId;
 	}
 }

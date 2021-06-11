@@ -15,32 +15,16 @@
  */
 package com.b2international.snowowl.core.bundle;
 
-import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.BaseResourceCreateRequestBuilder;
 
 /**
  * @since 8.0
  */
-public final class BundleCreateRequestBuilder extends BaseResourceCreateRequestBuilder<BundleCreateRequestBuilder> {
+public final class BundleCreateRequestBuilder extends BaseResourceCreateRequestBuilder<BundleCreateRequestBuilder, BundleCreateRequest> {
 
 	@Override
-	protected Request<TransactionContext, String> doBuild() {
-		final BundleCreateRequest req = new BundleCreateRequest();
-		req.setId(id);
-		req.setUrl(url);
-		req.setTitle(title);
-		req.setLanguage(language);
-		req.setDescription(description);
-		req.setStatus(status);
-		req.setCopyright(copyright);
-		req.setOwner(owner);
-		req.setContact(contact);
-		req.setUsage(usage);
-		req.setPurpose(purpose);
-		req.setBundleId(bundleId);
-		
-		return req;
+	public BundleCreateRequest createResourceRequest() {
+		return new BundleCreateRequest();
 	}
 
 }

@@ -18,14 +18,12 @@ package com.b2international.snowowl.core.codesystem;
 import java.util.Map;
 
 import com.b2international.snowowl.core.ResourceURI;
-import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.BaseResourceCreateRequestBuilder;
 
 /**
  * @since 4.7
  */
-public final class CodeSystemCreateRequestBuilder extends BaseResourceCreateRequestBuilder<CodeSystemCreateRequestBuilder> {
+public final class CodeSystemCreateRequestBuilder extends BaseResourceCreateRequestBuilder<CodeSystemCreateRequestBuilder, CodeSystemCreateRequest> {
 
 	// specialized resource fields
 	private String oid;
@@ -66,29 +64,18 @@ public final class CodeSystemCreateRequestBuilder extends BaseResourceCreateRequ
 		this.settings = settings;
 		return getSelf();
 	}
-	
-	@Override
-	protected Request<TransactionContext, String> doBuild() {
-		final CodeSystemCreateRequest req = new CodeSystemCreateRequest();
-		req.setId(id);
-		req.setUrl(url);
-		req.setTitle(title);
-		req.setLanguage(language);
-		req.setDescription(description);
-		req.setStatus(status);
-		req.setCopyright(copyright);
-		req.setOwner(owner);
-		req.setContact(contact);
-		req.setUsage(usage);
-		req.setPurpose(purpose);
-		req.setBundleId(bundleId);
 
+	@Override
+	public CodeSystemCreateRequest createResourceRequest() {
+		final CodeSystemCreateRequest req = new CodeSystemCreateRequest();
+		
 		req.oid = oid;
 		req.branchPath = branchPath;
 		req.toolingId = toolingId;
 		req.extensionOf = extensionOf;
 		req.upgradeOf = upgradeOf;
 		req.settings = settings;
+		
 		return req;
 	}
 }

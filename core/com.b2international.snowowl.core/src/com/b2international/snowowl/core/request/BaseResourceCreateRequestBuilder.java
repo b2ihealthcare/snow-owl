@@ -18,86 +18,109 @@ package com.b2international.snowowl.core.request;
 import com.b2international.snowowl.core.context.ResourceRepositoryTransactionRequestBuilder;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
+import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.id.IDs;
 
 /**
  * @since 8.0
  */
-public abstract class BaseResourceCreateRequestBuilder <RB extends BaseResourceCreateRequestBuilder<RB>>
+public abstract class BaseResourceCreateRequestBuilder <RB extends BaseResourceCreateRequestBuilder<RB, R>, R extends BaseResourceCreateRequest>
 		extends BaseRequestBuilder<RB, TransactionContext, String> 
 		implements ResourceRepositoryTransactionRequestBuilder<String> {
 	
-	protected String id = IDs.randomBase64UUID();
+	private String id = IDs.randomBase64UUID();
+	private String bundleId = "-1";
 	
-	protected String url;
-	protected String title;
-	protected String language;
-	protected String description;
-	protected String status;
-	protected String copyright;
-	protected String owner;
-	protected String contact;
-	protected String usage;
-	protected String purpose;
-	protected String bundleId = "-1";
+	private String url;
+	private String title;
+	private String language;
+	private String description;
+	private String status;
+	private String copyright;
+	private String owner;
+	private String contact;
+	private String usage;
+	private String purpose;
 	
-	public RB setId(String id) {
+	public final RB setId(String id) {
 		this.id = id;
 		return getSelf();
 	}
 	
-	public RB setUrl(String url) {
+	public final RB setUrl(String url) {
 		this.url = url;
 		return getSelf();
 	}
 	
-	public RB setTitle(String title) {
+	public final RB setTitle(String title) {
 		this.title = title;
 		return getSelf();
 	}
 	
-	public RB setLanguage(String language) {
+	public final RB setLanguage(String language) {
 		this.language = language;
 		return getSelf();
 	}
 	
-	public RB setDescription(String description) {
+	public final RB setDescription(String description) {
 		this.description = description;
 		return getSelf();
 	}
 	
-	public RB setStatus(String status) {
+	public final RB setStatus(String status) {
 		this.status = status;
 		return getSelf();
 	}
 	
-	public RB setCopyright(String copyright) {
+	public final RB setCopyright(String copyright) {
 		this.copyright = copyright;
 		return getSelf();
 	}
 	
-	public RB setOwner(String owner) {
+	public final RB setOwner(String owner) {
 		this.owner = owner;
 		return getSelf();
 	}
 	
-	public RB setContact(String contact) {
+	public final RB setContact(String contact) {
 		this.contact = contact;
 		return getSelf();
 	}
 	
-	public RB setUsage(String usage) {
+	public final RB setUsage(String usage) {
 		this.usage = usage;
 		return getSelf();
 	}
 	
-	public RB setPurpose(String purpose) {
+	public final RB setPurpose(String purpose) {
 		this.purpose = purpose;
 		return getSelf();
 	}
 	
-	public RB bundleId(String bundleId) {
+	public final RB bundleId(String bundleId) {
 		this.bundleId = bundleId;
 		return getSelf();
+	}
+	
+	public abstract R createResourceRequest();
+	
+	@Override
+	protected final Request<TransactionContext, String> doBuild() {
+		final R req = createResourceRequest();
+		
+		req.id = id;
+		req.url = url;
+		req.title = title;
+		req.language = language;
+		req.description = description;
+		req.status = status;
+		req.copyright = copyright;
+		req.owner = owner;
+		req.contact = contact;
+		req.usage = usage;
+		req.purpose = purpose;
+		req.bundleId = bundleId;
+		
+		return req;
 	}
 }
