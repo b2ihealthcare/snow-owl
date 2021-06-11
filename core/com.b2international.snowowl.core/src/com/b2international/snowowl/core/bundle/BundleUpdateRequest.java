@@ -15,26 +15,25 @@
  */
 package com.b2international.snowowl.core.bundle;
 
+import com.b2international.snowowl.core.domain.TransactionContext;
+import com.b2international.snowowl.core.internal.ResourceDocument;
+import com.b2international.snowowl.core.internal.ResourceDocument.Builder;
+import com.b2international.snowowl.core.request.BaseResourceUpdateRequest;
+
 /**
  * @since 8.0
  */
-public final class BundleRequests {
+final class BundleUpdateRequest extends BaseResourceUpdateRequest {
+
+	private static final long serialVersionUID = 1L;
 	
-	private BundleRequests() {}
-	
-	public static BundleCreateRequestBuilder prepareNewBundle() {
-		return new BundleCreateRequestBuilder();
+	protected BundleUpdateRequest(String componentId) {
+		super(componentId);
 	}
 
-	public static BundleGetRequestBuilder prepareGetBundle(final String id) {
-		return new BundleGetRequestBuilder(id);
-	}
-	
-	public static BundleSearchRequestBuilder prepareSearchBundle() {
-		return new BundleSearchRequestBuilder();
+	@Override
+	protected boolean updateSpecializedProperties(TransactionContext context, ResourceDocument resource, Builder updated) {
+		return false;
 	}
 
-	public static BundleUpdateRequestBuilder prepareUpdateBundle(final String uniqueId) {
-		return new BundleUpdateRequestBuilder(uniqueId);
-	}
 }

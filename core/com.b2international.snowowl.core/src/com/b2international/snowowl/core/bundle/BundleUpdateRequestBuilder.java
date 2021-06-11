@@ -15,26 +15,20 @@
  */
 package com.b2international.snowowl.core.bundle;
 
+import com.b2international.snowowl.core.request.BaseResourceUpdateRequestBuilder;
+
 /**
  * @since 8.0
  */
-public final class BundleRequests {
-	
-	private BundleRequests() {}
-	
-	public static BundleCreateRequestBuilder prepareNewBundle() {
-		return new BundleCreateRequestBuilder();
+public final class BundleUpdateRequestBuilder extends BaseResourceUpdateRequestBuilder<BundleUpdateRequestBuilder, BundleUpdateRequest> {
+
+	protected BundleUpdateRequestBuilder(String uniqueId) {
+		super(uniqueId);
 	}
 
-	public static BundleGetRequestBuilder prepareGetBundle(final String id) {
-		return new BundleGetRequestBuilder(id);
-	}
-	
-	public static BundleSearchRequestBuilder prepareSearchBundle() {
-		return new BundleSearchRequestBuilder();
+	@Override
+	public BundleUpdateRequest createResourceRequest() {
+		return new BundleUpdateRequest(resourceId);
 	}
 
-	public static BundleUpdateRequestBuilder prepareUpdateBundle(final String uniqueId) {
-		return new BundleUpdateRequestBuilder(uniqueId);
-	}
 }
