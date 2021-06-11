@@ -15,12 +15,14 @@
  */
 package com.b2international.index.revision;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.collections.Collections3;
-import com.google.common.collect.Sets;
 
 /**
  * @since 5.0
@@ -35,9 +37,6 @@ public final class RevisionCompare {
 		
 		private final RevisionBranchRef base;
 		private final RevisionBranchRef compare;
-		
-		private int added;
-		private int removed;
 		
 		private final int limit;
 		private boolean excludeComponentChanges;
@@ -105,33 +104,37 @@ public final class RevisionCompare {
 		}
 		
 		public RevisionCompare build() {
-			// count changes only once
-			final Set<ObjectId> changedObjects = Sets.newHashSet();
-			detailsByComponent.values().forEach(compareDetail -> {
-						switch (compareDetail.getOp()) {
-						case ADD:
-							added++;
-							break;
-						case CHANGE:
-							// count only property changes
-							if (compareDetail.isPropertyChange()) {
-								changedObjects.add(compareDetail.getObject());
-							}
-							break;
-						case REMOVE:
-							removed++;
-							break;
-						}
-					});
+			// count changes only once at the end
+			int added = 0;
+			int changed = 0;
+			int removed = 0;
+			for (RevisionCompareDetail compareDetail : detailsByComponent.values()) {
+				switch (compareDetail.getOp()) {
+				case ADD:
+					added++;
+					break;
+				case CHANGE:
+					// count only property changes
+					if (compareDetail.isPropertyChange()) {
+						changed++;
+					}
+					break;
+				case REMOVE:
+					removed++;
+					break;
+				}
+			}
+			
 			final List<RevisionCompareDetail> details = detailsByComponent.values().stream().limit(limit).collect(Collectors.toUnmodifiableList());
 			
 			return new RevisionCompare(
-					base, 
-					compare,
-					details,
-					added,
-					changedObjects.size(),
-					removed);
+				base, 
+				compare,
+				details,
+				added,
+				changed,
+				removed
+			);
 		}
 		
 	}
