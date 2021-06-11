@@ -23,7 +23,7 @@ import com.b2international.snowowl.core.request.GetResourceRequest;
 /**
  * @since 8.0
  */
-public class BundleGetRequest
+final class BundleGetRequest
 		extends GetResourceRequest<BundleSearchRequestBuilder, RepositoryContext, Bundles, Bundle>
 		implements RepositoryAccessControl {
 

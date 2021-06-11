@@ -22,7 +22,7 @@ import com.b2international.snowowl.core.request.GetResourceRequestBuilder;
 /**
  * @since 8.0
  */
-public class BundleGetRequestBuilder
+public final class BundleGetRequestBuilder
 		extends GetResourceRequestBuilder<BundleGetRequestBuilder, BundleSearchRequestBuilder, RepositoryContext, Bundles, Bundle>
 		implements ResourceRepositoryRequestBuilder<Bundle> {
 

@@ -22,7 +22,7 @@ import com.b2international.snowowl.core.request.BaseResourceCreateRequest;
 /**
  * @since 8.0
  */
-public final class BundleCreateRequest extends BaseResourceCreateRequest {
+final class BundleCreateRequest extends BaseResourceCreateRequest {
 
 	private static final long serialVersionUID = 1L;
 

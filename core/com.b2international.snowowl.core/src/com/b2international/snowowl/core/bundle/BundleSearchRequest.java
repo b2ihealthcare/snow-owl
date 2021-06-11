@@ -37,9 +37,9 @@ import com.b2international.snowowl.core.request.TermFilter;
 /**
  * @since 8.0
  */
-public class BundleSearchRequest
-		extends SearchIndexResourceRequest<RepositoryContext, Bundles, ResourceDocument> 
-		implements RepositoryAccessControl {
+final class BundleSearchRequest
+	extends SearchIndexResourceRequest<RepositoryContext, Bundles, ResourceDocument>
+	implements RepositoryAccessControl {
 
 	private static final long serialVersionUID = 1L;
 
