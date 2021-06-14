@@ -50,4 +50,18 @@ public final class Bundle extends Resource {
 		return BUNDLE_RESOURCE_TYPE;
 	}
 
+	public BundleCreateRequestBuilder toCreateRequest() {
+		return BundleRequests.prepareNewBundle()
+				.setId(getId())
+				.setUrl(getUrl())
+				.setTitle(getTitle())
+				.setLanguage(getLanguage())
+				.setDescription(getDescription())
+				.setStatus(getStatus())
+				.setCopyright(getCopyright())
+				.setOwner(getOwner())
+				.setContact(getContact())
+				.setUsage(getUsage())
+				.setPurpose(getPurpose());
+	}
 }
