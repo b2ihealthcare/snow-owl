@@ -72,6 +72,13 @@ public final class Json extends ForwardingMap<String, Object> {
 		return ImmutableList.copyOf(values);
 	}
 	
+	/**
+	 * Construct a new {@link Json} object which is basically a Map of String keys to any Object value. <code>null</code> values are ignored and the
+	 * associated keys will not be registered in the resulting {@link Json} object.
+	 * 
+	 * @param properties - key-value property pairs or <code>null</code>
+	 * @return a {@link Json} object instance, never <code>null</code>
+	 */
 	public static Json object(Object...properties) {
 		final ImmutableMap.Builder<String, Object> props = ImmutableMap.builder();
 		if (properties != null) {

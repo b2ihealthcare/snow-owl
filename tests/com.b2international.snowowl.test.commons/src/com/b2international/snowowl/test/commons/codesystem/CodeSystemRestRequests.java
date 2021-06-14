@@ -18,47 +18,62 @@ package com.b2international.snowowl.test.commons.codesystem;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import com.b2international.commons.json.Json;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.api.IBranchPath;
+import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.test.commons.ApiTestConstants;
+import com.b2international.snowowl.test.commons.Services;
 
 import io.restassured.http.ContentType;
 import io.restassured.response.ValidatableResponse;
 
 /**
+ * Common requests for working with Code Systems (only SNOMED CT is supported).
+ * 
  * @since 4.7
  */
 public abstract class CodeSystemRestRequests {
 	
-	public static ValidatableResponse createCodeSystem(IBranchPath branchPath, String shortName) {
-		return createCodeSystem(null, branchPath, shortName);
-	}
-
-	public static ValidatableResponse createCodeSystem(ResourceURI extensionOf, String shortName) {
-		return createCodeSystem(extensionOf, null, shortName);
+	public static ValidatableResponse createCodeSystem(String codeSystemId) {
+		String branchPath = RepositoryRequests.branching().prepareCreate()
+			.setParent(Branch.MAIN_PATH)
+			.setName(codeSystemId)
+			.build(SnomedTerminologyComponentConstants.TOOLING_ID)
+			.execute(Services.bus())
+			.getSync(1, TimeUnit.MINUTES);
+		return createCodeSystem(null, branchPath, codeSystemId);
 	}
 	
-	private static ValidatableResponse createCodeSystem(ResourceURI extensionOf, IBranchPath branchPath, String shortName) {
+	public static ValidatableResponse createCodeSystem(IBranchPath branchPath, String codeSystemId) {
+		return createCodeSystem(branchPath.getPath(), codeSystemId);
+	}
+	
+	public static ValidatableResponse createCodeSystem(String branchPath, String codeSystemId) {
+		return createCodeSystem(null, branchPath, codeSystemId);
+	}
+
+	public static ValidatableResponse createCodeSystem(ResourceURI extensionOf, String codeSystemId) {
+		return createCodeSystem(extensionOf, null, codeSystemId);
+	}
+	
+	private static ValidatableResponse createCodeSystem(ResourceURI extensionOf, String branchPath, String codeSystemId) {
 		Json requestBody = Json.object(
-			"id", shortName,
-			"title", shortName,
-			"url", "organizationLink",
+			"id", codeSystemId,
+			"title", codeSystemId,
+			"url", SnomedTerminologyComponentConstants.SNOMED_URI_BASE,
 			"description", "citation",
 			"toolingId", SnomedTerminologyComponentConstants.TOOLING_ID,
-			"oid", "oid_" + shortName,
-			"language", "primaryLanguage"
+			"oid", "oid_" + codeSystemId,
+			"language", "primaryLanguage",
+			"extensionOf", extensionOf,
+			"branchPath", branchPath
 		);
 				
-		
-		if (extensionOf != null) {
-			requestBody = requestBody.with("extensionOf", extensionOf);
-		} else if (branchPath != null) {
-			requestBody = requestBody.with("branchPath", branchPath.getPath());
-		}
-		
 		return givenAuthenticatedRequest(ApiTestConstants.CODESYSTEMS_API)
 				.contentType(ContentType.JSON)
 				.body(requestBody)
@@ -78,6 +93,13 @@ public abstract class CodeSystemRestRequests {
 				.body(requestBody)
 				.put("/{id}", id)
 				.then();
+	}
+	
+	public static ValidatableResponse deleteCodeSystem(String codeSystemId) {
+		return givenAuthenticatedRequest(ApiTestConstants.CODESYSTEMS_API)
+				.delete("/{id}", codeSystemId)
+				.then();
+
 	}
 	
 	public static ValidatableResponse upgrade(ResourceURI upgradeOf, ResourceURI extensionOf) {
