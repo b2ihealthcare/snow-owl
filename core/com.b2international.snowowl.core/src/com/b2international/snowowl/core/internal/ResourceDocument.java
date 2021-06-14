@@ -26,6 +26,7 @@ import static com.b2international.index.query.Expressions.matchTextParsed;
 import static com.b2international.index.query.Expressions.regexp;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.collections.Collections3;
@@ -43,6 +44,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 8.0
@@ -97,6 +99,7 @@ public final class ResourceDocument extends RevisionDocument {
 		private static final String TITLE_EXACT    = TITLE + ".exact";
 		private static final String TITLE_TEXT     = TITLE + ".text";
 		
+		public static final Set<String> SORT_FIELDS = ImmutableSet.of(RESOURCE_TYPE, TITLE, LANGUAGE, STATUS, OWNER, USAGE);
 	}
 	
 	/**
