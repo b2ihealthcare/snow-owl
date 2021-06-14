@@ -99,6 +99,7 @@ public final class CodeSystem extends TerminologyResource {
 				.setContact(getContact())
 				.setUsage(getUsage())
 				.setPurpose(getPurpose())
+				.setBundleId(getBundleId())
 				.setOid(getOid())
 				.setBranchPath(getBranchPath())
 				.setToolingId(getToolingId())

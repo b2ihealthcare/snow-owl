@@ -168,6 +168,7 @@ public class CodeSystemRestService extends AbstractRestService {
 				.setContact(codeSystem.getContact())
 				.setUsage(codeSystem.getUsage())
 				.setPurpose(codeSystem.getPurpose())
+				.setBundleId(codeSystem.getBundleId())
 				.setOid(codeSystem.getOid())
 				.setBranchPath(codeSystem.getBranchPath())
 				.setExtensionOf(codeSystem.getExtensionOf())
