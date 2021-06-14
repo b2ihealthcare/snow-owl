@@ -18,61 +18,38 @@ package com.b2international.snowowl.fhir.tests.endpoints.codesystem;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.hamcrest.CoreMatchers.*;
 
+import java.util.UUID;
+
 import org.junit.Test;
 
 import com.b2international.snowowl.fhir.tests.FhirRestTest;
 
 /**
- * CodeSystem REST end-point test cases
+ * FHIR /CodeSystem Resource API Tests
+ * 
  * @since 6.6
  */
 public class CodeSystemRestTest extends FhirRestTest {
 	
-	private static final String FHIR_ISSUE_TYPE_CODESYSTEM_ID = "fhir/issue-type";
-	private static final String FHIR_ISSUE_TYPE_NAME = "issue-type";
-	
-	// all tests should create their own Code Systems instead of relying on Code Systems created by other tests, or implicitly by the system
-	
+	private static final String CODESYSTEM = "/CodeSystem";
+	private static final String CODESYSTEM_ID = "/CodeSystem/{id}";
+
 	@Test
-	public void getAllFullCodeSystemsTest() {
+	public void GET_CodeSystem() throws Exception {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.when().get("/CodeSystem")
+			.when().get(CODESYSTEM)
 			.then()
 			.statusCode(200)
 			.body("resourceType", equalTo("Bundle"))
-			.body("total", notNullValue())
-			
-			.body("entry.resource.url", hasItem("http://hl7.org/fhir/operation-outcome"))
-			
-			//SNOMED CT
-			.root("entry.resource.find { it.url == 'http://snomed.info/sct/version/20170731'}")
-			.body("property.size()", equalTo(127))
-			
-			//FHIR issue type code system has children
-			.root("entry.resource.find { it.url == 'http://hl7.org/fhir/issue-type'}")
-			.body("concept.size()", equalTo(29));
+			.body("total", equalTo(1))
+			.body("entry.resource.url", hasItem("http://snomed.info/sct"));
+			// TODO check number of concepts
 	}
 	
 	@Test
-	public void getCodeSystemsSummaryTest() {
-		
+	public void GET_CodeSystem_IdFilter_NoMatch() throws Exception {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.param("_summary", true)
-			.when().get("/CodeSystem").then()
-			.statusCode(200)
-			.body("resourceType", equalTo("Bundle"))
-			.body("total", notNullValue())
-			.body("type", equalTo("searchset"))
-			
-			//no concept definitions are part of the summary
-			.body("entry.resource", not(hasItem("concept")));
-	}
-	
-	@Test
-	public void getCodeSystemsInvalidIdParamTest() {
-		
-		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.param("_id", "whatever")
+			.queryParam("_id", "non-existent")
 			.when().get("/CodeSystem")
 			.then()
 			.statusCode(200)
@@ -81,223 +58,252 @@ public class CodeSystemRestTest extends FhirRestTest {
 	}
 	
 	@Test
-	public void getCodeSystemsIdParamTest() {
-		
+	public void GET_CodeSystem_IdFilter_Match() throws Exception {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.param("_id", FHIR_ISSUE_TYPE_CODESYSTEM_ID)
+			.queryParam("_id", getTestCodeSystemId())
 			.when().get("/CodeSystem")
 			.then()
 			.statusCode(200)
 			.body("resourceType", equalTo("Bundle"))
 			.body("total", equalTo(1))
 			.body("type", equalTo("searchset"))
-			.body("entry[0].resource.concept", notNullValue());
+			.body("entry.resource.url", hasItem("http://snomed.info/sct"));
 	}
 	
 	@Test
-	public void getCodeSystemsIdsParamTest() {
-		
-		final String narrativeStatusId = "fhir/narrative-status";
-		
+	public void GET_CodeSystem_IdFilter_Match_Multi() throws Exception {
+		String anotherCodeSystemId = createCodeSystem(UUID.randomUUID().toString());
+		String thirdCodeSystemId = createCodeSystem(UUID.randomUUID().toString());
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.param("_id", FHIR_ISSUE_TYPE_CODESYSTEM_ID, narrativeStatusId)
+			.queryParam("_id", getTestCodeSystemId(), anotherCodeSystemId)
 			.when().get("/CodeSystem")
 			.then()
 			.statusCode(200)
 			.body("resourceType", equalTo("Bundle"))
 			.body("total", equalTo(2))
 			.body("type", equalTo("searchset"))
-			.root("entry.find { it.resource.id == '" + FHIR_ISSUE_TYPE_CODESYSTEM_ID + "'}")
-			.body("resource.id", equalTo(FHIR_ISSUE_TYPE_CODESYSTEM_ID))
-			.body("resource.concept", notNullValue())
-			.root("entry.find { it.resource.id == '" + narrativeStatusId + "'}")
-			.body("resource.id", equalTo(narrativeStatusId));
-		}
-	
+			.body("entry.resource.id", hasItems(getTestCodeSystemId(), anotherCodeSystemId))
+			.body("entry.resource.url", hasItem("http://snomed.info/sct"));
+//			.root("entry.find { it.resource.id == '" + FHIR_ISSUE_TYPE_CODESYSTEM_ID + "'}")
+//			.body("resource.id", equalTo(FHIR_ISSUE_TYPE_CODESYSTEM_ID))
+//			.body("resource.concept", notNullValue())
+//			.root("entry.find { it.resource.id == '" + narrativeStatusId + "'}")
+//			.body("resource.id", equalTo(narrativeStatusId));
+	}
 	
 	@Test
-	public void getCodeSystemsByNameParamTest() {
-		
+	public void GET_CodeSystem_NameFilter_NoMatch() {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.param("_name", FHIR_ISSUE_TYPE_NAME)
+			.queryParam("_name", "unknown name")
+			.when().get("/CodeSystem")
+			.then()
+			.statusCode(200)
+			.body("resourceType", equalTo("Bundle"))
+			.body("total", equalTo(0))
+			.body("type", equalTo("searchset"));
+//			.body("entry[0].resource.id", equalTo(FHIR_ISSUE_TYPE_CODESYSTEM_ID))
+//			.body("entry[0].resource.concept", notNullValue());
+	}
+	
+	@Test
+	public void GET_CodeSystem_NameFilter_Match_Single() {
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.queryParam("_name", getTestCodeSystemId())
 			.when().get("/CodeSystem")
 			.then()
 			.statusCode(200)
 			.body("resourceType", equalTo("Bundle"))
 			.body("total", equalTo(1))
 			.body("type", equalTo("searchset"))
-			.body("entry[0].resource.id", equalTo(FHIR_ISSUE_TYPE_CODESYSTEM_ID))
-			.body("entry[0].resource.concept", notNullValue());
+			.body("entry[0].resource.id", equalTo(getTestCodeSystemId()))
+			.body("entry[0].resource.url", equalTo("http://snomed.info/sct"));
 	}
 	
 	@Test
-	public void getCodeSystemsByNamesParamTest() {
-		
-		final String narrativeStatus = "narrative-status";
-		
+	public void GET_CodeSystem_NameFilter_Match_Multiple() {
+		String anotherCodeSystemId = createCodeSystem(UUID.randomUUID().toString());
+		String thirdCodeSystemId = createCodeSystem(UUID.randomUUID().toString());
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.param("_name", FHIR_ISSUE_TYPE_NAME, narrativeStatus)
+			.queryParam("_name", getTestCodeSystemId(), anotherCodeSystemId)
 			.when().get("/CodeSystem")
 			.then()
 			.statusCode(200)
 			.body("resourceType", equalTo("Bundle"))
 			.body("total", equalTo(2))
 			.body("type", equalTo("searchset"))
-			.root("entry.find { it.resource.id == '" + FHIR_ISSUE_TYPE_CODESYSTEM_ID + "'}")
-			.body("resource.id", equalTo(FHIR_ISSUE_TYPE_CODESYSTEM_ID))
-			.body("resource.concept", notNullValue())
-			.root("entry.find { it.resource.id == 'fhir/" + narrativeStatus + "'}")
-			.body("resource.id", equalTo("fhir/" + narrativeStatus));
+			.body("entry.resource.id", hasItems(getTestCodeSystemId(), anotherCodeSystemId))
+			.body("entry.resource.url", hasItem("http://snomed.info/sct"));
 	}
-
+	
 	@Test
-	public void getSnomedCodeSystemTest() {
+	public void GET_CodeSystem_Summary_True() throws Exception {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-		 	.pathParam("id", "SNOMEDCT/2018-01-31") 
-			.when().get("/CodeSystem/{id}")
+			.queryParam("_summary", true)
+			.when().get(CODESYSTEM)
+			.then()
+			.statusCode(200)
+			.body("resourceType", equalTo("Bundle"))
+			.body("total", equalTo(1))
+			.body("type", equalTo("searchset"))
+			//no concept definitions are part of the summary
+			.body("entry.resource", not(hasItem("concept")));
+	}
+	
+	@Test
+	public void GET_CodeSystem_Summary_Text() throws Exception {
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.queryParam("_summary", "text")
+			.when().get(CODESYSTEM)
+			.then()
+			.statusCode(200)
+			.body("resourceType", equalTo("Bundle"))
+			.body("total", equalTo(1))
+			.body("type", equalTo("searchset"));
+//		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+//		.param("_summary", "text")
+//	 	.pathParam("id", FHIR_ISSUE_TYPE_CODESYSTEM_ID) 
+//		.when().get("/CodeSystem/{id}")
+//		.then() 
+//		.statusCode(200)
+//		.body("resourceType", equalTo("CodeSystem"))
+//		.body("meta.tag.code", hasItem("SUBSETTED"))
+//		//only text, id, meta and mandatory
+//		.body("text.div", equalTo("<div>A code that describes the type of issue.</div>"))
+//		.body("status", equalTo("active"))
+//		.body("id", notNullValue())
+//		.body("count", nullValue())
+//		.body("name", nullValue())
+//		.body("concept", nullValue()) 
+//		.body("copyright", nullValue()) 
+//		.body("url", nullValue());
+	}
+	
+	@Test
+	public void GET_CodeSystem_Summary_Data() throws Exception {
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.queryParam("_summary", "data")
+			.when().get(CODESYSTEM)
+			.then()
+			.statusCode(200)
+			.body("resourceType", equalTo("Bundle"))
+			.body("total", equalTo(1))
+			.body("type", equalTo("searchset"));
+//		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+//		.param("_summary", "data")
+//	 	.pathParam("id", FHIR_ISSUE_TYPE_CODESYSTEM_ID) 
+//		.when().get("/CodeSystem/{id}")
+//		.then() 
+//		.statusCode(200)
+//		.body("resourceType", equalTo("CodeSystem"))
+//		.body("meta.tag.code", hasItem("SUBSETTED"))
+//		//only text, id, meta and mandatory
+//		.body("text", nullValue())
+//		.body("status", equalTo("active"))
+//		.body("id", notNullValue())
+//		.body("count", notNullValue())
+//		.body("name", notNullValue())
+//		.body("concept", notNullValue()) 
+//		.body("copyright", notNullValue()) 
+//		.body("url", notNullValue());
+	}
+	
+	@Test
+	public void GET_CodeSystem_Summary_Count() throws Exception {
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.queryParam("_summary", "count")
+			.when().get(CODESYSTEM)
+			.then()
+			.statusCode(200)
+			.body("resourceType", equalTo("Bundle"))
+			.body("total", equalTo(1))
+			.body("type", equalTo("searchset"))
+			.body("entry", nullValue());
+	}
+	
+	@Test
+	public void GET_CodeSystem_Summary_False() throws Exception {
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.queryParam("_summary", false)
+			.when().get(CODESYSTEM)
+			.then()
+			.statusCode(200)
+			.body("resourceType", equalTo("Bundle"))
+			.body("total", equalTo(1))
+			.body("type", equalTo("searchset"))
+			.body("entry.resource.id", hasItem(getTestCodeSystemId()))
+			.body("entry.resource.url", hasItem("http://snomed.info/sct"));
+	}
+	
+	@Test
+	public void GET_CodeSystem_Elements() throws Exception {
+//		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+//		.param("_elements", "name", "url")
+//	 	.pathParam("id", FHIR_ISSUE_TYPE_CODESYSTEM_ID) 
+//		.when().get("/CodeSystem/{id}")
+//		.then() 
+//		.statusCode(200)
+//		//mandatory fields
+//		.body("resourceType", equalTo("CodeSystem"))
+//		.body("meta.tag.code", hasItem("SUBSETTED"))
+//		.body("status", equalTo("active"))
+//		.body("content", equalTo("complete"))
+//		.body("id", equalTo(FHIR_ISSUE_TYPE_CODESYSTEM_ID))
+//		//summary and optional fields
+//		.body("text", nullValue())
+//		.body("count", nullValue())
+//		.body("concept", nullValue()) 
+//		.body("copyright", nullValue()) 
+//		//requested fields
+//		.body("name", equalTo(FHIR_ISSUE_TYPE_NAME))
+//		.body("url", notNullValue());
+	}
+	
+	@Test
+	public void GET_CodeSystem_Elements_Unrecognized() throws Exception {
+//		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+//		.param("_elements", "xyz", "abcs")
+//	 	.pathParam("id", FHIR_ISSUE_TYPE_CODESYSTEM_ID) 
+//		.when().get("/CodeSystem/{id}")
+//		.then() 
+//		.statusCode(200)
+//		//mandatory fields
+//		.body("resourceType", equalTo("CodeSystem"))
+//		.body("meta.tag.code", hasItem("SUBSETTED"))
+//		.body("status", equalTo("active"))
+//		.body("content", equalTo("complete"))
+//		.body("id", equalTo(FHIR_ISSUE_TYPE_CODESYSTEM_ID))
+//		//summary and optional fields
+//		.body("text", nullValue())
+//		.body("count", nullValue())
+//		.body("concept", nullValue()) 
+//		.body("copyright", nullValue()) 
+//		//requested fields
+//		.body("name",  nullValue())
+//		.body("url",  nullValue());
+	}
+	
+	@Test
+	public void GET_CodeSystemId() throws Exception {
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.when().get(CODESYSTEM_ID, getTestCodeSystemId())
 			.then()
 			.statusCode(200)
 			.body("resourceType", equalTo("CodeSystem"))
-			.body("content", equalTo("not-present"))
 			.body("status", equalTo("active"));
-	}
-	
-	@Test
-	public void getFhirCodeSystemTest() {
-		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.param("_summary", false)
-		 	.pathParam("id", FHIR_ISSUE_TYPE_CODESYSTEM_ID) 
-			.when().get("/CodeSystem/{id}")
-			.then()
-			.statusCode(200)
-			.body("resourceType", equalTo("CodeSystem"))
-			.body("status", equalTo("active")) //mandatory
-			.body("name", equalTo(FHIR_ISSUE_TYPE_NAME)) //summary
-			.body("concept", notNullValue()) //optional
-			.body("copyright", containsString("2011+ HL7")); //optional;
-	}
-	
-	@Test
-	public void getFhirCodeSystemSummaryTest() {
-		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.param("_summary", true)
-		 	.pathParam("id", FHIR_ISSUE_TYPE_CODESYSTEM_ID) 
-			.when().get("/CodeSystem/{id}")
-			.then()
-			.statusCode(200)
-			.body("resourceType", equalTo("CodeSystem"))
-			.body("meta.tag.code", hasItem("SUBSETTED"))
-			.body("status", equalTo("active"))
-			.body("name", equalTo(FHIR_ISSUE_TYPE_NAME))
-			//NOT part of the summary
-			.body("concept", nullValue()) 
-			.body("copyright", nullValue());
 	}
 	
 	//Summary-count should not be allowed for non-search type operations?
 	//https://www.hl7.org/fhir/search.html#summary
-	//@Test
-	public void getFhirCodeSystemSummaryCountTest() {
+	@Test
+	public void GET_CodeSystemId_Summary_Count_BadRequest() {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.param("_summary", "count")
-		 	.pathParam("id", FHIR_ISSUE_TYPE_CODESYSTEM_ID) 
-			.when().get("/CodeSystem/{id}")
+			.queryParam("_summary", "count")
+			.when().get(CODESYSTEM_ID, getTestCodeSystemId())
 			.then()
 			.statusCode(400)
 			.body("resourceType", equalTo("OperationOutcome"))
 			.body("issue.severity", hasItem("error"))
 			.body("issue.code", hasItem("invalid"));
 	}
-	
-	@Test
-	public void getFhirCodeSystemSummaryDataTest() {
-		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.param("_summary", "data")
-		 	.pathParam("id", FHIR_ISSUE_TYPE_CODESYSTEM_ID) 
-			.when().get("/CodeSystem/{id}")
-			.then() 
-			.statusCode(200)
-			.body("resourceType", equalTo("CodeSystem"))
-			.body("meta.tag.code", hasItem("SUBSETTED"))
-			//only text, id, meta and mandatory
-			.body("text", nullValue())
-			.body("status", equalTo("active"))
-			.body("id", notNullValue())
-			.body("count", notNullValue())
-			.body("name", notNullValue())
-			.body("concept", notNullValue()) 
-			.body("copyright", notNullValue()) 
-			.body("url", notNullValue());
-	}
-	
-	//Summary-text FHIR code system (text, id, meta, mandatory)
-	@Test
-	public void getFhirCodeSystemSummaryTextTest() {
-		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.param("_summary", "text")
-		 	.pathParam("id", FHIR_ISSUE_TYPE_CODESYSTEM_ID) 
-			.when().get("/CodeSystem/{id}")
-			.then() 
-			.statusCode(200)
-			.body("resourceType", equalTo("CodeSystem"))
-			.body("meta.tag.code", hasItem("SUBSETTED"))
-			//only text, id, meta and mandatory
-			.body("text.div", equalTo("<div>A code that describes the type of issue.</div>"))
-			.body("status", equalTo("active"))
-			.body("id", notNullValue())
-			.body("count", nullValue())
-			.body("name", nullValue())
-			.body("concept", nullValue()) 
-			.body("copyright", nullValue()) 
-			.body("url", nullValue());
-	}
-	
-	@Test
-	public void getFhirCodeSystemElementsTest() {
-		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.param("_elements", "name", "url")
-		 	.pathParam("id", FHIR_ISSUE_TYPE_CODESYSTEM_ID) 
-			.when().get("/CodeSystem/{id}")
-			.then() 
-			.statusCode(200)
-			//mandatory fields
-			.body("resourceType", equalTo("CodeSystem"))
-			.body("meta.tag.code", hasItem("SUBSETTED"))
-			.body("status", equalTo("active"))
-			.body("content", equalTo("complete"))
-			.body("id", equalTo(FHIR_ISSUE_TYPE_CODESYSTEM_ID))
-			//summary and optional fields
-			.body("text", nullValue())
-			.body("count", nullValue())
-			.body("concept", nullValue()) 
-			.body("copyright", nullValue()) 
-			//requested fields
-			.body("name", equalTo(FHIR_ISSUE_TYPE_NAME))
-			.body("url", notNullValue());
-	}
-	
-	@Test
-	public void getFhirCodeSystemIncorrectElementsTest() {
-		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.param("_elements", "xyz", "abcs")
-		 	.pathParam("id", FHIR_ISSUE_TYPE_CODESYSTEM_ID) 
-			.when().get("/CodeSystem/{id}")
-			.then() 
-			.statusCode(200)
-			//mandatory fields
-			.body("resourceType", equalTo("CodeSystem"))
-			.body("meta.tag.code", hasItem("SUBSETTED"))
-			.body("status", equalTo("active"))
-			.body("content", equalTo("complete"))
-			.body("id", equalTo(FHIR_ISSUE_TYPE_CODESYSTEM_ID))
-			//summary and optional fields
-			.body("text", nullValue())
-			.body("count", nullValue())
-			.body("concept", nullValue()) 
-			.body("copyright", nullValue()) 
-			//requested fields
-			.body("name",  nullValue())
-			.body("url",  nullValue());
-	}
-	
+
 }

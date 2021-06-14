@@ -20,6 +20,7 @@ import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
 import com.b2international.snowowl.fhir.core.model.Bundle;
+import com.b2international.snowowl.fhir.core.request.codesystem.FhirCodeSystemSearchRequest.OptionKey;
 
 /**
  * @since 8.0
@@ -31,6 +32,10 @@ public final class FhirCodeSystemSearchRequestBuilder
 	@Override
 	protected SearchResourceRequest<RepositoryContext, Bundle> createSearch() {
 		return new FhirCodeSystemSearchRequest();
+	}
+
+	public FhirCodeSystemSearchRequestBuilder setSummary(String summary) {
+		return addOption(OptionKey.SUMMARY, summary);
 	}
 
 }
