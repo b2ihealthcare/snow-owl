@@ -123,7 +123,7 @@ public class BundleRestService extends AbstractRestService {
 		)
 		@ApiResponses({
 			@ApiResponse(code = 201, message = "Created", response = Void.class),
-			@ApiResponse(code = 400, message = "CodeSystem already exists in the system", response = RestApiError.class)
+			@ApiResponse(code = 400, message = "Bundle already exists in the system", response = RestApiError.class)
 		})
 		@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 		@ResponseStatus(HttpStatus.CREATED)
