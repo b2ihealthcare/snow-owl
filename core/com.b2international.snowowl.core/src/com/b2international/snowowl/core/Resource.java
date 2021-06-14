@@ -60,7 +60,7 @@ public abstract class Resource implements Serializable {
 	// FHIR property, supports markdown
 	private String purpose;
 
-	// The ID of the bundle this resource contained by
+	// The ID of the bundle this resource is contained by
 	private String bundleId;
 
 	/**
