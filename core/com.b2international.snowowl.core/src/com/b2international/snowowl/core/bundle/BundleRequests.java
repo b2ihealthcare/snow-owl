@@ -37,4 +37,8 @@ public final class BundleRequests {
 	public static BundleUpdateRequestBuilder prepareUpdateBundle(final String uniqueId) {
 		return new BundleUpdateRequestBuilder(uniqueId);
 	}
+
+	public static BundleDeleteRequestBuilder prepareDeleteBundle(final String uniqueId) {
+		return new BundleDeleteRequestBuilder(uniqueId);
+	}
 }

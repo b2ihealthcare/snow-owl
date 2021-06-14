@@ -361,7 +361,7 @@ public final class BundleApiTest extends BaseBundleApiTest {
 		final String cs3Id = createCodeSystem(subBundleId, "cs3");
 		
 		final Boolean isSuccess = BundleRequests.prepareDeleteBundle(subBundleId)
-				.build(USER, String.format("Delete bundle: %s", rootBundleId))
+				.build(USER, String.format("Delete bundle: %s", subBundleId))
 				.execute(Services.bus())
 				.getSync(1, TimeUnit.MINUTES)
 				.getResultAs(Boolean.class);
