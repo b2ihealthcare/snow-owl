@@ -15,9 +15,12 @@
  */
 package com.b2international.snowowl.fhir.core.request.codesystem;
 
+import java.util.Optional;
+
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.GetResourceRequest;
 import com.b2international.snowowl.fhir.core.model.Bundle;
+import com.b2international.snowowl.fhir.core.model.Entry;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 
 /**
@@ -34,6 +37,11 @@ final class FhirCodeSystemGetRequest extends GetResourceRequest<FhirCodeSystemSe
 	@Override
 	protected FhirCodeSystemSearchRequestBuilder createSearchRequestBuilder() {
 		return new FhirCodeSystemSearchRequestBuilder();
+	}
+	
+	@Override
+	protected Optional<CodeSystem> extractFirst(Bundle items) {
+		return items.first().map(Entry::getResource).map(CodeSystem.class::cast);
 	}
 
 }
