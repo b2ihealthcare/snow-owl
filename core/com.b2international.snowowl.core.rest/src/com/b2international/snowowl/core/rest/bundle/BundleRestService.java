@@ -122,7 +122,8 @@ public class BundleRestService extends AbstractRestService {
 		)
 		@ApiResponses({
 			@ApiResponse(code = 201, message = "Created", response = Void.class),
-			@ApiResponse(code = 400, message = "Bundle already exists in the system", response = RestApiError.class)
+			@ApiResponse(code = 400, message = "Invalid input arguments", response = RestApiError.class),
+			@ApiResponse(code = 409, message = "Bundle already exists in the system", response = RestApiError.class)
 		})
 		@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 		@ResponseStatus(HttpStatus.CREATED)
@@ -193,7 +194,7 @@ public class BundleRestService extends AbstractRestService {
 			notes="Delete a bundle with the given parameters")
 	@ApiResponses({
 		@ApiResponse(code = 204, message = "Deletion successful", response = Void.class),
-		@ApiResponse(code = 400, message = "Bundle cannot be deleted", response = RestApiError.class)
+		@ApiResponse(code = 409, message = "Bundle cannot be deleted", response = RestApiError.class)
 	})
 	@DeleteMapping(value = "/{bundleId}", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.NO_CONTENT)
