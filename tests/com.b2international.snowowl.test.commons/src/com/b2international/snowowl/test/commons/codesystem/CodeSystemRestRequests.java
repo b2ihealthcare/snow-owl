@@ -18,6 +18,7 @@ package com.b2international.snowowl.test.commons.codesystem;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import com.b2international.commons.json.Json;
@@ -110,6 +111,17 @@ public abstract class CodeSystemRestRequests {
 					"upgradeOf", upgradeOf.toString()
 				))
 				.post()
+				.then();
+	}
+	
+	public static ValidatableResponse search(String id, String expand) {
+		return givenAuthenticatedRequest(ApiTestConstants.CODESYSTEMS_API)
+				.contentType(ContentType.JSON)
+				.body(Map.of(
+						"id", Set.of(id),
+						"expand", expand
+					))
+				.post("/search")
 				.then();
 	}
 

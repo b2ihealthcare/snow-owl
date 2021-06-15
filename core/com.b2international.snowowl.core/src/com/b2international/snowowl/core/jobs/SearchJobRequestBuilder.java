@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ public final class SearchJobRequestBuilder extends SearchResourceRequestBuilder<
 
 	/**
 	 * Filter {@link RemoteJob job entries} by the assigned user.
+	 * 
 	 * @param user
 	 * @return
 	 */
@@ -43,7 +44,8 @@ public final class SearchJobRequestBuilder extends SearchResourceRequestBuilder<
 	
 	/**
 	 * Filter {@link RemoteJob job entries} by the assigned users.
-	 * @param user
+	 * 
+	 * @param users
 	 * @return
 	 */
 	public SearchJobRequestBuilder filterByUsers(Iterable<String> users) {

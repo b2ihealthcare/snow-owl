@@ -333,6 +333,7 @@ public abstract class SnomedRequests {
 	
 	/**
 	 * Returns a SNOMED CT request builder to prepare the labeling of a SNOMED CT Query Language (QL) expression (also works for ECL expressions).
+	 * 
 	 * @param expression - the QL/ECL expression to extend with labels
 	 * @return SNOMED CT Query labeler request builder
 	 */
@@ -342,7 +343,8 @@ public abstract class SnomedRequests {
 	
 	/**
 	 * Returns a SNOMED CT request builder to prepare the labeling of a list of SNOMED CT Query Language (QL) expressions (also works for ECL expressions).
-	 * @param expression - the QL/ECL expression to extend with labels
+	 * 
+	 * @param expressions - the QL/ECL expressions to extend with labels
 	 * @return SNOMED CT Query labeler request builder
 	 */
 	public static SnomedQueryLabelerRequestBuilder prepareQueryLabeler(List<String> expressions) {

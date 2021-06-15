@@ -196,6 +196,7 @@ public final class Commit implements WithScore {
 		public static final String COMMENT_PREFIX = "comment.prefix";
 		public static final String TIMESTAMP = "timestamp";
 		public static final String GROUP_ID = "groupId";
+		public static final String MERGE_SOURCE = "mergeSource";
 		private static final String DETAILS_OBJECT = "details.objects";
 		private static final String DETAILS_COMPONENT = "details.components";
 		// Sort keys

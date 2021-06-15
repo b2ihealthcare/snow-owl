@@ -93,7 +93,7 @@ public final class CodeSystemConverter extends BaseResourceConverter<ResourceDoc
 		
 		expandAvailableUpgrades(results);
 		expandExtensionOfBranchState(results);
-		expandUpgradeOfBranchState(results);
+		expandUpgradeOfInfo(results);
 	}
 
 	private void expandExtensionOfBranchState(List<CodeSystem> results) {
@@ -110,7 +110,7 @@ public final class CodeSystemConverter extends BaseResourceConverter<ResourceDoc
 		}
 	}
 	
-	private void expandUpgradeOfBranchState(List<CodeSystem> results) {
+	private void expandUpgradeOfInfo(List<CodeSystem> results) {
 		if (!expand().containsKey(CodeSystem.Expand.UPGRADE_INFO)) {
 			return;
 		}
@@ -138,44 +138,45 @@ public final class CodeSystemConverter extends BaseResourceConverter<ResourceDoc
 
 		for (CodeSystem result : results) {
 			BaseRevisionBranching branching = context().service(RepositoryManager.class).get(result.getToolingId()).service(BaseRevisionBranching.class);
-			String upgradeOfBranchPath = branchesByUpgradeOf.get(result.getUpgradeOf().withoutPath());
+			String upgradeOfCodeSystemBranchPath = branchesByUpgradeOf.get(result.getUpgradeOf().withoutPath());
 			
-			if (!Strings.isNullOrEmpty(upgradeOfBranchPath)) {
+			if (!Strings.isNullOrEmpty(upgradeOfCodeSystemBranchPath)) {
+				
 				RevisionBranch branch = branching.getBranch(result.getBranchPath());
-				BranchState branchState = branching.getBranchState(result.getBranchPath(), upgradeOfBranchPath);
+				BranchState branchState = branching.getBranchState(result.getBranchPath(), upgradeOfCodeSystemBranchPath);
 				BranchInfo mainInfo = new BranchInfo(branch.getPath(), branchState, branch.getBaseTimestamp(), branch.getHeadTimestamp());
 				
 				List<ResourceURI> availableVersions = Lists.newArrayList();
 				List<BranchInfo> versionBranchInfo = Lists.newArrayList();
-				
+
 				if (!result.getUpgradeOf().isHead()) {
+					long startTimestamp;
+					final String upgradeOfVersionBranch = context().service(ResourceURIPathResolver.class).resolve(context(), List.of(result.getUpgradeOf())).stream().findFirst().orElse("");
 
-					String extensionOfBranchPath = context().service(ResourceURIPathResolver.class).resolve(context(), List.of(result.getExtensionOf())).stream()
-							.findFirst()
-							.orElse("");
-
-					long extensionBaseTimestamp = Long.MIN_VALUE;
-					if (!Strings.isNullOrEmpty(extensionOfBranchPath)) {
-						extensionBaseTimestamp = branching.getBranch(extensionOfBranchPath).getBaseTimestamp();
+					if (!Strings.isNullOrEmpty(upgradeOfVersionBranch)) {
+						startTimestamp = branching.getBranch(upgradeOfVersionBranch).getBaseTimestamp() + 1;
+					} else {
+						startTimestamp = Long.MIN_VALUE;
 					}
 
-					versionBranchInfo = ResourceRequests.prepareSearchVersion()
+					ResourceRequests.prepareSearchVersion()
 							.all()
 							.filterByResource(result.getUpgradeOf().withoutPath())
-							.filterByEffectiveTime(extensionBaseTimestamp, Long.MAX_VALUE)
+							.filterByParentBranchPath(upgradeOfCodeSystemBranchPath)
 							.build()
 							.execute(context())
 							.stream()
 							.filter(csv -> !csv.getVersionResourceURI().isHead())
-							.map(csv -> {
+							.forEach(csv -> {
 								RevisionBranch versionBranch = branching.getBranch(csv.getBranchPath());
-								BranchState versionBranchState = branching.getBranchState(result.getBranchPath(), versionBranch.getPath());
-								if (versionBranchState == BranchState.BEHIND || versionBranchState == BranchState.DIVERGED) {
-									availableVersions.add(csv.getVersionResourceURI());
+								if (versionBranch.getBaseTimestamp() > startTimestamp) {
+									BranchState versionBranchState = branching.getBranchState(result.getBranchPath(), versionBranch.getPath());
+									if (versionBranchState == BranchState.BEHIND || versionBranchState == BranchState.DIVERGED) {
+										availableVersions.add(csv.getVersionResourceURI());
+									}
+									versionBranchInfo.add(new BranchInfo(branch.getPath(), versionBranchState, versionBranch.getBaseTimestamp(), versionBranch.getHeadTimestamp()));
 								}
-								return new BranchInfo(branch.getPath(), versionBranchState, versionBranch.getBaseTimestamp(), versionBranch.getHeadTimestamp());
-							})
-							.collect(Collectors.toList());
+							});
 				}
 				
 				result.setUpgradeInfo(new UpgradeInfo(mainInfo, versionBranchInfo, availableVersions));

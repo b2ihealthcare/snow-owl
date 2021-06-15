@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.core.request;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -26,6 +25,7 @@ import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.request.SearchResourceRequest.OptionKey;
 import com.b2international.snowowl.core.request.SearchResourceRequest.Sort;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 
 /**
@@ -79,11 +79,11 @@ public abstract class SearchResourceRequestBuilder<B extends SearchResourceReque
 	
 	/**
 	 * Filter by resource identifiers.
-	 * @param ids - a {@link Collection} of identifiers to match
+	 * @param ids - a {@link Iterable} of identifiers to match
 	 * @return this builder instance
 	 */
-	public final B filterByIds(Collection<String> ids) {
-		this.componentIds = ids == null ? null : Set.copyOf(ids);
+	public final B filterByIds(Iterable<String> ids) {
+		this.componentIds = ids == null ? null : ImmutableSet.copyOf(ids);
 		return getSelf();
 	}
 	

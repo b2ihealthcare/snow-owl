@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,15 +50,27 @@ public final class CommitInfo implements Serializable {
 			.mergeSource(doc.getMergeSource());
 	}
 	
+	public static Builder builder(final CommitInfo commitInfo) {
+		return builder()
+			.id(commitInfo.getId())
+			.branch(commitInfo.getBranch())
+			.author(commitInfo.getAuthor())
+			.comment(commitInfo.getComment())
+			.timestamp(commitInfo.getTimestamp())
+			.groupId(commitInfo.getGroupId())
+			.mergeSource(commitInfo.getMergeSource())
+			.details(commitInfo.getDetails());
+	}
+
 	public static Builder builder(final RepositoryCommitNotification notification) {
 		return builder()
-				.id(notification.getCommitId())
-				.branch(notification.getBranchPath())
-				.author(notification.getUserId())
-				.comment(notification.getComment())
-				.timestamp(notification.getCommitTimestamp())
-				.groupId(notification.getGroupId())
-				.mergeSource(notification.getMergeSource());
+			.id(notification.getCommitId())
+			.branch(notification.getBranchPath())
+			.author(notification.getUserId())
+			.comment(notification.getComment())
+			.timestamp(notification.getCommitTimestamp())
+			.groupId(notification.getGroupId())
+			.mergeSource(notification.getMergeSource());
 	}
 	
 	@JsonPOJOBuilder(withPrefix="")

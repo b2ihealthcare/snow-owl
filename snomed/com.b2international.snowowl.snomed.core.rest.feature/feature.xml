@@ -3,7 +3,7 @@
       id="com.b2international.snowowl.snomed.core.rest.feature"
       label="SNOMED CT REST API Feature"
       version="8.0.0.qualifier"
-      provider-name="B2iHealthcare">
+      provider-name="B2i Healthcare">
 
    <description url="http://b2i.sg">
       Snow Owl Terminology Server SNOMED CT RESTful API feature.

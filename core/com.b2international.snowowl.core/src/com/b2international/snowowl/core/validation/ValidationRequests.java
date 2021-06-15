@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,15 +46,14 @@ public final class ValidationRequests {
 	}
 	
 	/**
-	 * Creates a unique validation id for the given codesystem on the given branch.
+	 * Creates a unique validation id for the given code system uri.
 	 * 
-	 * @param shortName
-	 * @param codeSystemURI
+	 * @param codeSystemUri
 	 * 
 	 * @return the unique id.
 	 */
-	public static String createUniqueValidationJobKey(String codeSystemURI) {
-		return String.format("%s%s", VALIDATION_JOB_ID_PREFIX, codeSystemURI);
+	public static String createUniqueValidationJobKey(String codeSystemUri) {
+		return String.format("%s%s", VALIDATION_JOB_ID_PREFIX, codeSystemUri);
 	}
 	
 	public static boolean isValidationJob(RemoteJobEntry job) {

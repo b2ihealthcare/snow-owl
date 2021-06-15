@@ -1,6 +1,64 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 7.17.1
+
+### Bugs/Improvements
+- [index] use real-time scrolling instead of snapshot scroll when creating compare between two branches (11de246)
+- [snomed] validate incorrect partition and component identifiers when validating any SNOMED CT IDs during RF2 import (4bc59b1)
+- [snomed] improve concept preferred description change processing performance (9cb727c)
+- [api] apply alternate type rule for ComponentIdentifier type (9f50aeb)
+- [api] return with proper error response when labeling up ECL expressions via `POST /label-expressions` API (#830)
+
+## 7.17.0
+
+### Core
+- Code System API
+  * Move to `POST /upgrade` endpoint (#808)
+  * Support selecting Code System versions as sources when creating upgrades to let authors continue working on unpublished content without the need of fixing data at two places (#808, #822)
+  * Create versions on non-working branches is now disabled (#799, #810)
+
+### SNOMED CT
+- Support for SNOMED CT Concrete Value Specification (RF2 2021-07-31) (#811)
+  * Add complete support for SNOMED International Concrete Value Specification, including import and export of the new `der2_RelationshipConcreteValues` RF2 file, searching concrete values using ECL expressions and editing then classifying concrete values.
+- Add new `ignoreMissingReferencesIn` configuration option to RF2 file imports (#803)
+  * This option can be used to define SNOMED CT Reference Set IDs when importing an RF2 archive where the selected Reference Sets might reference non-existent components. (eg. SNOMED CT UK Clinical Extension, UK Edition RF2 content often released with such reference set memberships)
+- New `POST /:path/label-expressions` endpoint to label up one or more ECL expressions using the selected description type (`FSN` or `PT`) and locales (#814, #817)
+- New validation rules (#801, #804)
+  * Active terms should not contain double spaces
+  * Active terms should be capitalized or have `Entire term case sensitive` case significance
+  * Spacing around hyphens should be consistent in active terms
+  * In active terms, spaces should not precede commas, colons, semicolons or full stops
+  * Descriptions which are not Fully Specified Names should not contain semantic tags
+  * The fully specified names of active concept should contain a bracketed suffix (semantic tag)
+  * Terms should only contain ASCII characters
+  * Fully specified names should not contain <, >, &, %, $, @, # characters
+  * Synonyms should not contain $, @ characters
+  * Brackets in active terms should balance and be sequentially valid (in correct order)
+  * FSN terms should not duplicate other FSN terms, regardless of case
+  * Synonyms should not duplicate other synonyms, regardless of case
+  * Reference Sets should not contain retired concepts
+  * Reference Sets should not contain retired descriptions
+
+### FHIR API
+- Add initial support for FHIR Search Parameters, like `_id`, `_name` (#806)
+- Add initial support for FHIR `$validate-code` operation endpoints (#816)
+
+### Bugs/Improvements
+- [index] use segment diff to compute accurate base/head timestamps when merging empty branches (#807)
+- [index] support indexing fields with type `double` (b275329)
+- [index] don't create "null" strings when mapping results to String[] (c78a710)
+- [index] support exlucing non-property type changes when comparing branches (#815, #818, #825)
+- [index] cache rootField and fieldPaths to prevent recomputing them when processing larger commits (1cb9e6a)
+- [index] compute property diffs only for FSNs during change processing to reduce memory pressure (fe6ed78)
+- [core] improve concept map compare comment merge phase to avoid exponential complexity and never ending compares (67d20d6)
+- [snomed] fixed an issue where importing released version of a component did not set the `released` flag to `true` after RF2 import (#802)
+- [classification] commit classification relationship/concrete value changes in batches (#809)
+- [quality] fix major and minor code smells (#819, #824) Thank you for the contribution @eranhash!
+
+### Dependencies
+- Upgrade [snomed-ecl](https://github.com/b2ihealthcare/snomed-ecl) to 1.4.3 (#826)
+
 ## 7.16.2
 
 ### Bugs/Improvements

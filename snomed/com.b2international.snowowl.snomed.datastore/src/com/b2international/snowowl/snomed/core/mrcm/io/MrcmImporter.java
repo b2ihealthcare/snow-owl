@@ -31,7 +31,7 @@ public interface MrcmImporter {
 	 * 
 	 * @param resourceUri
 	 * @param authorizationToken - the authorization token to authenticate the user
-	 * @param username
+	 * @param username - the author of the import
 	 * @param source - the MRCM file to process and import.
 	 */
 	void doImport(ResourceURI resourceUri, String authorizationToken, String username, InputStream source);
