@@ -49,7 +49,7 @@ import io.swagger.annotations.ApiResponses;
 /**
  * @since 8.0
  */
-@Api(value = "Bundles", tags = { "resources" })
+@Api(value = "Resources", tags = { "resources" })
 @RestController
 @RequestMapping("/bundles")
 public class BundleRestService extends AbstractRestService {
