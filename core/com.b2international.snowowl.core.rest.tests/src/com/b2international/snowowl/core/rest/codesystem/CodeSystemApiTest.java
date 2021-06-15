@@ -364,19 +364,6 @@ public class CodeSystemApiTest {
 	}
 	
 	@Test
-	public void codesystem21_UpdateBundleId() {
-		final String codeSystemId = "cs21";
-		final Map<String, Object> requestBody = prepareCodeSystemCreateRequestBody(codeSystemId);
-		assertCodeSystemCreated(requestBody);
-		
-		final Json updateRequestBody = Json.object("bundleId", "updated-bundle-id");
-		
-		assertCodeSystemUpdated(codeSystemId, updateRequestBody);
-		assertCodeSystemHasAttributeValue(codeSystemId, "bundleId", "updated-bundle-id");
-	}
-
-	
-	@Test
 	public void codesystem21_UpdateExtensionOf() {
 		final String parentCodeSystemId = "cs13";
 		final Json parentRequestBody = prepareCodeSystemCreateRequestBody(parentCodeSystemId);
@@ -461,6 +448,18 @@ public class CodeSystemApiTest {
 				.execute(Services.bus())
 				.getSync()
 				.isDeleted()).isTrue();
+	}
+	
+	@Test
+	public void codesystem24_UpdateBundleId() {
+		final String codeSystemId = "cs24";
+		final Map<String, Object> requestBody = prepareCodeSystemCreateRequestBody(codeSystemId);
+		assertCodeSystemCreated(requestBody);
+		
+		final Json updateRequestBody = Json.object("bundleId", "updated-bundle-id");
+		
+		assertCodeSystemUpdated(codeSystemId, updateRequestBody);
+		assertCodeSystemHasAttributeValue(codeSystemId, "bundleId", "updated-bundle-id");
 	}
 	
 	@After
