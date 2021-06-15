@@ -153,7 +153,7 @@ public class BundleRestService extends AbstractRestService {
 			notes="Update a bundle with the given parameters")
 	@ApiResponses({
 		@ApiResponse(code = 204, message = "No content", response = Void.class),
-		@ApiResponse(code = 400, message = "Bundle cannot be updated", response = RestApiError.class)
+		@ApiResponse(code = 400, message = "Bad Request", response = RestApiError.class)
 	})
 	@PutMapping(value = "/{bundleId}", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.NO_CONTENT)
