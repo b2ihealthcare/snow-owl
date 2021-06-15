@@ -40,7 +40,7 @@ public final class BundleApiTest extends BaseBundleApiTest {
 		final String id = BundleRequests.prepareNewBundle()
 				.setUrl(URL)
 				.setTitle(TITLE)
-				.build(USER, String.format("Create bundle"))
+				.build(USER, "Create bundle")
 				.execute(Services.bus())
 				.getSync(1, TimeUnit.MINUTES)
 				.getResultAs(String.class);
@@ -55,7 +55,7 @@ public final class BundleApiTest extends BaseBundleApiTest {
 			.setId(null)
 			.setUrl(URL)
 			.setTitle(TITLE)
-			.build(USER, String.format("Create bundle"));
+			.build(USER, "Create bundle");
 	}
 	
 	@Test(expected = BadRequestException.class)
@@ -63,7 +63,7 @@ public final class BundleApiTest extends BaseBundleApiTest {
 		BundleRequests.prepareNewBundle()
 			.setId(id)
 			.setUrl(URL)
-			.build(USER, String.format("Create bundle"));
+			.build(USER, "Create bundle");
 	}
 	
 	@Test(expected = BadRequestException.class)
@@ -71,7 +71,7 @@ public final class BundleApiTest extends BaseBundleApiTest {
 		BundleRequests.prepareNewBundle()
 			.setId(id)
 			.setTitle(TITLE)
-			.build(USER, String.format("Create bundle"));
+			.build(USER, "Create bundle");
 	}
 	
 	@Test
