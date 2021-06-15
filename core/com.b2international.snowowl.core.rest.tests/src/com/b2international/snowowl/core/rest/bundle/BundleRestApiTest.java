@@ -130,10 +130,11 @@ public class BundleRestApiTest {
 		assertCodeSystemCreated(prepareCodeSystemCreateRequestBody("cs3").with("bundleId", subBundleId));
 		
 		assertBundleSearch(Map.of("id", Set.of(rootBundleId), "expand", "resources()")).and()
-			.body("items.resources.total", equalTo(3))
-			.body("items.resources.items", hasItem((hasEntry("id", "cs1"))))
-			.body("items.resources.items", hasItem((hasEntry("id", "cs2"))))
-			.body("items.resources.items", hasItem((hasEntry("id", subBundleId))))
+			.body("total", equalTo(1))
+			.body("items[0].resources.total", equalTo(3))
+			.body("items[0].resources.items", hasItem(hasEntry("id", "cs1")))
+			.body("items[0].resources.items", hasItem(hasEntry("id", "cs2")))
+			.body("items[0].resources.items", hasItem(hasEntry("id", subBundleId)))
 			.assertThat();
 	}
 	
