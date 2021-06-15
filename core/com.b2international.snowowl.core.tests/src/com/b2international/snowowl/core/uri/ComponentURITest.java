@@ -63,7 +63,7 @@ public class ComponentURITest {
 		final String identifier = "123456789";
 		ComponentURI componentURI = ComponentURI.of(codeSystemURI, terminologyComponentId, identifier);
 		assertEquals("SNOMEDCT", componentURI.resourceId());
-		assertEquals("codesystem/SNOMEDCT/2019-09-30", componentURI.resourceUri().toString());
+		assertEquals("codesystems/SNOMEDCT/2019-09-30", componentURI.resourceUri().toString());
 		assertEquals(150, componentURI.terminologyComponentId());
 		assertEquals(identifier, componentURI.identifier());
 		assertEquals(ComponentIdentifier.of(terminologyComponentId, identifier), componentURI.toComponentIdentifier());
