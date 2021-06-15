@@ -55,7 +55,7 @@ public class CodeSystemRequests {
 		return new CodeSystemCompleteUpgradeRequestBuilder(codeSystemId);
 	}
 	
-	public static CodeSystemUpgradeSynchronizationRequestBuilder prepareUpgradeSynchronization(CodeSystemURI codeSystemId, CodeSystemURI source) {
+	public static CodeSystemUpgradeSynchronizationRequestBuilder prepareUpgradeSynchronization(ResourceURI codeSystemId, ResourceURI source) {
 		return new CodeSystemUpgradeSynchronizationRequestBuilder(codeSystemId, source);
 	}
 	

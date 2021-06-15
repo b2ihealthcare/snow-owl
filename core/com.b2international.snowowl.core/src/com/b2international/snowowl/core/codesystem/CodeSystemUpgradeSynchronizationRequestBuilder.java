@@ -15,23 +15,23 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
+import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.context.ResourceRepositoryRequestBuilder;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.request.RepositoryRequestBuilder;
-import com.b2international.snowowl.core.uri.CodeSystemURI;
 
 /**
  * @since 7.17
  */
 public final class CodeSystemUpgradeSynchronizationRequestBuilder
 		extends BaseRequestBuilder<CodeSystemUpgradeSynchronizationRequestBuilder, RepositoryContext, Boolean>
-		implements RepositoryRequestBuilder<Boolean> {
+		implements ResourceRepositoryRequestBuilder<Boolean> {
 
-	private final CodeSystemURI codeSystemId;
-	private final CodeSystemURI source;
+	private final ResourceURI codeSystemId;
+	private final ResourceURI source;
 
-	public CodeSystemUpgradeSynchronizationRequestBuilder(CodeSystemURI codeSystemId, CodeSystemURI source) {
+	public CodeSystemUpgradeSynchronizationRequestBuilder(ResourceURI codeSystemId, ResourceURI source) {
 		this.codeSystemId = codeSystemId;
 		this.source = source;
 	}

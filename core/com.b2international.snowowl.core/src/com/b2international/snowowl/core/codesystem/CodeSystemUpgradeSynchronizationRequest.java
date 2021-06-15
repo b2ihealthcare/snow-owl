@@ -20,11 +20,15 @@ import java.util.List;
 import javax.validation.constraints.NotNull;
 
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.context.ResourceRepositoryCommitRequestBuilder;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.identity.User;
+import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
-import com.b2international.snowowl.core.uri.CodeSystemURI;
+import com.b2international.snowowl.core.request.BranchRequest;
 import com.b2international.snowowl.core.uri.ResourceURIPathResolver;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -37,13 +41,13 @@ public final class CodeSystemUpgradeSynchronizationRequest implements Request<Re
 	
 	@JsonProperty
 	@NotNull
-	private CodeSystemURI codeSystemId;
+	private ResourceURI codeSystemId;
 	
 	@JsonProperty
 	@NotNull
-	private CodeSystemURI source;
+	private ResourceURI source;
 
-	CodeSystemUpgradeSynchronizationRequest(CodeSystemURI codeSystemId, CodeSystemURI source) {
+	CodeSystemUpgradeSynchronizationRequest(ResourceURI codeSystemId, ResourceURI source) {
 		this.codeSystemId = codeSystemId;
 		this.source = source;
 	}
@@ -52,7 +56,7 @@ public final class CodeSystemUpgradeSynchronizationRequest implements Request<Re
 	public Boolean execute(RepositoryContext context) {
 		final String message = String.format("Merge %s into %s", source, codeSystemId);
 		
-		CodeSystem codeSystem = CodeSystemRequests.prepareGetCodeSystem(codeSystemId.getCodeSystem()).build().execute(context);
+		CodeSystem codeSystem = CodeSystemRequests.prepareGetCodeSystem(codeSystemId.getResourceId()).build().execute(context);
 		
 		if (codeSystem.getUpgradeOf() == null) {
 			throw new BadRequestException("Code System '%s' is not an Upgrade Code System. It cannot be synchronized with '%s'.", codeSystemId, source);
@@ -70,22 +74,22 @@ public final class CodeSystemUpgradeSynchronizationRequest implements Request<Re
 			.setUserId(context.service(User.class).getUsername())
 			.setCommitComment(message)
 			.setSquash(false)
-			.build()
+			.build(codeSystem.getToolingId())
+			.getRequest()
 			.execute(context);
 
 		if (!codeSystem.getUpgradeOf().equals(source)) {
-			return RepositoryRequests.prepareCommit()
-					.setCommitComment(String.format("Update upgradeOf from '%s' to '%s'", codeSystem.getUpgradeOf(), source))
+			return new BranchRequest<>(Branch.MAIN_PATH,
+				new ResourceRepositoryCommitRequestBuilder()
 					.setBody((tx) -> {
-						CodeSystemEntry entry = tx.lookup(codeSystemId.getCodeSystem(), CodeSystemEntry.class);
-						tx.add(CodeSystemEntry.builder(entry).upgradeOf(source).build());
-						tx.commit();
+						ResourceDocument entry = tx.lookup(codeSystemId.getResourceId(), ResourceDocument.class);
+						tx.add(ResourceDocument.builder(entry).upgradeOf(source).build());
+						tx.commit(String.format("Update upgradeOf from '%s' to '%s'", codeSystem.getUpgradeOf(), source));
 						return Boolean.TRUE;
 					})
-					.build(codeSystem.getCodeSystemURI())
-					.getRequest()
-					.execute(context)
-					.getResultAs(Boolean.class);
+					.setCommitComment(String.format("Complete upgrade of %s to %s", codeSystem.getUpgradeOf().getResourceId(), codeSystem.getExtensionOf()))
+					.build()
+			).execute(context).getResultAs(Boolean.class);
 		} else {
 			return Boolean.TRUE;
 		}

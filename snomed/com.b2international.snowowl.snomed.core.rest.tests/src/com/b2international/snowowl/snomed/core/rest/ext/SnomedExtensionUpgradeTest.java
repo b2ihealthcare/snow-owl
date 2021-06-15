@@ -48,10 +48,8 @@ import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.codesystem.CodeSystems;
-import com.b2international.snowowl.core.date.DateFormats;
-import com.b2international.snowowl.core.date.Dates;
-import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.merge.Merge;
+import com.b2international.snowowl.core.version.Version;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
@@ -1098,35 +1096,34 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		CodeSystem extension = createExtension(latestInternationalVersion, branchPath.lastSegment());
 		
 		// new SI concept
-		createConcept(new CodeSystemURI(SNOMEDCT), createConceptRequestBody(Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE));
+		createConcept(SnomedContentRule.SNOMEDCT, createConceptRequestBody(Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE));
 		
 		// create a new INT version
-		String effectiveDate = getNextAvailableEffectiveDateAsString(SNOMEDCT);
-		createVersion(SNOMEDCT, effectiveDate, effectiveDate).statusCode(201);
-		CodeSystemURI upgradeVersion = CodeSystemURI.branch(SNOMEDCT, effectiveDate);
-		
+		LocalDate effectiveDate = getNextAvailableEffectiveDate(SNOMEDCT);
+		createVersion(SNOMEDCT, effectiveDate).statusCode(201);
+		ResourceURI upgradeVersion = CodeSystem.uri(SNOMEDCT, effectiveDate.toString());
 		
 		// new SE concept
 		String extensionModuleId = createModule(extension);
-		createConcept(extension.getCodeSystemURI(), createConceptRequestBody(Concepts.ROOT_CONCEPT, extensionModuleId));
+		createConcept(extension.getResourceURI(), createConceptRequestBody(Concepts.ROOT_CONCEPT, extensionModuleId));
 		
 		// version extension
-		String effectiveDate2 = Dates.now(DateFormats.SHORT);
-		createVersion(extension.getShortName(), effectiveDate2, effectiveDate2).statusCode(201);
-		CodeSystemURI extensionVersion = CodeSystemURI.branch(extension.getShortName(), effectiveDate2);
+		LocalDate effectiveDate2 = LocalDate.now();
+		createVersion(extension.getId(), effectiveDate2).statusCode(201);
+		ResourceURI extensionVersion = CodeSystem.uri(extension.getId(), effectiveDate2.toString());
 		
 		// new SE concept
-		createConcept(extension.getCodeSystemURI(), createConceptRequestBody(Concepts.ROOT_CONCEPT, extensionModuleId));
+		createConcept(extension.getResourceURI(), createConceptRequestBody(Concepts.ROOT_CONCEPT, extensionModuleId));
 		
 		// version extension
-		String effectiveDate3 =  getNextAvailableEffectiveDateAsString(extension.getShortName());
-		createVersion(extension.getShortName(), effectiveDate3, effectiveDate3).statusCode(201);
-		CodeSystemURI extensionVersion2 = CodeSystemURI.branch(extension.getShortName(), effectiveDate3);
+		LocalDate effectiveDate3 =  getNextAvailableEffectiveDate(extension.getId());
+		createVersion(extension.getId(), effectiveDate3).statusCode(201);
+		ResourceURI extensionVersion2 = CodeSystem.uri(extension.getId(), effectiveDate3.toString());
 		
 		// start upgrade to the new available upgrade version
 		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extensionVersion, upgradeVersion);
 		
-		CodeSystems expandedCodeSystems = CodeSystemRestRequests.search(upgradeCodeSystem.getShortName(), CodeSystem.Expand.UPGRADE_INFO + "()").extract().as(CodeSystems.class);
+		CodeSystems expandedCodeSystems = CodeSystemRestRequests.search(upgradeCodeSystem.getId(), CodeSystem.Expand.UPGRADE_INFO + "()").extract().as(CodeSystems.class);
 		
 		assertEquals(upgradeVersion, upgradeCodeSystem.getExtensionOf());
 		assertThat(expandedCodeSystems.first().get().getUpgradeInfo().getAvailableVersions()).doesNotContainSequence(extensionVersion);
@@ -1139,35 +1136,35 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		CodeSystem extension = createExtension(latestInternationalVersion, branchPath.lastSegment());
 		
 		// new SI concept
-		createConcept(new CodeSystemURI(SNOMEDCT), createConceptRequestBody(Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE));
+		createConcept(SnomedContentRule.SNOMEDCT, createConceptRequestBody(Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE));
 		
 		// create a new INT version
-		String effectiveDate = getNextAvailableEffectiveDateAsString(SNOMEDCT);
-		createVersion(SNOMEDCT, effectiveDate, effectiveDate).statusCode(201);
-		CodeSystemURI upgradeVersion = CodeSystemURI.branch(SNOMEDCT, effectiveDate);
+		LocalDate effectiveDate = getNextAvailableEffectiveDate(SNOMEDCT);
+		createVersion(SNOMEDCT, effectiveDate).statusCode(201);
+		ResourceURI upgradeVersion = CodeSystem.uri(SNOMEDCT, effectiveDate.toString());
 		
 		
 		// new SE concept
 		String extensionModuleId = createModule(extension);
-		createConcept(extension.getCodeSystemURI(), createConceptRequestBody(Concepts.ROOT_CONCEPT, extensionModuleId));
+		createConcept(extension.getResourceURI(), createConceptRequestBody(Concepts.ROOT_CONCEPT, extensionModuleId));
 		
 		// version extension
-		String effectiveDate2 = Dates.now(DateFormats.SHORT);
-		createVersion(extension.getShortName(), effectiveDate2, effectiveDate2).statusCode(201);
-		CodeSystemURI extensionVersion = CodeSystemURI.branch(extension.getShortName(), effectiveDate2);
+		LocalDate effectiveDate2 = LocalDate.now();
+		createVersion(extension.getId(), effectiveDate2).statusCode(201);
+		ResourceURI extensionVersion = CodeSystem.uri(extension.getId(), effectiveDate2.toString());
 		
 		// start upgrade to the new available upgrade version
 		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extensionVersion, upgradeVersion);
 		
 		// new SE concept
-		createConcept(extension.getCodeSystemURI(), createConceptRequestBody(Concepts.ROOT_CONCEPT, extensionModuleId));
+		createConcept(extension.getResourceURI(), createConceptRequestBody(Concepts.ROOT_CONCEPT, extensionModuleId));
 		
 		// version extension
-		String effectiveDate3 =  getNextAvailableEffectiveDateAsString(extension.getShortName());
-		createVersion(extension.getShortName(), effectiveDate3, effectiveDate3).statusCode(201);
-		CodeSystemURI extensionVersion2 = CodeSystemURI.branch(extension.getShortName(), effectiveDate3);
+		LocalDate effectiveDate3 =  getNextAvailableEffectiveDate(extension.getId());
+		createVersion(extension.getId(), effectiveDate3).statusCode(201);
+		ResourceURI extensionVersion2 = CodeSystem.uri(extension.getId(), effectiveDate3.toString());
 		
-		CodeSystems expandedCodeSystems = CodeSystemRestRequests.search(upgradeCodeSystem.getShortName(), CodeSystem.Expand.UPGRADE_INFO + "()").extract().as(CodeSystems.class);
+		CodeSystems expandedCodeSystems = CodeSystemRestRequests.search(upgradeCodeSystem.getId(), CodeSystem.Expand.UPGRADE_INFO + "()").extract().as(CodeSystems.class);
 		
 		assertEquals(upgradeVersion, upgradeCodeSystem.getExtensionOf());
 		assertThat(expandedCodeSystems.first().get().getUpgradeInfo().getAvailableVersions()).doesNotContainSequence(extensionVersion);
@@ -1180,35 +1177,35 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		CodeSystem extension = createExtension(latestInternationalVersion, branchPath.lastSegment());
 		
 		// new SI concept
-		createConcept(new CodeSystemURI(SNOMEDCT), createConceptRequestBody(Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE));
+		createConcept(SnomedContentRule.SNOMEDCT, createConceptRequestBody(Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE));
 		
 		// create a new INT version
-		String effectiveDate = getNextAvailableEffectiveDateAsString(SNOMEDCT);
-		createVersion(SNOMEDCT, effectiveDate, effectiveDate).statusCode(201);
-		CodeSystemURI upgradeVersion = CodeSystemURI.branch(SNOMEDCT, effectiveDate);
+		LocalDate effectiveDate = getNextAvailableEffectiveDate(SNOMEDCT);
+		createVersion(SNOMEDCT, effectiveDate).statusCode(201);
+		ResourceURI upgradeVersion = CodeSystem.uri(SNOMEDCT, effectiveDate.toString());
 		
 		
 		// new SE concept
 		String extensionModuleId = createModule(extension);
-		createConcept(extension.getCodeSystemURI(), createConceptRequestBody(Concepts.ROOT_CONCEPT, extensionModuleId));
+		createConcept(extension.getResourceURI(), createConceptRequestBody(Concepts.ROOT_CONCEPT, extensionModuleId));
 		
 		// version extension
-		String effectiveDate2 = Dates.now(DateFormats.SHORT);
-		createVersion(extension.getShortName(), effectiveDate2, effectiveDate2).statusCode(201);
-		CodeSystemURI extensionVersion = CodeSystemURI.branch(extension.getShortName(), effectiveDate2);
+		LocalDate effectiveDate2 = LocalDate.now();
+		createVersion(extension.getId(), effectiveDate2).statusCode(201);
+		ResourceURI extensionVersion = CodeSystem.uri(extension.getId(), effectiveDate2.toString());
 		
 		// new SE concept
-		createConcept(extension.getCodeSystemURI(), createConceptRequestBody(Concepts.ROOT_CONCEPT, extensionModuleId));
+		createConcept(extension.getResourceURI(), createConceptRequestBody(Concepts.ROOT_CONCEPT, extensionModuleId));
 		
 		// version extension
-		String effectiveDate3 =  getNextAvailableEffectiveDateAsString(extension.getShortName());
-		createVersion(extension.getShortName(), effectiveDate3, effectiveDate3).statusCode(201);
-		CodeSystemURI extensionVersion2 = CodeSystemURI.branch(extension.getShortName(), effectiveDate3);
+		LocalDate effectiveDate3 =  getNextAvailableEffectiveDate(extension.getId());
+		createVersion(extension.getId(), effectiveDate3).statusCode(201);
+		ResourceURI extensionVersion2 = CodeSystem.uri(extension.getId(), effectiveDate3.toString());
 		
 		// start upgrade to the new available upgrade version
 		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extensionVersion, upgradeVersion);
 		
-		CodeSystems expandedCodeSystems = CodeSystemRestRequests.search(upgradeCodeSystem.getShortName(), CodeSystem.Expand.UPGRADE_INFO + "()").extract().as(CodeSystems.class);
+		CodeSystems expandedCodeSystems = CodeSystemRestRequests.search(upgradeCodeSystem.getId(), CodeSystem.Expand.UPGRADE_INFO + "()").extract().as(CodeSystems.class);
 		
 		assertEquals(upgradeVersion, upgradeCodeSystem.getExtensionOf());
 		assertThat(expandedCodeSystems.first().get().getUpgradeInfo().getAvailableVersions()).doesNotContainSequence(extensionVersion);
@@ -1218,13 +1215,13 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		IBranchPath upgradeBranch = BranchPathUtils.createPath(upgradeCodeSystem.getBranchPath());
 		merge(extensionBranch, upgradeBranch, "Merged new concept from child branch").body("status", equalTo(Merge.Status.COMPLETED.name()));	
 		
-		Boolean success = CodeSystemRequests.prepareUpgradeSynchronization(upgradeCodeSystem.getCodeSystemURI(), extension.getCodeSystemURI())
-			.build(upgradeCodeSystem.getRepositoryId())
+		Boolean success = CodeSystemRequests.prepareUpgradeSynchronization(upgradeCodeSystem.getResourceURI(), extension.getResourceURI())
+			.buildAsync()
 			.execute(getBus())
 			.getSync(1, TimeUnit.MINUTES);
 		assertTrue(success);
 		
-		CodeSystems expandedCodeSystemsAfterMerge = CodeSystemRestRequests.search(upgradeCodeSystem.getShortName(), CodeSystem.Expand.UPGRADE_INFO + "()").extract().as(CodeSystems.class);
+		CodeSystems expandedCodeSystemsAfterMerge = CodeSystemRestRequests.search(upgradeCodeSystem.getId(), CodeSystem.Expand.UPGRADE_INFO + "()").extract().as(CodeSystems.class);
 		assertThat(expandedCodeSystemsAfterMerge.first().get().getUpgradeInfo().getAvailableVersions()).isEmpty();
 	}
 	
@@ -1234,44 +1231,44 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		CodeSystem extension = createExtension(latestInternationalVersion, branchPath.lastSegment());
 		
 		// new SI concept
-		createConcept(new CodeSystemURI(SNOMEDCT), createConceptRequestBody(Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE));
+		createConcept(SnomedContentRule.SNOMEDCT, createConceptRequestBody(Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE));
 		
 		// create a new INT version
-		String effectiveDate = getNextAvailableEffectiveDateAsString(SNOMEDCT);
-		createVersion(SNOMEDCT, effectiveDate, effectiveDate).statusCode(201);
-		CodeSystemURI upgradeVersion = CodeSystemURI.branch(SNOMEDCT, effectiveDate);
+		LocalDate effectiveDate = getNextAvailableEffectiveDate(SNOMEDCT);
+		createVersion(SNOMEDCT, effectiveDate).statusCode(201);
+		ResourceURI upgradeVersion = CodeSystem.uri(SNOMEDCT, effectiveDate.toString());
 		
 		
 		// new SE concept
 		String extensionModuleId = createModule(extension);
-		createConcept(extension.getCodeSystemURI(), createConceptRequestBody(Concepts.ROOT_CONCEPT, extensionModuleId));
+		createConcept(extension.getResourceURI(), createConceptRequestBody(Concepts.ROOT_CONCEPT, extensionModuleId));
 		
 		// version extension
-		String effectiveDate2 = Dates.now(DateFormats.SHORT);
-		createVersion(extension.getShortName(), effectiveDate2, effectiveDate2).statusCode(201);
-		CodeSystemURI extensionVersion = CodeSystemURI.branch(extension.getShortName(), effectiveDate2);
+		LocalDate effectiveDate2 = LocalDate.now();
+		createVersion(extension.getId(), effectiveDate2).statusCode(201);
+		ResourceURI extensionVersion = CodeSystem.uri(extension.getId(), effectiveDate2.toString());
 		
 		// new SE concept
-		createConcept(extension.getCodeSystemURI(), createConceptRequestBody(Concepts.ROOT_CONCEPT, extensionModuleId));
+		createConcept(extension.getResourceURI(), createConceptRequestBody(Concepts.ROOT_CONCEPT, extensionModuleId));
 		
 		// version extension
-		String effectiveDate3 =  getNextAvailableEffectiveDateAsString(extension.getShortName());
-		createVersion(extension.getShortName(), effectiveDate3, effectiveDate3).statusCode(201);
-		CodeSystemVersion codeSystemVersion2 = CodeSystemVersionRestRequests.getVersion(extension.getShortName(), effectiveDate3).extract().as(CodeSystemVersion.class);
-		CodeSystemURI extensionVersion2 = CodeSystemURI.branch(extension.getShortName(), effectiveDate3);
+		LocalDate effectiveDate3 =  getNextAvailableEffectiveDate(extension.getId());
+		createVersion(extension.getId(), effectiveDate3).statusCode(201);
+		Version codeSystemVersion2 = CodeSystemVersionRestRequests.getVersion(extension.getId(), effectiveDate3.toString());
+		ResourceURI extensionVersion2 = CodeSystem.uri(extension.getId(), effectiveDate3.toString());
 		
 		// new SE concept
-		createConcept(extension.getCodeSystemURI(), createConceptRequestBody(Concepts.ROOT_CONCEPT, extensionModuleId));
+		createConcept(extension.getResourceURI(), createConceptRequestBody(Concepts.ROOT_CONCEPT, extensionModuleId));
 		
 		// version extension
-		String effectiveDate4 =  getNextAvailableEffectiveDateAsString(extension.getShortName());
-		createVersion(extension.getShortName(), effectiveDate4, effectiveDate4).statusCode(201);
-		CodeSystemURI extensionVersion3 = CodeSystemURI.branch(extension.getShortName(), effectiveDate4);
+		LocalDate effectiveDate4 =  getNextAvailableEffectiveDate(extension.getId());
+		createVersion(extension.getId(), effectiveDate4).statusCode(201);
+		ResourceURI extensionVersion3 = CodeSystem.uri(extension.getId(), effectiveDate4.toString());
 		
 		// start upgrade to the new available upgrade version
 		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extensionVersion, upgradeVersion);
 		
-		CodeSystems expandedCodeSystems = CodeSystemRestRequests.search(upgradeCodeSystem.getShortName(), CodeSystem.Expand.UPGRADE_INFO + "()").extract().as(CodeSystems.class);
+		CodeSystems expandedCodeSystems = CodeSystemRestRequests.search(upgradeCodeSystem.getId(), CodeSystem.Expand.UPGRADE_INFO + "()").extract().as(CodeSystems.class);
 		
 		assertEquals(upgradeVersion, upgradeCodeSystem.getExtensionOf());
 		assertThat(expandedCodeSystems.first().get().getUpgradeInfo().getAvailableVersions()).doesNotContainSequence(extensionVersion);
@@ -1281,13 +1278,13 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		IBranchPath upgradeBranch = BranchPathUtils.createPath(upgradeCodeSystem.getBranchPath());
 		merge(extensionBranch, upgradeBranch, "Merged new concept from child branch").body("status", equalTo(Merge.Status.COMPLETED.name()));	
 		
-		Boolean success = CodeSystemRequests.prepareUpgradeSynchronization(upgradeCodeSystem.getCodeSystemURI(), extensionVersion2)
-				.build(upgradeCodeSystem.getRepositoryId())
+		Boolean success = CodeSystemRequests.prepareUpgradeSynchronization(upgradeCodeSystem.getResourceURI(), extensionVersion2)
+				.buildAsync()
 				.execute(getBus())
 				.getSync(1, TimeUnit.MINUTES);
 		assertTrue(success);
 		
-		CodeSystems expandedCodeSystemsAfterMerge = CodeSystemRestRequests.search(upgradeCodeSystem.getShortName(), CodeSystem.Expand.UPGRADE_INFO + "()").extract().as(CodeSystems.class);
+		CodeSystems expandedCodeSystemsAfterMerge = CodeSystemRestRequests.search(upgradeCodeSystem.getId(), CodeSystem.Expand.UPGRADE_INFO + "()").extract().as(CodeSystems.class);
 		assertThat(expandedCodeSystemsAfterMerge.first().get().getUpgradeInfo().getAvailableVersions()).containsOnly(extensionVersion3);
 	}
 	

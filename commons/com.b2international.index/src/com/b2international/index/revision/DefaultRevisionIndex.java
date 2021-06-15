@@ -24,10 +24,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import com.b2international.index.BulkDelete;
-import com.b2international.index.Index;
-import com.b2international.index.Searcher;
-import com.b2international.index.Writer;
+import com.b2international.index.*;
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
