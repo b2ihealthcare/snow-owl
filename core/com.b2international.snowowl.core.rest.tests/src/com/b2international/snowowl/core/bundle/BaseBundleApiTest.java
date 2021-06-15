@@ -22,6 +22,7 @@ import org.junit.Before;
 import org.junit.Rule;
 
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.test.commons.Services;
 import com.b2international.snowowl.test.commons.TestMethodNameRule;
@@ -33,7 +34,7 @@ import com.b2international.snowowl.test.commons.rest.RestExtensions;
 abstract class BaseBundleApiTest {
 	
 	static final String USER = RestExtensions.USER;
-	static final String ROOT = "-1";
+	static final String ROOT = IComponent.ROOT_ID;
 	static final String URL = "https://b2i.sg";
 	static final String TITLE = "Bundle title";
 	static final String LANGUAGE = "en";

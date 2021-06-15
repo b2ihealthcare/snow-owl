@@ -16,6 +16,7 @@
 package com.b2international.snowowl.core.request;
 
 import com.b2international.snowowl.core.context.ResourceRepositoryTransactionRequestBuilder;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
@@ -29,7 +30,7 @@ public abstract class BaseResourceCreateRequestBuilder <RB extends BaseResourceC
 		implements ResourceRepositoryTransactionRequestBuilder<String> {
 	
 	private String id = IDs.randomBase64UUID();
-	private String bundleId = "-1";
+	private String bundleId = IComponent.ROOT_ID;
 	
 	private String url;
 	private String title;
