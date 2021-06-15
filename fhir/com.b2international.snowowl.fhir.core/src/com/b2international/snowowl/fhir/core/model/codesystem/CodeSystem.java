@@ -67,6 +67,8 @@ import io.swagger.annotations.ApiModel;
 */
 public class CodeSystem extends MetadataResource {
 
+	private static final long serialVersionUID = 1L;
+
 	// FHIR header "resourceType" : "CodeSystem",
 	@Mandatory
 	@JsonProperty

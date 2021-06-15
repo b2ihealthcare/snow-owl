@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.fhir.core.model;
 
+import java.io.Serializable;
 import java.util.Collection;
 
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
@@ -22,22 +23,35 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * FHIR Entry BackBone element in the Bundle domain object
+ * 
  * @since 6.3
  */
-public class Entry {
+public final class Entry implements Serializable {
 	
-	@JsonProperty("link")
+	private static final long serialVersionUID = 1L;
+
 	private Collection<String> links;
 	
-	@JsonProperty
 	private Uri fullUrl;
 	
-	@JsonProperty
 	private FhirResource resource;
 	
 	public Entry(final Uri fullUrl, final FhirResource resource) {
 		this.fullUrl = fullUrl;
 		this.resource = resource;
+	}
+
+	@JsonProperty("link")
+	public Collection<String> getLinks() {
+		return links;
+	}
+	
+	public Uri getFullUrl() {
+		return fullUrl;
+	}
+	
+	public FhirResource getResource() {
+		return resource;
 	}
 
 }
