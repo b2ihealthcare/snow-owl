@@ -62,6 +62,7 @@ public final class Bundle extends Resource {
 				.setOwner(getOwner())
 				.setContact(getContact())
 				.setUsage(getUsage())
-				.setPurpose(getPurpose());
+				.setPurpose(getPurpose())
+				.setBundleId(getBundleId());
 	}
 }
