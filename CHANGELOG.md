@@ -1,6 +1,15 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 7.17.1
+
+### Bugs/Improvements
+- [index] use real-time scrolling instead of snapshot scroll when creating compare between two branches (11de246)
+- [snomed] validate incorrect partition and component identifiers when validating any SNOMED CT IDs during RF2 import (4bc59b1)
+- [snomed] improve concept preferred description change processing performance (9cb727c)
+- [api] apply alternate type rule for ComponentIdentifier type (9f50aeb)
+- [api] return with proper error response when labeling up ECL expressions via `POST /label-expressions` API (#830)
+
 ## 7.17.0
 
 ### Core
