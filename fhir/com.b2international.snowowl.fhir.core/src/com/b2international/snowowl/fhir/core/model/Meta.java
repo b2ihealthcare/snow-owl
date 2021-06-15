@@ -115,7 +115,9 @@ public class Meta extends Element {
 		}
 
 		public Builder addTag(Coding tag) {
-			tags.add(tag);
+			if (tag != null) {
+				tags.add(tag);
+			}
 			return getSelf();
 		}
 		

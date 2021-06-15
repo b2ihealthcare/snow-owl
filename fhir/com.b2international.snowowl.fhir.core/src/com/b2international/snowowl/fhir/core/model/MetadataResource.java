@@ -20,6 +20,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Set;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -28,18 +29,16 @@ import com.b2international.snowowl.fhir.core.FhirConstants;
 import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
 import com.b2international.snowowl.fhir.core.exceptions.FhirException;
-import com.b2international.snowowl.fhir.core.model.dt.Code;
-import com.b2international.snowowl.fhir.core.model.dt.CodeableConcept;
-import com.b2international.snowowl.fhir.core.model.dt.Id;
-import com.b2international.snowowl.fhir.core.model.dt.Identifier;
-import com.b2international.snowowl.fhir.core.model.dt.Narrative;
-import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.b2international.snowowl.fhir.core.model.dt.*;
 import com.b2international.snowowl.fhir.core.model.usagecontext.UsageContext;
-import com.b2international.snowowl.fhir.core.search.*;
-import com.fasterxml.jackson.annotation.JsonFilter;
+import com.b2international.snowowl.fhir.core.search.Filterable;
+import com.b2international.snowowl.fhir.core.search.Mandatory;
+import com.b2international.snowowl.fhir.core.search.Searchable;
+import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -53,10 +52,41 @@ import com.google.common.collect.Sets;
 //@JsonFilter(FhirBeanPropertyFilter.FILTER_NAME)
 public abstract class MetadataResource extends DomainResource {
 	
-	//same as logical id
+	/**
+	 * @since 8.0
+	 */
+	public static abstract class Fields extends FhirResource.Fields {
+		
+		public static final String URL = "url";
+		public static final String IDENTIFIER = "identifier";
+		public static final String VERSION = "version";
+		public static final String NAME = "name";
+		public static final String TITLE = "title";
+		public static final String STATUS = "status";
+		public static final String DATE = "date";
+		public static final String PUBLISHER = "publisher";
+		// XXX do we need contacts???
+		public static final String DESCRIPTION = "description";
+		// XXX do we need usageContexts???
+		// XXX do we need jurisdictions???
+		public static final String PURPOSE = "purpose";
+		public static final String COPYRIGHT = "copyright";
+		
+		public static final Set<String> MANDATORY = ImmutableSet.<String>builder()
+				.addAll(FhirResource.Fields.MANDATORY)
+				.add(STATUS)
+				.build();
+		
+		public static final Set<String> SUMMARY = ImmutableSet.<String>builder()
+				.addAll(FhirResource.Fields.SUMMARY)
+				.add(URL, IDENTIFIER, VERSION, NAME, TITLE, DATE, PUBLISHER)
+				.build();
+		
+	}
+	
 	@Summary
 	@JsonProperty
-	private Uri url; //ORG_LINK or hardcoded provider value
+	private Uri url;
 	
 	@Summary
 	@JsonProperty
@@ -64,7 +94,7 @@ public abstract class MetadataResource extends DomainResource {
 	
 	@Summary
 	@JsonProperty
-	private String version; //not necessarily available - and what to do when we have more than 1??
+	private String version;
 	
 	@Summary
 	@JsonProperty

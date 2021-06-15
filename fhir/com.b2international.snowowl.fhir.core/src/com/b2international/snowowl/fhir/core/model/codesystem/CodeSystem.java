@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,11 @@ package com.b2international.snowowl.fhir.core.model.codesystem;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.Set;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
-
-import org.hibernate.validator.constraints.ScriptAssert;
 
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemHierarchyMeaning;
@@ -36,6 +35,7 @@ import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -59,17 +59,41 @@ import io.swagger.annotations.ApiModel;
  * @since 6.3
  */
 @ApiModel("CodeSystem")
-/*
-@ScriptAssert.List({
-	@ScriptAssert(lang = "javascript", script = "false", message = "Problem"),
-	@ScriptAssert(lang = "groovy", script = "_.caseSensitive == false", message = "Problem", alias = "_")
-})
-*/
 public class CodeSystem extends MetadataResource {
 
 	private static final long serialVersionUID = 1L;
 
-	// FHIR header "resourceType" : "CodeSystem",
+	/**
+	 * @since 8.0
+	 */
+	public static final class Fields extends MetadataResource.Fields {
+
+		// XXX do we need caseSensitive???
+		public static final String CONTENT = "content";
+		// TODO valueSet
+		public static final String COUNT = "count";
+		// XXX do we need hierarchyMeaning???
+		// XXX do we need compositional???
+		// XXX do we need versionNeeded???
+		// XXX do we need supplements???
+		
+		// complex properties
+		public static final String FILTER = "filter";
+		public static final String PROPERTY = "property";
+		public static final String CONCEPT = "concept";
+		
+		public static final Set<String> MANDATORY = ImmutableSet.<String>builder()
+				.addAll(MetadataResource.Fields.MANDATORY)
+				.add(CONTENT)
+				.build();
+		
+		public static final Set<String> SUMMARY = ImmutableSet.<String>builder()
+				.addAll(MetadataResource.Fields.SUMMARY)
+				.add(COUNT, FILTER, PROPERTY)
+				.build(); 
+		
+	}
+	
 	@Mandatory
 	@JsonProperty
 	private String resourceType = "CodeSystem";
@@ -114,7 +138,7 @@ public class CodeSystem extends MetadataResource {
 
 	@Summary
 	@Valid
-	@JsonProperty("filter")
+	@JsonProperty(CodeSystem.Fields.FILTER)
 	@JsonInclude(value = Include.NON_EMPTY)
 	private Collection<Filter> filters;
 
@@ -123,7 +147,7 @@ public class CodeSystem extends MetadataResource {
 	 */
 	@Summary
 	@Valid
-	@JsonProperty("property")
+	@JsonProperty(CodeSystem.Fields.PROPERTY)
 	@JsonInclude(value = Include.NON_EMPTY)
 	private Collection<SupportedConceptProperty> properties;
 

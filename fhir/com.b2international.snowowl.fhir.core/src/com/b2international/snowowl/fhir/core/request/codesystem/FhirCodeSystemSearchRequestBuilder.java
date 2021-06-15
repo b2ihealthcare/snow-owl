@@ -15,15 +15,22 @@
  */
 package com.b2international.snowowl.fhir.core.request.codesystem;
 
+import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.context.ResourceRepositoryRequestBuilder;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
 import com.b2international.snowowl.fhir.core.model.Bundle;
+import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.request.codesystem.FhirCodeSystemSearchRequest.OptionKey;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 
 /**
  * @since 8.0
@@ -66,17 +73,28 @@ public final class FhirCodeSystemSearchRequestBuilder
 	}
 
 	public FhirCodeSystemSearchRequestBuilder setSummary(String summary) {
-		// TODO convert this to a proper setFields where the list of fields represent the summary fields, based on the input, if the defined summary value is not a valid value throw a BadRequest
-		if ("count".equals(summary)) {
+		if ("true".equals(summary)) {
+			return setElements(CodeSystem.Fields.SUMMARY);
+		} else if ("count".equals(summary)) {
 			return setLimit(0);
 		} else {
+			// TODO support text and data _summary values
 			return getSelf();
 		}
 	}
 	
-	public FhirCodeSystemSearchRequestBuilder setElements(String[] elements) {
-		// TODO convert this to a proper setFields where the list of fields represent the summary fields, based on the input, if the defined summary value is not a valid value throw a BadRequest
-		return setFields(elements == null ? null : List.of(elements));
+	public FhirCodeSystemSearchRequestBuilder setElements(Iterable<String> elements) {
+		if (elements == null) {
+			return getSelf();
+		} else {
+			final Set<String> fields = new LinkedHashSet<>();
+			// when called with a non-null value, make sure mandatory fields are implicitly included
+			fields.addAll(CodeSystem.Fields.MANDATORY);
+			// add all other fields
+			elements.forEach(fields::add);
+			// TODO validate elements against the known resource field set
+			return setFields(ImmutableList.copyOf(fields));
+		}
 	}
 	
 	public FhirCodeSystemSearchRequestBuilder setCount(int count) {

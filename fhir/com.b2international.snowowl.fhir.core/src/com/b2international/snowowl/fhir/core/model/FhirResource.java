@@ -16,6 +16,7 @@
 package com.b2international.snowowl.fhir.core.model;
 
 import java.io.Serializable;
+import java.util.Set;
 
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
@@ -25,6 +26,7 @@ import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.b2international.snowowl.fhir.core.search.Searchable;
 import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * Top-level FHIR resource
@@ -44,6 +46,24 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 public abstract class FhirResource implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
+	
+	/**
+	 * @since 8.0
+	 */
+	public static abstract class Fields {
+		
+		public static final String ID = "id";
+		public static final String META = "meta";
+		public static final String LANGUAGE = "language";
+		
+		// TODO do we need implicitRules???
+		
+		public static final Set<String> MANDATORY = Set.of(ID, META);
+		public static final Set<String> SUMMARY = ImmutableSet.<String>builder()
+				.addAll(MANDATORY)
+				.build();
+		
+	}
 
 	/**
 	 * Logical id of this artifact

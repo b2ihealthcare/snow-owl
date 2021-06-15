@@ -76,7 +76,7 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 				.setCount(params.getCount())
 				// XXX _summary=count may override the default _count=10 value, so order of method calls is important here
 				.setSummary(params.getSummary())
-				.setElements(params.getElements())
+				.setElements(asList(params.getElements()))
 				.sortByFields(params.getSort())
 				.buildAsync()
 				.execute(getBus());
