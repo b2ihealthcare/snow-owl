@@ -16,6 +16,7 @@
 package com.b2international.snowowl.core.bundle;
 
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 import org.junit.After;
 import org.junit.Before;
@@ -127,5 +128,13 @@ abstract class BaseBundleApiTest {
 		return builder.buildAsync()
 				.getRequest()
 				.execute(Services.context());
+	}
+	
+	Stream<String> buildAsIds(final BundleSearchRequestBuilder builder) {
+		return builder.buildAsync()
+				.getRequest()
+				.execute(Services.context())
+				.stream()
+				.map(Bundle::getId);
 	}
 }

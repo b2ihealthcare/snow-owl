@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.junit.Test;
 
@@ -122,12 +122,8 @@ public final class BundleApiTest extends BaseBundleApiTest {
 		createBundle();
 		createBundle(id2);
 		
-		final List<String> bundleIds = build(BundleRequests.prepareSearchBundle().filterById(id))
-				.stream()
-				.map(Bundle::getId)
-				.collect(Collectors.toList());
-		
-		assertThat(bundleIds).hasSameElementsAs(List.of(id));
+		assertThat(buildAsIds(BundleRequests.prepareSearchBundle().filterById(id)))
+			.hasSameElementsAs(List.of(id));
 	}
 
 	@Test
@@ -140,12 +136,8 @@ public final class BundleApiTest extends BaseBundleApiTest {
 		createBundle(id2);
 		createBundle(id3);
 		
-		final List<String> bundleIds = build(BundleRequests.prepareSearchBundle().filterByIds(Set.of(id1, id2)))
-				.stream()
-				.map(Bundle::getId)
-				.collect(Collectors.toList());
-		
-		assertThat(bundleIds).hasSameElementsAs(List.of(id1, id2));
+		assertThat(buildAsIds(BundleRequests.prepareSearchBundle().filterByIds(Set.of(id1, id2))))
+			.hasSameElementsAs(List.of(id1, id2));
 	}
 	
 	@Test
@@ -155,8 +147,7 @@ public final class BundleApiTest extends BaseBundleApiTest {
 		final String bundleId1 = createBundle("exactId1", ROOT, title);
 		final String bundleId2 = createBundle("exactId2", ROOT, title.toUpperCase());
 		
-		final List<String> bundleIds = build(BundleRequests.prepareSearchBundle().filterByExactTerm(title))
-				.stream().map(Bundle::getId).collect(Collectors.toList());
+		final Stream<String> bundleIds = buildAsIds(BundleRequests.prepareSearchBundle().filterByExactTerm(title));
 		
 		assertThat(bundleIds).contains(bundleId1);
 		assertThat(bundleIds).doesNotContain(bundleId2);
@@ -169,10 +160,8 @@ public final class BundleApiTest extends BaseBundleApiTest {
 		final String bundleId1 = createBundle("exactId1", ROOT, title.toUpperCase());
 		final String bundleId2 = createBundle("exactId2", ROOT, title.toLowerCase());
 		
-		final List<String> bundleIds = build(BundleRequests.prepareSearchBundle().filterByExactTermIgnoreCase(title))
-				.stream().map(Bundle::getId).collect(Collectors.toList());
-		
-		assertThat(bundleIds).containsOnlyOnce(bundleId1, bundleId2);
+		assertThat(buildAsIds(BundleRequests.prepareSearchBundle().filterByExactTermIgnoreCase(title)))
+			.containsOnlyOnce(bundleId1, bundleId2);
 	}
 	
 	@Test
@@ -183,10 +172,8 @@ public final class BundleApiTest extends BaseBundleApiTest {
 		final String bundleId1 = createBundle("exactId1", ROOT, title1);
 		final String bundleId2 = createBundle("exactId2", ROOT, title2);
 		
-		final List<String> bundleIds = build(BundleRequests.prepareSearchBundle().filterByTerm(TermFilter.parsedTermMatch("Bundle*")))
-				.stream().map(Bundle::getId).collect(Collectors.toList());
-		
-		assertThat(bundleIds).containsOnlyOnce(bundleId1, bundleId2);
+		assertThat(buildAsIds(BundleRequests.prepareSearchBundle().filterByTerm(TermFilter.parsedTermMatch("Bundle*"))))
+			.containsOnlyOnce(bundleId1, bundleId2);
 	}
 
 	@Test
@@ -195,16 +182,12 @@ public final class BundleApiTest extends BaseBundleApiTest {
 		
 		final String bundleId = createBundle(id, ROOT, title);
 		
-		final List<String> bundleIdsDistance2 = build(BundleRequests.prepareSearchBundle().filterByTerm(TermFilter.fuzzyMatch("uncle title")))
-				.stream().map(Bundle::getId).collect(Collectors.toList());
-		
 		// Only 1 Levenshtein distance is allowed
-		assertThat(bundleIdsDistance2).isEmpty();
+		assertThat(buildAsIds(BundleRequests.prepareSearchBundle().filterByTerm(TermFilter.fuzzyMatch("uncle title"))))
+			.isEmpty();
 
-		final List<String> bundleIdsDistance1 = build(BundleRequests.prepareSearchBundle().filterByTerm(TermFilter.fuzzyMatch("Buncle title")))
-				.stream().map(Bundle::getId).collect(Collectors.toList());
-		
-		assertThat(bundleIdsDistance1).containsOnly(bundleId);
+		assertThat( buildAsIds(BundleRequests.prepareSearchBundle().filterByTerm(TermFilter.fuzzyMatch("Buncle title"))))
+			.containsOnly(bundleId);
 	}
 
 	@Test
@@ -218,34 +201,24 @@ public final class BundleApiTest extends BaseBundleApiTest {
 		final String id3 = createBundle("title_id_3", ROOT, title3);
 		
 		// Match all word stop words not ignored
-		final List<String> textSearch = build(BundleRequests.prepareSearchBundle().filterByTerm("search algorithm"))
-				.stream().map(Bundle::getId).collect(Collectors.toList());
-		
-		assertThat(textSearch).containsOnlyOnce(id1, id2);
+		assertThat(buildAsIds(BundleRequests.prepareSearchBundle().filterByTerm("search algorithm")))
+			.containsOnlyOnce(id1, id2);
 
 		// Match all word stop words ignored
-		final List<String> textSearchStopWrodsIgnored = build(BundleRequests.prepareSearchBundle().filterByTerm(TermFilter.defaultTermMatch("the search algorithm of").withIgnoreStopwords()))
-				.stream().map(Bundle::getId).collect(Collectors.toList());
-		
-		assertThat(textSearchStopWrodsIgnored).containsOnlyOnce(id1, id2);
+		assertThat(buildAsIds(BundleRequests.prepareSearchBundle().filterByTerm(TermFilter.defaultTermMatch("the search algorithm of").withIgnoreStopwords())))
+			.containsOnlyOnce(id1, id2);
 
 		// Match prefixes
-		final List<String> bundlePrefix = build(BundleRequests.prepareSearchBundle().filterByTerm("te algo"))
-				.stream().map(Bundle::getId).collect(Collectors.toList());
-
-		assertThat(bundlePrefix).containsOnlyOnce(id1, id3);
+		assertThat(buildAsIds(BundleRequests.prepareSearchBundle().filterByTerm("te algo")))
+			.containsOnlyOnce(id1, id3);
 
 		// Match boolean prefixes
-		final List<String> bundleBooleanPrefix = build(BundleRequests.prepareSearchBundle().filterByTerm("text search alg"))
-				.stream().map(Bundle::getId).collect(Collectors.toList());
-		
-		assertThat(bundleBooleanPrefix).containsOnlyOnce(id1);
+		assertThat(buildAsIds(BundleRequests.prepareSearchBundle().filterByTerm("text search alg")))
+			.containsOnlyOnce(id1);
 		
 		// Match exact case insensitive
-		final List<String> bundleExactCaseInsensitive = build(
-				BundleRequests.prepareSearchBundle().filterByTerm(title2.toUpperCase())).stream().map(Bundle::getId).collect(Collectors.toList());
-		
-		assertThat(bundleExactCaseInsensitive).containsOnlyOnce(id2);
+		assertThat( buildAsIds(BundleRequests.prepareSearchBundle().filterByTerm(title2.toUpperCase())))
+			.containsOnlyOnce(id2);
 	}
 	
 	@Test
@@ -259,22 +232,16 @@ public final class BundleApiTest extends BaseBundleApiTest {
 		final String id3 = createBundle("title_id_3", ROOT, title3);
 		
 		// 3 word of "General clinical state finding" must present
-		final List<String> threeTermMatch = build(BundleRequests.prepareSearchBundle().filterByTerm(TermFilter.minTermMatch("General clinical state finding", 3)))
-				.stream().map(Bundle::getId).collect(Collectors.toList());
-		
-		assertThat(threeTermMatch).containsOnlyOnce(id3);
+		assertThat(buildAsIds(BundleRequests.prepareSearchBundle().filterByTerm(TermFilter.minTermMatch("General clinical state finding", 3))))
+			.containsOnlyOnce(id3);
 
 		// 2 word of "General clinical state finding" must present
-		final List<String> twoTermMatch = build(BundleRequests.prepareSearchBundle().filterByTerm(TermFilter.minTermMatch("General clinical state finding", 2)))
-				.stream().map(Bundle::getId).collect(Collectors.toList());
-		
-		assertThat(twoTermMatch).containsOnlyOnce(id1, id2, id3);
+		assertThat(buildAsIds(BundleRequests.prepareSearchBundle().filterByTerm(TermFilter.minTermMatch("General clinical state finding", 2))))
+			.containsOnlyOnce(id1, id2, id3);
 		
 		// 3 word prefix of "en cli sta fin" must present
-		final List<String> threePrefixTermMatch = build(BundleRequests.prepareSearchBundle().filterByTerm(TermFilter.minTermMatch("en cli sta fin", 3)))
-				.stream().map(Bundle::getId).collect(Collectors.toList());
-		
-		assertThat(threePrefixTermMatch).containsOnlyOnce(id3, id2);
+		assertThat(buildAsIds(BundleRequests.prepareSearchBundle().filterByTerm(TermFilter.minTermMatch("en cli sta fin", 3))))
+			.containsOnlyOnce(id3, id2);
 	}
 	
 	@Test
@@ -296,7 +263,7 @@ public final class BundleApiTest extends BaseBundleApiTest {
 		
 		assertThat(bundle.getResources()).isNotNull();
 		
-		final List<String> resourceIds = bundle.getResources().getItems().stream().map(Resource::getId).collect(Collectors.toList());
+		final Stream<String> resourceIds = bundle.getResources().getItems().stream().map(Resource::getId);
 		
 		assertThat(resourceIds).containsOnlyOnce(cs1Id, cs2Id, subBundleId);
 		assertThat(resourceIds).doesNotContain(cs3Id);
@@ -376,7 +343,7 @@ public final class BundleApiTest extends BaseBundleApiTest {
 		
 		assertThat(bundle.getResources()).isNotNull();
 		
-		final List<String> resourceIds = bundle.getResources().getItems().stream().map(Resource::getId).collect(Collectors.toList());
+		final Stream<String> resourceIds = bundle.getResources().getItems().stream().map(Resource::getId);
 		
 		assertThat(resourceIds).containsOnlyOnce(cs1Id, cs2Id, cs3Id);
 	}
