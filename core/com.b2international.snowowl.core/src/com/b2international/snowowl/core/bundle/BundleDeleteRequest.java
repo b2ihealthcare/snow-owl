@@ -17,15 +17,10 @@ package com.b2international.snowowl.core.bundle;
 
 import javax.validation.constraints.NotNull;
 
-import com.b2international.snowowl.core.Resource;
-import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.events.bulk.BulkRequest;
-import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.internal.ResourceDocument;
-import com.b2international.snowowl.core.request.CommitResult;
 import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.request.SearchResourceRequestIterator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -52,7 +47,7 @@ final class BundleDeleteRequest implements Request<TransactionContext, Boolean> 
 			
 			updateResourceBundles(context, bundleToDelete.getId(), bundleToDelete.getBundleId());
 			
-			context.delete(context.lookup(resourceId, ResourceDocument.class));
+			context.delete(bundleToDelete);
 		} catch (ComponentNotFoundException e) {
 			// ignore, probably already deleted
 		}
@@ -87,21 +82,13 @@ final class BundleDeleteRequest implements Request<TransactionContext, Boolean> 
 				ResourceRequests.prepareSearch()
 					.setLimit(10_000)
 					.filterByBundleId(id),
-				req -> req.buildAsync().getRequest().execute(context)
+				req -> req.build().execute(context)
 			).forEachRemaining(resourceBatch -> {
-				final BulkRequestBuilder<ServiceProvider> bulkRequestBuilder = BulkRequest.<ServiceProvider>create();
-
-				resourceBatch.stream().forEach(resource -> bulkRequestBuilder.add(toRequest(context, resource, bundleId)));
-				
-				bulkRequestBuilder.build().execute(context);
+				resourceBatch.stream().forEach(resource -> {
+					final ResourceDocument doc = context.lookup(resource.getId(), ResourceDocument.class);
+					context.add(ResourceDocument.builder(doc).bundleId(bundleId).build());
+				});
 			});
-	}
-	
-	private Request<ServiceProvider, CommitResult> toRequest(final TransactionContext context, final Resource resource, final String newBundleId) {
-		return ResourceRequests.prepareUpdate(resource.getId())
-				.setBundleId(newBundleId)
-				.build(context.author(), String.format("Update %s bundle ID to: %s", resource.getTitle(), newBundleId))
-				.getRequest();
 	}
 	
 	public String getResourceId() {
