@@ -30,7 +30,7 @@ import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.Branches;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.internal.ResourceDocument;
+import com.b2international.snowowl.core.internal.ResourceDocument.Builder;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.BaseResourceCreateRequest;
 import com.b2international.snowowl.core.request.ResourceRequests;
@@ -62,7 +62,18 @@ final class CodeSystemCreateRequest extends BaseResourceCreateRequest {
 	CodeSystemCreateRequest() {}
 
 	@Override
-	public String execute(final TransactionContext context) {
+	protected Builder setSpecializedFields(Builder builder) {
+		return builder.resourceType(CodeSystem.CODESYSTEM_RESOURCE_TYPE)
+				.oid(oid)
+				.branchPath(branchPath)
+				.toolingId(toolingId)
+				.extensionOf(extensionOf)
+				.upgradeOf(upgradeOf)
+				.settings(settings);
+	}
+	
+	@Override
+	protected void executeAdditionalLogic(final TransactionContext context) {
 		// Create branch if null or empty path was specified in the request
 		final boolean createBranch = StringUtils.isEmpty(branchPath);
 		
@@ -83,14 +94,11 @@ final class CodeSystemCreateRequest extends BaseResourceCreateRequest {
 			branchPath = RepositoryRequests.branching()
 				.prepareCreate()
 				.setParent(parentPath)
-				.setName(id)
+				.setName(getId())
 				.build(toolingId)
 				.getRequest()
 				.execute(context);
 		}
-
-		context.add(createCodeSystemEntry());
-		return id;
 	}
 
 	private void checkBranchPath(final RepositoryContext context, final boolean create) {
@@ -101,7 +109,7 @@ final class CodeSystemCreateRequest extends BaseResourceCreateRequest {
 		
 		// If the branch should be created, it branch should not exist, however 
 		if (create) {
-			final String newBranchPath = Branch.get(parentPath, title);
+			final String newBranchPath = Branch.get(parentPath, getTitle());
 			if (branchExists(newBranchPath, context)) {
 				throw new AlreadyExistsException("Code system branch", newBranchPath);
 			}
@@ -112,25 +120,25 @@ final class CodeSystemCreateRequest extends BaseResourceCreateRequest {
 		// codeSystemId checked against all resources
 		final boolean existingId = ResourceRequests.prepareSearch()
 			.setLimit(0)
-			.filterById(id)
+			.filterById(getId())
 			.build()
 			.execute(context)
 			.getTotal() > 0;
 			
 		if (existingId) {
-			throw new AlreadyExistsException("Resource", id);
+			throw new AlreadyExistsException("Resource", getId());
 		}
 		
 		// title should be unique across all resources
 		final boolean existingTitle = ResourceRequests.prepareSearch()
 			.setLimit(0)
-			.filterByTitleExact(title)
+			.filterByTitleExact(getTitle())
 			.build()
 			.execute(context)
 			.getTotal() > 0;
 			
 		if (existingTitle) {
-			throw new AlreadyExistsException("Resource", "title", title);
+			throw new AlreadyExistsException("Resource", "title", getTitle());
 		}
 
 		// OID must be unique if defined
@@ -176,7 +184,7 @@ final class CodeSystemCreateRequest extends BaseResourceCreateRequest {
 			}
 			
 			// The working branch prefix is determined by the extensionOf code system version's path
-			final String newResourceBranchPath = Branch.get(extensionOfVersion.get().getBranchPath(), id);
+			final String newResourceBranchPath = Branch.get(extensionOfVersion.get().getBranchPath(), getId());
 			
 			// CodeSystem Upgrade branches are managed by CodeSystemUpgradeRequest and they can have different paths than the usual extension branch paths, skip check
 			if (upgradeOf == null && !create && !branchPath.equals(newResourceBranchPath)) {
@@ -219,30 +227,6 @@ final class CodeSystemCreateRequest extends BaseResourceCreateRequest {
 		
 		return branches.stream().filter(b -> !b.isDeleted()).findFirst().isPresent();
 		
-	}
-
-	private ResourceDocument createCodeSystemEntry() {
-		return ResourceDocument.builder()
-				.id(id)
-				.resourceType(CodeSystem.CODESYSTEM_RESOURCE_TYPE)
-				.url(url)
-				.title(title)
-				.language(language)
-				.description(description)
-				.status(status)
-				.copyright(copyright)
-				.owner(owner)
-				.contact(contact)
-				.usage(usage)
-				.purpose(purpose)
-				.bundleId(bundleId)
-				.oid(oid)
-				.branchPath(branchPath)
-				.toolingId(toolingId)
-				.extensionOf(extensionOf)
-				.upgradeOf(upgradeOf)
-				.settings(settings)
-				.build();
 	}
 	
 }

@@ -19,6 +19,8 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.internal.ResourceDocument;
+import com.b2international.snowowl.core.internal.ResourceDocument.Builder;
 
 /**
  * @since 8.0
@@ -29,71 +31,64 @@ public abstract class BaseResourceCreateRequest implements Request<TransactionCo
 
 	// the new ID, if not specified, it will be auto-generated
 	@NotEmpty
-	protected String id;
+	String id;
 	
 	@NotEmpty
-	protected String url;
+	String url;
 	
 	@NotEmpty
-	protected String title;
+	String title;
 	
-	protected String language;
-	protected String description;
-	protected String status;
-	protected String copyright;
-	protected String owner;
-	protected String contact;
-	protected String usage;
-	protected String purpose;
+	String language;
+	String description;
+	String status;
+	String copyright;
+	String owner;
+	String contact;
+	String usage;
+	String purpose;
 	
 	@NotEmpty
-	protected String bundleId;
-
-	public final void setId(String id) {
-		this.id = id;
+	String bundleId;
+	
+	@Override
+	public final String execute(TransactionContext context) {
+		executeAdditionalLogic(context);
+		context.add(createResourceDocument());
+		return id;
 	}
-
-	public final void setUrl(String url) {
-		this.url = url;
+	
+	public final String getId() {
+		return id;
 	}
-
-	public final void setTitle(String title) {
-		this.title = title;
+	
+	public final String getTitle() {
+		return title;
 	}
+	
+	/**
+	 * Subclasses may override this method to add extra logic to request execution.
+	 */
+	protected void executeAdditionalLogic(final TransactionContext context) { }
 
-	public final void setLanguage(String language) {
-		this.language = language;
-	}
-
-	public final void setDescription(String description) {
-		this.description = description;
-	}
-
-	public final void setStatus(String status) {
-		this.status = status;
-	}
-
-	public final void setCopyright(String copyright) {
-		this.copyright = copyright;
-	}
-
-	public final void setOwner(String owner) {
-		this.owner = owner;
-	}
-
-	public final void setContact(String contact) {
-		this.contact = contact;
-	}
-
-	public final void setUsage(String usage) {
-		this.usage = usage;
-	}
-
-	public final void setPurpose(String purpose) {
-		this.purpose = purpose;
-	}
-
-	public final void setBundleId(String bundleId) {
-		this.bundleId = bundleId;
+	protected abstract ResourceDocument.Builder setSpecializedFields(final ResourceDocument.Builder builder);
+	
+	private ResourceDocument createResourceDocument() {
+		final Builder builder = ResourceDocument.builder();
+				
+		return setSpecializedFields(builder)
+				.id(id)
+				.url(url)
+				.title(title)
+				.language(language)
+				.description(description)
+				.status(status)
+				.copyright(copyright)
+				.owner(owner)
+				.contact(contact)
+				.usage(usage)
+				.purpose(purpose)
+				.bundleId(bundleId)
+				.build();
 	}
 }

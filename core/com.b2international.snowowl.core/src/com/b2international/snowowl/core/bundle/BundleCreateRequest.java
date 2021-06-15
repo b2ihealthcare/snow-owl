@@ -15,8 +15,7 @@
  */
 package com.b2international.snowowl.core.bundle;
 
-import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.internal.ResourceDocument;
+import com.b2international.snowowl.core.internal.ResourceDocument.Builder;
 import com.b2international.snowowl.core.request.BaseResourceCreateRequest;
 
 /**
@@ -27,26 +26,7 @@ final class BundleCreateRequest extends BaseResourceCreateRequest {
 	private static final long serialVersionUID = 1L;
 
 	@Override
-	public String execute(TransactionContext context) {
-		context.add(createBundleDocument());
-		return id;
-	}
-
-	private ResourceDocument createBundleDocument() {
-		return ResourceDocument.builder()
-				.id(id)
-				.resourceType(Bundle.BUNDLE_RESOURCE_TYPE)
-				.url(url)
-				.title(title)
-				.language(language)
-				.description(description)
-				.status(status)
-				.copyright(copyright)
-				.owner(owner)
-				.contact(contact)
-				.usage(usage)
-				.purpose(purpose)
-				.bundleId(bundleId)
-				.build();
+	protected Builder setSpecializedFields(Builder builder) {
+		return builder.resourceType(Bundle.BUNDLE_RESOURCE_TYPE);
 	}
 }

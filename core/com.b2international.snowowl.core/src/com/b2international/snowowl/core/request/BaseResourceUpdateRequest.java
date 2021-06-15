@@ -28,17 +28,17 @@ public abstract class BaseResourceUpdateRequest extends UpdateRequest<Transactio
 
 	private static final long serialVersionUID = 1L;
 
-	protected String url;
-	protected String title;
-	protected String language;
-	protected String description;
-	protected String status;
-	protected String copyright;
-	protected String owner;
-	protected String contact;
-	protected String usage;
-	protected String purpose;
-	protected String bundleId;
+	String url;
+	String title;
+	String language;
+	String description;
+	String status;
+	String copyright;
+	String owner;
+	String contact;
+	String usage;
+	String purpose;
+	String bundleId;
 
 	protected BaseResourceUpdateRequest(String componentId) {
 		super(componentId);
