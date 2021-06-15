@@ -18,6 +18,7 @@ package com.b2international.snowowl.fhir.tests.endpoints.codesystem;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.hamcrest.CoreMatchers.*;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.junit.Test;
@@ -75,7 +76,7 @@ public class CodeSystemRestTest extends FhirRestTest {
 		String anotherCodeSystemId = createCodeSystem(UUID.randomUUID().toString());
 		String thirdCodeSystemId = createCodeSystem(UUID.randomUUID().toString());
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.param("_id", getTestCodeSystemId(), anotherCodeSystemId)
+			.queryParam("_id", getTestCodeSystemId(), anotherCodeSystemId)
 			.when().get("/CodeSystem")
 			.then()
 			.statusCode(200)
@@ -217,7 +218,7 @@ public class CodeSystemRestTest extends FhirRestTest {
 			.body("resourceType", equalTo("Bundle"))
 			.body("total", equalTo(1))
 			.body("type", equalTo("searchset"))
-			.body("entry", nullValue());
+			.body("entry", equalTo(List.of()));
 	}
 	
 	@Test
@@ -289,7 +290,7 @@ public class CodeSystemRestTest extends FhirRestTest {
 			.then()
 			.statusCode(200)
 			.body("resourceType", equalTo("CodeSystem"))
-			.body("status", equalTo("active"));
+			.body("status", equalTo("unknown"));
 	}
 	
 	//Summary-count should not be allowed for non-search type operations?
