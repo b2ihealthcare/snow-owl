@@ -27,10 +27,7 @@ import com.b2international.snowowl.fhir.core.model.OperationOutcome;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.*;
 
 /**
  * Code system resource REST endpoint.
@@ -64,7 +61,8 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 			value="Retrieve all code systems",
 			notes="Returns a collection of the supported code systems.")
 	@ApiResponses({
-		@ApiResponse(code = HTTP_OK, message = "OK")
+		@ApiResponse(code = HTTP_OK, message = "OK"),
+		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad Request", response = OperationOutcome.class),
 	})
 	@GetMapping
 	public Promise<Bundle> getCodeSystems(FhirCodeSystemSearchParameters params) {
@@ -74,11 +72,12 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 				.filterByTitle(params.getTitle())
 				.filterByContent(params.getContent())
 				.filterByLastUpdated(params.getLastUpdated())
+				.setSearchAfter(params.getAfter())
+				.setCount(params.getCount())
+				// XXX _summary=count may override the default _count=10 value, so order of method calls is important here
 				.setSummary(params.getSummary())
 				.setElements(params.getElements())
 				.sortByFields(params.getSort())
-				.setSearchAfter(params.getAfter())
-				.setCount(params.getCount())
 				.buildAsync()
 				.execute(getBus());
 		
@@ -106,7 +105,7 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 	
 	/**
 	 * HTTP Get for retrieving a code system by its code system id
-	 * @param codeSystemId
+	 * @param id
 	 * @param parameters - request parameters
 	 * @return
 	 */
@@ -119,17 +118,16 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
 		@ApiResponse(code = HTTP_NOT_FOUND, message = "Code system not found", response = OperationOutcome.class)
 	})
-	@RequestMapping(value="/{codeSystemId:**}", method=RequestMethod.GET)
+	@RequestMapping(value="/{id:**}", method=RequestMethod.GET)
 	public Promise<CodeSystem> getCodeSystem(
-			@PathVariable(value = "codeSystemId") 
-			final String codeSystemId,
-			
-			FhirCodeSystemSearchParameters params) {
+			@ApiParam(value = "The identifier of the Code System resource")
+			@PathVariable(value = "id") 
+			final String id) {
 		
 //		Pair<Set<FhirFilterParameter>, Set<FhirSearchParameter>> fhirParameters = processParameters(parameters);
 		// apply filters, params, etc.
 		
-		return FhirRequests.codeSystems().prepareGet(codeSystemId)
+		return FhirRequests.codeSystems().prepareGet(id)
 				.buildAsync()
 				.execute(getBus());
 		
