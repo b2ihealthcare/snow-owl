@@ -37,7 +37,7 @@ public abstract class BaseResourceSearchRequestBuilder<RB extends BaseResourceSe
 	 * @param titles - at least one of these titles match
 	 * @return this builder
 	 */
-	public final RB filterByTitleExact(Iterable<String> titles) {
+	public final RB filterByTermExact(Iterable<String> titles) {
 		return addOption(OptionKey.TITLE_EXACT, titles);
 	}
 

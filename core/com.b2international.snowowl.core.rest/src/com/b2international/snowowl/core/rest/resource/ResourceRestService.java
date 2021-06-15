@@ -51,7 +51,7 @@ public class ResourceRestService extends AbstractRestService {
 				.prepareSearch()
 				.filterByIds(params.getId())
 				.filterByResourceType(params.getResourceType())
-				.filterByTitleExact(params.getTitleExact())
+				.filterByTermExact(params.getTitleExact())
 				.filterByTerm(params.getTitle())
 				.filterByToolingIds(params.getToolingId())
 				.setLimit(params.getLimit())

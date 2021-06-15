@@ -522,7 +522,7 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 					.map(PrefixedValue::getValue)
 					.collect(Collectors.toSet());
 			
-			codeSystemRequestBuilder.filterByTitleExact(names);
+			codeSystemRequestBuilder.filterByTermExact(names);
 			// TODO do we need this???
 //			codeSystemVersionRequestBuilder.filterByCodeSystemShortNames(names);
 			
