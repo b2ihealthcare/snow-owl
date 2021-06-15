@@ -58,6 +58,10 @@ public abstract class SnomedTerminologyComponentConstants {
 	public static final String CODESYSTEM_MODULES_CONFIG_KEY = "moduleIds";
 	public static final String CODESYSTEM_NAMESPACE_CONFIG_KEY = "namespace";
 	public static final String CODESYSTEM_DESCRIPTION_COPY_POLICY_CONFIG_KEY = "descriptionCopyPolicy";
+
+	// FHIR specific constants
+	public static final String SNOMED_URI_BASE = "http://snomed.info/sct";
+	public static final String SNOMED_URI_BASE_DEV = "http://snomed.info/xsct";
 	
 	public static short getTerminologyComponentIdValue(final String referencedComponentId) {
 		final short s = getTerminologyComponentIdValueSafe(referencedComponentId);

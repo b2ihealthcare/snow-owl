@@ -38,6 +38,10 @@ final class FhirCodeSystemSearchRequest extends SearchResourceRequest<Repository
 
 	private static final long serialVersionUID = 1L;
 
+	public enum OptionKey {
+		SUMMARY
+	}
+	
 	@Override
 	protected Bundle createEmptyResult(int limit) {
 		return prepareBundle().total(0).build();

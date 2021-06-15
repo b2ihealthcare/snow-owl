@@ -19,6 +19,8 @@ import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
 
+import java.util.List;
+
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,10 +30,7 @@ import com.b2international.snowowl.fhir.core.model.OperationOutcome;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.*;
 
 /**
  * Code system resource REST endpoint.
@@ -68,15 +67,14 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 		@ApiResponse(code = HTTP_OK, message = "OK")
 	})
 	@GetMapping
-	public Promise<Bundle> getCodeSystems(
-			@RequestParam(required = false) 
-			final MultiValueMap<String, String> parameters
-			) {
+	public Promise<Bundle> getCodeSystems(FhirCodeSystemSearchParameters params) {
 		
 //		Pair<Set<FhirFilterParameter>, Set<FhirSearchParameter>> requestParameters = processParameters(parameters);
 //		Set<FhirFilterParameter> filterParameters = requestParameters.getA();
 		
 		return FhirRequests.codeSystems().prepareSearch()
+				.filterByIds(params.getId() == null ? null : List.of(params.getId()))
+				.setSummary(params.getSummary())
 				.buildAsync()
 				.execute(getBus());
 		
@@ -120,8 +118,7 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 			@PathVariable(value = "codeSystemId") 
 			final String codeSystemId,
 			
-			@RequestParam(required = false) 
-			final MultiValueMap<String, String> parameters) {
+			FhirCodeSystemSearchParameters params) {
 		
 //		Pair<Set<FhirFilterParameter>, Set<FhirSearchParameter>> fhirParameters = processParameters(parameters);
 		// apply filters, params, etc.

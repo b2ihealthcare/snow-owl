@@ -74,7 +74,7 @@ public abstract class AbstractFhirController extends AbstractRestService {
 		if (Throwables.getRootCause(ex).getMessage().toLowerCase().contains("broken pipe")) {
 	        return null; // socket is closed, cannot return any response    
 	    } else {
-	    	LOG.trace("Exception during processing of a request", ex);
+	    	LOG.error("Exception during processing of a request", ex);
 	    	FhirException fhirException = FhirException.createFhirError(GENERIC_USER_MESSAGE + " Exception: " + ex.getMessage(), OperationOutcomeCode.MSG_BAD_SYNTAX);
 	    	return fhirException.toOperationOutcome();
 	    }

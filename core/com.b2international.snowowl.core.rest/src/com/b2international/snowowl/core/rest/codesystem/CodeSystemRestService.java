@@ -27,6 +27,7 @@ import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.codesystem.CodeSystems;
 import com.b2international.snowowl.core.events.util.Promise;
+import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
 
@@ -179,6 +180,29 @@ public class CodeSystemRestService extends AbstractRestService {
 				.buildAsync()
 				.execute(getBus())
 				.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);
+	}
+	
+	@ApiOperation(
+			value="Delete a CodeSystem",
+			notes="Deletes a CodeSystem permanently from the server")
+	@ApiResponses({
+		@ApiResponse(code = 204, message = "No content", response = Void.class),
+		@ApiResponse(code = 400, message = "Bad Request", response = RestApiError.class),
+		@ApiResponse(code = 409, message = "CodeSystem cannot be deleted", response = RestApiError.class)
+	})
+	@DeleteMapping(value = "/{codeSystemId}")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void delete(
+			@ApiParam(value="The code system identifier")
+			@PathVariable(value="codeSystemId") 
+			final String codeSystemId,
+			
+			@RequestHeader(value = X_AUTHOR, required = false)
+			final String author) {
+		ResourceRequests.prepareDelete(codeSystemId)
+			.build(author, "Delete ".concat(codeSystemId))
+			.execute(getBus())
+			.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);
 	}
 	
 }
