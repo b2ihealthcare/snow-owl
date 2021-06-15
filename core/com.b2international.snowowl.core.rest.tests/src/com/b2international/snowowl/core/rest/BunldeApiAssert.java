@@ -25,9 +25,9 @@ import java.util.Collections;
 import java.util.Map;
 
 import com.b2international.commons.json.Json;
+import com.b2international.snowowl.core.domain.IComponent;
 
 import io.restassured.http.ContentType;
-import io.restassured.response.Response;
 import io.restassured.response.ValidatableResponse;
 
 /**
@@ -42,13 +42,13 @@ public class BunldeApiAssert {
 	public static ValidatableResponse assertBundleSearch(final Map<String, Object> filters) {
 		return givenAuthenticatedRequest(BUNDLE_API)
 				.when().queryParams(filters).get()
-				.then().assertThat();
+				.then().statusCode(200).assertThat();
 	}
 	
 	public static ValidatableResponse assertBundleGet(final String resourceId) {
 		return givenAuthenticatedRequest(BUNDLE_API)
 				.when().get("/{id}", resourceId)
-				.then().assertThat()
+				.then().assertThat().statusCode(200)
 				.and().body("id", equalTo(resourceId))
 				.assertThat();
 	}
@@ -71,11 +71,13 @@ public class BunldeApiAssert {
 				.then().assertThat();
 	}
 	
-	public static Response updateBundle(final String uniqueId, final Map<String, Object> requestBody) {
+	public static ValidatableResponse updateBundle(final String uniqueId, final Map<String, Object> requestBody) {
 		return givenAuthenticatedRequest(BUNDLE_API)
 			.with().contentType(ContentType.JSON)
 			.and().body(requestBody)
-			.when().put("/{id}", uniqueId);
+			.when().put("/{id}", uniqueId)
+			.then().assertThat()
+			.statusCode(204);
 	}
 	
 	public static ValidatableResponse assertUpdateBundleField(final String uniqueId, final String field, final String value) {
@@ -87,7 +89,7 @@ public class BunldeApiAssert {
 	}
 	
 	public static Json prepareCreateRequestBody(final String resourceId) {
-		return prepareCreateRequestBody(resourceId, "-1");
+		return prepareCreateRequestBody(resourceId, IComponent.ROOT_ID);
 	}
 	
 	public static Json prepareCreateRequestBody(final String resourceId, final String bundleId) {
