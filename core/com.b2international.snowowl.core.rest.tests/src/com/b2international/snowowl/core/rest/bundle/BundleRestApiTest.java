@@ -27,7 +27,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.collection.IsEmptyCollection.empty;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
-import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 
 import java.util.Map;
 import java.util.Set;
@@ -125,16 +124,16 @@ public class BundleRestApiTest {
 		final String subBundleId = "subBundleId";
 		
 		assertBundleCreated(prepareCreateRequestBody(rootBundleId));
-		assertBundleCreated(prepareCreateRequestBody(subBundleId));
+		assertBundleCreated(prepareCreateRequestBody(subBundleId, rootBundleId));
 		assertCodeSystemCreated(prepareCodeSystemCreateRequestBody("cs1").with("bundleId", rootBundleId));
 		assertCodeSystemCreated(prepareCodeSystemCreateRequestBody("cs2").with("bundleId", rootBundleId));
 		assertCodeSystemCreated(prepareCodeSystemCreateRequestBody("cs3").with("bundleId", subBundleId));
 		
 		assertBundleSearch(Map.of("id", Set.of(rootBundleId), "expand", "resources()")).and()
-			.body("items", hasItem(hasEntry("resources", hasSize(3))))
-			.body("items", hasItem(hasEntry("resources", hasItem(hasEntry("id", "cs1")))))
-			.body("items", hasItem(hasEntry("resources", hasItem(hasEntry("id", "cs2")))))
-			.body("items", hasItem(hasEntry("resources", hasItem(hasEntry("id", subBundleId)))))
+			.body("items.resources.total", equalTo(3))
+			.body("items.resources.items", hasItem((hasEntry("id", "cs1"))))
+			.body("items.resources.items", hasItem((hasEntry("id", "cs2"))))
+			.body("items.resources.items", hasItem((hasEntry("id", subBundleId))))
 			.assertThat();
 	}
 	

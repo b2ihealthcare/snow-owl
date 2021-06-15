@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.Test;
@@ -147,7 +148,7 @@ public final class BundleApiTest extends BaseBundleApiTest {
 		final String bundleId1 = createBundle("exactId1", ROOT, title);
 		final String bundleId2 = createBundle("exactId2", ROOT, title.toUpperCase());
 		
-		final Stream<String> bundleIds = buildAsIds(BundleRequests.prepareSearch().filterByExactTerm(title));
+		final List<String> bundleIds = buildAsIds(BundleRequests.prepareSearch().filterByExactTerm(title)).collect(Collectors.toList());
 		
 		assertThat(bundleIds).contains(bundleId1);
 		assertThat(bundleIds).doesNotContain(bundleId2);
@@ -263,7 +264,7 @@ public final class BundleApiTest extends BaseBundleApiTest {
 		
 		assertThat(bundle.getResources()).isNotNull();
 		
-		final Stream<String> resourceIds = bundle.getResources().getItems().stream().map(Resource::getId);
+		final List<String> resourceIds = bundle.getResources().getItems().stream().map(Resource::getId).collect(Collectors.toList());
 		
 		assertThat(resourceIds).containsOnlyOnce(cs1Id, cs2Id, subBundleId);
 		assertThat(resourceIds).doesNotContain(cs3Id);
