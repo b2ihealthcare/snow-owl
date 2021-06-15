@@ -75,7 +75,7 @@ public class BundleConverter extends BaseResourceConverter<ResourceDocument, Bun
 		
 		results.forEach(result -> {
 			final Resources resources = ResourceRequests.prepareSearch()
-				.setLimit(100)
+				.setLimit(getLimit(expand().getOptions(Bundle.Expand.RESOURCES)))
 				.filterByBundleId(result.getId())
 				.buildAsync()
 				.getRequest()
