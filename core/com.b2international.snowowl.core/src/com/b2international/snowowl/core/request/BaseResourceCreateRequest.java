@@ -27,7 +27,7 @@ public abstract class BaseResourceCreateRequest implements Request<TransactionCo
 
 	protected static final long serialVersionUID = 1L;
 
-	// the new codesystem's ID, if not specified, it will be auto-generated
+	// the new ID, if not specified, it will be auto-generated
 	@NotEmpty
 	protected String id;
 	
