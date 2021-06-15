@@ -67,12 +67,16 @@ public final class FhirCodeSystemSearchRequestBuilder
 
 	public FhirCodeSystemSearchRequestBuilder setSummary(String summary) {
 		// TODO convert this to a proper setFields where the list of fields represent the summary fields, based on the input, if the defined summary value is not a valid value throw a BadRequest
-		return getSelf();
+		if ("count".equals(summary)) {
+			return setLimit(0);
+		} else {
+			return getSelf();
+		}
 	}
 	
 	public FhirCodeSystemSearchRequestBuilder setElements(String[] elements) {
 		// TODO convert this to a proper setFields where the list of fields represent the summary fields, based on the input, if the defined summary value is not a valid value throw a BadRequest
-		return getSelf();
+		return setFields(elements == null ? null : List.of(elements));
 	}
 	
 	public FhirCodeSystemSearchRequestBuilder setCount(int count) {
