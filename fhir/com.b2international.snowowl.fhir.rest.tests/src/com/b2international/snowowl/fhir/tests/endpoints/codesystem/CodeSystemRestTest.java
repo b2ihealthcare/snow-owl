@@ -75,7 +75,7 @@ public class CodeSystemRestTest extends FhirRestTest {
 		String anotherCodeSystemId = createCodeSystem(UUID.randomUUID().toString());
 		String thirdCodeSystemId = createCodeSystem(UUID.randomUUID().toString());
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.queryParam("_id", getTestCodeSystemId(), anotherCodeSystemId)
+			.param("_id", getTestCodeSystemId(), anotherCodeSystemId)
 			.when().get("/CodeSystem")
 			.then()
 			.statusCode(200)

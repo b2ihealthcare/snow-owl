@@ -16,6 +16,7 @@
 package com.b2international.snowowl.fhir.core.request.codesystem;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -38,8 +39,15 @@ final class FhirCodeSystemSearchRequest extends SearchResourceRequest<Repository
 
 	private static final long serialVersionUID = 1L;
 
+	/**
+	 * @since 8.0
+	 */
 	public enum OptionKey {
-		SUMMARY
+		NAME,
+		TITLE, 
+		CONTENT,
+		
+		LAST_UPDATED, 
 	}
 	
 	@Override
@@ -49,10 +57,22 @@ final class FhirCodeSystemSearchRequest extends SearchResourceRequest<Repository
 
 	@Override
 	protected Bundle doExecute(RepositoryContext context) throws IOException {
+		// TODO if one of the given ID filters specify versions, then query both Code System and Version
+		
+		final Collection<String> idFilter;
+		if (componentIds() != null) {
+			// TODO if _name filter defined along with _id then raise an error or warning
+			idFilter = componentIds();
+		} else if (containsKey(OptionKey.NAME)) {
+			idFilter = getCollection(OptionKey.NAME, String.class);
+		} else {
+			idFilter = null;
+		}
+		
 		CodeSystems internalCodeSystems = CodeSystemRequests.prepareSearchCodeSystem()
-				.filterByIds(componentIds())
+				.filterByIds(idFilter)
 //				.filterByIdsOrUrls(componentIds()) // XXX componentId in FHIR Search Request can be either logicalId or url so either of them can match, apply to the search
-				// TODO apply other FHIR search parameters
+				.filterByTitle(getString(OptionKey.TITLE))
 				.setLimit(limit())
 				.setSearchAfter(searchAfter())
 				.setExpand(expand())
@@ -61,6 +81,7 @@ final class FhirCodeSystemSearchRequest extends SearchResourceRequest<Repository
 				.sortBy(sortBy())
 				.build()
 				.execute(context);
+		
 		
 		return prepareBundle()
 				.entry(internalCodeSystems.stream().map(codeSystem -> toFhirCodeSystemEntry(context, codeSystem)).collect(Collectors.toList()))

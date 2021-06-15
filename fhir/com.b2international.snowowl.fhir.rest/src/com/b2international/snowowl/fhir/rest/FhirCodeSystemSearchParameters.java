@@ -43,12 +43,13 @@ public class FhirCodeSystemSearchParameters {
 	String[] _elements;
 	
 	// paging
-	@ApiParam
-	String _count;
+	@ApiParam(value = "The maximum number of items to return", defaultValue = "10")
+	int _count = 10;
+	
 	@ApiParam
 	String[] _sort;
 	
-	// extensions
+	// extensions (paging)
 	@ApiParam
 	String _after;
 
@@ -64,7 +65,7 @@ public class FhirCodeSystemSearchParameters {
 		return _content;
 	}
 	
-	public String getCount() {
+	public int getCount() {
 		return _count;
 	}
 	
@@ -104,7 +105,7 @@ public class FhirCodeSystemSearchParameters {
 		this._content = _content;
 	}
 	
-	void set_count(String _count) {
+	void set_count(int _count) {
 		this._count = _count;
 	}
 	

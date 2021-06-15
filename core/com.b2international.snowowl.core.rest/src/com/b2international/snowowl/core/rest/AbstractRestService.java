@@ -150,5 +150,16 @@ public abstract class AbstractRestService {
 	protected final URI getResourceLocationURI(String branch, String resourceId) {
 		return createURIBuilder().pathSegment(resourceId).build(branch);
 	}
+	
+	/**
+	 * Converts the given array to a {@link List} so it can be passed to methods that require {@link Iterable} instances.
+	 * 
+	 * @param <T>
+	 * @param array - the array to convert
+	 * @return a {@link List} representing the same elements as the input array, or <code>null</code> if the input array argument was <code>null</code>.
+	 */
+	protected <T> List<T> asList(T[] array) {
+		return array == null ? null : List.of(array);
+	}
 
 }

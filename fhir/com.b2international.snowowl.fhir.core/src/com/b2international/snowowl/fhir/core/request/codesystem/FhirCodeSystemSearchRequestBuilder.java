@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.fhir.core.request.codesystem;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.b2international.snowowl.core.context.ResourceRepositoryRequestBuilder;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
@@ -34,8 +37,54 @@ public final class FhirCodeSystemSearchRequestBuilder
 		return new FhirCodeSystemSearchRequest();
 	}
 
+	public FhirCodeSystemSearchRequestBuilder filterByNames(Iterable<String> names) {
+		return addOption(OptionKey.NAME, names);
+	}
+	
+	public FhirCodeSystemSearchRequestBuilder filterByTitle(String titles) {
+		return addOption(OptionKey.TITLE, titles);
+	}
+
+	public FhirCodeSystemSearchRequestBuilder sortByFields(String...sort) {
+		if (sort != null) {
+			return sortBy(
+				List.of(sort)
+					.stream()
+					.map(field -> {
+						// TODO validate and report if any sort fields use unrecognized fields
+						if (field.startsWith("-")) {
+							return SearchResourceRequest.SortField.of(field.substring(1), false);
+						} else {
+							return SearchResourceRequest.SortField.of(field, true);
+						}
+					})
+					.collect(Collectors.toList())
+			);
+		} else {
+			return getSelf();
+		}
+	}
+
 	public FhirCodeSystemSearchRequestBuilder setSummary(String summary) {
-		return addOption(OptionKey.SUMMARY, summary);
+		// TODO convert this to a proper setFields where the list of fields represent the summary fields, based on the input, if the defined summary value is not a valid value throw a BadRequest
+		return getSelf();
+	}
+	
+	public FhirCodeSystemSearchRequestBuilder setElements(String[] elements) {
+		// TODO convert this to a proper setFields where the list of fields represent the summary fields, based on the input, if the defined summary value is not a valid value throw a BadRequest
+		return getSelf();
+	}
+	
+	public FhirCodeSystemSearchRequestBuilder setCount(int count) {
+		return setLimit(count);
+	}
+
+	public FhirCodeSystemSearchRequestBuilder filterByContent(String content) {
+		return addOption(OptionKey.CONTENT, content);
+	}
+
+	public FhirCodeSystemSearchRequestBuilder filterByLastUpdated(String lastUpdated) {
+		return addOption(OptionKey.LAST_UPDATED, lastUpdated);
 	}
 
 }
