@@ -59,7 +59,7 @@ abstract class BaseBundleApiTest {
 	
 	@After
 	public void cleanUp() {
-		BundleRequests.prepareSearchBundle()
+		BundleRequests.prepareSearch()
 			.buildAsync()
 			.getRequest()
 			.execute(Services.context())
@@ -77,7 +77,7 @@ abstract class BaseBundleApiTest {
 	}
 	
 	Bundle getBundle(final String id) {
-		return BundleRequests.prepareGetBundle(id)
+		return BundleRequests.prepareGet(id)
 				.buildAsync()
 				.getRequest()
 				.execute(Services.context());
@@ -92,7 +92,7 @@ abstract class BaseBundleApiTest {
 	}
 	
 	String createBundle(final String id, final String bundleId, final String title) {
-		return BundleRequests.prepareNewBundle()
+		return BundleRequests.prepareCreate()
 				.setId(id)
 				.setUrl(URL)
 				.setTitle(title)

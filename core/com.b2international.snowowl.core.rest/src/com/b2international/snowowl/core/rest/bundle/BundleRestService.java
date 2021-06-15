@@ -72,7 +72,7 @@ public class BundleRestService extends AbstractRestService {
 		})
 		@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
 		public Promise<Bundles> searchByGet(final BundleRestSearch params) {
-			return BundleRequests.prepareSearchBundle()
+			return BundleRequests.prepareSearch()
 					.filterByIds(params.getId())
 					.filterByTerm(params.getTitle())
 					.setLimit(params.getLimit())
@@ -111,7 +111,7 @@ public class BundleRestService extends AbstractRestService {
 	public Promise<Bundle> get(
 			@ApiParam(value="The bundle identifier")
 			@PathVariable(value="bundleId") final String bundleId) {
-		return BundleRequests.prepareGetBundle(bundleId)
+		return BundleRequests.prepareGet(bundleId)
 				.buildAsync()
 				.execute(getBus());
 	}
@@ -169,7 +169,7 @@ public class BundleRestService extends AbstractRestService {
 			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
 		final String commitComment = String.format("Update bundle %s", bundleId);
-		BundleRequests.prepareUpdateBundle(bundleId)
+		BundleRequests.prepareUpdate(bundleId)
 				.setUrl(bundle.getUrl())
 				.setTitle(bundle.getTitle())
 				.setLanguage(bundle.getLanguage())
@@ -206,7 +206,7 @@ public class BundleRestService extends AbstractRestService {
 			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
 		
-		BundleRequests.prepareDeleteBundle(bundleId)
+		BundleRequests.prepareDelete(bundleId)
 				.commit()
 				.setAuthor(author)
 				.setCommitComment(String.format("Delete bundle %s", bundleId))
