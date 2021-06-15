@@ -167,7 +167,7 @@ public class BundleRestService extends AbstractRestService {
 			
 			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
-		final String commitComment = String.format("Updated bunle %s", bundleId);
+		final String commitComment = String.format("Update bundle %s", bundleId);
 		BundleRequests.prepareUpdateBundle(bundleId)
 				.setUrl(bundle.getUrl())
 				.setTitle(bundle.getTitle())

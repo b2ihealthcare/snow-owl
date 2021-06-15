@@ -65,7 +65,7 @@ abstract class BaseBundleApiTest {
 			.getItems()
 			.forEach(bundle -> {
 				ResourceRequests.prepareDelete(bundle.getId())
-					.build(USAGE, String.format("Delet bundle: %s", bundle.getId()))
+					.build(USAGE, String.format("Delete bundle: %s", bundle.getId()))
 					.execute(Services.bus())
 					.getSync(1, TimeUnit.MINUTES);
 			});
