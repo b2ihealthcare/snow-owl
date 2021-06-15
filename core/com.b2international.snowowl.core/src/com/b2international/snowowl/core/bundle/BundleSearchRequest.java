@@ -21,29 +21,16 @@ import com.b2international.index.Hits;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
-import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.internal.ResourceDocument;
-import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
-import com.b2international.snowowl.core.request.TermFilter;
+import com.b2international.snowowl.core.request.BaseResourceSearchRequest;
 
 /**
  * @since 8.0
  */
-final class BundleSearchRequest
-	extends SearchIndexResourceRequest<RepositoryContext, Bundles, ResourceDocument>
-	implements RepositoryAccessControl {
+final class BundleSearchRequest extends BaseResourceSearchRequest<Bundles> {
 
 	private static final long serialVersionUID = 1L;
-
-	/**
-	 * @since 8.0
-	 */
-	public enum OptionKey {
-		/** Search bundles by title */
-		TITLE,
-	}
 
 	@Override
 	protected Expression prepareQuery(RepositoryContext context) {
@@ -55,31 +42,6 @@ final class BundleSearchRequest
 		return queryBuilder.build();
 	}
 
-	private void addTitleFilter(ExpressionBuilder queryBuilder) {
-		if (!containsKey(OptionKey.TITLE)) {
-			return;
-		}
-		
-		final TermFilter termFilter = get(OptionKey.TITLE, TermFilter.class);
-		
-		final ExpressionBuilder expressionBuilder = Expressions.builder();
-		
-		if (termFilter.isFuzzy()) {
-			expressionBuilder.should(ResourceDocument.Expressions.titleFuzzy(termFilter.getTerm()));
-		} else if (termFilter.isExact()) {
-			expressionBuilder.should(ResourceDocument.Expressions.matchTitleExact(termFilter.getTerm(), termFilter.isCaseSensitive()));
-		} else if (termFilter.isParsed()) {
-			expressionBuilder.should(ResourceDocument.Expressions.parsedTitle(termFilter.getTerm()));
-		} else if (termFilter.isAnyMatch()) {
-			expressionBuilder.should(ResourceDocument.Expressions.minShouldMatchTermDisjunctionQuery(termFilter));
-		} else {
-			expressionBuilder.should(ResourceDocument.Expressions.defaultTitleDisjunctionQuery(termFilter));
-		}
-		
-		expressionBuilder.should(Expressions.boost(ResourceDocument.Expressions.id(termFilter.getTerm()), 1000.0f));
-		queryBuilder.must(expressionBuilder.build());
-	}
-
 	@Override
 	protected Bundles toCollectionResource(RepositoryContext context, Hits<ResourceDocument> hits) {
 		final BundleConverter converter = new BundleConverter(context, expand(), null);
@@ -89,16 +51,6 @@ final class BundleSearchRequest
 	@Override
 	protected Bundles createEmptyResult(int limit) {
 		return new Bundles(Collections.emptyList(), null, limit, 0);
-	}
-	
-	@Override
-	public String getOperation() {
-		return Permission.OPERATION_BROWSE;
-	}
-
-	@Override
-	protected Class<ResourceDocument> getSelect() {
-		return ResourceDocument.class;
 	}
 	
 }

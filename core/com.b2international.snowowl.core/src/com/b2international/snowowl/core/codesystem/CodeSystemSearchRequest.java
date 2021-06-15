@@ -22,18 +22,14 @@ import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.ResourceURI;
-import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.internal.ResourceDocument;
-import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
+import com.b2international.snowowl.core.request.BaseResourceSearchRequest;
 
 /**
  * @since 4.7
  */
-final class CodeSystemSearchRequest 
-	extends SearchIndexResourceRequest<RepositoryContext, CodeSystems, ResourceDocument> 
-	implements RepositoryAccessControl {
+final class CodeSystemSearchRequest extends BaseResourceSearchRequest<CodeSystems> {
 
 	private static final long serialVersionUID = 3L;
 
@@ -45,10 +41,6 @@ final class CodeSystemSearchRequest
 	public enum OptionKey {
 		/** Search by specific tooling ID */
 		TOOLING_ID,
-		/** "Smart" search by title (taking prefixes, stemming, etc. into account) */
-		TITLE,
-		/** Exact match for code system title */
-		TITLE_EXACT,
 		/** HL7 registry OID **/
 		OID, 
 		/**
@@ -67,29 +59,15 @@ final class CodeSystemSearchRequest
 		final ExpressionBuilder queryBuilder = Expressions.builder();
 		
 		addIdFilter(queryBuilder, ResourceDocument.Expressions::ids);
+		addTitleExactFilter(queryBuilder);
+		addTitleFilter(queryBuilder);
 		
 		addFilter(queryBuilder, OptionKey.TOOLING_ID, String.class, ResourceDocument.Expressions::toolingIds);
 		addFilter(queryBuilder, OptionKey.OID, String.class, ResourceDocument.Expressions::oids);
-		addFilter(queryBuilder, OptionKey.TITLE_EXACT, String.class, ResourceDocument.Expressions::titles);
 		addFilter(queryBuilder, OptionKey.UPGRADE_OF, ResourceURI.class, ResourceDocument.Expressions::upgradeOfs);
 
-		addTitleFilter(queryBuilder);
 		
 		return queryBuilder.build();
-	}
-
-	private void addTitleFilter(ExpressionBuilder queryBuilder) {
-		if (containsKey(OptionKey.TITLE)) {
-			final String searchTerm = getString(OptionKey.TITLE);
-			ExpressionBuilder termFilter = Expressions.builder();
-			termFilter.should(Expressions.dismaxWithScoreCategories(
-				ResourceDocument.Expressions.matchTitleExactCaseInsensitive(searchTerm),
-				ResourceDocument.Expressions.matchTitleAllTermsPresent(searchTerm),
-				ResourceDocument.Expressions.matchTitleAllPrefixesPresent(searchTerm)
-			));
-			termFilter.should(Expressions.boost(ResourceDocument.Expressions.id(searchTerm), 1000.0f));
-			queryBuilder.must(termFilter.build());
-		}
 	}
 	
 	@Override
@@ -101,10 +79,5 @@ final class CodeSystemSearchRequest
 	@Override
 	protected CodeSystems createEmptyResult(int limit) {
 		return new CodeSystems(Collections.emptyList(), null, limit, 0);
-	}
-	
-	@Override
-	public String getOperation() {
-		return Permission.OPERATION_BROWSE;
 	}
 }

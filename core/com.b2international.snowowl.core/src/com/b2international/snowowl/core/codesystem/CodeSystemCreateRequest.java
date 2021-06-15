@@ -132,7 +132,7 @@ final class CodeSystemCreateRequest extends BaseResourceCreateRequest {
 		// title should be unique across all resources
 		final boolean existingTitle = ResourceRequests.prepareSearch()
 			.setLimit(0)
-			.filterByTitleExact(getTitle())
+			.filterByExactTermIgnoreCase(getTitle())
 			.build()
 			.execute(context)
 			.getTotal() > 0;

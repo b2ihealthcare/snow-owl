@@ -15,28 +15,17 @@
  */
 package com.b2international.snowowl.core.bundle;
 
-import com.b2international.snowowl.core.bundle.BundleSearchRequest.OptionKey;
-import com.b2international.snowowl.core.context.ResourceRepositoryRequestBuilder;
 import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.request.BaseResourceSearchRequestBuilder;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
-import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
-import com.b2international.snowowl.core.request.TermFilter;
-import com.b2international.snowowl.core.request.TermFilterSupport;
 
 /**
  * @since 8.0
  */
-public final class BundleSearchRequestBuilder 
-		extends SearchResourceRequestBuilder<BundleSearchRequestBuilder, RepositoryContext, Bundles>
-		implements ResourceRepositoryRequestBuilder<Bundles>, TermFilterSupport<BundleSearchRequestBuilder> {
+public final class BundleSearchRequestBuilder extends BaseResourceSearchRequestBuilder<BundleSearchRequestBuilder, Bundles> {
 
 	BundleSearchRequestBuilder() {
 		super();
-	}
-
-	@Override
-	public BundleSearchRequestBuilder filterByTerm(TermFilter termFilter) {
-		return addOption(OptionKey.TITLE, termFilter);
 	}
 
 	@Override
