@@ -226,9 +226,10 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		// add dirty descriptions with relevant changes from tx
 		staging
 			// XXX accepts only relevant property changes, lang member detection should take care about acceptability changes
-			.getChangedRevisions(SnomedDescriptionIndexEntry.class, ALLOWED_DESCRIPTION_CHANGE_FEATURES) 
+			.getChangedRevisions(SnomedDescriptionIndexEntry.class) 
+			.filter(diff -> !Concepts.TEXT_DEFINITION.equals(((SnomedDescriptionIndexEntry) diff.newRevision).getTypeId()))
+			.filter(diff -> diff.hasRevisionPropertyChanges(ALLOWED_DESCRIPTION_CHANGE_FEATURES))
 			.map(diff -> (SnomedDescriptionIndexEntry) diff.newRevision)
-			.filter(description -> !Concepts.TEXT_DEFINITION.equals(description.getTypeId()))
 			.forEach(description -> descriptions.put(description.getId(), description));
 		
 		// add detached descriptions
@@ -243,9 +244,9 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 			.map(member -> member.getReferencedComponentId())
 			.forEach(descriptionsToLoad::add);
 		
-		staging.getChangedRevisions(SnomedRefSetMemberIndexEntry.class, ALLOWED_LANG_MEMBER_CHANGE_FEATURES)
-			.map(diff -> (SnomedRefSetMemberIndexEntry) diff.newRevision)
-			.map(member -> member.getReferencedComponentId())
+		staging.getChangedRevisions(SnomedRefSetMemberIndexEntry.class)
+			.filter(diff -> diff.hasRevisionPropertyChanges(ALLOWED_LANG_MEMBER_CHANGE_FEATURES))
+			.map(diff -> ((SnomedRefSetMemberIndexEntry) diff.newRevision).getReferencedComponentId())
 			.forEach(descriptionsToLoad::add);
 		
 		staging.getRemovedObjects(SnomedRefSetMemberIndexEntry.class)
@@ -292,16 +293,29 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		final long idLong = Long.parseLong(id);
 		final boolean active = newOrDirtyRevision != null ? newOrDirtyRevision.isActive() : cleanRevision.isActive();
 		
-		doc.active(active)
-			.released(newOrDirtyRevision != null ? newOrDirtyRevision.isReleased() : cleanRevision.isReleased())
-			.effectiveTime(newOrDirtyRevision != null ? newOrDirtyRevision.getEffectiveTime() : cleanRevision.getEffectiveTime())
-			.moduleId(newOrDirtyRevision != null ? newOrDirtyRevision.getModuleId() : cleanRevision.getModuleId())
-			.exhaustive(newOrDirtyRevision != null ? newOrDirtyRevision.isExhaustive() : cleanRevision.isExhaustive())
-			.primitive(newOrDirtyRevision != null ? newOrDirtyRevision.isPrimitive() : cleanRevision.isPrimitive())
-			.refSetType(newOrDirtyRevision != null ? newOrDirtyRevision.getRefSetType() : cleanRevision.getRefSetType())
-			.referencedComponentType(newOrDirtyRevision != null ? newOrDirtyRevision.getReferencedComponentType() : cleanRevision.getReferencedComponentType())
-			.mapTargetComponentType(newOrDirtyRevision != null ? newOrDirtyRevision.getMapTargetComponentType() : cleanRevision.getMapTargetComponentType())
-			.doi(doiData.getDoiScore(idLong));
+		if (newOrDirtyRevision != null) {
+			doc.active(active)
+					.released(newOrDirtyRevision.isReleased())
+					.effectiveTime(newOrDirtyRevision.getEffectiveTime())
+					.moduleId(newOrDirtyRevision.getModuleId())
+					.exhaustive(newOrDirtyRevision.isExhaustive())
+					.primitive(newOrDirtyRevision.isPrimitive())
+					.refSetType(newOrDirtyRevision.getRefSetType())
+					.referencedComponentType(newOrDirtyRevision.getReferencedComponentType())
+					.mapTargetComponentType(newOrDirtyRevision.getMapTargetComponentType())
+					.doi(doiData.getDoiScore(idLong));
+		} else {
+			doc.active(active)
+					.released(cleanRevision.isReleased())
+					.effectiveTime(cleanRevision.getEffectiveTime())
+					.moduleId(cleanRevision.getModuleId())
+					.exhaustive(cleanRevision.isExhaustive())
+					.primitive(cleanRevision.isPrimitive())
+					.refSetType(cleanRevision.getRefSetType())
+					.referencedComponentType(cleanRevision.getReferencedComponentType())
+					.mapTargetComponentType(cleanRevision.getMapTargetComponentType())
+					.doi(doiData.getDoiScore(idLong));
+		}
 		
 		final boolean inStated = statedTaxonomy.getNewTaxonomy().containsNode(idLong);
 		final boolean inInferred = inferredTaxonomy.getNewTaxonomy().containsNode(idLong);

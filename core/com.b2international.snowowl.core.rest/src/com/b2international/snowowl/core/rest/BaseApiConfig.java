@@ -31,6 +31,7 @@ import org.springframework.http.ResponseEntity;
 
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.fasterxml.classmate.TypeResolver;
 import com.google.common.base.Predicate;
@@ -115,6 +116,7 @@ public abstract class BaseApiConfig {
 				.alternateTypeRules(
 					newRule(resolver.resolve(UUID.class), resolver.resolve(String.class)),
 					newRule(resolver.resolve(ResourceURI.class), resolver.resolve(String.class)),
+					newRule(resolver.resolve(ComponentIdentifier.class), resolver.resolve(String.class)),
 					newRule(resolver.resolve(ExtendedLocale.class), resolver.resolve(String.class)),
 					newRule(
 						resolver.resolve(List.class, resolver.resolve(ResourceURI.class)),

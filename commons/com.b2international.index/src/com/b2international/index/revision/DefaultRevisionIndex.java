@@ -32,6 +32,7 @@ import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.Query;
+import com.b2international.index.query.Query.AfterWhereBuilder;
 import com.b2international.index.query.SortBy;
 import com.b2international.index.query.SortBy.Order;
 import com.b2international.index.revision.RevisionCompare.Builder;
@@ -184,13 +185,22 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex, Hooks 
 					.build());
 		}
 		
-		// apply commits happened on the compareRef segments in chronological order 
-		searcher.scroll(Query.select(Commit.class)
-				.where(compareCommitsQuery.build())
-				.limit(20) // load only 20 commits for each batch (import commits tend to be large, so if we load 20 of them we should not use that much memory)
-				.sortBy(SortBy.field(Commit.Fields.TIMESTAMP, Order.ASC))
-				.build())
-				.forEach(commits -> commits.forEach(result::apply));
+		// apply commits happened on the compareRef segments in chronological order
+		AfterWhereBuilder<Commit> query = Query.select(Commit.class)
+			.where(compareCommitsQuery.build())
+			.limit(20) // load only 20 commits for each batch (import commits tend to be large, so if we load 20 of them we should not use that much memory)
+			.sortBy(SortBy.field(Commit.Fields.TIMESTAMP, Order.ASC));
+		
+		int processedCommits = 0;
+		Hits<Commit> hits = null;
+		do {
+			if (hits != null) {
+				query.searchAfter(hits.getSearchAfter());
+			}
+			hits = searcher.search(query.build());
+			hits.forEach(result::apply);
+			processedCommits += hits.getLimit();
+		} while (processedCommits < hits.getTotal());
 	}
 
 	private String getBranchPath(Searcher searcher, long branchId) throws IOException {

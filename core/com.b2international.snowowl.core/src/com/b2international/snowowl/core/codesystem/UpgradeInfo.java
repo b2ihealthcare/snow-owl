@@ -21,6 +21,9 @@ import java.util.List;
 import com.b2international.index.revision.RevisionBranch.BranchState;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.branch.BranchInfo;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 7.17.0
@@ -33,7 +36,11 @@ public final class UpgradeInfo implements Serializable {
 	List<BranchInfo> versionBranchInfos;
 	List<ResourceURI> availableVersions;
 	
-	public UpgradeInfo(BranchInfo upgradeOfBranchInfo, List<BranchInfo> versionBranchInfos, List<ResourceURI> availableVersions) {
+	@JsonCreator
+	public UpgradeInfo(
+			@JsonProperty("upgradeOfBranchInfo") BranchInfo upgradeOfBranchInfo, 
+			@JsonProperty("versionBranchInfos") List<BranchInfo> versionBranchInfos, 
+			@JsonProperty("availableVersions") List<ResourceURI> availableVersions) {
 		this.upgradeOfBranchInfo = upgradeOfBranchInfo;
 		this.versionBranchInfos = versionBranchInfos;
 		this.availableVersions = availableVersions;
@@ -52,6 +59,7 @@ public final class UpgradeInfo implements Serializable {
 		return availableVersions;
 	}
 	
+	@JsonIgnore
 	public boolean isBlocked() {
 		return upgradeOfBranchInfo.getState()  == BranchState.DIVERGED || upgradeOfBranchInfo.getState()  == BranchState.BEHIND;
 	}

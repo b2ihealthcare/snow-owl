@@ -25,20 +25,12 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
-import com.b2international.snowowl.core.compare.ConceptMapCompareChangeKind;
-import com.b2international.snowowl.core.compare.ConceptMapCompareConfigurationProperties;
-import com.b2international.snowowl.core.compare.ConceptMapCompareResult;
-import com.b2international.snowowl.core.compare.ConceptMapCompareResultItem;
-import com.b2international.snowowl.core.compare.MapCompareSourceAndTargetEquivalence;
+import com.b2international.snowowl.core.compare.*;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.ConceptMapMapping;
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.google.common.base.Equivalence.Wrapper;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
+import com.google.common.collect.*;
 
 /**
 * @since 7.8
@@ -88,43 +80,41 @@ final class ConceptMapCompareRequest extends ResourceRequest<BranchContext, Conc
 		List<ConceptMapMapping> baseMappings = Lists.newArrayList();
 		new SearchResourceRequestIterator<>(
 				CodeSystemRequests.prepareSearchConceptMapMappings()
-				.filterByConceptMap(conceptMapId)
-				.filterByActive(true)
-				.setLocales(locales())
-				.setPreferredDisplay(preferredDisplay)
-				.setLimit(DEFAULT_MEMBER_SCROLL_LIMIT),
+					.filterByConceptMap(conceptMapId)
+					.filterByActive(true)
+					.setLocales(locales())
+					.setPreferredDisplay(preferredDisplay)
+					.setLimit(DEFAULT_MEMBER_SCROLL_LIMIT),
 				r -> r.build().execute(context)
 			).forEachRemaining(hits -> hits.forEach(baseMappings::add));
 		return baseMappings;
 	}
 	
 	private ConceptMapCompareResult compareDifferences(List<ConceptMapMapping> baseMappings, List<ConceptMapMapping> compareMappings) {
-
-		//Wrap the mappings to be compared and processed using set operations
+		// Wrap the mappings to be compared and processed using set operations
 		Set<Wrapper<ConceptMapMapping>> baseWrappedMappings = wrapMappings(baseMappings);
 		Set<Wrapper<ConceptMapMapping>> compareWrappedMappings = wrapMappings(compareMappings);
 		
 		//Unchanged elements are in the intersection
 		Set<Wrapper<ConceptMapMapping>> allUnchangedWrappedMappings = Sets.intersection(baseWrappedMappings, compareWrappedMappings);
 		
-		//Collect mappings with comments
+		// compute intersection by using a Multimap of HASH -> MAPPING
+		// index mappings by hash, then for each key reduce comments into a single concept map mapping with all comments where the hash were the same
+		Multimap<Integer, ConceptMapMapping> baseMappingsByHash = ArrayListMultimap.create();
+		baseWrappedMappings.forEach(mapping -> {
+			baseMappingsByHash.put(mapping.hashCode(), mapping.get());
+		});
 		
-		Set<Wrapper<ConceptMapMapping>> allUnchangedWrappedMappingsWithComments = allUnchangedWrappedMappings.stream().map(mapping -> {
-			List<String> comments = Lists.newArrayList();
-
-			baseWrappedMappings.stream().filter(baseMapping -> baseMapping.equals(mapping))
-				.findFirst()
-				.ifPresent(m -> comments.add(m.get().getComments()));
-
-			compareWrappedMappings.stream().filter(compareMapping -> compareMapping.equals(mapping))
-				.findFirst()
-				.ifPresent(m -> comments.add(m.get().getComments()));
-			
-			return mapCompareEquivalence.wrap(ConceptMapMapping.builder(mapping.get()).comments(String.join(" ", comments).trim()).build());
-		}).collect(Collectors.toSet());
+		Multimap<Integer, ConceptMapMapping> compareMappingsByHash = ArrayListMultimap.create();
+		compareWrappedMappings.forEach(mapping -> {
+			compareMappingsByHash.put(mapping.hashCode(), mapping.get());
+		});
 		
-		List<ConceptMapCompareResultItem> allUnchanged = allUnchangedWrappedMappingsWithComments.stream()
-			.map(w -> new ConceptMapCompareResultItem(ConceptMapCompareChangeKind.SAME, w.get()))
+		List<ConceptMapCompareResultItem> allUnchanged = Set.copyOf(Sets.intersection(baseMappingsByHash.keySet(), compareMappingsByHash.keySet()))
+			.stream()
+			.map(hash -> ImmutableList.<ConceptMapMapping>builder().addAll(baseMappingsByHash.removeAll(hash)).addAll(compareMappingsByHash.removeAll(hash)).build())
+			.map(mappings -> mappings.stream().reduce((result, next) -> result.mergeComments(next.getComments())).get())
+			.map(mapping -> new ConceptMapCompareResultItem(ConceptMapCompareChangeKind.SAME, mapping))
 			.collect(Collectors.toList());
 		
 		//Remove the unchanged from further comparison

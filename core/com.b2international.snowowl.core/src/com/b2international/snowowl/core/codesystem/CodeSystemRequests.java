@@ -55,6 +55,10 @@ public class CodeSystemRequests {
 		return new CodeSystemCompleteUpgradeRequestBuilder(codeSystemId);
 	}
 	
+	public static CodeSystemUpgradeSynchronizationRequestBuilder prepareUpgradeSynchronization(CodeSystemURI codeSystemId, CodeSystemURI source) {
+		return new CodeSystemUpgradeSynchronizationRequestBuilder(codeSystemId, source);
+	}
+	
 	// Generic Content Search APIs
 	
 	/**

@@ -15,17 +15,19 @@
  */
 package com.b2international.snowowl.snomed.core.ql;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.commons.exceptions.ApiException;
+import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.exceptions.SyntaxException;
 import com.b2international.commons.tree.NoopTreeVisitor;
+import com.b2international.snomed.ecl.ecl.EclConceptReference;
+import com.b2international.snomed.ql.ql.Query;
 import com.b2international.snowowl.core.authorization.BranchAccessControl;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.emf.EObjectTreeNode;
@@ -34,8 +36,6 @@ import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.request.ResourceRequest;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
-import com.b2international.snomed.ecl.ecl.EclConceptReference;
-import com.b2international.snomed.ql.ql.Query;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
@@ -73,13 +73,31 @@ final class SnomedQueryLabelerRequest extends ResourceRequest<BranchContext, Exp
 		SnomedQuerySerializer querySerializer = context.service(SnomedQuerySerializer.class);
 		final Set<String> conceptIdsToLabel = Sets.newHashSetWithExpectedSize(expressions.size());
 		final Map<String, Query> queries = Maps.newHashMapWithExpectedSize(expressions.size());
+		LinkedHashMap <String, Object> errors = Maps.newLinkedHashMap();
 		
 		for (String expression : expressions) {
 			if (Strings.isNullOrEmpty(expression)) {
 				continue;
 			}
-			Query query = queries.computeIfAbsent(expression, (key) -> context.service(SnomedQueryParser.class).parse(key));
-			conceptIdsToLabel.addAll(collect(query));
+			try {
+				Query query = queries.computeIfAbsent(expression, (key) -> context.service(SnomedQueryParser.class).parse(key));
+				conceptIdsToLabel.addAll(collect(query));
+			} catch (ApiException e) {
+				if (e instanceof SyntaxException) {
+					errors.put(expression, List.copyOf(((SyntaxException)e).getAdditionalInfo().values()));
+				} else if (e instanceof BadRequestException) {
+					errors.put(expression, e.getMessage());
+				} else {
+					throw e;
+				}
+			}
+		}
+		
+		if (!errors.isEmpty()) {
+			BadRequestException badRequestException = new BadRequestException("One or more QL syntax errors");
+			badRequestException.withAdditionalInfo("erroneousExpressions", errors);
+
+			throw badRequestException;
 		}
 		
 		// fetch all concept labels
