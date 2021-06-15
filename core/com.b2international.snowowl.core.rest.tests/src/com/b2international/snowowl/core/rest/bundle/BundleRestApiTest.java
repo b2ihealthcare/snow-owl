@@ -19,14 +19,18 @@ import static com.b2international.snowowl.core.rest.BunldeApiAssert.assertBundle
 import static com.b2international.snowowl.core.rest.BunldeApiAssert.assertBundleGet;
 import static com.b2international.snowowl.core.rest.BunldeApiAssert.assertBundleSearch;
 import static com.b2international.snowowl.core.rest.BunldeApiAssert.assertCreate;
+import static com.b2international.snowowl.core.rest.BunldeApiAssert.assertUpdateBundleField;
 import static com.b2international.snowowl.core.rest.BunldeApiAssert.prepareCreateRequestBody;
+import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertCodeSystemCreated;
+import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.prepareCodeSystemCreateRequestBody;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.collection.IsEmptyCollection.empty;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
+import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.junit.Test;
 
@@ -67,9 +71,7 @@ public class BundleRestApiTest {
 	public void createBundle() throws JsonProcessingException {
 		final Json body = prepareCreateRequestBody("b1");
 		assertBundleCreated(body);
-		assertBundleGet("b1").and()
-			.body("id", equalTo("b1"))
-			.assertThat();
+		assertBundleGet("b1");
 	}
 	
 	@Test
@@ -83,7 +85,7 @@ public class BundleRestApiTest {
 	@Test
 	public void serachBundleById() {
 		assertBundleCreated(prepareCreateRequestBody("b2"));
-		assertBundleSearch(Map.of("id", List.of("b2"))).and()
+		assertBundleSearch(Map.of("id", Set.of("b2"))).and()
 			.body("items", hasItem(hasEntry("id", "b2")))
 			.assertThat();
 	}
@@ -117,4 +119,99 @@ public class BundleRestApiTest {
 			.assertThat();
 	}
 	
+	@Test
+	public void expandBundleResources() {
+		final String rootBundleId = "rootBundleId";
+		final String subBundleId = "subBundleId";
+		
+		assertBundleCreated(prepareCreateRequestBody(rootBundleId));
+		assertBundleCreated(prepareCreateRequestBody(subBundleId));
+		assertCodeSystemCreated(prepareCodeSystemCreateRequestBody("cs1").with("bundleId", rootBundleId));
+		assertCodeSystemCreated(prepareCodeSystemCreateRequestBody("cs2").with("bundleId", rootBundleId));
+		assertCodeSystemCreated(prepareCodeSystemCreateRequestBody("cs3").with("bundleId", subBundleId));
+		
+		assertBundleSearch(Map.of("id", Set.of(rootBundleId), "expand", "resources()")).and()
+			.body("items", hasItem(hasEntry("resources", hasSize(3))))
+			.body("items", hasItem(hasEntry("resources", hasItem(hasEntry("id", "cs1")))))
+			.body("items", hasItem(hasEntry("resources", hasItem(hasEntry("id", "cs2")))))
+			.body("items", hasItem(hasEntry("resources", hasItem(hasEntry("id", subBundleId)))))
+			.assertThat();
+	}
+	
+	@Test
+	public void updateBundleTitle() {
+		final String id = "b4";
+		assertBundleCreated(prepareCreateRequestBody(id));
+		assertUpdateBundleField(id, "title", "new bundle title");
+	}
+
+	@Test
+	public void updateBundleUrl() {
+		final String id = "b5";
+		assertBundleCreated(prepareCreateRequestBody(id));
+		assertUpdateBundleField(id, "url", "new bundle url");
+	}
+
+	@Test
+	public void updateBundleLanguage() {
+		final String id = "b6";
+		assertBundleCreated(prepareCreateRequestBody(id));
+		assertUpdateBundleField(id, "language", "hu");
+	}
+	
+	@Test
+	public void updateBundleDescription() {
+		final String id = "b7";
+		assertBundleCreated(prepareCreateRequestBody(id));
+		assertUpdateBundleField(id, "description", "Bundle `Hungarian` resources");
+	}
+	
+	@Test
+	public void updateBundleStaus() {
+		final String id = "b8";
+		assertBundleCreated(prepareCreateRequestBody(id));
+		assertUpdateBundleField(id, "status", "draft");
+	}
+	
+	@Test
+	public void updateBundleCopyright() {
+		final String id = "b9";
+		assertBundleCreated(prepareCreateRequestBody(id));
+		assertUpdateBundleField(id, "copyright", "Licensed under the Fictive License 2.0");
+	}
+	
+	@Test
+	public void updateBundleOwner() {
+		final String id = "b10";
+		assertBundleCreated(prepareCreateRequestBody(id));
+		assertUpdateBundleField(id, "owner", "B2i");
+	}
+	
+	@Test
+	public void updateBundleContact() {
+		final String id = "b11";
+		assertBundleCreated(prepareCreateRequestBody(id));
+		assertUpdateBundleField(id, "contact", "info@b2international.com");
+	}
+	
+	@Test
+	public void updateBundleUsage() {
+		final String id = "b12";
+		assertBundleCreated(prepareCreateRequestBody(id));
+		assertUpdateBundleField(id, "usage", "For testing");
+	}
+	
+	@Test
+	public void updateBundlePurpose() {
+		final String id = "b13";
+		assertBundleCreated(prepareCreateRequestBody(id));
+		assertUpdateBundleField(id, "purpose", "Test bundle REST API update endpoint");
+	}
+	
+	@Test
+	public void updateBundleBundleId() {
+		final String id = "b14";
+		assertBundleCreated(prepareCreateRequestBody(id));
+		assertUpdateBundleField(id, "bundleId", "new-bundle-id");
+	}
 }

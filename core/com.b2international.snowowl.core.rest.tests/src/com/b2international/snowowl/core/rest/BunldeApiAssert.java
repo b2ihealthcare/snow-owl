@@ -27,6 +27,7 @@ import java.util.Map;
 import com.b2international.commons.json.Json;
 
 import io.restassured.http.ContentType;
+import io.restassured.response.Response;
 import io.restassured.response.ValidatableResponse;
 
 /**
@@ -47,7 +48,9 @@ public class BunldeApiAssert {
 	public static ValidatableResponse assertBundleGet(final String resourceId) {
 		return givenAuthenticatedRequest(BUNDLE_API)
 				.when().get("/{id}", resourceId)
-				.then().assertThat();
+				.then().assertThat()
+				.and().body("id", equalTo(resourceId))
+				.assertThat();
 	}
 	
 	public static String assertBundleCreated(final Map<String, Object> requestBody) {
@@ -66,6 +69,21 @@ public class BunldeApiAssert {
 				.and().body(requestBody)
 				.when().post()
 				.then().assertThat();
+	}
+	
+	public static Response updateBundle(final String uniqueId, final Map<String, Object> requestBody) {
+		return givenAuthenticatedRequest(BUNDLE_API)
+			.with().contentType(ContentType.JSON)
+			.and().body(requestBody)
+			.when().put("/{id}", uniqueId);
+	}
+	
+	public static ValidatableResponse assertUpdateBundleField(final String uniqueId, final String field, final String value) {
+		updateBundle(uniqueId, Map.of(field, value));
+		
+		return assertBundleGet(uniqueId).and()
+			.body(field, equalTo(value))
+			.assertThat();
 	}
 	
 	public static Json prepareCreateRequestBody(final String resourceId) {

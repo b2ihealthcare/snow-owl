@@ -94,7 +94,6 @@ public class BundleRestService extends AbstractRestService {
 		@ApiResponses({
 			@ApiResponse(code = 200, message = "OK", response = CodeSystems.class),
 			@ApiResponse(code = 400, message = "Invalid search config", response = RestApiError.class),
-			@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
 		})
 		@PostMapping(value="/search", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 		public Promise<Bundles> searchByPost(final BundleRestSearch params) {
