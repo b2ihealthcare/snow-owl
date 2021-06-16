@@ -21,11 +21,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.codesystem.CodeSystems;
-import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
@@ -116,22 +114,30 @@ public class CodeSystemRestService extends AbstractRestService {
 	@ResponseStatus(HttpStatus.CREATED)
 	public ResponseEntity<Void> create(
 			@RequestBody
-			final CodeSystem codeSystem,
+			final CodeSystemCreateRestInput params,
 			
 			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
 
-		if (codeSystem.getUpgradeOf() != null) {
-			throw new BadRequestException("'upgradeOf' property cannot be set through code system create API");
-		}
-		
-		// initialize defaults, TODO use dedicatd input object instead of representation
-		if (codeSystem.getBundleId() == null) {
-			codeSystem.setBundleId(IComponent.ROOT_ID);
-		}
-		
-		final String commitComment = String.format("Created new Code System %s", codeSystem.getId());
-		final String codeSystemId = codeSystem.toCreateRequest()
+		final String commitComment = String.format("Created new Code System %s", params.getId());
+		final String codeSystemId = CodeSystemRequests.prepareNewCodeSystem()
+				.setId(params.getId())
+				.setBundleId(params.getBundleId())
+				.setUrl(params.getUrl())
+				.setTitle(params.getTitle())
+				.setLanguage(params.getLanguage())
+				.setDescription(params.getDescription())
+				.setStatus(params.getStatus())
+				.setCopyright(params.getCopyright())
+				.setOwner(params.getOwner())
+				.setContact(params.getContact())
+				.setUsage(params.getUsage())
+				.setPurpose(params.getPurpose())
+				.setOid(params.getOid())
+				.setBranchPath(params.getBranchPath())
+				.setToolingId(params.getToolingId())
+				.setExtensionOf(params.getExtensionOf())
+				.setSettings(params.getSettings())
 				.commit() 
 				.setAuthor(author)
 				.setCommitComment(commitComment)
@@ -158,27 +164,27 @@ public class CodeSystemRestService extends AbstractRestService {
 			final String codeSystemId,
 			
 			@RequestBody
-			final CodeSystem codeSystem,
+			final CodeSystemUpdateRestInput params,
 			
 			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
 		final String commitComment = String.format("Updated Code System %s", codeSystemId);
 		CodeSystemRequests.prepareUpdateCodeSystem(codeSystemId)
-				.setUrl(codeSystem.getUrl())
-				.setTitle(codeSystem.getTitle())
-				.setLanguage(codeSystem.getLanguage())
-				.setDescription(codeSystem.getDescription())
-				.setStatus(codeSystem.getStatus())
-				.setCopyright(codeSystem.getCopyright())
-				.setOwner(codeSystem.getOwner())
-				.setContact(codeSystem.getContact())
-				.setUsage(codeSystem.getUsage())
-				.setPurpose(codeSystem.getPurpose())
-				.setBundleId(codeSystem.getBundleId())
-				.setOid(codeSystem.getOid())
-				.setBranchPath(codeSystem.getBranchPath())
-				.setExtensionOf(codeSystem.getExtensionOf())
-				.setSettings(codeSystem.getSettings())
+				.setUrl(params.getUrl())
+				.setTitle(params.getTitle())
+				.setLanguage(params.getLanguage())
+				.setDescription(params.getDescription())
+				.setStatus(params.getStatus())
+				.setCopyright(params.getCopyright())
+				.setOwner(params.getOwner())
+				.setContact(params.getContact())
+				.setUsage(params.getUsage())
+				.setPurpose(params.getPurpose())
+				.setBundleId(params.getBundleId())
+				.setOid(params.getOid())
+				.setBranchPath(params.getBranchPath())
+				.setExtensionOf(params.getExtensionOf())
+				.setSettings(params.getSettings())
 				.commit()
 				.setAuthor(author)
 				.setCommitComment(commitComment)
