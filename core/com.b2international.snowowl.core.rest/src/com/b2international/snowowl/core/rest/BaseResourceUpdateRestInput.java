@@ -18,7 +18,7 @@ package com.b2international.snowowl.core.rest;
 /**
  * @since 8.0
  */
-public class BaseResourceUpdateRestInput {
+public abstract class BaseResourceUpdateRestInput {
 	
 	private String bundleId;
 	private String url;
