@@ -24,11 +24,46 @@ import com.b2international.snowowl.core.request.BaseResourceSearchRequest.Option
  */
 public abstract class BaseResourceSearchRequestBuilder<RB extends BaseResourceSearchRequestBuilder<RB, R>, R>
 		extends SearchResourceRequestBuilder<RB, RepositoryContext, R>
-		implements ResourceRepositoryRequestBuilder<R>, TermFilterSupport<RB>{
+		implements ResourceRepositoryRequestBuilder<R> {
 
-	@Override
-	public final RB filterByTerm(TermFilter termFilter) {
+	/**
+	 * Filter matches by a {@link TermFilter} configuration
+	 * 
+	 * @param termFilter - configuration
+	 * @return this builder
+	 */
+	public final RB filterByTitle(final TermFilter termFilter) {
 		return addOption(OptionKey.TITLE, termFilter);
+	}
+	
+	/**
+	 * "Smart" search by title (taking prefixes, stemming, etc. into account)
+	 * 
+	 * @param title - the title to search for
+	 * @return this builder
+	 */
+	public final RB filterByTitle(final String title) {
+		return filterByTitle(title != null ? TermFilter.defaultTermMatch(title) : null);
+	}
+	
+	/**
+	 * Exact case sensitive match on title
+	 * 
+	 * @param exactTitle - the title to search for
+	 * @return this builder
+	 */
+	public final RB filterByExactTitle(final String exactTitle) {
+		return filterByTitle(exactTitle != null ? TermFilter.exactTermMatch(exactTitle) : null);
+	}
+	
+	/**
+	 * Exact case insensitive ASCII folded match on title
+	 * 
+	 * @param exactTitle - the title to search for
+	 * @return this builder
+	 */
+	public final RB filterByExactTitleIgnoreCase(final String exactTitle) {
+		return filterByTitle(exactTitle != null ? TermFilter.exactIgnoreCaseTermMatch(exactTitle) : null);
 	}
 	
 	/**
@@ -37,7 +72,7 @@ public abstract class BaseResourceSearchRequestBuilder<RB extends BaseResourceSe
 	 * @param titles - at least one of these titles match
 	 * @return this builder
 	 */
-	public final RB filterByTermExact(Iterable<String> titles) {
+	public final RB filterByTitleExact(Iterable<String> titles) {
 		return addOption(OptionKey.TITLE_EXACT, titles);
 	}
 

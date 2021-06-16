@@ -109,7 +109,7 @@ final class CodeSystemCreateRequest extends BaseResourceCreateRequest {
 		
 		// If the branch should be created, it branch should not exist, however 
 		if (create) {
-			final String newBranchPath = Branch.get(parentPath, getTitle());
+			final String newBranchPath = Branch.get(parentPath, getId());
 			if (branchExists(newBranchPath, context)) {
 				throw new AlreadyExistsException("Code system branch", newBranchPath);
 			}
@@ -132,7 +132,7 @@ final class CodeSystemCreateRequest extends BaseResourceCreateRequest {
 		// title should be unique across all resources
 		final boolean existingTitle = ResourceRequests.prepareSearch()
 			.setLimit(0)
-			.filterByExactTermIgnoreCase(getTitle())
+			.filterByExactTitleIgnoreCase(getTitle())
 			.build()
 			.execute(context)
 			.getTotal() > 0;

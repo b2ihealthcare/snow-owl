@@ -58,7 +58,7 @@ public class CodeSystemRestService extends AbstractRestService {
 		return CodeSystemRequests.prepareSearchCodeSystem()
 				.filterByIds(params.getId())
 				.filterByOids(params.getOid())
-				.filterByTerm(params.getTitle())
+				.filterByTitle(params.getTitle())
 				.filterByToolingIds(params.getToolingId())
 				.setLimit(params.getLimit())
 				.setExpand(params.getExpand())

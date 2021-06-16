@@ -74,7 +74,7 @@ public class BundleRestService extends AbstractRestService {
 		public Promise<Bundles> searchByGet(final BundleRestSearch params) {
 			return ResourceRequests.bundles().prepareSearch()
 					.filterByIds(params.getId())
-					.filterByTerm(params.getTitle())
+					.filterByTitle(params.getTitle())
 					.setLimit(params.getLimit())
 					.setExpand(params.getExpand())
 					.setSearchAfter(params.getSearchAfter())
