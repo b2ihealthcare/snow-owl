@@ -67,7 +67,7 @@ public abstract class BaseResourceCreateRequest implements Request<TransactionCo
 	}
 	
 	/**
-	 * Subclasses may override this method to add extra logic to request execution.
+	 * Subclasses may override this method to perform validation checks and/or attach additional resources to the transaction before creating the main resource.
 	 */
 	protected void executeAdditionalLogic(final TransactionContext context) { }
 
