@@ -118,8 +118,7 @@ public abstract class CodeSystemApiAssert {
 			"toolingId", TOOLING_ID,
 			"oid", codeSystemId,
 			"language", "en",
-			"url", "link",
-			"bundleId", IComponent.ROOT_ID
+			"url", "link"
 		);
 	}
 	
