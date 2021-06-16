@@ -50,7 +50,7 @@ public class BundleApiAssert {
 				.when().get("/{id}", resourceId)
 				.then().assertThat().statusCode(200)
 				.and().body("id", equalTo(resourceId))
-				.assertThat();
+				.assertThat().and();
 	}
 	
 	public static String assertBundleCreated(final Map<String, Object> requestBody) {
@@ -83,9 +83,9 @@ public class BundleApiAssert {
 	public static ValidatableResponse assertUpdateBundleField(final String uniqueId, final String field, final String value) {
 		updateBundle(uniqueId, Map.of(field, value));
 		
-		return assertBundleGet(uniqueId).and()
+		return assertBundleGet(uniqueId)
 			.body(field, equalTo(value))
-			.assertThat();
+			.assertThat().and();
 	}
 	
 	public static Json prepareCreateRequestBody(final String resourceId) {
