@@ -32,6 +32,7 @@ import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
+import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
 import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.Bundle.Builder;
@@ -40,6 +41,7 @@ import com.b2international.snowowl.fhir.core.model.Meta;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Instant;
+import com.b2international.snowowl.fhir.core.model.dt.Narrative;
 import com.google.common.collect.Lists;
 
 /**
@@ -58,7 +60,8 @@ final class FhirCodeSystemSearchRequest extends SearchResourceRequest<Repository
 		CodeSystem.Fields.DATE,
 		CodeSystem.Fields.IDENTIFIER,
 		CodeSystem.Fields.META,
-		CodeSystem.Fields.VERSION
+		CodeSystem.Fields.VERSION,
+		CodeSystem.Fields.TEXT
 	);
 	
 	/**
@@ -144,22 +147,24 @@ final class FhirCodeSystemSearchRequest extends SearchResourceRequest<Repository
 						.lastUpdated(Instant.builder().instant(java.time.Instant.now()).build())
 					.build()
 				)
-				.content(CodeSystemContentMode.COMPLETE) // treat all CodeSystems complete by default, later we might add this field to the document, if needed
-				
-				// summary fields
-				.url(codeSystem.getUrl())
-				.publisher(codeSystem.getOwner())
-				.name(codeSystem.getId()) // we are using the ID of the resource as machine readable name
-				.title(codeSystem.getTitle());
-		// TODO fill out Code System specific properties, if required use tooling specific extensions to fill all fields
+				.content(CodeSystemContentMode.COMPLETE); // treat all CodeSystems complete by default, later we might add this field to the document, if needed
 		
 		// optional fields
+		// we are using the ID of the resource as machine readable name
+		includeIfFieldSelected(CodeSystem.Fields.NAME, codeSystem::getId, entry::name);
+		includeIfFieldSelected(CodeSystem.Fields.TITLE, codeSystem::getTitle, entry::title);
+		includeIfFieldSelected(CodeSystem.Fields.URL, codeSystem::getUrl, entry::url);
+		includeIfFieldSelected(CodeSystem.Fields.TEXT, () -> Narrative.builder().div("<div></div>").status(NarrativeStatus.EMPTY).build(), entry::text);
+		includeIfFieldSelected(CodeSystem.Fields.PUBLISHER, codeSystem::getOwner, entry::publisher);
 		includeIfFieldSelected(CodeSystem.Fields.COPYRIGHT, codeSystem::getCopyright, entry::copyright);
 		includeIfFieldSelected(CodeSystem.Fields.LANGUAGE, codeSystem::getLanguage, entry::language);
 		includeIfFieldSelected(CodeSystem.Fields.DESCRIPTION, codeSystem::getDescription, entry::description);
 		includeIfFieldSelected(CodeSystem.Fields.PURPOSE, codeSystem::getPurpose, entry::purpose);
+		
 		// TODO compute count based on the current number of concepts
 		includeIfFieldSelected(CodeSystem.Fields.COUNT, () -> 0, entry::count);
+		
+		// TODO fill out Code System specific properties, if required use tooling specific extensions to fill all fields
 		
 		return entry.build();
 	}

@@ -22,36 +22,30 @@ import io.swagger.annotations.ApiParam;
 /**
  * @since 8.0
  */
-public class FhirResourceSearchParameters {
+public class FhirResourceSearchParameters extends FhirResourceSelectors {
 
 	// filters
 	@ApiParam(value = "_id")
-	String[] _id;
+	private String[] _id;
 	@ApiParam(value = "_name")
-	String[] _name;
+	private String[] _name;
 	@ApiParam(value = "_title")
-	String _title;
+	private String _title;
 	@ApiParam(value = "_lastUpdated")
-	String _lastUpdated;
+	private String _lastUpdated;
 	@ApiParam
-	String _content;
-	
-	// content selectors
-	@ApiParam
-	String _summary;
-	@ApiParam
-	String[] _elements;
+	private String _content;
 	
 	// paging
 	@ApiParam(value = "The maximum number of items to return", defaultValue = "10")
-	int _count = 10;
+	private int _count = 10;
 	
 	@ApiParam
-	String[] _sort;
+	private String[] _sort;
 	
 	// extensions (paging)
 	@ApiParam
-	String _after;
+	private String _after;
 
 	public String[] getId() {
 		return _id;
@@ -69,10 +63,6 @@ public class FhirResourceSearchParameters {
 		return _count;
 	}
 	
-	public String[] getElements() {
-		return _elements;
-	}
-
 	public String getLastUpdated() {
 		return _lastUpdated;
 	}
@@ -83,10 +73,6 @@ public class FhirResourceSearchParameters {
 	
 	public String[] getSort() {
 		return _sort;
-	}
-	
-	public String getSummary() {
-		return _summary;
 	}
 	
 	public String getTitle() {
@@ -109,10 +95,6 @@ public class FhirResourceSearchParameters {
 		this._count = _count;
 	}
 	
-	public void set_elements(String[] _elements) {
-		this._elements = _elements;
-	}
-	
 	public void set_lastUpdated(String _lastUpdated) {
 		this._lastUpdated = _lastUpdated;
 	}
@@ -123,10 +105,6 @@ public class FhirResourceSearchParameters {
 	
 	public void set_sort(String[] _sort) {
 		this._sort = _sort;
-	}
-	
-	public void set_summary(String _summary) {
-		this._summary = _summary;
 	}
 	
 	public void set_title(String _title) {
@@ -142,8 +120,8 @@ public class FhirResourceSearchParameters {
 				.add("_title", _title)
 				.add("_lastUpdated", _lastUpdated)
 				.add("_content", _content)
-				.add("_summary", _summary)
-				.add("_elements", _elements)
+				.add("_summary", getSummary())
+				.add("_elements", getElements())
 				.add("_count", _count)
 				.add("_sort", _sort)
 				.add("_after", _after)

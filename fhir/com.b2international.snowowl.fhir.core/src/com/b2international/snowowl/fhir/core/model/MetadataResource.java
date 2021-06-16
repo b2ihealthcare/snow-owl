@@ -55,7 +55,7 @@ public abstract class MetadataResource extends DomainResource {
 	/**
 	 * @since 8.0
 	 */
-	public static abstract class Fields extends FhirResource.Fields {
+	public static abstract class Fields extends DomainResource.Fields {
 		
 		public static final String URL = "url";
 		public static final String IDENTIFIER = "identifier";
