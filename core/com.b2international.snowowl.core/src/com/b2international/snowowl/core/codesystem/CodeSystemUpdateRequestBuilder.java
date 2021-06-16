@@ -35,11 +35,6 @@ public final class CodeSystemUpdateRequestBuilder
 		super(uniqueId);
 	}
 
-	public CodeSystemUpdateRequestBuilder setUrl(String url) {
-		this.url = url;
-		return getSelf();
-	}
-
 	public CodeSystemUpdateRequestBuilder setOid(String oid) {
 		this.oid = oid;
 		return getSelf();
@@ -63,7 +58,7 @@ public final class CodeSystemUpdateRequestBuilder
 	@Override
 	public CodeSystemUpdateRequest createResourceRequest() {
 
-		final CodeSystemUpdateRequest req = new CodeSystemUpdateRequest(resourceId);
+		final CodeSystemUpdateRequest req = new CodeSystemUpdateRequest(getResourceId());
 		req.oid = oid;
 		req.branchPath = branchPath;
 		req.extensionOf = extensionOf;

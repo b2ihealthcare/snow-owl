@@ -26,7 +26,7 @@ public final class ResourceUpdateRequestBuilder extends BaseResourceUpdateReques
 
 	@Override
 	public ResourceUpdateRequest createResourceRequest() {
-		return new ResourceUpdateRequest(resourceId);
+		return new ResourceUpdateRequest(getResourceId());
 	}
 	
 }

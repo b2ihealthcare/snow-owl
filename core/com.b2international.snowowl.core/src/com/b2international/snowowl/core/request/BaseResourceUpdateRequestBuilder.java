@@ -27,76 +27,80 @@ public abstract class BaseResourceUpdateRequestBuilder<RB extends BaseResourceUp
 		extends BaseRequestBuilder<RB, TransactionContext, Boolean>
 		implements ResourceRepositoryTransactionRequestBuilder<Boolean> {
 
-	protected final String resourceId;
+	private final String resourceId;
 
-	protected String url;
-	protected String title;
-	protected String language;
-	protected String description;
-	protected String status;
-	protected String copyright;
-	protected String owner;
-	protected String contact;
-	protected String usage;
-	protected String purpose;
-	protected String bundleId;
+	private String url;
+	private String title;
+	private String language;
+	private String description;
+	private String status;
+	private String copyright;
+	private String owner;
+	private String contact;
+	private String usage;
+	private String purpose;
+	private String bundleId;
 
-	protected BaseResourceUpdateRequestBuilder(final String uniqueId) {
+	protected BaseResourceUpdateRequestBuilder(final String resourceId) {
 		super();
-		this.resourceId = uniqueId;
+		this.resourceId = resourceId;
+	}
+	
+	protected final String getResourceId() {
+		return resourceId;
 	}
 
-	public RB setUrl(String url) {
+	public final RB setUrl(String url) {
 		this.url = url;
 		return getSelf();
 	}
 
-	public RB setTitle(String title) {
+	public final RB setTitle(String title) {
 		this.title = title;
 		return getSelf();
 	}
 
-	public RB setLanguage(String language) {
+	public final RB setLanguage(String language) {
 		this.language = language;
 		return getSelf();
 	}
 
-	public RB setDescription(String description) {
+	public final RB setDescription(String description) {
 		this.description = description;
 		return getSelf();
 	}
 
-	public RB setStatus(String status) {
+	public final RB setStatus(String status) {
 		this.status = status;
 		return getSelf();
 	}
 
-	public RB setCopyright(String copyright) {
+	public final RB setCopyright(String copyright) {
 		this.copyright = copyright;
 		return getSelf();
 	}
 
-	public RB setOwner(String owner) {
+	public final RB setOwner(String owner) {
 		this.owner = owner;
 		return getSelf();
 	}
 
-	public RB setContact(String contact) {
+	public final RB setContact(String contact) {
 		this.contact = contact;
 		return getSelf();
 	}
 
-	public RB setUsage(String usage) {
+	public final RB setUsage(String usage) {
 		this.usage = usage;
 		return getSelf();
 	}
 
-	public RB setPurpose(String purpose) {
+	public final RB setPurpose(String purpose) {
 		this.purpose = purpose;
 		return getSelf();
 	}
 
-	public RB setBundleId(String bundleId) {
+	public final RB setBundleId(String bundleId) {
 		this.bundleId = bundleId;
 		return getSelf();
 	}
@@ -107,17 +111,17 @@ public abstract class BaseResourceUpdateRequestBuilder<RB extends BaseResourceUp
 	protected final Request<TransactionContext, Boolean> doBuild() {
 		final R req = createResourceRequest();
 
-		req.url = url;
-		req.title = title;
-		req.language = language;
-		req.description = description;
-		req.status = status;
-		req.copyright = copyright;
-		req.owner = owner;
-		req.contact = contact;
-		req.usage = usage;
-		req.purpose = purpose;
-		req.bundleId = bundleId;
+		req.setUrl(url);
+		req.setTitle(title);
+		req.setLanguage(language);
+		req.setDescription(description);
+		req.setStatus(status);
+		req.setCopyright(copyright);
+		req.setOwner(owner);
+		req.setContact(contact);
+		req.setUsage(usage);
+		req.setPurpose(purpose);
+		req.setBundleId(bundleId);
 
 		return req;
 	}

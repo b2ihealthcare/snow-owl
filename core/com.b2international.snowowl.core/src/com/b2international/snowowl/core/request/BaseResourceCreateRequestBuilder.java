@@ -112,18 +112,18 @@ public abstract class BaseResourceCreateRequestBuilder <RB extends BaseResourceC
 	protected final Request<TransactionContext, String> doBuild() {
 		final R req = createResourceRequest();
 		
-		req.id = id;
-		req.url = url;
-		req.title = title;
-		req.language = language;
-		req.description = description;
-		req.status = status;
-		req.copyright = copyright;
-		req.owner = owner;
-		req.contact = contact;
-		req.usage = usage;
-		req.purpose = purpose;
-		req.bundleId = bundleId;
+		req.setId(id);
+		req.setUrl(url);
+		req.setTitle(title);
+		req.setLanguage(language);
+		req.setDescription(description);
+		req.setStatus(status);
+		req.setCopyright(copyright);
+		req.setOwner(owner);
+		req.setContact(contact);
+		req.setUsage(usage);
+		req.setPurpose(purpose);
+		req.setBundleId(bundleId);
 		
 		return req;
 	}

@@ -73,7 +73,7 @@ final class CodeSystemCreateRequest extends BaseResourceCreateRequest {
 	}
 	
 	@Override
-	protected void executeAdditionalLogic(final TransactionContext context) {
+	protected void preExecute(final TransactionContext context) {
 		// Create branch if null or empty path was specified in the request
 		final boolean createBranch = StringUtils.isEmpty(branchPath);
 		

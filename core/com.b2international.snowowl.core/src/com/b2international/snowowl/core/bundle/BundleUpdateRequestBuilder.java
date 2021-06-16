@@ -22,13 +22,13 @@ import com.b2international.snowowl.core.request.BaseResourceUpdateRequestBuilder
  */
 public final class BundleUpdateRequestBuilder extends BaseResourceUpdateRequestBuilder<BundleUpdateRequestBuilder, BundleUpdateRequest> {
 
-	protected BundleUpdateRequestBuilder(String uniqueId) {
-		super(uniqueId);
+	protected BundleUpdateRequestBuilder(String resourceId) {
+		super(resourceId);
 	}
 
 	@Override
 	public BundleUpdateRequest createResourceRequest() {
-		return new BundleUpdateRequest(resourceId);
+		return new BundleUpdateRequest(getResourceId());
 	}
 
 }

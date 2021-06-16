@@ -20,6 +20,7 @@ import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.internal.ResourceDocument.Builder;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 8.0
@@ -28,18 +29,83 @@ public abstract class BaseResourceUpdateRequest extends UpdateRequest<Transactio
 
 	private static final long serialVersionUID = 1L;
 
-	String url;
-	String title;
-	String language;
-	String description;
-	String status;
-	String copyright;
-	String owner;
-	String contact;
-	String usage;
-	String purpose;
-	String bundleId;
+	@JsonProperty
+	private String url;
+	
+	@JsonProperty
+	private String title;
+	
+	@JsonProperty
+	private String language;
+	
+	@JsonProperty
+	private String description;
+	
+	@JsonProperty
+	private String status;
+	
+	@JsonProperty
+	private String copyright;
+	
+	@JsonProperty
+	private String owner;
+	
+	@JsonProperty
+	private String contact;
+	
+	@JsonProperty
+	private String usage;
+	
+	@JsonProperty
+	private String purpose;
 
+	@JsonProperty
+	private String bundleId;
+	
+	protected final void setUrl(String url) {
+		this.url = url;
+	}
+	
+	protected final void setTitle(String title) {
+		this.title = title;
+	}
+	
+	protected final void setLanguage(String language) {
+		this.language = language;
+	}
+	
+	protected final void setDescription(String description) {
+		this.description = description;
+	}
+
+	protected final void setStatus(String status) {
+		this.status = status;
+	}
+	
+	protected final void setCopyright(String copyright) {
+		this.copyright = copyright;
+	}
+	
+	protected final void setOwner(String owner) {
+		this.owner = owner;
+	}
+	
+	protected final void setContact(String contact) {
+		this.contact = contact;
+	}
+	
+	protected final void setUsage(String usage) {
+		this.usage = usage;
+	}
+	
+	protected final void setPurpose(String purpose) {
+		this.purpose = purpose;
+	}
+	
+	protected final void setBundleId(String bundleId) {
+		this.bundleId = bundleId;
+	}
+	
 	protected BaseResourceUpdateRequest(String componentId) {
 		super(componentId);
 	}

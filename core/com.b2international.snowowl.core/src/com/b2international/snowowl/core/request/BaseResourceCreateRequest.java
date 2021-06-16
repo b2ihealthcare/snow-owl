@@ -21,6 +21,7 @@ import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.internal.ResourceDocument.Builder;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 8.0
@@ -30,46 +31,153 @@ public abstract class BaseResourceCreateRequest implements Request<TransactionCo
 	protected static final long serialVersionUID = 1L;
 
 	// the new ID, if not specified, it will be auto-generated
+	@JsonProperty
 	@NotEmpty
-	String id;
+	private String id;
 	
+	@JsonProperty
 	@NotEmpty
-	String url;
+	private String url;
 	
+	@JsonProperty
 	@NotEmpty
-	String title;
+	private String title;
 	
-	String language;
-	String description;
-	String status;
-	String copyright;
-	String owner;
-	String contact;
-	String usage;
-	String purpose;
-	
+	@JsonProperty
 	@NotEmpty
-	String bundleId;
+	private String bundleId;
+	
+	@JsonProperty
+	private String language;
+	
+	@JsonProperty
+	private String description;
+	
+	@JsonProperty
+	private String status;
+	
+	@JsonProperty
+	private String copyright;
+	
+	@JsonProperty
+	private String owner;
+	
+	@JsonProperty
+	private String contact;
+	
+	@JsonProperty
+	private String usage;
+	
+	@JsonProperty
+	private String purpose;
+	
+	protected final String getId() {
+		return id;
+	}
+	
+	protected final String getUrl() {
+		return url;
+	}
+	
+	protected final String getTitle() {
+		return title;
+	}
+	
+	protected final String getBundleId() {
+		return bundleId;
+	}
+	
+	protected final String getLanguage() {
+		return language;
+	}
+	
+	protected final String getDescription() {
+		return description;
+	}
+	
+	protected final String getStatus() {
+		return status;
+	}
+	
+	protected final String getCopyright() {
+		return copyright;
+	}
+	
+	protected final String getOwner() {
+		return owner;
+	}
+	
+	protected final String getContact() {
+		return contact;
+	}
+	
+	protected final String getUsage() {
+		return usage;
+	}
+	
+	protected final String getPurpose() {
+		return purpose;
+	}
+	
+	protected final void setId(String id) {
+		this.id = id;
+	}
+	
+	protected final void setUrl(String url) {
+		this.url = url;
+	}
+	
+	protected final void setTitle(String title) {
+		this.title = title;
+	}
+	
+	protected final void setBundleId(String bundleId) {
+		this.bundleId = bundleId;
+	}
+	
+	protected final void setLanguage(String language) {
+		this.language = language;
+	}
+	
+	protected final void setDescription(String description) {
+		this.description = description;
+	}
+	
+	protected final void setStatus(String status) {
+		this.status = status;
+	}
+	
+	protected final void setCopyright(String copyright) {
+		this.copyright = copyright;
+	}
+	
+	protected final void setOwner(String owner) {
+		this.owner = owner;
+	}
+	
+	protected final void setContact(String contact) {
+		this.contact = contact;
+	}
+	
+	protected final void setUsage(String usage) {
+		this.usage = usage;
+	}
+	
+	protected final void setPurpose(String purpose) {
+		this.purpose = purpose;
+	}
 	
 	@Override
 	public final String execute(TransactionContext context) {
-		executeAdditionalLogic(context);
+		preExecute(context);
 		context.add(createResourceDocument());
 		return id;
-	}
-	
-	public final String getId() {
-		return id;
-	}
-	
-	public final String getTitle() {
-		return title;
 	}
 	
 	/**
 	 * Subclasses may override this method to perform validation checks and/or attach additional resources to the transaction before creating the main resource.
 	 */
-	protected void executeAdditionalLogic(final TransactionContext context) { }
+	protected void preExecute(final TransactionContext context) { }
 
 	protected abstract ResourceDocument.Builder setSpecializedFields(final ResourceDocument.Builder builder);
 	
