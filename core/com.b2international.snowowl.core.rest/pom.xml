@@ -16,7 +16,7 @@
 		<spring.security.version>5.1.6.RELEASE</spring.security.version>
 		<springfox.version>2.9.2</springfox.version>
 		<!-- Node.js version to use for building the API docs site -->
-		<node.version>v12.13.0</node.version>
+		<node.version>v14.17.1</node.version>
 	</properties>
 
 	<!-- NOTE: in case of dependency changes, please update the includeArtifactIds section in the maven-dependency-plugin configuration as well, listing all (exact and transitive) dependency artifactIds -->
