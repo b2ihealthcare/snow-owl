@@ -32,11 +32,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.b2international.commons.validation.ApiValidation;
 import com.b2international.snowowl.core.bundle.Bundle;
-import com.b2international.snowowl.core.bundle.BundleRequests;
 import com.b2international.snowowl.core.bundle.Bundles;
 import com.b2international.snowowl.core.codesystem.CodeSystems;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.internal.ResourceDocument;
+import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
 
@@ -72,7 +72,7 @@ public class BundleRestService extends AbstractRestService {
 		})
 		@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
 		public Promise<Bundles> searchByGet(final BundleRestSearch params) {
-			return BundleRequests.prepareSearch()
+			return ResourceRequests.bundles().prepareSearch()
 					.filterByIds(params.getId())
 					.filterByTerm(params.getTitle())
 					.setLimit(params.getLimit())
@@ -111,7 +111,7 @@ public class BundleRestService extends AbstractRestService {
 	public Promise<Bundle> get(
 			@ApiParam(value="The bundle identifier")
 			@PathVariable(value="bundleId") final String bundleId) {
-		return BundleRequests.prepareGet(bundleId)
+		return ResourceRequests.bundles().prepareGet(bundleId)
 				.buildAsync()
 				.execute(getBus());
 	}
@@ -169,7 +169,7 @@ public class BundleRestService extends AbstractRestService {
 			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
 		final String commitComment = String.format("Update bundle %s", bundleId);
-		BundleRequests.prepareUpdate(bundleId)
+		ResourceRequests.bundles().prepareUpdate(bundleId)
 				.setUrl(bundle.getUrl())
 				.setTitle(bundle.getTitle())
 				.setLanguage(bundle.getLanguage())
@@ -206,7 +206,7 @@ public class BundleRestService extends AbstractRestService {
 			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
 		
-		BundleRequests.prepareDelete(bundleId)
+		ResourceRequests.bundles().prepareDelete(bundleId)
 				.commit()
 				.setAuthor(author)
 				.setCommitComment(String.format("Delete bundle %s", bundleId))

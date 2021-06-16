@@ -18,25 +18,25 @@ package com.b2international.snowowl.core.bundle;
 /**
  * @since 8.0
  */
-public class BundleRequests {
+public final class BundleRequests {
 	
-	public static BundleCreateRequestBuilder prepareCreate() {
+	public BundleCreateRequestBuilder prepareCreate() {
 		return new BundleCreateRequestBuilder();
 	}
 
-	public static BundleGetRequestBuilder prepareGet(final String id) {
+	public BundleGetRequestBuilder prepareGet(final String id) {
 		return new BundleGetRequestBuilder(id);
 	}
 	
-	public static BundleSearchRequestBuilder prepareSearch() {
+	public BundleSearchRequestBuilder prepareSearch() {
 		return new BundleSearchRequestBuilder();
 	}
 
-	public static BundleUpdateRequestBuilder prepareUpdate(final String uniqueId) {
+	public BundleUpdateRequestBuilder prepareUpdate(final String uniqueId) {
 		return new BundleUpdateRequestBuilder(uniqueId);
 	}
 
-	public static BundleDeleteRequestBuilder prepareDelete(final String uniqueId) {
+	public BundleDeleteRequestBuilder prepareDelete(final String uniqueId) {
 		return new BundleDeleteRequestBuilder(uniqueId);
 	}
 }

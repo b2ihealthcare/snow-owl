@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.bundle;
 
 import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.Resources;
+import com.b2international.snowowl.core.request.ResourceRequests;
 
 /**
  * @since 8.0
@@ -51,7 +52,7 @@ public final class Bundle extends Resource {
 	}
 
 	public BundleCreateRequestBuilder toCreateRequest() {
-		return BundleRequests.prepareCreate()
+		return ResourceRequests.bundles().prepareCreate()
 				.setId(getId())
 				.setUrl(getUrl())
 				.setTitle(getTitle())
