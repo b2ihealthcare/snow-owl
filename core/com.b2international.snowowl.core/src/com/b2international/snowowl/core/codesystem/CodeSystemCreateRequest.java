@@ -62,7 +62,7 @@ final class CodeSystemCreateRequest extends BaseResourceCreateRequest {
 	CodeSystemCreateRequest() {}
 
 	@Override
-	protected Builder setSpecializedFields(Builder builder) {
+	protected Builder completeResource(Builder builder) {
 		return builder.resourceType(CodeSystem.CODESYSTEM_RESOURCE_TYPE)
 				.oid(oid)
 				.branchPath(branchPath)

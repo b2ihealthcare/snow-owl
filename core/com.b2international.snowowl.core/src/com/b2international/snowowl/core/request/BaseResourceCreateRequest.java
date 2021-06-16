@@ -179,13 +179,13 @@ public abstract class BaseResourceCreateRequest implements Request<TransactionCo
 	 */
 	protected void preExecute(final TransactionContext context) { }
 
-	protected abstract ResourceDocument.Builder setSpecializedFields(final ResourceDocument.Builder builder);
+	/**
+	 * Set the additional fields of the resource
+	 */
+	protected abstract ResourceDocument.Builder completeResource(final ResourceDocument.Builder builder);
 	
 	private ResourceDocument createResourceDocument() {
-		final Builder builder = ResourceDocument.builder();
-				
-		return setSpecializedFields(builder)
-				.id(id)
+		final Builder builder = ResourceDocument.builder()
 				.url(url)
 				.title(title)
 				.language(language)
@@ -196,7 +196,10 @@ public abstract class BaseResourceCreateRequest implements Request<TransactionCo
 				.contact(contact)
 				.usage(usage)
 				.purpose(purpose)
-				.bundleId(bundleId)
-				.build();
+				.bundleId(bundleId);
+		
+		completeResource(builder);
+		
+		return builder.build();
 	}
 }

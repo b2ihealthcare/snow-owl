@@ -26,7 +26,7 @@ final class BundleCreateRequest extends BaseResourceCreateRequest {
 	private static final long serialVersionUID = 1L;
 
 	@Override
-	protected Builder setSpecializedFields(Builder builder) {
+	protected Builder completeResource(Builder builder) {
 		return builder.resourceType(Bundle.BUNDLE_RESOURCE_TYPE);
 	}
 }
