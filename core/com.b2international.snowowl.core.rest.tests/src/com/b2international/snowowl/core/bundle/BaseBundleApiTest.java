@@ -124,13 +124,13 @@ abstract class BaseBundleApiTest {
 
 	}
 	
-	Bundles build(final BundleSearchRequestBuilder builder) {
+	Bundles execute(final BundleSearchRequestBuilder builder) {
 		return builder.buildAsync()
 				.getRequest()
 				.execute(Services.context());
 	}
 	
-	Stream<String> buildAsIds(final BundleSearchRequestBuilder builder) {
+	Stream<String> executeThenExtractIds(final BundleSearchRequestBuilder builder) {
 		return builder.buildAsync()
 				.getRequest()
 				.execute(Services.context())
