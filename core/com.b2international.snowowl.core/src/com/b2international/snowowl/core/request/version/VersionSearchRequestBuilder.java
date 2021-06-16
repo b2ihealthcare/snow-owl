@@ -21,6 +21,7 @@ import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.context.ResourceRepositoryRequestBuilder;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
 import com.b2international.snowowl.core.request.version.VersionSearchRequest.OptionKey;
@@ -86,8 +87,17 @@ public final class VersionSearchRequestBuilder
 		return addOption(OptionKey.EFFECTIVE_TIME_START, effectiveTimeStart).addOption(OptionKey.EFFECTIVE_TIME_END, effectiveTimeEnd);
 	}
 	
+	public VersionSearchRequestBuilder filterByResourceBranchPath(String resourceBranchPath) {
+		return addOption(OptionKey.RESOURCE_BRANCHPATH, resourceBranchPath);
+	}
+	
+	public VersionSearchRequestBuilder filterByResourceBranchPaths(Iterable<String> resourceBranchPaths) {
+		return addOption(OptionKey.RESOURCE_BRANCHPATH, resourceBranchPaths);
+	}
+	
 	@Override
 	protected SearchResourceRequest<RepositoryContext, Versions> createSearch() {
 		return new VersionSearchRequest();
 	}
+
 }

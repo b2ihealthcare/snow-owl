@@ -29,8 +29,10 @@ import com.b2international.index.Doc;
 import com.b2international.index.ID;
 import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.base.MoreObjects;
@@ -59,6 +61,7 @@ public final class VersionDocument implements Serializable {
 		public static final String EFFECTIVE_TIME = "effectiveTime";
 		public static final String RESOURCE = "resource";
 		public static final String BRANCH_PATH = "branchPath";
+		public static final String RESOURCE_BRANCH_PATH = "resourceBranchPath";
 		
 		public static final Set<String> SORT_FIELDS = Set.of(ID, VERSION, DESCRIPTION, EFFECTIVE_TIME, RESOURCE, BRANCH_PATH);
 	}
@@ -91,6 +94,10 @@ public final class VersionDocument implements Serializable {
 		
 		public static Expression effectiveTime(long from, long to) {
 			return matchRange(Fields.EFFECTIVE_TIME, from, to);
+		}
+		
+		public static Expression resourceBranchPaths(Iterable<String> resourceBranchPaths) {
+			return matchAny(Fields.RESOURCE_BRANCH_PATH, resourceBranchPaths);
 		}
 		
 	}
@@ -136,6 +143,11 @@ public final class VersionDocument implements Serializable {
 		
 		public Builder branchPath(String branchPath) {
 			this.branchPath = branchPath;
+			return this;
+		}
+		
+		@JsonSetter
+		Builder resourceBranchPath(String resourceBranchPath) {
 			return this;
 		}
 		
@@ -198,7 +210,11 @@ public final class VersionDocument implements Serializable {
 	public String getBranchPath() {
 		return branchPath;
 	}
-
+	
+	public String getResourceBranchPath() {
+		return BranchPathUtils.createPath(branchPath).getParentPath();
+	}
+	
 	// additional helpers
 	
 	/**

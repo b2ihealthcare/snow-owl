@@ -162,7 +162,7 @@ public final class CodeSystemConverter extends BaseResourceConverter<ResourceDoc
 					ResourceRequests.prepareSearchVersion()
 							.all()
 							.filterByResource(result.getUpgradeOf().withoutPath())
-							.filterByParentBranchPath(upgradeOfCodeSystemBranchPath)
+							.filterByResourceBranchPath(upgradeOfCodeSystemBranchPath)
 							.build()
 							.execute(context())
 							.stream()

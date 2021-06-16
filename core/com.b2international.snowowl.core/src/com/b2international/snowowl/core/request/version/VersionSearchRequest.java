@@ -62,7 +62,12 @@ public final class VersionSearchRequest
 		/**
 		 * Filter versions by effective date ending with this value, inclusive.
 		 */
-		EFFECTIVE_TIME_END,
+		EFFECTIVE_TIME_END, 
+		
+		/**
+		 * Filter matches by corresponding resource branch path (formerly parent branch path).
+		 */
+		RESOURCE_BRANCHPATH,
 	}
 	
 	VersionSearchRequest() { }
@@ -74,6 +79,7 @@ public final class VersionSearchRequest
 		addIdFilter(query, VersionDocument.Expressions::ids);
 		addFilter(query, OptionKey.RESOURCE, String.class, VersionDocument.Expressions::resources);
 		addFilter(query, OptionKey.VERSION, String.class, VersionDocument.Expressions::versions);
+		addFilter(query, OptionKey.RESOURCE_BRANCHPATH, String.class, VersionDocument.Expressions::resourceBranchPaths);
 
 		if (containsKey(OptionKey.EFFECTIVE_TIME_START) || containsKey(OptionKey.EFFECTIVE_TIME_END)) {
 			final long from = containsKey(OptionKey.EFFECTIVE_TIME_START) ? get(OptionKey.EFFECTIVE_TIME_START, Long.class) : 0;
