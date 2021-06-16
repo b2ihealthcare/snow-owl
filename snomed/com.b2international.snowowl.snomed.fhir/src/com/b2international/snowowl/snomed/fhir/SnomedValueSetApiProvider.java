@@ -93,7 +93,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 		Collection<ValueSet> valueSets = Lists.newArrayList();
 		
 		//Collect every version on every extension
-		List<Version> codeSystemVersionList = collectCodeSystemVersions();
+		List<Version> codeSystemVersionList = List.of(); //collectCodeSystemVersions();
 		
 		List<ValueSet> simpleTypevalueSets = collectSimpleTypeRefsets(codeSystemVersionList, searchParameters);
 		valueSets.addAll(simpleTypevalueSets);
@@ -212,7 +212,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 		String locationName = "$expand.url";
 		SnomedUri snomedUri = SnomedUri.fromUriString(uriString, locationName);
 		
-		Version codeSystemVersion = getCodeSystemVersion(snomedUri.getVersionTag());
+		Version codeSystemVersion = null; //getCodeSystemVersion(snomedUri.getVersionTag());
 		
 		if (!snomedUri.hasQueryPart()) {
 			throw new BadRequestException("Query part is missing for value set expansion.", locationName);
@@ -280,7 +280,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 		}
 		
 		SnomedUri snomedUri = SnomedUri.fromUriString(validateCodeRequest.getUrl().getUriValue(), locationName);
-		Version codeSystemVersion = getCodeSystemVersion(snomedUri.getVersionTag());
+		Version codeSystemVersion = null; //getCodeSystemVersion(snomedUri.getVersionTag());
 		String componentId = validateCodeRequest.getCode();
 
 		if (!snomedUri.hasQueryPart()) {
@@ -413,7 +413,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 		
 		//simple type reference
 		if (componentURI.terminologyComponentId()!= SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER) {
-			return validateSimpleTypReferenceSet(componentURI, codeSystemVersion.getParentBranchPath(), validateCodeRequest);
+			return validateSimpleTypReferenceSet(componentURI, codeSystemVersion.getResourceBranchPath(), validateCodeRequest);
 		} 
 		
 		//query type refset

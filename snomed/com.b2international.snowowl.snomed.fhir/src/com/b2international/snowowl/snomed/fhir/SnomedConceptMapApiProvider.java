@@ -104,7 +104,7 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 		Optional<FhirSearchParameter> nameOptional = getSearchParam(searchParameters, "_name");
 		
 		//Collect every version on every extension
-		List<Version> codeSystemVersionList = collectCodeSystemVersions();
+		List<Version> codeSystemVersionList = List.of(); //collectCodeSystemVersions();
 		
 		//might be nicer to maintain the order by version
 		List<ConceptMap> conceptMaps = codeSystemVersionList.stream()
@@ -292,7 +292,7 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 		
 		String locationName = "$translate.system";
 		SnomedUri snomedUri = SnomedUri.fromUriString(sourceSystem, locationName);
-		Version codeSystemVersion = getCodeSystemVersion(snomedUri.getVersionTag());
+		Version codeSystemVersion = null; //getCodeSystemVersion(snomedUri.getVersionTag());
 		
 		//no target code system is specified on the Map
 		Set<String> refsetIds = SnomedRequests.prepareSearchRefSet()

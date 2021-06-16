@@ -27,11 +27,9 @@ import com.b2international.commons.StringUtils;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ResourceURI;
-import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.plugin.Component;
 import com.b2international.snowowl.core.version.Version;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.fhir.core.FhirCoreActivator;
 import com.b2international.snowowl.fhir.core.ResourceNarrative;
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
 import com.b2international.snowowl.fhir.core.codesystems.FhirCodeSystem;
@@ -118,28 +116,28 @@ public final class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 		return codeSystems;
 	}
 
-	@Override
-	public LookupResult lookup(LookupRequest lookupRequest) {
-		
-		String system = lookupRequest.getSystem();
-		String code = lookupRequest.getCode();
-		
-		if (StringUtils.isEmpty(system) || StringUtils.isEmpty(code)) {
-			throw new BadRequestException("System or code parameters must not be null.");
-		}
-		validateRequestedProperties(lookupRequest);
-		
-		FhirCodeSystem fhirCodeSystem = findCodeSystemByUri(system);
-		Optional<FhirCodeSystem> enumConstantOptional = getEnumConstant(fhirCodeSystem, code);
-		
-		FhirCodeSystem enumConstant = enumConstantOptional
-				.orElseThrow(() -> new BadRequestException("Could not find code [%s] for the known code system [%s].", code, fhirCodeSystem.getCodeSystemUri()));
-		
-		LookupResult.Builder resultBuilder = LookupResult.builder();
-		resultBuilder.name(enumConstant.getClass().getSimpleName());
-		resultBuilder.display(enumConstant.getDisplayName());
-		return resultBuilder.build();
-	}
+//	@Override
+//	public LookupResult lookup(LookupRequest lookupRequest) {
+//		
+//		String system = lookupRequest.getSystem();
+//		String code = lookupRequest.getCode();
+//		
+//		if (StringUtils.isEmpty(system) || StringUtils.isEmpty(code)) {
+//			throw new BadRequestException("System or code parameters must not be null.");
+//		}
+//		validateRequestedProperties(lookupRequest);
+//		
+//		FhirCodeSystem fhirCodeSystem = findCodeSystemByUri(system);
+//		Optional<FhirCodeSystem> enumConstantOptional = getEnumConstant(fhirCodeSystem, code);
+//		
+//		FhirCodeSystem enumConstant = enumConstantOptional
+//				.orElseThrow(() -> new BadRequestException("Could not find code [%s] for the known code system [%s].", code, fhirCodeSystem.getCodeSystemUri()));
+//		
+//		LookupResult.Builder resultBuilder = LookupResult.builder();
+//		resultBuilder.name(enumConstant.getClass().getSimpleName());
+//		resultBuilder.display(enumConstant.getDisplayName());
+//		return resultBuilder.build();
+//	}
 	
 	@Override
 	public SubsumptionResult subsumes(SubsumptionRequest subsumption) {
@@ -328,7 +326,8 @@ public final class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 		
 		Collection<Class<?>> codeSystemClasses = Sets.newHashSet();
 		
-		Bundle bundle = FhirCoreActivator.getDefault().getBundle();
+//		Bundle bundle = FhirCoreActivator.getDefault().getBundle();
+		Bundle bundle = null;
 		BundleWiring bundleWiring = bundle.adapt(BundleWiring.class);
 		Collection<String> listResources = bundleWiring.listResources("/com/b2international/snowowl/fhir/core/codesystems", "*", BundleWiring.FINDENTRIES_RECURSE);
 

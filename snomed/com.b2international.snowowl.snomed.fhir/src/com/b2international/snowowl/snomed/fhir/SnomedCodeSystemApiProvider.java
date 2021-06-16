@@ -82,44 +82,44 @@ public class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 	
 	private static final String URI_BASE = "http://snomed.info";
 	
-	private static final Set<String> SUPPORTED_URIS = ImmutableSet.of(
-		SnomedUri.SNOMED_BASE_URI_STRING
-	);
+//	private static final Set<String> SUPPORTED_URIS = ImmutableSet.of(
+//		SnomedUri.SNOMED_BASE_URI_STRING
+//	);
 	
 	public SnomedCodeSystemApiProvider(IEventBus bus, List<ExtendedLocale> locales) {
 		super(bus, locales);
 	}
 	
-	@Override
-	public LookupResult lookup(LookupRequest lookup) {
-		
-		SnomedUri snomedUri = SnomedUri.fromUriString(lookup.getSystem(), "CodeSystem$lookup.system");
-		
-		validateVersion(snomedUri, lookup.getVersion());
-		
-		Version codeSystemVersion = getCodeSystemVersion(snomedUri.getVersionTag());
-		String branchPath = codeSystemVersion.getBranchPath();
-		String versionString = codeSystemVersion.getVersion();
-		
-		validateRequestedProperties(lookup);
-		
-		boolean requestedChild = lookup.containsProperty(CommonConceptProperties.CHILD.getCode());
-		boolean requestedParent = lookup.containsProperty(CommonConceptProperties.PARENT.getCode());
-		
-		String expandDescendants = requestedChild ? ",descendants(direct:true,expand(pt()))" : "";
-		String expandAncestors = requestedParent ? ",ancestors(direct:true,expand(pt()))" : "";
-		String displayLanguage = lookup.getDisplayLanguage() != null ? lookup.getDisplayLanguage().getCodeValue() : "en-GB";
-		
-		SnomedConceptGetRequestBuilder req = SnomedRequests.prepareGetConcept(lookup.getCode())
-			.setExpand(String.format("descriptions(expand(type(expand(pt())))),pt()%s%s", expandDescendants, expandAncestors))
-			.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)));
-		
-		SnomedConcept concept = req.build(branchPath)
-			.execute(getBus())
-			.getSync();
-		
-		return mapToLookupResult(concept, lookup, versionString);
-	}
+//	@Override
+//	public LookupResult lookup(LookupRequest lookup) {
+//		
+//		SnomedUri snomedUri = SnomedUri.fromUriString(lookup.getSystem(), "CodeSystem$lookup.system");
+//		
+//		validateVersion(snomedUri, lookup.getVersion());
+//		
+//		Version codeSystemVersion = getCodeSystemVersion(snomedUri.getVersionTag());
+//		String branchPath = codeSystemVersion.getBranchPath();
+//		String versionString = codeSystemVersion.getVersion();
+//		
+//		validateRequestedProperties(lookup);
+//		
+//		boolean requestedChild = lookup.containsProperty(CommonConceptProperties.CHILD.getCode());
+//		boolean requestedParent = lookup.containsProperty(CommonConceptProperties.PARENT.getCode());
+//		
+//		String expandDescendants = requestedChild ? ",descendants(direct:true,expand(pt()))" : "";
+//		String expandAncestors = requestedParent ? ",ancestors(direct:true,expand(pt()))" : "";
+//		String displayLanguage = lookup.getDisplayLanguage() != null ? lookup.getDisplayLanguage().getCodeValue() : "en-GB";
+//		
+//		SnomedConceptGetRequestBuilder req = SnomedRequests.prepareGetConcept(lookup.getCode())
+//			.setExpand(String.format("descriptions(expand(type(expand(pt())))),pt()%s%s", expandDescendants, expandAncestors))
+//			.setLocales(ImmutableList.of(ExtendedLocale.valueOf(displayLanguage)));
+//		
+//		SnomedConcept concept = req.build(branchPath)
+//			.execute(getBus())
+//			.getSync();
+//		
+//		return mapToLookupResult(concept, lookup, versionString);
+//	}
 	
 	@Override
 	protected Collection<IConceptProperty> getSupportedConceptProperties() {
@@ -158,28 +158,28 @@ public class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 	}
 	
 	
-	@Override
-	public boolean isSupported(ResourceURI codeSystemURI) {
+//	@Override
+//	public boolean isSupported(ResourceURI codeSystemURI) {
 		// TODO fix is supported implementation
 //		return codeSystemURI.getCodeSystem().startsWith(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME);
-		return false;
-	}
+//		return false;
+//	}
 	
-	@Override
-	public final boolean isSupported(String uri) {
-		if (Strings.isNullOrEmpty(uri)) return false;
-		
-		//supported URI perfect match
-		boolean foundInList = getSupportedURIs().stream()
-			.filter(uri::equalsIgnoreCase)
-			.findAny()
-			.isPresent();
-		
-		//extension and version is part of the URI
-		boolean extensionUri = uri.startsWith(SnomedUri.SNOMED_BASE_URI_STRING);
-		
-		return foundInList || extensionUri;
-	}
+//	@Override
+//	public final boolean isSupported(String uri) {
+//		if (Strings.isNullOrEmpty(uri)) return false;
+//		
+//		//supported URI perfect match
+//		boolean foundInList = getSupportedURIs().stream()
+//			.filter(uri::equalsIgnoreCase)
+//			.findAny()
+//			.isPresent();
+//		
+//		//extension and version is part of the URI
+//		boolean extensionUri = uri.startsWith(SnomedUri.SNOMED_BASE_URI_STRING);
+//		
+//		return foundInList || extensionUri;
+//	}
 	
 	@Override
 	protected Set<String> fetchAncestors(final ResourceURI codeSystemUri, final String componentId) {
@@ -209,10 +209,10 @@ public class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 		);
 	}
 	
-	@Override
-	public Collection<String> getSupportedURIs() {
-		return SUPPORTED_URIS;
-	}
+//	@Override
+//	public Collection<String> getSupportedURIs() {
+//		return SUPPORTED_URIS;
+//	}
 	
 	protected Uri getFhirUri(com.b2international.snowowl.core.codesystem.CodeSystem codeSystem, Version codeSystemVersion) {
 		
@@ -225,42 +225,42 @@ public class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 		return builder.build().toUri();
 	}
 	
-	@Override
-	protected ResourceURI getCodeSystemUri(final String system, final String version) {
-		
-		SnomedUri snomedUri = SnomedUri.fromUriString(system, LOCATION_MARKER_SUBSUMES);
-		validateVersion(snomedUri, version);
-		
-		String extensionModuleId = snomedUri.getExtensionModuleId();
-		
-		if (StringUtils.isEmpty(extensionModuleId)) {
-			extensionModuleId = Concepts.MODULE_SCT_CORE;
-		}
-		
-		CodeSystem moduleCodeSystem = findCodeSystemByModule(extensionModuleId);
-		
-		VersionSearchRequestBuilder versionSearchRequestBuilder = ResourceRequests.prepareSearchVersion()
-			.one()
-			.filterByResource(moduleCodeSystem.getResourceURI())
-			.sortBy(SearchResourceRequest.SortField.descending(VersionDocument.Fields.EFFECTIVE_TIME));
-		
-		//Use the version tag from the URI
-		String versionTag = snomedUri.getVersionTag();
-		if (versionTag != null) {
-			versionSearchRequestBuilder.filterByEffectiveTime(EffectiveTimes.parse(versionTag, DateFormats.SHORT));
-		}
-		
-		ResourceURI codeSystemURI = versionSearchRequestBuilder
-				.buildAsync()
-				.execute(getBus())
-				.getSync()
-				.first()
-				.map(Version::getVersionResourceURI)
-				//never been versioned, return 'the latest', should be head?
-				.orElse(moduleCodeSystem.getResourceURI());
-		
-		return codeSystemURI;
-	}
+//	@Override
+//	protected ResourceURI getCodeSystemUri(final String system, final String version) {
+//		
+//		SnomedUri snomedUri = SnomedUri.fromUriString(system, LOCATION_MARKER_SUBSUMES);
+//		validateVersion(snomedUri, version);
+//		
+//		String extensionModuleId = snomedUri.getExtensionModuleId();
+//		
+//		if (StringUtils.isEmpty(extensionModuleId)) {
+//			extensionModuleId = Concepts.MODULE_SCT_CORE;
+//		}
+//		
+//		CodeSystem moduleCodeSystem = findCodeSystemByModule(extensionModuleId);
+//		
+//		VersionSearchRequestBuilder versionSearchRequestBuilder = ResourceRequests.prepareSearchVersion()
+//			.one()
+//			.filterByResource(moduleCodeSystem.getResourceURI())
+//			.sortBy(SearchResourceRequest.SortField.descending(VersionDocument.Fields.EFFECTIVE_TIME));
+//		
+//		//Use the version tag from the URI
+//		String versionTag = snomedUri.getVersionTag();
+//		if (versionTag != null) {
+//			versionSearchRequestBuilder.filterByEffectiveTime(EffectiveTimes.parse(versionTag, DateFormats.SHORT));
+//		}
+//		
+//		ResourceURI codeSystemURI = versionSearchRequestBuilder
+//				.buildAsync()
+//				.execute(getBus())
+//				.getSync()
+//				.first()
+//				.map(Version::getVersionResourceURI)
+//				//never been versioned, return 'the latest', should be head?
+//				.orElse(moduleCodeSystem.getResourceURI());
+//		
+//		return codeSystemURI;
+//	}
 	
 	private CodeSystem findCodeSystemByModule(String extensionModuleId) {
 		
@@ -307,7 +307,7 @@ public class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 		
 		final LookupResult.Builder resultBuilder = LookupResult.builder();
 		
-		setBaseProperties(lookupRequest, resultBuilder, SnomedTerminologyComponentConstants.SNOMED_NAME, version, getPreferredTermOrId(concept));
+//		setBaseProperties(lookupRequest, resultBuilder, SnomedTerminologyComponentConstants.SNOMED_NAME, version, getPreferredTermOrId(concept));
 		
 		//add terms as designations
 		if (lookupRequest.isPropertyRequested(SupportedCodeSystemRequestProperties.DESIGNATION)) {
@@ -370,7 +370,7 @@ public class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 			.collect(Collectors.toSet());
 		
 		
-		String branchPath = getBranchPath(lookupRequest.getVersion());
+		String branchPath = ""; //getBranchPath(lookupRequest.getVersion());
 		
 		if (!relationshipTypeIds.isEmpty()) {
 			SnomedRequests.prepareSearchRelationship()

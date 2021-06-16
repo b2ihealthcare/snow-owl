@@ -62,7 +62,7 @@ public class SnomedCodeSystemProviderTest {
 		
 		//Change the method visibility for the test
 		public ResourceURI getCodeSystemUri(String system, String version) {
-			return super.getCodeSystemUri(system, version);
+			return null; //super.getCodeSystemUri(system, version);
 		}
 		
 	}

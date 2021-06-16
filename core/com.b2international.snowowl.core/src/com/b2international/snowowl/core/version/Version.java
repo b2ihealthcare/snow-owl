@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.time.LocalDate;
 
 import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
@@ -66,6 +67,10 @@ public final class Version implements Serializable {
 	
 	public String getBranchPath() {
 		return branchPath;
+	}
+
+	public String getResourceBranchPath() {
+		return BranchPathUtils.createPath(branchPath).getParentPath();
 	}
 	
 	public void setId(String id) {
