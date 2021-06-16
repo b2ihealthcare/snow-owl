@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.fhir.core.model;
 
+import java.io.Serializable;
+import java.util.Set;
+
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Id;
@@ -23,6 +26,7 @@ import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.b2international.snowowl.fhir.core.search.Searchable;
 import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * Top-level FHIR resource
@@ -39,8 +43,28 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  * @since 6.3
  */
 @JsonPropertyOrder({ "resourceType", "id" })
-public abstract class FhirResource {
+public abstract class FhirResource implements Serializable {
 	
+	private static final long serialVersionUID = 1L;
+	
+	/**
+	 * @since 8.0
+	 */
+	public static abstract class Fields {
+		
+		public static final String ID = "id";
+		public static final String META = "meta";
+		public static final String LANGUAGE = "language";
+		
+		// TODO do we need implicitRules???
+		
+		public static final Set<String> MANDATORY = Set.of(ID, META);
+		public static final Set<String> SUMMARY = ImmutableSet.<String>builder()
+				.addAll(MANDATORY)
+				.build();
+		
+	}
+
 	/**
 	 * Logical id of this artifact
 	 * Set the ID to -1 when submitting for creation.

@@ -38,6 +38,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class Bundle extends FhirResource implements CollectionResource<Entry> {
 	
+	private static final long serialVersionUID = 1L;
+
 	//FHIR header "resourceType" : "Bundle",
 	@JsonProperty
 	private String resourceType = "Bundle";

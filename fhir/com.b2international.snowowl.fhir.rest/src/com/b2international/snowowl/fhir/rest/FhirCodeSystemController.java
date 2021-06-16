@@ -19,9 +19,6 @@ import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
 
-import java.util.List;
-
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 
 import com.b2international.snowowl.core.events.util.Promise;
@@ -64,19 +61,27 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 			value="Retrieve all code systems",
 			notes="Returns a collection of the supported code systems.")
 	@ApiResponses({
-		@ApiResponse(code = HTTP_OK, message = "OK")
+		@ApiResponse(code = HTTP_OK, message = "OK"),
+		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad Request", response = OperationOutcome.class),
 	})
 	@GetMapping
 	public Promise<Bundle> getCodeSystems(FhirCodeSystemSearchParameters params) {
-		
-//		Pair<Set<FhirFilterParameter>, Set<FhirSearchParameter>> requestParameters = processParameters(parameters);
-//		Set<FhirFilterParameter> filterParameters = requestParameters.getA();
-		
 		return FhirRequests.codeSystems().prepareSearch()
-				.filterByIds(params.getId() == null ? null : List.of(params.getId()))
+				.filterByIds(asList(params.getId()))
+				.filterByNames(asList(params.getName()))
+				.filterByTitle(params.getTitle())
+				.filterByContent(params.getContent())
+				.filterByLastUpdated(params.getLastUpdated())
+				.setSearchAfter(params.getAfter())
+				.setCount(params.getCount())
+				// XXX _summary=count may override the default _count=10 value, so order of method calls is important here
 				.setSummary(params.getSummary())
+				.setElements(asList(params.getElements()))
+				.sortByFields(params.getSort())
 				.buildAsync()
 				.execute(getBus());
+		
+		// TODO convert returned Bundle entries to have a fullUrl, either here or supply current url to request via header param
 		
 		//TODO: replace this with something more general as described in
 		//https://docs.spring.io/spring-hateoas/docs/current/reference/html/
@@ -100,7 +105,7 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 	
 	/**
 	 * HTTP Get for retrieving a code system by its code system id
-	 * @param codeSystemId
+	 * @param id
 	 * @param parameters - request parameters
 	 * @return
 	 */
@@ -113,17 +118,16 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
 		@ApiResponse(code = HTTP_NOT_FOUND, message = "Code system not found", response = OperationOutcome.class)
 	})
-	@RequestMapping(value="/{codeSystemId:**}", method=RequestMethod.GET)
+	@RequestMapping(value="/{id:**}", method=RequestMethod.GET)
 	public Promise<CodeSystem> getCodeSystem(
-			@PathVariable(value = "codeSystemId") 
-			final String codeSystemId,
-			
-			FhirCodeSystemSearchParameters params) {
+			@ApiParam(value = "The identifier of the Code System resource")
+			@PathVariable(value = "id") 
+			final String id) {
 		
 //		Pair<Set<FhirFilterParameter>, Set<FhirSearchParameter>> fhirParameters = processParameters(parameters);
 		// apply filters, params, etc.
 		
-		return FhirRequests.codeSystems().prepareGet(codeSystemId)
+		return FhirRequests.codeSystems().prepareGet(id)
 				.buildAsync()
 				.execute(getBus());
 		

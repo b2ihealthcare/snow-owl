@@ -37,6 +37,7 @@ import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.CollectionResource;
+import com.google.common.collect.ImmutableList;
 
 /**
  * @since 5.11
@@ -55,6 +56,15 @@ public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B, D
 	protected final B doExecute(C context) throws IOException {
 		final Searcher searcher = searcher(context);
 		final Expression where = prepareQuery(context);
+		
+		// in case of Revisions always include the ID field to avoid low-level error
+		if (Revision.class.isAssignableFrom(getFrom()) && !CompareUtils.isEmpty(fields()) && !fields().contains(Revision.Fields.ID)) {
+			setFields(ImmutableList.<String>builder()
+					.add(Revision.Fields.ID)
+					.addAll(fields())
+					.build());
+		}
+		
 		final Hits<D> hits = searcher.search(Query.select(getSelect())
 				.from(getFrom())
 				.fields(fields())
