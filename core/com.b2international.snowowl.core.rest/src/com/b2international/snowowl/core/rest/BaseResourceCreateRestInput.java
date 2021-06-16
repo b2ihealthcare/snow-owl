@@ -23,7 +23,7 @@ import com.b2international.snowowl.core.id.IDs;
  */
 public abstract class BaseResourceCreateRestInput {
 	
-	//Mandatroy properties
+	//Mandatory properties
 	private String id = IDs.randomBase64UUID();
 	private String bundleId = IComponent.ROOT_ID;
 	private String url;
