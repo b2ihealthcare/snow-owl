@@ -76,6 +76,7 @@ public final class CodeSystem extends TerminologyResource {
 		codeSystem.setContact(doc.getContact());
 		codeSystem.setUsage(doc.getUsage());
 		codeSystem.setPurpose(doc.getPurpose());
+		codeSystem.setBundleId(doc.getBundleId());
 		codeSystem.setOid(doc.getOid());
 		codeSystem.setBranchPath(doc.getBranchPath());
 		codeSystem.setToolingId(doc.getToolingId());
@@ -98,6 +99,7 @@ public final class CodeSystem extends TerminologyResource {
 				.setContact(getContact())
 				.setUsage(getUsage())
 				.setPurpose(getPurpose())
+				.setBundleId(getBundleId())
 				.setOid(getOid())
 				.setBranchPath(getBranchPath())
 				.setToolingId(getToolingId())

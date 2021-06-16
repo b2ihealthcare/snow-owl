@@ -16,6 +16,7 @@
 package com.b2international.snowowl.core.request;
 
 import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.bundle.BundleRequests;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.jobs.RemoteJobEntry;
 import com.b2international.snowowl.core.request.resource.ResourceDeleteRequestBuilder;
@@ -30,8 +31,16 @@ public final class ResourceRequests {
 
 	public static final String VERSION_JOB_KEY_PREFIX = "version-";
 	
+	public static BundleRequests bundles() {
+		return new BundleRequests();
+	}
+	
 	public static ResourceGetRequestBuilder prepareGet(ResourceURI resourceUri) {
 		return prepareGet(resourceUri.getResourceId());
+	}
+	
+	public static ResourceUpdateRequestBuilder prepareUpdate(final String resourceId) {
+		return new ResourceUpdateRequestBuilder(resourceId);
 	}
 	
 	public static ResourceGetRequestBuilder prepareGet(String resourceId) {

@@ -39,5 +39,10 @@ public interface ApiTestConstants {
 	 * The context-relative base URL for the resource controller.
 	 */
 	String RESOURCES_API = "/resources";
+
+	/**
+	 * The context-relative base URL for the bundle controller.
+	 */
+	String BUNDLE_API = "/bundles";
 	
 }

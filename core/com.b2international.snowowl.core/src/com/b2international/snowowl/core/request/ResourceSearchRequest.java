@@ -26,7 +26,7 @@ import com.b2international.snowowl.core.internal.ResourceDocument;
 /**
  * @since 8.0
  */
-final class ResourceSearchRequest extends SearchIndexResourceRequest<RepositoryContext, Resources, ResourceDocument> {
+final class ResourceSearchRequest extends BaseResourceSearchRequest<Resources> {
 
 	private static final long serialVersionUID = 1L;
 
@@ -38,14 +38,6 @@ final class ResourceSearchRequest extends SearchIndexResourceRequest<RepositoryC
 		RESOURCE_TYPE,
 
 		/**
-		 * Filter matches by their title (exact match).
-		 */
-		TITLE_EXACT,
-
-		/** "Smart" search by title (taking prefixes, stemming, etc. into account) */
-		TITLE,
-
-		/**
 		 * Filter matches by their tooling id property.
 		 */
 		TOOLING_ID,
@@ -55,40 +47,24 @@ final class ResourceSearchRequest extends SearchIndexResourceRequest<RepositoryC
 		 */
 		BRANCH,
 
-	}
-
-	@Override
-	protected Class<ResourceDocument> getDocumentType() {
-		return ResourceDocument.class;
+		/**
+		 * Filter matches by their bundle ID.
+		 */
+		BUNDLE_ID,
 	}
 
 	@Override
 	protected Expression prepareQuery(RepositoryContext context) {
 		final ExpressionBuilder queryBuilder = Expressions.builder();
 		addIdFilter(queryBuilder, ResourceDocument.Expressions::ids);
+		addTitleFilter(queryBuilder);
+		addTitleExactFilter(queryBuilder);
+		
 		addFilter(queryBuilder, OptionKey.RESOURCE_TYPE, String.class, ResourceDocument.Expressions::resourceTypes);
-		addFilter(queryBuilder, OptionKey.TITLE_EXACT, String.class, ResourceDocument.Expressions::titles);
 		addFilter(queryBuilder, OptionKey.TOOLING_ID, String.class, ResourceDocument.Expressions::toolingIds);
 		addFilter(queryBuilder, OptionKey.BRANCH, String.class, ResourceDocument.Expressions::branchPaths);
-		
-		addTitleFilters(queryBuilder);
-		
+		addFilter(queryBuilder, OptionKey.BUNDLE_ID, String.class, ResourceDocument.Expressions::bundleIds);
 		return queryBuilder.build();
-	}
-
-	private void addTitleFilters(ExpressionBuilder queryBuilder) {
-		if (containsKey(OptionKey.TITLE)) {
-			final String searchTerm = getString(OptionKey.TITLE);
-			final ExpressionBuilder termFilter = Expressions.builder();
-
-			termFilter.should(Expressions.dismaxWithScoreCategories(ResourceDocument.Expressions.matchTitleExact(searchTerm),
-					ResourceDocument.Expressions.matchTitleAllTermsPresent(searchTerm),
-					ResourceDocument.Expressions.matchTitleAllPrefixesPresent(searchTerm)));
-			
-			termFilter.should(Expressions.boost(ResourceDocument.Expressions.id(searchTerm), 1000.0f));
-			
-			queryBuilder.must(termFilter.build());
-		}
 	}
 
 	@Override

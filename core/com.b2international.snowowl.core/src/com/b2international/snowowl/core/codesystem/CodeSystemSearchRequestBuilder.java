@@ -17,17 +17,14 @@ package com.b2international.snowowl.core.codesystem;
 
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.codesystem.CodeSystemSearchRequest.OptionKey;
-import com.b2international.snowowl.core.context.ResourceRepositoryRequestBuilder;
 import com.b2international.snowowl.core.domain.RepositoryContext;
+import com.b2international.snowowl.core.request.BaseResourceSearchRequestBuilder;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
-import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
 
 /**
  * @since 4.7
  */
-public final class CodeSystemSearchRequestBuilder 
-		extends SearchResourceRequestBuilder<CodeSystemSearchRequestBuilder, RepositoryContext, CodeSystems>
-		implements ResourceRepositoryRequestBuilder<CodeSystems> {
+public final class CodeSystemSearchRequestBuilder extends BaseResourceSearchRequestBuilder<CodeSystemSearchRequestBuilder, CodeSystems> {
 
 	CodeSystemSearchRequestBuilder() {
 		super();
@@ -39,18 +36,6 @@ public final class CodeSystemSearchRequestBuilder
 
 	public CodeSystemSearchRequestBuilder filterByToolingIds(Iterable<String> toolingIds) {
 		return addOption(OptionKey.TOOLING_ID, toolingIds);
-	}
-	
-	public CodeSystemSearchRequestBuilder filterByTitle(String term) {
-		return addOption(OptionKey.TITLE, term);
-	}
-	
-	public CodeSystemSearchRequestBuilder filterByTitleExact(String term) {
-		return addOption(OptionKey.TITLE_EXACT, term);
-	}
-	
-	public CodeSystemSearchRequestBuilder filterByTitleExact(Iterable<String> titles) {
-		return addOption(OptionKey.TITLE_EXACT, titles);
 	}
 	
 	public CodeSystemSearchRequestBuilder filterByOid(String oid) {

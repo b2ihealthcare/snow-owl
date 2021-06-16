@@ -30,9 +30,9 @@ import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.Branches;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.internal.ResourceDocument;
+import com.b2international.snowowl.core.internal.ResourceDocument.Builder;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
+import com.b2international.snowowl.core.request.BaseResourceCreateRequest;
 import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.version.Version;
 import com.google.common.base.Strings;
@@ -40,30 +40,10 @@ import com.google.common.base.Strings;
 /**
  * @since 4.7
  */
-final class CodeSystemCreateRequest implements Request<TransactionContext, String> {
+final class CodeSystemCreateRequest extends BaseResourceCreateRequest {
 
 	private static final long serialVersionUID = 2L;
 
-	// the new codesystem's ID, if not specified, it will be auto-generated
-	@NotEmpty
-	String id;
-	
-	// common resource fields TODO move to superclass
-	@NotEmpty
-	String url;
-	
-	@NotEmpty
-	String title;
-	
-	String language;
-	String description;
-	String status;
-	String copyright;
-	String owner;
-	String contact;
-	String usage;
-	String purpose;
-	
 	// specialized resource fields
 	// optional OID, but if defined it must be unique
 	String oid;
@@ -82,7 +62,18 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 	CodeSystemCreateRequest() {}
 
 	@Override
-	public String execute(final TransactionContext context) {
+	protected Builder completeResource(Builder builder) {
+		return builder.resourceType(CodeSystem.CODESYSTEM_RESOURCE_TYPE)
+				.oid(oid)
+				.branchPath(branchPath)
+				.toolingId(toolingId)
+				.extensionOf(extensionOf)
+				.upgradeOf(upgradeOf)
+				.settings(settings);
+	}
+	
+	@Override
+	protected void preExecute(final TransactionContext context) {
 		// Create branch if null or empty path was specified in the request
 		final boolean createBranch = StringUtils.isEmpty(branchPath);
 		
@@ -103,14 +94,11 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 			branchPath = RepositoryRequests.branching()
 				.prepareCreate()
 				.setParent(parentPath)
-				.setName(id)
+				.setName(getId())
 				.build(toolingId)
 				.getRequest()
 				.execute(context);
 		}
-
-		context.add(createCodeSystemEntry());
-		return id;
 	}
 
 	private void checkBranchPath(final RepositoryContext context, final boolean create) {
@@ -121,7 +109,7 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 		
 		// If the branch should be created, it branch should not exist, however 
 		if (create) {
-			final String newBranchPath = Branch.get(parentPath, title);
+			final String newBranchPath = Branch.get(parentPath, getId());
 			if (branchExists(newBranchPath, context)) {
 				throw new AlreadyExistsException("Code system branch", newBranchPath);
 			}
@@ -132,25 +120,25 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 		// codeSystemId checked against all resources
 		final boolean existingId = ResourceRequests.prepareSearch()
 			.setLimit(0)
-			.filterById(id)
+			.filterById(getId())
 			.build()
 			.execute(context)
 			.getTotal() > 0;
 			
 		if (existingId) {
-			throw new AlreadyExistsException("Resource", id);
+			throw new AlreadyExistsException("Resource", getId());
 		}
 		
 		// title should be unique across all resources
 		final boolean existingTitle = ResourceRequests.prepareSearch()
 			.setLimit(0)
-			.filterByTitleExact(title)
+			.filterByExactTitleIgnoreCase(getTitle())
 			.build()
 			.execute(context)
 			.getTotal() > 0;
 			
 		if (existingTitle) {
-			throw new AlreadyExistsException("Resource", "title", title);
+			throw new AlreadyExistsException("Resource", "title", getTitle());
 		}
 
 		// OID must be unique if defined
@@ -196,7 +184,7 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 			}
 			
 			// The working branch prefix is determined by the extensionOf code system version's path
-			final String newResourceBranchPath = Branch.get(extensionOfVersion.get().getBranchPath(), id);
+			final String newResourceBranchPath = Branch.get(extensionOfVersion.get().getBranchPath(), getId());
 			
 			// CodeSystem Upgrade branches are managed by CodeSystemUpgradeRequest and they can have different paths than the usual extension branch paths, skip check
 			if (upgradeOf == null && !create && !branchPath.equals(newResourceBranchPath)) {
@@ -239,29 +227,6 @@ final class CodeSystemCreateRequest implements Request<TransactionContext, Strin
 		
 		return branches.stream().filter(b -> !b.isDeleted()).findFirst().isPresent();
 		
-	}
-
-	private ResourceDocument createCodeSystemEntry() {
-		return ResourceDocument.builder()
-				.id(id)
-				.resourceType(CodeSystem.CODESYSTEM_RESOURCE_TYPE)
-				.url(url)
-				.title(title)
-				.language(language)
-				.description(description)
-				.status(status)
-				.copyright(copyright)
-				.owner(owner)
-				.contact(contact)
-				.usage(usage)
-				.purpose(purpose)
-				.oid(oid)
-				.branchPath(branchPath)
-				.toolingId(toolingId)
-				.extensionOf(extensionOf)
-				.upgradeOf(upgradeOf)
-				.settings(settings)
-				.build();
 	}
 	
 }

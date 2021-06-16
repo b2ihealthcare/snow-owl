@@ -51,6 +51,7 @@ import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.json.Json;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.ResourceRequests;
@@ -71,7 +72,8 @@ public class CodeSystemApiTest {
 		ResourceDocument.Fields.TITLE, "SNOMED CT",
 		ResourceDocument.Fields.URL, "http://snomed.info/sct",
 		ResourceDocument.Fields.TOOLING_ID, SnomedTerminologyComponentConstants.TOOLING_ID,
-		ResourceDocument.Fields.OID, SnomedContentRule.SNOMEDCT_OID
+		ResourceDocument.Fields.OID, SnomedContentRule.SNOMEDCT_OID,
+		ResourceDocument.Fields.BUNDLE_ID, IComponent.ROOT_ID
 	);
 	
 	@Test
@@ -448,6 +450,18 @@ public class CodeSystemApiTest {
 				.execute(Services.bus())
 				.getSync()
 				.isDeleted()).isTrue();
+	}
+	
+	@Test
+	public void codesystem24_UpdateBundleId() {
+		final String codeSystemId = "cs24";
+		final Map<String, Object> requestBody = prepareCodeSystemCreateRequestBody(codeSystemId);
+		assertCodeSystemCreated(requestBody);
+		
+		final Json updateRequestBody = Json.object("bundleId", "updated-bundle-id");
+		
+		assertCodeSystemUpdated(codeSystemId, updateRequestBody);
+		assertCodeSystemHasAttributeValue(codeSystemId, "bundleId", "updated-bundle-id");
 	}
 	
 	@After

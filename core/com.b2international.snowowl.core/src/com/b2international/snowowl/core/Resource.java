@@ -60,6 +60,9 @@ public abstract class Resource implements Serializable {
 	// FHIR property, supports markdown
 	private String purpose;
 
+	// The ID of the bundle this resource is contained by
+	private String bundleId;
+
 	/**
 	 * @return the type of the resource
 	 */
@@ -183,6 +186,14 @@ public abstract class Resource implements Serializable {
 
 	public void setPurpose(String purpose) {
 		this.purpose = purpose;
+	}
+	
+	public String getBundleId() {
+		return bundleId;
+	}
+	
+	public void setBundleId(String bundleId) {
+		this.bundleId = bundleId;
 	}
 	
 }

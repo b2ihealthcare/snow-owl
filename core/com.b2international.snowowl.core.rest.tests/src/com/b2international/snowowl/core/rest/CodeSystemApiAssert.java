@@ -26,7 +26,7 @@ import java.util.Map;
 
 import com.b2international.commons.json.Json;
 import com.b2international.snowowl.core.ResourceURI;
-import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 
 import io.restassured.http.ContentType;

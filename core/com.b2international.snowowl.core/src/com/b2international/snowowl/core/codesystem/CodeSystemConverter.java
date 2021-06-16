@@ -73,6 +73,7 @@ public final class CodeSystemConverter extends BaseResourceConverter<ResourceDoc
 		codeSystem.setContact(doc.getContact());
 		codeSystem.setUsage(doc.getUsage());
 		codeSystem.setPurpose(doc.getPurpose());
+		codeSystem.setBundleId(doc.getBundleId());
 		
 		codeSystem.setOid(doc.getOid());
 		codeSystem.setBranchPath(doc.getBranchPath());

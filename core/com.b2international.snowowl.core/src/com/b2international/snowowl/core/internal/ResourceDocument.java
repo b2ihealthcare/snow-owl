@@ -15,12 +15,18 @@
  */
 package com.b2international.snowowl.core.internal;
 
+import static com.b2international.index.query.Expressions.dismaxWithScoreCategories;
 import static com.b2international.index.query.Expressions.exactMatch;
 import static com.b2international.index.query.Expressions.matchAny;
+import static com.b2international.index.query.Expressions.matchBooleanPrefix;
 import static com.b2international.index.query.Expressions.matchTextAll;
+import static com.b2international.index.query.Expressions.matchTextAny;
+import static com.b2international.index.query.Expressions.matchTextFuzzy;
+import static com.b2international.index.query.Expressions.matchTextParsed;
 import static com.b2international.index.query.Expressions.regexp;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.collections.Collections3;
@@ -33,10 +39,12 @@ import com.b2international.index.mapping.FieldAlias.FieldAliasType;
 import com.b2international.index.query.Expression;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.repository.RevisionDocument;
+import com.b2international.snowowl.core.request.TermFilter;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 8.0
@@ -76,6 +84,7 @@ public final class ResourceDocument extends RevisionDocument {
 		public static final String CONTACT = "contact";
 		public static final String USAGE = "usage";
 		public static final String PURPOSE = "purpose";
+		public static final String BUNDLE_ID = "bundleId";
 		
 		// specialized resource fields
 		public static final String OID = "oid";
@@ -90,12 +99,29 @@ public final class ResourceDocument extends RevisionDocument {
 		private static final String TITLE_EXACT    = TITLE + ".exact";
 		private static final String TITLE_TEXT     = TITLE + ".text";
 		
+		public static final Set<String> SORT_FIELDS = ImmutableSet.of(RESOURCE_TYPE, TITLE, LANGUAGE, STATUS, OWNER, USAGE);
 	}
 	
 	/**
 	 * @since 8.0
 	 */
 	public static final class Expressions extends RevisionDocument.Expressions {
+		
+		public static Expression defaultTitleDisjunctionQuery(final TermFilter termFilter) {
+			return dismaxWithScoreCategories(
+				matchTitleExactCaseInsensitive(termFilter.getTerm()),
+				matchTextAll(Fields.TITLE_EXACT, termFilter.getTerm()).withIgnoreStopwords(termFilter.isIgnoreStopwords()),
+				matchBooleanPrefix(Fields.TITLE_TEXT, termFilter.getTerm()).withIgnoreStopwords(termFilter.isIgnoreStopwords()),
+				matchTextAll(Fields.TITLE_PREFIX, termFilter.getTerm()).withIgnoreStopwords(termFilter.isIgnoreStopwords())
+			);
+		}
+		
+		public static Expression minShouldMatchTermDisjunctionQuery(final TermFilter termFilter) {
+			return dismaxWithScoreCategories(
+				matchTextAny(Fields.TITLE_TEXT, termFilter.getTerm(), termFilter.getMinShouldMatch()).withIgnoreStopwords(termFilter.isIgnoreStopwords()),
+				matchTextAny(Fields.TITLE_PREFIX, termFilter.getTerm(), termFilter.getMinShouldMatch()).withIgnoreStopwords(termFilter.isIgnoreStopwords())
+			);
+		}
 		
 		public static Expression resourceType(String resourceType) {
 			return exactMatch(Fields.RESOURCE_TYPE, resourceType);
@@ -105,10 +131,14 @@ public final class ResourceDocument extends RevisionDocument {
 			return matchAny(Fields.RESOURCE_TYPE, resourceTypes);
 		}
 		
-		public static Expression matchTitleExact(String term) {
-			return matchTextAll(Fields.TITLE_EXACT, term);
+		public static Expression matchTitleExact(String term, boolean isCaseSensitive) {
+			return matchTextAll(isCaseSensitive ? Fields.TITLE : Fields.TITLE_EXACT, term);
 		}
-		
+
+		public static Expression matchTitleExactCaseInsensitive(String term) {
+			return matchTitleExact(term, false);
+		}
+
 		public static Expression title(String title) {
 			return exactMatch(Fields.TITLE, title);
 		}
@@ -129,12 +159,24 @@ public final class ResourceDocument extends RevisionDocument {
 			return matchTextAll(Fields.TITLE_TEXT, term);
 		}
 		
+		public static Expression titleFuzzy(String title) {
+			return matchTextFuzzy(Fields.TITLE_TEXT, title);
+		}
+		
+		public static Expression parsedTitle(String title) {
+			return matchTextParsed(Fields.TITLE_TEXT, title);
+		}
+		
 		public static Expression toolingIds(Iterable<String> toolingIds) {
 			return matchAny(Fields.TOOLING_ID, toolingIds);
 		}
 		
 		public static Expression branchPaths(Iterable<String> branchPaths) {
 			return matchAny(Fields.BRANCH_PATH, branchPaths);
+		}
+
+		public static Expression bundleIds(Iterable<String> bundleIds) {
+			return matchAny(Fields.BUNDLE_ID, bundleIds);
 		}
 		
 		public static Expression oid(String oid) {
@@ -174,6 +216,7 @@ public final class ResourceDocument extends RevisionDocument {
 				.contact(from.getContact())
 				.usage(from.getUsage())
 				.purpose(from.getPurpose())
+				.bundleId(from.getBundleId())
 				.oid(from.getOid())
 				.branchPath(from.getBranchPath())
 				.toolingId(from.getToolingId())
@@ -197,6 +240,7 @@ public final class ResourceDocument extends RevisionDocument {
 		private String contact;
 		private String usage;
 		private String purpose;
+		private String bundleId;
 		
 		// specialized resource fields
 		private String oid;
@@ -264,6 +308,11 @@ public final class ResourceDocument extends RevisionDocument {
 			this.purpose = purpose;
 			return getSelf();
 		}
+
+		public Builder bundleId(String bundleId) {
+			this.bundleId = bundleId;
+			return getSelf();
+		}
 		
 		public Builder oid(String oid) {
 			this.oid = oid;
@@ -316,6 +365,7 @@ public final class ResourceDocument extends RevisionDocument {
 				contact, 
 				usage, 
 				purpose,
+				bundleId,
 				oid,
 				branchPath,
 				toolingId,
@@ -346,6 +396,7 @@ public final class ResourceDocument extends RevisionDocument {
 	private final String contact;
 	private final String usage;
 	private final String purpose;
+	private final String bundleId;
 	
 	// specialized resource fields
 	private final String oid;
@@ -369,6 +420,7 @@ public final class ResourceDocument extends RevisionDocument {
 			final String contact,
 			final String usage,
 			final String purpose,
+			final String bundleId,
 			final String oid,
 			final String branchPath,
 			final String toolingId,
@@ -387,6 +439,7 @@ public final class ResourceDocument extends RevisionDocument {
 		this.contact = contact;
 		this.usage = usage;
 		this.purpose = purpose;
+		this.bundleId = bundleId;
 		this.oid = oid;
 		this.branchPath = branchPath;
 		this.toolingId = toolingId;
@@ -442,6 +495,10 @@ public final class ResourceDocument extends RevisionDocument {
 	
 	public String getPurpose() {
 		return purpose;
+	}
+	
+	public String getBundleId() {
+		return bundleId;
 	}
 	
 	public String getOid() {

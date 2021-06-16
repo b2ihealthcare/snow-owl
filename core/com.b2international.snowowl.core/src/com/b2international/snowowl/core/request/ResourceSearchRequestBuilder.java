@@ -16,16 +16,13 @@
 package com.b2international.snowowl.core.request;
 
 import com.b2international.snowowl.core.Resources;
-import com.b2international.snowowl.core.context.ResourceRepositoryRequestBuilder;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.ResourceSearchRequest.OptionKey;
 
 /**
  * @since 8.0
  */
-public final class ResourceSearchRequestBuilder 
-		extends SearchResourceRequestBuilder<ResourceSearchRequestBuilder, RepositoryContext, Resources>
-		implements ResourceRepositoryRequestBuilder<Resources> {
+public final class ResourceSearchRequestBuilder extends BaseResourceSearchRequestBuilder<ResourceSearchRequestBuilder, Resources> {
 
 	/**
 	 * Filters matches by the given resource type.
@@ -47,36 +44,6 @@ public final class ResourceSearchRequestBuilder
 		return addOption(OptionKey.RESOURCE_TYPE, resourceTypes);
 	}
 	
-	/**
-	 * Filters matches by their title (exact match).
-	 * 
-	 * @param title - the single to match
-	 * @return this builder
-	 */
-	public ResourceSearchRequestBuilder filterByTitleExact(String title) {
-		return addOption(OptionKey.TITLE_EXACT, title);
-	}
-	
-	/**
-	 * "Smart" search by title (taking prefixes, stemming, etc. into account)
-	 * 
-	 * @param title - the title to search for
-	 * @return this builder
-	 */
-	public ResourceSearchRequestBuilder filterByTitle(String title) {
-		return addOption(OptionKey.TITLE, title);
-	}
-	
-	/**
-	 * Filters matches by their title (exact match).
-	 * 
-	 * @param titles - at least one of these titles match
-	 * @return this builder
-	 */
-	public ResourceSearchRequestBuilder filterByTitleExact(Iterable<String> titles) {
-		return addOption(OptionKey.TITLE_EXACT, titles);
-	}
-	
 	public ResourceSearchRequestBuilder filterByToolingId(String toolingId) {
 		return addOption(OptionKey.TOOLING_ID, toolingId);
 	}
@@ -91,6 +58,14 @@ public final class ResourceSearchRequestBuilder
 	
 	public ResourceSearchRequestBuilder filterByBranches(Iterable<String> branchPaths) {
 		return addOption(OptionKey.BRANCH, branchPaths);
+	}
+
+	public ResourceSearchRequestBuilder filterByBundleId(String bundleId) {
+		return addOption(OptionKey.BUNDLE_ID, bundleId);
+	}
+
+	public ResourceSearchRequestBuilder filterByBundleIds(Iterable<String> bundleIds) {
+		return addOption(OptionKey.BUNDLE_ID, bundleIds);
 	}
 	
 	@Override
