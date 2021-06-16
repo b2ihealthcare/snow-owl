@@ -33,7 +33,7 @@ import io.restassured.response.ValidatableResponse;
 /**
  * @since 8.0
  */
-public class BunldeApiAssert {
+public class BundleApiAssert {
 	
 	public static ValidatableResponse assertBundleSearch() {
 		return assertBundleSearch(Collections.emptyMap());

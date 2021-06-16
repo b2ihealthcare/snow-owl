@@ -15,12 +15,12 @@
  */
 package com.b2international.snowowl.core.rest.bundle;
 
-import static com.b2international.snowowl.core.rest.BunldeApiAssert.assertBundleCreated;
-import static com.b2international.snowowl.core.rest.BunldeApiAssert.assertBundleGet;
-import static com.b2international.snowowl.core.rest.BunldeApiAssert.assertBundleSearch;
-import static com.b2international.snowowl.core.rest.BunldeApiAssert.assertCreate;
-import static com.b2international.snowowl.core.rest.BunldeApiAssert.assertUpdateBundleField;
-import static com.b2international.snowowl.core.rest.BunldeApiAssert.prepareCreateRequestBody;
+import static com.b2international.snowowl.core.rest.BundleApiAssert.assertBundleCreated;
+import static com.b2international.snowowl.core.rest.BundleApiAssert.assertBundleGet;
+import static com.b2international.snowowl.core.rest.BundleApiAssert.assertBundleSearch;
+import static com.b2international.snowowl.core.rest.BundleApiAssert.assertCreate;
+import static com.b2international.snowowl.core.rest.BundleApiAssert.assertUpdateBundleField;
+import static com.b2international.snowowl.core.rest.BundleApiAssert.prepareCreateRequestBody;
 import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertCodeSystemCreated;
 import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.prepareCodeSystemCreateRequestBody;
 import static org.hamcrest.CoreMatchers.equalTo;
