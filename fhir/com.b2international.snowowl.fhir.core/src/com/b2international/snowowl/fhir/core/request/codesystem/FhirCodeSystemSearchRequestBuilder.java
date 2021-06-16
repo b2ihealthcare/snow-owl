@@ -73,9 +73,9 @@ public final class FhirCodeSystemSearchRequestBuilder
 	}
 
 	public FhirCodeSystemSearchRequestBuilder setSummary(String summary) {
-		if ("true".equals(summary)) {
+		if ("true".equalsIgnoreCase(summary)) {
 			return setElements(CodeSystem.Fields.SUMMARY);
-		} else if ("count".equals(summary)) {
+		} else if ("count".equalsIgnoreCase(summary)) {
 			return setLimit(0);
 		} else {
 			// TODO support text and data _summary values
