@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.fhir.core.model.usagecontext;
 
-import java.util.Collection;
+import java.util.List;
 
 import com.b2international.snowowl.fhir.core.model.Extension;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
@@ -30,7 +30,7 @@ import com.b2international.snowowl.fhir.core.model.dt.Quantity;
  */
 public class QuantityUsageContext extends UsageContext<Quantity> {
 
-	protected QuantityUsageContext(final String id, final Collection<Extension> extensions, final Coding code, final Quantity value) {
+	protected QuantityUsageContext(final String id, final List<Extension> extensions, final Coding code, final Quantity value) {
 		super(id, extensions, code, value);
 	}
 	

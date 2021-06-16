@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.fhir.core.model.usagecontext;
 
-import java.util.Collection;
+import java.util.List;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -55,7 +55,7 @@ public abstract class UsageContext<T> extends Element {
 	 * @param id
 	 * @param extensions
 	 */
-	protected UsageContext(final String id, final Collection<Extension> extensions,
+	protected UsageContext(final String id, final List<Extension> extensions,
 			final Coding code, final T value) {
 		super(id, extensions);
 		this.code = code;

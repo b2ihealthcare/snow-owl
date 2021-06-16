@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.fhir.core.model.dt;
 
-import java.util.Collection;
+import java.util.List;
 
 import com.b2international.snowowl.fhir.core.model.Extension;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -32,7 +32,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class Quantity extends BaseQuantity {
 	
-	Quantity(String id, Collection<Extension> extensions, Double value, Code comparator, String unit, Uri system, Code code) {
+	Quantity(String id, List<Extension> extensions, Double value, Code comparator, String unit, Uri system, Code code) {
 		super(id, extensions, value, comparator, unit, system, code);
 	}
 	

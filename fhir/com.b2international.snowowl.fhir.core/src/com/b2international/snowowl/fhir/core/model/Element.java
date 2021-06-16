@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,11 @@
  */
 package com.b2international.snowowl.fhir.core.model;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.Lists;
 
 /**
  * 
@@ -30,21 +31,21 @@ import com.google.common.collect.Lists;
 public abstract class Element {
 	
 	@JsonProperty
-	private String id;
+	private final String id;
 	
 	@JsonProperty("extension")
-	private Collection<Extension> extensions;
+	private final List<Extension> extensions;
 	
-	protected Element(final String id, final Collection<Extension> extensions) {
+	protected Element(final String id, final List<Extension> extensions) {
 		this.id = id;
 		this.extensions = extensions;
 	}
 	
-	public String getId() {
+	public final String getId() {
 		return id;
 	}
 	
-	public Collection<Extension> getExtensions() {
+	public final Collection<Extension> getExtensions() {
 		return extensions;
 	}
 	
@@ -52,10 +53,7 @@ public abstract class Element {
 
 		protected String id;
 
-		protected Collection<Extension> extensions = Lists.newArrayList();
-		
-//		public Builder() {
-//		}
+		protected List<Extension> extensions;
 		
 		protected abstract B getSelf();
 		
@@ -65,6 +63,9 @@ public abstract class Element {
 		}
 		
 		public B addExtension(final Extension extension) {
+			if (extensions == null) {
+				extensions = new ArrayList<>();
+			}
 			extensions.add(extension);
 			return getSelf();
 		}

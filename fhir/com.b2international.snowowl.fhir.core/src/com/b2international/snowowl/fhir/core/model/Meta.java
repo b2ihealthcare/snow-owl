@@ -1,9 +1,10 @@
 /*******************************************************************************
- * Copyright (c) 2018 B2i Healthcare. All rights reserved.
+ * Copyright (c) 2018-2021 B2i Healthcare. All rights reserved.
  *******************************************************************************/
 package com.b2international.snowowl.fhir.core.model;
 
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Id;
@@ -11,9 +12,7 @@ import com.b2international.snowowl.fhir.core.model.dt.Instant;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.search.Searchable;
 import com.b2international.snowowl.fhir.core.search.Summary;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.Sets;
 
 /**
  * FHIR Resource Metadata
@@ -24,40 +23,23 @@ import com.google.common.collect.Sets;
 public class Meta extends Element {
 	
 	@Summary
-	@JsonProperty
-	private Id versionId;
+	private final Id versionId;
 	
 	@Summary
-	@JsonProperty
 	@Searchable(type = "Date")
-	private Instant lastUpdated;
+	private final Instant lastUpdated;
 	
 	@Summary
-	@JsonProperty("profile")
-	private Collection<Uri> profiles;
+	private final List<Uri> profiles;
 	
 	@Summary
-	@JsonProperty("security")
-	private Collection<Coding> securities;
+	private final List<Coding> securities;
 	
 	@Summary
-	@JsonProperty("tag")
-	private Collection<Coding> tags;
-	
-	/**
-	 * @return the tags
-	 */
-	@JsonIgnore
-	public Collection<Coding> getTags() {
-		return tags;
-	}
-	
-	/**
-	 * @param id
-	 * @param extensions
-	 */
-	protected Meta(String id, Collection<Extension> extensions,
-			final Id versionId, final Instant lastUpdated, final Collection<Uri> profiles, final Collection<Coding> securities, final Collection<Coding> tags) {
+	private final List<Coding> tags;
+
+	protected Meta(String id, List<Extension> extensions,
+			final Id versionId, final Instant lastUpdated, final List<Uri> profiles, final List<Coding> securities, final List<Coding> tags) {
 		
 		super(id, extensions);
 		this.versionId = versionId;
@@ -65,6 +47,29 @@ public class Meta extends Element {
 		this.profiles = profiles;
 		this.securities = securities;
 		this.tags = tags;
+	}
+
+	public Id getVersionId() {
+		return versionId;
+	}
+	
+	public Instant getLastUpdated() {
+		return lastUpdated;
+	}
+	
+	@JsonProperty("tag")
+	public List<Coding> getTags() {
+		return tags;
+	}
+	
+	@JsonProperty("profile")
+	public List<Uri> getProfiles() {
+		return profiles;
+	}
+	
+	@JsonProperty("security")
+	public List<Coding> getSecurities() {
+		return securities;
 	}
 	
 	public static Builder builder() {
@@ -75,9 +80,9 @@ public class Meta extends Element {
 		
 		private Id versionId;
 		private Instant lastUpdated;
-		private Collection<Uri> profiles = Sets.newHashSet();
-		private Collection<Coding> securities = Sets.newHashSet();
-		private Collection<Coding> tags = Sets.newHashSet();
+		private List<Uri> profiles;
+		private List<Coding> securities;
+		private List<Coding> tags;
 		
 		@Override
 		protected Builder getSelf() {
@@ -100,22 +105,34 @@ public class Meta extends Element {
 		}
 		
 		public Builder addProfile(Uri profileUri) {
+			if (profiles == null) {
+				profiles = new ArrayList<>();
+			}
 			profiles.add(profileUri);
 			return getSelf();
 		}
 
 		public Builder addProfile(String profile) {
+			if (profiles == null) {
+				profiles = new ArrayList<>();
+			}
 			profiles.add(new Uri(profile));
 			return getSelf();
 		}
 		
 		public Builder addSecurity(Coding security) {
+			if (securities == null) {
+				securities = new ArrayList<>();
+			}
 			securities.add(security);
 			return getSelf();
 		}
 
 		public Builder addTag(Coding tag) {
 			if (tag != null) {
+				if (tags == null) {
+					tags = new ArrayList<>();
+				}
 				tags.add(tag);
 			}
 			return getSelf();

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,8 @@
  */
 package com.b2international.snowowl.fhir.core.model.dt;
 
-import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 
 import com.b2international.snowowl.fhir.core.model.Element;
 import com.b2international.snowowl.fhir.core.model.Extension;
@@ -44,7 +44,7 @@ public class Period extends Element {
 		this(start, end, null, null);
 	}
 	
-	public Period(final Date start, final Date end, final String id, final Collection<Extension> extensions) {
+	public Period(final Date start, final Date end, final String id, final List<Extension> extensions) {
 		super(id, extensions);
 		this.start = start;
 		this.end = end;

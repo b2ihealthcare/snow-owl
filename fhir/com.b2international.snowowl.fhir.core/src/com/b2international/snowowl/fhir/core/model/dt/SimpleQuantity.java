@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.fhir.core.model.dt;
 
-import java.util.Collection;
+import java.util.List;
 
 import javax.validation.constraints.Null;
 
@@ -32,7 +32,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class SimpleQuantity extends BaseQuantity {
 	
-	SimpleQuantity(String id, Collection<Extension> extensions,
+	SimpleQuantity(String id, List<Extension> extensions,
 			final Double value, final Code comparator, final String unit, final Uri system, final Code code) {
 		super(id, extensions, value, comparator, unit, system, code);
 	}
