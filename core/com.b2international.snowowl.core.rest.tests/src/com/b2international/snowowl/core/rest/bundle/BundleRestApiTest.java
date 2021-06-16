@@ -45,8 +45,10 @@ public class BundleRestApiTest {
 	@Test
 	public void createBundleNoId() {
 		assertCreate(
-				Json.object())
-		.statusCode(400).body("violations", hasItem("'id' may not be empty (was 'null')"));
+				Json.object(
+						ResourceDocument.Fields.ID, ""
+				)
+		).statusCode(400).body("violations", hasItem("'id' may not be empty (was '')"));
 	}
 
 	@Test

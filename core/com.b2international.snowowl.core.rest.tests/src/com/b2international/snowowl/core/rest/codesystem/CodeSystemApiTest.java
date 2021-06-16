@@ -86,8 +86,10 @@ public class CodeSystemApiTest {
 	@Test
 	public void codesystem02_CreateEmptyBody() throws Exception {
 		assertCodeSystemCreate(
-			Json.object()
-		).statusCode(400).body("violations", hasItem("'id' may not be empty (was 'null')"));
+			Json.object(
+					ResourceDocument.Fields.ID, ""
+			)
+		).statusCode(400).body("violations", hasItem("'id' may not be empty (was '')"));
 	}
 	
 	@Test
