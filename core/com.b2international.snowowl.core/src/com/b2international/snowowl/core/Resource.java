@@ -17,7 +17,6 @@ package com.b2international.snowowl.core;
 
 import java.io.Serializable;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
 
 /**
@@ -66,7 +65,6 @@ public abstract class Resource implements Serializable {
 	/**
 	 * @return the type of the resource
 	 */
-	@JsonIgnore
 	public abstract String getResourceType();
 	
 	/**
