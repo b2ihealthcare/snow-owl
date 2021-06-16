@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,19 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.tests;
+package com.b2international.snowowl.fhir.rest.tests.valueset;
 
 import org.junit.BeforeClass;
 
 import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.fhir.tests.endpoints.valueset.TestReferenceSetCreator;
+import com.b2international.snowowl.fhir.tests.FhirRestTest;
 
 /**
  * Common class for SNOMED CT Rest test cases
  * @since 7.1
  *
  */
-public class SnomedFhirRestTest extends FhirRestTest {
+public abstract class SnomedFhirRestTest extends FhirRestTest {
 	
 	protected static final String FHIR_SIMPLE_TYPE_REFSET_VERSION = "FHIR_SIMPLE_TYPE_REFSET_VERSION"; //$NON-NLS-N$
 	protected static final String SIMPLE_TYPE_REFSET_NAME = "FHIR Automated Test Simple Type Reference Set"; //$NON-NLS-N$

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.tests.endpoints.codesystem;
+package com.b2international.snowowl.fhir.rest.tests.codesystem;
 
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.hamcrest.CoreMatchers.*;
@@ -32,7 +32,7 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
  * 
  * @since 6.6
  */
-public class CodeSystemRestTest extends FhirRestTest {
+public class FhirCodeSystemApiTest extends FhirRestTest {
 	
 	private static final String CODESYSTEM = "/CodeSystem";
 	private static final String CODESYSTEM_ID = "/CodeSystem/{id}";
