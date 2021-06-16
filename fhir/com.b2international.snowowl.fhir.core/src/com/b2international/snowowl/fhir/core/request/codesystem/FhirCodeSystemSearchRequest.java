@@ -20,8 +20,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.codesystem.CodeSystems;
 import com.b2international.snowowl.core.domain.RepositoryContext;
@@ -111,7 +114,6 @@ final class FhirCodeSystemSearchRequest extends SearchResourceRequest<Repository
 				.build()
 				.execute(context);
 		
-		
 		return prepareBundle()
 				.entry(internalCodeSystems.stream().map(codeSystem -> toFhirCodeSystemEntry(context, codeSystem)).collect(Collectors.toList()))
 				.total(internalCodeSystems.getTotal())
@@ -122,7 +124,7 @@ final class FhirCodeSystemSearchRequest extends SearchResourceRequest<Repository
 		return Bundle.builder(UUID.randomUUID().toString())
 				.type(BundleType.SEARCHSET)
 				.meta(Meta.builder()
-						.addTag(fields() != null ? Coding.CODING_SUBSETTED : null)
+						.addTag(CompareUtils.isEmpty(fields()) ? null : Coding.CODING_SUBSETTED)
 						.lastUpdated(Instant.builder().instant(java.time.Instant.now()).build())
 						.build());
 	}
@@ -132,7 +134,7 @@ final class FhirCodeSystemSearchRequest extends SearchResourceRequest<Repository
 	}
 
 	private CodeSystem toFhirCodeSystem(RepositoryContext context, com.b2international.snowowl.core.codesystem.CodeSystem codeSystem) {
-		return CodeSystem.builder()
+		CodeSystem.Builder entry = CodeSystem.builder()
 				// mandatory fields
 				.id(codeSystem.getId())
 				.status(PublicationStatus.getByCodeValue(codeSystem.getStatus()))
@@ -148,16 +150,24 @@ final class FhirCodeSystemSearchRequest extends SearchResourceRequest<Repository
 				.url(codeSystem.getUrl())
 				.publisher(codeSystem.getOwner())
 				.name(codeSystem.getId()) // we are using the ID of the resource as machine readable name
-				.title(codeSystem.getTitle())
-				
-				// optional fields
-				.copyright(codeSystem.getCopyright())
-				.language(codeSystem.getLanguage())
-				.description(codeSystem.getDescription())
-				.purpose(codeSystem.getPurpose())
-				.count(0) // TODO compute count based on the current number of concepts
-				.build();
+				.title(codeSystem.getTitle());
 		// TODO fill out Code System specific properties, if required use tooling specific extensions to fill all fields
+		
+		// optional fields
+		includeIfFieldSelected(CodeSystem.Fields.COPYRIGHT, codeSystem::getCopyright, entry::copyright);
+		includeIfFieldSelected(CodeSystem.Fields.LANGUAGE, codeSystem::getLanguage, entry::language);
+		includeIfFieldSelected(CodeSystem.Fields.DESCRIPTION, codeSystem::getDescription, entry::description);
+		includeIfFieldSelected(CodeSystem.Fields.PURPOSE, codeSystem::getPurpose, entry::purpose);
+		// TODO compute count based on the current number of concepts
+		includeIfFieldSelected(CodeSystem.Fields.COUNT, () -> 0, entry::count);
+		
+		return entry.build();
+	}
+	
+	private <T> void includeIfFieldSelected(String field, Supplier<T> getter, Function<T, ?> setter) {
+		if (CompareUtils.isEmpty(fields()) || fields().contains(field)) {
+			setter.apply(getter.get());
+		}
 	}
 	
 }

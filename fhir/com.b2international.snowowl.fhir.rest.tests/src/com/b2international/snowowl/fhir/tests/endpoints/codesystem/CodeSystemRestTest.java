@@ -23,6 +23,7 @@ import java.util.UUID;
 
 import org.junit.Test;
 
+import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.tests.FhirRestTest;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 
@@ -43,9 +44,11 @@ public class CodeSystemRestTest extends FhirRestTest {
 			.then()
 			.statusCode(200)
 			.body("resourceType", equalTo("Bundle"))
+			.body("type", equalTo("searchset"))
+			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
 			.body("total", equalTo(1))
-			.body("entry.resource.url", hasItem("http://snomed.info/sct"));
-			// TODO check number of concepts
+			.body("entry[0].resource.url", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_BASE))
+			.body("entry[0].resource.count", equalTo(0));
 	}
 	
 	@Test
@@ -56,6 +59,8 @@ public class CodeSystemRestTest extends FhirRestTest {
 			.then()
 			.statusCode(200)
 			.body("resourceType", equalTo("Bundle"))
+			.body("type", equalTo("searchset"))
+			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
 			.body("total", equalTo(0));
 	}
 	
@@ -67,9 +72,10 @@ public class CodeSystemRestTest extends FhirRestTest {
 			.then()
 			.statusCode(200)
 			.body("resourceType", equalTo("Bundle"))
-			.body("total", equalTo(1))
 			.body("type", equalTo("searchset"))
-			.body("entry.resource.url", hasItem("http://snomed.info/sct"));
+			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
+			.body("total", equalTo(1))
+			.body("entry[0].resource.url", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_BASE));
 	}
 	
 	@Test
@@ -82,10 +88,11 @@ public class CodeSystemRestTest extends FhirRestTest {
 			.then()
 			.statusCode(200)
 			.body("resourceType", equalTo("Bundle"))
-			.body("total", equalTo(2))
 			.body("type", equalTo("searchset"))
+			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
+			.body("total", equalTo(2))
 			.body("entry.resource.id", hasItems(getTestCodeSystemId(), anotherCodeSystemId))
-			.body("entry.resource.url", hasItem("http://snomed.info/sct"));
+			.body("entry.resource.url", hasItem(SnomedTerminologyComponentConstants.SNOMED_URI_BASE));
 //			.root("entry.find { it.resource.id == '" + FHIR_ISSUE_TYPE_CODESYSTEM_ID + "'}")
 //			.body("resource.id", equalTo(FHIR_ISSUE_TYPE_CODESYSTEM_ID))
 //			.body("resource.concept", notNullValue())
@@ -101,8 +108,9 @@ public class CodeSystemRestTest extends FhirRestTest {
 			.then()
 			.statusCode(200)
 			.body("resourceType", equalTo("Bundle"))
-			.body("total", equalTo(0))
-			.body("type", equalTo("searchset"));
+			.body("type", equalTo("searchset"))
+			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
+			.body("total", equalTo(0));
 	}
 	
 	@Test
@@ -113,10 +121,11 @@ public class CodeSystemRestTest extends FhirRestTest {
 			.then()
 			.statusCode(200)
 			.body("resourceType", equalTo("Bundle"))
-			.body("total", equalTo(1))
 			.body("type", equalTo("searchset"))
+			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
+			.body("total", equalTo(1))
 			.body("entry[0].resource.id", equalTo(getTestCodeSystemId()))
-			.body("entry[0].resource.url", equalTo("http://snomed.info/sct"));
+			.body("entry[0].resource.url", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_BASE));
 	}
 	
 	@Test
@@ -129,10 +138,11 @@ public class CodeSystemRestTest extends FhirRestTest {
 			.then()
 			.statusCode(200)
 			.body("resourceType", equalTo("Bundle"))
-			.body("total", equalTo(2))
+			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
 			.body("type", equalTo("searchset"))
+			.body("total", equalTo(2))
 			.body("entry.resource.id", hasItems(getTestCodeSystemId(), anotherCodeSystemId))
-			.body("entry.resource.url", hasItem("http://snomed.info/sct"));
+			.body("entry.resource.url", hasItem(SnomedTerminologyComponentConstants.SNOMED_URI_BASE));
 	}
 	
 	@Test
@@ -143,8 +153,9 @@ public class CodeSystemRestTest extends FhirRestTest {
 			.then()
 			.statusCode(200)
 			.body("resourceType", equalTo("Bundle"))
-			.body("total", equalTo(1))
+			.body("meta.tag.code", hasItem(Coding.CODING_SUBSETTED.getCodeValue()))
 			.body("type", equalTo("searchset"))
+			.body("total", equalTo(1))
 			//no concept definitions are part of the summary
 			.body("entry.resource", not(hasItem("concept")));
 	}
@@ -157,25 +168,18 @@ public class CodeSystemRestTest extends FhirRestTest {
 			.then()
 			.statusCode(200)
 			.body("resourceType", equalTo("Bundle"))
+			.body("meta.tag.code", hasItem(Coding.CODING_SUBSETTED.getCodeValue()))
+			.body("type", equalTo("searchset"))
 			.body("total", equalTo(1))
-			.body("type", equalTo("searchset"));
-//		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-//		.param("_summary", "text")
-//	 	.pathParam("id", FHIR_ISSUE_TYPE_CODESYSTEM_ID) 
-//		.when().get("/CodeSystem/{id}")
-//		.then() 
-//		.statusCode(200)
-//		.body("resourceType", equalTo("CodeSystem"))
-//		.body("meta.tag.code", hasItem("SUBSETTED"))
-//		//only text, id, meta and mandatory
-//		.body("text.div", equalTo("<div>A code that describes the type of issue.</div>"))
-//		.body("status", equalTo("active"))
-//		.body("id", notNullValue())
-//		.body("count", nullValue())
-//		.body("name", nullValue())
-//		.body("concept", nullValue()) 
-//		.body("copyright", nullValue()) 
-//		.body("url", nullValue());
+			// only text, id, meta and mandatory
+//			.body("text.div", equalTo("<div>A code that describes the type of issue.</div>"))
+			.body("entry[0].resource.id", equalTo(getTestCodeSystemId()))
+			.body("entry[0].resource.status", equalTo("unknown"))
+			.body("entry[0].resource.count", nullValue())
+			.body("entry[0].resource.name", nullValue())
+			.body("entry[0].resource.concept", nullValue()) 
+			.body("entry[0].resource.copyright", nullValue()) 
+			.body("entry[0].resource.url", nullValue());
 	}
 	
 	@Test
@@ -186,25 +190,18 @@ public class CodeSystemRestTest extends FhirRestTest {
 			.then()
 			.statusCode(200)
 			.body("resourceType", equalTo("Bundle"))
+			.body("meta.tag.code", hasItem(Coding.CODING_SUBSETTED.getCodeValue()))
+			.body("type", equalTo("searchset"))
 			.body("total", equalTo(1))
-			.body("type", equalTo("searchset"));
-//		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-//		.param("_summary", "data")
-//	 	.pathParam("id", FHIR_ISSUE_TYPE_CODESYSTEM_ID) 
-//		.when().get("/CodeSystem/{id}")
-//		.then() 
-//		.statusCode(200)
-//		.body("resourceType", equalTo("CodeSystem"))
-//		.body("meta.tag.code", hasItem("SUBSETTED"))
-//		//only text, id, meta and mandatory
-//		.body("text", nullValue())
-//		.body("status", equalTo("active"))
-//		.body("id", notNullValue())
-//		.body("count", notNullValue())
-//		.body("name", notNullValue())
-//		.body("concept", notNullValue()) 
-//		.body("copyright", notNullValue()) 
-//		.body("url", notNullValue());
+			// only data, id, meta 
+			// mandatory
+			.body("entry[0].resource.id", notNullValue())
+			.body("entry[0].resource.status", equalTo("unknown"))
+			.body("entry[0].resource.count", notNullValue())
+			.body("entry[0].resource.url", notNullValue())
+			.body("entry[0].resource.name", notNullValue())
+			.body("entry[0].resource.copyright", notNullValue())
+			.body("entry[0].resource.text", nullValue());
 	}
 	
 	@Test
@@ -215,6 +212,7 @@ public class CodeSystemRestTest extends FhirRestTest {
 			.then()
 			.statusCode(200)
 			.body("resourceType", equalTo("Bundle"))
+			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
 			.body("total", equalTo(1))
 			.body("type", equalTo("searchset"))
 			.body("entry", equalTo(List.of()));
@@ -228,10 +226,11 @@ public class CodeSystemRestTest extends FhirRestTest {
 			.then()
 			.statusCode(200)
 			.body("resourceType", equalTo("Bundle"))
+			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
 			.body("total", equalTo(1))
 			.body("type", equalTo("searchset"))
 			.body("entry.resource.id", hasItem(getTestCodeSystemId()))
-			.body("entry.resource.url", hasItem("http://snomed.info/sct"));
+			.body("entry.resource.url", hasItem(SnomedTerminologyComponentConstants.SNOMED_URI_BASE));
 	}
 	
 	@Test
@@ -241,20 +240,22 @@ public class CodeSystemRestTest extends FhirRestTest {
 			.when().get(CODESYSTEM)
 			.then() 
 			.statusCode(200)
-			// mandatory fields
 			.body("resourceType", equalTo("Bundle"))
-			.body("meta.tag.code", hasItem("SUBSETTED"))
+			.body("meta.tag.code", hasItem(Coding.CODING_SUBSETTED.getCodeValue()))
+			.body("total", equalTo(1))
+			.body("type", equalTo("searchset"))
+			// mandatory fields
 			.body("entry.resource.status", hasItem("unknown"))
 			.body("entry.resource.content", hasItem("complete"))
 			.body("entry.resource.id", hasItem(getTestCodeSystemId()))
 			// summary and optional fields
-			.body("entry.resource.text", nullValue())
-			.body("entry.resource.count", nullValue())
-			.body("entry.resource.concept", nullValue()) 
-			.body("entry.resource.copyright", nullValue()) 
+			.body("entry[0].resource.text", nullValue())
+			.body("entry[0].resource.count", nullValue())
+			.body("entry[0].resource.concept", nullValue()) 
+			.body("entry[0].resource.copyright", nullValue()) 
 			// requested fields
-			.body("entry.resource.name", hasItem(getTestCodeSystemId()))
-			.body("entry.resource.url", hasItem(SnomedTerminologyComponentConstants.SNOMED_URI_BASE));
+			.body("entry[0].resource.name", hasItem(getTestCodeSystemId()))
+			.body("entry[0].resource.url", hasItem(SnomedTerminologyComponentConstants.SNOMED_URI_BASE));
 	}
 	
 	@Test
@@ -264,19 +265,19 @@ public class CodeSystemRestTest extends FhirRestTest {
 			.when().get(CODESYSTEM)
 			.then() 
 			.statusCode(200)
-			// mandatory fields
 			.body("resourceType", equalTo("Bundle"))
-			.body("meta.tag.code", hasItem("SUBSETTED"))
-			.body("entry.resource.status", hasItem("unknown"))
-			.body("entry.resource.content", hasItem("complete"))
-			.body("entry.resource.id", hasItem(getTestCodeSystemId()))
+			.body("meta.tag.code", hasItem(Coding.CODING_SUBSETTED.getCodeValue()))
+			// mandatory fields
+			.body("entry[0].resource.status", equalTo("unknown"))
+			.body("entry[0].resource.content", equalTo("complete"))
+			.body("entry[0].resource.id", equalTo(getTestCodeSystemId()))
 			// summary and optional fields
-			.body("entry.resource.text", nullValue())
-			.body("entry.resource.count", nullValue())
-			.body("entry.resource.concept", nullValue()) 
-			.body("entry.resource.copyright", nullValue()) 
-			.body("entry.resource.name",  nullValue())
-			.body("entry.resource.url",  nullValue());
+			.body("entry[0].resource.text", nullValue())
+			.body("entry[0].resource.count", nullValue())
+			.body("entry[0].resource.concept", nullValue()) 
+			.body("entry[0].resource.copyright", nullValue()) 
+			.body("entry[0].resource.name",  nullValue())
+			.body("entry[0].resource.url",  nullValue());
 	}
 	
 	@Test
