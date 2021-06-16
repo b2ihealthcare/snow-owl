@@ -17,6 +17,9 @@ package com.b2international.snowowl.core.request;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.commons.exceptions.NotFoundException;
+import com.b2international.snowowl.core.bundle.Bundles;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.internal.ResourceDocument;
@@ -170,6 +173,19 @@ public abstract class BaseResourceCreateRequest implements Request<TransactionCo
 	@Override
 	public final String execute(TransactionContext context) {
 		preExecute(context);
+		
+		if (!IComponent.ROOT_ID.equals(bundleId)) {
+			Bundles bundles = ResourceRequests.bundles().prepareSearch()
+				.filterById(bundleId)
+				.setLimit(0)
+				.build()
+				.execute(context);
+			
+			if (bundles.getTotal() == 0) {
+				throw new NotFoundException("Bundle", bundleId).toBadRequestException();
+			}
+		} 
+		
 		context.add(createResourceDocument());
 		return id;
 	}
@@ -186,6 +202,7 @@ public abstract class BaseResourceCreateRequest implements Request<TransactionCo
 	
 	private ResourceDocument createResourceDocument() {
 		final Builder builder = ResourceDocument.builder()
+				.id(id)
 				.url(url)
 				.title(title)
 				.language(language)

@@ -19,32 +19,19 @@ import java.util.concurrent.TimeUnit;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import com.b2international.commons.validation.ApiValidation;
 import com.b2international.snowowl.core.bundle.Bundle;
 import com.b2international.snowowl.core.bundle.Bundles;
 import com.b2international.snowowl.core.codesystem.CodeSystems;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.*;
 
 /**
  * @since 8.0
@@ -59,46 +46,46 @@ public class BundleRestService extends AbstractRestService {
 	}
 	
 	@ApiOperation(
-			value="Retrieve bundles", 
-			notes="Returns a collection resource containing all/filtered registered bundles."
-				+ "<p>Results are by default sorted by ID."
-				+ "<p>The following properties can be expanded:"
-				+ "<p>"
-				+ "&bull; resources() &ndash; this list of resources this bundle contains"
-		)
-		@ApiResponses({
-			@ApiResponse(code = 200, message = "OK", response = CodeSystems.class),
-			@ApiResponse(code = 400, message = "Bad Request", response = RestApiError.class)
-		})
-		@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
-		public Promise<Bundles> searchByGet(final BundleRestSearch params) {
-			return ResourceRequests.bundles().prepareSearch()
-					.filterByIds(params.getId())
-					.filterByTitle(params.getTitle())
-					.setLimit(params.getLimit())
-					.setExpand(params.getExpand())
-					.setSearchAfter(params.getSearchAfter())
-					.sortBy(extractSortFields(params.getSort()))
-					.buildAsync()
-					.execute(getBus());
-		}
+		value="Retrieve bundles", 
+		notes="Returns a collection resource containing all/filtered registered bundles."
+			+ "<p>Results are by default sorted by ID."
+			+ "<p>The following properties can be expanded:"
+			+ "<p>"
+			+ "&bull; resources() &ndash; this list of resources this bundle contains"
+	)
+	@ApiResponses({
+		@ApiResponse(code = 200, message = "OK", response = CodeSystems.class),
+		@ApiResponse(code = 400, message = "Bad Request", response = RestApiError.class)
+	})
+	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
+	public Promise<Bundles> searchByGet(final BundleRestSearch params) {
+		return ResourceRequests.bundles().prepareSearch()
+				.filterByIds(params.getId())
+				.filterByTitle(params.getTitle())
+				.setLimit(params.getLimit())
+				.setExpand(params.getExpand())
+				.setSearchAfter(params.getSearchAfter())
+				.sortBy(extractSortFields(params.getSort()))
+				.buildAsync()
+				.execute(getBus());
+	}
 	
 	@ApiOperation(
-			value="Retrieve bundles", 
-			notes="Returns a collection resource containing all/filtered registered bundles."
-				+ "<p>Results are by default sorted by ID."
-				+ "<p>The following properties can be expanded:"
-				+ "<p>"
-				+ "&bull; resources() &ndash; this list of resources this bundle contains"
-		)
-		@ApiResponses({
-			@ApiResponse(code = 200, message = "OK", response = CodeSystems.class),
-			@ApiResponse(code = 400, message = "Invalid search config", response = RestApiError.class),
-		})
-		@PostMapping(value="/search", produces = { AbstractRestService.JSON_MEDIA_TYPE })
-		public Promise<Bundles> searchByPost(final BundleRestSearch params) {
-			return searchByGet(params);
-		}
+		value="Retrieve bundles", 
+		notes="Returns a collection resource containing all/filtered registered bundles."
+			+ "<p>Results are by default sorted by ID."
+			+ "<p>The following properties can be expanded:"
+			+ "<p>"
+			+ "&bull; resources() &ndash; this list of resources this bundle contains"
+	)
+	@ApiResponses({
+		@ApiResponse(code = 200, message = "OK", response = CodeSystems.class),
+		@ApiResponse(code = 400, message = "Invalid search config", response = RestApiError.class),
+	})
+	@PostMapping(value="/search", produces = { AbstractRestService.JSON_MEDIA_TYPE })
+	public Promise<Bundles> searchByPost(final BundleRestSearch params) {
+		return searchByGet(params);
+	}
 	
 	@ApiOperation(
 			value="Retrieve budnle by its unique identifier",
@@ -117,37 +104,40 @@ public class BundleRestService extends AbstractRestService {
 	}
 	
 	@ApiOperation(
-			value="Create a bundle",
-			notes="Create a new bundle with the given parameters"
-		)
-		@ApiResponses({
-			@ApiResponse(code = 201, message = "Created", response = Void.class),
-			@ApiResponse(code = 400, message = "Invalid input arguments", response = RestApiError.class),
-			@ApiResponse(code = 409, message = "Bundle already exists in the system", response = RestApiError.class)
-		})
-		@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
-		@ResponseStatus(HttpStatus.CREATED)
-		public ResponseEntity<Void> create(
-				@RequestBody
-				final Bundle bundle,
-				
-				@RequestHeader(value = X_AUTHOR, required = false)
-				final String author) {
-
-			ApiValidation.checkInput(bundle);
+		value="Create a bundle",
+		notes="Create a new bundle with the given parameters"
+	)
+	@ApiResponses({
+		@ApiResponse(code = 201, message = "Created", response = Void.class),
+		@ApiResponse(code = 400, message = "Invalid input arguments", response = RestApiError.class),
+		@ApiResponse(code = 409, message = "Bundle already exists in the system", response = RestApiError.class)
+	})
+	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
+	@ResponseStatus(HttpStatus.CREATED)
+	public ResponseEntity<Void> create(
+			@RequestBody
+			final Bundle bundle,
 			
-			final String commitComment = String.format("Created new bundle %s", bundle.getTitle());
-			final String codeSystemId = bundle.toCreateRequest()
-					.commit() 
-					.setAuthor(author)
-					.setCommitComment(commitComment)
-					.buildAsync()
-					.execute(getBus())
-					.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES)
-					.getResultAs(String.class);
-			
-			return ResponseEntity.created(getResourceLocationURI(codeSystemId)).build();
+			@RequestHeader(value = X_AUTHOR, required = false)
+			final String author) {
+		
+		// XXX use dedicated input model instead of representation
+		if (bundle.getBundleId() == null) {
+			bundle.setBundleId(IComponent.ROOT_ID);
 		}
+		
+		final String commitComment = String.format("Created new bundle %s", bundle.getTitle());
+		final String codeSystemId = bundle.toCreateRequest()
+				.commit() 
+				.setAuthor(author)
+				.setCommitComment(commitComment)
+				.buildAsync()
+				.execute(getBus())
+				.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES)
+				.getResultAs(String.class);
+		
+		return ResponseEntity.created(getResourceLocationURI(codeSystemId)).build();
+	}
 	
 	@ApiOperation(
 			value="Update a bundle",

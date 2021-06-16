@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -76,10 +77,15 @@ public final class BundleApiTest extends BaseBundleApiTest {
 			.build(USER, "Create bundle");
 	}
 	
+	@Test(expected = BadRequestException.class)
+	public void createBundleWithNonExistingParentBundle() throws Exception {
+		createBundle(id, UUID.randomUUID().toString(), TITLE);
+	}
+	
 	@Test
 	public void createNewBundle() {
-		final String bundleId = "123";
-		createBundle(id, bundleId, TITLE);
+		final String parentBundleId = createBundle("123");
+		createBundle(id, parentBundleId, TITLE);
 		
 		final Bundle bundle = getBundle();
 		
@@ -93,7 +99,7 @@ public final class BundleApiTest extends BaseBundleApiTest {
 		assertThat(bundle.getOwner()).isEqualTo(OWNER);
 		assertThat(bundle.getUsage()).isEqualTo(USAGE);
 		assertThat(bundle.getPurpose()).isEqualTo(PURPOSE);
-		assertThat(bundle.getBundleId()).isEqualTo(bundleId);
+		assertThat(bundle.getBundleId()).isEqualTo(parentBundleId);
 	}
 	
 	@Test

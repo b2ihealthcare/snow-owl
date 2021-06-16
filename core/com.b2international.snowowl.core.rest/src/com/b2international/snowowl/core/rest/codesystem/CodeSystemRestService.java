@@ -22,10 +22,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.b2international.commons.exceptions.BadRequestException;
-import com.b2international.commons.validation.ApiValidation;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.codesystem.CodeSystems;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
@@ -121,10 +121,13 @@ public class CodeSystemRestService extends AbstractRestService {
 			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
 
-		ApiValidation.checkInput(codeSystem);
-		
 		if (codeSystem.getUpgradeOf() != null) {
 			throw new BadRequestException("'upgradeOf' property cannot be set through code system create API");
+		}
+		
+		// initialize defaults, TODO use dedicatd input object instead of representation
+		if (codeSystem.getBundleId() == null) {
+			codeSystem.setBundleId(IComponent.ROOT_ID);
 		}
 		
 		final String commitComment = String.format("Created new Code System %s", codeSystem.getId());
