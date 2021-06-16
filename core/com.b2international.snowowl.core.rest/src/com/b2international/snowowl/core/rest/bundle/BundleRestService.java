@@ -24,7 +24,6 @@ import org.springframework.web.bind.annotation.*;
 import com.b2international.snowowl.core.bundle.Bundle;
 import com.b2international.snowowl.core.bundle.Bundles;
 import com.b2international.snowowl.core.codesystem.CodeSystems;
-import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.request.ResourceRequests;
@@ -116,18 +115,24 @@ public class BundleRestService extends AbstractRestService {
 	@ResponseStatus(HttpStatus.CREATED)
 	public ResponseEntity<Void> create(
 			@RequestBody
-			final Bundle bundle,
+			final BundleCreateRestInput params,
 			
 			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
-		
-		// XXX use dedicated input model instead of representation
-		if (bundle.getBundleId() == null) {
-			bundle.setBundleId(IComponent.ROOT_ID);
-		}
-		
-		final String commitComment = String.format("Created new bundle %s", bundle.getTitle());
-		final String codeSystemId = bundle.toCreateRequest()
+		final String commitComment = String.format("Created new bundle %s", params.getTitle());
+		final String codeSystemId = ResourceRequests.bundles().prepareCreate()
+				.setId(params.getId())
+				.setBundleId(params.getBundleId())
+				.setUrl(params.getUrl())
+				.setTitle(params.getTitle())
+				.setLanguage(params.getLanguage())
+				.setDescription(params.getDescription())
+				.setStatus(params.getStatus())
+				.setCopyright(params.getCopyright())
+				.setOwner(params.getOwner())
+				.setContact(params.getContact())
+				.setUsage(params.getUsage())
+				.setPurpose(params.getPurpose())
 				.commit() 
 				.setAuthor(author)
 				.setCommitComment(commitComment)
@@ -154,23 +159,23 @@ public class BundleRestService extends AbstractRestService {
 			final String bundleId,
 			
 			@RequestBody
-			final Bundle bundle,
+			final BundleUpdateRestinput params,
 			
 			@RequestHeader(value = X_AUTHOR, required = false)
 			final String author) {
 		final String commitComment = String.format("Update bundle %s", bundleId);
 		ResourceRequests.bundles().prepareUpdate(bundleId)
-				.setUrl(bundle.getUrl())
-				.setTitle(bundle.getTitle())
-				.setLanguage(bundle.getLanguage())
-				.setDescription(bundle.getDescription())
-				.setStatus(bundle.getStatus())
-				.setCopyright(bundle.getCopyright())
-				.setOwner(bundle.getOwner())
-				.setContact(bundle.getContact())
-				.setUsage(bundle.getUsage())
-				.setPurpose(bundle.getPurpose())
-				.setBundleId(bundle.getBundleId())
+				.setUrl(params.getUrl())
+				.setTitle(params.getTitle())
+				.setLanguage(params.getLanguage())
+				.setDescription(params.getDescription())
+				.setStatus(params.getStatus())
+				.setCopyright(params.getCopyright())
+				.setOwner(params.getOwner())
+				.setContact(params.getContact())
+				.setUsage(params.getUsage())
+				.setPurpose(params.getPurpose())
+				.setBundleId(params.getBundleId())
 				.commit()
 				.setAuthor(author)
 				.setCommitComment(commitComment)
