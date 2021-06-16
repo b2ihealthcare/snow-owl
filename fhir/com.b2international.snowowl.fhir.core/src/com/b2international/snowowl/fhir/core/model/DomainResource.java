@@ -45,6 +45,12 @@ import com.google.common.collect.Sets;
  */
 public abstract class DomainResource extends FhirResource {
 	
+	public static abstract class Fields extends FhirResource.Fields {
+		
+		public static final String TEXT = "text";
+		
+	}
+	
 	//Text summary of the resource, for human interpretation 0..1
 	private Narrative text;
 	

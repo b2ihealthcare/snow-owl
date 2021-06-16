@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.tests.endpoints.codesystem;
+package com.b2international.snowowl.fhir.rest.tests.codesystem;
 
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -32,7 +32,7 @@ import com.b2international.snowowl.fhir.tests.FhirRestTest;
  * 
  * @since 6.6
  */
-public class LookupFhirCodeSystemRestTest extends FhirRestTest {
+public class FhirLookupOperationTest extends FhirRestTest {
 	
 	private static final String FHIR_ISSUE_TYPE_CODESYSTEM_URI = "http://hl7.org/fhir/issue-type";
 	

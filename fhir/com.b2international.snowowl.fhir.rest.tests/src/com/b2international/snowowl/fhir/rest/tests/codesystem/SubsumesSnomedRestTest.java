@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.tests.endpoints.codesystem;
+package com.b2international.snowowl.fhir.rest.tests.codesystem;
 
 import static com.b2international.snowowl.fhir.tests.FhirTestConcepts.BACTERIA;
 import static com.b2international.snowowl.fhir.tests.FhirTestConcepts.MICROORGANISM;

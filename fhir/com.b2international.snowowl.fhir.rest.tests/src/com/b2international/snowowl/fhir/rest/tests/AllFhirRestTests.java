@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.tests;
+package com.b2international.snowowl.fhir.rest.tests;
 
 import org.junit.ClassRule;
 import org.junit.rules.RuleChain;
@@ -21,11 +21,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
-import com.b2international.snowowl.fhir.tests.endpoints.codesystem.*;
-import com.b2international.snowowl.fhir.tests.endpoints.conceptmap.SnomedConceptMapRestTest;
-import com.b2international.snowowl.fhir.tests.endpoints.conceptmap.TranslateSnomedConceptMapRestTest;
-import com.b2international.snowowl.fhir.tests.endpoints.valueset.ExpandSnomedRestTest;
-import com.b2international.snowowl.fhir.tests.endpoints.valueset.SnomedValueSetRestTest;
+import com.b2international.snowowl.fhir.rest.tests.codesystem.FhirCodeSystemApiTest;
+import com.b2international.snowowl.fhir.rest.tests.codesystem.FhirLookupOperationTest;
 import com.b2international.snowowl.test.commons.BundleStartRule;
 import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 
@@ -35,15 +32,20 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
  */
 @RunWith(Suite.class)
 @SuiteClasses({ 
-	CodeSystemRestTest.class,
-//	LookupFhirCodeSystemRestTest.class,
-//	ValidateFhirCodeRestTest.class,
-//	ValidateSnomedCodeRestTest.class,
+	// CodeSystem API
+	FhirCodeSystemApiTest.class,
+	FhirLookupOperationTest.class,
 //	SnomedCodeSystemProviderTest.class,
 //	LookupSnomedRestTest.class,
 //	SubsumesSnomedRestTest.class,
+//	ValidateFhirCodeRestTest.class,
+//	ValidateSnomedCodeRestTest.class,
+	
+	// ValueSet API
 //	SnomedValueSetRestTest.class,
 //	ExpandSnomedRestTest.class,
+	
+	// ConceptMap API
 //	SnomedConceptMapRestTest.class,
 //	TranslateSnomedConceptMapRestTest.class,
 })

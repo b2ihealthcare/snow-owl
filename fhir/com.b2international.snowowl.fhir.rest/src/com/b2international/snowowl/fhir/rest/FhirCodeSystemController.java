@@ -122,12 +122,13 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 	public Promise<CodeSystem> getCodeSystem(
 			@ApiParam(value = "The identifier of the Code System resource")
 			@PathVariable(value = "id") 
-			final String id) {
-		
-//		Pair<Set<FhirFilterParameter>, Set<FhirSearchParameter>> fhirParameters = processParameters(parameters);
-		// apply filters, params, etc.
+			final String id,
+			
+			final FhirResourceSelectors selectors) {
 		
 		return FhirRequests.codeSystems().prepareGet(id)
+				.setSummary(selectors.getSummary())
+				.setElements(asList(selectors.getElements()))
 				.buildAsync()
 				.execute(getBus());
 		

@@ -90,7 +90,21 @@ public class CodeSystem extends MetadataResource {
 		public static final Set<String> SUMMARY = ImmutableSet.<String>builder()
 				.addAll(MetadataResource.Fields.SUMMARY)
 				.add(COUNT, FILTER, PROPERTY)
-				.build(); 
+				.build();
+		
+		public static final Set<String> SUMMARY_TEXT = ImmutableSet.<String>builder()
+				.addAll(MetadataResource.Fields.MANDATORY)
+				.add(TEXT)
+				.build();
+		
+		public static final Set<String> SUMMARY_DATA = MANDATORY;
+		
+		public static final Set<String> ALL = ImmutableSet.<String>builder()
+				.addAll(MANDATORY)
+				.addAll(SUMMARY)
+				.add(TEXT)
+				.add(CONCEPT)
+				.build();
 		
 	}
 	

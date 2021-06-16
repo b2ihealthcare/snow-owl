@@ -15,22 +15,22 @@
  */
 package com.b2international.snowowl.fhir.core.request.codesystem;
 
-import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.context.ResourceRepositoryRequestBuilder;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
+import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.request.codesystem.FhirCodeSystemSearchRequest.OptionKey;
+import com.b2international.snowowl.fhir.core.search.Summary;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 /**
  * @since 8.0
@@ -73,13 +73,18 @@ public final class FhirCodeSystemSearchRequestBuilder
 	}
 
 	public FhirCodeSystemSearchRequestBuilder setSummary(String summary) {
-		if ("true".equalsIgnoreCase(summary)) {
+		if (summary == null || Summary.FALSE.equalsIgnoreCase(summary)) {
+			return getSelf();
+		} else if (Summary.TRUE.equalsIgnoreCase(summary)) {
 			return setElements(CodeSystem.Fields.SUMMARY);
-		} else if ("count".equalsIgnoreCase(summary)) {
+		} else if (Summary.TEXT.equalsIgnoreCase(summary)) {
+			return setElements(CodeSystem.Fields.SUMMARY_TEXT);
+		} else if (Summary.DATA.equalsIgnoreCase(summary)) {
+			return setElements(CodeSystem.Fields.SUMMARY_DATA);
+		} else if (Summary.COUNT.equalsIgnoreCase(summary)) {
 			return setLimit(0);
 		} else {
-			// TODO support text and data _summary values
-			return getSelf();
+			throw new BadRequestException(String.format("'%s' is unrecognized or not yet supported _summary value. Supported values are: '%s'", summary, Summary.VALUES));
 		}
 	}
 	
@@ -92,7 +97,17 @@ public final class FhirCodeSystemSearchRequestBuilder
 			fields.addAll(CodeSystem.Fields.MANDATORY);
 			// add all other fields
 			elements.forEach(fields::add);
-			// TODO validate elements against the known resource field set
+			
+			Set<String> unrecognizedElements = Sets.difference(fields, CodeSystem.Fields.ALL);
+			if (!unrecognizedElements.isEmpty()) {
+				throw new BadRequestException(String.format(
+					"'%s' %s unrecognized or not yet supported _elements value(s). Supported values are: '%s'", 
+					unrecognizedElements, 
+					unrecognizedElements.size() == 1 ? "is" : "are",
+					CodeSystem.Fields.ALL
+				));
+			}
+			
 			return setFields(ImmutableList.copyOf(fields));
 		}
 	}

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.tests.endpoints.valueset;
+package com.b2international.snowowl.fhir.rest.tests.valueset;
 
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.hamcrest.CoreMatchers.endsWith;
@@ -27,7 +27,6 @@ import org.junit.Test;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.fhir.tests.FhirTestConcepts;
-import com.b2international.snowowl.fhir.tests.SnomedFhirRestTest;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 
 /**

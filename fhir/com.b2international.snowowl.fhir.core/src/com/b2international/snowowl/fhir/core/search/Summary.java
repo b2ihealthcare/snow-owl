@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,9 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
+import java.util.Set;
+
+import com.google.common.collect.ImmutableSortedSet;
 
 /**
  * Annotation to mark properties that are returned in a summary
@@ -28,4 +31,12 @@ import java.lang.annotation.Target;
 @Retention(RUNTIME)
 @Target(FIELD)
 public @interface Summary {
+
+	String TRUE = "true";
+	String FALSE = "false";
+	String TEXT = "text";
+	String DATA = "data";
+	String COUNT = "count";
+	
+	Set<String> VALUES = ImmutableSortedSet.of(TRUE, FALSE, TEXT, DATA, COUNT);
 }

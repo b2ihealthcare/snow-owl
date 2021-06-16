@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - 7.x
+      - 8.x
   pull_request:
     branches:
       - 7.x
+      - 8.x
 
 jobs:
   build:

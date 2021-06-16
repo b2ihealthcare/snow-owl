@@ -15,13 +15,16 @@
  */
 package com.b2international.snowowl.fhir.core.request.codesystem;
 
+import java.util.List;
 import java.util.Optional;
 
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.GetResourceRequest;
+import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.Entry;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
+import com.b2international.snowowl.fhir.core.search.Summary;
 
 /**
  * @since 8.0
@@ -29,14 +32,31 @@ import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 final class FhirCodeSystemGetRequest extends GetResourceRequest<FhirCodeSystemSearchRequestBuilder, RepositoryContext, Bundle, CodeSystem> {
 
 	private static final long serialVersionUID = 1L;
-
+	
+	private String summary;
+	private List<String> elements;
+	
 	public FhirCodeSystemGetRequest(String idOrUrl) {
 		super(idOrUrl);
+	}
+	
+	void setSummary(String summary) {
+		this.summary = summary;
+	}
+	
+	void setElements(List<String> elements) {
+		this.elements = elements;
 	}
 
 	@Override
 	protected FhirCodeSystemSearchRequestBuilder createSearchRequestBuilder() {
-		return new FhirCodeSystemSearchRequestBuilder();
+		if (Summary.COUNT.equals(summary)) {
+			throw new BadRequestException(String.format("_summary=count is not supported on single resource operations"));
+		}
+		
+		return new FhirCodeSystemSearchRequestBuilder()
+				.setSummary(summary)
+				.setElements(elements);
 	}
 	
 	@Override
