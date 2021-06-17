@@ -93,7 +93,7 @@ public final class SnomedConceptSearchRequestEvaluator implements ConceptSearchR
 					.append(")");
 			}
 			
-			req.filterByQuery(query.toString());
+			req.filterByEcl(query.toString());
 		}
 		
 		SnomedConcepts matches = req

@@ -39,7 +39,6 @@ import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.ecl.EclExpression;
-import com.b2international.snowowl.snomed.core.ql.SnomedQueryExpression;
 import com.b2international.snowowl.snomed.core.tree.Trees;
 import com.b2international.snowowl.snomed.datastore.SnomedDescriptionUtils;
 import com.b2international.snowowl.snomed.datastore.converter.SnomedConceptConverter;
@@ -82,11 +81,6 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 		 * ECL expression to match on the state form
 		 */
 		STATED_ECL,
-		
-		/**
-		 * Snomed CT Query expression to match
-		 */
-		QUERY,
 		
 		/**
 		 * The definition status to match
@@ -193,16 +187,6 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 				throw new NoResultException();
 			} else if (!statedEclExpression.isMatchAll()) {
 				queryBuilder.filter(statedEclExpression);
-			}
-		}
-		
-		if (containsKey(OptionKey.QUERY)) {
-			final String ql = getString(OptionKey.QUERY);
-			Expression queryExpression = SnomedQueryExpression.of(ql).resolveToExpression(context).getSync(3, TimeUnit.MINUTES);
-			if (queryExpression.isMatchNone()) {
-				throw new NoResultException();
-			} else if (!queryExpression.isMatchAll()) {
-				queryBuilder.filter(queryExpression);
 			}
 		}
 		
