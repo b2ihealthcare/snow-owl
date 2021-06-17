@@ -13,21 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.core.ql;
+package com.b2international.snowowl.snomed.core.ecl;
 
 import java.util.List;
 
 import com.b2international.snowowl.core.domain.ListCollectionResource;
 
 /**
+ * A collection resource for expression text content.
+ * 
  * @since 7.6
  */
-public final class Expressions extends ListCollectionResource<String> {
+public final class LabeledEclExpressions extends ListCollectionResource<String> {
 
 	private static final long serialVersionUID = 1L;
 
-	public Expressions(List<String> items) {
+	public LabeledEclExpressions(List<String> items) {
 		super(items);
 	}
-	
 }

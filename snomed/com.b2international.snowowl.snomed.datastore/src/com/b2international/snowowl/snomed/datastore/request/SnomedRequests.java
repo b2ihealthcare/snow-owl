@@ -44,7 +44,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.ecl.SnomedEclEvaluationRequestBuilder;
 import com.b2international.snowowl.snomed.core.ql.SnomedQueryEvaluationRequestBuilder;
-import com.b2international.snowowl.snomed.core.ql.SnomedQueryLabelerRequestBuilder;
+import com.b2international.snowowl.snomed.core.ecl.SnomedEclLabelerRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
@@ -332,23 +332,21 @@ public abstract class SnomedRequests {
 	}
 	
 	/**
-	 * Returns a SNOMED CT request builder to prepare the labeling of a SNOMED CT Query Language (QL) expression (also works for ECL expressions).
-	 * 
-	 * @param expression - the QL/ECL expression to extend with labels
-	 * @return SNOMED CT Query labeler request builder
+	 * Returns a SNOMED CT request builder to prepare the labeling of a SNOMED CT Expression Constraint Language (ECL) expression.
+	 * @param expression - the ECL expression to extend with labels
+	 * @return SNOMED CT ECL labeler request builder
 	 */
-	public static SnomedQueryLabelerRequestBuilder prepareQueryLabeler(String expression) {
-		return new SnomedQueryLabelerRequestBuilder(expression);
+	public static SnomedEclLabelerRequestBuilder prepareEclLabeler(String expression) {
+		return new SnomedEclLabelerRequestBuilder(expression);
 	}
 	
 	/**
-	 * Returns a SNOMED CT request builder to prepare the labeling of a list of SNOMED CT Query Language (QL) expressions (also works for ECL expressions).
-	 * 
-	 * @param expressions - the QL/ECL expressions to extend with labels
-	 * @return SNOMED CT Query labeler request builder
+	 * Returns a SNOMED CT request builder to prepare the labeling of a list of SNOMED CT Expression Constraint Language (ECL) expressions.
+	 * @param expression - the ECL expression to extend with labels
+	 * @return SNOMED CT ECL labeler request builder
 	 */
-	public static SnomedQueryLabelerRequestBuilder prepareQueryLabeler(List<String> expressions) {
-		return new SnomedQueryLabelerRequestBuilder(expressions);
+	public static SnomedEclLabelerRequestBuilder prepareEclLabeler(List<String> expressions) {
+		return new SnomedEclLabelerRequestBuilder(expressions);
 	}
 	
 	/**
