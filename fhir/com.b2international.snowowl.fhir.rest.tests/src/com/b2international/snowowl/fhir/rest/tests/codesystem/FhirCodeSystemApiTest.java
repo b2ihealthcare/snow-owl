@@ -98,7 +98,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 	@Test
 	public void GET_CodeSystem_NameFilter_NoMatch() {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.queryParam("_name", "unknown name")
+			.queryParam("name", "unknown name")
 			.when().get("/CodeSystem")
 			.then()
 			.statusCode(200)
@@ -111,7 +111,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 	@Test
 	public void GET_CodeSystem_NameFilter_Match_Single() {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.queryParam("_name", getTestCodeSystemId())
+			.queryParam("name", getTestCodeSystemId())
 			.when().get("/CodeSystem")
 			.then()
 			.statusCode(200)
@@ -128,7 +128,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 		String anotherCodeSystemId = createCodeSystem(UUID.randomUUID().toString());
 		String thirdCodeSystemId = createCodeSystem(UUID.randomUUID().toString());
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.queryParam("_name", getTestCodeSystemId(), anotherCodeSystemId)
+			.queryParam("name", getTestCodeSystemId(), anotherCodeSystemId)
 			.when().get("/CodeSystem")
 			.then()
 			.statusCode(200)

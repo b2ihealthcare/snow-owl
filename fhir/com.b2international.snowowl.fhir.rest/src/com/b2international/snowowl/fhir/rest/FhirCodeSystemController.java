@@ -67,17 +67,17 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 	@GetMapping
 	public Promise<Bundle> getCodeSystems(FhirCodeSystemSearchParameters params) {
 		return FhirRequests.codeSystems().prepareSearch()
-				.filterByIds(asList(params.getId()))
+				.filterByIds(asList(params.get_id()))
 				.filterByNames(asList(params.getName()))
 				.filterByTitle(params.getTitle())
-				.filterByContent(params.getContent())
-				.filterByLastUpdated(params.getLastUpdated())
-				.setSearchAfter(params.getAfter())
-				.setCount(params.getCount())
+				.filterByContent(params.get_content())
+				.filterByLastUpdated(params.get_lastUpdated())
+				.setSearchAfter(params.get_after())
+				.setCount(params.get_count())
 				// XXX _summary=count may override the default _count=10 value, so order of method calls is important here
-				.setSummary(params.getSummary())
-				.setElements(asList(params.getElements()))
-				.sortByFields(params.getSort())
+				.setSummary(params.get_summary())
+				.setElements(asList(params.get_elements()))
+				.sortByFields(params.get_sort())
 				.buildAsync()
 				.execute(getBus());
 		
@@ -127,8 +127,8 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 			final FhirResourceSelectors selectors) {
 		
 		return FhirRequests.codeSystems().prepareGet(id)
-				.setSummary(selectors.getSummary())
-				.setElements(asList(selectors.getElements()))
+				.setSummary(selectors.get_summary())
+				.setElements(asList(selectors.get_elements()))
 				.buildAsync()
 				.execute(getBus());
 		

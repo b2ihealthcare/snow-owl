@@ -27,10 +27,10 @@ public class FhirResourceSearchParameters extends FhirResourceSelectors {
 	// filters
 	@ApiParam(value = "_id")
 	private String[] _id;
-	@ApiParam(value = "_name")
-	private String[] _name;
-	@ApiParam(value = "_title")
-	private String _title;
+	@ApiParam(value = "name")
+	private String[] name;
+	@ApiParam(value = "title")
+	private String title;
 	@ApiParam(value = "_lastUpdated")
 	private String _lastUpdated;
 	@ApiParam
@@ -47,36 +47,36 @@ public class FhirResourceSearchParameters extends FhirResourceSelectors {
 	@ApiParam
 	private String _after;
 
-	public String[] getId() {
+	public String[] get_id() {
 		return _id;
 	}
 	
-	public String getAfter() {
+	public String get_after() {
 		return _after;
 	}
 	
-	public String getContent() {
+	public String get_content() {
 		return _content;
 	}
 	
-	public int getCount() {
+	public int get_count() {
 		return _count;
 	}
 	
-	public String getLastUpdated() {
+	public String get_lastUpdated() {
 		return _lastUpdated;
 	}
 	
 	public String[] getName() {
-		return _name;
+		return name;
 	}
 	
-	public String[] getSort() {
+	public String[] get_sort() {
 		return _sort;
 	}
 	
 	public String getTitle() {
-		return _title;
+		return title;
 	}
 	
 	public void set_id(String[] _id) {
@@ -99,16 +99,16 @@ public class FhirResourceSearchParameters extends FhirResourceSelectors {
 		this._lastUpdated = _lastUpdated;
 	}
 	
-	public void set_name(String[] _name) {
-		this._name = _name;
+	public void setName(String[] name) {
+		this.name = name;
 	}
 	
 	public void set_sort(String[] _sort) {
 		this._sort = _sort;
 	}
 	
-	public void set_title(String _title) {
-		this._title = _title;
+	public void setTitle(String title) {
+		this.title = title;
 	}
 	
 	@Override
@@ -116,12 +116,12 @@ public class FhirResourceSearchParameters extends FhirResourceSelectors {
 		return MoreObjects.toStringHelper(getClass())
 				.omitNullValues()
 				.add("_id", _id)
-				.add("_name", _name)
-				.add("_title", _title)
+				.add("name", name)
+				.add("title", title)
 				.add("_lastUpdated", _lastUpdated)
 				.add("_content", _content)
-				.add("_summary", getSummary())
-				.add("_elements", getElements())
+				.add("_summary", get_summary())
+				.add("_elements", get_elements())
 				.add("_count", _count)
 				.add("_sort", _sort)
 				.add("_after", _after)

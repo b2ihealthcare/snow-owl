@@ -29,11 +29,11 @@ public class FhirResourceSelectors {
 	@ApiParam
 	private String[] _elements;
 	
-	public String[] getElements() {
+	public String[] get_elements() {
 		return _elements;
 	}
 	
-	public String getSummary() {
+	public String get_summary() {
 		return _summary;
 	}
 	
