@@ -66,7 +66,7 @@ public abstract class CodeSystemRestRequests {
 		Json requestBody = Json.object(
 			"id", codeSystemId,
 			"title", codeSystemId,
-			"url", SnomedTerminologyComponentConstants.SNOMED_URI_BASE,
+			"url", SnomedTerminologyComponentConstants.SNOMED_URI_BASE + "/" + codeSystemId,
 			"description", "citation",
 			"toolingId", SnomedTerminologyComponentConstants.TOOLING_ID,
 			"oid", "oid_" + codeSystemId,

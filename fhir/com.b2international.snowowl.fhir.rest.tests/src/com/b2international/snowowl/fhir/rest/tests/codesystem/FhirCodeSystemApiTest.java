@@ -47,7 +47,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.body("type", equalTo("searchset"))
 			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
 			.body("total", equalTo(1))
-			.body("entry[0].resource.url", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_BASE))
+			.body("entry[0].resource.url", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_BASE + "/" + getTestCodeSystemId()))
 			.body("entry[0].resource.count", equalTo(0));
 	}
 	
@@ -75,7 +75,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.body("type", equalTo("searchset"))
 			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
 			.body("total", equalTo(1))
-			.body("entry[0].resource.url", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_BASE));
+			.body("entry[0].resource.url", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_BASE + "/" + getTestCodeSystemId()));
 	}
 	
 	@Test
@@ -92,7 +92,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
 			.body("total", equalTo(2))
 			.body("entry.resource.id", hasItems(getTestCodeSystemId(), anotherCodeSystemId))
-			.body("entry.resource.url", hasItem(SnomedTerminologyComponentConstants.SNOMED_URI_BASE));
+			.body("entry.resource.url", hasItem(SnomedTerminologyComponentConstants.SNOMED_URI_BASE + "/" + getTestCodeSystemId()));
 	}
 	
 	@Test
@@ -120,7 +120,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
 			.body("total", equalTo(1))
 			.body("entry[0].resource.id", equalTo(getTestCodeSystemId()))
-			.body("entry[0].resource.url", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_BASE));
+			.body("entry[0].resource.url", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_BASE + "/" + getTestCodeSystemId()));
 	}
 	
 	@Test
@@ -137,7 +137,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.body("type", equalTo("searchset"))
 			.body("total", equalTo(2))
 			.body("entry.resource.id", hasItems(getTestCodeSystemId(), anotherCodeSystemId))
-			.body("entry.resource.url", hasItem(SnomedTerminologyComponentConstants.SNOMED_URI_BASE));
+			.body("entry.resource.url", hasItem(SnomedTerminologyComponentConstants.SNOMED_URI_BASE + "/" + getTestCodeSystemId()));
 	}
 	
 	@Test
@@ -229,7 +229,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.body("total", equalTo(1))
 			.body("type", equalTo("searchset"))
 			.body("entry[0].resource.id", equalTo(getTestCodeSystemId()))
-			.body("entry[0].resource.url", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_BASE));
+			.body("entry[0].resource.url", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_BASE + "/" + getTestCodeSystemId()));
 	}
 	
 	@Test
@@ -254,7 +254,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.body("entry[0].resource.copyright", nullValue()) 
 			// requested fields
 			.body("entry[0].resource.name", equalTo(getTestCodeSystemId()))
-			.body("entry[0].resource.url", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_BASE));
+			.body("entry[0].resource.url", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_BASE + "/" + getTestCodeSystemId()));
 	}
 	
 	@Test
@@ -277,7 +277,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.statusCode(200)
 			.body("resourceType", equalTo("CodeSystem"))
 			.body("id", equalTo(getTestCodeSystemId()))
-			.body("url", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_BASE))
+			.body("url", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_BASE + "/" + getTestCodeSystemId()))
 			.body("status", equalTo("unknown"));
 	}
 	
