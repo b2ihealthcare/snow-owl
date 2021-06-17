@@ -9,7 +9,7 @@ try {
 
 	def currentVersion
 	def revision
-	def mavenPhase = skipDeploy ? "verify" : "deploy"
+	def mavenPhase = params.skipDeploy ? "verify" : "deploy"
 
 	slack.notifyBuild()
 
@@ -41,7 +41,7 @@ try {
 
 	}
 
-	if (currentBuild.resultIsBetterOrEqualTo('SUCCESS') && !skipDeploy) {
+	if (currentBuild.resultIsBetterOrEqualTo('SUCCESS') && !params.skipDeploy) {
 
 		build job: 'snow-owl-docker-build', parameters: [
 			string(name: 'groupId', value: 'com.b2international.snowowl'),
