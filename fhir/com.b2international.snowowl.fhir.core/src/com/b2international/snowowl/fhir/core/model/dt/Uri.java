@@ -19,6 +19,7 @@ import java.util.Objects;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
@@ -48,6 +49,7 @@ public final class Uri {
 	 * Returns true if this URI designates a SNOMED CT code system (starts with http://snomed.info/sct)
 	 * @return
 	 */
+	@JsonIgnore
 	public boolean isSnomedUri() {
 		return uriValue !=null && uriValue.startsWith(SNOMED_BASE_URI_STRING);
 	}

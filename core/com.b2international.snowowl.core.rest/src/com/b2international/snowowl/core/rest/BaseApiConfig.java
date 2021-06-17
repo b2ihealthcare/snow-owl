@@ -39,6 +39,7 @@ import com.google.common.collect.ImmutableList;
 
 import io.swagger.models.auth.In;
 import springfox.documentation.builders.PathSelectors;
+import springfox.documentation.schema.AlternateTypeRule;
 import springfox.documentation.schema.WildcardType;
 import springfox.documentation.service.*;
 import springfox.documentation.spi.DocumentationType;
@@ -113,33 +114,37 @@ public abstract class BaseApiConfig {
 				))
 				.useDefaultResponseMessages(false)
 				.ignoredParameterTypes(Principal.class)
-				.alternateTypeRules(
-					newRule(resolver.resolve(UUID.class), resolver.resolve(String.class)),
-					newRule(resolver.resolve(ResourceURI.class), resolver.resolve(String.class)),
-					newRule(resolver.resolve(ComponentIdentifier.class), resolver.resolve(String.class)),
-					newRule(resolver.resolve(ExtendedLocale.class), resolver.resolve(String.class)),
-					newRule(
-						resolver.resolve(List.class, resolver.resolve(ResourceURI.class)),
-						resolver.resolve(List.class, resolver.resolve(String.class))
-			        ),
-					newRule(
-						resolver.resolve(List.class, resolver.resolve(ExtendedLocale.class)),
-						resolver.resolve(List.class, resolver.resolve(String.class))
-			        ),
-					newRule(
-						resolver.resolve(Promise.class, WildcardType.class),
-			            resolver.resolve(WildcardType.class)
-			        ),
-					newRule(
-						resolver.resolve(Promise.class, resolver.resolve(ResponseEntity.class, WildcardType.class)),
-			            resolver.resolve(WildcardType.class)
-			        )
-				)
+				.alternateTypeRules(getAlternateTypeRules(resolver))
 				.groupName(apiGroup)
 	            .select()
 	            	.paths(paths)
 	            	.build()
 	            .apiInfo(new ApiInfo(apiTitle, apiDescription, apiVersion, apiTermsOfServiceUrl, new Contact("B2i Healthcare", apiLicenseUrl, apiContact), apiLicense, apiLicenseUrl, Collections.emptyList()));
+	}
+
+	protected AlternateTypeRule[] getAlternateTypeRules(TypeResolver resolver) {
+		return new AlternateTypeRule[] {
+			newRule(resolver.resolve(UUID.class), resolver.resolve(String.class)),
+			newRule(resolver.resolve(ResourceURI.class), resolver.resolve(String.class)),
+			newRule(resolver.resolve(ComponentIdentifier.class), resolver.resolve(String.class)),
+			newRule(resolver.resolve(ExtendedLocale.class), resolver.resolve(String.class)),
+			newRule(
+				resolver.resolve(List.class, resolver.resolve(ResourceURI.class)),
+				resolver.resolve(List.class, resolver.resolve(String.class))
+	        ),
+			newRule(
+				resolver.resolve(List.class, resolver.resolve(ExtendedLocale.class)),
+				resolver.resolve(List.class, resolver.resolve(String.class))
+	        ),
+			newRule(
+				resolver.resolve(Promise.class, WildcardType.class),
+	            resolver.resolve(WildcardType.class)
+	        ),
+			newRule(
+				resolver.resolve(Promise.class, resolver.resolve(ResponseEntity.class, WildcardType.class)),
+	            resolver.resolve(WildcardType.class)
+	        )
+		};
 	}
 	
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,21 @@
  */
 package com.b2international.snowowl.core.rest;
 
+import static springfox.documentation.schema.AlternateTypeRules.newRule;
+
+import java.util.stream.Stream;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
 import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.provider.IConceptMapApiProvider;
 import com.b2international.snowowl.fhir.core.provider.IValueSetApiProvider;
+import com.fasterxml.classmate.TypeResolver;
 
+import springfox.documentation.schema.AlternateTypeRule;
 import springfox.documentation.spring.web.plugins.Docket;
 
 /**
@@ -53,7 +60,16 @@ public class FhirApiConfig extends BaseApiConfig {
 			"This describes the resources that make up the official Snow Owl® Snow Owl® <a href=\\\"http://hl7.org/fhir/\\\">FHIR®</a> API.\r\n" + 
 			"Detailed documentation is available at the [official documentation site](https://docs.b2i.sg/snow-owl/api/fhir)."
 		);
-
+	}
+	
+	@Override
+	protected AlternateTypeRule[] getAlternateTypeRules(TypeResolver resolver) {
+		AlternateTypeRule[] localRules = { 
+			newRule(resolver.resolve(Uri.class), resolver.resolve(String.class)) 
+		};
+		return Stream.of(super.getAlternateTypeRules(resolver), localRules)
+				.flatMap(Stream::of)
+				.toArray(length -> new AlternateTypeRule[length]);
 	}
 	
 	@Bean
