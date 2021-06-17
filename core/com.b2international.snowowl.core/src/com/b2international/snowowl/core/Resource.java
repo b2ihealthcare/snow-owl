@@ -67,6 +67,10 @@ public abstract class Resource implements Serializable {
 	 */
 	public abstract String getResourceType();
 	
+	// XXX empty setter to make Jackson happy when deserializing
+	@JsonSetter
+	/*package*/ void setResourceType() {}
+	
 	/**
 	 * Logical id of this resource.
 	 * 
