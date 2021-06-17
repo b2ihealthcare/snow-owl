@@ -60,29 +60,7 @@ public final class CodeSystemConverter extends BaseResourceConverter<ResourceDoc
 
 	@Override
 	protected CodeSystem toResource(ResourceDocument doc) {
-		CodeSystem codeSystem = new CodeSystem();
-		
-		codeSystem.setId(doc.getId());
-		codeSystem.setUrl(doc.getUrl());
-		codeSystem.setTitle(doc.getTitle());
-		codeSystem.setLanguage(doc.getLanguage());
-		codeSystem.setDescription(doc.getDescription());
-		codeSystem.setStatus(doc.getStatus());
-		codeSystem.setCopyright(doc.getCopyright());
-		codeSystem.setOwner(doc.getOwner());
-		codeSystem.setContact(doc.getContact());
-		codeSystem.setUsage(doc.getUsage());
-		codeSystem.setPurpose(doc.getPurpose());
-		codeSystem.setBundleId(doc.getBundleId());
-		
-		codeSystem.setOid(doc.getOid());
-		codeSystem.setBranchPath(doc.getBranchPath());
-		codeSystem.setToolingId(doc.getToolingId());
-		codeSystem.setExtensionOf(doc.getExtensionOf());
-		codeSystem.setUpgradeOf(doc.getUpgradeOf());
-		codeSystem.setSettings(doc.getSettings());
-		
-		return codeSystem;
+		return CodeSystem.from(doc);
 	}
 	
 	@Override

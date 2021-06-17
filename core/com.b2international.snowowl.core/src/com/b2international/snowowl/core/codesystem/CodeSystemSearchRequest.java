@@ -56,7 +56,8 @@ final class CodeSystemSearchRequest extends BaseResourceSearchRequest<CodeSystem
 	
 	@Override
 	protected Expression prepareQuery(RepositoryContext context) {
-		final ExpressionBuilder queryBuilder = Expressions.builder();
+		final ExpressionBuilder queryBuilder = Expressions.builder()
+				.filter(ResourceDocument.Expressions.resourceType(CodeSystem.RESOURCE_TYPE));
 		
 		addIdFilter(queryBuilder, ResourceDocument.Expressions::ids);
 		addTitleExactFilter(queryBuilder);
