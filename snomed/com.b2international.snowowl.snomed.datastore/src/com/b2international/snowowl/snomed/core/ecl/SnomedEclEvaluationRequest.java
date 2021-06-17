@@ -24,9 +24,11 @@ import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedCom
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument.Fields.ACTIVE_MEMBER_OF;
 import static com.google.common.collect.Sets.newHashSet;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
@@ -37,8 +39,12 @@ import org.eclipse.xtext.util.PolymorphicDispatcher;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.NotImplementedException;
+import com.b2international.index.Hits;
 import com.b2international.index.query.*;
+import com.b2international.index.revision.RevisionSearcher;
+import com.b2international.snomed.ecl.Ecl;
 import com.b2international.snomed.ecl.ecl.*;
+import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.events.Request;
@@ -46,8 +52,11 @@ import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.tree.Trees;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Function;
+import com.google.common.base.Predicates;
 import com.google.common.collect.FluentIterable;
 
 /**
@@ -436,6 +445,198 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 	}
 	
 	/**
+	 * Handles (possibly) filtered expression constraints by evaluating them along
+	 * with the primary ECL expression, and adding the resulting query expressions as
+	 * extra required clauses.
+	 * 
+	 * @param context
+	 * @param filtered
+	 * @return
+	 */
+	protected Promise<Expression> eval(BranchContext context, final FilteredExpressionConstraint filtered) {
+		final ExpressionConstraint constraint = filtered.getConstraint();
+		final FilterConstraint filter = filtered.getFilter();
+		final Domain filterDomain = Ecl.getDomain(filter);
+		
+		final Promise<Expression> evaluatedConstraint = evaluate(context, constraint);
+		Promise<Expression> evaluatedFilter = evaluate(context, filter);
+		if (Domain.DESCRIPTION.equals(filterDomain)) {
+			// Find concepts that match the description expression, then use the resulting concept IDs as the expression
+			evaluatedFilter = evaluatedFilter.then(ex -> executeDescriptionSearch(context, ex));
+		}
+		
+		if (constraint instanceof Any) {
+			// No need to combine "match all" with the filter query expression, return it directly
+			return evaluatedFilter;
+		}
+		
+		return Promise.all(evaluatedConstraint, evaluatedFilter).then(results -> {
+			final Expressions.ExpressionBuilder builder = Expressions.builder();
+			results.forEach(f -> builder.filter((Expression) f));
+			return builder.build();
+		});
+	}
+	
+	private static Expression executeDescriptionSearch(BranchContext context, Expression descriptionExpression) {
+		if (descriptionExpression.isMatchAll()) {
+			return Expressions.matchAll();
+		}
+		
+		final RevisionSearcher searcher = context.service(RevisionSearcher.class);
+		try {
+			
+			final Query<String> descriptionIndexQuery = Query.select(String.class)
+				.from(SnomedDescriptionIndexEntry.class)
+				.fields(SnomedDescriptionIndexEntry.Fields.CONCEPT_ID)
+				.where(descriptionExpression)
+				.limit(Integer.MAX_VALUE)
+				.build();
+			
+			final Hits<String> descriptionHits = searcher.search(descriptionIndexQuery);
+			final Set<String> conceptIds = Set.copyOf(descriptionHits.getHits());
+			return SnomedDocument.Expressions.ids(conceptIds);
+
+		} catch (IOException e) {
+			throw new SnowowlRuntimeException(e);
+		}
+	}
+
+	protected Promise<Expression> eval(BranchContext context, final NestedFilter nestedFilter) {
+		return evaluate(context, nestedFilter.getNested());
+	}
+	
+	protected Promise<Expression> eval(BranchContext context, final ActiveFilter activeFilter) {
+		return Promise.immediate(SnomedDocument.Expressions.active(activeFilter.isActive()));
+	}
+	
+	protected Promise<Expression> eval(BranchContext context, final ModuleFilter moduleFilter) {
+		final ExpressionConstraint innerConstraint = moduleFilter.getModuleId();
+		return evaluate(context, innerConstraint)
+			.thenWith(resolveIds(context, innerConstraint, expressionForm))
+			.then(SnomedDocument.Expressions::modules);
+	}
+	
+	protected Promise<Expression> eval(BranchContext context, final TypedTermFilter typedTermFilter) {
+		// typedTermFilter.getOp() should always be set EQUALS after rewriting 
+		final String term = typedTermFilter.getTerm();
+
+		LexicalSearchType lexicalSearchType = LexicalSearchType.fromString(typedTermFilter.getLexicalSearchType());
+		if (lexicalSearchType == null) {
+			lexicalSearchType = LexicalSearchType.MATCH;
+		}
+
+		switch (lexicalSearchType) {
+			case MATCH:
+				final com.b2international.snowowl.core.request.TermFilter match = com.b2international.snowowl.core.request.TermFilter.defaultTermMatch(term);
+				return Promise.immediate(SnomedDescriptionIndexEntry.Expressions.termDisjunctionQuery(match));
+			case WILD:
+				final String regexTerm = term.replace("*", ".*");
+				return Promise.immediate(SnomedDescriptionIndexEntry.Expressions.matchTermRegex(regexTerm));
+			case REGEX:
+				return Promise.immediate(SnomedDescriptionIndexEntry.Expressions.matchTermRegex(term));
+			case EXACT:
+				return Promise.immediate(SnomedDescriptionIndexEntry.Expressions.matchTermCaseInsensitive(term));
+			default:
+				throw new UnsupportedOperationException("Not implemented lexical search type: '" + lexicalSearchType + "'.");
+		}
+	}
+	
+	protected Promise<Expression> eval(BranchContext context, final TypedTermFilterSet termFilterSet) {
+		// Filters are combined with an OR ("should") operator
+		final Expressions.ExpressionBuilder builder = Expressions.builder();
+		
+		for (final TypedTermFilter typedTermFilter : termFilterSet.getTerms()) {
+			builder.should(eval(context, typedTermFilter).getSync());
+		}
+		
+		return Promise.immediate(builder.build());
+	}
+	
+	protected Promise<Expression> eval(BranchContext context, final TypeTokenFilter typeTokenFilter) {
+		final Set<String> typeIds = typeTokenFilter.getTokens()
+			.stream()
+			.map(DescriptionTypeToken::fromString)
+			.filter(Predicates.notNull())
+			.map(DescriptionTypeToken::getConceptId)
+			.collect(Collectors.toSet());
+		
+		return Promise.immediate(SnomedDescriptionIndexEntry.Expressions.types(typeIds));
+	}
+	
+	protected Promise<Expression> eval(BranchContext context, final TypeIdFilter typeIdFilter) {
+		final /* EclConceptReference|EclConceptReferenceSet */ EObject innerConstraint = typeIdFilter.getType();
+		if (innerConstraint instanceof EclConceptReference) {
+			final EclConceptReference conceptReference = (EclConceptReference) innerConstraint;
+			return Promise.immediate(SnomedDescriptionIndexEntry.Expressions.type(conceptReference.getId()));
+		} else if (innerConstraint instanceof EclConceptReferenceSet) {
+			final EclConceptReferenceSet conceptReferenceSet = (EclConceptReferenceSet) innerConstraint;
+			final Set<String> conceptIds = FluentIterable.from(conceptReferenceSet.getConcepts())
+				.transform(EclConceptReference::getId)
+				.toSet();
+			return Promise.immediate(SnomedDescriptionIndexEntry.Expressions.types(conceptIds));
+		} else {
+			throw new IllegalArgumentException("Unexpected type in TypeIdFilter");
+		}
+	}
+	
+	protected Promise<Expression> eval(BranchContext context, final PreferredInFilter preferredInFilter) {
+		return EclExpression.of(preferredInFilter.getLanguageRefSetId(), Trees.INFERRED_FORM)
+				.resolve(context)
+				.then(SnomedDescriptionIndexEntry.Expressions::preferredIn);
+	}
+	
+	protected Promise<Expression> eval(BranchContext context, final AcceptableInFilter acceptableInFilter) {
+		return EclExpression.of(acceptableInFilter.getLanguageRefSetId(), Trees.INFERRED_FORM)
+				.resolve(context)
+				.then(SnomedDescriptionIndexEntry.Expressions::acceptableIn);
+	}
+	
+	protected Promise<Expression> eval(BranchContext context, final LanguageRefSetFilter languageRefSetFilter) {
+		return EclExpression.of(languageRefSetFilter.getLanguageRefSetId(), Trees.INFERRED_FORM)
+				.resolve(context)
+				.then(languageReferenceSetIds -> {
+					return Expressions.builder()
+							.should(SnomedDescriptionIndexEntry.Expressions.acceptableIn(languageReferenceSetIds))
+							.should(SnomedDescriptionIndexEntry.Expressions.preferredIn(languageReferenceSetIds))
+							.build();
+				});
+	}
+	
+	protected Promise<Expression> eval(BranchContext context, final CaseSignificanceFilter caseSignificanceFilter) {
+		return EclExpression.of(caseSignificanceFilter.getCaseSignificanceId(), Trees.INFERRED_FORM)
+				.resolve(context)
+				.then(SnomedDescriptionIndexEntry.Expressions::caseSignificances);
+	}
+	
+	protected Promise<Expression> eval(BranchContext context, final LanguageFilter languageCodeFilter) {
+		return Promise.immediate(SnomedDescriptionIndexEntry.Expressions.languageCodes(languageCodeFilter.getLanguageCodes()));
+	}
+	
+	protected Promise<Expression> eval(BranchContext context, final ConjunctionFilter conjunction) {
+		return Promise.all(evaluate(context, conjunction.getLeft()), evaluate(context, conjunction.getRight()))
+				.then(results -> {
+					Expression left = (Expression) results.get(0);
+					Expression right = (Expression) results.get(1);
+					return Expressions.builder()
+							.filter(left)
+							.filter(right)
+							.build();
+				});
+	}
+	
+	protected Promise<Expression> eval(BranchContext context, final DisjunctionFilter disjunction) {
+		return Promise.all(evaluate(context, disjunction.getLeft()), evaluate(context, disjunction.getRight()))
+				.then(results -> {
+					Expression left = (Expression) results.get(0);
+					Expression right = (Expression) results.get(1);
+					return Expressions.builder()
+							.should(left)
+							.should(right)
+							.build();
+				});
+	}
+	
+	/**
 	 * Handles cases when the expression constraint is not available at all. For instance, script is empty.
 	 */
 	protected Promise<Expression> eval(BranchContext context, final Void empty) {
@@ -529,5 +730,4 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 	/*package*/ static Function<Set<String>, Expression> matchIdsOrNone() {
 		return ids -> ids.isEmpty() ? Expressions.matchNone() : ids(ids);
 	}
-	
 }
