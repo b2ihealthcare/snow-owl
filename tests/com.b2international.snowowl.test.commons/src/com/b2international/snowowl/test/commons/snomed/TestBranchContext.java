@@ -33,6 +33,7 @@ import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
+import com.b2international.snowowl.core.context.TerminologyResourceContentRequest;
 import com.b2international.snowowl.core.context.TerminologyResourceRequest;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.DelegatingContext;
@@ -102,7 +103,7 @@ public final class TestBranchContext extends DelegatingContext implements Branch
 				try {
 					final Request<?, ?> req = message.body(Request.class);
 					final BranchRequest<?> branchReq = Request.getNestedRequest(req, BranchRequest.class);
-					final TerminologyResourceRequest<?> codeSystemResourceRequest = Request.getNestedRequest(req, TerminologyResourceRequest.class);
+					final TerminologyResourceContentRequest<?> codeSystemResourceRequest = Request.getNestedRequest(req, TerminologyResourceContentRequest.class);
 					final Request<BranchContext, ?> innerReq = branchReq != null ? ReflectionUtils.getField(DelegatingRequest.class, branchReq, "next") : ReflectionUtils.getField(DelegatingRequest.class, codeSystemResourceRequest, "next");
 					message.reply(innerReq.execute(context));
 				} catch (WrappedException e1) {
