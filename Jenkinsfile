@@ -1,9 +1,15 @@
 @Library('jenkins-shared-library') _
 
+/**
+* Job Parameters:
+*	skipTests - whether to skip unit tests during the build process or not
+*	skipDeploy - whether to deploy build artifacts in case of successful maven build or not (should be false by default)
+**/
 try {
 
 	def currentVersion
 	def revision
+	def mavenPhase = skipDeploy ? "verify" : "deploy"
 
 	slack.notifyBuild()
 
@@ -23,11 +29,11 @@ try {
 
 			if (!custom_maven_settings.isEmpty()) {
 				withMaven(jdk: 'OpenJDK_11', maven: 'Maven_3.6.3', mavenSettingsConfig: custom_maven_settings, options: [artifactsPublisher(disabled: true)],  publisherStrategy: 'EXPLICIT') {
-					sh "mvn clean deploy -Dmaven.test.skip=${skipTests} -Dmaven.install.skip=true -Dtycho.localArtifacts=ignore"
+					sh "mvn clean ${mavenPhase} -Dmaven.test.skip=${skipTests} -Dmaven.install.skip=true -Dtycho.localArtifacts=ignore"
 				}
 			} else {
 				withMaven(jdk: 'OpenJDK_11', maven: 'Maven_3.6.3', options: [artifactsPublisher(disabled: true)], publisherStrategy: 'EXPLICIT') {
-					sh "mvn clean deploy -Dmaven.test.skip=${skipTests} -Dmaven.install.skip=true -Dtycho.localArtifacts=ignore"
+					sh "mvn clean ${mavenPhase} -Dmaven.test.skip=${skipTests} -Dmaven.install.skip=true -Dtycho.localArtifacts=ignore"
 				}
 			}
 
@@ -35,7 +41,7 @@ try {
 
 	}
 
-	if (currentBuild.resultIsBetterOrEqualTo('SUCCESS')) {
+	if (currentBuild.resultIsBetterOrEqualTo('SUCCESS') && !skipDeploy) {
 
 		build job: 'snow-owl-docker-build', parameters: [
 			string(name: 'groupId', value: 'com.b2international.snowowl'),
