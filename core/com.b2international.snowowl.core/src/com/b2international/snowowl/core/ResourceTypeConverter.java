@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,6 +39,7 @@ public interface ResourceTypeConverter {
 		}
 		
 		public Resource toResource(ResourceDocument doc) {
+			checkArgument(resourceTypeConverters.containsKey(doc.getResourceType()), "ResourceTypeConverter implementation is missing for type: %s", doc.getResourceType());
 			return resourceTypeConverters.get(doc.getResourceType()).toResource(doc);
 		}
 		

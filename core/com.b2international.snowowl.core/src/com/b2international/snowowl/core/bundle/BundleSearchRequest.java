@@ -34,7 +34,8 @@ final class BundleSearchRequest extends BaseResourceSearchRequest<Bundles> {
 
 	@Override
 	protected Expression prepareQuery(RepositoryContext context) {
-		final ExpressionBuilder queryBuilder = Expressions.builder();
+		final ExpressionBuilder queryBuilder = Expressions.builder()
+				.filter(ResourceDocument.Expressions.resourceType(Bundle.RESOURCE_TYPE));
 		
 		addIdFilter(queryBuilder, ResourceDocument.Expressions::ids);
 		addTitleFilter(queryBuilder);

@@ -15,18 +15,25 @@
  */
 package com.b2international.snowowl.core.bundle;
 
-import com.b2international.snowowl.core.internal.ResourceDocument.Builder;
-import com.b2international.snowowl.core.request.BaseResourceCreateRequest;
+import com.b2international.snowowl.core.Resource;
+import com.b2international.snowowl.core.ResourceTypeConverter;
+import com.b2international.snowowl.core.internal.ResourceDocument;
+import com.b2international.snowowl.core.plugin.Component;
 
 /**
  * @since 8.0
  */
-final class BundleCreateRequest extends BaseResourceCreateRequest {
-
-	private static final long serialVersionUID = 1L;
+@Component
+public class BundleResourceTypeConverter implements ResourceTypeConverter {
 
 	@Override
-	protected Builder completeResource(Builder builder) {
-		return builder.resourceType(Bundle.RESOURCE_TYPE);
+	public String getResourceType() {
+		return Bundle.RESOURCE_TYPE;
 	}
+
+	@Override
+	public Resource toResource(ResourceDocument doc) {
+		return Bundle.from(doc);
+	}
+
 }

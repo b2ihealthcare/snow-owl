@@ -41,22 +41,7 @@ public class BundleConverter extends BaseResourceConverter<ResourceDocument, Bun
 
 	@Override
 	protected Bundle toResource(final ResourceDocument doc) {
-		final Bundle bundle = new Bundle();
-		
-		bundle.setId(doc.getId());
-		bundle.setUrl(doc.getUrl());
-		bundle.setTitle(doc.getTitle());
-		bundle.setLanguage(doc.getLanguage());
-		bundle.setDescription(doc.getDescription());
-		bundle.setStatus(doc.getStatus());
-		bundle.setCopyright(doc.getCopyright());
-		bundle.setOwner(doc.getOwner());
-		bundle.setContact(doc.getContact());
-		bundle.setUsage(doc.getUsage());
-		bundle.setPurpose(doc.getPurpose());
-		bundle.setBundleId(doc.getBundleId());
-
-		return bundle;
+		return Bundle.from(doc);
 	}
 
 	@Override

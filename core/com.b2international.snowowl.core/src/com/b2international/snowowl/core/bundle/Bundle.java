@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.bundle;
 
 import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.Resources;
+import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.request.ResourceRequests;
 
 /**
@@ -26,7 +27,7 @@ public final class Bundle extends Resource {
 
 	private static final long serialVersionUID = 1L;
 
-	public static final String BUNDLE_RESOURCE_TYPE = "bundle";
+	public static final String RESOURCE_TYPE = "bundle";
 	
 	/**
 	 * @since 8.0
@@ -48,7 +49,7 @@ public final class Bundle extends Resource {
 	
 	@Override
 	public String getResourceType() {
-		return BUNDLE_RESOURCE_TYPE;
+		return RESOURCE_TYPE;
 	}
 
 	public BundleCreateRequestBuilder toCreateRequest() {
@@ -65,5 +66,22 @@ public final class Bundle extends Resource {
 				.setUsage(getUsage())
 				.setPurpose(getPurpose())
 				.setBundleId(getBundleId());
+	}
+
+	public static Bundle from(ResourceDocument doc) {
+		final Bundle bundle = new Bundle();
+		bundle.setId(doc.getId());
+		bundle.setUrl(doc.getUrl());
+		bundle.setTitle(doc.getTitle());
+		bundle.setLanguage(doc.getLanguage());
+		bundle.setDescription(doc.getDescription());
+		bundle.setStatus(doc.getStatus());
+		bundle.setCopyright(doc.getCopyright());
+		bundle.setOwner(doc.getOwner());
+		bundle.setContact(doc.getContact());
+		bundle.setUsage(doc.getUsage());
+		bundle.setPurpose(doc.getPurpose());
+		bundle.setBundleId(doc.getBundleId());
+		return bundle;
 	}
 }
