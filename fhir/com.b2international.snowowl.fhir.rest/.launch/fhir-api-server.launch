@@ -196,9 +196,7 @@
         <setEntry value="com.b2international.snowowl.core@default:default"/>
         <setEntry value="com.b2international.snowowl.eventbus@default:default"/>
         <setEntry value="com.b2international.snowowl.fhir.core@default:default"/>
-        <setEntry value="com.b2international.snowowl.folder.core@default:default"/>
         <setEntry value="com.b2international.snowowl.identity.ldap@default:false"/>
-        <setEntry value="com.b2international.snowowl.keyword.core@default:default"/>
         <setEntry value="com.b2international.snowowl.rpc@default:default"/>
         <setEntry value="com.b2international.snowowl.server.product@default:default"/>
         <setEntry value="com.b2international.snowowl.snomed.cis@default:default"/>
