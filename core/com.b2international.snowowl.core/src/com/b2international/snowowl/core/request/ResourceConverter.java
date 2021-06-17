@@ -20,9 +20,9 @@ import java.util.List;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.Resource;
+import com.b2international.snowowl.core.ResourceTypeConverter;
 import com.b2international.snowowl.core.Resources;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 
 /**
@@ -30,8 +30,11 @@ import com.b2international.snowowl.core.internal.ResourceDocument;
  */
 public final class ResourceConverter extends BaseResourceConverter<ResourceDocument, Resource, Resources> {
 
+	private final ResourceTypeConverter.Registry converters;
+
 	public ResourceConverter(ServiceProvider context, Options expand, List<ExtendedLocale> locales) {
 		super(context, expand, locales);
+		this.converters = context().service(ResourceTypeConverter.Registry.class);
 	}
 
 	@Override
@@ -41,8 +44,7 @@ public final class ResourceConverter extends BaseResourceConverter<ResourceDocum
 
 	@Override
 	protected Resource toResource(ResourceDocument doc) {
-		// TODO pluggable resource conversion to available domain models, for now only CodeSystem
-		return CodeSystem.from(doc);
+		return converters.toResource(doc);
 	}
 
 }

@@ -63,7 +63,7 @@ final class CodeSystemCreateRequest extends BaseResourceCreateRequest {
 
 	@Override
 	protected Builder completeResource(Builder builder) {
-		return builder.resourceType(CodeSystem.CODESYSTEM_RESOURCE_TYPE)
+		return builder.resourceType(CodeSystem.RESOURCE_TYPE)
 				.oid(oid)
 				.branchPath(branchPath)
 				.toolingId(toolingId)

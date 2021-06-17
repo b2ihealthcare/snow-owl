@@ -21,6 +21,7 @@ import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.internal.ResourceDocument;
+import com.b2international.snowowl.core.plugin.Component;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
@@ -29,11 +30,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * 
  * @since 1.0
  */
+@Component
 public final class CodeSystem extends TerminologyResource {
 	
 	private static final long serialVersionUID = 5L;
 	
-	public static final String CODESYSTEM_RESOURCE_TYPE = "codesystems";
+	public static final String RESOURCE_TYPE = "codesystems";
 	
 	/**
 	 * @since 8.0
@@ -44,7 +46,7 @@ public final class CodeSystem extends TerminologyResource {
 
 	@Override
 	public String getResourceType() {
-		return CODESYSTEM_RESOURCE_TYPE;
+		return RESOURCE_TYPE;
 	}
 	
 	/**
@@ -56,11 +58,11 @@ public final class CodeSystem extends TerminologyResource {
 	}
 	
 	public static ResourceURI uri(String codeSystemId) {
-		return ResourceURI.of(CODESYSTEM_RESOURCE_TYPE, codeSystemId);
+		return ResourceURI.of(RESOURCE_TYPE, codeSystemId);
 	}
 	
 	public static ResourceURI uri(String codeSystemId, String path) {
-		return ResourceURI.branch(CODESYSTEM_RESOURCE_TYPE, codeSystemId, path);
+		return ResourceURI.branch(RESOURCE_TYPE, codeSystemId, path);
 	}
 	
 	public static CodeSystem from(ResourceDocument doc) {
