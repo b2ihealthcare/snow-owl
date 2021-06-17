@@ -117,30 +117,6 @@ final class CodeSystemCreateRequest extends BaseResourceCreateRequest {
 	}
 
 	private Optional<Version> checkCodeSystem(final RepositoryContext context, final boolean create) {
-		// codeSystemId checked against all resources
-		final boolean existingId = ResourceRequests.prepareSearch()
-			.setLimit(0)
-			.filterById(getId())
-			.build()
-			.execute(context)
-			.getTotal() > 0;
-			
-		if (existingId) {
-			throw new AlreadyExistsException("Resource", getId());
-		}
-		
-		// title should be unique across all resources
-		final boolean existingTitle = ResourceRequests.prepareSearch()
-			.setLimit(0)
-			.filterByExactTitleIgnoreCase(getTitle())
-			.build()
-			.execute(context)
-			.getTotal() > 0;
-			
-		if (existingTitle) {
-			throw new AlreadyExistsException("Resource", "title", getTitle());
-		}
-
 		// OID must be unique if defined
 		if (!Strings.isNullOrEmpty(oid)) {
 			final boolean existingOid = CodeSystemRequests.prepareSearchCodeSystem()

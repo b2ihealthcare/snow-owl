@@ -36,7 +36,7 @@ abstract class BaseBundleApiTest {
 	
 	static final String USER = RestExtensions.USER;
 	static final String ROOT = IComponent.ROOT_ID;
-	static final String URL = "https://b2i.sg";
+	static final String URL_PREFIX = "https://b2i.sg/";
 	static final String TITLE = "Bundle title";
 	static final String LANGUAGE = "en";
 	static final String DESCRIPTION = "Bundle to group resources";
@@ -61,12 +61,11 @@ abstract class BaseBundleApiTest {
 	public void cleanUp() {
 		ResourceRequests.bundles().prepareSearch()
 			.buildAsync()
-			.getRequest()
-			.execute(Services.context())
-			.getItems()
+			.execute(Services.bus())
+			.getSync(1, TimeUnit.MINUTES)
 			.forEach(bundle -> {
 				ResourceRequests.prepareDelete(bundle.getId())
-					.build(USAGE, String.format("Delete bundle: %s", bundle.getId()))
+					.build(USER, String.format("Delete bundle: %s", bundle.getId()))
 					.execute(Services.bus())
 					.getSync(1, TimeUnit.MINUTES);
 			});
@@ -79,22 +78,22 @@ abstract class BaseBundleApiTest {
 	Bundle getBundle(final String id) {
 		return ResourceRequests.bundles().prepareGet(id)
 				.buildAsync()
-				.getRequest()
-				.execute(Services.context());
+				.execute(Services.bus())
+				.getSync(1, TimeUnit.MINUTES);
 	}
 	
 	String createBundle(final String id) {
-		return createBundle(id, ROOT, TITLE);
+		return createBundle(id, ROOT, String.join("_", id, TITLE));
 	}
 
 	String createBundle() {
-		return createBundle(id, ROOT, TITLE);
+		return createBundle(id, ROOT, String.join("_", id, TITLE));
 	}
 	
 	String createBundle(final String id, final String bundleId, final String title) {
 		return ResourceRequests.bundles().prepareCreate()
 				.setId(id)
-				.setUrl(URL)
+				.setUrl(URL_PREFIX + id)
 				.setTitle(title)
 				.setLanguage(LANGUAGE)
 				.setDescription(DESCRIPTION)
@@ -115,7 +114,7 @@ abstract class BaseBundleApiTest {
 		return CodeSystemRequests.prepareNewCodeSystem()
 				.setTitle(title)
 				.setBundleId(bundleId)
-				.setUrl("https://b2i.sg")
+				.setUrl(URL_PREFIX + title)
 				.setToolingId("snomed")
 				.build(USER, String.format("Create code system: %s", id))
 				.execute(Services.bus())
@@ -126,14 +125,14 @@ abstract class BaseBundleApiTest {
 	
 	Bundles execute(final BundleSearchRequestBuilder builder) {
 		return builder.buildAsync()
-				.getRequest()
-				.execute(Services.context());
+				.execute(Services.bus())
+				.getSync(1, TimeUnit.MINUTES);
 	}
 	
 	Stream<String> executeThenExtractIds(final BundleSearchRequestBuilder builder) {
 		return builder.buildAsync()
-				.getRequest()
-				.execute(Services.context())
+				.execute(Services.bus())
+				.getSync(1, TimeUnit.MINUTES)
 				.stream()
 				.map(Bundle::getId);
 	}

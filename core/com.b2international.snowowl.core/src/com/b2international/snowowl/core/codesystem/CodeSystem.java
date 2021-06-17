@@ -21,7 +21,6 @@ import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.internal.ResourceDocument;
-import com.b2international.snowowl.core.plugin.Component;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
@@ -30,7 +29,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * 
  * @since 1.0
  */
-@Component
 public final class CodeSystem extends TerminologyResource {
 	
 	private static final long serialVersionUID = 5L;

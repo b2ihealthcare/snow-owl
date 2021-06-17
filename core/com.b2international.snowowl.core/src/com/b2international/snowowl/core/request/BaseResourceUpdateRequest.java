@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.request;
 
+import com.b2international.commons.exceptions.AlreadyExistsException;
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.identity.Permission;
@@ -123,8 +125,27 @@ public abstract class BaseResourceUpdateRequest extends UpdateRequest<Transactio
 		boolean changed = false;
 
 		changed |= updateSpecializedProperties(context, resource, updated);
+
+		// url checked against all resources
+		if (url != null) {
+			if (url.isBlank()) {
+				throw new BadRequestException("Resource.url should not be empty string");
+			}
+			
+			final boolean existingUrl = ResourceRequests.prepareSearch()
+				.setLimit(0)
+				.filterByUrl(url)
+				.build()
+				.execute(context)
+				.getTotal() > 0;
+					
+			if (existingUrl) {
+				throw new AlreadyExistsException("Resource", ResourceDocument.Fields.URL, url);
+			}
+			
+			changed |= updateProperty(url, resource::getUrl, updated::url);
+		}
 		
-		changed |= updateProperty(url, resource::getUrl, updated::url);
 		changed |= updateProperty(title, resource::getTitle, updated::title);
 		changed |= updateProperty(language, resource::getLanguage, updated::language);
 		changed |= updateProperty(description, resource::getDescription, updated::description);

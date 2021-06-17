@@ -70,7 +70,7 @@ public class CodeSystemApiTest {
 	private static final Json SNOMED = Json.object(
 		ResourceDocument.Fields.ID, "SNOMEDCT",
 		ResourceDocument.Fields.TITLE, "SNOMED CT",
-		ResourceDocument.Fields.URL, "http://snomed.info/sct",
+		ResourceDocument.Fields.URL, SnomedTerminologyComponentConstants.SNOMED_URI_BASE,
 		ResourceDocument.Fields.TOOLING_ID, SnomedTerminologyComponentConstants.TOOLING_ID,
 		ResourceDocument.Fields.OID, SnomedContentRule.SNOMEDCT_OID,
 		ResourceDocument.Fields.BUNDLE_ID, IComponent.ROOT_ID
@@ -148,13 +148,13 @@ public class CodeSystemApiTest {
 	}
 	
 	@Test
-	public void codesystem09_CreateNonUniqueTitle() throws Exception {
+	public void codesystem09_CreateNonUniqueUrl() throws Exception {
 		assertCodeSystemCreate(SNOMED)
 			.statusCode(201);
 		
 		assertCodeSystemCreate(SNOMED.with(ResourceDocument.Fields.ID, "SNOMEDCT-other"))
 			.statusCode(409)
-			.body("message", containsString("Resource with 'SNOMED CT' title already exists."));
+			.body("message", containsString("Resource with 'http://snomed.info/sct' url already exists."));
 	}
 	
 	@Test
@@ -162,7 +162,7 @@ public class CodeSystemApiTest {
 		assertCodeSystemCreate(SNOMED)
 			.statusCode(201);
 		
-		assertCodeSystemCreate(SNOMED.with(ResourceDocument.Fields.ID, "SNOMEDCT-other").with("title", "SNOMED CT-other"))
+		assertCodeSystemCreate(SNOMED.with(ResourceDocument.Fields.ID, "SNOMEDCT-other").with("url", "SNOMED CT-other"))
 			.statusCode(409)
 			.body("message", containsString("Resource with '2.16.840.1.113883.6.96' oid already exists."));
 	}

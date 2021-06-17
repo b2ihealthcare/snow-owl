@@ -123,6 +123,14 @@ public final class ResourceDocument extends RevisionDocument {
 			);
 		}
 		
+		public static Expression url(String url) {
+			return exactMatch(Fields.URL, url);
+		}
+		
+		public static Expression urls(Iterable<String> urls) {
+			return matchAny(Fields.URL, urls);
+		}
+		
 		public static Expression resourceType(String resourceType) {
 			return exactMatch(Fields.RESOURCE_TYPE, resourceType);
 		}

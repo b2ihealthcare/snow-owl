@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.request;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.bundle.Bundles;
 import com.b2international.snowowl.core.domain.IComponent;
@@ -172,6 +173,30 @@ public abstract class BaseResourceCreateRequest implements Request<TransactionCo
 	
 	@Override
 	public final String execute(TransactionContext context) {
+		// id checked against all resources
+		final boolean existingId = ResourceRequests.prepareSearch()
+			.setLimit(0)
+			.filterById(getId())
+			.build()
+			.execute(context)
+			.getTotal() > 0;
+			
+		if (existingId) {
+			throw new AlreadyExistsException("Resource", getId());
+		}
+		
+		// url checked against all resources
+		final boolean existingUrl = ResourceRequests.prepareSearch()
+			.setLimit(0)
+			.filterByUrl(getUrl())
+			.build()
+			.execute(context)
+			.getTotal() > 0;
+			
+		if (existingUrl) {
+			throw new AlreadyExistsException("Resource", ResourceDocument.Fields.URL, getUrl());
+		}
+		
 		preExecute(context);
 		
 		if (!IComponent.ROOT_ID.equals(bundleId)) {

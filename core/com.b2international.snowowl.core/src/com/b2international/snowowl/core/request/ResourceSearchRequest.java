@@ -33,6 +33,11 @@ final class ResourceSearchRequest extends BaseResourceSearchRequest<Resources> {
 	enum OptionKey {
 
 		/**
+		 * Filter matches by their associated URL.
+		 */
+		URL,
+		
+		/**
 		 * Filter matches by their resource type.
 		 */
 		RESOURCE_TYPE,
@@ -50,15 +55,19 @@ final class ResourceSearchRequest extends BaseResourceSearchRequest<Resources> {
 		/**
 		 * Filter matches by their bundle ID.
 		 */
-		BUNDLE_ID,
+		BUNDLE_ID, 
+		
 	}
 
 	@Override
 	protected Expression prepareQuery(RepositoryContext context) {
 		final ExpressionBuilder queryBuilder = Expressions.builder();
+		
 		addIdFilter(queryBuilder, ResourceDocument.Expressions::ids);
 		addTitleFilter(queryBuilder);
 		addTitleExactFilter(queryBuilder);
+		
+		addFilter(queryBuilder, OptionKey.URL, String.class, ResourceDocument.Expressions::urls);
 		
 		addFilter(queryBuilder, OptionKey.RESOURCE_TYPE, String.class, ResourceDocument.Expressions::resourceTypes);
 		addFilter(queryBuilder, OptionKey.TOOLING_ID, String.class, ResourceDocument.Expressions::toolingIds);

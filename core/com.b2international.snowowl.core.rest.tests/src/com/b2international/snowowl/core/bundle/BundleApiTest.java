@@ -24,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.elasticsearch.common.UUIDs;
 import org.junit.Test;
 
 import com.b2international.commons.exceptions.BadRequestException;
@@ -41,7 +42,7 @@ public final class BundleApiTest extends BaseBundleApiTest {
 	@Test
 	public void createWithoutId() {
 		final String id = ResourceRequests.bundles().prepareCreate()
-				.setUrl(URL)
+				.setUrl(URL_PREFIX + "random")
 				.setTitle(TITLE)
 				.build(USER, "Create bundle")
 				.execute(Services.bus())
@@ -56,7 +57,6 @@ public final class BundleApiTest extends BaseBundleApiTest {
 	public void createWithoutNullId() {
 		ResourceRequests.bundles().prepareCreate()
 			.setId(null)
-			.setUrl(URL)
 			.setTitle(TITLE)
 			.build(USER, "Create bundle");
 	}
@@ -65,7 +65,7 @@ public final class BundleApiTest extends BaseBundleApiTest {
 	public void createWithoutTitle() {
 		ResourceRequests.bundles().prepareCreate()
 			.setId(id)
-			.setUrl(URL)
+			.setUrl(URL_PREFIX + id)
 			.build(USER, "Create bundle");
 	}
 	
@@ -90,7 +90,7 @@ public final class BundleApiTest extends BaseBundleApiTest {
 		final Bundle bundle = getBundle();
 		
 		assertThat(bundle.getId()).isEqualTo(id);
-		assertThat(bundle.getUrl()).isEqualTo(URL);
+		assertThat(bundle.getUrl()).isEqualTo(URL_PREFIX + id);
 		assertThat(bundle.getTitle()).isEqualTo(TITLE);
 		assertThat(bundle.getLanguage()).isEqualTo(LANGUAGE);
 		assertThat(bundle.getDescription()).isEqualTo(DESCRIPTION);
@@ -106,7 +106,7 @@ public final class BundleApiTest extends BaseBundleApiTest {
 	public void createWithoutBundleId() {
 		ResourceRequests.bundles().prepareCreate()
 				.setId(id)
-				.setUrl(URL)
+				.setUrl(URL_PREFIX + id)
 				.setTitle(TITLE)
 				.build(USER, String.format("Create bundle: %s", id))
 				.execute(Services.bus())
@@ -157,8 +157,9 @@ public final class BundleApiTest extends BaseBundleApiTest {
 		
 		final List<String> bundleIds = executeThenExtractIds(ResourceRequests.bundles().prepareSearch().filterByExactTitle(title)).collect(Collectors.toList());
 		
-		assertThat(bundleIds).contains(bundleId1);
-		assertThat(bundleIds).doesNotContain(bundleId2);
+		assertThat(bundleIds)
+			.contains(bundleId1)
+			.doesNotContain(bundleId2);
 	}
 
 	@Test
@@ -169,7 +170,7 @@ public final class BundleApiTest extends BaseBundleApiTest {
 		final String bundleId2 = createBundle("exactId2", ROOT, title.toLowerCase());
 		
 		assertThat(executeThenExtractIds(ResourceRequests.bundles().prepareSearch().filterByExactTitleIgnoreCase(title)))
-			.containsOnlyOnce(bundleId1, bundleId2);
+			.contains(bundleId1, bundleId2);
 	}
 	
 	@Test
@@ -256,12 +257,12 @@ public final class BundleApiTest extends BaseBundleApiTest {
 	public void expandResources() {
 		final String rootBundleId = createBundle();
 		
-		final String cs1Id = createCodeSystem(rootBundleId, "cs1");
-		final String cs2Id = createCodeSystem(rootBundleId, "cs2");
+		final String cs1Id = createCodeSystem(rootBundleId, UUIDs.randomBase64UUID());
+		final String cs2Id = createCodeSystem(rootBundleId, UUIDs.randomBase64UUID());
 
 		final String subBundleId = createBundle("bundle1", rootBundleId, "subBundle");
 		
-		final String cs3Id = createCodeSystem(subBundleId, "cs3");
+		final String cs3Id = createCodeSystem(subBundleId, UUIDs.randomBase64UUID());
 		
 		final Bundles bundles = execute(ResourceRequests.bundles().prepareSearch().filterById(rootBundleId).setExpand("resources()"));
 
@@ -273,8 +274,9 @@ public final class BundleApiTest extends BaseBundleApiTest {
 		
 		final List<String> resourceIds = bundle.getResources().getItems().stream().map(Resource::getId).collect(Collectors.toList());
 		
-		assertThat(resourceIds).containsOnlyOnce(cs1Id, cs2Id, subBundleId);
-		assertThat(resourceIds).doesNotContain(cs3Id);
+		assertThat(resourceIds)
+			.containsOnlyOnce(cs1Id, cs2Id, subBundleId)
+			.doesNotContain(cs3Id);
 	}
 	
 	@Test
@@ -328,12 +330,12 @@ public final class BundleApiTest extends BaseBundleApiTest {
 	public void deleteBundle() {
 		final String rootBundleId = createBundle();
 		
-		final String cs1Id = createCodeSystem(rootBundleId, "cs1");
-		final String cs2Id = createCodeSystem(rootBundleId, "cs2");
+		final String cs1Id = createCodeSystem(rootBundleId, UUIDs.randomBase64UUID());
+		final String cs2Id = createCodeSystem(rootBundleId, UUIDs.randomBase64UUID());
 
 		final String subBundleId = createBundle("bundle1", rootBundleId, "subBundle");
 		
-		final String cs3Id = createCodeSystem(subBundleId, "cs3");
+		final String cs3Id = createCodeSystem(subBundleId, UUIDs.randomBase64UUID());
 		
 		final Boolean isSuccess = ResourceRequests.bundles().prepareDelete(subBundleId)
 				.build(USER, String.format("Delete bundle: %s", subBundleId))
