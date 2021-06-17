@@ -109,7 +109,6 @@ public class SnomedConceptRestService extends AbstractRestService {
 					.filterByStatedAncestors(params.getStatedAncestor() == null ? null : ImmutableSet.copyOf(params.getStatedAncestor()))
 					.filterByEcl(params.getEcl())
 					.filterByStatedEcl(params.getStatedEcl())
-					.filterByQuery(params.getQuery())
 					.filterByTerm(params.getTerm())
 					.filterByDescriptionLanguageRefSet(acceptLanguage)
 					.filterByDescriptionType(params.getDescriptionType())
