@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,15 @@
  */
 package com.b2international.snowowl.snomed.core.ecl;
 
+import static com.google.common.collect.Sets.newHashSet;
+
+import java.util.List;
+import java.util.Set;
+
 import org.eclipse.emf.ecore.EObject;
 
 import com.b2international.snomed.ecl.ecl.*;
+import com.b2international.snomed.ecl.ecl.util.EclSwitch;
 
 /** 
  * @since 5.4
@@ -25,197 +31,283 @@ import com.b2international.snomed.ecl.ecl.*;
 @SuppressWarnings("unchecked")
 public class SnomedEclRewriter {
 
+	private static final class RewriterImpl extends EclSwitch<EObject> {
+		private static final RewriterImpl INSTANCE = new RewriterImpl();
+
+		@Override
+		public EObject caseScript(Script object) {
+			object.setConstraint(rewrite(object.getConstraint()));
+			return object;
+		}
+
+		@Override
+		public EObject caseChildOf(ChildOf object) {
+			object.setConstraint(rewrite(object.getConstraint()));
+			return object;
+		}
+
+		@Override
+		public EObject caseChildOrSelfOf(ChildOrSelfOf object) {
+			object.setConstraint(rewrite(object.getConstraint()));
+			return object;
+		}
+
+		@Override
+		public EObject caseDescendantOf(DescendantOf object) {
+			object.setConstraint(rewrite(object.getConstraint()));
+			return object;
+		}
+
+		@Override
+		public EObject caseDescendantOrSelfOf(DescendantOrSelfOf object) {
+			object.setConstraint(rewrite(object.getConstraint()));
+			return object;
+		}
+
+		@Override
+		public EObject caseParentOf(ParentOf object) {
+			object.setConstraint(rewrite(object.getConstraint()));
+			return object;
+		}
+
+		@Override
+		public EObject caseParentOrSelfOf(ParentOrSelfOf object) {
+			object.setConstraint(rewrite(object.getConstraint()));
+			return object;
+		}
+
+		@Override
+		public EObject caseAncestorOf(AncestorOf object) {
+			object.setConstraint(rewrite(object.getConstraint()));
+			return object;
+		}
+
+		@Override
+		public EObject caseAncestorOrSelfOf(AncestorOrSelfOf object) {
+			object.setConstraint(rewrite(object.getConstraint()));
+			return object;
+		}
+
+		@Override
+		public EObject caseMemberOf(MemberOf object) {
+			object.setConstraint(rewrite(object.getConstraint()));
+			return object;
+		}
+
+		@Override
+		public EObject caseEclConceptReference(EclConceptReference object) {
+			// Remove term from reference
+			object.setTerm(null);
+			return object;
+		}
+
+		@Override
+		public EObject caseEclConceptReferenceSet(EclConceptReferenceSet object) {
+			// Make referenced SCTIDs unique (remove reference if its SCTID was already in the set)
+			final List<EclConceptReference> conceptReferences = object.getConcepts();
+			final Set<String> conceptIds = newHashSet();
+			conceptReferences.removeIf(ref -> !conceptIds.add(ref.getId()));
+			
+			// Rewrite remaining references
+			for (int i = 0; i < conceptReferences.size(); i++) {
+				conceptReferences.set(i, rewrite(conceptReferences.get(i)));
+			}
+			
+			return object;
+		}
+
+		@Override
+		public EObject caseAny(Any object) {
+			// Nothing to rewrite on "Any"
+			return object;
+		}
+
+		@Override
+		public EObject caseNestedRefinement(NestedRefinement object) {
+			object.setNested(rewrite(object.getNested()));
+			return object;
+		}
+
+		@Override
+		public EObject caseEclAttributeGroup(EclAttributeGroup object) {
+			object.setRefinement(rewrite(object.getRefinement()));
+			return object;
+		}
+
+		@Override
+		public EObject caseAttributeConstraint(AttributeConstraint object) {
+			object.setAttribute(rewrite(object.getAttribute()));
+			object.setComparison(rewrite(object.getComparison()));
+			return object;
+		}
+
+		@Override
+		public EObject caseAttributeComparison(AttributeComparison object) {
+			final String op = object.getOp();
+			final Operator operator = Operator.fromString(op);
+			if (!Operator.NOT_EQUALS.equals(operator)) {
+				return object;
+			}
+			
+			// replace "!= XYZ" with "= (* MINUS XYZ)"
+			final ExclusionExpressionConstraint newExclusion = EclFactory.eINSTANCE.createExclusionExpressionConstraint();
+			newExclusion.setLeft(EclFactory.eINSTANCE.createAny());
+			newExclusion.setRight(rewrite(object.getValue()));
+			
+			final NestedExpression newNestedExpression = EclFactory.eINSTANCE.createNestedExpression();
+			newNestedExpression.setNested(newExclusion);
+			
+			object.setOp(Operator.EQUALS.toString());
+			object.setValue(newNestedExpression);
+			return object;
+		}
+
+		@Override
+		public EObject caseNestedExpression(NestedExpression object) {
+			object.setNested(rewrite(object.getNested()));
+			return object;
+		}
+
+		@Override
+		public EObject caseNestedFilter(NestedFilter object) {
+			object.setNested(rewrite(object.getNested()));
+			return object;
+		}
+
+		@Override
+		public EObject caseTypeIdFilter(TypeIdFilter object) {
+			object.setType(rewrite(object.getType()));
+			return object;
+		}
+
+		@Override
+		public EObject caseTypeTokenFilter(TypeTokenFilter object) {
+			// Make referenced description type tokens unique
+			final List<String> tokens = object.getTokens();
+			final Set<String> uniqueTokens = newHashSet();
+			tokens.removeIf(t -> !uniqueTokens.add(t));
+			
+			return object;
+		}
+
+		@Override
+		public EObject caseOrExpressionConstraint(OrExpressionConstraint object) {
+			// Consecutive OR constraints are parsed to one side, rewrite the other
+			ExpressionConstraint left = object;
+			while (left instanceof OrExpressionConstraint) {
+				OrExpressionConstraint newLeft = (OrExpressionConstraint) left;
+				newLeft.setRight(rewrite(newLeft.getRight()));
+				left = newLeft.getLeft();
+			}
+			return object;
+		}
+
+		@Override
+		public EObject caseAndExpressionConstraint(AndExpressionConstraint object) {
+			// Consecutive AND constraints are parsed to one side, rewrite the other
+			ExpressionConstraint left = object;
+			while (left instanceof AndExpressionConstraint) {
+				AndExpressionConstraint newAnd = (AndExpressionConstraint) left;
+				newAnd.setRight(rewrite(newAnd.getRight()));
+				left = newAnd.getLeft();
+			}
+			return object;
+		}
+
+		@Override
+		public EObject caseExclusionExpressionConstraint(ExclusionExpressionConstraint object) {
+			// Consecutive MINUS constraints are parsed to one side, rewrite the other
+			ExpressionConstraint left = object;
+			while (left instanceof ExclusionExpressionConstraint) {
+				ExclusionExpressionConstraint newExclusion = (ExclusionExpressionConstraint) left;
+				newExclusion.setRight(rewrite(newExclusion.getRight()));
+				left = newExclusion.getLeft();
+			}
+			return object;
+		}
+
+		@Override
+		public EObject caseRefinedExpressionConstraint(RefinedExpressionConstraint object) {
+			object.setConstraint(rewrite(object.getConstraint()));
+			object.setRefinement(rewrite(object.getRefinement()));
+			return object;
+		}
+
+		@Override
+		public EObject caseDottedExpressionConstraint(DottedExpressionConstraint object) {
+			object.setAttribute(rewrite(object.getAttribute()));
+			object.setConstraint(rewrite(object.getConstraint()));
+			return object;
+		}
+
+		@Override
+		public EObject caseFilteredExpressionConstraint(FilteredExpressionConstraint object) {
+			object.setConstraint(rewrite(object.getConstraint()));
+			object.setFilter(rewrite(object.getFilter()));
+			return object;
+		}
+
+		@Override
+		public EObject caseOrRefinement(OrRefinement object) {
+			EclRefinement left = object;
+			while (left instanceof OrRefinement) {
+				OrRefinement newRefinement = (OrRefinement) left;
+				newRefinement.setRight(rewrite(newRefinement.getRight()));
+				left = newRefinement.getLeft();
+			}
+			return object;
+		}
+
+		@Override
+		public EObject caseAndRefinement(AndRefinement object) {
+			EclRefinement left = object;
+			while (left instanceof AndRefinement) {
+				AndRefinement newRefinement = (AndRefinement) left;
+				newRefinement.setRight(rewrite(newRefinement.getRight()));
+				left = newRefinement.getLeft();
+			}
+			return object;
+		}
+
+		@Override
+		public EObject caseDisjunctionFilter(DisjunctionFilter object) {
+			Filter left = object;
+			while (left instanceof DisjunctionFilter) {
+				DisjunctionFilter newFilter = (DisjunctionFilter) left;
+				newFilter.setRight(rewrite(newFilter.getRight()));
+				left = newFilter.getLeft();
+			}
+			return object;
+		}
+
+		@Override
+		public EObject caseConjunctionFilter(ConjunctionFilter object) {
+			Filter left = object;
+			while (left instanceof ConjunctionFilter) {
+				ConjunctionFilter newFilter = (ConjunctionFilter) left;
+				newFilter.setRight(rewrite(newFilter.getRight()));
+				left = newFilter.getLeft();
+			}
+			return object;
+		}
+
+		@Override
+		public EObject defaultCase(EObject object) {
+			return object;
+		}
+
+		// Convenience method that casts the result back to the input object's type
+		public <T extends EObject> T rewrite(T object) {
+			return (object == null) ? null : (T) doSwitch(object);
+		}
+	}
+	
 	SnomedEclRewriter() {}
 
 	/**
 	 * Rewrites recognizable ECL subtrees for better/easier evaluation.
 	 */
 	public <T extends EObject> T rewrite(T eclObject) {
-		if (eclObject instanceof ExpressionConstraint) {
-			return (T) rewriteExpression((ExpressionConstraint) eclObject);
-		} else if (eclObject instanceof EclRefinement) {
-			return (T) rewriteRefinement((EclRefinement) eclObject);
-		} else if (eclObject instanceof Comparison) {
-			return (T) rewriteComparison((Comparison) eclObject);
-		} else {
-			return eclObject;
-		}
+		return RewriterImpl.INSTANCE.rewrite(eclObject);
 	}
-
-	// EXPRESSIONCONSTRAINT hierarchy
-
-	private ExpressionConstraint rewriteExpression(ExpressionConstraint it) {
-		if (it instanceof ParentOf) {
-			return rewriteExpression((ParentOf) it);
-		} else if (it instanceof AncestorOf) {
-			return rewriteExpression((AncestorOf) it);
-		} else if (it instanceof AncestorOrSelfOf) {
-			return rewriteExpression((AncestorOrSelfOf) it);
-		} else if (it instanceof ChildOf) {
-			return rewriteExpression((ChildOf) it);
-		} else if (it instanceof DescendantOf) {
-			return rewriteExpression((DescendantOf) it);
-		} else if (it instanceof DescendantOrSelfOf) {
-			return rewriteExpression((DescendantOrSelfOf) it);
-		} else if (it instanceof MemberOf) {
-			return rewriteExpression((MemberOf) it);
-		} else if (it instanceof OrExpressionConstraint) {
-			return rewriteExpression((OrExpressionConstraint) it);
-		} else if (it instanceof AndExpressionConstraint) {
-			return rewriteExpression((AndExpressionConstraint) it);
-		} else if (it instanceof ExclusionExpressionConstraint) {
-			return rewriteExpression((ExclusionExpressionConstraint) it);
-		} else if (it instanceof DottedExpressionConstraint) {
-			return rewriteExpression((DottedExpressionConstraint) it);
-		} else if (it instanceof RefinedExpressionConstraint) {
-			return rewriteExpression((RefinedExpressionConstraint) it);
-		} else if (it instanceof NestedExpression) {
-			return rewriteExpression((NestedExpression) it);
-		}
-		return it;
-	}
-	
-	private ExpressionConstraint rewriteExpression(ParentOf it) {
-		it.setConstraint(rewrite(it.getConstraint()));
-		return it;
-	}
-	
-	private ExpressionConstraint rewriteExpression(AncestorOf it) {
-		it.setConstraint(rewrite(it.getConstraint()));
-		return it;
-	}
-	
-	private ExpressionConstraint rewriteExpression(AncestorOrSelfOf it) {
-		it.setConstraint(rewrite(it.getConstraint()));
-		return it;
-	}
-	
-	private ExpressionConstraint rewriteExpression(ChildOf it) {
-		it.setConstraint(rewrite(it.getConstraint()));
-		return it;
-	}
-	
-	private ExpressionConstraint rewriteExpression(DescendantOf it) {
-		it.setConstraint(rewrite(it.getConstraint()));
-		return it;
-	}
-	
-	private ExpressionConstraint rewriteExpression(DescendantOrSelfOf it) {
-		it.setConstraint(rewrite(it.getConstraint()));
-		return it;
-	}
-	
-	private ExpressionConstraint rewriteExpression(MemberOf it) {
-		it.setConstraint(rewrite(it.getConstraint()));
-		return it;
-	}
-
-	private ExpressionConstraint rewriteExpression(OrExpressionConstraint it) {
-		ExpressionConstraint left = it;
-		while (left instanceof OrExpressionConstraint) {
-			OrExpressionConstraint newLeft = (OrExpressionConstraint) left;
-			newLeft.setRight(rewrite(newLeft.getRight()));
-			left = newLeft.getLeft();
-		}
-		return it;
-	}
-	
-	private ExpressionConstraint rewriteExpression(AndExpressionConstraint it) {
-		ExpressionConstraint left = it;
-		while (left instanceof AndExpressionConstraint) {
-			AndExpressionConstraint newAnd = (AndExpressionConstraint) left;
-			newAnd.setRight(rewrite(newAnd.getRight()));
-			left = newAnd.getLeft();
-		}
-		return it;
-	}
-	
-	private ExpressionConstraint rewriteExpression(ExclusionExpressionConstraint it) {
-		ExpressionConstraint left = it;
-		while (left instanceof ExclusionExpressionConstraint) {
-			ExclusionExpressionConstraint newExclusion = (ExclusionExpressionConstraint) left;
-			newExclusion.setRight(rewrite(newExclusion.getRight()));
-			left = newExclusion.getLeft();
-		}
-		return it;
-	}
-	
-	private ExpressionConstraint rewriteExpression(DottedExpressionConstraint it) {
-		it.setConstraint(rewrite(it.getConstraint()));
-		it.setAttribute(rewrite(it.getAttribute()));
-		return it;
-	}
-	
-	private ExpressionConstraint rewriteExpression(RefinedExpressionConstraint it) {
-		it.setConstraint(rewrite(it.getConstraint()));
-		it.setRefinement(rewrite(it.getRefinement()));
-		return it;
-	}
-	
-	private ExpressionConstraint rewriteExpression(NestedExpression it) {
-		it.setNested(rewrite(it.getNested()));
-		return it;
-	}
-	
-	// REFINEMENT hierarchy
-	
-	private EclRefinement rewriteRefinement(EclRefinement it) {
-		if (it instanceof AndRefinement) {
-			return rewriteRefinement((AndRefinement) it);
-		} else if (it instanceof OrRefinement) {
-			return rewriteRefinement((OrRefinement) it);
-		} else if (it instanceof NestedRefinement) {
-			return rewriteRefinement((NestedRefinement) it);
-		} else if (it instanceof EclAttributeGroup) {
-			return rewriteRefinement((EclAttributeGroup) it);
-		} else if (it instanceof AttributeConstraint) {
-			return rewriteRefinement((AttributeConstraint) it);
-		}
-		return it;
-	}
-	
-	private EclRefinement rewriteRefinement(AndRefinement it) {
-		it.setLeft(rewrite(it.getLeft()));
-		it.setRight(rewrite(it.getRight()));
-		return it;
-	}
-	
-	private EclRefinement rewriteRefinement(OrRefinement it) {
-		it.setLeft(rewrite(it.getLeft()));
-		it.setRight(rewrite(it.getRight()));
-		return it;
-	}
-	
-	private EclRefinement rewriteRefinement(NestedRefinement it) {
-		it.setNested(rewrite(it.getNested()));
-		return it;
-	}
-	
-	private EclRefinement rewriteRefinement(EclAttributeGroup it) {
-		it.setRefinement(rewriteRefinement(it.getRefinement()));
-		return it;
-	}
-	
-	private EclRefinement rewriteRefinement(AttributeConstraint it) {
-		it.setComparison(rewrite(it.getComparison()));
-		return it;
-	}
-	
-	// COMPARISON hierarchy
-	
-	private Comparison rewriteComparison(Comparison it) {
-		if (it instanceof AttributeValueNotEquals) {
-			// replace != with * MINUS XYZ
-			AttributeValueEquals newComparison = EclFactory.eINSTANCE.createAttributeValueEquals();
-			NestedExpression newConstraint = EclFactory.eINSTANCE.createNestedExpression();
-			ExclusionExpressionConstraint newNested = EclFactory.eINSTANCE.createExclusionExpressionConstraint();
-			newNested.setLeft(EclFactory.eINSTANCE.createAny());
-			newNested.setRight(((AttributeValueNotEquals) it).getConstraint());
-			newConstraint.setNested(newNested);
-			newComparison.setConstraint(newConstraint);
-			return newComparison;
-		}
-		return it;
-	}
-	
 }
