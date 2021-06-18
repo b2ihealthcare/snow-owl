@@ -69,7 +69,7 @@ public abstract class Resource implements Serializable {
 	
 	// XXX empty setter to make Jackson happy when deserializing
 	@JsonSetter
-	/*package*/ void setResourceType() {}
+	/*package*/ final void setResourceType(String resourceType) {}
 	
 	/**
 	 * Logical id of this resource.
@@ -94,7 +94,7 @@ public abstract class Resource implements Serializable {
 
 	// XXX empty setter to make Jackson happy when deserializing 
 	@JsonSetter
-	final void setResourceURI(ResourceURI resourceUri) {}
+	/*package*/ final void setResourceURI(ResourceURI resourceUri) {}
 
 	/**
 	 * The canonical URL that never changes for this resource - it is the same in every copy. This canonical URL is used to refer to all instances of
