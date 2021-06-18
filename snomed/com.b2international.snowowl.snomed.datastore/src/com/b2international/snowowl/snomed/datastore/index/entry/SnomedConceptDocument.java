@@ -109,7 +109,6 @@ import com.google.common.collect.ImmutableMap;
 public final class SnomedConceptDocument extends SnomedComponentDocument {
 
 	public static final float DEFAULT_DOI = 1.0f;
-	private static final long serialVersionUID = -824286402410205210L;
 
 	public static SortBy sortByTerm(List<String> languageRefSetPreferenceList, Set<String> synonymIds, SortBy.Order order) {
 		return SortBy.script("termSort", ImmutableMap.of("locales", languageRefSetPreferenceList, "synonymIds", synonymIds), order);
@@ -164,14 +163,6 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 			return match(Fields.EXHAUSTIVE, true);
 		}
 		
-		public static Expression refSetStorageKey(long storageKey) {
-			return exactMatch(Fields.REFSET_STORAGEKEY, storageKey);
-		}
-		
-		public static Expression refSetStorageKeys(Iterable<Long> storageKeys) {
-			return matchAnyLong(Fields.REFSET_STORAGEKEY, storageKeys);
-		}
-
 		public static Expression refSetType(SnomedRefSetType type) {
 			return refSetTypes(Collections.singleton(type));
 		}
@@ -196,16 +187,11 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 			return matchAnyInt(Fields.MAP_TARGET_COMPONENT_TYPE, mapTargetComponentTypes);
 		}
 		
-		public static Expression referringPredicate(String referringPredicate) {
-			return exactMatch(Fields.REFERRING_PREDICATES, referringPredicate);
-		}
-		
 	}
 
 	public static class Fields extends SnomedComponentDocument.Fields {
 		
 		public static final String REFSET_STORAGEKEY = "refSetStorageKey";
-		public static final String REFERRING_PREDICATES = "referringPredicates";
 		public static final String PRIMITIVE = "primitive";
 		public static final String EXHAUSTIVE = "exhaustive";
 		public static final String ANCESTORS = "ancestors";

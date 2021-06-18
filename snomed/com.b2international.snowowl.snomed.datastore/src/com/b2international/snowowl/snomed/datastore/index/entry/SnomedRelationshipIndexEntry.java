@@ -68,8 +68,6 @@ import com.google.common.collect.FluentIterable;
 @JsonDeserialize(builder = SnomedRelationshipIndexEntry.Builder.class)
 public final class SnomedRelationshipIndexEntry extends SnomedComponentDocument {
 
-	private static final long serialVersionUID = 2L;
-
 	public static final int DEFAULT_GROUP = -1;
 	public static final int DEFAULT_UNION_GROUP = -1;
 
