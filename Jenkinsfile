@@ -4,10 +4,13 @@
 * Job Parameters:
 *	skipTests - whether to skip unit tests during the build process or not
 *	skipDeploy - whether to deploy build artifacts in case of successful maven build or not (should be false by default)
+*	skipDownstreamBuilds - whether to skip execution of downstream builds
+*	downstreamBuild - name of downstream build
 **/
 try {
 
 	def currentVersion
+	def majorVersion
 	def revision
 	def mavenPhase = params.skipDeploy ? "verify" : "deploy"
 
@@ -21,6 +24,7 @@ try {
 
 			pom = readMavenPom file: 'pom.xml'
 			currentVersion = pom.version
+			majorVersion = currentVersion.take(1)
 			revision = sh(returnStdout: true, script: "git rev-parse --short HEAD").trim()
 
 		}
@@ -51,6 +55,16 @@ try {
 			string(name: 'extension', value: 'tar.gz'),
 			string(name: 'imageClassifier', value: 'oss'),
 			string(name: 'gitRevision', value: revision),
+		], quietPeriod: 1, wait: false
+
+	}
+
+	if (!skipDownstreamBuilds) {
+
+		build job: 'build-'+majorVersion+'.x/'+downstreamBuild+'', parameters: [
+			booleanParam(name: 'skipTests', value: params.skipTests),
+			booleanParam(name: 'skipDeploy', value: params.skipDeploy),
+			booleanParam(name: 'skipDownstreamBuilds', value: params.skipDownstreamBuilds)
 		], quietPeriod: 1, wait: false
 
 	}
