@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.fhir.rest.tests.codesystem;
 
+import static com.b2international.snowowl.fhir.tests.FhirRestTest.Endpoints.CODESYSTEM;
+import static com.b2international.snowowl.fhir.tests.FhirRestTest.Endpoints.CODESYSTEM_ID;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.hamcrest.CoreMatchers.*;
 
@@ -34,9 +36,6 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
  */
 public class FhirCodeSystemApiTest extends FhirRestTest {
 	
-	private static final String CODESYSTEM = "/CodeSystem";
-	private static final String CODESYSTEM_ID = "/CodeSystem/{id}";
-
 	@Test
 	public void GET_CodeSystem() throws Exception {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
@@ -46,7 +45,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.body("resourceType", equalTo("Bundle"))
 			.body("type", equalTo("searchset"))
 			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
-			.body("total", equalTo(1))
+			.body("total", equalTo(2))
 			.body("entry[0].resource.url", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_BASE + "/" + getTestCodeSystemId()))
 			.body("entry[0].resource.count", equalTo(0));
 	}
@@ -55,7 +54,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 	public void GET_CodeSystem_IdFilter_NoMatch() throws Exception {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.queryParam("_id", "non-existent")
-			.when().get("/CodeSystem")
+			.when().get(CODESYSTEM)
 			.then()
 			.statusCode(200)
 			.body("resourceType", equalTo("Bundle"))
@@ -68,7 +67,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 	public void GET_CodeSystem_IdFilter_Match() throws Exception {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.queryParam("_id", getTestCodeSystemId())
-			.when().get("/CodeSystem")
+			.when().get(CODESYSTEM)
 			.then()
 			.statusCode(200)
 			.body("resourceType", equalTo("Bundle"))
@@ -84,7 +83,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 		String thirdCodeSystemId = createCodeSystem(UUID.randomUUID().toString());
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.queryParam("_id", getTestCodeSystemId(), anotherCodeSystemId)
-			.when().get("/CodeSystem")
+			.when().get(CODESYSTEM)
 			.then()
 			.statusCode(200)
 			.body("resourceType", equalTo("Bundle"))
@@ -99,7 +98,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 	public void GET_CodeSystem_NameFilter_NoMatch() {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.queryParam("name", "unknown name")
-			.when().get("/CodeSystem")
+			.when().get(CODESYSTEM)
 			.then()
 			.statusCode(200)
 			.body("resourceType", equalTo("Bundle"))
@@ -112,7 +111,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 	public void GET_CodeSystem_NameFilter_Match_Single() {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.queryParam("name", getTestCodeSystemId())
-			.when().get("/CodeSystem")
+			.when().get(CODESYSTEM)
 			.then()
 			.statusCode(200)
 			.body("resourceType", equalTo("Bundle"))
@@ -129,7 +128,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 		String thirdCodeSystemId = createCodeSystem(UUID.randomUUID().toString());
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.queryParam("name", getTestCodeSystemId(), anotherCodeSystemId)
-			.when().get("/CodeSystem")
+			.when().get(CODESYSTEM)
 			.then()
 			.statusCode(200)
 			.body("resourceType", equalTo("Bundle"))
@@ -143,6 +142,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 	@Test
 	public void GET_CodeSystem_Summary_True() throws Exception {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.queryParam("_id", getTestCodeSystemId())
 			.queryParam("_summary", true)
 			.when().get(CODESYSTEM)
 			.then()
@@ -158,6 +158,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 	@Test
 	public void GET_CodeSystem_Summary_Text() throws Exception {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.queryParam("_id", getTestCodeSystemId())
 			.queryParam("_summary", "text")
 			.when().get(CODESYSTEM)
 			.then()
@@ -182,6 +183,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 	@Test
 	public void GET_CodeSystem_Summary_Data() throws Exception {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.queryParam("_id", getTestCodeSystemId())
 			.queryParam("_summary", "data")
 			.when().get(CODESYSTEM)
 			.then()
@@ -206,6 +208,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 	@Test
 	public void GET_CodeSystem_Summary_Count() throws Exception {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.queryParam("_id", getTestCodeSystemId())
 			.queryParam("_summary", "count")
 			.when().get(CODESYSTEM)
 			.then()
@@ -220,6 +223,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 	@Test
 	public void GET_CodeSystem_Summary_False() throws Exception {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.queryParam("_id", getTestCodeSystemId())
 			.queryParam("_summary", false)
 			.when().get(CODESYSTEM)
 			.then()
@@ -235,6 +239,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 	@Test
 	public void GET_CodeSystem_Elements() throws Exception {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.queryParam("_id", getTestCodeSystemId())
 			.queryParam("_elements", "name", "url")
 			.when().get(CODESYSTEM)
 			.then() 

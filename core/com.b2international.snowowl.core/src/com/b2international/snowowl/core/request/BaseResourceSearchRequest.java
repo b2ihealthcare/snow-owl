@@ -35,10 +35,15 @@ public abstract class BaseResourceSearchRequest<R>
 	 * @since 8.0
 	 */
 	public enum OptionKey {
+		URL,
 		/** Search resources by title */
 		TITLE,
 		/** "Smart" search by title (taking prefixes, stemming, etc. into account) */
 		TITLE_EXACT,
+	}
+	
+	protected final void addUrlFilter(ExpressionBuilder queryBuilder) {
+		addFilter(queryBuilder, OptionKey.URL, String.class, ResourceDocument.Expressions::urls);
 	}
 	
 	protected final ExpressionBuilder addTitleFilter(ExpressionBuilder queryBuilder) {

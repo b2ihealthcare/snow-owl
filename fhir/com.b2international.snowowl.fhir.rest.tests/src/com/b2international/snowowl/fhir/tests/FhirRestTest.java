@@ -34,12 +34,18 @@ public class FhirRestTest extends FhirTest {
 	
 	protected static final String APPLICATION_FHIR_JSON = "application/fhir+json;charset=utf-8";
 	
-	protected static final String FHIR_ROOT_CONTEXT = "/fhir"; //$NON-NLS-N$
+	public static final String FHIR_ROOT_CONTEXT = "/fhir"; //$NON-NLS-N$
 	
 	protected static final String SNOMED_VERSION = "2018-07-31";
 	
+	public static final class Endpoints {
+		public static final String CODESYSTEM = "/CodeSystem";
+		public static final String CODESYSTEM_ID = "/CodeSystem/{id}";
+		public static final String CODESYSTEM_LOOKUP = "/CodeSystem/$lookup";
+	}
+	
 	protected final String getTestCodeSystemId() {
-		return methodNameRule.get();
+		return methodNameRule.get().replaceAll("\\$", "");
 	}
 	
 	private final Set<String> createdCodeSystems = new HashSet<>(); 

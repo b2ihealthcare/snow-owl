@@ -62,6 +62,7 @@ final class CodeSystemSearchRequest extends BaseResourceSearchRequest<CodeSystem
 		addIdFilter(queryBuilder, ResourceDocument.Expressions::ids);
 		addTitleExactFilter(queryBuilder);
 		addTitleFilter(queryBuilder);
+		addUrlFilter(queryBuilder);
 		
 		addFilter(queryBuilder, OptionKey.TOOLING_ID, String.class, ResourceDocument.Expressions::toolingIds);
 		addFilter(queryBuilder, OptionKey.OID, String.class, ResourceDocument.Expressions::oids);

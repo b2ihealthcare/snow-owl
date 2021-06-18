@@ -17,7 +17,12 @@ package com.b2international.snowowl.fhir.core.request.codesystem;
 
 import javax.validation.Valid;
 
+import com.b2international.commons.CompareUtils;
+import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.codesystem.CodeSystem;
+import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
+import com.b2international.snowowl.core.domain.Concept;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupResult;
@@ -52,7 +57,38 @@ final class FhirLookupRequest implements Request<ServiceProvider, LookupResult> 
 
 	@Override
 	public LookupResult execute(ServiceProvider context) {
-		return LookupResult.builder().build();
+		
+		CodeSystem codeSystem = CodeSystemRequests
+			.prepareSearchCodeSystem()
+			.one()
+			.filterByUrl(request.getSystem())
+			.buildAsync()
+			.getRequest()
+			.execute(context)
+			.first()
+			.orElseThrow(() -> new NotFoundException("CodeSystem", request.getSystem()));
+		
+		// TODO support searching versions 
+
+		String locales = request.getDisplayLanguage() != null ? request.getDisplayLanguage().getCodeValue() : null;
+		if (CompareUtils.isEmpty(locales)) {
+			locales = "en";
+		}
+		
+		Concept concept = CodeSystemRequests.prepareSearchConcepts()
+			.one()
+			.filterById(request.getCode())
+			.setLocales(locales)
+			.build(codeSystem.getResourceURI())
+			.getRequest()
+			.execute(context)
+			.first()
+			.orElseThrow(() -> new NotFoundException("Concept", request.getCode()));
+		
+		return LookupResult.builder()
+				.name(codeSystem.getId())
+				.display(concept.getTerm())
+				.build();
 	}
 
 }

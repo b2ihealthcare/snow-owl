@@ -66,8 +66,7 @@ final class ResourceSearchRequest extends BaseResourceSearchRequest<Resources> {
 		addIdFilter(queryBuilder, ResourceDocument.Expressions::ids);
 		addTitleFilter(queryBuilder);
 		addTitleExactFilter(queryBuilder);
-		
-		addFilter(queryBuilder, OptionKey.URL, String.class, ResourceDocument.Expressions::urls);
+		addUrlFilter(queryBuilder);
 		
 		addFilter(queryBuilder, OptionKey.RESOURCE_TYPE, String.class, ResourceDocument.Expressions::resourceTypes);
 		addFilter(queryBuilder, OptionKey.TOOLING_ID, String.class, ResourceDocument.Expressions::toolingIds);

@@ -26,6 +26,14 @@ public abstract class BaseResourceSearchRequestBuilder<RB extends BaseResourceSe
 		extends SearchResourceRequestBuilder<RB, RepositoryContext, R>
 		implements ResourceRepositoryRequestBuilder<R> {
 
+	public RB filterByUrl(String url) {
+		return addOption(OptionKey.URL, url);
+	}
+	
+	public RB filterByUrls(String urls) {
+		return addOption(OptionKey.URL, urls);
+	}
+	
 	/**
 	 * Filter matches by a {@link TermFilter} configuration
 	 * 

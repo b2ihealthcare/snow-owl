@@ -39,7 +39,7 @@ import io.swagger.annotations.*;
  */
 @Api(value = "CodeSystem", description="FHIR CodeSystem Resource", tags = { "CodeSystem" })
 @RestController
-@RequestMapping(value="/CodeSystem", produces = { AbstractFhirController.APPLICATION_FHIR_JSON })
+@RequestMapping(value="/CodeSystem/$lookup", produces = { AbstractFhirController.APPLICATION_FHIR_JSON })
 public class FhirCodeSystemLookupOperationController extends AbstractFhirController {
 
 	/**
@@ -60,17 +60,33 @@ public class FhirCodeSystemLookupOperationController extends AbstractFhirControl
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
 		@ApiResponse(code = HTTP_NOT_FOUND, message = "Code system not found", response = OperationOutcome.class)
 	})
-	@RequestMapping(value="/$lookup", method=RequestMethod.GET)
+	@GetMapping
 	public Promise<Parameters.Fhir> lookup(
 		
-		@ApiParam(value="The code to look up") @RequestParam(value="code") final String code,
-		@ApiParam(value="The code system's uri") @RequestParam(value="system") final String system,
-		@ApiParam(value="The code system version") @RequestParam(value="version") final Optional<String> version,
-		@ApiParam(value="Lookup date in datetime format") @RequestParam(value="date") final Optional<String> date,
-		@ApiParam(value="Language code for display") @RequestParam(value="displayLanguage") final Optional<String> displayLanguage,
+		@ApiParam(value="The code to look up") 
+		@RequestParam(value="code") 
+		final String code,
+		
+		@ApiParam(value="The code system's uri") 
+		@RequestParam(value="system") 
+		final String system,
+		
+		@ApiParam(value="The code system version") 
+		@RequestParam(value="version") 
+		final Optional<String> version,
+		
+		@ApiParam(value="Lookup date in datetime format") 
+		@RequestParam(value="date") 
+		final Optional<String> date,
+		
+		@ApiParam(value="Language code for display") 
+		@RequestParam(value="displayLanguage") 
+		final Optional<String> displayLanguage,
 		
 		//Collection binding does not work with Optional!! (Optional<Set<String>> properties does not get populated with multiple properties, only the first one is present!)
-		@ApiParam(value="Properties to return in the output") @RequestParam(value="property", required = false) Set<String> properties) {
+		@ApiParam(value="Properties to return in the output") 
+		@RequestParam(value="property", required = false) 
+		Set<String> properties) {
 		
 		Builder builder = LookupRequest.builder()
 			.code(code)
@@ -107,7 +123,7 @@ public class FhirCodeSystemLookupOperationController extends AbstractFhirControl
 		@ApiResponse(code = HTTP_NOT_FOUND, message = "Not found", response = OperationOutcome.class),
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class)
 	})
-	@RequestMapping(value="/$lookup", method=RequestMethod.POST, consumes = AbstractFhirResourceController.APPLICATION_FHIR_JSON)
+	@PostMapping(consumes = AbstractFhirResourceController.APPLICATION_FHIR_JSON)
 	public Promise<Parameters.Fhir> lookup(
 			@ApiParam(name = "body", value = "The lookup request parameters")
 			@RequestBody Parameters.Fhir in) {

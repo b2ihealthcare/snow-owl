@@ -39,6 +39,7 @@ final class BundleSearchRequest extends BaseResourceSearchRequest<Bundles> {
 		
 		addIdFilter(queryBuilder, ResourceDocument.Expressions::ids);
 		addTitleFilter(queryBuilder);
+		addUrlFilter(queryBuilder);
 		
 		return queryBuilder.build();
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,7 @@
  */
 package com.b2international.snowowl.fhir.core.model.codesystem;
 
-import java.util.Collection;
-import java.util.Date;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.AssertTrue;
@@ -29,16 +26,13 @@ import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.fhir.core.FhirConstants;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
-import com.b2international.snowowl.fhir.core.model.dt.Code;
-import com.b2international.snowowl.fhir.core.model.dt.Coding;
-import com.b2international.snowowl.fhir.core.model.dt.FhirDataType;
-import com.b2international.snowowl.fhir.core.model.dt.FhirType;
-import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.b2international.snowowl.fhir.core.model.dt.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import com.google.common.collect.Sets;
 
 /**
  * This class represents a FHIR lookup operation request.
@@ -126,10 +120,12 @@ public class LookupRequest {
 		return displayLanguage;
 	}
 
+	@JsonProperty("property")
 	public Collection<Code> getProperties() {
 		return property;
 	}
 
+	@JsonIgnore
 	public Collection<String> getPropertyCodes() {
 		return property.stream().map(p -> p.getCodeValue()).collect(Collectors.toSet());
 	}
@@ -152,17 +148,17 @@ public class LookupRequest {
 	}
 
 	/**
-	 * @return true if the <i>version</i> property is requested to be returned, <code>false</code> otherwise.
+	 * @return <code>true</code> if the <i>version</i> property is requested to be returned, <code>false</code> otherwise.
 	 */
+	@JsonIgnore
 	public final boolean isVersionPropertyRequested() {
 		return containsProperty(SupportedCodeSystemRequestProperties.VERSION.getCode());
 	}
 
 	/**
-	 * Returns true if the <i>designation</i> property is requested to be returned.
-	 * 
-	 * @return
+	 * @return <code>true</code> if the <i>designation</i> property is requested to be returned.
 	 */
+	@JsonIgnore
 	public final boolean isDesignationPropertyRequested() {
 		return containsProperty(SupportedCodeSystemRequestProperties.DESIGNATION.getCode());
 	}
@@ -244,7 +240,7 @@ public class LookupRequest {
 		private Coding coding;
 		private Date date;
 		private Code displayLanguage;
-		private Set<Code> properties = Sets.newHashSet();
+		private List<Code> properties;
 
 		Builder() {
 		}
@@ -288,21 +284,24 @@ public class LookupRequest {
 		 */
 		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
 		Builder property(Collection<Code> props) {
-			properties = Collections3.toImmutableSet(props);
+			properties = Collections3.toImmutableList(props);
 			return this;
 		}
 
 		public Builder properties(Collection<String> properties) {
-			this.properties = properties.stream().map(p -> new Code(p)).collect(Collectors.toSet());
+			this.properties = properties.stream().map(p -> new Code(p)).collect(Collectors.toList());
 			return this;
 		}
 
 		public Builder codeProperties(Collection<Code> properties) {
-			this.properties = Collections3.toImmutableSet(properties);
+			this.properties = Collections3.toImmutableList(properties);
 			return this;
 		}
 
 		public Builder addProperty(String property) {
+			if (this.properties == null) {
+				this.properties = new ArrayList<>(3);
+			}
 			this.properties.add(new Code(property));
 			return this;
 		}
