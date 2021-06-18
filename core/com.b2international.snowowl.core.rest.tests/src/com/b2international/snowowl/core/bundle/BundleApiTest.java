@@ -283,16 +283,16 @@ public final class BundleApiTest extends BaseBundleApiTest {
 	public void updateBundle() {
 		createBundle();
 
-		final String newUrl = "https://updated.hu";
-		final String newTitle = "Új név";
-		final String newLanguage = "hu";
-		final String newDescription = "Erőforrások rendszerezésére";
+		final String newUrl = "https://updated.com";
+		final String newTitle = "New title";
+		final String newLanguage = "us";
+		final String newDescription = "New description for this bundle";
 		final String newStatus = "inactive";
-		final String newCopyright = "Szerzői jog";
-		final String newOwner = "tulajdonos";
-		final String newContract = "info@b2international.hu";
-		final String newUsage = "Magyar kódrendszerek csoportosítására";
-		final String newPurpose = "Tesztelési célra";
+		final String newCopyright = "Updated license agreement";
+		final String newOwner = "New owner";
+		final String newContact = "newcontact@gmail.com";
+		final String newUsage = "New usage";
+		final String newPurpose = "New purpose";
 		final String newBundleId = "123";
 		
 		ResourceRequests.bundles().prepareUpdate(id)
@@ -303,7 +303,7 @@ public final class BundleApiTest extends BaseBundleApiTest {
 			.setStatus(newStatus)
 			.setCopyright(newCopyright)
 			.setOwner(newOwner)
-			.setContact(newContract)
+			.setContact(newContact)
 			.setUsage(newUsage)
 			.setPurpose(newPurpose)
 			.setBundleId(newBundleId)
