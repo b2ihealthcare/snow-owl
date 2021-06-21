@@ -75,6 +75,14 @@ public final class ResourceSearchRequestBuilder extends BaseResourceSearchReques
 	public ResourceSearchRequestBuilder filterByBundleIds(Iterable<String> bundleIds) {
 		return addOption(OptionKey.BUNDLE_ID, bundleIds);
 	}
+
+	public ResourceSearchRequestBuilder filterByOid(String oid) {
+		return addOption(OptionKey.BUNDLE_ID, oid);
+	}
+	
+	public ResourceSearchRequestBuilder filterByOids(Iterable<String> oids) {
+		return addOption(OptionKey.BUNDLE_ID, oids);
+	}
 	
 	@Override
 	protected SearchResourceRequest<RepositoryContext, Resources> createSearch() {

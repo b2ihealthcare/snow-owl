@@ -55,8 +55,12 @@ final class ResourceSearchRequest extends BaseResourceSearchRequest<Resources> {
 		/**
 		 * Filter matches by their bundle ID.
 		 */
-		BUNDLE_ID, 
+		BUNDLE_ID,
 		
+		/**
+		 * HL7 registry OID
+		 */
+		OID, 
 	}
 
 	@Override
@@ -72,6 +76,7 @@ final class ResourceSearchRequest extends BaseResourceSearchRequest<Resources> {
 		addFilter(queryBuilder, OptionKey.TOOLING_ID, String.class, ResourceDocument.Expressions::toolingIds);
 		addFilter(queryBuilder, OptionKey.BRANCH, String.class, ResourceDocument.Expressions::branchPaths);
 		addFilter(queryBuilder, OptionKey.BUNDLE_ID, String.class, ResourceDocument.Expressions::bundleIds);
+		addFilter(queryBuilder, OptionKey.OID, String.class, ResourceDocument.Expressions::oids);
 		return queryBuilder.build();
 	}
 
