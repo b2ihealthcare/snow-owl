@@ -16,9 +16,12 @@
 package com.b2international.snowowl.core.repository;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import com.b2international.snowowl.core.domain.IComponent;
+import com.b2international.snowowl.core.setup.Environment;
 
 /**
  * @since 7.0
@@ -29,6 +32,13 @@ public interface TerminologyRepositoryConfigurer {
 	 * @return the repository ID that should be configured/customized by this configurer.
 	 */
 	String getToolingId();
+	
+	/**
+	 * @since 8.0
+	 */
+	default Map<Class<?>, Object> bindAdditionalServices(Environment env) {
+		return Collections.emptyMap();
+	}
 	
 	/**
 	 * @return additional mappings that should be managed and configured for use within the configured repository.
@@ -47,5 +57,7 @@ public interface TerminologyRepositoryConfigurer {
 	/**
 	 * @return additional component deletion policies for subtypes of RevisionDocument
 	 */
-	CompositeComponentDeletionPolicy getComponentDeletionPolicy();
+	default CompositeComponentDeletionPolicy getComponentDeletionPolicy() {
+		return null;
+	}
 }

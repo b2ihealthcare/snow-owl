@@ -25,6 +25,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.CompareUtils;
+import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.codesystem.CodeSystems;
 import com.b2international.snowowl.core.domain.RepositoryContext;
@@ -161,10 +162,14 @@ final class FhirCodeSystemSearchRequest extends SearchResourceRequest<Repository
 		includeIfFieldSelected(CodeSystem.Fields.DESCRIPTION, codeSystem::getDescription, entry::description);
 		includeIfFieldSelected(CodeSystem.Fields.PURPOSE, codeSystem::getPurpose, entry::purpose);
 		
-		// TODO compute count based on the current number of concepts
-		includeIfFieldSelected(CodeSystem.Fields.COUNT, () -> 0, entry::count);
+		FhirCodeSystemResourceConverter converter = context.service(RepositoryManager.class)
+			.get(codeSystem.getToolingId())
+			.optionalService(FhirCodeSystemResourceConverter.class)
+			.orElse(FhirCodeSystemResourceConverter.DEFAULT);
 		
-		// TODO fill out Code System specific properties, if required use tooling specific extensions to fill all fields
+		includeIfFieldSelected(CodeSystem.Fields.COUNT, () -> converter.count(context, codeSystem.getResourceURI()), entry::count);
+		
+		converter.expand(context, entry, codeSystem);
 		
 		return entry.build();
 	}
