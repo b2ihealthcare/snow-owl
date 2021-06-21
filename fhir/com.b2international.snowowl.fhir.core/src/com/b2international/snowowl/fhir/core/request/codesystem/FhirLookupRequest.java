@@ -16,6 +16,7 @@
 package com.b2international.snowowl.fhir.core.request.codesystem;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.NotFoundException;
@@ -23,7 +24,6 @@ import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.domain.Concept;
-import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupResult;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -42,34 +42,23 @@ import com.fasterxml.jackson.annotation.JsonUnwrapped;
  * @see LookupResult
  * @since 8.0
  */
-final class FhirLookupRequest implements Request<ServiceProvider, LookupResult> {
+final class FhirLookupRequest extends FhirRequest<LookupResult> {
 
 	private static final long serialVersionUID = 1L;
 	
+	@NotNull
 	@Valid
 	@JsonProperty
 	@JsonUnwrapped
 	private LookupRequest request;
 
 	FhirLookupRequest(LookupRequest request) {
+		super(request.getSystem());
 		this.request = request;
 	}
 
 	@Override
-	public LookupResult execute(ServiceProvider context) {
-		
-		CodeSystem codeSystem = CodeSystemRequests
-			.prepareSearchCodeSystem()
-			.one()
-			.filterByUrl(request.getSystem())
-			.buildAsync()
-			.getRequest()
-			.execute(context)
-			.first()
-			.orElseThrow(() -> new NotFoundException("CodeSystem", request.getSystem()));
-		
-		// TODO support searching versions 
-
+	protected LookupResult doExecute(ServiceProvider context, CodeSystem codeSystem) {
 		String locales = request.getDisplayLanguage() != null ? request.getDisplayLanguage().getCodeValue() : null;
 		if (CompareUtils.isEmpty(locales)) {
 			locales = "en";

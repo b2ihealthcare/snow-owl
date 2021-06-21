@@ -320,35 +320,6 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 
 	protected abstract int getCount(Version codeSystemVersion);
 
-	@Override
-	public SubsumptionResult subsumes(SubsumptionRequest subsumptionRequest) {
-		
-		final ResourceURI codeSystemUri = resolveResourceUri(subsumptionRequest.getSystem(), subsumptionRequest.getVersion());
-		
-		String codeA = null;
-		String codeB = null;
-		if (subsumptionRequest.getCodeA() != null && subsumptionRequest.getCodeB() != null) {
-			codeA = subsumptionRequest.getCodeA();
-			codeB = subsumptionRequest.getCodeB();
-		} else {
-			codeA = subsumptionRequest.getCodingA().getCodeValue();
-			codeB = subsumptionRequest.getCodingB().getCodeValue();
-		}
-		
-		final Set<String> ancestorsA = fetchAncestors(codeSystemUri, codeA);
-		final Set<String> ancestorsB = fetchAncestors(codeSystemUri, codeB);
-		
-		if (codeA.equals(codeB)) {
-			return SubsumptionResult.equivalent();
-		} else if (ancestorsA.contains(codeB)) {
-			return SubsumptionResult.subsumedBy();
-		} else if (ancestorsB.contains(codeA)) {
-			return SubsumptionResult.subsumes();
-		} else {
-			return SubsumptionResult.notSubsumed();
-		}
-	}
-	
 	protected ResourceURI resolveResourceUri(final String system, final String version) {
 		throw new NotImplementedException("TODO Resolve URI from system (%s) and version ('') parameters", system, version);
 	}

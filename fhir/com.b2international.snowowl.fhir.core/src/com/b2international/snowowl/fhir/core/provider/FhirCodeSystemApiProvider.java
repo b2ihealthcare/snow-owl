@@ -140,11 +140,6 @@ public final class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 //	}
 	
 	@Override
-	public SubsumptionResult subsumes(SubsumptionRequest subsumption) {
-		throw new UnsupportedOperationException();
-	}
-	
-	@Override
 	public ValidateCodeResult validateCode(final ResourceURI codeSystemUri, final ValidateCodeRequest validationRequest) {
 		
 		Set<Coding> codings = collectCodingsToValidate(validationRequest);

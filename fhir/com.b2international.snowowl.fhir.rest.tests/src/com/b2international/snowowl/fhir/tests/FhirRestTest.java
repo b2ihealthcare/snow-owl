@@ -42,6 +42,7 @@ public class FhirRestTest extends FhirTest {
 		public static final String CODESYSTEM = "/CodeSystem";
 		public static final String CODESYSTEM_ID = "/CodeSystem/{id}";
 		public static final String CODESYSTEM_LOOKUP = "/CodeSystem/$lookup";
+		public static final String CODESYSTEM_SUBSUMES = "/CodeSystem/$subsumes";
 	}
 	
 	protected final String getTestCodeSystemId() {

@@ -24,7 +24,8 @@ import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.ValidateCodeResult;
-import com.b2international.snowowl.fhir.core.model.codesystem.*;
+import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
+import com.b2international.snowowl.fhir.core.model.codesystem.ValidateCodeRequest;
 import com.b2international.snowowl.fhir.core.search.FhirSearchParameter;
 
 /**
@@ -42,15 +43,6 @@ public interface ICodeSystemApiProvider {
 		ICodeSystemApiProvider create(IEventBus bus, List<ExtendedLocale> locales);
 	}
 	
-	/**
-	 * Test the subsumption relationship between code/Coding A and code/Coding B given the semantics of subsumption in the underlying code system (see hierarchyMeaning).
-	 * See <a href="http://hl7.org/fhir/codesystem-operations.html#subsumes">docs</a> for more details.  
-	 *  
-	 * @param subsumption - in parameters
-	 * @return
-	 */
-	SubsumptionResult subsumes(SubsumptionRequest subsumption);
-
 	/**
 	 * Returns the code systems based on the search parameters provided.
 	 * Passing in an empty collection as parameters returns all the available code systems.
