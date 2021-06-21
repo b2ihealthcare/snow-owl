@@ -39,7 +39,7 @@ import io.swagger.annotations.*;
  */
 @Api(value = "CodeSystem", description="FHIR CodeSystem Resource", tags = { "CodeSystem" })
 @RestController
-@RequestMapping(value="/CodeSystem/$lookup", produces = { AbstractFhirController.APPLICATION_FHIR_JSON })
+@RequestMapping(value="/CodeSystem", produces = { AbstractFhirController.APPLICATION_FHIR_JSON })
 public class FhirCodeSystemLookupOperationController extends AbstractFhirController {
 
 	/**
@@ -60,7 +60,7 @@ public class FhirCodeSystemLookupOperationController extends AbstractFhirControl
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
 		@ApiResponse(code = HTTP_NOT_FOUND, message = "Code system not found", response = OperationOutcome.class)
 	})
-	@GetMapping
+	@GetMapping("/$lookup")
 	public Promise<Parameters.Fhir> lookup(
 		
 		@ApiParam(value="The code to look up") 
@@ -122,7 +122,7 @@ public class FhirCodeSystemLookupOperationController extends AbstractFhirControl
 		@ApiResponse(code = HTTP_NOT_FOUND, message = "Not found", response = OperationOutcome.class),
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class)
 	})
-	@PostMapping(consumes = AbstractFhirResourceController.APPLICATION_FHIR_JSON)
+	@PostMapping(value = "/$lookup", consumes = AbstractFhirResourceController.APPLICATION_FHIR_JSON)
 	public Promise<Parameters.Fhir> lookup(
 			@ApiParam(name = "body", value = "The lookup request parameters")
 			@RequestBody 
