@@ -30,12 +30,7 @@ import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.codesystem.CodeSystems;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
-import com.b2international.snowowl.core.plugin.Component;
-import com.b2international.snowowl.core.request.ResourceRequests;
-import com.b2international.snowowl.core.request.SearchResourceRequest;
-import com.b2international.snowowl.core.request.version.VersionSearchRequestBuilder;
 import com.b2international.snowowl.core.version.Version;
-import com.b2international.snowowl.core.version.VersionDocument;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.fhir.core.codesystems.CommonConceptProperties;
 import com.b2international.snowowl.fhir.core.codesystems.IssueSeverity;
@@ -48,19 +43,15 @@ import com.b2international.snowowl.fhir.core.model.codesystem.*;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.provider.CodeSystemApiProvider;
-import com.b2international.snowowl.fhir.core.provider.ICodeSystemApiProvider;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.RelationshipValue;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
-import com.b2international.snowowl.snomed.datastore.request.SnomedConceptGetRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.snomed.fhir.SnomedUri.Builder;
 import com.b2international.snowowl.snomed.fhir.codesystems.CoreSnomedConceptProperties;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 
 /**
  * Provider for the SNOMED CT FHIR support
@@ -72,14 +63,6 @@ public class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 
 	private static final String LOCATION_MARKER_SUBSUMES = "CodeSystem$subsumes.system";
 
-	@Component
-	public static final class Factory implements ICodeSystemApiProvider.Factory {
-		@Override
-		public ICodeSystemApiProvider create(IEventBus bus, List<ExtendedLocale> locales) {
-			return new SnomedCodeSystemApiProvider(bus, locales);
-		}
-	}
-	
 	private static final String URI_BASE = "http://snomed.info";
 	
 //	private static final Set<String> SUPPORTED_URIS = ImmutableSet.of(

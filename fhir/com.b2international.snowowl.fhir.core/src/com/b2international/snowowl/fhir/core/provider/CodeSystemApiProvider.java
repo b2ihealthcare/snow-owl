@@ -63,7 +63,7 @@ import com.google.common.collect.Sets;
  * 
  * @since 7.0
  */
-public abstract class CodeSystemApiProvider extends FhirApiProvider implements ICodeSystemApiProvider {
+public abstract class CodeSystemApiProvider extends FhirApiProvider {
 	
 	protected static final String CODE_SYSTEM_LOCATION_MARKER = "CodeSystem";
 
@@ -81,7 +81,6 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 		return Collections.emptySet();
 	}
 
-	@Override
 	public CodeSystem getCodeSystem(ResourceURI codeSystemURI) {
 
 		final com.b2international.snowowl.core.codesystem.CodeSystem codeSystem;
@@ -106,7 +105,6 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 		return createCodeSystemBuilder(codeSystem, codeSystemVersionEntry).build();
 	}
 	
-	@Override
 	public Collection<CodeSystem> getCodeSystems(final Set<FhirSearchParameter> searchParameters) {
 		
 		//Pre-fetch code systems based on ES filters available

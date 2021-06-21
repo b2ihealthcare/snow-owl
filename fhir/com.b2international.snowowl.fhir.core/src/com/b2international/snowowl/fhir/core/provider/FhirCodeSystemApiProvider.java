@@ -17,17 +17,18 @@ package com.b2international.snowowl.fhir.core.provider;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.wiring.BundleWiring;
 
-import com.b2international.commons.StringUtils;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ResourceURI;
-import com.b2international.snowowl.core.plugin.Component;
 import com.b2international.snowowl.core.version.Version;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.fhir.core.ResourceNarrative;
@@ -35,10 +36,9 @@ import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
 import com.b2international.snowowl.fhir.core.codesystems.FhirCodeSystem;
 import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
-import com.b2international.snowowl.fhir.core.model.ValidateCodeResult;
-import com.b2international.snowowl.fhir.core.model.codesystem.*;
+import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem.Builder;
-import com.b2international.snowowl.fhir.core.model.dt.Coding;
+import com.b2international.snowowl.fhir.core.model.codesystem.Concept;
 import com.b2international.snowowl.fhir.core.model.dt.Narrative;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.search.FhirParameter.PrefixedValue;
@@ -52,14 +52,6 @@ import com.google.common.collect.Sets;
  */
 public final class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 
-	@Component
-	public static final class Factory implements ICodeSystemApiProvider.Factory {
-		@Override
-		public ICodeSystemApiProvider create(IEventBus bus, List<ExtendedLocale> locales) {
-			return new FhirCodeSystemApiProvider(bus, locales);
-		}
-	}
-	
 	public FhirCodeSystemApiProvider(IEventBus bus, List<ExtendedLocale> locales) {
 		super(bus, locales);
 	}
