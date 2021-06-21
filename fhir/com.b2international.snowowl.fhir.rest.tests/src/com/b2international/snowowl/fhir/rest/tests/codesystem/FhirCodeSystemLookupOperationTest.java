@@ -35,7 +35,7 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
  * 
  * @since 6.6
  */
-public class FhirLookupOperationTest extends FhirRestTest {
+public class FhirCodeSystemLookupOperationTest extends FhirRestTest {
 
 	@Test
 	public void GET_CodeSystem_$lookup_NonExistent() throws Exception {
