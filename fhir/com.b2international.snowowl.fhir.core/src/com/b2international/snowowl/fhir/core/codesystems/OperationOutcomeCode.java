@@ -45,7 +45,7 @@ public enum OperationOutcomeCode implements FhirCodeSystem {
 	MSG_JSON_OBJECT("Json Source for a resource should start with an object"),	
 	MSG_LOCAL_FAIL("Unable to resolve local reference to resource %s"),	
 	MSG_NO_MATCH("No Resource found matching the query '%s'"),	
-	MSG_NO_EXIST	("Resource Id '%s' does not exist"),	
+	MSG_NO_EXIST("Resource Id '%s' does not exist"),	
 	MSG_NO_MODULE("No module could be found to handle the request '%s'"),	
 	MSG_NO_SUMMARY("No Summary for this resource"),	
 	MSG_OP_NOT_ALLOWED("Operation %s not allowed for resource %s (due to local configuration)"),	

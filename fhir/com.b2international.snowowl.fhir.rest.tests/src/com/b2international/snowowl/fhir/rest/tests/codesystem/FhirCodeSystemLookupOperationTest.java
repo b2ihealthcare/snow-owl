@@ -17,15 +17,12 @@ package com.b2international.snowowl.fhir.rest.tests.codesystem;
 
 import static com.b2international.snowowl.fhir.tests.FhirRestTest.Endpoints.CODESYSTEM_LOOKUP;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.*;
 
 import org.junit.Test;
 
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
-import com.b2international.snowowl.fhir.core.model.dt.Parameters;
-import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
 import com.b2international.snowowl.fhir.tests.FhirRestTest;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
@@ -38,7 +35,22 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 public class FhirCodeSystemLookupOperationTest extends FhirRestTest {
 
 	@Test
-	public void GET_CodeSystem_$lookup_NonExistent() throws Exception {
+	public void GET_CodeSystem_$lookup_NonExistentSystem() throws Exception {
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.queryParam("system", "unknown")
+			.queryParam("code", "12345")
+			.queryParam("_format", "json")
+			.when().get(CODESYSTEM_LOOKUP)
+			.then().assertThat()
+			.statusCode(404)
+			.body("resourceType", equalTo("OperationOutcome"))
+			.body("issue.severity", hasItem("error"))
+			.body("issue.code", hasItem("not_found"))
+			.body("issue.diagnostics", hasItem("CodeSystem with identifier 'unknown' could not be found."));
+	}
+	
+	@Test
+	public void GET_CodeSystem_$lookup_NonExistentCode() throws Exception {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.queryParam("system", SnomedTerminologyComponentConstants.SNOMED_URI_BASE)
 			.queryParam("code", "12345")
@@ -46,11 +58,14 @@ public class FhirCodeSystemLookupOperationTest extends FhirRestTest {
 			.when().get(CODESYSTEM_LOOKUP)
 			.then().assertThat()
 			.statusCode(404)
-			.log().ifStatusCodeIsEqualTo(404);
+			.body("resourceType", equalTo("OperationOutcome"))
+			.body("issue.severity", hasItem("error"))
+			.body("issue.code", hasItem("not_found"))
+			.body("issue.diagnostics", hasItem("Concept with identifier '12345' could not be found."));
 	}
 	
 	@Test
-	public void GET_CodeSystem_$lookup_Existing() {
+	public void GET_CodeSystem_$lookup_Existing() throws Exception {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.queryParam("system", SnomedTerminologyComponentConstants.SNOMED_URI_BASE)
 			.queryParam("code", Concepts.ROOT_CONCEPT)
@@ -66,7 +81,7 @@ public class FhirCodeSystemLookupOperationTest extends FhirRestTest {
 	}
 	
 	@Test
-	public void GET_CodeSystem_$lookup_Existing_WithProperty() {
+	public void GET_CodeSystem_$lookup_Existing_WithProperty() throws Exception {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.queryParam("system", SnomedTerminologyComponentConstants.SNOMED_URI_BASE)
 			.queryParam("code", Concepts.ROOT_CONCEPT)
@@ -85,7 +100,7 @@ public class FhirCodeSystemLookupOperationTest extends FhirRestTest {
 	}
 	
 	@Test
-	public void GET_CodeSystem_$lookup_Existing_WithInvalidProperty() {
+	public void GET_CodeSystem_$lookup_Existing_WithInvalidProperty() throws Exception {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.queryParam("system", SnomedTerminologyComponentConstants.SNOMED_URI_BASE)
 			.queryParam("code", Concepts.ROOT_CONCEPT)
@@ -104,22 +119,13 @@ public class FhirCodeSystemLookupOperationTest extends FhirRestTest {
 	@Test
 	public void POST_CodeSystem_$lookup_Existing() throws Exception {
 		
-		Coding coding = Coding.builder()
-				.system(SnomedTerminologyComponentConstants.SNOMED_URI_BASE)
-				.code(Concepts.ROOT_CONCEPT)
-				.build();
-
 		LookupRequest request = LookupRequest.builder()
-				.coding(coding)
+				.coding(Coding.of(SnomedTerminologyComponentConstants.SNOMED_URI_BASE, Concepts.ROOT_CONCEPT))
 				.build();
-		
-		Fhir fhirParameters = new Parameters.Fhir(request);
-		
-		String jsonBody = objectMapper.writeValueAsString(fhirParameters);
 		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.contentType(APPLICATION_FHIR_JSON)
-			.body(jsonBody)
+			.body(toFhirParameters(request))
 			.when().post(CODESYSTEM_LOOKUP)
 			.then().assertThat()
 			.statusCode(200)
@@ -130,27 +136,16 @@ public class FhirCodeSystemLookupOperationTest extends FhirRestTest {
 			.body("parameter[1].valueString", equalTo("SNOMED CT Concept"));
 	}
 	
-	//POST with request body with property
 	@Test
 	public void POST_CodeSystem_$lookup_Existing_Property() throws Exception {
-		
-		Coding coding = Coding.builder()
-			.system(SnomedTerminologyComponentConstants.SNOMED_URI_BASE)
-			.code(Concepts.ROOT_CONCEPT)
-			.build();
-
 		LookupRequest request = LookupRequest.builder()
-				.coding(coding)
+				.coding(Coding.of(SnomedTerminologyComponentConstants.SNOMED_URI_BASE, Concepts.ROOT_CONCEPT))
 				.addProperty("parent")
 				.build();
 		
-		Fhir fhirParameters = new Parameters.Fhir(request);
-		
-		String jsonBody = objectMapper.writeValueAsString(fhirParameters);
-		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.contentType(APPLICATION_FHIR_JSON)
-			.body(jsonBody)
+			.body(toFhirParameters(request))
 			.when().post(CODESYSTEM_LOOKUP)
 			.then().assertThat()
 			.statusCode(200)
@@ -161,6 +156,25 @@ public class FhirCodeSystemLookupOperationTest extends FhirRestTest {
 			.body("parameter[1].valueString", equalTo("SNOMED CT Concept"))
 			.body("parameter[1].name", equalTo("parent"))
 			.body("parameter[1].valueString", equalTo("TODO"));
+	}
+	
+	@Test
+	public void POST_CodeSystem_$lookup_Existing_WithInvalidProperty() throws Exception {
+		LookupRequest request = LookupRequest.builder()
+					.coding(Coding.of(SnomedTerminologyComponentConstants.SNOMED_URI_BASE, Concepts.ROOT_CONCEPT))
+					.addProperty("http://snomed.info/id/12345")
+					.build();
+		
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.contentType(APPLICATION_FHIR_JSON)
+			.body(toFhirParameters(request))
+			.when().post(CODESYSTEM_LOOKUP)
+			.then().assertThat()
+			.statusCode(400)
+			.body("resourceType", equalTo("OperationOutcome"))
+			.body("issue.severity", hasItem("error"))
+			.body("issue.code", hasItem("invalid"))
+			.body("issue.diagnostics", hasItem("Unrecognized properties [http://snomed.info/id/12345]."));
 	}
 	
 }

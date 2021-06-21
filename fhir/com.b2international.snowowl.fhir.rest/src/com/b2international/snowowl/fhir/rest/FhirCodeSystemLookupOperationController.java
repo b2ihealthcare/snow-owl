@@ -113,8 +113,7 @@ public class FhirCodeSystemLookupOperationController extends AbstractFhirControl
 	}
 	
 	/**
-	 * POST-based lookup end-point.
-	 * All parameters are in the request body.
+	 * POST-based lookup end-point. Parameters are in the request body.
 	 * @param in - FHIR parameters
 	 */
 	@ApiOperation(value="Concept lookup and decomposition", notes="Given a code/version/system, or a Coding, get additional details about the concept.")
@@ -126,15 +125,13 @@ public class FhirCodeSystemLookupOperationController extends AbstractFhirControl
 	@PostMapping(consumes = AbstractFhirResourceController.APPLICATION_FHIR_JSON)
 	public Promise<Parameters.Fhir> lookup(
 			@ApiParam(name = "body", value = "The lookup request parameters")
-			@RequestBody Parameters.Fhir in) {
+			@RequestBody 
+			final Parameters.Fhir in) {
 		
 		final LookupRequest req = toRequest(in, LookupRequest.class);
 		return lookup(req);
 	}
 	
-	/*
-	 * Perform the actual lookup by deferring the operation to the matching code system provider.
-	 */
 	private Promise<Parameters.Fhir> lookup(LookupRequest lookupRequest) {
 		return FhirRequests.codeSystems().prepareLookup()
 				.setRequest(lookupRequest)
