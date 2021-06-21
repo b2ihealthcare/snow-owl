@@ -139,45 +139,45 @@ public final class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 //		return resultBuilder.build();
 //	}
 	
-	@Override
-	public ValidateCodeResult validateCode(final ResourceURI codeSystemUri, final ValidateCodeRequest validationRequest) {
-		
-		Set<Coding> codings = collectCodingsToValidate(validationRequest);
-		
-		FhirCodeSystem fhirCodeSystem = findCodeSystemById(codeSystemUri);
-		
-		Map<Coding, FhirCodeSystem> codingEnumMap = codings.stream()
-			.filter(coding -> {
-				Optional<FhirCodeSystem> enumConstant = getEnumConstant(fhirCodeSystem, coding.getCodeValue());
-				return enumConstant.isPresent();
-			}).collect(Collectors.toMap(c -> c, c -> getEnumConstant(fhirCodeSystem, c.getCodeValue()).get()));
-		
-		//Return true if any of the coding code found
-		if (!codingEnumMap.isEmpty()) {
-			
-			Coding coding = codingEnumMap.keySet().iterator().next();
-			if (!StringUtils.isEmpty(coding.getDisplay())) {
-				FhirCodeSystem enumCode = codingEnumMap.get(coding);
-				if (coding.getDisplay().equals(enumCode.getDisplayName())) {
-					return ValidateCodeResult.builder().result(true).build();
-				} else {
-					return ValidateCodeResult.builder()
-							.result(false)
-							.display(enumCode.getDisplayName())
-							.message(String.format("Incorrect display '%s' for code '%s'", coding.getDisplay(), coding.getCodeValue()))
-							.build();
-				}
- 			} else {
-				return ValidateCodeResult.builder().result(true).build();
-			}
-		} else {
-			Object[] codeValues = codings.stream().map(c->c.getCodeValue()).collect(Collectors.toSet()).toArray();
-			return ValidateCodeResult.builder().result(false)
-					.message(String.format("Could not find code(s) '%s'", Arrays.toString(codeValues)))
-					.build();
-		}
-
-	}
+//	@Override
+//	public ValidateCodeResult validateCode(final ResourceURI codeSystemUri, final ValidateCodeRequest validationRequest) {
+//		
+//		Set<Coding> codings = collectCodingsToValidate(validationRequest);
+//		
+//		FhirCodeSystem fhirCodeSystem = findCodeSystemById(codeSystemUri);
+//		
+//		Map<Coding, FhirCodeSystem> codingEnumMap = codings.stream()
+//			.filter(coding -> {
+//				Optional<FhirCodeSystem> enumConstant = getEnumConstant(fhirCodeSystem, coding.getCodeValue());
+//				return enumConstant.isPresent();
+//			}).collect(Collectors.toMap(c -> c, c -> getEnumConstant(fhirCodeSystem, c.getCodeValue()).get()));
+//		
+//		//Return true if any of the coding code found
+//		if (!codingEnumMap.isEmpty()) {
+//			
+//			Coding coding = codingEnumMap.keySet().iterator().next();
+//			if (!StringUtils.isEmpty(coding.getDisplay())) {
+//				FhirCodeSystem enumCode = codingEnumMap.get(coding);
+//				if (coding.getDisplay().equals(enumCode.getDisplayName())) {
+//					return ValidateCodeResult.builder().result(true).build();
+//				} else {
+//					return ValidateCodeResult.builder()
+//							.result(false)
+//							.display(enumCode.getDisplayName())
+//							.message(String.format("Incorrect display '%s' for code '%s'", coding.getDisplay(), coding.getCodeValue()))
+//							.build();
+//				}
+// 			} else {
+//				return ValidateCodeResult.builder().result(true).build();
+//			}
+//		} else {
+//			Object[] codeValues = codings.stream().map(c->c.getCodeValue()).collect(Collectors.toSet()).toArray();
+//			return ValidateCodeResult.builder().result(false)
+//					.message(String.format("Could not find code(s) '%s'", Arrays.toString(codeValues)))
+//					.build();
+//		}
+//
+//	}
 	
 	@Override
 	protected Set<String> fetchAncestors(final ResourceURI codeSystemUri, String componentId) {

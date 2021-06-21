@@ -171,50 +171,6 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 				.collect(Collectors.toList());
 	}
 
-	@Override
-	public ValidateCodeResult validateCode(final String systemUri, final ValidateCodeRequest validationRequest) {
-		throw new UnsupportedOperationException();
-//		//try to convert the system URi to internal code systemUri
-//		ResourceURI codeSystemUri = getCodeSystemUri(systemUri, validationRequest.getVersion());
-//		return validateCode(codeSystemUri, validationRequest);
-	}
-	
-	@Override
-	public ValidateCodeResult validateCode(final ResourceURI codeSystemUri, final ValidateCodeRequest validationRequest) {
-		
-		Set<Coding> codings = collectCodingsToValidate(validationRequest);
-		
-		Map<String, Coding> codingMap = codings.stream().collect(Collectors.toMap(c -> c.getCodeValue(), c -> c));
-		
-		Concepts concepts = CodeSystemRequests.prepareSearchConcepts()
-			.all()
-			.filterByIds(codingMap.keySet())
-			.build(codeSystemUri)
-			.execute(getBus())
-			.getSync(1000, TimeUnit.MILLISECONDS);
-		
-		if (concepts.isEmpty()) {
-			return ValidateCodeResult.builder().result(false)
-					.message(String.format("Could not find code(s) '%s'", Arrays.toString(codingMap.keySet().toArray())))
-					.build();
-		} else {
-			for (com.b2international.snowowl.core.domain.Concept concept : concepts) {
-				Coding coding = codingMap.get(concept.getId());
-				if (coding.getDisplay() != null) {
-					//any mismatch is false (?)
-					if (!coding.getDisplay().equals(concept.getTerm())) {
-						return ValidateCodeResult.builder()
-								.result(false)
-								.display(concept.getTerm())
-								.message(String.format("Incorrect display '%s' for code '%s'", coding.getDisplay(), coding.getCodeValue()))
-								.build();
-					}
-				}
-			}
-			return ValidateCodeResult.builder().result(true).build();
-		}
-	}
-
 	/**
 	 * Returns the designated FHIR Uri for the given code system
 	 * @param codeSystem
@@ -222,33 +178,6 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 	 * @return
 	 */
 	protected abstract Uri getFhirUri(com.b2international.snowowl.core.codesystem.CodeSystem codeSystem, Version codeSystemVersion);
-	
-	protected Set<Coding> collectCodingsToValidate(ValidateCodeRequest validationRequest) {
-		
-		Set<Coding> codings = Sets.newHashSet();
-				
-		if (validationRequest.getCode() != null) {
-			
-			Coding coding = Coding.builder()
-					.code(validationRequest.getCode())
-					.display(validationRequest.getDisplay())
-					.build();
-			
-			codings.add(coding);
-		}
-				
-		if (validationRequest.getCoding() != null) {
-			codings.add(validationRequest.getCoding());
-		}
-			
-		CodeableConcept codeableConcept = validationRequest.getCodeableConcept();
-		if (codeableConcept != null) {
-			if (codeableConcept.getCodings() != null) { 
-				codeableConcept.getCodings().forEach(c -> codings.add(c));
-			}
-		}
-		return codings;
-	}
 	
 	/**
 	 * Creates a FHIR {@link CodeSystem} from a {@link com.b2international.snowowl.core.codesystem.CodeSystem}

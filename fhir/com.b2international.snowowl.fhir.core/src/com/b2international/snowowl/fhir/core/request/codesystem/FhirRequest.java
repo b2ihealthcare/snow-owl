@@ -15,11 +15,13 @@
  */
 package com.b2international.snowowl.fhir.core.request.codesystem;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.fhir.core.model.dt.Code;
 
 /**
  * @since 8.0
@@ -50,6 +52,14 @@ public abstract class FhirRequest<R> implements Request<ServiceProvider, R> {
 		// TODO support searching versions 
 		
 		return doExecute(context, codeSystem);
+	}
+	
+	protected String extractLocales(Code displayLanguage) {
+		String locales = displayLanguage != null ? displayLanguage.getCodeValue() : null;
+		if (CompareUtils.isEmpty(locales)) {
+			locales = "en";
+		}
+		return locales;
 	}
 
 	protected abstract R doExecute(ServiceProvider context, CodeSystem codeSystem);

@@ -23,9 +23,7 @@ import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
-import com.b2international.snowowl.fhir.core.model.ValidateCodeResult;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
-import com.b2international.snowowl.fhir.core.model.codesystem.ValidateCodeRequest;
 import com.b2international.snowowl.fhir.core.search.FhirSearchParameter;
 
 /**
@@ -58,22 +56,5 @@ public interface ICodeSystemApiProvider {
 	 * @throws BadRequestException if the code system is not supported by this provider
 	 */
 	CodeSystem getCodeSystem(ResourceURI codeSystemId);
-
-	/**
-	 * Validates a code system code against a code system specified in the request.
-	 * @param codeSystemUri the internal logical URI representing the code system to check the code against
-	 * @param validateCodeRequest
-	 * @return validation result
-	 */
-	ValidateCodeResult validateCode(ResourceURI codeSystemUri, ValidateCodeRequest validateCodeRequest);
-	
-	/**
-	 * Validates a code system code against a code system specified in the request.
-	 * @param systemUri the external URI (http://....) representing the code system to check the code against
-	 * @param validateCodeRequest
-	 * @return validation result
-	 */
-	ValidateCodeResult validateCode(String systemUri, ValidateCodeRequest validateCodeRequest);
-
 
 }

@@ -18,7 +18,6 @@ package com.b2international.snowowl.fhir.core.request.codesystem;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
@@ -59,15 +58,10 @@ final class FhirLookupRequest extends FhirRequest<LookupResult> {
 
 	@Override
 	protected LookupResult doExecute(ServiceProvider context, CodeSystem codeSystem) {
-		String locales = request.getDisplayLanguage() != null ? request.getDisplayLanguage().getCodeValue() : null;
-		if (CompareUtils.isEmpty(locales)) {
-			locales = "en";
-		}
-		
 		Concept concept = CodeSystemRequests.prepareSearchConcepts()
 			.one()
 			.filterById(request.getCode())
-			.setLocales(locales)
+			.setLocales(extractLocales(request.getDisplayLanguage()))
 			.build(codeSystem.getResourceURI())
 			.getRequest()
 			.execute(context)
