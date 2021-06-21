@@ -119,7 +119,7 @@ final class CodeSystemCreateRequest extends BaseResourceCreateRequest {
 	private Optional<Version> checkCodeSystem(final RepositoryContext context, final boolean create) {
 		// OID must be unique if defined
 		if (!Strings.isNullOrEmpty(oid)) {
-			final boolean existingOid = CodeSystemRequests.prepareSearchCodeSystem()
+			final boolean existingOid = ResourceRequests.prepareSearch()
 					.setLimit(0)
 					.filterByOid(oid)
 					.build()
