@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## 7.17.2
+
+### Bugs/Improvements
+- [build] improvements to b2i-ci's `Jenkinsfile` (skip deploy, downstream build configuration) (27de738, eba50fe)
+
 ## 7.17.1
 
 ### Bugs/Improvements
