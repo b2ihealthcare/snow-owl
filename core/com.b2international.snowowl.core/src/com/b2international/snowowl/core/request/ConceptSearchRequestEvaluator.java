@@ -89,7 +89,17 @@ public interface ConceptSearchRequestEvaluator {
 		/**
 		 * Filters concepts by their type.
 		 */
-		TYPE,
+		TYPE, 
+		
+		/**
+		 * Filters concepts by their direct parents.
+		 */
+		PARENT,
+		
+		/**
+		 * Filters concepts by their ancestors (direct or indirect parents).
+		 */
+		ANCESTOR,
 	}
 
 	/**
