@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,7 @@ public final class ScrollingIterator<T> implements Iterator<Hits<T>> {
 			if (hits == null) {
 				hits = searcher.search(query);
 			} else {
-				hits = searcher.scroll(new Scroll<>(query.getSelect(), query.getFrom(), query.getFields(), hits.getScrollId(), query.getScrollKeepAlive()));
+				hits = searcher.scroll(new Scroll<>(query.getSelection(), query.getFields(), hits.getScrollId(), query.getScrollKeepAlive()));
 			}
 		} catch (IOException e) {
 			throw new IndexException("Failed to load next page of scrolled documents", e);
