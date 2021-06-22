@@ -25,15 +25,19 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.CompareUtils;
+import com.b2international.index.Hits;
+import com.b2international.index.query.Expressions;
+import com.b2international.index.query.Expressions.ExpressionBuilder;
+import com.b2international.index.query.Query;
+import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.RepositoryManager;
-import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
-import com.b2international.snowowl.core.codesystem.CodeSystems;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
+import com.b2international.snowowl.core.request.TermFilter;
+import com.b2international.snowowl.core.version.VersionDocument;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
-import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
 import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.Bundle.Builder;
@@ -42,7 +46,7 @@ import com.b2international.snowowl.fhir.core.model.Meta;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Instant;
-import com.b2international.snowowl.fhir.core.model.dt.Narrative;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
 
 /**
@@ -83,18 +87,6 @@ final class FhirCodeSystemSearchRequest extends SearchResourceRequest<Repository
 
 	@Override
 	protected Bundle doExecute(RepositoryContext context) throws IOException {
-		// TODO if one of the given ID filters specify versions, then query both Code System and Version
-		
-		final Collection<String> idFilter;
-		if (componentIds() != null) {
-			// TODO if _name filter defined along with _id then raise an error or warning
-			idFilter = componentIds();
-		} else if (containsKey(OptionKey.NAME)) {
-			idFilter = getCollection(OptionKey.NAME, String.class);
-		} else {
-			idFilter = null;
-		}
-		
 		// apply proper field selection
 		List<String> fields = Lists.newArrayList(fields());
 		// if any fields defined for field selection, then make sure toolingId is part of the selection, so it is returned and will be available when needed
@@ -110,22 +102,31 @@ final class FhirCodeSystemSearchRequest extends SearchResourceRequest<Repository
 			fields.add(ResourceDocument.Fields.OWNER);
 		}
 		
+		// prepare filters
+		final ExpressionBuilder codeSystemQuery = Expressions.builder();
 		
-		CodeSystems internalCodeSystems = CodeSystemRequests.prepareSearchCodeSystem()
-				.filterByIds(idFilter)
-//				.filterByIdsOrUrls(componentIds()) // XXX componentId in FHIR Search Request can be either logicalId or url so either of them can match, apply to the search
-				.filterByTitle(getString(OptionKey.TITLE))
-				.setLimit(limit())
-				.setSearchAfter(searchAfter())
-				.setExpand(expand())
-				.setFields(fields)
-				.setLocales(locales())
-				.sortBy(sortBy())
-				.build()
-				.execute(context);
+		addIdFilter(codeSystemQuery, ResourceDocument.Expressions::ids); // resource and version doc has id field
+		addFilter(codeSystemQuery, OptionKey.NAME, String.class, ResourceDocument.Expressions::ids); // apply _name filter to the id fields, we use the same value for both id and name
 		
+		if (containsKey(OptionKey.TITLE)) {
+			codeSystemQuery.must(ResourceDocument.Expressions.defaultTitleDisjunctionQuery(TermFilter.defaultTermMatch(getString(OptionKey.TITLE))));
+		}
+		
+		Hits<ResourceFragment> internalCodeSystems = context.service(RevisionSearcher.class)
+				.search(Query.select(ResourceFragment.class)
+				.from(ResourceDocument.class, VersionDocument.class)
+				.fields(fields)
+				.where(codeSystemQuery.build())
+				.searchAfter(searchAfter())
+				.limit(limit())
+				.sortBy(querySortBy(context))
+				.build());
+		
+		// extract resource IDs and fetch all related core Resources
+			
 		return prepareBundle()
 				.entry(internalCodeSystems.stream().map(codeSystem -> toFhirCodeSystemEntry(context, codeSystem)).collect(Collectors.toList()))
+//				.after(internalCodeSystems.getSearchAfter())
 				.total(internalCodeSystems.getTotal())
 				.build();
 	}
@@ -139,15 +140,15 @@ final class FhirCodeSystemSearchRequest extends SearchResourceRequest<Repository
 						.build());
 	}
 
-	private Entry toFhirCodeSystemEntry(RepositoryContext context, com.b2international.snowowl.core.codesystem.CodeSystem codeSystem) {
-		return new Entry(null, toFhirCodeSystem(context, codeSystem));
+	private Entry toFhirCodeSystemEntry(RepositoryContext context, ResourceFragment fragment) {
+		return new Entry(null, toFhirCodeSystem(context, fragment));
 	}
 
-	private CodeSystem toFhirCodeSystem(RepositoryContext context, com.b2international.snowowl.core.codesystem.CodeSystem codeSystem) {
+	private CodeSystem toFhirCodeSystem(RepositoryContext context, ResourceFragment codeSystem) {
 		CodeSystem.Builder entry = CodeSystem.builder()
 				// mandatory fields
-				.id(codeSystem.getId())
-				.status(PublicationStatus.getByCodeValue(codeSystem.getStatus()))
+				.id(codeSystem.id)
+				.status(PublicationStatus.UNKNOWN) // TODO support status on versions
 				.meta(
 					Meta.builder()
 						// TODO lastUpdated placeholder value for now, compute based on whether this is a version of the resource or the NEXT/HEAD version of the resource
@@ -158,24 +159,24 @@ final class FhirCodeSystemSearchRequest extends SearchResourceRequest<Repository
 		
 		// optional fields
 		// we are using the ID of the resource as machine readable name
-		includeIfFieldSelected(CodeSystem.Fields.NAME, codeSystem::getId, entry::name);
-		includeIfFieldSelected(CodeSystem.Fields.TITLE, codeSystem::getTitle, entry::title);
-		includeIfFieldSelected(CodeSystem.Fields.URL, codeSystem::getUrl, entry::url);
-		includeIfFieldSelected(CodeSystem.Fields.TEXT, () -> Narrative.builder().div("<div></div>").status(NarrativeStatus.EMPTY).build(), entry::text);
-		includeIfFieldSelected(CodeSystem.Fields.PUBLISHER, codeSystem::getOwner, entry::publisher);
-		includeIfFieldSelected(CodeSystem.Fields.COPYRIGHT, codeSystem::getCopyright, entry::copyright);
-		includeIfFieldSelected(CodeSystem.Fields.LANGUAGE, codeSystem::getLanguage, entry::language);
-		includeIfFieldSelected(CodeSystem.Fields.DESCRIPTION, codeSystem::getDescription, entry::description);
-		includeIfFieldSelected(CodeSystem.Fields.PURPOSE, codeSystem::getPurpose, entry::purpose);
+//		includeIfFieldSelected(CodeSystem.Fields.NAME, codeSystem::getId, entry::name);
+//		includeIfFieldSelected(CodeSystem.Fields.TITLE, codeSystem::getTitle, entry::title);
+//		includeIfFieldSelected(CodeSystem.Fields.URL, codeSystem::getUrl, entry::url);
+//		includeIfFieldSelected(CodeSystem.Fields.TEXT, () -> Narrative.builder().div("<div></div>").status(NarrativeStatus.EMPTY).build(), entry::text);
+//		includeIfFieldSelected(CodeSystem.Fields.PUBLISHER, codeSystem::getOwner, entry::publisher);
+//		includeIfFieldSelected(CodeSystem.Fields.COPYRIGHT, codeSystem::getCopyright, entry::copyright);
+//		includeIfFieldSelected(CodeSystem.Fields.LANGUAGE, codeSystem::getLanguage, entry::language);
+//		includeIfFieldSelected(CodeSystem.Fields.DESCRIPTION, codeSystem::getDescription, entry::description);
+//		includeIfFieldSelected(CodeSystem.Fields.PURPOSE, codeSystem::getPurpose, entry::purpose);
 		
 		FhirCodeSystemResourceConverter converter = context.service(RepositoryManager.class)
-			.get(codeSystem.getToolingId())
+			.get(codeSystem.toolingId)
 			.optionalService(FhirCodeSystemResourceConverter.class)
 			.orElse(FhirCodeSystemResourceConverter.DEFAULT);
 		
-		includeIfFieldSelected(CodeSystem.Fields.COUNT, () -> converter.count(context, codeSystem.getResourceURI()), entry::count);
+//		includeIfFieldSelected(CodeSystem.Fields.COUNT, () -> converter.count(context, codeSystem.getResourceURI()), entry::count);
 		
-		converter.expand(context, entry, codeSystem);
+//		converter.expand(context, entry, codeSystem);
 		
 		return entry.build();
 	}
@@ -184,6 +185,28 @@ final class FhirCodeSystemSearchRequest extends SearchResourceRequest<Repository
 		if (CompareUtils.isEmpty(fields()) || fields().contains(field)) {
 			setter.apply(getter.get());
 		}
+	}
+	
+	private static class ResourceFragment {
+		
+		@JsonProperty
+		String resourceType;
+		
+		@JsonProperty
+		String id;
+		
+		@JsonProperty
+		String url;
+		
+		@JsonProperty
+		String title;
+		
+		@JsonProperty
+		String toolingId;
+		
+		@JsonProperty
+		String branchPath;
+		
 	}
 	
 }
