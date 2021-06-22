@@ -97,6 +97,11 @@ final class FhirCodeSystemSearchRequest extends SearchResourceRequest<Repository
 		
 		// apply proper field selection
 		List<String> fields = Lists.newArrayList(fields());
+		// if any fields defined for field selection, then make sure toolingId is part of the selection, so it is returned and will be available when needed
+		if (!fields.isEmpty() && !fields.contains(ResourceDocument.Fields.TOOLING_ID)) {
+			fields.add(ResourceDocument.Fields.TOOLING_ID);
+		}
+		
 		// remove all fields that are not part of the current Code Code System model
 		fields.removeAll(EXTERNAL_FHIR_CODESYSTEM_FIELDS);
 		// replace publisher with internal owner field
@@ -104,6 +109,7 @@ final class FhirCodeSystemSearchRequest extends SearchResourceRequest<Repository
 			fields.remove(CodeSystem.Fields.PUBLISHER);
 			fields.add(ResourceDocument.Fields.OWNER);
 		}
+		
 		
 		CodeSystems internalCodeSystems = CodeSystemRequests.prepareSearchCodeSystem()
 				.filterByIds(idFilter)
