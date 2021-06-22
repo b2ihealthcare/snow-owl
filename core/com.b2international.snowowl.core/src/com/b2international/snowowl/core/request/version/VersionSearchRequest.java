@@ -65,6 +65,11 @@ public final class VersionSearchRequest
 		EFFECTIVE_TIME_END, 
 		
 		/**
+		 * Filter versions by associated resource's type.
+		 */
+		RESOURCE_TYPE,
+		
+		/**
 		 * Filter matches by corresponding resource branch path (formerly parent branch path).
 		 */
 		RESOURCE_BRANCHPATH,
@@ -77,6 +82,7 @@ public final class VersionSearchRequest
 		final ExpressionBuilder query = Expressions.builder();
 
 		addIdFilter(query, VersionDocument.Expressions::ids);
+		addFilter(query, OptionKey.RESOURCE_TYPE, String.class, VersionDocument.Expressions::resourceTypes);
 		addFilter(query, OptionKey.RESOURCE, String.class, VersionDocument.Expressions::resources);
 		addFilter(query, OptionKey.VERSION, String.class, VersionDocument.Expressions::versions);
 		addFilter(query, OptionKey.RESOURCE_BRANCHPATH, String.class, VersionDocument.Expressions::resourceBranchPaths);

@@ -61,7 +61,10 @@ public final class VersionDocument implements Serializable {
 		public static final String EFFECTIVE_TIME = "effectiveTime";
 		public static final String RESOURCE = "resource";
 		public static final String BRANCH_PATH = "branchPath";
+		
+		// derived fields
 		public static final String RESOURCE_BRANCH_PATH = "resourceBranchPath";
+		public static final String RESOURCE_TYPE = "resourceType";
 		
 		public static final Set<String> SORT_FIELDS = Set.of(ID, VERSION, DESCRIPTION, EFFECTIVE_TIME, RESOURCE, BRANCH_PATH);
 	}
@@ -86,6 +89,10 @@ public final class VersionDocument implements Serializable {
 		
 		public static Expression resources(Collection<String> resourceUris) {
 			return matchAny(Fields.RESOURCE, resourceUris);
+		}
+		
+		public static Expression resourceTypes(Collection<String> resourceTypes) {
+			return matchAny(Fields.RESOURCE_TYPE, resourceTypes);
 		}
 		
 		public static Expression effectiveTime(long effectiveTime) {
@@ -151,6 +158,11 @@ public final class VersionDocument implements Serializable {
 			return this;
 		}
 		
+		@JsonSetter
+		Builder resourceType(String resourceType) {
+			return this;
+		}
+		
 		public VersionDocument build() {
 			return new VersionDocument(
 				id,
@@ -205,6 +217,10 @@ public final class VersionDocument implements Serializable {
 	
 	public ResourceURI getResource() {
 		return resource;
+	}
+	
+	public String getResourceType() {
+		return getResource() != null ? getResource().getResourceType() : null;
 	}
 	
 	public String getBranchPath() {
