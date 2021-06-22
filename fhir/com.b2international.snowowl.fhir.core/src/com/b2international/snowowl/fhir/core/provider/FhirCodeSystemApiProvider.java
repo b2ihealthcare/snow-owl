@@ -17,17 +17,18 @@ package com.b2international.snowowl.fhir.core.provider;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.wiring.BundleWiring;
 
-import com.b2international.commons.StringUtils;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ResourceURI;
-import com.b2international.snowowl.core.plugin.Component;
 import com.b2international.snowowl.core.version.Version;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.fhir.core.ResourceNarrative;
@@ -35,10 +36,9 @@ import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
 import com.b2international.snowowl.fhir.core.codesystems.FhirCodeSystem;
 import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
-import com.b2international.snowowl.fhir.core.model.ValidateCodeResult;
-import com.b2international.snowowl.fhir.core.model.codesystem.*;
+import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem.Builder;
-import com.b2international.snowowl.fhir.core.model.dt.Coding;
+import com.b2international.snowowl.fhir.core.model.codesystem.Concept;
 import com.b2international.snowowl.fhir.core.model.dt.Narrative;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.search.FhirParameter.PrefixedValue;
@@ -52,14 +52,6 @@ import com.google.common.collect.Sets;
  */
 public final class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 
-	@Component
-	public static final class Factory implements ICodeSystemApiProvider.Factory {
-		@Override
-		public ICodeSystemApiProvider create(IEventBus bus, List<ExtendedLocale> locales) {
-			return new FhirCodeSystemApiProvider(bus, locales);
-		}
-	}
-	
 	public FhirCodeSystemApiProvider(IEventBus bus, List<ExtendedLocale> locales) {
 		super(bus, locales);
 	}
@@ -139,50 +131,45 @@ public final class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 //		return resultBuilder.build();
 //	}
 	
-	@Override
-	public SubsumptionResult subsumes(SubsumptionRequest subsumption) {
-		throw new UnsupportedOperationException();
-	}
-	
-	@Override
-	public ValidateCodeResult validateCode(final ResourceURI codeSystemUri, final ValidateCodeRequest validationRequest) {
-		
-		Set<Coding> codings = collectCodingsToValidate(validationRequest);
-		
-		FhirCodeSystem fhirCodeSystem = findCodeSystemById(codeSystemUri);
-		
-		Map<Coding, FhirCodeSystem> codingEnumMap = codings.stream()
-			.filter(coding -> {
-				Optional<FhirCodeSystem> enumConstant = getEnumConstant(fhirCodeSystem, coding.getCodeValue());
-				return enumConstant.isPresent();
-			}).collect(Collectors.toMap(c -> c, c -> getEnumConstant(fhirCodeSystem, c.getCodeValue()).get()));
-		
-		//Return true if any of the coding code found
-		if (!codingEnumMap.isEmpty()) {
-			
-			Coding coding = codingEnumMap.keySet().iterator().next();
-			if (!StringUtils.isEmpty(coding.getDisplay())) {
-				FhirCodeSystem enumCode = codingEnumMap.get(coding);
-				if (coding.getDisplay().equals(enumCode.getDisplayName())) {
-					return ValidateCodeResult.builder().result(true).build();
-				} else {
-					return ValidateCodeResult.builder()
-							.result(false)
-							.display(enumCode.getDisplayName())
-							.message(String.format("Incorrect display '%s' for code '%s'", coding.getDisplay(), coding.getCodeValue()))
-							.build();
-				}
- 			} else {
-				return ValidateCodeResult.builder().result(true).build();
-			}
-		} else {
-			Object[] codeValues = codings.stream().map(c->c.getCodeValue()).collect(Collectors.toSet()).toArray();
-			return ValidateCodeResult.builder().result(false)
-					.message(String.format("Could not find code(s) '%s'", Arrays.toString(codeValues)))
-					.build();
-		}
-
-	}
+//	@Override
+//	public ValidateCodeResult validateCode(final ResourceURI codeSystemUri, final ValidateCodeRequest validationRequest) {
+//		
+//		Set<Coding> codings = collectCodingsToValidate(validationRequest);
+//		
+//		FhirCodeSystem fhirCodeSystem = findCodeSystemById(codeSystemUri);
+//		
+//		Map<Coding, FhirCodeSystem> codingEnumMap = codings.stream()
+//			.filter(coding -> {
+//				Optional<FhirCodeSystem> enumConstant = getEnumConstant(fhirCodeSystem, coding.getCodeValue());
+//				return enumConstant.isPresent();
+//			}).collect(Collectors.toMap(c -> c, c -> getEnumConstant(fhirCodeSystem, c.getCodeValue()).get()));
+//		
+//		//Return true if any of the coding code found
+//		if (!codingEnumMap.isEmpty()) {
+//			
+//			Coding coding = codingEnumMap.keySet().iterator().next();
+//			if (!StringUtils.isEmpty(coding.getDisplay())) {
+//				FhirCodeSystem enumCode = codingEnumMap.get(coding);
+//				if (coding.getDisplay().equals(enumCode.getDisplayName())) {
+//					return ValidateCodeResult.builder().result(true).build();
+//				} else {
+//					return ValidateCodeResult.builder()
+//							.result(false)
+//							.display(enumCode.getDisplayName())
+//							.message(String.format("Incorrect display '%s' for code '%s'", coding.getDisplay(), coding.getCodeValue()))
+//							.build();
+//				}
+// 			} else {
+//				return ValidateCodeResult.builder().result(true).build();
+//			}
+//		} else {
+//			Object[] codeValues = codings.stream().map(c->c.getCodeValue()).collect(Collectors.toSet()).toArray();
+//			return ValidateCodeResult.builder().result(false)
+//					.message(String.format("Could not find code(s) '%s'", Arrays.toString(codeValues)))
+//					.build();
+//		}
+//
+//	}
 	
 	@Override
 	protected Set<String> fetchAncestors(final ResourceURI codeSystemUri, String componentId) {

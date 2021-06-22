@@ -78,7 +78,7 @@ public final class RevisionBranch extends MetadataHolderImpl {
 	/**
 	 * The maximum length of a branch.
 	 */
-	public static final int DEFAULT_MAXIMUM_BRANCH_NAME_LENGTH = 50;
+	public static final int DEFAULT_MAXIMUM_BRANCH_NAME_LENGTH = 100;
 
 	/**
 	 * Temporary branch name format. Values are prefix, name, current time. 

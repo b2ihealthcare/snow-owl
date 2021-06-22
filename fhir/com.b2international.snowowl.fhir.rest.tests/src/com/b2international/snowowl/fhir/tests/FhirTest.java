@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,14 +57,6 @@ public class FhirTest {
 		System.out.println(prettyPrint);
 	}
 	
-	/**
-	 * @deprecated - should only be used for debugging purposes
-	 */
-	protected void printJson(Object object) throws Exception {
-		String result = objectMapper.writeValueAsString(object);
-		System.out.println(result);
-	}
-	
 	protected void applyFilter(Object filteredObject) {
 		SimpleFilterProvider filterProvider = new SimpleFilterProvider().setFailOnUnknownId(false);
 		MappingJacksonValue mappingJacksonValue = new MappingJacksonValue(filteredObject);
@@ -86,6 +78,12 @@ public class FhirTest {
 		Fhir parameters = objectMapper.readValue(responseString, Parameters.Fhir.class);
 		Json json = new Parameters.Json(parameters);
 		return objectMapper.convertValue(json, LookupResult.class);
+	}
+	
+	
+	protected String toFhirParameters(Object request) throws Exception {
+		Fhir fhirParameters = new Parameters.Fhir(request);
+		return objectMapper.writeValueAsString(fhirParameters);
 	}
 
 }

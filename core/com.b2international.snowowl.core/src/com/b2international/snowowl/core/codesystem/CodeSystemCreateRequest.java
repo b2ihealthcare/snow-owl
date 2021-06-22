@@ -17,12 +17,15 @@ package com.b2international.snowowl.core.codesystem;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ServiceProvider;
@@ -74,6 +77,11 @@ final class CodeSystemCreateRequest extends BaseResourceCreateRequest {
 	
 	@Override
 	protected void preExecute(final TransactionContext context) {
+		Set<String> knownToolings = context.service(RepositoryManager.class).repositories().stream().map(Repository::id).collect(Collectors.toSet());
+		if (!knownToolings.contains(toolingId)) {
+			throw new BadRequestException("Unrecognized toolingId parameter '%s'. Allowed values are: '%s'", toolingId, knownToolings);
+		}
+		
 		// Create branch if null or empty path was specified in the request
 		final boolean createBranch = StringUtils.isEmpty(branchPath);
 		

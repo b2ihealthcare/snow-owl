@@ -22,7 +22,9 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 import com.b2international.snowowl.fhir.rest.tests.codesystem.FhirCodeSystemApiTest;
-import com.b2international.snowowl.fhir.rest.tests.codesystem.FhirLookupOperationTest;
+import com.b2international.snowowl.fhir.rest.tests.codesystem.FhirCodeSystemLookupOperationTest;
+import com.b2international.snowowl.fhir.rest.tests.codesystem.FhirCodeSystemSubsumesOperationTest;
+import com.b2international.snowowl.fhir.rest.tests.codesystem.FhirCodeSystemValidateCodeOperationTest;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.test.commons.BundleStartRule;
 import com.b2international.snowowl.test.commons.Resources;
@@ -37,12 +39,12 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 @SuiteClasses({ 
 	// CodeSystem API
 	FhirCodeSystemApiTest.class,
-	FhirLookupOperationTest.class,
+	FhirCodeSystemLookupOperationTest.class,
+	FhirCodeSystemSubsumesOperationTest.class,
+	FhirCodeSystemValidateCodeOperationTest.class,
 //	SnomedCodeSystemProviderTest.class,
 //	LookupSnomedRestTest.class,
 //	SubsumesSnomedRestTest.class,
-//	ValidateFhirCodeRestTest.class,
-//	ValidateSnomedCodeRestTest.class,
 	
 	// ValueSet API
 //	SnomedValueSetRestTest.class,

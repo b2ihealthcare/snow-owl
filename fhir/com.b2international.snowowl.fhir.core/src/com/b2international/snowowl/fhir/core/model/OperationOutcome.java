@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,13 +15,12 @@
  */
 package com.b2international.snowowl.fhir.core.model;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.google.common.collect.Lists;
 
 import io.swagger.annotations.ApiModel;
 
@@ -43,24 +42,19 @@ import io.swagger.annotations.ApiModel;
  * @since 6.3
  */
 @ApiModel("Operation outcome")
-@JsonPropertyOrder({"language", "use", "value"})
-public class OperationOutcome {
+public final class OperationOutcome {
 	
 	@JsonProperty
 	private String resourceType = "OperationOutcome";
 	
-	@JsonProperty("issue")
 	@NotEmpty
-	private Collection<Issue> issues = Lists.newArrayList();
+	private final Collection<Issue> issues;
 	
 	OperationOutcome(Collection<Issue> issues) {
 		this.issues = issues;
 	}
 
-	public void addIssue(final Issue issue) {
-		issues.add(issue);
-	}
-	
+	@JsonProperty("issue")
 	public Collection<Issue> getIssues() {
 		return issues;
 	}
@@ -71,14 +65,20 @@ public class OperationOutcome {
 	
 	public static class Builder extends ValidatingBuilder<OperationOutcome> {
 
-		private Collection<Issue> issues = Lists.newArrayList();
+		private Collection<Issue> issues;
 		
 		public Builder addIssue(Issue issue) {
+			if (this.issues == null) {
+				this.issues = new ArrayList<>();
+			}
 			issues.add(issue);
 			return this;
 		}
 		
 		public void addIssues(Collection<Issue> outComeIssues) {
+			if (this.issues == null) {
+				this.issues = new ArrayList<>();
+			}
 			issues.addAll(outComeIssues);
 		}
 

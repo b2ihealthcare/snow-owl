@@ -39,7 +39,7 @@ import io.swagger.annotations.*;
  */
 @Api(value = "CodeSystem", description="FHIR CodeSystem Resource", tags = { "CodeSystem" })
 @RestController
-@RequestMapping(value="/CodeSystem/$lookup", produces = { AbstractFhirController.APPLICATION_FHIR_JSON })
+@RequestMapping(value="/CodeSystem", produces = { AbstractFhirController.APPLICATION_FHIR_JSON })
 public class FhirCodeSystemLookupOperationController extends AbstractFhirController {
 
 	/**
@@ -60,7 +60,7 @@ public class FhirCodeSystemLookupOperationController extends AbstractFhirControl
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
 		@ApiResponse(code = HTTP_NOT_FOUND, message = "Code system not found", response = OperationOutcome.class)
 	})
-	@GetMapping
+	@GetMapping("/$lookup")
 	public Promise<Parameters.Fhir> lookup(
 		
 		@ApiParam(value="The code to look up") 
@@ -113,8 +113,7 @@ public class FhirCodeSystemLookupOperationController extends AbstractFhirControl
 	}
 	
 	/**
-	 * POST-based lookup end-point.
-	 * All parameters are in the request body.
+	 * POST-based lookup end-point. Parameters are in the request body.
 	 * @param in - FHIR parameters
 	 */
 	@ApiOperation(value="Concept lookup and decomposition", notes="Given a code/version/system, or a Coding, get additional details about the concept.")
@@ -123,18 +122,16 @@ public class FhirCodeSystemLookupOperationController extends AbstractFhirControl
 		@ApiResponse(code = HTTP_NOT_FOUND, message = "Not found", response = OperationOutcome.class),
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class)
 	})
-	@PostMapping(consumes = AbstractFhirResourceController.APPLICATION_FHIR_JSON)
+	@PostMapping(value = "/$lookup", consumes = AbstractFhirResourceController.APPLICATION_FHIR_JSON)
 	public Promise<Parameters.Fhir> lookup(
 			@ApiParam(name = "body", value = "The lookup request parameters")
-			@RequestBody Parameters.Fhir in) {
+			@RequestBody 
+			final Parameters.Fhir in) {
 		
 		final LookupRequest req = toRequest(in, LookupRequest.class);
 		return lookup(req);
 	}
 	
-	/*
-	 * Perform the actual lookup by deferring the operation to the matching code system provider.
-	 */
 	private Promise<Parameters.Fhir> lookup(LookupRequest lookupRequest) {
 		return FhirRequests.codeSystems().prepareLookup()
 				.setRequest(lookupRequest)

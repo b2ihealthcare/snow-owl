@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.fhir.core.model.dt;
 
+import java.util.Objects;
+
 import javax.validation.Valid;
 import javax.validation.constraints.AssertTrue;
 
@@ -137,53 +139,26 @@ public class Coding {
 	
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((code == null) ? 0 : code.hashCode());
-		result = prime * result + ((display == null) ? 0 : display.hashCode());
-		result = prime * result + ((userSelected == null) ? 0 : userSelected.hashCode());
-		result = prime * result + ((system == null) ? 0 : system.hashCode());
-		result = prime * result + ((version == null) ? 0 : version.hashCode());
-		return result;
+		return Objects.hash(code, display, userSelected, system, version);
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
+		if (this == obj) return true;
+		if (obj == null) return false;
+		if (getClass() != obj.getClass()) return false;
 		Coding other = (Coding) obj;
-		if (code == null) {
-			if (other.code != null)
-				return false;
-		} else if (!code.equals(other.code))
-			return false;
-		if (display == null) {
-			if (other.display != null)
-				return false;
-		} else if (!display.equals(other.display))
-			return false;
-		if (userSelected == null) {
-			if (other.userSelected != null)
-				return false;
-		} else if (!userSelected.equals(other.userSelected))
-			return false;
-		if (system == null) {
-			if (other.system != null)
-				return false;
-		} else if (!system.equals(other.system))
-			return false;
-		if (version == null) {
-			if (other.version != null)
-				return false;
-		} else if (!version.equals(other.version))
-			return false;
-		return true;
+		return Objects.equals(system, other.system)
+				&& Objects.equals(version, other.version)
+				&& Objects.equals(code, other.code)
+				&& Objects.equals(display, other.display)
+				&& Objects.equals(userSelected, other.userSelected);
 	}
 
+	public static Coding of(String system, String code) {
+		return builder().system(system).code(code).build();
+	}
+	
 	public static Builder builder() {
 		return new Builder();
 	}

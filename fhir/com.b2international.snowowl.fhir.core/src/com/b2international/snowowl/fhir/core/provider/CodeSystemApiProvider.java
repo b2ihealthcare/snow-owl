@@ -63,7 +63,7 @@ import com.google.common.collect.Sets;
  * 
  * @since 7.0
  */
-public abstract class CodeSystemApiProvider extends FhirApiProvider implements ICodeSystemApiProvider {
+public abstract class CodeSystemApiProvider extends FhirApiProvider {
 	
 	protected static final String CODE_SYSTEM_LOCATION_MARKER = "CodeSystem";
 
@@ -81,7 +81,6 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 		return Collections.emptySet();
 	}
 
-	@Override
 	public CodeSystem getCodeSystem(ResourceURI codeSystemURI) {
 
 		final com.b2international.snowowl.core.codesystem.CodeSystem codeSystem;
@@ -106,7 +105,6 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 		return createCodeSystemBuilder(codeSystem, codeSystemVersionEntry).build();
 	}
 	
-	@Override
 	public Collection<CodeSystem> getCodeSystems(final Set<FhirSearchParameter> searchParameters) {
 		
 		//Pre-fetch code systems based on ES filters available
@@ -171,50 +169,6 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 				.collect(Collectors.toList());
 	}
 
-	@Override
-	public ValidateCodeResult validateCode(final String systemUri, final ValidateCodeRequest validationRequest) {
-		throw new UnsupportedOperationException();
-//		//try to convert the system URi to internal code systemUri
-//		ResourceURI codeSystemUri = getCodeSystemUri(systemUri, validationRequest.getVersion());
-//		return validateCode(codeSystemUri, validationRequest);
-	}
-	
-	@Override
-	public ValidateCodeResult validateCode(final ResourceURI codeSystemUri, final ValidateCodeRequest validationRequest) {
-		
-		Set<Coding> codings = collectCodingsToValidate(validationRequest);
-		
-		Map<String, Coding> codingMap = codings.stream().collect(Collectors.toMap(c -> c.getCodeValue(), c -> c));
-		
-		Concepts concepts = CodeSystemRequests.prepareSearchConcepts()
-			.all()
-			.filterByIds(codingMap.keySet())
-			.build(codeSystemUri)
-			.execute(getBus())
-			.getSync(1000, TimeUnit.MILLISECONDS);
-		
-		if (concepts.isEmpty()) {
-			return ValidateCodeResult.builder().result(false)
-					.message(String.format("Could not find code(s) '%s'", Arrays.toString(codingMap.keySet().toArray())))
-					.build();
-		} else {
-			for (com.b2international.snowowl.core.domain.Concept concept : concepts) {
-				Coding coding = codingMap.get(concept.getId());
-				if (coding.getDisplay() != null) {
-					//any mismatch is false (?)
-					if (!coding.getDisplay().equals(concept.getTerm())) {
-						return ValidateCodeResult.builder()
-								.result(false)
-								.display(concept.getTerm())
-								.message(String.format("Incorrect display '%s' for code '%s'", coding.getDisplay(), coding.getCodeValue()))
-								.build();
-					}
-				}
-			}
-			return ValidateCodeResult.builder().result(true).build();
-		}
-	}
-
 	/**
 	 * Returns the designated FHIR Uri for the given code system
 	 * @param codeSystem
@@ -222,33 +176,6 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 	 * @return
 	 */
 	protected abstract Uri getFhirUri(com.b2international.snowowl.core.codesystem.CodeSystem codeSystem, Version codeSystemVersion);
-	
-	protected Set<Coding> collectCodingsToValidate(ValidateCodeRequest validationRequest) {
-		
-		Set<Coding> codings = Sets.newHashSet();
-				
-		if (validationRequest.getCode() != null) {
-			
-			Coding coding = Coding.builder()
-					.code(validationRequest.getCode())
-					.display(validationRequest.getDisplay())
-					.build();
-			
-			codings.add(coding);
-		}
-				
-		if (validationRequest.getCoding() != null) {
-			codings.add(validationRequest.getCoding());
-		}
-			
-		CodeableConcept codeableConcept = validationRequest.getCodeableConcept();
-		if (codeableConcept != null) {
-			if (codeableConcept.getCodings() != null) { 
-				codeableConcept.getCodings().forEach(c -> codings.add(c));
-			}
-		}
-		return codings;
-	}
 	
 	/**
 	 * Creates a FHIR {@link CodeSystem} from a {@link com.b2international.snowowl.core.codesystem.CodeSystem}
@@ -320,35 +247,6 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider implements I
 
 	protected abstract int getCount(Version codeSystemVersion);
 
-	@Override
-	public SubsumptionResult subsumes(SubsumptionRequest subsumptionRequest) {
-		
-		final ResourceURI codeSystemUri = resolveResourceUri(subsumptionRequest.getSystem(), subsumptionRequest.getVersion());
-		
-		String codeA = null;
-		String codeB = null;
-		if (subsumptionRequest.getCodeA() != null && subsumptionRequest.getCodeB() != null) {
-			codeA = subsumptionRequest.getCodeA();
-			codeB = subsumptionRequest.getCodeB();
-		} else {
-			codeA = subsumptionRequest.getCodingA().getCodeValue();
-			codeB = subsumptionRequest.getCodingB().getCodeValue();
-		}
-		
-		final Set<String> ancestorsA = fetchAncestors(codeSystemUri, codeA);
-		final Set<String> ancestorsB = fetchAncestors(codeSystemUri, codeB);
-		
-		if (codeA.equals(codeB)) {
-			return SubsumptionResult.equivalent();
-		} else if (ancestorsA.contains(codeB)) {
-			return SubsumptionResult.subsumedBy();
-		} else if (ancestorsB.contains(codeA)) {
-			return SubsumptionResult.subsumes();
-		} else {
-			return SubsumptionResult.notSubsumed();
-		}
-	}
-	
 	protected ResourceURI resolveResourceUri(final String system, final String version) {
 		throw new NotImplementedException("TODO Resolve URI from system (%s) and version ('') parameters", system, version);
 	}
