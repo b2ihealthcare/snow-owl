@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,15 +19,13 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.b2international.index.query.Query;
-import com.google.common.collect.HashMultiset;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Multiset;
+import com.google.common.collect.*;
 import com.google.common.collect.Multiset.Entry;
 
 /**
@@ -38,12 +36,12 @@ public final class Mappings {
 	private final Map<Class<?>, DocumentMapping> mappingsByType = newHashMap(); 
 	
 	public Mappings(Class<?>...types) {
-		this(ImmutableSet.copyOf(types));
+		this(Set.of(types));
 	}
 	
 	public Mappings(Collection<Class<?>> types) {
 		final Multiset<String> duplicates = HashMultiset.create();
-		for (Class<?> type : ImmutableSet.copyOf(types)) {
+		for (Class<?> type : Set.copyOf(types)) {
 			// XXX register only root mappings, nested mappings should be looked up via the parent/ancestor mapping
 			DocumentMapping mapping = putMapping(type);
 			duplicates.add(mapping.typeAsString());
@@ -56,7 +54,7 @@ public final class Mappings {
 	}
 	
 	public Collection<Class<?>> getTypes() {
-		return ImmutableSet.copyOf(mappingsByType.keySet());
+		return Set.copyOf(mappingsByType.keySet());
 	}
 	
 	public DocumentMapping putMapping(Class<?> type) {
@@ -84,11 +82,11 @@ public final class Mappings {
 		return Iterables.getOnlyElement(mappings);
 	}
 	
-	public DocumentMapping getDocumentMapping(Query<?> query) {
-		if (query.getParentType() != null) {
-			return getMapping(query.getParentType()).getNestedMapping(query.getFrom());
+	public List<DocumentMapping> getDocumentMapping(Query<?> query) {
+		if (query.getSelection().getParentScope() != null) {
+			return List.of(getMapping(query.getSelection().getParentScope()).getNestedMapping(Iterables.getOnlyElement(query.getSelection().getFrom())));
 		} else {
-			return getMapping(query.getFrom());
+			return query.getSelection().getFrom().stream().map(this::getMapping).collect(Collectors.toList());
 		}
 	}
 

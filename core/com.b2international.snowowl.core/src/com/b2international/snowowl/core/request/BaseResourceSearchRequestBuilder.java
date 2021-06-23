@@ -30,7 +30,7 @@ public abstract class BaseResourceSearchRequestBuilder<RB extends BaseResourceSe
 		return addOption(OptionKey.URL, url);
 	}
 	
-	public RB filterByUrls(String urls) {
+	public RB filterByUrls(Iterable<String> urls) {
 		return addOption(OptionKey.URL, urls);
 	}
 
@@ -90,6 +90,14 @@ public abstract class BaseResourceSearchRequestBuilder<RB extends BaseResourceSe
 	 */
 	public final RB filterByTitleExact(Iterable<String> titles) {
 		return addOption(OptionKey.TITLE_EXACT, titles);
+	}
+	
+	public RB filterByBundleId(String bundleId) {
+		return addOption(OptionKey.BUNDLE_ID, bundleId);
+	}
+
+	public RB filterByBundleIds(Iterable<String> bundleIds) {
+		return addOption(OptionKey.BUNDLE_ID, bundleIds);
 	}
 
 }

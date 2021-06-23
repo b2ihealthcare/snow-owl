@@ -17,8 +17,9 @@ package com.b2international.index.query;
 
 import java.util.List;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.index.Searcher;
-import com.b2international.index.mapping.DocumentMapping;
+import com.b2international.index.revision.Revision;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
@@ -30,13 +31,17 @@ import com.google.common.collect.ImmutableList;
  */
 public final class Query<T> {
 
+	private static final Joiner COMMA_JOINER = Joiner.on(",");
 	public static final String DEFAULT_SCROLL_KEEP_ALIVE = "60s";
 	
 	/**
 	 * @since 4.7
 	 */
 	public interface QueryBuilder<T> {
-		QueryBuilder<T> from(Class<?> from);
+		
+		QueryBuilder<T> from(Class<?> from, Class<?>...additionalFroms);
+		
+		QueryBuilder<T> from(List<Class<?>> froms);
 		
 		QueryBuilder<T> parent(Class<?> parent);
 
@@ -47,6 +52,7 @@ public final class Query<T> {
 		QueryBuilder<T> fields(List<String> fields);
 		
 		AfterWhereBuilder<T> where(Expression expression);
+
 	}
 	
 	/**
@@ -111,11 +117,9 @@ public final class Query<T> {
 	private String scrollKeepAlive;
 	private String searchAfter;
 	private int limit;
-	private Class<T> select;
-	private Class<?> from;
+	private IndexSelection<T> selection;
 	private Expression where;
 	private SortBy sortBy = SortBy.DEFAULT;
-	private Class<?> parentType;
 	private boolean withScores;
 	private List<String> fields;
 
@@ -144,29 +148,13 @@ public final class Query<T> {
 	void setSortBy(SortBy sortBy) {
 		this.sortBy = sortBy;
 	}
-	
-	public Class<T> getSelect() {
-		return select;
+
+	public IndexSelection<T> getSelection() {
+		return selection;
 	}
 	
-	void setSelect(Class<T> select) {
-		this.select = select;
-	}
-	
-	public Class<?> getFrom() {
-		return from;
-	}
-	
-	void setFrom(Class<?> from) {
-		this.from = from;
-	}
-	
-	public Class<?> getParentType() {
-		return parentType;
-	}
-	
-	void setParentType(Class<?> parentType) {
-		this.parentType = parentType;
+	void setSelection(IndexSelection<T> selection) {
+		this.selection = selection;
 	}
 	
 	public boolean isWithScores() {
@@ -205,7 +193,7 @@ public final class Query<T> {
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("SELECT " + getSelectString());
-		sb.append(" FROM " + DocumentMapping.getType(from));
+		sb.append(" FROM " + COMMA_JOINER.join(selection.getFromDocumentTypes()));
 		sb.append(" WHERE " + where);
 		if (!SortBy.DEFAULT.equals(sortBy)) {
 			sb.append(" SORT BY " + sortBy);
@@ -214,17 +202,39 @@ public final class Query<T> {
 		if (!Strings.isNullOrEmpty(scrollKeepAlive)) {
 			sb.append(" SCROLL("+scrollKeepAlive+") ");
 		}
-		if (parentType != null) {
-			sb.append(" HAS_PARENT(" + DocumentMapping.getType(parentType) + ")");
+		if (selection.getParentScope() != null) {
+			sb.append(" HAS_PARENT(" + selection.getParentScopeDocumentType() + ")");
 		}
 		return sb.toString();
 	}
 
 	private String getSelectString() {
-		return fields != null && !fields.isEmpty() ? Joiner.on(",").join(fields) : select == from ? "*" : select.toString();
+		return !CompareUtils.isEmpty(fields) ? COMMA_JOINER.join(fields) : selection.toSelectString();
 	}
 
 	public static <T> QueryBuilder<T> select(Class<T> select) {
 		return new DefaultQueryBuilder<>(select);
 	}
+	
+	public static <T> QueryBuilder<T> select(IndexSelection<T> select) {
+		return new DefaultQueryBuilder<>(select.getSelect())
+				.from(select.getFrom())
+				.parent(select.getParentScope());
+	}
+
+	public boolean isRevisionQuery() {
+		return getSelection().getFrom().stream().anyMatch(Revision.class::isAssignableFrom);
+	}
+	
+	public AfterWhereBuilder<T> withWhere(Expression where) {
+		return Query.select(getSelection())
+			.fields(getFields())
+			.where(where)
+			.sortBy(getSortBy())
+			.limit(getLimit())
+			.scroll(getScrollKeepAlive())
+			.searchAfter(getSearchAfter())
+			.withScores(isWithScores());
+	}
+	
 }

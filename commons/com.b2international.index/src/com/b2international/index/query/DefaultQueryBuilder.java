@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,10 +31,7 @@ class DefaultQueryBuilder<T> implements QueryBuilder<T>, AfterWhereBuilder<T> {
 
 	private static final int DEFAULT_LIMIT = 50;
 
-	private final Class<T> select;
-	
-	private Class<?> from;
-	private Class<?> scope;
+	private IndexSelection.Builder<T> selection;
 	
 	private String scrollKeepAlive;
 	private String searchAfter;
@@ -46,19 +43,24 @@ class DefaultQueryBuilder<T> implements QueryBuilder<T>, AfterWhereBuilder<T> {
 	private List<String> fields = Collections.emptyList();
 
 	DefaultQueryBuilder(Class<T> select) {
-		this.select = select;
-		this.from = select;
+		this.selection = IndexSelection.builder(select);
 	}
 	
 	@Override
-	public QueryBuilder<T> from(Class<?> from) {
-		this.from = from;
+	public QueryBuilder<T> from(Class<?> from, Class<?>...froms) {
+		this.selection.from(from, froms);
 		return this;
 	}
 	
 	@Override
-	public QueryBuilder<T> parent(Class<?> parent) {
-		this.scope = parent;
+	public QueryBuilder<T> from(List<Class<?>> froms) {
+		this.selection.from(froms);
+		return this;
+	}
+	
+	@Override
+	public QueryBuilder<T> parent(Class<?> parentScope) {
+		this.selection.withParentScope(parentScope);
 		return this;
 	}
 	
@@ -106,13 +108,12 @@ class DefaultQueryBuilder<T> implements QueryBuilder<T>, AfterWhereBuilder<T> {
 
 	@Override
 	public Query<T> build() {
-		if (Revision.class.isAssignableFrom(select) && !CompareUtils.isEmpty(fields) && !fields.contains(Revision.Fields.ID)) {
+		IndexSelection<T> selection = this.selection.build();
+		if (Revision.class.isAssignableFrom(selection.getSelect()) && !CompareUtils.isEmpty(fields) && !fields.contains(Revision.Fields.ID)) {
 			throw new BadRequestException("'%s' field is required when loading objects partially.", Revision.Fields.ID);
 		}
 		Query<T> query = new Query<T>();
-		query.setSelect(select);
-		query.setFrom(from);
-		query.setParentType(scope);
+		query.setSelection(selection);
 		query.setWhere(where);
 		query.setScrollKeepAlive(scrollKeepAlive);
 		query.setSearchAfter(searchAfter);
@@ -122,4 +123,5 @@ class DefaultQueryBuilder<T> implements QueryBuilder<T>, AfterWhereBuilder<T> {
 		query.setFields(fields);
 		return query;
 	}
+
 }

@@ -205,7 +205,7 @@ public interface HitConverter<T> {
 		
 	}
 	
-	static <T> HitConverter<T> getConverter(ObjectMapper mapper, Class<T> select, Class<?> from, boolean fetchSource, List<String> fields) {
+	static <T> HitConverter<T> getConverter(ObjectMapper mapper, Class<T> select, List<Class<?>> froms, boolean fetchSource, List<String> fields) {
 		if (Primitives.isWrapperType(select) || String.class.isAssignableFrom(select)) {
 			checkState(!fetchSource, "Single field fetching is not supported when it requires to load the source of the document.");
 			return new FieldValueHitConverter<>(select);
@@ -225,15 +225,15 @@ public interface HitConverter<T> {
 			return new SourceAsJsonNodeHitConverter<>(mapper, select);
 		} else {
 			if (fetchSource) {
-				return new SourceAsObjectHitConverter<>(getResultObjectReader(mapper, select, from));
+				return new SourceAsObjectHitConverter<>(getResultObjectReader(mapper, select, froms));
 			} else {
 				return new FieldsAsObjectHitConverter<>(mapper, select);
 			}
 		}
 	}
 	
-	static <T> ObjectReader getResultObjectReader(ObjectMapper mapper, Class<T> select, Class<?> from) {
-		return select != from 
+	static <T> ObjectReader getResultObjectReader(ObjectMapper mapper, Class<T> select, List<Class<?>> froms) {
+		return !froms.contains(select) 
 				? mapper.readerFor(select).without(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES) 
 				: mapper.readerFor(select);
 	}

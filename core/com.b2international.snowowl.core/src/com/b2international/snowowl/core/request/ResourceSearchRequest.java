@@ -30,6 +30,9 @@ final class ResourceSearchRequest extends BaseResourceSearchRequest<Resources> {
 
 	private static final long serialVersionUID = 1L;
 
+	/**
+	 * @since 8.0
+	 */
 	enum OptionKey {
 
 		/**
@@ -54,19 +57,10 @@ final class ResourceSearchRequest extends BaseResourceSearchRequest<Resources> {
 	}
 
 	@Override
-	protected Expression prepareQuery(RepositoryContext context) {
-		final ExpressionBuilder queryBuilder = Expressions.builder();
-		
-		addIdFilter(queryBuilder, ResourceDocument.Expressions::ids);
-		addTitleFilter(queryBuilder);
-		addTitleExactFilter(queryBuilder);
-		addUrlFilter(queryBuilder);
-		addBundleFilter(queryBuilder);
-		
+	protected void prepareAdditionalFilters(RepositoryContext context, ExpressionBuilder queryBuilder) {
 		addFilter(queryBuilder, OptionKey.RESOURCE_TYPE, String.class, ResourceDocument.Expressions::resourceTypes);
 		addFilter(queryBuilder, OptionKey.TOOLING_ID, String.class, ResourceDocument.Expressions::toolingIds);
 		addFilter(queryBuilder, OptionKey.BRANCH, String.class, ResourceDocument.Expressions::branchPaths);
-		return queryBuilder.build();
 	}
 
 	@Override

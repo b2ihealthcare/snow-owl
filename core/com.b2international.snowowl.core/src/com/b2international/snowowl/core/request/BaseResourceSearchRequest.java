@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.request;
 
+import com.b2international.index.query.Expression;
 import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
@@ -35,19 +36,50 @@ public abstract class BaseResourceSearchRequest<R>
 	 * @since 8.0
 	 */
 	public enum OptionKey {
+		
+		/**
+		 * Filter matches by their stored URL value.
+		 */
 		URL,
-		/** Search resources by title */
+		
+		/**
+		 * Search resources by title 
+		 */
 		TITLE,
-		/** "Smart" search by title (taking prefixes, stemming, etc. into account) */
+		
+		/** 
+		 * "Smart" search by title (taking prefixes, stemming, etc. into account)
+		 */
 		TITLE_EXACT,
+		
 		/**
 		 * Filter matches by their bundle ID.
 		 */
-		BUNDLE_ID,
+		BUNDLE_ID, 
 	}
 	
-	protected final void addBundleFilter(ExpressionBuilder queryBuilder) {
+	@Override
+	protected final Expression prepareQuery(RepositoryContext context) {
+		final ExpressionBuilder queryBuilder = Expressions.builder();
+		
 		addFilter(queryBuilder, OptionKey.BUNDLE_ID, String.class, ResourceDocument.Expressions::bundleIds);
+		addIdFilter(queryBuilder, ResourceDocument.Expressions::ids);
+		addTitleFilter(queryBuilder);
+		addTitleExactFilter(queryBuilder);
+		addUrlFilter(queryBuilder);
+		
+		prepareAdditionalFilters(context, queryBuilder);
+		
+		return queryBuilder.build();
+	}
+	
+	/**
+	 * Subclasses may override this method to provide additional filter clauses to the supplied bool {@link ExpressionBuilder}. This method does nothing by default.
+	 * 
+	 * @param context
+	 * @param queryBuilder
+	 */
+	protected void prepareAdditionalFilters(RepositoryContext context, ExpressionBuilder queryBuilder) {
 	}
 
 	protected final void addUrlFilter(ExpressionBuilder queryBuilder) {

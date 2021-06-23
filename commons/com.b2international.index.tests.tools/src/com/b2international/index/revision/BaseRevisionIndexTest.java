@@ -41,6 +41,8 @@ public abstract class BaseRevisionIndexTest {
 	protected static final String MAIN = RevisionBranch.MAIN_PATH;
 	protected static final String STORAGE_KEY1 = "1";
 	protected static final String STORAGE_KEY2 = "2";
+	protected static final String STORAGE_KEY3 = "3";
+	protected static final String STORAGE_KEY4 = "4";
 	
 	private AtomicLong storageKeys = new AtomicLong(3);
 	

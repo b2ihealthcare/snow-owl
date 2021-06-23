@@ -16,6 +16,7 @@
 package com.b2international.index.revision;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -102,6 +103,11 @@ public final class RevisionIndexAdmin implements IndexAdmin {
 	@Override
 	public String getTypeIndex(DocumentMapping mapping) {
 		return rawIndexAdmin.getTypeIndex(mapping);
+	}
+	
+	@Override
+	public List<String> getTypeIndexes(List<DocumentMapping> mappings) {
+		return rawIndexAdmin.getTypeIndexes(mappings);
 	}
 
 	@Override

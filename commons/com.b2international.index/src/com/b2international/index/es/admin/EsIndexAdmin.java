@@ -28,6 +28,7 @@ import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest.Level;
@@ -568,6 +569,11 @@ public final class EsIndexAdmin implements IndexAdmin {
 	}
 	
 	@Override
+	public List<String> getTypeIndexes(List<DocumentMapping> mappings) {
+		return mappings.stream().map(this::getTypeIndex).collect(Collectors.toList());
+	}
+	
+	@Override
 	public EsClient client() {
 		return client;
 	}
@@ -712,5 +718,5 @@ public final class EsIndexAdmin implements IndexAdmin {
 	public int getConcurrencyLevel() {
 		return (int) settings().get(IndexClientFactory.COMMIT_CONCURRENCY_LEVEL);
 	}
-	
+
 }

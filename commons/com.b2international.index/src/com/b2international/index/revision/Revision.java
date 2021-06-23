@@ -44,7 +44,6 @@ import com.google.common.base.MoreObjects.ToStringHelper;
 		+ "    ctx._source.revised.add(params.newRevised);"
 		+ "}"
 )
-@JsonIgnoreProperties(value = { "_hash" }) // XXX keep _hash field ignored for backward compatibility, remove in 8.0
 public abstract class Revision {
 	
 	/**
