@@ -41,7 +41,7 @@ import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
 import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.Bundle.Builder;
-import com.b2international.snowowl.fhir.core.model.Entry;
+import com.b2international.snowowl.fhir.core.model.ResourceEntry;
 import com.b2international.snowowl.fhir.core.model.Meta;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
@@ -140,8 +140,8 @@ final class FhirCodeSystemSearchRequest extends SearchResourceRequest<Repository
 						.build());
 	}
 
-	private Entry toFhirCodeSystemEntry(RepositoryContext context, ResourceFragment fragment) {
-		return new Entry(null, toFhirCodeSystem(context, fragment));
+	private ResourceEntry toFhirCodeSystemEntry(RepositoryContext context, ResourceFragment fragment) {
+		return ResourceEntry.builder().resource(toFhirCodeSystem(context, fragment)).build();
 	}
 
 	private CodeSystem toFhirCodeSystem(RepositoryContext context, ResourceFragment codeSystem) {

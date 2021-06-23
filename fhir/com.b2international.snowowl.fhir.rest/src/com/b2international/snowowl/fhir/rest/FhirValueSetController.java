@@ -39,7 +39,7 @@ import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.Bundle;
-import com.b2international.snowowl.fhir.core.model.Entry;
+import com.b2international.snowowl.fhir.core.model.ResourceEntry;
 import com.b2international.snowowl.fhir.core.model.OperationOutcome;
 import com.b2international.snowowl.fhir.core.model.ValidateCodeResult;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
@@ -110,7 +110,8 @@ public class FhirValueSetController extends AbstractFhirResourceController<Value
 			for (ValueSet valueSet : valueSets) {
 				applyResponseContentFilter(valueSet, requestParameters.getA());
 				String resourceUrl = String.join("/", uri, valueSet.getId().getIdValue());
-				Entry entry = new Entry(new Uri(resourceUrl), valueSet);
+				
+				ResourceEntry entry = ResourceEntry.builder().fullUrl(resourceUrl).resource(valueSet).build();
 				builder.addEntry(entry);
 				total++;
 			}

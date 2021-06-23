@@ -40,7 +40,7 @@ import com.b2international.commons.Pair;
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.model.Bundle;
-import com.b2international.snowowl.fhir.core.model.Entry;
+import com.b2international.snowowl.fhir.core.model.ResourceEntry;
 import com.b2international.snowowl.fhir.core.model.OperationOutcome;
 import com.b2international.snowowl.fhir.core.model.conceptmap.ConceptMap;
 import com.b2international.snowowl.fhir.core.model.conceptmap.Match;
@@ -110,7 +110,8 @@ public class FhirConceptMapController extends AbstractFhirResourceController<Con
 			for (ConceptMap conceptMap : conceptMaps) {
 				applyResponseContentFilter(conceptMap, requestParameters.getA());
 				String resourceUrl = String.join("/", uri, conceptMap.getId().getIdValue());
-				Entry entry = new Entry(new Uri(resourceUrl), conceptMap);
+				
+				ResourceEntry entry = ResourceEntry.builder().fullUrl(resourceUrl).resource(conceptMap).build();
 				builder.addEntry(entry);
 				total++;
 			}

@@ -28,7 +28,10 @@ import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.model.dt.*;
 import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 /**
  * FHIR Bundle domain model.
@@ -36,12 +39,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @see <a href="https://www.hl7.org/fhir/bundle.html">FHIR:Bundle</a>
  * @since 6.3
  */
+@JsonDeserialize(builder = Bundle.Builder.class)
 public class Bundle extends FhirResource implements CollectionResource<Entry> {
 	
 	private static final long serialVersionUID = 1L;
 
 	//FHIR header "resourceType" : "Bundle",
-	@JsonProperty
+	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	private String resourceType = "Bundle";
 
 	@Summary
@@ -83,8 +87,11 @@ public class Bundle extends FhirResource implements CollectionResource<Entry> {
 		return new Builder(bundleId);
 	}
 
+	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends FhirResource.Builder<Builder, Bundle> {
 
+		private String resourceType;
+		
 		private Identifier identifier;
 		
 		private Code type;
@@ -97,9 +104,20 @@ public class Bundle extends FhirResource implements CollectionResource<Entry> {
 		
 		private Signature signature;
 		
+		Builder() {
+		}
+		
 		public Builder(String cdoId) {
 			super(cdoId);
 		}
+
+		/*
+		 * Ignored in the constructor, only needed for deserialization
+		 */
+//		public Builder resourceType(final String resourceType) {
+//			this.resourceType = resourceType;
+//			return getSelf();
+//		}
 
 		public Builder identifier(final Identifier identifer) {
 			this.identifier = identifer;

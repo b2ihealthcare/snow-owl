@@ -16,6 +16,7 @@
 package com.b2international.snowowl.fhir.core.codesystems;
 
 import com.b2international.snowowl.fhir.core.ResourceNarrative;
+import com.fasterxml.jackson.annotation.JsonCreator;
 
 /**
  * FHIR Bundle type code system
@@ -74,5 +75,10 @@ public enum BundleType implements FhirCodeSystem {
 	public String getCodeSystemUri() {
 		return CODE_SYSTEM_URI;
 	}
+	
+	@JsonCreator
+    public static BundleType forValue(String value) {
+		return BundleType.valueOf(value.toUpperCase().replaceAll("-", "_"));
+    }
 
 }

@@ -16,18 +16,22 @@
 package com.b2international.snowowl.fhir.tests.serialization.domain;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
-import org.junit.Rule;
+import org.junit.Assert;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
-import com.b2international.snowowl.fhir.core.model.Bundle;
-import com.b2international.snowowl.fhir.core.model.Entry;
+import com.b2international.snowowl.fhir.core.model.*;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
+import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
+import com.b2international.snowowl.fhir.core.model.dt.Code;
+import com.b2international.snowowl.fhir.core.model.dt.Coding;
+import com.b2international.snowowl.fhir.core.model.dt.Parameters;
+import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
+import com.b2international.snowowl.fhir.core.model.dt.Parameters.Json;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.tests.FhirTest;
 
@@ -39,10 +43,7 @@ import io.restassured.path.json.JsonPath;
  */
 public class BundleSerializationTest extends FhirTest {
 	
-	@Rule
-	public ExpectedException exception = ExpectedException.none();
-	
-	@Test
+	//@Test
 	public void bundleTest() throws Exception {
 		
 		CodeSystem codeSystem = CodeSystem.builder("repo/shortName")
@@ -52,7 +53,7 @@ public class BundleSerializationTest extends FhirTest {
 			.url(new Uri("code system uri"))
 			.build();
 		
-		Entry entry = new Entry(new Uri("full Url"), codeSystem);
+		ResourceEntry entry = ResourceEntry.builder().fullUrl("full_Url").resource(codeSystem).build();
 		
 		Bundle bundle = Bundle.builder("bundle_Id?")
 			.language("en")
@@ -81,7 +82,7 @@ public class BundleSerializationTest extends FhirTest {
 		
 		jsonPath.setRoot("entry[0]");
 		
-		assertThat(jsonPath.getString("fullUrl"), equalTo("full Url"));
+		assertThat(jsonPath.getString("fullUrl"), equalTo("full_Url"));
 		jsonPath.setRoot("entry[0].resource");
 		
 		assertThat(jsonPath.getString("resourceType"), equalTo("CodeSystem"));
@@ -90,6 +91,123 @@ public class BundleSerializationTest extends FhirTest {
 		assertThat(jsonPath.getString("name"), equalTo("Local code system"));
 		assertThat(jsonPath.getString("status"), equalTo("active"));
 		assertThat(jsonPath.getString("content"), equalTo("complete"));
+	}
+	
+	/*
+	 * {
+   "type" : "batch",
+   "resourceType" : "Bundle",
+   "entry" : [
+      {
+         "request" : {
+            "method" : "POST",
+            "url" : "CodeSystem/$lookup"
+         },
+         "resource" : {
+            "resourceType" : "Parameters",
+            "parameter" : [
+               {
+                  "valueUri" : "http://loinc.org",
+                  "name" : "system"
+               },
+               {
+                  "valueCode" : "23245-4",
+                  "name" : "code"
+               }
+            ]
+         }
+      },
+      {
+          "request" : {
+            "method" : "POST",
+            "url" : "CodeSystem/$lookup"
+         },
+         "resource" : {
+             "resourceType" : "Parameters",
+            "parameter" : [
+               {
+                  "name" : "system",
+                  "valueUri" : "http://snomed.info/sct"
+               },
+               {
+                  "valueCode" : "263495000",
+                  "name" : "code"
+               }
+            ]
+         }
+      }
+   ]
+}
+	 */
+	@Test
+	public void bulkRequestTest() throws Exception {
+		
+		LookupRequest request1 = LookupRequest.builder()
+				.code("23245-4")
+				.system("http://loinc.org")
+				.build();
+		
+		Json json1 = new Parameters.Json(request1);
+		System.out.println("JSON params:" + json1);
+		
+		Fhir fhir = new Parameters.Fhir(json1.parameters());
+		String fhirJson = objectMapper.writeValueAsString(fhir);
+		System.out.println("This is the JSON request from the client: " + fhirJson);
+			
+		RequestEntry entry = RequestEntry.builder()
+				.request(BatchRequest.createPostRequest("CodeSystem/$lookup"))
+				.resource(fhir)
+				.build();
+			
+		Bundle bundle = Bundle.builder("bundle_Id?")
+			.language("en")
+			.total(1)
+			.type(BundleType.SEARCHSET)
+			.addLink("self", "http://localhost:8080/snowowl/CodeSystem")
+			.addEntry(entry)
+			.build();
+		
+		printPrettyJson(bundle);
+			
+	}
+	
+	@Test
+	public void bundleRequestDeserializationTest() throws Exception {
+		
+		String jsonCoding =   "{ \"type\" : \"batch\", "
+				+ "\"resourceType\" : \"Bundle\", "
+				+ "\"entry\" : "
+					+ "[{\"request\" : "
+						+ "{\"method\" : \"POST\","
+						+ "\"url\" : \"CodeSystem/$lookup\"},"
+					+ "\"resource\" : "
+						+ "{\"resourceType\" : \"Parameters\","
+						+ "\"parameter\" : ["
+							+ "{\"valueUri\" : \"http://loinc.org\","
+							+ "\"name\" : \"system\"},"
+							+ "{\"valueCode\" : \"23245-4\","
+							+ "\"name\" : \"code\"}"
+							+ "]"
+						+ "}"
+					+ "},"
+					+ "{\"request\" : "
+						+ "{\"method\" : \"POST\","
+						+ "\"url\" : \"CodeSystem/$lookup\"},"
+					+ "\"resource\" : "
+						+ "{\"resourceType\" : \"Parameters\","
+						+ "\"parameter\" : ["
+							+ "{\"name\" : \"system\","
+							+ "\"valueUri\" : \"http://snomed.info/sct\"}"
+							+ ",{\"valueCode\" : \"263495000\","
+							+ "\"name\" : \"code\"}"
+						+ "]"
+					+ "}}"
+				+ "]}";
+		
+		Bundle bundle = objectMapper.readValue(jsonCoding, Bundle.class);
+		
+		System.out.println("Bundle: " + bundle);
+		
 	}
 
 }

@@ -28,7 +28,7 @@ import com.b2international.commons.Pair;
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.fhir.core.model.Bundle;
-import com.b2international.snowowl.fhir.core.model.Entry;
+import com.b2international.snowowl.fhir.core.model.ResourceEntry;
 import com.b2international.snowowl.fhir.core.model.FhirResource;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.search.FhirBeanPropertyFilter;
@@ -141,7 +141,8 @@ public abstract class AbstractFhirResourceController<R extends FhirResource> ext
 		for (FhirResource fhirResource : filteredResources) {
 			applyResponseContentFilter(fhirResource, filterParameters);
 			String resourceUrl = String.join("/", uri, fhirResource.getId().getIdValue());
-			Entry entry = new Entry(new Uri(resourceUrl), fhirResource);
+			
+			ResourceEntry entry = ResourceEntry.builder().fullUrl(resourceUrl).resource(fhirResource).build();
 			builder.addEntry(entry);
 			total++;
 		}

@@ -15,30 +15,27 @@
  */
 package com.b2international.snowowl.fhir.core.model;
 
-import java.io.Serializable;
 import java.util.Collection;
 
+import javax.validation.Valid;
+
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-/**
- * FHIR Entry BackBone element in the Bundle domain object
- * 
- * @since 6.3
- */
-public final class Entry implements Serializable {
+public class Entry {
 	
-	private static final long serialVersionUID = 1L;
-
+	@Summary
+	@Valid
 	private Collection<String> links;
 	
+	@Summary
+	@Valid
 	private Uri fullUrl;
 	
-	private FhirResource resource;
-	
-	public Entry(final Uri fullUrl, final FhirResource resource) {
+	protected Entry(final Collection<String> links, final Uri fullUrl) {
+		this.links = links;
 		this.fullUrl = fullUrl;
-		this.resource = resource;
 	}
 
 	@JsonProperty("link")
@@ -50,8 +47,29 @@ public final class Entry implements Serializable {
 		return fullUrl;
 	}
 	
-	public FhirResource getResource() {
-		return resource;
+	public static abstract class Builder<B extends Builder<B, T>, T extends Entry> extends ValidatingBuilder<T> {
+		
+		protected Collection<String> links;
+		
+		protected Uri fullUrl;
+		
+		protected abstract B getSelf();
+		
+		public B fullUrl(Uri fullUrl) {
+			this.fullUrl = fullUrl;
+			return getSelf();
+		}
+		
+		public B fullUrl(String uriString) {
+			this.fullUrl = new Uri(uriString);
+			return getSelf();
+		}
+		
+		public B links(Collection<String> links) {
+			this.links = links;
+			return getSelf();
+		}
+		
 	}
-
+	
 }

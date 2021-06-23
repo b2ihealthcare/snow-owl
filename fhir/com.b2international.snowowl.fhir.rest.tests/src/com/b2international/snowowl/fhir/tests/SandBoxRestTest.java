@@ -63,7 +63,11 @@ public class SandBoxRestTest extends FhirRestTest {
 		.around(new BundleStartRule("com.b2international.snowowl.core.rest"));
 	
 	
-	@Test
+	public void bulkRequestTest() {
+		
+	}
+	
+	//@Test
 	public void invalidCodeGetTest2() throws Exception {
 		
 		String responseString = givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
