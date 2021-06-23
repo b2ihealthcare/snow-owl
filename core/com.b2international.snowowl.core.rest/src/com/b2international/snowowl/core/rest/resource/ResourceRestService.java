@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.b2international.index.revision.Commit;
 import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.Resources;
+import com.b2international.snowowl.core.commit.CommitInfo;
 import com.b2international.snowowl.core.commit.CommitInfos;
 import com.b2international.snowowl.core.context.ResourceRepositoryRequestBuilder;
 import com.b2international.snowowl.core.domain.RepositoryContext;
@@ -51,6 +52,10 @@ import io.swagger.annotations.ApiResponses;
 @RestController
 @RequestMapping("/resources")
 public class ResourceRestService extends AbstractRestService {
+	
+	public ResourceRestService() {
+		super(Commit.Fields.ALL);
+	}
 
 	@ApiOperation(value = "Retrive Resources", notes = "Returns a collection resource containing all/filtered registered Resources."
 			+ "<p>Results are by default sorted by ID.")
@@ -58,17 +63,29 @@ public class ResourceRestService extends AbstractRestService {
 			@ApiResponse(code = 400, message = "Bad Request", response = RestApiError.class) })
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public Promise<Resources> searchByGet(final ResourceRestSearch params) {
-		return ResourceRequests.prepareSearch().filterByIds(params.getId()).filterByResourceType(params.getResourceType())
-				.filterByTitleExact(params.getTitleExact()).filterByTitle(params.getTitle()).filterByToolingIds(params.getToolingId())
-				.setLimit(params.getLimit()).setExpand(params.getExpand()).setSearchAfter(params.getSearchAfter())
-				.sortBy(extractSortFields(params.getSort())).buildAsync().execute(getBus());
+		return ResourceRequests
+				.prepareSearch()
+				.filterByIds(params.getId())
+				.filterByResourceType(params.getResourceType())
+				.filterByTitleExact(params.getTitleExact())
+				.filterByTitle(params.getTitle())
+				.filterByToolingIds(params.getToolingId())
+				.setLimit(params.getLimit())
+				.setExpand(params.getExpand())
+				.setSearchAfter(params.getSearchAfter())
+				.sortBy(extractSortFields(params.getSort()))
+				.buildAsync()
+				.execute(getBus());
 	}
 
 	@ApiOperation(value = "Retrieve resource by it's unique identifier", notes = "Returns generic information about a single resource associated to the given unique identifier.")
 	@ApiResponses({ @ApiResponse(code = 200, message = "OK"), @ApiResponse(code = 404, message = "Not Found", response = RestApiError.class) })
 	@GetMapping(value = "/{resourceId}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public Promise<Resource> get(@ApiParam(value = "The resource identifier") @PathVariable(value = "resourceId") final String resourceId) {
-		return ResourceRequests.prepareGet(resourceId).buildAsync().execute(getBus());
+		return ResourceRequests
+				.prepareGet(resourceId)
+				.buildAsync()
+				.execute(getBus());
 	}
 
 	@ApiOperation(value = "Retrive all resource commits", notes = "Returns a collection, that contains all/filtered resource commits")
