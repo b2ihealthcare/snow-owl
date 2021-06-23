@@ -15,16 +15,19 @@
  */
 package com.b2international.snowowl.fhir.core.model;
 
-import java.io.Serializable;
 import java.util.Collection;
 
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 /**
- * FHIR Entry BackBone element in the Bundle domain object
+ * Entry to encapsulate a resource in a {@link Bundle}
  * 
  * @since 8.0.0
  */
+@JsonDeserialize(using = JsonDeserializer.None.class, builder = ResourceEntry.Builder.class)
 public class ResourceEntry extends Entry {
 	
 	private FhirResource resource;
@@ -42,7 +45,10 @@ public class ResourceEntry extends Entry {
 		return new Builder();
 	}
 	
+	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends Entry.Builder<Builder, ResourceEntry> {
+		
+		Builder() {}
 		
 		private FhirResource fhirResource;
 		

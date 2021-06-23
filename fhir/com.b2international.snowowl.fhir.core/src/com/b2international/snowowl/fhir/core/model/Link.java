@@ -53,5 +53,13 @@ public class Link {
 	public Link(String urlString) {
 		this.url = new Uri(urlString);
 	}
+	
+	public String getRelation() {
+		return relation;
+	}
+	
+	public Uri getUrl() {
+		return url;
+	}
 
 }

@@ -20,12 +20,15 @@ import java.util.Collection;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 /**
- * 
+ * Entry to encapsulate a request in a {@link Bundle}
  * @since 8.0.0
- *
  */
+@JsonDeserialize(using = JsonDeserializer.None.class, builder = RequestEntry.Builder.class)
 public class RequestEntry extends Entry {
 	
 	private BatchRequest request;
@@ -52,6 +55,7 @@ public class RequestEntry extends Entry {
 		return new Builder();
 	}
 	
+	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends Entry.Builder<Builder, RequestEntry> {
 		
 		private BatchRequest request;

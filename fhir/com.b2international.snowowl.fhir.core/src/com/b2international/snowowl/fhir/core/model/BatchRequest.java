@@ -20,6 +20,7 @@ import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.b2international.snowowl.fhir.core.search.Summary;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -40,7 +41,8 @@ public class BatchRequest {
 	@JsonProperty
 	private Uri url;
 	
-	public BatchRequest(final Code method, final Uri url) {
+	@JsonCreator
+	public BatchRequest(@JsonProperty("method") final Code method, @JsonProperty("url") final Uri url) {
 		this.method = method;
 		this.url = url;
 	}
@@ -53,5 +55,12 @@ public class BatchRequest {
 		return new BatchRequest(HttpVerb.POST.getCode(), new Uri(url));
 	}
 	
+	public Code getMethod() {
+		return method;
+	}
+	
+	public Uri getUrl() {
+		return url;
+	}
 	
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,18 +17,25 @@ package com.b2international.snowowl.fhir.tests.serialization.domain;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-import org.junit.Assert;
+import java.util.Iterator;
+
 import org.junit.Test;
 
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
+import com.b2international.snowowl.fhir.core.codesystems.HttpVerb;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
-import com.b2international.snowowl.fhir.core.model.*;
+import com.b2international.snowowl.fhir.core.model.BatchRequest;
+import com.b2international.snowowl.fhir.core.model.Bundle;
+import com.b2international.snowowl.fhir.core.model.Entry;
+import com.b2international.snowowl.fhir.core.model.Link;
+import com.b2international.snowowl.fhir.core.model.RequestEntry;
+import com.b2international.snowowl.fhir.core.model.ResourceEntry;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
-import com.b2international.snowowl.fhir.core.model.dt.Code;
-import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Json;
@@ -43,8 +50,8 @@ import io.restassured.path.json.JsonPath;
  */
 public class BundleSerializationTest extends FhirTest {
 	
-	//@Test
-	public void bundleTest() throws Exception {
+	@Test
+	public void resourceBundleBuildTest() throws Exception {
 		
 		CodeSystem codeSystem = CodeSystem.builder("repo/shortName")
 			.status(PublicationStatus.ACTIVE)
@@ -65,7 +72,7 @@ public class BundleSerializationTest extends FhirTest {
 		
 		applyFilter(bundle);
 		
-//		printPrettyJson(bundle);
+		printPrettyJson(bundle);
 		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(bundle));
 		
@@ -93,79 +100,53 @@ public class BundleSerializationTest extends FhirTest {
 		assertThat(jsonPath.getString("content"), equalTo("complete"));
 	}
 	
-	/*
-	 * {
-   "type" : "batch",
-   "resourceType" : "Bundle",
-   "entry" : [
-      {
-         "request" : {
-            "method" : "POST",
-            "url" : "CodeSystem/$lookup"
-         },
-         "resource" : {
-            "resourceType" : "Parameters",
-            "parameter" : [
-               {
-                  "valueUri" : "http://loinc.org",
-                  "name" : "system"
-               },
-               {
-                  "valueCode" : "23245-4",
-                  "name" : "code"
-               }
-            ]
-         }
-      },
-      {
-          "request" : {
-            "method" : "POST",
-            "url" : "CodeSystem/$lookup"
-         },
-         "resource" : {
-             "resourceType" : "Parameters",
-            "parameter" : [
-               {
-                  "name" : "system",
-                  "valueUri" : "http://snomed.info/sct"
-               },
-               {
-                  "valueCode" : "263495000",
-                  "name" : "code"
-               }
-            ]
-         }
-      }
-   ]
-}
-	 */
 	@Test
-	public void bulkRequestTest() throws Exception {
+	public void bulkRequestBuildTest() throws Exception {
 		
-		LookupRequest request1 = LookupRequest.builder()
+		LookupRequest lookupRequest = LookupRequest.builder()
 				.code("23245-4")
 				.system("http://loinc.org")
 				.build();
 		
-		Json json1 = new Parameters.Json(request1);
+		Json json1 = new Parameters.Json(lookupRequest);
 		System.out.println("JSON params:" + json1);
 		
-		Fhir fhir = new Parameters.Fhir(json1.parameters());
-		String fhirJson = objectMapper.writeValueAsString(fhir);
-		System.out.println("This is the JSON request from the client: " + fhirJson);
-			
 		RequestEntry entry = RequestEntry.builder()
 				.request(BatchRequest.createPostRequest("CodeSystem/$lookup"))
-				.resource(fhir)
+				.resource(new Parameters.Fhir(json1.parameters()))
 				.build();
 			
-		Bundle bundle = Bundle.builder("bundle_Id?")
+		Bundle bundle = Bundle.builder("bundle_id")
 			.language("en")
 			.total(1)
 			.type(BundleType.SEARCHSET)
 			.addLink("self", "http://localhost:8080/snowowl/CodeSystem")
 			.addEntry(entry)
 			.build();
+		
+		assertEquals("bundle_id", bundle.getId().getIdValue());
+		assertEquals("en", bundle.getLanguage().getCodeValue());
+		assertEquals(1, bundle.getTotal());
+		assertEquals(BundleType.SEARCHSET.getCode(), bundle.getType());
+		Link link = bundle.getLink().iterator().next();
+		assertEquals("self", link.getRelation());
+		assertEquals("http://localhost:8080/snowowl/CodeSystem", link.getUrl().getUriValue());
+		
+		Entry bundleEntry = bundle.getItems().iterator().next();
+		assertTrue(bundleEntry instanceof RequestEntry);
+		RequestEntry requestEntry = (RequestEntry) bundleEntry;
+		BatchRequest batchRequest = requestEntry.getRequest();
+		
+		assertEquals(HttpVerb.POST.getCode(), batchRequest.getMethod());
+		assertEquals("CodeSystem/$lookup", batchRequest.getUrl().getUriValue());
+		
+		Fhir requestResource = requestEntry.getRequestResource();
+		
+		//Back to Domain JSON...
+		Json json = new Parameters.Json(requestResource);
+		LookupRequest returnedLookupRequest = objectMapper.convertValue(json, LookupRequest.class);
+		assertEquals("23245-4", returnedLookupRequest.getCode());
+		assertEquals("http://loinc.org", returnedLookupRequest.getSystem());
 		
 		printPrettyJson(bundle);
 			
@@ -206,8 +187,40 @@ public class BundleSerializationTest extends FhirTest {
 		
 		Bundle bundle = objectMapper.readValue(jsonCoding, Bundle.class);
 		
-		System.out.println("Bundle: " + bundle);
+		assertEquals(BundleType.BATCH.getCode(), bundle.getType());
 		
+		Iterator<Entry> iterator = bundle.getItems().iterator();
+		Entry bundleEntry = iterator.next();
+		assertTrue(bundleEntry instanceof RequestEntry);
+		RequestEntry requestEntry = (RequestEntry) bundleEntry;
+		BatchRequest batchRequest = requestEntry.getRequest();
+		
+		assertEquals(HttpVerb.POST.getCode(), batchRequest.getMethod());
+		assertEquals("CodeSystem/$lookup", batchRequest.getUrl().getUriValue());
+		
+		Fhir requestResource = requestEntry.getRequestResource();
+		
+		//Back to Domain JSON...
+		Json json = new Parameters.Json(requestResource);
+		LookupRequest returnedLookupRequest = objectMapper.convertValue(json, LookupRequest.class);
+		assertEquals("23245-4", returnedLookupRequest.getCode());
+		assertEquals("http://loinc.org", returnedLookupRequest.getSystem());
+		
+		bundleEntry = iterator.next();
+		assertTrue(bundleEntry instanceof RequestEntry);
+		requestEntry = (RequestEntry) bundleEntry;
+		batchRequest = requestEntry.getRequest();
+		
+		assertEquals(HttpVerb.POST.getCode(), batchRequest.getMethod());
+		assertEquals("CodeSystem/$lookup", batchRequest.getUrl().getUriValue());
+		
+		requestResource = requestEntry.getRequestResource();
+		
+		//Back to Domain JSON...
+		json = new Parameters.Json(requestResource);
+		returnedLookupRequest = objectMapper.convertValue(json, LookupRequest.class);
+		assertEquals("263495000", returnedLookupRequest.getCode());
+		assertEquals("http://snomed.info/sct", returnedLookupRequest.getSystem());
 	}
 
 }

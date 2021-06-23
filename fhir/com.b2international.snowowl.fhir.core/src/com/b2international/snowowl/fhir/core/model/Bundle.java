@@ -17,18 +17,24 @@ package com.b2international.snowowl.fhir.core.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import javax.validation.Valid;
+import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import com.b2international.commons.collections.Collections3;
 import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
-import com.b2international.snowowl.fhir.core.model.dt.*;
+import com.b2international.snowowl.fhir.core.model.dt.Code;
+import com.b2international.snowowl.fhir.core.model.dt.Id;
+import com.b2international.snowowl.fhir.core.model.dt.Identifier;
+import com.b2international.snowowl.fhir.core.model.dt.Instant;
+import com.b2international.snowowl.fhir.core.model.dt.Signature;
+import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
@@ -42,11 +48,13 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 @JsonDeserialize(builder = Bundle.Builder.class)
 public class Bundle extends FhirResource implements CollectionResource<Entry> {
 	
+	private static final String RESOURCE_TYPE_BUNDLE = "Bundle";
+
 	private static final long serialVersionUID = 1L;
 
-	//FHIR header "resourceType" : "Bundle",
-	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
-	private String resourceType = "Bundle";
+	//FHIR Json header "resourceType" : "Bundle",
+	@JsonProperty
+	private String resourceType;
 
 	@Summary
 	private Identifier identifier;
@@ -68,19 +76,25 @@ public class Bundle extends FhirResource implements CollectionResource<Entry> {
 	private Collection<Link> link;
 	
 	@Summary
-	private Collection<Entry> entry;
+	private List<Entry> entry;
 	
 	@Summary
 	@Valid
 	private Signature signature;
 	
-	private Bundle(Id id, final Meta meta, final Uri impliciteRules, Code language, Identifier identifier, Code type, int total, Collection<Link> links, Collection<Entry> entries, final Signature signature) {
+	private Bundle(Id id, final String resourceType, final Meta meta, final Uri impliciteRules, Code language, Identifier identifier, Code type, int total, Collection<Link> links, List<Entry> entries, final Signature signature) {
 		super(id, meta, impliciteRules, language);
+		this.resourceType = resourceType;
 		this.identifier = identifier;
 		this.type = type;
 		this.total = total;
 		this.link = links;
 		this.entry = entries;
+	}
+	
+	@AssertTrue(message = "Resource type must be 'Bundle'")
+	private boolean isResourceTypeValid() {
+		return RESOURCE_TYPE_BUNDLE.equals(resourceType);
 	}
 	
 	public static Builder builder(String bundleId) {
@@ -90,7 +104,7 @@ public class Bundle extends FhirResource implements CollectionResource<Entry> {
 	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends FhirResource.Builder<Builder, Bundle> {
 
-		private String resourceType;
+		private String resourceType  = RESOURCE_TYPE_BUNDLE;
 		
 		private Identifier identifier;
 		
@@ -100,7 +114,7 @@ public class Bundle extends FhirResource implements CollectionResource<Entry> {
 		
 		private Collection<Link> links;
 		
-		private Collection<Entry> entries;
+		private List<Entry> entries;
 		
 		private Signature signature;
 		
@@ -114,10 +128,10 @@ public class Bundle extends FhirResource implements CollectionResource<Entry> {
 		/*
 		 * Ignored in the constructor, only needed for deserialization
 		 */
-//		public Builder resourceType(final String resourceType) {
-//			this.resourceType = resourceType;
-//			return getSelf();
-//		}
+		public Builder resourceType(final String resourceType) {
+			this.resourceType = resourceType;
+			return getSelf();
+		}
 
 		public Builder identifier(final Identifier identifer) {
 			this.identifier = identifer;
@@ -175,14 +189,14 @@ public class Bundle extends FhirResource implements CollectionResource<Entry> {
 
 		@Override
 		protected Bundle doBuild() {
-			return new Bundle(id, meta, implicitRules, language, identifier, type, total, links, entries, signature);
+			return new Bundle(id, resourceType, meta, implicitRules, language, identifier, type, total, links, entries, signature);
 		}
 
 	}
 	
 	@JsonIgnore
 	@Override
-	public Collection<Entry> getItems() {
+	public List<Entry> getItems() {
 		return Collections3.toImmutableList(entry);
 	}
 	
