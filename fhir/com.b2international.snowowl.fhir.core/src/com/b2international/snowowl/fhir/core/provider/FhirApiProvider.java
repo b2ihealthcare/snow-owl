@@ -95,7 +95,7 @@ public abstract class FhirApiProvider {
 	protected Version findCodeSystemVersion(ComponentURI componentURI, String location) {
 		return ResourceRequests.prepareSearchVersion()
 			.one()
-			.filterById(componentURI.resourceUri().toString())
+			.filterById(componentURI.resourceUri().withoutResourceType())
 			.buildAsync()
 			.execute(getBus())
 			.getSync()

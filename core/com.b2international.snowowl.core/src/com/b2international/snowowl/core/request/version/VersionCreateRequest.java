@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.request.version;
 
 import static com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions.CREATE_VERSION;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.Map.Entry;
@@ -179,12 +180,14 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 				new ResourceRepositoryCommitRequestBuilder()
 				.setBody(tx -> {
 					tx.add(VersionDocument.builder()
-							.id(resource.withPath(version).toString())
+							.id(resource.withPath(version).withoutResourceType())
 							.version(version)
 							.description(description)
 							.effectiveTime(EffectiveTimes.getEffectiveTime(effectiveTime))
 							.resource(resource)
 							.branchPath(resourceToVersion.getRelativeBranchPath(version))
+							.createdAt(Instant.now().toEpochMilli())
+							.toolingId(resourceToVersion.getToolingId())
 							.build());
 					return Boolean.TRUE;
 				})

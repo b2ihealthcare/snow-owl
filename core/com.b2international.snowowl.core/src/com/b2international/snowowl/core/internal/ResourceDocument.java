@@ -15,17 +15,10 @@
  */
 package com.b2international.snowowl.core.internal;
 
-import static com.b2international.index.query.Expressions.dismaxWithScoreCategories;
-import static com.b2international.index.query.Expressions.exactMatch;
-import static com.b2international.index.query.Expressions.matchAny;
-import static com.b2international.index.query.Expressions.matchBooleanPrefix;
-import static com.b2international.index.query.Expressions.matchTextAll;
-import static com.b2international.index.query.Expressions.matchTextAny;
-import static com.b2international.index.query.Expressions.matchTextFuzzy;
-import static com.b2international.index.query.Expressions.matchTextParsed;
-import static com.b2international.index.query.Expressions.regexp;
+import static com.b2international.index.query.Expressions.*;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -37,14 +30,15 @@ import com.b2international.index.mapping.Field;
 import com.b2international.index.mapping.FieldAlias;
 import com.b2international.index.mapping.FieldAlias.FieldAliasType;
 import com.b2international.index.query.Expression;
+import com.b2international.index.revision.RevisionBranchPoint;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.repository.RevisionDocument;
 import com.b2international.snowowl.core.request.TermFilter;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 8.0
@@ -84,6 +78,7 @@ public final class ResourceDocument extends RevisionDocument {
 		public static final String CONTACT = "contact";
 		public static final String USAGE = "usage";
 		public static final String PURPOSE = "purpose";
+		public static final String CREATED_AT = "createdAt";
 		public static final String BUNDLE_ID = "bundleId";
 		
 		// specialized resource fields
@@ -99,7 +94,23 @@ public final class ResourceDocument extends RevisionDocument {
 		private static final String TITLE_EXACT    = TITLE + ".exact";
 		private static final String TITLE_TEXT     = TITLE + ".text";
 		
-		public static final Set<String> SORT_FIELDS = ImmutableSet.of(RESOURCE_TYPE, TITLE, LANGUAGE, STATUS, OWNER, USAGE);
+		public static final Set<String> SORT_FIELDS = Set.of(
+			RESOURCE_TYPE,
+			ID,
+			URL,
+			TITLE, 
+			LANGUAGE, 
+			STATUS, 
+			OWNER, 
+			USAGE,
+			CREATED_AT,
+			BUNDLE_ID,
+			OID,
+			BRANCH_PATH, 
+			TOOLING_ID,
+			EXTENSION_OF, 
+			UPGRADE_OF
+		);
 	}
 	
 	/**
@@ -258,6 +269,9 @@ public final class ResourceDocument extends RevisionDocument {
 		private ResourceURI upgradeOf;
 		private Map<String, Object> settings;
 		
+		// derived fields, access only
+		private Long createdAt;
+		
 		@JsonCreator
 		private Builder() {
 		}
@@ -352,6 +366,12 @@ public final class ResourceDocument extends RevisionDocument {
 			return getSelf();
 		}
 		
+		@JsonSetter
+		Builder createdAt(Long createdAt) {
+			this.createdAt = createdAt;
+			return getSelf();
+		}
+		
 		@Override
 		protected Builder getSelf() {
 			return this;
@@ -379,7 +399,8 @@ public final class ResourceDocument extends RevisionDocument {
 				toolingId,
 				extensionOf,
 				upgradeOf,
-				settings
+				settings,
+				createdAt
 			);
 		}
 		
@@ -414,6 +435,9 @@ public final class ResourceDocument extends RevisionDocument {
 	private final ResourceURI upgradeOf;
 	private final Map<String, Object> settings;
 	
+	// derived fields, getters only, mapping generation requires a field to be specified
+	private final Long createdAt;
+	
 	public ResourceDocument(
 			final String id, 
 			final String iconId, 
@@ -434,7 +458,8 @@ public final class ResourceDocument extends RevisionDocument {
 			final String toolingId,
 			final ResourceURI extensionOf,
 			final ResourceURI upgradeOf,
-			final Map<String, Object> settings) {
+			final Map<String, Object> settings,
+			final Long createdAt) {
 		super(id, iconId);
 		this.resourceType = resourceType;
 		this.url = url;
@@ -454,6 +479,7 @@ public final class ResourceDocument extends RevisionDocument {
 		this.extensionOf = extensionOf;
 		this.upgradeOf = upgradeOf;
 		this.settings = settings;
+		this.createdAt = createdAt;
 	}
 
 	@JsonIgnore
@@ -532,5 +558,11 @@ public final class ResourceDocument extends RevisionDocument {
 	public Map<String, Object> getSettings() {
 		return settings;
 	}
-
+	
+	public Long getCreatedAt() {
+		return Optional.ofNullable(createdAt)
+				.or(() -> Optional.ofNullable(getCreated()).map(RevisionBranchPoint::getTimestamp))
+				.orElse(null);
+	}
+	
 }

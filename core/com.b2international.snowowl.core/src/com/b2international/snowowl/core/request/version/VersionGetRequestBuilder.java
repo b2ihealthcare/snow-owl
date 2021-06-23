@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.core.request.version;
 
-import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.context.ResourceRepositoryRequestBuilder;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.GetResourceRequestBuilder;
@@ -29,8 +28,8 @@ public final class VersionGetRequestBuilder
 		extends GetResourceRequestBuilder<VersionGetRequestBuilder, VersionSearchRequestBuilder, RepositoryContext, Versions, Version>
 		implements ResourceRepositoryRequestBuilder<Version> {
 
-	public VersionGetRequestBuilder(ResourceURI versionUri) {
-		super(new VersionGetRequest(versionUri == null ? null : versionUri.toString()));
+	public VersionGetRequestBuilder(String versionId) {
+		super(new VersionGetRequest(versionId));
 	}
-
+	
 }

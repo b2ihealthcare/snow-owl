@@ -31,6 +31,7 @@ import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.index.query.Query;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.RepositoryManager;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
@@ -38,6 +39,7 @@ import com.b2international.snowowl.core.request.TermFilter;
 import com.b2international.snowowl.core.version.VersionDocument;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
+import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
 import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.Bundle.Builder;
@@ -46,6 +48,7 @@ import com.b2international.snowowl.fhir.core.model.Meta;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Instant;
+import com.b2international.snowowl.fhir.core.model.dt.Narrative;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
 
@@ -89,9 +92,20 @@ final class FhirCodeSystemSearchRequest extends SearchResourceRequest<Repository
 	protected Bundle doExecute(RepositoryContext context) throws IOException {
 		// apply proper field selection
 		List<String> fields = Lists.newArrayList(fields());
-		// if any fields defined for field selection, then make sure toolingId is part of the selection, so it is returned and will be available when needed
-		if (!fields.isEmpty() && !fields.contains(ResourceDocument.Fields.TOOLING_ID)) {
-			fields.add(ResourceDocument.Fields.TOOLING_ID);
+		// if any fields defined for field selection, then make sure toolingId, resourceType and id is part of the selection, so it is returned and will be available when needed
+		if (!fields.isEmpty()) {
+			if (!fields.contains(ResourceDocument.Fields.ID)) {
+				fields.add(ResourceDocument.Fields.ID);
+			}
+			if (!fields.contains(ResourceDocument.Fields.RESOURCE_TYPE)) {
+				fields.add(ResourceDocument.Fields.RESOURCE_TYPE);
+			}
+			if (!fields.contains(ResourceDocument.Fields.TOOLING_ID)) {
+				fields.add(ResourceDocument.Fields.TOOLING_ID);
+			}
+			if (!fields.contains(ResourceDocument.Fields.CREATED_AT)) {
+				fields.add(ResourceDocument.Fields.CREATED_AT);
+			}
 		}
 		
 		// remove all fields that are not part of the current Code Code System model
@@ -103,7 +117,8 @@ final class FhirCodeSystemSearchRequest extends SearchResourceRequest<Repository
 		}
 		
 		// prepare filters
-		final ExpressionBuilder codeSystemQuery = Expressions.builder();
+		final ExpressionBuilder codeSystemQuery = Expressions.builder()
+				.filter(ResourceDocument.Expressions.resourceType(com.b2international.snowowl.core.codesystem.CodeSystem.RESOURCE_TYPE)); // CodeSystem and versions of CodeSystems
 		
 		addIdFilter(codeSystemQuery, ResourceDocument.Expressions::ids); // resource and version doc has id field
 		addFilter(codeSystemQuery, OptionKey.NAME, String.class, ResourceDocument.Expressions::ids); // apply _name filter to the id fields, we use the same value for both id and name
@@ -122,7 +137,7 @@ final class FhirCodeSystemSearchRequest extends SearchResourceRequest<Repository
 				.sortBy(querySortBy(context))
 				.build());
 		
-		// extract resource IDs and fetch all related core Resources
+		// TODO extract resource IDs and fetch all related core Resources
 			
 		return prepareBundle()
 				.entry(internalCodeSystems.stream().map(codeSystem -> toFhirCodeSystemEntry(context, codeSystem)).collect(Collectors.toList()))
@@ -147,22 +162,22 @@ final class FhirCodeSystemSearchRequest extends SearchResourceRequest<Repository
 	private CodeSystem toFhirCodeSystem(RepositoryContext context, ResourceFragment codeSystem) {
 		CodeSystem.Builder entry = CodeSystem.builder()
 				// mandatory fields
-				.id(codeSystem.id)
-				.status(PublicationStatus.UNKNOWN) // TODO support status on versions
+				.id(codeSystem.getId())
+				.status(PublicationStatus.UNKNOWN) // TODO support status on versions??
 				.meta(
 					Meta.builder()
-						// TODO lastUpdated placeholder value for now, compute based on whether this is a version of the resource or the NEXT/HEAD version of the resource
-						.lastUpdated(Instant.builder().instant(java.time.Instant.now()).build())
+						.lastUpdated(Instant.builder().instant(codeSystem.getCreatedAt()).build()) // createdAt returns version creation time or latest update of the resource :gold:
 					.build()
 				)
 				.content(CodeSystemContentMode.COMPLETE); // treat all CodeSystems complete by default, later we might add this field to the document, if needed
 		
 		// optional fields
 		// we are using the ID of the resource as machine readable name
-//		includeIfFieldSelected(CodeSystem.Fields.NAME, codeSystem::getId, entry::name);
-//		includeIfFieldSelected(CodeSystem.Fields.TITLE, codeSystem::getTitle, entry::title);
-//		includeIfFieldSelected(CodeSystem.Fields.URL, codeSystem::getUrl, entry::url);
-//		includeIfFieldSelected(CodeSystem.Fields.TEXT, () -> Narrative.builder().div("<div></div>").status(NarrativeStatus.EMPTY).build(), entry::text);
+		includeIfFieldSelected(CodeSystem.Fields.NAME, codeSystem::getId, entry::name);
+		includeIfFieldSelected(CodeSystem.Fields.TITLE, codeSystem::getTitle, entry::title);
+		includeIfFieldSelected(CodeSystem.Fields.URL, codeSystem::getUrl, entry::url);
+		includeIfFieldSelected(CodeSystem.Fields.TEXT, () -> Narrative.builder().div("<div></div>").status(NarrativeStatus.EMPTY).build(), entry::text);
+		includeIfFieldSelected(CodeSystem.Fields.VERSION, codeSystem::getVersion, entry::version);
 //		includeIfFieldSelected(CodeSystem.Fields.PUBLISHER, codeSystem::getOwner, entry::publisher);
 //		includeIfFieldSelected(CodeSystem.Fields.COPYRIGHT, codeSystem::getCopyright, entry::copyright);
 //		includeIfFieldSelected(CodeSystem.Fields.LANGUAGE, codeSystem::getLanguage, entry::language);
@@ -170,11 +185,11 @@ final class FhirCodeSystemSearchRequest extends SearchResourceRequest<Repository
 //		includeIfFieldSelected(CodeSystem.Fields.PURPOSE, codeSystem::getPurpose, entry::purpose);
 		
 		FhirCodeSystemResourceConverter converter = context.service(RepositoryManager.class)
-			.get(codeSystem.toolingId)
+			.get(codeSystem.getToolingId())
 			.optionalService(FhirCodeSystemResourceConverter.class)
 			.orElse(FhirCodeSystemResourceConverter.DEFAULT);
 		
-//		includeIfFieldSelected(CodeSystem.Fields.COUNT, () -> converter.count(context, codeSystem.getResourceURI()), entry::count);
+		includeIfFieldSelected(CodeSystem.Fields.COUNT, () -> converter.count(context, codeSystem.getResourceURI()), entry::count);
 		
 //		converter.expand(context, entry, codeSystem);
 		
@@ -190,22 +205,64 @@ final class FhirCodeSystemSearchRequest extends SearchResourceRequest<Repository
 	private static class ResourceFragment {
 		
 		@JsonProperty
-		String resourceType;
+		private String resourceType;
 		
 		@JsonProperty
-		String id;
+		private String id;
 		
 		@JsonProperty
-		String url;
+		private String url;
 		
 		@JsonProperty
-		String title;
+		private String title;
 		
 		@JsonProperty
-		String toolingId;
+		private String toolingId;
 		
 		@JsonProperty
-		String branchPath;
+		private String branchPath;
+		
+		@JsonProperty
+		private String version;
+		
+		@JsonProperty
+		private Long createdAt;
+		
+		public String getId() {
+			return id;
+		}
+		
+		public String getResourceType() {
+			return resourceType;
+		}
+		
+		public String getUrl() {
+			return url;
+		}
+		
+		public String getTitle() {
+			return title;
+		}
+		
+		public String getToolingId() {
+			return toolingId;
+		}
+		
+		public String getBranchPath() {
+			return branchPath;
+		}
+		
+		public String getVersion() {
+			return version;
+		}
+		
+		public Long getCreatedAt() {
+			return createdAt;
+		}
+		
+		public ResourceURI getResourceURI() {
+			return ResourceURI.of(resourceType, id);
+		}
 		
 	}
 	
