@@ -20,11 +20,10 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 import com.b2international.snowowl.snomed.core.ecl.SnomedEclEvaluationRequestTest;
+import com.b2international.snowowl.snomed.core.ecl.SnomedEclLabelerRequestTest;
 import com.b2international.snowowl.snomed.core.ecl.SnomedEclRewriterTest;
 import com.b2international.snowowl.snomed.core.ecl.SnomedEclShortcutTest;
 import com.b2international.snowowl.snomed.core.ecl.SnomedStatedEclEvaluationTest;
-import com.b2international.snowowl.snomed.core.ql.SnomedQueryEvaluationRequestTest;
-import com.b2international.snowowl.snomed.core.ql.SnomedQueryLabelerRequestTest;
 import com.b2international.snowowl.snomed.core.tree.TerminologyTreeTest;
 import com.b2international.snowowl.snomed.datastore.id.memory.DefaultSnomedIdentifierServiceRegressionTest;
 import com.b2international.snowowl.snomed.datastore.id.memory.DefaultSnomedIdentifierServiceTest;
@@ -75,9 +74,7 @@ import com.b2international.snowowl.snomed.validation.SnomedQueryValidationRuleEv
 	SnomedEclEvaluationRequestTest.class,
 	SnomedStatedEclEvaluationTest.class,
 	SnomedEclRewriterTest.class,
-	// QL test cases
-	SnomedQueryEvaluationRequestTest.class,
-	SnomedQueryLabelerRequestTest.class,
+	SnomedEclLabelerRequestTest.class,
 	SnomedEclShortcutTest.class,
 	SnomedDescriptionUtilsTest.class,
 	// Validate Rule Evaluators
