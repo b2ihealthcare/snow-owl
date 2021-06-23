@@ -33,6 +33,14 @@ public abstract class BaseResourceSearchRequestBuilder<RB extends BaseResourceSe
 	public RB filterByUrls(String urls) {
 		return addOption(OptionKey.URL, urls);
 	}
+
+	public RB filterByBundleId(String bundleId) {
+		return addOption(OptionKey.BUNDLE_ID, bundleId);
+	}
+
+	public RB filterByBundleIds(Iterable<String> bundleIds) {
+		return addOption(OptionKey.BUNDLE_ID, bundleIds);
+	}
 	
 	/**
 	 * Filter matches by a {@link TermFilter} configuration

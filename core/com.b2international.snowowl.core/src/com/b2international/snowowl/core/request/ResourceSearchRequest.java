@@ -51,16 +51,6 @@ final class ResourceSearchRequest extends BaseResourceSearchRequest<Resources> {
 		 * Filter matches by their currently associated working branch (exact match).
 		 */
 		BRANCH,
-
-		/**
-		 * Filter matches by their bundle ID.
-		 */
-		BUNDLE_ID,
-		
-		/**
-		 * HL7 registry OID
-		 */
-		OID, 
 	}
 
 	@Override
@@ -71,12 +61,11 @@ final class ResourceSearchRequest extends BaseResourceSearchRequest<Resources> {
 		addTitleFilter(queryBuilder);
 		addTitleExactFilter(queryBuilder);
 		addUrlFilter(queryBuilder);
+		addBundleFilter(queryBuilder);
 		
 		addFilter(queryBuilder, OptionKey.RESOURCE_TYPE, String.class, ResourceDocument.Expressions::resourceTypes);
 		addFilter(queryBuilder, OptionKey.TOOLING_ID, String.class, ResourceDocument.Expressions::toolingIds);
 		addFilter(queryBuilder, OptionKey.BRANCH, String.class, ResourceDocument.Expressions::branchPaths);
-		addFilter(queryBuilder, OptionKey.BUNDLE_ID, String.class, ResourceDocument.Expressions::bundleIds);
-		addFilter(queryBuilder, OptionKey.OID, String.class, ResourceDocument.Expressions::oids);
 		return queryBuilder.build();
 	}
 

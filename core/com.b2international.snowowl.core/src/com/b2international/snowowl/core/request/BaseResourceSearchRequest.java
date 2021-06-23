@@ -40,8 +40,16 @@ public abstract class BaseResourceSearchRequest<R>
 		TITLE,
 		/** "Smart" search by title (taking prefixes, stemming, etc. into account) */
 		TITLE_EXACT,
+		/**
+		 * Filter matches by their bundle ID.
+		 */
+		BUNDLE_ID,
 	}
 	
+	protected final void addBundleFilter(ExpressionBuilder queryBuilder) {
+		addFilter(queryBuilder, OptionKey.BUNDLE_ID, String.class, ResourceDocument.Expressions::bundleIds);
+	}
+
 	protected final void addUrlFilter(ExpressionBuilder queryBuilder) {
 		addFilter(queryBuilder, OptionKey.URL, String.class, ResourceDocument.Expressions::urls);
 	}
