@@ -33,7 +33,7 @@ import com.google.common.collect.ImmutableSortedSet;
  */
 public final class DefaultRevisionBranching extends BaseRevisionBranching {
 
-	private final AtomicLong branchIds = new AtomicLong(0L);
+	private final AtomicLong branchIds = new AtomicLong(RevisionBranch.MAIN_BRANCH_ID);
 	private final long mainBaseTimestamp;
 	private final long mainHeadTimestamp;
 	private final long mainBranchId;

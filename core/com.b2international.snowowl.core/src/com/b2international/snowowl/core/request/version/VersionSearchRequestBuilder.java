@@ -65,7 +65,7 @@ public final class VersionSearchRequestBuilder
 	 * @param versions - the version tags to look for.
 	 * @return
 	 */
-	public VersionSearchRequestBuilder filterByVersionId(Iterable<String> versions) {
+	public VersionSearchRequestBuilder filterByVersionIds(Iterable<String> versions) {
 		return addOption(OptionKey.VERSION, versions);
 	}
 	

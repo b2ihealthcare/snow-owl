@@ -64,6 +64,10 @@ public final class ResourceRequests {
 	}
 	
 	public static VersionGetRequestBuilder prepareGetVersion(ResourceURI versionUri) {
+		return prepareGetVersion(versionUri == null ? null : versionUri.withoutResourceType());
+	}
+	
+	public static VersionGetRequestBuilder prepareGetVersion(String versionUri) {
 		return new VersionGetRequestBuilder(versionUri);
 	}
 	
