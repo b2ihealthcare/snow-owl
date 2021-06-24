@@ -98,6 +98,7 @@ public class BundleRestService extends AbstractRestService {
 			@ApiParam(value="The bundle identifier")
 			@PathVariable(value="bundleId") 
 			final String bundleId,
+			
 			@RequestParam(value = "expand")
 			@ApiParam(value="expand", required = false) 
 			String expand) {
