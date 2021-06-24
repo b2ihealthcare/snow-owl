@@ -27,7 +27,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.b2international.index.revision.Commit;
 import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.Resources;
-import com.b2international.snowowl.core.commit.CommitInfo;
 import com.b2international.snowowl.core.commit.CommitInfos;
 import com.b2international.snowowl.core.context.ResourceRepositoryRequestBuilder;
 import com.b2international.snowowl.core.domain.RepositoryContext;
@@ -70,6 +69,7 @@ public class ResourceRestService extends AbstractRestService {
 				.filterByTitleExact(params.getTitleExact())
 				.filterByTitle(params.getTitle())
 				.filterByToolingIds(params.getToolingId())
+				.filterByBundleIds(params.getBundleId())
 				.setLimit(params.getLimit())
 				.setExpand(params.getExpand())
 				.setSearchAfter(params.getSearchAfter())
