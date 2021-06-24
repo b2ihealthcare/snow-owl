@@ -72,6 +72,7 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 				.filterByTitle(params.getTitle())
 				.filterByContent(params.get_content())
 				.filterByLastUpdated(params.get_lastUpdated())
+				.filterByUrls(params.getUrl())
 				.setSearchAfter(params.get_after())
 				.setCount(params.get_count())
 				// XXX _summary=count may override the default _count=10 value, so order of method calls is important here

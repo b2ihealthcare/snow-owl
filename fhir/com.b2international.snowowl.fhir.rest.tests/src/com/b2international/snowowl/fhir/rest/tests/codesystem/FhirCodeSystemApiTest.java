@@ -276,6 +276,49 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 	}
 	
 	@Test
+	public void GET_CodeSystem_Url_NoMatch() throws Exception {
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.queryParam("url", "http://unknown.com")
+			.when().get(CODESYSTEM)
+			.then().assertThat()
+			.statusCode(200)
+			.body("resourceType", equalTo("Bundle"))
+			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
+			.body("total", equalTo(0))
+			.body("type", equalTo("searchset"));
+	}
+	
+	@Test
+	public void GET_CodeSystem_Url_Match_Single() throws Exception {
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.queryParam("url", SnomedTerminologyComponentConstants.SNOMED_URI_BASE)
+			.when().get(CODESYSTEM)
+			.then().assertThat()
+			.statusCode(200)
+			.body("resourceType", equalTo("Bundle"))
+			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
+			.body("total", equalTo(1))
+			.body("type", equalTo("searchset"))
+			.body("entry[0].resource.id", equalTo("SNOMEDCT"))
+			.body("entry[0].resource.url", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_BASE));
+	}
+	
+	@Test
+	public void GET_CodeSystem_Url_Match_Multiple() throws Exception {
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.queryParam("url", SnomedTerminologyComponentConstants.SNOMED_URI_BASE, SnomedTerminologyComponentConstants.SNOMED_URI_BASE + "/" + getTestCodeSystemId())
+			.when().get(CODESYSTEM)
+			.then().assertThat()
+			.statusCode(200)
+			.body("resourceType", equalTo("Bundle"))
+			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
+			.body("total", equalTo(2))
+			.body("type", equalTo("searchset"))
+			.body("entry.resource.id", hasItems("SNOMEDCT", getTestCodeSystemId()))
+			.body("entry.resource.url", hasItems(SnomedTerminologyComponentConstants.SNOMED_URI_BASE, SnomedTerminologyComponentConstants.SNOMED_URI_BASE + "/" + getTestCodeSystemId()));
+	}
+	
+	@Test
 	public void GET_CodeSystemId() throws Exception {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.when().get(CODESYSTEM_ID, getTestCodeSystemId())

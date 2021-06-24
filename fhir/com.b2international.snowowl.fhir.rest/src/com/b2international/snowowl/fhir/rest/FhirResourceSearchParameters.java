@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.fhir.rest;
 
+import java.util.List;
+
 import com.google.common.base.MoreObjects;
 
 import io.swagger.annotations.ApiParam;
@@ -27,14 +29,21 @@ public class FhirResourceSearchParameters extends FhirResourceSelectors {
 	// filters
 	@ApiParam(value = "_id")
 	private String[] _id;
+	
 	@ApiParam(value = "name")
 	private String[] name;
+	
 	@ApiParam(value = "title")
 	private String title;
+	
 	@ApiParam(value = "_lastUpdated")
 	private String _lastUpdated;
-	@ApiParam
+	
+	@ApiParam(value = "_content")
 	private String _content;
+	
+	@ApiParam(value = "url")
+	private List<String> url;
 	
 	// paging
 	@ApiParam(value = "The maximum number of items to return", defaultValue = "10")
@@ -79,6 +88,10 @@ public class FhirResourceSearchParameters extends FhirResourceSelectors {
 		return title;
 	}
 	
+	public List<String> getUrl() {
+		return url;
+	}
+	
 	public void set_id(String[] _id) {
 		this._id = _id;
 	}
@@ -111,6 +124,10 @@ public class FhirResourceSearchParameters extends FhirResourceSelectors {
 		this.title = title;
 	}
 	
+	public void setUrl(List<String> url) {
+		this.url = url;
+	}
+	
 	@Override
 	public String toString() {
 		return MoreObjects.toStringHelper(getClass())
@@ -120,6 +137,7 @@ public class FhirResourceSearchParameters extends FhirResourceSelectors {
 				.add("title", title)
 				.add("_lastUpdated", _lastUpdated)
 				.add("_content", _content)
+				.add("url", url)
 				.add("_summary", get_summary())
 				.add("_elements", get_elements())
 				.add("_count", _count)
