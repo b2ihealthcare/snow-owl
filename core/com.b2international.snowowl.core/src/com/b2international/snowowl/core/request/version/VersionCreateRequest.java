@@ -50,6 +50,7 @@ import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.*;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
+import com.b2international.snowowl.core.uri.ResourceURLSchemaSupport;
 import com.b2international.snowowl.core.version.Version;
 import com.b2international.snowowl.core.version.VersionDocument;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -188,6 +189,7 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 							.branchPath(resourceToVersion.getRelativeBranchPath(version))
 							.createdAt(Instant.now().toEpochMilli())
 							.toolingId(resourceToVersion.getToolingId())
+							.url(buildVersionUrl(context, resourceToVersion))
 							.build());
 					return Boolean.TRUE;
 				})
@@ -202,6 +204,13 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 		}
 	}
 	
+	private String buildVersionUrl(RepositoryContext context, TerminologyResource resourceToVersion) {
+		Request<RepositoryContext, String> withVersionReq = ctx -> {
+			return ctx.service(ResourceURLSchemaSupport.class).withVersion(resourceToVersion.getUrl(), version, effectiveTime);
+		};
+		return new RepositoryRequest<>(resourceToVersion.getToolingId(), withVersionReq).execute(context);
+	}
+
 	private boolean deleteBranch(ServiceProvider context, String path, String repositoryId) {
 		return RepositoryRequests.branching()
 				.prepareDelete(path)
