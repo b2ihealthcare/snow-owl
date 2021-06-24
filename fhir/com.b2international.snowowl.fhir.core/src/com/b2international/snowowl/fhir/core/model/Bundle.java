@@ -34,6 +34,7 @@ import com.b2international.snowowl.fhir.core.model.dt.Instant;
 import com.b2international.snowowl.fhir.core.model.dt.Signature;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.search.Summary;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -82,10 +83,12 @@ public class Bundle extends FhirResource implements CollectionResource<Entry> {
 	@Valid
 	private Signature signature;
 	
-	private Bundle(Id id, final String resourceType, final Meta meta, final Uri impliciteRules, Code language, Identifier identifier, Code type, int total, Collection<Link> links, List<Entry> entries, final Signature signature) {
+	private Bundle(Id id, final String resourceType, final Meta meta, final Uri impliciteRules, Code language, Identifier identifier, 
+			Instant timestamp, Code type, int total, Collection<Link> links, List<Entry> entries, final Signature signature) {
 		super(id, meta, impliciteRules, language);
 		this.resourceType = resourceType;
 		this.identifier = identifier;
+		this.timestamp = timestamp;
 		this.type = type;
 		this.total = total;
 		this.link = links;
@@ -100,6 +103,10 @@ public class Bundle extends FhirResource implements CollectionResource<Entry> {
 	public static Builder builder(String bundleId) {
 		return new Builder(bundleId);
 	}
+	
+	public static Builder builder() {
+		return new Builder();
+	}
 
 	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends FhirResource.Builder<Builder, Bundle> {
@@ -107,6 +114,8 @@ public class Bundle extends FhirResource implements CollectionResource<Entry> {
 		private String resourceType  = RESOURCE_TYPE_BUNDLE;
 		
 		private Identifier identifier;
+		
+		private Instant timestamp;
 		
 		private Code type;
 		
@@ -121,8 +130,8 @@ public class Bundle extends FhirResource implements CollectionResource<Entry> {
 		Builder() {
 		}
 		
-		public Builder(String cdoId) {
-			super(cdoId);
+		public Builder(String bundleId) {
+			super(bundleId);
 		}
 
 		/*
@@ -138,6 +147,11 @@ public class Bundle extends FhirResource implements CollectionResource<Entry> {
 			return getSelf();
 		}
 		
+		public Builder timestamp(final Instant timestamp) {
+			this.timestamp = timestamp;
+			return getSelf();
+		}
+		
 		public Builder type(BundleType type) {
 			this.type = type.getCode();
 			return getSelf();
@@ -145,6 +159,13 @@ public class Bundle extends FhirResource implements CollectionResource<Entry> {
 
 		public Builder total(int total) {
 			this.total = total;
+			return getSelf();
+		}
+		
+		@JsonProperty("link")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder links(Collection<Link> links) {
+			this.links = links;
 			return getSelf();
 		}
 		
@@ -189,7 +210,8 @@ public class Bundle extends FhirResource implements CollectionResource<Entry> {
 
 		@Override
 		protected Bundle doBuild() {
-			return new Bundle(id, resourceType, meta, implicitRules, language, identifier, type, total, links, entries, signature);
+			return new Bundle(id, resourceType, meta, implicitRules, language, identifier, timestamp, 
+					type, total, links, entries, signature);
 		}
 
 	}

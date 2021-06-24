@@ -32,12 +32,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class BatchRequest {
 	
 	@Mandatory
-	@Summary
 	@JsonProperty
 	private Code method;
 	
 	@Mandatory
-	@Summary
 	@JsonProperty
 	private Uri url;
 	

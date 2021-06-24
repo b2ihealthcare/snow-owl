@@ -17,10 +17,9 @@ package com.b2international.snowowl.fhir.core.model;
 
 import java.util.Collection;
 
-import javax.validation.Valid;
-
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.search.Summary;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
@@ -32,11 +31,10 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 public class Entry {
 	
 	@Summary
-	@Valid
 	private Collection<String> links;
 	
+	//This can be null
 	@Summary
-	@Valid
 	private Uri fullUrl;
 	
 	protected Entry(final Collection<String> links, final Uri fullUrl) {
@@ -71,6 +69,9 @@ public class Entry {
 			return getSelf();
 		}
 		
+		
+		@JsonProperty("link")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
 		public B links(Collection<String> links) {
 			this.links = links;
 			return getSelf();

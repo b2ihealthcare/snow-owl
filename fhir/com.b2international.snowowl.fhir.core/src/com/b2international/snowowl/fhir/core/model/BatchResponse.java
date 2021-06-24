@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,53 +15,36 @@
  */
 package com.b2international.snowowl.fhir.core.model;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.snowowl.fhir.core.model.dt.Uri;
-import com.b2international.snowowl.fhir.core.search.Summary;
+import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * FHIR Link BackBone element in the Bundle domain object
- * @since 6.3
+ * FHIR Response Metadata
+ * 
+ * @see <a href="https://www.hl7.org/fhir/bundle-definitions.html#Bundle.entry.response">FHIR:Bunlde:Entry:Response</a>
+ * @since 8.0.0
  */
-public class Link {
+public class BatchResponse {
 	
-	@Summary
+	@Mandatory
 	@NotEmpty
 	@JsonProperty
-	private String relation = "self";
-	
-	@Summary
-	@Valid
-	@NotNull
-	@JsonProperty
-	private Uri url;
+	private String status;
 	
 	@JsonCreator
-	public Link(@JsonProperty("relation") String relation, @JsonProperty("url") Uri url) {
-		this.relation = relation;
-		this.url = url;
-	}
-
-	public Link(Uri url) {
-		this.url = url;
-	}
-
-	public Link(String urlString) {
-		this.url = new Uri(urlString);
+	public BatchResponse(@JsonProperty("status") final String status) {
+		this.status = status;
 	}
 	
-	public String getRelation() {
-		return relation;
+	public static BatchResponse createOkResponse() {
+		return new BatchResponse("200");
 	}
 	
-	public Uri getUrl() {
-		return url;
+	public String getStatus() {
+		return status;
 	}
 
 }

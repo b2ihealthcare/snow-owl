@@ -42,16 +42,22 @@ public class BundleEntryDeserializer extends StdDeserializer<Entry> {
 		TreeNode node = p.readValueAsTree();
 
 		// Select the concrete class based on the resource type header
-		TreeNode treeNode = node.get("resource");
-		TreeNode resourceTypeNode = treeNode.get("resourceType");
-		
-		if (!(resourceTypeNode instanceof TextNode)) {
-			throw new IllegalArgumentException("Unknown resource type: " + resourceTypeNode);
+		TreeNode requestNode = node.get("request");
+		if (requestNode !=null) {
+			return p.getCodec().treeToValue(node, RequestEntry.class); 
 		}
 		
-		TextNode typeNode = (TextNode) resourceTypeNode;
-		if (typeNode.textValue().equals("Parameters")) {
-			return p.getCodec().treeToValue(node, RequestEntry.class);
+		TreeNode responseNode = node.get("response");
+		if (responseNode !=null) {
+			TreeNode resourceTypeNode = node.path("resource").path("resourceType");
+			if (resourceTypeNode instanceof TextNode) {
+				TextNode textNode = (TextNode) resourceTypeNode;
+				if (textNode.textValue().equals("OperationOutcome")) {
+					return p.getCodec().treeToValue(node, OperationOutcomeEntry.class); 
+				} else {
+					return p.getCodec().treeToValue(node, ResponseEntry.class);
+				}
+			}
 		}
 		return p.getCodec().treeToValue(node, ResourceEntry.class);
 	}

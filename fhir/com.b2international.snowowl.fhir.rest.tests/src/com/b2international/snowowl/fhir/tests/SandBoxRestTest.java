@@ -17,6 +17,7 @@ package com.b2international.snowowl.fhir.tests;
 
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -30,6 +31,10 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 
+import com.b2international.snowowl.fhir.core.codesystems.BundleType;
+import com.b2international.snowowl.fhir.core.model.BatchRequest;
+import com.b2international.snowowl.fhir.core.model.Bundle;
+import com.b2international.snowowl.fhir.core.model.RequestEntry;
 import com.b2international.snowowl.fhir.core.model.ValidateCodeResult;
 import com.b2international.snowowl.fhir.core.model.codesystem.Concept;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
@@ -63,8 +68,39 @@ public class SandBoxRestTest extends FhirRestTest {
 		.around(new BundleStartRule("com.b2international.snowowl.core.rest"));
 	
 	
+	@Test
 	public void bulkRequestTest() {
 		
+		LookupRequest lookupRequest = LookupRequest.builder()
+				.code("23245-4")
+				.system("http://loinc.org")
+				.build();
+		
+		Json json1 = new Parameters.Json(lookupRequest);
+		System.out.println("JSON params:" + json1);
+		
+		RequestEntry entry = RequestEntry.builder()
+				.request(BatchRequest.createPostRequest("CodeSystem/$lookup"))
+				.resource(new Parameters.Fhir(json1.parameters()))
+				.build();
+			
+		Bundle bundle = Bundle.builder()
+			.language("en")
+			.total(1)
+			.type(BundleType.BATCH)
+			.addEntry(entry)
+			.build();
+		
+		
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.contentType(APPLICATION_FHIR_JSON)
+			.body(bundle)
+			.when().post("/")
+			.prettyPeek()
+			.then()
+			.statusCode(200)
+			.body("resourceType", equalTo("Bundle"))
+			.body("type", is("batch-response"));
 	}
 	
 	//@Test
