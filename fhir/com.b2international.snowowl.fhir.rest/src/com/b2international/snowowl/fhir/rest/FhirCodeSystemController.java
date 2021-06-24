@@ -21,6 +21,7 @@ import static java.net.HttpURLConnection.HTTP_OK;
 
 import org.springframework.web.bind.annotation.*;
 
+import com.b2international.commons.collections.Collections3;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.OperationOutcome;
@@ -72,7 +73,7 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 				.filterByTitle(params.getTitle())
 				.filterByContent(params.get_content())
 				.filterByLastUpdated(params.get_lastUpdated())
-				.filterByUrls(params.getUrl())
+				.filterByUrls(Collections3.intersection(params.getUrl(), params.getSystem())) // values defined in both url and system match the same field, compute intersection to simulate ES behavior here
 				.setSearchAfter(params.get_after())
 				.setCount(params.get_count())
 				// XXX _summary=count may override the default _count=10 value, so order of method calls is important here

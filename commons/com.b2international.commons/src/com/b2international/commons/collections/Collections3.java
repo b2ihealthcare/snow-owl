@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import java.util.Set;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 
 /**
  * Yet another collection utility class.
@@ -62,4 +63,24 @@ public abstract class Collections3 {
 	}
 	
 	private Collections3() { /*suppress instantiation*/ }
+
+	/**
+	 * Computes the intersection of the two {@link Collection} instances.
+	 * 
+	 * @param left
+	 * @param right
+	 * @return a non-<code>null</code> value if any of the input arguments is not <code>null</code>, otherwise <code>null</code>
+	 * @see Sets#intersection(Set, Set)
+	 */
+	public static Set<String> intersection(Collection<String> left, Collection<String> right) {
+		if (left == null && right == null) {
+			return null;
+		} else if (left == null && right != null) {
+			return toImmutableSet(right);
+		} else if (left != null && right == null) {
+			return toImmutableSet(left);
+		} else {
+			return Sets.intersection(toImmutableSet(left), toImmutableSet(right));
+		}
+	}
 }

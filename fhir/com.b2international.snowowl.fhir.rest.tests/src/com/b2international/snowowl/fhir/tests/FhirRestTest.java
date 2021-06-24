@@ -69,5 +69,9 @@ public class FhirRestTest extends FhirTest {
 			CodeSystemRestRequests.deleteCodeSystem(codeSystemId).statusCode(204);
 		}
 	}
+	
+	protected final String getTestCodeSystemUrl() {
+		return CodeSystemRestRequests.getCodeSystemUrl(getTestCodeSystemId());
+	}
 
 }

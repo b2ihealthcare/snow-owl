@@ -45,6 +45,9 @@ public class FhirResourceSearchParameters extends FhirResourceSelectors {
 	@ApiParam(value = "url")
 	private List<String> url;
 	
+	@ApiParam(value = "system")
+	private List<String> system;
+	
 	// paging
 	@ApiParam(value = "The maximum number of items to return", defaultValue = "10")
 	private int _count = 10;
@@ -92,6 +95,10 @@ public class FhirResourceSearchParameters extends FhirResourceSelectors {
 		return url;
 	}
 	
+	public List<String> getSystem() {
+		return system;
+	}
+	
 	public void set_id(String[] _id) {
 		this._id = _id;
 	}
@@ -128,6 +135,10 @@ public class FhirResourceSearchParameters extends FhirResourceSelectors {
 		this.url = url;
 	}
 	
+	public void setSystem(List<String> system) {
+		this.system = system;
+	}
+	
 	@Override
 	public String toString() {
 		return MoreObjects.toStringHelper(getClass())
@@ -138,6 +149,7 @@ public class FhirResourceSearchParameters extends FhirResourceSelectors {
 				.add("_lastUpdated", _lastUpdated)
 				.add("_content", _content)
 				.add("url", url)
+				.add("system", system)
 				.add("_summary", get_summary())
 				.add("_elements", get_elements())
 				.add("_count", _count)
