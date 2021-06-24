@@ -96,7 +96,7 @@ public class BundleRestService extends AbstractRestService {
 	@GetMapping(value = "/{bundleId}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public Promise<Bundle> get(
 			@ApiParam(value="The bundle identifier")
-			@PathVariable(value="bundleId") 
+			@PathVariable(value="bundleId", required = true) 
 			final String bundleId,
 			
 			@RequestParam(value = "expand")
