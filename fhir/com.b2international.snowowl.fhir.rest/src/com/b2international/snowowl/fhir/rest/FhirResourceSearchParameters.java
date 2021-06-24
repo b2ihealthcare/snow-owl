@@ -48,6 +48,9 @@ public class FhirResourceSearchParameters extends FhirResourceSelectors {
 	@ApiParam(value = "system")
 	private List<String> system;
 	
+	@ApiParam(value = "version")
+	private List<String> version;
+	
 	// paging
 	@ApiParam(value = "The maximum number of items to return", defaultValue = "10")
 	private int _count = 10;
@@ -99,6 +102,10 @@ public class FhirResourceSearchParameters extends FhirResourceSelectors {
 		return system;
 	}
 	
+	public List<String> getVersion() {
+		return version;
+	}
+	
 	public void set_id(String[] _id) {
 		this._id = _id;
 	}
@@ -137,6 +144,10 @@ public class FhirResourceSearchParameters extends FhirResourceSelectors {
 	
 	public void setSystem(List<String> system) {
 		this.system = system;
+	}
+	
+	public void setVersion(List<String> version) {
+		this.version = version;
 	}
 	
 	@Override

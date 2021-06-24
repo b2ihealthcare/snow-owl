@@ -28,6 +28,7 @@ import org.junit.Test;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.tests.FhirRestTest;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests;
 
 /**
  * FHIR /CodeSystem Resource API Tests
@@ -378,6 +379,54 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 	}
 	
 	@Test
+	public void GET_CodeSystem_Version_NoMatch() throws Exception {
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.queryParam("version", "unknown-version")
+			.when().get(CODESYSTEM)
+			.then().assertThat()
+			.statusCode(200)
+			.body("resourceType", equalTo("Bundle"))
+			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
+			.body("total", equalTo(0))
+			.body("type", equalTo("searchset"));
+	}
+	
+	@Test
+	public void GET_CodeSystem_Version_Match_Single() throws Exception {
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.queryParam("version", "2002-01-31")
+			.when().get(CODESYSTEM)
+			.then().assertThat()
+			.statusCode(200)
+			.body("resourceType", equalTo("Bundle"))
+			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
+			.body("total", equalTo(1))
+			.body("type", equalTo("searchset"))
+			.body("entry[0].resource.id", equalTo("SNOMEDCT/2002-01-31"))
+			.body("entry[0].resource.url", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_BASE + "/version/20020131"))
+			.body("entry[0].resource.version", equalTo("2002-01-31"));
+	}
+	
+	@Test
+	public void GET_CodeSystem_Version_Match_Multiple() throws Exception {
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.queryParam("version", "2002-01-31", "2020-01-31")
+			.when().get(CODESYSTEM)
+			.then().assertThat()
+			.statusCode(200)
+			.body("resourceType", equalTo("Bundle"))
+			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
+			.body("total", equalTo(2))
+			.body("type", equalTo("searchset"))
+			.body("entry[0].resource.id", equalTo("SNOMEDCT/2002-01-31"))
+			.body("entry[0].resource.url", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_BASE + "/version/20020131"))
+			.body("entry[0].resource.version", equalTo("2002-01-31"))
+			.body("entry[1].resource.id", equalTo("SNOMEDCT/2020-01-31"))
+			.body("entry[1].resource.url", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_BASE + "/version/20200131"))
+			.body("entry[1].resource.version", equalTo("2020-01-31"));
+	}
+	
+	@Test
 	public void GET_CodeSystemId() throws Exception {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.when().get(CODESYSTEM_ID, getTestCodeSystemId())
@@ -387,6 +436,19 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.body("id", equalTo(getTestCodeSystemId()))
 			.body("url", equalTo(getTestCodeSystemUrl()))
 			.body("status", equalTo("unknown"));
+	}
+	
+	@Test
+	public void GET_CodeSystemId_Versioned() throws Exception {
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.when().get(CODESYSTEM_ID, "SNOMEDCT/2002-01-31")
+			.then().assertThat()
+			.statusCode(200)
+			.body("resourceType", equalTo("CodeSystem"))
+			.body("id", equalTo("SNOMEDCT/2002-01-31"))
+			.body("url", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_BASE + "/version/20020131"))
+			.body("status", equalTo("unknown"))
+			.body("version", equalTo("2002-01-31"));
 	}
 	
 	//Summary-count should not be allowed for non-search type operations?

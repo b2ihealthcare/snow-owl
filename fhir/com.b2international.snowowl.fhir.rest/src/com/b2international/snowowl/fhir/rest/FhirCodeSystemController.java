@@ -74,6 +74,7 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 				.filterByContent(params.get_content())
 				.filterByLastUpdated(params.get_lastUpdated())
 				.filterByUrls(Collections3.intersection(params.getUrl(), params.getSystem())) // values defined in both url and system match the same field, compute intersection to simulate ES behavior here
+				.filterByVersions(params.getVersion())
 				.setSearchAfter(params.get_after())
 				.setCount(params.get_count())
 				// XXX _summary=count may override the default _count=10 value, so order of method calls is important here

@@ -60,6 +60,14 @@ public final class FhirCodeSystemSearchRequestBuilder
 		return addOption(OptionKey.URL, url);
 	}
 	
+	public FhirCodeSystemSearchRequestBuilder filterByVersion(String version) {
+		return addOption(OptionKey.VERSION, version);
+	}
+	
+	public FhirCodeSystemSearchRequestBuilder filterByVersions(Iterable<String> versions) {
+		return addOption(OptionKey.VERSION, versions);
+	}
+	
 	public FhirCodeSystemSearchRequestBuilder filterByTitle(String titles) {
 		return addOption(OptionKey.TITLE, titles);
 	}
