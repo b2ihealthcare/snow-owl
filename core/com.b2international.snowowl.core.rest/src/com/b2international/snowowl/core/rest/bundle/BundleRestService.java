@@ -96,8 +96,11 @@ public class BundleRestService extends AbstractRestService {
 	@GetMapping(value = "/{bundleId}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public Promise<Bundle> get(
 			@ApiParam(value="The bundle identifier")
-			@PathVariable(value="bundleId") final String bundleId,
-			@ApiParam(value="expand", required = false) String expand) {
+			@PathVariable(value="bundleId") 
+			final String bundleId,
+			@RequestParam(value = "expand")
+			@ApiParam(value="expand", required = false) 
+			String expand) {
 		return ResourceRequests.bundles().prepareGet(bundleId)
 				.setExpand(expand)
 				.buildAsync()
