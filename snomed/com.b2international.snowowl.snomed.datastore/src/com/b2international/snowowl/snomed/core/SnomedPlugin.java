@@ -41,6 +41,7 @@ import com.b2international.snowowl.core.request.*;
 import com.b2international.snowowl.core.request.version.VersioningRequestBuilder;
 import com.b2international.snowowl.core.setup.ConfigurationRegistry;
 import com.b2international.snowowl.core.setup.Environment;
+import com.b2international.snowowl.core.uri.ResourceURLSchemaSupport;
 import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.rpc.RpcUtil;
@@ -67,6 +68,7 @@ import com.b2international.snowowl.snomed.core.ql.SnomedQueryParser;
 import com.b2international.snowowl.snomed.core.ql.SnomedQuerySerializer;
 import com.b2international.snowowl.snomed.core.request.SnomedConceptSearchRequestEvaluator;
 import com.b2international.snowowl.snomed.core.request.SnomedQueryOptimizer;
+import com.b2international.snowowl.snomed.core.uri.SnomedURLSchemaSupport;
 import com.b2international.snowowl.snomed.core.version.SnomedVersioningRequest;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.index.change.SnomedRepositoryPreCommitHook;
@@ -120,6 +122,11 @@ public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 			env.services().registerService(MrcmImporter.class, RpcUtil.createProxy(env.container(), MrcmImporter.class));
 			env.services().registerService(MrcmExporter.class, RpcUtil.createProxy(env.container(), MrcmExporter.class));
 		}
+	}
+	
+	@Override
+	protected ResourceURLSchemaSupport getTerminologyURISupport() {
+		return new SnomedURLSchemaSupport();
 	}
 	
 	@Override

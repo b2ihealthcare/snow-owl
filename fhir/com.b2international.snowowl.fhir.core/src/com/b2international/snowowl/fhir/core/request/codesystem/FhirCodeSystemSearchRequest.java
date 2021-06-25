@@ -76,9 +76,11 @@ final class FhirCodeSystemSearchRequest extends SearchResourceRequest<Repository
 	 * @since 8.0
 	 */
 	public enum OptionKey {
+		URL,
 		NAME,
 		TITLE, 
 		CONTENT,
+		VERSION,
 		
 		LAST_UPDATED, 
 	}
@@ -122,6 +124,8 @@ final class FhirCodeSystemSearchRequest extends SearchResourceRequest<Repository
 		
 		addIdFilter(codeSystemQuery, ResourceDocument.Expressions::ids); // resource and version doc has id field
 		addFilter(codeSystemQuery, OptionKey.NAME, String.class, ResourceDocument.Expressions::ids); // apply _name filter to the id fields, we use the same value for both id and name
+		addFilter(codeSystemQuery, OptionKey.URL, String.class, ResourceDocument.Expressions::urls);
+		addFilter(codeSystemQuery, OptionKey.VERSION, String.class, VersionDocument.Expressions::versions);
 		
 		if (containsKey(OptionKey.TITLE)) {
 			codeSystemQuery.must(ResourceDocument.Expressions.defaultTitleDisjunctionQuery(TermFilter.defaultTermMatch(getString(OptionKey.TITLE))));

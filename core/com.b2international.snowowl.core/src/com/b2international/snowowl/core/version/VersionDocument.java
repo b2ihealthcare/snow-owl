@@ -68,6 +68,7 @@ public final class VersionDocument implements Serializable {
 		public static final String BRANCH_PATH = "branchPath";
 		public static final String CREATED_AT = "createdAt";
 		public static final String TOOLING_ID = "toolingId";
+		public static final String URL = "url";
 		
 		// derived fields
 		public static final String RESOURCE_BRANCH_PATH = "resourceBranchPath";
@@ -131,6 +132,7 @@ public final class VersionDocument implements Serializable {
 		private String branchPath;
 		private Long createdAt;
 		private String toolingId;
+		private String url;
 		
 		public Builder id(String id) {
 			this.id = id;
@@ -172,6 +174,11 @@ public final class VersionDocument implements Serializable {
 			return this;
 		}
 		
+		public Builder url(String url) {
+			this.url = url;
+			return this;
+		}
+		
 		// index only fields, for searching, sorting, etc.
 		
 		@JsonSetter
@@ -203,7 +210,8 @@ public final class VersionDocument implements Serializable {
 				resource,
 				branchPath,
 				createdAt,
-				toolingId
+				toolingId,
+				url
 			);
 		}
 		
@@ -218,6 +226,7 @@ public final class VersionDocument implements Serializable {
 	private final String branchPath;
 	private final Long createdAt;
 	private final String toolingId;
+	private final String url;
 	
 	/**
 	 * Same as Revision.created and revised to allow running queries against both Resource and Version documents. 
@@ -237,7 +246,8 @@ public final class VersionDocument implements Serializable {
 			final ResourceURI resource,
 			final String branchPath,
 			final Long createdAt,
-			final String toolingId) {
+			final String toolingId,
+			final String url) {
 		this.id = id;
 		this.version = version;
 		this.description = description;
@@ -246,6 +256,7 @@ public final class VersionDocument implements Serializable {
 		this.branchPath = branchPath;
 		this.createdAt = createdAt;
 		this.toolingId = toolingId;
+		this.url = url;
 		this.created = createdAt != null ? new RevisionBranchPoint(RevisionBranch.MAIN_BRANCH_ID, createdAt) : null;
 	}
 	
@@ -289,6 +300,10 @@ public final class VersionDocument implements Serializable {
 		return toolingId;
 	}
 	
+	public String getUrl() {
+		return url;
+	}
+	
 	// additional helpers
 	
 	/**
@@ -330,6 +345,9 @@ public final class VersionDocument implements Serializable {
 				.add("effectiveTime", effectiveTime)
 				.add("resource", resource)
 				.add("branchPath", branchPath)
+				.add("toolingId", toolingId)
+				.add("createdAt", createdAt)
+				.add("url", url)
 				.toString();
 	}
 

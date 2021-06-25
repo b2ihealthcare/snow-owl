@@ -28,6 +28,7 @@ import org.junit.Test;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.tests.FhirRestTest;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests;
 
 /**
  * FHIR /CodeSystem Resource API Tests
@@ -47,7 +48,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
 			.body("total", notNullValue()) // actual number depends on test data, just verify existence
 			.body("entry[0].resource.id", equalTo(getTestCodeSystemId()))
-			.body("entry[0].resource.url", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_BASE + "/" + getTestCodeSystemId()))
+			.body("entry[0].resource.url", equalTo(getTestCodeSystemUrl()))
 			.body("entry[0].resource.count", equalTo(1928)); // base RF2 package count
 	}
 	
@@ -75,7 +76,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.body("type", equalTo("searchset"))
 			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
 			.body("total", equalTo(1))
-			.body("entry[0].resource.url", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_BASE + "/" + getTestCodeSystemId()));
+			.body("entry[0].resource.url", equalTo(getTestCodeSystemUrl()));
 	}
 	
 	@Test
@@ -92,7 +93,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
 			.body("total", equalTo(2))
 			.body("entry.resource.id", hasItems(getTestCodeSystemId(), anotherCodeSystemId))
-			.body("entry.resource.url", hasItem(SnomedTerminologyComponentConstants.SNOMED_URI_BASE + "/" + getTestCodeSystemId()));
+			.body("entry.resource.url", hasItem(getTestCodeSystemUrl()));
 	}
 	
 	@Test
@@ -120,7 +121,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
 			.body("total", equalTo(1))
 			.body("entry[0].resource.id", equalTo(getTestCodeSystemId()))
-			.body("entry[0].resource.url", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_BASE + "/" + getTestCodeSystemId()));
+			.body("entry[0].resource.url", equalTo(getTestCodeSystemUrl()));
 	}
 	
 	@Test
@@ -137,7 +138,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.body("type", equalTo("searchset"))
 			.body("total", equalTo(2))
 			.body("entry.resource.id", hasItems(getTestCodeSystemId(), anotherCodeSystemId))
-			.body("entry.resource.url", hasItem(SnomedTerminologyComponentConstants.SNOMED_URI_BASE + "/" + getTestCodeSystemId()));
+			.body("entry.resource.url", hasItem(getTestCodeSystemUrl()));
 	}
 	
 	@Test
@@ -234,7 +235,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.body("total", equalTo(1))
 			.body("type", equalTo("searchset"))
 			.body("entry[0].resource.id", equalTo(getTestCodeSystemId()))
-			.body("entry[0].resource.url", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_BASE + "/" + getTestCodeSystemId()));
+			.body("entry[0].resource.url", equalTo(getTestCodeSystemUrl()));
 	}
 	
 	@Test
@@ -260,7 +261,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.body("entry[0].resource.copyright", nullValue()) 
 			// requested fields
 			.body("entry[0].resource.name", equalTo(getTestCodeSystemId()))
-			.body("entry[0].resource.url", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_BASE + "/" + getTestCodeSystemId()));
+			.body("entry[0].resource.url", equalTo(getTestCodeSystemUrl()));
 	}
 	
 	@Test
@@ -276,6 +277,156 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 	}
 	
 	@Test
+	public void GET_CodeSystem_Url_NoMatch() throws Exception {
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.queryParam("url", "http://unknown.com")
+			.when().get(CODESYSTEM)
+			.then().assertThat()
+			.statusCode(200)
+			.body("resourceType", equalTo("Bundle"))
+			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
+			.body("total", equalTo(0))
+			.body("type", equalTo("searchset"));
+	}
+	
+	@Test
+	public void GET_CodeSystem_Url_Match_Single() throws Exception {
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.queryParam("url", SnomedTerminologyComponentConstants.SNOMED_URI_BASE)
+			.when().get(CODESYSTEM)
+			.then().assertThat()
+			.statusCode(200)
+			.body("resourceType", equalTo("Bundle"))
+			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
+			.body("total", equalTo(1))
+			.body("type", equalTo("searchset"))
+			.body("entry[0].resource.id", equalTo("SNOMEDCT"))
+			.body("entry[0].resource.url", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_BASE));
+	}
+	
+	@Test
+	public void GET_CodeSystem_Url_Match_Multiple() throws Exception {
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.queryParam("url", SnomedTerminologyComponentConstants.SNOMED_URI_BASE, getTestCodeSystemUrl())
+			.when().get(CODESYSTEM)
+			.then().assertThat()
+			.statusCode(200)
+			.body("resourceType", equalTo("Bundle"))
+			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
+			.body("total", equalTo(2))
+			.body("type", equalTo("searchset"))
+			.body("entry.resource.id", hasItems("SNOMEDCT", getTestCodeSystemId()))
+			.body("entry.resource.url", hasItems(SnomedTerminologyComponentConstants.SNOMED_URI_BASE, getTestCodeSystemUrl()));
+	}
+
+	@Test
+	public void GET_CodeSystem_System_NoMatch() throws Exception {
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.queryParam("system", "http://unknown.com")
+			.when().get(CODESYSTEM)
+			.then().assertThat()
+			.statusCode(200)
+			.body("resourceType", equalTo("Bundle"))
+			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
+			.body("total", equalTo(0))
+			.body("type", equalTo("searchset"));
+	}
+	
+	@Test
+	public void GET_CodeSystem_System_Match_Single() throws Exception {
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.queryParam("system", SnomedTerminologyComponentConstants.SNOMED_URI_BASE)
+			.when().get(CODESYSTEM)
+			.then().assertThat()
+			.statusCode(200)
+			.body("resourceType", equalTo("Bundle"))
+			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
+			.body("total", equalTo(1))
+			.body("type", equalTo("searchset"))
+			.body("entry[0].resource.id", equalTo("SNOMEDCT"))
+			.body("entry[0].resource.url", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_BASE));
+	}
+	
+	@Test
+	public void GET_CodeSystem_System_Match_Multiple() throws Exception {
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.queryParam("system", SnomedTerminologyComponentConstants.SNOMED_URI_BASE, getTestCodeSystemUrl())
+			.when().get(CODESYSTEM)
+			.then().assertThat()
+			.statusCode(200)
+			.body("resourceType", equalTo("Bundle"))
+			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
+			.body("total", equalTo(2))
+			.body("type", equalTo("searchset"))
+			.body("entry.resource.id", hasItems("SNOMEDCT", getTestCodeSystemId()))
+			.body("entry.resource.url", hasItems(SnomedTerminologyComponentConstants.SNOMED_URI_BASE, getTestCodeSystemUrl()));
+	}
+	
+	@Test
+	public void GET_CodeSystem_System_And_Url_Intersection_Match() throws Exception {
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.queryParam("url", SnomedTerminologyComponentConstants.SNOMED_URI_BASE, getTestCodeSystemUrl())
+			.queryParam("system", SnomedTerminologyComponentConstants.SNOMED_URI_BASE)
+			.when().get(CODESYSTEM)
+			.then().assertThat()
+			.statusCode(200)
+			.body("resourceType", equalTo("Bundle"))
+			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
+			.body("total", equalTo(1))
+			.body("type", equalTo("searchset"))
+			.body("entry[0].resource.id", equalTo("SNOMEDCT"))
+			.body("entry[0].resource.url", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_BASE));
+	}
+	
+	@Test
+	public void GET_CodeSystem_Version_NoMatch() throws Exception {
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.queryParam("version", "unknown-version")
+			.when().get(CODESYSTEM)
+			.then().assertThat()
+			.statusCode(200)
+			.body("resourceType", equalTo("Bundle"))
+			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
+			.body("total", equalTo(0))
+			.body("type", equalTo("searchset"));
+	}
+	
+	@Test
+	public void GET_CodeSystem_Version_Match_Single() throws Exception {
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.queryParam("version", "2002-01-31")
+			.when().get(CODESYSTEM)
+			.then().assertThat()
+			.statusCode(200)
+			.body("resourceType", equalTo("Bundle"))
+			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
+			.body("total", equalTo(1))
+			.body("type", equalTo("searchset"))
+			.body("entry[0].resource.id", equalTo("SNOMEDCT/2002-01-31"))
+			.body("entry[0].resource.url", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_BASE + "/version/20020131"))
+			.body("entry[0].resource.version", equalTo("2002-01-31"));
+	}
+	
+	@Test
+	public void GET_CodeSystem_Version_Match_Multiple() throws Exception {
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.queryParam("version", "2002-01-31", "2020-01-31")
+			.when().get(CODESYSTEM)
+			.then().assertThat()
+			.statusCode(200)
+			.body("resourceType", equalTo("Bundle"))
+			.body("meta.tag.code", not(hasItem(Coding.CODING_SUBSETTED.getCodeValue())))
+			.body("total", equalTo(2))
+			.body("type", equalTo("searchset"))
+			.body("entry[0].resource.id", equalTo("SNOMEDCT/2002-01-31"))
+			.body("entry[0].resource.url", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_BASE + "/version/20020131"))
+			.body("entry[0].resource.version", equalTo("2002-01-31"))
+			.body("entry[1].resource.id", equalTo("SNOMEDCT/2020-01-31"))
+			.body("entry[1].resource.url", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_BASE + "/version/20200131"))
+			.body("entry[1].resource.version", equalTo("2020-01-31"));
+	}
+	
+	@Test
 	public void GET_CodeSystemId() throws Exception {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.when().get(CODESYSTEM_ID, getTestCodeSystemId())
@@ -283,8 +434,21 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.statusCode(200)
 			.body("resourceType", equalTo("CodeSystem"))
 			.body("id", equalTo(getTestCodeSystemId()))
-			.body("url", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_BASE + "/" + getTestCodeSystemId()))
+			.body("url", equalTo(getTestCodeSystemUrl()))
 			.body("status", equalTo("unknown"));
+	}
+	
+	@Test
+	public void GET_CodeSystemId_Versioned() throws Exception {
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.when().get(CODESYSTEM_ID, "SNOMEDCT/2002-01-31")
+			.then().assertThat()
+			.statusCode(200)
+			.body("resourceType", equalTo("CodeSystem"))
+			.body("id", equalTo("SNOMEDCT/2002-01-31"))
+			.body("url", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_BASE + "/version/20020131"))
+			.body("status", equalTo("unknown"))
+			.body("version", equalTo("2002-01-31"));
 	}
 	
 	//Summary-count should not be allowed for non-search type operations?

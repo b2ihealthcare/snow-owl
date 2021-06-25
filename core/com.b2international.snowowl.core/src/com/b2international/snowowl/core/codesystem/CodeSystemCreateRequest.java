@@ -23,6 +23,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.snowowl.core.Repository;
 import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ServiceProvider;
@@ -34,6 +35,7 @@ import com.b2international.snowowl.core.internal.ResourceDocument.Builder;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.BaseResourceCreateRequest;
 import com.b2international.snowowl.core.request.ResourceRequests;
+import com.b2international.snowowl.core.uri.ResourceURLSchemaSupport;
 import com.b2international.snowowl.core.version.Version;
 import com.google.common.base.Strings;
 
@@ -100,6 +102,11 @@ final class CodeSystemCreateRequest extends BaseResourceCreateRequest {
 				.execute(context);
 		}
 	}
+	
+	@Override
+	protected ResourceURLSchemaSupport getResourceURLSchemaSupport(ServiceProvider context) {
+		return validateAndGetToolingRepository(context).service(ResourceURLSchemaSupport.class);
+	}
 
 	private void checkBranchPath(final RepositoryContext context, final boolean create) {
 		// If no branch is created, the branch should already exist
@@ -117,14 +124,6 @@ final class CodeSystemCreateRequest extends BaseResourceCreateRequest {
 	}
 
 	private Optional<Version> checkCodeSystem(final RepositoryContext context, final boolean create) {
-		// toolingId must be supported
-		context.service(RepositoryManager.class)
-			.repositories()
-			.stream()
-			.filter(repository -> repository.id().equals(toolingId))
-			.findFirst()
-			.orElseThrow(() -> new BadRequestException("ToolingId '%s' is not supported by this server.", toolingId));
-
 		// OID must be unique if defined
 		if (!Strings.isNullOrEmpty(oid)) {
 			final boolean existingOid = ResourceRequests.prepareSearch()
@@ -173,6 +172,16 @@ final class CodeSystemCreateRequest extends BaseResourceCreateRequest {
 		}
 		
 		return Optional.empty();
+	}
+
+	private Repository validateAndGetToolingRepository(final ServiceProvider context) {
+		// toolingId must be supported
+		return context.service(RepositoryManager.class)
+			.repositories()
+			.stream()
+			.filter(repository -> repository.id().equals(toolingId))
+			.findFirst()
+			.orElseThrow(() -> new BadRequestException("ToolingId '%s' is not supported by this server.", toolingId));
 	}
 
 	private void checkSettings() {

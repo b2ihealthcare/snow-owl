@@ -44,8 +44,28 @@ public final class FhirCodeSystemSearchRequestBuilder
 		return new FhirCodeSystemSearchRequest();
 	}
 
+	public FhirCodeSystemSearchRequestBuilder filterByName(String name) {
+		return addOption(OptionKey.NAME, name);
+	}
+	
 	public FhirCodeSystemSearchRequestBuilder filterByNames(Iterable<String> names) {
 		return addOption(OptionKey.NAME, names);
+	}
+	
+	public FhirCodeSystemSearchRequestBuilder filterByUrl(String url) {
+		return addOption(OptionKey.URL, url);
+	}
+	
+	public FhirCodeSystemSearchRequestBuilder filterByUrls(Iterable<String> url) {
+		return addOption(OptionKey.URL, url);
+	}
+	
+	public FhirCodeSystemSearchRequestBuilder filterByVersion(String version) {
+		return addOption(OptionKey.VERSION, version);
+	}
+	
+	public FhirCodeSystemSearchRequestBuilder filterByVersions(Iterable<String> versions) {
+		return addOption(OptionKey.VERSION, versions);
 	}
 	
 	public FhirCodeSystemSearchRequestBuilder filterByTitle(String titles) {

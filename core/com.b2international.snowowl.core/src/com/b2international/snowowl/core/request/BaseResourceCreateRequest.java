@@ -19,12 +19,14 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.commons.exceptions.NotFoundException;
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.bundle.Bundles;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.internal.ResourceDocument.Builder;
+import com.b2international.snowowl.core.uri.ResourceURLSchemaSupport;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -173,6 +175,9 @@ public abstract class BaseResourceCreateRequest implements Request<TransactionCo
 	
 	@Override
 	public final String execute(TransactionContext context) {
+		// validate URL format
+		getResourceURLSchemaSupport(context).validate(url);
+		
 		// id checked against all resources
 		final boolean existingId = ResourceRequests.prepareSearch()
 			.setLimit(0)
@@ -215,6 +220,16 @@ public abstract class BaseResourceCreateRequest implements Request<TransactionCo
 		return id;
 	}
 	
+	/**
+	 * Subclasses may override to provide their own URL Schema support implementation for validation purposes.
+	 * 
+	 * @param context
+	 * @return
+	 */
+	protected ResourceURLSchemaSupport getResourceURLSchemaSupport(ServiceProvider context) {
+		return ResourceURLSchemaSupport.DEFAULT;
+	}
+
 	/**
 	 * Subclasses may override this method to perform validation checks and/or attach additional resources to the transaction before creating the main resource.
 	 */

@@ -40,6 +40,7 @@ import com.b2international.snowowl.core.setup.Plugin;
 import com.b2international.snowowl.core.terminology.Terminology;
 import com.b2international.snowowl.core.terminology.TerminologyComponent;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
+import com.b2international.snowowl.core.uri.ResourceURLSchemaSupport;
 
 /**
  * @since 7.0
@@ -73,6 +74,7 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 					.bind(QueryOptimizer.class, getQueryOptimizer())
 					.bind(ContentAvailabilityInfoProvider.class, getContentAvailabilityInfoProvider())
 					.bind(ContextConfigurer.class, getRequestConfigurer())
+					.bind(ResourceURLSchemaSupport.class, getTerminologyURISupport())
 					.build(env);
 			
 			RepositoryInfo status = repo.status();
@@ -88,6 +90,17 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 		afterRun(configuration, env);
 	}
 	
+	/**
+	 * Subclasses may override to provide a terminology specific URI format to enforce when creating resources and/or their versions in this
+	 * repository. By default it configures the {@link ResourceURLSchemaSupport#DEFAULT default implementation}, which supports any URI without any
+	 * format.
+	 * 
+	 * @return
+	 */
+	protected ResourceURLSchemaSupport getTerminologyURISupport() {
+		return ResourceURLSchemaSupport.DEFAULT;
+	}
+
 	/**
 	 * Subclasses may override to provide a terminology specific request configurer to configure incoming requests. The default implementation of this method returns a no-op request configurer.
 	 * 

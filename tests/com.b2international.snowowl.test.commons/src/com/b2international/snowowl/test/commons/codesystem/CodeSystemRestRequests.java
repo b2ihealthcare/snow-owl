@@ -66,7 +66,7 @@ public abstract class CodeSystemRestRequests {
 		Json requestBody = Json.object(
 			"id", codeSystemId,
 			"title", codeSystemId,
-			"url", SnomedTerminologyComponentConstants.SNOMED_URI_BASE + "/" + codeSystemId,
+			"url", getCodeSystemUrl(codeSystemId),
 			"description", "citation",
 			"toolingId", SnomedTerminologyComponentConstants.TOOLING_ID,
 			"oid", "oid_" + codeSystemId,
@@ -80,6 +80,10 @@ public abstract class CodeSystemRestRequests {
 				.body(requestBody)
 				.post()
 				.then();
+	}
+
+	public static String getCodeSystemUrl(String codeSystemId) {
+		return SnomedTerminologyComponentConstants.SNOMED_URI_BASE + "/" + codeSystemId;
 	}
 
 	public static ValidatableResponse getCodeSystem(String id) {
