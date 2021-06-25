@@ -23,6 +23,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemHierarchyMeaning;
 import com.b2international.snowowl.fhir.core.model.ContactDetail;
@@ -32,6 +33,7 @@ import com.b2international.snowowl.fhir.core.model.dt.*;
 import com.b2international.snowowl.fhir.core.model.usagecontext.UsageContext;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.b2international.snowowl.fhir.core.search.Summary;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -198,6 +200,11 @@ public class CodeSystem extends MetadataResource {
 		this.filters = filters;
 		this.properties = properties;
 		this.concepts = concepts;
+	}
+	
+	@JsonIgnore
+	public ResourceURI getResourceURI() {
+		return ResourceURI.of(com.b2international.snowowl.core.codesystem.CodeSystem.RESOURCE_TYPE, getId().getIdValue());
 	}
 
 	public static Builder builder() {

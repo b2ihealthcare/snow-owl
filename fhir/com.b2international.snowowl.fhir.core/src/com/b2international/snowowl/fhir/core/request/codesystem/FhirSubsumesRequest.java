@@ -21,8 +21,8 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
+import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionRequest;
 import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionResult;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -45,7 +45,7 @@ final class FhirSubsumesRequest extends FhirRequest<SubsumptionResult> {
 	private final SubsumptionRequest request;
 
 	public FhirSubsumesRequest(SubsumptionRequest request) {
-		super(request.getSystem());
+		super(request.getSystem(), request.getVersion());
 		this.request = request;
 	}
 

@@ -18,10 +18,11 @@ package com.b2international.snowowl.fhir.core.request.codesystem;
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.codesystem.CodeSystem;
-import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.fhir.core.model.Entry;
+import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
+import com.b2international.snowowl.fhir.core.request.FhirRequests;
 
 /**
  * @since 8.0
@@ -32,21 +33,27 @@ public abstract class FhirRequest<R> implements Request<ServiceProvider, R> {
 	private static final long serialVersionUID = 1L;
 	
 	private final String system;
+	
+	private final String version;
 
-	public FhirRequest(String system) {
+	public FhirRequest(String system, String version) {
 		this.system = system;
+		this.version = version;
 	}
 	
 	@Override
 	public final R execute(ServiceProvider context) {
-		CodeSystem codeSystem = CodeSystemRequests
-				.prepareSearchCodeSystem()
+		CodeSystem codeSystem = FhirRequests
+				.codeSystems().prepareSearch()
 				.one()
 				.filterByUrl(system)
+				.filterByVersion(version)
 				.buildAsync()
 				.getRequest()
 				.execute(context)
 				.first()
+				.map(Entry::getResource)
+				.map(CodeSystem.class::cast)
 				.orElseThrow(() -> new NotFoundException("CodeSystem", system));
 		
 		// TODO support searching versions 

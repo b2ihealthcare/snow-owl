@@ -24,10 +24,10 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.domain.Concept;
 import com.b2international.snowowl.fhir.core.model.ValidateCodeResult;
+import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.codesystem.ValidateCodeRequest;
 import com.b2international.snowowl.fhir.core.model.dt.CodeableConcept;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
@@ -50,7 +50,7 @@ final class FhirValidateCodeRequest extends FhirRequest<ValidateCodeResult> {
 	private final ValidateCodeRequest request;
 	
 	FhirValidateCodeRequest(ValidateCodeRequest request) {
-		super(request.getUrl().getUriValue());
+		super(request.getUrl().getUriValue(), request.getVersion());
 		this.request = request;
 	}
 
