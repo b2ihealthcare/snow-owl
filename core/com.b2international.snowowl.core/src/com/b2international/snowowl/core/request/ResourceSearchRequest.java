@@ -16,8 +16,6 @@
 package com.b2international.snowowl.core.request;
 
 import com.b2international.index.Hits;
-import com.b2international.index.query.Expression;
-import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.Resources;
 import com.b2international.snowowl.core.domain.RepositoryContext;
@@ -36,11 +34,6 @@ final class ResourceSearchRequest extends BaseResourceSearchRequest<Resources> {
 	enum OptionKey {
 
 		/**
-		 * Filter matches by their associated URL.
-		 */
-		URL,
-		
-		/**
 		 * Filter matches by their resource type.
 		 */
 		RESOURCE_TYPE,
@@ -54,6 +47,7 @@ final class ResourceSearchRequest extends BaseResourceSearchRequest<Resources> {
 		 * Filter matches by their currently associated working branch (exact match).
 		 */
 		BRANCH,
+
 	}
 
 	@Override
