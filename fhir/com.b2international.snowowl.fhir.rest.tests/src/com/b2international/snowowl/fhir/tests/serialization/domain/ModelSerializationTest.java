@@ -16,7 +16,7 @@
 package com.b2international.snowowl.fhir.tests.serialization.domain;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -126,7 +126,7 @@ public class ModelSerializationTest extends FhirTest {
 	public void missingIssueTest() throws Exception {
 		
 		Issue expectedIssue = builder.addLocation("OperationOutcome.issues")
-			.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'issues' content is invalid [[]]. Violation: may not be empty.")
+			.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'issues' content is invalid [null]. Violation: may not be empty.")
 			.build();
 		
 		exception.expect(ValidationException.class);

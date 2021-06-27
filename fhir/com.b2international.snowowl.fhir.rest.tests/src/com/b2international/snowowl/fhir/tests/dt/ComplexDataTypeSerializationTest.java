@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.tests.serialization.dt;
+package com.b2international.snowowl.fhir.tests.dt;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -40,7 +40,20 @@ import com.b2international.snowowl.fhir.core.model.Extension;
 import com.b2international.snowowl.fhir.core.model.IntegerExtension;
 import com.b2international.snowowl.fhir.core.model.Issue;
 import com.b2international.snowowl.fhir.core.model.Issue.Builder;
-import com.b2international.snowowl.fhir.core.model.dt.*;
+import com.b2international.snowowl.fhir.core.model.dt.Code;
+import com.b2international.snowowl.fhir.core.model.dt.CodeableConcept;
+import com.b2international.snowowl.fhir.core.model.dt.Coding;
+import com.b2international.snowowl.fhir.core.model.dt.ContactPoint;
+import com.b2international.snowowl.fhir.core.model.dt.Identifier;
+import com.b2international.snowowl.fhir.core.model.dt.Instant;
+import com.b2international.snowowl.fhir.core.model.dt.Narrative;
+import com.b2international.snowowl.fhir.core.model.dt.Period;
+import com.b2international.snowowl.fhir.core.model.dt.Quantity;
+import com.b2international.snowowl.fhir.core.model.dt.Range;
+import com.b2international.snowowl.fhir.core.model.dt.Reference;
+import com.b2international.snowowl.fhir.core.model.dt.Signature;
+import com.b2international.snowowl.fhir.core.model.dt.SimpleQuantity;
+import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.tests.FhirExceptionIssueMatcher;
 import com.b2international.snowowl.fhir.tests.FhirTest;
 import com.google.common.primitives.Bytes;
@@ -56,80 +69,6 @@ import io.restassured.path.json.JsonPath;
  */
 public class ComplexDataTypeSerializationTest extends FhirTest {
 	
-	private Builder builder = Issue.builder()
-			.code(IssueType.INVALID)
-			.severity(IssueSeverity.ERROR)
-			.diagnostics("1 validation error");
-	
-	@Test
-	public void codingTest() throws Exception {
-		
-		Coding coding = Coding.builder()
-			.code("1234")
-			.system("http://www.whocc.no/atc")
-			.version("20180131")
-			.build();
-		
-		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(coding));
-		assertThat(jsonPath.getString("code"), equalTo("1234"));
-		assertThat(jsonPath.getString("system"), equalTo("http://www.whocc.no/atc"));
-		assertThat(jsonPath.getString("version"), equalTo("20180131"));
-	}
-	
-	@Test
-	public void invalidSnomedVersionCodingTest() throws Exception {
-		
-		exception.expect(ValidationException.class);
-		exception.expectMessage("1 validation error");
-		
-		Coding.builder()
-				.code("1234")
-				.system("http://snomed.info/sct")
-				.version("20180131")
-				.build();
-	}
-	
-	@Test
-	public void invalidCodingTest() throws Exception {
-		
-		Issue expectedIssue = builder.addLocation("Coding.code.codeValue")
-				.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'code.codeValue' content is invalid []. "
-						+ "Violation: must match \"[^\\s]+([\\s]?[^\\s]+)*\".")
-				.build();
-		
-		exception.expect(ValidationException.class);
-		exception.expectMessage("1 validation error");
-		exception.expect(FhirExceptionIssueMatcher.issue(expectedIssue));
-		
-		Coding.builder()
-			.code("")
-			.system("http://www.whocc.no/atc")
-			.version("20180131")
-			.build();
-	}
-	
-	@Test
-	public void codeableConceptTest() throws Exception {
-		
-		Coding coding = Coding.builder()
-				.code("1234")
-				.system("http://www.whocc.no/atc")
-				.version("20180131")
-				.build();
-		
-		CodeableConcept cc = CodeableConcept.builder()
-				.addCoding(coding)
-				.text("text")
-				.build();
-		
-		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(cc));
-		assertThat(jsonPath.getString("text"), equalTo("text"));
-		assertThat(jsonPath.getString("coding[0].code"), equalTo("1234"));
-		assertThat(jsonPath.getString("coding[0].system"), equalTo("http://www.whocc.no/atc"));
-		assertThat(jsonPath.getString("coding[0].version"), equalTo("20180131"));
-		
-	}
-	
 	@Test
 	public void narrativeTest() throws Exception {
 		Narrative narrative = Narrative.builder()
@@ -144,7 +83,7 @@ public class ComplexDataTypeSerializationTest extends FhirTest {
 	
 	@Test
 	public void incorrentNarrativeTest() throws Exception {
-		Issue expectedIssue = builder.addLocation("Narrative.div")
+		Issue expectedIssue = validationErrorissueBuilder.addLocation("Narrative.div")
 				.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'div' content is invalid [<div>]. Violation: div content is invalid, minimally should be <div></div>.")
 				.build();
 		
@@ -179,7 +118,7 @@ public class ComplexDataTypeSerializationTest extends FhirTest {
 	@Test
 	public void incorrectSimpleQuantityTest() throws Exception {
 		
-		Issue expectedIssue = builder.addLocation("SimpleQuantity.comparator")
+		Issue expectedIssue = validationErrorissueBuilder.addLocation("SimpleQuantity.comparator")
 				.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'comparator' content is invalid [Code [codeValue=>=]]. Violation: must be null.")
 				.build();
 		
@@ -415,7 +354,7 @@ public class ComplexDataTypeSerializationTest extends FhirTest {
 	@Test
 	public void incorrectSignatureReferenceTest() throws Exception {
 		
-		Issue expectedIssue = builder.addLocation("Signature.valid")
+		Issue expectedIssue = validationErrorissueBuilder.addLocation("Signature.valid")
 				.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'valid' content is invalid [false]."
 						+ " Violation: Either URI or Reference should be set for the 'who' and 'onBehalfOf' fields.")
 				.build();

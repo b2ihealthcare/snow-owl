@@ -26,15 +26,24 @@ import javax.validation.constraints.NotNull;
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemHierarchyMeaning;
 import com.b2international.snowowl.fhir.core.model.ContactDetail;
+import com.b2international.snowowl.fhir.core.model.FhirResource;
 import com.b2international.snowowl.fhir.core.model.Meta;
 import com.b2international.snowowl.fhir.core.model.MetadataResource;
-import com.b2international.snowowl.fhir.core.model.dt.*;
+import com.b2international.snowowl.fhir.core.model.dt.Code;
+import com.b2international.snowowl.fhir.core.model.dt.CodeableConcept;
+import com.b2international.snowowl.fhir.core.model.dt.Id;
+import com.b2international.snowowl.fhir.core.model.dt.Identifier;
+import com.b2international.snowowl.fhir.core.model.dt.Narrative;
+import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.usagecontext.UsageContext;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -59,6 +68,7 @@ import io.swagger.annotations.ApiModel;
  * @since 6.3
  */
 @ApiModel("CodeSystem")
+@JsonDeserialize(builder = CodeSystem.Builder.class, using = JsonDeserializer.None.class)
 public class CodeSystem extends MetadataResource {
 
 	private static final long serialVersionUID = 1L;
@@ -108,9 +118,11 @@ public class CodeSystem extends MetadataResource {
 		
 	}
 	
+	public static final String RESOUCE_TYPE_CODE_SYSTEM = "CodeSystem";
+	
 	@Mandatory
 	@JsonProperty
-	private String resourceType = "CodeSystem";
+	private String resourceType;
 
 	@Summary
 	@JsonProperty
@@ -180,6 +192,7 @@ public class CodeSystem extends MetadataResource {
 			final Collection<CodeableConcept> jurisdictions, final String purpose, final String copyright,
 			
 			//CodeSystem only
+			final String resourceType,
 			final Boolean caseSensitive, final Uri valueSet, final Code hierarchyMeaning, final Boolean compositional, final Boolean versionNeeded,
 			final Code content, final Uri supplements, final Integer count, 
 			Collection<Filter> filters, Collection<SupportedConceptProperty> properties, Collection<Concept> concepts) {
@@ -187,6 +200,7 @@ public class CodeSystem extends MetadataResource {
 		super(id, meta, impliciteRules, language, text, url, identifier, version, name, title, status, date, publisher, contacts, 
 				description, usageContexts, jurisdictions, purpose, copyright);
 
+		this.resourceType = resourceType;
 		this.caseSensitive = caseSensitive;
 		this.valueSet = valueSet;
 		this.hierarchyMeaning = hierarchyMeaning;
@@ -208,8 +222,11 @@ public class CodeSystem extends MetadataResource {
 		return new Builder(codeSystemId);
 	}
 
+	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends MetadataResource.Builder<Builder, CodeSystem> {
 
+		private String resourceType = RESOUCE_TYPE_CODE_SYSTEM;
+		
 		private Boolean caseSensitive;
 		
 		private Uri valueSet;
@@ -245,6 +262,11 @@ public class CodeSystem extends MetadataResource {
 		@Override
 		protected Builder getSelf() {
 			return this;
+		}
+		
+		public Builder resourceType(String resourceType) {
+			this.resourceType = resourceType;
+			return getSelf();
 		}
 		
 		public Builder caseSensitive(Boolean caseSensitive) {
@@ -311,7 +333,7 @@ public class CodeSystem extends MetadataResource {
 		protected CodeSystem doBuild() {
 			return new CodeSystem(id, meta, implicitRules, language, text, url, identifier, version, name, title, status, date, publisher, contacts, 
 				description, usageContexts, jurisdictions, purpose, copyright,
-				caseSensitive, valueSet, hierarchyMeaning, compositional, versionNeeded,
+				resourceType, caseSensitive, valueSet, hierarchyMeaning, compositional, versionNeeded,
 				content, supplements, count, filters, properties, concepts);
 		}
 	}

@@ -13,6 +13,8 @@ import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.search.Searchable;
 import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 /**
  * FHIR Resource Metadata
@@ -20,6 +22,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @see <a href="https://www.hl7.org/fhir/resource.html#Meta">FHIR:Resource:Meta</a>
  * @since 6.6
  */
+@JsonDeserialize(builder = Meta.Builder.class)
 public class Meta extends Element {
 	
 	@Summary
@@ -76,6 +79,7 @@ public class Meta extends Element {
 		return new Builder();
 	}
 	
+	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends Element.Builder<Builder, Meta> {
 		
 		private Id versionId;

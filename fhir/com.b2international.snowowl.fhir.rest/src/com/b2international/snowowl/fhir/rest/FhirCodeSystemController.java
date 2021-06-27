@@ -44,7 +44,8 @@ import io.swagger.annotations.*;
  */
 @Api(value = "CodeSystem", description="FHIR CodeSystem Resource", tags = { "CodeSystem" })
 @RestController
-@RequestMapping(value="/CodeSystem", produces = { AbstractFhirResourceController.APPLICATION_FHIR_JSON })
+@RequestMapping(value="/CodeSystem")
+//, produces = { AbstractFhirResourceController.APPLICATION_FHIR_JSON })
 public class FhirCodeSystemController extends AbstractFhirResourceController<CodeSystem> {
 	
 	@Override

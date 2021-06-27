@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.fhir.core.ResourceNarrative;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.collect.Lists;
 
 /**
@@ -60,6 +61,16 @@ public enum CodeSystemContentMode implements FhirCodeSystem {
 			List<String> wordList = Lists.newArrayList(words);
 			return wordList.stream().map(StringUtils::capitalizeFirstLetter).collect(Collectors.joining());
 		}
+	}
+	
+	@JsonCreator
+	public static CodeSystemContentMode getByCodeValue(String codeValue) {
+		for (CodeSystemContentMode code : values()) {
+			if (code.getCodeValue().equals(codeValue)) {
+				return code;
+			}
+		}
+		throw new IllegalArgumentException("Unknown content mode. '" + codeValue + "'.");
 	}
 	
 	@Override

@@ -18,28 +18,29 @@ package com.b2international.snowowl.fhir.tests;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.web.client.RestTemplate;
 
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.model.BatchRequest;
 import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.RequestEntry;
-import com.b2international.snowowl.fhir.core.model.ValidateCodeResult;
-import com.b2international.snowowl.fhir.core.model.codesystem.Concept;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionResult;
-import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionResult.SubsumptionType;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Parameter;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
@@ -48,6 +49,7 @@ import com.b2international.snowowl.fhir.core.model.dt.Parameters.Json;
 import com.b2international.snowowl.fhir.rest.tests.AllFhirRestTests;
 import com.b2international.snowowl.test.commons.BundleStartRule;
 import com.b2international.snowowl.test.commons.SnowOwlAppRule;
+import com.b2international.snowowl.test.commons.rest.RestExtensions;
 
 /**
  * @since 6.6
@@ -66,6 +68,46 @@ public class SandBoxRestTest extends FhirRestTest {
 		.outerRule(SnowOwlAppRule.snowOwl(AllFhirRestTests.class).clearResources(false))
 		.around(new BundleStartRule("org.eclipse.jetty.osgi.boot"))
 		.around(new BundleStartRule("com.b2international.snowowl.core.rest"));
+	
+	@Test
+	public void restTemplateCallTest() {
+		
+		HttpHeaders headers = new HttpHeaders();
+		headers.setBasicAuth(RestExtensions.USER, RestExtensions.PASS);
+		MediaType mediaType = MediaType.parseMediaType("application/fhir+json;charset=utf-8");
+		headers.setContentType(mediaType);
+		HttpEntity<Bundle> request = new HttpEntity<>(headers);
+		
+		RestTemplate restTemplate = new RestTemplate();
+
+		List<HttpMessageConverter<?>> messageConverters = new ArrayList<>();
+		MappingJackson2HttpMessageConverter jsonMessageConverter = new MappingJackson2HttpMessageConverter() {
+
+			public boolean canRead(java.lang.Class<?> clazz, org.springframework.http.MediaType mediaType) {
+				return true;
+			}
+
+			public boolean canRead(java.lang.reflect.Type type, java.lang.Class<?> contextClass,
+					org.springframework.http.MediaType mediaType) {
+				return true;
+			}
+
+			protected boolean canRead(org.springframework.http.MediaType mediaType) {
+				return true;
+			}
+		};
+
+		jsonMessageConverter.setObjectMapper(objectMapper);
+		messageConverters.add(jsonMessageConverter);
+
+		restTemplate.setMessageConverters(messageConverters);
+		
+		ResponseEntity<Bundle> response = restTemplate.exchange("http://localhost:8080/snowowl/fhir/CodeSystem", HttpMethod.GET, request, Bundle.class);
+
+		//ResponseEntity<Bundle> bundle = restTemplate.getForEntity("http://localhost:8080/snowowl/fhir/CodeSystem", Bundle.class, request);
+		System.out.println(response.getStatusCodeValue());
+		System.out.println(response.getBody().getId());
+	}
 	
 	
 	@Test

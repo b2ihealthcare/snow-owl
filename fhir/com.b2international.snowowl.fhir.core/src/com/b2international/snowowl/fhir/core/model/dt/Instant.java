@@ -25,6 +25,7 @@ import javax.validation.constraints.NotNull;
 
 import com.b2international.snowowl.fhir.core.model.Element;
 import com.b2international.snowowl.fhir.core.model.Extension;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
@@ -42,7 +43,12 @@ public class Instant extends Element {
 	
 	@NotNull
 	private java.time.Instant instant;
-
+	
+	@JsonCreator
+	Instant(String instant) {
+		this(null, null, java.time.Instant.parse(instant));
+	}
+	
 	@SuppressWarnings("rawtypes")
 	Instant(String id, List<Extension> extensions, java.time.Instant instant) {
 		super(id, extensions);
@@ -79,6 +85,12 @@ public class Instant extends Element {
 		
 		public Builder instant(Date date) {
 			this.instant = date.toInstant();
+			return getSelf();
+		}
+		
+		@JsonCreator
+		public Builder instant(String instant) {
+			this.instant = java.time.Instant.parse(instant);
 			return getSelf();
 		}
 		

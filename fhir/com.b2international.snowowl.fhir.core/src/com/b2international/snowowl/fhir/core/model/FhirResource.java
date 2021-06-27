@@ -26,6 +26,8 @@ import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.b2international.snowowl.fhir.core.search.Searchable;
 import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -43,6 +45,7 @@ import com.google.common.collect.ImmutableSet;
  * @since 6.3
  */
 @JsonPropertyOrder({ "resourceType", "id" })
+@JsonDeserialize(using = FhirResourceDeserializer.class)
 public abstract class FhirResource implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
@@ -134,7 +137,7 @@ public abstract class FhirResource implements Serializable {
 		}
 		
 	}
-
+	
 	public static abstract class Builder<B extends Builder<B, T>, T extends FhirResource> extends ValidatingBuilder<T> {
 
 		protected Id id;

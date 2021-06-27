@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.tests.serialization.domain;
+package com.b2international.snowowl.fhir.tests.domain;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -23,31 +23,56 @@ import static org.junit.Assert.assertTrue;
 import java.util.Collection;
 import java.util.Iterator;
 
+import org.junit.Assert;
 import org.junit.Test;
 
-import com.b2international.snowowl.fhir.core.codesystems.*;
-import com.b2international.snowowl.fhir.core.model.*;
+import com.b2international.snowowl.fhir.core.codesystems.BundleType;
+import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
+import com.b2international.snowowl.fhir.core.codesystems.HttpVerb;
+import com.b2international.snowowl.fhir.core.codesystems.IssueSeverity;
+import com.b2international.snowowl.fhir.core.codesystems.IssueType;
+import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
+import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
+import com.b2international.snowowl.fhir.core.exceptions.ValidationException;
+import com.b2international.snowowl.fhir.core.model.BatchRequest;
+import com.b2international.snowowl.fhir.core.model.BatchResponse;
+import com.b2international.snowowl.fhir.core.model.Bundle;
+import com.b2international.snowowl.fhir.core.model.Designation;
+import com.b2international.snowowl.fhir.core.model.Entry;
+import com.b2international.snowowl.fhir.core.model.FhirResource;
+import com.b2international.snowowl.fhir.core.model.Issue;
+import com.b2international.snowowl.fhir.core.model.Link;
+import com.b2international.snowowl.fhir.core.model.OperationOutcome;
+import com.b2international.snowowl.fhir.core.model.OperationOutcomeEntry;
+import com.b2international.snowowl.fhir.core.model.RequestEntry;
+import com.b2international.snowowl.fhir.core.model.ResourceEntry;
+import com.b2international.snowowl.fhir.core.model.ResponseEntry;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupResult;
 import com.b2international.snowowl.fhir.core.model.codesystem.Property;
+import com.b2international.snowowl.fhir.core.model.dt.Code;
+import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
-import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
-import com.b2international.snowowl.fhir.core.model.dt.Parameters.Json;
 import com.b2international.snowowl.fhir.core.model.dt.SubProperty;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
+import com.b2international.snowowl.fhir.core.model.dt.Parameters.Json;
+import com.b2international.snowowl.fhir.tests.FhirExceptionIssueMatcher;
 import com.b2international.snowowl.fhir.tests.FhirTest;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.collect.ImmutableList;
 
 import io.restassured.path.json.JsonPath;
 
 /**
- * Test for checking the serialization of Bundles from model->JSON and back.
- * @since 6.3
+ * Test for validating the {@link Bundle} model object.
+ * @since 8.0.0
  */
-public class BundleSerializationTest extends FhirTest {
+public class BundleTest extends FhirTest {
 	
 	@Test
-	public void resourceBundleSerializationTest() throws Exception {
+	public void serializeResourceBundle() throws Exception {
 		
 		CodeSystem codeSystem = CodeSystem.builder("repo/shortName")
 			.status(PublicationStatus.ACTIVE)
@@ -97,7 +122,7 @@ public class BundleSerializationTest extends FhirTest {
 	}
 	
 	@Test
-	public void requestBundleBuildTest() throws Exception {
+	public void buildRequestBundle() throws Exception {
 		
 		LookupRequest lookupRequest = LookupRequest.builder()
 				.code("23245-4")
@@ -148,7 +173,7 @@ public class BundleSerializationTest extends FhirTest {
 	}
 	
 	@Test
-	public void requestBundleDeserializationTest() throws Exception {
+	public void deserializeRequestBundle() throws Exception {
 		
 		String jsonCoding =   "{ \"type\" : \"batch\", "
 				+ "\"resourceType\" : \"Bundle\", "
@@ -219,7 +244,7 @@ public class BundleSerializationTest extends FhirTest {
 	}
 	
 	@Test
-	public void responseBundleBuildTest() throws Exception {
+	public void buildResponseBundle() throws Exception {
 		
 		LookupResult lookupResult = LookupResult.builder()
 				.name("test")
@@ -280,7 +305,7 @@ public class BundleSerializationTest extends FhirTest {
 	}
 	
 	@Test
-	public void responseBundleDeserializationTest() throws Exception {
+	public void deserializeResponseBundle() throws Exception {
 		String jsonResponse = "{\"resourceType\":\"Bundle\","
 			+ "\"id\":\"ID\","
 			+ "\"type\":\"batch-response\","
@@ -370,7 +395,7 @@ public class BundleSerializationTest extends FhirTest {
 	}
 	
 	@Test
-	public void responseMixedBundleBuildTest() throws Exception {
+	public void buildMixedBundle() throws Exception {
 		
 		LookupResult lookupResult = LookupResult.builder()
 				.name("test")
@@ -437,6 +462,64 @@ public class BundleSerializationTest extends FhirTest {
 		
 		printPrettyJson(bundle);
 			
+	}
+	
+	@Test
+	public void deserializeResourceBundle() throws JsonProcessingException {
+		
+		FhirResource resource = CodeSystem.builder()
+				.status(PublicationStatus.ACTIVE)
+				.content(CodeSystemContentMode.COMPLETE)
+				.build();
+		
+		String resourceString = objectMapper.writeValueAsString(resource);
+		System.out.println(resourceString);
+		CodeSystem fhirResource = objectMapper.readValue(resourceString, CodeSystem.class);
+		assertEquals(null, fhirResource.getId());
+		
+		ResourceEntry entry = ResourceEntry.builder()
+				.resource(resource)
+				.build();
+		
+		Bundle bundle = Bundle.builder()
+				.type(BundleType.BATCH)
+				.entry(ImmutableList.of(entry))
+				.build();
+		
+		String bundleString = objectMapper.writeValueAsString(bundle);
+		System.out.println(bundleString);
+		Bundle readBundle = objectMapper.readValue(bundleString, Bundle.class);
+		assertEquals(null, readBundle.getId());
+		
+	}
+	
+	@Test
+	public void serialize() throws JsonProcessingException {
+		
+		FhirResource resource = CodeSystem.builder()
+				.status(PublicationStatus.ACTIVE)
+				.content(CodeSystemContentMode.COMPLETE)
+				.build();
+		
+		String resourceString = objectMapper.writeValueAsString(resource);
+		System.out.println(resourceString);
+		CodeSystem fhirResource = objectMapper.readValue(resourceString, CodeSystem.class);
+		assertEquals(null, fhirResource.getId());
+		
+		ResourceEntry entry = ResourceEntry.builder()
+				.resource(resource)
+				.build();
+		
+		Bundle bundle = Bundle.builder()
+				.type(BundleType.BATCH)
+				.entry(ImmutableList.of(entry))
+				.build();
+		
+		String bundleString = objectMapper.writeValueAsString(bundle);
+		System.out.println(bundleString);
+		Bundle readBundle = objectMapper.readValue(bundleString, Bundle.class);
+		assertEquals(null, readBundle.getId());
+		
 	}
 	
 }
