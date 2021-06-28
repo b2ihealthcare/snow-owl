@@ -23,44 +23,24 @@ import static org.junit.Assert.assertTrue;
 import java.util.Collection;
 import java.util.Iterator;
 
-import org.junit.Assert;
 import org.junit.Test;
 
-import com.b2international.snowowl.fhir.core.codesystems.BundleType;
-import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
-import com.b2international.snowowl.fhir.core.codesystems.HttpVerb;
-import com.b2international.snowowl.fhir.core.codesystems.IssueSeverity;
-import com.b2international.snowowl.fhir.core.codesystems.IssueType;
-import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
-import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
-import com.b2international.snowowl.fhir.core.exceptions.ValidationException;
-import com.b2international.snowowl.fhir.core.model.BatchRequest;
-import com.b2international.snowowl.fhir.core.model.BatchResponse;
-import com.b2international.snowowl.fhir.core.model.Bundle;
-import com.b2international.snowowl.fhir.core.model.Designation;
-import com.b2international.snowowl.fhir.core.model.Entry;
-import com.b2international.snowowl.fhir.core.model.FhirResource;
-import com.b2international.snowowl.fhir.core.model.Issue;
-import com.b2international.snowowl.fhir.core.model.Link;
-import com.b2international.snowowl.fhir.core.model.OperationOutcome;
-import com.b2international.snowowl.fhir.core.model.OperationOutcomeEntry;
-import com.b2international.snowowl.fhir.core.model.RequestEntry;
-import com.b2international.snowowl.fhir.core.model.ResourceEntry;
-import com.b2international.snowowl.fhir.core.model.ResponseEntry;
+import com.b2international.snowowl.fhir.core.codesystems.*;
+import com.b2international.snowowl.fhir.core.model.*;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupResult;
 import com.b2international.snowowl.fhir.core.model.codesystem.Property;
-import com.b2international.snowowl.fhir.core.model.dt.Code;
-import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
-import com.b2international.snowowl.fhir.core.model.dt.SubProperty;
-import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Json;
-import com.b2international.snowowl.fhir.tests.FhirExceptionIssueMatcher;
+import com.b2international.snowowl.fhir.core.model.dt.SubProperty;
+import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.tests.FhirTest;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableList;
 
 import io.restassured.path.json.JsonPath;
@@ -302,6 +282,41 @@ public class BundleTest extends FhirTest {
 		
 		printPrettyJson(bundle);
 			
+	}
+	
+	@Test
+	public void buildBundleWithJsonNode() throws Exception {
+		
+		Bundle bundle = Bundle.builder()
+				.language("en")
+				.type(BundleType.BATCH_RESPONSE)
+				.addLink("self", "http://localhost:8080/snowowl/CodeSystem")
+				.build();
+		
+		ObjectNode rootNode = (ObjectNode) objectMapper.valueToTree(bundle);
+		
+		printPrettyJson(bundle);
+		
+		
+		
+		ArrayNode entryArrayNode = objectMapper.createArrayNode();
+		
+		ObjectNode resourceNode = (ObjectNode) objectMapper.readTree("{\"Info\":{\"Brand\":{\"BrandName\":\"TOP OF THE WORLD\"}}}");
+		entryArrayNode.add(resourceNode);
+		rootNode.putArray("Entry")
+			.add(objectMapper.createObjectNode().put("this", "that"))
+			.add("sdsdsd")
+			.addAll(entryArrayNode);
+		
+		//rootNode.sset(entryArrayNode);
+		printPrettyJson(rootNode);
+		
+		
+//		ResponseEntry entry = ResponseEntry.builder()
+//				.resource(new Parameters.Fhir(json1.parameters()))
+//				.response(BatchResponse.createOkResponse())
+//				.build();.
+		
 	}
 	
 	@Test
