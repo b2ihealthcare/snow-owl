@@ -44,7 +44,10 @@ import com.b2international.snowowl.fhir.core.model.Bundle.Builder;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * 
@@ -75,14 +78,22 @@ public class BatchRequestController {
 		
 		System.out.println("Bundle: " + bundle);
 		Collection<Entry> entries = bundle.getEntry();
-		Builder reponseBundleBuilder = Bundle.builder().type(BundleType.BATCH_RESPONSE);
+		Bundle responseBundle = Bundle.builder()
+				.language("en")
+				.type(BundleType.BATCH_RESPONSE)
+				.build();
+		
+		ObjectNode rootNode = (ObjectNode) objectMapper.valueToTree(responseBundle);
+		
+		ArrayNode arrayNode = rootNode.putArray("entry");
 		
 		for (Entry entry : entries) {
 			if (entry instanceof RequestEntry) {
 				RequestEntry requestEntry = (RequestEntry) entry;
 				System.out.println("Request: " + requestEntry.getRequest().getUrl());
-				Entry responseEntry = processRequestEntry(requestEntry, headers);
-				reponseBundleBuilder.addEntry(responseEntry);
+				processRequestEntry(arrayNode, requestEntry, headers);
+				//reponseBundleBuilder.addEntry(responseEntry);
+				
 			} else {
 				
 				//Currently only operation request entries are supported
@@ -95,28 +106,57 @@ public class BatchRequestController {
 										.build())
 								.build())
 						.build();
-				reponseBundleBuilder.addEntry(ooEntry);
+				//reponseBundleBuilder.addEntry(ooEntry);
 			}
 		}
 		
-		return Promise.immediate(reponseBundleBuilder
-				.build());
+		return Promise.immediate(objectMapper.treeToValue(rootNode, Bundle.class));
 	}
 
-	private Entry processRequestEntry(RequestEntry requestEntry, HttpHeaders headers2) throws JsonProcessingException {
+	private void processRequestEntry(ArrayNode arrayNode, RequestEntry requestEntry, HttpHeaders headers) throws JsonProcessingException {
 		
 		BatchRequest request = requestEntry.getRequest();
 		Uri url = request.getUrl();
 		System.out.println("Request: " + url);
 		
-		HttpHeaders localHeaders = getHttpHeaders();
-		
-		
-		
 		//localHeaders.put(key, value)
-		HttpEntity<String> httpEntity = new HttpEntity<>(headers2);
+		HttpEntity<String> httpEntity = new HttpEntity<>(headers);
 		
+		RestTemplate restTemplate = getRestTemplate();
+		
+		//Fhir requestResource = requestEntry.getRequestResource();
+		//String jsonString = new ObjectMapper().writeValueAsString(requestResource);
+		//HttpEntity<String> httpEntity = new HttpEntity<String>(jsonString, headers);
+		
+		Code requestMethod = request.getMethod();
+		if (requestMethod.equals(HttpVerb.POST.getCode())) {
+		
+			ResponseEntity<String> response = restTemplate.exchange("http://localhost:8080/snowowl/fhir/CodeSystem", HttpMethod.GET, httpEntity, String.class);
+			
+			String json = response.getBody();
+			System.out.println("Body: " + json);
+			
+			ObjectNode resourceNode = (ObjectNode) objectMapper.readTree(json);
+			ObjectNode resourceRoot = objectMapper.createObjectNode().putPOJO("resource", resourceNode);
+			arrayNode.add(resourceRoot);
+			
+			BatchResponse batchResponse = BatchResponse.createOkResponse();
+			JsonNode responseNode = objectMapper.valueToTree(batchResponse);
+			ObjectNode responseRoot = objectMapper.createObjectNode().putPOJO("response", responseNode);
+			arrayNode.add(responseRoot);
+			
+		} else if (requestMethod.equals(HttpVerb.POST.getCode())){
+			
+			//Bundle bundle = restTemplate.getForObject("http://localhost:8080/snowowl/fhir/CodeSystem", Bundle.class);
+			//Entry entry = bundle.getEntry().iterator().next();
+			
+		}
+		
+	}
+
+	private RestTemplate getRestTemplate() {
 		RestTemplate restTemplate = new RestTemplate();
+		
 		List<HttpMessageConverter<?>> messageConverters = new ArrayList<>();
 		MappingJackson2HttpMessageConverter jsonMessageConverter = new MappingJackson2HttpMessageConverter() {
 
@@ -137,53 +177,8 @@ public class BatchRequestController {
 		jsonMessageConverter.setObjectMapper(objectMapper);
 		messageConverters.add(jsonMessageConverter);
 
-		restTemplate.setMessageConverters(messageConverters);
-		
-		//Fhir requestResource = requestEntry.getRequestResource();
-		//String jsonString = new ObjectMapper().writeValueAsString(requestResource);
-		//HttpEntity<String> httpEntity = new HttpEntity<String>(jsonString, headers);
-		
-		String uriValue = request.getUrl().getUriValue();
-		Code requestMethod = request.getMethod();
-		if (requestMethod.equals(HttpVerb.GET.getCode())) {
-		
-			ResponseEntity<String> response = restTemplate.exchange("http://localhost:8080/snowowl/fhir/CodeSystem", HttpMethod.GET, httpEntity, String.class);
-			
-			String json = response.getBody();
-			System.out.println("Body: " + json);
-			Bundle bundle = objectMapper.readValue(json, Bundle.class);
-			
-			
-			//System.out.println("STATUS: " + response.getStatusCodeValue());
-			//System.out.println("Response id: " + response.getBody().getId());
-			
-			//Entry entry = response.getBody().getEntry().iterator().next();
-			
-			//Replace port, context from request
-			//ResponseEntity<Bundle> response2 = restTemplate.exchange("http://localhost:8080/snowowl/fhir/CodeSystem$$lookup"
-			//		+ "?system=http://snomed.info/sct&code=263495000", HttpMethod.GET, httpEntity, Bundle.class);
-			
-			
-			//System.out.println("STATUS: " + response.getStatusCodeValue());
-			//System.out.println("Response id: " + response.getBody().getId());
-			//RestTemplate restTemplate = new RestTemplate();
-			//Entry entry = restTemplate.getForObject(uriValue, Entry.class);
-			
-			//return entry;
-			return null;
-		} else if (requestMethod.equals(HttpVerb.POST.getCode())){
-			
-			
-			//RestTemplate restTemplate = new RestTemplate();
-			//Entry entry = restTemplate.postForObject("http://localhost:8080/snowowl/fhir/" + uriValue, httpEntity , Entry.class);
-			Bundle bundle = restTemplate.getForObject("http://localhost:8080/snowowl/fhir/CodeSystem", Bundle.class);
-			Entry entry = bundle.getEntry().iterator().next();
-			
-			return entry;
-		} else {
-			return null;
-		}
-		
+		//restTemplate.setMessageConverters(messageConverters);
+		return restTemplate;
 	}
 	
 	private HttpHeaders getHttpHeaders() {
@@ -200,50 +195,6 @@ public class BatchRequestController {
 		headers.setContentType(mediaType);
 		
 		return headers;
-	}
-
-	private Entry handleRequest(final BatchRequest request) {
-		
-		
-		
-		return null;
-		
-//		String[] split = uriValue.split("/");
-//		if (split.length < 2) {
-//			throw new BadRequestException("Invalid request '" + uriValue + "'.");
-//		}
-//		
-//		String resource = split[0];
-//		
-//		if (resource.equals("CodeSystem")) {
-//			System.out.println("Code system call");
-//			
-//			
-//			
-//			//WebClient.create("http://localhost:8080/snowowl");
-//			Map<RequestMappingInfo, HandlerMethod> handlerMethods = requestMappingHandlerMapping.getHandlerMethods();
-//			Set<RequestMappingInfo> keySet = handlerMethods.keySet();
-//			for (RequestMappingInfo requestMappingInfo : keySet) {
-//				System.out.println(requestMappingInfo);
-//				HandlerMethod handlerMethod = handlerMethods.get(requestMappingInfo);
-//				Method method = handlerMethod.getMethod();
-//				System.out.println(method);
-//			}
-//			try {
-//				RequestMatchResult match = requestMappingHandlerMapping.match(null, null);
-//			} catch (Exception e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-//		}
-//		
-//		
-//		
-//		
-//		
-//		// TODO Auto-generated method stub
-		
-		
 	}
 
 }

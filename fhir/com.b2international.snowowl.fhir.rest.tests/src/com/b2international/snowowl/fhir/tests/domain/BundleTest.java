@@ -61,7 +61,11 @@ public class BundleTest extends FhirTest {
 			.url(new Uri("code system uri"))
 			.build();
 		
-		ResourceEntry entry = ResourceEntry.builder().fullUrl("full_Url").resource(codeSystem).build();
+		ResourceEntry entry = ResourceEntry.builder()
+				.fullUrl("full_Url")
+				.response(BatchResponse.createOkResponse())
+				.resource(codeSystem)
+				.build();
 		
 		Bundle bundle = Bundle.builder("bundle_Id?")
 			.language("en")
@@ -91,6 +95,7 @@ public class BundleTest extends FhirTest {
 		jsonPath.setRoot("entry[0]");
 		
 		assertThat(jsonPath.getString("fullUrl"), equalTo("full_Url"));
+		assertThat(jsonPath.getString("response.status"), equalTo("200"));
 		jsonPath.setRoot("entry[0].resource");
 		
 		assertThat(jsonPath.getString("resourceType"), equalTo("CodeSystem"));
@@ -282,41 +287,6 @@ public class BundleTest extends FhirTest {
 		
 		printPrettyJson(bundle);
 			
-	}
-	
-	@Test
-	public void buildBundleWithJsonNode() throws Exception {
-		
-		Bundle bundle = Bundle.builder()
-				.language("en")
-				.type(BundleType.BATCH_RESPONSE)
-				.addLink("self", "http://localhost:8080/snowowl/CodeSystem")
-				.build();
-		
-		ObjectNode rootNode = (ObjectNode) objectMapper.valueToTree(bundle);
-		
-		printPrettyJson(bundle);
-		
-		
-		
-		ArrayNode entryArrayNode = objectMapper.createArrayNode();
-		
-		ObjectNode resourceNode = (ObjectNode) objectMapper.readTree("{\"Info\":{\"Brand\":{\"BrandName\":\"TOP OF THE WORLD\"}}}");
-		entryArrayNode.add(resourceNode);
-		rootNode.putArray("Entry")
-			.add(objectMapper.createObjectNode().put("this", "that"))
-			.add("sdsdsd")
-			.addAll(entryArrayNode);
-		
-		//rootNode.sset(entryArrayNode);
-		printPrettyJson(rootNode);
-		
-		
-//		ResponseEntry entry = ResponseEntry.builder()
-//				.resource(new Parameters.Fhir(json1.parameters()))
-//				.response(BatchResponse.createOkResponse())
-//				.build();.
-		
 	}
 	
 	@Test

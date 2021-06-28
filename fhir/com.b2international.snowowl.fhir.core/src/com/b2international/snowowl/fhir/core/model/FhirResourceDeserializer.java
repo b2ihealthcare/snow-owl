@@ -45,14 +45,17 @@ public class FhirResourceDeserializer extends StdDeserializer<FhirResource> {
 		TreeNode resourceTypeNode = node.get("resourceType");
 		if (resourceTypeNode instanceof TextNode) {
 			TextNode resourceTypeTextNode = (TextNode) resourceTypeNode;
-			if (CodeSystem.RESOUCE_TYPE_CODE_SYSTEM.equals(resourceTypeTextNode.textValue())) {
+			switch (resourceTypeTextNode.textValue()) {
+			
+			case CodeSystem.RESOUCE_TYPE_CODE_SYSTEM:
 				return p.getCodec().treeToValue(node, CodeSystem.class); 
+
+			case Bundle.RESOURCE_TYPE_BUNDLE:
+				return p.getCodec().treeToValue(node, Bundle.class);
+			default:
+				break;
 			}
 		}
-		
 		throw new IllegalArgumentException("Unknown resource type for '" + node.toString() + "'.");
-		
-
-		
 	}
 }

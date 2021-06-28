@@ -49,7 +49,7 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 @JsonDeserialize(builder = Bundle.Builder.class)
 public class Bundle extends FhirResource implements CollectionResource<Entry> {
 	
-	private static final String RESOURCE_TYPE_BUNDLE = "Bundle";
+	public static final String RESOURCE_TYPE_BUNDLE = "Bundle";
 
 	private static final long serialVersionUID = 1L;
 

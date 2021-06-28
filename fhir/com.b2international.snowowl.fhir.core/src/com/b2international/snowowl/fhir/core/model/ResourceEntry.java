@@ -17,6 +17,7 @@ package com.b2international.snowowl.fhir.core.model;
 
 import java.util.Collection;
 
+import com.b2international.snowowl.fhir.core.model.ResponseEntry.Builder;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -30,13 +31,21 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 @JsonDeserialize(using = JsonDeserializer.None.class, builder = ResourceEntry.Builder.class)
 public class ResourceEntry extends Entry {
 	
+	private BatchResponse response;
+	
 	private FhirResource resource;
 	
-	protected ResourceEntry(final Collection<String> links, final Uri fullUrl, final FhirResource resource) {
+	protected ResourceEntry(final Collection<String> links, final Uri fullUrl, 
+			final BatchResponse response, final FhirResource resource) {
 		super(links, fullUrl);
+		this.response = response;
 		this.resource = resource;
 	}
 
+	public BatchResponse getResponse() {
+		return response;
+	}
+	
 	public FhirResource getResource() {
 		return resource;
 	}
@@ -48,13 +57,18 @@ public class ResourceEntry extends Entry {
 	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends Entry.Builder<Builder, ResourceEntry> {
 		
-		Builder() {}
+		private BatchResponse response;
 		
 		private FhirResource fhirResource;
 		
 		@Override
 		protected Builder getSelf() {
 			return this;
+		}
+		
+		public Builder response(BatchResponse response) {
+			this.response = response;
+			return getSelf();
 		}
 		
 		public Builder resource(FhirResource fhirResource) {
@@ -64,7 +78,7 @@ public class ResourceEntry extends Entry {
 		
 		@Override
 		protected ResourceEntry doBuild() {
-			return new ResourceEntry(links, fullUrl, fhirResource);
+			return new ResourceEntry(links, fullUrl, response, fhirResource);
 		}
 		
 	}
