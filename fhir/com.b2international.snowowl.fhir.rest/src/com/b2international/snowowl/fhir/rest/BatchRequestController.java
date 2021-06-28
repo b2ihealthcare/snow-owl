@@ -15,32 +15,38 @@
  */
 package com.b2international.snowowl.fhir.rest;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.List;
 
-import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.servlet.handler.RequestMatchResult;
-import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.codesystems.HttpVerb;
 import com.b2international.snowowl.fhir.core.codesystems.IssueType;
-import com.b2international.snowowl.fhir.core.model.*;
-import com.b2international.snowowl.fhir.core.model.Bundle.Builder;
+import com.b2international.snowowl.fhir.core.model.BatchRequest;
+import com.b2international.snowowl.fhir.core.model.BatchResponse;
+import com.b2international.snowowl.fhir.core.model.Bundle;
+import com.b2international.snowowl.fhir.core.model.Entry;
+import com.b2international.snowowl.fhir.core.model.Issue;
+import com.b2international.snowowl.fhir.core.model.OperationOutcome;
+import com.b2international.snowowl.fhir.core.model.OperationOutcomeEntry;
+import com.b2international.snowowl.fhir.core.model.RequestEntry;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -59,24 +65,11 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 public class BatchRequestController {
 	
 	@Autowired
-	private RequestMappingHandlerMapping requestMappingHandlerMapping;
-	
-	@Autowired
-	private HttpServletRequest servletRequest;
-	
-	@Autowired
 	private ObjectMapper objectMapper;
 	
-	@Autowired
-	private ServletContext servletContext;
-	
 	@RequestMapping(value="/", method=RequestMethod.POST, consumes = AbstractFhirResourceController.APPLICATION_FHIR_JSON)
-	public Promise<Bundle> getBatchResponse(@RequestBody final Bundle bundle, 
-			@RequestHeader HttpHeaders headers,
-			ServletResponse response) throws JsonProcessingException {
+	public Promise<Bundle> getBatchResponse(@RequestBody final Bundle bundle, HttpServletRequest request) throws JsonProcessingException {
 		
-		
-		System.out.println("Bundle: " + bundle);
 		Collection<Entry> entries = bundle.getEntry();
 		Bundle responseBundle = Bundle.builder()
 				.language("en")
@@ -91,8 +84,7 @@ public class BatchRequestController {
 			if (entry instanceof RequestEntry) {
 				RequestEntry requestEntry = (RequestEntry) entry;
 				System.out.println("Request: " + requestEntry.getRequest().getUrl());
-				processRequestEntry(arrayNode, requestEntry, headers);
-				//reponseBundleBuilder.addEntry(responseEntry);
+				processRequestEntry(arrayNode, requestEntry, request);
 				
 			} else {
 				
@@ -106,32 +98,37 @@ public class BatchRequestController {
 										.build())
 								.build())
 						.build();
-				//reponseBundleBuilder.addEntry(ooEntry);
 			}
 		}
 		
 		return Promise.immediate(objectMapper.treeToValue(rootNode, Bundle.class));
 	}
 
-	private void processRequestEntry(ArrayNode arrayNode, RequestEntry requestEntry, HttpHeaders headers) throws JsonProcessingException {
+	private void processRequestEntry(ArrayNode arrayNode, RequestEntry requestEntry, HttpServletRequest request) throws JsonProcessingException {
 		
-		BatchRequest request = requestEntry.getRequest();
-		Uri url = request.getUrl();
-		System.out.println("Request: " + url);
+	    BatchRequest batchRequest = requestEntry.getRequest();
+		Uri url = batchRequest.getUrl();
 		
-		//localHeaders.put(key, value)
+		HttpHeaders headers = getHeaders(request);
 		HttpEntity<String> httpEntity = new HttpEntity<>(headers);
 		
 		RestTemplate restTemplate = getRestTemplate();
 		
-		//Fhir requestResource = requestEntry.getRequestResource();
-		//String jsonString = new ObjectMapper().writeValueAsString(requestResource);
-		//HttpEntity<String> httpEntity = new HttpEntity<String>(jsonString, headers);
+		StringBuilder uriBuilder = new StringBuilder(request.getScheme())
+				.append("://")
+				.append(request.getServerName())
+				.append(":")
+				.append(request.getLocalPort());
 		
-		Code requestMethod = request.getMethod();
-		if (requestMethod.equals(HttpVerb.POST.getCode())) {
+		Code requestMethod = batchRequest.getMethod();
 		
-			ResponseEntity<String> response = restTemplate.exchange("http://localhost:8080/snowowl/fhir/CodeSystem", HttpMethod.GET, httpEntity, String.class);
+		if (requestMethod.equals(HttpVerb.GET.getCode())) {
+		
+			uriBuilder.append(request.getRequestURI())
+			.append(batchRequest.getUrl().getUriValue());
+			
+			System.out.println("URI: " + uriBuilder.toString());
+			ResponseEntity<String> response = restTemplate.exchange(uriBuilder.toString(), HttpMethod.GET, httpEntity, String.class);
 			
 			String json = response.getBody();
 			System.out.println("Body: " + json);
@@ -152,6 +149,26 @@ public class BatchRequestController {
 			
 		}
 		
+	}
+
+	private HttpHeaders getHeaders(HttpServletRequest request) {
+		
+		HttpHeaders headers = new HttpHeaders();
+		
+		Enumeration<String> headerNames = request.getHeaderNames();
+		while (headerNames.hasMoreElements()) {
+			
+			String headerName = (String) headerNames.nextElement();
+			
+			Enumeration<String> headerValues = request.getHeaders(headerName);
+			while (headerValues.hasMoreElements()) {
+				String headerValue = (String) headerValues.nextElement();
+				headers.add(headerName, headerValue);
+				
+			}
+		};
+		
+		return headers;
 	}
 
 	private RestTemplate getRestTemplate() {
@@ -181,20 +198,4 @@ public class BatchRequestController {
 		return restTemplate;
 	}
 	
-	private HttpHeaders getHttpHeaders() {
-		
-		
-		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		String username = auth.getName();
-		
-		HttpHeaders headers = new HttpHeaders();
-		//UserDetails principal = (UserDetails) auth.getPrincipal();
-		headers.setBasicAuth("x", "x");
-		
-		MediaType mediaType = MediaType.parseMediaType("application/fhir+json;charset=utf-8");
-		headers.setContentType(mediaType);
-		
-		return headers;
-	}
-
 }
