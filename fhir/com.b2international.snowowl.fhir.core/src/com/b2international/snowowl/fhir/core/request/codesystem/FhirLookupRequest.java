@@ -20,9 +20,9 @@ import javax.validation.constraints.NotNull;
 
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.domain.Concept;
+import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupResult;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -52,7 +52,7 @@ final class FhirLookupRequest extends FhirRequest<LookupResult> {
 	private LookupRequest request;
 
 	FhirLookupRequest(LookupRequest request) {
-		super(request.getSystem());
+		super(request.getSystem(), request.getVersion());
 		this.request = request;
 	}
 
@@ -69,7 +69,7 @@ final class FhirLookupRequest extends FhirRequest<LookupResult> {
 			.orElseThrow(() -> new NotFoundException("Concept", request.getCode()));
 		
 		return LookupResult.builder()
-				.name(codeSystem.getId())
+				.name(codeSystem.getName())
 				.display(concept.getTerm())
 				.build();
 	}
