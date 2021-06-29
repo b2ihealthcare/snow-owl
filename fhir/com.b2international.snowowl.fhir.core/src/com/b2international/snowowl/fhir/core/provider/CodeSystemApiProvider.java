@@ -15,48 +15,12 @@
  */
 package com.b2international.snowowl.fhir.core.provider;
 
-import static com.google.common.collect.Sets.newHashSet;
+import java.util.List;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.format.DateTimeParseException;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import com.b2international.commons.exceptions.NotFoundException;
-import com.b2international.commons.exceptions.NotImplementedException;
 import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.snowowl.core.ResourceURI;
-import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
-import com.b2international.snowowl.core.codesystem.CodeSystemSearchRequestBuilder;
-import com.b2international.snowowl.core.codesystem.CodeSystems;
-import com.b2international.snowowl.core.domain.Concepts;
-import com.b2international.snowowl.core.domain.IComponent;
-import com.b2international.snowowl.core.request.ResourceRequests;
-import com.b2international.snowowl.core.request.SearchResourceRequest;
-import com.b2international.snowowl.core.request.version.VersionSearchRequestBuilder;
-import com.b2international.snowowl.core.version.Version;
-import com.b2international.snowowl.core.version.VersionDocument;
-import com.b2international.snowowl.core.version.Versions;
 import com.b2international.snowowl.eventbus.IEventBus;
-import com.b2international.snowowl.fhir.core.codesystems.*;
-import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
-import com.b2international.snowowl.fhir.core.exceptions.FhirException;
-import com.b2international.snowowl.fhir.core.model.ValidateCodeResult;
-import com.b2international.snowowl.fhir.core.model.codesystem.*;
-import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem.Builder;
-import com.b2international.snowowl.fhir.core.model.dt.CodeableConcept;
-import com.b2international.snowowl.fhir.core.model.dt.Coding;
-import com.b2international.snowowl.fhir.core.model.dt.Identifier;
-import com.b2international.snowowl.fhir.core.model.dt.Uri;
-import com.b2international.snowowl.fhir.core.search.FhirParameter.PrefixedValue;
-import com.b2international.snowowl.fhir.core.search.FhirSearchParameter;
-import com.b2international.snowowl.fhir.core.search.FhirUriSearchParameterDefinition;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
+import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
+import com.b2international.snowowl.fhir.core.model.codesystem.LookupResult;
 
 /**
  * FHIR provider base class.
@@ -120,88 +84,6 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider {
 //				.collect(Collectors.toList());
 //	}
 
-	/**
-	 * Returns the designated FHIR Uri for the given code system
-	 * @param codeSystem
-	 * @param codeSystemVersion 
-	 * @return
-	 */
-//	protected abstract Uri getFhirUri(com.b2international.snowowl.core.codesystem.CodeSystem codeSystem, Version codeSystemVersion);
-	
-	/**
-	 * Creates a FHIR {@link CodeSystem} from a {@link com.b2international.snowowl.core.codesystem.CodeSystem}
-	 * @param codeSystem
-	 * @param codeSystemVersion
-	 * @return FHIR Code system
-	 */
-//	protected Builder createCodeSystemBuilder(final com.b2international.snowowl.core.codesystem.CodeSystem codeSystem, final Version codeSystemVersion) {
-//		
-//		Identifier identifier = Identifier.builder()
-//			.use(IdentifierUse.OFFICIAL)
-//			.system(codeSystem.getUrl())
-//			.value(codeSystem.getOid())
-//			.build();
-//		
-//		String id = codeSystemVersion.getVersionResourceURI().toString();
-//		
-//		final Builder builder = CodeSystem.builder(id)
-//			.identifier(identifier)
-//			.language(codeSystem.getLanguage())
-//			.title(codeSystem.getTitle())
-//			.name(codeSystem.getTitle())
-//			.url(getFhirUri(codeSystem, codeSystemVersion))
-//			.status(PublicationStatus.getByCodeValue(codeSystem.getStatus()))
-//			.hierarchyMeaning(CodeSystemHierarchyMeaning.IS_A)
-//			.narrative(NarrativeStatus.ADDITIONAL, codeSystem.getDescription())
-//			.description(codeSystem.getDescription())
-//			.content(getCodeSystemContentMode())
-//			.publisher(codeSystem.getOwner())
-//			.purpose(codeSystem.getPurpose())
-//			.copyright(codeSystem.getCopyright())
-//			.count(getCount(codeSystemVersion));
-//		// TODO add usage as UsageContext
-//		
-//		if (codeSystemVersion !=null) {
-//			builder.version(codeSystemVersion.getVersion());
-//			
-//			 TODO support lastUpdated time on resources
-//			Meta meta = Meta.builder()
-//				.lastUpdated(Instant.builder().instant(codeSystemVersion.getLastModificationDate()).build())
-//				.build();
-//			builder.meta(meta);
-//		}
-//
-//		add filters here
-//		Collection<Filter> supportedFilters = getSupportedFilters();
-//		for (Filter filter : supportedFilters) {
-//			builder.addFilter(filter);
-//		}
-//		
-//		Collection<Concept> concepts = getConcepts(codeSystem);
-//		for (Concept concept: concepts) {
-//			builder.addConcept(concept);
-//		}
-//		
-//		// include supported concept properties
-//		getSupportedProperties().stream()
-//			.filter(p -> !(SupportedCodeSystemRequestProperties.class.isInstance(p)))
-//			.map(SupportedConceptProperty::builder)
-//			.map(SupportedConceptProperty.Builder::build)
-//			.forEach(builder::addProperty);
-//		
-//		return builder;
-//	}
-//	
-//	protected Collection<Concept> getConcepts(com.b2international.snowowl.core.codesystem.CodeSystem codeSystem) {
-//		return Collections.emptySet();
-//	}
-
-//	protected abstract int getCount(Version codeSystemVersion);
-
-//	protected ResourceURI resolveResourceUri(final String system, final String version) {
-//		throw new NotImplementedException("TODO Resolve URI from system (%s) and version ('') parameters", system, version);
-//	}
-
 //	/**
 //	 * Builds a lookup result property for the given @see {@link IConceptProperty} based on the supplier's value
 //	 * @param supplier
@@ -218,30 +100,6 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider {
 //		}
 //	}
 
-	/**
-	 * @param request - the lookup request
-	 */
-//	protected void validateRequestedProperties(LookupRequest request) {
-//		final Collection<String> properties = request.getPropertyCodes();
-//		
-//		final Set<String> supportedCodes = getSupportedProperties().stream().map(p -> {
-//			if (p instanceof IConceptProperty.Dynamic) {
-//				return p.getUri().getUriValue();
-//			} else {
-//				return p.getCodeValue();
-//			}
-//		})
-//		.collect(Collectors.toSet());
-//		
-//		if (!supportedCodes.containsAll(properties)) {
-//			if (properties.size() == 1) {
-//				throw new BadRequestException(String.format("Unrecognized property %s. Supported properties are: %s.", Arrays.toString(properties.toArray()), Arrays.toString(supportedCodes.toArray())), "LookupRequest.property");
-//			} else {
-//				throw new BadRequestException(String.format("Unrecognized properties %s. Supported properties are: %s.", Arrays.toString(properties.toArray()), Arrays.toString(supportedCodes.toArray())), "LookupRequest.property");
-//			}
-//		}
-//	}
-	
 	/**
 	 * Set the base properties if requested
 	 * @param lookupRequest

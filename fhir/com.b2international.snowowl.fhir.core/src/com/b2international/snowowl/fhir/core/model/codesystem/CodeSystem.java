@@ -153,8 +153,6 @@ public class CodeSystem extends MetadataResource {
 
 	@Summary
 	@Valid
-	@JsonProperty(CodeSystem.Fields.FILTER)
-	@JsonInclude(value = Include.NON_EMPTY)
 	private Collection<Filter> filters;
 
 	/*
@@ -162,16 +160,12 @@ public class CodeSystem extends MetadataResource {
 	 */
 	@Summary
 	@Valid
-	@JsonProperty(CodeSystem.Fields.PROPERTY)
-	@JsonInclude(value = Include.NON_EMPTY)
 	private Collection<SupportedConceptProperty> properties;
 
 	/*
 	 * Concepts in the code system, up to the server if they are returned
 	 */
 	@Valid
-	@JsonProperty("concept")
-	@JsonInclude(value = Include.NON_EMPTY)
 	private Collection<Concept> concepts;
 
 	@SuppressWarnings("rawtypes")
@@ -199,6 +193,24 @@ public class CodeSystem extends MetadataResource {
 		this.filters = filters;
 		this.properties = properties;
 		this.concepts = concepts;
+	}
+
+	@JsonProperty(CodeSystem.Fields.CONCEPT)
+	@JsonInclude(value = Include.NON_EMPTY)
+	public Collection<Concept> getConcepts() {
+		return concepts;
+	}
+	
+	@JsonProperty(CodeSystem.Fields.FILTER)
+	@JsonInclude(value = Include.NON_EMPTY)
+	public Collection<Filter> getFilters() {
+		return filters;
+	}
+	
+	@JsonProperty(CodeSystem.Fields.PROPERTY)
+	@JsonInclude(value = Include.NON_EMPTY)
+	public Collection<SupportedConceptProperty> getProperties() {
+		return properties;
 	}
 	
 	@JsonIgnore

@@ -15,6 +15,11 @@
  */
 package com.b2international.snowowl.fhir.core.request.codesystem;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -22,9 +27,11 @@ import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.domain.Concept;
+import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupResult;
+import com.b2international.snowowl.fhir.core.model.codesystem.SupportedConceptProperty;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
@@ -58,6 +65,9 @@ final class FhirLookupRequest extends FhirRequest<LookupResult> {
 
 	@Override
 	protected LookupResult doExecute(ServiceProvider context, CodeSystem codeSystem) {
+		
+		
+		
 		Concept concept = CodeSystemRequests.prepareSearchConcepts()
 			.one()
 			.filterById(request.getCode())
@@ -73,5 +83,19 @@ final class FhirLookupRequest extends FhirRequest<LookupResult> {
 				.display(concept.getTerm())
 				.build();
 	}
+	
+	protected void validateRequestedProperties(CodeSystem codeSystem) {
+		final Collection<String> properties = request.getPropertyCodes();
+		
+		final Set<String> supportedCodes = codeSystem.getProperties().stream().map(SupportedConceptProperty::getCodeValue).collect(Collectors.toSet());
+		
+		if (!supportedCodes.containsAll(properties)) {
+			if (properties.size() == 1) {
+				throw new BadRequestException(String.format("Unrecognized property %s. Supported properties are: %s.", Arrays.toString(properties.toArray()), Arrays.toString(supportedCodes.toArray())), "LookupRequest.property");
+			} else {
+				throw new BadRequestException(String.format("Unrecognized properties %s. Supported properties are: %s.", Arrays.toString(properties.toArray()), Arrays.toString(supportedCodes.toArray())), "LookupRequest.property");
+			}
+		}
+}
 
 }
