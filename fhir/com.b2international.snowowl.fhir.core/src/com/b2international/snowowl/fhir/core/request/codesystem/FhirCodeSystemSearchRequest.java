@@ -16,10 +16,7 @@
 package com.b2international.snowowl.fhir.core.request.codesystem;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -51,6 +48,7 @@ import com.b2international.snowowl.fhir.core.model.dt.Instant;
 import com.b2international.snowowl.fhir.core.model.dt.Narrative;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 /**
  * @since 8.0
@@ -141,7 +139,8 @@ final class FhirCodeSystemSearchRequest extends SearchResourceRequest<Repository
 				.sortBy(querySortBy(context))
 				.build());
 		
-		// TODO extract resource IDs and fetch all related core Resources
+		// in case of version fragments, extract their CodeSystem only information from the latest CodeSystem document (no need to represent older data there)
+		fillCodeSystemDocumentOnlyProperties(context, internalCodeSystems, fields);
 			
 		return prepareBundle()
 				.entry(internalCodeSystems.stream().map(codeSystem -> toFhirCodeSystemEntry(context, codeSystem)).collect(Collectors.toList()))
@@ -149,9 +148,46 @@ final class FhirCodeSystemSearchRequest extends SearchResourceRequest<Repository
 				.total(internalCodeSystems.getTotal())
 				.build();
 	}
+
+	private void fillCodeSystemDocumentOnlyProperties(RepositoryContext context, Hits<ResourceFragment> internalCodeSystems, List<String> fields) throws IOException {
+		final Set<String> versionCodeSystems = internalCodeSystems.stream()
+				.filter(fragment -> !CompareUtils.isEmpty(fragment.getVersion()))
+				.map(fragment -> fragment.getResourceURI().getResourceId())
+				.collect(Collectors.toSet());
+		Map<String, ResourceFragment> internalCodeSystemsById = new HashMap<>(internalCodeSystems.getHits().size());
+		internalCodeSystems.forEach(fragment -> {
+			internalCodeSystemsById.put(fragment.getId(), fragment);
+		});
+		
+		Set<String> missingCodeSystems = Sets.difference(versionCodeSystems, internalCodeSystemsById.keySet());
+		if (!missingCodeSystems.isEmpty()) {
+			context.service(RevisionSearcher.class)
+				.search(Query.select(ResourceFragment.class)
+				.from(ResourceDocument.class)
+				.fields(fields)
+				.where(ResourceDocument.Expressions.ids(missingCodeSystems))
+				.limit(missingCodeSystems.size())
+				.build())
+				.forEach(missingFragment -> {
+					internalCodeSystemsById.put(missingFragment.getId(), missingFragment);
+				});
+		}
+		
+		for (ResourceFragment versionFragment : internalCodeSystemsById.values()) {
+			if (!CompareUtils.isEmpty(versionFragment.getVersion())) {
+				ResourceFragment versionCodeSystem = internalCodeSystemsById.get(versionFragment.getResourceURI().getResourceId());
+				versionFragment.status = versionCodeSystem.status;
+				versionFragment.owner = versionCodeSystem.owner;
+				versionFragment.copyright = versionCodeSystem.copyright;
+				versionFragment.language = versionCodeSystem.language;
+				versionFragment.description = versionCodeSystem.description;
+				versionFragment.purpose = versionCodeSystem.purpose;
+			}
+		}
+	}
 	
 	private Builder prepareBundle() {
-		return Bundle.builder(UUID.randomUUID().toString())
+		return Bundle.builder("codesystems")
 				.type(BundleType.SEARCHSET)
 				.meta(Meta.builder()
 						.addTag(CompareUtils.isEmpty(fields()) ? null : Coding.CODING_SUBSETTED)
@@ -167,7 +203,7 @@ final class FhirCodeSystemSearchRequest extends SearchResourceRequest<Repository
 		CodeSystem.Builder entry = CodeSystem.builder()
 				// mandatory fields
 				.id(codeSystem.getId())
-				.status(PublicationStatus.UNKNOWN) // TODO support status on versions??
+				.status(PublicationStatus.getByCodeValue(codeSystem.getStatus()))
 				.meta(
 					Meta.builder()
 						.lastUpdated(Instant.builder().instant(codeSystem.getCreatedAt()).build()) // createdAt returns version creation time or latest update of the resource :gold:
@@ -182,11 +218,11 @@ final class FhirCodeSystemSearchRequest extends SearchResourceRequest<Repository
 		includeIfFieldSelected(CodeSystem.Fields.URL, codeSystem::getUrl, entry::url);
 		includeIfFieldSelected(CodeSystem.Fields.TEXT, () -> Narrative.builder().div("<div></div>").status(NarrativeStatus.EMPTY).build(), entry::text);
 		includeIfFieldSelected(CodeSystem.Fields.VERSION, codeSystem::getVersion, entry::version);
-//		includeIfFieldSelected(CodeSystem.Fields.PUBLISHER, codeSystem::getOwner, entry::publisher);
-//		includeIfFieldSelected(CodeSystem.Fields.COPYRIGHT, codeSystem::getCopyright, entry::copyright);
-//		includeIfFieldSelected(CodeSystem.Fields.LANGUAGE, codeSystem::getLanguage, entry::language);
-//		includeIfFieldSelected(CodeSystem.Fields.DESCRIPTION, codeSystem::getDescription, entry::description);
-//		includeIfFieldSelected(CodeSystem.Fields.PURPOSE, codeSystem::getPurpose, entry::purpose);
+		includeIfFieldSelected(CodeSystem.Fields.PUBLISHER, codeSystem::getOwner, entry::publisher);
+		includeIfFieldSelected(CodeSystem.Fields.COPYRIGHT, codeSystem::getCopyright, entry::copyright);
+		includeIfFieldSelected(CodeSystem.Fields.LANGUAGE, codeSystem::getLanguage, entry::language);
+		includeIfFieldSelected(CodeSystem.Fields.DESCRIPTION, codeSystem::getDescription, entry::description);
+		includeIfFieldSelected(CodeSystem.Fields.PURPOSE, codeSystem::getPurpose, entry::purpose);
 		
 		FhirCodeSystemResourceConverter converter = context.service(RepositoryManager.class)
 			.get(codeSystem.getToolingId())
@@ -209,28 +245,37 @@ final class FhirCodeSystemSearchRequest extends SearchResourceRequest<Repository
 	private static class ResourceFragment {
 		
 		@JsonProperty
-		private String resourceType;
+		String resourceType;
 		
 		@JsonProperty
-		private String id;
+		String id;
 		
 		@JsonProperty
-		private String url;
+		String url;
 		
 		@JsonProperty
-		private String title;
+		String title;
 		
 		@JsonProperty
-		private String toolingId;
+		String toolingId;
 		
 		@JsonProperty
-		private String branchPath;
+		String branchPath;
 		
 		@JsonProperty
-		private String version;
+		String version;
 		
 		@JsonProperty
-		private Long createdAt;
+		Long createdAt;
+		
+		// CodeSystem only fields, for Versions they got their values from the corresponding CodeSystem
+		
+		String status;
+		String owner;
+		String copyright;
+		String language;
+		String description;
+		String purpose;
 		
 		public String getId() {
 			return id;
@@ -266,6 +311,30 @@ final class FhirCodeSystemSearchRequest extends SearchResourceRequest<Repository
 		
 		public ResourceURI getResourceURI() {
 			return ResourceURI.of(resourceType, id);
+		}
+		
+		public String getStatus() {
+			return status;
+		}
+		
+		public String getOwner() {
+			return owner;
+		}
+		
+		public String getCopyright() {
+			return copyright;
+		}
+		
+		public String getLanguage() {
+			return language;
+		}
+		
+		public String getDescription() {
+			return description;
+		}
+		
+		public String getPurpose() {
+			return purpose;
 		}
 		
 	}

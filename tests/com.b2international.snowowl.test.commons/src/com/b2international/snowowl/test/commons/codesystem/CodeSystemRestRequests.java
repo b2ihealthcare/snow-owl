@@ -67,12 +67,13 @@ public abstract class CodeSystemRestRequests {
 			"id", codeSystemId,
 			"title", codeSystemId,
 			"url", getCodeSystemUrl(codeSystemId),
-			"description", "citation",
+			"description", "<div>Markdown supported</div>",
 			"toolingId", SnomedTerminologyComponentConstants.TOOLING_ID,
 			"oid", "oid_" + codeSystemId,
-			"language", "primaryLanguage",
+			"language", "ENG",
 			"extensionOf", extensionOf,
-			"branchPath", branchPath
+			"branchPath", branchPath,
+			"owner", "https://b2i.sg"
 		);
 				
 		return givenAuthenticatedRequest(ApiTestConstants.CODESYSTEMS_API)

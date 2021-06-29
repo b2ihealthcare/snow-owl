@@ -28,7 +28,6 @@ import org.junit.Test;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.tests.FhirRestTest;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests;
 
 /**
  * FHIR /CodeSystem Resource API Tests
@@ -448,7 +447,9 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.body("id", equalTo("SNOMEDCT/2002-01-31"))
 			.body("url", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_BASE + "/version/20020131"))
 			.body("status", equalTo("unknown"))
-			.body("version", equalTo("2002-01-31"));
+			.body("version", equalTo("2002-01-31"))
+			.body("language", equalTo("ENG"))
+			.body("publisher", equalTo("https://b2i.sg"));
 	}
 	
 	//Summary-count should not be allowed for non-search type operations?
