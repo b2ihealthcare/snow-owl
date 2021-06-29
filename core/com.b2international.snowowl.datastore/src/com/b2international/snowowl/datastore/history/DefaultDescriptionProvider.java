@@ -38,7 +38,7 @@ public class DefaultDescriptionProvider implements IDescriptionProvider {
 	}
 	
 	/* (non-Javadoc)
-	 * @see sg.com.mohh.sdd.sourcedata.core.provider.IDescriptionProvider#provideDescription(org.eclipse.emf.ecore.EObject)
+	 * @see sg.com.ihis.sdd.sourcedata.core.provider.IDescriptionProvider#provideDescription(org.eclipse.emf.ecore.EObject)
 	 */
 	@Override
 	public String provideDescription(final EObject object, final ChangeKind type) {
