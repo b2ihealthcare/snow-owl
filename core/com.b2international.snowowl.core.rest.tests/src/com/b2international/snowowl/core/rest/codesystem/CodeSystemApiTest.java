@@ -70,7 +70,7 @@ public class CodeSystemApiTest {
 	private static final Json SNOMED = Json.object(
 		ResourceDocument.Fields.ID, "SNOMEDCT",
 		ResourceDocument.Fields.TITLE, "SNOMED CT",
-		ResourceDocument.Fields.URL, SnomedTerminologyComponentConstants.SNOMED_URI_BASE,
+		ResourceDocument.Fields.URL, SnomedTerminologyComponentConstants.SNOMED_URI_SCT,
 		ResourceDocument.Fields.TOOLING_ID, SnomedTerminologyComponentConstants.TOOLING_ID,
 		ResourceDocument.Fields.OID, SnomedContentRule.SNOMEDCT_OID,
 		ResourceDocument.Fields.BUNDLE_ID, IComponent.ROOT_ID

@@ -63,8 +63,6 @@ public class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 
 	private static final String LOCATION_MARKER_SUBSUMES = "CodeSystem$subsumes.system";
 
-	private static final String URI_BASE = "http://snomed.info";
-	
 //	private static final Set<String> SUPPORTED_URIS = ImmutableSet.of(
 //		SnomedUri.SNOMED_BASE_URI_STRING
 //	);
@@ -103,110 +101,6 @@ public class SnomedCodeSystemApiProvider extends CodeSystemApiProvider {
 //		
 //		return mapToLookupResult(concept, lookup, versionString);
 //	}
-	
-	@Override
-	protected Collection<IConceptProperty> getSupportedConceptProperties() {
-		
-		// what should be the locale here? Likely we need to add the config locale as well
-		final List<ExtendedLocale> locales = ImmutableList.of(ExtendedLocale.valueOf("en-x-" + Concepts.REFSET_LANGUAGE_TYPE_US));
-		
-		final ImmutableList.Builder<IConceptProperty> properties = ImmutableList.builder();
-		
-		// add basic properties
-		properties.add(CoreSnomedConceptProperties.INACTIVE); 
-		properties.add(CoreSnomedConceptProperties.MODULE_ID); 
-		properties.add(CoreSnomedConceptProperties.EFFECTIVE_TIME); 
-		properties.add(CoreSnomedConceptProperties.SUFFICIENTLY_DEFINED); 
-		properties.add(CommonConceptProperties.CHILD); 
-		properties.add(CommonConceptProperties.PARENT); 
-		
-		// fetch available relationship types and register them as supported concept property
-		SnomedRequests.prepareSearchConcept()
-			.all()
-			.filterByActive(true)
-			.filterByAncestor(Concepts.CONCEPT_MODEL_ATTRIBUTE)
-			.setExpand("pt()")
-			.setLocales(locales)
-			.build(Branch.MAIN_PATH)
-			.execute(getBus())
-			.getSync()
-			.stream()
-			.map(type -> {
-				final String displayName = getPreferredTermOrId(type);
-				return IConceptProperty.Dynamic.valueCode(URI_BASE + "/id", displayName, type.getId());
-			})
-			.forEach(properties::add);
-		
-		return properties.build();
-	}
-	
-	
-//	@Override
-//	public boolean isSupported(ResourceURI codeSystemURI) {
-		// TODO fix is supported implementation
-//		return codeSystemURI.getCodeSystem().startsWith(SnomedTerminologyComponentConstants.SNOMED_SHORT_NAME);
-//		return false;
-//	}
-	
-//	@Override
-//	public final boolean isSupported(String uri) {
-//		if (Strings.isNullOrEmpty(uri)) return false;
-//		
-//		//supported URI perfect match
-//		boolean foundInList = getSupportedURIs().stream()
-//			.filter(uri::equalsIgnoreCase)
-//			.findAny()
-//			.isPresent();
-//		
-//		//extension and version is part of the URI
-//		boolean extensionUri = uri.startsWith(SnomedUri.SNOMED_BASE_URI_STRING);
-//		
-//		return foundInList || extensionUri;
-//	}
-	
-	@Override
-	protected Set<String> fetchAncestors(final ResourceURI codeSystemUri, final String componentId) {
-		return SnomedConcept.GET_ANCESTORS.apply(SnomedRequests.prepareGetConcept(componentId)
-			.build(codeSystemUri)
-			.execute(getBus())
-			.getSync());
-	}
-	
-	@Override
-	protected int getCount(Version codeSystemVersion) {
-		return SnomedRequests.prepareSearchConcept()
-				.setLimit(0)
-				.build(codeSystemVersion.getVersionResourceURI())
-				.execute(getBus())
-				.getSync()
-				.getTotal();
-	}
-	
-	@Override
-	protected Collection<Filter> getSupportedFilters() {
-		return List.of(
-			Filters.EXPRESSION_FILTER, 
-			Filters.EXPRESSIONS_FILTER,
-			Filters.IS_A_FILTER, 
-			Filters.REFSET_MEMBER_OF
-		);
-	}
-	
-//	@Override
-//	public Collection<String> getSupportedURIs() {
-//		return SUPPORTED_URIS;
-//	}
-	
-	protected Uri getFhirUri(com.b2international.snowowl.core.codesystem.CodeSystem codeSystem, Version codeSystemVersion) {
-		
-		//TODO: edition module should come here
-		Builder builder = SnomedUri.builder();
-		
-		if (codeSystemVersion != null) {
-			builder.version(codeSystemVersion.getVersion());
-		} 
-		return builder.build().toUri();
-	}
 	
 //	@Override
 //	protected ResourceURI getCodeSystemUri(final String system, final String version) {

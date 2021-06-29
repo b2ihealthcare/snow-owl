@@ -38,7 +38,7 @@ public class FhirCodeSystemValidateCodeOperationTest extends FhirRestTest {
 	@Test
 	public void GET_CodeSystem_$validate_code_NonExisting() throws Exception {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.queryParam("url", SnomedTerminologyComponentConstants.SNOMED_URI_BASE)
+			.queryParam("url", SnomedTerminologyComponentConstants.SNOMED_URI_SCT)
 			.queryParam("code", "12345")
 			.when().get(CODESYSTEM_VALIDATE_CODE)
 			.then().assertThat()
@@ -53,7 +53,7 @@ public class FhirCodeSystemValidateCodeOperationTest extends FhirRestTest {
 	@Test
 	public void GET_CodeSystem_$validate_code_InvalidDisplay() throws Exception {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.queryParam("url", SnomedTerminologyComponentConstants.SNOMED_URI_BASE)
+			.queryParam("url", SnomedTerminologyComponentConstants.SNOMED_URI_SCT)
 			.queryParam("code", Concepts.ROOT_CONCEPT)
 			.queryParam("display", "Unknown display")
 			.when().get(CODESYSTEM_VALIDATE_CODE)
@@ -70,7 +70,7 @@ public class FhirCodeSystemValidateCodeOperationTest extends FhirRestTest {
 	@Test
 	public void GET_CodeSystem_$validate_code_Existing() throws Exception {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.queryParam("url", SnomedTerminologyComponentConstants.SNOMED_URI_BASE)
+			.queryParam("url", SnomedTerminologyComponentConstants.SNOMED_URI_SCT)
 			.queryParam("code", Concepts.ROOT_CONCEPT)
 			.when().get(CODESYSTEM_VALIDATE_CODE)
 			.then().assertThat()
@@ -83,8 +83,8 @@ public class FhirCodeSystemValidateCodeOperationTest extends FhirRestTest {
 	@Test
 	public void POST_CodeSystem_$validate_code_Existing() throws Exception {
 		ValidateCodeRequest request = ValidateCodeRequest.builder()
-				.url(SnomedTerminologyComponentConstants.SNOMED_URI_BASE)
-				.coding(Coding.of(SnomedTerminologyComponentConstants.SNOMED_URI_BASE, Concepts.ROOT_CONCEPT))
+				.url(SnomedTerminologyComponentConstants.SNOMED_URI_SCT)
+				.coding(Coding.of(SnomedTerminologyComponentConstants.SNOMED_URI_SCT, Concepts.ROOT_CONCEPT))
 				.build();
 
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)

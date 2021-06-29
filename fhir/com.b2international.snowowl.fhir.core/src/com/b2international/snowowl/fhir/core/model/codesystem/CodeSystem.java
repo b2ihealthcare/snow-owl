@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.fhir.core.model.codesystem;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Set;
@@ -38,8 +39,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 
 import io.swagger.annotations.ApiModel;
 
@@ -233,11 +232,11 @@ public class CodeSystem extends MetadataResource {
 
 		private Integer count;
 
-		private Collection<Filter> filters = Sets.newHashSet();
+		private Collection<Filter> filters;
 
-		private Collection<SupportedConceptProperty> properties = Lists.newArrayList();
+		private Collection<SupportedConceptProperty> properties;
 
-		private Collection<Concept> concepts = Sets.newHashSet();
+		private Collection<Concept> concepts;
 
 		/**
 		 * Use this constructor when a new resource is sent to the server to be created.
@@ -305,12 +304,36 @@ public class CodeSystem extends MetadataResource {
 		}
 
 		public Builder addProperty(SupportedConceptProperty property) {
+			if (this.properties == null) {
+				this.properties = new ArrayList<>();
+			}
 			this.properties.add(property);
 			return getSelf();
 		}
 
 		public Builder addConcept(Concept concept) {
+			if (this.concepts == null) {
+				this.concepts = new ArrayList<>();
+			}
 			this.concepts.add(concept);
+			return getSelf();
+		}
+		
+		public Builder filters(Collection<Filter> filters) {
+			if (this.filters == null) {
+				this.filters = new ArrayList<>();
+			}
+			this.filters = filters;
+			return getSelf();
+		}
+		
+		public Builder properties(Collection<SupportedConceptProperty> properties) {
+			this.properties = properties;
+			return getSelf();
+		}
+		
+		public Builder concepts(Collection<Concept> concepts) {
+			this.concepts = concepts;
 			return getSelf();
 		}
 

@@ -15,10 +15,18 @@
  */
 package com.b2international.snowowl.fhir.core.request.codesystem;
 
+import java.util.List;
+
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+
+import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
-import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
+import com.b2international.snowowl.fhir.core.model.codesystem.Concept;
+import com.b2international.snowowl.fhir.core.model.codesystem.Filter;
+import com.b2international.snowowl.fhir.core.model.codesystem.IConceptProperty;
+import com.b2international.snowowl.fhir.core.model.codesystem.SupportedCodeSystemRequestProperties;
 
 /**
  * @since 8.0
@@ -44,14 +52,39 @@ public interface FhirCodeSystemResourceConverter {
 	}
 
 	/**
-	 * Implementers may expand the FHIR CodeSystem with additional code system specific information, such as concept properties, filters and override
-	 * any defaults set by the {@link FhirCodeSystemSearchRequest}. This method by default does nothing.
+	 * Implementers may expand a FHIR CodeSystem with its concepts if they wish to include them. This method by default does nothing.
 	 * 
 	 * @param context - the context to use when expanding additional information
-	 * @param entry - the entry to expand with additional information
-	 * @param codeSystem - the base CodeSystem to use
+	 * @param resourceURI 
+	 * @param list 
 	 */
-	default void expand(ServiceProvider context, CodeSystem.Builder entry, com.b2international.snowowl.core.codesystem.CodeSystem codeSystem) {
+	default List<Concept> expandConcepts(ServiceProvider context, ResourceURI resourceURI, List<ExtendedLocale> list) {
+		return List.of();
 	}
-
+	
+	/**
+	 * Implementers may expand a FHIR CodeSystem with its available filters if they wish to include them. This method by default does nothing.
+	 * 
+	 * @param context - the context to use when expanding additional information
+	 * @param resourceURI 
+	 * @param list 
+	 */
+	default List<Filter> expandFilters(ServiceProvider context, ResourceURI resourceURI, List<ExtendedLocale> list) {
+		return List.of();
+	}
+	
+	/**
+	 * Implementers may expand the FHIR CodeSystem with its available concept properties if they wish to include them. This method returns the common
+	 * code system request properties by default. Overriding methods must ensure they return these as well when customizing the return value.
+	 * 
+	 * @param context
+	 *            - the context to use when expanding additional information
+	 * @param resourceURI
+	 * @param list
+	 */
+	@OverridingMethodsMustInvokeSuper
+	default List<IConceptProperty> expandProperties(ServiceProvider context, ResourceURI resourceURI, List<ExtendedLocale> list) {
+		return List.of(SupportedCodeSystemRequestProperties.values());
+	}
+	
 }

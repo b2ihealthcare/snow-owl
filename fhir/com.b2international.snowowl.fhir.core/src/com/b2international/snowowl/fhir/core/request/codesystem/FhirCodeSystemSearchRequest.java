@@ -17,7 +17,7 @@ package com.b2international.snowowl.fhir.core.request.codesystem;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.function.Function;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -34,16 +34,16 @@ import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.request.TermFilter;
 import com.b2international.snowowl.core.version.VersionDocument;
-import com.b2international.snowowl.fhir.core.codesystems.BundleType;
-import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
-import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
-import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
+import com.b2international.snowowl.fhir.core.codesystems.*;
 import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.Bundle.Builder;
 import com.b2international.snowowl.fhir.core.model.Entry;
 import com.b2international.snowowl.fhir.core.model.Meta;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
+import com.b2international.snowowl.fhir.core.model.codesystem.SupportedCodeSystemRequestProperties;
+import com.b2international.snowowl.fhir.core.model.codesystem.SupportedConceptProperty;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
+import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Instant;
 import com.b2international.snowowl.fhir.core.model.dt.Narrative;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -115,6 +115,11 @@ final class FhirCodeSystemSearchRequest extends SearchResourceRequest<Repository
 			fields.remove(CodeSystem.Fields.PUBLISHER);
 			fields.add(ResourceDocument.Fields.OWNER);
 		}
+		// replace identifier with internal oid field
+		if (fields.contains(CodeSystem.Fields.IDENTIFIER)) {
+			fields.remove(CodeSystem.Fields.IDENTIFIER);
+			fields.add(ResourceDocument.Fields.OID);
+		}
 		
 		// prepare filters
 		final ExpressionBuilder codeSystemQuery = Expressions.builder()
@@ -182,6 +187,7 @@ final class FhirCodeSystemSearchRequest extends SearchResourceRequest<Repository
 				versionFragment.language = versionCodeSystem.language;
 				versionFragment.description = versionCodeSystem.description;
 				versionFragment.purpose = versionCodeSystem.purpose;
+				versionFragment.oid = versionCodeSystem.oid;
 			}
 		}
 	}
@@ -218,6 +224,17 @@ final class FhirCodeSystemSearchRequest extends SearchResourceRequest<Repository
 		includeIfFieldSelected(CodeSystem.Fields.URL, codeSystem::getUrl, entry::url);
 		includeIfFieldSelected(CodeSystem.Fields.TEXT, () -> Narrative.builder().div("<div></div>").status(NarrativeStatus.EMPTY).build(), entry::text);
 		includeIfFieldSelected(CodeSystem.Fields.VERSION, codeSystem::getVersion, entry::version);
+		includeIfFieldSelected(CodeSystem.Fields.IDENTIFIER, () -> {
+			if (!CompareUtils.isEmpty(codeSystem.getOid())) {
+				return Identifier.builder()
+						.use(IdentifierUse.OFFICIAL)
+						.system(codeSystem.getUrl())
+						.value(codeSystem.getOid())
+						.build();
+			} else {
+				return null;
+			}
+		}, entry::identifier);
 		includeIfFieldSelected(CodeSystem.Fields.PUBLISHER, codeSystem::getOwner, entry::publisher);
 		includeIfFieldSelected(CodeSystem.Fields.COPYRIGHT, codeSystem::getCopyright, entry::copyright);
 		includeIfFieldSelected(CodeSystem.Fields.LANGUAGE, codeSystem::getLanguage, entry::language);
@@ -225,20 +242,26 @@ final class FhirCodeSystemSearchRequest extends SearchResourceRequest<Repository
 		includeIfFieldSelected(CodeSystem.Fields.PURPOSE, codeSystem::getPurpose, entry::purpose);
 		
 		FhirCodeSystemResourceConverter converter = context.service(RepositoryManager.class)
-			.get(codeSystem.getToolingId())
-			.optionalService(FhirCodeSystemResourceConverter.class)
-			.orElse(FhirCodeSystemResourceConverter.DEFAULT);
+				.get(codeSystem.getToolingId())
+				.optionalService(FhirCodeSystemResourceConverter.class)
+				.orElse(FhirCodeSystemResourceConverter.DEFAULT);
 		
 		includeIfFieldSelected(CodeSystem.Fields.COUNT, () -> converter.count(context, codeSystem.getResourceURI()), entry::count);
-		
-//		converter.expand(context, entry, codeSystem);
+		includeIfFieldSelected(CodeSystem.Fields.CONCEPT, () -> converter.expandConcepts(context, codeSystem.getResourceURI(), locales()), entry::concepts);
+		includeIfFieldSelected(CodeSystem.Fields.FILTER, () -> converter.expandFilters(context, codeSystem.getResourceURI(), locales()), entry::filters);
+		includeIfFieldSelected(CodeSystem.Fields.PROPERTY, () -> converter.expandProperties(context, codeSystem.getResourceURI(), locales()), properties -> {
+			properties.stream()
+				.filter(p -> !(SupportedCodeSystemRequestProperties.class.isInstance(p)))
+				.map(prop -> SupportedConceptProperty.builder(prop).build())
+				.forEach(entry::addProperty);
+		});
 		
 		return entry.build();
 	}
 	
-	private <T> void includeIfFieldSelected(String field, Supplier<T> getter, Function<T, ?> setter) {
+	private <T> void includeIfFieldSelected(String field, Supplier<T> getter, Consumer<T> setter) {
 		if (CompareUtils.isEmpty(fields()) || fields().contains(field)) {
-			setter.apply(getter.get());
+			setter.accept(getter.get());
 		}
 	}
 	
@@ -276,6 +299,7 @@ final class FhirCodeSystemSearchRequest extends SearchResourceRequest<Repository
 		String language;
 		String description;
 		String purpose;
+		String oid;
 		
 		public String getId() {
 			return id;
@@ -335,6 +359,10 @@ final class FhirCodeSystemSearchRequest extends SearchResourceRequest<Repository
 		
 		public String getPurpose() {
 			return purpose;
+		}
+		
+		public String getOid() {
+			return oid;
 		}
 		
 	}

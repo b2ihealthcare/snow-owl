@@ -84,7 +84,7 @@ public abstract class CodeSystemRestRequests {
 	}
 
 	public static String getCodeSystemUrl(String codeSystemId) {
-		return SnomedTerminologyComponentConstants.SNOMED_URI_BASE + "/" + codeSystemId;
+		return SnomedTerminologyComponentConstants.SNOMED_URI_SCT + "/" + codeSystemId;
 	}
 
 	public static ValidatableResponse getCodeSystem(String id) {

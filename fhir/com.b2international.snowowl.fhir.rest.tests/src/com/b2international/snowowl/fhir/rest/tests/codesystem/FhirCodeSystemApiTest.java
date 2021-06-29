@@ -152,6 +152,8 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.body("meta.tag.code", hasItem(Coding.CODING_SUBSETTED.getCodeValue()))
 			.body("type", equalTo("searchset"))
 			.body("total", equalTo(1))
+			.body("entry.resource.property", notNullValue())
+			.body("entry.resource.filter", notNullValue())
 			//no concept definitions are part of the summary
 			.body("entry.resource", not(hasItem("concept")));
 	}
@@ -291,7 +293,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 	@Test
 	public void GET_CodeSystem_Url_Match_Single() throws Exception {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.queryParam("url", SnomedTerminologyComponentConstants.SNOMED_URI_BASE)
+			.queryParam("url", SnomedTerminologyComponentConstants.SNOMED_URI_SCT)
 			.when().get(CODESYSTEM)
 			.then().assertThat()
 			.statusCode(200)
@@ -300,13 +302,13 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.body("total", equalTo(1))
 			.body("type", equalTo("searchset"))
 			.body("entry[0].resource.id", equalTo("SNOMEDCT"))
-			.body("entry[0].resource.url", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_BASE));
+			.body("entry[0].resource.url", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_SCT));
 	}
 	
 	@Test
 	public void GET_CodeSystem_Url_Match_Multiple() throws Exception {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.queryParam("url", SnomedTerminologyComponentConstants.SNOMED_URI_BASE, getTestCodeSystemUrl())
+			.queryParam("url", SnomedTerminologyComponentConstants.SNOMED_URI_SCT, getTestCodeSystemUrl())
 			.when().get(CODESYSTEM)
 			.then().assertThat()
 			.statusCode(200)
@@ -315,7 +317,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.body("total", equalTo(2))
 			.body("type", equalTo("searchset"))
 			.body("entry.resource.id", hasItems("SNOMEDCT", getTestCodeSystemId()))
-			.body("entry.resource.url", hasItems(SnomedTerminologyComponentConstants.SNOMED_URI_BASE, getTestCodeSystemUrl()));
+			.body("entry.resource.url", hasItems(SnomedTerminologyComponentConstants.SNOMED_URI_SCT, getTestCodeSystemUrl()));
 	}
 
 	@Test
@@ -334,7 +336,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 	@Test
 	public void GET_CodeSystem_System_Match_Single() throws Exception {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.queryParam("system", SnomedTerminologyComponentConstants.SNOMED_URI_BASE)
+			.queryParam("system", SnomedTerminologyComponentConstants.SNOMED_URI_SCT)
 			.when().get(CODESYSTEM)
 			.then().assertThat()
 			.statusCode(200)
@@ -343,13 +345,13 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.body("total", equalTo(1))
 			.body("type", equalTo("searchset"))
 			.body("entry[0].resource.id", equalTo("SNOMEDCT"))
-			.body("entry[0].resource.url", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_BASE));
+			.body("entry[0].resource.url", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_SCT));
 	}
 	
 	@Test
 	public void GET_CodeSystem_System_Match_Multiple() throws Exception {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.queryParam("system", SnomedTerminologyComponentConstants.SNOMED_URI_BASE, getTestCodeSystemUrl())
+			.queryParam("system", SnomedTerminologyComponentConstants.SNOMED_URI_SCT, getTestCodeSystemUrl())
 			.when().get(CODESYSTEM)
 			.then().assertThat()
 			.statusCode(200)
@@ -358,14 +360,14 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.body("total", equalTo(2))
 			.body("type", equalTo("searchset"))
 			.body("entry.resource.id", hasItems("SNOMEDCT", getTestCodeSystemId()))
-			.body("entry.resource.url", hasItems(SnomedTerminologyComponentConstants.SNOMED_URI_BASE, getTestCodeSystemUrl()));
+			.body("entry.resource.url", hasItems(SnomedTerminologyComponentConstants.SNOMED_URI_SCT, getTestCodeSystemUrl()));
 	}
 	
 	@Test
 	public void GET_CodeSystem_System_And_Url_Intersection_Match() throws Exception {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.queryParam("url", SnomedTerminologyComponentConstants.SNOMED_URI_BASE, getTestCodeSystemUrl())
-			.queryParam("system", SnomedTerminologyComponentConstants.SNOMED_URI_BASE)
+			.queryParam("url", SnomedTerminologyComponentConstants.SNOMED_URI_SCT, getTestCodeSystemUrl())
+			.queryParam("system", SnomedTerminologyComponentConstants.SNOMED_URI_SCT)
 			.when().get(CODESYSTEM)
 			.then().assertThat()
 			.statusCode(200)
@@ -374,7 +376,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.body("total", equalTo(1))
 			.body("type", equalTo("searchset"))
 			.body("entry[0].resource.id", equalTo("SNOMEDCT"))
-			.body("entry[0].resource.url", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_BASE));
+			.body("entry[0].resource.url", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_SCT));
 	}
 	
 	@Test
@@ -402,7 +404,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.body("total", equalTo(1))
 			.body("type", equalTo("searchset"))
 			.body("entry[0].resource.id", equalTo("SNOMEDCT/2002-01-31"))
-			.body("entry[0].resource.url", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_BASE + "/version/20020131"))
+			.body("entry[0].resource.url", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_SCT + "/version/20020131"))
 			.body("entry[0].resource.version", equalTo("2002-01-31"));
 	}
 	
@@ -418,10 +420,10 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.body("total", equalTo(2))
 			.body("type", equalTo("searchset"))
 			.body("entry[0].resource.id", equalTo("SNOMEDCT/2002-01-31"))
-			.body("entry[0].resource.url", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_BASE + "/version/20020131"))
+			.body("entry[0].resource.url", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_SCT + "/version/20020131"))
 			.body("entry[0].resource.version", equalTo("2002-01-31"))
 			.body("entry[1].resource.id", equalTo("SNOMEDCT/2020-01-31"))
-			.body("entry[1].resource.url", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_BASE + "/version/20200131"))
+			.body("entry[1].resource.url", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_SCT + "/version/20200131"))
 			.body("entry[1].resource.version", equalTo("2020-01-31"));
 	}
 	
@@ -445,7 +447,7 @@ public class FhirCodeSystemApiTest extends FhirRestTest {
 			.statusCode(200)
 			.body("resourceType", equalTo("CodeSystem"))
 			.body("id", equalTo("SNOMEDCT/2002-01-31"))
-			.body("url", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_BASE + "/version/20020131"))
+			.body("url", equalTo(SnomedTerminologyComponentConstants.SNOMED_URI_SCT + "/version/20020131"))
 			.body("status", equalTo("unknown"))
 			.body("version", equalTo("2002-01-31"))
 			.body("language", equalTo("ENG"))

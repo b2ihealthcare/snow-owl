@@ -118,7 +118,7 @@ public class SnomedContentRule extends ExternalResource {
 		CodeSystemRequests.prepareNewCodeSystem()
 			.setId(codeSystemId.getResourceId())
 			.setBranchPath(SNOMEDCT.equals(codeSystemId) ? Branch.MAIN_PATH : null)
-			.setUrl(SNOMEDCT.equals(codeSystemId) ? SnomedTerminologyComponentConstants.SNOMED_URI_BASE : SnomedTerminologyComponentConstants.SNOMED_URI_BASE + "/" + codeSystemId.getResourceId())
+			.setUrl(SNOMEDCT.equals(codeSystemId) ? SnomedTerminologyComponentConstants.SNOMED_URI_SCT : SnomedTerminologyComponentConstants.SNOMED_URI_SCT + "/" + codeSystemId.getResourceId())
 			.setDescription("description")
 			.setExtensionOf(extensionOf)
 			.setLanguage("ENG")

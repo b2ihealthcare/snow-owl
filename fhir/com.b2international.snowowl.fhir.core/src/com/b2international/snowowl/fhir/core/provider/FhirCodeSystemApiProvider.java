@@ -20,8 +20,6 @@ import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.wiring.BundleWiring;
@@ -29,7 +27,6 @@ import org.osgi.framework.wiring.BundleWiring;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ResourceURI;
-import com.b2international.snowowl.core.version.Version;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.fhir.core.ResourceNarrative;
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
@@ -41,8 +38,6 @@ import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem.Builder
 import com.b2international.snowowl.fhir.core.model.codesystem.Concept;
 import com.b2international.snowowl.fhir.core.model.dt.Narrative;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
-import com.b2international.snowowl.fhir.core.search.FhirParameter.PrefixedValue;
-import com.b2international.snowowl.fhir.core.search.FhirSearchParameter;
 import com.google.common.collect.Sets;
 
 /**
@@ -68,45 +63,45 @@ public final class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 		return codeSystems;
 	}
 
-	@Override
-	public CodeSystem getCodeSystem(ResourceURI codeSystemURI) {
-		return getCodeSystemClasses().stream()
-				.map(cl-> createCodeSystemEnum(cl))
-				.filter(fcs -> fcs.getCodeSystemUri().endsWith(codeSystemURI.getPath()))
-				.map(this::buildCodeSystem)
-				.findFirst()
-				.get();
-	}
+//	@Override
+//	public CodeSystem getCodeSystem(ResourceURI codeSystemURI) {
+//		return getCodeSystemClasses().stream()
+//				.map(cl-> createCodeSystemEnum(cl))
+//				.filter(fcs -> fcs.getCodeSystemUri().endsWith(codeSystemURI.getPath()))
+//				.map(this::buildCodeSystem)
+//				.findFirst()
+//				.get();
+//	}
 	
-	@Override
-	public Collection<CodeSystem> getCodeSystems(Set<FhirSearchParameter> searchParameters) {
-		
-		Collection<CodeSystem> codeSystems = getCodeSystems();
-		
-		Optional<FhirSearchParameter> idParamOptional = getSearchParam(searchParameters, "_id");
-		if (idParamOptional.isPresent()) {
-			Collection<String> values = idParamOptional.get().getValues().stream()
-					.map(PrefixedValue::getValue)
-					.collect(Collectors.toSet());
-			
-			codeSystems = codeSystems.stream().filter(cs -> {
-				return values.contains(cs.getId().getIdValue());
-			}).collect(Collectors.toSet());
-		}
-		
-		Optional<FhirSearchParameter> nameOptional = getSearchParam(searchParameters, "_name");
-
-		if (nameOptional.isPresent()) {
-			Collection<String> nameValues = nameOptional.get().getValues().stream()
-					.map(PrefixedValue::getValue)
-					.collect(Collectors.toSet());
-			codeSystems = codeSystems.stream().filter(cs -> {
-				return nameValues.contains(cs.getName());
-			}).collect(Collectors.toSet());
-		}
-		
-		return codeSystems;
-	}
+//	@Override
+//	public Collection<CodeSystem> getCodeSystems(Set<FhirSearchParameter> searchParameters) {
+//		
+//		Collection<CodeSystem> codeSystems = getCodeSystems();
+//		
+//		Optional<FhirSearchParameter> idParamOptional = getSearchParam(searchParameters, "_id");
+//		if (idParamOptional.isPresent()) {
+//			Collection<String> values = idParamOptional.get().getValues().stream()
+//					.map(PrefixedValue::getValue)
+//					.collect(Collectors.toSet());
+//			
+//			codeSystems = codeSystems.stream().filter(cs -> {
+//				return values.contains(cs.getId().getIdValue());
+//			}).collect(Collectors.toSet());
+//		}
+//		
+//		Optional<FhirSearchParameter> nameOptional = getSearchParam(searchParameters, "_name");
+//
+//		if (nameOptional.isPresent()) {
+//			Collection<String> nameValues = nameOptional.get().getValues().stream()
+//					.map(PrefixedValue::getValue)
+//					.collect(Collectors.toSet());
+//			codeSystems = codeSystems.stream().filter(cs -> {
+//				return nameValues.contains(cs.getName());
+//			}).collect(Collectors.toSet());
+//		}
+//		
+//		return codeSystems;
+//	}
 
 //	@Override
 //	public LookupResult lookup(LookupRequest lookupRequest) {
@@ -170,11 +165,6 @@ public final class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 //		}
 //
 //	}
-	
-	@Override
-	protected Set<String> fetchAncestors(final ResourceURI codeSystemUri, String componentId) {
-		throw new UnsupportedOperationException();
-	}
 	
 //	@Override
 //	public Collection<String> getSupportedURIs() {
@@ -344,18 +334,6 @@ public final class FhirCodeSystemApiProvider extends CodeSystemApiProvider {
 	@SuppressWarnings("unchecked")
 	private <T extends Enum<T>> T createEnumInstance(String name, Type type) {
 		return Enum.valueOf((Class<T>) type, name);
-	}
-
-	@Override
-	protected Uri getFhirUri(com.b2international.snowowl.core.codesystem.CodeSystem codeSystem, Version codeSystemVersion) {
-		//handled on the per Core terminology basis (like LCS) 
-		return null;
-	}
-
-	@Override
-	protected int getCount(Version codeSystemVersion) {
-		//handled on the per Core terminology basis (like LCS) 
-		return 0;
 	}
 
 }

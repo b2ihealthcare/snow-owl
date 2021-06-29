@@ -53,7 +53,7 @@ public class FhirCodeSystemLookupOperationTest extends FhirRestTest {
 	@Test
 	public void GET_CodeSystem_$lookup_NonExistentCode() throws Exception {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.queryParam("system", SnomedTerminologyComponentConstants.SNOMED_URI_BASE)
+			.queryParam("system", SnomedTerminologyComponentConstants.SNOMED_URI_SCT)
 			.queryParam("code", "12345")
 			.queryParam("_format", "json")
 			.when().get(CODESYSTEM_LOOKUP)
@@ -68,7 +68,7 @@ public class FhirCodeSystemLookupOperationTest extends FhirRestTest {
 	@Test
 	public void GET_CodeSystem_$lookup_Existing() throws Exception {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.queryParam("system", SnomedTerminologyComponentConstants.SNOMED_URI_BASE)
+			.queryParam("system", SnomedTerminologyComponentConstants.SNOMED_URI_SCT)
 			.queryParam("code", Concepts.ROOT_CONCEPT)
 			.queryParam("_format", "json")
 			.when().get(CODESYSTEM_LOOKUP)
@@ -100,7 +100,7 @@ public class FhirCodeSystemLookupOperationTest extends FhirRestTest {
 	@Test
 	public void GET_CodeSystem_$lookup_Existing_WithProperty() throws Exception {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.queryParam("system", SnomedTerminologyComponentConstants.SNOMED_URI_BASE)
+			.queryParam("system", SnomedTerminologyComponentConstants.SNOMED_URI_SCT)
 			.queryParam("code", Concepts.ROOT_CONCEPT)
 			.queryParam("property", "parent")
 			.queryParam("_format", "json")
@@ -119,7 +119,7 @@ public class FhirCodeSystemLookupOperationTest extends FhirRestTest {
 	@Test
 	public void GET_CodeSystem_$lookup_Existing_WithInvalidProperty() throws Exception {
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
-			.queryParam("system", SnomedTerminologyComponentConstants.SNOMED_URI_BASE)
+			.queryParam("system", SnomedTerminologyComponentConstants.SNOMED_URI_SCT)
 			.queryParam("code", Concepts.ROOT_CONCEPT)
 			.queryParam("property", "name")
 			.queryParam("property", "http://snomed.info/id/116676008") //associated morphology
@@ -137,7 +137,7 @@ public class FhirCodeSystemLookupOperationTest extends FhirRestTest {
 	public void POST_CodeSystem_$lookup_Existing() throws Exception {
 		
 		LookupRequest request = LookupRequest.builder()
-				.coding(Coding.of(SnomedTerminologyComponentConstants.SNOMED_URI_BASE, Concepts.ROOT_CONCEPT))
+				.coding(Coding.of(SnomedTerminologyComponentConstants.SNOMED_URI_SCT, Concepts.ROOT_CONCEPT))
 				.build();
 		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
@@ -156,7 +156,7 @@ public class FhirCodeSystemLookupOperationTest extends FhirRestTest {
 	@Test
 	public void POST_CodeSystem_$lookup_Existing_Property() throws Exception {
 		LookupRequest request = LookupRequest.builder()
-				.coding(Coding.of(SnomedTerminologyComponentConstants.SNOMED_URI_BASE, Concepts.ROOT_CONCEPT))
+				.coding(Coding.of(SnomedTerminologyComponentConstants.SNOMED_URI_SCT, Concepts.ROOT_CONCEPT))
 				.addProperty("parent")
 				.build();
 		
@@ -178,7 +178,7 @@ public class FhirCodeSystemLookupOperationTest extends FhirRestTest {
 	@Test
 	public void POST_CodeSystem_$lookup_Existing_WithInvalidProperty() throws Exception {
 		LookupRequest request = LookupRequest.builder()
-					.coding(Coding.of(SnomedTerminologyComponentConstants.SNOMED_URI_BASE, Concepts.ROOT_CONCEPT))
+					.coding(Coding.of(SnomedTerminologyComponentConstants.SNOMED_URI_SCT, Concepts.ROOT_CONCEPT))
 					.addProperty("http://snomed.info/id/12345")
 					.build();
 		
