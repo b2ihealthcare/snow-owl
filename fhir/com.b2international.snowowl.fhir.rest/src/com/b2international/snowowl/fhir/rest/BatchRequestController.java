@@ -60,6 +60,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 @RequestMapping(value="/", produces = { AbstractFhirResourceController.APPLICATION_FHIR_JSON })
 public class BatchRequestController {
 	
+	private static final String RESOURCE_PROPERTY_NAME = "resource";
+	private static final String RESPONSE_PROPERTY_NAME = "response";
 	@Autowired
 	private ObjectMapper objectMapper;
 	
@@ -99,6 +101,61 @@ public class BatchRequestController {
 		
 		return Promise.immediate(objectMapper.treeToValue(rootNode, Bundle.class));
 	}
+	
+	private void processRequestEntry(ArrayNode arrayNode, ParametersRequestEntry requestEntry, HttpServletRequest request) throws JsonProcessingException {
+		
+	    BatchRequest batchRequest = requestEntry.getRequest();
+		
+		HttpHeaders headers = getHeaders(request);
+		
+		RestTemplate restTemplate = getRestTemplate();
+		
+		StringBuilder uriBuilder = new StringBuilder(request.getScheme())
+				.append("://")
+				.append(request.getServerName())
+				.append(":")
+				.append(request.getLocalPort())
+				.append(request.getRequestURI())
+				.append(batchRequest.getUrl().getUriValue());
+		
+		Code requestMethod = batchRequest.getMethod();
+		
+		if (requestMethod.equals(HttpVerb.GET.getCode())) {
+		
+			HttpEntity<String> httpEntity = new HttpEntity<>(headers);
+			System.out.println("URI: " + uriBuilder.toString());
+			ResponseEntity<String> response = restTemplate.exchange(uriBuilder.toString(), HttpMethod.GET, httpEntity, String.class);
+			
+			addResponseToEntry(arrayNode, response);
+			
+		} else if (requestMethod.equals(HttpVerb.POST.getCode())){
+			
+			System.out.println("URI: " + uriBuilder.toString());
+			
+			//TODO: change the RequestEntry to accommodate resources for non-operation bulk support
+			HttpEntity<?> httpEntity = new HttpEntity<>(requestEntry.getRequestResource(), headers);
+			ResponseEntity<String> response = restTemplate.exchange(uriBuilder.toString(), HttpMethod.POST, httpEntity, String.class);
+			
+			addResponseToEntry(arrayNode, response);
+		}
+		
+	}
+
+	private void addResponseToEntry(ArrayNode arrayNode, ResponseEntity<String> response)
+			throws JsonProcessingException, JsonMappingException {
+		String json = response.getBody();
+		System.out.println("Body: " + json);
+		
+		ObjectNode resourceNode = (ObjectNode) objectMapper.readTree(json);
+		ObjectNode resourceRoot = objectMapper.createObjectNode().putPOJO(RESOURCE_PROPERTY_NAME, resourceNode);
+		arrayNode.add(resourceRoot);
+		
+		BatchResponse batchResponse = BatchResponse.createOkResponse();
+		JsonNode responseNode = objectMapper.valueToTree(batchResponse);
+		ObjectNode responseRoot = objectMapper.createObjectNode().putPOJO(RESPONSE_PROPERTY_NAME, responseNode);
+		arrayNode.add(responseRoot);
+	}
+
 
 	private void processClientErrorException(ArrayNode arrayNode, HttpClientErrorException hcee) throws JsonMappingException, JsonProcessingException {
 		
@@ -147,65 +204,18 @@ public class BatchRequestController {
 	
 	private void addToArrayNode(ArrayNode arrayNode, ObjectNode resourceNode, HttpStatusCodeException statusCodeException) {
 		
-		ObjectNode resourceRoot = objectMapper.createObjectNode().putPOJO("resource", resourceNode);
+		ObjectNode resourceRoot = objectMapper.createObjectNode().putPOJO(RESOURCE_PROPERTY_NAME, resourceNode);
 		arrayNode.add(resourceRoot);
 		
 		BatchResponse batchResponse = new BatchResponse(String.valueOf(statusCodeException.getStatusCode().value()));
 		JsonNode responseNode = objectMapper.valueToTree(batchResponse);
-		ObjectNode responseRoot = objectMapper.createObjectNode().putPOJO("response", responseNode);
+		ObjectNode responseRoot = objectMapper.createObjectNode().putPOJO(RESPONSE_PROPERTY_NAME, responseNode);
 		arrayNode.add(responseRoot);
 	}
 
-	private void processRequestEntry(ArrayNode arrayNode, ParametersRequestEntry requestEntry, HttpServletRequest request) throws JsonProcessingException {
-		
-	    BatchRequest batchRequest = requestEntry.getRequest();
-		
-		HttpHeaders headers = getHeaders(request);
-		
-		RestTemplate restTemplate = getRestTemplate();
-		
-		StringBuilder uriBuilder = new StringBuilder(request.getScheme())
-				.append("://")
-				.append(request.getServerName())
-				.append(":")
-				.append(request.getLocalPort())
-				.append(request.getRequestURI())
-				.append(batchRequest.getUrl().getUriValue());
-		
-		Code requestMethod = batchRequest.getMethod();
-		
-		if (requestMethod.equals(HttpVerb.GET.getCode())) {
-		
-			HttpEntity<String> httpEntity = new HttpEntity<>(headers);
-			System.out.println("URI: " + uriBuilder.toString());
-			ResponseEntity<String> response = restTemplate.exchange(uriBuilder.toString(), HttpMethod.GET, httpEntity, String.class);
-			
-			String json = response.getBody();
-			System.out.println("Body: " + json);
-			
-			ObjectNode resourceNode = (ObjectNode) objectMapper.readTree(json);
-			ObjectNode resourceRoot = objectMapper.createObjectNode().putPOJO("resource", resourceNode);
-			arrayNode.add(resourceRoot);
-			
-			BatchResponse batchResponse = BatchResponse.createOkResponse();
-			JsonNode responseNode = objectMapper.valueToTree(batchResponse);
-			ObjectNode responseRoot = objectMapper.createObjectNode().putPOJO("response", responseNode);
-			arrayNode.add(responseRoot);
-			
-		} else if (requestMethod.equals(HttpVerb.POST.getCode())){
-			
-			System.out.println("URI: " + uriBuilder.toString());
-			
-			//TODO: change the RequestEntry to accommodate resources for non-operation bulk support
-			HttpEntity httpEntity = new HttpEntity(requestEntry.getRequestResource(), headers);
-			ResponseEntity<String> response = restTemplate.exchange(uriBuilder.toString(), HttpMethod.POST, httpEntity, String.class);
-			
-			String json = response.getBody();
-			System.out.println("Body: " + json);
-		}
-		
-	}
-
+	/*
+	 * Convert the headers from the injected request to the format required by the client's request
+	 */
 	private HttpHeaders getHeaders(HttpServletRequest request) {
 		
 		HttpHeaders headers = new HttpHeaders();
@@ -219,15 +229,24 @@ public class BatchRequestController {
 			while (headerValues.hasMoreElements()) {
 				String headerValue = (String) headerValues.nextElement();
 				headers.add(headerName, headerValue);
-				
 			}
 		};
-		
 		return headers;
 	}
 
+	/*
+	 * This RestTemplate is suitable for debugging.
+	 */
 	private RestTemplate getRestTemplate() {
 		RestTemplate restTemplate = new RestTemplate();
+		
+		//Register the server's objectmapper for the REST client
+		MappingJackson2HttpMessageConverter messageConverter = restTemplate.getMessageConverters().stream()
+                .filter(MappingJackson2HttpMessageConverter.class::isInstance)
+                .map(MappingJackson2HttpMessageConverter.class::cast)
+                .findFirst().orElseThrow( () -> new RuntimeException("MappingJackson2HttpMessageConverter not found"));
+		messageConverter.setObjectMapper(objectMapper);
+		
 		
 		List<HttpMessageConverter<?>> messageConverters = new ArrayList<>();
 		MappingJackson2HttpMessageConverter jsonMessageConverter = new MappingJackson2HttpMessageConverter() {
@@ -246,7 +265,7 @@ public class BatchRequestController {
 			}
 		};
 
-		jsonMessageConverter.setObjectMapper(objectMapper);
+		//jsonMessageConverter.setObjectMapper(objectMapper);
 		messageConverters.add(jsonMessageConverter);
 
 		//restTemplate.setMessageConverters(messageConverters);
