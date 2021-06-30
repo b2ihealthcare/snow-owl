@@ -38,6 +38,8 @@ public final class Concept extends BaseComponent {
 	
 	private Float score;
 	
+	private Object internalConcept;
+	
 	public Concept(String codeSystem, short terminologyComponentId) {
 		this.codeSystem = codeSystem;
 		this.terminologyComponentId = terminologyComponentId;
@@ -77,6 +79,22 @@ public final class Concept extends BaseComponent {
 	
 	public Float getScore() {
 		return score;
+	}
+
+	@JsonIgnore
+	public void setInternalConcept(Object internalConcept) {
+		this.internalConcept = internalConcept;
+	}
+	
+	@JsonIgnore
+	public Object getInternalConcept() {
+		return internalConcept;
+	}
+	
+	@JsonIgnore
+	@SuppressWarnings("unchecked")
+	public <T> T getInternalConceptAs() {
+		return (T) internalConcept;
 	}
 	
 	@Override
