@@ -122,7 +122,7 @@ public class FhirCodeSystemLookupOperationTest extends FhirRestTest {
 			.queryParam("system", SnomedTerminologyComponentConstants.SNOMED_URI_SCT)
 			.queryParam("code", Concepts.ROOT_CONCEPT)
 			.queryParam("property", "name")
-			.queryParam("property", "http://snomed.info/id/116676008") //associated morphology
+			.queryParam("property", "http://snomed.info/id/12345")
 			.queryParam("_format", "json")
 			.when().get(CODESYSTEM_LOOKUP)
 			.then().assertThat()
@@ -130,7 +130,7 @@ public class FhirCodeSystemLookupOperationTest extends FhirRestTest {
 			.body("resourceType", equalTo("OperationOutcome"))
 			.body("issue.severity", hasItem("error"))
 			.body("issue.code", hasItem("invalid"))
-			.body("issue.diagnostics", hasItem("Unrecognized properties [name, http://snomed.info/id/116676008]. Supported properties are: [parent, system, display, name, designation, version, child]."));
+			.body("issue.diagnostics[0]", containsString("Unrecognized properties [name, http://snomed.info/id/12345]."));
 	}
 	
 	@Test
@@ -171,8 +171,8 @@ public class FhirCodeSystemLookupOperationTest extends FhirRestTest {
 			.body("parameter[0].valueString", equalTo("SNOMEDCT"))
 			.body("parameter[1].name", equalTo("display"))
 			.body("parameter[1].valueString", equalTo("SNOMED CT Concept"))
-			.body("parameter[1].name", equalTo("parent"))
-			.body("parameter[1].valueString", equalTo("TODO"));
+			.body("parameter[2].name", equalTo("parent"))
+			.body("parameter[2].valueString", equalTo("TODO"));
 	}
 	
 	@Test
@@ -191,7 +191,7 @@ public class FhirCodeSystemLookupOperationTest extends FhirRestTest {
 			.body("resourceType", equalTo("OperationOutcome"))
 			.body("issue.severity", hasItem("error"))
 			.body("issue.code", hasItem("invalid"))
-			.body("issue.diagnostics", hasItem("Unrecognized properties [http://snomed.info/id/12345]."));
+			.body("issue.diagnostics[0]", containsString("Unrecognized property [http://snomed.info/id/12345]."));
 	}
 	
 }

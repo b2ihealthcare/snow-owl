@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.fhir.core.request.codesystem;
 
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -32,8 +30,10 @@ import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupResult;
 import com.b2international.snowowl.fhir.core.model.codesystem.SupportedConceptProperty;
+import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import com.google.common.collect.Sets;
 
 /**
  * Performs the lookup operation based on the parameter-based lookup request.
@@ -65,8 +65,7 @@ final class FhirLookupRequest extends FhirRequest<LookupResult> {
 
 	@Override
 	protected LookupResult doExecute(ServiceProvider context, CodeSystem codeSystem) {
-		
-		
+		validateRequestedProperties(codeSystem);
 		
 		Concept concept = CodeSystemRequests.prepareSearchConcepts()
 			.one()
@@ -84,18 +83,23 @@ final class FhirLookupRequest extends FhirRequest<LookupResult> {
 				.build();
 	}
 	
-	protected void validateRequestedProperties(CodeSystem codeSystem) {
-		final Collection<String> properties = request.getPropertyCodes();
+	private void validateRequestedProperties(CodeSystem codeSystem) {
+		final Set<String> requestedProperties = request.getPropertyCodes();
+		final Set<String> supportedProperties = codeSystem.getProperties().stream().map(SupportedConceptProperty::getUri).map(Uri::getUriValue).collect(Collectors.toSet());
+		// first check if there is any unsupported properties defined by their full URL
+		final Set<String> unsupportedProperties = Sets.difference(requestedProperties, supportedProperties);
 		
+		// then if there is any left, check if there are any unsupported code values (requested property is defined with its code as opposed to its full URL)
 		final Set<String> supportedCodes = codeSystem.getProperties().stream().map(SupportedConceptProperty::getCodeValue).collect(Collectors.toSet());
+		final Set<String> unsupportedCodes = Sets.difference(unsupportedProperties, supportedCodes);
 		
-		if (!supportedCodes.containsAll(properties)) {
-			if (properties.size() == 1) {
-				throw new BadRequestException(String.format("Unrecognized property %s. Supported properties are: %s.", Arrays.toString(properties.toArray()), Arrays.toString(supportedCodes.toArray())), "LookupRequest.property");
+		if (!unsupportedCodes.isEmpty()) {
+			if (unsupportedCodes.size() == 1) {
+				throw new BadRequestException(String.format("Unrecognized property %s. Supported properties are: %s.", unsupportedCodes, supportedProperties), "LookupRequest.property");
 			} else {
-				throw new BadRequestException(String.format("Unrecognized properties %s. Supported properties are: %s.", Arrays.toString(properties.toArray()), Arrays.toString(supportedCodes.toArray())), "LookupRequest.property");
+				throw new BadRequestException(String.format("Unrecognized properties %s. Supported properties are: %s.", unsupportedCodes, supportedProperties), "LookupRequest.property");
 			}
 		}
-}
+	}
 
 }
