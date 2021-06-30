@@ -123,10 +123,13 @@ final class FhirCodeSystemSearchRequest extends SearchResourceRequest<Repository
 		
 		// prepare filters
 		final ExpressionBuilder codeSystemQuery = Expressions.builder()
-				.filter(ResourceDocument.Expressions.resourceType(com.b2international.snowowl.core.codesystem.CodeSystem.RESOURCE_TYPE)); // CodeSystem and versions of CodeSystems
+				// CodeSystems and versions of CodeSystems
+				.filter(ResourceDocument.Expressions.resourceType(com.b2international.snowowl.core.codesystem.CodeSystem.RESOURCE_TYPE)); 
 		
-		addIdFilter(codeSystemQuery, ResourceDocument.Expressions::ids); // resource and version doc has id field
-		addFilter(codeSystemQuery, OptionKey.NAME, String.class, ResourceDocument.Expressions::ids); // apply _name filter to the id fields, we use the same value for both id and name
+		// resource and version doc has id field
+		addIdFilter(codeSystemQuery, ResourceDocument.Expressions::ids); 
+		// apply _name filter to the id fields, we use the same value for both id and name
+		addFilter(codeSystemQuery, OptionKey.NAME, String.class, ResourceDocument.Expressions::ids); 
 		addFilter(codeSystemQuery, OptionKey.URL, String.class, ResourceDocument.Expressions::urls);
 		addFilter(codeSystemQuery, OptionKey.VERSION, String.class, VersionDocument.Expressions::versions);
 		
@@ -212,10 +215,13 @@ final class FhirCodeSystemSearchRequest extends SearchResourceRequest<Repository
 				.status(PublicationStatus.getByCodeValue(codeSystem.getStatus()))
 				.meta(
 					Meta.builder()
-						.lastUpdated(Instant.builder().instant(codeSystem.getCreatedAt()).build()) // createdAt returns version creation time or latest update of the resource :gold:
+						// createdAt returns version creation time or latest update of the resource :gold:
+						.lastUpdated(Instant.builder().instant(codeSystem.getCreatedAt()).build())
 					.build()
 				)
-				.content(CodeSystemContentMode.COMPLETE); // treat all CodeSystems complete by default, later we might add this field to the document, if needed
+				// treat all CodeSystems complete by default, later we might add this field to the document, if needed
+				.content(CodeSystemContentMode.COMPLETE)
+				.toolingId(codeSystem.getToolingId()); 
 		
 		// optional fields
 		// we are using the ID of the resource as machine readable name

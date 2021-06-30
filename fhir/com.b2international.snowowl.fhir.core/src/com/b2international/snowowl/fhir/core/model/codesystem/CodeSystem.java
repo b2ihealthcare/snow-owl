@@ -167,17 +167,44 @@ public class CodeSystem extends MetadataResource {
 	 */
 	@Valid
 	private Collection<Concept> concepts;
+	
+	private String toolingId;
 
 	@SuppressWarnings("rawtypes")
-	CodeSystem(Id id, final Meta meta, final Uri impliciteRules, Code language, 
-			final Narrative text, Uri url, Identifier identifier, String version, String name, String title, Code status,
-			final Date date, final String publisher, final Collection<ContactDetail> contacts, final String description, final Collection<UsageContext> usageContexts, 
-			final Collection<CodeableConcept> jurisdictions, final String purpose, final String copyright,
+	CodeSystem(
+			final Id id, 
+			final Meta meta, 
+			final Uri impliciteRules, 
+			final Code language, 
+			final Narrative text, 
+			final Uri url, 
+			final Identifier identifier, 
+			final String version, 
+			final String name, 
+			final String title, 
+			final Code status,
+			final Date date, 
+			final String publisher, 
+			final Collection<ContactDetail> contacts, 
+			final String description, 
+			final Collection<UsageContext> usageContexts, 
+			final Collection<CodeableConcept> jurisdictions, 
+			final String purpose, 
+			final String copyright,
 			
 			//CodeSystem only
-			final Boolean caseSensitive, final Uri valueSet, final Code hierarchyMeaning, final Boolean compositional, final Boolean versionNeeded,
-			final Code content, final Uri supplements, final Integer count, 
-			Collection<Filter> filters, Collection<SupportedConceptProperty> properties, Collection<Concept> concepts) {
+			final Boolean caseSensitive, 
+			final Uri valueSet, 
+			final Code hierarchyMeaning, 
+			final Boolean compositional, 
+			final Boolean versionNeeded,
+			final Code content, 
+			final Uri supplements, 
+			final Integer count, 
+			final Collection<Filter> filters, 
+			final Collection<SupportedConceptProperty> properties, 
+			final Collection<Concept> concepts,
+			final String toolingId) {
 
 		super(id, meta, impliciteRules, language, text, url, identifier, version, name, title, status, date, publisher, contacts, 
 				description, usageContexts, jurisdictions, purpose, copyright);
@@ -193,6 +220,7 @@ public class CodeSystem extends MetadataResource {
 		this.filters = filters;
 		this.properties = properties;
 		this.concepts = concepts;
+		this.toolingId = toolingId;
 	}
 
 	@JsonProperty(CodeSystem.Fields.CONCEPT)
@@ -216,6 +244,11 @@ public class CodeSystem extends MetadataResource {
 	@JsonIgnore
 	public ResourceURI getResourceURI() {
 		return ResourceURI.of(com.b2international.snowowl.core.codesystem.CodeSystem.RESOURCE_TYPE, getId().getIdValue());
+	}
+	
+	@JsonIgnore
+	public String getToolingId() {
+		return toolingId;
 	}
 
 	public static Builder builder() {
@@ -249,6 +282,8 @@ public class CodeSystem extends MetadataResource {
 		private Collection<SupportedConceptProperty> properties;
 
 		private Collection<Concept> concepts;
+
+		private String toolingId;
 
 		/**
 		 * Use this constructor when a new resource is sent to the server to be created.
@@ -348,13 +383,18 @@ public class CodeSystem extends MetadataResource {
 			this.concepts = concepts;
 			return getSelf();
 		}
+		
+		public Builder toolingId(String toolingId) {
+			this.toolingId = toolingId;
+			return getSelf();
+		}
 
 		@Override
 		protected CodeSystem doBuild() {
 			return new CodeSystem(id, meta, implicitRules, language, text, url, identifier, version, name, title, status, date, publisher, contacts, 
 				description, usageContexts, jurisdictions, purpose, copyright,
 				caseSensitive, valueSet, hierarchyMeaning, compositional, versionNeeded,
-				content, supplements, count, filters, properties, concepts);
+				content, supplements, count, filters, properties, concepts, toolingId);
 		}
 	}
 
