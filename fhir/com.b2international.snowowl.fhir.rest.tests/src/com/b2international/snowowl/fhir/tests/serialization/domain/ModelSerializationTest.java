@@ -51,11 +51,6 @@ import io.restassured.path.json.JsonPath;
  */
 public class ModelSerializationTest extends FhirTest {
 	
-	private Builder builder = Issue.builder()
-		.code(IssueType.INVALID)
-		.severity(IssueSeverity.ERROR)
-		.diagnostics("1 validation error");
-	
 	@Test
 	public void contactDetailTest() throws Exception {
 		
@@ -103,37 +98,6 @@ public class ModelSerializationTest extends FhirTest {
 		assertThat(jsonPath.getString("security[0].code"), equalTo("code"));
 		assertThat(jsonPath.getString("tag[0].code"), equalTo("tag"));
 		assertThat(jsonPath.getString("profile[0]"), equalTo("profileValue"));
-	}
-	
-	@Test
-	public void operationOutcomeTest() throws Exception {
-		OperationOutcome ou = OperationOutcome.builder()
-				.addIssue(Issue.builder()
-						.severity(IssueSeverity.ERROR)
-						.code(IssueType.REQUIRED)
-						.build())
-				.build();
-		
-		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(ou));
-		assertThat(jsonPath.getString("resourceType"), equalTo("OperationOutcome"));
-		jsonPath.setRoot("issue[0]");
-		
-		assertThat(jsonPath.getString("severity"), equalTo("error"));
-		assertThat(jsonPath.getString("code"), equalTo("required"));
-	}
-	
-	@Test
-	public void missingIssueTest() throws Exception {
-		
-		Issue expectedIssue = builder.addLocation("OperationOutcome.issues")
-			.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'issues' content is invalid [null]. Violation: may not be empty.")
-			.build();
-		
-		exception.expect(ValidationException.class);
-		exception.expectMessage("1 validation error");
-		exception.expect(FhirExceptionIssueMatcher.issue(expectedIssue));
-		
-		OperationOutcome.builder().build();
 	}
 	
 }

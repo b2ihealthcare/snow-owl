@@ -25,30 +25,30 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 /**
- * Entry to encapsulate a response in a {@link Bundle}
+ * Entry to encapsulate a parameter-based request in a {@link Bundle}
  * @since 8.0.0
  */
-@JsonDeserialize(using = JsonDeserializer.None.class, builder = ResponseEntry.Builder.class)
-public class ResponseEntry extends Entry {
+@JsonDeserialize(using = JsonDeserializer.None.class, builder = ParametersRequestEntry.Builder.class)
+public class ParametersRequestEntry extends Entry {
+
+	private BatchRequest request;
 	
-	private BatchResponse response;
+	private Fhir requestResource;
 	
-	private Fhir responseResource;
-	
-	protected ResponseEntry(final Collection<String> links, final Uri fullUrl, 
-			final BatchResponse response, final Fhir responseResource) {
+	protected ParametersRequestEntry(final Collection<String> links, final Uri fullUrl, 
+			final BatchRequest request, final Fhir requestResource) {
 		super(links, fullUrl);
-		this.response = response;
-		this.responseResource = responseResource;
+		this.request = request;
+		this.requestResource = requestResource;
 	}
 	
-	public BatchResponse getResponse() {
-		return response;
+	public BatchRequest getRequest() {
+		return request;
 	}
 	
 	@JsonProperty("resource")
-	public Fhir getResponseResource() {
-		return responseResource;
+	public Fhir getRequestResource() {
+		return requestResource;
 	}
 	
 	public static Builder builder() {
@@ -56,32 +56,30 @@ public class ResponseEntry extends Entry {
 	}
 	
 	@JsonPOJOBuilder(withPrefix = "")
-	public static class Builder extends Entry.Builder<Builder, ResponseEntry> {
+	public static class Builder extends Entry.Builder<Builder, ParametersRequestEntry> {
 		
-		private BatchResponse response;
+		private BatchRequest request;
 		
-		private Fhir responseResource;
+		private Fhir requestResource;
 		
 		@Override
 		protected Builder getSelf() {
 			return this;
 		}
 		
-		public Builder response(BatchResponse response) {
-			this.response = response;
+		public Builder request(BatchRequest request) {
+			this.request = request;
 			return getSelf();
 		}
 		
 		public Builder resource(Fhir requestResource) {
-			this.responseResource = requestResource;
+			this.requestResource = requestResource;
 			return getSelf();
 		}
 		
 		@Override
-		protected ResponseEntry doBuild() {
-			return new ResponseEntry(links, fullUrl, response, responseResource);
+		protected ParametersRequestEntry doBuild() {
+			return new ParametersRequestEntry(links, fullUrl, request, requestResource);
 		}
-		
 	}
-
 }

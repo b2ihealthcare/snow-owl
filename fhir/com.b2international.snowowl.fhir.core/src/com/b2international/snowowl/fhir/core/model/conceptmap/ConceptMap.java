@@ -24,12 +24,7 @@ import javax.validation.constraints.AssertTrue;
 import com.b2international.snowowl.fhir.core.model.ContactDetail;
 import com.b2international.snowowl.fhir.core.model.Meta;
 import com.b2international.snowowl.fhir.core.model.MetadataResource;
-import com.b2international.snowowl.fhir.core.model.dt.Code;
-import com.b2international.snowowl.fhir.core.model.dt.CodeableConcept;
-import com.b2international.snowowl.fhir.core.model.dt.Id;
-import com.b2international.snowowl.fhir.core.model.dt.Identifier;
-import com.b2international.snowowl.fhir.core.model.dt.Narrative;
-import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.b2international.snowowl.fhir.core.model.dt.*;
 import com.b2international.snowowl.fhir.core.model.usagecontext.UsageContext;
 import com.b2international.snowowl.fhir.core.search.FhirBeanPropertyFilter;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
@@ -106,7 +101,7 @@ public class ConceptMap extends MetadataResource {
 	}
 
 	@SuppressWarnings("rawtypes")
-	public ConceptMap(Id id, Meta meta, Uri impliciteRules, Code language, Narrative text, Uri url,
+	ConceptMap(Id id, Meta meta, Uri impliciteRules, Code language, Narrative text, Uri url,
 			Identifier identifier, String version, String name, String title, Code status, Date date, String publisher,
 			Collection<ContactDetail> contacts, String description, Collection<UsageContext> usageContexts,
 			Collection<CodeableConcept> jurisdictions, String purpose, String copyright, Uri sourceUri,

@@ -47,11 +47,15 @@ public class FhirResourceDeserializer extends StdDeserializer<FhirResource> {
 			TextNode resourceTypeTextNode = (TextNode) resourceTypeNode;
 			switch (resourceTypeTextNode.textValue()) {
 			
-			case CodeSystem.RESOUCE_TYPE_CODE_SYSTEM:
+			case CodeSystem.RESOURCE_TYPE_CODE_SYSTEM:
 				return p.getCodec().treeToValue(node, CodeSystem.class); 
 
 			case Bundle.RESOURCE_TYPE_BUNDLE:
 				return p.getCodec().treeToValue(node, Bundle.class);
+			
+			case OperationOutcome.RESOURCE_TYPE_OPERATION_OUTCOME:
+				return p.getCodec().treeToValue(node, OperationOutcome.class);
+			
 			default:
 				break;
 			}

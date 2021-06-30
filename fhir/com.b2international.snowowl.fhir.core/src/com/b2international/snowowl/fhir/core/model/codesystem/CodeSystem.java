@@ -118,7 +118,7 @@ public class CodeSystem extends MetadataResource {
 		
 	}
 	
-	public static final String RESOUCE_TYPE_CODE_SYSTEM = "CodeSystem";
+	public static final String RESOURCE_TYPE_CODE_SYSTEM = "CodeSystem";
 	
 	@Mandatory
 	@JsonProperty
@@ -225,7 +225,7 @@ public class CodeSystem extends MetadataResource {
 	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends MetadataResource.Builder<Builder, CodeSystem> {
 
-		private String resourceType = RESOUCE_TYPE_CODE_SYSTEM;
+		private String resourceType = RESOURCE_TYPE_CODE_SYSTEM;
 		
 		private Boolean caseSensitive;
 		

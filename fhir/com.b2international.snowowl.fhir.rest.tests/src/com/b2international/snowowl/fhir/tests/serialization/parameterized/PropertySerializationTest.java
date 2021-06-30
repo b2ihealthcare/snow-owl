@@ -73,7 +73,7 @@ public class PropertySerializationTest extends FhirTest {
 				.diagnostics("1 validation error");
 		
 		Issue expectedIssue = builder.addLocation("Property.code")
-				.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'code' content is invalid [null]. Violation: may not be null.")
+				.detailsWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'code' content is invalid [null]. Violation: may not be null.")
 				.build();
 		
 		exception.expect(ValidationException.class);
@@ -92,7 +92,7 @@ public class PropertySerializationTest extends FhirTest {
 				.diagnostics("1 validation error");
 		
 		Issue expectedIssue = builder.addLocation("Property.code.codeValue")
-			.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'code.codeValue' content is invalid []. Violation: must match \"[^\\s]+([\\s]?[^\\s]+)*\".")
+			.detailsWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'code.codeValue' content is invalid []. Violation: must match \"[^\\s]+([\\s]?[^\\s]+)*\".")
 			.build();
 		
 		exception.expect(ValidationException.class);
@@ -186,7 +186,7 @@ public class PropertySerializationTest extends FhirTest {
 				.diagnostics("1 validation error");
 		
 		Issue expectedIssue = builder.addLocation("SubProperty.code")
-				.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'code' content is invalid [null]. Violation: may not be null.")
+				.detailsWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'code' content is invalid [null]. Violation: may not be null.")
 				.build();
 		
 		exception.expect(ValidationException.class);

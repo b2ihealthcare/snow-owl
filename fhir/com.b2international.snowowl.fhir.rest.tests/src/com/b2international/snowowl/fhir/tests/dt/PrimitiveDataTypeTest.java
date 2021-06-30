@@ -76,7 +76,7 @@ public class PrimitiveDataTypeTest extends FhirTest {
 		
 		Issue expectedIssue = validationErrorissueBuilder
 				.addLocation("Instant.instant")
-				.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'instant' content is invalid [null]. Violation: may not be null.")
+				.detailsWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'instant' content is invalid [null]. Violation: may not be null.")
 				.build();
 		
 		assertThat(exception, FhirExceptionIssueMatcher.issue(expectedIssue));

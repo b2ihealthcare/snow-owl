@@ -134,9 +134,6 @@ public class Bundle extends FhirResource implements CollectionResource<Entry> {
 			super(bundleId);
 		}
 
-		/*
-		 * Ignored in the constructor, only needed for deserialization
-		 */
 		public Builder resourceType(final String resourceType) {
 			this.resourceType = resourceType;
 			return getSelf();

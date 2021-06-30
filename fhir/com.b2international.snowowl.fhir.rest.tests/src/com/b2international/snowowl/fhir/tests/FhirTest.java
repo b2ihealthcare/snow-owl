@@ -56,9 +56,6 @@ public class FhirTest {
 			.severity(IssueSeverity.ERROR)
 			.diagnostics("1 validation error");
 	
-	/**
-	 * @deprecated - should only be used for debugging purposes
-	 */
 	protected void printPrettyJson(Object object) throws Exception {
 		String result = objectMapper.writeValueAsString(object);
 		Object json = objectMapper.readValue(result, Object.class);

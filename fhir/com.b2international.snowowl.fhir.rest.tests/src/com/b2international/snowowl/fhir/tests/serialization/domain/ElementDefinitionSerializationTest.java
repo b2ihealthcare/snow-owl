@@ -51,7 +51,7 @@ public class ElementDefinitionSerializationTest extends FhirTest {
 				.severity(IssueSeverity.ERROR)
 				.diagnostics("1 validation error")
 				.addLocation("Discriminator.path")
-				.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'path' content is invalid [null]. Violation: may not be null.")
+				.detailsWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'path' content is invalid [null]. Violation: may not be null.")
 				.build();
 			
 		exception.expect(ValidationException.class);
@@ -69,7 +69,7 @@ public class ElementDefinitionSerializationTest extends FhirTest {
 				.severity(IssueSeverity.ERROR)
 				.diagnostics("1 validation error")
 				.addLocation("Slicing.rules")
-				.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'rules' content is invalid [null]. Violation: may not be null.")
+				.detailsWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'rules' content is invalid [null]. Violation: may not be null.")
 				.build();
 			
 		exception.expect(ValidationException.class);

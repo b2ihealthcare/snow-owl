@@ -17,6 +17,7 @@ package com.b2international.snowowl.fhir.core.model;
 
 import java.util.Collection;
 
+import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonDeserializer;
@@ -24,24 +25,21 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 /**
- * Entry to encapsulate an {@link OperationOutcome} in a {@link Bundle}
+ * Entry to encapsulate a parameter-based response in a {@link Bundle}
  * @since 8.0.0
  */
-@JsonDeserialize(using = JsonDeserializer.None.class, builder = OperationOutcomeEntry.Builder.class)
-public class OperationOutcomeEntry extends Entry {
-	
-	/*
-	 * entry.all(response.exists() = (%resource.type = 'batch-response' or %resource.type = 'transaction-response' or %resource.type = 'history'))
-	 */
+@JsonDeserialize(using = JsonDeserializer.None.class, builder = ParametersResponseEntry.Builder.class)
+public class ParametersResponseEntry extends Entry {
+
 	private BatchResponse response;
 	
-	private OperationOutcome operationOutcome;
+	private Fhir responseResource;
 	
-	protected OperationOutcomeEntry(final Collection<String> links, final Uri fullUrl, 
-			final BatchResponse response, final OperationOutcome operationOutcome) {
+	protected ParametersResponseEntry(final Collection<String> links, final Uri fullUrl, 
+			final BatchResponse response, final Fhir responseResource) {
 		super(links, fullUrl);
 		this.response = response;
-		this.operationOutcome = operationOutcome;
+		this.responseResource = responseResource;
 	}
 	
 	public BatchResponse getResponse() {
@@ -49,8 +47,8 @@ public class OperationOutcomeEntry extends Entry {
 	}
 	
 	@JsonProperty("resource")
-	public OperationOutcome getOperationOutcome() {
-		return operationOutcome;
+	public Fhir getResponseResource() {
+		return responseResource;
 	}
 	
 	public static Builder builder() {
@@ -58,11 +56,11 @@ public class OperationOutcomeEntry extends Entry {
 	}
 	
 	@JsonPOJOBuilder(withPrefix = "")
-	public static class Builder extends Entry.Builder<Builder, OperationOutcomeEntry> {
+	public static class Builder extends Entry.Builder<Builder, ParametersResponseEntry> {
 		
 		private BatchResponse response;
 		
-		private OperationOutcome operationOutcome;
+		private Fhir responseResource;
 		
 		@Override
 		protected Builder getSelf() {
@@ -74,15 +72,14 @@ public class OperationOutcomeEntry extends Entry {
 			return getSelf();
 		}
 		
-		@JsonProperty("resource")
-		public Builder operationOutcome(OperationOutcome operationOutcome) {
-			this.operationOutcome = operationOutcome;
+		public Builder resource(Fhir requestResource) {
+			this.responseResource = requestResource;
 			return getSelf();
 		}
 		
 		@Override
-		protected OperationOutcomeEntry doBuild() {
-			return new OperationOutcomeEntry(links, fullUrl, response, operationOutcome);
+		protected ParametersResponseEntry doBuild() {
+			return new ParametersResponseEntry(links, fullUrl, response, responseResource);
 		}
 		
 	}

@@ -19,6 +19,7 @@ import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.core.TreeNode;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
@@ -38,27 +39,33 @@ public class BundleEntryDeserializer extends StdDeserializer<Entry> {
 	}
 
 	@Override
-	public Entry deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
-		TreeNode node = p.readValueAsTree();
+	public Entry deserialize(JsonParser parser, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+		
+		TreeNode node = parser.readValueAsTree();
+		ObjectCodec objectCodec = parser.getCodec();
 
 		// Select the concrete class based on the resource type header
-		TreeNode requestNode = node.get("request");
-		if (requestNode !=null) {
-			return p.getCodec().treeToValue(node, RequestEntry.class); 
-		}
-		
-		TreeNode responseNode = node.get("response");
-		if (responseNode !=null) {
-			TreeNode resourceTypeNode = node.path("resource").path("resourceType");
-			if (resourceTypeNode instanceof TextNode) {
-				TextNode textNode = (TextNode) resourceTypeNode;
-				if (textNode.textValue().equals("OperationOutcome")) {
-					return p.getCodec().treeToValue(node, OperationOutcomeEntry.class); 
+		TreeNode resourceTypeNode = node.path("resource").path("resourceType");
+		if (resourceTypeNode instanceof TextNode) {
+			TextNode textNode = (TextNode) resourceTypeNode;
+
+			if (node.get("request") !=null) {
+				if (textNode.textValue().equals("Parameters")) {
+					return objectCodec.treeToValue(node, ParametersRequestEntry.class);
 				} else {
-					return p.getCodec().treeToValue(node, ResponseEntry.class);
+					return objectCodec.treeToValue(node, ResourceRequestEntry.class);
+				}
+			} else if (node.get("response") !=null) {
+				if (textNode.textValue().equals("Parameters")) {
+					return objectCodec.treeToValue(node, ParametersResponseEntry.class); 
+				}
+				else if (textNode.textValue().equals("OperationOutcome")) {
+					return objectCodec.treeToValue(node, OperationOutcomeEntry.class); 
+				} else {
+					return objectCodec.treeToValue(node, ResourceResponseEntry.class);
 				}
 			}
 		}
-		return p.getCodec().treeToValue(node, ResourceEntry.class);
+		return objectCodec.treeToValue(node, ResourceResponseEntry.class);
 	}
 }

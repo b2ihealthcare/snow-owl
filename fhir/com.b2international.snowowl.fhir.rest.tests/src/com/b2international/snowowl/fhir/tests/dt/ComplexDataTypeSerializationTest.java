@@ -84,7 +84,7 @@ public class ComplexDataTypeSerializationTest extends FhirTest {
 	@Test
 	public void incorrentNarrativeTest() throws Exception {
 		Issue expectedIssue = validationErrorissueBuilder.addLocation("Narrative.div")
-				.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'div' content is invalid [<div>]. Violation: div content is invalid, minimally should be <div></div>.")
+				.detailsWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'div' content is invalid [<div>]. Violation: div content is invalid, minimally should be <div></div>.")
 				.build();
 		
 		exception.expect(ValidationException.class);
@@ -119,7 +119,7 @@ public class ComplexDataTypeSerializationTest extends FhirTest {
 	public void incorrectSimpleQuantityTest() throws Exception {
 		
 		Issue expectedIssue = validationErrorissueBuilder.addLocation("SimpleQuantity.comparator")
-				.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'comparator' content is invalid [Code [codeValue=>=]]. Violation: must be null.")
+				.detailsWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'comparator' content is invalid [Code [codeValue=>=]]. Violation: must be null.")
 				.build();
 		
 		exception.expect(ValidationException.class);
@@ -355,7 +355,7 @@ public class ComplexDataTypeSerializationTest extends FhirTest {
 	public void incorrectSignatureReferenceTest() throws Exception {
 		
 		Issue expectedIssue = validationErrorissueBuilder.addLocation("Signature.valid")
-				.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'valid' content is invalid [false]."
+				.detailsWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'valid' content is invalid [false]."
 						+ " Violation: Either URI or Reference should be set for the 'who' and 'onBehalfOf' fields.")
 				.build();
 		

@@ -178,7 +178,7 @@ public class CodeSystemSerializationTest extends FhirTest {
 			.severity(IssueSeverity.ERROR)
 			.diagnostics("1 validation error")
 			.addLocation("Filter.code")
-			.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'code' content is invalid [null]. Violation: may not be null.")
+			.detailsWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'code' content is invalid [null]. Violation: may not be null.")
 			.build();
 		
 		exception.expect(ValidationException.class);
@@ -232,7 +232,7 @@ public class CodeSystemSerializationTest extends FhirTest {
 				.severity(IssueSeverity.ERROR)
 				.diagnostics("1 validation error")
 				.addLocation("CodeSystem.count")
-				.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'count' content is invalid [-1]. Violation: Count must be equal to or larger than 0.")
+				.detailsWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'count' content is invalid [-1]. Violation: Count must be equal to or larger than 0.")
 				.build();
 			
 			exception.expect(ValidationException.class);

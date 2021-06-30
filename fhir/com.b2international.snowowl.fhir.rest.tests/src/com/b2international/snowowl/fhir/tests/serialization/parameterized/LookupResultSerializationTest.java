@@ -57,7 +57,7 @@ public class LookupResultSerializationTest extends FhirTest {
 			.diagnostics("1 validation error");
 		
 		Issue expectedIssue = builder.addLocation("LookupResult.name")
-				.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'name' content is invalid [null]. Violation: may not be empty.")
+				.detailsWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'name' content is invalid [null]. Violation: may not be empty.")
 				.build();
 		
 		exception.expect(ValidationException.class);
@@ -76,7 +76,7 @@ public class LookupResultSerializationTest extends FhirTest {
 			.diagnostics("1 validation error");
 		
 		Issue expectedIssue = builder.addLocation("LookupResult.name")
-			.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'name' content is invalid []. Violation: may not be empty.")
+			.detailsWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'name' content is invalid []. Violation: may not be empty.")
 			.build();
 		
 		exception.expect(ValidationException.class);
@@ -95,7 +95,7 @@ public class LookupResultSerializationTest extends FhirTest {
 			.diagnostics("1 validation error");
 		
 		Issue expectedIssue = builder.addLocation("LookupResult.display")
-			.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'display' content is invalid [null]. Violation: may not be empty.")
+			.detailsWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'display' content is invalid [null]. Violation: may not be empty.")
 			.build();
 		
 		exception.expect(ValidationException.class);

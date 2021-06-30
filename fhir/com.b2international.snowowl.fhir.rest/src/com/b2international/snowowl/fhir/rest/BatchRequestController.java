@@ -33,23 +33,19 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.codesystems.HttpVerb;
 import com.b2international.snowowl.fhir.core.codesystems.IssueType;
-import com.b2international.snowowl.fhir.core.model.BatchRequest;
-import com.b2international.snowowl.fhir.core.model.BatchResponse;
-import com.b2international.snowowl.fhir.core.model.Bundle;
-import com.b2international.snowowl.fhir.core.model.Entry;
-import com.b2international.snowowl.fhir.core.model.Issue;
-import com.b2international.snowowl.fhir.core.model.OperationOutcome;
-import com.b2international.snowowl.fhir.core.model.OperationOutcomeEntry;
-import com.b2international.snowowl.fhir.core.model.RequestEntry;
+import com.b2international.snowowl.fhir.core.model.*;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
-import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -57,7 +53,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * 
- * REST endpoint for batch operations.
+ * REST end-point for batch operations.
  * @since 8.0.0
  */
 @RestController
@@ -81,36 +77,90 @@ public class BatchRequestController {
 		ArrayNode arrayNode = rootNode.putArray("entry");
 		
 		for (Entry entry : entries) {
-			if (entry instanceof RequestEntry) {
-				RequestEntry requestEntry = (RequestEntry) entry;
+			if (entry instanceof ParametersRequestEntry) {
+				ParametersRequestEntry requestEntry = (ParametersRequestEntry) entry;
 				System.out.println("Request: " + requestEntry.getRequest().getUrl());
-				processRequestEntry(arrayNode, requestEntry, request);
 				
+				try {
+					processRequestEntry(arrayNode, requestEntry, request);
+				} catch (HttpClientErrorException hcee) {
+					processClientErrorException(arrayNode, hcee);
+				} catch (HttpServerErrorException hsee) {
+					processServerErrorException(arrayNode, hsee);
+				} catch (Exception e) {
+					processGenericError(arrayNode, e);
+					System.out.println("Exception: " + e.getMessage());
+					e.printStackTrace();
+				}
 			} else {
-				
-				//Currently only operation request entries are supported
-				OperationOutcomeEntry ooEntry = OperationOutcomeEntry.builder()
-						.operationOutcome(OperationOutcome.builder()
-								.addIssue(Issue.builder()
-										.code(IssueType.INVALID)
-										.addExpression("Request in batch mode not supported.")
-										.addLocation(entry.getFullUrl().getUriValue())
-										.build())
-								.build())
-						.build();
+				processNotSupportedError(arrayNode);
 			}
 		}
 		
 		return Promise.immediate(objectMapper.treeToValue(rootNode, Bundle.class));
 	}
 
-	private void processRequestEntry(ArrayNode arrayNode, RequestEntry requestEntry, HttpServletRequest request) throws JsonProcessingException {
+	private void processClientErrorException(ArrayNode arrayNode, HttpClientErrorException hcee) throws JsonMappingException, JsonProcessingException {
+		
+		//HttpClientErrorException returns an OperationOutcome in the response body
+		ObjectNode resourceNode = (ObjectNode) objectMapper.readTree(hcee.getResponseBodyAsString());
+		addToArrayNode(arrayNode, resourceNode, hcee);
+	}
+
+	private void processServerErrorException(ArrayNode arrayNode, HttpServerErrorException hsee) throws JsonMappingException, JsonProcessingException {
+		
+		//TODO: dig out the message from the error
+		OperationOutcomeEntry ooEntry = OperationOutcomeEntry.builder()
+				.operationOutcome(OperationOutcome.builder()
+						.addIssue(Issue.builder()
+								.code(IssueType.INVALID)
+								.addExpression("Request in batch mode not supported.")
+								//.addLocation(entry.getFullUrl().getUriValue())
+								.build())
+						.build())
+				.build();
+		
+		ObjectNode resourceNode = (ObjectNode) objectMapper.valueToTree(ooEntry);
+		addToArrayNode(arrayNode, resourceNode, hsee);
+	}
+
+	private void processGenericError(ArrayNode arrayNode, Exception e) {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	private void processNotSupportedError(ArrayNode arrayNode) {
+		//Currently only operation request entries are supported
+//		OperationOutcomeEntry ooEntry = OperationOutcomeEntry.builder()
+//				.operationOutcome(OperationOutcome.builder()
+//						.addIssue(Issue.builder()
+//								.code(IssueType.INVALID)
+//								.addExpression("Request in batch mode not supported.")
+//								.addLocation(entry.getFullUrl().getUriValue())
+//								.build())
+//						.build())
+//				.build();
+		
+		//bundle.getEntry().add(ooEntry);
+		
+	}
+	
+	private void addToArrayNode(ArrayNode arrayNode, ObjectNode resourceNode, HttpStatusCodeException statusCodeException) {
+		
+		ObjectNode resourceRoot = objectMapper.createObjectNode().putPOJO("resource", resourceNode);
+		arrayNode.add(resourceRoot);
+		
+		BatchResponse batchResponse = new BatchResponse(String.valueOf(statusCodeException.getStatusCode().value()));
+		JsonNode responseNode = objectMapper.valueToTree(batchResponse);
+		ObjectNode responseRoot = objectMapper.createObjectNode().putPOJO("response", responseNode);
+		arrayNode.add(responseRoot);
+	}
+
+	private void processRequestEntry(ArrayNode arrayNode, ParametersRequestEntry requestEntry, HttpServletRequest request) throws JsonProcessingException {
 		
 	    BatchRequest batchRequest = requestEntry.getRequest();
-		Uri url = batchRequest.getUrl();
 		
 		HttpHeaders headers = getHeaders(request);
-		HttpEntity<String> httpEntity = new HttpEntity<>(headers);
 		
 		RestTemplate restTemplate = getRestTemplate();
 		
@@ -118,15 +168,15 @@ public class BatchRequestController {
 				.append("://")
 				.append(request.getServerName())
 				.append(":")
-				.append(request.getLocalPort());
+				.append(request.getLocalPort())
+				.append(request.getRequestURI())
+				.append(batchRequest.getUrl().getUriValue());
 		
 		Code requestMethod = batchRequest.getMethod();
 		
 		if (requestMethod.equals(HttpVerb.GET.getCode())) {
 		
-			uriBuilder.append(request.getRequestURI())
-			.append(batchRequest.getUrl().getUriValue());
-			
+			HttpEntity<String> httpEntity = new HttpEntity<>(headers);
 			System.out.println("URI: " + uriBuilder.toString());
 			ResponseEntity<String> response = restTemplate.exchange(uriBuilder.toString(), HttpMethod.GET, httpEntity, String.class);
 			
@@ -144,9 +194,14 @@ public class BatchRequestController {
 			
 		} else if (requestMethod.equals(HttpVerb.POST.getCode())){
 			
-			//Bundle bundle = restTemplate.getForObject("http://localhost:8080/snowowl/fhir/CodeSystem", Bundle.class);
-			//Entry entry = bundle.getEntry().iterator().next();
+			System.out.println("URI: " + uriBuilder.toString());
 			
+			//TODO: change the RequestEntry to accommodate resources for non-operation bulk support
+			HttpEntity httpEntity = new HttpEntity(requestEntry.getRequestResource(), headers);
+			ResponseEntity<String> response = restTemplate.exchange(uriBuilder.toString(), HttpMethod.POST, httpEntity, String.class);
+			
+			String json = response.getBody();
+			System.out.println("Body: " + json);
 		}
 		
 	}

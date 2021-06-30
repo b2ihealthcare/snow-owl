@@ -18,9 +18,18 @@ package com.b2international.snowowl.fhir.core.model;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import javax.validation.constraints.AssertTrue;
+
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.b2international.snowowl.fhir.core.model.dt.Code;
+import com.b2international.snowowl.fhir.core.model.dt.Id;
+import com.b2international.snowowl.fhir.core.model.dt.Narrative;
+import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 import io.swagger.annotations.ApiModel;
 
@@ -42,16 +51,32 @@ import io.swagger.annotations.ApiModel;
  * @since 6.3
  */
 @ApiModel("Operation outcome")
-public final class OperationOutcome {
+@JsonDeserialize(builder = OperationOutcome.Builder.class)
+public final class OperationOutcome extends DomainResource {
+	
+	private static final long serialVersionUID = 1L;
+
+	public static final String RESOURCE_TYPE_OPERATION_OUTCOME = "OperationOutcome";
 	
 	@JsonProperty
-	private String resourceType = "OperationOutcome";
+	private String resourceType;
 	
 	@NotEmpty
 	private final Collection<Issue> issues;
 	
-	OperationOutcome(Collection<Issue> issues) {
+	@SuppressWarnings("rawtypes")
+	OperationOutcome(Id id, Meta meta, Uri impliciteRules, Code language, Narrative text, 
+			String resourceType, Collection<Issue> issues) {
+		
+		super(id, meta, impliciteRules, language, text);
+		
+		this.resourceType = resourceType;
 		this.issues = issues;
+	}
+	
+	@AssertTrue(message = "Resource type must be 'OperationOutcome'")
+	private boolean isResourceTypeValid() {
+		return RESOURCE_TYPE_OPERATION_OUTCOME.equals(resourceType);
 	}
 
 	@JsonProperty("issue")
@@ -63,28 +88,50 @@ public final class OperationOutcome {
 		return new Builder();
 	}
 	
-	public static class Builder extends ValidatingBuilder<OperationOutcome> {
+	@JsonPOJOBuilder(withPrefix = "")
+	public static class Builder extends DomainResource.Builder<Builder, OperationOutcome> {
 
+		private String resourceType  = RESOURCE_TYPE_OPERATION_OUTCOME;
+		
 		private Collection<Issue> issues;
+		
+		public Builder resourceType(final String resourceType) {
+			this.resourceType = resourceType;
+			return getSelf();
+		}
 		
 		public Builder addIssue(Issue issue) {
 			if (this.issues == null) {
 				this.issues = new ArrayList<>();
 			}
 			issues.add(issue);
-			return this;
+			return getSelf();
 		}
 		
-		public void addIssues(Collection<Issue> outComeIssues) {
+		public Builder addIssues(Collection<Issue> outComeIssues) {
 			if (this.issues == null) {
 				this.issues = new ArrayList<>();
 			}
 			issues.addAll(outComeIssues);
+			return getSelf();
+		}
+		
+		@JsonProperty("issue")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder issues(Collection<Issue> issues) {
+			this.issues = issues;
+			return getSelf();
+		}
+		
+		@Override
+		protected Builder getSelf() {
+			return this;
 		}
 
 		@Override
 		protected OperationOutcome doBuild() {
-			return new OperationOutcome(issues);
+			return new OperationOutcome(id, meta, implicitRules, language, text, 
+					resourceType, issues);
 		}
 
 

@@ -17,37 +17,42 @@ package com.b2international.snowowl.fhir.core.model;
 
 import java.util.Collection;
 
-import com.b2international.snowowl.fhir.core.model.ResponseEntry.Builder;
+import javax.validation.constraints.NotNull;
+
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 /**
- * Entry to encapsulate a resource in a {@link Bundle}
- * 
+ * Entry to encapsulate a resource-based response in a {@link Bundle}
  * @since 8.0.0
  */
-@JsonDeserialize(using = JsonDeserializer.None.class, builder = ResourceEntry.Builder.class)
-public class ResourceEntry extends Entry {
-	
+@JsonDeserialize(using = JsonDeserializer.None.class, builder = ResourceResponseEntry.Builder.class)
+public class ResourceResponseEntry extends Entry {
+
+	/*
+	 * entry.all(response.exists() = (%resource.type = 'batch-response' or %resource.type = 'transaction-response' or %resource.type = 'history'))
+	 */
 	private BatchResponse response;
 	
-	private FhirResource resource;
+	private FhirResource responseResource;
 	
-	protected ResourceEntry(final Collection<String> links, final Uri fullUrl, 
-			final BatchResponse response, final FhirResource resource) {
+	protected ResourceResponseEntry(final Collection<String> links, final Uri fullUrl, 
+			final BatchResponse response, final FhirResource responseResource) {
 		super(links, fullUrl);
 		this.response = response;
-		this.resource = resource;
+		this.responseResource = responseResource;
 	}
-
+	
 	public BatchResponse getResponse() {
 		return response;
 	}
 	
-	public FhirResource getResource() {
-		return resource;
+	@JsonProperty("resource")
+	public FhirResource getResponseResource() {
+		return responseResource;
 	}
 	
 	public static Builder builder() {
@@ -55,11 +60,11 @@ public class ResourceEntry extends Entry {
 	}
 	
 	@JsonPOJOBuilder(withPrefix = "")
-	public static class Builder extends Entry.Builder<Builder, ResourceEntry> {
+	public static class Builder extends Entry.Builder<Builder, ResourceResponseEntry> {
 		
 		private BatchResponse response;
 		
-		private FhirResource fhirResource;
+		private FhirResource responseResource;
 		
 		@Override
 		protected Builder getSelf() {
@@ -71,14 +76,14 @@ public class ResourceEntry extends Entry {
 			return getSelf();
 		}
 		
-		public Builder resource(FhirResource fhirResource) {
-			this.fhirResource = fhirResource;
+		public Builder resource(FhirResource requestResource) {
+			this.responseResource = requestResource;
 			return getSelf();
 		}
 		
 		@Override
-		protected ResourceEntry doBuild() {
-			return new ResourceEntry(links, fullUrl, response, fhirResource);
+		protected ResourceResponseEntry doBuild() {
+			return new ResourceResponseEntry(links, fullUrl, response, responseResource);
 		}
 		
 	}

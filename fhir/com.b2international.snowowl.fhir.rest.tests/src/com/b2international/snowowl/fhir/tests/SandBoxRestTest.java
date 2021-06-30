@@ -26,11 +26,7 @@ import java.util.List;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
@@ -38,7 +34,7 @@ import org.springframework.web.client.RestTemplate;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.model.BatchRequest;
 import com.b2international.snowowl.fhir.core.model.Bundle;
-import com.b2international.snowowl.fhir.core.model.RequestEntry;
+import com.b2international.snowowl.fhir.core.model.ParametersRequestEntry;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionResult;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
@@ -69,7 +65,7 @@ public class SandBoxRestTest extends FhirRestTest {
 		.around(new BundleStartRule("org.eclipse.jetty.osgi.boot"))
 		.around(new BundleStartRule("com.b2international.snowowl.core.rest"));
 	
-	@Test
+	//@Test
 	public void restTemplateCallTest() {
 		
 		HttpHeaders headers = new HttpHeaders();
@@ -121,7 +117,7 @@ public class SandBoxRestTest extends FhirRestTest {
 		Json json1 = new Parameters.Json(lookupRequest);
 		System.out.println("JSON params:" + json1);
 		
-		RequestEntry entry = RequestEntry.builder()
+		ParametersRequestEntry entry = ParametersRequestEntry.builder()
 				.request(BatchRequest.createPostRequest("CodeSystem/$lookup"))
 				.resource(new Parameters.Fhir(json1.parameters()))
 				.build();

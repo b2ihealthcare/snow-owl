@@ -17,7 +17,6 @@ package com.b2international.snowowl.fhir.core.model;
 
 import java.util.Collection;
 
-import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonDeserializer;
@@ -25,18 +24,19 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 /**
- * Entry to encapsulate a request in a {@link Bundle}
+ * Entry to encapsulate a resource-based request in a {@link Bundle}
  * @since 8.0.0
  */
-@JsonDeserialize(using = JsonDeserializer.None.class, builder = RequestEntry.Builder.class)
-public class RequestEntry extends Entry {
-	
-	private BatchRequest request;
+@JsonDeserialize(using = JsonDeserializer.None.class, builder = ParametersRequestEntry.Builder.class)
+public class ResourceRequestEntry extends Entry {
 
-	private Fhir requestResource;
+	private BatchRequest request;
 	
-	protected RequestEntry(final Collection<String> links, final Uri fullUrl, 
-			final BatchRequest request, Fhir requestResource) {
+	private FhirResource requestResource;
+	
+	protected ResourceRequestEntry(final Collection<String> links, final Uri fullUrl, 
+			final BatchRequest request, final FhirResource requestResource) {
+		
 		super(links, fullUrl);
 		this.request = request;
 		this.requestResource = requestResource;
@@ -47,7 +47,7 @@ public class RequestEntry extends Entry {
 	}
 	
 	@JsonProperty("resource")
-	public Fhir getRequestResource() {
+	public FhirResource getRequestResource() {
 		return requestResource;
 	}
 	
@@ -56,11 +56,11 @@ public class RequestEntry extends Entry {
 	}
 	
 	@JsonPOJOBuilder(withPrefix = "")
-	public static class Builder extends Entry.Builder<Builder, RequestEntry> {
+	public static class Builder extends Entry.Builder<Builder, ResourceRequestEntry> {
 		
 		private BatchRequest request;
-
-		private Fhir requestResource;
+		
+		private FhirResource requestResource;
 		
 		@Override
 		protected Builder getSelf() {
@@ -71,17 +71,16 @@ public class RequestEntry extends Entry {
 			this.request = request;
 			return getSelf();
 		}
-
-		public Builder resource(Fhir requestResource) {
+		
+		public Builder resource(FhirResource requestResource) {
 			this.requestResource = requestResource;
 			return getSelf();
 		}
 		
 		@Override
-		protected RequestEntry doBuild() {
-			return new RequestEntry(links, fullUrl, request, requestResource);
+		protected ResourceRequestEntry doBuild() {
+			return new ResourceRequestEntry(links, fullUrl, request, requestResource);
 		}
-		
 	}
 
 }

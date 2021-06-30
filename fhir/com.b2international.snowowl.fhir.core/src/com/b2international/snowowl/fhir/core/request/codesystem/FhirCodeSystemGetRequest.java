@@ -22,7 +22,7 @@ import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.GetResourceRequest;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.model.Bundle;
-import com.b2international.snowowl.fhir.core.model.ResourceEntry;
+import com.b2international.snowowl.fhir.core.model.ResourceResponseEntry;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.search.Summary;
 
@@ -62,8 +62,8 @@ final class FhirCodeSystemGetRequest extends GetResourceRequest<FhirCodeSystemSe
 	@Override
 	protected Optional<CodeSystem> extractFirst(Bundle items) {
 		return items.first()
-				.map(ResourceEntry.class::cast)
-				.map(ResourceEntry::getResource)
+				.map(ResourceResponseEntry.class::cast)
+				.map(ResourceResponseEntry::getResponseResource)
 				.map(CodeSystem.class::cast);
 	}
 
