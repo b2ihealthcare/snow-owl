@@ -19,6 +19,8 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import java.util.List;
+
 import org.junit.Test;
 
 import com.b2international.snowowl.fhir.core.codesystems.IssueSeverity;
@@ -120,10 +122,10 @@ public class LookupResultSerializationTest extends FhirTest {
 		LookupResult lookupResult = LookupResult.builder()
 			.name("test")
 			.display("display")
-			.addDesignation(Designation.builder()
+			.designation(List.of(Designation.builder()
 					.value("dValue")
-					.languageCode("uk").build())
-			.addProperty(Property.builder()
+					.languageCode("uk").build()))
+			.property(List.of(Property.builder()
 					.code("1234")
 					.description("propDescription")
 					.valueString("sds")
@@ -132,7 +134,7 @@ public class LookupResultSerializationTest extends FhirTest {
 						.description("subDescription")
 						.valueInteger(1)
 						.build())
-					.build())
+					.build()))
 			.build();
 		
 		Fhir fhirParameters = new Parameters.Fhir(lookupResult);

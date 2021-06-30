@@ -53,6 +53,7 @@ public abstract class SnomedTerminologyComponentConstants {
 	public static final String SNOMED_URI_BASE = "http://snomed.info";
 	public static final String SNOMED_URI_SCT = SNOMED_URI_BASE + "/sct";
 	public static final String SNOMED_URI_DEV = SNOMED_URI_BASE + "/xsct";
+	public static final String SNOMED_URI_ID = SNOMED_URI_BASE + "/id";
 	
 	public static short getTerminologyComponentIdValue(final String referencedComponentId) {
 		final short s = getTerminologyComponentIdValueSafe(referencedComponentId);
