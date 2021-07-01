@@ -15,6 +15,9 @@
  */
 package com.b2international.snowowl.fhir.rest;
 
+import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
+import static java.net.HttpURLConnection.HTTP_OK;
+
 import java.util.Collection;
 
 import javax.servlet.http.HttpServletRequest;
@@ -29,16 +32,24 @@ import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.Entry;
+import com.b2international.snowowl.fhir.core.model.OperationOutcome;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 /**
  * 
  * REST end-point for batch operations.
  * @since 8.0.0
  */
+@Api(value = "Bundle", description="Bundle Resource and batch operations", tags = { "Bundle" })
 @RestController
 @RequestMapping(value="/", produces = { AbstractFhirResourceController.APPLICATION_FHIR_JSON })
 public class BatchRequestController extends AbstractFhirResourceController<Bundle> {
@@ -46,8 +57,18 @@ public class BatchRequestController extends AbstractFhirResourceController<Bundl
 	@Autowired
 	private ObjectMapper objectMapper;
 	
+	@ApiOperation(
+			value="Perform batch operations",
+			notes="Executes the FHIR requests included in the bundle provided.")
+	@ApiResponses({
+		@ApiResponse(code = HTTP_OK, message = "OK"),
+		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad Request", response = OperationOutcome.class),
+	})
 	@RequestMapping(value="/", method=RequestMethod.POST, consumes = AbstractFhirResourceController.APPLICATION_FHIR_JSON)
-	public Promise<Bundle> getBatchResponse(@RequestBody final Bundle bundle, HttpServletRequest request) throws JsonProcessingException {
+	public Promise<Bundle> getBatchResponse(
+			@ApiParam(name = "bundle", value = "The bundle including the list of requests to perform")
+			@RequestBody final Bundle bundle, 
+			HttpServletRequest request) throws JsonProcessingException {
 		
 		Collection<Entry> entries = bundle.getEntry();
 		
