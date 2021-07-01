@@ -66,6 +66,6 @@ public class BundleEntryDeserializer extends StdDeserializer<Entry> {
 				}
 			}
 		}
-		return objectCodec.treeToValue(node, ResourceResponseEntry.class);
+		return objectCodec.treeToValue(node, RequestEntry.class);
 	}
 }

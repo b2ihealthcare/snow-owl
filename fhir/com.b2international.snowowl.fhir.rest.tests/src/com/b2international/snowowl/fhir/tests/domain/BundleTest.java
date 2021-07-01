@@ -49,7 +49,7 @@ import io.restassured.path.json.JsonPath;
  */
 public class BundleTest extends FhirTest {
 	
-	//@Test
+	@Test
 	public void serializeResourceBundle() throws Exception {
 		
 		CodeSystem codeSystem = CodeSystem.builder("repo/shortName")
@@ -104,7 +104,7 @@ public class BundleTest extends FhirTest {
 		assertThat(jsonPath.getString("content"), equalTo("complete"));
 	}
 	
-	//@Test
+	@Test
 	public void buildRequestBundle() throws Exception {
 		
 		LookupRequest lookupRequest = LookupRequest.builder()
@@ -155,7 +155,7 @@ public class BundleTest extends FhirTest {
 			
 	}
 	
-	//@Test
+	@Test
 	public void deserializeRequestBundle() throws Exception {
 		
 		String jsonCoding =   "{ \"type\" : \"batch\", "
@@ -226,7 +226,7 @@ public class BundleTest extends FhirTest {
 		assertEquals("http://snomed.info/sct", returnedLookupRequest.getSystem());
 	}
 	
-	//@Test
+	@Test
 	public void buildResponseBundle() throws Exception {
 		
 		LookupResult lookupResult = LookupResult.builder()
@@ -287,7 +287,7 @@ public class BundleTest extends FhirTest {
 			
 	}
 	
-	//@Test
+	@Test
 	public void deserializeResponseBundle() throws Exception {
 		String jsonResponse = "{\"resourceType\":\"Bundle\","
 			+ "\"id\":\"ID\","
@@ -377,7 +377,7 @@ public class BundleTest extends FhirTest {
 		
 	}
 	
-	//@Test
+	@Test
 	public void buildMixedBundle() throws Exception {
 		
 		LookupResult lookupResult = LookupResult.builder()
@@ -447,7 +447,7 @@ public class BundleTest extends FhirTest {
 			
 	}
 	
-	//@Test
+	@Test
 	public void deserializeResourceBundle() throws JsonProcessingException {
 		
 		FhirResource resource = CodeSystem.builder()
@@ -476,7 +476,7 @@ public class BundleTest extends FhirTest {
 		
 	}
 	
-	//@Test
+	@Test
 	public void serialize() throws JsonProcessingException {
 		
 		FhirResource resource = CodeSystem.builder()

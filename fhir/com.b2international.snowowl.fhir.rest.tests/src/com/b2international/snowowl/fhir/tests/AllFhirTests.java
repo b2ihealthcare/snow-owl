@@ -19,7 +19,10 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
+import com.b2international.snowowl.fhir.tests.domain.BundleEntryTest;
 import com.b2international.snowowl.fhir.tests.domain.BundleTest;
+import com.b2international.snowowl.fhir.tests.domain.IssueTest;
+import com.b2international.snowowl.fhir.tests.domain.OperationOutcomeTest;
 import com.b2international.snowowl.fhir.tests.dt.CodeableConcepTest;
 import com.b2international.snowowl.fhir.tests.dt.CodingTest;
 import com.b2international.snowowl.fhir.tests.dt.ComplexDataTypeSerializationTest;
@@ -88,6 +91,9 @@ import com.b2international.snowowl.fhir.tests.serialization.parameterized.Valida
 	ModelSerializationTest.class,
 	
 	//New format
+	IssueTest.class,
+	OperationOutcomeTest.class,
+	BundleEntryTest.class,
 	BundleTest.class,
 
 	CodeSystemSerializationTest.class,

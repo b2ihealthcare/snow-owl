@@ -51,7 +51,7 @@ public class FhirTest {
 	@Rule
 	public TestMethodNameRule methodNameRule = new TestMethodNameRule();
 	
-	protected Builder validationErrorissueBuilder = Issue.builder()
+	protected Builder validationErrorIssueBuilder = Issue.builder()
 			.code(IssueType.INVALID)
 			.severity(IssueSeverity.ERROR)
 			.diagnostics("1 validation error");

@@ -28,7 +28,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
  * @since 8.0.0
  */
 @JsonDeserialize(using = BundleEntryDeserializer.class)
-public class Entry {
+public abstract class Entry {
 	
 	@Summary
 	private Collection<String> links;

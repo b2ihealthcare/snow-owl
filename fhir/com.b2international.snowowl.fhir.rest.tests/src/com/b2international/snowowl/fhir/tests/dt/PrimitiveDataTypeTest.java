@@ -74,7 +74,7 @@ public class PrimitiveDataTypeTest extends FhirTest {
 		
 		assertEquals("1 validation error", exception.getMessage());
 		
-		Issue expectedIssue = validationErrorissueBuilder
+		Issue expectedIssue = validationErrorIssueBuilder
 				.addLocation("Instant.instant")
 				.detailsWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'instant' content is invalid [null]. Violation: may not be null.")
 				.build();

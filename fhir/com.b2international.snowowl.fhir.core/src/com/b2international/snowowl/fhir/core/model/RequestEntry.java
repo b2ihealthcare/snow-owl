@@ -22,36 +22,27 @@ import javax.validation.constraints.AssertTrue;
 import com.b2international.snowowl.fhir.core.codesystems.HttpVerb;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 /**
- * Entry to encapsulate a resource-based request in a {@link Bundle}
+ * Entry to encapsulate a GET request without a resource in a {@link Bundle}
  * @since 8.0.0
  */
-@JsonDeserialize(using = JsonDeserializer.None.class, builder = ResourceRequestEntry.Builder.class)
-public class ResourceRequestEntry extends AbstractRequestEntry {
+@JsonDeserialize(using = JsonDeserializer.None.class, builder = RequestEntry.Builder.class)
+public class RequestEntry extends AbstractRequestEntry {
 
-	private FhirResource requestResource;
-	
-	protected ResourceRequestEntry(final Collection<String> links, final Uri fullUrl, 
-			final BatchRequest request, final FhirResource requestResource) {
+	protected RequestEntry(final Collection<String> links, final Uri fullUrl, 
+			final BatchRequest request) {
 		
 		super(links, fullUrl, request);
-		this.requestResource = requestResource;
-	}
-	
-	@JsonProperty("resource")
-	public FhirResource getRequestResource() {
-		return requestResource;
 	}
 	
 	@JsonIgnore
-	@AssertTrue(message = "Only POST requests can be resource-based")
-	public boolean isPost() {
-		return HttpVerb.POST.getCode().equals(getRequest().getMethod());
+	@AssertTrue(message = "Only GET requests can be without request body")
+	public boolean isGet() {
+		return HttpVerb.GET.getCode().equals(getRequest().getMethod());
 	}
 	
 	public static Builder builder() {
@@ -59,28 +50,16 @@ public class ResourceRequestEntry extends AbstractRequestEntry {
 	}
 	
 	@JsonPOJOBuilder(withPrefix = "")
-	public static class Builder extends AbstractRequestEntry.Builder<Builder, ResourceRequestEntry> {
-		
-		private FhirResource requestResource;
+	public static class Builder extends AbstractRequestEntry.Builder<Builder, RequestEntry> {
 		
 		@Override
 		protected Builder getSelf() {
 			return this;
 		}
 		
-		public Builder request(BatchRequest request) {
-			this.request = request;
-			return getSelf();
-		}
-		
-		public Builder resource(FhirResource requestResource) {
-			this.requestResource = requestResource;
-			return getSelf();
-		}
-		
 		@Override
-		protected ResourceRequestEntry doBuild() {
-			return new ResourceRequestEntry(links, fullUrl, request, requestResource);
+		protected RequestEntry doBuild() {
+			return new RequestEntry(links, fullUrl, request);
 		}
 	}
 

@@ -64,7 +64,6 @@ public final class OperationOutcome extends DomainResource {
 	@NotEmpty
 	private final Collection<Issue> issues;
 	
-	@SuppressWarnings("rawtypes")
 	OperationOutcome(Id id, Meta meta, Uri impliciteRules, Code language, Narrative text, 
 			String resourceType, Collection<Issue> issues) {
 		

@@ -60,7 +60,7 @@ public class OperationOutcomeTest extends FhirTest {
 	@Test
 	public void buildWithMissingIssue() throws Exception {
 		
-		Issue expectedIssue = validationErrorissueBuilder
+		Issue expectedIssue = validationErrorIssueBuilder
 			.addLocation("OperationOutcome.issues")
 			.detailsWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'issues' content is invalid [null]. Violation: may not be empty.")
 			.build();

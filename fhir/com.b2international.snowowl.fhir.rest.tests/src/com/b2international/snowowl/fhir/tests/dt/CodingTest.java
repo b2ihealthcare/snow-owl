@@ -43,7 +43,7 @@ public class CodingTest extends FhirTest {
 	@Test
 	public void buildInvalidSnomedVersion() throws Exception {
 		
-		Issue expectedIssue = validationErrorissueBuilder
+		Issue expectedIssue = validationErrorIssueBuilder
 				.addLocation("Coding.versionValid")
 				.detailsWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'versionValid' content is invalid [false]. "
 					+ "Violation: SNOMED CT version is defined as part of the system URI.")
@@ -63,7 +63,7 @@ public class CodingTest extends FhirTest {
 	@Test
 	public void buildWithInvalidCode() throws Exception {
 		
-		Issue expectedIssue = validationErrorissueBuilder.addLocation("Coding.code.codeValue")
+		Issue expectedIssue = validationErrorIssueBuilder.addLocation("Coding.code.codeValue")
 				.detailsWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'code.codeValue' content is invalid []. "
 						+ "Violation: must match \"[^\\s]+([\\s]?[^\\s]+)*\".")
 				.build();
@@ -81,7 +81,7 @@ public class CodingTest extends FhirTest {
 	
 	@Test
 	public void buildWithInvalidSystem() throws Exception {
-		Issue expectedIssue = validationErrorissueBuilder
+		Issue expectedIssue = validationErrorIssueBuilder
 			.addLocation("Coding.system.uriValue")
 			.detailsWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'system.uriValue' content is invalid [sys tem]. Violation: uri is invalid.")
 			.build();
