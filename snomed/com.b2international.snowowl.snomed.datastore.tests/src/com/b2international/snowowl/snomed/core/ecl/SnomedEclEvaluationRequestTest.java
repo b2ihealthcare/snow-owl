@@ -65,11 +65,7 @@ import com.b2international.snowowl.core.request.RevisionIndexReadRequest;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.tree.Trees;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.*;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator;
 import com.b2international.snowowl.test.commons.snomed.TestBranchContext;
@@ -1508,7 +1504,7 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 	}
 	
 	@Test
-	public void filterEffectiveTime() throws Exception {
+	public void filterDescriptionEffectiveTime() throws Exception {
 		indexRevision(MAIN, SnomedDescriptionIndexEntry.builder()
 				.id(generateDescriptionId())
 				.active(true)
@@ -1565,6 +1561,29 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 		
 		expected = SnomedDocument.Expressions.ids(ImmutableSet.of(Concepts.ROOT_CONCEPT, Concepts.SUBSTANCE));
 		actual = eval("* {{ Description.effectiveTime != \"20211030\" }}");
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void filterConceptEffectiveTime() throws Exception {
+		indexRevision(MAIN, SnomedConceptDocument.builder()
+				.id(Concepts.FINDING_SITE)
+				.active(true)
+				.released(true)
+				.effectiveTime(EffectiveTimes.getEffectiveTime("20210731", DateFormats.SHORT))
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.build());
+		
+		indexRevision(MAIN, SnomedConceptDocument.builder()
+				.id(Concepts.HAS_ACTIVE_INGREDIENT)
+				.active(true)
+				.released(true)
+				.effectiveTime(EffectiveTimes.getEffectiveTime("20020131", DateFormats.SHORT))
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.build());
+		
+		Expression expected = SnomedDocument.Expressions.effectiveTime(EffectiveTimes.getEffectiveTime("20210731", DateFormats.SHORT));
+		Expression actual = eval("* {{ effectiveTime = \"20210731\" }}");
 		assertEquals(expected, actual);
 	}
 	
