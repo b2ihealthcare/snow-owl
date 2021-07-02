@@ -56,6 +56,8 @@ import com.b2international.index.revision.RevisionIndex;
 import com.b2international.index.revision.StagingArea;
 import com.b2international.snomed.ecl.EclStandaloneSetup;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.date.DateFormats;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.repository.RevisionDocument;
@@ -1457,6 +1459,112 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 		
 		final Expression actual = eval("* {{ languageRefSetId = " + Concepts.REFSET_LANGUAGE_TYPE_UK + " }}");
 		final Expression expected = SnomedDocument.Expressions.ids(ImmutableSet.of(Concepts.ROOT_CONCEPT, Concepts.SUBSTANCE));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void filterSemanticTag() throws Exception {
+		indexRevision(MAIN, SnomedDescriptionIndexEntry.builder()
+				.id(generateDescriptionId())
+				.active(true)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.term("Clinical finding (finding)")
+				.conceptId(Concepts.ROOT_CONCEPT)
+				.typeId(Concepts.TEXT_DEFINITION)
+				.preferredIn(ImmutableSet.of(Concepts.REFSET_LANGUAGE_TYPE_UK))
+				.acceptableIn(ImmutableSet.of(Concepts.REFSET_LANGUAGE_TYPE_US))
+				.build());
+		
+		indexRevision(MAIN, SnomedDescriptionIndexEntry.builder()
+				.id(generateDescriptionId())
+				.active(true)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.term("Clinical finding (clinical)")
+				.conceptId(Concepts.SUBSTANCE)
+				.typeId(Concepts.TEXT_DEFINITION)
+				.preferredIn(ImmutableSet.of(Concepts.REFSET_LANGUAGE_TYPE_US))
+				.acceptableIn(ImmutableSet.of(Concepts.REFSET_LANGUAGE_TYPE_UK))
+				.build());
+		
+		indexRevision(MAIN, SnomedDescriptionIndexEntry.builder()
+				.id(generateDescriptionId())
+				.active(true)
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.term("Clinical finding (disorder)")
+				.conceptId(Concepts.ATTRIBUTE)
+				.typeId(Concepts.TEXT_DEFINITION)
+				.preferredIn(ImmutableSet.of(Concepts.REFSET_LANGUAGE_TYPE_US))
+				.acceptableIn(ImmutableSet.of(Concepts.REFSET_LANGUAGE_TYPE_UK))
+				.build());
+		
+		
+		Expression expected = SnomedDocument.Expressions.ids(ImmutableSet.of(Concepts.SUBSTANCE));
+		Expression actual = eval("* {{ semanticTag = \"clinical\" }}");
+		assertEquals(expected, actual);
+		
+		expected = SnomedDocument.Expressions.ids(ImmutableSet.of(Concepts.SUBSTANCE, Concepts.ATTRIBUTE));
+		actual = eval("* {{ semanticTag != \"finding\" }}");
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void filterEffectiveTime() throws Exception {
+		indexRevision(MAIN, SnomedDescriptionIndexEntry.builder()
+				.id(generateDescriptionId())
+				.active(true)
+				.released(true)
+				.effectiveTime(EffectiveTimes.getEffectiveTime("20210731", DateFormats.SHORT))
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.term("Clinical finding (finding)")
+				.conceptId(Concepts.ROOT_CONCEPT)
+				.typeId(Concepts.TEXT_DEFINITION)
+				.preferredIn(ImmutableSet.of(Concepts.REFSET_LANGUAGE_TYPE_UK))
+				.acceptableIn(ImmutableSet.of(Concepts.REFSET_LANGUAGE_TYPE_US))
+				.build());
+		
+		indexRevision(MAIN, SnomedDescriptionIndexEntry.builder()
+				.id(generateDescriptionId())
+				.active(true)
+				.released(true)
+				.effectiveTime(EffectiveTimes.getEffectiveTime("20020131", DateFormats.SHORT))
+				.moduleId(Concepts.MODULE_SCT_CORE)
+				.term("Clinical finding (clinical)")
+				.conceptId(Concepts.SUBSTANCE)
+				.typeId(Concepts.TEXT_DEFINITION)
+				.preferredIn(ImmutableSet.of(Concepts.REFSET_LANGUAGE_TYPE_US))
+				.acceptableIn(ImmutableSet.of(Concepts.REFSET_LANGUAGE_TYPE_UK))
+				.build());
+		
+		Expression expected = SnomedDocument.Expressions.ids(ImmutableSet.of(Concepts.ROOT_CONCEPT));
+		Expression actual = eval("* {{ Description.effectiveTime = \"20210731\" }}");
+		assertEquals(expected, actual);
+
+		expected = SnomedDocument.Expressions.ids(ImmutableSet.of(Concepts.ROOT_CONCEPT));
+		actual = eval("* {{ Description.effectiveTime > \"20210605\" }}");
+		assertEquals(expected, actual);
+
+		expected = SnomedDocument.Expressions.ids(ImmutableSet.of(Concepts.SUBSTANCE));
+		actual = eval("* {{ Description.effectiveTime < \"20020201\" }}");
+		assertEquals(expected, actual);
+		
+		expected = SnomedDocument.Expressions.ids(ImmutableSet.of(Concepts.ROOT_CONCEPT, Concepts.SUBSTANCE));
+		actual = eval("* {{ Description.effectiveTime >= \"20020131\" }}");
+		assertEquals(expected, actual);
+		
+		expected = SnomedDocument.Expressions.ids(ImmutableSet.of(Concepts.ROOT_CONCEPT, Concepts.SUBSTANCE));
+		actual = eval("* {{ Description.effectiveTime >= \"20010731\" }}");
+		assertEquals(expected, actual);
+		
+		expected = SnomedDocument.Expressions.ids(ImmutableSet.of(Concepts.ROOT_CONCEPT, Concepts.SUBSTANCE));
+		actual = eval("* {{ Description.effectiveTime <= \"20210731\" }}");
+		assertEquals(expected, actual);
+		
+		expected = SnomedDocument.Expressions.ids(ImmutableSet.of(Concepts.ROOT_CONCEPT, Concepts.SUBSTANCE));
+		actual = eval("* {{ Description.effectiveTime <= \"20211030\" }}");
+		assertEquals(expected, actual);
+		
+		expected = SnomedDocument.Expressions.ids(ImmutableSet.of(Concepts.ROOT_CONCEPT, Concepts.SUBSTANCE));
+		actual = eval("* {{ Description.effectiveTime != \"20211030\" }}");
 		assertEquals(expected, actual);
 	}
 	

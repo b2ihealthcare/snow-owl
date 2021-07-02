@@ -27,6 +27,7 @@ import static com.google.common.collect.Sets.newHashSet;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -45,6 +46,8 @@ import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snomed.ecl.Ecl;
 import com.b2international.snomed.ecl.ecl.*;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.date.DateFormats;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.events.Request;
@@ -516,8 +519,56 @@ final class SnomedEclEvaluationRequest implements Request<BranchContext, Promise
 			.then(SnomedDocument.Expressions::modules);
 	}
 	
+	protected Promise<Expression> eval(BranchContext context, final EffectiveTimeFilter effectiveFilter) {
+		final String effectiveTimeAsString = effectiveFilter.getEffectiveTime();
+		final long effectiveTime = EffectiveTimes.getEffectiveTime(effectiveTimeAsString, DateFormats.SHORT);
+		final String op = effectiveFilter.getOp();
+		final Operator eclOperator = Operator.fromString(op);
+		
+		final Expression expression;
+		switch (eclOperator) {
+			case EQUALS:
+				expression = SnomedDocument.Expressions.effectiveTime(effectiveTime);
+				break;
+			case GT:
+				expression = SnomedDocument.Expressions.effectiveTime(effectiveTime, Long.MAX_VALUE, false, true);
+				break;
+			case GTE:
+				expression = SnomedDocument.Expressions.effectiveTime(effectiveTime, Long.MAX_VALUE, true, true);
+				break;
+			case LT:
+				expression = SnomedDocument.Expressions.effectiveTime(Long.MIN_VALUE, effectiveTime, true, false);
+				break;
+			case LTE:
+				expression = SnomedDocument.Expressions.effectiveTime(Long.MIN_VALUE, effectiveTime, true, true);
+				break;
+			case NOT_EQUALS:
+				expression = Expressions.builder()
+					.mustNot(SnomedDocument.Expressions.effectiveTime(effectiveTime))
+					.build();
+				break;
+			default:
+				throw new IllegalStateException("Unhandled ECL search operator '" + eclOperator + "'.");
+		}
+
+		return Promise.immediate(expression);
+	}
+
+	protected Promise<Expression> eval(BranchContext context, final SemanticTagFilter semanticTagFilter) {
+		final String op = semanticTagFilter.getOp();
+		final Operator eclOperator = Operator.fromString(op);
+
+		Expression expression = SnomedDescriptionIndexEntry.Expressions.semanticTags(List.of(semanticTagFilter.getSemanticTag()));
+		if (Operator.NOT_EQUALS.equals(eclOperator)) {
+			expression = Expressions.builder()
+				.mustNot(expression)
+				.build();
+		}
+		
+		return Promise.immediate(expression);
+	}
+
 	protected Promise<Expression> eval(BranchContext context, final TypedTermFilter typedTermFilter) {
-		// typedTermFilter.getOp() should always be set EQUALS after rewriting 
 		final String term = typedTermFilter.getTerm();
 
 		LexicalSearchType lexicalSearchType = LexicalSearchType.fromString(typedTermFilter.getLexicalSearchType());
