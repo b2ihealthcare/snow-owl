@@ -25,8 +25,26 @@ import java.util.Iterator;
 
 import org.junit.Test;
 
-import com.b2international.snowowl.fhir.core.codesystems.*;
-import com.b2international.snowowl.fhir.core.model.*;
+import com.b2international.snowowl.fhir.core.codesystems.BundleType;
+import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
+import com.b2international.snowowl.fhir.core.codesystems.HttpVerb;
+import com.b2international.snowowl.fhir.core.codesystems.IssueSeverity;
+import com.b2international.snowowl.fhir.core.codesystems.IssueType;
+import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
+import com.b2international.snowowl.fhir.core.model.BatchRequest;
+import com.b2international.snowowl.fhir.core.model.BatchResponse;
+import com.b2international.snowowl.fhir.core.model.Bundle;
+import com.b2international.snowowl.fhir.core.model.Designation;
+import com.b2international.snowowl.fhir.core.model.Entry;
+import com.b2international.snowowl.fhir.core.model.FhirResource;
+import com.b2international.snowowl.fhir.core.model.Issue;
+import com.b2international.snowowl.fhir.core.model.Link;
+import com.b2international.snowowl.fhir.core.model.OperationOutcome;
+import com.b2international.snowowl.fhir.core.model.OperationOutcomeEntry;
+import com.b2international.snowowl.fhir.core.model.ParametersRequestEntry;
+import com.b2international.snowowl.fhir.core.model.ParametersResponseEntry;
+import com.b2international.snowowl.fhir.core.model.ResourceRequestEntry;
+import com.b2international.snowowl.fhir.core.model.ResourceResponseEntry;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupResult;
@@ -38,7 +56,6 @@ import com.b2international.snowowl.fhir.core.model.dt.SubProperty;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.tests.FhirTest;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.common.collect.ImmutableList;
 
 import io.restassured.path.json.JsonPath;
@@ -74,8 +91,6 @@ public class BundleTest extends FhirTest {
 			.build();
 		
 		applyFilter(bundle);
-		
-		printPrettyJson(bundle);
 		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(bundle));
 		
@@ -113,7 +128,6 @@ public class BundleTest extends FhirTest {
 				.build();
 		
 		Json json1 = new Parameters.Json(lookupRequest);
-		System.out.println("JSON params:" + json1);
 		
 		ParametersRequestEntry entry = ParametersRequestEntry.builder()
 				.request(BatchRequest.createPostRequest("CodeSystem/$lookup"))
@@ -150,9 +164,52 @@ public class BundleTest extends FhirTest {
 		LookupRequest returnedLookupRequest = objectMapper.convertValue(json, LookupRequest.class);
 		assertEquals("23245-4", returnedLookupRequest.getCode());
 		assertEquals("http://loinc.org", returnedLookupRequest.getSystem());
-		
-		printPrettyJson(bundle);
 			
+	}
+	
+	@Test
+	public void buildResourceRequestBundle() throws Exception {
+		
+		CodeSystem codeSystem = CodeSystem.builder()
+				.status(PublicationStatus.ACTIVE)
+				.content(CodeSystemContentMode.COMPLETE)
+				.build();
+		
+		ResourceRequestEntry entry = ResourceRequestEntry.builder()
+				.request(BatchRequest.createPostRequest("/CodeSystem"))
+				.resource(codeSystem)
+				.build();
+		
+		Bundle bundle = Bundle.builder()
+				.language("en")
+				.total(1)
+				.type(BundleType.BATCH)
+				.addEntry(entry)
+				.addLink("self", "http://localhost:8080/snowowl/CodeSystem")
+				.build();
+		
+		assertEquals("en", bundle.getLanguage().getCodeValue());
+		assertEquals(1, bundle.getTotal());
+		assertEquals(BundleType.BATCH.getCode(), bundle.getType());
+		Link link = bundle.getLink().iterator().next();
+		assertEquals("self", link.getRelation());
+		assertEquals("http://localhost:8080/snowowl/CodeSystem", link.getUrl().getUriValue());
+		
+		Entry bundleEntry = bundle.getItems().iterator().next();
+		assertTrue(bundleEntry instanceof ResourceRequestEntry);
+		ResourceRequestEntry requestEntry = (ResourceRequestEntry) bundleEntry;
+		BatchRequest batchRequest = requestEntry.getRequest();
+		
+		assertEquals(HttpVerb.POST.getCode(), batchRequest.getMethod());
+		assertEquals("/CodeSystem", batchRequest.getUrl().getUriValue());
+		
+		FhirResource readCodeSystem = requestEntry.getRequestResource();
+		assertTrue(readCodeSystem instanceof CodeSystem);
+		
+		String bundleString = objectMapper.writeValueAsString(bundle);
+		
+		Bundle readBundle = objectMapper.readValue(bundleString, Bundle.class);
+		assertTrue(readBundle.getEntry().iterator().next() instanceof ResourceRequestEntry);
 	}
 	
 	@Test
@@ -249,8 +306,6 @@ public class BundleTest extends FhirTest {
 		
 		
 		Json json1 = new Parameters.Json(lookupResult);
-		System.out.println("JSON params:" + json1);
-		
 		
 		ParametersResponseEntry entry = ParametersResponseEntry.builder()
 				.resource(new Parameters.Fhir(json1.parameters()))
@@ -283,8 +338,6 @@ public class BundleTest extends FhirTest {
 		assertEquals("test", returnedResponse.getName());
 		assertEquals("display", returnedResponse.getDisplay());
 		
-		printPrettyJson(bundle);
-			
 	}
 	
 	@Test
@@ -373,8 +426,6 @@ public class BundleTest extends FhirTest {
 		Json json = new Parameters.Json(responseResource);
 		LookupResult lookupResult = objectMapper.convertValue(json, LookupResult.class);
 		assertEquals("LOINC", lookupResult.getName());
-		printPrettyJson(lookupResult);
-		
 	}
 	
 	@Test
@@ -394,12 +445,11 @@ public class BundleTest extends FhirTest {
 				.build();
 		
 		OperationOutcome operationOutcome = OperationOutcome.builder()
-			.addIssue(Issue.builder().code(IssueType.CODE_INVALID).diagnostics("Invalid code").severity(IssueSeverity.ERROR).build())
-			.build();
+				.addIssue(Issue.builder().code(IssueType.CODE_INVALID).diagnostics("Invalid code").severity(IssueSeverity.ERROR).build())
+				.build();
 		
 		
 		Json json1 = new Parameters.Json(lookupResult);
-		System.out.println("JSON params:" + json1);
 		
 		ParametersResponseEntry lookupResultEntry = ParametersResponseEntry.builder()
 				.resource(new Parameters.Fhir(json1.parameters()))
@@ -409,12 +459,12 @@ public class BundleTest extends FhirTest {
 		OperationOutcomeEntry operationOutcomeEntry = OperationOutcomeEntry.builder().operationOutcome(operationOutcome).build();
 		
 		Bundle bundle = Bundle.builder()
-			.language("en")
-			.type(BundleType.BATCH_RESPONSE)
-			.addLink("self", "http://localhost:8080/snowowl/CodeSystem")
-			.addEntry(lookupResultEntry)
-			.addEntry(operationOutcomeEntry)
-			.build();
+				.language("en")
+				.type(BundleType.BATCH_RESPONSE)
+				.addLink("self", "http://localhost:8080/snowowl/CodeSystem")
+				.addEntry(lookupResultEntry)
+				.addEntry(operationOutcomeEntry)
+				.build();
 		
 		assertEquals("en", bundle.getLanguage().getCodeValue());
 		assertEquals(BundleType.BATCH_RESPONSE.getCode(), bundle.getType());
@@ -443,8 +493,6 @@ public class BundleTest extends FhirTest {
 		assertEquals(1, issues.size());
 		assertEquals(IssueSeverity.ERROR.getCode(), issues.iterator().next().getSeverity());
 		
-		printPrettyJson(bundle);
-			
 	}
 	
 	@Test
@@ -456,12 +504,12 @@ public class BundleTest extends FhirTest {
 				.build();
 		
 		String resourceString = objectMapper.writeValueAsString(resource);
-		System.out.println(resourceString);
 		CodeSystem fhirResource = objectMapper.readValue(resourceString, CodeSystem.class);
 		assertEquals(null, fhirResource.getId());
 		
 		ResourceRequestEntry entry = ResourceRequestEntry.builder()
 				.resource(resource)
+				.request(BatchRequest.createPostRequest("/url"))
 				.build();
 		
 		Bundle bundle = Bundle.builder()
@@ -470,7 +518,6 @@ public class BundleTest extends FhirTest {
 				.build();
 		
 		String bundleString = objectMapper.writeValueAsString(bundle);
-		System.out.println(bundleString);
 		Bundle readBundle = objectMapper.readValue(bundleString, Bundle.class);
 		assertEquals(null, readBundle.getId());
 		
@@ -485,12 +532,12 @@ public class BundleTest extends FhirTest {
 				.build();
 		
 		String resourceString = objectMapper.writeValueAsString(resource);
-		System.out.println(resourceString);
 		CodeSystem fhirResource = objectMapper.readValue(resourceString, CodeSystem.class);
 		assertEquals(null, fhirResource.getId());
 		
 		ResourceRequestEntry entry = ResourceRequestEntry.builder()
 				.resource(resource)
+				.request(BatchRequest.createPostRequest("/url"))
 				.build();
 		
 		Bundle bundle = Bundle.builder()
@@ -499,7 +546,6 @@ public class BundleTest extends FhirTest {
 				.build();
 		
 		String bundleString = objectMapper.writeValueAsString(bundle);
-		System.out.println(bundleString);
 		Bundle readBundle = objectMapper.readValue(bundleString, Bundle.class);
 		assertEquals(null, readBundle.getId());
 		

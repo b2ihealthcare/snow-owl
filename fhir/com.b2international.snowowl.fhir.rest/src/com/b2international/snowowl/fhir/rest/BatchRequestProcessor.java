@@ -33,11 +33,13 @@ import com.b2international.snowowl.fhir.core.codesystems.IssueSeverity;
 import com.b2international.snowowl.fhir.core.codesystems.IssueType;
 import com.b2international.snowowl.fhir.core.model.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.TreeNode;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 
 /**
  * Class to process a bulk request
@@ -78,7 +80,7 @@ public abstract class BatchRequestProcessor {
 			processClientErrorException(arrayNode, hcee);
 			System.out.println("ArrayNode: " + arrayNode);
 		} catch (HttpServerErrorException hsee) {
-			processServerErrorException(arrayNode, hsee);
+			processHttpException(arrayNode, hsee);
 		} catch (JsonProcessingException e) {
 			System.out.println("JSON Processing!");
 			//e.printStackTrace();
@@ -154,12 +156,23 @@ public abstract class BatchRequestProcessor {
 	
 	private void processClientErrorException(ArrayNode arrayNode, HttpClientErrorException hcee) throws JsonMappingException, JsonProcessingException {
 		
-		//HttpClientErrorException returns an OperationOutcome in the response body
+		//HttpClientErrorException can return an OperationOutcome in the response body
 		ObjectNode resourceNode = (ObjectNode) objectMapper.readTree(hcee.getResponseBodyAsString());
-		addResponse(arrayNode, resourceNode, String.valueOf(hcee.getStatusCode().value()));
+		
+		TreeNode resourceTypeNode = resourceNode.path("resource").path("resourceType");
+		if (resourceTypeNode instanceof TextNode) {
+			TextNode textNode = (TextNode) resourceTypeNode;
+			if (textNode.textValue().equals("OperationOutcome")) {
+				addResponse(arrayNode, resourceNode, String.valueOf(hcee.getStatusCode().value()));
+				return;
+				//return objectMapper.treeToValue(objectMapper, OperationOutcomeEntry.class);
+			}
+		}
+		processHttpException(arrayNode, hcee);
+		
 	}
 
-	private void processServerErrorException(ArrayNode arrayNode, HttpServerErrorException hsee) throws JsonMappingException, JsonProcessingException {
+	private void processHttpException(ArrayNode arrayNode, HttpStatusCodeException hsee) throws JsonMappingException, JsonProcessingException {
 		
 		OperationOutcome operationOutcome = batchRequestController.handle(hsee);
 		

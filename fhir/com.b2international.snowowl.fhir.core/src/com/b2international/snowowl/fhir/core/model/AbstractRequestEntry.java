@@ -17,6 +17,8 @@ package com.b2international.snowowl.fhir.core.model;
 
 import java.util.Collection;
 
+import javax.validation.constraints.NotNull;
+
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
@@ -27,6 +29,7 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 //@JsonDeserialize(using = JsonDeserializer.None.class, builder = RequestEntry.Builder.class)
 public abstract class AbstractRequestEntry extends Entry {
 
+	@NotNull
 	private BatchRequest request;
 	
 	protected AbstractRequestEntry(final Collection<String> links, final Uri fullUrl, 

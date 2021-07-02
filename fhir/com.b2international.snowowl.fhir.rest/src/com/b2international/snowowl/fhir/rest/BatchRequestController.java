@@ -45,8 +45,8 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
 /**
- * 
  * REST end-point for batch operations.
+ * 
  * @since 8.0.0
  */
 @Api(value = "Bundle", description="Bundle Resource and batch operations", tags = { "Bundle" })

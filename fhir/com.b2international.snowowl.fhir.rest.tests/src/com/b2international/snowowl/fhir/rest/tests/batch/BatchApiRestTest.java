@@ -24,10 +24,14 @@ import org.junit.Test;
 import org.junit.rules.RuleChain;
 
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
+import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
+import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
 import com.b2international.snowowl.fhir.core.model.BatchRequest;
 import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.ParametersRequestEntry;
 import com.b2international.snowowl.fhir.core.model.RequestEntry;
+import com.b2international.snowowl.fhir.core.model.ResourceRequestEntry;
+import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
@@ -47,7 +51,7 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
  */
 public class BatchApiRestTest extends FhirRestTest {
 	
-	@Test
+	//@Test
 	public void singleLookupGET() {
 		
 		RequestEntry entry = RequestEntry.builder()
@@ -80,7 +84,52 @@ public class BatchApiRestTest extends FhirRestTest {
 		
 	}
 	
-	@Test
+	//@Test
+	public void multiLookupGET() {
+		
+		RequestEntry entry1 = RequestEntry.builder()
+				.request(BatchRequest.createGetRequest("CodeSystem/$lookup?"
+						+ "system=http://snomed.info/sct"
+						+ "&code=" + Concepts.IS_A))
+				.build();
+		
+		RequestEntry entry2 = RequestEntry.builder()
+				.request(BatchRequest.createGetRequest("CodeSystem/$lookup?"
+						+ "system=http://snomed.info/sct"
+						+ "&code=" + Concepts.MORPHOLOGY))
+				.build();
+			
+		Bundle bundle = Bundle.builder()
+			.language("en")
+			.total(1)
+			.type(BundleType.BATCH)
+			.addEntry(entry1)
+			.addEntry(entry2)
+			.build();
+		
+		
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.contentType(APPLICATION_FHIR_JSON)
+			.body(bundle)
+			.when().post("/")
+			.prettyPeek()
+			.then()
+			.statusCode(200)
+			.body("resourceType", equalTo("Bundle"))
+			.body("type", is("batch-response"))
+			.root("entry[0]")
+			.body("response.status", equalTo("200"))
+			.root("entry[0].resource")
+			.body("resourceType", equalTo("Parameters"))
+			
+			.root("entry[1]")
+			.body("response.status", equalTo("200"))
+			.root("entry[1].resource")
+			.body("resourceType", equalTo("Parameters"));
+		
+	}
+	
+	//@Test
 	public void singleLookupPost() {
 		
 		LookupRequest request = LookupRequest.builder()
@@ -120,8 +169,8 @@ public class BatchApiRestTest extends FhirRestTest {
 		
 	}
 	
-	@Test
-	public void multiRequestWithError() {
+	//@Test
+	public void singleRequestWithInvalidParameters() {
 		
 		LookupRequest request = LookupRequest.builder()
 				.coding(Coding.builder()
@@ -137,6 +186,7 @@ public class BatchApiRestTest extends FhirRestTest {
 				.resource(new Parameters.Fhir(json.parameters()))
 				.build();
 		
+		//Completely invalid request
 		RequestEntry entry2 = RequestEntry.builder()
 				.request(BatchRequest.createGetRequest("CodeSystem/$lookup?system=whatever?code=1234"))
 				.build();
@@ -165,8 +215,8 @@ public class BatchApiRestTest extends FhirRestTest {
 		
 	}
 	
-	@Test
-	public void multiRequestWithError2() {
+	//@Test
+	public void singleRequestWithFailedLookup() {
 		
 		LookupRequest request = LookupRequest.builder()
 				.coding(Coding.builder()
@@ -204,10 +254,44 @@ public class BatchApiRestTest extends FhirRestTest {
 				.body("resourceType", equalTo("Bundle"))
 				.body("type", is("batch-response"))
 				.body("entry[0].response.status", equalTo("200"))
-				.root("entry[0].resource")
 				.body("entry[0].resource.resourceType", equalTo("Parameters"))
 				.body("entry[1].response.status", equalTo("404"))
 				.body("entry[1].resource.resourceType", equalTo("OperationOutcome"));
+	}
+	
+	@Test
+	public void singleResourcePost() {
+		
+		CodeSystem codeSystem = CodeSystem.builder()
+				.status(PublicationStatus.ACTIVE)
+				.content(CodeSystemContentMode.COMPLETE)
+				.build();
+		
+		ResourceRequestEntry entry = ResourceRequestEntry.builder()
+				.request(BatchRequest.createPostRequest("/CodeSystem"))
+				.resource(codeSystem)
+				.build();
+		
+		Bundle bundle = Bundle.builder()
+				.language("en")
+				.total(1)
+				.type(BundleType.BATCH)
+				.addEntry(entry)
+				.build();
+			
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+				.contentType(APPLICATION_FHIR_JSON)
+				.body(bundle)
+				.when().post("/")
+				.prettyPeek()
+				.then()
+				.statusCode(200)
+				.body("resourceType", equalTo("Bundle"))
+				.body("type", is("batch-response"))
+				.root("entry[0]")
+				.body("response.status", equalTo("405"))
+				.root("entry[0].resource")
+				.body("resourceType", equalTo("OperationOutcome"));
 		
 	}
 	

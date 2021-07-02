@@ -31,6 +31,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * {@link BatchRequestProcessor} to process resource POST requests in a batch
@@ -70,12 +71,15 @@ public class ResourceRequestEntryProcessor extends BatchRequestProcessor {
 		
 		System.out.println("URI: " + uriBuilder.toString());
 			
-		//TODO: change the RequestEntry to accommodate resources for non-operation bulk support
-		HttpEntity httpEntity = new HttpEntity(requestEntry.getRequestResource(), headers);
+		HttpEntity<?> httpEntity = new HttpEntity<>(requestEntry.getRequestResource(), headers);
 		ResponseEntity<String> response = restTemplate.exchange(uriBuilder.toString(), HttpMethod.POST, httpEntity, String.class);
 		
 		String json = response.getBody();
 		System.out.println("Body: " + json);
+		
+		ObjectNode resourceNode = (ObjectNode) objectMapper.readTree(json);
+		
+		addResponse(arrayNode, resourceNode, String.valueOf(response.getStatusCode().value()));
 	}
 
 }

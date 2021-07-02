@@ -129,7 +129,7 @@ public class CodeSystem extends MetadataResource {
 	private Boolean caseSensitive;
 	
 	@Summary
-	@Valid
+	//@Valid - bbanfai: why is this invoked on a null?
 	@JsonProperty
 	private Uri valueSet;
 	
@@ -285,7 +285,11 @@ public class CodeSystem extends MetadataResource {
 		}
 		
 		public Builder hierarchyMeaning(CodeSystemHierarchyMeaning codeSystemHierarchyMeaning) {
-			this.hierarchyMeaning = codeSystemHierarchyMeaning.getCode();
+			if (codeSystemHierarchyMeaning == null) {
+				hierarchyMeaning = null;
+			} else {
+				this.hierarchyMeaning = codeSystemHierarchyMeaning.getCode();
+			}
 			return getSelf();
 		}
 		

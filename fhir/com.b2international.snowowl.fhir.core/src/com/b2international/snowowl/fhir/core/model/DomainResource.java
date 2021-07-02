@@ -20,10 +20,12 @@ import java.util.Collection;
 import javax.validation.Valid;
 
 import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
+import com.b2international.snowowl.fhir.core.model.Bundle.Builder;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.model.dt.Id;
 import com.b2international.snowowl.fhir.core.model.dt.Narrative;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Sets;
 
@@ -95,6 +97,13 @@ public abstract class DomainResource extends FhirResource {
 		
 		public B text(Narrative text) {
 			this.text = text;
+			return getSelf();
+		}
+		
+		@JsonProperty("extension")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public B extensions(Collection<Extension<?>> extensions) {
+			this.extensions = extensions;
 			return getSelf();
 		}
 		

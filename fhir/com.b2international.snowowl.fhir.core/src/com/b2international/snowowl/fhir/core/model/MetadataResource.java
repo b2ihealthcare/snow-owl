@@ -269,10 +269,14 @@ public abstract class MetadataResource extends DomainResource {
 		}
 		
 		public B date(String dateString) {
+			if (dateString == null) {
+				this.date = null;
+				return getSelf();
+			}
 			DateFormat df = new SimpleDateFormat(FhirConstants.DATE_TIME_FORMAT);
 			try {
 				this.date = df.parse(dateString);
-			} catch (ParseException e) {
+			} catch (Exception e) {
 				throw FhirException.createFhirError(dateString + " cannot be parsed, use the format " + FhirConstants.DATE_TIME_FORMAT, OperationOutcomeCode.MSG_PARAM_INVALID);
 			}
 			return getSelf();

@@ -51,6 +51,8 @@ public class ResourceRequestEntry extends AbstractRequestEntry {
 	@JsonIgnore
 	@AssertTrue(message = "Only POST requests can be resource-based")
 	public boolean isPost() {
+		
+		if (getRequest() == null) return false;
 		return HttpVerb.POST.getCode().equals(getRequest().getMethod());
 	}
 	
