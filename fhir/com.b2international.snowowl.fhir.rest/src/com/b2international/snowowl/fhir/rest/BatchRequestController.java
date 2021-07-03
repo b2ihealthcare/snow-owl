@@ -16,6 +16,7 @@
 package com.b2international.snowowl.fhir.rest;
 
 import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
+import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
 import static java.net.HttpURLConnection.HTTP_OK;
 
 import java.util.Collection;
@@ -23,6 +24,8 @@ import java.util.Collection;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -33,6 +36,8 @@ import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.Entry;
 import com.b2international.snowowl.fhir.core.model.OperationOutcome;
+import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
+import com.b2international.snowowl.fhir.core.request.FhirRequests;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -88,6 +93,47 @@ public class BatchRequestController extends AbstractFhirResourceController<Bundl
 		
 		Bundle treeToValue = objectMapper.treeToValue(rootNode, Bundle.class);
 		return Promise.immediate(treeToValue);
+	}
+	
+	/**
+	 * Bundles
+	 * @return bundle of bundles
+	 */
+	@ApiOperation(
+			value="Retrieve all bundles in a bundle",
+			notes="Returns a collection of the bundles included in a bundle.")
+	@ApiResponses({
+		@ApiResponse(code = HTTP_OK, message = "OK"),
+		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad Request", response = OperationOutcome.class),
+	})
+	@GetMapping("/bundle")
+	public Promise<Bundle> getBundles() {
+		throw new UnsupportedOperationException();
+	}
+	
+	/**
+	 * HTTP Get for retrieving a bundle by its id
+	 * @param id
+	 * @return
+	 */
+	@ApiOperation(
+			response=Bundle.class,
+			value="Retrieve a bundle by id",
+			notes="Retrieves a bundle specified by its logical id.")
+	@ApiResponses({
+		@ApiResponse(code = HTTP_OK, message = "OK"),
+		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
+		@ApiResponse(code = HTTP_NOT_FOUND, message = "Bundle not found", response = OperationOutcome.class)
+	})
+	@RequestMapping(value="/bundle/{id:**}", method=RequestMethod.GET)
+	public Promise<Bundle> getBundle(
+			@ApiParam(value = "The identifier of the bundle resource")
+			@PathVariable(value = "id") 
+			final String id,
+			
+			final FhirResourceSelectors selectors) {
+		
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
