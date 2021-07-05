@@ -70,6 +70,8 @@ public class SnomedRf2ExportRestService extends AbstractRestService {
 			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 		
+		final Rf2RefSetExportLayout globalExportLayout = ApplicationContext.getServiceForClass(SnomedCoreConfiguration.class).getExport().getRefSetExportLayout();
+		
 		final Attachment exportedFile = SnomedRequests.rf2().prepareExport()
 			.setReleaseType(params.getType() == null ? null : Rf2ReleaseType.getByNameIgnoreCase(params.getType()))
 			.setExtensionOnly(params.isExtensionOnly())
@@ -82,7 +84,7 @@ public class SnomedRf2ExportRestService extends AbstractRestService {
 			.setTransientEffectiveTime(params.getTransientEffectiveTime())
 			.setStartEffectiveTime(params.getStartEffectiveTime())
 			.setEndEffectiveTime(params.getEndEffectiveTime())
-			.setRefSetExportLayout(params.getRefSetLayout() == null ? Rf2RefSetExportLayout.COMBINED : Rf2RefSetExportLayout.getByNameIgnoreCase(params.getRefSetLayout()))
+			.setRefSetExportLayout(params.getRefSetLayout() == null ? globalExportLayout : Rf2RefSetExportLayout.getByNameIgnoreCase(params.getRefSetLayout()))
 			.build(branch)
 			.execute(getBus())
 			.getSync();
