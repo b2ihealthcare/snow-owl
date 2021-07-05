@@ -445,6 +445,16 @@ public class SnomedEclEvaluationRequestTest extends BaseRevisionIndexTest {
 		eval(String.format("%s AND %s OR %s", ROOT_ID, ROOT_ID, ROOT_ID));
 	}
 	
+	@Test(expected = BadRequestException.class)
+	public void ambiguousOrOperatorInRefinement() throws Exception {
+		eval("(<64572001 |Disease (disorder)|: 363698007 |Finding site| = 74281007 |Myocardium structure| OR 404684003 |Clinical finding|)");
+	}
+
+	@Test
+	public void ambiguousOrOperatorInConstraint() throws Exception {
+		eval("(404684003 |Clinical finding (finding)| OR <64572001 |Disease (disorder)|: 363698007 |Finding site| = 74281007 |Myocardium structure|)");
+	}
+	
 	@Test
 	public void refinementAttributeEquals() throws Exception {
 		generateDrugHierarchy();
