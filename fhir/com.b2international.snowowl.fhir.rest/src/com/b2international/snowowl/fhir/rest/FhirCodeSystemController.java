@@ -67,6 +67,10 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 	})
 	@GetMapping
 	public Promise<Bundle> getCodeSystems(FhirCodeSystemSearchParameters params) {
+		//TODO: replace this with something more general as described in
+		//https://docs.spring.io/spring-hateoas/docs/current/reference/html/
+//		String uri = MvcUriComponentsBuilder.fromController(FhirCodeSystemController.class).build().toString();
+		
 		return FhirRequests.codeSystems().prepareSearch()
 				.filterByIds(asList(params.get_id()))
 				.filterByNames(asList(params.getName()))
@@ -83,27 +87,9 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 				.sortByFields(params.get_sort())
 				.buildAsync()
 				.execute(getBus());
-		
 		// TODO convert returned Bundle entries to have a fullUrl, either here or supply current url to request via header param
-		
-		//TODO: replace this with something more general as described in
-		//https://docs.spring.io/spring-hateoas/docs/current/reference/html/
-//		String uri = MvcUriComponentsBuilder.fromController(FhirCodeSystemController.class).build().toString();
-		
-		//collect the hits from the providers
-//		Collection<ICodeSystemApiProvider> providers = codeSystemProviderRegistry.getProviders(getBus(), locales);
-//		
-//		for (ICodeSystemApiProvider codeSystemProvider : providers) {
-//			Collection<CodeSystem> codeSystems = codeSystemProvider.getCodeSystems(requestParameters.getB());
-//			for (CodeSystem codeSystem : codeSystems) {
-//				applyResponseContentFilter(codeSystem, filterParameters);
 //				String resourceUrl = String.join("/", uri, codeSystem.getId().getIdValue());
 //				Entry entry = new Entry(new Uri(resourceUrl), codeSystem);
-//				builder.addEntry(entry);
-//				total++;
-//			}
-//		}
-//		return builder.total(total).build();
 	}
 	
 	/**
@@ -134,12 +120,6 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 				.setElements(asList(selectors.get_elements()))
 				.buildAsync()
 				.execute(getBus());
-		
-//		ResourceURI codeSystemURI = com.b2international.snowowl.core.codesystem.CodeSystem.uri(codeSystemId);
-//		ICodeSystemApiProvider codeSystemProvider = codeSystemProviderRegistry.getCodeSystemProvider(getBus(), locales, codeSystemURI);
-//		CodeSystem codeSystem = codeSystemProvider.getCodeSystem(codeSystemURI);
-		
-//		return applyResponseContentFilter(codeSystem, fhirParameters.getA());
 	}
 	
 }

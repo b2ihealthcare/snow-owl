@@ -56,8 +56,6 @@ public abstract class FhirRequest<R> implements Request<ServiceProvider, R> {
 				.map(CodeSystem.class::cast)
 				.orElseThrow(() -> new NotFoundException("CodeSystem", system));
 		
-		// TODO support searching versions 
-		
 		return doExecute(context, codeSystem);
 	}
 	

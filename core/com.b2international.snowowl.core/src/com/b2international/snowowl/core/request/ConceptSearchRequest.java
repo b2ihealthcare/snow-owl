@@ -32,6 +32,8 @@ import com.b2international.snowowl.core.domain.Concepts;
  */
 public final class ConceptSearchRequest extends SearchResourceRequest<BranchContext, Concepts> {
 
+	private static final long serialVersionUID = 1L;
+
 	@Override
 	protected Concepts createEmptyResult(int limit) {
 		return new Concepts(limit, 0);
@@ -45,6 +47,7 @@ public final class ConceptSearchRequest extends SearchResourceRequest<BranchCont
 				.put(ConceptSearchRequestEvaluator.OptionKey.AFTER, searchAfter())
 				.put(ConceptSearchRequestEvaluator.OptionKey.LIMIT, limit())
 				.put(ConceptSearchRequestEvaluator.OptionKey.LOCALES, locales())
+				.put(ConceptSearchRequestEvaluator.OptionKey.EXPAND, expand())
 				.put(SearchResourceRequest.OptionKey.SORT_BY, sortBy())
 				.build();
 		return context.service(ConceptSearchRequestEvaluator.class).evaluate(context.service(ResourceURI.class), context, options);

@@ -32,8 +32,8 @@ public class SnomedURLSchemaSupport implements ResourceURLSchemaSupport {
 	@Override
 	public void validate(String uri) throws BadRequestException {
 		// very basic validation to ensure that all tests use proper URLs
-		if (!uri.startsWith(SnomedTerminologyComponentConstants.SNOMED_URI_BASE)) {
-			throw new BadRequestException("SNOMED CT URIs must start with '%s'. Got '%s'", SnomedTerminologyComponentConstants.SNOMED_URI_BASE, uri);
+		if (!uri.startsWith(SnomedTerminologyComponentConstants.SNOMED_URI_SCT) && !uri.startsWith(SnomedTerminologyComponentConstants.SNOMED_URI_DEV)) {
+			throw new BadRequestException("SNOMED CT URIs must start with one of ['%s', '%s']. Got '%s'", SnomedTerminologyComponentConstants.SNOMED_URI_SCT, SnomedTerminologyComponentConstants.SNOMED_URI_DEV, uri);
 		}
 	}
 	

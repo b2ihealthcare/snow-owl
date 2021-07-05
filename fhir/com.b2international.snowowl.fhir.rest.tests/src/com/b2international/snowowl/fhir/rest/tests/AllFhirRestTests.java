@@ -42,9 +42,6 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	FhirCodeSystemLookupOperationTest.class,
 	FhirCodeSystemSubsumesOperationTest.class,
 	FhirCodeSystemValidateCodeOperationTest.class,
-//	SnomedCodeSystemProviderTest.class,
-//	LookupSnomedRestTest.class,
-//	SubsumesSnomedRestTest.class,
 	
 	// ValueSet API
 //	SnomedValueSetRestTest.class,

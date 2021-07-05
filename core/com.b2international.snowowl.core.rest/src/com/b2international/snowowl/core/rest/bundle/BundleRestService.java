@@ -87,7 +87,7 @@ public class BundleRestService extends AbstractRestService {
 	}
 	
 	@ApiOperation(
-			value="Retrieve budnle by its unique identifier",
+			value="Retrieve bundle by its unique identifier",
 			notes="Returns generic information about a single bundle associated to the given unique identifier.")
 	@ApiResponses({
 		@ApiResponse(code = 200, message = "OK"),
@@ -99,8 +99,8 @@ public class BundleRestService extends AbstractRestService {
 			@PathVariable(value="bundleId", required = true) 
 			final String bundleId,
 			
-			@RequestParam(value = "expand")
-			@ApiParam(value="expand", required = false) 
+			@ApiParam(value="expand") 
+			@RequestParam(value = "expand", required = false)
 			String expand) {
 		return ResourceRequests.bundles().prepareGet(bundleId)
 				.setExpand(expand)
