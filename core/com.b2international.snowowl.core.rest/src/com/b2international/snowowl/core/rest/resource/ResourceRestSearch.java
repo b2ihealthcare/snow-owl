@@ -43,6 +43,9 @@ public class ResourceRestSearch extends ObjectRestSearch {
 	
 	@ApiParam
 	private List<String> bundleId;
+	
+	@ApiParam
+	private List<String> oid;
 
 	public List<String> getBranch() {
 		return branch;
@@ -92,5 +95,12 @@ public class ResourceRestSearch extends ObjectRestSearch {
 		this.bundleId = bundleId;
 	}
 	
+	public List<String> getOid() {
+		return oid;
+	}
+	
+	public void setOid(List<String> oid) {
+		this.oid = oid;
+	}
 	
 }
