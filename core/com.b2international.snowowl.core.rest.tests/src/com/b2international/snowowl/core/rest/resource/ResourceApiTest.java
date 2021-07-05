@@ -17,20 +17,15 @@ package com.b2international.snowowl.core.rest.resource;
 
 import static com.b2international.snowowl.core.rest.ResourceApiAssert.assertResourceGet;
 import static com.b2international.snowowl.core.rest.ResourceApiAssert.assertResourceSearch;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.groups.Tuple.tuple;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.iterableWithSize;
 
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.b2international.snowowl.core.Resource;
-import com.b2international.snowowl.core.Resources;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.request.ResourceRequests;
@@ -90,15 +85,11 @@ public class ResourceApiTest {
 		createDefaultCodeSystem(id1, oid1);
 		createDefaultCodeSystem(id2, oid2);
 
-		final List<Resource> resources = assertResourceSearch(ImmutableMap.of("oid", ImmutableList.of(oid1)))
-				.statusCode(200)
-				.extract()
-				.as(Resources.class)
-				.getItems();
-		
-		assertThat(resources).extracting("id", "oid")
-			.containsOnly(tuple(id1, oid1))
-			.doesNotContain(tuple(id2, oid2));
+		 assertResourceSearch(ImmutableMap.of("oid", ImmutableList.of(oid1)))
+			.statusCode(200)
+			.body("total", equalTo(1))
+			.body("items[0].id", equalTo(id1))
+			.body("items[0].oid", equalTo(oid1));
 	}
 
 	private void createDefaultCodeSystem(final String shortName, final String oid) {
