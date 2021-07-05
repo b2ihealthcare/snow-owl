@@ -15,18 +15,23 @@
  */
 package com.b2international.snowowl.fhir.core.request;
 
+import com.b2international.snowowl.fhir.core.model.Bundle;
+import com.b2international.snowowl.fhir.core.request.bundle.FhirBundleGetRequestBuilder;
+import com.b2international.snowowl.fhir.core.request.bundle.FhirBundleSearchRequestBuilder;
+
 /**
- * Main class to access FHIR requests.
+ * FHIR requests to manage bundles
+ * @see Bundle
  * @since 8.0
  */
-public class FhirRequests {
+public class FhirBundleRequests {
+	
+	public FhirBundleSearchRequestBuilder prepareSearch() {
+		return new FhirBundleSearchRequestBuilder();
+	}
+	
+	public FhirBundleGetRequestBuilder prepareGet(String idOrUrl) {
+		return new FhirBundleGetRequestBuilder(idOrUrl);
+	}
 
-	public static FhirCodeSystemRequests codeSystems() {
-		return new FhirCodeSystemRequests();
-	}
-	
-	public static FhirBundleRequests bundles() {
-		return new FhirBundleRequests();
-	}
-	
 }

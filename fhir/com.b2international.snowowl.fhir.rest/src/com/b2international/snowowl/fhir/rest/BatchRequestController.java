@@ -24,30 +24,20 @@ import java.util.Collection;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.Entry;
 import com.b2international.snowowl.fhir.core.model.OperationOutcome;
-import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.*;
 
 /**
  * REST end-point for batch operations.
@@ -107,8 +97,15 @@ public class BatchRequestController extends AbstractFhirResourceController<Bundl
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad Request", response = OperationOutcome.class),
 	})
 	@GetMapping("/bundle")
-	public Promise<Bundle> getBundles() {
-		throw new UnsupportedOperationException();
+	public Promise<Bundle> getBundles(final FhirBundleSearchParameters params) {
+		
+		return FhirRequests.bundles().prepareSearch()
+				.filterByIds(asList(params.get_id()))
+				
+				//TODO: additional supported filters come here
+				.buildAsync()
+				.execute(getBus());
+		
 	}
 	
 	/**
@@ -133,7 +130,9 @@ public class BatchRequestController extends AbstractFhirResourceController<Bundl
 			
 			final FhirResourceSelectors selectors) {
 		
-		throw new UnsupportedOperationException();
+		return FhirRequests.bundles().prepareGet(id)
+			.buildAsync()
+			.execute(getBus());
 	}
 
 	@Override

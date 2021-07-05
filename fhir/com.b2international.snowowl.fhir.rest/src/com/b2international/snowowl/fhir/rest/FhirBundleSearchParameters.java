@@ -13,20 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.fhir.core.request;
+package com.b2international.snowowl.fhir.rest;
 
 /**
- * Main class to access FHIR requests.
- * @since 8.0
+ * @since 8.0.1
  */
-public class FhirRequests {
+public class FhirBundleSearchParameters extends FhirResourceSearchParameters {
 
-	public static FhirCodeSystemRequests codeSystems() {
-		return new FhirCodeSystemRequests();
-	}
-	
-	public static FhirBundleRequests bundles() {
-		return new FhirBundleRequests();
-	}
-	
 }

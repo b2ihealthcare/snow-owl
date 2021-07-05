@@ -35,7 +35,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * {@link BatchRequestProcessor} to process resource POST requests in a batch
- * @ssince 8.0.0
+ * @since 8.0.0
  */
 public class ResourceRequestEntryProcessor extends BatchRequestProcessor {
 
@@ -53,7 +53,7 @@ public class ResourceRequestEntryProcessor extends BatchRequestProcessor {
 		Code requestMethod = batchRequest.getMethod();
 		
 		if (!requestMethod.equals(HttpVerb.POST.getCode())) {
-			createInvalidMethodResponse(arrayNode);
+			createInvalidMethodResponse(arrayNode, requestMethod);
 			return;
 		}
 		
@@ -69,13 +69,10 @@ public class ResourceRequestEntryProcessor extends BatchRequestProcessor {
 				.append(request.getRequestURI())
 				.append(batchRequest.getUrl().getUriValue());
 		
-		System.out.println("URI: " + uriBuilder.toString());
-			
 		HttpEntity<?> httpEntity = new HttpEntity<>(requestEntry.getRequestResource(), headers);
 		ResponseEntity<String> response = restTemplate.exchange(uriBuilder.toString(), HttpMethod.POST, httpEntity, String.class);
 		
 		String json = response.getBody();
-		System.out.println("Body: " + json);
 		
 		ObjectNode resourceNode = (ObjectNode) objectMapper.readTree(json);
 		

@@ -32,6 +32,7 @@ import org.springframework.web.client.RestTemplate;
 import com.b2international.snowowl.fhir.core.codesystems.IssueSeverity;
 import com.b2international.snowowl.fhir.core.codesystems.IssueType;
 import com.b2international.snowowl.fhir.core.model.*;
+import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.TreeNode;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -78,16 +79,10 @@ public abstract class BatchRequestProcessor {
 			doProcess(arrayNode, request);
 		} catch (HttpClientErrorException hcee) {
 			processClientErrorException(arrayNode, hcee);
-			System.out.println("ArrayNode: " + arrayNode);
 		} catch (HttpServerErrorException hsee) {
 			processHttpException(arrayNode, hsee);
-		} catch (JsonProcessingException e) {
-			System.out.println("JSON Processing!");
-			//e.printStackTrace();
 		} catch (Exception e) {
 			processGenericError(arrayNode, e);
-			System.out.println("Exception: " + e.getMessage());
-			//e.printStackTrace();
 		}
 	}
 	
@@ -101,9 +96,26 @@ public abstract class BatchRequestProcessor {
 	 */
 	public abstract void doProcess(ArrayNode arrayNode, HttpServletRequest request) throws Exception;
 	
-	protected void createInvalidMethodResponse(ArrayNode arrayNode) {
-		System.out.println("Invalid method!");
-		// TODO Auto-generated method stub
+	protected void createInvalidMethodResponse(ArrayNode arrayNode, Code requestMethod) {
+		
+		OperationOutcome operationOutcome = OperationOutcome.builder()
+				.addIssue(Issue.builder()
+						.severity(IssueSeverity.ERROR)
+						.code(IssueType.INVALID)
+						.addLocation("request.method")
+						.diagnostics(String.format("'%s' request method is invalid.", requestMethod.getCodeValue()))
+						.build())
+				.build();
+		
+		OperationOutcomeEntry ooEntry = OperationOutcomeEntry.builder()
+				.operationOutcome(operationOutcome)
+				.build();
+		
+		ObjectNode resourceNode = (ObjectNode) objectMapper.valueToTree(ooEntry);
+		BatchResponse batchResponse = new BatchResponse("500");
+		JsonNode responseNode = objectMapper.valueToTree(batchResponse);
+		resourceNode.putPOJO("response", responseNode);
+		arrayNode.add(resourceNode);
 		
 	}
 	
@@ -127,6 +139,73 @@ public abstract class BatchRequestProcessor {
 		return headers;
 	}
 	
+	private void processClientErrorException(ArrayNode arrayNode, HttpClientErrorException hcee) throws JsonMappingException, JsonProcessingException {
+		
+		//HttpClientErrorException can return an OperationOutcome in the response body
+		ObjectNode resourceNode = (ObjectNode) objectMapper.readTree(hcee.getResponseBodyAsString());
+		
+		TreeNode resourceTypeNode = resourceNode.path("resource").path("resourceType");
+		if (resourceTypeNode instanceof TextNode) {
+			TextNode textNode = (TextNode) resourceTypeNode;
+			if (textNode.textValue().equals("OperationOutcome")) {
+				addResponse(arrayNode, resourceNode, String.valueOf(hcee.getStatusCode().value()));
+				return;
+			}
+		}
+		processHttpException(arrayNode, hcee);
+		
+	}
+
+	private void processHttpException(ArrayNode arrayNode, HttpStatusCodeException hsee) throws JsonMappingException, JsonProcessingException {
+		
+		OperationOutcome operationOutcome = batchRequestController.handle(hsee);
+		
+		OperationOutcomeEntry ooEntry = OperationOutcomeEntry.builder()
+				.operationOutcome(operationOutcome)
+				.build();
+		
+		ObjectNode resourceNode = (ObjectNode) objectMapper.valueToTree(ooEntry);
+		BatchResponse batchResponse = new BatchResponse(String.valueOf(hsee.getStatusCode().value()));
+		JsonNode responseNode = objectMapper.valueToTree(batchResponse);
+		resourceNode.putPOJO("response", responseNode);
+		arrayNode.add(resourceNode);
+	}
+
+	private void processGenericError(ArrayNode arrayNode, Exception e) {
+		OperationOutcome operationOutcome = OperationOutcome.builder()
+				.addIssue(Issue.builder()
+						.severity(IssueSeverity.ERROR)
+						.code(IssueType.EXCEPTION)
+						.addLocation("request")
+						.diagnostics(String.format("Exception when processing request. Exception: '%s'", e.getMessage()))
+						.build())
+				.build();
+		
+		OperationOutcomeEntry ooEntry = OperationOutcomeEntry.builder()
+				.operationOutcome(operationOutcome)
+				.build();
+		
+		ObjectNode resourceNode = (ObjectNode) objectMapper.valueToTree(ooEntry);
+		BatchResponse batchResponse = new BatchResponse("500");
+		JsonNode responseNode = objectMapper.valueToTree(batchResponse);
+		resourceNode.putPOJO("response", responseNode);
+		arrayNode.add(resourceNode);
+		
+	}
+	
+	protected void addResponse(ArrayNode arrayNode, ObjectNode resourceNode, String statusCode) {
+		
+		ObjectNode resourceRoot = objectMapper.createObjectNode().putPOJO("resource", resourceNode);
+		
+		BatchResponse batchResponse = new BatchResponse(statusCode);
+		JsonNode responseNode = objectMapper.valueToTree(batchResponse);
+		resourceRoot.putPOJO("response", responseNode);
+		arrayNode.add(resourceRoot);
+	}
+	
+	/*
+	 * This REST template is suitable for debugging.
+	 */
 	protected RestTemplate getRestTemplate() {
 		RestTemplate restTemplate = new RestTemplate();
 		
@@ -152,70 +231,6 @@ public abstract class BatchRequestProcessor {
 
 		//restTemplate.setMessageConverters(messageConverters);
 		return restTemplate;
-	}
-	
-	private void processClientErrorException(ArrayNode arrayNode, HttpClientErrorException hcee) throws JsonMappingException, JsonProcessingException {
-		
-		//HttpClientErrorException can return an OperationOutcome in the response body
-		ObjectNode resourceNode = (ObjectNode) objectMapper.readTree(hcee.getResponseBodyAsString());
-		
-		TreeNode resourceTypeNode = resourceNode.path("resource").path("resourceType");
-		if (resourceTypeNode instanceof TextNode) {
-			TextNode textNode = (TextNode) resourceTypeNode;
-			if (textNode.textValue().equals("OperationOutcome")) {
-				addResponse(arrayNode, resourceNode, String.valueOf(hcee.getStatusCode().value()));
-				return;
-				//return objectMapper.treeToValue(objectMapper, OperationOutcomeEntry.class);
-			}
-		}
-		processHttpException(arrayNode, hcee);
-		
-	}
-
-	private void processHttpException(ArrayNode arrayNode, HttpStatusCodeException hsee) throws JsonMappingException, JsonProcessingException {
-		
-		OperationOutcome operationOutcome = batchRequestController.handle(hsee);
-		
-		OperationOutcomeEntry ooEntry = OperationOutcomeEntry.builder()
-				.operationOutcome(operationOutcome)
-				.build();
-		
-		ObjectNode resourceNode = (ObjectNode) objectMapper.valueToTree(ooEntry);
-		BatchResponse batchResponse = new BatchResponse(String.valueOf(hsee.getStatusCode().value()));
-		JsonNode responseNode = objectMapper.valueToTree(batchResponse);
-		resourceNode.putPOJO("response", responseNode);
-		arrayNode.add(resourceNode);
-	}
-
-	private void processGenericError(ArrayNode arrayNode, Exception e) {
-		// TODO Auto-generated method stub
-		
-	}
-	
-	private void processNotSupportedError(ArrayNode arrayNode) {
-		//Currently only operation request entries are supported
-//		OperationOutcomeEntry ooEntry = OperationOutcomeEntry.builder()
-//				.operationOutcome(OperationOutcome.builder()
-//						.addIssue(Issue.builder()
-//								.code(IssueType.INVALID)
-//								.addExpression("Request in batch mode not supported.")
-//								.addLocation(entry.getFullUrl().getUriValue())
-//								.build())
-//						.build())
-//				.build();
-		
-		//bundle.getEntry().add(ooEntry);
-		
-	}
-	
-	protected void addResponse(ArrayNode arrayNode, ObjectNode resourceNode, String statusCode) {
-		
-		ObjectNode resourceRoot = objectMapper.createObjectNode().putPOJO("resource", resourceNode);
-		
-		BatchResponse batchResponse = new BatchResponse(statusCode);
-		JsonNode responseNode = objectMapper.valueToTree(batchResponse);
-		resourceRoot.putPOJO("response", responseNode);
-		arrayNode.add(resourceRoot);
 	}
 	
 }

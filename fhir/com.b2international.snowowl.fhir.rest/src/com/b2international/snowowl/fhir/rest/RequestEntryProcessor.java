@@ -25,19 +25,15 @@ import org.springframework.web.client.RestTemplate;
 
 import com.b2international.snowowl.fhir.core.codesystems.HttpVerb;
 import com.b2international.snowowl.fhir.core.model.BatchRequest;
-import com.b2international.snowowl.fhir.core.model.BatchResponse;
 import com.b2international.snowowl.fhir.core.model.RequestEntry;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * {@link BatchRequestProcessor} to process GET requests in a batch
- * @ssince 8.0.0
+ * @since 8.0.0
  */
 public class RequestEntryProcessor extends BatchRequestProcessor {
 
@@ -56,7 +52,7 @@ public class RequestEntryProcessor extends BatchRequestProcessor {
 		Code requestMethod = batchRequest.getMethod();
 		
 		if (!requestMethod.equals(HttpVerb.GET.getCode())) {
-			createInvalidMethodResponse(arrayNode);
+			createInvalidMethodResponse(arrayNode, requestMethod);
 			return;
 		}
 
@@ -74,11 +70,9 @@ public class RequestEntryProcessor extends BatchRequestProcessor {
 			
 			
 		HttpEntity<String> httpEntity = new HttpEntity<>(headers);
-		System.out.println("URI: " + uriBuilder.toString());
 		ResponseEntity<String> response = restTemplate.exchange(uriBuilder.toString(), HttpMethod.GET, httpEntity, String.class);
 		
 		String json = response.getBody();
-		System.out.println("Body: " + json);
 		
 		ObjectNode resourceNode = (ObjectNode) objectMapper.readTree(json);
 		
