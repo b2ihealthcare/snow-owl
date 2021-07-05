@@ -18,8 +18,6 @@ package com.b2international.snowowl.core.bundle;
 import java.util.Collections;
 
 import com.b2international.index.Hits;
-import com.b2international.index.query.Expression;
-import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.internal.ResourceDocument;
@@ -33,14 +31,8 @@ final class BundleSearchRequest extends BaseResourceSearchRequest<Bundles> {
 	private static final long serialVersionUID = 1L;
 
 	@Override
-	protected Expression prepareQuery(RepositoryContext context) {
-		final ExpressionBuilder queryBuilder = Expressions.builder()
-				.filter(ResourceDocument.Expressions.resourceType(Bundle.RESOURCE_TYPE));
-		
-		addIdFilter(queryBuilder, ResourceDocument.Expressions::ids);
-		addTitleFilter(queryBuilder);
-		
-		return queryBuilder.build();
+	protected void prepareAdditionalFilters(RepositoryContext context, ExpressionBuilder queryBuilder) {
+		queryBuilder.filter(ResourceDocument.Expressions.resourceType(Bundle.RESOURCE_TYPE));
 	}
 
 	@Override

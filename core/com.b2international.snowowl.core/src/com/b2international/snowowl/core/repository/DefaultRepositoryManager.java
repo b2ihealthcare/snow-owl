@@ -46,6 +46,7 @@ public final class DefaultRepositoryManager implements RepositoryManager {
 	
 	@Override
 	public Repository get(String repositoryId) {
+		checkNotNull(repositoryId, "RepositoryId may not be null.");
 		checkState(!isDisposed(), "Repository Manager is not available");
 		return repositories.get(repositoryId);
 	}

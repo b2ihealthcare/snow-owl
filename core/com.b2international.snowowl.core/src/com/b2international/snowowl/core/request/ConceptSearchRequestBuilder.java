@@ -148,6 +148,45 @@ public final class ConceptSearchRequestBuilder
 		return addOption(OptionKey.TYPE, types);
 	}
 	
+	/**
+	 * Filters concepts to have the given concept their direct parent.
+	 * 
+	 * @param parentId - a single parent to match
+	 * @return
+	 */
+	public ConceptSearchRequestBuilder filterByParent(String parentId) {
+		return addOption(OptionKey.PARENT, parentId);
+	}
+	
+	/**
+	 * Filters concepts to have any of the given parents their direct parent.
+	 * 
+	 * @param parentIds - any parent to match from this collection
+	 * @return
+	 */
+	public ConceptSearchRequestBuilder filterByParents(Iterable<String> parentIds) {
+		return addOption(OptionKey.PARENT, parentIds);
+	}
+	
+	/**
+	 * Filters concepts to have the given ancestor their direct or indirect parent (ancestor).
+	 * 
+	 * @param ancestorId - single ancestor to match
+	 * @return
+	 */
+	public ConceptSearchRequestBuilder filterByAncestor(String ancestorId) {
+		return addOption(OptionKey.ANCESTOR, ancestorId);
+	}
+	
+	/**
+	 * Filters concepts to have any of the given parents their direct or indirect parent (ancestor).
+	 * 
+	 * @param ancestorIds - any ancestor to match from this collection
+	 * @return
+	 */
+	public ConceptSearchRequestBuilder filterByAncestors(Iterable<String> ancestorIds) {
+		return addOption(OptionKey.ANCESTOR, ancestorIds);
+	}
 	
 	/**
 	 * Sets the preferred display term to return for every code system

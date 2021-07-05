@@ -68,7 +68,7 @@ public class FhirCodeSystemValidateCodeOperationController extends AbstractFhirC
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
 		@ApiResponse(code = HTTP_NOT_FOUND, message = "Code system not found", response = OperationOutcome.class)
 	})
-	@RequestMapping(value="/$validate-code", method=RequestMethod.GET)
+	@GetMapping("/$validate-code")
 	public Promise<Parameters.Fhir> validateCodeByUrl(
 			@ApiParam(value="The uri of the code system to validate against") @RequestParam("url") String url, 
 			@ApiParam(value="The code to be validated") @RequestParam(value="code") final String code,
@@ -107,7 +107,7 @@ public class FhirCodeSystemValidateCodeOperationController extends AbstractFhirC
 		@ApiResponse(code = HTTP_NOT_FOUND, message = "Not found", response = OperationOutcome.class),
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class)
 	})
-	@RequestMapping(value="/$validate-code", method=RequestMethod.POST, consumes = AbstractFhirResourceController.APPLICATION_FHIR_JSON)
+	@PostMapping(value="/$validate-code", consumes = AbstractFhirResourceController.APPLICATION_FHIR_JSON)
 	public Promise<Parameters.Fhir> validateCode(@ApiParam(name = "body", value = "The validate-code request parameters") @RequestBody Parameters.Fhir in) {
 		
 		final ValidateCodeRequest request = toRequest(in, ValidateCodeRequest.class);
@@ -147,7 +147,7 @@ public class FhirCodeSystemValidateCodeOperationController extends AbstractFhirC
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
 		@ApiResponse(code = HTTP_NOT_FOUND, message = "Code system not found", response = OperationOutcome.class)
 	})
-	@RequestMapping(value="/{codeSystemId:**}/$validate-code", method=RequestMethod.GET)
+	@GetMapping("/{codeSystemId:**}/$validate-code")
 	public Promise<Parameters.Fhir> validateCode(
 			@ApiParam(value="The id of the code system to validate against") @PathVariable("codeSystemId") String codeSystemId, 
 			@ApiParam(value="The code to be validated") @RequestParam(value="code") final String code,
@@ -185,7 +185,7 @@ public class FhirCodeSystemValidateCodeOperationController extends AbstractFhirC
 		@ApiResponse(code = HTTP_NOT_FOUND, message = "Not found", response = OperationOutcome.class),
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class)
 	})
-	@RequestMapping(value="/{codeSystemId:**}/$validate-code", method=RequestMethod.POST, consumes = AbstractFhirResourceController.APPLICATION_FHIR_JSON)
+	@PostMapping(value="/{codeSystemId:**}/$validate-code", consumes = AbstractFhirResourceController.APPLICATION_FHIR_JSON)
 	public Promise<Parameters.Fhir> validateCode(
 			@ApiParam(value="The id of the code system to validate against") @PathVariable("codeSystemId") String codeSystemId, 
 			@ApiParam(name = "body", value = "The validate-code request parameters")

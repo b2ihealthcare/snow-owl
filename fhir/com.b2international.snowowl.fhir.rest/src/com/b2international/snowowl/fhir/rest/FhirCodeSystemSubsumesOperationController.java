@@ -49,9 +49,9 @@ public class FhirCodeSystemSubsumesOperationController extends AbstractFhirContr
 	@ApiResponses({
 		@ApiResponse(code = HTTP_OK, message = "OK"),
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
-		@ApiResponse(code = HTTP_NOT_FOUND, message = "Code system not found", response = OperationOutcome.class)
+		@ApiResponse(code = HTTP_NOT_FOUND, message = "CodeSystem not found", response = OperationOutcome.class)
 	})
-	@RequestMapping(value="/$subsumes", method=RequestMethod.GET)
+	@GetMapping("/$subsumes")
 	public Promise<Parameters.Fhir> subsumes(
 			@ApiParam(value="The \"A\" code that is to be tested") @RequestParam(value="codeA") final String codeA,
 			@ApiParam(value="The \"B\" code that is to be tested") @RequestParam(value="codeB") final String codeB,
@@ -85,7 +85,7 @@ public class FhirCodeSystemSubsumesOperationController extends AbstractFhirContr
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
 		@ApiResponse(code = HTTP_NOT_FOUND, message = "Code system not found", response = OperationOutcome.class)
 	})
-	@RequestMapping(value="{codeSystemId:**}/$subsumes", method=RequestMethod.GET)
+	@GetMapping("{codeSystemId:**}/$subsumes")
 	public Promise<Parameters.Fhir> subsumes(
 			@ApiParam(value="The id of the code system to invoke the operation on") 	@PathVariable("codeSystemId") String codeSystemId,
 			@ApiParam(value="The \"A\" code that is to be tested") @RequestParam(value="codeA") final String codeA,
@@ -118,7 +118,7 @@ public class FhirCodeSystemSubsumesOperationController extends AbstractFhirContr
 		@ApiResponse(code = HTTP_NOT_FOUND, message = "Not found", response = OperationOutcome.class),
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class)
 	})
-	@RequestMapping(value="/$subsumes", method=RequestMethod.POST, consumes = AbstractFhirResourceController.APPLICATION_FHIR_JSON)
+	@PostMapping(value="/$subsumes", consumes = AbstractFhirResourceController.APPLICATION_FHIR_JSON)
 	public Promise<Parameters.Fhir> subsumes(
 			@ApiParam(name = "body", value = "The lookup request parameters")
 			@RequestBody Parameters.Fhir in) {
@@ -143,7 +143,7 @@ public class FhirCodeSystemSubsumesOperationController extends AbstractFhirContr
 		@ApiResponse(code = HTTP_NOT_FOUND, message = "Not found", response = OperationOutcome.class),
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class)
 	})
-	@RequestMapping(value="{codeSystemId:**}/$subsumes", method=RequestMethod.POST, consumes = AbstractFhirResourceController.APPLICATION_FHIR_JSON)
+	@PostMapping(value="{codeSystemId:**}/$subsumes", consumes = AbstractFhirResourceController.APPLICATION_FHIR_JSON)
 	public Promise<Parameters.Fhir> subsumes(
 			@ApiParam(value="The id of the code system to invoke the operation on") @PathVariable("codeSystemId") String codeSystemId,
 			@ApiParam(name = "body", value = "The lookup request parameters") @RequestBody Parameters.Fhir in) {

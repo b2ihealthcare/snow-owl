@@ -41,7 +41,7 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
  * @since 7.17.0
  */
 @JsonDeserialize(builder = ValidateCodeRequest.Builder.class)
-@JsonPropertyOrder({ "url", "codeSystem", "code", "version", "display", "coding", "codeableConcept", "date", "isAbstract"})
+@JsonPropertyOrder({ "url", "codeSystem", "code", "version", "display", "coding", "codeableConcept", "date", "isAbstract", "displayLanguage" })
 public class ValidateCodeRequest {
 
 	// CodeSystem URL to validate against (0..1)
@@ -73,9 +73,11 @@ public class ValidateCodeRequest {
 	// 'Grouper' codes are abstract (0..1)
 	@FhirSerializedName("abstract")
 	private final Boolean isAbstract;
+	
+	private final Code displayLanguage;
 
 	ValidateCodeRequest(Uri url, CodeSystem codeSystem, Code code, String version, String display, Coding coding, 
-			CodeableConcept codeableConcept, Date date, Boolean isAbstract) {
+			CodeableConcept codeableConcept, Date date, Boolean isAbstract, Code displayLanguage) {
 		
 		this.url = url;
 		this.codeSystem = codeSystem;
@@ -86,6 +88,7 @@ public class ValidateCodeRequest {
 		this.codeableConcept = codeableConcept;
 		this.date = date;
 		this.isAbstract = isAbstract;
+		this.displayLanguage = displayLanguage;
 	}
 	
 	public Uri getUrl() {
@@ -125,6 +128,10 @@ public class ValidateCodeRequest {
 	
 	public Boolean getAbstract() {
 		return isAbstract;
+	}
+	
+	public Code getDisplayLanguage() {
+		return displayLanguage;
 	}
 
 	public static Builder builder() {
@@ -223,6 +230,7 @@ public class ValidateCodeRequest {
 		private CodeableConcept codeableConcept;
 		private Date date;
 		private Boolean isAbstract;
+		private Code displayLanguage;
 
 		Builder() {
 		}
@@ -271,11 +279,16 @@ public class ValidateCodeRequest {
 			this.isAbstract = isAbstract;
 			return this;
 		}
+		
+		public Builder displayLanguage(Code displayLanguage) {
+			this.displayLanguage = displayLanguage;
+			return this;
+		}
 
 
 		@Override
 		protected ValidateCodeRequest doBuild() {
-			return new ValidateCodeRequest(url, codeSystem, code, version, display, coding, codeableConcept, date, isAbstract);
+			return new ValidateCodeRequest(url, codeSystem, code, version, display, coding, codeableConcept, date, isAbstract, displayLanguage);
 		}
 
 	}

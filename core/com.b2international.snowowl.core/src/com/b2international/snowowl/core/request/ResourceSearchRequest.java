@@ -16,8 +16,6 @@
 package com.b2international.snowowl.core.request;
 
 import com.b2international.index.Hits;
-import com.b2international.index.query.Expression;
-import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.Resources;
 import com.b2international.snowowl.core.domain.RepositoryContext;
@@ -30,13 +28,11 @@ final class ResourceSearchRequest extends BaseResourceSearchRequest<Resources> {
 
 	private static final long serialVersionUID = 1L;
 
+	/**
+	 * @since 8.0
+	 */
 	enum OptionKey {
 
-		/**
-		 * Filter matches by their associated URL.
-		 */
-		URL,
-		
 		/**
 		 * Filter matches by their resource type.
 		 */
@@ -52,28 +48,13 @@ final class ResourceSearchRequest extends BaseResourceSearchRequest<Resources> {
 		 */
 		BRANCH,
 
-		/**
-		 * Filter matches by their bundle ID.
-		 */
-		BUNDLE_ID, 
-		
 	}
 
 	@Override
-	protected Expression prepareQuery(RepositoryContext context) {
-		final ExpressionBuilder queryBuilder = Expressions.builder();
-		
-		addIdFilter(queryBuilder, ResourceDocument.Expressions::ids);
-		addTitleFilter(queryBuilder);
-		addTitleExactFilter(queryBuilder);
-		
-		addFilter(queryBuilder, OptionKey.URL, String.class, ResourceDocument.Expressions::urls);
-		
+	protected void prepareAdditionalFilters(RepositoryContext context, ExpressionBuilder queryBuilder) {
 		addFilter(queryBuilder, OptionKey.RESOURCE_TYPE, String.class, ResourceDocument.Expressions::resourceTypes);
 		addFilter(queryBuilder, OptionKey.TOOLING_ID, String.class, ResourceDocument.Expressions::toolingIds);
 		addFilter(queryBuilder, OptionKey.BRANCH, String.class, ResourceDocument.Expressions::branchPaths);
-		addFilter(queryBuilder, OptionKey.BUNDLE_ID, String.class, ResourceDocument.Expressions::bundleIds);
-		return queryBuilder.build();
 	}
 
 	@Override

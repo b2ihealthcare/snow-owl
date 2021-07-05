@@ -66,7 +66,6 @@ import com.google.common.collect.Sets;
 @JsonDeserialize(builder = SnomedDescriptionIndexEntry.Builder.class)
 public final class SnomedDescriptionIndexEntry extends SnomedComponentDocument {
 
-	private static final long serialVersionUID = 301681633674309020L;
 	private static final Pattern SEM_TAG = Pattern.compile(".*\\((.*)\\)");
 
 	/**

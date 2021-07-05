@@ -21,17 +21,18 @@ import static com.b2international.index.query.Expressions.matchRange;
 
 import java.io.Serializable;
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 import com.b2international.index.Doc;
 import com.b2international.index.ID;
 import com.b2international.index.query.Expression;
+import com.b2international.index.revision.RevisionBranch;
+import com.b2international.index.revision.RevisionBranchPoint;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
@@ -55,13 +56,23 @@ public final class VersionDocument implements Serializable {
 	 * @since 8.0
 	 */
 	public static class Fields {
+		// same fields as in the Revision document to allow queryin' versions along with ResourceDocuments
+		public static final String CREATED = "created";
+		public static final String REVISED = "revised";
+		
 		public static final String ID = "id";
 		public static final String VERSION = "version";
 		public static final String DESCRIPTION = "description";
 		public static final String EFFECTIVE_TIME = "effectiveTime";
 		public static final String RESOURCE = "resource";
 		public static final String BRANCH_PATH = "branchPath";
+		public static final String CREATED_AT = "createdAt";
+		public static final String TOOLING_ID = "toolingId";
+		public static final String URL = "url";
+		
+		// derived fields
 		public static final String RESOURCE_BRANCH_PATH = "resourceBranchPath";
+		public static final String RESOURCE_TYPE = "resourceType";
 		
 		public static final Set<String> SORT_FIELDS = Set.of(ID, VERSION, DESCRIPTION, EFFECTIVE_TIME, RESOURCE, BRANCH_PATH);
 	}
@@ -88,6 +99,10 @@ public final class VersionDocument implements Serializable {
 			return matchAny(Fields.RESOURCE, resourceUris);
 		}
 		
+		public static Expression resourceTypes(Collection<String> resourceTypes) {
+			return matchAny(Fields.RESOURCE_TYPE, resourceTypes);
+		}
+		
 		public static Expression effectiveTime(long effectiveTime) {
 			return exactMatch(Fields.EFFECTIVE_TIME, effectiveTime);
 		}
@@ -112,9 +127,12 @@ public final class VersionDocument implements Serializable {
 		private String id;
 		private String version;
 		private String description;
-		private long effectiveTime;
+		private Long effectiveTime;
 		private ResourceURI resource;
 		private String branchPath;
+		private Long createdAt;
+		private String toolingId;
+		private String url;
 		
 		public Builder id(String id) {
 			this.id = id;
@@ -131,7 +149,7 @@ public final class VersionDocument implements Serializable {
 			return this;
 		}
 		
-		public Builder effectiveTime(long effectiveTime) {
+		public Builder effectiveTime(Long effectiveTime) {
 			this.effectiveTime = effectiveTime;
 			return this;
 		}
@@ -146,8 +164,40 @@ public final class VersionDocument implements Serializable {
 			return this;
 		}
 		
+		public Builder createdAt(Long createdAt) {
+			this.createdAt = createdAt;
+			return this;
+		}
+		
+		public Builder toolingId(String toolingId) {
+			this.toolingId = toolingId;
+			return this;
+		}
+		
+		public Builder url(String url) {
+			this.url = url;
+			return this;
+		}
+		
+		// index only fields, for searching, sorting, etc.
+		
+		@JsonSetter
+		Builder created(RevisionBranchPoint created) {
+			return this;
+		}
+		
 		@JsonSetter
 		Builder resourceBranchPath(String resourceBranchPath) {
+			return this;
+		}
+		
+		@JsonSetter
+		Builder resourceType(String resourceType) {
+			return this;
+		}
+		
+		@JsonSetter
+		Builder revised(List<RevisionBranchPoint> revised) {
 			return this;
 		}
 		
@@ -158,7 +208,10 @@ public final class VersionDocument implements Serializable {
 				description,
 				effectiveTime, 
 				resource,
-				branchPath
+				branchPath,
+				createdAt,
+				toolingId,
+				url
 			);
 		}
 		
@@ -168,23 +221,43 @@ public final class VersionDocument implements Serializable {
 	private final String id;
 	private final String version;
 	private final String description;
-	private final long effectiveTime;
+	private final Long effectiveTime;
 	private final ResourceURI resource;
 	private final String branchPath;
+	private final Long createdAt;
+	private final String toolingId;
+	private final String url;
+	
+	/**
+	 * Same as Revision.created and revised to allow running queries against both Resource and Version documents. 
+	 * NOTE: VersionDocument only uses the timestamp portion of the branchpoint model for createdAt property.
+	 */
+	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
+	private RevisionBranchPoint created;
+	
+	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
+	private List<RevisionBranchPoint> revised = Collections.emptyList();
 	
 	private VersionDocument(
 			final String id, 
 			final String version,
 			final String description,
-			final long effectiveTime, 
+			final Long effectiveTime, 
 			final ResourceURI resource,
-			final String branchPath) {
+			final String branchPath,
+			final Long createdAt,
+			final String toolingId,
+			final String url) {
 		this.id = id;
 		this.version = version;
 		this.description = description;
 		this.effectiveTime = effectiveTime;
 		this.resource = resource;
 		this.branchPath = branchPath;
+		this.createdAt = createdAt;
+		this.toolingId = toolingId;
+		this.url = url;
+		this.created = createdAt != null ? new RevisionBranchPoint(RevisionBranch.MAIN_BRANCH_ID, createdAt) : null;
 	}
 	
 	public String getId() {
@@ -207,12 +280,28 @@ public final class VersionDocument implements Serializable {
 		return resource;
 	}
 	
+	public String getResourceType() {
+		return getResource() != null ? getResource().getResourceType() : null;
+	}
+	
 	public String getBranchPath() {
 		return branchPath;
 	}
 	
 	public String getResourceBranchPath() {
 		return BranchPathUtils.createPath(branchPath).getParentPath();
+	}
+	
+	public Long getCreatedAt() {
+		return createdAt;
+	}
+	
+	public String getToolingId() {
+		return toolingId;
+	}
+	
+	public String getUrl() {
+		return url;
 	}
 	
 	// additional helpers
@@ -256,6 +345,9 @@ public final class VersionDocument implements Serializable {
 				.add("effectiveTime", effectiveTime)
 				.add("resource", resource)
 				.add("branchPath", branchPath)
+				.add("toolingId", toolingId)
+				.add("createdAt", createdAt)
+				.add("url", url)
 				.toString();
 	}
 

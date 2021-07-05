@@ -42,9 +42,11 @@ public class CompositeComponentDeletionPolicy implements ComponentDeletionPolicy
 	}
 	
 	public CompositeComponentDeletionPolicy mergeWith(final CompositeComponentDeletionPolicy other) {
-		Map<Class<?>, ComponentDeletionPolicy> mergedPolicies = newHashMap(deletionPolicies);
-		other.getDeletionPolicies().forEach( (clazz, policy) -> mergedPolicies.putIfAbsent(clazz, policy));
-		this.deletionPolicies = ImmutableMap.copyOf(mergedPolicies);
+		if (other != null) {
+			Map<Class<?>, ComponentDeletionPolicy> mergedPolicies = newHashMap(deletionPolicies);
+			other.getDeletionPolicies().forEach( (clazz, policy) -> mergedPolicies.putIfAbsent(clazz, policy));
+			this.deletionPolicies = ImmutableMap.copyOf(mergedPolicies);
+		}
 		return this;
 	}
 	

@@ -42,16 +42,6 @@ public abstract class SnomedTerminologyComponentConstants {
 	public static final String TEMPLATE = "com.b2international.snowowl.terminology.snomed.template";
 	public static final short TEMPLATE_NUMBER = 106;
 	
-//	public static final String SNOMED_NAME = "SNOMED CT";
-//	public static final String SNOMED_INT_LANGUAGE = "ENG";
-//	public static final String SNOMED_INT_LINK = "http://www.snomed.org";
-//	public static final String SNOMED_INT_ICON_PATH = "icons/snomed.png";
-//	public static final String SNOMED_INT_CITATION = "SNOMED CT contributes to the improvement of patient care by underpinning the " +
-//			"development of Electronic Health Records that record clinical information in ways that enable meaning-based retrieval. " +
-//			"This provides effective access to information required for decision support and consistent reporting and analysis. " +
-//			"Patients benefit from the use of SNOMED CT because it improves the recording of EHR information and facilitates better communication, " +
-//			"leading to improvements in the quality of care.";
-	
 	private static final Pattern PATTERN = Pattern.compile("^\\d*$");
 
 	// configuration keys for managing Module and Namespace configuration in CodeSystem entries
@@ -60,8 +50,10 @@ public abstract class SnomedTerminologyComponentConstants {
 	public static final String CODESYSTEM_DESCRIPTION_COPY_POLICY_CONFIG_KEY = "descriptionCopyPolicy";
 
 	// FHIR specific constants
-	public static final String SNOMED_URI_BASE = "http://snomed.info/sct";
-	public static final String SNOMED_URI_BASE_DEV = "http://snomed.info/xsct";
+	public static final String SNOMED_URI_BASE = "http://snomed.info";
+	public static final String SNOMED_URI_SCT = SNOMED_URI_BASE + "/sct";
+	public static final String SNOMED_URI_DEV = SNOMED_URI_BASE + "/xsct";
+	public static final String SNOMED_URI_ID = SNOMED_URI_BASE + "/id";
 	
 	public static short getTerminologyComponentIdValue(final String referencedComponentId) {
 		final short s = getTerminologyComponentIdValueSafe(referencedComponentId);

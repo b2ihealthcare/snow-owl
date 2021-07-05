@@ -27,7 +27,7 @@ public final class Bundle extends Resource {
 
 	private static final long serialVersionUID = 1L;
 
-	public static final String RESOURCE_TYPE = "bundle";
+	public static final String RESOURCE_TYPE = "bundles";
 	
 	/**
 	 * @since 8.0

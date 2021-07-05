@@ -29,9 +29,12 @@ import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.commons.exceptions.NotImplementedException;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
+import com.b2international.snowowl.fhir.core.codesystems.IssueSeverity;
+import com.b2international.snowowl.fhir.core.codesystems.IssueType;
 import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
 import com.b2international.snowowl.fhir.core.exceptions.FhirException;
+import com.b2international.snowowl.fhir.core.model.Issue;
 import com.b2international.snowowl.fhir.core.model.OperationOutcome;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -111,8 +114,17 @@ public abstract class AbstractFhirController extends AbstractRestService {
 	@ExceptionHandler
 	@ResponseStatus(HttpStatus.NOT_FOUND)
 	public @ResponseBody OperationOutcome handle(final NotFoundException ex) {
-		FhirException fhirException = FhirException.createFhirError(ex.getMessage(), OperationOutcomeCode.MSG_NO_EXIST, ex.getKey());
-		return fhirException.toOperationOutcome();
+		return OperationOutcome.builder()
+				.addIssue(
+					Issue.builder()
+						.severity(IssueSeverity.ERROR)
+						.code(IssueType.NOT_FOUND)
+						.codeableConceptWithDisplayArgs(OperationOutcomeCode.MSG_NO_EXIST, ex.getKey())
+						.diagnostics(ex.getMessage())
+						.addLocation(ex.getKey())
+					.build()
+				)
+				.build();
 	}
 
 	/**

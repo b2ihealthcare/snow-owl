@@ -111,6 +111,7 @@ public final class RepositoryBuilder {
 		repositoryConfigurers.forEach(configurer -> {
 			addTerminologyComponents(configurer.getAdditionalTerminologyComponents());
 			addMappings(configurer.getAdditionalMappings());
+			this.bindings.putAll(configurer.bindAdditionalServices(env));
 		});
 		
 		final ComponentDeletionPolicy deletionPolicy = (ComponentDeletionPolicy) bindings.get(ComponentDeletionPolicy.class);

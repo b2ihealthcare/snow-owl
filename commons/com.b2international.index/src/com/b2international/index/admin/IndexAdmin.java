@@ -16,6 +16,7 @@
 package com.b2international.index.admin;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -101,6 +102,14 @@ public interface IndexAdmin {
 	 * @return
 	 */
 	String getTypeIndex(DocumentMapping mapping);
+	
+	/**
+	 * Returns the actual index name for the given List of {@link DocumentMapping mappings}.
+	 * 
+	 * @param mappings
+	 * @return
+	 */
+	List<String> getTypeIndexes(List<DocumentMapping> mappings);
 
 	/**
 	 * Optimizes the underlying index until it has less than or equal segments than the supplied maxSegments number.

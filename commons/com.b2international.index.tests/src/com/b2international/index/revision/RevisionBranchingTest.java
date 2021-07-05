@@ -31,6 +31,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.junit.Test;
 
@@ -102,13 +103,14 @@ public class RevisionBranchingTest extends BaseRevisionIndexTest {
 	
 	@Test(expected = BadRequestException.class)
 	public void createBranchWithTooLongName() throws Exception {
-		createBranch(MAIN, "123456789012345678901234567890123456789012345678901");
+		String tooLongBranchName = IntStream.range(0, RevisionBranch.DEFAULT_MAXIMUM_BRANCH_NAME_LENGTH + 1).mapToObj(i -> String.valueOf(i).substring(0, 1)).collect(Collectors.joining());
+		createBranch(MAIN, tooLongBranchName);
 	}
 	
 	@Test
-	public void createBranchWith50CharName() throws Exception {
-		final String name = "12345678901234567890123456789012345678901234567890";
-		final String path = createBranch(MAIN, name);
+	public void createBranchWith100CharName() throws Exception {
+		String maxBranchName = IntStream.range(0, RevisionBranch.DEFAULT_MAXIMUM_BRANCH_NAME_LENGTH).mapToObj(i -> String.valueOf(i).substring(0, 1)).collect(Collectors.joining());
+		final String path = createBranch(MAIN, maxBranchName);
 		assertNotNull(branching().getBranch(path));
 		assertThat(branching().getBranchState(path)).isEqualTo(BranchState.UP_TO_DATE);
 	}

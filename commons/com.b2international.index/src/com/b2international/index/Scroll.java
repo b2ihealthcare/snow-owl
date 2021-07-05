@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.b2international.index;
 
 import java.util.List;
 
+import com.b2international.index.query.IndexSelection;
 import com.b2international.index.query.Query;
 import com.google.common.base.Strings;
 
@@ -25,26 +26,20 @@ import com.google.common.base.Strings;
  */
 public final class Scroll<T> {
 
-	private final Class<T> select;
-	private final Class<?> from;
+	private final IndexSelection<T> selection;
 	private final String scrollId;
 	private final String keepAlive;
 	private final List<String> fields;
 
-	public Scroll(Class<T> select, Class<?> from, List<String> fields, String scrollId, String keepAlive) {
-		this.select = select;
-		this.from = from;
+	public Scroll(IndexSelection<T> selection, List<String> fields, String scrollId, String keepAlive) {
+		this.selection = selection;
 		this.scrollId = scrollId;
 		this.keepAlive = Strings.isNullOrEmpty(keepAlive) ? Query.DEFAULT_SCROLL_KEEP_ALIVE : keepAlive;
 		this.fields = fields;
 	}
-	
-	public Class<T> getSelect() {
-		return select;
-	}
-	
-	public Class<?> getFrom() {
-		return from;
+
+	public IndexSelection<T> getSelection() {
+		return selection;
 	}
 	
 	public String getScrollId() {

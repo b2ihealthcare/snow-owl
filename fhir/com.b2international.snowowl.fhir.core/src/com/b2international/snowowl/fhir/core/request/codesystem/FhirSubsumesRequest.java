@@ -15,34 +15,66 @@
  */
 package com.b2international.snowowl.fhir.core.request.codesystem;
 
+import java.util.Objects;
+
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 import com.b2international.snowowl.core.ServiceProvider;
-import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
+import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionRequest;
 import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionResult;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 
 /**
+ * Test the subsumption relationship between code/Coding A and code/Coding B given the semantics of subsumption in the underlying code system (see hierarchyMeaning).
+ * 
+ * @see <a href="http://hl7.org/fhir/codesystem-operation-subsumes.html">offical FHIR $subsumes operation docs</a> for more details.
  * @since 8.0
  */
-final class FhirSubsumesRequest implements Request<ServiceProvider, SubsumptionResult> {
+final class FhirSubsumesRequest extends FhirRequest<SubsumptionResult> {
 
 	private static final long serialVersionUID = 1L;
 	
+	@NotNull
 	@Valid
 	@JsonProperty
 	@JsonUnwrapped
 	private final SubsumptionRequest request;
 
 	public FhirSubsumesRequest(SubsumptionRequest request) {
+		super(request.getSystem(), request.getVersion());
 		this.request = request;
 	}
 
 	@Override
-	public SubsumptionResult execute(ServiceProvider context) {
-		return SubsumptionResult.equivalent();
+	public SubsumptionResult doExecute(ServiceProvider context, CodeSystem codeSystem) {
+		
+		final String codeA = request.getCodeA() != null ? request.getCodeA() : request.getCodingA().getCodeValue();
+		final String codeB = request.getCodeB() != null ? request.getCodeB() : request.getCodingB().getCodeValue();
+		
+		if (Objects.equals(codeA, codeB)) {
+			return SubsumptionResult.equivalent();
+		} else if (isSubsumedBy(context, codeSystem, codeA, codeB)) {
+			return SubsumptionResult.subsumedBy(); 
+		} else if (isSubsumedBy(context, codeSystem, codeB, codeA)) {
+			return SubsumptionResult.subsumes();	
+		} else {
+			return SubsumptionResult.notSubsumed();				
+		}
+	}
+
+	private boolean isSubsumedBy(ServiceProvider context, CodeSystem codeSystem, final String subType, final String superType) {
+		return CodeSystemRequests.prepareSearchConcepts()
+			.setLimit(0)
+			.filterById(subType)
+			.filterByAncestor(superType)
+			.build(codeSystem.getResourceURI())
+			.getRequest()
+			.execute(context)
+			.getTotal() > 0;
 	}
 
 }

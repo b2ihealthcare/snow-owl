@@ -77,6 +77,12 @@ public interface ConceptSearchRequestEvaluator {
 		LIMIT,
 		
 		/**
+		 * Expand additional data requested by the client. If set, implementers should set the {@link Concept#setInternalConcept(Object)} to the
+		 * fully loaded internal tooling representation of the code and return it along with the generic {@link Concept} object.
+		 */
+		EXPAND,
+		
+		/**
 		 * Set the preferred display type to return
 		 */
 		DISPLAY,
@@ -89,7 +95,17 @@ public interface ConceptSearchRequestEvaluator {
 		/**
 		 * Filters concepts by their type.
 		 */
-		TYPE,
+		TYPE, 
+		
+		/**
+		 * Filters concepts by their direct parents.
+		 */
+		PARENT,
+		
+		/**
+		 * Filters concepts by their ancestors (direct or indirect parents).
+		 */
+		ANCESTOR,
 	}
 
 	/**

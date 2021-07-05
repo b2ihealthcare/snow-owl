@@ -44,14 +44,6 @@ public final class ResourceSearchRequestBuilder extends BaseResourceSearchReques
 		return addOption(OptionKey.RESOURCE_TYPE, resourceTypes);
 	}
 	
-	public ResourceSearchRequestBuilder filterByUrl(String url) {
-		return addOption(OptionKey.URL, url);
-	}
-	
-	public ResourceSearchRequestBuilder filterByUrls(Iterable<String> urls) {
-		return addOption(OptionKey.URL, urls);
-	}
-	
 	public ResourceSearchRequestBuilder filterByToolingId(String toolingId) {
 		return addOption(OptionKey.TOOLING_ID, toolingId);
 	}
@@ -68,14 +60,6 @@ public final class ResourceSearchRequestBuilder extends BaseResourceSearchReques
 		return addOption(OptionKey.BRANCH, branchPaths);
 	}
 
-	public ResourceSearchRequestBuilder filterByBundleId(String bundleId) {
-		return addOption(OptionKey.BUNDLE_ID, bundleId);
-	}
-
-	public ResourceSearchRequestBuilder filterByBundleIds(Iterable<String> bundleIds) {
-		return addOption(OptionKey.BUNDLE_ID, bundleIds);
-	}
-	
 	@Override
 	protected SearchResourceRequest<RepositoryContext, Resources> createSearch() {
 		return new ResourceSearchRequest();

@@ -131,16 +131,18 @@ public class EsDocumentSearcher implements Searcher {
 	@Override
 	public <T> Hits<T> search(Query<T> query) throws IOException {
 		final EsClient client = admin.client();
-		final DocumentMapping mapping = admin.mappings().getDocumentMapping(query);
+		final List<DocumentMapping> mappings = admin.mappings().getDocumentMapping(query);
+		final DocumentMapping primaryMapping = Iterables.getFirst(mappings, null);
 		
 		// Restrict variables to the theoretical maximum
 		final int limit = query.getLimit();
 		final int toRead = Ints.min(limit, resultWindow);
 		
-		final EsQueryBuilder esQueryBuilder = new EsQueryBuilder(mapping, admin.settings(), admin.log());
+		// TODO support multiple document mappings during query building
+		final EsQueryBuilder esQueryBuilder = new EsQueryBuilder(primaryMapping, admin.settings(), admin.log());
 		final QueryBuilder esQuery = esQueryBuilder.build(query.getWhere());
 		
-		final SearchRequest req = new SearchRequest(admin.getTypeIndex(mapping));
+		final SearchRequest req = new SearchRequest(admin.getTypeIndexes(mappings).toArray(length -> new String[length]));
 		
 		final SearchSourceBuilder reqSource = req.source()
 			.size(toRead)
@@ -149,7 +151,7 @@ public class EsDocumentSearcher implements Searcher {
 			.trackTotalHitsUpTo(Integer.MAX_VALUE);
 		
 		// field selection
-		final boolean fetchSource = applySourceFiltering(query.getFields(), mapping, reqSource);
+		final boolean fetchSource = applySourceFiltering(query.getFields(), primaryMapping, reqSource);
 		
 		// this won't load fields like _parent, _routing, _uid at all
 		// and _id in cases where we explicitly require the _source
@@ -179,7 +181,7 @@ public class EsDocumentSearcher implements Searcher {
 		}
 		
 		// sorting config with a default sort field based on scroll config
-		addSort(mapping, reqSource, query.getSortBy(), !isScrolled && !isLocalScroll);
+		addSort(primaryMapping, reqSource, query.getSortBy(), !isScrolled && !isLocalScroll);
 		// disable explain explicitly, just in case
 		reqSource.explain(false);
 		// disable version field explicitly, just in case
@@ -242,8 +244,8 @@ public class EsDocumentSearcher implements Searcher {
 			allHits.add(response.getHits().getHits());
 		}
 
-		final Class<T> select = query.getSelect();
-		final Class<?> from = query.getFrom();
+		final Class<T> select = query.getSelection().getSelect();
+		final List<Class<?>> from = query.getSelection().getFrom();
 		
 		return toHits(select, from, query.getFields(), fetchSource, limit, totalHitCount, response.getScrollId(), query.getSortBy(), allHits.build());
 	}
@@ -286,9 +288,10 @@ public class EsDocumentSearcher implements Searcher {
 			final SearchResponse response = admin.client()
 					.scroll(searchScrollRequest);
 			
-			final DocumentMapping mapping = admin.mappings().getMapping(scroll.getFrom());
+			Class<?> from = Iterables.getOnlyElement(scroll.getSelection().getFrom());
+			final DocumentMapping mapping = admin.mappings().getMapping(from);
 			final boolean fetchSource = scroll.getFields().isEmpty() || requiresDocumentSourceField(mapping, scroll.getFields());
-			return toHits(scroll.getSelect(), scroll.getFrom(), scroll.getFields(), fetchSource, response.getHits().getHits().length, (int) response.getHits().getTotalHits().value, response.getScrollId(), null, response.getHits());	
+			return toHits(scroll.getSelection().getSelect(), List.of(from), scroll.getFields(), fetchSource, response.getHits().getHits().length, (int) response.getHits().getTotalHits().value, response.getScrollId(), null, response.getHits());	
 			
 		} catch (IOException | ElasticsearchStatusException e) {
 			final Throwable rootCause = Throwables.getRootCause(e);
@@ -317,7 +320,7 @@ public class EsDocumentSearcher implements Searcher {
 	
 	private <T> Hits<T> toHits(
 			Class<T> select, 
-			Class<?> from, 
+			List<Class<?>> from, 
 			final List<String> fields, 
 			final boolean fetchSource,
 			final int limit, 
@@ -492,7 +495,7 @@ public class EsDocumentSearcher implements Searcher {
 			}
 			Hits<T> hits;
 			if (topHits != null) {
-				hits = toHits(aggregation.getSelect(), aggregation.getFrom(), aggregation.getFields(), fetchSource, aggregation.getBucketHitsLimit(), (int) bucket.getDocCount(), null, null, topHits.getHits()); 
+				hits = toHits(aggregation.getSelect(), List.of(aggregation.getFrom()), aggregation.getFields(), fetchSource, aggregation.getBucketHitsLimit(), (int) bucket.getDocCount(), null, null, topHits.getHits()); 
 			} else {
 				hits = new Hits<>(Collections.emptyList(), null, null, aggregation.getBucketHitsLimit(), (int) bucket.getDocCount());
 			}

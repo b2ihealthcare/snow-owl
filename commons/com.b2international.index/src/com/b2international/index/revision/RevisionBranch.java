@@ -78,7 +78,7 @@ public final class RevisionBranch extends MetadataHolderImpl {
 	/**
 	 * The maximum length of a branch.
 	 */
-	public static final int DEFAULT_MAXIMUM_BRANCH_NAME_LENGTH = 50;
+	public static final int DEFAULT_MAXIMUM_BRANCH_NAME_LENGTH = 100;
 
 	/**
 	 * Temporary branch name format. Values are prefix, name, current time. 
@@ -89,6 +89,11 @@ public final class RevisionBranch extends MetadataHolderImpl {
 	 * The path of the main branch.
 	 */
 	public static final String MAIN_PATH = "MAIN";
+	
+	/**
+	 * The internal ID of the MAIN branch.
+	 */
+	public static final long MAIN_BRANCH_ID = 0L;
 	
 	/**
 	 * Segment separator in {@link RevisionBranch#getPath()} values.

@@ -118,7 +118,7 @@ public abstract class CodeSystemApiAssert {
 			"toolingId", TOOLING_ID,
 			"oid", codeSystemId,
 			"language", "en",
-			"url", SnomedTerminologyComponentConstants.SNOMED_URI_BASE_DEV + "/" + codeSystemId
+			"url", SnomedTerminologyComponentConstants.SNOMED_URI_DEV + "/" + codeSystemId
 		);
 	}
 	

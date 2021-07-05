@@ -18,8 +18,6 @@ package com.b2international.snowowl.core.codesystem;
 import java.util.Collections;
 
 import com.b2international.index.Hits;
-import com.b2international.index.query.Expression;
-import com.b2international.index.query.Expressions;
 import com.b2international.index.query.Expressions.ExpressionBuilder;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.domain.RepositoryContext;
@@ -53,22 +51,14 @@ final class CodeSystemSearchRequest extends BaseResourceSearchRequest<CodeSystem
 	protected Class<ResourceDocument> getDocumentType() {
 		return ResourceDocument.class;
 	}
-	
+
 	@Override
-	protected Expression prepareQuery(RepositoryContext context) {
-		final ExpressionBuilder queryBuilder = Expressions.builder()
-				.filter(ResourceDocument.Expressions.resourceType(CodeSystem.RESOURCE_TYPE));
-		
-		addIdFilter(queryBuilder, ResourceDocument.Expressions::ids);
-		addTitleExactFilter(queryBuilder);
-		addTitleFilter(queryBuilder);
+	protected void prepareAdditionalFilters(RepositoryContext context, ExpressionBuilder queryBuilder) {
+		queryBuilder.filter(ResourceDocument.Expressions.resourceType(CodeSystem.RESOURCE_TYPE));
 		
 		addFilter(queryBuilder, OptionKey.TOOLING_ID, String.class, ResourceDocument.Expressions::toolingIds);
 		addFilter(queryBuilder, OptionKey.OID, String.class, ResourceDocument.Expressions::oids);
 		addFilter(queryBuilder, OptionKey.UPGRADE_OF, ResourceURI.class, ResourceDocument.Expressions::upgradeOfs);
-
-		
-		return queryBuilder.build();
 	}
 	
 	@Override

@@ -148,7 +148,8 @@ final class CodeSystemUpgradeRequest implements Request<RepositoryContext, Strin
 				.setBranchPath(upgradeBranch)
 				.setTitle(String.format("Upgrade of '%s' to '%s'", currentCodeSystem.getTitle(), extensionOf))
 				// copy shared properties from the original CodeSystem
-				.setUrl(currentCodeSystem.getUrl())
+				// TODO figure out a better way of representing upgrade in the original codesystem's url 
+				.setUrl(currentCodeSystem.getUrl() + "?upgrade=" + upgradeResourceId) 
 				.setLanguage(currentCodeSystem.getLanguage())
 				.setDescription(currentCodeSystem.getDescription())
 				.setStatus("draft")

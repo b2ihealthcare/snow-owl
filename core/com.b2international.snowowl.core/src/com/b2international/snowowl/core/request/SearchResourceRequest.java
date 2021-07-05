@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,19 +17,23 @@ package com.b2international.snowowl.core.request;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
+import javax.annotation.OverridingMethodsMustInvokeSuper;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.commons.options.Options;
 import com.b2international.commons.options.OptionsBuilder;
+import com.b2international.index.ID;
+import com.b2international.index.query.Expression;
+import com.b2international.index.query.Expressions.ExpressionBuilder;
+import com.b2international.index.query.SortBy;
+import com.b2international.index.query.SortBy.Builder;
+import com.b2international.index.query.SortBy.Order;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -295,6 +299,10 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 		return options.getOptions(key.name());
 	}
 	
+	protected final ExpressionBuilder addIdFilter(ExpressionBuilder queryBuilder, Function<Collection<String>, Expression> expressionFactory) {
+		return applyIdFilter(queryBuilder, (qb, ids) -> qb.filter(expressionFactory.apply(ids)));
+	}
+	
 	/**
 	 * Modifies the specified input using the given reducer {@link BiFunction} if a component ID filter 
 	 * list is present.
@@ -307,6 +315,22 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 			return reducer.apply(input, componentIds);
 		} else {
 			return input;
+		}
+	}
+	
+	/**
+	 * Applies a filter clause to the given queryBuilder if the specified optionKey holds any value, otherwise this method does nothing.
+	 *  
+	 * @param <T> - the expected type of the filter values
+	 * @param queryBuilder - the query builder to apply the filter to
+	 * @param optionKey - the search option key
+	 * @param filterType - the expected type of the filter values
+	 * @param expressionFactory - the factory that creates the index clause based on the filter values
+	 */
+	protected final <T> void addFilter(ExpressionBuilder queryBuilder, Enum<?> optionKey, Class<T> filterType, Function<Collection<T>, Expression> expressionFactory) {
+		if (containsKey(optionKey)) {
+			Collection<T> filterValues = getCollection(optionKey, filterType);
+			queryBuilder.filter(expressionFactory.apply(filterValues));
 		}
 	}
 	
@@ -372,6 +396,41 @@ public abstract class SearchResourceRequest<C extends ServiceProvider, B> extend
 
 	protected final List<Sort> sortBy() {
 		return containsKey(SearchResourceRequest.OptionKey.SORT_BY) ? getList(SearchResourceRequest.OptionKey.SORT_BY, Sort.class) : null;
+	}
+	
+	/**
+	 * @return the currently set {@link SortBy} search option or if sort is not present in the request, the default sort which is by the configured {@link ID} document field.
+	 */
+	protected final SortBy querySortBy(C context) {
+		List<Sort> sortBy = sortBy();
+		if (!CompareUtils.isEmpty(sortBy)) {
+			SortBy.Builder sortBuilder = SortBy.builder();
+			for (Sort sort : sortBy) {
+				toQuerySortBy(context, sortBuilder, sort);
+			}
+			return sortBuilder.build();
+		}		
+		return SortBy.DEFAULT;
+	}
+	
+	/**
+	 * Search requests may alter the default sortBy construction. By default it creates field and script sorts, but special sorts can be constructed using special sort keys.
+	 * @param context - the context to access if needed
+	 * @param sortBuilder - the builder to append to the query sort
+	 * @param sort - the sort to convert to low-level query sort
+	 */
+	@OverridingMethodsMustInvokeSuper
+	protected void toQuerySortBy(C context, Builder sortBuilder, Sort sort) {
+		final Order order = sort.isAscending() ? Order.ASC : Order.DESC;
+		if (sort instanceof SortField) {
+			SortField sortField = (SortField) sort;
+			sortBuilder.sortByField(sortField.getField(), order);
+		} else if (sort instanceof SortScript) {
+			SortScript sortScript = (SortScript) sort;
+			sortBuilder.sortByScript(sortScript.getScript(), sortScript.getArguments(), order);
+		} else {
+			throw new UnsupportedOperationException("Cannot handle sort type " + sort);
+		}
 	}
 	
 	/**

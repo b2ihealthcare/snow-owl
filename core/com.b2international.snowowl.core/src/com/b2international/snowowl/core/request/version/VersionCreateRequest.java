@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.request.version;
 
 import static com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions.CREATE_VERSION;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.Map.Entry;
@@ -49,6 +50,7 @@ import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.*;
 import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
+import com.b2international.snowowl.core.uri.ResourceURLSchemaSupport;
 import com.b2international.snowowl.core.version.Version;
 import com.b2international.snowowl.core.version.VersionDocument;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -179,12 +181,15 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 				new ResourceRepositoryCommitRequestBuilder()
 				.setBody(tx -> {
 					tx.add(VersionDocument.builder()
-							.id(resource.withPath(version).toString())
+							.id(resource.withPath(version).withoutResourceType())
 							.version(version)
 							.description(description)
 							.effectiveTime(EffectiveTimes.getEffectiveTime(effectiveTime))
 							.resource(resource)
 							.branchPath(resourceToVersion.getRelativeBranchPath(version))
+							.createdAt(Instant.now().toEpochMilli())
+							.toolingId(resourceToVersion.getToolingId())
+							.url(buildVersionUrl(context, resourceToVersion))
 							.build());
 					return Boolean.TRUE;
 				})
@@ -199,6 +204,13 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 		}
 	}
 	
+	private String buildVersionUrl(RepositoryContext context, TerminologyResource resourceToVersion) {
+		Request<RepositoryContext, String> withVersionReq = ctx -> {
+			return ctx.service(ResourceURLSchemaSupport.class).withVersion(resourceToVersion.getUrl(), version, effectiveTime);
+		};
+		return new RepositoryRequest<>(resourceToVersion.getToolingId(), withVersionReq).execute(context);
+	}
+
 	private boolean deleteBranch(ServiceProvider context, String path, String repositoryId) {
 		return RepositoryRequests.branching()
 				.prepareDelete(path)
