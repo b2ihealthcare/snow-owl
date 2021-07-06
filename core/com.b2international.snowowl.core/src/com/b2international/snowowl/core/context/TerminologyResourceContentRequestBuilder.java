@@ -28,9 +28,9 @@ import com.b2international.snowowl.core.request.RevisionIndexReadRequest;
  */
 public interface TerminologyResourceContentRequestBuilder<R> extends RequestBuilder<BranchContext, R>, AllowedHealthStates {
 
-	default AsyncRequest<R> build(String toolingId, String resourceUriOrPath) {
+	default AsyncRequest<R> build(String toolingId, String resourcePath) {
 		return new AsyncRequest<>(
-			new TerminologyResourceRequest<>(toolingId, resourceUriOrPath,
+			new TerminologyResourceRequest<>(toolingId, resourcePath,
 				new TerminologyResourceContentRequest<>(
 					wrap(build())
 				)
@@ -38,12 +38,12 @@ public interface TerminologyResourceContentRequestBuilder<R> extends RequestBuil
 		);
 	}
 	
-	default AsyncRequest<R> build(String resourceUriOrPath) {
-		return build(getToolingId(), resourceUriOrPath);
+	default AsyncRequest<R> build(String resourcePath) {
+		return build(getToolingId(), resourcePath);
 	}
 	
 	default AsyncRequest<R> build(ResourceURI resourceUri) {
-		return build(resourceUri.toString());
+		return build(resourceUri.withoutResourceType());
 	}
 	
 	default Request<BranchContext, R> wrap(Request<BranchContext, R> req) {

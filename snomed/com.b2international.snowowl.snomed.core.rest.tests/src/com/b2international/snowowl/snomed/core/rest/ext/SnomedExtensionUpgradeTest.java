@@ -108,7 +108,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getResourceURI(), upgradeVersion);
 		assertEquals(upgradeVersion, upgradeCodeSystem.getExtensionOf());
 		
-		getComponent(upgradeCodeSystem.getResourceURI().toString(), SnomedComponentType.CONCEPT, moduleId).statusCode(200);
+		getComponent(upgradeCodeSystem.getResourceURI(), SnomedComponentType.CONCEPT, moduleId).statusCode(200);
 	}
 
 	@Test
@@ -128,7 +128,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getResourceURI(), upgradeVersion);
 		assertEquals(upgradeVersion, upgradeCodeSystem.getExtensionOf());
 		
-		getComponent(upgradeCodeSystem.getResourceURI().toString(), SnomedComponentType.CONCEPT, newConceptId).statusCode(200);
+		getComponent(upgradeCodeSystem.getResourceURI(), SnomedComponentType.CONCEPT, newConceptId).statusCode(200);
 	}
 
 	@Test
@@ -939,7 +939,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getResourceURI(), upgradeVersion);
 		assertEquals(upgradeVersion, upgradeCodeSystem.getExtensionOf());
 		
-		getComponent(upgradeCodeSystem.getResourceURI().toString(), SnomedComponentType.CONCEPT, moduleId).statusCode(200);
+		getComponent(upgradeCodeSystem.getResourceURI(), SnomedComponentType.CONCEPT, moduleId).statusCode(200);
 		
 		Boolean success = CodeSystemRequests.prepareComplete(upgradeCodeSystem.getId())
 			.buildAsync()
@@ -991,7 +991,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extensionVersion, upgradeVersion);
 		assertEquals(upgradeVersion, upgradeCodeSystem.getExtensionOf());
 		
-		getComponent(upgradeCodeSystem.getResourceURI().toString(), SnomedComponentType.CONCEPT, newConceptId).statusCode(200);
+		getComponent(upgradeCodeSystem.getResourceURI(), SnomedComponentType.CONCEPT, newConceptId).statusCode(200);
 	}
 	
 	@Test
@@ -1020,8 +1020,8 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extensionVersion, upgradeVersion);
 		assertEquals(upgradeVersion, upgradeCodeSystem.getExtensionOf());
 		
-		getComponent(upgradeCodeSystem.getResourceURI().toString(), SnomedComponentType.CONCEPT, newConceptId).statusCode(200);
-		getComponent(upgradeCodeSystem.getResourceURI().toString(), SnomedComponentType.CONCEPT, newConceptId2).statusCode(200);
+		getComponent(upgradeCodeSystem.getResourceURI(), SnomedComponentType.CONCEPT, newConceptId).statusCode(200);
+		getComponent(upgradeCodeSystem.getResourceURI(), SnomedComponentType.CONCEPT, newConceptId2).statusCode(200);
 	}
 	
 	@Test
@@ -1051,8 +1051,8 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extensionVersion, upgradeVersion);
 		assertEquals(upgradeVersion, upgradeCodeSystem.getExtensionOf());
 		
-		getComponent(upgradeCodeSystem.getResourceURI().toString(), SnomedComponentType.CONCEPT, newConceptId).statusCode(200);
-		getComponent(upgradeCodeSystem.getResourceURI().toString(), SnomedComponentType.CONCEPT, newConceptId2).statusCode(404);
+		getComponent(upgradeCodeSystem.getResourceURI(), SnomedComponentType.CONCEPT, newConceptId).statusCode(200);
+		getComponent(upgradeCodeSystem.getResourceURI(), SnomedComponentType.CONCEPT, newConceptId2).statusCode(404);
 	}
 	
 	@Test
@@ -1085,9 +1085,9 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		// new SE concept
 		String newConceptId3 = createConcept(extension.getResourceURI(), createConceptRequestBody(Concepts.ROOT_CONCEPT, extensionModuleId));
 		
-		getComponent(upgradeCodeSystem.getResourceURI().toString(), SnomedComponentType.CONCEPT, newConceptId).statusCode(200);
-		getComponent(upgradeCodeSystem.getResourceURI().toString(), SnomedComponentType.CONCEPT, newConceptId2).statusCode(200);
-		getComponent(upgradeCodeSystem.getResourceURI().toString(), SnomedComponentType.CONCEPT, newConceptId3).statusCode(404);
+		getComponent(upgradeCodeSystem.getResourceURI(), SnomedComponentType.CONCEPT, newConceptId).statusCode(200);
+		getComponent(upgradeCodeSystem.getResourceURI(), SnomedComponentType.CONCEPT, newConceptId2).statusCode(200);
+		getComponent(upgradeCodeSystem.getResourceURI(), SnomedComponentType.CONCEPT, newConceptId3).statusCode(404);
 	}
 	
 	@Test

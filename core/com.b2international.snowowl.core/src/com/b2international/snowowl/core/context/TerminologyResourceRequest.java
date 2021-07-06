@@ -42,17 +42,17 @@ public final class TerminologyResourceRequest<R> extends DelegatingRequest<Servi
 	private final String toolingId;
 	
 	@NotEmpty
-	private final String resourceUriOrPath;
+	private final String resourcePath;
 
 	private transient ResourceURI resourceUri;
 	private transient TerminologyResource resource;
 	private transient String branchPath;
 	
-	public TerminologyResourceRequest(final String toolingId, final String resourceUriOrPath, final Request<TerminologyResourceContext, R> next) {
+	public TerminologyResourceRequest(final String toolingId, final String resourcePath, final Request<TerminologyResourceContext, R> next) {
 		super(next);
 		this.toolingId = toolingId;
-		this.resourceUriOrPath = resourceUriOrPath;
-		if (resourceUriOrPath.startsWith(Branch.MAIN_PATH) && Strings.isNullOrEmpty(toolingId)) {
+		this.resourcePath = resourcePath;
+		if (resourcePath.startsWith(Branch.MAIN_PATH) && Strings.isNullOrEmpty(toolingId)) {
 			throw new BadRequestException("Reflective access ('repositoryId/path') to terminology resource content is not supported in this request builder.");
 		}
 	}
@@ -85,20 +85,23 @@ public final class TerminologyResourceRequest<R> extends DelegatingRequest<Servi
 	}
 	
 	private void initialize(ServiceProvider context) {
-		if (resourceUriOrPath.startsWith(Branch.MAIN_PATH)) {
-			context.log().warn("Reflective access of terminology resources ('{}/{}') is not the recommended way. Consider using ResourceURIs when sending requested to work on resources.", toolingId, resourceUriOrPath);
-			this.resource = context.service(PathTerminologyResourceResolver.class).resolve(context, toolingId, resourceUriOrPath);
-			this.resourceUri = resource.getResourceURI(resourceUriOrPath);
-			this.branchPath = resourceUriOrPath;
+		if (resourcePath.startsWith(Branch.MAIN_PATH)) {
+			context.log().warn("Reflective access of terminology resources ('{}/{}') is not the recommended way of accessing resources. Consider using Resource IDs and relative branch path expressions.", toolingId, resourcePath);
+			this.resource = context.service(PathTerminologyResourceResolver.class).resolve(context, toolingId, resourcePath);
+			this.resourceUri = resource.getResourceURI(resourcePath);
+			this.branchPath = resourcePath;
 		} else {
-			this.resourceUri = new ResourceURI(resourceUriOrPath);
+			// resourcePaths are just ID/PATH style expressions to reference content in a terminology repository
+			final ResourceURI referenceResourceUri = ResourceURI.of("any", resourcePath);
+			// extract the 
 			
-			Resource resource = ResourceRequests.prepareGet(resourceUri).buildAsync().getRequest().execute(context);
+			Resource resource = ResourceRequests.prepareGet(referenceResourceUri).buildAsync().getRequest().execute(context);
 			if (!(resource instanceof TerminologyResource)) {
-				throw new NotFoundException("Terminology Resource", resourceUri.toString());
+				throw new NotFoundException("Terminology Resource", referenceResourceUri.getResourceId());
 			}
 			this.resource = (TerminologyResource) resource;
-			this.branchPath = context.service(ResourceURIPathResolver.class).resolve(context, resourceUri, resource);
+			this.resourceUri = this.resource.getResourceURI().withPath(referenceResourceUri.getPath());
+			this.branchPath = context.service(ResourceURIPathResolver.class).resolve(context, referenceResourceUri, resource);
 		}		
 	}
 
