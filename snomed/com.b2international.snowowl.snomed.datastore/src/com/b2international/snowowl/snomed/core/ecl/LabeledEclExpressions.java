@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2021 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,15 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.core.ql;
+package com.b2international.snowowl.snomed.core.ecl;
 
-import com.b2international.snomed.ql.ql.Query;
+import java.util.List;
+
+import com.b2international.snowowl.core.domain.ListCollectionResource;
 
 /**
- * @since 6.12
+ * A collection resource for expression text content.
+ * 
+ * @since 7.6
  */
-public interface SnomedQueryParser {
+public final class LabeledEclExpressions extends ListCollectionResource<String> {
 
-	Query parse(String expression);
-	
+	private static final long serialVersionUID = 1L;
+
+	public LabeledEclExpressions(List<String> items) {
+		super(items);
+	}
 }
