@@ -134,7 +134,7 @@ public final class IdRequest<C extends BranchContext, R> extends DelegatingReque
 								.index(request -> getNamespaceKey(request));
 
 						for (final String namespace : requestsByNamespace.keySet()) {
-							final String convertedNamespace = namespace.equals(SnomedIdentifiers.INT_NAMESPACE) ? null : namespace;
+							final String convertedNamespace = SnomedIdentifiers.INT_NAMESPACE.equals(namespace) ? null : namespace;
 							final Collection<BaseSnomedComponentCreateRequest> namespaceRequests = requestsByNamespace.get(namespace);
 							final int count = namespaceRequests.size();
 							

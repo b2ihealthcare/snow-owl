@@ -73,15 +73,18 @@ final class SnomedInactivationReasonUpdateRequest extends BaseComponentMemberUpd
 
 	private static final Logger LOG = LoggerFactory.getLogger(SnomedInactivationReasonUpdateRequest.class);
 
-	private static final String CLEAR = "";
+	static final String CLEAR = "";
 
+	private final boolean create;
 	private final String inactivationRefSetId;
+	
 	private String inactivationValueId;
 
 	
-	SnomedInactivationReasonUpdateRequest(final SnomedComponentDocument componentToUpdate, final String inactivationRefSetId) {
+	SnomedInactivationReasonUpdateRequest(final SnomedComponentDocument componentToUpdate, final String inactivationRefSetId, boolean create) {
 		super(componentToUpdate);
 		this.inactivationRefSetId = inactivationRefSetId;
+		this.create = create;
 	}
 
 	void setInactivationValueId(final String inactivationValueId) {
@@ -101,15 +104,16 @@ final class SnomedInactivationReasonUpdateRequest extends BaseComponentMemberUpd
 	
 	@Override
 	protected void doExecute(TransactionContext context, SnomedComponentDocument componentToUpdate) {
-		final List<SnomedReferenceSetMember> existingMembers = newArrayList(
-			SnomedRequests.prepareSearchMember()
+		final List<SnomedReferenceSetMember> existingMembers = newArrayList();
+		if (!create) {
+			existingMembers.addAll(SnomedRequests.prepareSearchMember()
 				.all()
 				.filterByReferencedComponent(componentToUpdate.getId())
 				.filterByRefSet(inactivationRefSetId)
 				.build()
 				.execute(context)
-				.getItems()
-		);
+				.getItems());
+		}
 		boolean firstMemberFound = false;
 		
 		// Check if there is at least one existing member
