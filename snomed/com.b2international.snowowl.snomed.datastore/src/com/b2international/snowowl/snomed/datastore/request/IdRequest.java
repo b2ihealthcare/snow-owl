@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.NotImplementedException;
@@ -235,7 +236,9 @@ public final class IdRequest<C extends BranchContext, R> extends DelegatingReque
 	}
 
 	private Set<String> getExistingIds(final BranchContext context, final Set<String> ids, final Class<? extends SnomedDocument> documentClass) {
-		
+		if (CompareUtils.isEmpty(ids)) {
+			return Set.of();
+		}
 		try {
 			
 			final Query<String> getComponentsById = Query.select(String.class).from(documentClass)
@@ -244,7 +247,7 @@ public final class IdRequest<C extends BranchContext, R> extends DelegatingReque
 					.limit(ids.size())
 					.build();
 			
-			return Sets.newHashSet(context.service(RevisionSearcher.class).search(getComponentsById));
+			return Set.copyOf(context.service(RevisionSearcher.class).search(getComponentsById).getHits());
 			
 		} catch (IOException e) {
 			throw new SnowowlRuntimeException(e);
