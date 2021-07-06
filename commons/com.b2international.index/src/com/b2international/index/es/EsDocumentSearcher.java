@@ -69,6 +69,7 @@ import com.b2international.index.query.SortBy.MultiSortBy;
 import com.b2international.index.query.SortBy.SortByField;
 import com.b2international.index.query.SortBy.SortByScript;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
@@ -130,6 +131,9 @@ public class EsDocumentSearcher implements Searcher {
 
 	@Override
 	public <T> Hits<T> search(Query<T> query) throws IOException {
+		Stopwatch w = Stopwatch.createStarted();
+		admin.log().trace("Executing query '{}'", query);
+		
 		final EsClient client = admin.client();
 		final List<DocumentMapping> mappings = admin.mappings().getDocumentMapping(query);
 		final DocumentMapping primaryMapping = Iterables.getFirst(mappings, null);
@@ -247,7 +251,9 @@ public class EsDocumentSearcher implements Searcher {
 		final Class<T> select = query.getSelection().getSelect();
 		final List<Class<?>> from = query.getSelection().getFrom();
 		
-		return toHits(select, from, query.getFields(), fetchSource, limit, totalHitCount, response.getScrollId(), query.getSortBy(), allHits.build());
+		final Hits<T> hits = toHits(select, from, query.getFields(), fetchSource, limit, totalHitCount, response.getScrollId(), query.getSortBy(), allHits.build());
+		admin.log().trace("Executed query '{}' in '{}'", query, w);
+		return hits;
 	}
 
 	private <T> boolean applySourceFiltering(List<String> fields, final DocumentMapping mapping, final SearchSourceBuilder reqSource) {
