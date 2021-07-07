@@ -61,6 +61,11 @@ public abstract class BaseResourceSearchRequest<R>
 		 * HL7 registry OID
 		 */
 		OID,
+
+		/**
+		 * Search resources by status
+		 */
+		STATUS,
 	}
 	
 	@Override
@@ -69,6 +74,7 @@ public abstract class BaseResourceSearchRequest<R>
 		
 		addFilter(queryBuilder, OptionKey.BUNDLE_ID, String.class, ResourceDocument.Expressions::bundleIds);
 		addFilter(queryBuilder, OptionKey.OID, String.class, ResourceDocument.Expressions::oids);
+		addFilter(queryBuilder, OptionKey.STATUS, String.class, ResourceDocument.Expressions::statuses);
 		addIdFilter(queryBuilder, ResourceDocument.Expressions::ids);
 		addTitleFilter(queryBuilder);
 		addTitleExactFilter(queryBuilder);

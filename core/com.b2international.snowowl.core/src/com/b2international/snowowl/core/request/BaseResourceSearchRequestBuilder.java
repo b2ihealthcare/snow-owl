@@ -100,4 +100,12 @@ public abstract class BaseResourceSearchRequestBuilder<RB extends BaseResourceSe
 		return addOption(OptionKey.OID, oids);
 	}
 
+	public RB filterByStatus(String status) {
+		return addOption(OptionKey.STATUS, status);
+	}
+
+	public RB filterByStatus(Iterable<String> status) {
+		return addOption(OptionKey.STATUS, status);
+	}
+
 }
