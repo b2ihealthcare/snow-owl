@@ -1242,7 +1242,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 				.put("refSetLayout", Rf2RefSetExportLayout.COMBINED)
 				.build();
 		
-		String codeSystemId = "CodeSystem-WithOutSettings";
+		String codeSystemId = "SNOMEDCT-custom-rf2-export-config";
 		createCodeSystem(null, codeSystemId, exportSettings).statusCode(201);
 		
 		CodeSystem codeSystem = CodeSystemRestRequests.getCodeSystem(codeSystemId).extract().as(CodeSystem.class);
@@ -1263,7 +1263,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void exportRf2WithoutConfiguration() throws Exception {
 		
-		String codeSystemId = "CodeSystem-WithSettings";
+		String codeSystemId = "SNOMEDCT-default-rf2-export-config";
 		createCodeSystem(branchPath, codeSystemId).statusCode(201);
 		
 		CodeSystem codeSystem = CodeSystemRestRequests.getCodeSystem(codeSystemId).extract().as(CodeSystem.class);
