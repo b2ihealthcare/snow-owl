@@ -32,6 +32,7 @@ import com.b2international.snowowl.core.attachments.Attachment;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.attachments.InternalAttachmentRegistry;
 import com.b2international.snowowl.core.rest.AbstractRestService;
+import com.b2international.snowowl.snomed.core.domain.Rf2MaintainerType;
 import com.b2international.snowowl.snomed.core.domain.Rf2RefSetExportLayout;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedRf2ExportConfiguration;
@@ -79,7 +80,7 @@ public class SnomedRf2ExportRestService extends AbstractRestService {
 			.setIncludePreReleaseContent(params.isIncludeUnpublished())
 			.setModules(params.getModuleIds())
 			.setRefSets(params.getRefSetIds())
-			.setCountryNamespaceElement(params.getNamespaceId())
+			.setCountryNamespaceElement(getCountryNamespaceElement(params))
 			// .setNamespaceFilter(namespaceFilter) is not supported on REST, yet
 			.setTransientEffectiveTime(params.getTransientEffectiveTime())
 			.setStartEffectiveTime(params.getStartEffectiveTime())
@@ -100,6 +101,26 @@ public class SnomedRf2ExportRestService extends AbstractRestService {
 		// TODO figure out a smart way to cache export results, probably it could be tied to commitTimestamps/versions/etc. 
 		file.deleteOnExit();
 		return new ResponseEntity<>(exportZipResource, httpHeaders, HttpStatus.OK);
+	}
+	
+	private static String getCountryNamespaceElement(final SnomedRf2ExportConfiguration config) {
+		final StringBuilder builder = new StringBuilder();
+		
+		switch ((Rf2MaintainerType)config.getMaintainerType()) {
+			case NRC:
+				builder.append(config.getNrcCountryCode());
+				break;
+			case OTHER_EXTENSION_PROVIDER:
+				// Nothing to append
+				break;
+			case SNOMED_INTERNATIONAL:
+				builder.append("INT");
+				break;
+			default:
+				break;
+		}
+		
+		return builder.toString();
 	}
 	
 }
