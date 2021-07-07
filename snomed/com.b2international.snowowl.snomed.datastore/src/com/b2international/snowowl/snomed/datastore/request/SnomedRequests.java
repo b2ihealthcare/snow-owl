@@ -332,7 +332,7 @@ public abstract class SnomedRequests {
 	
 	/**
 	 * Returns a SNOMED CT request builder to prepare the labeling of a list of SNOMED CT Expression Constraint Language (ECL) expressions.
-	 * @param expression - the ECL expression to extend with labels
+	 * @param expressions - a list of ECL expressions to extend with labels
 	 * @return SNOMED CT ECL labeler request builder
 	 */
 	public static SnomedEclLabelerRequestBuilder prepareEclLabeler(List<String> expressions) {
