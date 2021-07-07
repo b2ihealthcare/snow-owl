@@ -37,6 +37,8 @@ import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.test.commons.Services;
 import com.b2international.snowowl.test.commons.rest.RestExtensions;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * @since 8.0
@@ -99,6 +101,36 @@ public class ResourceApiTest {
 			.doesNotContain(tuple(id2, oid2));
 	}
 
+	@Test
+	public void filterByStatus() {
+		final String id1 = IDs.base64UUID();
+		final String id2 = IDs.base64UUID();
+		createCodeSystemWithStatus(id1, "draft");
+		createCodeSystemWithStatus(id2, "active");
+		
+		assertResourceSearch(ImmutableMap.of("status", ImmutableList.of("draft")))
+			.statusCode(200)
+			.body("total", equalTo(1))
+			.body("items[0].id", equalTo(id1))
+			.body("items[0].status", equalTo("draft"));
+	}
+
+	private void createCodeSystemWithStatus(final String shortName, final String status) {
+		CodeSystemRequests
+		.prepareNewCodeSystem()
+		.setId(shortName)
+		.setTitle(shortName)
+		.setUrl(SnomedTerminologyComponentConstants.SNOMED_URI_DEV + "/" + shortName)
+		.setDescription(DEFAULT_CODE_SYSTEM_DESCRIPTION)
+		.setLanguage(DEFAULT_CODE_SYSTEM_LANGUAGE)
+		.setToolingId(DEFAULT_CODE_SYSTEM_TOOLING_ID)
+		.setStatus(status)
+		.setOid("https://b2i.sg/" + shortName)
+		.build(RestExtensions.USER, String.format("New code system %s", shortName))
+		.execute(bus).getSync();
+		
+	}
+	
 	private void createDefaultCodeSystem(final String shortName, final String oid) {
 		CodeSystemRequests
 		.prepareNewCodeSystem()
