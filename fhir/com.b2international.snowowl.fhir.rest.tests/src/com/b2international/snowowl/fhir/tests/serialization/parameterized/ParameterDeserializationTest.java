@@ -19,6 +19,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsArrayContainingInAnyOrder.arrayContainingInAnyOrder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Collection;
@@ -199,7 +200,7 @@ public class ParameterDeserializationTest extends FhirTest {
 		assertEquals("LOINC", lookupRequest.getSystem());
 		assertEquals("20180131", lookupRequest.getVersion());
 		assertEquals("1234", lookupRequest.getCode());
-		assertTrue(lookupRequest.getProperties().isEmpty());
+		assertNull(lookupRequest.getProperties());
 	}
 	
 	@Test
