@@ -103,8 +103,8 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 	 * @return {@link SnomedConceptSearchRequestBuilder}
 	 * @see SnomedDescription
 	 */
-	public final SnomedConceptSearchRequestBuilder filterByDescriptionSemanticTags(Iterable<String> semanticTags) {
-		return addOption(SnomedConceptSearchRequest.OptionKey.DESCRIPTION_SEMANTIC_TAG, semanticTags);
+	public final SnomedConceptSearchRequestBuilder filterBySemanticTags(Iterable<String> semanticTags) {
+		return addOption(SnomedConceptSearchRequest.OptionKey.SEMANTIC_TAG, semanticTags);
 	}
 
 	/**
