@@ -62,7 +62,15 @@ public abstract class CodeSystemRestRequests {
 		return createCodeSystem(extensionOf, null, codeSystemId);
 	}
 	
-	private static ValidatableResponse createCodeSystem(ResourceURI extensionOf, String branchPath, String codeSystemId) {
+	public static ValidatableResponse createCodeSystem(ResourceURI extensionOf, String branchPath, String codeSystemId) {
+		return createCodeSystem(extensionOf, branchPath, codeSystemId, Map.of());
+	}
+	
+	public static ValidatableResponse createCodeSystem(ResourceURI extensionOf, String codeSystemId,  Map<String, Object> settings) {
+		return createCodeSystem(extensionOf, null, codeSystemId, settings);
+	}
+	
+	private static ValidatableResponse createCodeSystem(ResourceURI extensionOf, String branchPath, String codeSystemId,  Map<String, Object> settings) {
 		Json requestBody = Json.object(
 			"id", codeSystemId,
 			"title", codeSystemId,
@@ -73,7 +81,8 @@ public abstract class CodeSystemRestRequests {
 			"language", "ENG",
 			"extensionOf", extensionOf,
 			"branchPath", branchPath,
-			"owner", "https://b2i.sg"
+			"owner", "https://b2i.sg",
+			"settings", settings
 		);
 				
 		return givenAuthenticatedRequest(ApiTestConstants.CODESYSTEMS_API)
