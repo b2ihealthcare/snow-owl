@@ -219,10 +219,10 @@ public final class VersionCreateRequest implements Request<RepositoryContext, Bo
 				.getSync(1, TimeUnit.MINUTES);
 	}
 	
-	// TODO fetch only the relevant resources and not everything
 	private Map<ResourceURI, TerminologyResource> fetchResources(ServiceProvider context) {
 		return ResourceRequests.prepareSearch()
-			.all()
+			.one()
+			.filterById(resource.getResourceId())
 			.buildAsync()
 			.getRequest()
 			.execute(context)

@@ -41,7 +41,7 @@ public class SnomedPartialLoadingApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void partialLoadingConceptApi() throws Exception {
-		PageableCollectionResource<String[]> hits = new TerminologyResourceRequest<>(SnomedTerminologyComponentConstants.TOOLING_ID, SnomedContentRule.SNOMEDCT.toString(),
+		PageableCollectionResource<String[]> hits = new TerminologyResourceRequest<>(SnomedTerminologyComponentConstants.TOOLING_ID, SnomedContentRule.SNOMEDCT.getResourceId(),
 			new TerminologyResourceContentRequest<>(
 				new RevisionIndexReadRequest<>(
 					context -> {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,8 +42,6 @@ public final class SnomedConceptRestSearch extends ObjectRestSearch {
 	private String ecl;
 	@ApiParam(value = "The ECL expression to match on the stated form")
 	private String statedEcl;
-	@ApiParam(value = "The SNOMED CT Query expression to match (inferred form only)")
-	private String query;
 
 	// description filters
 	@ApiParam(value = "Description semantic tag(s) to match")
@@ -151,14 +149,6 @@ public final class SnomedConceptRestSearch extends ObjectRestSearch {
 
 	public void setStatedEcl(String statedEcl) {
 		this.statedEcl = statedEcl;
-	}
-
-	public String getQuery() {
-		return query;
-	}
-
-	public void setQuery(String query) {
-		this.query = query;
 	}
 
 	public String getTerm() {

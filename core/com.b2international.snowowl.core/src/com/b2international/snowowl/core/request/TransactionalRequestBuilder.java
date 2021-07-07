@@ -26,20 +26,20 @@ import com.b2international.snowowl.core.events.RequestBuilder;
  */
 public interface TransactionalRequestBuilder<R> extends RequestBuilder<TransactionContext, R> {
 
-	default AsyncRequest<CommitResult> build(String resourceUri, 
+	default AsyncRequest<CommitResult> build(String resourcePath, 
 			String author,
 			String commitComment) {
 		return commit()
 				.setAuthor(author)
 				.setCommitComment(commitComment)
-				.build(resourceUri);
+				.build(resourcePath);
 	}
 	
 	default AsyncRequest<CommitResult> build(ResourceURI resourceUri, 
 			String author,
 			String commitComment) {
 		
-		return build(resourceUri.getUri(), author, commitComment);
+		return build(resourceUri.withoutResourceType(), author, commitComment);
 	}
 	
 	

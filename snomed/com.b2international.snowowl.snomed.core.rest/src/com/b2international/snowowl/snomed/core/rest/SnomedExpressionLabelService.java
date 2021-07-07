@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.RestApiError;
-import com.b2international.snowowl.snomed.core.ql.Expressions;
+import com.b2international.snowowl.snomed.core.ecl.LabeledEclExpressions;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
 import io.swagger.annotations.*;
@@ -38,12 +38,12 @@ public class SnomedExpressionLabelService extends AbstractRestService {
 			notes="Returns a collection resource containing ECL expressions."
 		)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK", response = Expressions.class),
+		@ApiResponse(code = 200, message = "OK", response = LabeledEclExpressions.class),
 		@ApiResponse(code = 400, message = "Bad request", response = RestApiError.class),
 		@ApiResponse(code = 404, message = "Not found", response = RestApiError.class)
 	})
 	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
-	public @ResponseBody Promise<Expressions> getLabel(		
+	public @ResponseBody Promise<LabeledEclExpressions> getLabel(		
 			
 			@ApiParam(value = "The branch path", required = true)
 			@PathVariable(value="path")
@@ -56,7 +56,7 @@ public class SnomedExpressionLabelService extends AbstractRestService {
 			@ApiParam(value = "Accepted language tags, in order of preference")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
-				return SnomedRequests.prepareQueryLabeler(body.getExpressions())
+				return SnomedRequests.prepareEclLabeler(body.getExpressions())
 						.setDescriptionType(body.getDescriptionType())
 						.setLocales(acceptLanguage)
 						.build(path)

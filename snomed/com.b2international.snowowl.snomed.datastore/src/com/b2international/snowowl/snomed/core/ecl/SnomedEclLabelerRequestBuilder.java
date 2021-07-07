@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.core.ql;
+package com.b2international.snowowl.snomed.core.ecl;
 
 import java.util.List;
 
@@ -26,17 +26,17 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedContentRequest
 /**
  * @since 7.6
  */
-public final class SnomedQueryLabelerRequestBuilder extends ResourceRequestBuilder<SnomedQueryLabelerRequestBuilder, BranchContext, Expressions>
-		implements SnomedContentRequestBuilder<Expressions> {
+public final class SnomedEclLabelerRequestBuilder extends ResourceRequestBuilder<SnomedEclLabelerRequestBuilder, BranchContext, LabeledEclExpressions>
+		implements SnomedContentRequestBuilder<LabeledEclExpressions> {
 
 	private final List<String> expressions;
 	private String descriptionType = SnomedConcept.Expand.FULLY_SPECIFIED_NAME;
 
-	public SnomedQueryLabelerRequestBuilder(String expression) {
+	public SnomedEclLabelerRequestBuilder(String expression) {
 		this(List.of(expression));
 	}
 	
-	public SnomedQueryLabelerRequestBuilder(List<String> expressions) {
+	public SnomedEclLabelerRequestBuilder(List<String> expressions) {
 		this.expressions = List.copyOf(expressions);
 	}
 
@@ -49,13 +49,13 @@ public final class SnomedQueryLabelerRequestBuilder extends ResourceRequestBuild
 	 * @see SnomedConcept.Expand#FULLY_SPECIFIED_NAME
 	 * @see SnomedConcept.Expand#PREFERRED_TERM
 	 */
-	public SnomedQueryLabelerRequestBuilder setDescriptionType(String descriptionType) {
+	public SnomedEclLabelerRequestBuilder setDescriptionType(String descriptionType) {
 		this.descriptionType = descriptionType;
 		return getSelf();
 	}
 
 	@Override
-	protected void init(ResourceRequest<BranchContext, Expressions> request) {
+	protected void init(ResourceRequest<BranchContext, LabeledEclExpressions> request) {
 		super.init(request);
 		SnomedQueryLabelerRequest req = (SnomedQueryLabelerRequest) request;
 		req.setExpressions(expressions);
@@ -63,7 +63,7 @@ public final class SnomedQueryLabelerRequestBuilder extends ResourceRequestBuild
 	}
 
 	@Override
-	protected ResourceRequest<BranchContext, Expressions> create() {
+	protected ResourceRequest<BranchContext, LabeledEclExpressions> create() {
 		return new SnomedQueryLabelerRequest();
 	}
 

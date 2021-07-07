@@ -142,8 +142,9 @@ public final class SnomedDescriptionCreateRequest extends BaseSnomedComponentCre
 			convertMembers(context, descriptionId);
 			context.add(description);
 			
+			// update inactivation reason members if the new description was immediately set to have an inactivation member
 			if (inactivationIndicatorId != null) {
-				final SnomedInactivationReasonUpdateRequest inactivationUpdate =  new SnomedInactivationReasonUpdateRequest(description, Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR);
+				final SnomedInactivationReasonUpdateRequest inactivationUpdate =  new SnomedInactivationReasonUpdateRequest(description, Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR, true);
 				inactivationUpdate.setInactivationValueId(inactivationIndicatorId);
 				inactivationUpdate.execute(context);
 			}
