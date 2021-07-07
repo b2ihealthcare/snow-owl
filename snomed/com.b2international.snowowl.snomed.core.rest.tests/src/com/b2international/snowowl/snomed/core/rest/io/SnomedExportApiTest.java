@@ -59,6 +59,7 @@ import com.b2international.snowowl.core.attachments.Attachment;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.attachments.InternalAttachmentRegistry;
 import com.b2international.snowowl.core.branch.BranchPathUtils;
+import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.events.util.Promise;
@@ -71,6 +72,7 @@ import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
@@ -1228,6 +1230,55 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		fileToLinesMap.put(expectedOwlExpressionDeltaFile, Pair.of(true, owlAxiomMemberLine));
 
 		assertArchiveContainsLines(exportArchive, fileToLinesMap);
+	}
+	
+	@Test
+	public void exportRf2WithConfiguration() throws Exception {
+		
+		final Map<String, Object> exportSettings = ImmutableMap.<String, Object>builder()
+				.put("maintainerType",  Rf2MaintainerType.NRC)
+				.put("nrcCountryCode", "GB")
+				.put("extensionNamespaceId", "370137002")
+				.put("refSetLayout", Rf2RefSetExportLayout.COMBINED)
+				.build();
+		
+		String codeSystemId = "CodeSystem-WithOutSettings";
+		createCodeSystem(null, codeSystemId, exportSettings).statusCode(201);
+		
+		CodeSystem codeSystem = CodeSystemRestRequests.getCodeSystem(codeSystemId).extract().as(CodeSystem.class);
+		
+		final File exportArchive = doExport(branchPath, codeSystem.getSettings());
+		
+		final Map<String, Boolean> files = ImmutableMap.<String, Boolean>builder()
+				.put("der2_sssssssRefset_MRCMDomainSnapshot_GB", true)
+				.put("sct2_Relationship_Snapshot_GB", true)
+				.put("sct2_Description_Snapshot-en_GB", true)
+				.put("der2_sRefset_SimpleMapSnapshot_GB", true)
+				.build();
+			
+		assertArchiveContainsFiles(exportArchive, files);
+		
+	}
+	
+	@Test
+	public void exportRf2WithoutConfiguration() throws Exception {
+		
+		String codeSystemId = "CodeSystem-WithSettings";
+		createCodeSystem(branchPath, codeSystemId).statusCode(201);
+		
+		CodeSystem codeSystem = CodeSystemRestRequests.getCodeSystem(codeSystemId).extract().as(CodeSystem.class);
+		
+		final File exportArchive = doExport(branchPath, codeSystem.getSettings());
+		
+		final Map<String, Boolean> files = ImmutableMap.<String, Boolean>builder()
+				.put("der2_sssssssRefset_MRCMDomainSnapshot_INT", true)
+				.put("sct2_Relationship_Snapshot_INT", true)
+				.put("sct2_Description_Snapshot-en_INT", true)
+				.put("der2_sRefset_SimpleMapSnapshot_INT", true)
+				.build();
+			
+		assertArchiveContainsFiles(exportArchive, files);
+		
 	}
 	
 	private static String getLanguageRefsetMemberId(IBranchPath branchPath, String descriptionId, String languageRefsetId) {
