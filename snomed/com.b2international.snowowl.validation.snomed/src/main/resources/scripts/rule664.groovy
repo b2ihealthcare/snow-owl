@@ -83,7 +83,7 @@ if (params.isUnpublishedOnly) {
 			Expressions.builder()
 				.filter(SnomedDescriptionIndexEntry.Expressions.active())
 				.filter(SnomedDescriptionIndexEntry.Expressions.type(Concepts.FULLY_SPECIFIED_NAME))
-				.filter(SnomedDescriptionIndexEntry.Expressions.matchTermOriginal(descriptionsByTerm.keySet())) // send in all unpublished terms
+				.filter(SnomedDescriptionIndexEntry.Expressions.matchTerm(descriptionsByTerm.keySet())) // send in all unpublished terms
 				.mustNot(SnomedDocument.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)) // only published
 			.build()
 		)
@@ -111,7 +111,7 @@ if (params.isUnpublishedOnly) {
 						.filter(SnomedDescriptionIndexEntry.Expressions.concepts(activeConceptIds.get()))
 						.build()
 						)
-				.onFieldValue(SnomedDescriptionIndexEntry.Fields.TERM_ORIGINAL)
+				.onFieldValue(SnomedDescriptionIndexEntry.Fields.TERM)
 				.fields(SnomedDescriptionIndexEntry.Fields.ID)
 				.minBucketSize(2))
 		.getBuckets()
