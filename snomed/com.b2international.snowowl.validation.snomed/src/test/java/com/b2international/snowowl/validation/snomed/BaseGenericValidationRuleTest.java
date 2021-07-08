@@ -88,6 +88,8 @@ public abstract class BaseGenericValidationRuleTest extends BaseValidationTest {
 	
 	@Override
 	protected void configureContext(Builder context) {
+		super.configureContext(context);
+		
 		final CodeSystem cs = new CodeSystem();
 		cs.setBranchPath(MAIN);
 		cs.setId(CODESYSTEM);
