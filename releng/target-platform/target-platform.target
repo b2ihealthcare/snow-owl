@@ -32,7 +32,6 @@
 		<unit id="org.junit" version="4.13.0.v20200204-1500"/>
 		<unit id="org.junit.source" version="4.13.0.v20200204-1500"/>
 		<unit id="org.ccil.cowan.tagsoup" version="1.2.0.v201202211000"/>
-		<unit id="org.mockito" version="2.13.0.v20180426-1843"/>
 		<repository location="https://download.eclipse.org/tools/orbit/downloads/drops/R20200224183213/repository"/>
 	</location>
 	<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">

@@ -142,7 +142,7 @@
         <setEntry value="org.hdrhistogram.HdrHistogram@default:default"/>
         <setEntry value="org.jetbrains.kotlin.osgi-bundle@default:default"/>
         <setEntry value="org.junit@default:default"/>
-        <setEntry value="org.mockito@default:default"/>
+        <setEntry value="org.mockito.mockito-core@default:default"/>
         <setEntry value="org.objectweb.asm.tree@default:default"/>
         <setEntry value="org.objectweb.asm@default:default"/>
         <setEntry value="org.objenesis@default:default"/>

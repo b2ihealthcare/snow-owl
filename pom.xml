@@ -646,6 +646,12 @@
 			<version>${failsafe.version}</version>
 			<scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<version>3.11.2</version>
+			<scope>provided</scope>
+		</dependency>
 	</dependencies>
 
 	<build>

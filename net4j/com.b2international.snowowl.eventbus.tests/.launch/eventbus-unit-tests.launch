@@ -59,7 +59,7 @@
         <setEntry value="org.eclipse.osgi@-1:true"/>
         <setEntry value="org.hamcrest.core@default:default"/>
         <setEntry value="org.junit@default:default"/>
-        <setEntry value="org.mockito@default:default"/>
+        <setEntry value="org.mockito.mockito-core@default:default"/>
         <setEntry value="org.objenesis@default:default"/>
         <setEntry value="slf4j.api@default:default"/>
     </setAttribute>
