@@ -9,7 +9,7 @@
    <launcherArgs>
       <programArgs>-console -consoleLog
       </programArgs>
-      <vmArgs>-Dosgi.requiredJavaVersion=1.5 -Xms2g -Xmx2g -server -Declipse.ignoreApp=true -Dosgi.noShutdown=true -Djetty.port=9090 -XX:+AlwaysLockClassLoader -Dosgi.classloader.type=nonparallel -Djetty.home.bundle=org.eclipse.jetty.osgi.boot
+      <vmArgs>-Dosgi.requiredJavaVersion=1.5 -Xms2g -Xmx2g -server -Declipse.ignoreApp=true -Dosgi.noShutdown=true -Djetty.port=9090 -Dosgi.classloader.type=nonparallel -Djetty.home.bundle=org.eclipse.jetty.osgi.boot --add-opens java.base/java.lang.reflect=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.time=ALL-UNNAMED
       </vmArgs>
       <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts -Djava.awt.headless=true
       </vmArgsMac>
