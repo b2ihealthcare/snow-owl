@@ -26,7 +26,9 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
 import com.b2international.snomed.ecl.EclStandaloneSetup;
+import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.internal.validation.ValidationConfiguration;
 import com.b2international.snowowl.core.validation.ValidateRequestBuilder;
@@ -86,7 +88,12 @@ public abstract class BaseGenericValidationRuleTest extends BaseValidationTest {
 	
 	@Override
 	protected void configureContext(Builder context) {
+		final CodeSystem cs = new CodeSystem();
+		cs.setBranchPath(MAIN);
+		cs.setId(CODESYSTEM);
+		
 		context
+			.with(TerminologyResource.class, cs)
 			.with(EclParser.class, new DefaultEclParser(ECL_INJECTOR.getInstance(IParser.class), ECL_INJECTOR.getInstance(IResourceValidator.class)))
 			.with(EclSerializer.class, new DefaultEclSerializer(ECL_INJECTOR.getInstance(ISerializer.class)));
 	}
