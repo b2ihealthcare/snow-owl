@@ -193,7 +193,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 	
 	@Test
 	public void incorrectRf2ReleaseType() {
-		export(branchPath, ImmutableMap.of("type", "unknown"))
+		export(branchPath.getPath(), Map.of("type", "unknown"))
 			.then()
 			.statusCode(400);
 	}
@@ -1235,23 +1235,23 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void exportRf2WithConfiguration() throws Exception {
 		
-		final Map<String, Object> codeSystemExportSettings = ImmutableMap.<String, Object>builder()
-				.put("maintainerType",  Rf2MaintainerType.NRC)
-				.put("nrcCountryCode", "GB")
-				.put("extensionNamespaceId", "370137002")
-				.put("refSetLayout", Rf2RefSetExportLayout.COMBINED)
-				.build();
+		final Map<String, Object> codeSystemExportSettings = Map.of(
+				"maintainerType",  Rf2MaintainerType.NRC,
+				"nrcCountryCode", "GB",
+				"extensionNamespaceId", "370137002",
+				"refSetLayout", Rf2RefSetExportLayout.COMBINED
+				);
 		
 		String codeSystemId = "SNOMEDCT-custom-rf2-export-config";
-		createCodeSystem(null, codeSystemId, codeSystemExportSettings).statusCode(201);
+		createCodeSystem(null, branchPath.getPath(), codeSystemId, codeSystemExportSettings).statusCode(201);
 		
-		final Map<String, Object> config = ImmutableMap.<String, Object>builder()
-				.put("type", Rf2ReleaseType.SNAPSHOT.name())
-				.put("includeUnpublished", true)
-				.put("codeSystemId", codeSystemId)
-				.build();
+		final Map<String, Object> config = Map.of(
+			"type", Rf2ReleaseType.SNAPSHOT.name(),
+			"includeUnpublished", true,
+			"codeSystemId", codeSystemId
+		);
 		
-		final File exportArchive = doExport(branchPath, config);
+		final File exportArchive = doExport(codeSystemId, config);
 		
 		final Map<String, Boolean> files = ImmutableMap.<String, Boolean>builder()
 				.put("der2_sssssssRefset_MRCMDomainSnapshot_GB", true)
@@ -1272,7 +1272,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		
 		CodeSystem codeSystem = CodeSystemRestRequests.getCodeSystem(codeSystemId).extract().as(CodeSystem.class);
 		
-		final File exportArchive = doExport(branchPath, codeSystem.getSettings());
+		final File exportArchive = doExport(codeSystemId, codeSystem.getSettings());
 		
 		final Map<String, Boolean> files = ImmutableMap.<String, Boolean>builder()
 				.put("der2_sssssssRefset_MRCMDomainSnapshot_INT", true)
