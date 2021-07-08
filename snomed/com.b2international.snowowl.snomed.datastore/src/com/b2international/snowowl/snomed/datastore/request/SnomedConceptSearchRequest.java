@@ -39,7 +39,6 @@ import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.ecl.EclExpression;
-import com.b2international.snowowl.snomed.core.ql.SnomedQueryExpression;
 import com.b2international.snowowl.snomed.core.tree.Trees;
 import com.b2international.snowowl.snomed.datastore.SnomedDescriptionUtils;
 import com.b2international.snowowl.snomed.datastore.converter.SnomedConceptConverter;
@@ -71,7 +70,7 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 		/**
 		 * Description semantic tag(s) to match
 		 */
-		DESCRIPTION_SEMANTIC_TAG,
+		SEMANTIC_TAG,
 
 		/**
 		 * ECL expression to match on the inferred form
@@ -82,11 +81,6 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 		 * ECL expression to match on the state form
 		 */
 		STATED_ECL,
-		
-		/**
-		 * Snomed CT Query expression to match
-		 */
-		QUERY,
 		
 		/**
 		 * The definition status to match
@@ -196,21 +190,15 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 			}
 		}
 		
-		if (containsKey(OptionKey.QUERY)) {
-			final String ql = getString(OptionKey.QUERY);
-			Expression queryExpression = SnomedQueryExpression.of(ql).resolveToExpression(context).getSync(3, TimeUnit.MINUTES);
-			if (queryExpression.isMatchNone()) {
-				throw new NoResultException();
-			} else if (!queryExpression.isMatchAll()) {
-				queryBuilder.filter(queryExpression);
-			}
-		}
-		
 		Expression searchProfileQuery = null;
 		
 		final Expression queryExpression;
 		
-		if (containsKey(OptionKey.TERM) || containsKey(OptionKey.DESCRIPTION_SEMANTIC_TAG)) {
+		if (containsKey(OptionKey.SEMANTIC_TAG)) {
+			queryBuilder.filter(SnomedConceptDocument.Expressions.semanticTags(getCollection(OptionKey.SEMANTIC_TAG, String.class)));
+		}
+		
+		if (containsKey(OptionKey.TERM)) {
 			final ExpressionBuilder bq = Expressions.builder();
 			// nest current query
 			bq.filter(queryBuilder.build());
@@ -313,11 +301,6 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 		if (containsKey(OptionKey.DESCRIPTION_TYPE)) {
 			final String type = getString(OptionKey.DESCRIPTION_TYPE);
 			requestBuilder.filterByType(type);
-		}
-		
-		if (containsKey(OptionKey.DESCRIPTION_SEMANTIC_TAG)) {
-			final Collection<String> semanticTags = getCollection(OptionKey.DESCRIPTION_SEMANTIC_TAG, String.class);
-			requestBuilder.filterBySemanticTags(semanticTags);
 		}
 		
 		if (termFilter != null) {

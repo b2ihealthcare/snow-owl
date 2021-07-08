@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -103,8 +103,8 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 	 * @return {@link SnomedConceptSearchRequestBuilder}
 	 * @see SnomedDescription
 	 */
-	public final SnomedConceptSearchRequestBuilder filterByDescriptionSemanticTags(Iterable<String> semanticTags) {
-		return addOption(SnomedConceptSearchRequest.OptionKey.DESCRIPTION_SEMANTIC_TAG, semanticTags);
+	public final SnomedConceptSearchRequestBuilder filterBySemanticTags(Iterable<String> semanticTags) {
+		return addOption(SnomedConceptSearchRequest.OptionKey.SEMANTIC_TAG, semanticTags);
 	}
 
 	/**
@@ -129,17 +129,6 @@ public final class SnomedConceptSearchRequestBuilder extends SnomedComponentSear
 	 */
 	public final SnomedConceptSearchRequestBuilder filterByStatedEcl(String expression) {
 		return addOption(SnomedConceptSearchRequest.OptionKey.STATED_ECL, expression);
-	}
-
-	/**
-	 * Filter matches by the specified Snomed Query Language (QL) expression.
-	 * 
-	 * @param expression
-	 *            QL expression
-	 * @return SnomedConceptSearchRequestBuilder
-	 */
-	public final SnomedConceptSearchRequestBuilder filterByQuery(String expression) {
-		return addOption(SnomedConceptSearchRequest.OptionKey.QUERY, expression);
 	}
 
 	/**

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,7 @@
  */
 package com.b2international.snowowl.fhir.tests.serialization.domain;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -34,11 +33,7 @@ import com.b2international.snowowl.fhir.core.model.Issue;
 import com.b2international.snowowl.fhir.core.model.Issue.Builder;
 import com.b2international.snowowl.fhir.core.model.Meta;
 import com.b2international.snowowl.fhir.core.model.OperationOutcome;
-import com.b2international.snowowl.fhir.core.model.dt.Coding;
-import com.b2international.snowowl.fhir.core.model.dt.ContactPoint;
-import com.b2international.snowowl.fhir.core.model.dt.Id;
-import com.b2international.snowowl.fhir.core.model.dt.Instant;
-import com.b2international.snowowl.fhir.core.model.dt.Period;
+import com.b2international.snowowl.fhir.core.model.dt.*;
 import com.b2international.snowowl.fhir.tests.FhirExceptionIssueMatcher;
 import com.b2international.snowowl.fhir.tests.FhirTest;
 
@@ -72,12 +67,12 @@ public class ModelSerializationTest extends FhirTest {
 			.build();
 		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(cd));
-		assertThat(jsonPath.getString("name"), equalTo("name"));
+		assertThat(jsonPath.getString("name")).isEqualTo("name");
 		jsonPath.setRoot("telecom[0]");
-		assertThat(jsonPath.getString("system"), equalTo("system"));
-		assertThat(jsonPath.getString("period.start"), equalTo(null));
-		assertThat(jsonPath.getString("value"), equalTo("value"));
-		assertThat(jsonPath.getInt("rank"), equalTo(1));
+		assertThat(jsonPath.getString("system")).isEqualTo("system");
+		assertThat(jsonPath.getString("period.start")).isEqualTo(null);
+		assertThat(jsonPath.getString("value")).isEqualTo("value");
+		assertThat(jsonPath.getInt("rank")).isEqualTo(1);
 	}
 	
 	@Test
@@ -98,11 +93,11 @@ public class ModelSerializationTest extends FhirTest {
 			.build();
 		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(meta));
-		assertThat(jsonPath.getString("versionId"), equalTo("versionId"));
-		assertThat(jsonPath.getString("lastUpdated"), equalTo("2018-03-23T07:49:40Z"));
-		assertThat(jsonPath.getString("security[0].code"), equalTo("code"));
-		assertThat(jsonPath.getString("tag[0].code"), equalTo("tag"));
-		assertThat(jsonPath.getString("profile[0]"), equalTo("profileValue"));
+		assertThat(jsonPath.getString("versionId")).isEqualTo("versionId");
+		assertThat(jsonPath.getString("lastUpdated")).isEqualTo("2018-03-23T07:49:40Z");
+		assertThat(jsonPath.getString("security[0].code")).isEqualTo("code");
+		assertThat(jsonPath.getString("tag[0].code")).isEqualTo("tag");
+		assertThat(jsonPath.getString("profile[0]")).isEqualTo("profileValue");
 	}
 	
 	@Test
@@ -115,18 +110,17 @@ public class ModelSerializationTest extends FhirTest {
 				.build();
 		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(ou));
-		assertThat(jsonPath.getString("resourceType"), equalTo("OperationOutcome"));
+		assertThat(jsonPath.getString("resourceType")).isEqualTo("OperationOutcome");
 		jsonPath.setRoot("issue[0]");
 		
-		assertThat(jsonPath.getString("severity"), equalTo("error"));
-		assertThat(jsonPath.getString("code"), equalTo("required"));
+		assertThat(jsonPath.getString("severity")).isEqualTo("error");
+		assertThat(jsonPath.getString("code")).isEqualTo("required");
 	}
 	
 	@Test
 	public void missingIssueTest() throws Exception {
-		
 		Issue expectedIssue = builder.addLocation("OperationOutcome.issues")
-			.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'issues' content is invalid [[]]. Violation: may not be empty.")
+			.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'issues' content is invalid [null]. Violation: may not be empty.")
 			.build();
 		
 		exception.expect(ValidationException.class);

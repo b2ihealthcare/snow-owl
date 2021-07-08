@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.core.ecl;
 
+import static com.b2international.index.revision.Revision.Fields.ID;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument.Expressions.active;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.*;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Fields.*;
@@ -45,7 +46,6 @@ import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
-import com.b2international.snowowl.core.request.SearchResourceRequest.Operator;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
@@ -360,7 +360,7 @@ final class SnomedEclRefinementEvaluator {
 			// resolve non-* focusConcept ECLs to IDs, so we can filter relationships by source/destination
 			// filterByType and filterByDestination accepts ECL expressions as well, so serialize them into ECL and pass as String when required
 			// if reversed refinement, then we are interested in the destinationIds otherwise we need the sourceIds
-			final Collection<String> destinationConceptFilter = evalToConceptIds(context, ((AttributeComparison) comparison).getConstraint(), expressionForm).getSync(1, TimeUnit.MINUTES);
+			final Collection<String> destinationConceptFilter = evalToConceptIds(context, ((AttributeComparison) comparison).getValue(), expressionForm).getSync(1, TimeUnit.MINUTES);
 			final Collection<String> focusConceptFilter = refinement.isReversed() ? destinationConceptFilter : focusConceptIds;
 			final Collection<String> valueConceptFilter = refinement.isReversed() ? focusConceptIds : destinationConceptFilter;
 			return evalStatements(context, focusConceptFilter, typeConceptFilter, valueConceptFilter, grouped, expressionForm);
@@ -384,74 +384,23 @@ final class SnomedEclRefinementEvaluator {
 	private Promise<Collection<Property>> evalMembers(BranchContext context, Set<String> focusConceptIds, Collection<String> typeIds, DataTypeComparison comparison) {
 		final Object value;
 		final DataType type;
-		final SearchResourceRequest.Operator operator;
-		if (comparison instanceof BooleanValueEquals) {
-			value = ((BooleanValueEquals) comparison).isValue();
+		if (comparison instanceof BooleanValueComparison) {
+			value = ((BooleanValueComparison) comparison).isValue();
 			type = DataType.BOOLEAN;
-			operator = SearchResourceRequest.Operator.EQUALS;
-		} else if (comparison instanceof BooleanValueNotEquals) {
-			value = ((BooleanValueNotEquals) comparison).isValue();
-			type = DataType.BOOLEAN;
-			operator = SearchResourceRequest.Operator.NOT_EQUALS;
-		} else if (comparison instanceof StringValueEquals) {
-			value = ((StringValueEquals) comparison).getValue();
+		} else if (comparison instanceof StringValueComparison) {
+			value = ((StringValueComparison) comparison).getValue();
 			type = DataType.STRING;
-			operator = SearchResourceRequest.Operator.EQUALS;
-		} else if (comparison instanceof StringValueNotEquals) {
-			value = ((StringValueNotEquals) comparison).getValue();
-			type = DataType.STRING;
-			operator = SearchResourceRequest.Operator.NOT_EQUALS;
-		} else if (comparison instanceof IntegerValueEquals) {
-			value = ((IntegerValueEquals) comparison).getValue();
+		} else if (comparison instanceof IntegerValueComparison) {
+			value = ((IntegerValueComparison) comparison).getValue();
 			type = DataType.INTEGER;
-			operator = SearchResourceRequest.Operator.EQUALS;
-		} else if (comparison instanceof IntegerValueNotEquals) {
-			value = ((IntegerValueNotEquals) comparison).getValue();
-			type = DataType.INTEGER;
-			operator = SearchResourceRequest.Operator.NOT_EQUALS;
-		} else if (comparison instanceof DecimalValueEquals) {
-			value = ((DecimalValueEquals) comparison).getValue();
+		} else if (comparison instanceof DecimalValueComparison) {
+			value = ((DecimalValueComparison) comparison).getValue();
 			type = DataType.DECIMAL;
-			operator = SearchResourceRequest.Operator.EQUALS;
-		} else if (comparison instanceof DecimalValueNotEquals) {
-			value = ((DecimalValueNotEquals) comparison).getValue();
-			type = DataType.DECIMAL;
-			operator = SearchResourceRequest.Operator.NOT_EQUALS;
-		} else if (comparison instanceof IntegerValueLessThan) {
-			value = ((IntegerValueLessThan) comparison).getValue();
-			type = DataType.INTEGER;
-			operator = SearchResourceRequest.Operator.LESS_THAN;
-		} else if (comparison instanceof DecimalValueLessThan) {
-			value = ((DecimalValueLessThan) comparison).getValue();
-			type = DataType.DECIMAL;
-			operator = SearchResourceRequest.Operator.LESS_THAN;
-		} else if (comparison instanceof IntegerValueLessThanEquals) {
-			value = ((IntegerValueLessThanEquals) comparison).getValue();
-			type = DataType.INTEGER;
-			operator = SearchResourceRequest.Operator.LESS_THAN_EQUALS;
-		} else if (comparison instanceof DecimalValueLessThanEquals) {
-			value = ((DecimalValueLessThanEquals) comparison).getValue();
-			type = DataType.DECIMAL;
-			operator = SearchResourceRequest.Operator.LESS_THAN_EQUALS;
-		} else if (comparison instanceof IntegerValueGreaterThan) {
-			value = ((IntegerValueGreaterThan) comparison).getValue();
-			type = DataType.INTEGER;
-			operator = SearchResourceRequest.Operator.GREATER_THAN;
-		} else if (comparison instanceof DecimalValueGreaterThan) {
-			value = ((DecimalValueGreaterThan) comparison).getValue();
-			type = DataType.DECIMAL;
-			operator = SearchResourceRequest.Operator.GREATER_THAN;
-		} else if (comparison instanceof IntegerValueGreaterThanEquals) {
-			value = ((IntegerValueGreaterThanEquals) comparison).getValue();
-			type = DataType.INTEGER;
-			operator = SearchResourceRequest.Operator.GREATER_THAN_EQUALS;
-		} else if (comparison instanceof DecimalValueGreaterThanEquals) {
-			value = ((DecimalValueGreaterThanEquals) comparison).getValue();
-			type = DataType.DECIMAL;
-			operator = SearchResourceRequest.Operator.GREATER_THAN_EQUALS;
 		} else {
 			return SnomedEclEvaluationRequest.throwUnsupported(comparison);
 		}
+		
+		final SearchResourceRequest.Operator operator = toSearchOperator(comparison.getOp());
 		return evalMembers(context, focusConceptIds, typeIds, type, value, operator)
 				.then(matchingMembers -> FluentIterable.from(matchingMembers)
 					.transform(input -> new Property(
@@ -499,55 +448,17 @@ final class SnomedEclRefinementEvaluator {
 		DataTypeComparison comparison) {
 		
 		final RelationshipValue value;
-		final SearchResourceRequest.Operator operator;
+		final SearchResourceRequest.Operator operator = toSearchOperator(comparison.getOp());
 
 		// XXX: no boolean comparison for relationships with value!
-		if (comparison instanceof BooleanValueEquals) {
+		if (comparison instanceof BooleanValueComparison) {
 			return Promise.immediate(List.of());
-		} else if (comparison instanceof BooleanValueNotEquals) {
-			return Promise.immediate(List.of());
-		} else if (comparison instanceof StringValueEquals) {
-			value = new RelationshipValue(((StringValueEquals) comparison).getValue());
-			operator = SearchResourceRequest.Operator.EQUALS;
-		} else if (comparison instanceof StringValueNotEquals) {
-			value = new RelationshipValue(((StringValueNotEquals) comparison).getValue());
-			operator = SearchResourceRequest.Operator.NOT_EQUALS;
-		} else if (comparison instanceof IntegerValueEquals) {
-			value = new RelationshipValue(((IntegerValueEquals) comparison).getValue());
-			operator = SearchResourceRequest.Operator.EQUALS;
-		} else if (comparison instanceof IntegerValueNotEquals) {
-			value = new RelationshipValue(((IntegerValueNotEquals) comparison).getValue());
-			operator = SearchResourceRequest.Operator.NOT_EQUALS;
-		} else if (comparison instanceof DecimalValueEquals) {
-			value = new RelationshipValue(((DecimalValueEquals) comparison).getValue().doubleValue());
-			operator = SearchResourceRequest.Operator.EQUALS;
-		} else if (comparison instanceof DecimalValueNotEquals) {
-			value = new RelationshipValue(((DecimalValueNotEquals) comparison).getValue().doubleValue());
-			operator = SearchResourceRequest.Operator.NOT_EQUALS;
-		} else if (comparison instanceof IntegerValueLessThan) {
-			value = new RelationshipValue(((IntegerValueLessThan) comparison).getValue());
-			operator = SearchResourceRequest.Operator.LESS_THAN;
-		} else if (comparison instanceof DecimalValueLessThan) {
-			value = new RelationshipValue(((DecimalValueLessThan) comparison).getValue().doubleValue());
-			operator = SearchResourceRequest.Operator.LESS_THAN;
-		} else if (comparison instanceof IntegerValueLessThanEquals) {
-			value = new RelationshipValue(((IntegerValueLessThanEquals) comparison).getValue());
-			operator = SearchResourceRequest.Operator.LESS_THAN_EQUALS;
-		} else if (comparison instanceof DecimalValueLessThanEquals) {
-			value = new RelationshipValue(((DecimalValueLessThanEquals) comparison).getValue().doubleValue());
-			operator = SearchResourceRequest.Operator.LESS_THAN_EQUALS;
-		} else if (comparison instanceof IntegerValueGreaterThan) {
-			value = new RelationshipValue(((IntegerValueGreaterThan) comparison).getValue());
-			operator = SearchResourceRequest.Operator.GREATER_THAN;
-		} else if (comparison instanceof DecimalValueGreaterThan) {
-			value = new RelationshipValue(((DecimalValueGreaterThan) comparison).getValue().doubleValue());
-			operator = SearchResourceRequest.Operator.GREATER_THAN;
-		} else if (comparison instanceof IntegerValueGreaterThanEquals) {
-			value = new RelationshipValue(((IntegerValueGreaterThanEquals) comparison).getValue());
-			operator = SearchResourceRequest.Operator.GREATER_THAN_EQUALS;
-		} else if (comparison instanceof DecimalValueGreaterThanEquals) {
-			value = new RelationshipValue(((DecimalValueGreaterThanEquals) comparison).getValue().doubleValue());
-			operator = SearchResourceRequest.Operator.GREATER_THAN_EQUALS;
+		} else if (comparison instanceof StringValueComparison) {
+			value = new RelationshipValue(((StringValueComparison) comparison).getValue());
+		} else if (comparison instanceof IntegerValueComparison) {
+			value = new RelationshipValue(((IntegerValueComparison) comparison).getValue());
+		} else if (comparison instanceof DecimalValueComparison) {
+			value = new RelationshipValue(((DecimalValueComparison) comparison).getValue().doubleValue());
 		} else {
 			return SnomedEclEvaluationRequest.throwUnsupported(comparison);
 		}
@@ -600,7 +511,7 @@ final class SnomedEclRefinementEvaluator {
 			Set<String> focusConceptIds,
 			Collection<String> typeIds, 
 			RelationshipValue value, 
-			Operator operator) {
+			SearchResourceRequest.Operator operator) {
 		
 		// search existing axioms defined for the given set of conceptIds
 		ExpressionBuilder axiomFilter = Expressions.builder();
@@ -654,6 +565,26 @@ final class SnomedEclRefinementEvaluator {
 			});
 		
 		return Promise.immediate(axiomProperties);
+	}
+
+	private SearchResourceRequest.Operator toSearchOperator(final String op) {
+		final Operator eclOperator = Operator.fromString(op);
+		switch (eclOperator) {
+			case EQUALS:
+				return SearchResourceRequest.Operator.EQUALS;
+			case GT:
+				return SearchResourceRequest.Operator.GREATER_THAN;
+			case GTE:
+				return SearchResourceRequest.Operator.GREATER_THAN_EQUALS;
+			case LT:
+				return SearchResourceRequest.Operator.LESS_THAN;
+			case LTE:
+				return SearchResourceRequest.Operator.LESS_THAN_EQUALS;
+			case NOT_EQUALS:
+				return SearchResourceRequest.Operator.NOT_EQUALS;
+			default:
+				throw new IllegalStateException("Unhandled ECL search operator '" + eclOperator + "'.");
+		}
 	}
 
 	/*package*/ static Function<Collection<Property>, Collection<Property>> filterByCardinality(final boolean grouped, final Range<Long> groupCardinality, final Range<Long> cardinality, final Function<Property, Object> idProvider) {

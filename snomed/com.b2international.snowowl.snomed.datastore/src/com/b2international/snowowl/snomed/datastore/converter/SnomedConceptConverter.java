@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -122,6 +123,10 @@ public final class SnomedConceptConverter extends BaseRevisionResourceConverter<
 				return preferredDescription;
 			}).collect(Collectors.toList());
 			result.setPreferredDescriptions(new SnomedDescriptions(preferredDescriptions, null, preferredDescriptions.size(), preferredDescriptions.size()));
+		}
+		
+		if (expand().containsKey(SnomedConcept.Expand.SEMANTIC_TAGS)) {
+			result.setSemanticTags(Collections3.toImmutableList(input.getSemanticTags()));
 		}
 			
 		return result;

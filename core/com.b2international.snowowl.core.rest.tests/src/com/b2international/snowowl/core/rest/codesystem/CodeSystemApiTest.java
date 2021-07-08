@@ -162,7 +162,7 @@ public class CodeSystemApiTest {
 		assertCodeSystemCreate(SNOMED)
 			.statusCode(201);
 		
-		assertCodeSystemCreate(SNOMED.with(ResourceDocument.Fields.ID, "SNOMEDCT-other").with("url", "SNOMED CT-other"))
+		assertCodeSystemCreate(SNOMED.with(ResourceDocument.Fields.ID, "SNOMEDCT-other").with("url", SnomedTerminologyComponentConstants.SNOMED_URI_DEV))
 			.statusCode(409)
 			.body("message", containsString("Resource with '2.16.840.1.113883.6.96' oid already exists."));
 	}

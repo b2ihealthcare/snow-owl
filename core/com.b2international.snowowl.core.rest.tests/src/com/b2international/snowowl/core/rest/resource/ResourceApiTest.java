@@ -29,6 +29,7 @@ import org.junit.Test;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.eventbus.IEventBus;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.test.commons.Services;
 import com.b2international.snowowl.test.commons.rest.RestExtensions;
 
@@ -37,10 +38,9 @@ import com.b2international.snowowl.test.commons.rest.RestExtensions;
  */
 public class ResourceApiTest {
 
-	private static final String DEFAULT_CODE_SYSTEM_TOOLING_ID = "snomed";
+	private static final String DEFAULT_CODE_SYSTEM_TOOLING_ID = SnomedTerminologyComponentConstants.TOOLING_ID;
 	private static final String DEFAULT_CODE_SYSTEM_LANGUAGE = "en";
 	private static final String DEFAULT_CODE_SYSTEM_DESCRIPTION = "# Description";
-	private static final String DEFAULT_CODE_SYSTEM_URL = "www.ihtsdo.org";
 	private static final String DEFAULT_CODE_SYSTEM_SHORT_NAME = "sn";
 	private static final String DEFAULT_CODE_SYSTEM_OID = "oid";
 
@@ -61,7 +61,6 @@ public class ResourceApiTest {
 		createDefaultCodeSystem(DEFAULT_CODE_SYSTEM_SHORT_NAME, DEFAULT_CODE_SYSTEM_OID);
 
 		assertResourceSearch().statusCode(200).body("items", iterableWithSize(1));
-
 	}
 
 	@Test
@@ -69,10 +68,9 @@ public class ResourceApiTest {
 		createDefaultCodeSystem(DEFAULT_CODE_SYSTEM_SHORT_NAME, DEFAULT_CODE_SYSTEM_OID);
 
 		assertResourceGet(DEFAULT_CODE_SYSTEM_SHORT_NAME)
-		.statusCode(200)
-		.body("id", equalTo(DEFAULT_CODE_SYSTEM_SHORT_NAME))
-		.body("oid", equalTo(DEFAULT_CODE_SYSTEM_OID));
-
+			.statusCode(200)
+			.body("id", equalTo(DEFAULT_CODE_SYSTEM_SHORT_NAME))
+			.body("oid", equalTo(DEFAULT_CODE_SYSTEM_OID));
 	}
 
 	private void createDefaultCodeSystem(final String shortName, final String oid) {
@@ -80,7 +78,7 @@ public class ResourceApiTest {
 		.prepareNewCodeSystem()
 		.setId(shortName)
 		.setTitle(String.format("%s - %s", shortName, oid))
-		.setUrl(DEFAULT_CODE_SYSTEM_URL)
+		.setUrl(SnomedTerminologyComponentConstants.SNOMED_URI_DEV + "/" + shortName)
 		.setDescription(DEFAULT_CODE_SYSTEM_DESCRIPTION)
 		.setLanguage(DEFAULT_CODE_SYSTEM_LANGUAGE)
 		.setToolingId(DEFAULT_CODE_SYSTEM_TOOLING_ID)

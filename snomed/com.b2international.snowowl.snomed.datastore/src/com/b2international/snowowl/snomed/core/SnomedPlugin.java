@@ -24,7 +24,6 @@ import org.slf4j.Logger;
 
 import com.b2international.index.revision.Hooks.PreCommitHook;
 import com.b2international.snomed.ecl.EclStandaloneSetup;
-import com.b2international.snomed.ql.QLStandaloneSetup;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.core.domain.BranchContext;
@@ -62,10 +61,6 @@ import com.b2international.snowowl.snomed.core.mrcm.io.MrcmExporter;
 import com.b2international.snowowl.snomed.core.mrcm.io.MrcmExporterImpl;
 import com.b2international.snowowl.snomed.core.mrcm.io.MrcmImporter;
 import com.b2international.snowowl.snomed.core.mrcm.io.MrcmJsonImporter;
-import com.b2international.snowowl.snomed.core.ql.DefaultSnomedQueryParser;
-import com.b2international.snowowl.snomed.core.ql.DefaultSnomedQuerySerializer;
-import com.b2international.snowowl.snomed.core.ql.SnomedQueryParser;
-import com.b2international.snowowl.snomed.core.ql.SnomedQuerySerializer;
 import com.b2international.snowowl.snomed.core.request.SnomedConceptSearchRequestEvaluator;
 import com.b2international.snowowl.snomed.core.request.SnomedQueryOptimizer;
 import com.b2international.snowowl.snomed.core.uri.SnomedURLSchemaSupport;
@@ -101,10 +96,6 @@ public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 		final Injector injector = new EclStandaloneSetup().createInjectorAndDoEMFRegistration();
 		env.services().registerService(EclParser.class, new DefaultEclParser(injector.getInstance(IParser.class), injector.getInstance(IResourceValidator.class)));
 		env.services().registerService(EclSerializer.class, new DefaultEclSerializer(injector.getInstance(ISerializer.class)));
-		
-		final Injector qlInjector = new QLStandaloneSetup().createInjectorAndDoEMFRegistration();
-		env.services().registerService(SnomedQueryParser.class, new DefaultSnomedQueryParser(qlInjector.getInstance(IParser.class), qlInjector.getInstance(IResourceValidator.class)));
-		env.services().registerService(SnomedQuerySerializer.class, new DefaultSnomedQuerySerializer(qlInjector.getInstance(ISerializer.class)));
 		
 		// register SNOMED CT Query based validation rule evaluator
 		ValidationRuleEvaluator.Registry.register(new SnomedQueryValidationRuleEvaluator());

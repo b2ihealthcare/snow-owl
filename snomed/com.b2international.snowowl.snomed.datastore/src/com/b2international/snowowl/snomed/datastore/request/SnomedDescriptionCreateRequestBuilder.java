@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ public final class SnomedDescriptionCreateRequestBuilder extends SnomedComponent
 	private String typeId = Concepts.SYNONYM;
 	private String languageCode = "en";
 	private Map<String, Acceptability> acceptabilityMap = newHashMap();
-	private String inactivationIndicatorId = "";
+	private String inactivationIndicatorId = SnomedInactivationReasonUpdateRequest.CLEAR;
 	
 	SnomedDescriptionCreateRequestBuilder() { 
 		super();

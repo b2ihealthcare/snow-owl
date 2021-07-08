@@ -19,10 +19,7 @@ import static com.b2international.index.query.Expressions.*;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Sets.newHashSetWithExpectedSize;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import com.b2international.collections.PrimitiveSets;
 import com.b2international.collections.longs.LongSortedSet;
@@ -186,6 +183,14 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 		public static Expression mapTargetComponentTypes(Collection<Integer> mapTargetComponentTypes) {
 			return matchAnyInt(Fields.MAP_TARGET_COMPONENT_TYPE, mapTargetComponentTypes);
 		}
+
+		public static Expression semanticTag(String semanticTag) {
+			return exactMatch(Fields.SEMANTIC_TAGS, semanticTag);
+		}
+		
+		public static Expression semanticTags(Iterable<String> semanticTags) {
+			return matchAny(Fields.SEMANTIC_TAGS, semanticTags);
+		}
 		
 	}
 
@@ -202,7 +207,8 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 		public static final String REFERENCED_COMPONENT_TYPE = "referencedComponentType";
 		public static final String MAP_TARGET_COMPONENT_TYPE = "mapTargetComponentType";
 		public static final String DOI = "doi";
-		public static final String DESCRIPTIONS = "preferredDescriptions";
+		public static final String PREFERRED_DESCRIPTIONS = "preferredDescriptions";
+		public static final String SEMANTIC_TAGS = "semanticTags";
 	}
 	
 	public static Builder builder(final SnomedConceptDocument input) {
@@ -267,6 +273,7 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 		private Short referencedComponentType = TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT;
 		private Short mapTargetComponentType;
 		private List<SnomedDescriptionFragment> preferredDescriptions = Collections.emptyList();
+		private SortedSet<String> semanticTags = Collections.emptySortedSet();
 		private float doi = DEFAULT_DOI;
 
 		@JsonCreator
@@ -382,6 +389,11 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 			return getSelf();
 		}
 		
+		public Builder semanticTags(SortedSet<String> semanticTags) {
+			this.semanticTags = semanticTags;
+			return getSelf();
+		}
+		
 		public SnomedConceptDocument build() {
 			final SnomedConceptDocument entry = new SnomedConceptDocument(id,
 					iconId, 
@@ -417,6 +429,10 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 				entry.statedAncestors = statedAncestors;
 			}
 			
+			if (semanticTags != null) {
+				entry.semanticTags = semanticTags;
+			}
+			
 			return entry;
 		}
 
@@ -434,6 +450,7 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 	private LongSortedSet statedParents;
 	private LongSortedSet statedAncestors;
 	private float doi;
+	private SortedSet<String> semanticTags;
 
 	private SnomedConceptDocument(final String id,
 			final String iconId,
@@ -517,6 +534,10 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 	
 	public List<SnomedDescriptionFragment> getPreferredDescriptions() {
 		return preferredDescriptions;
+	}
+	
+	public SortedSet<String> getSemanticTags() {
+		return semanticTags;
 	}
 	
 	@Override
