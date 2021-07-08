@@ -27,29 +27,32 @@ import com.b2international.snowowl.core.codesystem.CodeSystems;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
-import com.b2international.snowowl.core.rest.RestApiError;
 
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * @since 1.0
  */
-@Api(value = "Resources", description="Resources", tags = { "resources" })
+@Tag(description = "Resources", name = "resources")
 @RestController
 @RequestMapping("/codesystems")
 public class CodeSystemRestService extends AbstractRestService {
 
-	@ApiOperation(
-		value="Retrieve CodeSystems", 
-		notes="Returns a collection resource containing all/filtered registered CodeSystems."
+	@Operation(
+		summary="Retrieve CodeSystems", 
+		description="Returns a collection resource containing all/filtered registered CodeSystems."
 			+ "<p>Results are by default sorted by ID."
 			+ "<p>The following properties can be expanded:"
 			+ "<p>"
 			+ "&bull; availableUpgrades() &ndash; a list of possible code system resource URIs that can be used as an 'extensionOf' property"
 	)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK", response = CodeSystems.class),
-		@ApiResponse(code = 400, message = "Bad Request", response = RestApiError.class)
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "400", description = "Bad Request")
 	})
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public Promise<CodeSystems> searchByGet(final CodeSystemRestSearch params) {
@@ -66,18 +69,18 @@ public class CodeSystemRestService extends AbstractRestService {
 				.execute(getBus());
 	}
 	
-	@ApiOperation(
-		value="Retrieve Code Systems", 
-		notes="Returns a collection resource containing all/filtered registered Code Systems."
+	@Operation(
+		summary="Retrieve Code Systems", 
+		description="Returns a collection resource containing all/filtered registered Code Systems."
 		    + "<p>Results are always sorted by repositoryUuid first, sort keys only apply per repository."
 			+ "<p>The following properties can be expanded:"
 			+ "<p>"
 			+ "&bull; availableUpgrades() &ndash; a list of possible code system URIs that can be used as an 'extensionOf' property"
 	)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK", response = CodeSystems.class),
-		@ApiResponse(code = 400, message = "Invalid search config", response = RestApiError.class),
-		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "400", description = "Invalid search config"),
+		@ApiResponse(responseCode = "404", description = "Branch not found")
 	})
 	@PostMapping(value="/search", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public @ResponseBody Promise<CodeSystems> searchByPost(
@@ -86,29 +89,30 @@ public class CodeSystemRestService extends AbstractRestService {
 		return searchByGet(params);
 	}
 
-	@ApiOperation(
-			value="Retrieve code system by its unique identifier",
-			notes="Returns generic information about a single code system associated to the given unique identifier.")
+	@Operation(
+		summary="Retrieve code system by its unique identifier",
+		description="Returns generic information about a single code system associated to the given unique identifier."
+	)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Not found", response = RestApiError.class)
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "404", description = "Not found")
 	})
 	@GetMapping(value = "/{codeSystemId}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public Promise<CodeSystem> get(
-			@ApiParam(value="The code system identifier")
+			@Parameter(description="The code system identifier")
 			@PathVariable(value="codeSystemId") final String codeSystemId) {
 		return CodeSystemRequests.prepareGetCodeSystem(codeSystemId)
 				.buildAsync()
 				.execute(getBus());
 	}
 	
-	@ApiOperation(
-		value="Create a code system",
-		notes="Create a new Code System with the given parameters"
+	@Operation(
+		summary="Create a code system",
+		description="Create a new Code System with the given parameters"
 	)
 	@ApiResponses({
-		@ApiResponse(code = 201, message = "Created", response = Void.class),
-		@ApiResponse(code = 400, message = "CodeSystem already exists in the system", response = RestApiError.class)
+		@ApiResponse(responseCode = "201", description = "Created"),
+		@ApiResponse(responseCode = "400", description = "CodeSystem already exists in the system")
 	})
 	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.CREATED)
@@ -149,17 +153,18 @@ public class CodeSystemRestService extends AbstractRestService {
 		return ResponseEntity.created(getResourceLocationURI(codeSystemId)).build();
 	}
 	
-	@ApiOperation(
-			value="Update a code system",
-			notes="Update a Code System with the given parameters")
+	@Operation(
+		summary = "Update a code system",
+		description = "Update a Code System with the given parameters"
+	)
 	@ApiResponses({
-		@ApiResponse(code = 204, message = "No content", response = Void.class),
-		@ApiResponse(code = 400, message = "Code System cannot be updated", response = RestApiError.class)
+		@ApiResponse(responseCode = "204", description = "No content"),
+		@ApiResponse(responseCode = "400", description = "Code System cannot be updated")
 	})
 	@PutMapping(value = "/{codeSystemId}", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void update(
-			@ApiParam(value="The code system identifier")
+			@Parameter(description = "The code system identifier")
 			@PathVariable(value="codeSystemId") 
 			final String codeSystemId,
 			
@@ -193,18 +198,18 @@ public class CodeSystemRestService extends AbstractRestService {
 				.getSync(COMMIT_TIMEOUT, TimeUnit.MINUTES);
 	}
 	
-	@ApiOperation(
-			value="Delete a CodeSystem",
-			notes="Deletes a CodeSystem permanently from the server")
+	@Operation(
+			summary="Delete a CodeSystem",
+			description="Deletes a CodeSystem permanently from the server")
 	@ApiResponses({
-		@ApiResponse(code = 204, message = "No content", response = Void.class),
-		@ApiResponse(code = 400, message = "Bad Request", response = RestApiError.class),
-		@ApiResponse(code = 409, message = "CodeSystem cannot be deleted", response = RestApiError.class)
+		@ApiResponse(responseCode = "204", description = "No content"),
+		@ApiResponse(responseCode = "400", description = "Bad Request"),
+		@ApiResponse(responseCode = "409", description = "CodeSystem cannot be deleted")
 	})
 	@DeleteMapping(value = "/{codeSystemId}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void delete(
-			@ApiParam(value="The code system identifier")
+			@Parameter(description = "The code system identifier")
 			@PathVariable(value="codeSystemId") 
 			final String codeSystemId,
 			

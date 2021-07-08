@@ -19,29 +19,21 @@ import java.util.List;
 
 import com.b2international.snowowl.core.rest.domain.ObjectRestSearch;
 
-import io.swagger.annotations.ApiParam;
-
 /**
  * @since 8.0
  */
 public class ResourceRestSearch extends ObjectRestSearch {
 
-	@ApiParam
 	private List<String> branch;
 	
-	@ApiParam
 	private List<String> resourceType;
 	
-	@ApiParam
 	private List<String> titleExact;
 	
-	@ApiParam
 	private String title;
 	
-	@ApiParam
 	private List<String> toolingId;
 	
-	@ApiParam
 	private List<String> bundleId;
 
 	public List<String> getBranch() {

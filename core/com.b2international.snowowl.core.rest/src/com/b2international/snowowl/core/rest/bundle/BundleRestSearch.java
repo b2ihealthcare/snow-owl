@@ -17,14 +17,11 @@ package com.b2international.snowowl.core.rest.bundle;
 
 import com.b2international.snowowl.core.rest.domain.ObjectRestSearch;
 
-import io.swagger.annotations.ApiParam;
-
 /**
  * @since 8.0
  */
 public final class BundleRestSearch extends ObjectRestSearch {
 	
-	@ApiParam
 	private String title;
 	
 	public String getTitle() {

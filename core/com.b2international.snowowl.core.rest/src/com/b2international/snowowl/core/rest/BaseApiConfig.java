@@ -15,36 +15,22 @@
  */
 package com.b2international.snowowl.core.rest;
 
-import static springfox.documentation.schema.AlternateTypeRules.newRule;
-
-import java.security.Principal;
-import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 
+import org.springdoc.core.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseEntity;
 
-import com.b2international.commons.http.ExtendedLocale;
-import com.b2international.snowowl.core.ResourceURI;
-import com.b2international.snowowl.core.ComponentIdentifier;
-import com.b2international.snowowl.core.events.util.Promise;
 import com.fasterxml.classmate.TypeResolver;
-import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableList;
 
-import io.swagger.models.auth.In;
-import springfox.documentation.builders.PathSelectors;
-import springfox.documentation.schema.AlternateTypeRule;
-import springfox.documentation.schema.WildcardType;
-import springfox.documentation.service.*;
-import springfox.documentation.spi.DocumentationType;
-import springfox.documentation.spi.service.contexts.SecurityContext;
-import springfox.documentation.spring.web.plugins.Docket;
+import io.swagger.v3.oas.models.info.Contact;
+import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.info.License;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
+import io.swagger.v3.oas.models.security.SecurityScheme.In;
 
 /**
  * Abstract configuration superclass to aid in providing Swagger documentation
@@ -86,7 +72,7 @@ public abstract class BaseApiConfig {
 	 * Expose this as @Bean annotated component in the implementation configuration class.
 	 * @return a configured docket for this API module
 	 */
-	protected final Docket docs(
+	protected final GroupedOpenApi docs(
 			final String apiBaseUrl,
 			final String apiGroup,
 			final String apiVersion,
@@ -96,55 +82,62 @@ public abstract class BaseApiConfig {
 			final String apiLicense,
 			final String apiLicenseUrl,
 			final String apiDescription) {
-		final TypeResolver resolver = new TypeResolver();
-		final Predicate<String> paths = PathSelectors.regex(apiBaseUrl + ".*");
-		return new Docket(DocumentationType.SWAGGER_2)
-				.securitySchemes(ImmutableList.of(
-					new BasicAuth("basic"),
-					new ApiKey("bearer", HttpHeaders.AUTHORIZATION, In.HEADER.name())
-				))
-				.securityContexts(ImmutableList.of(
-					SecurityContext.builder()
-						.forPaths(paths)
-						.securityReferences(ImmutableList.of(
-							new SecurityReference("basic", new AuthorizationScope[0]),
-							new SecurityReference("bearer", new AuthorizationScope[0])
-						))
-					.build()
-				))
-				.useDefaultResponseMessages(false)
-				.ignoredParameterTypes(Principal.class)
-				.alternateTypeRules(getAlternateTypeRules(resolver))
-				.groupName(apiGroup)
-	            .select()
-	            	.paths(paths)
-	            	.build()
-	            .apiInfo(new ApiInfo(apiTitle, apiDescription, apiVersion, apiTermsOfServiceUrl, new Contact("B2i Healthcare", apiLicenseUrl, apiContact), apiLicense, apiLicenseUrl, Collections.emptyList()));
+		return GroupedOpenApi.builder()
+				.group(apiGroup)
+				.pathsToMatch(apiBaseUrl.endsWith("/") ? apiBaseUrl + "**" : apiBaseUrl + "/**")
+				.addOpenApiCustomiser(api -> {
+					Info apiInfo = api.getInfo();
+					apiInfo.setTitle(apiTitle);
+					apiInfo.setDescription(apiDescription);
+					apiInfo.setVersion(apiVersion);
+					apiInfo.setTermsOfService(apiTermsOfServiceUrl);
+					Contact contact = new Contact();
+					contact.setName("B2i Healthcare");
+					contact.setEmail(apiContact);
+					contact.setUrl(apiLicenseUrl);
+					apiInfo.setContact(contact);
+					License license = new License();
+					license.setName(apiLicense);
+					license.setUrl(apiLicenseUrl);
+					apiInfo.setLicense(license);
+
+					
+					// configure global security
+					api.getComponents()
+						.addSecuritySchemes("basic", new SecurityScheme().type(SecurityScheme.Type.HTTP).scheme("basic"))
+						.addSecuritySchemes("bearer", new SecurityScheme().type(SecurityScheme.Type.APIKEY).scheme("bearer").in(In.HEADER).bearerFormat("JWT"));
+					
+					// disable servers prop
+					api.setServers(List.of()); 
+				})
+				.build();
+//				.useDefaultResponseMessages(false)
+//				.alternateTypeRules(getAlternateTypeRules(resolver));
 	}
 
-	protected AlternateTypeRule[] getAlternateTypeRules(TypeResolver resolver) {
-		return new AlternateTypeRule[] {
-			newRule(resolver.resolve(UUID.class), resolver.resolve(String.class)),
-			newRule(resolver.resolve(ResourceURI.class), resolver.resolve(String.class)),
-			newRule(resolver.resolve(ComponentIdentifier.class), resolver.resolve(String.class)),
-			newRule(resolver.resolve(ExtendedLocale.class), resolver.resolve(String.class)),
-			newRule(
-				resolver.resolve(List.class, resolver.resolve(ResourceURI.class)),
-				resolver.resolve(List.class, resolver.resolve(String.class))
-	        ),
-			newRule(
-				resolver.resolve(List.class, resolver.resolve(ExtendedLocale.class)),
-				resolver.resolve(List.class, resolver.resolve(String.class))
-	        ),
-			newRule(
-				resolver.resolve(Promise.class, WildcardType.class),
-	            resolver.resolve(WildcardType.class)
-	        ),
-			newRule(
-				resolver.resolve(Promise.class, resolver.resolve(ResponseEntity.class, WildcardType.class)),
-	            resolver.resolve(WildcardType.class)
-	        )
-		};
-	}
+//	protected AlternateTypeRule[] getAlternateTypeRules(TypeResolver resolver) {
+//		return new AlternateTypeRule[] {
+//			newRule(resolver.resolve(UUID.class), resolver.resolve(String.class)),
+//			newRule(resolver.resolve(ResourceURI.class), resolver.resolve(String.class)),
+//			newRule(resolver.resolve(ComponentIdentifier.class), resolver.resolve(String.class)),
+//			newRule(resolver.resolve(ExtendedLocale.class), resolver.resolve(String.class)),
+//			newRule(
+//				resolver.resolve(List.class, resolver.resolve(ResourceURI.class)),
+//				resolver.resolve(List.class, resolver.resolve(String.class))
+//	        ),
+//			newRule(
+//				resolver.resolve(List.class, resolver.resolve(ExtendedLocale.class)),
+//				resolver.resolve(List.class, resolver.resolve(String.class))
+//	        ),
+//			newRule(
+//				resolver.resolve(Promise.class, WildcardType.class),
+//	            resolver.resolve(WildcardType.class)
+//	        ),
+//			newRule(
+//				resolver.resolve(Promise.class, resolver.resolve(ResponseEntity.class, WildcardType.class)),
+//	            resolver.resolve(WildcardType.class)
+//	        )
+//		};
+//	}
 	
 }

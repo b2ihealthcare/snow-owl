@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,20 +25,20 @@ import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * @since 5.8
  */
-@Api(value = "Server info", description="Info", tags = { "info" })
+@Tag(description = "Server info", name = "info")
 @Controller
 @RequestMapping(value = "/info") 
 public class ServerInfoRestService extends AbstractRestService {
 
-	@ApiOperation(
-		value="Retrieve server information",
-		notes="Retrieves information about the running server, including version, available repositories, etc."
+	@Operation(
+		summary = "Retrieve server information",
+		description="Retrieves information about the running server, including version, available repositories, etc."
 	)
 	@RequestMapping(method = { RequestMethod.GET, RequestMethod.HEAD }, produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public @ResponseBody Promise<ServerInfo> info() {

@@ -56,7 +56,7 @@ class App extends React.Component {
           </Sider>
           <Content style={{ marginLeft: 200 }}>
             <SwaggerUI 
-              url={`${process.env.REACT_APP_SO_BASE_URL}/api-docs?group=${this.state.selectedKey}`} 
+              url={`${process.env.REACT_APP_SO_BASE_URL}/api-docs/${this.state.selectedKey}`} 
               docExpansion = "list"
             />
           </Content>

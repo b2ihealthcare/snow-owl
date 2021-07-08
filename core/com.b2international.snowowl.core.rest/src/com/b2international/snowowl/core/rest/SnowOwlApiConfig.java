@@ -66,7 +66,6 @@ import com.b2international.snowowl.core.rate.ApiConfiguration;
 import com.b2international.snowowl.core.rate.HttpConfig;
 import com.b2international.snowowl.core.rest.util.AntPathWildcardMatcher;
 import com.b2international.snowowl.core.rest.util.CsvMessageConverter;
-import com.b2international.snowowl.core.rest.util.ModelAttributeParameterExpanderExt;
 import com.b2international.snowowl.core.rest.util.PromiseMethodReturnValueHandler;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -80,26 +79,26 @@ import com.google.common.collect.ImmutableMap;
 import com.google.inject.Provider;
 
 import io.micrometer.core.instrument.MeterRegistry;
-import springfox.documentation.schema.property.bean.AccessorsProvider;
-import springfox.documentation.schema.property.field.FieldProvider;
-import springfox.documentation.spi.schema.EnumTypeDeterminer;
-import springfox.documentation.spring.web.readers.parameter.ModelAttributeParameterExpander;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
+import io.swagger.v3.oas.models.OpenAPI;
 
 /**
  * The Spring configuration class for Snow Owl's internal REST services module.
  *
  * @since 1.0
  */
-@EnableSwagger2
 @Configuration
-@ComponentScan({"com.b2international.snowowl.core.rest"})
+@ComponentScan({"com.b2international.snowowl.core.rest", "org.springdoc"})
 @Import({ SnowOwlSecurityConfig.class })
 @PropertySource("classpath:com/b2international/snowowl/core/rest/service_configuration.properties")
 public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 
 	@Autowired
 	private org.springframework.context.ApplicationContext ctx;
+
+	@Bean
+	public OpenAPI springShopOpenAPI() {
+		return new OpenAPI();
+	}
 	
 	@Bean
 	public ObjectMapper objectMapper() {
@@ -140,14 +139,6 @@ public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 	    return multipartResolver;
 	}
 	
-	@Bean
-	public ModelAttributeParameterExpander modelAttributeParameterExpander(
-			@Autowired FieldProvider fieldProvider, 
-			@Autowired AccessorsProvider accessorsProvider,
-			@Autowired EnumTypeDeterminer enumTypeDeterminer) {
-		return new ModelAttributeParameterExpanderExt(fieldProvider, accessorsProvider, enumTypeDeterminer);
-	}
-
 	@Bean
 	public IdentityProvider identityProvider() {
 		return com.b2international.snowowl.core.ApplicationContext.getInstance().getServiceChecked(IdentityProvider.class);
@@ -253,7 +244,7 @@ public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 						info = typeInfo.combine(info);
 					}
 					String prefix = getPrefix(handlerType);
-					if (prefix != null) {
+					if (prefix != null && !prefix.equals("/")) {
 						BuilderConfiguration config = new BuilderConfiguration();
 						config.setPathMatcher(getPathMatcher());
 						config.setSuffixPatternMatch(false);

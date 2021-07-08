@@ -24,29 +24,28 @@ import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.AbstractRestService;
-import com.b2international.snowowl.core.rest.RestApiError;
 import com.b2international.snowowl.eventbus.IEventBus;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * @since 7.17
  */
-@Api(value = "CodeSystemUpgrade", description="Code System Upgrade", tags = { "code-system-upgrade" })
+@Tag(description = "CodeSystems", name = "codesystems")
 @RestController
 @RequestMapping(value = "/upgrade") 
 public class CodeSystemUpgradeRestService extends AbstractRestService {
 
-	@ApiOperation(
-			value="Start a Code System dependency upgrade (EXPERIMENTAL)",
-			notes="Starts the upgrade process of a Code System to a newer extensionOf Code System dependency than the current extensionOf."
-			)
+	@Operation(
+		summary="Start a Code System dependency upgrade (EXPERIMENTAL)",
+		description="Starts the upgrade process of a Code System to a newer extensionOf Code System dependency than the current extensionOf."
+	)
 	@ApiResponses({
-		@ApiResponse(code = 204, message = "Upgrade ", response = Void.class),
-		@ApiResponse(code = 400, message = "Code System cannot be upgraded", response = RestApiError.class)
+		@ApiResponse(responseCode = "204", description = "Upgrade "),
+		@ApiResponse(responseCode = "400", description = "Code System cannot be upgraded")
 	})
 	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.CREATED)

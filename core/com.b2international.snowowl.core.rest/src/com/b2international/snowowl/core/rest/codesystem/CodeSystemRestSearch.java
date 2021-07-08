@@ -19,20 +19,15 @@ import java.util.List;
 
 import com.b2international.snowowl.core.rest.domain.ObjectRestSearch;
 
-import io.swagger.annotations.ApiParam;
-
 /**
  * @since 7.6.0
  */
 public final class CodeSystemRestSearch extends ObjectRestSearch {
 
-	@ApiParam
 	private String title;
 	
-	@ApiParam
 	private List<String> oid;
 	
-	@ApiParam
 	private List<String> toolingId;
 	
 	public List<String> getOid() {

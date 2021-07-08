@@ -19,14 +19,14 @@ import java.util.List;
 
 import com.b2international.snowowl.core.rest.domain.ObjectRestSearch;
 
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Parameter;
 
 /**
  * @since 8.0
  */
 public class VersionRestSearch extends ObjectRestSearch {
 
-	@ApiParam(value="Resource identifier(s)")
+	@Parameter(description="Resource identifier(s)")
 	private List<String> resource;
 	
 	public List<String> getResource() {
