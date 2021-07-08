@@ -17,50 +17,50 @@ package com.b2international.snowowl.snomed.core.rest.domain;
 
 import com.b2international.snowowl.core.rest.domain.ObjectRestSearch;
 
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * @since 6.16
  */
 public final class SnomedDescriptionRestSearch extends ObjectRestSearch {
 
-	@Parameter(value = "The effective time to match (yyyyMMdd, exact matches only)")
+	@Schema(description = "The effective time to match (yyyyMMdd, exact matches only)")
 	private String effectiveTime;
 
-	@Parameter(value = "The status to match")
+	@Schema(description = "The status to match")
 	private Boolean active;
 
-	@Parameter(value = "The module identifier to match")
+	@Schema(description = "The module identifier to match")
 	private String module;
 
-	@Parameter(value = "The namespace to match")
+	@Schema(description = "The namespace to match")
 	private String namespace;
 
-	@Parameter(value = "The term to match")
+	@Schema(description = "The term to match")
 	private String term;
 
-	@Parameter(value = "The concept ECL expression to match")
+	@Schema(description = "The concept ECL expression to match")
 	private String concept;
 
-	@Parameter(value = "The language code to match")
+	@Schema(description = "The language code to match")
 	private String[] languageCode;
 
-	@Parameter(value = "The type ECL expression to match")
+	@Schema(description = "The type ECL expression to match")
 	private String type;
 
-	@Parameter(value = "The case significance ECL expression to match")
+	@Schema(description = "The case significance ECL expression to match")
 	private String caseSignificance;
 
-	@Parameter(value = "Semantic tag(s) to match")
+	@Schema(description = "Semantic tag(s) to match")
 	private String[] semanticTag;
 
-	@Parameter(value = "Acceptable membership to match in these language refsets")
+	@Schema(description = "Acceptable membership to match in these language refsets")
 	private String[] acceptableIn;
 
-	@Parameter(value = "Preferred membership to match in these language refsets")
+	@Schema(description = "Preferred membership to match in these language refsets")
 	private String[] preferredIn;
 
-	@Parameter(value = "Any membership to match in these language refsets")
+	@Schema(description = "Any membership to match in these language refsets")
 	private String[] languageRefSet;
 
 	public String getEffectiveTime() {

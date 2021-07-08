@@ -19,50 +19,50 @@ import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.rest.domain.ObjectRestSearch;
 import com.b2international.snowowl.snomed.core.domain.RelationshipValueType;
 
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * @since 6.16
  */
 public final class SnomedRelationshipRestSearch extends ObjectRestSearch {
 
-	@Parameter(value = "The effective time to match (yyyyMMdd, exact matches only)")
+	@Schema(description = "The effective time to match (yyyyMMdd, exact matches only)")
 	private String effectiveTime;
 
-	@Parameter(value = "The status to match")
+	@Schema(description = "The status to match")
 	private Boolean active;
 
-	@Parameter(value = "The module identifier to match")
+	@Schema(description = "The module identifier to match")
 	private String module;
 
-	@Parameter(value = "The namespace to match")
+	@Schema(description = "The namespace to match")
 	private String namespace;
 
-	@Parameter(value = "The source concept to match")
+	@Schema(description = "The source concept to match")
 	private String source;
 
-	@Parameter(value = "The type concept to match")
+	@Schema(description = "The type concept to match")
 	private String type;
 
-	@Parameter(value = "The destination concept to match")
+	@Schema(description = "The destination concept to match")
 	private String destination;
 	
-	@Parameter(value = "The value type to match")
+	@Schema(description = "The value type to match")
 	private RelationshipValueType valueType;
 
-	@Parameter(value = "The value comparison operator")
+	@Schema(description = "The value comparison operator")
 	private SearchResourceRequest.Operator operator;
 
-	@Parameter(value = "The value to match (in literal form)")
+	@Schema(description = "The value to match (in literal form)")
 	private String value;
 
-	@Parameter(value = "The characteristic type to match")
+	@Schema(description = "The characteristic type to match")
 	private String characteristicType;
 
-	@Parameter(value = "The group to match")
+	@Schema(description = "The group to match")
 	private Integer group;
 
-	@Parameter(value = "The union group to match")
+	@Schema(description = "The union group to match")
 	private Integer unionGroup;
 
 	public String getEffectiveTime() {

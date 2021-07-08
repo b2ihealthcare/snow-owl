@@ -96,7 +96,7 @@ public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 	private org.springframework.context.ApplicationContext ctx;
 
 	@Bean
-	public OpenAPI springShopOpenAPI() {
+	public OpenAPI openAPI() {
 		return new OpenAPI();
 	}
 	

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,24 +26,24 @@ import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.snomed.reasoner.domain.ReasonerExtensions;
 import com.b2international.snowowl.snomed.reasoner.request.ClassificationRequests;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * @since 6.16
  */
-@Tag(description = "Reasoners", description="Reasoners", tags = "reasoners")
+@Tag(description="Reasoners", name = "reasoners")
 @Controller
 @RequestMapping(value="/reasoners", produces={ AbstractRestService.JSON_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 public class SnomedReasonerRestService extends AbstractRestService {
 	
 	@Operation(
-		value="Retrieve reasoner id-s from the running Snow Owl instance.", 
+		summary="Retrieve reasoner id-s from the running Snow Owl instance.", 
 		description="Retrieve reasoner id-s from the running Snow Owl instance.")
 	@ApiResponses({
-		@ApiResponse(responseCode = "200", message = "OK"),
+		@ApiResponse(responseCode = "200", description = "OK"),
 	})
 	@GetMapping
 	public @ResponseBody Promise<ReasonerExtensions> getReasoners() {

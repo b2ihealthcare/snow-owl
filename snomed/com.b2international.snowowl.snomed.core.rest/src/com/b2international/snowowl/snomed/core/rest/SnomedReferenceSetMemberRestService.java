@@ -27,7 +27,6 @@ import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.AbstractRestService;
-import com.b2international.snowowl.core.rest.RestApiError;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedMemberRestUpdate;
@@ -40,12 +39,16 @@ import com.b2international.snowowl.snomed.core.rest.request.RestRequest;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberSearchRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * @since 4.5
  */
-@Tag(description = "members", description="Members", tags = "members")
+@Tag(description="Members", name = "members")
 @Controller
 @RequestMapping(value="/{path:**}/members")
 public class SnomedReferenceSetMemberRestService extends AbstractRestService {
@@ -55,24 +58,24 @@ public class SnomedReferenceSetMemberRestService extends AbstractRestService {
 	}
 	
 	@Operation(
-		value="Retrieve reference set members from a path", 
+		summary="Retrieve reference set members from a path", 
 		description="Returns a list with all reference set members from a path."
 				+ "<p>The following properties can be expanded:"
 				+ "<p>"
 				+ "&bull; referencedComponent(expand(pt(),...)) &ndash; the referenced component, and any applicable nested expansions<br>")
 	@ApiResponses({
-		@ApiResponse(responseCode = "200", message = "OK", response = SnomedReferenceSetMembers.class),
-		@ApiResponse(responseCode = "404", message = "Branch not found", response = RestApiError.class)
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "404", description = "Branch not found")
 	})
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })	
 	public @ResponseBody Promise<SnomedReferenceSetMembers> searchByGet(
-			@Parameter(value = "The resource path", required = true)
+			@Parameter(description = "The resource path", required = true)
 			@PathVariable(value="path")
 			final String path,
 
 			final SnomedReferenceSetMemberRestSearch params,
 			
-			@Parameter(value = "Accepted language tags, in order of preference")
+			@Parameter(description = "Accepted language tags, in order of preference")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 
@@ -98,57 +101,57 @@ public class SnomedReferenceSetMemberRestService extends AbstractRestService {
 	}
 	
 	@Operation(
-		value="Retrieve reference set members from a path", 
+		summary="Retrieve reference set members from a path", 
 		description="Returns a list with all reference set members from a path."
 				+ "<p>The following properties can be expanded:"
 				+ "<p>"
 				+ "&bull; referencedComponent(expand(pt(),...)) &ndash; the referenced component, and any applicable nested expansions<br>"
 	)
 	@ApiResponses({
-		@ApiResponse(responseCode = "200", message = "OK", response = SnomedReferenceSetMembers.class),
-		@ApiResponse(responseCode = "404", message = "Branch not found", response = RestApiError.class)
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "404", description = "Branch not found")
 	})
 	@PostMapping("/search")
 	public @ResponseBody Promise<SnomedReferenceSetMembers> searchByPost(
-			@Parameter(value = "The resource path", required = true)
+			@Parameter(description = "The resource path", required = true)
 			@PathVariable(value="path")
 			final String branch,
 
 			@RequestBody(required = false)
 			final SnomedReferenceSetMemberRestSearch params,
 			
-			@Parameter(value = "Accepted language tags, in order of preference")
+			@Parameter(description = "Accepted language tags, in order of preference")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 		return searchByGet(branch, params, acceptLanguage);
 	}
 	
 	@Operation(
-		value="Retrieve a reference set member",
+		summary="Retrieve a reference set member",
 		description="Returns all properties of the specified reference set member."
 				+ "<p>The following properties can be expanded:"
 				+ "<p>"
 				+ "&bull; referencedComponent(expand(pt(),...)) &ndash; the referenced component, and any applicable nested expansions<br>"
 	)
 	@ApiResponses({
-		@ApiResponse(responseCode = "200", message = "OK", response = Void.class),
-		@ApiResponse(responseCode = "404", message = "Branch or reference set member not found", response = RestApiError.class)
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "404", description = "Branch or reference set member not found")
 	})
 	@GetMapping(value = "/{id}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public @ResponseBody Promise<SnomedReferenceSetMember> get(
-			@Parameter(value = "The resource path", required = true)
+			@Parameter(description = "The resource path", required = true)
 			@PathVariable(value="path")
 			final String path,
 
-			@Parameter(value = "The reference set member identifier")
+			@Parameter(description = "The reference set member identifier")
 			@PathVariable(value="id")
 			final String memberId,
 			
-			@Parameter(value = "Expansion parameters")
+			@Parameter(description = "Expansion parameters")
 			@RequestParam(value="expand", required=false)
 			final String expand,
 
-			@Parameter(value = "Accepted language tags, in order of preference")
+			@Parameter(description = "Accepted language tags, in order of preference")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 		return SnomedRequests
@@ -160,23 +163,23 @@ public class SnomedReferenceSetMemberRestService extends AbstractRestService {
 	}
 	
 	@Operation(
-		value="Create a reference set member",
+		summary="Create a reference set member",
 		description="Creates a new reference set member directly on a branch. "
 				+ "On top of the basic member properties you can include other properties relevant for specific reference set member types."
 				+ "For example: query type reference set members support _query_ and _refsetDescription_ properties. "
 				+ "_Query_ defines the ESCG query of the new member, while the _refsetDescription_ will be used as the description of the new target simple type reference set."
 	)
 	@ApiResponses({
-		@ApiResponse(responseCode = "200", message = "OK", response = Void.class),
-		@ApiResponse(responseCode = "404", message = "Branch not found", response = RestApiError.class)
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "404", description = "Branch not found")
 	})
 	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	public ResponseEntity<Void> create(
-			@Parameter(value = "The resource path", required = true)
+			@Parameter(description = "The resource path", required = true)
 			@PathVariable(value="path")
 			final String path,
 			
-			@Parameter(value = "Reference set member parameters")
+			@Parameter(description = "Reference set member parameters")
 			@RequestBody 
 			final SnomedResourceRequest<SnomedRefSetMemberRestInput> body,
 
@@ -205,28 +208,28 @@ public class SnomedReferenceSetMemberRestService extends AbstractRestService {
 	}
 	
 	@Operation(
-		value="Delete Reference Set Member",
+		summary="Delete Reference Set Member",
 		description="Permanently removes the specified unreleased Reference Set Member.<p>If the member "
 				+ "has already been released, it can not be removed and a <code>409</code> "
 				+ "status will be returned."
 	)
 	@ApiResponses({
-		@ApiResponse(responseCode = "204", message = "Delete successful"),
-		@ApiResponse(responseCode = "404", message = "Branch or member not found", response = RestApiError.class),
-		@ApiResponse(responseCode = "409", message = "Member cannot be deleted", response = RestApiError.class)
+		@ApiResponse(responseCode = "204", description = "Delete successful"),
+		@ApiResponse(responseCode = "404", description = "Branch or member not found"),
+		@ApiResponse(responseCode = "409", description = "Member cannot be deleted")
 	})
 	@DeleteMapping(value = "/{id}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void delete(
-			@Parameter(value = "The resource path", required = true)
+			@Parameter(description = "The resource path", required = true)
 			@PathVariable(value="path")
 			final String path,
 			
-			@Parameter(value = "The reference set member identifier")
+			@Parameter(description = "The reference set member identifier")
 			@PathVariable(value="id")
 			final String memberId,
 			
-			@Parameter(value = "Force deletion flag")
+			@Parameter(description = "Force deletion flag")
 			@RequestParam(defaultValue="false", required=false)
 			final Boolean force,
 			
@@ -243,7 +246,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractRestService {
 	}
 	
 	@Operation(
-		value="Update Reference Set Member",
+		summary="Update Reference Set Member",
 		description="Updates properties of the specified Reference Set Member."
 				+ "The following properties are allowed to change (other properties will be simply ignored):"
 				+ "- activity status flag (active)"
@@ -251,25 +254,25 @@ public class SnomedReferenceSetMemberRestService extends AbstractRestService {
 				+ "- query field of query type reference set members"
 	)
 	@ApiResponses({
-		@ApiResponse(responseCode = "204", message = "Update successful"),
-		@ApiResponse(responseCode = "404", message = "Branch or member not found", response = RestApiError.class)
+		@ApiResponse(responseCode = "204", description = "Update successful"),
+		@ApiResponse(responseCode = "404", description = "Branch or member not found")
 	})
 	@PutMapping(value = "/{id}", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void update(
-			@Parameter(value = "The resource path", required = true)
+			@Parameter(description = "The resource path", required = true)
 			@PathVariable(value="path")
 			final String path,
 			
-			@Parameter(value = "The reference set member identifier")
+			@Parameter(description = "The reference set member identifier")
 			@PathVariable(value="id")
 			final String memberId,
 			
-			@Parameter(value = "Updated Reference Set parameters")
+			@Parameter(description = "Updated Reference Set parameters")
 			@RequestBody 
 			final SnomedResourceRequest<SnomedMemberRestUpdate> body,
 			
-			@Parameter(value = "Force update flag")
+			@Parameter(description = "Force update flag")
 			@RequestParam(defaultValue="false", required=false)
 			final Boolean force,
 			
@@ -293,7 +296,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractRestService {
 	}
 	
 	@Operation(
-		value="Executes an action",
+		summary="Executes an action",
 		description="Executes an action specified via the request body on a reference set member."
 				+ "<p>Supported actions are:"
 				+ "&bull; 'sync' - Executes sync action on a query type member"
@@ -301,23 +304,23 @@ public class SnomedReferenceSetMemberRestService extends AbstractRestService {
 				+ "</p>"
 	)
 	@ApiResponses({
-		@ApiResponse(responseCode = "200", message = "Action execution successful"),
-		@ApiResponse(responseCode = "204", message = "No content"),
-		@ApiResponse(responseCode = "404", message = "Branch or member not found", response = RestApiError.class)
+		@ApiResponse(responseCode = "200", description = "Action execution successful"),
+		@ApiResponse(responseCode = "204", description = "No content"),
+		@ApiResponse(responseCode = "404", description = "Branch or member not found")
 	})
 	@PostMapping(value = "/{id}/actions", 
 		consumes = { AbstractRestService.JSON_MEDIA_TYPE }, 
 		produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public @ResponseBody Object executeAction(
-			@Parameter(value = "The resource path", required = true)
+			@Parameter(description = "The resource path", required = true)
 			@PathVariable(value="path")
 			final String path,
 			
-			@Parameter(value = "The reference set member identifier")
+			@Parameter(description = "The reference set member identifier")
 			@PathVariable(value="id")
 			final String memberId,
 			
-			@Parameter(value = "Reference set member action")
+			@Parameter(description = "Reference set member action")
 			@RequestBody 
 			final SnomedResourceRequest<RestRequest> body,
 			

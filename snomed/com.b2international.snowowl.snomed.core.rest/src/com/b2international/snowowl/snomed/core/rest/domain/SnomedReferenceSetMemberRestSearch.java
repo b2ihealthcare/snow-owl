@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,75 +25,75 @@ import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRefSetMemberSearchRequestBuilder;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * @since 6.16
  */
 public final class SnomedReferenceSetMemberRestSearch extends ObjectRestSearch {
 
-	@Parameter(value="The effective time to match (yyyyMMdd, exact matches only)")
+	@Schema(description = "The effective time to match (yyyyMMdd, exact matches only)")
 	private String effectiveTime;
 	
-	@Parameter(value="The status to match")
+	@Schema(description = "The status to match")
 	private Boolean active;
 	
-	@Parameter(value="The module identifier to match")
+	@Schema(description = "The module identifier to match")
 	private String module;
 	
-	@Parameter(value="The reference set identifier(s) to match, or a single ECL expression")
+	@Schema(description = "The reference set identifier(s) to match, or a single ECL expression")
 	private List<String> referenceSet;
 	
-	@Parameter(value="The referenced component identifier(s) to match")
+	@Schema(description = "The referenced component identifier(s) to match")
 	private List<String> referencedComponentId;
 
 	// Special RF2 member columns go here
-	@Parameter(value="The acceptability identifier(s) to match in case of language refset members")
+	@Schema(description = "The acceptability identifier(s) to match in case of language refset members")
 	private List<String> acceptabilityId;
 	
-	@Parameter(value="The target component identifier(s) to match in case of association refset members")
+	@Schema(description = "The target component identifier(s) to match in case of association refset members")
 	private List<String> targetComponent;
 	
-	@Parameter(value="The value identifier(s) to match in case of attribute value refset members")
+	@Schema(description = "The value identifier(s) to match in case of attribute value refset members")
 	private List<String> valueId;
 	
-	@Parameter(value="The correlation identifier(s) to match in case of complex/extended map refset members")
+	@Schema(description = "The correlation identifier(s) to match in case of complex/extended map refset members")
 	private List<String> correlationId;
 	
-	@Parameter(value="The description format identifier(s) to match in case of description format refset members")
+	@Schema(description = "The description format identifier(s) to match in case of description format refset members")
 	private List<String> descriptionFormat;
 	
-	@Parameter(value="The characteristic type identifier(s) to match in case of concrete domain refset members")
+	@Schema(description = "The characteristic type identifier(s) to match in case of concrete domain refset members")
 	private List<String> characteristicTypeId;
 	
-	@Parameter(value="The attribute type identifier(s) to match in case of concrete domain refset members")
+	@Schema(description = "The attribute type identifier(s) to match in case of concrete domain refset members")
 	private List<String> typeId;
 	
-	@Parameter(value="The map category identifier(s) to match in case of extended refset members")
+	@Schema(description = "The map category identifier(s) to match in case of extended refset members")
 	private List<String> mapCategoryId;
 	
-	@Parameter(value="The mrcm domain identifier(s) to match in case of mrcm domain refset members")
+	@Schema(description = "The mrcm domain identifier(s) to match in case of mrcm domain refset members")
 	private List<String> domainId;
 	
-	@Parameter(value="The content type identifier(s) to match in case of mrcm attribute domain and range refset members")
+	@Schema(description = "The content type identifier(s) to match in case of mrcm attribute domain and range refset members")
 	private List<String> contentTypeId;
 	
-	@Parameter(value="The rule strength identifier(s) to match in case of mrcm attribute domain and range refset members")
+	@Schema(description = "The rule strength identifier(s) to match in case of mrcm attribute domain and range refset members")
 	private List<String> ruleStrengthId;
 	
-	@Parameter(value="The rule refset identifier(s) to match in case of mrcm module scope refset members")
+	@Schema(description = "The rule refset identifier(s) to match in case of mrcm module scope refset members")
 	private List<String> mrcmRuleRefSetId;
 	
-	@Parameter(value="The relationship group value(s) to match in case of concrete domain refset members")
+	@Schema(description = "The relationship group value(s) to match in case of concrete domain refset members")
 	private List<String> relationshipGroup;
 	
-	@Parameter(value="The map target value(s) to match in case of mapping refset members")
+	@Schema(description = "The map target value(s) to match in case of mapping refset members")
 	private List<String> mapTarget;
 	
-	@Parameter(value="An MRCM rule refset member should be grouped or not")
+	@Schema(description = "An MRCM rule refset member should be grouped or not")
 	private Boolean grouped;
 	
-	@Parameter(value="Special filters for owlExpression axiom values")
+	@Schema(description = "Special filters for owlExpression axiom values")
 	private SnomedOwlExpressionFilters owlExpression; 
 	
 	public String getEffectiveTime() {
