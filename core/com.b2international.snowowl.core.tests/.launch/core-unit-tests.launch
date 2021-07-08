@@ -132,7 +132,7 @@
         <setEntry value="org.hdrhistogram.HdrHistogram@default:default"/>
         <setEntry value="org.jetbrains.kotlin.osgi-bundle@default:default"/>
         <setEntry value="org.junit@default:default"/>
-        <setEntry value="org.mockito@default:default"/>
+        <setEntry value="org.mockito.mockito-core@default:default"/>
         <setEntry value="org.objenesis@default:default"/>
         <setEntry value="org.reactivestreams.reactive-streams@default:default"/>
         <setEntry value="org.yaml.snakeyaml@default:default"/>

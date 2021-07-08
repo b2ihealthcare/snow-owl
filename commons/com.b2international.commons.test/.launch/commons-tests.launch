@@ -100,7 +100,7 @@
         <setEntry value="org.hamcrest.core@default:default"/>
         <setEntry value="org.hdrhistogram.HdrHistogram@default:default"/>
         <setEntry value="org.junit@default:default"/>
-        <setEntry value="org.mockito@default:default"/>
+        <setEntry value="org.mockito.mockito-core@default:default"/>
         <setEntry value="org.objenesis@default:default"/>
         <setEntry value="org.w3c.css.sac@default:default"/>
         <setEntry value="org.yaml.snakeyaml@default:default"/>
