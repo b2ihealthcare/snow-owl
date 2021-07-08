@@ -1235,7 +1235,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 	@Test
 	public void exportRf2WithConfiguration() throws Exception {
 		
-		final Map<String, Object> exportSettings = ImmutableMap.<String, Object>builder()
+		final Map<String, Object> codeSystemExportSettings = ImmutableMap.<String, Object>builder()
 				.put("maintainerType",  Rf2MaintainerType.NRC)
 				.put("nrcCountryCode", "GB")
 				.put("extensionNamespaceId", "370137002")
@@ -1243,11 +1243,15 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 				.build();
 		
 		String codeSystemId = "SNOMEDCT-custom-rf2-export-config";
-		createCodeSystem(null, codeSystemId, exportSettings).statusCode(201);
+		createCodeSystem(null, codeSystemId, codeSystemExportSettings).statusCode(201);
 		
-		CodeSystem codeSystem = CodeSystemRestRequests.getCodeSystem(codeSystemId).extract().as(CodeSystem.class);
+		final Map<String, Object> config = ImmutableMap.<String, Object>builder()
+				.put("type", Rf2ReleaseType.SNAPSHOT.name())
+				.put("includeUnpublished", true)
+				.put("codeSystemId", codeSystemId)
+				.build();
 		
-		final File exportArchive = doExport(branchPath, codeSystem.getSettings());
+		final File exportArchive = doExport(branchPath, config);
 		
 		final Map<String, Boolean> files = ImmutableMap.<String, Boolean>builder()
 				.put("der2_sssssssRefset_MRCMDomainSnapshot_GB", true)
