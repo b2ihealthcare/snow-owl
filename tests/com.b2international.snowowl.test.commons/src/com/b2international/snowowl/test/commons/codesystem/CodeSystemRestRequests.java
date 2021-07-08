@@ -70,7 +70,7 @@ public abstract class CodeSystemRestRequests {
 		return createCodeSystem(extensionOf, null, codeSystemId, settings);
 	}
 	
-	private static ValidatableResponse createCodeSystem(ResourceURI extensionOf, String branchPath, String codeSystemId,  Map<String, Object> settings) {
+	public static ValidatableResponse createCodeSystem(ResourceURI extensionOf, String branchPath, String codeSystemId,  Map<String, Object> settings) {
 		Json requestBody = Json.object(
 			"id", codeSystemId,
 			"title", codeSystemId,
