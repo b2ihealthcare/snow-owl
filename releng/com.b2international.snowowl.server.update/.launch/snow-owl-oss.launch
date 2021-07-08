@@ -165,10 +165,11 @@
         <setEntry value="com.b2international.snowowl.core@default:default"/>
         <setEntry value="com.b2international.snowowl.eventbus@default:default"/>
         <setEntry value="com.b2international.snowowl.fhir.core@default:default"/>
-        <setEntry value="com.b2international.snowowl.fhir.rest@default:default"/>
+        <setEntry value="com.b2international.snowowl.fhir.rest@default:false"/>
         <setEntry value="com.b2international.snowowl.identity.ldap@default:false"/>
         <setEntry value="com.b2international.snowowl.rpc@default:default"/>
         <setEntry value="com.b2international.snowowl.server.product@4:true"/>
+        <setEntry value="com.b2international.snowowl.snomed.cis.rest@default:default"/>
         <setEntry value="com.b2international.snowowl.snomed.cis@default:default"/>
         <setEntry value="com.b2international.snowowl.snomed.common@default:default"/>
         <setEntry value="com.b2international.snowowl.snomed.core.rest@default:false"/>

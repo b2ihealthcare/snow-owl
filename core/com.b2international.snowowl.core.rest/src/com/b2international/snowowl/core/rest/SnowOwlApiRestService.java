@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,14 +29,12 @@ import org.springframework.web.bind.annotation.RestController;
 import com.b2international.snowowl.core.domain.CollectionResource;
 import com.b2international.snowowl.core.domain.ListCollectionResource;
 
-//import springfox.documentation.annotations.ApiIgnore;
-//import springfox.documentation.service.Documentation;
-//import springfox.documentation.spring.web.DocumentationCache;
+import io.swagger.v3.oas.annotations.Hidden;
 
 /**
  * @since 7.3
  */
-//@ApiIgnore
+@Hidden
 @RestController
 @RequestMapping(value = "/apis", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 public class SnowOwlApiRestService extends AbstractRestService {
@@ -52,18 +50,13 @@ public class SnowOwlApiRestService extends AbstractRestService {
 			.sorted((a1, a2) -> a1.getGroup().compareTo(a2.getGroup()))
 			.map(this::toApiDoc)
 			.collect(Collectors.toList());
-//		List<Map<String, Object>> items = documentCache.all().values().stream()
-//				.sorted((d1, d2) -> d1.getResourceListing().getInfo().getTitle().compareTo(d2.getResourceListing().getInfo().getTitle()))
-//				.map(this::toApiDoc)
-//				.collect(Collectors.toList());
 		return ListCollectionResource.of(items);
 	}
 	
 	private Map<String, Object> toApiDoc(GroupedOpenApi doc) {
 		return Map.of(
 			"id", doc.getGroup(),
-			"title", doc.getGroup()
-//			getResourceListing().getInfo().getTitle()
+			"title", doc.getGroup().toUpperCase() + " API"
 		);
 	}
 	

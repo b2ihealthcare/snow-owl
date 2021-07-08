@@ -23,12 +23,9 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.AnnotationUtils;
 
-import com.fasterxml.classmate.TypeResolver;
-
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
-import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.security.SecurityScheme.In;
 
@@ -85,6 +82,7 @@ public abstract class BaseApiConfig {
 		return GroupedOpenApi.builder()
 				.group(apiGroup)
 				.pathsToMatch(apiBaseUrl.endsWith("/") ? apiBaseUrl + "**" : apiBaseUrl + "/**")
+				.packagesToScan(getApiBasePackages())
 				.addOpenApiCustomiser(api -> {
 					Info apiInfo = api.getInfo();
 					apiInfo.setTitle(apiTitle);
