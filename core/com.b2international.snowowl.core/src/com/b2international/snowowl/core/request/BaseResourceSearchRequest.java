@@ -56,6 +56,16 @@ public abstract class BaseResourceSearchRequest<R>
 		 * Filter matches by their bundle ID.
 		 */
 		BUNDLE_ID, 
+
+		/**
+		 * HL7 registry OID
+		 */
+		OID,
+
+		/**
+		 * Search resources by status
+		 */
+		STATUS,
 	}
 	
 	@Override
@@ -63,6 +73,8 @@ public abstract class BaseResourceSearchRequest<R>
 		final ExpressionBuilder queryBuilder = Expressions.builder();
 		
 		addFilter(queryBuilder, OptionKey.BUNDLE_ID, String.class, ResourceDocument.Expressions::bundleIds);
+		addFilter(queryBuilder, OptionKey.OID, String.class, ResourceDocument.Expressions::oids);
+		addFilter(queryBuilder, OptionKey.STATUS, String.class, ResourceDocument.Expressions::statuses);
 		addIdFilter(queryBuilder, ResourceDocument.Expressions::ids);
 		addTitleFilter(queryBuilder);
 		addTitleExactFilter(queryBuilder);

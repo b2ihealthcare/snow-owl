@@ -36,6 +36,9 @@ public class ResourceRestSearch extends ObjectRestSearch {
 	
 	private List<String> bundleId;
 
+	@ApiParam
+	private List<String> status;
+
 	public List<String> getBranch() {
 		return branch;
 	}
@@ -84,5 +87,12 @@ public class ResourceRestSearch extends ObjectRestSearch {
 		this.bundleId = bundleId;
 	}
 	
+	public List<String> getStatus() {
+		return status;
+	}
+	
+	public void setStatus(List<String> status) {
+		this.status = status;
+	}
 	
 }
