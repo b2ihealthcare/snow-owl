@@ -12,8 +12,8 @@
 	<packaging>eclipse-plugin</packaging>
 	
 	<properties>
-		<spring.version>5.1.9.RELEASE</spring.version>
-		<spring.security.version>5.1.6.RELEASE</spring.security.version>
+		<spring.version>5.3.5</spring.version>
+		<spring.security.version>5.3.5.RELEASE</spring.security.version>
 		<springfox.version>2.9.2</springfox.version>
 		<!-- Node.js version to use for building the API docs site -->
 		<node.version>v14.17.1</node.version>
