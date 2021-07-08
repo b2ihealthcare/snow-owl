@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.fhir.rest;
 
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * @since 8.0
@@ -23,10 +23,10 @@ import io.swagger.annotations.ApiParam;
 public class FhirResourceSelectors {
 
 	// content selectors
-	@ApiParam
+	@Schema
 	private String _summary;
 	
-	@ApiParam
+	@Schema
 	private String[] _elements;
 	
 	public String[] get_elements() {

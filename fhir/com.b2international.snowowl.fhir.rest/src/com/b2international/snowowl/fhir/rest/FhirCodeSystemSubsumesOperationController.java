@@ -15,27 +15,26 @@
  */
 package com.b2international.snowowl.fhir.rest;
 
-import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
-import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
-import static java.net.HttpURLConnection.HTTP_OK;
-
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
-import com.b2international.snowowl.fhir.core.model.OperationOutcome;
 import com.b2international.snowowl.fhir.core.model.codesystem.SubsumptionRequest;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
 
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * @since 8.0
  */
-@Tag(description = "CodeSystem", description="FHIR CodeSystem Resource", tags = { "CodeSystem" })
+@Tag(description = "CodeSystem", name= "CodeSystem")
 @RestController
 @RequestMapping(value="/CodeSystem", produces = { AbstractFhirController.APPLICATION_FHIR_JSON })
 public class FhirCodeSystemSubsumesOperationController extends AbstractFhirController {
@@ -44,19 +43,20 @@ public class FhirCodeSystemSubsumesOperationController extends AbstractFhirContr
 	 * Subsumes GET method with no codeSystemId and parameters
 	 */
 	@Operation(
-			value="Subsumption testing",
-			description="Test the subsumption relationship between code/Coding A and code/Coding B given the semantics of subsumption in the underlying code system (see hierarchyMeaning).")
+		summary="Subsumption testing",
+		description="Test the subsumption relationship between code/Coding A and code/Coding B given the semantics of subsumption in the underlying code system (see hierarchyMeaning)."
+	)
 	@ApiResponses({
-		@ApiResponse(code = HTTP_OK, message = "OK"),
-		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
-		@ApiResponse(code = HTTP_NOT_FOUND, message = "CodeSystem not found", response = OperationOutcome.class)
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "400", description = "Bad request"),
+		@ApiResponse(responseCode = "404", description = "CodeSystem not found")
 	})
 	@GetMapping("/$subsumes")
 	public Promise<Parameters.Fhir> subsumes(
-			@Parameter(value="The \"A\" code that is to be tested") @RequestParam(value="codeA") final String codeA,
-			@Parameter(value="The \"B\" code that is to be tested") @RequestParam(value="codeB") final String codeB,
-			@Parameter(value="The code system's uri") @RequestParam(value="system") final String system,
-			@Parameter(value="The code system version") @RequestParam(value="version", required=false) final String version) {
+			@Parameter(description = "The \"A\" code that is to be tested") @RequestParam(value="codeA") final String codeA,
+			@Parameter(description = "The \"B\" code that is to be tested") @RequestParam(value="codeB") final String codeB,
+			@Parameter(description = "The code system's uri") @RequestParam(value="system") final String system,
+			@Parameter(description = "The code system version") @RequestParam(value="version", required=false) final String version) {
 		
 		validateSubsumptionRequest(codeA, codeB, system, version);
 		
@@ -78,20 +78,21 @@ public class FhirCodeSystemSubsumesOperationController extends AbstractFhirContr
 	 * Subsumes GET method with codeSystemId and parameters
 	 */
 	@Operation(
-			value="Subsumption testing",
-			description="Test the subsumption relationship between code/Coding A and code/Coding B given the semantics of subsumption in the underlying code system (see hierarchyMeaning).")
+		summary="Subsumption testing",
+		description="Test the subsumption relationship between code/Coding A and code/Coding B given the semantics of subsumption in the underlying code system (see hierarchyMeaning)."
+	)
 	@ApiResponses({
-		@ApiResponse(code = HTTP_OK, message = "OK"),
-		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
-		@ApiResponse(code = HTTP_NOT_FOUND, message = "Code system not found", response = OperationOutcome.class)
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "400", description = "Bad request"),
+		@ApiResponse(responseCode = "404", description = "Code system not found")
 	})
 	@GetMapping("{codeSystemId:**}/$subsumes")
 	public Promise<Parameters.Fhir> subsumes(
-			@Parameter(value="The id of the code system to invoke the operation on") 	@PathVariable("codeSystemId") String codeSystemId,
-			@Parameter(value="The \"A\" code that is to be tested") @RequestParam(value="codeA") final String codeA,
-			@Parameter(value="The \"B\" code that is to be tested") @RequestParam(value="codeB") final String codeB,
-			@Parameter(value="The code system's uri") @RequestParam(value="system") final String system,
-			@Parameter(value="The code system version") @RequestParam(value="version", required=false) final String version	) {
+			@Parameter(description = "The id of the code system to invoke the operation on") 	@PathVariable("codeSystemId") String codeSystemId,
+			@Parameter(description = "The \"A\" code that is to be tested") @RequestParam(value="codeA") final String codeA,
+			@Parameter(description = "The \"B\" code that is to be tested") @RequestParam(value="codeB") final String codeB,
+			@Parameter(description = "The code system's uri") @RequestParam(value="system") final String system,
+			@Parameter(description = "The code system version") @RequestParam(value="version", required=false) final String version	) {
 		
 		validateSubsumptionRequest(codeSystemId, codeA, codeB, system, version);
 		
@@ -112,18 +113,21 @@ public class FhirCodeSystemSubsumesOperationController extends AbstractFhirContr
 	/*
 	 * Subsumes POST method without codeSystemId and body
 	 */
-	@Operation(value="Subsumption testing", description="Test the subsumption relationship between code/Coding A and code/Coding B given the semantics of subsumption in the underlying code system (see hierarchyMeaning).")
+	@Operation(
+		summary="Subsumption testing", 
+		description="Test the subsumption relationship between code/Coding A and code/Coding B given the semantics of subsumption in the underlying code system (see hierarchyMeaning)."
+	)
 	@ApiResponses({
-		@ApiResponse(code = HTTP_OK, message = "OK"),
-		@ApiResponse(code = HTTP_NOT_FOUND, message = "Not found", response = OperationOutcome.class),
-		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class)
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "404", description = "Not found"),
+		@ApiResponse(responseCode = "400", description = "Bad request")
 	})
 	@PostMapping(value="/$subsumes", consumes = AbstractFhirResourceController.APPLICATION_FHIR_JSON)
 	public Promise<Parameters.Fhir> subsumes(
-			@Parameter(name = "body", value = "The lookup request parameters")
-			@RequestBody Parameters.Fhir in) {
+			@Parameter(description = "The lookup request parameters")
+			@RequestBody Parameters.Fhir body) {
 		
-		SubsumptionRequest request = toRequest(in, SubsumptionRequest.class);
+		SubsumptionRequest request = toRequest(body, SubsumptionRequest.class);
 		
 		validateSubsumptionRequest(request);
 
@@ -137,18 +141,26 @@ public class FhirCodeSystemSubsumesOperationController extends AbstractFhirContr
 	/*
 	 * Subsumes POST method with code system as path parameter
 	 */
-	@Operation(value="Subsumption testing", description="Test the subsumption relationship between code/Coding A and code/Coding B given the semantics of subsumption in the underlying code system (see hierarchyMeaning).")
+	@Operation(
+		summary="Subsumption testing", 
+		description="Test the subsumption relationship between code/Coding A and code/Coding B given the semantics of subsumption in the underlying code system (see hierarchyMeaning)."
+	)
 	@ApiResponses({
-		@ApiResponse(code = HTTP_OK, message = "OK"),
-		@ApiResponse(code = HTTP_NOT_FOUND, message = "Not found", response = OperationOutcome.class),
-		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class)
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "404", description = "Not found"),
+		@ApiResponse(responseCode = "400", description = "Bad request")
 	})
 	@PostMapping(value="{codeSystemId:**}/$subsumes", consumes = AbstractFhirResourceController.APPLICATION_FHIR_JSON)
 	public Promise<Parameters.Fhir> subsumes(
-			@Parameter(value="The id of the code system to invoke the operation on") @PathVariable("codeSystemId") String codeSystemId,
-			@Parameter(name = "body", value = "The lookup request parameters") @RequestBody Parameters.Fhir in) {
+			@Parameter(description = "The id of the code system to invoke the operation on") 
+			@PathVariable("codeSystemId") 
+			String codeSystemId,
+			
+			@Parameter(description = "The lookup request parameters") 
+			@RequestBody 
+			Parameters.Fhir body) {
 		
-		SubsumptionRequest request = toRequest(in, SubsumptionRequest.class);
+		SubsumptionRequest request = toRequest(body, SubsumptionRequest.class);
 		
 		validateSubsumptionRequest(request);
 		

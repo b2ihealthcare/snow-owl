@@ -19,7 +19,7 @@ import java.util.List;
 
 import com.google.common.base.MoreObjects;
 
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * @since 8.0
@@ -27,39 +27,39 @@ import io.swagger.annotations.ApiParam;
 public class FhirResourceSearchParameters extends FhirResourceSelectors {
 
 	// filters
-	@Parameter(value = "_id")
+	@Schema(description = "_id")
 	private String[] _id;
 	
-	@Parameter(value = "name")
+	@Schema(description = "name")
 	private String[] name;
 	
-	@Parameter(value = "title")
+	@Schema(description = "title")
 	private String title;
 	
-	@Parameter(value = "_lastUpdated")
+	@Schema(description = "_lastUpdated")
 	private String _lastUpdated;
 	
-	@Parameter(value = "_content")
+	@Schema(description = "_content")
 	private String _content;
 	
-	@Parameter(value = "url")
+	@Schema(description = "url")
 	private List<String> url;
 	
-	@Parameter(value = "system")
+	@Schema(description = "system")
 	private List<String> system;
 	
-	@Parameter(value = "version")
+	@Schema(description = "version")
 	private List<String> version;
 	
 	// paging
-	@Parameter(value = "The maximum number of items to return", defaultValue = "10")
+	@Schema(description = "The maximum number of items to return", defaultValue = "10")
 	private int _count = 10;
 	
-	@ApiParam
+	@Schema
 	private String[] _sort;
 	
 	// extensions (paging)
-	@ApiParam
+	@Schema
 	private String _after;
 
 	public String[] get_id() {

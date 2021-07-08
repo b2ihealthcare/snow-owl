@@ -15,10 +15,6 @@
  */
 package com.b2international.snowowl.fhir.rest;
 
-import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
-import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
-import static java.net.HttpURLConnection.HTTP_OK;
-
 import java.text.ParseException;
 import java.util.Optional;
 import java.util.Set;
@@ -26,18 +22,21 @@ import java.util.Set;
 import org.springframework.web.bind.annotation.*;
 
 import com.b2international.snowowl.core.events.util.Promise;
-import com.b2international.snowowl.fhir.core.model.OperationOutcome;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest.Builder;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
 
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * @since 8.0
  */
-@Tag(description = "CodeSystem", description="FHIR CodeSystem Resource", tags = { "CodeSystem" })
+@Tag(description = "CodeSystem", name = "CodeSystem")
 @RestController
 @RequestMapping(value="/CodeSystem", produces = { AbstractFhirController.APPLICATION_FHIR_JSON })
 public class FhirCodeSystemLookupOperationController extends AbstractFhirController {
@@ -53,38 +52,39 @@ public class FhirCodeSystemLookupOperationController extends AbstractFhirControl
 	 * @throws ParseException 
 	 */
 	@Operation(
-			value="Concept lookup and decomposition",
-			description="Given a code/version/system, or a Coding, get additional details about the concept.")
+		summary="Concept lookup and decomposition",
+		description="Given a code/version/system, or a Coding, get additional details about the concept."
+	)
 	@ApiResponses({
-		@ApiResponse(code = HTTP_OK, message = "OK"),
-		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
-		@ApiResponse(code = HTTP_NOT_FOUND, message = "Code system not found", response = OperationOutcome.class)
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "400", description = "Bad request"),
+		@ApiResponse(responseCode = "404", description = "Code system not found")
 	})
 	@GetMapping("/$lookup")
 	public Promise<Parameters.Fhir> lookup(
 		
-		@Parameter(value="The code to look up") 
+		@Parameter(description = "The code to look up") 
 		@RequestParam(value="code") 
 		final String code,
 		
-		@Parameter(value="The code system's uri") 
+		@Parameter(description = "The code system's uri") 
 		@RequestParam(value="system") 
 		final String system,
 		
-		@Parameter(value="The code system version") 
+		@Parameter(description = "The code system version") 
 		@RequestParam(value="version") 
 		final Optional<String> version,
 		
-		@Parameter(value="Lookup date in datetime format") 
+		@Parameter(description = "Lookup date in datetime format") 
 		@RequestParam(value="date") 
 		final Optional<String> date,
 		
-		@Parameter(value="Language code for display") 
+		@Parameter(description = "Language code for display") 
 		@RequestParam(value="displayLanguage") 
 		final Optional<String> displayLanguage,
 		
 		//Collection binding does not work with Optional!! (Optional<Set<String>> properties does not get populated with multiple properties, only the first one is present!)
-		@Parameter(value="Properties to return in the output") 
+		@Parameter(description = "Properties to return in the output") 
 		@RequestParam(value="property", required = false) 
 		Set<String> properties) {
 		
@@ -114,21 +114,24 @@ public class FhirCodeSystemLookupOperationController extends AbstractFhirControl
 	
 	/**
 	 * POST-based lookup end-point. Parameters are in the request body.
-	 * @param in - FHIR parameters
+	 * @param body - FHIR parameters
 	 */
-	@Operation(value="Concept lookup and decomposition", description="Given a code/version/system, or a Coding, get additional details about the concept.")
+	@Operation(
+		summary="Concept lookup and decomposition", 
+		description="Given a code/version/system, or a Coding, get additional details about the concept."
+	)
 	@ApiResponses({
-		@ApiResponse(code = HTTP_OK, message = "OK"),
-		@ApiResponse(code = HTTP_NOT_FOUND, message = "Not found", response = OperationOutcome.class),
-		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class)
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "404", description = "Not found"),
+		@ApiResponse(responseCode = "400", description = "Bad request")
 	})
 	@PostMapping(value = "/$lookup", consumes = AbstractFhirResourceController.APPLICATION_FHIR_JSON)
 	public Promise<Parameters.Fhir> lookup(
-			@Parameter(name = "body", value = "The lookup request parameters")
+			@Parameter(description = "The lookup request parameters")
 			@RequestBody 
-			final Parameters.Fhir in) {
+			final Parameters.Fhir body) {
 		
-		final LookupRequest req = toRequest(in, LookupRequest.class);
+		final LookupRequest req = toRequest(body, LookupRequest.class);
 		return lookup(req);
 	}
 	

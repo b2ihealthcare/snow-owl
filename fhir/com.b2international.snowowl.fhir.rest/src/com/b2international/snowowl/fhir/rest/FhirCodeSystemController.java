@@ -15,20 +15,19 @@
  */
 package com.b2international.snowowl.fhir.rest;
 
-import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
-import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
-import static java.net.HttpURLConnection.HTTP_OK;
-
 import org.springframework.web.bind.annotation.*;
 
 import com.b2international.commons.collections.Collections3;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.fhir.core.model.Bundle;
-import com.b2international.snowowl.fhir.core.model.OperationOutcome;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
 
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * Code system resource REST endpoint.
@@ -43,7 +42,7 @@ import io.swagger.annotations.*;
  * 
  * @since 8.0
  */
-@Tag(description = "CodeSystem", description="FHIR CodeSystem Resource", tags = { "CodeSystem" })
+@Tag(description = "CodeSystem", name = "CodeSystem")
 @RestController
 @RequestMapping(value="/CodeSystem", produces = { AbstractFhirResourceController.APPLICATION_FHIR_JSON })
 public class FhirCodeSystemController extends AbstractFhirResourceController<CodeSystem> {
@@ -59,11 +58,12 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 	 * @return bundle of code systems
 	 */
 	@Operation(
-			value="Retrieve all code systems",
-			description="Returns a collection of the supported code systems.")
+		summary="Retrieve all code systems",
+		description="Returns a collection of the supported code systems."
+	)
 	@ApiResponses({
-		@ApiResponse(code = HTTP_OK, message = "OK"),
-		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad Request", response = OperationOutcome.class),
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "400", description = "Bad Request"),
 	})
 	@GetMapping
 	public Promise<Bundle> getCodeSystems(FhirCodeSystemSearchParameters params) {
@@ -99,17 +99,17 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 	 * @return
 	 */
 	@Operation(
-			response=CodeSystem.class,
-			value="Retrieve the code system by id",
-			description="Retrieves the code system specified by its logical id.")
+		summary = "Retrieve the code system by id",
+		description = "Retrieves the code system specified by its logical id."
+	)
 	@ApiResponses({
-		@ApiResponse(code = HTTP_OK, message = "OK"),
-		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
-		@ApiResponse(code = HTTP_NOT_FOUND, message = "Code system not found", response = OperationOutcome.class)
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "400", description = "Bad request"),
+		@ApiResponse(responseCode = "404", description = "Code system not found")
 	})
 	@RequestMapping(value="/{id:**}", method=RequestMethod.GET)
 	public Promise<CodeSystem> getCodeSystem(
-			@Parameter(value = "The identifier of the Code System resource")
+			@Parameter(description = "The identifier of the Code System resource")
 			@PathVariable(value = "id") 
 			final String id,
 			

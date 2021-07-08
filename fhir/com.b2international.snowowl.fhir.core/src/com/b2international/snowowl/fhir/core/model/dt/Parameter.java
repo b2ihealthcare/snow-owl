@@ -21,8 +21,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.collect.ImmutableList;
 
-import io.swagger.annotations.ApiModel;
-
 /**
  * 
   // from Resource: id, meta, implicitRules, and language
@@ -58,7 +56,6 @@ import io.swagger.annotations.ApiModel;
 }
  * @since 6.3
  */
-@ApiModel("Parameter")
 @JsonDeserialize(builder=Parameter.Builder.class)
 public final class Parameter extends FhirProperty {
 

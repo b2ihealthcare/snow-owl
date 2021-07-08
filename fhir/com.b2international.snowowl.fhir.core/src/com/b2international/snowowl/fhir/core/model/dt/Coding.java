@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,8 +29,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
-import io.swagger.annotations.ApiModel;
-
 /**
  * FHIR Coding complex datatype.
  * 
@@ -41,7 +39,6 @@ import io.swagger.annotations.ApiModel;
  * 
  * @since 6.3
  */
-@ApiModel
 @JsonInclude(Include.NON_NULL)
 @JsonDeserialize(builder = Coding.Builder.class)
 public class Coding {
