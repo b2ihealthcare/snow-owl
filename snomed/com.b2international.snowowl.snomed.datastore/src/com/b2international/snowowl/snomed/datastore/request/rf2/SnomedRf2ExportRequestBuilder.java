@@ -24,6 +24,7 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.ResourceRequest;
 import com.b2international.snowowl.core.request.ResourceRequestBuilder;
+import com.b2international.snowowl.snomed.core.domain.Rf2MaintainerType;
 import com.b2international.snowowl.snomed.core.domain.Rf2RefSetExportLayout;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.datastore.request.SnomedContentRequestBuilder;
@@ -47,7 +48,8 @@ public final class SnomedRf2ExportRequestBuilder
 	private Collection<String> refSets = null;
 	private String transientEffectiveTime;
 	private boolean extensionOnly;
-	private String codeSystemId;
+	private Rf2MaintainerType maintainerType;
+	private String nrcCountryCode;
 	
 	SnomedRf2ExportRequestBuilder() {}
 	
@@ -119,11 +121,16 @@ public final class SnomedRf2ExportRequestBuilder
 		return getSelf();
 	}
 	
-	public SnomedRf2ExportRequestBuilder setCodeSystemId(final String codeSystemId) {
-		this.codeSystemId = codeSystemId;
+	public SnomedRf2ExportRequestBuilder setMaintainerType(final Rf2MaintainerType maintainerType) {
+		this.maintainerType = maintainerType;
 		return getSelf();
 	}
-
+	
+	public SnomedRf2ExportRequestBuilder setNrcCountryCode(final String nrcCountryCode) {
+		this.nrcCountryCode = nrcCountryCode;
+		return getSelf();
+	}
+	
 	@Override
 	protected ResourceRequest<BranchContext, Attachment> create() {
 		final SnomedRf2ExportRequest req = new SnomedRf2ExportRequest();
@@ -131,6 +138,8 @@ public final class SnomedRf2ExportRequestBuilder
 		req.setRefSetExportLayout(refSetExportLayout);
 		req.setCountryNamespaceElement(countryNamespaceElement);
 		req.setNamespaceFilter(namespaceFilter);
+		req.setMaintainerType(maintainerType);
+		req.setNrcCountryCode(nrcCountryCode);
 		req.setStartEffectiveTime(startEffectiveTime);
 		req.setEndEffectiveTime(endEffectiveTime);
 		req.setIncludePreReleaseContent(includePreReleaseContent);
@@ -139,7 +148,6 @@ public final class SnomedRf2ExportRequestBuilder
 		req.setRefSets(refSets);
 		req.setTransientEffectiveTime(transientEffectiveTime);
 		req.setExtensionOnly(extensionOnly);
-		req.setCodeSytemId(codeSystemId);
 		return req;
 	}
 	
