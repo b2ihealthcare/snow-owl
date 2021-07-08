@@ -1,8 +1,7 @@
 import 'antd/dist/antd.css';
-import 'swagger-ui-react/swagger-ui.css';
+import 'rapidoc';
 
 import React from 'react';
-import SwaggerUI from "swagger-ui-react"
 import { Layout, BackTop, Menu } from 'antd';
 
 const { Content, Sider } = Layout;
@@ -11,11 +10,12 @@ class App extends React.Component {
 
   state = {
     selectedKey: 'core',
-    apis: []
+    apis: [],
+    serverUrl: process.env.REACT_APP_SO_BASE_URL || process.env.PUBLIC_URL
   }
 
   componentDidMount() {
-    fetch(`${process.env.REACT_APP_SO_BASE_URL}/apis`)
+    fetch(`${this.state.serverUrl}/apis`)
       .then(response => response.json())
       .then(data => this.setState({ apis: data.items }));
   }
@@ -27,7 +27,7 @@ class App extends React.Component {
   }
 
   render() {
-    const apis = this.state.apis
+    const { apis, serverUrl } = this.state
     return (
       <>
         <BackTop />
@@ -55,9 +55,16 @@ class App extends React.Component {
             </Menu>
           </Sider>
           <Content style={{ marginLeft: 200 }}>
-            <SwaggerUI 
-              url={`${process.env.REACT_APP_SO_BASE_URL}/api-docs/${this.state.selectedKey}`} 
-              docExpansion = "list"
+            <rapi-doc
+              spec-url = {`${serverUrl}/api-docs/${this.state.selectedKey}`}
+			  server-url = {`${serverUrl}`}
+              render-style = "view"
+              layout = "row"
+              schema-expand-level = "3"
+              style = {{ height: "100vh", width: "100%" }}
+              allow-spec-url-load="false"
+              allow-spec-file-load="false"
+              allow-server-selection="false"
             />
           </Content>
         </Layout>
