@@ -47,6 +47,7 @@ public final class SnomedRf2ExportRequestBuilder
 	private Collection<String> refSets = null;
 	private String transientEffectiveTime;
 	private boolean extensionOnly;
+	private String codeSystemId;
 	
 	SnomedRf2ExportRequestBuilder() {}
 	
@@ -117,6 +118,11 @@ public final class SnomedRf2ExportRequestBuilder
 		this.extensionOnly = extensionOnly;
 		return getSelf();
 	}
+	
+	public SnomedRf2ExportRequestBuilder setCodeSystemId(final String codeSystemId) {
+		this.codeSystemId = codeSystemId;
+		return getSelf();
+	}
 
 	@Override
 	protected ResourceRequest<BranchContext, Attachment> create() {
@@ -133,6 +139,7 @@ public final class SnomedRf2ExportRequestBuilder
 		req.setRefSets(refSets);
 		req.setTransientEffectiveTime(transientEffectiveTime);
 		req.setExtensionOnly(extensionOnly);
+		req.setCodeSytemId(codeSystemId);
 		return req;
 	}
 	

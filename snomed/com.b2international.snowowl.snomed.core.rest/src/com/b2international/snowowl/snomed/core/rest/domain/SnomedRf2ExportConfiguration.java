@@ -17,7 +17,6 @@ package com.b2international.snowowl.snomed.core.rest.domain;
 
 import java.util.Collection;
 
-import com.b2international.snowowl.snomed.core.domain.Rf2MaintainerType;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 
 import io.swagger.annotations.ApiParam;
@@ -31,7 +30,7 @@ public final class SnomedRf2ExportConfiguration {
 	private String type = Rf2ReleaseType.SNAPSHOT.name();
 	
 	@ApiParam(value = "The namespaceId to use in the release archive name")
-	private String namespaceId = "INT";
+	private String namespaceId = "";
 	
 	@ApiParam(value = "Optional moduleIds to restrict the exported content")
 	private Collection<String> moduleIds;
@@ -57,11 +56,8 @@ public final class SnomedRf2ExportConfiguration {
 	@ApiParam(value = "The RF2 RefSet file layout to use. Defaults to server configuration key 'snomed.export.refSetLayout'.", allowableValues = "combined,individual")
 	private String refSetLayout;
 	
-	@ApiParam(value = "The maintainerType to use un the release archive name")
-	private Rf2MaintainerType maintainerType = Rf2MaintainerType.SNOMED_INTERNATIONAL;
-	
-	@ApiParam(value = "The nrcCountryCode to use un the release archive name")
-	private String nrcCountryCode = "";
+	@ApiParam(value = "The CodeSystem's id on wich the export was initiated.")
+	private String codeSystemId;
 	
 	/**
 	 * Returns with the RF2 release type of the current export configuration.
@@ -199,20 +195,12 @@ public final class SnomedRf2ExportConfiguration {
 		this.refSetLayout = refSetLayout;
 	}
 	
-	public void setMaintainerType(Rf2MaintainerType maintainerType) {
-		this.maintainerType = maintainerType;
+	public void setCodeSystemId(String codeSystemId) {
+		this.codeSystemId = codeSystemId;
 	}
 	
-	public Rf2MaintainerType getMaintainerType() {
-		return maintainerType;
-	}
-	
-	public void setNrcCountryCode(String nrcCountryCode) {
-		this.nrcCountryCode = nrcCountryCode;
-	}
-	
-	public String getNrcCountryCode() {
-		return nrcCountryCode;
+	public String getCodeSystemId() {
+		return codeSystemId;
 	}
 	
 }

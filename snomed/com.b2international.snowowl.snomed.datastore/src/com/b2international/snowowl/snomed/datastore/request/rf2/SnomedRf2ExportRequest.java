@@ -40,10 +40,9 @@ import java.util.stream.Stream;
 
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.validator.constraints.NotEmpty;
-
 import com.b2international.commons.FileUtils;
 import com.b2international.index.revision.RevisionIndex;
+import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.TerminologyResource;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
@@ -76,6 +75,8 @@ import com.b2international.snowowl.snomed.core.domain.*;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
+import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
+import com.b2international.snowowl.snomed.datastore.config.SnomedExportDefaultConfiguration;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedConceptSearchRequestBuilder;
@@ -105,11 +106,9 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 	private Rf2ReleaseType releaseType;
 
 	@JsonProperty
-	@NotNull
 	private Rf2RefSetExportLayout refSetExportLayout;
 
 	@JsonProperty
-	@NotEmpty
 	private String countryNamespaceElement;
 
 	@JsonProperty
@@ -138,6 +137,9 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 
 	@JsonProperty 
 	private boolean extensionOnly;
+	
+	@JsonProperty
+	private String codeSystemId;
 	
 	SnomedRf2ExportRequest() {}
 
@@ -216,8 +218,73 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 		this.extensionOnly = extensionOnly;
 	}
 	
+	public void setCodeSytemId(String codeSytemId) {
+		this.codeSystemId = codeSytemId;
+	}
+
+	private CodeSystem getCodeSystem(String codeSystemId, RepositoryContext context) {
+
+		return CodeSystemRequests.prepareGetCodeSystem(codeSystemId)
+				.setExpand("settings()")
+				.buildAsync()
+				.execute(context.service(IEventBus.class))
+				.getSync();
+
+	}
+	
+	private String getCountryNamespaceElement(Rf2MaintainerType maintainerType, String nrcCountryCode) {
+		final StringBuilder builder = new StringBuilder();
+		
+		switch (maintainerType) {
+			case NRC:
+				builder.append(nrcCountryCode);
+				break;
+			case OTHER_EXTENSION_PROVIDER:
+				// Nothing to append
+				break;
+			case SNOMED_INTERNATIONAL:
+				builder.append("INT");
+				break;
+			default:
+				break;
+		}
+		
+		return builder.toString();
+	}
+	
 	@Override
 	public Attachment execute(final BranchContext context) {
+		
+		SnomedExportDefaultConfiguration exportDefaultConfiguration = ApplicationContext.getServiceForClass(SnomedCoreConfiguration.class).getExport();
+		String defaultCountryNamespaceElement = getCountryNamespaceElement(exportDefaultConfiguration.getMaintainerType(), exportDefaultConfiguration.getNrcCountryCode());
+		Rf2RefSetExportLayout defaultRf2RefSetExportLayout = exportDefaultConfiguration.getRefSetExportLayout();
+		
+		if (codeSystemId != null) {
+			CodeSystem codeSystem = getCodeSystem(codeSystemId, context);
+
+			if (codeSystem.getSettings() != null) {
+				if (Strings.isNullOrEmpty(countryNamespaceElement)) {
+					String customCountryNamespaceElement = getCountryNamespaceElement(Rf2MaintainerType.getByNameIgnoreCase(codeSystem.getSettings().get("maintainerType").toString()), codeSystem.getSettings().get("nrcCountryCode").toString());
+
+					countryNamespaceElement = customCountryNamespaceElement;
+				}
+
+				if (refSetExportLayout == null) {
+					Rf2RefSetExportLayout rf2RefSetExportLayout = Rf2RefSetExportLayout.getByNameIgnoreCase(codeSystem.getSettings().get("refSetLayout").toString());
+
+					refSetExportLayout = rf2RefSetExportLayout;
+				}
+			}
+		} 
+
+		if (Strings.isNullOrEmpty(countryNamespaceElement)) {
+			countryNamespaceElement = defaultCountryNamespaceElement;
+		}
+
+		if (refSetExportLayout == null) {
+			refSetExportLayout = defaultRf2RefSetExportLayout;
+		}
+
 		final String referenceBranch = context.path();
 		
 		// register export start time for later use

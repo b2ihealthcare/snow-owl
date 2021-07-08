@@ -27,16 +27,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.attachments.Attachment;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.attachments.InternalAttachmentRegistry;
 import com.b2international.snowowl.core.rest.AbstractRestService;
-import com.b2international.snowowl.snomed.core.domain.Rf2MaintainerType;
 import com.b2international.snowowl.snomed.core.domain.Rf2RefSetExportLayout;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedRf2ExportConfiguration;
-import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
 import io.swagger.annotations.*;
@@ -71,8 +68,6 @@ public class SnomedRf2ExportRestService extends AbstractRestService {
 			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 		
-		final Rf2RefSetExportLayout globalExportLayout = ApplicationContext.getServiceForClass(SnomedCoreConfiguration.class).getExport().getRefSetExportLayout();
-		
 		final Attachment exportedFile = SnomedRequests.rf2().prepareExport()
 			.setReleaseType(params.getType() == null ? null : Rf2ReleaseType.getByNameIgnoreCase(params.getType()))
 			.setExtensionOnly(params.isExtensionOnly())
@@ -80,12 +75,13 @@ public class SnomedRf2ExportRestService extends AbstractRestService {
 			.setIncludePreReleaseContent(params.isIncludeUnpublished())
 			.setModules(params.getModuleIds())
 			.setRefSets(params.getRefSetIds())
-			.setCountryNamespaceElement(getCountryNamespaceElement(params))
+			.setCountryNamespaceElement(params.getNamespaceId())
 			// .setNamespaceFilter(namespaceFilter) is not supported on REST, yet
 			.setTransientEffectiveTime(params.getTransientEffectiveTime())
 			.setStartEffectiveTime(params.getStartEffectiveTime())
 			.setEndEffectiveTime(params.getEndEffectiveTime())
-			.setRefSetExportLayout(params.getRefSetLayout() == null ? globalExportLayout : Rf2RefSetExportLayout.getByNameIgnoreCase(params.getRefSetLayout()))
+			.setRefSetExportLayout(params.getRefSetLayout() == null ? null : Rf2RefSetExportLayout.getByNameIgnoreCase(params.getRefSetLayout()))
+			.setCodeSystemId(params.getCodeSystemId())
 			.build(branch)
 			.execute(getBus())
 			.getSync();
@@ -101,26 +97,6 @@ public class SnomedRf2ExportRestService extends AbstractRestService {
 		// TODO figure out a smart way to cache export results, probably it could be tied to commitTimestamps/versions/etc. 
 		file.deleteOnExit();
 		return new ResponseEntity<>(exportZipResource, httpHeaders, HttpStatus.OK);
-	}
-	
-	private static String getCountryNamespaceElement(final SnomedRf2ExportConfiguration config) {
-		final StringBuilder builder = new StringBuilder();
-		
-		switch ((Rf2MaintainerType)config.getMaintainerType()) {
-			case NRC:
-				builder.append(config.getNrcCountryCode());
-				break;
-			case OTHER_EXTENSION_PROVIDER:
-				// Nothing to append
-				break;
-			case SNOMED_INTERNATIONAL:
-				builder.append("INT");
-				break;
-			default:
-				break;
-		}
-		
-		return builder.toString();
 	}
 	
 }
