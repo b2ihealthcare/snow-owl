@@ -33,7 +33,7 @@ public abstract class BaseResourceSearchRequestBuilder<RB extends BaseResourceSe
 	public RB filterByUrls(Iterable<String> urls) {
 		return addOption(OptionKey.URL, urls);
 	}
-	
+
 	/**
 	 * Filter matches by a {@link TermFilter} configuration
 	 * 
@@ -90,6 +90,22 @@ public abstract class BaseResourceSearchRequestBuilder<RB extends BaseResourceSe
 
 	public RB filterByBundleIds(Iterable<String> bundleIds) {
 		return addOption(OptionKey.BUNDLE_ID, bundleIds);
+	}
+
+	public RB filterByOid(String oid) {
+		return addOption(OptionKey.OID, oid);
+	}
+	
+	public RB filterByOids(Iterable<String> oids) {
+		return addOption(OptionKey.OID, oids);
+	}
+
+	public RB filterByStatus(String status) {
+		return addOption(OptionKey.STATUS, status);
+	}
+
+	public RB filterByStatus(Iterable<String> status) {
+		return addOption(OptionKey.STATUS, status);
 	}
 
 }
