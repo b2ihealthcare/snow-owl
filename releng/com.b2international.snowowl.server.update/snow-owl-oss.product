@@ -37,6 +37,7 @@
       <feature id="com.b2international.snowowl.core.rest.feature"/>
       <feature id="com.b2international.snowowl.snomed.core.rest.feature"/>
       <feature id="com.b2international.snowowl.fhir.rest.feature"/>
+      <feature id="org.eclipse.justj.openjdk.hotspot.jre.full" installMode="root"/>
    </features>
 
    <configurations>

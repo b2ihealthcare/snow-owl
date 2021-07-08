@@ -690,7 +690,7 @@
 				<configuration>
 					<resolver>p2</resolver>
 					<pomDependencies>consider</pomDependencies>
-					<executionEnvironment>JavaSE-16</executionEnvironment>
+					<executionEnvironment>org.eclipse.justj.openjdk.hotspot.jre.full-16</executionEnvironment>
 					<target>
 						<artifact>
 							<groupId>${project.groupId}</groupId>
