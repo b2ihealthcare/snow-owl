@@ -40,8 +40,8 @@
 		<osgi.versionRange>[3.16.0,3.17.0]</osgi.versionRange>
 		
 		<!-- Build tool/compiler versions -->
-		<tycho.version>2.2.0</tycho.version>
-		<tycho-extras.version>2.2.0</tycho-extras.version>
+		<tycho.version>2.4.0-SNAPSHOT</tycho.version>
+		<tycho-extras.version>2.4.0-SNAPSHOT</tycho-extras.version>
 		<xtend.compiler.version>2.23.0</xtend.compiler.version>
 		<jacoco.version>0.8.6</jacoco.version>
 		
@@ -684,6 +684,7 @@
 				<configuration>
 					<resolver>p2</resolver>
 					<pomDependencies>consider</pomDependencies>
+					<executionEnvironment>JavaSE-16</executionEnvironment>
 					<target>
 						<artifact>
 							<groupId>${project.groupId}</groupId>
@@ -883,8 +884,8 @@
 					<version>${tycho.version}</version>
 					<configuration>
 						<useProjectSettings>false</useProjectSettings>
-						<source>11</source>
-						<target>11</target>
+						<source>16</source>
+						<target>16</target>
 						<excludeResources>
 							<excludeResource>**/*.groovy</excludeResource>
 							<excludeResource>**/*.xtend</excludeResource>
@@ -897,8 +898,8 @@
 					<artifactId>maven-compiler-plugin</artifactId>
 					<version>3.8.0</version>
 					<configuration>
-						<source>11</source>
-						<target>11</target>
+						<source>16</source>
+						<target>16</target>
 					</configuration>
 				</plugin>
 				<plugin>
@@ -949,6 +950,13 @@
 			</plugins>
 		</pluginManagement>
 	</build>
+
+	<pluginRepositories>
+		<pluginRepository>
+			<id>tycho-snapshots</id>
+			<url>https://repo.eclipse.org/content/repositories/tycho-snapshots/</url>
+		</pluginRepository>
+	</pluginRepositories>
 
 	<distributionManagement>
 		<repository>
