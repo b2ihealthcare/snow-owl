@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Search Indexing
 Bundle-SymbolicName: com.b2international.index;singleton:=true
 Bundle-Version: 8.0.0.qualifier
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-16
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.core.runtime;bundle-version="3.9.0",
  io.netty.buffer;bundle-version="4.1.45",

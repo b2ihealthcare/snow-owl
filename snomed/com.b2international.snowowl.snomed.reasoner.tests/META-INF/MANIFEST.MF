@@ -5,7 +5,7 @@ Bundle-SymbolicName: com.b2international.snowowl.snomed.reasoner.tests;singleton
 Bundle-Version: 8.0.0.qualifier
 Bundle-Vendor: B2i Healthcare
 Fragment-Host: com.b2international.snowowl.snomed.reasoner
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-16
 Require-Bundle: org.junit;bundle-version="4.11.0",
  org.mockito;bundle-version="2.13.0",
  com.b2international.index.tests.tools,
