@@ -112,7 +112,7 @@ public class SnomedConceptRestService extends AbstractRestService {
 					.filterByTerm(params.getTerm())
 					.filterByDescriptionLanguageRefSet(acceptLanguage)
 					.filterByDescriptionType(params.getDescriptionType())
-					.filterByDescriptionSemanticTags(params.getSemanticTag() == null ? null : ImmutableSet.copyOf(params.getSemanticTag()))
+					.filterBySemanticTags(params.getSemanticTag() == null ? null : ImmutableSet.copyOf(params.getSemanticTag()))
 					.withDoi(params.getDoi())
 					.setExpand(params.getExpand())
 					.setLocales(acceptLanguage)

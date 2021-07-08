@@ -69,6 +69,7 @@ import com.b2international.snowowl.test.commons.SnowOwlAppRule;
 	SnomedBranchingApiTest.class,
 	// Component API test cases
 	SnomedConceptApiTest.class,
+	SnomedConceptSearchApiTest.class,
 	SnomedConceptInactivationApiTest.class,
 	SnomedDescriptionApiTest.class,
 	SnomedRelationshipApiTest.class,

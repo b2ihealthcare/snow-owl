@@ -226,6 +226,17 @@ public final class StagingArea {
 	}
 	
 	/**
+	 * @param type
+	 * @param key
+	 * @return the underlying revision difference if the given type/key object was changed in this staging area, or <code>null</code> if not. 
+	 */
+	public RevisionDiff getChangedRevisionDiff(Class<? extends Revision> type, String key) {
+		final ObjectId objectId = ObjectId.of(type, key);
+		checkArgument(stagedObjects.containsKey(objectId), "The given object '%s' is not staged in this staging area.", objectId);
+		return stagedObjects.get(ObjectId.of(type, key)).getDiff();
+	}
+	
+	/**
 	 * @param <T>
 	 * @param type - the requested object type
 	 * @return a {@link Stream} of objects of type T that are registered as CHANGED in this staging area.
@@ -1354,5 +1365,5 @@ public final class StagingArea {
 	private StagedObject removed(Object object, RevisionDiff diff, boolean commit) {
 		return new StagedObject(StageKind.REMOVED, object, diff, commit);
 	}
-	
+
 }

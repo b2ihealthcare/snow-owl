@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.core.rest.components;
 
 import static com.b2international.snowowl.snomed.common.SnomedConstants.Concepts.ROOT_CONCEPT;
 import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.UK_ACCEPTABLE_MAP;
+import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants.UK_PREFERRED_MAP;
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.*;
 import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.*;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests.createCodeSystem;
@@ -26,7 +27,6 @@ import static com.b2international.snowowl.test.commons.rest.RestExtensions.asser
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.lastPathSegment;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -62,9 +62,7 @@ import com.b2international.snowowl.snomed.core.domain.*;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
-import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
-import com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants;
-import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
+import com.b2international.snowowl.snomed.core.rest.*;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.test.commons.SnomedContentRule;
 import com.b2international.snowowl.test.commons.rest.RestExtensions;
@@ -174,6 +172,82 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 				.with("commitComment", "Created an IS A cycle with three relationships");
 
 		createComponent(branchPath, SnomedComponentType.RELATIONSHIP, requestBody).statusCode(400);
+	}
+	
+	@Test
+	public void createConceptWithSemanticTag() throws Exception {
+		String conceptId = createConcept(branchPath, SnomedRestFixtures.createConceptRequestBody(Concepts.ROOT_CONCEPT));
+		SnomedConcept concept = getConcept(conceptId, "semanticTags()");
+		assertThat(concept.getSemanticTags()).isEmpty();
+		
+		SnomedRestFixtures.createNewDescription(branchPath, Json.object(
+			"conceptId", conceptId,
+			"moduleId", Concepts.MODULE_SCT_CORE,
+			"typeId", Concepts.FULLY_SPECIFIED_NAME,
+			"term", "My awesome fsn (tag)",
+			"languageCode", "en",
+			"acceptability", UK_PREFERRED_MAP,
+			"caseSignificanceId", Concepts.ENTIRE_TERM_CASE_INSENSITIVE,
+			"commitComment", "New FSN"
+		));
+		
+		concept = getConcept(conceptId, "semanticTags()");
+		assertThat(concept.getSemanticTags()).contains("tag");
+	}
+	
+	@Test
+	public void updateConceptSemanticTag() throws Exception {
+		String conceptId = createConcept(branchPath, SnomedRestFixtures.createConceptRequestBody(Concepts.ROOT_CONCEPT));
+		SnomedConcept concept = getConcept(conceptId, "semanticTags()");
+		assertThat(concept.getSemanticTags()).isEmpty();
+		
+		String fsnId = SnomedRestFixtures.createNewDescription(branchPath, Json.object(
+			"conceptId", conceptId,
+			"moduleId", Concepts.MODULE_SCT_CORE,
+			"typeId", Concepts.FULLY_SPECIFIED_NAME,
+			"term", "My awesome fsn (tag)",
+			"languageCode", "en",
+			"acceptability", UK_PREFERRED_MAP,
+			"caseSignificanceId", Concepts.ENTIRE_TERM_CASE_INSENSITIVE,
+			"commitComment", "New FSN"
+		));
+		
+		concept = getConcept(conceptId, "semanticTags()");
+		assertThat(concept.getSemanticTags()).contains("tag");
+		
+		SnomedComponentRestRequests.updateComponent(branchPath, SnomedComponentType.DESCRIPTION, fsnId, Json.object(
+			"term", "My awesome fsn (updated)",
+			"commitComment", "Update FSN semantic tag"
+		));
+		
+		concept = getConcept(conceptId, "semanticTags()");
+		assertThat(concept.getSemanticTags()).contains("updated");
+	}
+	
+	@Test
+	public void deleteConceptSemanticTag() throws Exception {
+		String conceptId = createConcept(branchPath, SnomedRestFixtures.createConceptRequestBody(Concepts.ROOT_CONCEPT));
+		SnomedConcept concept = getConcept(conceptId, "semanticTags()");
+		assertThat(concept.getSemanticTags()).isEmpty();
+		
+		String fsnId = SnomedRestFixtures.createNewDescription(branchPath, Json.object(
+			"conceptId", conceptId,
+			"moduleId", Concepts.MODULE_SCT_CORE,
+			"typeId", Concepts.FULLY_SPECIFIED_NAME,
+			"term", "My awesome fsn (tag)",
+			"languageCode", "en",
+			"acceptability", UK_PREFERRED_MAP,
+			"caseSignificanceId", Concepts.ENTIRE_TERM_CASE_INSENSITIVE,
+			"commitComment", "New FSN"
+		));
+		
+		concept = getConcept(conceptId, "semanticTags()");
+		assertThat(concept.getSemanticTags()).contains("tag");
+		
+		SnomedComponentRestRequests.deleteComponent(branchPath, SnomedComponentType.DESCRIPTION, fsnId, false);
+		
+		concept = getConcept(conceptId, "semanticTags()");
+		assertThat(concept.getSemanticTags()).isEmpty();
 	}
 
 	@Test

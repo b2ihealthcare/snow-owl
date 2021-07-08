@@ -41,7 +41,6 @@
         <setEntry value="ch.qos.logback.classic@default:default"/>
         <setEntry value="ch.qos.logback.core@default:default"/>
         <setEntry value="com.b2international.snomed.ecl@default:default"/>
-        <setEntry value="com.b2international.snomed.ql@default:default"/>
         <setEntry value="com.fasterxml.classmate@default:default"/>
         <setEntry value="com.fasterxml.jackson.core.jackson-annotations@default:default"/>
         <setEntry value="com.fasterxml.jackson.core.jackson-core@default:default"/>

@@ -139,21 +139,23 @@ public abstract class SnomedRestFixtures {
 	public static String createNewDescription(IBranchPath descriptionPath, String conceptId, String typeId, Map<String, Acceptability> acceptabilityMap, final String languageCode) {
 		Map<?, ?> requestBody = Json.assign(createDescriptionRequestBody(conceptId, typeId, Concepts.MODULE_SCT_CORE, acceptabilityMap, Concepts.ONLY_INITIAL_CHARACTER_CASE_INSENSITIVE, languageCode))
 				.with("commitComment", "Created new description");
-
-		return assertCreated(createComponent(descriptionPath, SnomedComponentType.DESCRIPTION, requestBody));
+		return createNewDescription(descriptionPath, requestBody);
 	}
-	
+
 	public static String createNewDescription(IBranchPath descriptionPath, String conceptId, String typeId, Map<String, Acceptability> acceptabilityMap) {
 		Map<?, ?> requestBody = Json.assign(createDescriptionRequestBody(conceptId, typeId, Concepts.MODULE_SCT_CORE, acceptabilityMap))
 				.with("commitComment", "Created new description");
 
-		return assertCreated(createComponent(descriptionPath, SnomedComponentType.DESCRIPTION, requestBody));
+		return createNewDescription(descriptionPath, requestBody);
 	}
 
 	public static String createNewTextDefinition(IBranchPath descriptionPath, Map<String, Acceptability> acceptabilityMap) {
 		Map<?, ?> requestBody = Json.assign(createDescriptionRequestBody(Concepts.ROOT_CONCEPT, Concepts.TEXT_DEFINITION, Concepts.MODULE_SCT_CORE, acceptabilityMap))
 				.with("commitComment", "Created new text definition");
-
+		return createNewDescription(descriptionPath, requestBody);
+	}
+	
+	public static String createNewDescription(IBranchPath descriptionPath, Map<?, ?> requestBody) {
 		return assertCreated(createComponent(descriptionPath, SnomedComponentType.DESCRIPTION, requestBody));
 	}
 
