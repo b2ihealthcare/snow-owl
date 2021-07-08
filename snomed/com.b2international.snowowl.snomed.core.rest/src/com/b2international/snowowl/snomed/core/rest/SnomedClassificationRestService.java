@@ -42,7 +42,7 @@ import io.swagger.annotations.*;
 /**
  * @since 1.0
  */
-@Api(value = "Classifications", description="Classifications", tags = "classifications")
+@Tag(description = "Classifications", description="Classifications", tags = "classifications")
 @Controller
 @RequestMapping(value = "/classifications")
 public class SnomedClassificationRestService extends AbstractRestService {
@@ -51,37 +51,37 @@ public class SnomedClassificationRestService extends AbstractRestService {
 		super(ClassificationTask.Fields.ALL);
 	}
 	
-	@ApiOperation(
+	@Operation(
 		value="Retrieve classification runs from branch", 
-		notes="Returns a list of classification runs for a branch."
+		description="Returns a list of classification runs for a branch."
 	)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Branch not found", response=RestApiError.class)
+		@ApiResponse(responseCode = "200", message = "OK"),
+		@ApiResponse(responseCode = "404", message = "Branch not found", response=RestApiError.class)
 	})
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public @ResponseBody Promise<ClassificationTasks> getAllClassificationRuns(
-			@ApiParam(value = "The resource path", required = true)
+			@Parameter(value = "The resource path", required = true)
 			@RequestParam(value="path", required=false) 
 			final String path,
 			
-			@ApiParam(value ="The classification status")
+			@Parameter(value ="The classification status")
 			@RequestParam(value="status", required=false) 
 			final ClassificationStatus status,
 
-			@ApiParam(value ="The user identifier")
+			@Parameter(value ="The user identifier")
 			@RequestParam(value="userId", required=false) 
 			final String userId,
 			
-			@ApiParam(value = "The search key to use for retrieving the next page of results")
+			@Parameter(value = "The search key to use for retrieving the next page of results")
 			@RequestParam(value="searchAfter", required=false)
 			final String searchAfter,
 			
-			@ApiParam(value ="Sort keys")
+			@Parameter(value ="Sort keys")
 			@RequestParam(value="sort", required=false)
 			final List<String> sort,
 			
-			@ApiParam(value ="The maximum number of items to return", defaultValue = "50")
+			@Parameter(value ="The maximum number of items to return", defaultValue = "50")
 			@RequestParam(value="limit", required=false) 
 			final int limit) {
 
@@ -96,20 +96,20 @@ public class SnomedClassificationRestService extends AbstractRestService {
 			.execute(getBus());
 	}
 
-	@ApiOperation(
+	@Operation(
 		value = "Start a classification on a branch",
 		notes = "Classification runs are async jobs. The call to this method immediately returns with a unique URL "
 				+ "pointing to the classification run.<p>The URL can be used to fetch the state of the classification "
 				+ "to determine whether it's completed or not."
 	)
 	@ApiResponses({
-		@ApiResponse(code = 201, message = "Created"),
-		@ApiResponse(code = 404, message = "Branch not found", response=RestApiError.class)
+		@ApiResponse(responseCode = "201", message = "Created"),
+		@ApiResponse(responseCode = "404", message = "Branch not found", response=RestApiError.class)
 	})
 	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(value=HttpStatus.CREATED)
 	public Promise<ResponseEntity<?>> beginClassification(
-			@ApiParam(value ="Classification parameters")
+			@Parameter(value ="Classification parameters")
 			@RequestBody 
 			final ClassificationRunRestInput request,
 
@@ -131,16 +131,16 @@ public class SnomedClassificationRestService extends AbstractRestService {
 				});
 	}
 
-	@ApiOperation(
+	@Operation(
 		value="Retrieve the state of a classification run from branch"
 	)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Branch or classification not found", response=RestApiError.class)
+		@ApiResponse(responseCode = "200", message = "OK"),
+		@ApiResponse(responseCode = "404", message = "Branch or classification not found", response=RestApiError.class)
 	})
 	@GetMapping(value = "/{classificationId}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public @ResponseBody Promise<ClassificationTask> getClassificationRun(
-			@ApiParam(value ="The classification identifier")
+			@Parameter(value ="The classification identifier")
 			@PathVariable(value="classificationId") 
 			final String classificationId) {
 
@@ -149,30 +149,30 @@ public class SnomedClassificationRestService extends AbstractRestService {
 				.execute(getBus());
 	}
 
-	@ApiOperation(
+	@Operation(
 		value="Retrieve equivalent concepts from a classification run on a branch",
-		notes="Returns a list of equivalent concept sets if the classification completed successfully; an empty JSON array "
+		description="Returns a list of equivalent concept sets if the classification completed successfully; an empty JSON array "
 				+ " is returned if the classification hasn't finished yet, or no equivalent concepts could be found."
 	)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Branch or classification not found", response=RestApiError.class)
+		@ApiResponse(responseCode = "200", message = "OK"),
+		@ApiResponse(responseCode = "404", message = "Branch or classification not found", response=RestApiError.class)
 	})
 	@GetMapping(value = "/{classificationId}/equivalent-concepts", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public @ResponseBody Promise<EquivalentConceptSets> getEquivalentConceptSets(
-			@ApiParam(value ="The classification identifier")
+			@Parameter(value ="The classification identifier")
 			@PathVariable(value="classificationId") 
 			final String classificationId,
 			
-			@ApiParam(value = "The search key to use for retrieving the next page of results")
+			@Parameter(value = "The search key to use for retrieving the next page of results")
 			@RequestParam(value="searchAfter", required=false)
 			final String searchAfter,
 			
-			@ApiParam(value ="The maximum number of items to return", defaultValue = "50")
+			@Parameter(value ="The maximum number of items to return", defaultValue = "50")
 			@RequestParam(value="limit", defaultValue="50", required=false) 
 			final int limit,
 			
-			@ApiParam(value ="Accepted language tags, in order of preference")
+			@Parameter(value ="Accepted language tags, in order of preference")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 
@@ -186,32 +186,32 @@ public class SnomedClassificationRestService extends AbstractRestService {
 				.execute(getBus());
 	}
 
-	@ApiOperation(
+	@Operation(
 		value="Retrieve relationship changes made by a classification run on a branch",
-		notes="Returns a list of relationship changes if the classification completed successfully; an empty JSON array "
+		description="Returns a list of relationship changes if the classification completed successfully; an empty JSON array "
 				+ " is returned if the classification hasn't finished yet, or no changed relationships could be found."
 	)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Branch or classification not found", response=RestApiError.class)
+		@ApiResponse(responseCode = "200", message = "OK"),
+		@ApiResponse(responseCode = "404", message = "Branch or classification not found", response=RestApiError.class)
 	})
 	@GetMapping(
 			value = "/{classificationId}/relationship-changes", 
 			produces = { AbstractRestService.JSON_MEDIA_TYPE, AbstractRestService.CSV_MEDIA_TYPE })
 	public @ResponseBody Promise<RelationshipChanges> getRelationshipChanges(
-			@ApiParam(value ="The classification identifier")
+			@Parameter(value ="The classification identifier")
 			@PathVariable(value="classificationId") 
 			final String classificationId,
 			
-			@ApiParam(value ="Expansion parameters")
+			@Parameter(value ="Expansion parameters")
 			@RequestParam(value="expand", required=false)
 			final String expand,
 
-			@ApiParam(value = "The search key to use for retrieving the next page of results")
+			@Parameter(value = "The search key to use for retrieving the next page of results")
 			@RequestParam(value="searchAfter", required=false)
 			final String searchAfter,
 			
-			@ApiParam(value ="The maximum number of items to return", defaultValue = "50")
+			@Parameter(value ="The maximum number of items to return", defaultValue = "50")
 			@RequestParam(value="limit", defaultValue="50", required=false) 
 			final int limit) {
 		
@@ -236,21 +236,21 @@ public class SnomedClassificationRestService extends AbstractRestService {
 //		description="Retrieves a preview of single concept and related information on a branch with classification changes applied."
 //	)
 ////	@ApiResponses({
-////			@ApiResponse(code = 200, message = "OK", response = Void.class),
-////			@ApiResponse(code = 404, message = "Code system version or concept not found", response = RestApiError.class)
+////			@ApiResponse(responseCode = "200", message = "OK", response = Void.class),
+////			@ApiResponse(responseCode = "404", message = "Code system version or concept not found", response = RestApiError.class)
 ////	})
 //	@GetMapping(value = "/{classificationId}/concept-preview/{conceptId}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 //	public @ResponseBody
 //	ISnomedBrowserConcept getConceptDetails(
-//			@ApiParam(value ="The classification identifier")
+//			@Parameter(value ="The classification identifier")
 //			@PathVariable(value="classificationId")
 //			final String classificationId,
 //
-//			@ApiParam(value ="The concept identifier")
+//			@Parameter(value ="The concept identifier")
 //			@PathVariable(value="conceptId")
 //			final String conceptId,
 //
-//			@ApiParam(value ="Language codes and reference sets, in order of preference")
+//			@Parameter(value ="Language codes and reference sets, in order of preference")
 //			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false)
 //			final String languageSetting) {
 //
@@ -314,25 +314,25 @@ public class SnomedClassificationRestService extends AbstractRestService {
 //		return conceptDetails;
 //	}
 
-	@ApiOperation(
+	@Operation(
 		value="Update a classification run on a branch",
-		notes="Update the specified classification run by changing its state property. Saving the results is an async operation "
+		description="Update the specified classification run by changing its state property. Saving the results is an async operation "
 				+ "due to the possible high number of changes. It is advised to fetch the state of the classification run until "
 				+ "the state changes to 'SAVED' or 'SAVE_FAILED'.<p>"
 				+ "Currently only the state can be changed from 'COMPLETED' to 'SAVED'."
 	)
 	@ApiResponses({
-		@ApiResponse(code = 204, message = "No content, update successful"),
-		@ApiResponse(code = 404, message = "Branch or classification not found", response=RestApiError.class)
+		@ApiResponse(responseCode = "204", message = "No content, update successful"),
+		@ApiResponse(responseCode = "404", message = "Branch or classification not found", response=RestApiError.class)
 	})
 	@PutMapping(value = "/{classificationId}", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(value=HttpStatus.NO_CONTENT)
 	public void updateClassificationRun(
-			@ApiParam(value = "The classification identifier")
+			@Parameter(value = "The classification identifier")
 			@PathVariable(value="classificationId") 
 			final String classificationId,
 
-			@ApiParam(value = "The updated classification parameters")
+			@Parameter(value = "The updated classification parameters")
 			@RequestBody 
 			final ClassificationRunRestUpdate update,
 			
@@ -355,18 +355,18 @@ public class SnomedClassificationRestService extends AbstractRestService {
 		}
 	}
 
-	@ApiOperation(
+	@Operation(
 		value="Removes a classification run from a branch",
-		notes="Classification runs remain available until they are explicitly deleted by the client. Results of the classification cannot be retrieved after deletion."
+		description="Classification runs remain available until they are explicitly deleted by the client. Results of the classification cannot be retrieved after deletion."
 	)
 	@ApiResponses({
-		@ApiResponse(code = 204, message = "No content, delete successful"),
-		@ApiResponse(code = 404, message = "Branch or classification not found", response=RestApiError.class)
+		@ApiResponse(responseCode = "204", message = "No content, delete successful"),
+		@ApiResponse(responseCode = "404", message = "Branch or classification not found", response=RestApiError.class)
 	})
 	@DeleteMapping(value = "/{classificationId}")
 	@ResponseStatus(value=HttpStatus.NO_CONTENT)
 	public void deleteClassificationRun(
-			@ApiParam(value = "The classification identifier")
+			@Parameter(value = "The classification identifier")
 			@PathVariable(value="classificationId") 
 			final String classificationId) {
 		

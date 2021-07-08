@@ -37,7 +37,7 @@ import io.swagger.annotations.*;
 /**
  * @since 8.0
  */
-@Api(value = "CodeSystem", description="FHIR CodeSystem Resource", tags = { "CodeSystem" })
+@Tag(description = "CodeSystem", description="FHIR CodeSystem Resource", tags = { "CodeSystem" })
 @RestController
 @RequestMapping(value="/CodeSystem", produces = { AbstractFhirController.APPLICATION_FHIR_JSON })
 public class FhirCodeSystemLookupOperationController extends AbstractFhirController {
@@ -52,9 +52,9 @@ public class FhirCodeSystemLookupOperationController extends AbstractFhirControl
 	 * @param properties
 	 * @throws ParseException 
 	 */
-	@ApiOperation(
+	@Operation(
 			value="Concept lookup and decomposition",
-			notes="Given a code/version/system, or a Coding, get additional details about the concept.")
+			description="Given a code/version/system, or a Coding, get additional details about the concept.")
 	@ApiResponses({
 		@ApiResponse(code = HTTP_OK, message = "OK"),
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
@@ -63,28 +63,28 @@ public class FhirCodeSystemLookupOperationController extends AbstractFhirControl
 	@GetMapping("/$lookup")
 	public Promise<Parameters.Fhir> lookup(
 		
-		@ApiParam(value="The code to look up") 
+		@Parameter(value="The code to look up") 
 		@RequestParam(value="code") 
 		final String code,
 		
-		@ApiParam(value="The code system's uri") 
+		@Parameter(value="The code system's uri") 
 		@RequestParam(value="system") 
 		final String system,
 		
-		@ApiParam(value="The code system version") 
+		@Parameter(value="The code system version") 
 		@RequestParam(value="version") 
 		final Optional<String> version,
 		
-		@ApiParam(value="Lookup date in datetime format") 
+		@Parameter(value="Lookup date in datetime format") 
 		@RequestParam(value="date") 
 		final Optional<String> date,
 		
-		@ApiParam(value="Language code for display") 
+		@Parameter(value="Language code for display") 
 		@RequestParam(value="displayLanguage") 
 		final Optional<String> displayLanguage,
 		
 		//Collection binding does not work with Optional!! (Optional<Set<String>> properties does not get populated with multiple properties, only the first one is present!)
-		@ApiParam(value="Properties to return in the output") 
+		@Parameter(value="Properties to return in the output") 
 		@RequestParam(value="property", required = false) 
 		Set<String> properties) {
 		
@@ -116,7 +116,7 @@ public class FhirCodeSystemLookupOperationController extends AbstractFhirControl
 	 * POST-based lookup end-point. Parameters are in the request body.
 	 * @param in - FHIR parameters
 	 */
-	@ApiOperation(value="Concept lookup and decomposition", notes="Given a code/version/system, or a Coding, get additional details about the concept.")
+	@Operation(value="Concept lookup and decomposition", description="Given a code/version/system, or a Coding, get additional details about the concept.")
 	@ApiResponses({
 		@ApiResponse(code = HTTP_OK, message = "OK"),
 		@ApiResponse(code = HTTP_NOT_FOUND, message = "Not found", response = OperationOutcome.class),
@@ -124,7 +124,7 @@ public class FhirCodeSystemLookupOperationController extends AbstractFhirControl
 	})
 	@PostMapping(value = "/$lookup", consumes = AbstractFhirResourceController.APPLICATION_FHIR_JSON)
 	public Promise<Parameters.Fhir> lookup(
-			@ApiParam(name = "body", value = "The lookup request parameters")
+			@Parameter(name = "body", value = "The lookup request parameters")
 			@RequestBody 
 			final Parameters.Fhir in) {
 		

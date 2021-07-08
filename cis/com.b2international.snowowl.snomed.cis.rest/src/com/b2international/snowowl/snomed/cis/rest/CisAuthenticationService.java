@@ -45,7 +45,7 @@ import io.swagger.annotations.ApiResponses;
 /**
  * @since 6.18
  */
-@Api(value = "Authentication", description="Authentication", tags = { "Authentication" })
+@Tag(description = "Authentication", description="Authentication", tags = { "Authentication" })
 @RestController
 @RequestMapping(produces={ MediaType.APPLICATION_JSON_VALUE })
 public class CisAuthenticationService extends AbstractRestService {
@@ -53,14 +53,14 @@ public class CisAuthenticationService extends AbstractRestService {
 	@Autowired
 	private JWTVerifier jwtVerifier;
 	
-	@ApiOperation(value="Creates a session, obtaining a token for next operations.")
+	@Operation(value="Creates a session, obtaining a token for next operations.")
 	@ApiResponses({
-		@ApiResponse(code = 400, message = "Error", response = RestApiError.class),
+		@ApiResponse(responseCode = "400", message = "Error", response = RestApiError.class),
 		@ApiResponse(code = 401, message = "Unauthorized", response = RestApiError.class)
 	})
 	@PostMapping(value="/login")
 	public Token login(
-			@ApiParam(value = "The user credentials.", required = true) 
+			@Parameter(value = "The user credentials.", required = true) 
 			@RequestBody Credentials credentials) {
 		return UserRequests.prepareLogin()
 				.setUsername(credentials.getUsername())
@@ -70,26 +70,26 @@ public class CisAuthenticationService extends AbstractRestService {
 				.getSync();
 	}
 	
-	@ApiOperation(value="Closes a session, identified by the token.")
+	@Operation(value="Closes a session, identified by the token.")
 	@ApiResponses({
-		@ApiResponse(code = 400, message = "Error", response = RestApiError.class)
+		@ApiResponse(responseCode = "400", message = "Error", response = RestApiError.class)
 	})
 	@PostMapping(value="/logout")
 	public ResponseEntity<EmptyJsonResponse> logout(
-			@ApiParam(value = "The security access token.", required = true)
+			@Parameter(value = "The security access token.", required = true)
 			@RequestBody 
 			Token token) {
 		return new ResponseEntity<>(new EmptyJsonResponse(), HttpStatus.OK);
 	}
 	
-	@ApiOperation(value = "Validates a token, checking if it's assigned to a current session, and retrieves user data.")
+	@Operation(value = "Validates a token, checking if it's assigned to a current session, and retrieves user data.")
 	@ApiResponses({
-		@ApiResponse(code = 400, message = "Error", response = RestApiError.class),
+		@ApiResponse(responseCode = "400", message = "Error", response = RestApiError.class),
 		@ApiResponse(code = 401, message = "Unauthorized", response = RestApiError.class)
 	})
 	@PostMapping(value="/authenticate")
 	public UserData authenticate(
-			@ApiParam(value = "The security access token.", required = true)
+			@Parameter(value = "The security access token.", required = true)
 			@RequestBody 
 			Token token) {
 		String username = verify(token.getToken());

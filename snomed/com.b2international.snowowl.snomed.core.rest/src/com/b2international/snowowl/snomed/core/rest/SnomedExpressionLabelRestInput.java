@@ -26,7 +26,7 @@ public class SnomedExpressionLabelRestInput {
 	
 	@ApiParam
 	private List<String> expressions;
-	@ApiParam(defaultValue = "fsn", example = "fsn|pt")
+	@Parameter(defaultValue = "fsn", example = "fsn|pt")
 	private String descriptionType;
 	
 	public List<String> getExpressions() {

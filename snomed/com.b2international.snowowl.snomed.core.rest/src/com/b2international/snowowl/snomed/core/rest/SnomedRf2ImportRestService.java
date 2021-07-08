@@ -49,7 +49,7 @@ import io.swagger.annotations.*;
 /**
  * @since 7.5
  */
-@Api(value = "Import", description="Import", tags = "import")
+@Tag(description = "Import", description="Import", tags = "import")
 @RestController
 @RequestMapping(value = "/{path:**}/import")
 public class SnomedRf2ImportRestService extends AbstractRestService {
@@ -57,41 +57,41 @@ public class SnomedRf2ImportRestService extends AbstractRestService {
 	@Autowired
 	private AttachmentRegistry attachments;
 	
-	@ApiOperation(
+	@Operation(
 		value="Import SNOMED CT content", 
-		notes="Configures processes to import RF2 based archives. The configured process will wait until the archive actually uploaded via the <em>/archive</em> endpoint. "
+		description="Configures processes to import RF2 based archives. The configured process will wait until the archive actually uploaded via the <em>/archive</em> endpoint. "
 				+ "The actual import process will start after the file upload completed. Note: unpublished components (with no value entered in the 'effectiveTime' column) are "
 				+ "only allowed in DELTA import mode."
 	)
 	@ApiResponses({
-		@ApiResponse(code = 201, message = "Created"),
-		@ApiResponse(code = 400, message = "Bad Request", response = RestApiError.class),
-		@ApiResponse(code = 404, message = "Not found", response = RestApiError.class),
+		@ApiResponse(responseCode = "201", message = "Created"),
+		@ApiResponse(responseCode = "400", message = "Bad Request", response = RestApiError.class),
+		@ApiResponse(responseCode = "404", message = "Not found", response = RestApiError.class),
 	})
 	@PostMapping(consumes = { AbstractRestService.MULTIPART_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.CREATED)
 	public ResponseEntity<Void> create(
-			@ApiParam(value = "The resource path", required = true)
+			@Parameter(value = "The resource path", required = true)
 			@PathVariable(name = "path")
 			final String path,
 			
-			@ApiParam(value = "RF2 Release Type to import from the archive", allowableValues = "full,snapshot,delta", defaultValue = "delta")
+			@Parameter(value = "RF2 Release Type to import from the archive", allowableValues = "full,snapshot,delta", defaultValue = "delta")
 			@RequestParam(name = "type", defaultValue = "delta")
 			final String type,
 			
-			@ApiParam(value = "To create versions for the CodeSystem relative to the given path", defaultValue = "true")
+			@Parameter(value = "To create versions for the CodeSystem relative to the given path", defaultValue = "true")
 			@RequestParam(name = "createVersions", defaultValue = "true")
 			final Boolean createVersions,
 			
-			@ApiParam(value = "Import should be allowed to progress when members of listed reference sets have missing referenced components")
+			@Parameter(value = "Import should be allowed to progress when members of listed reference sets have missing referenced components")
 			@RequestParam(name = "ignoreMissingReferencesIn", required = false)
 			final List<String> ignoreMissingReferencesIn,
 			
-			@ApiParam(value = "Enable to run the import content integrity validations without pushing any changes", defaultValue = "false")
+			@Parameter(value = "Enable to run the import content integrity validations without pushing any changes", defaultValue = "false")
 			@RequestParam(name = "dryRun", defaultValue = "false")
 			final Boolean dryRun,
 			
-			@ApiParam(value = "Import file", required = true)
+			@Parameter(value = "Import file", required = true)
 			@RequestPart("file") 
 			final MultipartFile file) throws IOException {
 		
@@ -114,17 +114,17 @@ public class SnomedRf2ImportRestService extends AbstractRestService {
 		return ResponseEntity.created(getResourceLocationURI(path, jobId)).build();
 	}
 	
-	@ApiOperation(
+	@Operation(
 		value="Retrieve an existing import job", 
-		notes="Returns the specified import run's configuration and status."
+		description="Returns the specified import run's configuration and status."
 	)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Not found", response = RestApiError.class),
+		@ApiResponse(responseCode = "200", message = "OK"),
+		@ApiResponse(responseCode = "404", message = "Not found", response = RestApiError.class),
 	})
 	@GetMapping(value = "/{id}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public Promise<SnomedRf2ImportConfiguration> getImport(
-			@ApiParam(value = "The import identifier")
+			@Parameter(value = "The import identifier")
 			@PathVariable(value="id") 
 			final String id) {
 		return JobRequests.prepareGet(id)
@@ -133,18 +133,18 @@ public class SnomedRf2ImportRestService extends AbstractRestService {
 				.then(this::toRf2ImportConfiguration);
 	}
 	
-	@ApiOperation(
+	@Operation(
 		value="Delete an existing import job", 
-		notes="Cancels/Deletes a pending/finished import configuration."
+		description="Cancels/Deletes a pending/finished import configuration."
 	)
 	@ApiResponses({
-		@ApiResponse(code = 204, message = "Delete successful"),
-		@ApiResponse(code = 404, message = "Not found", response = RestApiError.class),
+		@ApiResponse(responseCode = "204", message = "Delete successful"),
+		@ApiResponse(responseCode = "404", message = "Not found", response = RestApiError.class),
 	})
 	@DeleteMapping(value="/{id}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void deleteImport(
-			@ApiParam(value = "The import identifier")
+			@Parameter(value = "The import identifier")
 			@PathVariable(value="id") 
 			final String id) {
 		JobRequests.prepareDelete(id)

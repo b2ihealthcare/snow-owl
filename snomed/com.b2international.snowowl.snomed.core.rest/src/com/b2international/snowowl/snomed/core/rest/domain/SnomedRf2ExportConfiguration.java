@@ -26,34 +26,34 @@ import io.swagger.annotations.ApiParam;
  */
 public final class SnomedRf2ExportConfiguration {
 
-	@ApiParam(value = "The RF2 type to use", allowableValues = "full,snapshot,delta", defaultValue = "snapshot")
+	@Parameter(value = "The RF2 type to use", allowableValues = "full,snapshot,delta", defaultValue = "snapshot")
 	private String type = Rf2ReleaseType.SNAPSHOT.name();
 	
-	@ApiParam(value = "The namespaceId to use in the release archive name")
+	@Parameter(value = "The namespaceId to use in the release archive name")
 	private String namespaceId = "INT";
 	
-	@ApiParam(value = "Optional moduleIds to restrict the exported content")
+	@Parameter(value = "Optional moduleIds to restrict the exported content")
 	private Collection<String> moduleIds;
 	
-	@ApiParam(value = "Optional refSetIds to restrict the export content")
+	@Parameter(value = "Optional refSetIds to restrict the export content")
 	private Collection<String> refSetIds;
 	
-	@ApiParam(value = "Delta export start effectiveTime. By default unbounded.")
+	@Parameter(value = "Delta export start effectiveTime. By default unbounded.")
 	private String startEffectiveTime;
 	
-	@ApiParam(value = "Delta export end effectiveTime. By default unbounded.")
+	@Parameter(value = "Delta export end effectiveTime. By default unbounded.")
 	private String endEffectiveTime;
 	
-	@ApiParam(value = "Transient effectiveTime to apply on unpublished content")
+	@Parameter(value = "Transient effectiveTime to apply on unpublished content")
 	private String transientEffectiveTime;
 	
-	@ApiParam(value = "To include unreleased changes in the export result")
+	@Parameter(value = "To include unreleased changes in the export result")
 	private boolean includeUnpublished = true;
 	
-	@ApiParam(value = "To export the content of the Extension only or all dependencies as well forming an Edition Release.")
+	@Parameter(value = "To export the content of the Extension only or all dependencies as well forming an Edition Release.")
 	private boolean extensionOnly = false;
 	
-	@ApiParam(value = "The RF2 RefSet file layout to use. Defaults to server configuration key 'snomed.export.refSetLayout'.", allowableValues = "combined,individual")
+	@Parameter(value = "The RF2 RefSet file layout to use. Defaults to server configuration key 'snomed.export.refSetLayout'.", allowableValues = "combined,individual")
 	private String refSetLayout;
 	
 	/**

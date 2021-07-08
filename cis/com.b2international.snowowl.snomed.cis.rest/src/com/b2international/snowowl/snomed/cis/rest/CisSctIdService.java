@@ -46,24 +46,24 @@ import io.swagger.annotations.ApiResponses;
 /**
  * @since 6.18
  */
-@Api(value = "SCTIDS", description = "SCTIDS", tags = {"SCTIDS"})
+@Tag(description = "SCTIDS", description = "SCTIDS", tags = {"SCTIDS"})
 @RestController
 @RequestMapping(value = "/sct", produces = MediaType.APPLICATION_JSON_VALUE)
 public class CisSctIdService extends AbstractRestService {
 
 	private Identifiers identifiers = new Identifiers();
 	
-	@ApiOperation(value = "Returns the SCTIDs Record.")
+	@Operation(value = "Returns the SCTIDs Record.")
 	@ApiResponses({
-		@ApiResponse(code = 400, message = "Bad Request", response = RestApiError.class),
+		@ApiResponse(responseCode = "400", message = "Bad Request", response = RestApiError.class),
 		@ApiResponse(code = 401, message = "Unauthorized", response = RestApiError.class)
 	})
 	@GetMapping(value = "/ids/{sctid}")
 	public Promise<SctId> getIds(
-			@ApiParam(value = "The security access token.", required = true)
+			@Parameter(value = "The security access token.", required = true)
 			@RequestParam(value = "token")
 			String token, 
-			@ApiParam(value = "The required id.", required = true)
+			@Parameter(value = "The required id.", required = true)
 			@PathVariable(value = "sctid")
 			String sctid) {
 		return identifiers
@@ -74,20 +74,20 @@ public class CisSctIdService extends AbstractRestService {
 				.then(ids -> ids.first().get());
 	}
 	
-	@ApiOperation(
+	@Operation(
 		value = "Generates a new SCTID", 
 		notes = "Generates a new SCTID, based on the metadata passed in the GenerationData parameter. The first available SCTID will be assigned. Returns a SCTID Record with status 'Assigned'"
 	)
 	@ApiResponses({
-		@ApiResponse(code = 400, message = "Bad Request", response = RestApiError.class),
+		@ApiResponse(responseCode = "400", message = "Bad Request", response = RestApiError.class),
 		@ApiResponse(code = 401, message = "Unauthorized", response = RestApiError.class)
 	})
 	@PostMapping(value = "/generate", consumes = MediaType.APPLICATION_JSON_VALUE)
 	public Promise<SctId> generate(
-			@ApiParam(value = "The security access token.", required = true)
+			@Parameter(value = "The security access token.", required = true)
 			@RequestParam(value = "token")
 			String token,
-			@ApiParam(value = "The requested operation.", required = true)
+			@Parameter(value = "The requested operation.", required = true)
 			@RequestBody GenerationData generationData) {
 		return identifiers
 				.prepareGenerate()
@@ -98,20 +98,20 @@ public class CisSctIdService extends AbstractRestService {
 				.then(ids -> ids.first().get());
 	}
 	
-	@ApiOperation(
+	@Operation(
 		value = "Reserves a new SCTID", 
 		notes = "Reserves a SCTID for use in an external system, based on the metadata passed in the ReservationData parameter. The first available SCTID will be reserved. Returns a SCTID Record with status 'Reserved'."
 	)
 	@ApiResponses({
-		@ApiResponse(code = 400, message = "Bad Request", response = RestApiError.class),
+		@ApiResponse(responseCode = "400", message = "Bad Request", response = RestApiError.class),
 		@ApiResponse(code = 401, message = "Unauthorized", response = RestApiError.class)
 	})
 	@PostMapping(value = "/reserve", consumes = MediaType.APPLICATION_JSON_VALUE)
 	public Promise<SctId> reserve(
-			@ApiParam(value = "The security access token.", required = true)
+			@Parameter(value = "The security access token.", required = true)
 			@RequestParam(value = "token")
 			String token,
-			@ApiParam(value = "The requested operation.", required = true)
+			@Parameter(value = "The requested operation.", required = true)
 			@RequestBody 
 			ReservationData reservationData) {
 		return identifiers
@@ -123,20 +123,20 @@ public class CisSctIdService extends AbstractRestService {
 				.then(ids -> ids.first().get());
 	}
 	
-	@ApiOperation(
+	@Operation(
 		value = "Registers a SCTID", 
 		notes = "Registers a SCTID already in use in an external system, based on the metadata passed in the RegistrationData parameter. Returns a SCTID Record with status 'Assigned'. If the SCTID is already assigned it will return an error."
 	)
 	@ApiResponses({
-		@ApiResponse(code = 400, message = "Bad Request", response = RestApiError.class),
+		@ApiResponse(responseCode = "400", message = "Bad Request", response = RestApiError.class),
 		@ApiResponse(code = 401, message = "Unauthorized", response = RestApiError.class)
 	})
 	@PostMapping(value = "/register", consumes = MediaType.APPLICATION_JSON_VALUE)
 	public Promise<SctId> register(
-			@ApiParam(value = "The security access token.", required = true)
+			@Parameter(value = "The security access token.", required = true)
 			@RequestParam(value = "token")
 			String token,
-			@ApiParam(value = "The requested operation.", required = true)
+			@Parameter(value = "The requested operation.", required = true)
 			@RequestBody 
 			RegistrationData registrationData) {
 		return identifiers
@@ -147,16 +147,16 @@ public class CisSctIdService extends AbstractRestService {
 				.then(ids -> ids.first().get());
 	}
 	
-	@ApiOperation(
+	@Operation(
 		value = "Deprecates a SCTID", 
 		notes = "Deprecates a SCTID, so it will not be assigned to any component, based on the metadata passed in the DeprecationData parameter. Returns a SCTID Record with status 'Deprecated'."
 	)
 	@PutMapping(value = "/deprecate", consumes = MediaType.APPLICATION_JSON_VALUE)
 	public Promise<SctId> deprecate(
-			@ApiParam(value = "The security access token.", required = true)
+			@Parameter(value = "The security access token.", required = true)
 			@RequestParam(value = "token")
 			String token,
-			@ApiParam(value = "The requested operation.", required = true)
+			@Parameter(value = "The requested operation.", required = true)
 			@RequestBody 
 			DeprecationData deprecationData) {
 		return identifiers
@@ -167,16 +167,16 @@ public class CisSctIdService extends AbstractRestService {
 				.then(ids -> ids.first().get());
 	}
 
-	@ApiOperation(
+	@Operation(
 		value = "Releases a SCTID", 
 		notes = "Releases a SCTID, so it will available to be assigned again, based on the metadata passed in the DeprecationData parameter. Returns a SCTID Record with status 'Available'."
 	)
 	@PutMapping(value = "/release", consumes = MediaType.APPLICATION_JSON_VALUE)
 	public Promise<SctId> release(
-			@ApiParam(value = "The security access token.", required = true)
+			@Parameter(value = "The security access token.", required = true)
 			@RequestParam(value = "token")
 			String token,
-			@ApiParam(value = "The requested operation.", required = true)
+			@Parameter(value = "The requested operation.", required = true)
 			@RequestBody
 			ReleaseData releaseData) {
 		return identifiers
@@ -187,16 +187,16 @@ public class CisSctIdService extends AbstractRestService {
 				.then(ids -> ids.first().get());
 	}
 
-	@ApiOperation(
+	@Operation(
 		value = "Publishes a SCTID", 
 		notes = "Sets the SCTID as published, based on the metadata passed in the DeprecationData parameter. Returns a SCTID Record with status 'Published'."
 	)
 	@PutMapping(value = "/publish", consumes = MediaType.APPLICATION_JSON_VALUE)
 	public Promise<SctId> publish(
-			@ApiParam(value = "The security access token.", required = true)
+			@Parameter(value = "The security access token.", required = true)
 			@RequestParam(value = "token")
 			String token,
-			@ApiParam(value = "The requested operation.", required = true)
+			@Parameter(value = "The requested operation.", required = true)
 			@RequestBody
 			PublicationData publicationData) {
 		return identifiers

@@ -24,7 +24,7 @@ import io.swagger.annotations.ApiParam;
  */
 public final class SnomedReferenceSetRestSearch extends ObjectRestSearch {
 
-	@ApiParam(value = "The reference set type to match")
+	@Parameter(value = "The reference set type to match")
 	private String[] refSetTypes;
 	
 	public String[] getRefSetTypes() {

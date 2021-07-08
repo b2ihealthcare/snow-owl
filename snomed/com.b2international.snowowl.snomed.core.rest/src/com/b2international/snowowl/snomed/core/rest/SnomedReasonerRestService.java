@@ -34,16 +34,16 @@ import io.swagger.annotations.ApiResponses;
 /**
  * @since 6.16
  */
-@Api(value = "Reasoners", description="Reasoners", tags = "reasoners")
+@Tag(description = "Reasoners", description="Reasoners", tags = "reasoners")
 @Controller
 @RequestMapping(value="/reasoners", produces={ AbstractRestService.JSON_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE })
 public class SnomedReasonerRestService extends AbstractRestService {
 	
-	@ApiOperation(
+	@Operation(
 		value="Retrieve reasoner id-s from the running Snow Owl instance.", 
-		notes="Retrieve reasoner id-s from the running Snow Owl instance.")
+		description="Retrieve reasoner id-s from the running Snow Owl instance.")
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK"),
+		@ApiResponse(responseCode = "200", message = "OK"),
 	})
 	@GetMapping
 	public @ResponseBody Promise<ReasonerExtensions> getReasoners() {

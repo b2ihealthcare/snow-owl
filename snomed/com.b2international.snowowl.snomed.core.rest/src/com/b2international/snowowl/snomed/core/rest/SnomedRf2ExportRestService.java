@@ -43,7 +43,7 @@ import io.swagger.annotations.*;
 /**
  * @since 7.5
  */
-@Api(value = "Export", description="Export", tags = "export")
+@Tag(description = "Export", description="Export", tags = "export")
 @Controller
 @RequestMapping(value="/{path:**}/export")
 public class SnomedRf2ExportRestService extends AbstractRestService {
@@ -51,22 +51,22 @@ public class SnomedRf2ExportRestService extends AbstractRestService {
 	@Autowired
 	private AttachmentRegistry attachments;
 	
-	@ApiOperation(
+	@Operation(
 		value="Export SNOMED CT content to RF2", 
-		notes="Exports SNOMED CT content from the given branch to RF2."
+		description="Exports SNOMED CT content from the given branch to RF2."
 	)
 	@ApiResponses({
 		@ApiResponse(code=200, message="OK")
 	})
 	@GetMapping
 	public @ResponseBody ResponseEntity<?> export(
-			@ApiParam(value = "The branch path", required = true)
+			@Parameter(value = "The branch path", required = true)
 			@PathVariable(value="path")
 			final String branch,
 
 			final SnomedRf2ExportConfiguration params,
 			
-			@ApiParam(value = "Accepted language tags, in order of preference")
+			@Parameter(value = "Accepted language tags, in order of preference")
 			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 		

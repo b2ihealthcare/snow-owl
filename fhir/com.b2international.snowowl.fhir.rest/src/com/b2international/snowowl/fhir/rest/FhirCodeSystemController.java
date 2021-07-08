@@ -43,7 +43,7 @@ import io.swagger.annotations.*;
  * 
  * @since 8.0
  */
-@Api(value = "CodeSystem", description="FHIR CodeSystem Resource", tags = { "CodeSystem" })
+@Tag(description = "CodeSystem", description="FHIR CodeSystem Resource", tags = { "CodeSystem" })
 @RestController
 @RequestMapping(value="/CodeSystem", produces = { AbstractFhirResourceController.APPLICATION_FHIR_JSON })
 public class FhirCodeSystemController extends AbstractFhirResourceController<CodeSystem> {
@@ -58,9 +58,9 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 	 * @param parameters - request parameters
 	 * @return bundle of code systems
 	 */
-	@ApiOperation(
+	@Operation(
 			value="Retrieve all code systems",
-			notes="Returns a collection of the supported code systems.")
+			description="Returns a collection of the supported code systems.")
 	@ApiResponses({
 		@ApiResponse(code = HTTP_OK, message = "OK"),
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad Request", response = OperationOutcome.class),
@@ -98,10 +98,10 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 	 * @param parameters - request parameters
 	 * @return
 	 */
-	@ApiOperation(
+	@Operation(
 			response=CodeSystem.class,
 			value="Retrieve the code system by id",
-			notes="Retrieves the code system specified by its logical id.")
+			description="Retrieves the code system specified by its logical id.")
 	@ApiResponses({
 		@ApiResponse(code = HTTP_OK, message = "OK"),
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
@@ -109,7 +109,7 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 	})
 	@RequestMapping(value="/{id:**}", method=RequestMethod.GET)
 	public Promise<CodeSystem> getCodeSystem(
-			@ApiParam(value = "The identifier of the Code System resource")
+			@Parameter(value = "The identifier of the Code System resource")
 			@PathVariable(value = "id") 
 			final String id,
 			

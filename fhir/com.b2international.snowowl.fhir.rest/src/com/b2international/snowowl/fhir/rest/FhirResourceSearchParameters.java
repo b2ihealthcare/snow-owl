@@ -27,32 +27,32 @@ import io.swagger.annotations.ApiParam;
 public class FhirResourceSearchParameters extends FhirResourceSelectors {
 
 	// filters
-	@ApiParam(value = "_id")
+	@Parameter(value = "_id")
 	private String[] _id;
 	
-	@ApiParam(value = "name")
+	@Parameter(value = "name")
 	private String[] name;
 	
-	@ApiParam(value = "title")
+	@Parameter(value = "title")
 	private String title;
 	
-	@ApiParam(value = "_lastUpdated")
+	@Parameter(value = "_lastUpdated")
 	private String _lastUpdated;
 	
-	@ApiParam(value = "_content")
+	@Parameter(value = "_content")
 	private String _content;
 	
-	@ApiParam(value = "url")
+	@Parameter(value = "url")
 	private List<String> url;
 	
-	@ApiParam(value = "system")
+	@Parameter(value = "system")
 	private List<String> system;
 	
-	@ApiParam(value = "version")
+	@Parameter(value = "version")
 	private List<String> version;
 	
 	// paging
-	@ApiParam(value = "The maximum number of items to return", defaultValue = "10")
+	@Parameter(value = "The maximum number of items to return", defaultValue = "10")
 	private int _count = 10;
 	
 	@ApiParam

@@ -48,7 +48,7 @@ import io.swagger.annotations.ApiResponses;
 /**
  * @since 1.0
  */
-@Api(value = "Descriptions", description="Descriptions", tags = "descriptions")
+@Tag(description = "Descriptions", description="Descriptions", tags = "descriptions")
 @RestController
 @RequestMapping(value="/{path:**}/descriptions")
 public class SnomedDescriptionRestService extends AbstractRestService {
@@ -57,24 +57,24 @@ public class SnomedDescriptionRestService extends AbstractRestService {
 		super(SnomedDescription.Fields.ALL);
 	}
 	
-	@ApiOperation(
+	@Operation(
 		value="Retrieve Descriptions from a path", 
-		notes="Returns all Descriptions from a path that match the specified query parameters."
+		description="Returns all Descriptions from a path that match the specified query parameters."
 	)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK", response = SnomedDescriptions.class),
-		@ApiResponse(code = 400, message = "Invalid filter config", response = RestApiError.class),
-		@ApiResponse(code = 404, message = "Resource not found", response = RestApiError.class)
+		@ApiResponse(responseCode = "200", message = "OK", response = SnomedDescriptions.class),
+		@ApiResponse(responseCode = "400", message = "Invalid filter config", response = RestApiError.class),
+		@ApiResponse(responseCode = "404", message = "Resource not found", response = RestApiError.class)
 	})
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public Promise<SnomedDescriptions> searchByGet(
-			@ApiParam(value = "The resource path", required = true)
+			@Parameter(value = "The resource path", required = true)
 			@PathVariable(value="path")
 			final String path,
 
 			final SnomedDescriptionRestSearch params,
 
-			@ApiParam(value = "Accepted language tags, in order of preference")
+			@Parameter(value = "Accepted language tags, in order of preference")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 		
@@ -109,47 +109,47 @@ public class SnomedDescriptionRestService extends AbstractRestService {
 				.execute(getBus());
 	}
 	
-	@ApiOperation(
+	@Operation(
 		value="Retrieve Descriptions from a path", 
-		notes="Returns all Descriptions from a path that match the specified query parameters."
+		description="Returns all Descriptions from a path that match the specified query parameters."
 	)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK", response = SnomedDescriptions.class),
-		@ApiResponse(code = 400, message = "Invalid filter config", response = RestApiError.class),
-		@ApiResponse(code = 404, message = "Resource not found", response = RestApiError.class)
+		@ApiResponse(responseCode = "200", message = "OK", response = SnomedDescriptions.class),
+		@ApiResponse(responseCode = "400", message = "Invalid filter config", response = RestApiError.class),
+		@ApiResponse(responseCode = "404", message = "Resource not found", response = RestApiError.class)
 	})
 	@PostMapping(value="/search", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public Promise<SnomedDescriptions> searchByPost(
-			@ApiParam(value = "The resource path", required = true)
+			@Parameter(value = "The resource path", required = true)
 			@PathVariable(value="path")
 			final String path,
 
 			@RequestBody(required = false)
 			final SnomedDescriptionRestSearch body,
 			
-			@ApiParam(value = "Accepted language tags, in order of preference")
+			@Parameter(value = "Accepted language tags, in order of preference")
 			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 		
 		return searchByGet(path, body, acceptLanguage);
 	}
 
-	@ApiOperation(
+	@Operation(
 		value="Create Description", 
-		notes="Creates a new Description directly on a version."
+		description="Creates a new Description directly on a version."
 	)
 	@ApiResponses({
-		@ApiResponse(code = 201, message = "Created"),
-		@ApiResponse(code = 404, message = "Branch not found", response = RestApiError.class)
+		@ApiResponse(responseCode = "201", message = "Created"),
+		@ApiResponse(responseCode = "404", message = "Branch not found", response = RestApiError.class)
 	})
 	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.CREATED)
 	public ResponseEntity<Void> create(
-			@ApiParam(value = "The resource path", required = true)
+			@Parameter(value = "The resource path", required = true)
 			@PathVariable(value="path")
 			final String path,
 			
-			@ApiParam(value = "Description parameters")
+			@Parameter(value = "Description parameters")
 			@RequestBody 
 			final SnomedResourceRequest<SnomedDescriptionRestInput> body,
 			
@@ -173,25 +173,25 @@ public class SnomedDescriptionRestService extends AbstractRestService {
 		return ResponseEntity.created(getResourceLocationURI(path, createdDescriptionId)).build();
 	}
 
-	@ApiOperation(
+	@Operation(
 		value="Retrieve Description properties", 
-		notes="Returns all properties of the specified Description, including acceptability values by language reference set."
+		description="Returns all properties of the specified Description, including acceptability values by language reference set."
 	)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK"),
-		@ApiResponse(code = 404, message = "Branch or Description not found", response = RestApiError.class)
+		@ApiResponse(responseCode = "200", message = "OK"),
+		@ApiResponse(responseCode = "404", message = "Branch or Description not found", response = RestApiError.class)
 	})
 	@GetMapping(value = "/{descriptionId}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public Promise<SnomedDescription> read(
-			@ApiParam(value = "The resource path", required = true)
+			@Parameter(value = "The resource path", required = true)
 			@PathVariable(value="path")
 			final String path,
 			
-			@ApiParam(value = "The Description identifier")
+			@Parameter(value = "The Description identifier")
 			@PathVariable(value="descriptionId")
 			final String descriptionId,
 			
-			@ApiParam(value = "Expansion parameters")
+			@Parameter(value = "Expansion parameters")
 			@RequestParam(value="expand", required=false)
 			final String expand) {
 		
@@ -201,30 +201,30 @@ public class SnomedDescriptionRestService extends AbstractRestService {
 					.execute(getBus());
 	}
 
-	@ApiOperation(
+	@Operation(
 		value="Update Description",
-		notes="Updates properties of the specified Description, also managing language reference set membership."
+		description="Updates properties of the specified Description, also managing language reference set membership."
 	)
 	@ApiResponses({
-		@ApiResponse(code = 204, message = "Update successful"),
-		@ApiResponse(code = 404, message = "Branch or Description not found", response = RestApiError.class)
+		@ApiResponse(responseCode = "204", message = "Update successful"),
+		@ApiResponse(responseCode = "404", message = "Branch or Description not found", response = RestApiError.class)
 	})
 	@PostMapping(value = "/{descriptionId}/updates", consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void update(			
-			@ApiParam(value = "The resource path", required = true)
+			@Parameter(value = "The resource path", required = true)
 			@PathVariable(value="path")
 			final String path,
 			
-			@ApiParam(value = "The Description identifier")
+			@Parameter(value = "The Description identifier")
 			@PathVariable(value="descriptionId")
 			final String descriptionId,
 			
-			@ApiParam(value = "Update Description parameters")
+			@Parameter(value = "Update Description parameters")
 			@RequestBody 
 			final SnomedResourceRequest<SnomedDescriptionRestUpdate> body,
 			
-			@ApiParam(value = "Force update flag")
+			@Parameter(value = "Force update flag")
 			@RequestParam(defaultValue="false", required=false)
 			final Boolean force,
 			
@@ -246,29 +246,29 @@ public class SnomedDescriptionRestService extends AbstractRestService {
 		
 	}
 
-	@ApiOperation(
+	@Operation(
 		value="Delete Description",
-		notes="Permanently removes the specified unreleased Description and related components."
+		description="Permanently removes the specified unreleased Description and related components."
 				+ "<p>The force flag enables the deletion of a released Description. "
 				+ "Deleting published components is against the RF2 history policy so"
 				+ " this should only be used to remove a new component from a release before the release is published.</p>"
 	)
 	@ApiResponses({
-		@ApiResponse(code = 204, message = "Delete successful"),
-		@ApiResponse(code = 404, message = "Branch or Description not found", response = RestApiError.class)
+		@ApiResponse(responseCode = "204", message = "Delete successful"),
+		@ApiResponse(responseCode = "404", message = "Branch or Description not found", response = RestApiError.class)
 	})
 	@DeleteMapping(value="/{descriptionId}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void delete(			
-			@ApiParam(value = "The resource path", required = true)
+			@Parameter(value = "The resource path", required = true)
 			@PathVariable(value="path")
 			final String path,
 			
-			@ApiParam(value = "The Description identifier")
+			@Parameter(value = "The Description identifier")
 			@PathVariable(value="descriptionId")
 			final String descriptionId,
 			
-			@ApiParam(value = "Force deletion flag")
+			@Parameter(value = "Force deletion flag")
 			@RequestParam(defaultValue="false", required=false)
 			final Boolean force,
 

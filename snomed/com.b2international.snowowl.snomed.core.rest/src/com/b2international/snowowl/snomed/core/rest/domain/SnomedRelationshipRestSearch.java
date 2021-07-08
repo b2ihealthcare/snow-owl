@@ -26,43 +26,43 @@ import io.swagger.annotations.ApiParam;
  */
 public final class SnomedRelationshipRestSearch extends ObjectRestSearch {
 
-	@ApiParam(value = "The effective time to match (yyyyMMdd, exact matches only)")
+	@Parameter(value = "The effective time to match (yyyyMMdd, exact matches only)")
 	private String effectiveTime;
 
-	@ApiParam(value = "The status to match")
+	@Parameter(value = "The status to match")
 	private Boolean active;
 
-	@ApiParam(value = "The module identifier to match")
+	@Parameter(value = "The module identifier to match")
 	private String module;
 
-	@ApiParam(value = "The namespace to match")
+	@Parameter(value = "The namespace to match")
 	private String namespace;
 
-	@ApiParam(value = "The source concept to match")
+	@Parameter(value = "The source concept to match")
 	private String source;
 
-	@ApiParam(value = "The type concept to match")
+	@Parameter(value = "The type concept to match")
 	private String type;
 
-	@ApiParam(value = "The destination concept to match")
+	@Parameter(value = "The destination concept to match")
 	private String destination;
 	
-	@ApiParam(value = "The value type to match")
+	@Parameter(value = "The value type to match")
 	private RelationshipValueType valueType;
 
-	@ApiParam(value = "The value comparison operator")
+	@Parameter(value = "The value comparison operator")
 	private SearchResourceRequest.Operator operator;
 
-	@ApiParam(value = "The value to match (in literal form)")
+	@Parameter(value = "The value to match (in literal form)")
 	private String value;
 
-	@ApiParam(value = "The characteristic type to match")
+	@Parameter(value = "The characteristic type to match")
 	private String characteristicType;
 
-	@ApiParam(value = "The group to match")
+	@Parameter(value = "The group to match")
 	private Integer group;
 
-	@ApiParam(value = "The union group to match")
+	@Parameter(value = "The union group to match")
 	private Integer unionGroup;
 
 	public String getEffectiveTime() {

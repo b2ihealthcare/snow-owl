@@ -69,7 +69,7 @@ import io.swagger.annotations.ApiResponses;
  * @see <a href="https://www.hl7.org/fhir/conceptmap-operations.html">ConceptMap</a>
  * @since 7.0
  */
-@Api(value = "ConceptMap", description="FHIR ConceptMap Resource", tags = { "ConceptMap" })
+@Tag(description = "ConceptMap", description="FHIR ConceptMap Resource", tags = { "ConceptMap" })
 @RestController //no need for method level @ResponseBody annotations
 @RequestMapping(value="/ConceptMap", produces = { AbstractFhirResourceController.APPLICATION_FHIR_JSON })
 public class FhirConceptMapController extends AbstractFhirResourceController<ConceptMap> {
@@ -87,9 +87,9 @@ public class FhirConceptMapController extends AbstractFhirResourceController<Con
 	 * @param parameters - request parameters
 	 * @return bundle of concept maps
 	 */
-	@ApiOperation(
+	@Operation(
 		value="Retrieve all concept maps",
-		notes="Returns a collection of the supported concept maps.")
+		description="Returns a collection of the supported concept maps.")
 	@ApiResponses({
 		@ApiResponse(code = HTTP_OK, message = "OK")
 	})
@@ -124,10 +124,10 @@ public class FhirConceptMapController extends AbstractFhirResourceController<Con
 	 * @param parameters - request parameters
 	 * @return @link {@link ConceptMap}
 	 */
-	@ApiOperation(
+	@Operation(
 		response=ConceptMap.class,
 		value="Retrieve the concept map by id",
-		notes="Retrieves the concept map specified by its logical id.")
+		description="Retrieves the concept map specified by its logical id.")
 	@ApiResponses({
 		@ApiResponse(code = HTTP_OK, message = "OK"),
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
@@ -149,10 +149,10 @@ public class FhirConceptMapController extends AbstractFhirResourceController<Con
 	 * @param conceptMapId
 	 * @return translation of the code
 	 */
-	@ApiOperation(
+	@Operation(
 		response=TranslateResult.class,
 		value="Translate a code based on a specific Concept Map",
-		notes="Translate a code from one value set to another, based on the existing value set and specific concept map.")
+		description="Translate a code from one value set to another, based on the existing value set and specific concept map.")
 	@ApiResponses({
 		@ApiResponse(code = HTTP_OK, message = "OK"),
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
@@ -160,14 +160,14 @@ public class FhirConceptMapController extends AbstractFhirResourceController<Con
 	})
 	@RequestMapping(value="/{conceptMapId:**}/$translate", method=RequestMethod.GET)
 	public Parameters.Fhir translate(
-		@ApiParam(value="The id of the Concept Map to base the translation on") @PathVariable("conceptMapId") String conceptMapId,
-		@ApiParam(value="The code to translate") @RequestParam(value="code") final String code,
-		@ApiParam(value="The code system's uri") @RequestParam(value="system") final String system,
-		@ApiParam(value="The code system's version") @RequestParam(value="version") final Optional<String> version,
-		@ApiParam(value="The source value set") @RequestParam(value="source") final Optional<String> source,
-		@ApiParam(value="Value set in which a translation is sought") @RequestParam(value="target") final Optional<String> target,
-		@ApiParam(value="Target code system") @RequestParam(value="targetsystem") final Optional<String> targetSystem,
-		@ApiParam(value="If true, the mapping is reversed") @RequestParam(value="reverse") final Optional<Boolean> isReverse) {
+		@Parameter(value="The id of the Concept Map to base the translation on") @PathVariable("conceptMapId") String conceptMapId,
+		@Parameter(value="The code to translate") @RequestParam(value="code") final String code,
+		@Parameter(value="The code system's uri") @RequestParam(value="system") final String system,
+		@Parameter(value="The code system's version") @RequestParam(value="version") final Optional<String> version,
+		@Parameter(value="The source value set") @RequestParam(value="source") final Optional<String> source,
+		@Parameter(value="Value set in which a translation is sought") @RequestParam(value="target") final Optional<String> target,
+		@Parameter(value="Target code system") @RequestParam(value="targetsystem") final Optional<String> targetSystem,
+		@Parameter(value="If true, the mapping is reversed") @RequestParam(value="reverse") final Optional<Boolean> isReverse) {
 		
 		//validation is triggered by builder.build()
 		Builder builder = TranslateRequest.builder()
@@ -202,10 +202,10 @@ public class FhirConceptMapController extends AbstractFhirResourceController<Con
 	 * @param conceptMapId
 	 * @return translation of the code
 	 */
-	@ApiOperation(
+	@Operation(
 		response=TranslateResult.class,
 		value="Translate a code based on a specific Concept Map",
-		notes="Translate a code from one value set to another, based on the existing value set and specific concept map.")
+		description="Translate a code from one value set to another, based on the existing value set and specific concept map.")
 	@ApiResponses({
 		@ApiResponse(code = HTTP_OK, message = "OK"),
 		@ApiResponse(code = HTTP_NOT_FOUND, message = "Not found", response = OperationOutcome.class),
@@ -213,8 +213,8 @@ public class FhirConceptMapController extends AbstractFhirResourceController<Con
 	})
 	@RequestMapping(value="/{conceptMapId:**}/$translate", method=RequestMethod.POST, consumes = AbstractFhirResourceController.APPLICATION_FHIR_JSON)
 	public Parameters.Fhir translate(
-		@ApiParam(value="The id of the conceptMap to base the translation on") @PathVariable("conceptMapId") String conceptMapId,
-		@ApiParam(name = "body", value = "The translate request parameters")
+		@Parameter(value="The id of the conceptMap to base the translation on") @PathVariable("conceptMapId") String conceptMapId,
+		@Parameter(name = "body", value = "The translate request parameters")
 		@RequestBody Parameters.Fhir in) {
 		
 		//validation is triggered by builder.build()
@@ -227,10 +227,10 @@ public class FhirConceptMapController extends AbstractFhirResourceController<Con
 	 * HTTP Get request to translate a code that could belongs to any {@link ConceptMap} in the system.
 	 * @return translation of the code
 	 */
-	@ApiOperation(
+	@Operation(
 		response=TranslateResult.class,
 		value="Translate a code",
-		notes="Translate a code from one value set to another, based on the existing value set and concept maps resources, and/or other additional knowledge available to the server.")
+		description="Translate a code from one value set to another, based on the existing value set and concept maps resources, and/or other additional knowledge available to the server.")
 	@ApiResponses({
 		@ApiResponse(code = HTTP_OK, message = "OK"),
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
@@ -238,13 +238,13 @@ public class FhirConceptMapController extends AbstractFhirResourceController<Con
 	})
 	@RequestMapping(value="/$translate", method=RequestMethod.GET)
 	public Parameters.Fhir translate(
-		@ApiParam(value="The code to translate") @RequestParam(value="code") final String code,
-		@ApiParam(value="The code system's uri") @RequestParam(value="system") final String system,
-		@ApiParam(value="The code system's version, if null latest is used") @RequestParam(value="version") final Optional<String> version,
-		@ApiParam(value="The source value set") @RequestParam(value="source") final Optional<String> source,
-		@ApiParam(value="Value set in which a translation is sought") @RequestParam(value="target") final Optional<String> target,
-		@ApiParam(value="Target code system") @RequestParam(value="targetsystem") final Optional<String> targetSystem,
-		@ApiParam(value="If true, the mapping is reversed") @RequestParam(value="reverse") final Optional<Boolean> isReverse) {
+		@Parameter(value="The code to translate") @RequestParam(value="code") final String code,
+		@Parameter(value="The code system's uri") @RequestParam(value="system") final String system,
+		@Parameter(value="The code system's version, if null latest is used") @RequestParam(value="version") final Optional<String> version,
+		@Parameter(value="The source value set") @RequestParam(value="source") final Optional<String> source,
+		@Parameter(value="Value set in which a translation is sought") @RequestParam(value="target") final Optional<String> target,
+		@Parameter(value="Target code system") @RequestParam(value="targetsystem") final Optional<String> targetSystem,
+		@Parameter(value="If true, the mapping is reversed") @RequestParam(value="reverse") final Optional<Boolean> isReverse) {
 		
 		//validation is triggered by builder.build()
 		Builder builder = TranslateRequest.builder()
@@ -279,10 +279,10 @@ public class FhirConceptMapController extends AbstractFhirResourceController<Con
 	 * @param in - {@link TranslateRequest}}
 	 * @return translation of the code
 	 */
-	@ApiOperation(
+	@Operation(
 		response=TranslateResult.class,
 		value="Translate a code",
-		notes="Translate a code from one value set to another, based on the existing value set and concept map resources.")
+		description="Translate a code from one value set to another, based on the existing value set and concept map resources.")
 	@ApiResponses({
 		@ApiResponse(code = HTTP_OK, message = "OK"),
 		@ApiResponse(code = HTTP_NOT_FOUND, message = "Not found", response = OperationOutcome.class),
@@ -290,7 +290,7 @@ public class FhirConceptMapController extends AbstractFhirResourceController<Con
 	})
 	@RequestMapping(value="/$translate", method=RequestMethod.POST, consumes = AbstractFhirResourceController.APPLICATION_FHIR_JSON)
 	public Parameters.Fhir translate(
-			@ApiParam(name = "body", value = "The translate request parameters")
+			@Parameter(name = "body", value = "The translate request parameters")
 			@RequestBody Parameters.Fhir in) {
 		
 		//validation is triggered by builder.build()

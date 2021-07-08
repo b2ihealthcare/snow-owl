@@ -28,32 +28,32 @@ import io.swagger.annotations.*;
 /**
  * @since 7.17.0
  */
-@Api(value = "label-expressions", description="Label expressions", tags = { "label-expressions" })
+@Tag(description = "label-expressions", description="Label expressions", tags = { "label-expressions" })
 @RestController
 @RequestMapping(value = "/{path:**}/label-expressions") 
 public class SnomedExpressionLabelService extends AbstractRestService {
 	
-	@ApiOperation(
+	@Operation(
 			value="Retrieve ECL Labels", 
-			notes="Returns a collection resource containing ECL expressions."
+			description="Returns a collection resource containing ECL expressions."
 		)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK", response = LabeledEclExpressions.class),
-		@ApiResponse(code = 400, message = "Bad request", response = RestApiError.class),
-		@ApiResponse(code = 404, message = "Not found", response = RestApiError.class)
+		@ApiResponse(responseCode = "200", message = "OK", response = LabeledEclExpressions.class),
+		@ApiResponse(responseCode = "400", message = "Bad request", response = RestApiError.class),
+		@ApiResponse(responseCode = "404", message = "Not found", response = RestApiError.class)
 	})
 	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
 	public @ResponseBody Promise<LabeledEclExpressions> getLabel(		
 			
-			@ApiParam(value = "The branch path", required = true)
+			@Parameter(value = "The branch path", required = true)
 			@PathVariable(value="path")
 			final String path,
 			
-			@ApiParam(value = "The request body", required = true)
+			@Parameter(value = "The request body", required = true)
 			@RequestBody
 			final SnomedExpressionLabelRestInput body,
 			
-			@ApiParam(value = "Accepted language tags, in order of preference")
+			@Parameter(value = "Accepted language tags, in order of preference")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 				return SnomedRequests.prepareEclLabeler(body.getExpressions())

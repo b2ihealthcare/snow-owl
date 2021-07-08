@@ -54,7 +54,7 @@ import io.swagger.annotations.ApiResponses;
  * @see <a href="https://www.hl7.org/fhir/structuredefinition.html">StructureDefinition</a>
  * @since 7.1
  */
-@Api(value = "StructureDefinition", description="FHIR StructureDefinition Resource", tags = { "StructureDefinition" })
+@Tag(description = "StructureDefinition", description="FHIR StructureDefinition Resource", tags = { "StructureDefinition" })
 @RestController //no need for method level @ResponseBody annotations
 @RequestMapping(value="/StructureDefinition", produces = { AbstractFhirResourceController.APPLICATION_FHIR_JSON })
 public class FhirStructureDefinitionController extends AbstractFhirResourceController<StructureDefinition> {
@@ -69,9 +69,9 @@ public class FhirStructureDefinitionController extends AbstractFhirResourceContr
 	 * @param parameters
 	 * @return bundle of {@link StructureDefinition}s
 	 */
-	@ApiOperation(
+	@Operation(
 		value="Retrieve all structure definitions",
-		notes="Returns a collection of the supported structure definitions.")
+		description="Returns a collection of the supported structure definitions.")
 	@ApiResponses({
 		@ApiResponse(code = HTTP_OK, message = "OK")
 	})
@@ -98,10 +98,10 @@ public class FhirStructureDefinitionController extends AbstractFhirResourceContr
 	 * @param parameters
 	 * @return @link {@link StructureDefinition}
 	 */
-	@ApiOperation(
+	@Operation(
 		response=StructureDefinition.class,
 		value="Retrieve the structure definition by id",
-		notes="Retrieves the structure definition specified by its logical id.")
+		description="Retrieves the structure definition specified by its logical id.")
 	@ApiResponses({
 		@ApiResponse(code = HTTP_OK, message = "OK"),
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),

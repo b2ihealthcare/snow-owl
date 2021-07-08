@@ -24,13 +24,13 @@ import io.swagger.annotations.ApiParam;
  */
 public final class SnomedOwlExpressionFilters {
 
-	@ApiParam(value = "Special filter to match concept IDs in an owlExpression")
+	@Parameter(value = "Special filter to match concept IDs in an owlExpression")
 	private List<String> conceptId;
-	@ApiParam(value = "Special filter to match destination IDs in an owlExpression")
+	@Parameter(value = "Special filter to match destination IDs in an owlExpression")
 	private List<String> destinationId;
-	@ApiParam(value = "Special filter to match type IDs in an owlExpression")
+	@Parameter(value = "Special filter to match type IDs in an owlExpression")
 	private List<String> typeId;
-	@ApiParam(value = "Special filter to match GCI/non-GCI axioms")
+	@Parameter(value = "Special filter to match GCI/non-GCI axioms")
 	private Boolean gci;
 	
 	public List<String> getConceptId() {

@@ -57,46 +57,46 @@ import io.swagger.annotations.ApiResponses;
 /**
  * @since 6.18
  */
-@Api(value = "SCTIDS - Bulk Operations", description = "SCTIDS", tags = {"SCTIDS - Bulk Operations"})
+@Tag(description = "SCTIDS - Bulk Operations", description = "SCTIDS", tags = {"SCTIDS - Bulk Operations"})
 @RestController
 @RequestMapping(value = "/sct/bulk", produces = MediaType.APPLICATION_JSON_VALUE)
 public class CisBulkSctIdService extends AbstractRestService {
 
 	private Identifiers identifiers = new Identifiers();
 	
-	@ApiOperation(
+	@Operation(
 		value = "Returns the SCTIDs Record.",
 		notes = "Returns the required SCTID Records. Bulk SCTID operations do not currently include AdditionalIds"
 	)
 	@ApiResponses({
-		@ApiResponse(code = 400, message = "Bad Request", response = RestApiError.class),
+		@ApiResponse(responseCode = "400", message = "Bad Request", response = RestApiError.class),
 		@ApiResponse(code = 401, message = "Unauthorized", response = RestApiError.class)
 	})
 	@GetMapping(value = "/ids")
 	public Promise<List<SctId>> getSctIdsViaGet(
-			@ApiParam(value = "The security access token.", required = true)
+			@Parameter(value = "The security access token.", required = true)
 			@RequestParam(value = "token")
 			String token,
-			@ApiParam(value = "The required sctids list, separated with commas (,).", required = true)
+			@Parameter(value = "The required sctids list, separated with commas (,).", required = true)
 			@RequestParam(value = "sctids")
 			String sctIds) {
 		return getSctIds(sctIds);
 	}
 	
-	@ApiOperation(
+	@Operation(
 		value = "Returns the SCTIDs Record.",
 		notes = "Returns the required SCTID Records. Bulk SCTID operations do not currently include AdditionalIds"
 	)
 	@ApiResponses({
-		@ApiResponse(code = 400, message = "Bad Request", response = RestApiError.class),
+		@ApiResponse(responseCode = "400", message = "Bad Request", response = RestApiError.class),
 		@ApiResponse(code = 401, message = "Unauthorized", response = RestApiError.class)
 	})
 	@PostMapping(value = "/ids")
 	public Promise<List<SctId>> getSctIdsViaPost(
-			@ApiParam(value = "The security access token.", required = true)
+			@Parameter(value = "The security access token.", required = true)
 			@RequestParam(value = "token")
 			String token,
-			@ApiParam(value = "The required sctids list, separated with commas (,).", required = true)
+			@Parameter(value = "The required sctids list, separated with commas (,).", required = true)
 			@RequestBody
 			SctIdsList sctIds) {
 		return getSctIds(sctIds.getSctids());
@@ -112,16 +112,16 @@ public class CisBulkSctIdService extends AbstractRestService {
 				.then(ids -> ids.getItems());
 	}
 	
-	@ApiOperation(
+	@Operation(
 		value = "Generates new SCTIDs",
 		notes = "Generates new SCTIDs, based on the metadata passed in the GenerationData parameter. The first available SCTIDs will be assigned. Returns an array of SCTIDs Record with status 'Assigned'"
 	)
 	@PostMapping(value = "/generate")
 	public Promise<BulkJob> generateBulk(
-			@ApiParam(value = "The security access token.", required = true)
+			@Parameter(value = "The security access token.", required = true)
 			@RequestParam(value = "token")
 			String token,
-			@ApiParam(value = "The requested operation.", required = true)
+			@Parameter(value = "The requested operation.", required = true)
 			@RequestBody 
 			BulkGenerationData generationData) {
 		return runInJob("Generate new SCTIDs", identifiers
@@ -132,16 +132,16 @@ public class CisBulkSctIdService extends AbstractRestService {
 						.buildAsync());
 	}
 	
-	@ApiOperation(
+	@Operation(
 		value = "Registers SCTIDs",
 		notes = "Registers SCTIDs already in use in an external system, based on the metadata passed in the RegistrationData parameter. Returns an array of SCTID Records with status 'Assigned'."
 	)
 	@PostMapping(value = "/register")
 	public Promise<BulkJob> registerBulk(
-			@ApiParam(value = "The security access token.", required = true)
+			@Parameter(value = "The security access token.", required = true)
 			@RequestParam(value = "token")
 			String token,
-			@ApiParam(value = "The requested operation.", required = true)
+			@Parameter(value = "The requested operation.", required = true)
 			@RequestBody 
 			BulkRegistrationData registrationData) {
 		return runInJob("Register SCTIDs", identifiers
@@ -150,16 +150,16 @@ public class CisBulkSctIdService extends AbstractRestService {
 						.buildAsync());
 	}
 	
-	@ApiOperation(
+	@Operation(
 		value = "Reserves SCTIDs",
 		notes = "Reserves SCTIDs for use in an external system, based on the metadata passed in the ReservationData parameter. The first available SCTIDs will be reserved. Returns an array of SCTID Records with status 'Reserved'."
 	)
 	@PostMapping(value = "/reserve")
 	public Promise<BulkJob> reserveBulk(
-			@ApiParam(value = "The security access token.", required = true)
+			@Parameter(value = "The security access token.", required = true)
 			@RequestParam(value = "token")
 			String token,
-			@ApiParam(value = "The requested operation.", required = true)
+			@Parameter(value = "The requested operation.", required = true)
 			@RequestBody 
 			BulkReservationData reservationData) {
 		return runInJob("Reserve SCTIDs", identifiers
@@ -170,16 +170,16 @@ public class CisBulkSctIdService extends AbstractRestService {
 						.buildAsync());
 	}
 	
-	@ApiOperation(
+	@Operation(
 		value = "Deprecates SCTIDs",
 		notes = "Deprecates SCTIDs, so they will not be assigned to any component, based on the metadata passed in the DeprecationData parameter. Returns an array of SCTID Records with status 'Deprecated'."
 	)
 	@PutMapping(value = "/deprecate")
 	public Promise<BulkJob> deprecateBulk(
-			@ApiParam(value = "The security access token.", required = true)
+			@Parameter(value = "The security access token.", required = true)
 			@RequestParam(value = "token")
 			String token,
-			@ApiParam(value = "The requested operation.", required = true)
+			@Parameter(value = "The requested operation.", required = true)
 			@RequestBody 
 			BulkDeprecationData deprecationData) {
 		return runInJob("Deprecate SCTIDs", identifiers
@@ -188,16 +188,16 @@ public class CisBulkSctIdService extends AbstractRestService {
 						.buildAsync());
 	}
 
-	@ApiOperation(
+	@Operation(
 		value = "Release SCTIDs",
 		notes = "Releases SCTIDs, so they will be available to be assigned again, based on the metadata passed in the DeprecationData parameter. Returns an array SCTID Records with status 'Available'."
 	)
 	@PutMapping(value = "/release")
 	public Promise<BulkJob> releaseBulk(
-			@ApiParam(value = "The security access token.", required = true)
+			@Parameter(value = "The security access token.", required = true)
 			@RequestParam(value = "token")
 			String token,
-			@ApiParam(value = "The requested operation.", required = true)
+			@Parameter(value = "The requested operation.", required = true)
 			@RequestBody 
 			BulkReleaseData releaseData) {
 		return runInJob("Release SCTIDs", identifiers
@@ -206,16 +206,16 @@ public class CisBulkSctIdService extends AbstractRestService {
 						.buildAsync());
 	}
 
-	@ApiOperation(
+	@Operation(
 		value = "Publish SCTIDs",
 		notes = "Sets the SCTIDs as published, based on the metadata passed in the DeprecationData parameter. Returns an array SCTID Records with status 'Published'."
 	)
 	@PutMapping(value = "/publish")
 	public Promise<BulkJob> publishBulk(
-			@ApiParam(value = "The security access token.", required = true)
+			@Parameter(value = "The security access token.", required = true)
 			@RequestParam(value = "token")
 			String token,
-			@ApiParam(value = "The requested operation.", required = true)
+			@Parameter(value = "The requested operation.", required = true)
 			@RequestBody 
 			BulkPublicationData publicationData) {
 		return runInJob("Publish SCTIDs", identifiers

@@ -38,7 +38,7 @@ import io.swagger.annotations.*;
 /**
  * @since 8.0
  */
-@Api(value = "CodeSystem", description="FHIR CodeSystem Resource", tags = { "CodeSystem" })
+@Tag(description = "CodeSystem", description="FHIR CodeSystem Resource", tags = { "CodeSystem" })
 @RestController
 @RequestMapping(value="/CodeSystem", produces = { AbstractFhirController.APPLICATION_FHIR_JSON })
 public class FhirCodeSystemValidateCodeOperationController extends AbstractFhirController {
@@ -60,9 +60,9 @@ public class FhirCodeSystemValidateCodeOperationController extends AbstractFhirC
 	 *
 	 * @return validation results as {@link OperationOutcome}
 	 */
-	@ApiOperation(
+	@Operation(
 			value="Validate a code in a code system",
-			notes="Validate that a coded value is in a code system.")
+			description="Validate that a coded value is in a code system.")
 	@ApiResponses({
 		@ApiResponse(code = HTTP_OK, message = "OK"),
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
@@ -70,12 +70,12 @@ public class FhirCodeSystemValidateCodeOperationController extends AbstractFhirC
 	})
 	@GetMapping("/$validate-code")
 	public Promise<Parameters.Fhir> validateCodeByUrl(
-			@ApiParam(value="The uri of the code system to validate against") @RequestParam("url") String url, 
-			@ApiParam(value="The code to be validated") @RequestParam(value="code") final String code,
-			@ApiParam(value="The version of the code system") @RequestParam(value="version") final Optional<String> version,
-			@ApiParam(value="The display string of the code") @RequestParam(value="display") final Optional<String> display,
-			@ApiParam(value="The date stamp of the code system to validate against") @RequestParam(value="date") final Optional<String> date,
-			@ApiParam(value="The abstract status of the code") @RequestParam(value="abstract") final Optional<Boolean> isAbstract) {
+			@Parameter(value="The uri of the code system to validate against") @RequestParam("url") String url, 
+			@Parameter(value="The code to be validated") @RequestParam(value="code") final String code,
+			@Parameter(value="The version of the code system") @RequestParam(value="version") final Optional<String> version,
+			@Parameter(value="The display string of the code") @RequestParam(value="display") final Optional<String> display,
+			@Parameter(value="The date stamp of the code system to validate against") @RequestParam(value="date") final Optional<String> date,
+			@Parameter(value="The abstract status of the code") @RequestParam(value="abstract") final Optional<Boolean> isAbstract) {
 		
 		ValidateCodeRequest.Builder builder = ValidateCodeRequest.builder()
 			.url(url)
@@ -101,14 +101,14 @@ public class FhirCodeSystemValidateCodeOperationController extends AbstractFhirC
 	 * @param in - FHIR parameters
 	 * @return out - FHIR parameters
 	 */
-	@ApiOperation(value="Validate a code in a code system", notes="Validate that a coded value is in a code system.")
+	@Operation(value="Validate a code in a code system", description="Validate that a coded value is in a code system.")
 	@ApiResponses({
 		@ApiResponse(code = HTTP_OK, message = "OK"),
 		@ApiResponse(code = HTTP_NOT_FOUND, message = "Not found", response = OperationOutcome.class),
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class)
 	})
 	@PostMapping(value="/$validate-code", consumes = AbstractFhirResourceController.APPLICATION_FHIR_JSON)
-	public Promise<Parameters.Fhir> validateCode(@ApiParam(name = "body", value = "The validate-code request parameters") @RequestBody Parameters.Fhir in) {
+	public Promise<Parameters.Fhir> validateCode(@Parameter(name = "body", value = "The validate-code request parameters") @RequestBody Parameters.Fhir in) {
 		
 		final ValidateCodeRequest request = toRequest(in, ValidateCodeRequest.class);
 		
@@ -139,9 +139,9 @@ public class FhirCodeSystemValidateCodeOperationController extends AbstractFhirC
 	 *
 	 * @return validation results as {@link OperationOutcome}
 	 */
-	@ApiOperation(
+	@Operation(
 			value="Validate a code in a code system",
-			notes="Validate that a coded value is in a code system.")
+			description="Validate that a coded value is in a code system.")
 	@ApiResponses({
 		@ApiResponse(code = HTTP_OK, message = "OK"),
 		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
@@ -149,12 +149,12 @@ public class FhirCodeSystemValidateCodeOperationController extends AbstractFhirC
 	})
 	@GetMapping("/{codeSystemId:**}/$validate-code")
 	public Promise<Parameters.Fhir> validateCode(
-			@ApiParam(value="The id of the code system to validate against") @PathVariable("codeSystemId") String codeSystemId, 
-			@ApiParam(value="The code to be validated") @RequestParam(value="code") final String code,
-			@ApiParam(value="The version of the code system") @RequestParam(value="version") final Optional<String> version,
-			@ApiParam(value="The display string of the code") @RequestParam(value="display") final Optional<String> display,
-			@ApiParam(value="The date stamp of the code system to validate against") @RequestParam(value="date") final Optional<String> date,
-			@ApiParam(value="The abstract status of the code") @RequestParam(value="abstract") final Optional<Boolean> isAbstract) {
+			@Parameter(value="The id of the code system to validate against") @PathVariable("codeSystemId") String codeSystemId, 
+			@Parameter(value="The code to be validated") @RequestParam(value="code") final String code,
+			@Parameter(value="The version of the code system") @RequestParam(value="version") final Optional<String> version,
+			@Parameter(value="The display string of the code") @RequestParam(value="display") final Optional<String> display,
+			@Parameter(value="The date stamp of the code system to validate against") @RequestParam(value="date") final Optional<String> date,
+			@Parameter(value="The abstract status of the code") @RequestParam(value="abstract") final Optional<Boolean> isAbstract) {
 		
 		ValidateCodeRequest.Builder builder = ValidateCodeRequest.builder()		
 			.code(code)
@@ -179,7 +179,7 @@ public class FhirCodeSystemValidateCodeOperationController extends AbstractFhirC
 	 * @param in - FHIR parameters
 	 * @return out - FHIR parameters
 	 */
-	@ApiOperation(value="Validate a code in a code system", notes="Validate that a coded value is in a code system.")
+	@Operation(value="Validate a code in a code system", description="Validate that a coded value is in a code system.")
 	@ApiResponses({
 		@ApiResponse(code = HTTP_OK, message = "OK"),
 		@ApiResponse(code = HTTP_NOT_FOUND, message = "Not found", response = OperationOutcome.class),
@@ -187,8 +187,8 @@ public class FhirCodeSystemValidateCodeOperationController extends AbstractFhirC
 	})
 	@PostMapping(value="/{codeSystemId:**}/$validate-code", consumes = AbstractFhirResourceController.APPLICATION_FHIR_JSON)
 	public Promise<Parameters.Fhir> validateCode(
-			@ApiParam(value="The id of the code system to validate against") @PathVariable("codeSystemId") String codeSystemId, 
-			@ApiParam(name = "body", value = "The validate-code request parameters")
+			@Parameter(value="The id of the code system to validate against") @PathVariable("codeSystemId") String codeSystemId, 
+			@Parameter(name = "body", value = "The validate-code request parameters")
 			@RequestBody Parameters.Fhir in) {
 		
 		// TODO set codesystem in validate request
