@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.StreamSupport;
 
 import org.junit.FixMethodOrder;
@@ -38,12 +39,14 @@ import org.junit.runners.MethodSorters;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.BranchPathUtils;
+import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.jobs.RemoteJobState;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
@@ -61,7 +64,7 @@ import io.restassured.response.ValidatableResponse;
 public class SnomedImportApiTest extends AbstractSnomedApiTest {
 
 	private static final String OWL_EXPRESSION = "SubClassOf(ObjectIntersectionOf(:73211009 ObjectSomeValuesFrom(:42752001 :64572001)) :"+Concepts.ROOT_CONCEPT+")";
-
+	
 	private void importArchive(final String fileName) {
 		importArchive(branchPath, false, Rf2ReleaseType.DELTA, fileName);
 	}
@@ -531,6 +534,21 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 
 		assertEquals("Base and head timestamp must be equal after branch creation", baseTimestamp, headTimestamp);
 
+		if (createVersions) {
+			// Create a code system with the test branch path as its working branch
+			final String codeSystemId = branch.lastSegment();
+			
+			CodeSystemRequests.prepareNewCodeSystem()
+				.setBranchPath(branch.getPath())
+				.setId(codeSystemId)
+				.setToolingId(SnomedTerminologyComponentConstants.TOOLING_ID)
+				.setUrl(SnomedTerminologyComponentConstants.SNOMED_URI_SCT + "/" + codeSystemId)
+				.setTitle(codeSystemId)
+				.build("info@b2international.com", "Created new code system " + codeSystemId)
+				.execute(getBus())
+				.getSync(1L, TimeUnit.MINUTES);
+		}
+		
 		importArchive(branch, createVersions, Rf2ReleaseType.DELTA, importArchiveFileName);
 
 		ValidatableResponse response2 = branching.getBranch(branch);
