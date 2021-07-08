@@ -32,8 +32,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.StreamSupport;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
@@ -52,7 +50,6 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetM
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
-import com.b2international.snowowl.snomed.datastore.request.rf2.SnomedRf2ImportRequestBuilder;
 import com.google.common.collect.ImmutableMap;
 
 import io.restassured.response.ValidatableResponse;
@@ -65,16 +62,6 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 
 	private static final String OWL_EXPRESSION = "SubClassOf(ObjectIntersectionOf(:73211009 ObjectSomeValuesFrom(:42752001 :64572001)) :"+Concepts.ROOT_CONCEPT+")";
 
-	@Before
-	public void before() {
-		SnomedRf2ImportRequestBuilder.enableVersionsOnChildBranches();
-	}
-	
-	@After
-	public void after() {
-		SnomedRf2ImportRequestBuilder.disableVersionsOnChildBranches();
-	}
-	
 	private void importArchive(final String fileName) {
 		importArchive(branchPath, false, Rf2ReleaseType.DELTA, fileName);
 	}
@@ -522,18 +509,13 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 	
 	@Test
 	public void import33CreateVersionFromBranch() throws Exception {
-		try {
-			SnomedRf2ImportRequestBuilder.disableVersionsOnChildBranches();
-			final Map<String, ?> importConfiguration = ImmutableMap.<String, Object>builder()
-					.put("type", Rf2ReleaseType.DELTA.name())
-					.put("createVersions", true)
-					.build();
-			final String importId = lastPathSegment(doImport(branchPath, importConfiguration, getClass(), "SnomedCT_Release_INT_20210502_concept_wo_eff_time.zip").statusCode(201)
-					.extract().header("Location"));
-			waitForImportJob(branchPath, importId).statusCode(200).body("status", equalTo(RemoteJobState.FAILED.name()));
-		} finally {
-			SnomedRf2ImportRequestBuilder.enableVersionsOnChildBranches();
-		}
+		final Map<String, ?> importConfiguration = ImmutableMap.<String, Object>builder()
+				.put("type", Rf2ReleaseType.DELTA.name())
+				.put("createVersions", true)
+				.build();
+		final String importId = lastPathSegment(doImport(branchPath, importConfiguration, getClass(), "SnomedCT_Release_INT_20210502_concept_wo_eff_time.zip").statusCode(201)
+				.extract().header("Location"));
+		waitForImportJob(branchPath, importId).statusCode(200).body("status", equalTo(RemoteJobState.FAILED.name()));
 	}
 	
 	private void validateBranchHeadtimestampUpdate(IBranchPath branch, String importArchiveFileName,
