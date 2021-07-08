@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.core.rest;
 
 import java.io.File;
 
+import org.elasticsearch.common.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -31,6 +32,7 @@ import com.b2international.snowowl.core.attachments.Attachment;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.attachments.InternalAttachmentRegistry;
 import com.b2international.snowowl.core.rest.AbstractRestService;
+import com.b2international.snowowl.snomed.core.domain.Rf2MaintainerType;
 import com.b2international.snowowl.snomed.core.domain.Rf2RefSetExportLayout;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedRf2ExportConfiguration;
@@ -76,12 +78,13 @@ public class SnomedRf2ExportRestService extends AbstractRestService {
 			.setModules(params.getModuleIds())
 			.setRefSets(params.getRefSetIds())
 			.setCountryNamespaceElement(params.getNamespaceId())
+			.setMaintainerType(Strings.isNullOrEmpty(params.getMaintainerType()) ? null : Rf2MaintainerType.getByNameIgnoreCase(params.getMaintainerType()))
+			.setNrcCountryCode(params.getNrcCountryCode())
 			// .setNamespaceFilter(namespaceFilter) is not supported on REST, yet
 			.setTransientEffectiveTime(params.getTransientEffectiveTime())
 			.setStartEffectiveTime(params.getStartEffectiveTime())
 			.setEndEffectiveTime(params.getEndEffectiveTime())
 			.setRefSetExportLayout(params.getRefSetLayout() == null ? null : Rf2RefSetExportLayout.getByNameIgnoreCase(params.getRefSetLayout()))
-			.setCodeSystemId(params.getCodeSystemId())
 			.build(branch)
 			.execute(getBus())
 			.getSync();

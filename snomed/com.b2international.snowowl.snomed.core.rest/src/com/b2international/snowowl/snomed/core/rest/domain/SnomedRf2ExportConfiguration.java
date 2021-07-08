@@ -56,8 +56,11 @@ public final class SnomedRf2ExportConfiguration {
 	@ApiParam(value = "The RF2 RefSet file layout to use. Defaults to server configuration key 'snomed.export.refSetLayout'.", allowableValues = "combined,individual")
 	private String refSetLayout;
 	
-	@ApiParam(value = "The CodeSystem's id on wich the export was initiated.")
-	private String codeSystemId;
+	@ApiParam(value = "The nrcCountryCode to use un the release archive name")
+	private String nrcCountryCode = "";
+	
+	@ApiParam(value = "The maintainerType to use un the release archive name")
+	private String maintainerType = "";
 	
 	/**
 	 * Returns with the RF2 release type of the current export configuration.
@@ -195,12 +198,19 @@ public final class SnomedRf2ExportConfiguration {
 		this.refSetLayout = refSetLayout;
 	}
 	
-	public void setCodeSystemId(String codeSystemId) {
-		this.codeSystemId = codeSystemId;
+	public String getMaintainerType() {
+		return maintainerType;
 	}
 	
-	public String getCodeSystemId() {
-		return codeSystemId;
+	public void setMaintainerType(String maintainerType) {
+		this.maintainerType = maintainerType;
 	}
 	
+	public String getNrcCountryCode() {
+		return nrcCountryCode;
+	}
+	
+	public void setNrcCountryCode(String nrcCountryCode) {
+		this.nrcCountryCode = nrcCountryCode;
+	}
 }
