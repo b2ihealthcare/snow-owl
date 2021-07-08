@@ -36,7 +36,6 @@ public class ResourceRestSearch extends ObjectRestSearch {
 	
 	private List<String> bundleId;
 
-	@ApiParam
 	private List<String> status;
 
 	public List<String> getBranch() {
