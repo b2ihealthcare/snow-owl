@@ -29,7 +29,7 @@ public final class SnomedRf2ExportConfiguration {
 	@Schema(description = "The RF2 type to use", allowableValues = "full,snapshot,delta", defaultValue = "snapshot")
 	private String type = Rf2ReleaseType.SNAPSHOT.name();
 	
-	@ApiParam(value = "The namespaceId to use in the release archive name")
+	@Schema(description = "The namespaceId to use in the release archive name")
 	private String namespaceId = "";
 	
 	@Schema(description = "Optional moduleIds to restrict the exported content")
@@ -56,10 +56,10 @@ public final class SnomedRf2ExportConfiguration {
 	@Schema(description = "The RF2 RefSet file layout to use. Defaults to server configuration key 'snomed.export.refSetLayout'.", allowableValues = "combined,individual")
 	private String refSetLayout;
 	
-	@ApiParam(value = "The nrcCountryCode to use un the release archive name")
+	@Schema(description = "The nrcCountryCode to use un the release archive name")
 	private String nrcCountryCode = "";
 	
-	@ApiParam(value = "The maintainerType to use un the release archive name")
+	@Schema(description = "The maintainerType to use un the release archive name")
 	private String maintainerType = "";
 	
 	/**
