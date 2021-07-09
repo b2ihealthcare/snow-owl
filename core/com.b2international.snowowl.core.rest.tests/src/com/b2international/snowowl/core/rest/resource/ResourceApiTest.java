@@ -29,6 +29,7 @@ import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.id.IDs;
@@ -113,6 +114,22 @@ public class ResourceApiTest {
 			.body("total", equalTo(1))
 			.body("items[0].id", equalTo(id1))
 			.body("items[0].status", equalTo("draft"));
+	}
+	
+	@Test(expected = BadRequestException.class)
+	public void searchAfter() throws Exception {
+		final String id1 = IDs.base64UUID();
+		final String oid1 = "https://b2i.sg/" + id1;
+		createDefaultCodeSystem(id1, oid1);
+
+		CodeSystemRequests.prepareSearchCodeSystem()
+		.filterById(id1)
+		.setSearchAfter("codesystem")
+		.buildAsync()
+		.execute(bus)
+		.getSync()
+		.first()
+		.orElse(null);
 	}
 
 	private void createCodeSystemWithStatus(final String shortName, final String status) {
