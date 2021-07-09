@@ -29,8 +29,8 @@ import com.b2international.snowowl.fhir.tests.FhirTestConcepts;
 import com.b2international.snowowl.snomed.common.SnomedConstants;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
@@ -242,8 +242,8 @@ public class TestMapTypeReferenceSetCreator {
 			.addRelationship(createIsaRelationship(Concepts.STATED_RELATIONSHIP, SnomedRefSetUtil.getParentConceptId(refsetType)))
 			.addRelationship(createIsaRelationship(Concepts.INFERRED_RELATIONSHIP, SnomedRefSetUtil.getParentConceptId(refsetType)))
 			.setRefSet(SnomedRequests.prepareNewRefSet()
-					.setReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
-					.setMapTargetComponentType(SnomedTerminologyComponentConstants.CONCEPT)
+					.setReferencedComponentType(SnomedConcept.TYPE)
+					.setMapTargetComponentType(SnomedConcept.TYPE)
 					.setType(refsetType))
 			.build(branchPath, RestExtensions.USER, "FHIR Automated Test Simple Type Reference Set")
 			.execute(Services.bus())

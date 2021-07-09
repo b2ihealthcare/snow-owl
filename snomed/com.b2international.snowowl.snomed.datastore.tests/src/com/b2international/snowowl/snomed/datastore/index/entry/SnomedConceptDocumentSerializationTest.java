@@ -28,7 +28,8 @@ import com.b2international.collections.PrimitiveSets;
 import com.b2international.index.revision.BaseRevisionIndexTest;
 import com.b2international.index.revision.RevisionBranch;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -86,8 +87,8 @@ public class SnomedConceptDocumentSerializationTest extends BaseRevisionIndexTes
 				.statedAncestors(PrimitiveSets.newLongSortedSet(-1L))
 				.statedParents(PrimitiveSets.newLongSortedSet(-1L))
 				.refSetType(SnomedRefSetType.ASSOCIATION)
-				.referencedComponentType(SnomedTerminologyComponentConstants.CONCEPT_NUMBER)
-				.mapTargetComponentType(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER)
+				.referencedComponentType(SnomedConcept.TYPE)
+				.mapTargetComponentType(SnomedRelationship.TYPE)
 				.build();
 		
 		indexRevision(RevisionBranch.MAIN_PATH, concept);

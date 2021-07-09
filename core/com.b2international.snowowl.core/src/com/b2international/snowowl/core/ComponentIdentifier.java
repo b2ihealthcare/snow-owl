@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.io.Serializable;
 import java.util.Objects;
 
-import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
@@ -33,34 +32,22 @@ public final class ComponentIdentifier implements Serializable {
 
 	private static final long serialVersionUID = -7770154600003784759L;
 
-	private static final ComponentIdentifier UNKOWN = of(TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT, "unknown");
-
-	private final short terminologyComponentId;
+	private final String componentType;
 	private final String componentId;
 	
-	/**
-	 * Returns with a component identifier pair where the terminology component identifier is 
-	 * {@link TerminologyRegistry#UNSPECIFIED_NUMBER_SHORT} and the component identifier is {@code empty}.
-	 * @return a special component identifier with {@code empty} component identifier.
-	 * @see TerminologyRegistry#UNSPECIFIED_NUMBER_SHORT
-	 */
-	public static final ComponentIdentifier unknown() {
-		return UNKOWN;
-	}  
-
 	@JsonCreator
 	public static ComponentIdentifier valueOf(String componentIdentifier) {
 		final String[] parts = componentIdentifier.split("/");
 		checkArgument(parts.length == 2, "ComponentIdentifier should consist of two parts, a short type id and String component id (was: %s)", componentIdentifier);
-		return of(Short.valueOf(parts[0]), parts[1]);
+		return of(parts[0], parts[1]);
 	}
 	
-	public static ComponentIdentifier of(short terminologyComponentId, String componentId) {
-		return new ComponentIdentifier(terminologyComponentId, componentId);
+	public static ComponentIdentifier of(String componentType, String componentId) {
+		return new ComponentIdentifier(componentType, componentId);
 	}
 	
-	private ComponentIdentifier(final short terminologyComponentId, final String componentId) {
-		this.terminologyComponentId = terminologyComponentId;
+	private ComponentIdentifier(final String componentType, final String componentId) {
+		this.componentType = componentType;
 		this.componentId = checkNotNull(componentId, "componentId");
 	}
 	
@@ -76,19 +63,19 @@ public final class ComponentIdentifier implements Serializable {
 	 * Returns with the unique terminology component identifier.
 	 * @return unique terminology component identifier.
 	 */
-	public short getTerminologyComponentId() {
-		return terminologyComponentId;
+	public String getComponentType() {
+		return componentType;
 	}
 	
 	@JsonValue
 	@Override
 	public String toString() {
-		return String.join("/", Short.toString(terminologyComponentId), componentId);
+		return String.join("/", componentType, componentId);
 	}
 	
 	@Override
 	public int hashCode() {
-		return Objects.hash(terminologyComponentId, componentId);
+		return Objects.hash(componentType, componentId);
 	}
 	
 	@Override
@@ -98,7 +85,7 @@ public final class ComponentIdentifier implements Serializable {
 		if (getClass() != obj.getClass()) return false;
 		final ComponentIdentifier other = (ComponentIdentifier) obj;
 		return Objects.equals(componentId, other.componentId)
-				&& Objects.equals(terminologyComponentId, other.terminologyComponentId);
+				&& Objects.equals(componentType, other.componentType);
 	}
 	
 }

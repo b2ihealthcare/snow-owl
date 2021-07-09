@@ -25,7 +25,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 //		final String identifierId = generateConceptId();
 //		final Concept identifierConcept = createConcept(identifierId);
 //		registerNew(identifierConcept);
-//		final SnomedRefSet refSet = getRegularRefSet(identifierId, SnomedTerminologyComponentConstants.CONCEPT_NUMBER);
+//		final SnomedRefSet refSet = getRegularRefSet(identifierId, SnomedConcept.TYPE);
 //		registerNew(refSet);
 //		
 //		final ConceptChangeProcessor processor = process();
@@ -50,7 +50,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 //		assertEquals(0, before.getReferencedComponentType());
 //		assertEquals(-1L, before.getRefSetStorageKey());
 //		
-//		final SnomedRefSet refSet = getRegularRefSet(identifierId, SnomedTerminologyComponentConstants.CONCEPT_NUMBER);
+//		final SnomedRefSet refSet = getRegularRefSet(identifierId, SnomedConcept.TYPE);
 //		final long refsetStorageKey = CDOIDUtil.getLong(refSet.cdoID());
 //		registerNew(refSet);
 //		
@@ -71,7 +71,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 //	@Test
 //	public void deleteRefSetButKeepIdentifierConcept() throws Exception {
 //		final String refSetConceptId = generateConceptId();
-//		final SnomedRefSet refSet = getRegularRefSet(refSetConceptId, SnomedTerminologyComponentConstants.CONCEPT_NUMBER);
+//		final SnomedRefSet refSet = getRegularRefSet(refSetConceptId, SnomedConcept.TYPE);
 //		indexRevision(MAIN, doc(createConcept(refSetConceptId)).storageKey(nextStorageKey()).refSet(refSet).build());
 //		registerDetached(refSet.cdoID(), SnomedRefSetPackage.Literals.SNOMED_REF_SET);
 //		
@@ -86,7 +86,7 @@ public class ConceptChangeProcessorTest extends BaseChangeProcessorTest {
 //	public void updateRefSetIdentifierEffectiveTime() throws Exception {
 //		final String conceptId = generateConceptId();
 //		final long conceptStorageKey = nextStorageKey();
-//		final SnomedRefSet refSet = getRegularRefSet(conceptId, SnomedTerminologyComponentConstants.CONCEPT_NUMBER);
+//		final SnomedRefSet refSet = getRegularRefSet(conceptId, SnomedConcept.TYPE);
 //		final long refSetStorageKey = CDOIDUtil.getLong(refSet.cdoID());
 //		indexRevision(MAIN, doc(createConcept(conceptId)).storageKey(conceptStorageKey).refSet(refSet).build());
 //		

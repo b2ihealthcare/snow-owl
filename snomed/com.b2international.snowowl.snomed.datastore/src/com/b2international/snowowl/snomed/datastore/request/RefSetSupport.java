@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,9 @@ import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.NotImplementedException;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMultimap;
@@ -38,32 +40,32 @@ public abstract class RefSetSupport {
 	}
 
 	private static final Multimap<SnomedRefSetType, String> SUPPORTED_REFERENCED_COMPONENTS = ImmutableMultimap.<SnomedRefSetType, String> builder()
-			.put(SnomedRefSetType.ASSOCIATION, SnomedTerminologyComponentConstants.CONCEPT)
-			.put(SnomedRefSetType.ASSOCIATION, SnomedTerminologyComponentConstants.DESCRIPTION)
-			.put(SnomedRefSetType.ATTRIBUTE_VALUE, SnomedTerminologyComponentConstants.CONCEPT)
-			.put(SnomedRefSetType.ATTRIBUTE_VALUE, SnomedTerminologyComponentConstants.DESCRIPTION)
-			.put(SnomedRefSetType.ATTRIBUTE_VALUE, SnomedTerminologyComponentConstants.RELATIONSHIP)
+			.put(SnomedRefSetType.ASSOCIATION, SnomedConcept.TYPE)
+			.put(SnomedRefSetType.ASSOCIATION, SnomedDescription.TYPE)
+			.put(SnomedRefSetType.ATTRIBUTE_VALUE, SnomedConcept.TYPE)
+			.put(SnomedRefSetType.ATTRIBUTE_VALUE, SnomedDescription.TYPE)
+			.put(SnomedRefSetType.ATTRIBUTE_VALUE, SnomedRelationship.TYPE)
 			.put(SnomedRefSetType.CONCRETE_DATA_TYPE, TerminologyRegistry.UNSPECIFIED)
-			.put(SnomedRefSetType.COMPLEX_MAP, SnomedTerminologyComponentConstants.CONCEPT)
-			.put(SnomedRefSetType.COMPLEX_BLOCK_MAP, SnomedTerminologyComponentConstants.CONCEPT)
-			.put(SnomedRefSetType.DESCRIPTION_TYPE, SnomedTerminologyComponentConstants.CONCEPT)
-			.put(SnomedRefSetType.EXTENDED_MAP, SnomedTerminologyComponentConstants.CONCEPT)
-			.put(SnomedRefSetType.LANGUAGE, SnomedTerminologyComponentConstants.DESCRIPTION)
-			.put(SnomedRefSetType.MODULE_DEPENDENCY, SnomedTerminologyComponentConstants.CONCEPT)
-			.put(SnomedRefSetType.QUERY, SnomedTerminologyComponentConstants.CONCEPT)
-			.put(SnomedRefSetType.SIMPLE, SnomedTerminologyComponentConstants.CONCEPT)
-			.put(SnomedRefSetType.SIMPLE, SnomedTerminologyComponentConstants.DESCRIPTION)
-			.put(SnomedRefSetType.SIMPLE, SnomedTerminologyComponentConstants.RELATIONSHIP)
-			.put(SnomedRefSetType.SIMPLE_MAP, SnomedTerminologyComponentConstants.CONCEPT)
-			.put(SnomedRefSetType.OWL_AXIOM, SnomedTerminologyComponentConstants.CONCEPT)
-			.put(SnomedRefSetType.OWL_ONTOLOGY, SnomedTerminologyComponentConstants.CONCEPT)
-			.put(SnomedRefSetType.MRCM_DOMAIN, SnomedTerminologyComponentConstants.CONCEPT)
-			.put(SnomedRefSetType.MRCM_ATTRIBUTE_DOMAIN, SnomedTerminologyComponentConstants.CONCEPT)
-			.put(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE, SnomedTerminologyComponentConstants.CONCEPT)
-			.put(SnomedRefSetType.MRCM_MODULE_SCOPE, SnomedTerminologyComponentConstants.CONCEPT)
-			.put(SnomedRefSetType.SIMPLE_MAP, SnomedTerminologyComponentConstants.DESCRIPTION)
-			.put(SnomedRefSetType.SIMPLE_MAP_WITH_DESCRIPTION, SnomedTerminologyComponentConstants.CONCEPT)
-			.put(SnomedRefSetType.SIMPLE_MAP_WITH_DESCRIPTION, SnomedTerminologyComponentConstants.DESCRIPTION)
+			.put(SnomedRefSetType.COMPLEX_MAP, SnomedConcept.TYPE)
+			.put(SnomedRefSetType.COMPLEX_BLOCK_MAP, SnomedConcept.TYPE)
+			.put(SnomedRefSetType.DESCRIPTION_TYPE, SnomedConcept.TYPE)
+			.put(SnomedRefSetType.EXTENDED_MAP, SnomedConcept.TYPE)
+			.put(SnomedRefSetType.LANGUAGE, SnomedDescription.TYPE)
+			.put(SnomedRefSetType.MODULE_DEPENDENCY, SnomedConcept.TYPE)
+			.put(SnomedRefSetType.QUERY, SnomedConcept.TYPE)
+			.put(SnomedRefSetType.SIMPLE, SnomedConcept.TYPE)
+			.put(SnomedRefSetType.SIMPLE, SnomedDescription.TYPE)
+			.put(SnomedRefSetType.SIMPLE, SnomedRelationship.TYPE)
+			.put(SnomedRefSetType.SIMPLE_MAP, SnomedConcept.TYPE)
+			.put(SnomedRefSetType.OWL_AXIOM, SnomedConcept.TYPE)
+			.put(SnomedRefSetType.OWL_ONTOLOGY, SnomedConcept.TYPE)
+			.put(SnomedRefSetType.MRCM_DOMAIN, SnomedConcept.TYPE)
+			.put(SnomedRefSetType.MRCM_ATTRIBUTE_DOMAIN, SnomedConcept.TYPE)
+			.put(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE, SnomedConcept.TYPE)
+			.put(SnomedRefSetType.MRCM_MODULE_SCOPE, SnomedConcept.TYPE)
+			.put(SnomedRefSetType.SIMPLE_MAP, SnomedDescription.TYPE)
+			.put(SnomedRefSetType.SIMPLE_MAP_WITH_DESCRIPTION, SnomedConcept.TYPE)
+			.put(SnomedRefSetType.SIMPLE_MAP_WITH_DESCRIPTION, SnomedDescription.TYPE)
 			.build();
 
 	public static boolean isSupported(SnomedRefSetType type) {

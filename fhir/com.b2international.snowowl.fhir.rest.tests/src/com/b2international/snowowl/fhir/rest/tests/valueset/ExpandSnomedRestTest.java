@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,18 +16,13 @@
 package com.b2international.snowowl.fhir.rest.tests.valueset;
 
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
-import static org.hamcrest.CoreMatchers.endsWith;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.startsWith;
+import static org.hamcrest.CoreMatchers.*;
 
 import org.hamcrest.core.StringStartsWith;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.fhir.tests.FhirTestConcepts;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 
 /**
  * ValueSet $expand operation REST end-point test cases
@@ -119,8 +114,7 @@ public class ExpandSnomedRestTest extends SnomedFhirRestTest {
 	@Test
 	public void simpleTypeRefsetTest() throws Exception {
 		
-		String refsetURI = "SNOMEDCT/" + FHIR_SIMPLE_TYPE_REFSET_VERSION + "/" + 
-				SnomedTerminologyComponentConstants.REFSET_NUMBER + "/" + simpleTypeRefSetId;
+		String refsetURI = "SNOMEDCT/" + FHIR_SIMPLE_TYPE_REFSET_VERSION + "/member/" + simpleTypeRefSetId;
 		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.pathParam("id", refsetURI) 
@@ -147,8 +141,7 @@ public class ExpandSnomedRestTest extends SnomedFhirRestTest {
 		String refsetLogicalId = TestReferenceSetCreator.createQueryTypeReferenceSet(mainBranch, refsetName, FHIR_QUERY_TYPE_REFSET_VERSION);
 		System.out.println("ExpandSnomedRestTest.queryTypeRefsetTest() " + refsetLogicalId);
 		
-		String qtid = "SNOMEDCT/" + FHIR_QUERY_TYPE_REFSET_VERSION + "/" + 
-				SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER + "/" + queryTypeRefsetLogicalId;
+		String qtid = "SNOMEDCT/" + FHIR_QUERY_TYPE_REFSET_VERSION + "/member/" + queryTypeRefsetLogicalId;
 		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.pathParam("id", qtid) 

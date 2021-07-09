@@ -28,8 +28,8 @@ import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.StagingArea;
 import com.b2international.snowowl.core.repository.ChangeSetProcessorBase;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry.Builder;
 import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberChange;
@@ -45,7 +45,7 @@ public class DescriptionChangeProcessor extends ChangeSetProcessorBase {
 
 	public DescriptionChangeProcessor() {
 		super("description changes");
-		this.memberChangeProcessor = new ReferringMemberChangeProcessor(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER);
+		this.memberChangeProcessor = new ReferringMemberChangeProcessor(SnomedDescription.TYPE);
 	}
 
 	@Override

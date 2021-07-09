@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,10 @@ import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
@@ -100,7 +103,7 @@ abstract class SnomedRefSetMemberCreateDelegate {
 
 		String expectedReferencedComponentType = refSet.getReferencedComponentType();
 		if (!Strings.isNullOrEmpty(expectedReferencedComponentType) && !TerminologyRegistry.UNSPECIFIED.equals(expectedReferencedComponentType)) {
-			String actualReferencedComponentType = SnomedTerminologyComponentConstants.getTerminologyComponentId(getReferencedComponentId());
+			String actualReferencedComponentType = SnomedComponent.getType(getReferencedComponentId());
 			if (!expectedReferencedComponentType.equals(actualReferencedComponentType)) {
 				throw new BadRequestException("'%s' reference set can't reference '%s | %s' component. Only '%s' components are allowed.", 
 						refSet.getId(), 
@@ -116,18 +119,16 @@ abstract class SnomedRefSetMemberCreateDelegate {
 	}
 
 	protected final void checkComponentExists(SnomedReferenceSet refSet, TransactionContext context, String key, String componentId) {
-		short referencedComponentType = SnomedTerminologyComponentConstants.getTerminologyComponentIdValue(componentId);
-
 		try {
-
-			switch (referencedComponentType) {
-			case SnomedTerminologyComponentConstants.CONCEPT_NUMBER:
+			
+			switch (SnomedComponent.getTypeSafe(componentId)) {
+			case SnomedConcept.TYPE:
 				context.lookup(componentId, SnomedConceptDocument.class);
 				break;
-			case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER:
+			case SnomedDescription.TYPE:
 				context.lookup(componentId, SnomedDescriptionIndexEntry.class);
 				break;
-			case SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER:
+			case SnomedRelationship.TYPE:
 				context.lookup(componentId, SnomedRelationshipIndexEntry.class);
 				break;
 			default:

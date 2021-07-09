@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,6 @@ import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Json;
 import com.b2international.snowowl.fhir.tests.FhirRestTest;
 import com.b2international.snowowl.fhir.tests.FhirTestConcepts;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.fhir.SnomedUri;
 
@@ -139,8 +138,7 @@ public class TranslateSnomedConceptMapRestTest extends FhirRestTest {
 	@Test
 	public void nonExistingRefsetTest() throws Exception {
 		
-		String mapTypeRefsetUri = "SNOMEDCT/" + FHIR_MAP_TYPE_REFSET_VERSION + "/" + 
-				SnomedTerminologyComponentConstants.REFSET_NUMBER + "/invalid";
+		String mapTypeRefsetUri = "SNOMEDCT/" + FHIR_MAP_TYPE_REFSET_VERSION + "/member/invalid";
 			
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.pathParam("id", mapTypeRefsetUri)
@@ -162,8 +160,7 @@ public class TranslateSnomedConceptMapRestTest extends FhirRestTest {
 	@Test
 	public void invalidSystemTest() throws Exception {
 		
-		String mapTypeRefsetUri = "SNOMEDCT/" + FHIR_MAP_TYPE_REFSET_VERSION + "/" + 
-				SnomedTerminologyComponentConstants.REFSET_NUMBER + "/" + mapTypeRefSetIds.get(0);
+		String mapTypeRefsetUri = "SNOMEDCT/" + FHIR_MAP_TYPE_REFSET_VERSION + "/member/" + mapTypeRefSetIds.get(0);
 			
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.pathParam("id", mapTypeRefsetUri)
@@ -185,8 +182,7 @@ public class TranslateSnomedConceptMapRestTest extends FhirRestTest {
 	@Test
 	public void invalidTargetTest() throws Exception {
 		
-		String mapTypeRefsetUri = "SNOMEDCT/" + FHIR_MAP_TYPE_REFSET_VERSION + "/" + 
-				SnomedTerminologyComponentConstants.REFSET_NUMBER + "/" +  mapTypeRefSetIds.get(0);
+		String mapTypeRefsetUri = "SNOMEDCT/" + FHIR_MAP_TYPE_REFSET_VERSION + "/member/" +  mapTypeRefSetIds.get(0);
 			
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.pathParam("id", mapTypeRefsetUri)
@@ -208,8 +204,7 @@ public class TranslateSnomedConceptMapRestTest extends FhirRestTest {
 	@Test
 	public void noResultTest() throws Exception {
 		
-		String mapTypeRefsetUri = "SNOMEDCT/" + FHIR_MAP_TYPE_REFSET_VERSION + "/" + 
-				SnomedTerminologyComponentConstants.REFSET_NUMBER + "/" +  mapTypeRefSetIds.get(0);
+		String mapTypeRefsetUri = "SNOMEDCT/" + FHIR_MAP_TYPE_REFSET_VERSION + "/member/" +  mapTypeRefSetIds.get(0);
 			
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.pathParam("id", mapTypeRefsetUri)
@@ -230,8 +225,7 @@ public class TranslateSnomedConceptMapRestTest extends FhirRestTest {
 	@Test
 	public void translateSpecificMappingTest() throws Exception {
 		
-		String mapTypeRefsetUri = "SNOMEDCT/" + FHIR_MAP_TYPE_REFSET_VERSION + "/" + 
-				SnomedTerminologyComponentConstants.REFSET_NUMBER + "/" +  mapTypeRefSetIds.get(0);
+		String mapTypeRefsetUri = "SNOMEDCT/" + FHIR_MAP_TYPE_REFSET_VERSION + "/member/" +  mapTypeRefSetIds.get(0);
 		
 		String response = givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.pathParam("id", mapTypeRefsetUri)
@@ -269,8 +263,7 @@ public class TranslateSnomedConceptMapRestTest extends FhirRestTest {
 	@Test
 	public void reverseTranslateSpecificMappingTest() throws Exception {
 		
-		String mapTypeRefsetUri = "SNOMEDCT/" + FHIR_MAP_TYPE_REFSET_VERSION + "/" + 
-				SnomedTerminologyComponentConstants.REFSET_NUMBER + "/" +  mapTypeRefSetIds.get(0);
+		String mapTypeRefsetUri = "SNOMEDCT/" + FHIR_MAP_TYPE_REFSET_VERSION + "/member/" +  mapTypeRefSetIds.get(0);
 		
 		String response = givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.pathParam("id", mapTypeRefsetUri)

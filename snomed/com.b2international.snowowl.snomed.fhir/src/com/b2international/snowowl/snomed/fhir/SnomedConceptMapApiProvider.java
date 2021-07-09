@@ -133,7 +133,7 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 						// TODO figure out how to expand members on a ConceptMap in a pageable fashion (there is no official API for it right now)
 //						.setExpand("members(expand(referencedComponent(expand(pt()))), limit:"+ Integer.MAX_VALUE +")")
 						.setLocales(getLocales())
-						.filterByReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
+						.filterByReferencedComponentType(SnomedConcept.TYPE)
 						.build(csve.getVersionResourceURI())
 						.execute(getBus())
 						.getSync()
@@ -160,7 +160,7 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 			// TODO figure out how to expand members on a ConceptMap in a pageable fashion (there is no official API for it right now)
 //			.setExpand("members(expand(referencedComponent(expand(pt()))), limit:" + Integer.MAX_VALUE +")")
 			.setLocales(getLocales())
-			.filterByReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
+			.filterByReferencedComponentType(SnomedConcept.TYPE)
 			.build(componentURI.resourceUri())
 			.execute(getBus())
 			.getSync()
@@ -210,7 +210,7 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 		
 		//test the target
 		if (targetSystem.equals(SnomedUri.SNOMED_BASE_URI_STRING)) {
-			targetSystem = SnomedTerminologyComponentConstants.CONCEPT;
+			targetSystem = SnomedConcept.TYPE;
 		}
 				
 		try {
@@ -240,7 +240,7 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 				.filterByRefSet(componentURI.identifier())
 				.filterByRefSetType(CONCEPT_MAP_TYPES)
 				.setLocales(getLocales())
-				.filterByReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT);
+				.filterByReferencedComponentType(SnomedConcept.TYPE);
 				
 
 		if (translateRequest.getReverse() == null || !translateRequest.getReverse().booleanValue()) {
@@ -285,7 +285,7 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 		//"com.b2international.snowowl.terminology.atc.concept" is expected
 		//or the standard SNOMED CT URI
 		if (targetSystem.equals(SnomedUri.SNOMED_BASE_URI_STRING)) {
-			targetSystem = SnomedTerminologyComponentConstants.CONCEPT;
+			targetSystem = SnomedConcept.TYPE;
 		}
 		
 		int terminologyComponentIdAsInt = TerminologyRegistry.INSTANCE.getTerminologyComponentById(targetSystem).shortId();
@@ -300,7 +300,7 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 			.filterByActive(true)
 			.filterByTypes(CONCEPT_MAP_TYPES)
 			.filterByMapTargetComponentType(terminologyComponentIdAsInt)
-			.filterByReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
+			.filterByReferencedComponentType(SnomedConcept.TYPE)
 			.build(codeSystemVersion.getVersionResourceURI())
 			.execute(getBus())
 			.getSync()
@@ -315,7 +315,7 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 				.filterByRefSet(refsetIds)
 				.filterByRefSetType(CONCEPT_MAP_TYPES)
 				.setLocales(getLocales())
-				.filterByReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT);
+				.filterByReferencedComponentType(SnomedConcept.TYPE);
 				
 
 		if (translateRequest.getReverse() == null || !translateRequest.getReverse().booleanValue()) {
@@ -370,7 +370,7 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 
 	private ConceptMap.Builder buildConceptMap(SnomedReferenceSet snomedReferenceSet, Version codeSystemVersion, List<ExtendedLocale> locales) {
 		
-		ComponentURI componentURI = ComponentURI.of(codeSystemVersion.getVersionResourceURI(), SnomedTerminologyComponentConstants.REFSET_NUMBER, snomedReferenceSet.getId());
+		ComponentURI componentURI = ComponentURI.of(codeSystemVersion.getVersionResourceURI(), SnomedConcept.REFSET_TYPE, snomedReferenceSet.getId());
 		ConceptMap.Builder conceptMapBuilder = ConceptMap.builder(componentURI.toString());
 
 		String referenceSetId = snomedReferenceSet.getId();
@@ -535,7 +535,7 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 		//test the target
 		String targetsystem = translateRequest.getTargetsystem().getUriValue();
 		if (targetsystem.equals(SnomedUri.SNOMED_BASE_URI_STRING)) {
-			targetsystem = SnomedTerminologyComponentConstants.CONCEPT;
+			targetsystem = SnomedConcept.TYPE;
 		}
 		try {
 			TerminologyRegistry.INSTANCE.getTerminologyComponentById(targetsystem);
@@ -557,7 +557,7 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 		
 		//mighty hack
 		if (toolingId.contains("snomed")) {
-			return SnomedTerminologyComponentConstants.CONCEPT;
+			return SnomedConcept.TYPE;
 		}
 		
 		return TerminologyRegistry.INSTANCE.getTerminologyComponentIdsByTerminology(toolingId).iterator().next();

@@ -59,18 +59,18 @@ public class ComponentURITest {
 	@Test
 	public void create() {
 		final ResourceURI codeSystemURI = CodeSystem.uri("SNOMEDCT/2019-09-30");
-		final short terminologyComponentId = 150;
+		final String componentType = "concept";
 		final String identifier = "123456789";
-		ComponentURI componentURI = ComponentURI.of(codeSystemURI, terminologyComponentId, identifier);
+		ComponentURI componentURI = ComponentURI.of(codeSystemURI, componentType, identifier);
 		assertEquals("SNOMEDCT", componentURI.resourceId());
 		assertEquals("codesystems/SNOMEDCT/2019-09-30", componentURI.resourceUri().toString());
-		assertEquals(150, componentURI.terminologyComponentId());
+		assertEquals(150, componentURI.componentType());
 		assertEquals(identifier, componentURI.identifier());
-		assertEquals(ComponentIdentifier.of(terminologyComponentId, identifier), componentURI.toComponentIdentifier());
+		assertEquals(ComponentIdentifier.of(componentType, identifier), componentURI.toComponentIdentifier());
 		
 		// verify interner
-		assertTrue(componentURI == ComponentURI.of(codeSystemURI, ComponentIdentifier.of(terminologyComponentId, identifier)));
-		assertTrue(componentURI == ComponentURI.of(codeSystemURI.toString(), terminologyComponentId, identifier));
+		assertTrue(componentURI == ComponentURI.of(codeSystemURI, ComponentIdentifier.of(componentType, identifier)));
+		assertTrue(componentURI == ComponentURI.of(codeSystemURI.toString(), componentType, identifier));
 	}
 	
 	@Test
@@ -79,7 +79,7 @@ public class ComponentURITest {
 		ComponentURI componentURI = ComponentURI.of(uri);
 		assertEquals("SNOMEDCT", componentURI.resourceId());
 		assertEquals("codesystem/SNOMEDCT/2019-09-30", componentURI.resourceUri().toString());
-		assertEquals(150, componentURI.terminologyComponentId());
+		assertEquals(150, componentURI.componentType());
 		assertEquals("59524001", componentURI.identifier());
 		assertEquals(uri, componentURI.toString());
 	}

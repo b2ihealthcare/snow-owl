@@ -22,7 +22,6 @@ import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.BaseRevisionResourceConverter;
-import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
@@ -78,19 +77,10 @@ public final class SnomedReferenceSetConverter extends BaseRevisionResourceConve
 		refset.setModuleId(entry.getModuleId());
 		refset.setIconId(entry.getIconId());
 		refset.setScore(entry.getScore());
-		final Short referencedComponentType = entry.getReferencedComponentType();
-		if (referencedComponentType != null && referencedComponentType > 0) {
-			refset.setReferencedComponentType(getReferencedComponentType(referencedComponentType));
-		}
-		final Short mapTargetComponentType = entry.getMapTargetComponentType();
-		if (mapTargetComponentType != null) {
-			refset.setMapTargetComponentType(getReferencedComponentType(mapTargetComponentType));
-		}
+		refset.setReferencedComponentType(entry.getReferencedComponentType());
+		refset.setMapTargetComponentType(entry.getMapTargetComponentType());
 		refset.setType(entry.getRefSetType());
 		return refset;
 	}
 
-	private String getReferencedComponentType(final Short referencedComponentType) {
-		return context().service(TerminologyRegistry.class).getTerminologyComponentByShortId(referencedComponentType).id();
-	}
 }

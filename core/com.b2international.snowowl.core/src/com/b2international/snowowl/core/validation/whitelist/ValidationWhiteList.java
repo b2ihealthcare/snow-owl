@@ -58,9 +58,9 @@ public final class ValidationWhiteList implements Serializable {
 	private final String id;
 	private final String ruleId;
 	private final String reporter;
-	private final long createdAt;
+	private final Long createdAt;
 	private final String componentId;
-	private final short terminologyComponentId;
+	private final String componentType;
 	
 	@Field(aliases = {
 		@FieldAlias(name = "text", type = FieldAliasType.TEXT, analyzer = Analyzers.TOKENIZED),
@@ -74,10 +74,10 @@ public final class ValidationWhiteList implements Serializable {
 			final String id,
 			final String ruleId,
 			final String reporter,
-			final long createdAt,
+			final Long createdAt,
 			final ComponentIdentifier componentIdentifier,
 			final List<String> affectedComponentLabels) {
-		this(id, ruleId, reporter, createdAt, componentIdentifier.getTerminologyComponentId(), componentIdentifier.getComponentId(), affectedComponentLabels);
+		this(id, ruleId, reporter, createdAt, componentIdentifier.getComponentType(), componentIdentifier.getComponentId(), affectedComponentLabels);
 	}
 
 	@JsonCreator
@@ -85,15 +85,15 @@ public final class ValidationWhiteList implements Serializable {
 			@JsonProperty("id") final String id,
 			@JsonProperty("ruleId") final String ruleId,
 			@JsonProperty("reporter") final String reporter,
-			@JsonProperty("createdAt") final long createdAt,
-			@JsonProperty("terminologyComponentId") final short terminologyComponentId,
+			@JsonProperty("createdAt") final Long createdAt,
+			@JsonProperty("terminologyComponentId") final String componentType,
 			@JsonProperty("componentId") final String componentId,
 			@JsonProperty("affectedComponentLabels") final List<String> affectedComponentLabels) {
 		this.id = id;
 		this.ruleId = ruleId;
 		this.reporter = reporter;
 		this.createdAt = createdAt;
-		this.terminologyComponentId = terminologyComponentId;
+		this.componentType = componentType;
 		this.componentId = componentId;
 		this.affectedComponentLabels = Collections3.toImmutableList(affectedComponentLabels);
 	}
@@ -109,7 +109,7 @@ public final class ValidationWhiteList implements Serializable {
 	@JsonIgnore
 	public ComponentIdentifier getComponentIdentifier() {
 		if (componentIdentifier == null) {
-			componentIdentifier = ComponentIdentifier.of(terminologyComponentId, componentId);
+			componentIdentifier = ComponentIdentifier.of(componentType, componentId);
 		}
 		return componentIdentifier;
 	}
@@ -120,8 +120,8 @@ public final class ValidationWhiteList implements Serializable {
 	}
 	
 	@JsonProperty
-	short getTerminologyComponentId() {
-		return terminologyComponentId;
+	String getComponentType() {
+		return componentType;
 	}
 	
 	public List<String> getAffectedComponentLabels() {
@@ -132,7 +132,7 @@ public final class ValidationWhiteList implements Serializable {
 		return reporter;
 	}
 	
-	public long getCreatedAt() {
+	public Long getCreatedAt() {
 		return createdAt;
 	}
 	

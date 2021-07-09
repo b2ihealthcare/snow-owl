@@ -130,7 +130,7 @@ public class SnomedCompareRestRequestTest extends AbstractSnomedApiTest {
 		final BranchCompareResult compareResult = getCompareResult(parentBranchPath, childBranchPath);
 		// compare child branch with it's parent
 		assertThat(compareResult.getNewComponents()).isEmpty();
-		assertThat(compareResult.getChangedComponents()).contains(ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, newConceptId));
+		assertThat(compareResult.getChangedComponents()).contains(ComponentIdentifier.of(SnomedConcept.TYPE, newConceptId));
 		assertThat(compareResult.getDeletedComponents()).isEmpty();
 	}
 	
@@ -142,7 +142,7 @@ public class SnomedCompareRestRequestTest extends AbstractSnomedApiTest {
 		
 		final Set<ComponentIdentifier> newIds = prepareNewChanges(newConceptId, parentBranch);
 		final ComponentIdentifier concept = newIds.stream()
-				.filter(ci -> ci.getTerminologyComponentId() == SnomedTerminologyComponentConstants.CONCEPT_NUMBER)
+				.filter(ci -> ci.getComponentType() == SnomedConcept.TYPE)
 				.findFirst()
 				.get();
 		
@@ -183,15 +183,15 @@ public class SnomedCompareRestRequestTest extends AbstractSnomedApiTest {
 		final SnomedConcept concept = getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, "descriptions(expand(members())),relationships()")
 			.extract().as(SnomedConcept.class);
 		final Set<ComponentIdentifier> newIds = newHashSet();
-		newIds.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, concept.getId()));
+		newIds.add(ComponentIdentifier.of(SnomedConcept.TYPE, concept.getId()));
 		for (SnomedDescription description : concept.getDescriptions()) {
-			newIds.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, description.getId()));
+			newIds.add(ComponentIdentifier.of(SnomedDescription.TYPE, description.getId()));
 			for (SnomedReferenceSetMember member : description.getMembers()) {
-				newIds.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, member.getId()));
+				newIds.add(ComponentIdentifier.of(SnomedReferenceSetMember.TYPE, member.getId()));
 			}
 		}
 		for (SnomedRelationship relationship : concept.getRelationships()) {
-			newIds.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship.getId()));
+			newIds.add(ComponentIdentifier.of(SnomedRelationship.TYPE, relationship.getId()));
 		}
 		return newIds;
 	}

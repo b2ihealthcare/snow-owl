@@ -213,13 +213,12 @@ public class ValidationIssueApiTest {
 	private String createIssue(String ruleId, Map<String, Object> details, String...labels) {
 		final String branchPath = "testBranch";
 		final String issueId = UUID.randomUUID().toString();
-		final short terminologyShort = 0;
 		final String componentId = UUID.randomUUID().toString();
 		
 		final ValidationIssue issue = new ValidationIssue(
 			issueId,
 			ruleId,
-			ComponentURI.of(CodeSystem.uri("SNOMEDCT", branchPath), ComponentIdentifier.of(terminologyShort, componentId)),
+			ComponentURI.of(CodeSystem.uri("SNOMEDCT", branchPath), ComponentIdentifier.of("concept", componentId)),
 			false
 		);
 		

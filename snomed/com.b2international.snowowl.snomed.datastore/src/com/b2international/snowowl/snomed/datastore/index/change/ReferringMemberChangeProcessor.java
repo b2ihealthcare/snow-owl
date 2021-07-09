@@ -31,9 +31,9 @@ import com.google.common.collect.Multimap;
  */
 final class ReferringMemberChangeProcessor {
 	
-	private final short referencedComponentType;
+	private final String referencedComponentType;
 
-	public ReferringMemberChangeProcessor(final short referencedComponentType) {
+	public ReferringMemberChangeProcessor(final String referencedComponentType) {
 		this.referencedComponentType = referencedComponentType;
 	}
 	

@@ -15,9 +15,6 @@
  */
 package com.b2international.snowowl.validation.snomed;
 
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER;
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER;
 import static com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator.generateConceptId;
 import static com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator.generateDescriptionId;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -42,10 +39,13 @@ import com.b2international.snowowl.core.validation.issue.ValidationIssues;
 import com.b2international.snowowl.snomed.common.SnomedConstants;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.constraint.HierarchyInclusionType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.index.constraint.HierarchyDefinitionFragment;
 import com.b2international.snowowl.snomed.datastore.index.constraint.RelationshipPredicateFragment;
 import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
@@ -74,7 +74,7 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 
 		ValidationIssues issues = validate(ruleId);
 		ComponentURI componentURI = issues.stream().map(issue -> issue.getAffectedComponentURI()).findFirst().orElse(null);
-		assertThat(componentURI).isEqualTo(ComponentURI.of(CodeSystem.uri(CODESYSTEM), SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship.getId()));
+		assertThat(componentURI).isEqualTo(ComponentURI.of(CodeSystem.uri(CODESYSTEM), SnomedRelationship.TYPE, relationship.getId()));
 	}
 
 	
@@ -102,10 +102,10 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		indexRevision(MAIN, relationship1, relationship2, relationship3, relationship4, relationship5);
 		
 		ValidationIssues issues = validate(ruleId);
-		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship1.getId()),
-				ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship2.getId()),
-				ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship4.getId()),
-				ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship5.getId()));
+		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedRelationship.TYPE, relationship1.getId()),
+				ComponentIdentifier.of(SnomedRelationship.TYPE, relationship2.getId()),
+				ComponentIdentifier.of(SnomedRelationship.TYPE, relationship4.getId()),
+				ComponentIdentifier.of(SnomedRelationship.TYPE, relationship5.getId()));
 	}
 	
 	@Test
@@ -127,9 +127,9 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		
 		ValidationIssues issues = validate(ruleId);
 		assertThat(issues.stream().map(ValidationIssue::getAffectedComponent).collect(Collectors.toSet()))
-			.contains(ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, activeConceptWithoutInferredParent.getId()))
-			.doesNotContainAnyElementsOf(ImmutableList.of(ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, activeConceptWithInferredParent.getId()),
-					ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, inactiveConceptWithoutInferredParent.getId())));
+			.contains(ComponentIdentifier.of(SnomedConcept.TYPE, activeConceptWithoutInferredParent.getId()))
+			.doesNotContainAnyElementsOf(ImmutableList.of(ComponentIdentifier.of(SnomedConcept.TYPE, activeConceptWithInferredParent.getId()),
+					ComponentIdentifier.of(SnomedConcept.TYPE, inactiveConceptWithoutInferredParent.getId())));
 	}
 	
 	@Test
@@ -151,9 +151,9 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		
 		ValidationIssues issues = validate(ruleId);
 		assertThat(issues.stream().map(ValidationIssue::getAffectedComponent).collect(Collectors.toSet()))
-			.contains(ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, activeConceptWithoutStatedParent.getId()))
-			.doesNotContainAnyElementsOf(ImmutableList.of(ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, activeConceptWithStatedParent.getId()),
-					ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, inactiveConceptWithoutStatedParent.getId())));
+			.contains(ComponentIdentifier.of(SnomedConcept.TYPE, activeConceptWithoutStatedParent.getId()))
+			.doesNotContainAnyElementsOf(ImmutableList.of(ComponentIdentifier.of(SnomedConcept.TYPE, activeConceptWithStatedParent.getId()),
+					ComponentIdentifier.of(SnomedConcept.TYPE, inactiveConceptWithoutStatedParent.getId())));
 	}
 	
 	@Test
@@ -169,7 +169,7 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		indexRevision(MAIN, relationship);
 
 		ValidationIssues issues = validate(ruleId);
-		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship.getId()));
+		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedRelationship.TYPE, relationship.getId()));
 	}
 
 	@Test
@@ -186,7 +186,7 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 
 		ValidationIssues issues = validate(ruleId);
 
-		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship.getId()));
+		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedRelationship.TYPE, relationship.getId()));
 	}
 
 	@Test
@@ -214,9 +214,9 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		ValidationIssues issues = validate(ruleId);
 		
 		assertThat(issues.stream().map(ValidationIssue::getAffectedComponent).collect(Collectors.toSet()))
-			.contains(ComponentIdentifier.of(RELATIONSHIP_NUMBER, nonDefiningRelationshipInGroup0.getId()))
-			.doesNotContainAnyElementsOf(ImmutableList.of(ComponentIdentifier.of(RELATIONSHIP_NUMBER, definingRelationshipInGroup0.getId()),
-				ComponentIdentifier.of(RELATIONSHIP_NUMBER, relationshipInGroup2.getId())));		
+			.contains(ComponentIdentifier.of(SnomedRelationship.TYPE, nonDefiningRelationshipInGroup0.getId()))
+			.doesNotContainAnyElementsOf(ImmutableList.of(ComponentIdentifier.of(SnomedRelationship.TYPE, definingRelationshipInGroup0.getId()),
+				ComponentIdentifier.of(SnomedRelationship.TYPE, relationshipInGroup2.getId())));		
 	}
 	
 	@Test
@@ -238,7 +238,7 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		indexRevision(MAIN, description, description2);
 		ValidationIssues issues = validate(ruleId);
 
-		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, description.getId()));
+		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedDescription.TYPE, description.getId()));
 	}
 	
 	@Test
@@ -285,9 +285,9 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		ValidationIssues issues = validate(ruleId);
 
 		assertAffectedComponents(issues,
-				ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, descWithInvalidHypenSpacing.getId()),
-				ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, descWithMultipleInvalidHypenSpacing.getId()),
-				ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, descWithSymbolAndInvalidHypenSpacing.getId())
+				ComponentIdentifier.of(SnomedDescription.TYPE, descWithInvalidHypenSpacing.getId()),
+				ComponentIdentifier.of(SnomedDescription.TYPE, descWithMultipleInvalidHypenSpacing.getId()),
+				ComponentIdentifier.of(SnomedDescription.TYPE, descWithSymbolAndInvalidHypenSpacing.getId())
 		);
 	}
 	
@@ -316,7 +316,7 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 
 		ValidationIssues issues = validate(ruleId);
 
-		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, description1.getId()));
+		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedDescription.TYPE, description1.getId()));
 	}
 	
 	@Test
@@ -341,8 +341,8 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 
 		ValidationIssues issues = validate(ruleId);
 
-		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, badRel1.getId()),
-				ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, badRel2.getId()));
+		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedRelationship.TYPE, badRel1.getId()),
+				ComponentIdentifier.of(SnomedRelationship.TYPE, badRel2.getId()));
 	}
 	
 	@Test
@@ -374,9 +374,9 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		ValidationIssues issues = validate(ruleId);
 		
 		assertThat(issues.stream().map(ValidationIssue::getAffectedComponent).collect(Collectors.toSet()))
-			.contains(ComponentIdentifier.of(CONCEPT_NUMBER, invalidConcept.getId()))
-			.doesNotContainAnyElementsOf(ImmutableList.of(ComponentIdentifier.of(CONCEPT_NUMBER, validConcept1.getId()),
-					ComponentIdentifier.of(CONCEPT_NUMBER, validConcept2.getId())));
+			.contains(ComponentIdentifier.of(SnomedConcept.TYPE, invalidConcept.getId()))
+			.doesNotContainAnyElementsOf(ImmutableList.of(ComponentIdentifier.of(SnomedConcept.TYPE, validConcept1.getId()),
+					ComponentIdentifier.of(SnomedConcept.TYPE, validConcept2.getId())));
 	}
 	
 	@Test
@@ -404,8 +404,8 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		ValidationIssues issues = validate(ruleId);
 		
 		assertAffectedComponents(issues, 
-				ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, description1.getId()),
-				ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, description2.getId())
+				ComponentIdentifier.of(SnomedDescription.TYPE, description1.getId()),
+				ComponentIdentifier.of(SnomedDescription.TYPE, description2.getId())
 		);
   }
   
@@ -429,8 +429,8 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 
 		ValidationIssues issues = validate(ruleId);
 
-		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, description1.getId()),
-				ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, description2.getId()));
+		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedDescription.TYPE, description1.getId()),
+				ComponentIdentifier.of(SnomedDescription.TYPE, description2.getId()));
 	}
 	
 	@Test	
@@ -474,8 +474,8 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		ValidationIssues issues = validate(ruleId);	
 
 		assertAffectedComponents(issues, 
-			ComponentIdentifier.of(RELATIONSHIP_NUMBER, relationship1.getId()),
-			ComponentIdentifier.of(REFSET_MEMBER_NUMBER, owlAxiomMember2.getId())
+			ComponentIdentifier.of(SnomedRelationship.TYPE, relationship1.getId()),
+			ComponentIdentifier.of(SnomedReferenceSetMember.TYPE, owlAxiomMember2.getId())
 		);	
 	}
   
@@ -487,7 +487,7 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 
 		SnomedConceptDocument r1 = concept(generateConceptId())
 				.refSetType(SnomedRefSetType.SIMPLE)
-				.referencedComponentType(CONCEPT_NUMBER)
+				.referencedComponentType(SnomedConcept.TYPE)
 				.parents(Long.parseLong(SnomedConstants.Concepts.REFSET_ROOT_CONCEPT))
 				.build();
 
@@ -505,7 +505,7 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 
 		ValidationIssues issues = validate(ruleId);
 
-		assertAffectedComponents(issues, ComponentIdentifier.of(CONCEPT_NUMBER, badConcept.getId()));
+		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedConcept.TYPE, badConcept.getId()));
 	}
 	
 	@Test
@@ -516,7 +516,7 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 
 		SnomedConceptDocument r1 = concept(generateConceptId())
 				.refSetType(SnomedRefSetType.DESCRIPTION_TYPE)
-				.referencedComponentType(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER)
+				.referencedComponentType(SnomedDescription.TYPE)
 				.parents(Long.parseLong(SnomedConstants.Concepts.REFSET_ROOT_CONCEPT))
 				.build();
 
@@ -534,7 +534,7 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 
 		ValidationIssues issues = validate(ruleId);
 
-		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, badDesc.getId()));
+		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedDescription.TYPE, badDesc.getId()));
   }
 	
 	@Test
@@ -575,8 +575,8 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		ValidationIssues issues = validate(ruleId);
 
 		assertAffectedComponents(issues, 
-				ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, invalidDescription1.getId()),
-				ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, invalidDescription2.getId())
+				ComponentIdentifier.of(SnomedDescription.TYPE, invalidDescription1.getId()),
+				ComponentIdentifier.of(SnomedDescription.TYPE, invalidDescription2.getId())
 		);
 	}
 	
@@ -603,7 +603,7 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		
 		ValidationIssues issues = validate(ruleId);
 		
-		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, description3.getId()));
+		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedDescription.TYPE, description3.getId()));
 	}
 	
 	@Test
@@ -631,7 +631,7 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		
 		ValidationIssues issues = validate(ruleId);
 		
-		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, description3.getId()));
+		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedDescription.TYPE, description3.getId()));
 	}
 	
 	@Test
@@ -658,7 +658,7 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		
 		ValidationIssues issues = validate(ruleId);
 		
-		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, description3.getId()));
+		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedDescription.TYPE, description3.getId()));
 	}
 	
 	@Test
@@ -683,12 +683,12 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		ValidationIssues issues = validate(ruleId);
 
 		assertAffectedComponents(issues, 
-			ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, baadDesc1.getId()),
-			ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, baadDesc2.getId()),
-			ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, baadDesc3.getId()),
-			ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, baadDesc4.getId()),
-			ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, baadDesc5.getId()),
-			ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, baadDesc6.getId())
+			ComponentIdentifier.of(SnomedDescription.TYPE, baadDesc1.getId()),
+			ComponentIdentifier.of(SnomedDescription.TYPE, baadDesc2.getId()),
+			ComponentIdentifier.of(SnomedDescription.TYPE, baadDesc3.getId()),
+			ComponentIdentifier.of(SnomedDescription.TYPE, baadDesc4.getId()),
+			ComponentIdentifier.of(SnomedDescription.TYPE, baadDesc5.getId()),
+			ComponentIdentifier.of(SnomedDescription.TYPE, baadDesc6.getId())
 		);
 	}
 	
@@ -781,11 +781,11 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		ValidationIssues issues = validate(ruleId);
 		
 		assertAffectedComponents(issues,
-			ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, invalidDescription1.getId()),
-			ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, invalidIntDescription1.getId()),
-			ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, invalidDescription2.getId()),
-			ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, invalidDescription3.getId()),
-			ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, invalidDescription4.getId())
+			ComponentIdentifier.of(SnomedDescription.TYPE, invalidDescription1.getId()),
+			ComponentIdentifier.of(SnomedDescription.TYPE, invalidIntDescription1.getId()),
+			ComponentIdentifier.of(SnomedDescription.TYPE, invalidDescription2.getId()),
+			ComponentIdentifier.of(SnomedDescription.TYPE, invalidDescription3.getId()),
+			ComponentIdentifier.of(SnomedDescription.TYPE, invalidDescription4.getId())
 		);
 	}
 	
@@ -816,9 +816,9 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		
 		ValidationIssues validationIssues = validate(ruleId);
 		
-		assertAffectedComponents(validationIssues, ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, invalidSourceRelationship.getId()),
-				ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, invalidDestinationRelationship.getId()),
-				ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, invalidTypeRelationship.getId()));
+		assertAffectedComponents(validationIssues, ComponentIdentifier.of(SnomedRelationship.TYPE, invalidSourceRelationship.getId()),
+				ComponentIdentifier.of(SnomedRelationship.TYPE, invalidDestinationRelationship.getId()),
+				ComponentIdentifier.of(SnomedRelationship.TYPE, invalidTypeRelationship.getId()));
 	}
 
 	@Test
@@ -847,8 +847,8 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 
 		ValidationIssues issues = validate(ruleId);
 
-		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, d1.getId()),
-				ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, d2.getId()));
+		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedDescription.TYPE, d1.getId()),
+				ComponentIdentifier.of(SnomedDescription.TYPE, d2.getId()));
 	}
 	
 	@Test
@@ -893,8 +893,8 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		ValidationIssues issues = validate(ruleId);
 		
 		assertAffectedComponents(issues,
-			ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationshipWithDefiningCharType.getId()),
-			ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationshipWithQualifingCharType.getId())
+			ComponentIdentifier.of(SnomedRelationship.TYPE, relationshipWithDefiningCharType.getId()),
+			ComponentIdentifier.of(SnomedRelationship.TYPE, relationshipWithQualifingCharType.getId())
 		);
 
 	}
@@ -963,8 +963,8 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 				fsn3Member, pt1Member, pt2Member, pt3Member);
 		
 		ValidationIssues issues = validate(ruleId);
-		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, c1.getId()),
-				ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, c2.getId()));
+		assertAffectedComponents(issues, ComponentIdentifier.of(SnomedConcept.TYPE, c1.getId()),
+				ComponentIdentifier.of(SnomedConcept.TYPE, c2.getId()));
 	}
 
 	@Test
@@ -1014,10 +1014,10 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		
 		final ValidationIssues issues = validate(ruleId);
 		assertAffectedComponents(issues, 
-				ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, incorrectSynonym.getId()),
-				ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, incorrectFsn.getId()),
-				ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, incorrectTextDefinition.getId()),
-				ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, newIncorrectDescriptionTypedDesc.getId()));
+				ComponentIdentifier.of(SnomedDescription.TYPE, incorrectSynonym.getId()),
+				ComponentIdentifier.of(SnomedDescription.TYPE, incorrectFsn.getId()),
+				ComponentIdentifier.of(SnomedDescription.TYPE, incorrectTextDefinition.getId()),
+				ComponentIdentifier.of(SnomedDescription.TYPE, newIncorrectDescriptionTypedDesc.getId()));
 	}
 	
 	@Test
@@ -1073,10 +1073,10 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		ValidationIssues validationIssues = validate(ruleId);
 
 		assertAffectedComponents(validationIssues,
-				ComponentIdentifier.of(SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, invalidSourceAxiomMember.getId()),
-				ComponentIdentifier.of(SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, invalidDestinationAxiomMember.getId()),
-				ComponentIdentifier.of(SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, invalidDestinationGciAxiomMember.getId()),
-				ComponentIdentifier.of(SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, invalidTypeAxiomMember.getId()));
+				ComponentIdentifier.of(SnomedReferenceSetMember.TYPE, invalidSourceAxiomMember.getId()),
+				ComponentIdentifier.of(SnomedReferenceSetMember.TYPE, invalidDestinationAxiomMember.getId()),
+				ComponentIdentifier.of(SnomedReferenceSetMember.TYPE, invalidDestinationGciAxiomMember.getId()),
+				ComponentIdentifier.of(SnomedReferenceSetMember.TYPE, invalidTypeAxiomMember.getId()));
 	}
 	
 	@Test
@@ -1110,10 +1110,10 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		final ValidationIssues issues = validate(ruleId);
 		
 		assertAffectedComponents(issues, 
-				ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.IS_A),
-				ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.REFSET_ROOT_CONCEPT),
-				ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.ATTRIBUTE_TYPE_CONCEPT_TYPE_COMPONENT),
-				ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.ATTRIBUTE));
+				ComponentIdentifier.of(SnomedConcept.TYPE, Concepts.IS_A),
+				ComponentIdentifier.of(SnomedConcept.TYPE, Concepts.REFSET_ROOT_CONCEPT),
+				ComponentIdentifier.of(SnomedConcept.TYPE, Concepts.ATTRIBUTE_TYPE_CONCEPT_TYPE_COMPONENT),
+				ComponentIdentifier.of(SnomedConcept.TYPE, Concepts.ATTRIBUTE));
 	}
 	
 	@Test
@@ -1130,7 +1130,7 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		final ValidationIssues issues = validate(ruleId);
 		
 		assertAffectedComponents(issues, 
-				ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, Concepts.IS_A));
+				ComponentIdentifier.of(SnomedConcept.TYPE, Concepts.IS_A));
 	}
 
 	@Test
@@ -1194,8 +1194,8 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		final ValidationIssues issues = validate(ruleId);
 		
 		assertAffectedComponents(issues, 
-				ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, pt2.getId()),
-				ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, pt3.getId()));
+				ComponentIdentifier.of(SnomedDescription.TYPE, pt2.getId()),
+				ComponentIdentifier.of(SnomedDescription.TYPE, pt3.getId()));
 	}
 	
 	@Test
@@ -1241,8 +1241,8 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		
 		ValidationIssues issues = validate(ruleId);
 		assertAffectedComponents(issues, 
-				ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship1.getId()),
-				ComponentIdentifier.of(SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, axiomMember1.getId()));
+				ComponentIdentifier.of(SnomedRelationship.TYPE, relationship1.getId()),
+				ComponentIdentifier.of(SnomedReferenceSetMember.TYPE, axiomMember1.getId()));
 	}
 	
 	@Test
@@ -1306,14 +1306,14 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		ValidationIssues issues = validate(ruleId);
 		Assertions.assertThat(issues.stream().map(ValidationIssue::getAffectedComponent).collect(Collectors.toSet()))
 			.contains(
-					ComponentIdentifier.of(SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, axiomMember2.getId()),
-					ComponentIdentifier.of(SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, axiomMember3.getId()),
-					ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship3.getId()),
-					ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship4.getId()))
-			.doesNotContain(ComponentIdentifier.of(SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, axiomMember1.getId()),
-					ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship1.getId()),
-					ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship2.getId()),
-					ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship5.getId()));
+					ComponentIdentifier.of(SnomedReferenceSetMember.TYPE, axiomMember2.getId()),
+					ComponentIdentifier.of(SnomedReferenceSetMember.TYPE, axiomMember3.getId()),
+					ComponentIdentifier.of(SnomedRelationship.TYPE, relationship3.getId()),
+					ComponentIdentifier.of(SnomedRelationship.TYPE, relationship4.getId()))
+			.doesNotContain(ComponentIdentifier.of(SnomedReferenceSetMember.TYPE, axiomMember1.getId()),
+					ComponentIdentifier.of(SnomedRelationship.TYPE, relationship1.getId()),
+					ComponentIdentifier.of(SnomedRelationship.TYPE, relationship2.getId()),
+					ComponentIdentifier.of(SnomedRelationship.TYPE, relationship5.getId()));
 	}
 	
 	private SnomedRefSetMemberIndexEntry createLanguageRefsetMember(SnomedDescriptionIndexEntry description) {

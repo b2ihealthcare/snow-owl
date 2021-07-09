@@ -39,6 +39,8 @@ import com.b2international.snowowl.core.validation.issue.ValidationIssues;
 import com.b2international.snowowl.core.validation.rule.ValidationRule.Severity;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclParser;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclSerializer;
 import com.b2international.snowowl.snomed.core.ecl.EclParser;
@@ -118,7 +120,7 @@ public class SnomedQueryValidationRuleEvaluatorTest extends BaseValidationTest {
 		final ValidationIssues issues = validate(ruleId);
 
 		assertThat(issues.getTotal()).isEqualTo(1);
-		assertThat(issues.getItems().get(0).getAffectedComponent()).isEqualTo(ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, concept1));
+		assertThat(issues.getItems().get(0).getAffectedComponent()).isEqualTo(ComponentIdentifier.of(SnomedConcept.TYPE, concept1));
 	}
 
 	@Test
@@ -143,7 +145,7 @@ public class SnomedQueryValidationRuleEvaluatorTest extends BaseValidationTest {
 		final ValidationIssues issues = validate(ruleId);
 
 		assertThat(issues.getTotal()).isEqualTo(1);
-		assertThat(issues.getItems().get(0).getAffectedComponent()).isEqualTo(ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, concept1));
+		assertThat(issues.getItems().get(0).getAffectedComponent()).isEqualTo(ComponentIdentifier.of(SnomedConcept.TYPE, concept1));
 		
 	}
 	
@@ -170,7 +172,7 @@ public class SnomedQueryValidationRuleEvaluatorTest extends BaseValidationTest {
 		final ValidationIssues issues = validate(ruleId);
 		
 		assertThat(issues.getTotal()).isEqualTo(1);
-		assertThat(issues.getItems().get(0).getAffectedComponent()).isEqualTo(ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, description1));
+		assertThat(issues.getItems().get(0).getAffectedComponent()).isEqualTo(ComponentIdentifier.of(SnomedDescription.TYPE, description1));
 	}
 	
 	@Test
@@ -196,7 +198,7 @@ public class SnomedQueryValidationRuleEvaluatorTest extends BaseValidationTest {
 		final ValidationIssues issues = validate(ruleId);
 		
 		assertThat(issues.getTotal()).isEqualTo(1);
-		assertThat(issues.getItems().get(0).getAffectedComponent()).isEqualTo(ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, description1));
+		assertThat(issues.getItems().get(0).getAffectedComponent()).isEqualTo(ComponentIdentifier.of(SnomedDescription.TYPE, description1));
 	}
 	
 	@Test
@@ -228,7 +230,7 @@ public class SnomedQueryValidationRuleEvaluatorTest extends BaseValidationTest {
 		final ValidationIssues issues = validate(ruleId);
 		
 		assertThat(issues.getTotal()).isEqualTo(1);
-		assertThat(issues.getItems().get(0).getAffectedComponent()).isEqualTo(ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, description1));
+		assertThat(issues.getItems().get(0).getAffectedComponent()).isEqualTo(ComponentIdentifier.of(SnomedDescription.TYPE, description1));
 	}
 	
 	private String createSnomedQueryRule(final Map<String, Object> ruleQuery) throws JsonProcessingException {

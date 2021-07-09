@@ -42,7 +42,6 @@ import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.SnomedDisplayTermType;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
@@ -88,7 +87,7 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 		final Map<String, ComponentURI> targetComponentsByRefSetId = getTargetComponentsByRefSetId(context, refSetsById);
 		
 		List<ConceptMapMapping> mappings = referenceSetMembers.stream()
-				.filter(m -> SnomedTerminologyComponentConstants.CONCEPT_NUMBER == m.getReferencedComponent().getTerminologyComponentId())
+				.filter(m -> SnomedConcept.TYPE.equals(m.getReferencedComponent().getComponentType()))
 				.map(m -> {
 					return toMapping(m, uri, targetComponentsByRefSetId.get(m.getReferenceSetId()), snomedDisplayTermType, refSetsById);
 				})
@@ -178,7 +177,7 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 
 	private ConceptMapMapping toMapping(SnomedReferenceSetMember member, ResourceURI codeSystemURI, ComponentURI targetURI, final SnomedDisplayTermType snomedDisplayTermType, final Map<String, SnomedConcept> refSetsByIds) {	 		
 		final String iconId = member.getReferencedComponent().getIconId();
-		final short terminologyComponentId = member.getReferencedComponent().getTerminologyComponentId();
+		final String componentType = member.getReferencedComponent().getComponentType();
 
 		final SnomedConcept concept = (SnomedConcept) member.getReferencedComponent();
 		final String term  = snomedDisplayTermType.getLabel(concept);
@@ -190,7 +189,7 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 		if (ComponentURI.isValid(mapTarget)) {
 			mappingBuilder.targetComponentURI(ComponentURI.of(mapTarget));
 		} else {
-			mappingBuilder.targetComponentURI(ComponentURI.of(targetURI.resourceUri(), targetURI.terminologyComponentId(), mapTarget));
+			mappingBuilder.targetComponentURI(ComponentURI.of(targetURI.resourceUri(), targetURI.componentType(), mapTarget));
 		}
 
 		if (properties.containsKey(SnomedRf2Headers.FIELD_MAP_PRIORITY)) {
@@ -209,13 +208,13 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 		final SnomedConcept referenceSet = refSetsByIds.get(member.getReferenceSetId());
 
 		return mappingBuilder
-				.uri(ComponentURI.of(codeSystemURI, SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, member.getId()))
+				.uri(ComponentURI.of(codeSystemURI, SnomedReferenceSetMember.TYPE, member.getId()))
 				.containerIconId(referenceSet.getIconId())
 				.containerTerm(referenceSet.getPt().getTerm())
-				.containerSetURI(ComponentURI.of(codeSystemURI, SnomedTerminologyComponentConstants.REFSET_NUMBER, member.getReferenceSetId()))
+				.containerSetURI(ComponentURI.of(codeSystemURI, SnomedConcept.REFSET_TYPE, member.getReferenceSetId()))
 				.sourceIconId(iconId)
 				.sourceTerm(term)
-				.sourceComponentURI(ComponentURI.of(codeSystemURI, terminologyComponentId, member.getReferencedComponentId()))
+				.sourceComponentURI(ComponentURI.of(codeSystemURI, componentType, member.getReferencedComponentId()))
 				.targetTerm((String) member.getProperties().get(SnomedRf2Headers.FIELD_MAP_TARGET))
 				.active(member.isActive())
 				.mappingCorrelation(getEquivalence(member))

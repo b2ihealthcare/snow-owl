@@ -38,9 +38,9 @@ import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.internal.validation.ValidationConfiguration;
 import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
+import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
 import com.b2international.snowowl.core.validation.rule.ValidationRule;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.*;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
@@ -108,11 +108,11 @@ public final class SnomedQueryValidationRuleEvaluator implements ValidationRuleE
 				issues = newArrayListWithExpectedSize(page.getTotal());
 			}
 			for (String affectedComponentId : page) {
-				short terminologyComponentId = SnomedTerminologyComponentConstants.getTerminologyComponentIdValueSafe(affectedComponentId);
-				if (terminologyComponentId == -1) {
-					terminologyComponentId = SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER;
+				String affectedComponentType = SnomedComponent.getTypeSafe(affectedComponentId);
+				if (TerminologyRegistry.UNKNOWN_COMPONENT_TYPE.equals(affectedComponentType)) {
+					affectedComponentType = SnomedReferenceSetMember.TYPE;
 				}
-				issues.add(ComponentIdentifier.of(terminologyComponentId, affectedComponentId));
+				issues.add(ComponentIdentifier.of(affectedComponentType, affectedComponentId));
 			}
 		}
 		

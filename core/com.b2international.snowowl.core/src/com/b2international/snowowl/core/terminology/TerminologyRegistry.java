@@ -38,7 +38,7 @@ public enum TerminologyRegistry {
 	
 	public static final String UNSPECIFIED = "UNSPECIFIED";
 	public static final int UNSPECIFIED_NUMBER = -1;
-	public static final short UNSPECIFIED_NUMBER_SHORT = -1;
+	public static final String UNKNOWN_COMPONENT_TYPE = "__UNKNOWN__";
 	
 	private final Map<String, Terminology> terminologies = newHashMap();
 	private final Map<String, TerminologyComponent> terminologyComponentsById = newHashMap();
@@ -82,11 +82,10 @@ public enum TerminologyRegistry {
 	}
 
 	public void register(String terminologyId, TerminologyComponent terminologyComponent) {
-		TerminologyComponent prevAnnotation = terminologyComponentsById.put(terminologyComponent.id(), terminologyComponent);
+		TerminologyComponent prevAnnotation = terminologyComponentsById.put(getComponentType(terminologyComponent), terminologyComponent);
 		if (prevAnnotation != null) {
 			throw new IllegalArgumentException(String.format("A terminology component is already registered with id '%s'", terminologyComponent.id()));	
 		}
-		terminologyComponentsByShortId.put(terminologyComponent.shortId(), terminologyComponent);
 		terminologyIdByTerminologyComponentId.put(terminologyComponent.id(), terminologyId);
 		terminologyComponentIdsByTerminology.put(terminologyId, terminologyComponent.id());
 		if (!UNSPECIFIED.equals(terminologyId)) {
@@ -95,6 +94,10 @@ public enum TerminologyRegistry {
 		}
 	}
 	
+	private String getComponentType(TerminologyComponent terminologyComponent) {
+		return DocumentMapping.getType(terminologyComponent.docType());
+	}
+
 	public Terminology getTerminology(String terminologyId) {
 		checkArgument(terminologies.containsKey(terminologyId), "Missing terminology '%s'.", terminologyId);
 		return terminologies.get(terminologyId);
@@ -187,17 +190,7 @@ public enum TerminologyRegistry {
 			}
 			
 			@Override
-			public short shortId() {
-				return UNSPECIFIED_NUMBER_SHORT;
-			}
-			
-			@Override
 			public String name() {
-				return UNSPECIFIED;
-			}
-			
-			@Override
-			public String id() {
 				return UNSPECIFIED;
 			}
 			

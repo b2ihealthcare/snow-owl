@@ -39,7 +39,6 @@ import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.snomed.cis.ISnomedIdentifierService;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.*;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
@@ -194,10 +193,10 @@ public final class Rf2TransactionContext extends DelegatingTransactionContext {
 						conceptDocToUpdate = (SnomedConceptDocument) newComponents.get(refSetId);
 					}
 					if (conceptDocToUpdate.getRefSetType() == null) {
-						final String referencedComponentType = SnomedTerminologyComponentConstants.getTerminologyComponentId(member.getReferencedComponent().getId());
-						String mapTargetComponentType = TerminologyRegistry.UNSPECIFIED;
+						final String referencedComponentType = member.getReferencedComponent().getComponentType();
+						String mapTargetComponentType = TerminologyRegistry.UNKNOWN_COMPONENT_TYPE;
 						try {
-							mapTargetComponentType = SnomedTerminologyComponentConstants.getTerminologyComponentId((String) member.getProperties().get(SnomedRf2Headers.FIELD_MAP_TARGET));
+							mapTargetComponentType = SnomedComponent.getType((String) member.getProperties().get(SnomedRf2Headers.FIELD_MAP_TARGET));
 						} catch (IllegalArgumentException e) {
 							// ignored
 						}
