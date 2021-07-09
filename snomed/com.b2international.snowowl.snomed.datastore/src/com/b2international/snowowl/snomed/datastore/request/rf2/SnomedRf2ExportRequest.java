@@ -258,7 +258,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 		// Step 1: check if the export reference branch is a working branch path descendant
 		final TerminologyResource referenceCodeSystem = context.service(TerminologyResource.class);
 
-		if (CompareUtils.isEmpty(referenceCodeSystem.getSettings())) {
+		if (!CompareUtils.isEmpty(referenceCodeSystem.getSettings())) {
 			if (Strings.isNullOrEmpty(countryNamespaceElement)) {
 
 				if (maintainerType == null) {
