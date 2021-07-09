@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,14 @@ package com.b2international.snowowl.snomed.core.rest.domain;
 
 import com.b2international.snowowl.core.rest.domain.ObjectRestSearch;
 
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.Parameter;
 
 /**
  * @since 7.3
  */
 public final class SnomedReferenceSetRestSearch extends ObjectRestSearch {
 
-	@Schema(description = "The reference set type to match")
+	@Parameter(description = "The reference set type to match")
 	private String[] refSetTypes;
 	
 	public String[] getRefSetTypes() {

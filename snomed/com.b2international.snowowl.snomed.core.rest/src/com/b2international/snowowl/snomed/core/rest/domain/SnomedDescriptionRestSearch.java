@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,50 +17,50 @@ package com.b2international.snowowl.snomed.core.rest.domain;
 
 import com.b2international.snowowl.core.rest.domain.ObjectRestSearch;
 
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.Parameter;
 
 /**
  * @since 6.16
  */
 public final class SnomedDescriptionRestSearch extends ObjectRestSearch {
 
-	@Schema(description = "The effective time to match (yyyyMMdd, exact matches only)")
+	@Parameter(description = "The effective time to match (yyyyMMdd, exact matches only)")
 	private String effectiveTime;
 
-	@Schema(description = "The status to match")
+	@Parameter(description = "The status to match")
 	private Boolean active;
 
-	@Schema(description = "The module identifier to match")
+	@Parameter(description = "The module identifier to match")
 	private String module;
 
-	@Schema(description = "The namespace to match")
+	@Parameter(description = "The namespace to match")
 	private String namespace;
 
-	@Schema(description = "The term to match")
+	@Parameter(description = "The term to match")
 	private String term;
 
-	@Schema(description = "The concept ECL expression to match")
+	@Parameter(description = "The concept ECL expression to match")
 	private String concept;
 
-	@Schema(description = "The language code to match")
+	@Parameter(description = "The language code to match")
 	private String[] languageCode;
 
-	@Schema(description = "The type ECL expression to match")
+	@Parameter(description = "The type ECL expression to match")
 	private String type;
 
-	@Schema(description = "The case significance ECL expression to match")
+	@Parameter(description = "The case significance ECL expression to match")
 	private String caseSignificance;
 
-	@Schema(description = "Semantic tag(s) to match")
+	@Parameter(description = "Semantic tag(s) to match")
 	private String[] semanticTag;
 
-	@Schema(description = "Acceptable membership to match in these language refsets")
+	@Parameter(description = "Acceptable membership to match in these language refsets")
 	private String[] acceptableIn;
 
-	@Schema(description = "Preferred membership to match in these language refsets")
+	@Parameter(description = "Preferred membership to match in these language refsets")
 	private String[] preferredIn;
 
-	@Schema(description = "Any membership to match in these language refsets")
+	@Parameter(description = "Any membership to match in these language refsets")
 	private String[] languageRefSet;
 
 	public String getEffectiveTime() {

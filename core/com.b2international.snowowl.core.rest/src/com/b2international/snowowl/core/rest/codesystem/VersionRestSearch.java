@@ -26,7 +26,7 @@ import io.swagger.v3.oas.annotations.Parameter;
  */
 public class VersionRestSearch extends ObjectRestSearch {
 
-	@Parameter(description="Resource identifier(s)")
+	@Parameter(description="The corresponding resource identifier(s) to match")
 	private List<String> resource;
 	
 	public List<String> getResource() {

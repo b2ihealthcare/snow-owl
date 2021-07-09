@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.rest.codesystem;
 
 import java.util.concurrent.TimeUnit;
 
+import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -55,7 +56,7 @@ public class CodeSystemRestService extends AbstractRestService {
 		@ApiResponse(responseCode = "400", description = "Bad Request")
 	})
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public Promise<CodeSystems> searchByGet(final CodeSystemRestSearch params) {
+	public Promise<CodeSystems> searchByGet(@ParameterObject final CodeSystemRestSearch params) {
 		return CodeSystemRequests.prepareSearchCodeSystem()
 				.filterByIds(params.getId())
 				.filterByOids(params.getOid())

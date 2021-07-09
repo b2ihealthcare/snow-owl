@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -80,6 +81,7 @@ public class SnomedConceptRestService extends AbstractRestService {
 			@PathVariable(value="path")
 			final String path,
 
+			@ParameterObject
 			final SnomedConceptRestSearch params,
 			
 			@Parameter(description = "Accepted language tags, in order of preference")

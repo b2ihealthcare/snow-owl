@@ -18,6 +18,7 @@ package com.b2international.snowowl.core.rest.codesystem;
 import java.net.URI;
 import java.util.concurrent.TimeUnit;
 
+import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -68,6 +69,7 @@ public class VersionRestService extends AbstractRestService {
 	})
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public Promise<Versions> searchVersions(
+			@ParameterObject
 			VersionRestSearch config) {
 		return ResourceRequests.prepareSearchVersion()
 				.filterByResources(config.getResource())

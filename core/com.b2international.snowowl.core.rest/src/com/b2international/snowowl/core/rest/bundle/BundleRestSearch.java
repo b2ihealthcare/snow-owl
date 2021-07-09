@@ -15,20 +15,10 @@
  */
 package com.b2international.snowowl.core.rest.bundle;
 
-import com.b2international.snowowl.core.rest.domain.ObjectRestSearch;
+import com.b2international.snowowl.core.rest.domain.BaseResourceRestSearch;
 
 /**
  * @since 8.0
  */
-public final class BundleRestSearch extends ObjectRestSearch {
-	
-	private String title;
-	
-	public String getTitle() {
-		return title;
-	}
-
-	public void setTitle(String title) {
-		this.title = title;
-	}
+public final class BundleRestSearch extends BaseResourceRestSearch {
 }

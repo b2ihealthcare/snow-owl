@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.fhir.rest;
 
+import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.web.bind.annotation.*;
 
 import com.b2international.commons.collections.Collections3;
@@ -66,7 +67,7 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 		@ApiResponse(responseCode = "400", description = "Bad Request"),
 	})
 	@GetMapping
-	public Promise<Bundle> getCodeSystems(FhirCodeSystemSearchParameters params) {
+	public Promise<Bundle> getCodeSystems(@ParameterObject FhirCodeSystemSearchParameters params) {
 		//TODO: replace this with something more general as described in
 		//https://docs.spring.io/spring-hateoas/docs/current/reference/html/
 //		String uri = MvcUriComponentsBuilder.fromController(FhirCodeSystemController.class).build().toString();
@@ -113,6 +114,7 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 			@PathVariable(value = "id") 
 			final String id,
 			
+			@ParameterObject
 			final FhirResourceSelectors selectors) {
 		
 		return FhirRequests.codeSystems().prepareGet(id)

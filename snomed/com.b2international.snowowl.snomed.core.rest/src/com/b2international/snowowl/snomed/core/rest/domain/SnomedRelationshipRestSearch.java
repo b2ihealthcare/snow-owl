@@ -19,50 +19,50 @@ import com.b2international.snowowl.core.request.SearchResourceRequest;
 import com.b2international.snowowl.core.rest.domain.ObjectRestSearch;
 import com.b2international.snowowl.snomed.core.domain.RelationshipValueType;
 
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.Parameter;
 
 /**
  * @since 6.16
  */
 public final class SnomedRelationshipRestSearch extends ObjectRestSearch {
 
-	@Schema(description = "The effective time to match (yyyyMMdd, exact matches only)")
+	@Parameter(description = "The effective time to match (yyyyMMdd, exact matches only)")
 	private String effectiveTime;
 
-	@Schema(description = "The status to match")
+	@Parameter(description = "The status to match")
 	private Boolean active;
 
-	@Schema(description = "The module identifier to match")
+	@Parameter(description = "The module identifier to match")
 	private String module;
 
-	@Schema(description = "The namespace to match")
+	@Parameter(description = "The namespace to match")
 	private String namespace;
 
-	@Schema(description = "The source concept to match")
+	@Parameter(description = "The source concept to match")
 	private String source;
 
-	@Schema(description = "The type concept to match")
+	@Parameter(description = "The type concept to match")
 	private String type;
 
-	@Schema(description = "The destination concept to match")
+	@Parameter(description = "The destination concept to match")
 	private String destination;
 	
-	@Schema(description = "The value type to match")
+	@Parameter(description = "The value type to match")
 	private RelationshipValueType valueType;
 
-	@Schema(description = "The value comparison operator")
+	@Parameter(description = "The value comparison operator")
 	private SearchResourceRequest.Operator operator;
 
-	@Schema(description = "The value to match (in literal form)")
+	@Parameter(description = "The value to match (in literal form)")
 	private String value;
 
-	@Schema(description = "The characteristic type to match")
+	@Parameter(description = "The characteristic type to match")
 	private String characteristicType;
 
-	@Schema(description = "The group to match")
+	@Parameter(description = "The group to match")
 	private Integer group;
 
-	@Schema(description = "The union group to match")
+	@Parameter(description = "The union group to match")
 	private Integer unionGroup;
 
 	public String getEffectiveTime() {

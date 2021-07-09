@@ -18,6 +18,7 @@ package com.b2international.snowowl.core.rest.resource;
 import java.util.List;
 import java.util.Set;
 
+import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.web.bind.annotation.*;
 
 import com.b2international.index.revision.Commit;
@@ -58,7 +59,7 @@ public class ResourceRestService extends AbstractRestService {
 	@ApiResponses({ @ApiResponse(responseCode = "200", description = "OK"),
 			@ApiResponse(responseCode = "400", description = "Bad Request") })
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public Promise<Resources> searchByGet(final ResourceRestSearch params) {
+	public Promise<Resources> searchByGet(@ParameterObject final ResourceRestSearch params) {
 		return ResourceRequests
 				.prepareSearch()
 				.filterByIds(params.getId())

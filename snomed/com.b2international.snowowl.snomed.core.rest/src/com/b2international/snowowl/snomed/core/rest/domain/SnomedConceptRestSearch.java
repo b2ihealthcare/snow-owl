@@ -17,7 +17,7 @@ package com.b2international.snowowl.snomed.core.rest.domain;
 
 import com.b2international.snowowl.core.rest.domain.ObjectRestSearch;
 
-import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.Parameter;
 
 /**
  * @since 6.16
@@ -25,42 +25,42 @@ import io.swagger.v3.oas.annotations.media.Schema;
 public final class SnomedConceptRestSearch extends ObjectRestSearch {
 
 	// concept filters
-	@Schema(description = "The effective time to match (yyyyMMdd, exact matches only)")
+	@Parameter(description = "The effective time to match (yyyyMMdd, exact matches only)")
 	private String effectiveTime;
 
-	@Schema(description = "The concept status to match")
+	@Parameter(description = "The concept status to match")
 	private Boolean active = null;
-	@Schema(description = "The concept module identifier to match")
+	@Parameter(description = "The concept module identifier to match")
 	private String module;
-	@Schema(description = "The definition status to match")
+	@Parameter(description = "The definition status to match")
 	private String definitionStatus;
-	@Schema(description = "The namespace to match")
+	@Parameter(description = "The namespace to match")
 	private String namespace;
 
 	// query expressions
-	@Schema(description = "The ECL expression to match on the inferred form")
+	@Parameter(description = "The ECL expression to match on the inferred form")
 	private String ecl;
-	@Schema(description = "The ECL expression to match on the stated form")
+	@Parameter(description = "The ECL expression to match on the stated form")
 	private String statedEcl;
 
 	// description filters
-	@Schema(description = "Description semantic tag(s) to match")
+	@Parameter(description = "Description semantic tag(s) to match")
 	private String[] semanticTag;
-	@Schema(description = "The description term to match")
+	@Parameter(description = "The description term to match")
 	private String term;
-	@Schema(description = "Description type ECL expression to match")
+	@Parameter(description = "Description type ECL expression to match")
 	private String descriptionType;
 
 	// hiearchy filters
-	@Schema(description = "The inferred parent(s) to match")
+	@Parameter(description = "The inferred parent(s) to match")
 	private String[] parent;
-	@Schema(description = "The inferred ancestor(s) to match")
+	@Parameter(description = "The inferred ancestor(s) to match")
 	private String[] ancestor;
-	@Schema(description = "The stated parent(s) to match")
+	@Parameter(description = "The stated parent(s) to match")
 	private String[] statedParent;
-	@Schema(description = "The stated ancestor(s) to match")
+	@Parameter(description = "The stated ancestor(s) to match")
 	private String[] statedAncestor;
-	@Schema(description = "doi (degree-of-interest-based scoring)")
+	@Parameter(description = "doi (degree-of-interest-based scoring)")
 	private Boolean doi = null;
 
 	public Boolean getActive() {

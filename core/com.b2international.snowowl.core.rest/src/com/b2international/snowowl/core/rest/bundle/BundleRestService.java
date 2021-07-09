@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.rest.bundle;
 
 import java.util.concurrent.TimeUnit;
 
+import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -59,7 +60,7 @@ public class BundleRestService extends AbstractRestService {
 		@ApiResponse(responseCode = "400", description = "Bad Request")
 	})
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public Promise<Bundles> searchByGet(final BundleRestSearch params) {
+	public Promise<Bundles> searchByGet(@ParameterObject final BundleRestSearch params) {
 		return ResourceRequests.bundles().prepareSearch()
 				.filterByIds(params.getId())
 				.filterByTitle(params.getTitle())

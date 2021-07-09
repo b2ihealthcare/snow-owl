@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.core.rest;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -73,6 +74,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractRestService {
 			@PathVariable(value="path")
 			final String path,
 
+			@ParameterObject
 			final SnomedReferenceSetMemberRestSearch params,
 			
 			@Parameter(description = "Accepted language tags, in order of preference")
