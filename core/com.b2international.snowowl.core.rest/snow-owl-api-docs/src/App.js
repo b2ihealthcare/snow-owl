@@ -2,9 +2,7 @@ import 'antd/dist/antd.css';
 import 'rapidoc';
 
 import React from 'react';
-import { Layout, BackTop, Menu } from 'antd';
-
-const { Content, Sider } = Layout;
+import { BackTop } from 'antd';
 
 class App extends React.Component {
 
@@ -31,43 +29,25 @@ class App extends React.Component {
     return (
       <>
         <BackTop />
-        <Layout>
-          <Sider
-            style={{
-              overflow: 'auto',
-              height: '100vh',
-              position: 'fixed',
-              left: 0,
-            }}
-          >
-            <div className="logo">
-              <img src={`${process.env.PUBLIC_URL}/logo-snow-owl.png`} alt="logo-snow-owl" height="60" style={{maxWidth:"100%"}} />
-            </div>
-            <Menu
-              onSelect = { this.onMenuSelect }
-              selectedKeys = { [ this.state.selectedKey ] }
-              mode="inline"
-              theme="dark"
-            >
-              { 
-                apis.map(api => <Menu.Item key={`${api.id}`}>{api.title}</Menu.Item>)
-              }
-            </Menu>
-          </Sider>
-          <Content style={{ marginLeft: 200 }}>
-            <rapi-doc
-              spec-url = {`${serverUrl}/api-docs/${this.state.selectedKey}`}
-			  server-url = {`${serverUrl}`}
-              render-style = "view"
-              layout = "row"
-              schema-expand-level = "3"
-              style = {{ height: "100vh", width: "100%" }}
-              allow-spec-url-load="false"
-              allow-spec-file-load="false"
-              allow-server-selection="false"
-            />
-          </Content>
-        </Layout>
+        <rapi-doc
+          theme = "light"
+          spec-url = {`${serverUrl}/api-docs/${this.state.selectedKey}`}
+          server-url = {`${serverUrl}`}
+          show-header="false"
+          render-style = "focused"
+          default-schema-tab = "example"
+          layout = "row"
+          schema-expand-level = "3"
+          style = {{ height: "100vh", width: "100%" }}
+          allow-spec-url-load="false"
+          allow-spec-file-load="false"
+          allow-server-selection="false"
+        >
+          <div slot="nav-logo" style={{ display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px" }}> 
+            <img src = "./assets/favicon.svg" style={{ width: "40px", marginRight: "8px" }} alt="logo" />
+            <span style={{ color: "#fff" }}> Snow Owl API </span>
+          </div>
+        </rapi-doc>
       </>
     )
   }
