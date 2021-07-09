@@ -1329,6 +1329,71 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 	}
 	
 	@Test
+	public void exportRf2WithNamespaceIdAndNrcCodeConfiguration() throws Exception {
+		
+		final Map<String, Object> codeSystemExportSettings = Map.of(
+				"maintainerType",  Rf2MaintainerType.SNOMED_INTERNATIONAL,
+				"extensionNamespaceId", "370137002",
+				"nrcCountryCode", "GB",
+				"refSetLayout", Rf2RefSetExportLayout.COMBINED
+				);
+		
+		String codeSystemId = "SNOMEDCT-custom-Nrc-GB-rf2-export-config";
+		createCodeSystem(null, branchPath.getPath(), codeSystemId, codeSystemExportSettings).statusCode(201);
+		
+		final Map<String, Object> config = Map.of(
+				"type", Rf2ReleaseType.DELTA.name(),
+				"includeUnpublished", true,
+				"codeSystemId", codeSystemId,
+				"namespaceId", "HUN"
+				);
+		
+		final File exportArchive = doExport(codeSystemId, config);
+		
+		final Map<String, Boolean> files = ImmutableMap.<String, Boolean>builder()
+				.put("sct2_TextDefinition_Delta-en_INT", false)
+				.put("sct2_TextDefinition_Delta-en_HUN", true)
+				.put("sct2_RelationshipConcreteValues_Delta_INT", false)
+				.put("sct2_RelationshipConcreteValues_Delta_HUN", true)
+				.build();
+		
+		assertArchiveContainsFiles(exportArchive, files);
+		
+	}
+	
+	@Test
+	public void exportRf2WithNamespaceIdConfiguration() throws Exception {
+		
+		final Map<String, Object> codeSystemExportSettings = Map.of(
+				"maintainerType",  Rf2MaintainerType.SNOMED_INTERNATIONAL,
+				"extensionNamespaceId", "370137002",
+				"refSetLayout", Rf2RefSetExportLayout.COMBINED
+				);
+		
+		String codeSystemId = "SNOMEDCT-custom-NRC-rf2-export-config";
+		createCodeSystem(null, branchPath.getPath(), codeSystemId, codeSystemExportSettings).statusCode(201);
+		
+		final Map<String, Object> config = Map.of(
+				"type", Rf2ReleaseType.DELTA.name(),
+				"includeUnpublished", true,
+				"codeSystemId", codeSystemId,
+				"namespaceId", "NRC"
+				);
+		
+		final File exportArchive = doExport(codeSystemId, config);
+		
+		final Map<String, Boolean> files = ImmutableMap.<String, Boolean>builder()
+				.put("sct2_TextDefinition_Delta-en_NRC", true)
+				.put("sct2_RelationshipConcreteValues_Delta_NRC", true)
+				.put("sct2_sRefset_OWLExpressionDelta_NRC", true)
+				.put("sct2_Relationship_Delta_NRC", true)
+				.build();
+		
+		assertArchiveContainsFiles(exportArchive, files);
+		
+	}
+	
+	@Test
 	public void exportRf2WithoutConfiguration() throws Exception {
 		
 		String codeSystemId = "SNOMEDCT-default-rf2-export-config";
