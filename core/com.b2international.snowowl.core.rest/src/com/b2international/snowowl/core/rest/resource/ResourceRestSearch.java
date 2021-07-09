@@ -22,7 +22,7 @@ import com.b2international.snowowl.core.rest.domain.BaseResourceRestSearch;
 /**
  * @since 8.0
  */
-public abstract class ResourceRestSearch extends BaseResourceRestSearch {
+public class ResourceRestSearch extends BaseResourceRestSearch {
 
 	private List<String> branch;
 	
