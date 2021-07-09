@@ -40,8 +40,7 @@ import java.util.stream.Stream;
 
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.validator.constraints.NotEmpty;
-
+import com.b2international.commons.CompareUtils;
 import com.b2international.commons.FileUtils;
 import com.b2international.index.revision.RevisionIndex;
 import com.b2international.snowowl.core.ResourceURI;
@@ -94,6 +93,10 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 
 	private static final String DESCRIPTION_TYPES_EXCEPT_TEXT_DEFINITION = "<<" + Concepts.DESCRIPTION_TYPE_ROOT_CONCEPT + " MINUS " + Concepts.TEXT_DEFINITION;
 	private static final String NON_STATED_CHARACTERISTIC_TYPES = "<<" + Concepts.CHARACTERISTIC_TYPE + " MINUS " + Concepts.STATED_RELATIONSHIP;
+	
+	//default configuration for RF2 export
+	public static final Rf2MaintainerType DEFAULT_MAINTAINER_TYPE = Rf2MaintainerType.SNOMED_INTERNATIONAL;
+	public static final Rf2RefSetExportLayout DEFAULT_RF2_EXPORT_LAYOUT = Rf2RefSetExportLayout.COMBINED;
 
 	private static final long serialVersionUID = 2L;
 
@@ -105,11 +108,9 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 	private Rf2ReleaseType releaseType;
 
 	@JsonProperty
-	@NotNull
 	private Rf2RefSetExportLayout refSetExportLayout;
 
 	@JsonProperty
-	@NotEmpty
 	private String countryNamespaceElement;
 
 	@JsonProperty
@@ -138,6 +139,12 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 
 	@JsonProperty 
 	private boolean extensionOnly;
+	
+	@JsonProperty
+	private String nrcCountryCode;
+	
+	@JsonProperty
+	private Rf2MaintainerType maintainerType;
 	
 	SnomedRf2ExportRequest() {}
 
@@ -216,8 +223,37 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 		this.extensionOnly = extensionOnly;
 	}
 	
+	void setMaintainerType(Rf2MaintainerType maintainerType) {
+		this.maintainerType = maintainerType;
+	}
+	
+	void setNrcCountryCode(String nrcCountryCode) {
+		this.nrcCountryCode = nrcCountryCode;
+	}
+	
+	private String getCountryNamespaceElement(Rf2MaintainerType maintainerType, String nrcCountryCode) {
+		final StringBuilder builder = new StringBuilder();
+		
+		switch (maintainerType) {
+			case NRC:
+				builder.append(nrcCountryCode);
+				break;
+			case OTHER_EXTENSION_PROVIDER:
+				// Nothing to append
+				break;
+			case SNOMED_INTERNATIONAL:
+				builder.append("INT");
+				break;
+			default:
+				break;
+		}
+		
+		return builder.toString();
+	}
+	
 	@Override
 	public Attachment execute(final BranchContext context) {
+
 		final String referenceBranch = context.path();
 		
 		// register export start time for later use
@@ -226,6 +262,39 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 		// Step 1: check if the export reference branch is a working branch path descendant
 		final TerminologyResource referenceCodeSystem = context.service(TerminologyResource.class);
 
+		if (!CompareUtils.isEmpty(referenceCodeSystem.getSettings())) {
+			if (Strings.isNullOrEmpty(countryNamespaceElement)) {
+
+				if (maintainerType == null) {
+
+					String maintainerType = (String) referenceCodeSystem.getSettings().get(SnomedTerminologyComponentConstants.CODESYSTEM_MAINTAINER_TYPE_CONFIG_KEY);
+					String nrcCountryCode = (String) referenceCodeSystem.getSettings().get(SnomedTerminologyComponentConstants.CODESYSTEM_NRC_COUNTRY_CODE_CONFIG_KEY);
+
+					if(!Strings.isNullOrEmpty(maintainerType)) {
+						String customCountryNamespaceElement = getCountryNamespaceElement(Rf2MaintainerType.getByNameIgnoreCase(maintainerType), Strings.nullToEmpty(nrcCountryCode));
+						countryNamespaceElement = customCountryNamespaceElement;
+					}
+				} else {
+					countryNamespaceElement = getCountryNamespaceElement(maintainerType, Strings.nullToEmpty(nrcCountryCode));
+				}
+			}
+
+			if (refSetExportLayout == null && referenceCodeSystem.getSettings().containsKey(SnomedTerminologyComponentConstants.CODESYSTEM_RF2_EXPORT_LAYOUT_CONFIG_KEY)) {
+				String refSetLayout = (String) referenceCodeSystem.getSettings().get(SnomedTerminologyComponentConstants.CODESYSTEM_RF2_EXPORT_LAYOUT_CONFIG_KEY);
+				Rf2RefSetExportLayout rf2RefSetExportLayout = Rf2RefSetExportLayout.getByNameIgnoreCase(refSetLayout);
+
+				refSetExportLayout = rf2RefSetExportLayout;
+			}
+		}
+
+		if (Strings.isNullOrEmpty(countryNamespaceElement)) {
+			countryNamespaceElement = getCountryNamespaceElement(DEFAULT_MAINTAINER_TYPE, "");
+		}
+		
+		if (refSetExportLayout == null) {
+			refSetExportLayout = DEFAULT_RF2_EXPORT_LAYOUT;
+		}
+		
 		// Step 2: retrieve code system versions that are visible from the reference branch
 		final TreeSet<Version> versionsToExport = getAllExportableCodeSystemVersions(context, referenceCodeSystem);
 		

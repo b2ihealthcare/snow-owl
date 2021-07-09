@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,8 +29,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.collect.Lists;
 
-import io.swagger.annotations.ApiModel;
-
 /**
  * {
   // from Element: extension
@@ -40,7 +38,6 @@ import io.swagger.annotations.ApiModel;
  * @see <a href="http://hl7.org/fhir/datatypes.html#CodeableConcept">FHIR:Foundation:Data types</a>
  * @since 6.3
  */
-@ApiModel
 @JsonInclude(Include.NON_NULL)
 @JsonDeserialize(builder = CodeableConcept.Builder.class)
 public class CodeableConcept {

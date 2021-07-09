@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,14 +37,18 @@ public abstract class SnomedExportRestRequests {
 	private SnomedExportRestRequests() {
 	}
 	
-	public static Response export(IBranchPath branchPath, Map<String, ?> exportConfiguration) {
+	public static Response export(String path, Map<String, ?> exportConfiguration) {
 		return givenAuthenticatedRequest(SnomedApiTestConstants.SCT_API)
 			.queryParams(exportConfiguration)
-			.pathParam("path", branchPath.toString())
+			.pathParam("path", path)
 			.get("/{path}/export");
 	}
 	
 	public static File doExport(final IBranchPath branchPath, final Map<String, ?> exportConfiguration) throws Exception {
+		return doExport(branchPath.getPath(), exportConfiguration);
+	}
+	
+	public static File doExport(final String branchPath, final Map<String, ?> exportConfiguration) throws Exception {
 		File tmpDir = null;
 		File exportArchive = null;
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,36 +15,25 @@
  */
 package com.b2international.snowowl.fhir.rest;
 
-import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
-import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
-import static java.net.HttpURLConnection.HTTP_OK;
-
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import com.b2international.commons.Pair;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.model.Bundle;
-import com.b2international.snowowl.fhir.core.model.OperationOutcome;
 import com.b2international.snowowl.fhir.core.model.structuredefinition.StructureDefinition;
 import com.b2international.snowowl.fhir.core.search.FhirFilterParameter;
-import com.b2international.snowowl.fhir.core.search.FhirParameter;
 import com.b2international.snowowl.fhir.core.search.FhirSearchParameter;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * A definition of a FHIR structure. 
@@ -54,7 +43,7 @@ import io.swagger.annotations.ApiResponses;
  * @see <a href="https://www.hl7.org/fhir/structuredefinition.html">StructureDefinition</a>
  * @since 7.1
  */
-@Api(value = "StructureDefinition", description="FHIR StructureDefinition Resource", tags = { "StructureDefinition" })
+@Tag(description = "StructureDefinition", name = "StructureDefinition")
 @RestController //no need for method level @ResponseBody annotations
 @RequestMapping(value="/StructureDefinition", produces = { AbstractFhirResourceController.APPLICATION_FHIR_JSON })
 public class FhirStructureDefinitionController extends AbstractFhirResourceController<StructureDefinition> {
@@ -69,11 +58,12 @@ public class FhirStructureDefinitionController extends AbstractFhirResourceContr
 	 * @param parameters
 	 * @return bundle of {@link StructureDefinition}s
 	 */
-	@ApiOperation(
-		value="Retrieve all structure definitions",
-		notes="Returns a collection of the supported structure definitions.")
+	@Operation(
+		summary="Retrieve all structure definitions",
+		description="Returns a collection of the supported structure definitions."
+	)
 	@ApiResponses({
-		@ApiResponse(code = HTTP_OK, message = "OK")
+		@ApiResponse(responseCode = "200", description = "OK")
 	})
 	@RequestMapping(method=RequestMethod.GET)
 	public Bundle getStructureDefinitions(@RequestParam(required=false) MultiValueMap<String, String> parameters) {
@@ -98,14 +88,14 @@ public class FhirStructureDefinitionController extends AbstractFhirResourceContr
 	 * @param parameters
 	 * @return @link {@link StructureDefinition}
 	 */
-	@ApiOperation(
-		response=StructureDefinition.class,
-		value="Retrieve the structure definition by id",
-		notes="Retrieves the structure definition specified by its logical id.")
+	@Operation(
+		summary="Retrieve the structure definition by id",
+		description="Retrieves the structure definition specified by its logical id."
+	)
 	@ApiResponses({
-		@ApiResponse(code = HTTP_OK, message = "OK"),
-		@ApiResponse(code = HTTP_BAD_REQUEST, message = "Bad request", response = OperationOutcome.class),
-		@ApiResponse(code = HTTP_NOT_FOUND, message = "Structure definition not found", response = OperationOutcome.class)
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "400", description = "Bad request"),
+		@ApiResponse(responseCode = "404", description = "Structure definition not found")
 	})
 	@RequestMapping(value="/{structureDefinitionId:**}", method=RequestMethod.GET)
 	public MappingJacksonValue getStructureDefinition(@PathVariable("structureDefinitionId") String structureDefinitionId, 

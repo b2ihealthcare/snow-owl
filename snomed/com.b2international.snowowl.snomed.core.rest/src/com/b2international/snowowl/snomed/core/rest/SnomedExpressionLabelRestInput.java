@@ -17,16 +17,17 @@ package com.b2international.snowowl.snomed.core.rest;
 
 import java.util.List;
 
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * @since 7.17.0
  */
 public class SnomedExpressionLabelRestInput {
 	
-	@ApiParam
+	@Schema
 	private List<String> expressions;
-	@ApiParam(defaultValue = "fsn", example = "fsn|pt")
+	
+	@Schema(defaultValue = "fsn", example = "fsn|pt")
 	private String descriptionType;
 	
 	public List<String> getExpressions() {

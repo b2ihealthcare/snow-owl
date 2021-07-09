@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.fhir.rest;
 
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Parameter;
 
 /**
  * @since 8.0
@@ -23,10 +23,10 @@ import io.swagger.annotations.ApiParam;
 public class FhirResourceSelectors {
 
 	// content selectors
-	@ApiParam
+	@Parameter
 	private String _summary;
 	
-	@ApiParam
+	@Parameter
 	private String[] _elements;
 	
 	public String[] get_elements() {

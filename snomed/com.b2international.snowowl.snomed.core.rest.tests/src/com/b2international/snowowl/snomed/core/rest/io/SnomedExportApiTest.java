@@ -59,6 +59,7 @@ import com.b2international.snowowl.core.attachments.Attachment;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.attachments.InternalAttachmentRegistry;
 import com.b2international.snowowl.core.branch.BranchPathUtils;
+import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.events.util.Promise;
@@ -71,6 +72,7 @@ import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
+import com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
@@ -191,7 +193,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 	
 	@Test
 	public void incorrectRf2ReleaseType() {
-		export(branchPath, ImmutableMap.of("type", "unknown"))
+		export(branchPath.getPath(), Map.of("type", "unknown"))
 			.then()
 			.statusCode(400);
 	}
@@ -1228,6 +1230,188 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		fileToLinesMap.put(expectedOwlExpressionDeltaFile, Pair.of(true, owlAxiomMemberLine));
 
 		assertArchiveContainsLines(exportArchive, fileToLinesMap);
+	}
+	
+	@Test
+	public void exportRf2WithConfiguration() throws Exception {
+		
+		final Map<String, Object> codeSystemExportSettings = Map.of(
+				"maintainerType",  Rf2MaintainerType.NRC,
+				"nrcCountryCode", "GB",
+				"extensionNamespaceId", "370137002",
+				"refSetLayout", Rf2RefSetExportLayout.COMBINED
+				);
+		
+		String codeSystemId = "SNOMEDCT-custom-rf2-export-config";
+		createCodeSystem(null, branchPath.getPath(), codeSystemId, codeSystemExportSettings).statusCode(201);
+		
+		final Map<String, Object> config = Map.of(
+			"type", Rf2ReleaseType.SNAPSHOT.name(),
+			"includeUnpublished", true,
+			"codeSystemId", codeSystemId
+		);
+		
+		final File exportArchive = doExport(codeSystemId, config);
+		
+		final Map<String, Boolean> files = ImmutableMap.<String, Boolean>builder()
+				.put("der2_sssssssRefset_MRCMDomainSnapshot_GB", true)
+				.put("sct2_Relationship_Snapshot_GB", true)
+				.put("sct2_Description_Snapshot-en_GB", true)
+				.put("der2_sRefset_SimpleMapSnapshot_GB", true)
+				.build();
+			
+		assertArchiveContainsFiles(exportArchive, files);
+		
+	}
+	
+	@Test
+	public void exportRf2WithIntDeltaConfiguration() throws Exception {
+		
+		final Map<String, Object> codeSystemExportSettings = Map.of(
+				"maintainerType",  Rf2MaintainerType.SNOMED_INTERNATIONAL,
+				"nrcCountryCode", "GB",
+				"extensionNamespaceId", "370137002",
+				"refSetLayout", Rf2RefSetExportLayout.COMBINED
+				);
+		
+		String codeSystemId = "SNOMEDCT-custom-int-rf2-export-config";
+		createCodeSystem(null, branchPath.getPath(), codeSystemId, codeSystemExportSettings).statusCode(201);
+		
+		final Map<String, Object> config = Map.of(
+				"type", Rf2ReleaseType.DELTA.name(),
+				"includeUnpublished", true,
+				"codeSystemId", codeSystemId
+				);
+		
+		final File exportArchive = doExport(codeSystemId, config);
+		
+		final Map<String, Boolean> files = ImmutableMap.<String, Boolean>builder()
+				.put("sct2_TextDefinition_Delta-en_INT", true)
+				.put("sct2_RelationshipConcreteValues_Delta_INT", true)
+				.put("sct2_sRefset_OWLExpressionDelta_INT", true)
+				.put("sct2_Relationship_Delta_INT", true)
+				.build();
+		
+		assertArchiveContainsFiles(exportArchive, files);
+		
+	}
+	
+	@Test
+	public void exportRf2WithFullConfiguration() throws Exception {
+		
+		final Map<String, Object> codeSystemExportSettings = Map.of(
+				"maintainerType",  Rf2MaintainerType.SNOMED_INTERNATIONAL,
+				"nrcCountryCode", "GB",
+				"extensionNamespaceId", "370137002",
+				"refSetLayout", Rf2RefSetExportLayout.COMBINED
+				);
+		
+		String codeSystemId = "SNOMEDCT-custom-full-rf2-export-config";
+		createCodeSystem(null, branchPath.getPath(), codeSystemId, codeSystemExportSettings).statusCode(201);
+		
+		final Map<String, Object> config = Map.of(
+				"type", Rf2ReleaseType.FULL.name(),
+				"includeUnpublished", true,
+				"codeSystemId", codeSystemId
+				);
+		
+		final File exportArchive = doExport(codeSystemId, config);
+		
+		final Map<String, Boolean> files = ImmutableMap.<String, Boolean>builder()
+				.put("sct2_TextDefinition_Full-en_INT", true)
+				.put("sct2_RelationshipConcreteValues_Full_INT", true)
+				.put("sct2_sRefset_OWLExpressionFull_INT", true)
+				.put("sct2_Relationship_Full_INT", true)
+				.build();
+		
+		assertArchiveContainsFiles(exportArchive, files);
+		
+	}
+	
+	@Test
+	public void exportRf2WithNamespaceIdAndNrcCodeConfiguration() throws Exception {
+		
+		final Map<String, Object> codeSystemExportSettings = Map.of(
+				"maintainerType",  Rf2MaintainerType.SNOMED_INTERNATIONAL,
+				"extensionNamespaceId", "370137002",
+				"nrcCountryCode", "GB",
+				"refSetLayout", Rf2RefSetExportLayout.COMBINED
+				);
+		
+		String codeSystemId = "SNOMEDCT-custom-Nrc-GB-rf2-export-config";
+		createCodeSystem(null, branchPath.getPath(), codeSystemId, codeSystemExportSettings).statusCode(201);
+		
+		final Map<String, Object> config = Map.of(
+				"type", Rf2ReleaseType.DELTA.name(),
+				"includeUnpublished", true,
+				"codeSystemId", codeSystemId,
+				"namespaceId", "HUN"
+				);
+		
+		final File exportArchive = doExport(codeSystemId, config);
+		
+		final Map<String, Boolean> files = ImmutableMap.<String, Boolean>builder()
+				.put("sct2_TextDefinition_Delta-en_INT", false)
+				.put("sct2_TextDefinition_Delta-en_HUN", true)
+				.put("sct2_RelationshipConcreteValues_Delta_INT", false)
+				.put("sct2_RelationshipConcreteValues_Delta_HUN", true)
+				.build();
+		
+		assertArchiveContainsFiles(exportArchive, files);
+		
+	}
+	
+	@Test
+	public void exportRf2WithNamespaceIdConfiguration() throws Exception {
+		
+		final Map<String, Object> codeSystemExportSettings = Map.of(
+				"maintainerType",  Rf2MaintainerType.SNOMED_INTERNATIONAL,
+				"extensionNamespaceId", "370137002",
+				"refSetLayout", Rf2RefSetExportLayout.COMBINED
+				);
+		
+		String codeSystemId = "SNOMEDCT-custom-NRC-rf2-export-config";
+		createCodeSystem(null, branchPath.getPath(), codeSystemId, codeSystemExportSettings).statusCode(201);
+		
+		final Map<String, Object> config = Map.of(
+				"type", Rf2ReleaseType.DELTA.name(),
+				"includeUnpublished", true,
+				"codeSystemId", codeSystemId,
+				"namespaceId", "NRC"
+				);
+		
+		final File exportArchive = doExport(codeSystemId, config);
+		
+		final Map<String, Boolean> files = ImmutableMap.<String, Boolean>builder()
+				.put("sct2_TextDefinition_Delta-en_NRC", true)
+				.put("sct2_RelationshipConcreteValues_Delta_NRC", true)
+				.put("sct2_sRefset_OWLExpressionDelta_NRC", true)
+				.put("sct2_Relationship_Delta_NRC", true)
+				.build();
+		
+		assertArchiveContainsFiles(exportArchive, files);
+		
+	}
+	
+	@Test
+	public void exportRf2WithoutConfiguration() throws Exception {
+		
+		String codeSystemId = "SNOMEDCT-default-rf2-export-config";
+		createCodeSystem(branchPath, codeSystemId).statusCode(201);
+		
+		CodeSystem codeSystem = CodeSystemRestRequests.getCodeSystem(codeSystemId).extract().as(CodeSystem.class);
+		
+		final File exportArchive = doExport(codeSystemId, codeSystem.getSettings());
+		
+		final Map<String, Boolean> files = ImmutableMap.<String, Boolean>builder()
+				.put("der2_sssssssRefset_MRCMDomainSnapshot_INT", true)
+				.put("sct2_Relationship_Snapshot_INT", true)
+				.put("sct2_Description_Snapshot-en_INT", true)
+				.put("der2_sRefset_SimpleMapSnapshot_INT", true)
+				.build();
+			
+		assertArchiveContainsFiles(exportArchive, files);
+		
 	}
 	
 	private static String getLanguageRefsetMemberId(IBranchPath branchPath, String descriptionId, String languageRefsetId) {

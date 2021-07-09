@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 package com.b2international.snowowl.snomed.core.domain;
+
+import static com.google.common.base.Strings.nullToEmpty;
+
+import com.b2international.commons.exceptions.BadRequestException;
 
 /**
  * Enumerates organization types responsible for developing and maintaining RF2 release file content.
@@ -41,5 +45,14 @@ public enum Rf2MaintainerType {
 	@Override
 	public String toString() {
 		return displayLabel;
+	}
+	
+	public static Rf2MaintainerType getByNameIgnoreCase(String name) {
+		for (final Rf2MaintainerType type : values()) {
+			if (nullToEmpty(name).equalsIgnoreCase(type.name())) {
+				return type;
+			}
+		}
+		throw new BadRequestException("Unknown RF2 refset maintainer type '%s'.", name);
 	}
 }
