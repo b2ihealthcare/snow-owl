@@ -183,7 +183,7 @@ public class FhirCodeSystemValidateCodeOperationController extends AbstractFhirC
 	/**
 	 * POST-based $validate-code end-point.
 	 * All parameters are in the request body, except the codeSystemId
-	 * @param bodyn - FHIR parameters
+	 * @param body - FHIR parameters
 	 * @return out - FHIR parameters
 	 */
 	@Operation(
