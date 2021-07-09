@@ -2,7 +2,7 @@ package scripts
 
 import java.util.stream.Collectors
 
-import com.b2international.commons.options.Options
+import com.b2international.commons.options.OptionsBuilder
 import com.b2international.index.aggregations.Aggregation
 import com.b2international.index.aggregations.AggregationBuilder
 import com.b2international.index.query.Expressions
@@ -42,7 +42,7 @@ Set<String> synonymAndSubtypesIds = SnomedRequests.prepareGetSynonyms()
 	
 def pendingMoveDescriptions = SnomedRequests.prepareSearchMember()
 	.filterByRefSet(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR)
-	.filterByProps(Options.builder()
+	.filterByProps(OptionsBuilder.newBuilder()
 			.put(SnomedRf2Headers.FIELD_VALUE_ID, Concepts.PENDING_MOVE)
 			.build())
 	.filterByActive(true)
