@@ -29,7 +29,10 @@ import org.eclipse.xtext.serializer.ISerializer;
 import org.eclipse.xtext.validation.IResourceValidator;
 import org.junit.Test;
 
+import com.b2international.snomed.ecl.EclStandaloneSetup;
 import com.b2international.snowowl.core.ComponentIdentifier;
+import com.b2international.snowowl.core.TerminologyResource;
+import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.validation.ValidationRequests;
 import com.b2international.snowowl.core.validation.eval.ValidationRuleEvaluator;
 import com.b2international.snowowl.core.validation.issue.ValidationIssues;
@@ -43,7 +46,6 @@ import com.b2international.snowowl.snomed.core.ecl.EclSerializer;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.b2international.snomed.ecl.EclStandaloneSetup;
 import com.b2international.snowowl.test.commons.SnomedContentRule;
 import com.b2international.snowowl.test.commons.snomed.RandomSnomedIdentiferGenerator;
 import com.b2international.snowowl.test.commons.snomed.TestBranchContext.Builder;
@@ -76,7 +78,13 @@ public class SnomedQueryValidationRuleEvaluatorTest extends BaseValidationTest {
 	@Override
 	protected void configureContext(Builder context) {
 		super.configureContext(context);
+		
+		final CodeSystem cs = new CodeSystem();
+		cs.setBranchPath(MAIN);
+		cs.setId(SnomedContentRule.SNOMEDCT_ID);
+
 		context
+			.with(TerminologyResource.class, cs)
 			.with(EclParser.class, new DefaultEclParser(INJECTOR.getInstance(IParser.class), INJECTOR.getInstance(IResourceValidator.class)))
 			.with(EclSerializer.class, new DefaultEclSerializer(INJECTOR.getInstance(ISerializer.class)));
 	

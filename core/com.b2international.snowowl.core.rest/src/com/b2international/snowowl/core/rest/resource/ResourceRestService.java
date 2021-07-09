@@ -70,6 +70,7 @@ public class ResourceRestService extends AbstractRestService {
 				.filterByTitle(params.getTitle())
 				.filterByToolingIds(params.getToolingId())
 				.filterByBundleIds(params.getBundleId())
+				.filterByStatus(params.getStatus())
 				.setLimit(params.getLimit())
 				.setExpand(params.getExpand())
 				.setSearchAfter(params.getSearchAfter())

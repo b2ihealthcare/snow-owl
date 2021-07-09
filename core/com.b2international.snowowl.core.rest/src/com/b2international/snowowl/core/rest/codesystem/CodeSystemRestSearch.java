@@ -17,46 +17,24 @@ package com.b2international.snowowl.core.rest.codesystem;
 
 import java.util.List;
 
-import com.b2international.snowowl.core.rest.domain.ObjectRestSearch;
+import com.b2international.snowowl.core.rest.resource.ResourceRestSearch;
 
 import io.swagger.annotations.ApiParam;
 
 /**
  * @since 7.6.0
  */
-public final class CodeSystemRestSearch extends ObjectRestSearch {
+public final class CodeSystemRestSearch extends ResourceRestSearch {
 
 	@ApiParam
-	private String title;
-	
-	@ApiParam
 	private List<String> oid;
-	
-	@ApiParam
-	private List<String> toolingId;
 	
 	public List<String> getOid() {
 		return oid;
 	}
 	
-	public String getTitle() {
-		return title;
-	}
-	
-	public List<String> getToolingId() {
-		return toolingId;
-	}
-	
 	public void setOid(List<String> oid) {
 		this.oid = oid;
-	}
-	
-	public void setTitle(String title) {
-		this.title = title;
-	}
-	
-	public void setToolingId(List<String> toolingId) {
-		this.toolingId = toolingId;
 	}
 	
 }

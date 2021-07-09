@@ -205,6 +205,14 @@ public final class ResourceDocument extends RevisionDocument {
 		public static Expression oids(Iterable<String> oids) {
 			return matchAny(Fields.OID, oids);
 		}
+
+		public static Expression status(String status) {
+			return exactMatch(Fields.STATUS, status);
+		}
+
+		public static Expression statuses(Iterable<String> status) {
+			return matchAny(Fields.STATUS, status);
+		}
 		
 		public static Expression extensionOf(Iterable<ResourceURI> extensionOfs) {
 			return matchAny(Fields.EXTENSION_OF, Collections3.toImmutableSet(extensionOfs).stream().map(ResourceURI::toString).collect(Collectors.toSet()));

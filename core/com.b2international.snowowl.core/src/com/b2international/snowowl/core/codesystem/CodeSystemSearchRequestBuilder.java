@@ -38,14 +38,6 @@ public final class CodeSystemSearchRequestBuilder extends BaseResourceSearchRequ
 		return addOption(OptionKey.TOOLING_ID, toolingIds);
 	}
 	
-	public CodeSystemSearchRequestBuilder filterByOid(String oid) {
-		return addOption(OptionKey.OID, oid);
-	}
-
-	public CodeSystemSearchRequestBuilder filterByOids(Iterable<String> oids) {
-		return addOption(OptionKey.OID, oids);
-	}
-	
 	public CodeSystemSearchRequestBuilder filterByUpgradeOf(ResourceURI upgradeOf) {
 		return addOption(OptionKey.UPGRADE_OF, upgradeOf);
 	}

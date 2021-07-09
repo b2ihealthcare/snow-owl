@@ -35,6 +35,7 @@ import org.junit.runners.Parameterized;
 
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.codesystem.CodeSystem;
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.core.validation.issue.ValidationIssue;
 import com.b2international.snowowl.core.validation.issue.ValidationIssues;
@@ -73,8 +74,7 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 
 		ValidationIssues issues = validate(ruleId);
 		ComponentURI componentURI = issues.stream().map(issue -> issue.getAffectedComponentURI()).findFirst().orElse(null);
-		assertThat(componentURI)
-			.isEqualTo(ComponentURI.of(CODESYSTEM, SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship.getId()));
+		assertThat(componentURI).isEqualTo(ComponentURI.of(CodeSystem.uri(CODESYSTEM), SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship.getId()));
 	}
 
 	
