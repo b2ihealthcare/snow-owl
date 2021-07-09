@@ -23,7 +23,7 @@ import com.b2international.snowowl.snomed.core.domain.refset.QueryRefSetMemberEv
 /**
  * @since 4.5
  */
-public final class QueryRefSetMemberEvaluationRequestBuilder extends IndexResourceRequestBuilder<QueryRefSetMemberEvaluationRequestBuilder, BranchContext, QueryRefSetMemberEvaluation> {
+public final class QueryRefSetMemberEvaluationRequestBuilder extends IndexResourceRequestBuilder<QueryRefSetMemberEvaluationRequestBuilder, BranchContext, QueryRefSetMemberEvaluation> implements SnomedContentRequestBuilder<QueryRefSetMemberEvaluation> {
 
 	private String memberId;
 
