@@ -17,7 +17,7 @@ package com.b2international.snowowl.snomed.core.rest.domain;
 
 import com.b2international.snowowl.core.rest.domain.ObjectRestSearch;
 
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Parameter;
 
 /**
  * @since 6.16
@@ -25,42 +25,42 @@ import io.swagger.annotations.ApiParam;
 public final class SnomedConceptRestSearch extends ObjectRestSearch {
 
 	// concept filters
-	@ApiParam(value = "The effective time to match (yyyyMMdd, exact matches only)")
+	@Parameter(description = "The effective time to match (yyyyMMdd, exact matches only)")
 	private String effectiveTime;
 
-	@ApiParam(value = "The concept status to match")
+	@Parameter(description = "The concept status to match")
 	private Boolean active = null;
-	@ApiParam(value = "The concept module identifier to match")
+	@Parameter(description = "The concept module identifier to match")
 	private String module;
-	@ApiParam(value = "The definition status to match")
+	@Parameter(description = "The definition status to match")
 	private String definitionStatus;
-	@ApiParam(value = "The namespace to match")
+	@Parameter(description = "The namespace to match")
 	private String namespace;
 
 	// query expressions
-	@ApiParam(value = "The ECL expression to match on the inferred form")
+	@Parameter(description = "The ECL expression to match on the inferred form")
 	private String ecl;
-	@ApiParam(value = "The ECL expression to match on the stated form")
+	@Parameter(description = "The ECL expression to match on the stated form")
 	private String statedEcl;
 
 	// description filters
-	@ApiParam(value = "Description semantic tag(s) to match")
+	@Parameter(description = "Description semantic tag(s) to match")
 	private String[] semanticTag;
-	@ApiParam(value = "The description term to match")
+	@Parameter(description = "The description term to match")
 	private String term;
-	@ApiParam(value = "Description type ECL expression to match")
+	@Parameter(description = "Description type ECL expression to match")
 	private String descriptionType;
 
 	// hiearchy filters
-	@ApiParam(value = "The inferred parent(s) to match")
+	@Parameter(description = "The inferred parent(s) to match")
 	private String[] parent;
-	@ApiParam(value = "The inferred ancestor(s) to match")
+	@Parameter(description = "The inferred ancestor(s) to match")
 	private String[] ancestor;
-	@ApiParam(value = "The stated parent(s) to match")
+	@Parameter(description = "The stated parent(s) to match")
 	private String[] statedParent;
-	@ApiParam(value = "The stated ancestor(s) to match")
+	@Parameter(description = "The stated ancestor(s) to match")
 	private String[] statedAncestor;
-	@ApiParam(value = "doi (degree-of-interest-based scoring)")
+	@Parameter(description = "doi (degree-of-interest-based scoring)")
 	private Boolean doi = null;
 
 	public Boolean getActive() {

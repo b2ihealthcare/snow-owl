@@ -42,7 +42,6 @@
         <setEntry value="ch.qos.logback.classic@default:default"/>
         <setEntry value="ch.qos.logback.core@default:default"/>
         <setEntry value="com.b2international.snomed.ecl@default:default"/>
-        <setEntry value="com.b2international.snomed.ql@default:default"/>
         <setEntry value="com.diffplug.osgi.extension.sun.misc@default:false"/>
         <setEntry value="com.diffplug.osgi.extension.sun.reflect@default:false"/>
         <setEntry value="com.fasterxml.classmate@default:default"/>

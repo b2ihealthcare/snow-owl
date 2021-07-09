@@ -18,11 +18,8 @@ package com.b2international.snowowl.core.rest.resource;
 import java.util.List;
 import java.util.Set;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springdoc.api.annotations.ParameterObject;
+import org.springframework.web.bind.annotation.*;
 
 import com.b2international.index.revision.Commit;
 import com.b2international.snowowl.core.Resource;
@@ -35,19 +32,18 @@ import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
-import com.b2international.snowowl.core.rest.RestApiError;
 import com.google.common.base.Strings;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * @since 8.0
  */
-@Api(value = "Resources", description = "Resources", tags = { "resources" })
+@Tag(description = "Resources", name = "resources")
 @RestController
 @RequestMapping("/resources")
 public class ResourceRestService extends AbstractRestService {
@@ -56,12 +52,14 @@ public class ResourceRestService extends AbstractRestService {
 		super(Commit.Fields.ALL);
 	}
 
-	@ApiOperation(value = "Retrive Resources", notes = "Returns a collection resource containing all/filtered registered Resources."
+	@Operation(
+		summary = "Retrive Resources", 
+		description = "Returns a collection resource containing all/filtered registered Resources."
 			+ "<p>Results are by default sorted by ID.")
-	@ApiResponses({ @ApiResponse(code = 200, message = "OK", response = Resources.class),
-			@ApiResponse(code = 400, message = "Bad Request", response = RestApiError.class) })
+	@ApiResponses({ @ApiResponse(responseCode = "200", description = "OK"),
+			@ApiResponse(responseCode = "400", description = "Bad Request") })
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public Promise<Resources> searchByGet(final ResourceRestSearch params) {
+	public Promise<Resources> searchByGet(@ParameterObject final ResourceRestSearch params) {
 		return ResourceRequests
 				.prepareSearch()
 				.filterByIds(params.getId())
@@ -79,67 +77,81 @@ public class ResourceRestService extends AbstractRestService {
 				.execute(getBus());
 	}
 
-	@ApiOperation(value = "Retrieve resource by it's unique identifier", notes = "Returns generic information about a single resource associated to the given unique identifier.")
-	@ApiResponses({ @ApiResponse(code = 200, message = "OK"), @ApiResponse(code = 404, message = "Not Found", response = RestApiError.class) })
+	@Operation(
+		summary = "Retrieve resource by it's unique identifier", 
+		description = "Returns generic information about a single resource associated to the given unique identifier."
+	)
+	@ApiResponses({ 
+		@ApiResponse(responseCode = "200", description = "OK"), 
+		@ApiResponse(responseCode = "404", description = "Not Found") 
+	})
 	@GetMapping(value = "/{resourceId}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public Promise<Resource> get(@ApiParam(value = "The resource identifier") @PathVariable(value = "resourceId") final String resourceId) {
+	public Promise<Resource> get(
+			@Parameter(description = "The resource identifier") 
+			@PathVariable(value = "resourceId") 
+			final String resourceId) {
 		return ResourceRequests
 				.prepareGet(resourceId)
 				.buildAsync()
 				.execute(getBus());
 	}
 
-	@ApiOperation(value = "Retrive all resource commits", notes = "Returns a collection, that contains all/filtered resource commits")
-	@ApiResponses({ @ApiResponse(code = 200, message = "OK", response = CommitInfos.class),
-			@ApiResponse(code = 400, message = "Bad Request", response = RestApiError.class) })
+	@Operation(
+		summary = "Retrive all resource commits", 
+		description = "Returns a collection, that contains all/filtered resource commits")
+	@ApiResponses({ 
+		@ApiResponse(responseCode = "200", description = "OK"),
+		@ApiResponse(responseCode = "400", description = "Bad Request") 
+	})
 	@GetMapping(value = "/commits", produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public Promise<CommitInfos> searchCommits(@ApiParam(value = "The author of the commit to match")
-	@RequestParam(value="author", required=false)
-	final String author,
+	public Promise<CommitInfos> searchCommits(
+			@Parameter(description = "The author of the commit to match")
+			@RequestParam(value="author", required=false)
+			final String author,
 	
-	@ApiParam(value = "The identifier(s) to match")
-	@RequestParam(value="id", required=false)
-	final Set<String> id,
+			@Parameter(description = "The identifier(s) to match")
+			@RequestParam(value="id", required=false)
+			final Set<String> id,
 	
-	@ApiParam(value = "Affected component identifier to match")
-	@RequestParam(value="affectedComponentId", required=false)
-	final String affectedComponentId,
+			@Parameter(description = "Affected component identifier to match")
+			@RequestParam(value="affectedComponentId", required=false)
+			final String affectedComponentId,
+			
+			@Parameter(description = "Commit comment term to match")
+			@RequestParam(value="comment", required=false)
+			final String comment,
+			
+			@Parameter(description = "One or more branch paths to match")
+			@RequestParam(value="branch", required=false)
+			final List<String> branch,
+			
+			@Parameter(description = "Commit timestamp to match")
+			@RequestParam(value="timestamp", required=false)
+			final Long timestamp,
+			
+			@Parameter(description = "Minimum commit timestamp to search matches from")
+			@RequestParam(value="timestampFrom", required=false)
+			final Long timestampFrom,
+			
+			@Parameter(description = "Maximum commit timestamp to search matches to")
+			@RequestParam(value="timestampTo", required=false)
+			final Long timestampTo,
 	
-	@ApiParam(value = "Commit comment term to match")
-	@RequestParam(value="comment", required=false)
-	final String comment,
+			@Parameter(description = "Expansion parameters")
+			@RequestParam(value="expand", required=false)
+			final String expand,
+			
+			@Parameter(description = "The search key to use for retrieving the next page of results")
+			@RequestParam(value="searchAfter", required=false)
+			final String searchAfter,
+			
+			@Parameter(description = "Sort keys")
+			@RequestParam(value="sort", required=false)
+			final List<String> sort,
 	
-	@ApiParam(value = "One or more branch paths to match")
-	@RequestParam(value="branch", required=false)
-	final List<String> branch,
-	
-	@ApiParam(value = "Commit timestamp to match")
-	@RequestParam(value="timestamp", required=false)
-	final Long timestamp,
-	
-	@ApiParam(value = "Minimum commit timestamp to search matches from")
-	@RequestParam(value="timestampFrom", required=false)
-	final Long timestampFrom,
-	
-	@ApiParam(value = "Maximum commit timestamp to search matches to")
-	@RequestParam(value="timestampTo", required=false)
-	final Long timestampTo,
-	
-	@ApiParam(value = "Expansion parameters")
-	@RequestParam(value="expand", required=false)
-	final String expand,
-	
-	@ApiParam(value = "The search key to use for retrieving the next page of results")
-	@RequestParam(value="searchAfter", required=false)
-	final String searchAfter,
-	
-	@ApiParam(value = "Sort keys")
-	@RequestParam(value="sort", required=false)
-	final List<String> sort,
-	
-	@ApiParam(value = "The maximum number of items to return", defaultValue = "50")
-	@RequestParam(value="limit", defaultValue="50", required=false) 
-	final int limit) {
+			@Parameter(description = "The maximum number of items to return")
+			@RequestParam(value="limit", defaultValue="50", required=false) 
+			final int limit) {
 		 Request<RepositoryContext, CommitInfos> req = RepositoryRequests
 				.commitInfos()
 				.prepareSearchCommitInfo()

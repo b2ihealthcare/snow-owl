@@ -21,11 +21,7 @@ import static com.google.common.collect.Lists.newArrayListWithExpectedSize;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import com.b2international.commons.reflect.Reflections;
 import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
@@ -46,8 +42,7 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * Class to represent a list of FHIR parameters.
@@ -88,7 +83,6 @@ import io.swagger.annotations.ApiModelProperty;
 }
  * @since 6.4
  */
-@ApiModel("Parameters")
 public final class Parameters {
 
 	private final List<Parameter> parameters;
@@ -178,7 +172,7 @@ public final class Parameters {
 		
 	}
 	
-	@ApiModel("Parameters")
+	@Schema(name = "Parameters")
 	@JsonSerialize(using = Parameters.Fhir.Ser.class)
 	@JsonDeserialize(using = Parameters.Fhir.Deser.class)
 	public static final class Fhir {
@@ -204,7 +198,7 @@ public final class Parameters {
 				.findFirst();
 		}
 		
-		@ApiModelProperty("parameter")
+		@Schema(name = "parameter")
 		public List<Parameter> getParameters() {
 			return parameters.getParameters();
 		} 

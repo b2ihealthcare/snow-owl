@@ -603,20 +603,6 @@ Visit us at http://b2i.sg
          unpack="false"/>
 
    <plugin
-         id="io.swagger.annotations"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="io.swagger.models"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
          id="jcl.over.slf4j"
          download-size="0"
          install-size="0"
@@ -814,6 +800,20 @@ Visit us at http://b2i.sg
 
    <plugin
          id="org.apache.commons.io"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="io.swagger.core.v3.swagger-annotations"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="io.swagger.core.v3.swagger-models"
          download-size="0"
          install-size="0"
          version="0.0.0"

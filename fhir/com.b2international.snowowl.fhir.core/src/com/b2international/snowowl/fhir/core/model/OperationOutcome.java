@@ -22,8 +22,6 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import io.swagger.annotations.ApiModel;
-
 /**
  *  "resourceType" : "OperationOutcome",
  * // from Resource: id, meta, implicitRules, and language
@@ -41,7 +39,6 @@ import io.swagger.annotations.ApiModel;
  * @see <a href="http://hl7.org/fhir/operationoutcome.html">FHIR:OperationOutcome</a>
  * @since 6.3
  */
-@ApiModel("Operation outcome")
 public final class OperationOutcome {
 	
 	@JsonProperty

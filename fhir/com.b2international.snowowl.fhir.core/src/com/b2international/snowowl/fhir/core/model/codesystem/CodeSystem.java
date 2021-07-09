@@ -40,8 +40,6 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableSet;
 
-import io.swagger.annotations.ApiModel;
-
 /**
  * This class represents a FHIR code system. The CodeSystem resource is used to
  * declare the existence of a code system, and its key properties:
@@ -59,7 +57,6 @@ import io.swagger.annotations.ApiModel;
  * @see <a href="https://www.hl7.org/fhir/codesystem.html">FHIR:CodeSystem</a>
  * @since 6.3
  */
-@ApiModel("CodeSystem")
 public class CodeSystem extends MetadataResource {
 
 	private static final long serialVersionUID = 1L;

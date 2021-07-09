@@ -31,16 +31,16 @@ import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.google.common.base.Strings;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * @since 7.0
  */
-@Api(value = "Commits", description = "Commits", tags = "commits")
+@Tag(description = "Commits", name = "commits")
 @RequestMapping(value="/commits")
 public abstract class RepositoryCommitRestService extends AbstractRestService {
 
@@ -51,60 +51,60 @@ public abstract class RepositoryCommitRestService extends AbstractRestService {
 		this.repositoryId = repositoryId;
 	}
 	
-	@ApiOperation(
-		value = "Retrieve commit entries",
-		notes = "Returns all SNOMED CT commits"
+	@Operation(
+		summary = "Retrieve commit entries",
+		description = "Returns all SNOMED CT commits"
 	)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK", response=CommitInfos.class)
+		@ApiResponse(responseCode = "200", description = "OK")
 	})
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public Promise<CommitInfos> search(
-			@ApiParam(value = "The author of the commit to match")
+			@Parameter(description = "The author of the commit to match")
 			@RequestParam(value="author", required=false)
 			final String author,
 			
-			@ApiParam(value = "The identifier(s) to match")
+			@Parameter(description = "The identifier(s) to match")
 			@RequestParam(value="id", required=false)
 			final Set<String> id,
 			
-			@ApiParam(value = "Affected component identifier to match")
+			@Parameter(description = "Affected component identifier to match")
 			@RequestParam(value="affectedComponentId", required=false)
 			final String affectedComponentId,
 			
-			@ApiParam(value = "Commit comment term to match")
+			@Parameter(description = "Commit comment term to match")
 			@RequestParam(value="comment", required=false)
 			final String comment,
 			
-			@ApiParam(value = "One or more branch paths to match")
+			@Parameter(description = "One or more branch paths to match")
 			@RequestParam(value="branch", required=false)
 			final List<String> branch,
 			
-			@ApiParam(value = "Commit timestamp to match")
+			@Parameter(description = "Commit timestamp to match")
 			@RequestParam(value="timestamp", required=false)
 			final Long timestamp,
 			
-			@ApiParam(value = "Minimum commit timestamp to search matches from")
+			@Parameter(description = "Minimum commit timestamp to search matches from")
 			@RequestParam(value="timestampFrom", required=false)
 			final Long timestampFrom,
 			
-			@ApiParam(value = "Maximum commit timestamp to search matches to")
+			@Parameter(description = "Maximum commit timestamp to search matches to")
 			@RequestParam(value="timestampTo", required=false)
 			final Long timestampTo,
 			
-			@ApiParam(value = "Expansion parameters")
+			@Parameter(description = "Expansion parameters")
 			@RequestParam(value="expand", required=false)
 			final String expand,
 			
-			@ApiParam(value = "The search key to use for retrieving the next page of results")
+			@Parameter(description = "The search key to use for retrieving the next page of results")
 			@RequestParam(value="searchAfter", required=false)
 			final String searchAfter,
 			
-			@ApiParam(value = "Sort keys")
+			@Parameter(description = "Sort keys")
 			@RequestParam(value="sort", required=false)
 			final List<String> sort,
 			
-			@ApiParam(value = "The maximum number of items to return", defaultValue = "50")
+			@Parameter(description = "The maximum number of items to return")
 			@RequestParam(value="limit", defaultValue="50", required=false) 
 			final int limit) {
 		return RepositoryRequests
@@ -126,20 +126,20 @@ public abstract class RepositoryCommitRestService extends AbstractRestService {
 					.execute(getBus());
 	}
 	
-	@ApiOperation(
-		value = "Retrieve a commit",
-		notes = "Returns a single commit entry from SNOMED CT commits"
+	@Operation(
+		summary = "Retrieve a commit",
+		description = "Returns a single commit entry from SNOMED CT commits"
 	)
 	@ApiResponses({
-		@ApiResponse(code = 200, message = "OK")
+		@ApiResponse(responseCode = "200", description = "OK")
 	})
 	@GetMapping(value = "/{commitId}", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public Promise<CommitInfo> get(
-			@ApiParam(value = "Commit ID to match")
+			@Parameter(description = "Commit ID to match")
 			@PathVariable(value="commitId")
 			final String commitId, 
 			
-			@ApiParam(value = "Expansion parameters")
+			@Parameter(description = "Expansion parameters")
 			@RequestParam(value="expand", required=false)
 			final String expand) {
 		return RepositoryRequests

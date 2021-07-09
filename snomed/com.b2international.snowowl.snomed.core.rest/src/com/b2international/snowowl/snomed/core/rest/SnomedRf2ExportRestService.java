@@ -38,12 +38,16 @@ import com.b2international.snowowl.snomed.core.rest.domain.SnomedRf2ExportConfig
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * @since 7.5
  */
-@Api(value = "Export", description="Export", tags = "export")
+@Tag(description="Export", name = "export")
 @Controller
 @RequestMapping(value="/{path:**}/export")
 public class SnomedRf2ExportRestService extends AbstractRestService {
@@ -51,22 +55,22 @@ public class SnomedRf2ExportRestService extends AbstractRestService {
 	@Autowired
 	private AttachmentRegistry attachments;
 	
-	@ApiOperation(
-		value="Export SNOMED CT content to RF2", 
-		notes="Exports SNOMED CT content from the given branch to RF2."
+	@Operation(
+		summary="Export SNOMED CT content to RF2", 
+		description="Exports SNOMED CT content from the given branch to RF2."
 	)
 	@ApiResponses({
-		@ApiResponse(code=200, message="OK")
+		@ApiResponse(responseCode="200", description="OK")
 	})
 	@GetMapping
 	public @ResponseBody ResponseEntity<?> export(
-			@ApiParam(value = "The branch path", required = true)
+			@Parameter(description = "The branch path", required = true)
 			@PathVariable(value="path")
 			final String branch,
 
 			final SnomedRf2ExportConfiguration params,
 			
-			@ApiParam(value = "Accepted language tags, in order of preference")
+			@Parameter(description = "Accepted language tags, in order of preference")
 			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 		

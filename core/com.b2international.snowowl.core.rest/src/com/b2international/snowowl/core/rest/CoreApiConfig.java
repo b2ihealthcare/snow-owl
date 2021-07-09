@@ -15,10 +15,9 @@
  */
 package com.b2international.snowowl.core.rest;
 
+import org.springdoc.core.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import springfox.documentation.spring.web.plugins.Docket;
 
 /**
  * @since 8.0
@@ -32,7 +31,7 @@ public class CoreApiConfig extends BaseApiConfig {
 	}
 	
 	@Bean
-	public Docket codeSystemDocs() {
+	public GroupedOpenApi codeSystemDocs() {
 		return docs(
 			getApiBaseUrl(),
 			"core",
