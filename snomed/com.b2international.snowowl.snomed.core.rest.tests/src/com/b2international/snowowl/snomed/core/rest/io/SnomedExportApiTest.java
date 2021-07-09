@@ -1265,6 +1265,70 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 	}
 	
 	@Test
+	public void exportRf2WithIntDeltaConfiguration() throws Exception {
+		
+		final Map<String, Object> codeSystemExportSettings = Map.of(
+				"maintainerType",  Rf2MaintainerType.SNOMED_INTERNATIONAL,
+				"nrcCountryCode", "GB",
+				"extensionNamespaceId", "370137002",
+				"refSetLayout", Rf2RefSetExportLayout.COMBINED
+				);
+		
+		String codeSystemId = "SNOMEDCT-custom-int-rf2-export-config";
+		createCodeSystem(null, branchPath.getPath(), codeSystemId, codeSystemExportSettings).statusCode(201);
+		
+		final Map<String, Object> config = Map.of(
+				"type", Rf2ReleaseType.DELTA.name(),
+				"includeUnpublished", true,
+				"codeSystemId", codeSystemId
+				);
+		
+		final File exportArchive = doExport(codeSystemId, config);
+		
+		final Map<String, Boolean> files = ImmutableMap.<String, Boolean>builder()
+				.put("sct2_TextDefinition_Delta-en_INT", true)
+				.put("sct2_RelationshipConcreteValues_Delta_INT", true)
+				.put("sct2_sRefset_OWLExpressionDelta_INT", true)
+				.put("sct2_Relationship_Delta_INT", true)
+				.build();
+		
+		assertArchiveContainsFiles(exportArchive, files);
+		
+	}
+	
+	@Test
+	public void exportRf2WithFullConfiguration() throws Exception {
+		
+		final Map<String, Object> codeSystemExportSettings = Map.of(
+				"maintainerType",  Rf2MaintainerType.SNOMED_INTERNATIONAL,
+				"nrcCountryCode", "GB",
+				"extensionNamespaceId", "370137002",
+				"refSetLayout", Rf2RefSetExportLayout.COMBINED
+				);
+		
+		String codeSystemId = "SNOMEDCT-custom-full-rf2-export-config";
+		createCodeSystem(null, branchPath.getPath(), codeSystemId, codeSystemExportSettings).statusCode(201);
+		
+		final Map<String, Object> config = Map.of(
+				"type", Rf2ReleaseType.FULL.name(),
+				"includeUnpublished", true,
+				"codeSystemId", codeSystemId
+				);
+		
+		final File exportArchive = doExport(codeSystemId, config);
+		
+		final Map<String, Boolean> files = ImmutableMap.<String, Boolean>builder()
+				.put("sct2_TextDefinition_Full-en_INT", true)
+				.put("sct2_RelationshipConcreteValues_Full_INT", true)
+				.put("sct2_sRefset_OWLExpressionFull_INT", true)
+				.put("sct2_Relationship_Full_INT", true)
+				.build();
+		
+		assertArchiveContainsFiles(exportArchive, files);
+		
+	}
+	
+	@Test
 	public void exportRf2WithoutConfiguration() throws Exception {
 		
 		String codeSystemId = "SNOMEDCT-default-rf2-export-config";
