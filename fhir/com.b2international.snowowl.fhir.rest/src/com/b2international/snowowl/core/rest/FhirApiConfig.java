@@ -15,22 +15,14 @@
  */
 package com.b2international.snowowl.core.rest;
 
-import static springfox.documentation.schema.AlternateTypeRules.newRule;
-
-import java.util.stream.Stream;
-
+import org.springdoc.core.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
 import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.provider.IConceptMapApiProvider;
 import com.b2international.snowowl.fhir.core.provider.IValueSetApiProvider;
-import com.fasterxml.classmate.TypeResolver;
-
-import springfox.documentation.schema.AlternateTypeRule;
-import springfox.documentation.spring.web.plugins.Docket;
 
 /**
  * The Spring configuration class for Snow Owl's FHIR REST API.
@@ -47,11 +39,11 @@ public class FhirApiConfig extends BaseApiConfig {
 	}
 
 	@Bean
-	public Docket fhirDocs() {
+	public GroupedOpenApi fhirDocs() {
 		return docs(
 			getApiBaseUrl(), 
 			"fhir", 
-			"1.0", 
+			"4.0.1", 
 			"FHIR API", 
 			"https://b2i.sg/", 
 			"support@b2i.sg", 
@@ -62,15 +54,15 @@ public class FhirApiConfig extends BaseApiConfig {
 		);
 	}
 	
-	@Override
-	protected AlternateTypeRule[] getAlternateTypeRules(TypeResolver resolver) {
-		AlternateTypeRule[] localRules = { 
-			newRule(resolver.resolve(Uri.class), resolver.resolve(String.class)) 
-		};
-		return Stream.of(super.getAlternateTypeRules(resolver), localRules)
-				.flatMap(Stream::of)
-				.toArray(length -> new AlternateTypeRule[length]);
-	}
+//	@Override
+//	protected AlternateTypeRule[] getAlternateTypeRules(TypeResolver resolver) {
+//		AlternateTypeRule[] localRules = { 
+//			newRule(resolver.resolve(Uri.class), resolver.resolve(String.class)) 
+//		};
+//		return Stream.of(super.getAlternateTypeRules(resolver), localRules)
+//				.flatMap(Stream::of)
+//				.toArray(length -> new AlternateTypeRule[length]);
+//	}
 	
 	@Bean
 	public IConceptMapApiProvider.Registry conceptMapProviderRegistry() {

@@ -17,34 +17,19 @@ package com.b2international.snowowl.core.rest.resource;
 
 import java.util.List;
 
-import com.b2international.snowowl.core.rest.domain.ObjectRestSearch;
-
-import io.swagger.annotations.ApiParam;
+import com.b2international.snowowl.core.rest.domain.BaseResourceRestSearch;
 
 /**
  * @since 8.0
  */
-public class ResourceRestSearch extends ObjectRestSearch {
+public class ResourceRestSearch extends BaseResourceRestSearch {
 
-	@ApiParam
 	private List<String> branch;
 	
-	@ApiParam
 	private List<String> resourceType;
 	
-	@ApiParam
-	private List<String> titleExact;
-	
-	@ApiParam
-	private String title;
-	
-	@ApiParam
 	private List<String> toolingId;
 	
-	@ApiParam
-	private List<String> bundleId;
-
-	@ApiParam
 	private List<String> status;
 
 	public List<String> getBranch() {
@@ -63,14 +48,6 @@ public class ResourceRestSearch extends ObjectRestSearch {
 		this.resourceType = resourceType;
 	}
 
-	public List<String> getTitleExact() {
-		return titleExact;
-	}
-
-	public void setTitleExact(List<String> titleExact) {
-		this.titleExact = titleExact;
-	}
-
 	public List<String> getToolingId() {
 		return toolingId;
 	}
@@ -79,22 +56,6 @@ public class ResourceRestSearch extends ObjectRestSearch {
 		this.toolingId = toolingId;
 	}
 
-	public String getTitle() {
-		return title;
-	}
-
-	public void setTitle(String title) {
-		this.title = title;
-	}
-
-	public List<String> getBundleId() {
-		return bundleId;
-	}
-
-	public void setBundleId(List<String> bundleId) {
-		this.bundleId = bundleId;
-	}
-	
 	public List<String> getStatus() {
 		return status;
 	}
