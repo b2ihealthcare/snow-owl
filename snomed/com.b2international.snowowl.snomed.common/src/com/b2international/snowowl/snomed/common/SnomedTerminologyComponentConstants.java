@@ -48,6 +48,13 @@ public abstract class SnomedTerminologyComponentConstants {
 	public static final String CODESYSTEM_MODULES_CONFIG_KEY = "moduleIds";
 	public static final String CODESYSTEM_NAMESPACE_CONFIG_KEY = "namespace";
 	public static final String CODESYSTEM_DESCRIPTION_COPY_POLICY_CONFIG_KEY = "descriptionCopyPolicy";
+	public static final String CODESYSTEM_MAINTAINER_TYPE_CONFIG_KEY = "maintainerType";
+	public static final String CODESYSTEM_RF2_EXPORT_LAYOUT_CONFIG_KEY = "refSetExportLayout";
+	public static final String CODESYSTEM_NRC_COUNTRY_CODE_CONFIG_KEY = "nrcCountryCode";
+	
+	//default configuration for RF2 export
+	public static final String CODESYSTEM_DEFAULT_MAINTAINER_TYPE = "INT";
+	public static final String CODESYSTEM_DEFAULT_RF2_EXPORT_LAYOUT = "COMBINED";
 
 	// FHIR specific constants
 	public static final String SNOMED_URI_BASE = "http://snomed.info";
