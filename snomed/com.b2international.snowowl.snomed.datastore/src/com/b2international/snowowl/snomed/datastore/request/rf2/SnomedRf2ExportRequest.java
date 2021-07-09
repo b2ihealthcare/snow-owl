@@ -93,6 +93,10 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 
 	private static final String DESCRIPTION_TYPES_EXCEPT_TEXT_DEFINITION = "<<" + Concepts.DESCRIPTION_TYPE_ROOT_CONCEPT + " MINUS " + Concepts.TEXT_DEFINITION;
 	private static final String NON_STATED_CHARACTERISTIC_TYPES = "<<" + Concepts.CHARACTERISTIC_TYPE + " MINUS " + Concepts.STATED_RELATIONSHIP;
+	
+	//default configuration for RF2 export
+	public static final Rf2MaintainerType DEFAULT_MAINTAINER_TYPE = Rf2MaintainerType.SNOMED_INTERNATIONAL;
+	public static final Rf2RefSetExportLayout DEFAULT_RF2_EXPORT_LAYOUT = Rf2RefSetExportLayout.COMBINED;
 
 	private static final long serialVersionUID = 2L;
 
@@ -284,11 +288,11 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 		}
 
 		if (Strings.isNullOrEmpty(countryNamespaceElement)) {
-			countryNamespaceElement = getCountryNamespaceElement(Rf2MaintainerType.getByNameIgnoreCase(SnomedTerminologyComponentConstants.CODESYSTEM_DEFAULT_MAINTAINER_TYPE), "");
+			countryNamespaceElement = getCountryNamespaceElement(DEFAULT_MAINTAINER_TYPE, "");
 		}
 		
 		if (refSetExportLayout == null) {
-			refSetExportLayout = Rf2RefSetExportLayout.getByNameIgnoreCase(SnomedTerminologyComponentConstants.CODESYSTEM_DEFAULT_RF2_EXPORT_LAYOUT);
+			refSetExportLayout = DEFAULT_RF2_EXPORT_LAYOUT;
 		}
 		
 		// Step 2: retrieve code system versions that are visible from the reference branch
