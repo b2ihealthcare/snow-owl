@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.core.rest;
 
 import java.io.File;
 
+import org.elasticsearch.common.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -27,15 +28,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.attachments.Attachment;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.attachments.InternalAttachmentRegistry;
 import com.b2international.snowowl.core.rest.AbstractRestService;
+import com.b2international.snowowl.snomed.core.domain.Rf2MaintainerType;
 import com.b2international.snowowl.snomed.core.domain.Rf2RefSetExportLayout;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedRf2ExportConfiguration;
-import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -74,8 +74,6 @@ public class SnomedRf2ExportRestService extends AbstractRestService {
 			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
 		
-		final Rf2RefSetExportLayout globalExportLayout = ApplicationContext.getServiceForClass(SnomedCoreConfiguration.class).getExport().getRefSetExportLayout();
-		
 		final Attachment exportedFile = SnomedRequests.rf2().prepareExport()
 			.setReleaseType(params.getType() == null ? null : Rf2ReleaseType.getByNameIgnoreCase(params.getType()))
 			.setExtensionOnly(params.isExtensionOnly())
@@ -84,11 +82,13 @@ public class SnomedRf2ExportRestService extends AbstractRestService {
 			.setModules(params.getModuleIds())
 			.setRefSets(params.getRefSetIds())
 			.setCountryNamespaceElement(params.getNamespaceId())
+			.setMaintainerType(Strings.isNullOrEmpty(params.getMaintainerType()) ? null : Rf2MaintainerType.getByNameIgnoreCase(params.getMaintainerType()))
+			.setNrcCountryCode(params.getNrcCountryCode())
 			// .setNamespaceFilter(namespaceFilter) is not supported on REST, yet
 			.setTransientEffectiveTime(params.getTransientEffectiveTime())
 			.setStartEffectiveTime(params.getStartEffectiveTime())
 			.setEndEffectiveTime(params.getEndEffectiveTime())
-			.setRefSetExportLayout(params.getRefSetLayout() == null ? globalExportLayout : Rf2RefSetExportLayout.getByNameIgnoreCase(params.getRefSetLayout()))
+			.setRefSetExportLayout(params.getRefSetLayout() == null ? null : Rf2RefSetExportLayout.getByNameIgnoreCase(params.getRefSetLayout()))
 			.build(branch)
 			.execute(getBus())
 			.getSync();

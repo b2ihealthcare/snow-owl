@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ public final class SnomedRf2ExportConfiguration {
 	private String type = Rf2ReleaseType.SNAPSHOT.name();
 	
 	@Schema(description = "The namespaceId to use in the release archive name")
-	private String namespaceId = "INT";
+	private String namespaceId = "";
 	
 	@Schema(description = "Optional moduleIds to restrict the exported content")
 	private Collection<String> moduleIds;
@@ -55,6 +55,12 @@ public final class SnomedRf2ExportConfiguration {
 	
 	@Schema(description = "The RF2 RefSet file layout to use. Defaults to server configuration key 'snomed.export.refSetLayout'.", allowableValues = "combined,individual")
 	private String refSetLayout;
+	
+	@Schema(description = "The nrcCountryCode to use un the release archive name")
+	private String nrcCountryCode = "";
+	
+	@Schema(description = "The maintainerType to use un the release archive name")
+	private String maintainerType = "";
 	
 	/**
 	 * Returns with the RF2 release type of the current export configuration.
@@ -192,4 +198,19 @@ public final class SnomedRf2ExportConfiguration {
 		this.refSetLayout = refSetLayout;
 	}
 	
+	public String getMaintainerType() {
+		return maintainerType;
+	}
+	
+	public void setMaintainerType(String maintainerType) {
+		this.maintainerType = maintainerType;
+	}
+	
+	public String getNrcCountryCode() {
+		return nrcCountryCode;
+	}
+	
+	public void setNrcCountryCode(String nrcCountryCode) {
+		this.nrcCountryCode = nrcCountryCode;
+	}
 }
