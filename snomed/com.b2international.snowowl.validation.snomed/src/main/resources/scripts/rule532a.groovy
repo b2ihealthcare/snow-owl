@@ -49,7 +49,7 @@ ExpressionBuilder filterExpressionBuilder = Expressions.builder()
 			.mustNot(SnomedDescriptionIndexEntry.Expressions.activeMemberOf(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR))
 			.build())
 
-Aggregation<String[]> activeDescriptionsByOriginalTerm = searcher.aggregate(
+Aggregation<String[]> activeDescriptionsByExactTerm = searcher.aggregate(
 		AggregationBuilder.bucket("rule532a", String[].class, SnomedDescriptionIndexEntry.class)
 			.query(filterExpressionBuilder.build())
 			.onFieldValue(SnomedDescriptionIndexEntry.Fields.TERM_EXACT)
@@ -58,7 +58,7 @@ Aggregation<String[]> activeDescriptionsByOriginalTerm = searcher.aggregate(
 				SnomedDescriptionIndexEntry.Fields.MODULE_ID)
 			.minBucketSize(2))
 
-activeDescriptionsByOriginalTerm.getBuckets()
+activeDescriptionsByExactTerm.getBuckets()
 		.values()
 		.each({ bucket ->
 			def shouldReport = bucket.any({ hit ->

@@ -1,7 +1,7 @@
 [
   {
   	"id": "34",
-    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "toolingId": "snomed",
     "messageTemplate": "Relationships must be unique within a relationship group (can occur just once within one relationship group)",
     "severity": "ERROR",
     "checkType": "NORMAL",
@@ -10,7 +10,7 @@
   },
   {
     "id": "38a",
-    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "toolingId": "snomed",
     "messageTemplate": "Active concepts should have at least one active inferred parent.",
     "severity": "ERROR",
     "checkType": "FAST",
@@ -19,7 +19,7 @@
   }, 
   {
     "id": "38b",
-    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "toolingId": "snomed",
     "messageTemplate": "Active concepts should have at least one active stated parent.",
     "severity": "ERROR",
     "checkType": "FAST",
@@ -28,7 +28,7 @@
   },
   {
     "id": "45a",
-    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "toolingId": "snomed",
     "messageTemplate": "All hierarchical (IS_A) relationships should belong to relationship group 0",
     "severity": "ERROR",
     "checkType": "FAST",
@@ -37,7 +37,7 @@
   },
   {
     "id": "45b",
-    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "toolingId": "snomed",
     "messageTemplate": "Non-defining relationships must belong to relationship group 0",
     "severity": "ERROR",
     "checkType": "FAST",
@@ -46,7 +46,7 @@
   },
   {
     "id": "45c",
-    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "toolingId": "snomed",
     "messageTemplate": "Non-defining relationships should not belong to relationship group 0",
     "severity": "WARNING",
     "checkType": "FAST",
@@ -55,7 +55,7 @@
   },
   {
     "id": "54",
-    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "toolingId": "snomed",
     "messageTemplate": "Active terms should be capitalised or have Entire term case sensitive case significance.",
     "severity": "WARNING",
     "checkType": "FAST",
@@ -64,7 +64,7 @@
   },
   {
     "id": "55",
-    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "toolingId": "snomed",
     "messageTemplate": "Spacing around hyphens should be consistent in active terms",
     "severity": "WARNING",
     "checkType": "NORMAL",
@@ -73,7 +73,7 @@
   },
   {
     "id": "74",
-    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "toolingId": "snomed",
     "messageTemplate": "The fully specified names of active concept should contain a bracketed suffix (semantic tag)",
     "severity": "WARNING",
     "checkType": "NORMAL",
@@ -82,7 +82,7 @@
   },
   {
     "id": "75",
-    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "toolingId": "snomed",
     "messageTemplate": "Relationships in group 0 should not be duplicated in any other group.",
     "severity": "ERROR",
     "checkType": "EXPENSIVE",
@@ -91,7 +91,7 @@
   },
   {
     "id": "80",
-    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "toolingId": "snomed",
     "messageTemplate": "All International concepts should have a direct International parent",
     "severity": "WARNING",
     "checkType": "NORMAL",
@@ -100,7 +100,7 @@
   },
   {
     "id": "83",
-    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "toolingId": "snomed",
     "messageTemplate": "Active terms should not contain double spaces.",
     "severity": "ERROR",
     "checkType": "FAST",
@@ -109,7 +109,7 @@
   },
   {
   	"id": "84",
-    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "toolingId": "snomed",
     "messageTemplate": "In active terms, spaces should not precede commas, colons, semicolons or full stops.",
     "severity": "WARNING",
     "checkType": "FAST",
@@ -118,7 +118,7 @@
   },
   {
     "id": "110",
-    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "toolingId": "snomed",
     "messageTemplate": "Concepts used as attributes must come from the attribute hierarchy.",
     "severity": "ERROR",
     "checkType": "NORMAL",
@@ -127,7 +127,7 @@
   },
   {
   "id": "115a",
-    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "toolingId": "snomed",
     "messageTemplate": "Reference Sets should not contain retired concepts",
     "severity": "WARNING",
     "checkType": "NORMAL",
@@ -136,7 +136,7 @@
   },
   {
     "id": "115b",
-    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "toolingId": "snomed",
     "messageTemplate": "Reference Sets should not contain retired descriptions",
     "severity": "WARNING",
     "checkType": "NORMAL",
@@ -145,7 +145,7 @@
   },
   {
     "id": "266",
-    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "toolingId": "snomed",
     "messageTemplate": "Descriptions which are not Fully Specified Names should not contain semantic tags",
     "severity": "ERROR",
     "checkType": "FAST",
@@ -154,7 +154,7 @@
   },
   {
     "id": "326",
-    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "toolingId": "snomed",
     "messageTemplate": "Terms should only contain ASCII characters",
     "severity": "WARNING",
     "checkType": "FAST",
@@ -163,7 +163,7 @@
   },
   {
     "id": "327",
-    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "toolingId": "snomed",
     "messageTemplate": "Fully specified names shoud not contain <, >, &, %, $, @, # characters.",
     "severity": "WARNING",
     "checkType": "FAST",
@@ -172,7 +172,7 @@
   },
   {
     "id": "328",
-    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "toolingId": "snomed",
     "messageTemplate": "Synonyms should not contain $, @ characters",
     "severity": "WARNING",
     "checkType": "FAST",
@@ -181,7 +181,7 @@
   },
   {
   	"id": "482",
-    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "toolingId": "snomed",
     "messageTemplate": "Brackets in active terms should balance and be sequentially valid (in correct order).",
     "severity": "WARNING",
     "checkType": "NORMAL",
@@ -190,7 +190,7 @@
   },
   {
     "id": "532a",
-    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "toolingId": "snomed",
     "messageTemplate": "FSN terms should not duplicate other FSN terms, regardless of case.",
     "severity": "ERROR",
     "checkType": "EXPENSIVE",
@@ -199,7 +199,7 @@
   },
   {
   	"id": "532b",
-    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "toolingId": "snomed",
     "messageTemplate": "Synonyms should not duplicate other synonyms, regardless of case.",
     "severity": "WARNING",
     "checkType": "EXPENSIVE",
@@ -208,7 +208,7 @@
   },
   {
   	"id": "663",
-    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "toolingId": "snomed",
     "messageTemplate": "Relationships must not have inactive source, destination or type concepts.",
     "severity": "ERROR",
     "checkType": "FAST",
@@ -217,7 +217,7 @@
   },
   {
   	"id": "664",
-    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "toolingId": "snomed",
     "messageTemplate": "Fully-specified names of active concepts should be unique.",
     "severity": "WARNING",
     "checkType": "EXPENSIVE",
@@ -226,7 +226,7 @@
   },
   {
   	"id": "665",
-    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "toolingId": "snomed",
     "messageTemplate": "Relationships should not carry deprecated characteristic types.",
     "severity": "WARNING",
     "checkType": "FAST",
@@ -235,7 +235,7 @@
   },
   {
   	"id": "666",
-    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "toolingId": "snomed",
     "messageTemplate": "Concept should not carry more than one PT or preferred FSN per language reference set.",
     "severity": "WARNING",
     "checkType": "NORMAL",
@@ -244,7 +244,7 @@
   },
   {
   	"id": "667",
-    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "toolingId": "snomed",
     "messageTemplate": "Description terms should not exceed the maximum amount of character length allowed in the Description format reference set.",
     "severity": "WARNING",
     "checkType": "EXPENSIVE",
@@ -253,7 +253,7 @@
   },
   {
   	"id": "668",
-    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "toolingId": "snomed",
     "messageTemplate": "OWL axiom relationships must not refer to inactive concepts as their type or destination.",
     "severity": "ERROR",
     "checkType": "FAST",
@@ -262,7 +262,7 @@
   },
   {
   	"id": "669",
-    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "toolingId": "snomed",
     "messageTemplate": "Active Simple/Language/Attribute Value Reference Set Members must not reference the same component.",
     "severity": "ERROR",
     "checkType": "NORMAL",
@@ -271,7 +271,7 @@
   },
   {
   	"id": "670",
-    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "toolingId": "snomed",
     "messageTemplate": "Association type reference set members must not duplicate each other.",
     "severity": "ERROR",
     "checkType": "EXPENSIVE",
@@ -280,7 +280,7 @@
   },
   {
   	"id": "671",
-    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "toolingId": "snomed",
     "messageTemplate": "All active descriptions, and only active descriptions, of inactive concepts should have a single Concept non-current or Pending Move inactivation indicator.",
     "severity": "WARNING",
     "checkType": "FAST",
@@ -289,7 +289,7 @@
   },
   {
   	"id": "rule_mrcm_constraint",
-    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "toolingId": "snomed",
     "messageTemplate": "Relationship target values must be consistent with MRCM.",
     "severity": "WARNING",
     "checkType": "EXPENSIVE",
@@ -298,7 +298,7 @@
   },
   {
   	"id": "rule_mrcm_constraint_type",
-    "toolingId": "com.b2international.snowowl.terminology.snomed",
+    "toolingId": "snomed",
     "messageTemplate": "Relationship type values must be consistent with MRCM.",
     "severity": "WARNING",
     "checkType": "EXPENSIVE",
