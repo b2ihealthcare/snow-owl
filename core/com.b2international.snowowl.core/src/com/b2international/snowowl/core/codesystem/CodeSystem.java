@@ -20,6 +20,7 @@ import java.util.List;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.TerminologyResource;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -53,6 +54,14 @@ public final class CodeSystem extends TerminologyResource {
 	@JsonIgnore
 	public List<String> getLocales() {
 		return getSettings() == null ? null : (List<String>) getSettings().get(CommonSettings.LOCALES);
+	}
+	
+	
+	public static ResourceURI uriFromPath(String resourcePath) {
+		final String[] splittedResourcePath = resourcePath.split(Branch.SEPARATOR);
+		final String codeSystemId = splittedResourcePath[0];
+		final String branchPath = splittedResourcePath.length >= 2? splittedResourcePath[1] : Branch.MAIN_PATH;
+		return ResourceURI.branch(RESOURCE_TYPE, codeSystemId, branchPath);
 	}
 	
 	public static ResourceURI uri(String codeSystemId) {
