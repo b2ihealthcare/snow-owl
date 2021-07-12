@@ -371,7 +371,7 @@ public class EsDocumentSearcher implements Searcher {
 		}
 	}
 
-	private Object[] fromSearchAfterToken(final String searchAfterToken) throws ApiException {
+	private Object[] fromSearchAfterToken(final String searchAfterToken) throws BadRequestException {
 		if (Strings.isNullOrEmpty(searchAfterToken)) {
 			return null;
 		}
