@@ -156,7 +156,7 @@ public class ConceptMapCompareDsvExportTest {
 				.containerTerm(containerTerm)
 				.sourceComponentURI(ComponentURI.of(CodeSystem.uri("SNOMEDCT-CA"), SnomedConcept.TYPE, sourceId))
 				.sourceTerm(sourceTerm)
-				.targetComponentURI(ComponentURI.of(CodeSystem.uri("ICD-10-CA"), SnomedConcept.TYPE, targetId))
+				.targetComponentURI(ComponentURI.of(CodeSystem.uri("ICD-10-CA"), "concept", targetId))
 				.targetTerm(targetTerm)
 				.build();
 		return new ConceptMapCompareResultItem(changeKind, mapping);
