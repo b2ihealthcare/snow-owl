@@ -46,7 +46,7 @@ public final class ValidationWhiteList implements Serializable {
 		public static final String ID = "id";
 		public static final String RULE_ID = "ruleId";
 		public static final String COMPONENT_ID = "componentId";
-		public static final String TERMINOLOGY_COMPONENT_ID = "terminologyComponentId";
+		public static final String TERMINOLOGY_COMPONENT_ID = "componentType";
 		public static final String AFFECTED_COMPONENT_LABELS = "affectedComponentLabels";
 		public static final String AFFECTED_COMPONENT_LABELS_TEXT = AFFECTED_COMPONENT_LABELS + ".text";
 		public static final String AFFECTED_COMPONENT_LABELS_PREFIX = AFFECTED_COMPONENT_LABELS + ".prefix";
