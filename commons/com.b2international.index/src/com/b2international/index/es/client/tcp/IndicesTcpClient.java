@@ -17,10 +17,7 @@ package com.b2international.index.es.client.tcp;
 
 import java.io.IOException;
 
-import org.elasticsearch.client.indices.CreateIndexRequest;
-import org.elasticsearch.client.indices.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
-import org.elasticsearch.client.indices.PutMappingRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
 import org.elasticsearch.action.admin.indices.settings.get.GetSettingsRequest;
@@ -28,11 +25,15 @@ import org.elasticsearch.action.admin.indices.settings.get.GetSettingsResponse;
 import org.elasticsearch.action.admin.indices.settings.put.UpdateSettingsRequest;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.client.IndicesAdminClient;
+import org.elasticsearch.client.indices.CreateIndexRequest;
+import org.elasticsearch.client.indices.CreateIndexResponse;
 import org.elasticsearch.client.indices.GetMappingsRequest;
 import org.elasticsearch.client.indices.GetMappingsResponse;
+import org.elasticsearch.client.indices.PutMappingRequest;
 import org.elasticsearch.cluster.metadata.MappingMetadata;
 
 import com.b2international.index.es.client.IndicesClient;
+import com.b2international.index.mapping.DocumentMapping;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterators;
 
@@ -41,8 +42,6 @@ import com.google.common.collect.Iterators;
  */
 public final class IndicesTcpClient implements IndicesClient {
 
-	private static final String DOC_TYPE = "_doc";
-	
 	private final IndicesAdminClient client;
 
 	public IndicesTcpClient(IndicesAdminClient client) {
@@ -58,7 +57,7 @@ public final class IndicesTcpClient implements IndicesClient {
 	public CreateIndexResponse create(CreateIndexRequest req) throws IOException {
 		// Convert mappings using the generic "_doc" mapping type; include index settings
 		var tcpReq = new org.elasticsearch.action.admin.indices.create.CreateIndexRequest(req.index())
-			.mapping(DOC_TYPE, req.mappings().utf8ToString(), req.mappingsXContentType())
+			.mapping(DocumentMapping._DOC, req.mappings().utf8ToString(), req.mappingsXContentType())
 			.settings(req.settings());
 		var tcpResp = EsTcpClient.execute(client.create(tcpReq));
 		
@@ -100,7 +99,7 @@ public final class IndicesTcpClient implements IndicesClient {
 		 */
 		var tcpReq = new org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest(req.indices())
 			.source(req.source(), req.xContentType())
-			.type(DOC_TYPE);
+			.type(DocumentMapping._DOC);
 		var tcpResp = EsTcpClient.execute(client.putMapping(tcpReq));
 		
 		// Response can be used directly

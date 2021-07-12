@@ -50,7 +50,7 @@ public final class DocumentMapping {
 
 	private static final Logger LOG = LoggerFactory.getLogger(DocumentMapping.class);
 	
-	private static final String _DOC = "_doc";
+	public static final String _DOC = "_doc";
 	
 	// type path delimiter to differentiate between same nested types in different contexts
 	public static final String DELIMITER = ".";
