@@ -73,6 +73,8 @@ public final class ComponentURI implements Serializable {
 	protected static final Splitter SLASH_SPLITTER = Splitter.on('/');
 	protected static final Joiner SLASH_JOINER = Joiner.on('/');
 		
+	public static final ComponentURI UNSPECIFIED = ComponentURI.of(CodeSystem.uri(TerminologyRegistry.UNSPECIFIED), TerminologyRegistry.UNKNOWN_COMPONENT_TYPE, "");
+	
 	private final ResourceURI resourceUri;
 	private final String componentType;
 	private final String identifier;
@@ -105,6 +107,7 @@ public final class ComponentURI implements Serializable {
 	private ComponentURI(ResourceURI resourceUri, String componentType, String identifier) {
 		checkNotNull(resourceUri, "ResourceURI argument should not be null.");
 		checkArgument(!Strings.isNullOrEmpty(componentType), "Component Type should not be null or empty. Got: '%s'.", componentType);
+		checkArgument(!componentType.contains("."), "Component Type should be a single word. Got: '%s'.", componentType);
 		checkArgument(CodeSystem.uri(TerminologyRegistry.UNSPECIFIED).equals(resourceUri) || !Strings.isNullOrEmpty(identifier), "Identifier should not be null or empty.");
 		this.resourceUri = resourceUri;
 		this.componentType = componentType;

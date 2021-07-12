@@ -125,7 +125,7 @@ public class ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest {
 
 		assertEquals(2, conceptMaps.getTotal());
 		Set<ComponentURI> componentUris = getComponentUris(conceptMaps);
-		assertThat(componentUris).containsOnly(sourceUri, uri, ComponentURI.unspecified(filterId));
+		assertThat(componentUris).containsOnly(sourceUri, uri, ComponentURI.unspecified(SnomedConcept.TYPE, filterId));
 	}
 	
 	@Test

@@ -43,7 +43,6 @@ import com.b2international.snowowl.fhir.core.search.FhirParameter.PrefixedValue;
 import com.b2international.snowowl.fhir.core.search.FhirSearchParameter;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
@@ -110,7 +109,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 		Version codeSystemVersion = findCodeSystemVersion(componentURI, "ValueSet.id");
 		
 		//Simple type reference set
-		if (componentURI.terminologyComponentId()!= SnomedReferenceSetMember.TYPE) {
+		if (SnomedReferenceSetMember.TYPE.equals(componentURI.componentType())) {
 		
 			return getSimpleTypeRefsetSearchRequestBuilder(componentURI.identifier())
 				.build(componentURI.resourceUri())
@@ -156,10 +155,9 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 		
 		Version codeSystemVersion = findCodeSystemVersion(componentURI, "ValueSet.id");
 
-		if (componentURI.terminologyComponentId()!= SnomedReferenceSetMember.TYPE) {
+		if (SnomedReferenceSetMember.TYPE.equals(componentURI.componentType())) {
 			return buildSimpleTypeRefsetValueSet(componentURI.identifier(), codeSystemVersion);
-		} 
-		else {
+		} else {
 			//Query type reference set member
 			return SnomedRequests.prepareSearchMember()
 				.one()
@@ -411,14 +409,11 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 		
 		Version codeSystemVersion = findCodeSystemVersion(componentURI, "ValueSet.id");
 		
-		//simple type reference
-		if (componentURI.terminologyComponentId()!= SnomedReferenceSetMember.TYPE) {
+		if (SnomedReferenceSetMember.TYPE.equals(componentURI.componentType())) {
+			//simple type reference
 			return validateSimpleTypReferenceSet(componentURI, codeSystemVersion.getResourceBranchPath(), validateCodeRequest);
-		} 
-		
-		//query type refset
-		else {
-			//Query type reference set member
+		} else {
+			// Query type reference set member
 			Optional<SnomedReferenceSetMember> optionalRefsetMember = SnomedRequests.prepareSearchMember()
 				.one()
 				.filterById(componentURI.identifier())

@@ -30,6 +30,11 @@ import com.b2international.index.revision.Revision;
 @Target(TYPE)
 public @interface TerminologyComponent {
 
+	/**
+	 * @return optionally specific ID can be defined for the terminology component if for any reason the ID cannot be automatically calculated from the {@link #docType()} field.
+	 */
+	String id() default "";
+	
 	String name();
 	
 	ComponentCategory componentCategory();

@@ -24,8 +24,6 @@ import com.b2international.commons.StringUtils;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.commons.options.Options;
-import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
-import com.b2international.snowowl.core.codesystem.CodeSystems;
 import com.b2international.snowowl.core.plugin.Component;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.core.uri.ComponentURI;
@@ -35,23 +33,16 @@ import com.b2international.snowowl.fhir.core.codesystems.ConceptMapEquivalence;
 import com.b2international.snowowl.fhir.core.codesystems.IdentifierUse;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
 import com.b2international.snowowl.fhir.core.exceptions.BadRequestException;
-import com.b2international.snowowl.fhir.core.model.conceptmap.ConceptMap;
-import com.b2international.snowowl.fhir.core.model.conceptmap.ConceptMapElement;
-import com.b2international.snowowl.fhir.core.model.conceptmap.Group;
+import com.b2international.snowowl.fhir.core.model.conceptmap.*;
 import com.b2international.snowowl.fhir.core.model.conceptmap.Group.Builder;
-import com.b2international.snowowl.fhir.core.model.conceptmap.Match;
-import com.b2international.snowowl.fhir.core.model.conceptmap.Target;
-import com.b2international.snowowl.fhir.core.model.conceptmap.TranslateRequest;
-import com.b2international.snowowl.fhir.core.model.conceptmap.TranslateResult;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.provider.FhirApiProvider;
 import com.b2international.snowowl.fhir.core.provider.IConceptMapApiProvider;
-import com.b2international.snowowl.fhir.core.search.FhirSearchParameter;
 import com.b2international.snowowl.fhir.core.search.FhirParameter.PrefixedValue;
+import com.b2international.snowowl.fhir.core.search.FhirSearchParameter;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
@@ -288,8 +279,6 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 			targetSystem = SnomedConcept.TYPE;
 		}
 		
-		int terminologyComponentIdAsInt = TerminologyRegistry.INSTANCE.getTerminologyComponentById(targetSystem).shortId();
-		
 		String locationName = "$translate.system";
 		SnomedUri snomedUri = SnomedUri.fromUriString(sourceSystem, locationName);
 		Version codeSystemVersion = null; //getCodeSystemVersion(snomedUri.getVersionTag());
@@ -299,7 +288,7 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 			.all()
 			.filterByActive(true)
 			.filterByTypes(CONCEPT_MAP_TYPES)
-			.filterByMapTargetComponentType(terminologyComponentIdAsInt)
+			.filterByMapTargetComponentType(targetSystem)
 			.filterByReferencedComponentType(SnomedConcept.TYPE)
 			.build(codeSystemVersion.getVersionResourceURI())
 			.execute(getBus())
@@ -546,55 +535,4 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 		return true;
 	}
 	
-	private String getMapTargetComponentType(String codeSystemId) {
-		
-		com.b2international.snowowl.core.codesystem.CodeSystem codeSystem = CodeSystemRequests.prepareGetCodeSystem(codeSystemId)
-			.buildAsync()
-			.execute(getBus())
-			.getSync();
-		
-		String toolingId = codeSystem.getToolingId();
-		
-		//mighty hack
-		if (toolingId.contains("snomed")) {
-			return SnomedConcept.TYPE;
-		}
-		
-		return TerminologyRegistry.INSTANCE.getTerminologyComponentIdsByTerminology(toolingId).iterator().next();
-	}
-	
-	//This will be removed for 7.x
-	private String getShortName(SnomedReferenceSet snomedReferenceSet) {
-		
-		//CONCEPT = "com.b2international.snowowl.terminology.atc.concept"
-		String mapTargetComponentType = snomedReferenceSet.getMapTargetComponentType();
-		
-		String unknownTargetCodeSystem = "uri://unknown_target_codesystem";
-		
-		if (mapTargetComponentType == null ) {
-			return unknownTargetCodeSystem;
-		}
-		
-		String terminologyId = TerminologyRegistry.INSTANCE.getTerminologyByTerminologyComponentId(mapTargetComponentType).getToolingId();
-		
-		CodeSystems codeSystems = CodeSystemRequests.prepareSearchCodeSystem()
-			.all()
-			.buildAsync()
-			.execute(getBus())
-			.getSync();
-		
-		return codeSystems.stream()
-			.filter(cs -> cs.getToolingId().equals(terminologyId))
-			.map(cs -> {
-				// hack for SNOMED CT until URIs are added to the code system registry
-				if (cs.getResourceURI().toString().contains("SNOMEDCT")) {
-					return SnomedUri.SNOMED_BASE_URI_STRING;
-				} else {
-					return cs.getId();
-				}
-			})
-			.findFirst()
-			.orElse(unknownTargetCodeSystem);
-	}
-
 }

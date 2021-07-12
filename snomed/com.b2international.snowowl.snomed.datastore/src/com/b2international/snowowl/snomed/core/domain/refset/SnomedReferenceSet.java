@@ -56,6 +56,7 @@ import com.google.common.collect.ImmutableSet;
  * @since 4.5
  */
 @TerminologyComponent(
+	id = SnomedConcept.REFSET_TYPE,
 	componentCategory = ComponentCategory.SET,
 	name = "SNOMED CT Reference Set",
 	docType = SnomedConceptDocument.class,
