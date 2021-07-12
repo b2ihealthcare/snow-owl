@@ -299,8 +299,8 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			return matchAnyInt(Fields.MAP_BLOCK, mapBlocks);
 		}
 		
-		public static Expression referencedComponentTypes(Collection<Short> referencedComponentTypes) {
-			return matchAnyInt(Fields.REFERENCED_COMPONENT_TYPE, referencedComponentTypes.stream().map(Short::intValue).collect(Collectors.toSet()));
+		public static Expression referencedComponentTypes(Collection<String> referencedComponentTypes) {
+			return matchAny(Fields.REFERENCED_COMPONENT_TYPE, referencedComponentTypes);
 		}
 		
 		public static Expression referencedComponentIds(Collection<String> referencedComponentIds) {

@@ -21,6 +21,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.io.Serializable;
 import java.util.Objects;
 
+import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
@@ -86,6 +87,10 @@ public final class ComponentIdentifier implements Serializable {
 		final ComponentIdentifier other = (ComponentIdentifier) obj;
 		return Objects.equals(componentId, other.componentId)
 				&& Objects.equals(componentType, other.componentType);
+	}
+	
+	public static final ComponentIdentifier unknown(String componentId) {
+		return of(TerminologyRegistry.UNKNOWN_COMPONENT_TYPE, componentId);
 	}
 	
 }

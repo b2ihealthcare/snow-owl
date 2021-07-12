@@ -9,7 +9,7 @@ import com.b2international.index.query.Expressions.ExpressionBuilder
 import com.b2international.index.revision.RevisionSearcher
 import com.b2international.snowowl.core.ComponentIdentifier
 import com.b2international.snowowl.core.date.EffectiveTimes
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests
 import com.google.common.collect.Lists
@@ -51,7 +51,7 @@ Iterable<Hits<String[]>> queryResult = ctx.service(RevisionSearcher.class)
 		for(String[] hit: hits) {
 			if(!isValid(hit[1])) {
 				def descId = hit[0]
-				ComponentIdentifier affectedComponent = ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, descId);
+				ComponentIdentifier affectedComponent = ComponentIdentifier.of(SnomedDescription.TYPE, descId);
 				issues.add(affectedComponent)
 			}
 		}

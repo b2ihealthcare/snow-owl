@@ -7,8 +7,8 @@ import com.b2international.index.query.Expressions.ExpressionBuilder
 import com.b2international.index.revision.RevisionSearcher
 import com.b2international.snowowl.core.ComponentIdentifier
 import com.b2international.snowowl.core.date.EffectiveTimes
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry
@@ -37,7 +37,7 @@ if (params.isUnpublishedOnly) {
 			.limit(descriptionIds.size())
 			.build()
 		).each { String descriptionToReport -> 
-			issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, descriptionToReport))
+			issues.add(ComponentIdentifier.of(SnomedDescription.TYPE, descriptionToReport))
 		}
 		
 	}
@@ -125,7 +125,7 @@ if (params.isUnpublishedOnly) {
 			.build())
 			.each({hits ->
 				hits.each({ hit ->
-					issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, hit))
+					issues.add(ComponentIdentifier.of(SnomedDescription.TYPE, hit))
 				})
 			})
 			

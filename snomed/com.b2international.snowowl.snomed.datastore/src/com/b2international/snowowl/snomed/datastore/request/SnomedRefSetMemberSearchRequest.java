@@ -108,7 +108,7 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 		addComponentClause(queryBuilder);
 		
 		if (containsKey(OptionKey.REFERENCED_COMPONENT_TYPE)) {
-			queryBuilder.filter(referencedComponentTypes(getCollection(OptionKey.REFERENCED_COMPONENT_TYPE, Short.class)));
+			queryBuilder.filter(referencedComponentTypes(getCollection(OptionKey.REFERENCED_COMPONENT_TYPE, String.class)));
 		}
 		
 		if (!referencedComponentIds.isEmpty()) {
