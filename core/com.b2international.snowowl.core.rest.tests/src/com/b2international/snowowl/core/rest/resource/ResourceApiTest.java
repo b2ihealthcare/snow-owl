@@ -127,9 +127,7 @@ public class ResourceApiTest {
 		.setSearchAfter("codesystem")
 		.buildAsync()
 		.execute(bus)
-		.getSync()
-		.first()
-		.orElse(null);
+		.getSync();
 	}
 
 	private void createCodeSystemWithStatus(final String shortName, final String status) {
