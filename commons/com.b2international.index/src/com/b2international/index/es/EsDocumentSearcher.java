@@ -387,7 +387,7 @@ public class EsDocumentSearcher implements Searcher {
 				codec.close();
 				return obj.toArray();
 			} catch (IllegalArgumentException e) {
-				throw new BadRequestException(e.getMessage(), e.getCause());
+				throw new BadRequestException("Invalid 'searchAfter' parameter value '%s'", searchAfterToken);
 			}
 		} catch (final IOException e) {
 			throw new FormattedRuntimeException("Couldn't decode searchAfter token.", e);
