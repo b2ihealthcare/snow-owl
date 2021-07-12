@@ -24,7 +24,6 @@ import com.b2international.snowowl.core.request.IndexResourceRequestBuilder;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.core.terminology.TerminologyComponent;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
@@ -59,8 +58,6 @@ import com.google.common.collect.ImmutableSet;
  * @see SnomedReferenceSetMember
  */
 @TerminologyComponent(
-	id = SnomedTerminologyComponentConstants.RELATIONSHIP, 
-	shortId = SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER,
 	name = "SNOMED CT Relationship",			
 	componentCategory = ComponentCategory.RELATIONSHIP,
 	docType = SnomedRelationshipIndexEntry.class
@@ -68,6 +65,8 @@ import com.google.common.collect.ImmutableSet;
 public final class SnomedRelationship extends SnomedCoreComponent {
 
 	private static final long serialVersionUID = -1131388567716570593L;
+	
+	public static final String TYPE = "relationship";
 
 	/**
 	 * Enumerates expandable property keys.
@@ -146,8 +145,8 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 	}
 	
 	@Override
-	public short getTerminologyComponentId() {
-		return SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER;
+	public String getComponentType() {
+		return SnomedRelationship.TYPE;
 	}
 
 	/**

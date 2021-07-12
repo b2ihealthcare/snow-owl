@@ -50,15 +50,12 @@ public final class RepositoryBuilder {
 	private Hooks.PreCommitHook hook;
 	
 	private final Mappings mappings = new Mappings();
-	private final TerminologyComponents terminologyComponents;
 	private final Map<Class<?>, Object> bindings = newHashMap();
 
 	RepositoryBuilder(DefaultRepositoryManager manager, String repositoryId) {
 		this.manager = manager;
 		this.repositoryId = repositoryId;
 		this.log = LoggerFactory.getLogger("repository."+repositoryId);
-		this.terminologyComponents = new TerminologyComponents(this.log);
-		bind(TerminologyComponents.class, this.terminologyComponents);
 	}
 	
 	public Logger log() {
@@ -69,7 +66,6 @@ public final class RepositoryBuilder {
 		for (Class<? extends IComponent> terminologyComponent : terminologyComponents) {
 			TerminologyComponent tc = Terminology.getAnnotation(terminologyComponent);
 			checkNotNull(tc.docType(), "Document must be specified for terminology component: %s", terminologyComponent);
-			this.terminologyComponents.add(tc);
 			this.mappings.putMapping(tc.docType());
 		}
 		return this;
@@ -78,7 +74,6 @@ public final class RepositoryBuilder {
 	public RepositoryBuilder addTerminologyComponents(Map<Class<?>, TerminologyComponent> terminologyComponents) {
 		for (Entry<Class<?>, TerminologyComponent> terminologyComponent : terminologyComponents.entrySet()) {
 			final Class<?> docType = terminologyComponent.getKey();
-			this.terminologyComponents.add(terminologyComponent.getValue());
 			this.mappings.putMapping(docType);
 		}
 		return this;

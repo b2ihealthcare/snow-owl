@@ -20,14 +20,10 @@ import static com.google.common.collect.Maps.newHashMap;
 
 import java.lang.annotation.Annotation;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.revision.Revision;
-import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.core.domain.IComponent;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
 
 /**
  * @since 7.0
@@ -38,13 +34,10 @@ public enum TerminologyRegistry {
 	
 	public static final String UNSPECIFIED = "UNSPECIFIED";
 	public static final int UNSPECIFIED_NUMBER = -1;
-	public static final short UNSPECIFIED_NUMBER_SHORT = -1;
+	public static final String UNKNOWN_COMPONENT_TYPE = "__UNKNOWN__";
 	
 	private final Map<String, Terminology> terminologies = newHashMap();
-	private final Map<String, TerminologyComponent> terminologyComponentsById = newHashMap();
-	private final Map<Short, TerminologyComponent> terminologyComponentsByShortId = newHashMap();
-	private final Map<String, String> terminologyIdByTerminologyComponentId = newHashMap();
-	private final Multimap<String, String> terminologyComponentIdsByTerminology = HashMultimap.create();
+	private final TreeMap<String, TerminologyComponent> terminologyComponentsById = new TreeMap<>();
 	
 	private TerminologyRegistry() {
 		register(new Terminology() {
@@ -82,94 +75,44 @@ public enum TerminologyRegistry {
 	}
 
 	public void register(String terminologyId, TerminologyComponent terminologyComponent) {
-		TerminologyComponent prevAnnotation = terminologyComponentsById.put(terminologyComponent.id(), terminologyComponent);
+		String terminologyComponentId = getTerminologyComponentId(terminologyId, terminologyComponent);
+		TerminologyComponent prevAnnotation = terminologyComponentsById.put(terminologyComponentId, terminologyComponent);
 		if (prevAnnotation != null) {
-			throw new IllegalArgumentException(String.format("A terminology component is already registered with id '%s'", terminologyComponent.id()));	
+			throw new IllegalArgumentException(String.format("A terminology component is already registered with id '%s'", terminologyComponentId));	
 		}
-		terminologyComponentsByShortId.put(terminologyComponent.shortId(), terminologyComponent);
-		terminologyIdByTerminologyComponentId.put(terminologyComponent.id(), terminologyId);
-		terminologyComponentIdsByTerminology.put(terminologyId, terminologyComponent.id());
+		terminologyComponentsById.put(terminologyComponentId, terminologyComponent);
 		if (!UNSPECIFIED.equals(terminologyId)) {
 			// XXX This will inject the necessary values in the underlying document mapping caches
 			DocumentMapping.getType(terminologyComponent.docType());
 		}
 	}
 	
+	private String getTerminologyComponentId(String terminologyId, TerminologyComponent terminologyComponent) {
+		checkArgument(terminologyComponent.docType() != null || !terminologyComponent.id().isBlank(), "Either docType() or id() field must be specified on TerminologyComponent annotations");
+		if (!terminologyComponent.id().isBlank()) {
+			return String.join(".", terminologyId, terminologyComponent.id());
+		} else {
+			return String.join(".", terminologyId, DocumentMapping.getType(terminologyComponent.docType()));
+		}
+	}
+
 	public Terminology getTerminology(String terminologyId) {
 		checkArgument(terminologies.containsKey(terminologyId), "Missing terminology '%s'.", terminologyId);
 		return terminologies.get(terminologyId);
 	}
 
-	public TerminologyComponent getTerminologyComponentByShortId(short shortId) {
-		checkArgument(terminologyComponentsByShortId.containsKey(shortId), "Missing terminology component for short ID '%s'.", shortId);
-		return terminologyComponentsByShortId.get(shortId);
+	public TerminologyComponent getTerminologyComponentById(String terminologyComponentId) {
+		checkArgument(terminologyComponentsById.containsKey(terminologyComponentId), "Missing terminology component for ID '%s'.", terminologyComponentId);
+		return terminologyComponentsById.get(terminologyComponentId);
 	}
-	
-	public boolean hasTerminologyComponentByShortId(short shortId) {
-		return terminologyComponentsByShortId.containsKey(shortId);
-	}
-	
-	public TerminologyComponent getTerminologyComponentById(String id) {
-		checkArgument(terminologyComponentsById.containsKey(id), "Missing terminology component for ID '%s'.", id);
-		return terminologyComponentsById.get(id);
-	}
-
-	public Terminology getTerminologyByTerminologyComponentId(String terminologyComponentId) {
-		checkArgument(terminologyIdByTerminologyComponentId.containsKey(terminologyComponentId), "No terminology has been registered for terminology component '%s'.", terminologyComponentId);
-		return getTerminology(terminologyIdByTerminologyComponentId.get(terminologyComponentId));
-	}
-	
-	public Collection<String> getTerminologyComponentIdsByTerminology(String terminologyId) {
-		checkArgument(terminologyComponentIdsByTerminology.containsKey(terminologyId), "Missing terminology '%s'.", terminologyId);
-		return Set.copyOf(terminologyComponentIdsByTerminology.get(terminologyId));
-	}
-	
-	/**
-	 * Returns the primary terminology component ID (short) for a given terminology.
-	 * It is usually the 'Concept' type.
-	 * @param terminologyId
-	 * @return the primary component short identifier 
-	 */
-	public short getConceptTerminologyComponentIdByTerminology(String terminologyId) {
-		
-		Collection<String> componentIds = getTerminologyComponentIdsByTerminology(terminologyId);
-		
-		if (componentIds.isEmpty()) {
-			throw new SnowowlRuntimeException("Could not find registered terminology component IDs for " + terminologyId);
-		}
-		
-		Set<TerminologyComponent> terminologyComponents = componentIds.stream()
-				.map(componentId -> getTerminologyComponentById(componentId))
-				.collect(Collectors.toSet());
-		
-		if (terminologyComponents.isEmpty()) {
-			throw new SnowowlRuntimeException("Could not find registered terminology component for " + terminologyId);
-		} else if (terminologyComponents.size() == 1) {
-			//Return the the only registered component, even if it is not marked as primary
-			return terminologyComponents.iterator().next().shortId();
-		}
-			
-		Set<TerminologyComponent> primaryComponents = terminologyComponents.stream()
-				.filter(t -> t.componentCategory() == ComponentCategory.CONCEPT)
-				.collect(Collectors.toSet());
-		
-		if (primaryComponents.size() > 1) {
-			throw new SnowowlRuntimeException("There is more than one primary terminology component registered for " + terminologyId);
-		} else if (primaryComponents.isEmpty()) {
-			// check for the first SET category before throwing an exception
-			primaryComponents = terminologyComponents.stream()
-					.filter(t -> t.componentCategory() == ComponentCategory.SET)
-					.collect(Collectors.toSet());
-			if (primaryComponents.isEmpty()) {
-				throw new SnowowlRuntimeException("There is no primary terminology component (either CONCEPT or SET) registered for " + terminologyId);
-			}
-		}
-		return primaryComponents.iterator().next().shortId();
-	}
-	
 	
 	private static TerminologyComponent createUnspecifiedTerminologyComponent() {
 		return new TerminologyComponent() {
+			
+			@Override
+			public String id() {
+				return UNKNOWN_COMPONENT_TYPE;
+			}
 			
 			@Override
 			public Class<? extends Annotation> annotationType() {
@@ -187,18 +130,8 @@ public enum TerminologyRegistry {
 			}
 			
 			@Override
-			public short shortId() {
-				return UNSPECIFIED_NUMBER_SHORT;
-			}
-			
-			@Override
 			public String name() {
-				return UNSPECIFIED;
-			}
-			
-			@Override
-			public String id() {
-				return UNSPECIFIED;
+				return "Unspecified";
 			}
 			
 			@Override

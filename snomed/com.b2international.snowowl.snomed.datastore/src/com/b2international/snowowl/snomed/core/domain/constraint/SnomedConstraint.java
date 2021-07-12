@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,27 +17,14 @@ package com.b2international.snowowl.snomed.core.domain.constraint;
 
 import static com.google.common.collect.Sets.newHashSet;
 
-import java.util.Collection;
-import java.util.Date;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.core.terminology.TerminologyComponent;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.datastore.index.constraint.CompositeDefinitionFragment;
-import com.b2international.snowowl.snomed.datastore.index.constraint.ConceptSetDefinitionFragment;
-import com.b2international.snowowl.snomed.datastore.index.constraint.EnumeratedDefinitionFragment;
-import com.b2international.snowowl.snomed.datastore.index.constraint.HierarchyDefinitionFragment;
-import com.b2international.snowowl.snomed.datastore.index.constraint.PredicateFragment;
-import com.b2international.snowowl.snomed.datastore.index.constraint.ReferenceSetDefinitionFragment;
-import com.b2international.snowowl.snomed.datastore.index.constraint.RelationshipDefinitionFragment;
-import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
-import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintPredicateType;
+import com.b2international.snowowl.snomed.datastore.index.constraint.*;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
 /**
@@ -46,8 +33,6 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
  * @since 6.5
  */
 @TerminologyComponent(
-	id = SnomedTerminologyComponentConstants.CONSTRAINT,
-	shortId = SnomedTerminologyComponentConstants.CONSTRAINT_NUMBER,
 	componentCategory = ComponentCategory.UNKNOWN,
 	name = "SNOMED CT MRCM Constraint",
 	docType = SnomedConstraintDocument.class,
@@ -55,6 +40,8 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 )
 public final class SnomedConstraint extends SnomedConceptModelComponent implements IComponent {
 
+	public static final String TYPE = "constraint";
+	
 	public static final String PROP_STRENGTH = "strength";
 	public static final String PROP_FORM = "form";
 	public static final String PROP_VALIDATION_MESSAGE = "validationMessage";

@@ -182,11 +182,8 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 		 * component type should be exported if the input value is an empty collection.
 		 */
 		this.componentTypes = (componentTypes != null) 
-				? ImmutableSet.copyOf(componentTypes) 
-				: ImmutableSet.of(SnomedTerminologyComponentConstants.CONCEPT, 
-						SnomedTerminologyComponentConstants.DESCRIPTION, 
-						SnomedTerminologyComponentConstants.RELATIONSHIP, 
-						SnomedTerminologyComponentConstants.REFSET_MEMBER);
+				? Set.copyOf(componentTypes) 
+				: Set.of(SnomedConcept.TYPE, SnomedDescription.TYPE, SnomedRelationship.TYPE, SnomedConcept.REFSET_TYPE); 
 	}
 
 	void setModules(final Collection<String> modules) {
@@ -649,7 +646,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 
 		for (final String componentToExport : componentTypes) {
 			switch (componentToExport) {
-				case SnomedTerminologyComponentConstants.CONCEPT:
+				case SnomedConcept.TYPE:
 					exportConcepts(releaseDirectory, 
 							context,
 							branch,
@@ -659,7 +656,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 							visitedComponentEffectiveTimes);
 					break;
 	
-				case SnomedTerminologyComponentConstants.DESCRIPTION:
+				case SnomedDescription.TYPE:
 					for (final String languageCode : languageCodes) {
 						exportDescriptions(releaseDirectory, 
 								context,
@@ -672,7 +669,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 					}
 					break;
 	
-				case SnomedTerminologyComponentConstants.RELATIONSHIP:
+				case SnomedRelationship.TYPE:
 					exportRelationships(releaseDirectory, 
 							context,
 							branch,
@@ -690,7 +687,7 @@ final class SnomedRf2ExportRequest extends ResourceRequest<BranchContext, Attach
 							visitedComponentEffectiveTimes);
 					break;
 	
-				case SnomedTerminologyComponentConstants.REFSET_MEMBER:
+				case SnomedConcept.REFSET_TYPE:
 					if (Rf2RefSetExportLayout.COMBINED.equals(refSetExportLayout)) {
 						exportCombinedRefSets(releaseDirectory,
 								context,

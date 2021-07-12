@@ -17,7 +17,6 @@ package com.b2international.snowowl.core.validation.whitelist;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.stream.Collectors;
 
 import com.b2international.index.Hits;
 import com.b2international.index.Searcher;
@@ -110,10 +109,7 @@ final class ValidationWhiteListSearchRequest
 			queryBuilder.filter(Expressions.matchAny(ValidationWhiteList.Fields.COMPONENT_ID, componentIds));
 		}
 		
-		if (containsKey(OptionKey.COMPONENT_TYPE)) {
-			Collection<Integer> terminologyComponentIds = getCollection(OptionKey.COMPONENT_TYPE, Short.class).stream().map(Integer::valueOf).collect(Collectors.toSet());
-			queryBuilder.filter(Expressions.matchAnyInt(ValidationWhiteList.Fields.TERMINOLOGY_COMPONENT_ID, terminologyComponentIds));
-		}
+		addFilter(queryBuilder, OptionKey.COMPONENT_TYPE, String.class, ids -> Expressions.matchAny(ValidationWhiteList.Fields.TERMINOLOGY_COMPONENT_ID, ids));
 		
 		if (containsKey(OptionKey.REPORTER)) {
 			Collection<String> reporters = getCollection(OptionKey.REPORTER, String.class);

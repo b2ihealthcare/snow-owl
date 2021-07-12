@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,9 +30,10 @@ import com.b2international.index.revision.Revision;
 @Target(TYPE)
 public @interface TerminologyComponent {
 
-	String id();
-	
-	short shortId();
+	/**
+	 * @return optionally specific ID can be defined for the terminology component if for any reason the ID cannot be automatically calculated from the {@link #docType()} field.
+	 */
+	String id() default "";
 	
 	String name();
 	

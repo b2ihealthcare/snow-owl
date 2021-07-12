@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@ import com.b2international.snowowl.core.terminology.MapTargetTypes;
 import com.b2international.snowowl.core.terminology.TerminologyComponent;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
@@ -59,8 +58,6 @@ import com.google.common.collect.ImmutableSet;
  * @see SnomedReferenceSetMember
  */
 @TerminologyComponent(
-	id = SnomedTerminologyComponentConstants.DESCRIPTION, 
-	shortId = SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER,
 	name = "SNOMED CT Description",
 	componentCategory = ComponentCategory.DESCRIPTION,
 	docType = SnomedDescriptionIndexEntry.class,
@@ -76,6 +73,8 @@ public final class SnomedDescription extends SnomedCoreComponent {
 
 	private static final long serialVersionUID = 1L;
 
+	public static final String TYPE = "description";
+	
 	/**
 	 * @since 6.16
 	 */
@@ -123,8 +122,8 @@ public final class SnomedDescription extends SnomedCoreComponent {
 	}
 	
 	@Override
-	public short getTerminologyComponentId() {
-		return SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER;
+	public String getComponentType() {
+		return SnomedDescription.TYPE;
 	}
 
 	/**

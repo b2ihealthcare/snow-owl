@@ -16,9 +16,6 @@
 package com.b2international.snowowl.snomed.datastore.index.entry;
 
 import static com.b2international.index.query.Expressions.*;
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER;
-import static com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.math.BigDecimal;
@@ -63,7 +60,7 @@ import com.google.common.collect.Iterables;
  * Lightweight representation of a SNOMED CT reference set member.
  */
 @Doc(
-	type="member",
+	type=SnomedReferenceSetMember.TYPE,
 	revisionHash = { 
 		SnomedDocument.Fields.ACTIVE, 
 		SnomedDocument.Fields.EFFECTIVE_TIME, 
@@ -227,17 +224,8 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 				.moduleId(input.getModuleId())
 				.referencedComponentId(input.getReferencedComponent().getId())
 				.referenceSetId(input.getReferenceSetId())
-				.referenceSetType(input.type());
-		
-		if (input.getReferencedComponent() instanceof SnomedConcept) {
-			builder.referencedComponentType(CONCEPT_NUMBER);
-		} else if (input.getReferencedComponent() instanceof SnomedDescription) {
-			builder.referencedComponentType(DESCRIPTION_NUMBER);
-		} else if (input.getReferencedComponent() instanceof SnomedRelationship) {
-			builder.referencedComponentType(RELATIONSHIP_NUMBER);
-		} else {
-			builder.referencedComponentType(TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT);
-		}
+				.referenceSetType(input.type())
+				.referencedComponentType(input.getReferencedComponent().getComponentType());
 		
 		if (input.getEquivalentOWLRelationships() != null) {
 			builder.classAxiomRelationships(input.getEquivalentOWLRelationships());
@@ -499,7 +487,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 
 		private String referenceSetId;
 		private SnomedRefSetType referenceSetType;
-		private short referencedComponentType = TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT;
+		private String referencedComponentType = TerminologyRegistry.UNKNOWN_COMPONENT_TYPE;
 
 		// Member specific fields, they can be null or emptyish values
 		// ASSOCIATION reference set members
@@ -648,7 +636,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			return this;
 		}
 		
-		public Builder referencedComponentType(final short referencedComponentType) {
+		public Builder referencedComponentType(final String referencedComponentType) {
 			this.referencedComponentType = referencedComponentType;
 			return this;
 		}
@@ -976,7 +964,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	private final String referencedComponentId;
 	private final String referenceSetId;
 	private final SnomedRefSetType referenceSetType;
-	private final short referencedComponentType;
+	private final String referencedComponentType;
 	
 	// Member specific fields, they can be null or emptyish values
 	// ASSOCIATION reference set members
@@ -1053,7 +1041,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			final String referencedComponentId, 
 			final String referenceSetId,
 			final SnomedRefSetType referenceSetType,
-			final short referencedComponentType) {
+			final String referencedComponentType) {
 
 		super(id, 
 				referencedComponentId, // XXX: iconId is the referenced component identifier
@@ -1064,9 +1052,8 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		this.referencedComponentId = referencedComponentId;
 		this.referenceSetId = referenceSetId;
 		this.referenceSetType = referenceSetType;
-		checkArgument(referencedComponentType >= TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT, "Referenced component type '%s' is invalid.", referencedComponentType);
 		if (!Strings.isNullOrEmpty(referencedComponentId)) {
-			this.referencedComponentType = referencedComponentType == TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT ? SnomedTerminologyComponentConstants.getTerminologyComponentIdValue(referencedComponentId) : referencedComponentType;
+			this.referencedComponentType = referencedComponentType == TerminologyRegistry.UNKNOWN_COMPONENT_TYPE ? SnomedComponent.getType(referencedComponentId) : referencedComponentType;
 		} else {
 			this.referencedComponentType = referencedComponentType;
 		}
@@ -1085,10 +1072,10 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	@JsonIgnore
 	Class<?> getReferencedComponentDocClass() {
 		switch (referencedComponentType) {
-		case SnomedTerminologyComponentConstants.REFSET_NUMBER:
-		case SnomedTerminologyComponentConstants.CONCEPT_NUMBER: return SnomedConceptDocument.class;
-		case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER: return SnomedDescriptionIndexEntry.class;
-		case SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER: return SnomedRelationshipIndexEntry.class;
+		case SnomedConcept.REFSET_TYPE:
+		case SnomedConcept.TYPE: return SnomedConceptDocument.class;
+		case SnomedDescription.TYPE: return SnomedDescriptionIndexEntry.class;
+		case SnomedRelationship.TYPE: return SnomedRelationshipIndexEntry.class;
 		default: throw new UnsupportedOperationException("Cannot get doc class for referenced component type: " + referencedComponentType);
 		}
 	}
@@ -1235,7 +1222,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		return targetEffectiveTime;
 	}
 	
-	public short getReferencedComponentType() {
+	public String getReferencedComponentType() {
 		return referencedComponentType;
 	}
 	
@@ -1336,14 +1323,6 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		return EffectiveTimes.format(getTargetEffectiveTime(), DateFormats.SHORT);
 	}
 	
-	/**
-	 * @return the {@code String} terminology component identifier of the component referenced in this member
-	 */
-	@JsonIgnore
-	public String getReferencedComponentTypeAsString() {
-		return TerminologyRegistry.INSTANCE.getTerminologyComponentByShortId(referencedComponentType).id();
-	}
-
 	/**
 	 * Helper which converts all non-null/empty additional fields to a values {@link Map} keyed by their field name; 
 	 * @return

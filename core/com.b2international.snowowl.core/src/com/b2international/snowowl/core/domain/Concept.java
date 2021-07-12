@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ public final class Concept extends BaseComponent {
 	private static final long serialVersionUID = 1L;
 
 	private final String codeSystem;
-	private final short terminologyComponentId;
+	private final String componentType;
 	
 	private String term;
 	private String iconId;
@@ -40,9 +40,9 @@ public final class Concept extends BaseComponent {
 	
 	private Object internalConcept;
 	
-	public Concept(String codeSystem, short terminologyComponentId) {
+	public Concept(String codeSystem, String componentType) {
 		this.codeSystem = codeSystem;
-		this.terminologyComponentId = terminologyComponentId;
+		this.componentType = componentType;
 	}
 	
 	public String getCodeSystem() {
@@ -98,13 +98,13 @@ public final class Concept extends BaseComponent {
 	}
 	
 	@Override
-	public short getTerminologyComponentId() {
-		return terminologyComponentId;
+	public String getComponentType() {
+		return componentType;
 	}
 
 	@JsonIgnore
 	public ComponentURI getCode() {
-		return ComponentURI.of(codeSystem, terminologyComponentId, getId());
+		return ComponentURI.of(codeSystem, componentType, getId());
 	}
 	
 	@Override

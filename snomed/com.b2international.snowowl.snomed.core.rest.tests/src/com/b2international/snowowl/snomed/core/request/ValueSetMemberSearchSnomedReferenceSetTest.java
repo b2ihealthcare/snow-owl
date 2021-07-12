@@ -33,8 +33,8 @@ import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.snomed.common.SnomedConstants;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
@@ -99,7 +99,7 @@ public class ValueSetMemberSearchSnomedReferenceSetTest {
 		createSimpleMapTypeRefSetMember(refSetId, Concepts.IS_A, filteredId);
 		createSimpleMapTypeRefSetMember(refSetId, Concepts.IS_A, Concepts.IS_A);
 		
-		final ComponentURI uri = ComponentURI.of(SnomedContentRule.SNOMEDCT, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, filteredId);
+		final ComponentURI uri = ComponentURI.of(SnomedContentRule.SNOMEDCT, SnomedConcept.TYPE, filteredId);
 		
 		final SnomedReferenceSetMembers refSetMembers = SnomedRequests.prepareSearchMember()
 			.filterByRefSet(refSetId)
@@ -125,7 +125,7 @@ public class ValueSetMemberSearchSnomedReferenceSetTest {
 				.addRelationship(createIsaRelationship(Concepts.STATED_RELATIONSHIP, SnomedRefSetUtil.getParentConceptId(SnomedRefSetType.SIMPLE_MAP)))
 				.addRelationship(createIsaRelationship(Concepts.INFERRED_RELATIONSHIP, SnomedRefSetUtil.getParentConceptId(SnomedRefSetType.SIMPLE_MAP)))
 				.setRefSet(SnomedRequests.prepareNewRefSet()
-						.setReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
+						.setReferencedComponentType(SnomedConcept.TYPE)
 						.setType(SnomedRefSetType.SIMPLE_MAP))
 				.build(CODESYSTEM, RestExtensions.USER, "New Reference Set")
 				.execute(Services.bus())

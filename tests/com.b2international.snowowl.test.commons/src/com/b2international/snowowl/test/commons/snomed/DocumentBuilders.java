@@ -28,8 +28,8 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.RelationshipValue;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.constraint.ConstraintForm;
 import com.b2international.snowowl.snomed.core.domain.refset.DataType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
@@ -82,11 +82,12 @@ public abstract class DocumentBuilders {
 				.released(false);
 	}
 	
-	public static SnomedRefSetMemberIndexEntry.Builder member(final String id, String referencedComponentId, short referencedComponentType, String referenceSetId) {
+	public static SnomedRefSetMemberIndexEntry.Builder member(final String id, String referencedComponentId, String referencedComponentType, String referenceSetId) {
 		return SnomedRefSetMemberIndexEntry.builder()
 				.id(id)
 				.active(true)
 				.referencedComponentId(referencedComponentId)
+				.referencedComponentType(referencedComponentType)
 				.referenceSetId(referenceSetId)
 				.released(true);
 	}
@@ -152,7 +153,7 @@ public abstract class DocumentBuilders {
 				.active(true)
 				.moduleId(Concepts.MODULE_SCT_CORE)
 				.referencedComponentId(sourceId)
-				.referencedComponentType(SnomedTerminologyComponentConstants.CONCEPT_NUMBER)
+				.referencedComponentType(SnomedConcept.TYPE)
 				.referenceSetId(Concepts.REFSET_OWL_AXIOM)
 				.classAxiomRelationships(classAxioms);
 	}

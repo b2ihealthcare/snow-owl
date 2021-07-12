@@ -18,7 +18,6 @@ package com.b2international.snowowl.snomed.datastore.request;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
-import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMembers;
@@ -79,14 +78,10 @@ public final class SnomedRefSetMemberSearchRequestBuilder
 	}
 
 	public SnomedRefSetMemberSearchRequestBuilder filterByReferencedComponentType(String referencedComponentType) {
-		return filterByReferencedComponentType(TerminologyRegistry.INSTANCE.getTerminologyComponentById(referencedComponentType).shortId());
-	}
-	
-	public SnomedRefSetMemberSearchRequestBuilder filterByReferencedComponentType(short referencedComponentType) {
 		return addOption(OptionKey.REFERENCED_COMPONENT_TYPE, referencedComponentType);
 	}
 	
-	public SnomedRefSetMemberSearchRequestBuilder filterByReferencedComponentTypes(Iterable<Short> referencedComponentTypes) {
+	public SnomedRefSetMemberSearchRequestBuilder filterByReferencedComponentTypes(Iterable<String> referencedComponentTypes) {
 		return addOption(OptionKey.REFERENCED_COMPONENT_TYPE, referencedComponentTypes);
 	}
 	

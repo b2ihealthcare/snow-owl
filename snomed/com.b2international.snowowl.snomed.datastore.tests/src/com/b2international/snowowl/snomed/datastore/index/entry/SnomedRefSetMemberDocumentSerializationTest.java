@@ -34,7 +34,8 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.refset.DataType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Builder;
@@ -73,7 +74,7 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 			.released(false)
 			.moduleId(Concepts.MODULE_SCT_CORE)
 			.referencedComponentId(Concepts.ROOT_CONCEPT)
-			.referencedComponentType(SnomedTerminologyComponentConstants.CONCEPT_NUMBER);
+			.referencedComponentType(SnomedConcept.TYPE);
 	}
 	
 	@Test
@@ -85,7 +86,7 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 		
 		indexRevision(RevisionBranch.MAIN_PATH, member);
 		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, member.getId());
-		assertEquals(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, actual.getReferencedComponentType());
+		assertEquals(SnomedConcept.TYPE, actual.getReferencedComponentType());
 		assertDocEquals(member, actual);
 	}
 
@@ -99,14 +100,14 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 			
 		indexRevision(RevisionBranch.MAIN_PATH, member);
 		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, member.getId());
-		assertEquals(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, actual.getReferencedComponentType());
+		assertEquals(SnomedConcept.TYPE, actual.getReferencedComponentType());
 		assertDocEquals(member, actual);
 	}
 	
 	@Test
 	public void indexSimpleMapMemberWithComponentURITarget() throws Exception {
 		final String mapTargetId = "targetId01";
-		final ComponentURI componentURI = ComponentURI.of(SnomedContentRule.SNOMEDCT, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, mapTargetId);
+		final ComponentURI componentURI = ComponentURI.of(SnomedContentRule.SNOMEDCT, SnomedConcept.TYPE, mapTargetId);
 		
 		final SnomedRefSetMemberIndexEntry member = createBaseMember()
 				.referenceSetId(Concepts.REFSET_B2I_EXAMPLE)
@@ -116,7 +117,7 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 		
 		indexRevision(RevisionBranch.MAIN_PATH, member);
 		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, member.getId());
-		assertEquals(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, actual.getReferencedComponentType());
+		assertEquals(SnomedConcept.TYPE, actual.getReferencedComponentType());
 		assertDocEquals(member, actual);
 		assertEquals(ComponentURI.of(actual.getMapTarget()), componentURI);
 	}
@@ -125,7 +126,7 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 	public void indexLanguageMember() throws Exception {
 		final SnomedRefSetMemberIndexEntry member = createBaseMember()
 				// TODO use description ID in test case
-				.referencedComponentType(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER)
+				.referencedComponentType(SnomedDescription.TYPE)
 				.referenceSetId(Concepts.REFSET_B2I_EXAMPLE)
 				.referenceSetType(SnomedRefSetType.LANGUAGE)
 				.field(Fields.ACCEPTABILITY_ID, Concepts.REFSET_DESCRIPTION_ACCEPTABILITY_PREFERRED)
@@ -133,7 +134,7 @@ public class SnomedRefSetMemberDocumentSerializationTest extends BaseRevisionInd
 			
 		indexRevision(RevisionBranch.MAIN_PATH, member);
 		final SnomedRefSetMemberIndexEntry actual = getRevision(RevisionBranch.MAIN_PATH, SnomedRefSetMemberIndexEntry.class, member.getId());
-		assertEquals(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, actual.getReferencedComponentType());
+		assertEquals(SnomedDescription.TYPE, actual.getReferencedComponentType());
 		assertDocEquals(member, actual);
 	}
 	

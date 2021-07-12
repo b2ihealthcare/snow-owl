@@ -123,7 +123,7 @@ public interface ConceptSearchRequestEvaluator {
 	Concepts evaluate(ResourceURI uri, BranchContext context, Options search);
 
 	default Concept toConcept(ResourceURI codeSystem, IComponent concept, String iconId, String term, Float score) {
-		Concept result = new Concept(codeSystem.toString(), concept.getTerminologyComponentId());
+		Concept result = new Concept(codeSystem.toString(), concept.getComponentType());
 		result.setId(concept.getId());
 		result.setReleased(concept.isReleased());
 		result.setIconId(iconId);

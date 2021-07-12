@@ -27,7 +27,7 @@ import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.index.revision.StagingArea;
 import com.b2international.snowowl.core.repository.ChangeSetProcessorBase;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Builder;
 import com.b2international.snowowl.snomed.datastore.index.refset.RefSetMemberChange;
@@ -44,7 +44,7 @@ public class RelationshipChangeProcessor extends ChangeSetProcessorBase {
 
 	public RelationshipChangeProcessor() {
 		super("relationship changes");
-		this.memberChangeProcessor = new ReferringMemberChangeProcessor(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER);
+		this.memberChangeProcessor = new ReferringMemberChangeProcessor(SnomedRelationship.TYPE);
 	}
 
 	@Override

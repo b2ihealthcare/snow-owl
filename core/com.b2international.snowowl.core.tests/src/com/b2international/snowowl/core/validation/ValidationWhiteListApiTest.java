@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2019 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,6 +46,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class ValidationWhiteListApiTest {
 
+	private static final ComponentIdentifier COMPONENT_ID = ComponentIdentifier.of("concept", "123");
+	
 	private ServiceProvider context;
 	
 	@Before
@@ -70,19 +72,19 @@ public class ValidationWhiteListApiTest {
 	
 	@Test
 	public void createWhiteList() throws Exception {
-		final String whiteListId = createWhiteLists("58");
+		final String whiteListId = createWhiteLists("58", COMPONENT_ID);
 		
 		assertThat(whiteListId).isNotEmpty();
 		
 		final ValidationWhiteList whiteList = ValidationRequests.whiteList().prepareGet(whiteListId).buildAsync().getRequest().execute(context);
 		assertThat(whiteList.getRuleId()).isEqualTo("58");
-		assertThat(whiteList.getComponentIdentifier()).isEqualTo(ComponentIdentifier.unknown());
+		assertThat(whiteList.getComponentIdentifier()).isEqualTo(COMPONENT_ID);
 	}
 
 	@Test
 	public void deleteWhiteList() throws Exception {
-		final String whiteList1 = createWhiteLists("1");
-		final String whiteList2 = createWhiteLists("2");
+		final String whiteList1 = createWhiteLists("1", COMPONENT_ID);
+		final String whiteList2 = createWhiteLists("2", COMPONENT_ID);
 		
 		ValidationRequests.whiteList().prepareDelete(whiteList2).buildAsync().getRequest().execute(context);
 		
@@ -94,8 +96,8 @@ public class ValidationWhiteListApiTest {
 
 	@Test
 	public void filterByRuleId() throws Exception{
-		createWhiteLists("3");
-		createWhiteLists("4");
+		createWhiteLists("3", COMPONENT_ID);
+		createWhiteLists("4", COMPONENT_ID);
 		
 		final ValidationWhiteLists whiteLists = ValidationRequests.whiteList().prepareSearch()
 			.filterByRuleId("3")
@@ -108,15 +110,16 @@ public class ValidationWhiteListApiTest {
 	
 	@Test
 	public void filterByComponentIdentifier() throws Exception{
-		final ComponentIdentifier componentIdentifier = ComponentIdentifier.of((short) 100, "12345678");
+		final ComponentIdentifier componentIdentifier = ComponentIdentifier.of("concept", "12345678");
 		
-		createWhiteLists("5");
+		createWhiteLists("5", COMPONENT_ID);
 		createWhiteLists("6", componentIdentifier);
 		
 		final ValidationWhiteLists whiteLists = ValidationRequests.whiteList().prepareSearch()
 			.filterByComponentIdentifier(componentIdentifier.getComponentId())
-			.filterByComponentType(componentIdentifier.getTerminologyComponentId())
-			.buildAsync().getRequest()
+			.filterByComponentType(componentIdentifier.getComponentType())
+			.buildAsync()
+			.getRequest()
 			.execute(context);
 		
 		assertThat(whiteLists).hasSize(1);
@@ -129,10 +132,6 @@ public class ValidationWhiteListApiTest {
 		assertThat(validationWhiteLists).isEmpty();
 	}
 	
-	
-	private String createWhiteLists(final String ruleId) throws Exception {
-		return createWhiteLists(ruleId, ComponentIdentifier.unknown());
-	}
 	
 	private String createWhiteLists(final String ruleId, final ComponentIdentifier componentIdentifier) {
 		return ValidationRequests.whiteList().prepareCreate()
