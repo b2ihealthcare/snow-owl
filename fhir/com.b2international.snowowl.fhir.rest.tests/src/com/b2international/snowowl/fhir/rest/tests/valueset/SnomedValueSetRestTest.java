@@ -32,7 +32,7 @@ import com.b2international.snowowl.test.commons.rest.RestExtensions;
  */
 public class SnomedValueSetRestTest extends SnomedFhirRestTest {
 	
-	private String simpleTypeRefsetId = "SNOMEDCT/" + FHIR_SIMPLE_TYPE_REFSET_VERSION + "/member/" + simpleTypeRefSetId;
+	private String simpleTypeRefsetId = "SNOMEDCT/" + FHIR_SIMPLE_TYPE_REFSET_VERSION + "/refset/" + simpleTypeRefSetId;
 	
 	//@Test
 	public void printValueSets() throws Exception {
@@ -100,7 +100,7 @@ public class SnomedValueSetRestTest extends SnomedFhirRestTest {
 	@Test
 	public void getSingleQueryTypeValueSetTest() {
 		
-		String qtid = "SNOMEDCT/" + FHIR_QUERY_TYPE_REFSET_VERSION + "/member/" + queryTypeRefsetLogicalId;
+		String qtid = "SNOMEDCT/" + FHIR_QUERY_TYPE_REFSET_VERSION + "/refset/" + queryTypeRefsetLogicalId;
 		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 		 	.pathParam("id", qtid) 

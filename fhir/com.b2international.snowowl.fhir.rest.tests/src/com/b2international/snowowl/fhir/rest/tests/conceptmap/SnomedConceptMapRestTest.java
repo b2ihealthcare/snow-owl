@@ -222,7 +222,7 @@ public class SnomedConceptMapRestTest extends FhirRestTest {
 	public void conceptMapsSummaryTest() throws Exception {
 		
 		String simpleMapTypeRefsetId = mapTypeRefSetIds.get(0);
-		String mapTypeRefsetUri = "SNOMEDCT/" + FHIR_MAP_TYPE_REFSET_VERSION + "/member/" + simpleMapTypeRefsetId;
+		String mapTypeRefsetUri = "SNOMEDCT/" + FHIR_MAP_TYPE_REFSET_VERSION + "/refset/" + simpleMapTypeRefsetId;
 		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.pathParam("id",mapTypeRefsetUri)

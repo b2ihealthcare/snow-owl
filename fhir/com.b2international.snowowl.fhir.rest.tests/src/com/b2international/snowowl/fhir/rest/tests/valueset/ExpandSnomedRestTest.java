@@ -114,7 +114,7 @@ public class ExpandSnomedRestTest extends SnomedFhirRestTest {
 	@Test
 	public void simpleTypeRefsetTest() throws Exception {
 		
-		String refsetURI = "SNOMEDCT/" + FHIR_SIMPLE_TYPE_REFSET_VERSION + "/member/" + simpleTypeRefSetId;
+		String refsetURI = "SNOMEDCT/" + FHIR_SIMPLE_TYPE_REFSET_VERSION + "/refset/" + simpleTypeRefSetId;
 		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.pathParam("id", refsetURI) 
@@ -141,7 +141,7 @@ public class ExpandSnomedRestTest extends SnomedFhirRestTest {
 		String refsetLogicalId = TestReferenceSetCreator.createQueryTypeReferenceSet(mainBranch, refsetName, FHIR_QUERY_TYPE_REFSET_VERSION);
 		System.out.println("ExpandSnomedRestTest.queryTypeRefsetTest() " + refsetLogicalId);
 		
-		String qtid = "SNOMEDCT/" + FHIR_QUERY_TYPE_REFSET_VERSION + "/member/" + queryTypeRefsetLogicalId;
+		String qtid = "SNOMEDCT/" + FHIR_QUERY_TYPE_REFSET_VERSION + "/refset/" + queryTypeRefsetLogicalId;
 		
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.pathParam("id", qtid) 

@@ -138,7 +138,7 @@ public class TranslateSnomedConceptMapRestTest extends FhirRestTest {
 	@Test
 	public void nonExistingRefsetTest() throws Exception {
 		
-		String mapTypeRefsetUri = "SNOMEDCT/" + FHIR_MAP_TYPE_REFSET_VERSION + "/member/invalid";
+		String mapTypeRefsetUri = "SNOMEDCT/" + FHIR_MAP_TYPE_REFSET_VERSION + "/refset/invalid";
 			
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.pathParam("id", mapTypeRefsetUri)
@@ -160,7 +160,7 @@ public class TranslateSnomedConceptMapRestTest extends FhirRestTest {
 	@Test
 	public void invalidSystemTest() throws Exception {
 		
-		String mapTypeRefsetUri = "SNOMEDCT/" + FHIR_MAP_TYPE_REFSET_VERSION + "/member/" + mapTypeRefSetIds.get(0);
+		String mapTypeRefsetUri = "SNOMEDCT/" + FHIR_MAP_TYPE_REFSET_VERSION + "/refset/" + mapTypeRefSetIds.get(0);
 			
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.pathParam("id", mapTypeRefsetUri)
@@ -182,7 +182,7 @@ public class TranslateSnomedConceptMapRestTest extends FhirRestTest {
 	@Test
 	public void invalidTargetTest() throws Exception {
 		
-		String mapTypeRefsetUri = "SNOMEDCT/" + FHIR_MAP_TYPE_REFSET_VERSION + "/member/" +  mapTypeRefSetIds.get(0);
+		String mapTypeRefsetUri = "SNOMEDCT/" + FHIR_MAP_TYPE_REFSET_VERSION + "/refset/" +  mapTypeRefSetIds.get(0);
 			
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.pathParam("id", mapTypeRefsetUri)
@@ -204,7 +204,7 @@ public class TranslateSnomedConceptMapRestTest extends FhirRestTest {
 	@Test
 	public void noResultTest() throws Exception {
 		
-		String mapTypeRefsetUri = "SNOMEDCT/" + FHIR_MAP_TYPE_REFSET_VERSION + "/member/" +  mapTypeRefSetIds.get(0);
+		String mapTypeRefsetUri = "SNOMEDCT/" + FHIR_MAP_TYPE_REFSET_VERSION + "/refset/" +  mapTypeRefSetIds.get(0);
 			
 		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.pathParam("id", mapTypeRefsetUri)
@@ -225,7 +225,7 @@ public class TranslateSnomedConceptMapRestTest extends FhirRestTest {
 	@Test
 	public void translateSpecificMappingTest() throws Exception {
 		
-		String mapTypeRefsetUri = "SNOMEDCT/" + FHIR_MAP_TYPE_REFSET_VERSION + "/member/" +  mapTypeRefSetIds.get(0);
+		String mapTypeRefsetUri = "SNOMEDCT/" + FHIR_MAP_TYPE_REFSET_VERSION + "/refset/" +  mapTypeRefSetIds.get(0);
 		
 		String response = givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.pathParam("id", mapTypeRefsetUri)
@@ -263,7 +263,7 @@ public class TranslateSnomedConceptMapRestTest extends FhirRestTest {
 	@Test
 	public void reverseTranslateSpecificMappingTest() throws Exception {
 		
-		String mapTypeRefsetUri = "SNOMEDCT/" + FHIR_MAP_TYPE_REFSET_VERSION + "/member/" +  mapTypeRefSetIds.get(0);
+		String mapTypeRefsetUri = "SNOMEDCT/" + FHIR_MAP_TYPE_REFSET_VERSION + "/refset/" +  mapTypeRefSetIds.get(0);
 		
 		String response = givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
 			.pathParam("id", mapTypeRefsetUri)
