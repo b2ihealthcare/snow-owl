@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,18 +31,11 @@ import org.elasticsearch.action.bulk.BulkProcessor.Builder;
 import org.elasticsearch.action.bulk.BulkProcessor.Listener;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
-import org.elasticsearch.action.search.ClearScrollRequest;
-import org.elasticsearch.action.search.ClearScrollResponse;
-import org.elasticsearch.action.search.SearchRequest;
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.action.search.SearchScrollRequest;
-import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.client.RestClient;
-import org.elasticsearch.client.RestClientBuilder;
+import org.elasticsearch.action.search.*;
+import org.elasticsearch.client.*;
+import org.elasticsearch.client.HttpAsyncResponseConsumerFactory.HeapBufferedResponseConsumerFactory;
 import org.elasticsearch.client.RestClientBuilder.HttpClientConfigCallback;
 import org.elasticsearch.client.RestClientBuilder.RequestConfigCallback;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.client.RestHighLevelClientExt;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.reindex.BulkByScrollResponse;
 import org.elasticsearch.index.reindex.DeleteByQueryRequest;
@@ -59,6 +52,21 @@ import com.b2international.index.es.client.IndicesClient;
  * @since 6.11
  */
 public final class EsHttpClient extends EsClientBase {
+
+	/* 
+	 * Customize the HTTP response consumer factory to allow processing greater than 
+	 * the default 100 MB of data (currently 1 GB) as the input.
+	 */
+	private static final int BUFFER_LIMIT = 1024 * 1024 * 1024;
+
+	private static final RequestOptions EXTENDED_DEFAULT;
+	
+	static {
+		final RequestOptions.Builder builder = RequestOptions.DEFAULT.toBuilder();
+		// XXX: this method call returns void, not an instance of Builder, so calls can not be chained (unlike all other setters on Builder)
+		builder.setHttpAsyncResponseConsumerFactory(new HeapBufferedResponseConsumerFactory(BUFFER_LIMIT));
+		EXTENDED_DEFAULT = builder.build();
+	}
 
 	private final RestHighLevelClient client;
 	private final RestHighLevelClientExt clientExt;
@@ -119,38 +127,38 @@ public final class EsHttpClient extends EsClientBase {
 	
 	@Override
 	protected boolean ping() throws IOException {
-		return client.ping(RequestOptions.DEFAULT);
+		return client.ping(EXTENDED_DEFAULT);
 	}
 	
 	@Override
 	public Builder bulk(Listener listener) {
 		checkAvailable();
-		return BulkProcessor.builder((req, actionListener) -> clientExt.bulkAsync(req, RequestOptions.DEFAULT, actionListener), listener);
+		return BulkProcessor.builder((req, actionListener) -> clientExt.bulkAsync(req, EXTENDED_DEFAULT, actionListener), listener);
 	}
 
 	@Override
 	public GetResponse get(GetRequest req) throws IOException {
 		checkAvailable();
-		return client.get(req, RequestOptions.DEFAULT);
+		return client.get(req, EXTENDED_DEFAULT);
 	}
 
 	@Override
 	public SearchResponse search(SearchRequest req) throws IOException {
 		checkAvailable();
-		return client.search(req, RequestOptions.DEFAULT);
+		return client.search(req, EXTENDED_DEFAULT);
 	}
 	
 	@Override
 	public SearchResponse scroll(SearchScrollRequest req) throws IOException {
 		checkAvailable();
-		return client.scroll(req, RequestOptions.DEFAULT);
+		return client.scroll(req, EXTENDED_DEFAULT);
 	}
 	
 	@Override
 	public final ClearScrollResponse clearScroll(ClearScrollRequest req) throws IOException {
 		checkAvailable();
 		// XXX use special client to handle 404 Bad Request on missing search context errors
-		return clientExt.clearScroll(req, RequestOptions.DEFAULT);
+		return clientExt.clearScroll(req, EXTENDED_DEFAULT);
 	}
 	
 	@Override
@@ -164,7 +172,7 @@ public final class EsHttpClient extends EsClientBase {
 			.setSlices(numberOfSlices)
 			.setAbortOnVersionConflict(false);
 		
-		return client.updateByQuery(updateByQueryRequest, RequestOptions.DEFAULT);
+		return client.updateByQuery(updateByQueryRequest, EXTENDED_DEFAULT);
 	}
 	
 	@Override
@@ -177,7 +185,6 @@ public final class EsHttpClient extends EsClientBase {
 				.setSlices(numberOfSlices)
 				.setAbortOnVersionConflict(false);
 			
-		return client.deleteByQuery(deleteByQueryRequest, RequestOptions.DEFAULT);
+		return client.deleteByQuery(deleteByQueryRequest, EXTENDED_DEFAULT);
 	}
-
 }
