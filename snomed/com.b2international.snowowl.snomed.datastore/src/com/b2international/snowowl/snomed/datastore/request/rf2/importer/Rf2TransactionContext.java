@@ -193,7 +193,7 @@ public final class Rf2TransactionContext extends DelegatingTransactionContext {
 						conceptDocToUpdate = (SnomedConceptDocument) newComponents.get(refSetId);
 					}
 					if (conceptDocToUpdate.getRefSetType() == null) {
-						final String referencedComponentType = member.getReferencedComponent().getComponentType();
+						final String referencedComponentType = SnomedComponent.getType(member.getReferencedComponentId());
 						String mapTargetComponentType = TerminologyRegistry.UNKNOWN_COMPONENT_TYPE;
 						try {
 							mapTargetComponentType = SnomedComponent.getType((String) member.getProperties().get(SnomedRf2Headers.FIELD_MAP_TARGET));

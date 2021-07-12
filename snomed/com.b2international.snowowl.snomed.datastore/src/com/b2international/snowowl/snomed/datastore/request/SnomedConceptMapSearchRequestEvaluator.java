@@ -164,10 +164,10 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 					entry -> entry.getKey(), 
 					entry -> {
 						final String mapTargetComponentType = entry.getValue().getReferenceSet().getMapTargetComponentType();
-						if (Strings.isNullOrEmpty(mapTargetComponentType)) {
+						String[] typeParts = mapTargetComponentType.split("\\.");
+						if (Strings.isNullOrEmpty(mapTargetComponentType) || !codeSystemByToolingId.containsKey(typeParts[0])) {
 							return ComponentURI.UNSPECIFIED;
 						}
-						String[] typeParts = mapTargetComponentType.split("\\.");
 						CodeSystem codeSystem = codeSystemByToolingId.get(typeParts[0]);
 						return ComponentURI.of(codeSystem.getResourceURI(), typeParts[1], entry.getValue().getId());
 					}

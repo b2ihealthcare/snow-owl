@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.DelegatingRequest;
 import com.b2international.snowowl.core.events.Request;
@@ -32,7 +33,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.datastore.index.entry.*;
-import com.google.common.collect.FluentIterable;
+import com.google.common.base.Strings;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
@@ -44,6 +45,8 @@ import com.google.common.collect.Multimap;
  * @param <R>
  */
 public final class SnomedBulkRequest<R> extends DelegatingRequest<TransactionContext, TransactionContext, R> {
+
+	private static final long serialVersionUID = 1L;
 
 	public SnomedBulkRequest(Request<TransactionContext, R> next) {
 		super(next);
@@ -62,7 +65,12 @@ public final class SnomedBulkRequest<R> extends DelegatingRequest<TransactionCon
 			.filter(componentId -> SnomedComponent.getTypeSafe(componentId) != null || isMember(componentId)) // just in case filter out invalid component IDs
 			.collect(Collectors.toSet());
 		
-		final Multimap<Class<? extends SnomedDocument>, String> componentIdsByType = HashMultimap.create(FluentIterable.from(requiredComponentIds).index(this::getDocType));
+		final Multimap<Class<? extends SnomedDocument>, String> componentIdsByType = HashMultimap.create();
+		for (String requiredComponentId : requiredComponentIds) {
+			if (!Strings.isNullOrEmpty(requiredComponentId)) {
+				componentIdsByType.put(this.getDocType(requiredComponentId), requiredComponentId);
+			}
+		}
 		
 		// collect all deleted IDs as well
 		deletions.build()
@@ -96,13 +104,13 @@ public final class SnomedBulkRequest<R> extends DelegatingRequest<TransactionCon
 	}
 	
 	private Class<? extends SnomedDocument> getDocType(String componentId) {
-		switch (SnomedComponent.getType(componentId)) {
+		switch (SnomedComponent.getTypeSafe(componentId)) {
 			case SnomedConcept.TYPE: return SnomedConceptDocument.class;
 			case SnomedDescription.TYPE: return SnomedDescriptionIndexEntry.class;
 			case SnomedRelationship.TYPE: return SnomedRelationshipIndexEntry.class;
 			default: {
 				if (!isMember(componentId)) {
-					throw new UnsupportedOperationException("Cannot determine CDO class from component ID '" + componentId + "'.");
+					throw new BadRequestException("Incorrect SNOMED CT identifier '%s'.", componentId);
 				}
 				return SnomedRefSetMemberIndexEntry.class;
 			}

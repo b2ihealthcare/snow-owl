@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -45,8 +46,6 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.test.commons.Services;
 import com.b2international.snowowl.test.commons.SnomedContentRule;
 import com.b2international.snowowl.test.commons.rest.RestExtensions;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
 /**
@@ -104,7 +103,7 @@ public class ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest {
 	}
 	
 	@Test
-	public void filterByComponentUri() {
+	public void filterByComponentUriAndId() {
 		final String refSetId = createSimpleMapTypeRefSet();
 		final String filterId = "12345";
 		final ComponentURI uri = ComponentURI.of(CODESYSTEM, SnomedConcept.TYPE, filterId);
@@ -116,7 +115,7 @@ public class ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest {
 		
 		final ConceptMapMappings conceptMaps = CodeSystemRequests.prepareSearchConceptMapMappings()
 				.all()
-				.filterByComponentIds(ImmutableSet.of(uri.toString(), uri.identifier()))
+				.filterByComponentIds(Set.of(uri.toString(), uri.identifier()))
 				.filterByConceptMap(refSetId)
 				.setLocales("en")
 				.build(CODESYSTEM)
@@ -125,7 +124,7 @@ public class ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest {
 
 		assertEquals(2, conceptMaps.getTotal());
 		Set<ComponentURI> componentUris = getComponentUris(conceptMaps);
-		assertThat(componentUris).containsOnly(sourceUri, uri, ComponentURI.unspecified(SnomedConcept.TYPE, filterId));
+		assertThat(componentUris).containsOnly(sourceUri, uri, ComponentURI.unspecified(filterId));
 	}
 	
 	@Test
@@ -267,7 +266,7 @@ public class ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest {
 			.setTypeId(type)
 			.setTerm(term)
 			.setCaseSignificanceId(Concepts.ENTIRE_TERM_CASE_INSENSITIVE)
-			.setAcceptability(ImmutableMap.of(SnomedConstants.Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.PREFERRED));
+			.setAcceptability(Map.of(SnomedConstants.Concepts.REFSET_LANGUAGE_TYPE_US, Acceptability.PREFERRED));
 	}
 	
 	private static SnomedRelationshipCreateRequestBuilder createIsaRelationship(final String characteristicTypeId, String destinationId) {
@@ -288,7 +287,7 @@ public class ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest {
 			.setReferencedComponentId(sourceCode)
 			.setActive(true)
 			.setModuleId(Concepts.MODULE_SCT_CORE)
-			.setProperties(ImmutableMap.of(SnomedRf2Headers.FIELD_MAP_TARGET, targetCode))
+			.setProperties(Map.of(SnomedRf2Headers.FIELD_MAP_TARGET, targetCode))
 			.build(CODESYSTEM, RestExtensions.USER, "New Reference Set")
 			.execute(Services.bus())
 			.getSync(1, TimeUnit.MINUTES);

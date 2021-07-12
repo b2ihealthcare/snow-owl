@@ -153,6 +153,10 @@ public final class ComponentURI implements Serializable {
 		return new ComponentURI(resourceURI, componentType, componentId);
 	}
 	
+	public static ComponentURI unspecified(String identifier) {
+		return of(CodeSystem.uri(TerminologyRegistry.UNSPECIFIED), TerminologyRegistry.UNKNOWN_COMPONENT_TYPE, identifier);
+	}
+	
 	public static ComponentURI unspecified(String componentType, String identifier) {
 		return of(CodeSystem.uri(TerminologyRegistry.UNSPECIFIED), componentType, identifier);
 	}
