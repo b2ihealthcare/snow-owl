@@ -1290,6 +1290,44 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		assertThat(expandedCodeSystemsAfterMerge.first().get().getUpgradeInfo().getAvailableVersions()).containsOnly(extensionVersion3);
 	}
 	
+	@Test
+	public void upgrade24UpgradeWithEmptyExtension() throws Exception {
+		
+		// new SI concept
+		createConcept(new CodeSystemURI(SNOMEDCT), createConceptRequestBody(Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE));
+		
+		// create a new INT version
+		String effectiveDate1 = getNextAvailableEffectiveDateAsString(SNOMEDCT);
+		createVersion(SNOMEDCT, effectiveDate1, effectiveDate1).statusCode(201);
+		CodeSystemURI upgradeVersion1 = CodeSystemURI.branch(SNOMEDCT, effectiveDate1);
+		
+		// new SI concept
+		createConcept(new CodeSystemURI(SNOMEDCT), createConceptRequestBody(Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE));
+		
+		// create a new INT version
+		String effectiveDate2 = getNextAvailableEffectiveDateAsString(SNOMEDCT);
+		createVersion(SNOMEDCT, effectiveDate2, effectiveDate2).statusCode(201);
+		CodeSystemURI upgradeVersion2 = CodeSystemURI.branch(SNOMEDCT, effectiveDate2);
+		
+		// new SI concept
+		createConcept(new CodeSystemURI(SNOMEDCT), createConceptRequestBody(Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE));
+		
+		// create a new INT version
+		String effectiveDate3 = getNextAvailableEffectiveDateAsString(SNOMEDCT);
+		createVersion(SNOMEDCT, effectiveDate3, effectiveDate3).statusCode(201);
+		CodeSystemURI upgradeVersion3 = CodeSystemURI.branch(SNOMEDCT, effectiveDate3);
+		
+		// create extension on the latest SI VERSION
+		CodeSystem extension = createExtension(upgradeVersion1, branchPath.lastSegment());
+		
+		// start upgrade to the new available upgrade version
+		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getCodeSystemURI(), upgradeVersion2);
+		
+		// start upgrade to the new available upgrade version
+		CodeSystem upgradeCodeSystem2 = createExtensionUpgrade(extension.getCodeSystemURI(), upgradeVersion3);
+		
+	}
+	
 	private String getFirstRelationshipId(SnomedConcept concept, String characteristicTypeId) {
 		return concept.getRelationships().getItems().stream().filter(r -> characteristicTypeId.equals(r.getCharacteristicTypeId())).findFirst().get().getId();
 	}
