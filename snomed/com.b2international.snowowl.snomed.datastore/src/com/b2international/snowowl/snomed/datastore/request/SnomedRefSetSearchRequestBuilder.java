@@ -61,7 +61,7 @@ public final class SnomedRefSetSearchRequestBuilder extends SnomedSearchRequestB
 	 *            - map target component type integer
 	 */
 	public SnomedRefSetSearchRequestBuilder filterByMapTargetComponentType(String mapTargetComponentType) {
-		return filterByMapTargetComponentType(mapTargetComponentType);
+		return addOption(SnomedRefSetSearchRequest.OptionKey.MAP_TARGET_COMPONENT_TYPE, mapTargetComponentType);
 	}
 
 	/**

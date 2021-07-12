@@ -43,6 +43,7 @@ import com.b2international.snowowl.fhir.core.search.FhirParameter.PrefixedValue;
 import com.b2international.snowowl.fhir.core.search.FhirSearchParameter;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
@@ -273,10 +274,9 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 			targetSystem = translateRequest.getSystemValue();
 		}
 		
-		//"com.b2international.snowowl.terminology.atc.concept" is expected
-		//or the standard SNOMED CT URI
-		if (targetSystem.equals(SnomedUri.SNOMED_BASE_URI_STRING)) {
-			targetSystem = SnomedConcept.TYPE;
+		// "snomed.concept" is expected or the standard SNOMED CT URI
+		if (targetSystem.startsWith(SnomedUri.SNOMED_BASE_URI_STRING)) {
+			targetSystem = String.join(".", SnomedTerminologyComponentConstants.TOOLING_ID, SnomedConcept.TYPE);
 		}
 		
 		String locationName = "$translate.system";
