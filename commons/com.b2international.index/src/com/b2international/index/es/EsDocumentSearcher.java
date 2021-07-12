@@ -384,12 +384,10 @@ public class EsDocumentSearcher implements Searcher {
 			List<?> obj = (List<?>) codec.unmarshal(dis);
 			codec.close();
 			return obj.toArray();
-		} catch (final IOException | IllegalArgumentException e) {
-			if (e instanceof IOException) {
-				throw new FormattedRuntimeException("Couldn't decode searchAfter token.", e);
-			} else {
-				throw new BadRequestException("Invalid 'searchAfter' parameter value '%s'", searchAfterToken);
-			}
+		} catch (final IOException e) {
+			throw new FormattedRuntimeException("Couldn't decode searchAfter token.", e);
+		} catch (final IllegalArgumentException e) {
+			throw new BadRequestException("Invalid 'searchAfter' parameter value '%s'", searchAfterToken);
 		}
 	}
 
