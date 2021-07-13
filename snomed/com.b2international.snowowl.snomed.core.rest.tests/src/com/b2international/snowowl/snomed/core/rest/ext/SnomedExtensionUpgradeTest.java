@@ -19,7 +19,11 @@ import static com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstant
 import static com.b2international.snowowl.snomed.core.rest.SnomedComponentRestRequests.getComponent;
 import static com.b2international.snowowl.snomed.core.rest.SnomedMergingRestRequests.createMerge;
 import static com.b2international.snowowl.snomed.core.rest.SnomedMergingRestRequests.waitForMergeJob;
-import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.*;
+import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.DEFAULT_LANGUAGE_CODE;
+import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createConceptRequestBody;
+import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createDescriptionRequestBody;
+import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.createRelationshipRequestBody;
+import static com.b2international.snowowl.snomed.core.rest.SnomedRestFixtures.merge;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.createVersion;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getLatestVersion;
 import static com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests.getNextAvailableEffectiveDateAsString;
@@ -42,6 +46,10 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import com.b2international.commons.json.Json;
+import com.b2international.index.revision.BaseRevisionBranching;
+import com.b2international.index.revision.RevisionBranch.BranchState;
+import com.b2international.snowowl.core.ApplicationContext;
+import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.branch.BranchPathUtils;
 import com.b2international.snowowl.core.codesystem.CodeSystem;
@@ -61,6 +69,7 @@ import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.rest.SnomedApiTestConstants;
 import com.b2international.snowowl.snomed.core.rest.SnomedComponentType;
+import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.test.commons.codesystem.CodeSystemRestRequests;
 import com.b2international.snowowl.test.commons.codesystem.CodeSystemVersionRestRequests;
 
@@ -1302,7 +1311,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		CodeSystemURI upgradeVersion1 = CodeSystemURI.branch(SNOMEDCT, effectiveDate1);
 		
 		// new SI concept
-		createConcept(new CodeSystemURI(SNOMEDCT), createConceptRequestBody(Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE));
+		String conceptId = createConcept(new CodeSystemURI(SNOMEDCT), createConceptRequestBody(Concepts.ROOT_CONCEPT, Concepts.MODULE_SCT_CORE));
 		
 		// create a new INT version
 		String effectiveDate2 = getNextAvailableEffectiveDateAsString(SNOMEDCT);
@@ -1323,9 +1332,28 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		// start upgrade to the new available upgrade version
 		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getCodeSystemURI(), upgradeVersion2);
 		
-		// start upgrade to the new available upgrade version
-		CodeSystem upgradeCodeSystem2 = createExtensionUpgrade(extension.getCodeSystemURI(), upgradeVersion3);
+		assertState(upgradeCodeSystem.getBranchPath(), extension.getBranchPath(), BranchState.FORWARD);
 		
+		Boolean success = CodeSystemRequests.prepareUpgradeSynchronization(upgradeCodeSystem.getCodeSystemURI(), extension.getCodeSystemURI())
+				.build(upgradeCodeSystem.getRepositoryId())
+				.execute(getBus())
+				.getSync(1, TimeUnit.MINUTES);
+		assertTrue(success);
+		
+		assertState(upgradeCodeSystem.getBranchPath(), extension.getBranchPath(), BranchState.FORWARD);
+		
+		Boolean successComplete = CodeSystemRequests.prepareComplete(upgradeCodeSystem.getShortName())
+			.build(upgradeCodeSystem.getRepositoryId())
+			.execute(getBus())
+			.getSync(1, TimeUnit.MINUTES);
+		assertTrue(successComplete);
+		
+		getComponent(extension.getCodeSystemURI().toString(), SnomedComponentType.CONCEPT, conceptId).statusCode(200);
+	}
+	
+	private void assertState(String branchPath, String compareWith, BranchState expectedState) {
+		BaseRevisionBranching branching = ApplicationContext.getServiceForClass(RepositoryManager.class).get(SnomedDatastoreActivator.REPOSITORY_UUID).service(BaseRevisionBranching.class);
+		assertEquals(expectedState, branching.getBranchState(branchPath, compareWith));
 	}
 	
 	private String getFirstRelationshipId(SnomedConcept concept, String characteristicTypeId) {
