@@ -586,6 +586,21 @@ public class RevisionBranchMergeTest extends BaseRevisionIndexTest {
 		assertDocEquals(NEW_DATA2, existingDoc);
 	}
 	
+	@Test
+	public void mergeEmptyBranchTwice() throws Exception {
+		indexRevision(MAIN, NEW_DATA);
+		final String branchA = createBranch(MAIN, "branchA");
+		indexRevision(MAIN, NEW_DATA2);
+		final String branchB = createBranch(MAIN, "branchB");
+		branching().prepareMerge(branchA, branchB).squash(false).merge();
+		assertState(branchA, branchB, BranchState.BEHIND);
+		assertState(branchB, branchA, BranchState.FORWARD);
+        // perform another fast-forward merge to simulate sync
+		branching().prepareMerge(branchA, branchB).squash(false).merge();
+		assertState(branchA, branchB, BranchState.BEHIND);
+		assertState(branchB, branchA, BranchState.FORWARD);
+	}
+	
 	private void assertState(String branchPath, String compareWith, BranchState expectedState) {
 		assertEquals(expectedState, branching().getBranchState(branchPath, compareWith));
 	}

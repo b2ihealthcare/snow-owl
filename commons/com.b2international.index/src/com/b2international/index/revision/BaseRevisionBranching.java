@@ -21,12 +21,17 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
-import com.b2international.commons.exceptions.*;
+import com.b2international.commons.exceptions.AlreadyExistsException;
+import com.b2international.commons.exceptions.ApiException;
+import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.exceptions.NotFoundException;
+import com.b2international.commons.exceptions.RequestTimeoutException;
 import com.b2international.commons.options.Metadata;
 import com.b2international.index.BulkUpdate;
 import com.b2international.index.Hits;
@@ -44,6 +49,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
 
 /**
  * @since 6.5
@@ -186,11 +192,11 @@ public abstract class BaseRevisionBranching {
 	 * @param mergeBranch
 	 * @return
 	 */
-	protected final boolean hasChanges(String branch, long from, long to, long mergeBranch) {
+	protected final boolean hasChanges(Set<String> branches, long from, long to, long mergeBranch) {
 		return index().read(searcher -> searcher.search(Query.select(Commit.class)
 				.where(
 					Expressions.builder()
-						.filter(Commit.Expressions.branches(branch))
+						.filter(Commit.Expressions.branches(branches))
 						.filter(Commit.Expressions.timestampRange(from, to))
 						.mustNot(Commit.Expressions.mergeFrom(mergeBranch, from, to, false))
 					.build()
@@ -365,12 +371,12 @@ public abstract class BaseRevisionBranching {
 	 * @return
 	 */
 	public final BranchState getBranchState(RevisionBranch left, RevisionBranch right) {
-		final RevisionBranchRef diff = left.ref().difference(right.ref());
-		
-    	long leftBaseTimestamp = diff.segments().isEmpty() ? left.getBaseTimestamp() : diff.segments().first().start();
-    	long leftHeadTimestamp = diff.segments().isEmpty() ? left.getHeadTimestamp() : diff.segments().last().end();
-    	long rightBaseTimestamp = leftBaseTimestamp;
-    	long rightHeadTimestamp = right.getHeadTimestamp();
+		final RevisionBranchRef leftDiff = left.ref().difference(right.ref());
+		final RevisionBranchRef rightDiff = right.ref().difference(left.ref());
+    	long leftBaseTimestamp = leftDiff.segments().isEmpty() ? left.getBaseTimestamp() : leftDiff.segments().first().start();
+    	long leftHeadTimestamp = leftDiff.segments().isEmpty() ? left.getHeadTimestamp() : leftDiff.segments().last().end();
+    	long rightBaseTimestamp = rightDiff.segments().isEmpty() ? right.getBaseTimestamp() : rightDiff.segments().first().start();
+    	long rightHeadTimestamp = rightDiff.segments().isEmpty() ? right.getHeadTimestamp() : rightDiff.segments().last().end();
     	
     	final RevisionBranchPoint latestMergeOfRight = left.getLatestMergeSource(right.getId(), true);
     	if (latestMergeOfRight != null && latestMergeOfRight.getTimestamp() > rightBaseTimestamp) {
@@ -388,13 +394,31 @@ public abstract class BaseRevisionBranching {
     	}
     	
     	if (leftHeadTimestamp > leftBaseTimestamp && rightHeadTimestamp <= rightBaseTimestamp) {
-    		if (hasChanges(left.getPath(), leftBaseTimestamp, leftHeadTimestamp, right.getId())) {
+    		final Set<String> branchesToCheckForChanges = Sets.newHashSet(left.getPath());
+    		if (!leftDiff.segments().isEmpty()) {
+    			leftDiff.segments().stream()
+					.map(RevisionSegment::branchId)
+					.filter(branchId -> left.getId() != branchId)
+					.map(this::getBranch)
+					.map(RevisionBranch::getPath)
+					.forEach(branchesToCheckForChanges::add);
+    		}
+    		if (hasChanges(branchesToCheckForChanges, leftBaseTimestamp, leftHeadTimestamp, right.getId())) {
     			return BranchState.FORWARD;
     		} else {
     			return BranchState.UP_TO_DATE;
     		}
         } else if (leftHeadTimestamp <= leftBaseTimestamp && rightHeadTimestamp > rightBaseTimestamp) {
-        	if (hasChanges(right.getPath(), rightBaseTimestamp, rightHeadTimestamp, left.getId())) {
+        	final Set<String> branchesToCheckForChanges = Sets.newHashSet(right.getPath());
+    		if (!rightDiff.segments().isEmpty()) {
+    			rightDiff.segments().stream()
+					.map(RevisionSegment::branchId)
+					.filter(branchId -> right.getId() != branchId)
+					.map(this::getBranch)
+					.map(RevisionBranch::getPath)
+					.forEach(branchesToCheckForChanges::add);
+    		}
+        	if (hasChanges(branchesToCheckForChanges, rightBaseTimestamp, rightHeadTimestamp, left.getId())) {
     			return BranchState.BEHIND;
     		} else {
     			return BranchState.UP_TO_DATE;
