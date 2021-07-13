@@ -10,8 +10,8 @@ import com.b2international.index.query.Expressions.ExpressionBuilder
 import com.b2international.index.revision.RevisionSearcher
 import com.b2international.snowowl.core.ComponentIdentifier
 import com.b2international.snowowl.core.date.EffectiveTimes
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedCardinalityPredicate
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraint
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedRelationshipPredicate
@@ -144,7 +144,7 @@ if (params.isUnpublishedOnly) {
 		def typeId = hit[2]
 		
 		if (!typeId.equals(Concepts.IS_A) && getApplicableRules(sourceId, typeId, false).isEmpty()) {
-			issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationshipId))			
+			issues.add(ComponentIdentifier.of(SnomedRelationship.TYPE, relationshipId))			
 		}
 	}
 	
@@ -162,7 +162,7 @@ if (params.isUnpublishedOnly) {
 		for (SnomedOWLRelationshipDocument relationship : getOWLRelationships(owlAxiomMember)) {
 			def typeId = relationship.getTypeId()
 			if (!typeId.equals(Concepts.IS_A) && getApplicableRules(sourceId, typeId, true).isEmpty()) {
-				issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, owlAxiomMember.getId()))
+				issues.add(ComponentIdentifier.of(SnomedReferenceSetMember.TYPE, owlAxiomMember.getId()))
 			}
 		}
 	}
@@ -192,7 +192,7 @@ if (params.isUnpublishedOnly) {
 		
 		searcher.scroll(query).forEach({ hits ->
 			hits.forEach({ id ->
-				issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, id))
+				issues.add(ComponentIdentifier.of(SnomedRelationship.TYPE, id))
 			})
 		})
 	}
@@ -214,7 +214,7 @@ if (params.isUnpublishedOnly) {
 	
 	searcher.scroll(query).forEach({ hits ->
 		hits.forEach({ id ->
-			issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, id))
+			issues.add(ComponentIdentifier.of(SnomedRelationship.TYPE, id))
 		})
 	})
 	
@@ -250,7 +250,7 @@ if (params.isUnpublishedOnly) {
 		
 		searcher.scroll(owlMemberQuery).forEach({ hits ->
 			hits.forEach({ id ->
-				issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, id))
+				issues.add(ComponentIdentifier.of(SnomedReferenceSetMember.TYPE, id))
 			})
 		})
 	}
@@ -283,7 +283,7 @@ if (params.isUnpublishedOnly) {
 	
 	searcher.scroll(owlMemberQuery).forEach({ hits ->
 		hits.forEach({ id ->
-			issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, id))
+			issues.add(ComponentIdentifier.of(SnomedReferenceSetMember.TYPE, id))
 		})
 	})
 }

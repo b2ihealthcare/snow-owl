@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,7 @@ package com.b2international.index.es.client.tcp;
 
 import java.io.IOException;
 
-import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
-import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
-import org.elasticsearch.action.admin.indices.mapping.get.GetMappingsRequest;
-import org.elasticsearch.action.admin.indices.mapping.get.GetMappingsResponse;
-import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
 import org.elasticsearch.action.admin.indices.settings.get.GetSettingsRequest;
@@ -30,8 +25,17 @@ import org.elasticsearch.action.admin.indices.settings.get.GetSettingsResponse;
 import org.elasticsearch.action.admin.indices.settings.put.UpdateSettingsRequest;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.client.IndicesAdminClient;
+import org.elasticsearch.client.indices.CreateIndexRequest;
+import org.elasticsearch.client.indices.CreateIndexResponse;
+import org.elasticsearch.client.indices.GetMappingsRequest;
+import org.elasticsearch.client.indices.GetMappingsResponse;
+import org.elasticsearch.client.indices.PutMappingRequest;
+import org.elasticsearch.cluster.metadata.MappingMetadata;
 
 import com.b2international.index.es.client.IndicesClient;
+import com.b2international.index.mapping.DocumentMapping;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterators;
 
 /**
  * @since 6.11
@@ -51,7 +55,14 @@ public final class IndicesTcpClient implements IndicesClient {
 
 	@Override
 	public CreateIndexResponse create(CreateIndexRequest req) throws IOException {
-		return EsTcpClient.execute(client.create(req));
+		// Convert mappings using the generic "_doc" mapping type; include index settings
+		var tcpReq = new org.elasticsearch.action.admin.indices.create.CreateIndexRequest(req.index())
+			.mapping(DocumentMapping._DOC, req.mappings().utf8ToString(), req.mappingsXContentType())
+			.settings(req.settings());
+		var tcpResp = EsTcpClient.execute(client.create(tcpReq));
+		
+		// Convert acknowledgment flags and index name back to a client response
+		return new CreateIndexResponse(tcpResp.isAcknowledged(), tcpResp.isShardsAcknowledged(), tcpResp.index());
 	}
 
 	@Override
@@ -66,12 +77,33 @@ public final class IndicesTcpClient implements IndicesClient {
 	
 	@Override
 	public GetMappingsResponse getMapping(GetMappingsRequest req) throws IOException {
-		return EsTcpClient.execute(client.getMappings(req));
+		// Propagate index name(s) to the non-client get mapping request
+		var tcpReq = new org.elasticsearch.action.admin.indices.mapping.get.GetMappingsRequest()
+			.indices(req.indices());
+		var tcpResp = EsTcpClient.execute(client.getMappings(tcpReq));
+		
+		// Unpack inner Map containing the mapping for the single/only document type
+		final ImmutableMap.Builder<String, MappingMetadata> mappings = ImmutableMap.builder();
+		tcpResp.mappings().forEach(cursor -> {
+			mappings.put(cursor.key, Iterators.getOnlyElement(cursor.value.valuesIt()));
+		});
+		
+		return new GetMappingsResponse(mappings.build());
 	}
 	
 	@Override
 	public AcknowledgedResponse updateMapping(PutMappingRequest req) throws IOException {
-		return EsTcpClient.execute(client.putMapping(req));
+		/*
+		 * Propagate index name(s) and request source; add "_doc" as the mapping type name, which is not 
+		 * contained in the original request, but is required here.
+		 */
+		var tcpReq = new org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest(req.indices())
+			.source(req.source(), req.xContentType())
+			.type(DocumentMapping._DOC);
+		var tcpResp = EsTcpClient.execute(client.putMapping(tcpReq));
+		
+		// Response can be used directly
+		return tcpResp;
 	}
 	
 	@Override
@@ -83,5 +115,4 @@ public final class IndicesTcpClient implements IndicesClient {
 	public AcknowledgedResponse updateSettings(UpdateSettingsRequest req) throws IOException {
 		return EsTcpClient.execute(client.updateSettings(req));
 	}
-
 }

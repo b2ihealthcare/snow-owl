@@ -1,5 +1,5 @@
 /*
- * Copyright 2019-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2019-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,8 +32,10 @@ import com.b2international.snowowl.core.request.SearchResourceRequest.SortField;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRF2Folder;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
@@ -216,11 +218,11 @@ public final class Rf2RefSetDescriptorRefSetExporter extends Rf2Exporter<SnomedR
 
 	private static String getReferencedComponentType(String referencedComponentType) {
 		switch (referencedComponentType) {
-		case SnomedTerminologyComponentConstants.CONCEPT:
+		case SnomedConcept.TYPE:
 			return Concepts.ATTRIBUTE_TYPE_CONCEPT_TYPE_COMPONENT;
-		case SnomedTerminologyComponentConstants.DESCRIPTION:
+		case SnomedDescription.TYPE:
 			return Concepts.ATTRIBUTE_TYPE_DESCRIPTION_TYPE_COMPONENT;
-		case SnomedTerminologyComponentConstants.RELATIONSHIP:
+		case SnomedRelationship.TYPE:
 			return Concepts.ATTRIBUTE_TYPE_RELATIONSHIP_TYPE_COMPONENT;
 		default:
 			return Concepts.ATTRIBUTE_TYPE_COMPONENT_TYPE;

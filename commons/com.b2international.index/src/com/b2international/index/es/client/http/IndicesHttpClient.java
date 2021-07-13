@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,13 +18,13 @@ package com.b2international.index.es.client.http;
 import java.io.IOException;
 import java.util.Arrays;
 
-import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
-import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
+import org.elasticsearch.client.indices.CreateIndexRequest;
+import org.elasticsearch.client.indices.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
-import org.elasticsearch.action.admin.indices.get.GetIndexRequest;
-import org.elasticsearch.action.admin.indices.mapping.get.GetMappingsRequest;
-import org.elasticsearch.action.admin.indices.mapping.get.GetMappingsResponse;
-import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
+import org.elasticsearch.client.indices.GetIndexRequest;
+import org.elasticsearch.client.indices.GetMappingsRequest;
+import org.elasticsearch.client.indices.GetMappingsResponse;
+import org.elasticsearch.client.indices.PutMappingRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshRequest;
 import org.elasticsearch.action.admin.indices.refresh.RefreshResponse;
 import org.elasticsearch.action.admin.indices.settings.get.GetSettingsRequest;
@@ -56,7 +56,7 @@ public final class IndicesHttpClient implements IndicesClient {
 		try {
 			return esClient.indices().create(req, RequestOptions.DEFAULT);
 		} catch (IOException e) {
-			throw new IndexException(String.format("Failed to create index '%s' for type '%s'", req.index(), req.mappings().entrySet().iterator().next().getKey()), e);
+			throw new IndexException(String.format("Failed to create ES index '%s'.", req.index()), e);
 		}
 	}
 	
@@ -64,9 +64,9 @@ public final class IndicesHttpClient implements IndicesClient {
 	public boolean exists(String... indices) {
 		client.checkAvailable();
 		try {
-			return esClient.indices().exists(new GetIndexRequest().indices(indices), RequestOptions.DEFAULT);
+			return esClient.indices().exists(new GetIndexRequest(indices), RequestOptions.DEFAULT);
 		} catch (IOException e) {
-			throw new IndexException("Couldn't check the existence of ES indices " + Arrays.toString(indices), e);
+			throw new IndexException(String.format("Couldn't check the existence of ES indices '%s'.", Arrays.toString(indices)), e);
 		}
 	}
 
@@ -76,7 +76,7 @@ public final class IndicesHttpClient implements IndicesClient {
 		try {
 			return esClient.indices().delete(req, RequestOptions.DEFAULT);
 		} catch (IOException e) {
-			throw new IndexException(String.format("Failed to delete all ES indices for '%s'.", Arrays.toString(req.indices())), e);
+			throw new IndexException(String.format("Failed to delete ES indices '%s'.", Arrays.toString(req.indices())), e);
 		}
 	}
 
@@ -86,7 +86,7 @@ public final class IndicesHttpClient implements IndicesClient {
 		try {
 			return esClient.indices().refresh(req, RequestOptions.DEFAULT);
 		} catch (IOException e) {
-			throw new IndexException(String.format("Failed to refresh ES indexes '%s'.", Arrays.toString(req.indices())), e);
+			throw new IndexException(String.format("Failed to refresh ES indices '%s'.", Arrays.toString(req.indices())), e);
 		}
 	}
 	
@@ -96,7 +96,7 @@ public final class IndicesHttpClient implements IndicesClient {
 		try {
 			return esClient.indices().getMapping(req, RequestOptions.DEFAULT);
 		} catch (IOException e) {
-			throw new IndexException(String.format("Failed to get mapping '%s' of types %s.", Arrays.toString(req.indices()), Arrays.toString(req.types())), e);
+			throw new IndexException(String.format("Failed to get mapping for ES indices '%s'.", Arrays.toString(req.indices())), e);
 		}
 	}
 	
@@ -106,7 +106,7 @@ public final class IndicesHttpClient implements IndicesClient {
 		try {
 			return esClient.indices().putMapping(req, RequestOptions.DEFAULT);
 		} catch (IOException e) {
-			throw new IndexException(String.format("Failed to put mapping '%s' of types %s.", Arrays.toString(req.indices()), req.type()), e);
+			throw new IndexException(String.format("Failed to update mapping for ES indices '%s'.", Arrays.toString(req.indices())), e);
 		}
 	}
 	
@@ -116,7 +116,7 @@ public final class IndicesHttpClient implements IndicesClient {
 		try {
 			return esClient.indices().getSettings(req, RequestOptions.DEFAULT);
 		} catch (IOException e) {
-			throw new IndexException(String.format("Failed to get settings for index '%s'.", Arrays.toString(req.indices())), e);
+			throw new IndexException(String.format("Failed to get settings for ES indices '%s'.", Arrays.toString(req.indices())), e);
 		}
 	}
 	
@@ -126,8 +126,7 @@ public final class IndicesHttpClient implements IndicesClient {
 		try {
 			return esClient.indices().putSettings(req, RequestOptions.DEFAULT);
 		} catch (IOException e) {
-			throw new IndexException(String.format("Failed to update settings for index '%s'.", Arrays.toString(req.indices())), e);
+			throw new IndexException(String.format("Failed to update settings for ES indices '%s'.", Arrays.toString(req.indices())), e);
 		}
 	}
-	
 }

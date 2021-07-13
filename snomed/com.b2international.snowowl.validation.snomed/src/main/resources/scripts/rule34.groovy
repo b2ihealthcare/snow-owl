@@ -11,7 +11,7 @@ import com.b2international.index.query.SortBy.Order
 import com.b2international.index.revision.RevisionSearcher
 import com.b2international.snowowl.core.ComponentIdentifier
 import com.b2international.snowowl.core.date.EffectiveTimes
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry
 import com.google.common.collect.Lists
 
@@ -78,10 +78,10 @@ for (Hits<String[]> page : searcher.scroll(query)) {
 		String[] duplicate = buckets.get(key)
 		if (duplicate != null) {
 			// report duplication of grouped relationship in the same group
-			issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship[0]));
+			issues.add(ComponentIdentifier.of(SnomedRelationship.TYPE, relationship[0]));
 			
 			if (duplicate != REPORTED) {
-				issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, duplicate[0]));
+				issues.add(ComponentIdentifier.of(SnomedRelationship.TYPE, duplicate[0]));
 				buckets.put(key, REPORTED)
 			}
 			

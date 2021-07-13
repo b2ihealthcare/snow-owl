@@ -39,7 +39,9 @@ import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.SnomedRefSetUtil;
 import com.b2international.snowowl.snomed.datastore.request.SnomedDescriptionCreateRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRelationshipCreateRequestBuilder;
@@ -109,8 +111,8 @@ public class ConceptMapCompareSnomedMapTypeReferenceSetTest extends AbstractCore
 	public void compareLargeSimpleMapTypeReferenceSets() {
 		final String baseSimpleMapReferenceSet = "900000000000497000";
 		final String  compareSimpleMapReferenceSet = "447562003";
-		ComponentURI baseURI = ComponentURI.of(SnomedContentRule.SNOMEDCT, SnomedTerminologyComponentConstants.REFSET_NUMBER, baseSimpleMapReferenceSet);
-		ComponentURI compareURI = ComponentURI.of(SnomedContentRule.SNOMEDCT, SnomedTerminologyComponentConstants.REFSET_NUMBER, compareSimpleMapReferenceSet);
+		ComponentURI baseURI = ComponentURI.of(SnomedContentRule.SNOMEDCT, SnomedConcept.REFSET_TYPE, baseSimpleMapReferenceSet);
+		ComponentURI compareURI = ComponentURI.of(SnomedContentRule.SNOMEDCT, SnomedConcept.REFSET_TYPE, compareSimpleMapReferenceSet);
 		
 		compare(baseURI, compareURI);
 	}
@@ -126,15 +128,15 @@ public class ConceptMapCompareSnomedMapTypeReferenceSetTest extends AbstractCore
 	
 	private ConceptMapMapping mapping(String memberId, ComponentURI containerURI, String sourceCode, String targetCode) {
 		return ConceptMapMapping.builder()
-				.uri(ComponentURI.of(codeSystemURI, SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, memberId))
+				.uri(ComponentURI.of(codeSystemURI, SnomedReferenceSetMember.TYPE, memberId))
 				.active(true)
 				.containerSetURI(containerURI)
 				.containerTerm(baseReferenceSetURI == containerURI ? "rf1" : "rf2")
 				.containerIconId(Concepts.REFSET_SIMPLE_MAP_TYPE)
-				.sourceComponentURI(ComponentURI.of(codeSystemURI, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, sourceCode))
+				.sourceComponentURI(ComponentURI.of(codeSystemURI, SnomedConcept.TYPE, sourceCode))
 				.sourceTerm(sourceCode)
 				.sourceIconId("attribute")
-				.targetComponentURI(ComponentURI.of(codeSystemURI, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, targetCode))
+				.targetComponentURI(ComponentURI.of(codeSystemURI, SnomedConcept.TYPE, targetCode))
 				.targetTerm(targetCode)
 				.targetIconId("attribute")
 				.mapGroup(0)
@@ -144,7 +146,7 @@ public class ConceptMapCompareSnomedMapTypeReferenceSetTest extends AbstractCore
 	}
 	
 	private ComponentURI createURI(String referenceSetId) {
-		return ComponentURI.of(codeSystemURI, SnomedTerminologyComponentConstants.REFSET_NUMBER, referenceSetId);
+		return ComponentURI.of(codeSystemURI, SnomedConcept.REFSET_TYPE, referenceSetId);
 	}
 	
 	private String createSimpleMapTypeRefSet(String refSetName) {
@@ -157,8 +159,8 @@ public class ConceptMapCompareSnomedMapTypeReferenceSetTest extends AbstractCore
 				.addRelationship(createIsaRelationship(Concepts.STATED_RELATIONSHIP, SnomedRefSetUtil.getParentConceptId(SnomedRefSetType.SIMPLE_MAP)))
 				.addRelationship(createIsaRelationship(Concepts.INFERRED_RELATIONSHIP, SnomedRefSetUtil.getParentConceptId(SnomedRefSetType.SIMPLE_MAP)))
 				.setRefSet(SnomedRequests.prepareNewRefSet()
-						.setReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT)
-						.setMapTargetComponentType(SnomedTerminologyComponentConstants.CONCEPT)
+						.setReferencedComponentType(SnomedConcept.TYPE)
+						.setMapTargetComponentType(SnomedConcept.TYPE)
 						.setType(SnomedRefSetType.SIMPLE_MAP))
 				.build(codeSystemURI, RestExtensions.USER, "New Reference Set")
 				.execute(getBus())
@@ -198,7 +200,7 @@ public class ConceptMapCompareSnomedMapTypeReferenceSetTest extends AbstractCore
 			.setActive(true)
 			.setModuleId(Concepts.MODULE_SCT_CORE)
 			.setProperties(Map.of(
-				SnomedRf2Headers.FIELD_MAP_TARGET, ComponentURI.of(codeSystemURI, SnomedTerminologyComponentConstants.CONCEPT_NUMBER, targetCode).toString()
+				SnomedRf2Headers.FIELD_MAP_TARGET, ComponentURI.of(codeSystemURI, SnomedConcept.TYPE, targetCode).toString()
 			))
 			.build(codeSystemURI, RestExtensions.USER, "New Member")
 			.execute(getBus())

@@ -9,9 +9,10 @@ import com.b2international.index.query.Expressions.ExpressionBuilder
 import com.b2international.index.revision.RevisionSearcher
 import com.b2international.snowowl.core.ComponentIdentifier
 import com.b2international.snowowl.core.date.EffectiveTimes
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry
@@ -58,7 +59,7 @@ Iterable<Hits<String>> owlAxiomMemberQueryResult = searcher
 	
 owlAxiomMemberQueryResult.each({relHits ->
 	for (String id: relHits) {
-		ComponentIdentifier affectedComponent = ComponentIdentifier.of(SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER, id);
+		ComponentIdentifier affectedComponent = ComponentIdentifier.of(SnomedReferenceSetMember.TYPE, id);
 		issues.add(affectedComponent)
 	}
 })
@@ -82,7 +83,7 @@ Iterable<Hits<String>> relationshipQueryResult = searcher
 
 relationshipQueryResult.each({relHits ->
 	for (String id: relHits) {
-		ComponentIdentifier affectedComponent = ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, id);
+		ComponentIdentifier affectedComponent = ComponentIdentifier.of(SnomedRelationship.TYPE, id);
 		issues.add(affectedComponent)
 	}
 })

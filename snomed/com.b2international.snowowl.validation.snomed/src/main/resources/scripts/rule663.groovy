@@ -8,7 +8,7 @@ import com.b2international.index.query.Query
 import com.b2international.index.revision.RevisionSearcher
 import com.b2international.snowowl.core.ComponentIdentifier
 import com.b2international.snowowl.core.date.EffectiveTimes
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry
 import com.google.common.collect.HashMultimap
@@ -100,4 +100,4 @@ if (params.isUnpublishedOnly) {
 		}
 }
 
-return relationshipIdsToReport.stream().map({id -> ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, id)}).collect(Collectors.toList())
+return relationshipIdsToReport.stream().map({id -> ComponentIdentifier.of(SnomedRelationship.TYPE, id)}).collect(Collectors.toList())

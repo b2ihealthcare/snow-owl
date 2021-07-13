@@ -43,6 +43,7 @@ public enum DocumentMappingRegistry {
 	/*package*/ boolean enableRuntimeMappingOverrides = false; 
 
 	public String getType(Class<?> type) {
+		checkNotNull(type, "Type argument may not be null");
 		if (!docTypeCache.containsKey(type)) {
 			final Doc annotation = getDocAnnotation(type);
 			checkArgument(annotation != null, "Doc annotation must be present on type '%s' or on its class hierarchy", type);

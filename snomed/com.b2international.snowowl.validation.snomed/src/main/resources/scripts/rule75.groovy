@@ -11,7 +11,7 @@ import com.b2international.index.query.SortBy.Order
 import com.b2international.index.revision.RevisionSearcher
 import com.b2international.snowowl.core.ComponentIdentifier
 import com.b2international.snowowl.core.date.EffectiveTimes
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry
 import com.google.common.collect.Lists
 
@@ -55,7 +55,7 @@ for (Hits<String[]> page : searcher.scroll(query)) {
 		if ("0".equals(relationship[1])) {
 			buckets.add(key);
 		} else if (buckets.contains(key)) { // report duplication of ungrouped relationship in a group
-			issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationship[0]));					
+			issues.add(ComponentIdentifier.of(SnomedRelationship.TYPE, relationship[0]));					
 		}
 	}
 }

@@ -31,7 +31,6 @@ import com.b2international.snowowl.core.terminology.MapTargetTypes;
 import com.b2international.snowowl.core.terminology.TerminologyComponent;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
@@ -80,8 +79,6 @@ import com.google.common.base.Function;
  * @see SnomedReferenceSetMember
  */
 @TerminologyComponent(
-	id = SnomedTerminologyComponentConstants.CONCEPT, 
-	shortId = SnomedTerminologyComponentConstants.CONCEPT_NUMBER,
 	name = "SNOMED CT Concept", 
 	componentCategory = ComponentCategory.CONCEPT,
 	docType = SnomedConceptDocument.class,
@@ -101,6 +98,9 @@ public final class SnomedConcept extends SnomedCoreComponent {
 
 	private static final long serialVersionUID = 1L;
 
+	public static final String TYPE = "concept";
+	public static final String REFSET_TYPE = "refset";
+	
 	/**
 	 * Enumerates expandable property keys.
 	 * 
@@ -205,8 +205,8 @@ public final class SnomedConcept extends SnomedCoreComponent {
 	}
 	
 	@Override
-	public short getTerminologyComponentId() {
-		return SnomedTerminologyComponentConstants.CONCEPT_NUMBER;
+	public String getComponentType() {
+		return SnomedConcept.TYPE;
 	}
 	
 	public SnomedConcept getDefinitionStatus() {

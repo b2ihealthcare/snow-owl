@@ -37,6 +37,7 @@ import com.b2international.snowowl.core.repository.DefaultRepositoryContext;
  */
 public final class ResourceRepositoryRequest<R> extends DelegatingRequest<ServiceProvider, RepositoryContext, R> {
 
+	public static final String RESOURCE_REPOSITORY_ID = "resources";
 	private static final long serialVersionUID = 1L;
 	
 	public ResourceRepositoryRequest(Request<RepositoryContext, R> next) {
@@ -45,7 +46,7 @@ public final class ResourceRepositoryRequest<R> extends DelegatingRequest<Servic
 	
 	@Override
 	public String getContextId() {
-		return "resources";
+		return RESOURCE_REPOSITORY_ID;
 	}
 
 	@Override
@@ -53,7 +54,7 @@ public final class ResourceRepositoryRequest<R> extends DelegatingRequest<Servic
 		ResourceRepository resourceRepository = context.service(ResourceRepository.class);
 		return resourceRepository.read(searcher -> {
 			// TODO check health
-			DefaultRepositoryContext repository = new DefaultRepositoryContext(context, RepositoryInfo.of("resources", Health.GREEN, null, List.of()));
+			DefaultRepositoryContext repository = new DefaultRepositoryContext(context, RepositoryInfo.of(RESOURCE_REPOSITORY_ID, Health.GREEN, null, List.of()));
 			repository.bind(RevisionIndex.class, resourceRepository);
 			repository.bind(Searcher.class, searcher.searcher());
 			repository.bind(RevisionSearcher.class, searcher);
