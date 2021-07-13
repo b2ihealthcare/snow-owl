@@ -25,7 +25,8 @@ import com.google.common.collect.FluentIterable;
 /**
  * @since 7.5
  */
-public final class ConceptSearchRequestBuilder extends SearchResourceRequestBuilder<ConceptSearchRequestBuilder, BranchContext, Concepts>
+public final class ConceptSearchRequestBuilder 
+		extends SearchPageableCollectionResourceRequestBuilder<ConceptSearchRequestBuilder, BranchContext, Concepts>
 		implements RevisionIndexRequestBuilder<Concepts>, TermFilterSupport<ConceptSearchRequestBuilder> {
 
 	/**

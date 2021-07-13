@@ -17,8 +17,8 @@ package com.b2international.snowowl.core.jobs;
 
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.jobs.SearchJobRequest.OptionKey;
+import com.b2international.snowowl.core.request.SearchPageableCollectionResourceRequestBuilder;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
-import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
 import com.b2international.snowowl.core.request.SystemRequestBuilder;
 import com.google.common.collect.Iterables;
 
@@ -27,7 +27,9 @@ import com.google.common.collect.Iterables;
  * 
  * @since 5.7
  */
-public final class SearchJobRequestBuilder extends SearchResourceRequestBuilder<SearchJobRequestBuilder, ServiceProvider, RemoteJobs> implements SystemRequestBuilder<RemoteJobs> {
+public final class SearchJobRequestBuilder 
+		extends SearchPageableCollectionResourceRequestBuilder<SearchJobRequestBuilder, ServiceProvider, RemoteJobs> 
+		implements SystemRequestBuilder<RemoteJobs> {
 
 	SearchJobRequestBuilder() {
 	}

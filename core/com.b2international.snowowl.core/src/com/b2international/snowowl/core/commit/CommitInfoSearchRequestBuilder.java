@@ -15,25 +15,18 @@
  */
 package com.b2international.snowowl.core.commit;
 
-import static com.b2international.snowowl.core.commit.CommitInfoSearchRequest.OptionKey.AFFECTED_COMPONENT_ID;
-import static com.b2international.snowowl.core.commit.CommitInfoSearchRequest.OptionKey.AUTHOR;
-import static com.b2international.snowowl.core.commit.CommitInfoSearchRequest.OptionKey.BRANCH;
-import static com.b2international.snowowl.core.commit.CommitInfoSearchRequest.OptionKey.BRANCH_PREFIX;
-import static com.b2international.snowowl.core.commit.CommitInfoSearchRequest.OptionKey.COMMENT;
-import static com.b2international.snowowl.core.commit.CommitInfoSearchRequest.OptionKey.TIME_STAMP;
-import static com.b2international.snowowl.core.commit.CommitInfoSearchRequest.OptionKey.TIME_STAMP_FROM;
-import static com.b2international.snowowl.core.commit.CommitInfoSearchRequest.OptionKey.TIME_STAMP_TO;
+import static com.b2international.snowowl.core.commit.CommitInfoSearchRequest.OptionKey.*;
 
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.RepositoryRequestBuilder;
+import com.b2international.snowowl.core.request.SearchPageableCollectionResourceRequestBuilder;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
-import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
 
 /**
  * @since 5.2
  */
 public final class CommitInfoSearchRequestBuilder 
-		extends SearchResourceRequestBuilder<CommitInfoSearchRequestBuilder, RepositoryContext, CommitInfos> 
+		extends SearchPageableCollectionResourceRequestBuilder<CommitInfoSearchRequestBuilder, RepositoryContext, CommitInfos> 
 		implements RepositoryRequestBuilder<CommitInfos> {
 
 	CommitInfoSearchRequestBuilder() {}
