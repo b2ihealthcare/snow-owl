@@ -56,14 +56,6 @@ public final class CodeSystem extends TerminologyResource {
 		return getSettings() == null ? null : (List<String>) getSettings().get(CommonSettings.LOCALES);
 	}
 	
-	
-	public static ResourceURI uriFromPath(String resourcePath) {
-		final String[] splittedResourcePath = resourcePath.split(Branch.SEPARATOR);
-		final String codeSystemId = splittedResourcePath[0];
-		final String branchPath = splittedResourcePath.length >= 2? splittedResourcePath[1] : Branch.MAIN_PATH;
-		return ResourceURI.branch(RESOURCE_TYPE, codeSystemId, branchPath);
-	}
-	
 	public static ResourceURI uri(String codeSystemId) {
 		return ResourceURI.of(RESOURCE_TYPE, codeSystemId);
 	}
