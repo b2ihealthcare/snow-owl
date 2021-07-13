@@ -24,7 +24,7 @@ import com.b2international.snowowl.core.request.ConceptSearchRequestEvaluator.Op
  * @since 7.7
  */
 public final class ConceptSuggestionRequestBuilder 
-		extends SearchResourceRequestBuilder<ConceptSuggestionRequestBuilder, BranchContext, Suggestions>
+		extends SearchPageableCollectionResourceRequestBuilder<ConceptSuggestionRequestBuilder, BranchContext, Suggestions>
 		implements TerminologyResourceContentRequestBuilder<Suggestions> {
 
 	private int topTokenCount = 9;

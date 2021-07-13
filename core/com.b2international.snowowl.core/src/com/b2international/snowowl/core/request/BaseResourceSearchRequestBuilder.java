@@ -16,14 +16,15 @@
 package com.b2international.snowowl.core.request;
 
 import com.b2international.snowowl.core.context.ResourceRepositoryRequestBuilder;
+import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.BaseResourceSearchRequest.OptionKey;
 
 /**
  * @since 8.0
  */
-public abstract class BaseResourceSearchRequestBuilder<RB extends BaseResourceSearchRequestBuilder<RB, R>, R>
-		extends SearchResourceRequestBuilder<RB, RepositoryContext, R>
+public abstract class BaseResourceSearchRequestBuilder<RB extends BaseResourceSearchRequestBuilder<RB, R>, R extends PageableCollectionResource<?>>
+		extends SearchPageableCollectionResourceRequestBuilder<RB, RepositoryContext, R>
 		implements ResourceRepositoryRequestBuilder<R> {
 
 	public RB filterByUrl(String url) {
