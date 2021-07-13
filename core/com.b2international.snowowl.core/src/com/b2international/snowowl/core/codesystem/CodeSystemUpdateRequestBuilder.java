@@ -57,12 +57,12 @@ public final class CodeSystemUpdateRequestBuilder
 
 	@Override
 	public CodeSystemUpdateRequest createResourceRequest() {
-
 		final CodeSystemUpdateRequest req = new CodeSystemUpdateRequest(getResourceId());
-		req.oid = oid;
-		req.branchPath = branchPath;
-		req.extensionOf = extensionOf;
-		req.settings = settings;
+
+		req.setOid(oid);
+		req.setBranchPath(branchPath);
+		req.setExtensionOf(extensionOf);
+		req.setSettings(settings);
 
 		return req;
 	}
