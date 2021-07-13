@@ -20,7 +20,6 @@ import java.util.List;
 import com.b2international.commons.http.ExtendedLocale;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.TerminologyResource;
-import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
