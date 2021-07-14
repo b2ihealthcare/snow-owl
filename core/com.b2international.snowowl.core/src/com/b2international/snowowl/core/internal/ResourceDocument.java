@@ -44,7 +44,7 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
  * @since 8.0
  */
 @Doc(
-	type = "resource",
+	type = ResourceDocument.TYPE,
 	revisionHash = {
 		ResourceDocument.Fields.URL,
 		ResourceDocument.Fields.TITLE,
@@ -61,6 +61,8 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 @JsonDeserialize(builder = ResourceDocument.Builder.class)
 public final class ResourceDocument extends RevisionDocument {
 
+	public static final String TYPE = "resource";
+	
 	/**
 	 * @since 8.0
 	 */
@@ -223,7 +225,7 @@ public final class ResourceDocument extends RevisionDocument {
 		}
 		
 	}
-	
+
 	public static Builder builder() {
 		return new Builder();
 	}
