@@ -30,6 +30,7 @@ import org.junit.Test;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.Resource;
+import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.request.TermFilter;
 import com.b2international.snowowl.test.commons.Services;
@@ -293,7 +294,7 @@ public final class BundleApiTest extends BaseBundleApiTest {
 		final String newContact = "newcontact@gmail.com";
 		final String newUsage = "New usage";
 		final String newPurpose = "New purpose";
-		final String newBundleId = "123";
+		final String newBundleId = createBundle(IDs.base64UUID());
 		
 		ResourceRequests.bundles().prepareUpdate(id)
 		 	.setUrl(newUrl)

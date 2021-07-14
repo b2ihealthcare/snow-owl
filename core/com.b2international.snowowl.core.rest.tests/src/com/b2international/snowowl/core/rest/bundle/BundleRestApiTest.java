@@ -15,12 +15,7 @@
  */
 package com.b2international.snowowl.core.rest.bundle;
 
-import static com.b2international.snowowl.core.rest.BundleApiAssert.assertBundleCreated;
-import static com.b2international.snowowl.core.rest.BundleApiAssert.assertBundleGet;
-import static com.b2international.snowowl.core.rest.BundleApiAssert.assertBundleSearch;
-import static com.b2international.snowowl.core.rest.BundleApiAssert.assertCreate;
-import static com.b2international.snowowl.core.rest.BundleApiAssert.assertUpdateBundleField;
-import static com.b2international.snowowl.core.rest.BundleApiAssert.prepareCreateRequestBody;
+import static com.b2international.snowowl.core.rest.BundleApiAssert.*;
 import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.assertCodeSystemCreated;
 import static com.b2international.snowowl.core.rest.CodeSystemApiAssert.prepareCodeSystemCreateRequestBody;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -34,6 +29,7 @@ import java.util.Set;
 import org.junit.Test;
 
 import com.b2international.commons.json.Json;
+import com.b2international.snowowl.core.id.IDs;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
@@ -213,7 +209,19 @@ public class BundleRestApiTest {
 	@Test
 	public void updateBundleBundleId() {
 		final String id = "b14";
+		final String newBundleId = IDs.base64UUID();
+		
 		assertBundleCreated(prepareCreateRequestBody(id));
-		assertUpdateBundleField(id, "bundleId", "new-bundle-id");
+		assertBundleCreated(prepareCreateRequestBody(newBundleId));
+		
+		assertUpdateBundleField(id, "bundleId", newBundleId);
+	}
+	
+	@Test
+	public void updateBundleBundleIdNotExist() {
+		final String id = "b15";
+		assertBundleCreated(prepareCreateRequestBody(id));
+		updateBundle(id, Json.object("bundleId", "not-existings-id"))
+			.statusCode(400);
 	}
 }

@@ -76,12 +76,11 @@ public class BundleApiAssert {
 			.with().contentType(ContentType.JSON)
 			.and().body(requestBody)
 			.when().put("/{id}", uniqueId)
-			.then().assertThat()
-			.statusCode(204);
+			.then().assertThat();
 	}
 	
 	public static ValidatableResponse assertUpdateBundleField(final String uniqueId, final String field, final String value) {
-		updateBundle(uniqueId, Map.of(field, value));
+		updateBundle(uniqueId, Map.of(field, value)).statusCode(204);
 		
 		return assertBundleGet(uniqueId)
 			.body(field, equalTo(value))

@@ -89,6 +89,30 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 		this.settings = settings;
 	}
 	
+	protected final String getOid() {
+		return oid;
+	}
+	
+	protected final String getBranchPath() {
+		return branchPath;
+	}
+	
+	protected final String getToolingId() {
+		return toolingId;
+	}
+	
+	protected final ResourceURI getExtensionOf() {
+		return extensionOf;
+	}
+	
+	protected final ResourceURI getUpgradeOf() {
+		return upgradeOf;
+	}
+	
+	protected final Map<String, Object> getSettings() {
+		return settings;
+	}
+	
 	protected abstract String getResourceType();
 
 	@Override
