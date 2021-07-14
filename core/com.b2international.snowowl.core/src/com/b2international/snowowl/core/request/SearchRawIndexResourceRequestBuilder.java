@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import com.b2international.snowowl.core.events.Request;
  * @since 7.11
  */
 public final class SearchRawIndexResourceRequestBuilder<C extends ServiceProvider, D> 
-		extends SearchResourceRequestBuilder<SearchRawIndexResourceRequestBuilder<C, D>, C, PageableCollectionResource<D>> {
+		extends SearchPageableCollectionResourceRequestBuilder<SearchRawIndexResourceRequestBuilder<C, D>, C, PageableCollectionResource<D>> {
 
 	private final SearchResourceRequestBuilder<?, C, ?> original;
 	private final Class<D> select;

@@ -16,8 +16,8 @@
 package com.b2international.snowowl.core.validation.whitelist;
 
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.request.SearchPageableCollectionResourceRequestBuilder;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
-import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
 import com.b2international.snowowl.core.request.SystemRequestBuilder;
 import com.b2international.snowowl.core.validation.whitelist.ValidationWhiteListSearchRequest.OptionKey;
 
@@ -25,7 +25,7 @@ import com.b2international.snowowl.core.validation.whitelist.ValidationWhiteList
  * @since 6.1
  */
 public final class ValidationWhiteListSearchRequestBuilder 
-	extends SearchResourceRequestBuilder<ValidationWhiteListSearchRequestBuilder, ServiceProvider, ValidationWhiteLists> 
+	extends SearchPageableCollectionResourceRequestBuilder<ValidationWhiteListSearchRequestBuilder, ServiceProvider, ValidationWhiteLists> 
 	implements SystemRequestBuilder<ValidationWhiteLists> {
 
 	ValidationWhiteListSearchRequestBuilder() {}

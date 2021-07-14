@@ -21,7 +21,8 @@ import com.b2international.commons.CompareUtils;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.domain.BranchContext;
-import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
+import com.b2international.snowowl.core.domain.PageableCollectionResource;
+import com.b2international.snowowl.core.request.SearchPageableCollectionResourceRequestBuilder;
 import com.b2international.snowowl.snomed.datastore.request.SnomedSearchRequest.OptionKey;
 
 /**
@@ -29,8 +30,8 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedSearchRequest.
  * 
  * @since 4.5
  */
-public abstract class SnomedSearchRequestBuilder<B extends SnomedSearchRequestBuilder<B, R>, R> 
-		extends SearchResourceRequestBuilder<B, BranchContext, R>
+public abstract class SnomedSearchRequestBuilder<B extends SnomedSearchRequestBuilder<B, R>, R extends PageableCollectionResource<?>> 
+		extends SearchPageableCollectionResourceRequestBuilder<B, BranchContext, R>
 		implements SnomedContentRequestBuilder<R> {
 
 	/**
