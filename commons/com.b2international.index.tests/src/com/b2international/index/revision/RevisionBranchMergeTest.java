@@ -595,7 +595,7 @@ public class RevisionBranchMergeTest extends BaseRevisionIndexTest {
 		branching().prepareMerge(branchA, branchB).squash(false).merge();
 		assertState(branchA, branchB, BranchState.BEHIND);
 		assertState(branchB, branchA, BranchState.FORWARD);
-        // perform another fast-forward merge to simulate sync
+		// perform another fast-forward merge to simulate sync
 		branching().prepareMerge(branchA, branchB).squash(false).merge();
 		assertState(branchA, branchB, BranchState.BEHIND);
 		assertState(branchB, branchA, BranchState.FORWARD);
