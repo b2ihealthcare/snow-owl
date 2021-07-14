@@ -15,9 +15,6 @@
  */
 package com.b2international.snowowl.core.codesystem;
 
-import com.b2international.commons.exceptions.BadRequestException;
-import com.b2international.snowowl.core.Repository;
-import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.request.BaseTerminologyResourceCreateRequest;
 import com.b2international.snowowl.core.uri.ResourceURLSchemaSupport;
@@ -37,15 +34,5 @@ final class CodeSystemCreateRequest extends BaseTerminologyResourceCreateRequest
 	@Override
 	protected ResourceURLSchemaSupport getResourceURLSchemaSupport(ServiceProvider context) {
 		return validateAndGetToolingRepository(context).service(ResourceURLSchemaSupport.class);
-	}
-	
-	private Repository validateAndGetToolingRepository(final ServiceProvider context) {
-		// toolingId must be supported
-		return context.service(RepositoryManager.class)
-			.repositories()
-			.stream()
-			.filter(repository -> repository.id().equals(getToolingId()))
-			.findFirst()
-			.orElseThrow(() -> new BadRequestException("ToolingId '%s' is not supported by this server.", getToolingId()));
 	}
 }

@@ -23,6 +23,8 @@ import org.hibernate.validator.constraints.NotEmpty;
 import com.b2international.commons.StringUtils;
 import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.snowowl.core.Repository;
+import com.b2international.snowowl.core.RepositoryManager;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.branch.Branch;
@@ -250,6 +252,16 @@ public abstract class BaseTerminologyResourceCreateRequest extends BaseResourceC
 		
 		return branches.stream().filter(b -> !b.isDeleted()).findFirst().isPresent();
 		
+	}
+	
+	protected final Repository validateAndGetToolingRepository(final ServiceProvider context) {
+		// toolingId must be supported
+		return context.service(RepositoryManager.class)
+			.repositories()
+			.stream()
+			.filter(repository -> repository.id().equals(getToolingId()))
+			.findFirst()
+			.orElseThrow(() -> new BadRequestException("ToolingId '%s' is not supported by this server.", getToolingId()));
 	}
 	
 }
