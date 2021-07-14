@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import java.util.Objects;
 
 import com.b2international.commons.StringUtils;
 import com.b2international.snowowl.core.domain.BaseComponent;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.google.common.base.Strings;
 
 /**
@@ -66,9 +65,9 @@ public abstract class SnomedConceptModelComponent extends BaseComponent {
 	}
 
 	@Override
-	public short getTerminologyComponentId() {
+	public String getComponentType() {
 		// XXX: Returning the same component type ID for all parts
-		return SnomedTerminologyComponentConstants.CONSTRAINT_NUMBER;
+		return SnomedConstraint.TYPE;
 	}
 
 	/**

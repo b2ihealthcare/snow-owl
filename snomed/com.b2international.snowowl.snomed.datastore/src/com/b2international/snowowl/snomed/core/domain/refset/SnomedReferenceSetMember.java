@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,12 +29,7 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.core.terminology.TerminologyComponent;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
-import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.*;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedOWLRelationshipDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
@@ -70,8 +65,6 @@ import com.google.common.collect.ImmutableSet;
  * @since 4.5
  */
 @TerminologyComponent(
-	id = SnomedTerminologyComponentConstants.REFSET_MEMBER, 
-	shortId = SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER,
 	name = "SNOMED CT Reference Set Member",
 	componentCategory = ComponentCategory.SET_MEMBER,
 	docType = SnomedRefSetMemberIndexEntry.class,
@@ -81,6 +74,8 @@ public final class SnomedReferenceSetMember extends SnomedComponent {
 
 	private static final long serialVersionUID = -7471488952871955209L;
 
+	public static final String TYPE = "member";
+	
 	/**
 	 * Enumerates expandable property keys.
 	 * 
@@ -124,8 +119,8 @@ public final class SnomedReferenceSetMember extends SnomedComponent {
 	private List<SnomedOWLRelationshipDocument> gciOWLRelationships;
 
 	@Override
-	public short getTerminologyComponentId() {
-		return SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER;
+	public String getComponentType() {
+		return SnomedReferenceSetMember.TYPE;
 	}
 	
 	/**

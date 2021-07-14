@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.core.terminology.MapTargetTypes;
 import com.b2international.snowowl.core.terminology.TerminologyComponent;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
@@ -57,8 +56,7 @@ import com.google.common.collect.ImmutableSet;
  * @since 4.5
  */
 @TerminologyComponent(
-	id = SnomedTerminologyComponentConstants.REFSET,
-	shortId = SnomedTerminologyComponentConstants.REFSET_NUMBER,
+	id = SnomedConcept.REFSET_TYPE,
 	componentCategory = ComponentCategory.SET,
 	name = "SNOMED CT Reference Set",
 	docType = SnomedConceptDocument.class,
@@ -99,8 +97,8 @@ public final class SnomedReferenceSet extends SnomedComponent {
 	private SnomedReferenceSetMembers members;
 
 	@Override
-	public short getTerminologyComponentId() {
-		return SnomedTerminologyComponentConstants.REFSET_NUMBER;
+	public String getComponentType() {
+		return SnomedConcept.REFSET_TYPE;
 	}
 	
 	/**

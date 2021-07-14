@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.core.rest;
 
 import java.io.File;
 
+import org.elasticsearch.common.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -27,23 +28,26 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.attachments.Attachment;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.attachments.InternalAttachmentRegistry;
 import com.b2international.snowowl.core.rest.AbstractRestService;
+import com.b2international.snowowl.snomed.core.domain.Rf2MaintainerType;
 import com.b2international.snowowl.snomed.core.domain.Rf2RefSetExportLayout;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedRf2ExportConfiguration;
-import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * @since 7.5
  */
-@Api(value = "Export", description="Export", tags = "export")
+@Tag(description="Export", name = "export")
 @Controller
 @RequestMapping(value="/{path:**}/export")
 public class SnomedRf2ExportRestService extends AbstractRestService {
@@ -51,26 +55,24 @@ public class SnomedRf2ExportRestService extends AbstractRestService {
 	@Autowired
 	private AttachmentRegistry attachments;
 	
-	@ApiOperation(
-		value="Export SNOMED CT content to RF2", 
-		notes="Exports SNOMED CT content from the given branch to RF2."
+	@Operation(
+		summary="Export SNOMED CT content to RF2", 
+		description="Exports SNOMED CT content from the given branch to RF2."
 	)
 	@ApiResponses({
-		@ApiResponse(code=200, message="OK")
+		@ApiResponse(responseCode="200", description="OK")
 	})
 	@GetMapping
 	public @ResponseBody ResponseEntity<?> export(
-			@ApiParam(value = "The branch path", required = true)
+			@Parameter(description = "The branch path", required = true)
 			@PathVariable(value="path")
 			final String branch,
 
 			final SnomedRf2ExportConfiguration params,
 			
-			@ApiParam(value = "Accepted language tags, in order of preference")
+			@Parameter(description = "Accepted language tags, in order of preference")
 			@RequestHeader(value=HttpHeaders.ACCEPT_LANGUAGE, defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
 			final String acceptLanguage) {
-		
-		final Rf2RefSetExportLayout globalExportLayout = ApplicationContext.getServiceForClass(SnomedCoreConfiguration.class).getExport().getRefSetExportLayout();
 		
 		final Attachment exportedFile = SnomedRequests.rf2().prepareExport()
 			.setReleaseType(params.getType() == null ? null : Rf2ReleaseType.getByNameIgnoreCase(params.getType()))
@@ -80,11 +82,13 @@ public class SnomedRf2ExportRestService extends AbstractRestService {
 			.setModules(params.getModuleIds())
 			.setRefSets(params.getRefSetIds())
 			.setCountryNamespaceElement(params.getNamespaceId())
+			.setMaintainerType(Strings.isNullOrEmpty(params.getMaintainerType()) ? null : Rf2MaintainerType.getByNameIgnoreCase(params.getMaintainerType()))
+			.setNrcCountryCode(params.getNrcCountryCode())
 			// .setNamespaceFilter(namespaceFilter) is not supported on REST, yet
 			.setTransientEffectiveTime(params.getTransientEffectiveTime())
 			.setStartEffectiveTime(params.getStartEffectiveTime())
 			.setEndEffectiveTime(params.getEndEffectiveTime())
-			.setRefSetExportLayout(params.getRefSetLayout() == null ? globalExportLayout : Rf2RefSetExportLayout.getByNameIgnoreCase(params.getRefSetLayout()))
+			.setRefSetExportLayout(params.getRefSetLayout() == null ? null : Rf2RefSetExportLayout.getByNameIgnoreCase(params.getRefSetLayout()))
 			.build(branch)
 			.execute(getBus())
 			.getSync();

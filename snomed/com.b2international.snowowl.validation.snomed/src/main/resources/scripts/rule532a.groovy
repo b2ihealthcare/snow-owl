@@ -9,9 +9,9 @@ import com.b2international.index.revision.RevisionSearcher
 import com.b2international.snowowl.core.ComponentIdentifier
 import com.b2international.snowowl.core.date.EffectiveTimes
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests
@@ -75,7 +75,7 @@ activeDescriptionsByExactTerm.getBuckets()
 			if (shouldReport) {
 				bucket.each({ hit ->
 					def descId = hit[0]
-					issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, descId))
+					issues.add(ComponentIdentifier.of(SnomedDescription.TYPE, descId))
 				})
 			}
 		})

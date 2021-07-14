@@ -22,8 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.slf4j.LoggerFactory;
-
 import com.b2international.index.Index;
 import com.b2international.index.IndexClientFactory;
 import com.b2international.index.Indexes;
@@ -38,7 +36,6 @@ import com.b2international.snowowl.core.monitoring.MonitoringConfiguration;
 import com.b2international.snowowl.core.plugin.ClassPathScanner;
 import com.b2international.snowowl.core.plugin.Component;
 import com.b2international.snowowl.core.repository.PathTerminologyResourceResolver;
-import com.b2international.snowowl.core.repository.TerminologyComponents;
 import com.b2international.snowowl.core.setup.ConfigurationRegistry;
 import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.core.setup.Plugin;
@@ -102,8 +99,6 @@ public final class SnowOwlPlugin extends Plugin {
 			
 			final RevisionIndex revisionIndex = new DefaultRevisionIndex(resourceIndex, env.service(TimestampProvider.class), mapper);
 			env.services().registerService(ResourceRepository.class, new ResourceRepository(revisionIndex));
-			
-			env.services().registerService(TerminologyComponents.class, new TerminologyComponents(LoggerFactory.getLogger("core")));
 		}
 	}
 

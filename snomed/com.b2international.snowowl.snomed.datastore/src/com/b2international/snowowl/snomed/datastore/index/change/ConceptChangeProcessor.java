@@ -34,8 +34,8 @@ import com.b2international.index.revision.StagingArea;
 import com.b2international.index.revision.StagingArea.RevisionDiff;
 import com.b2international.snowowl.core.repository.ChangeSetProcessorBase;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.Acceptability;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Builder;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionFragment;
@@ -104,7 +104,7 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 		this.stated = new ParentageUpdater(statedTaxonomy.getNewTaxonomy(), true);
 		this.statedTaxonomy = statedTaxonomy;
 		this.inferredTaxonomy = inferredTaxonomy;
-		this.memberChangeProcessor = new ReferringMemberChangeProcessor(SnomedTerminologyComponentConstants.CONCEPT_NUMBER);
+		this.memberChangeProcessor = new ReferringMemberChangeProcessor(SnomedConcept.TYPE);
 	}
 	
 	@Override

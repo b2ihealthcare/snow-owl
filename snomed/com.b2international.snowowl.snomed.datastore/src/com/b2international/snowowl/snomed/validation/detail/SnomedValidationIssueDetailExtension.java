@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,20 +19,10 @@ import static com.b2international.snowowl.core.terminology.ComponentCategory.CON
 import static com.b2international.snowowl.core.terminology.ComponentCategory.DESCRIPTION;
 import static com.b2international.snowowl.core.terminology.ComponentCategory.RELATIONSHIP;
 import static com.b2international.snowowl.core.terminology.ComponentCategory.SET_MEMBER;
-import static com.b2international.snowowl.snomed.validation.detail.SnomedValidationIssueDetailExtension.SnomedIssueDetailFilterFields.COMPONENT_EFFECTIVE_TIME_END;
-import static com.b2international.snowowl.snomed.validation.detail.SnomedValidationIssueDetailExtension.SnomedIssueDetailFilterFields.COMPONENT_EFFECTIVE_TIME_START;
-import static com.b2international.snowowl.snomed.validation.detail.SnomedValidationIssueDetailExtension.SnomedIssueDetailFilterFields.COMPONENT_MODULE_ID;
-import static com.b2international.snowowl.snomed.validation.detail.SnomedValidationIssueDetailExtension.SnomedIssueDetailFilterFields.COMPONENT_STATUS;
-import static com.b2international.snowowl.snomed.validation.detail.SnomedValidationIssueDetailExtension.SnomedIssueDetailFilterFields.CONCEPT_STATUS;
-import static com.b2international.snowowl.snomed.validation.detail.SnomedValidationIssueDetailExtension.SnomedIssueDetailFilterFields.CONTENT_TYPE;
+import static com.b2international.snowowl.snomed.validation.detail.SnomedValidationIssueDetailExtension.SnomedIssueDetailFilterFields.*;
 import static com.google.common.collect.Sets.newHashSet;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.b2international.commons.http.ExtendedLocale;
@@ -56,23 +46,14 @@ import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConst
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
+import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.datastore.SnomedDescriptionUtils;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
-import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry;
+import com.b2international.snowowl.snomed.datastore.index.entry.*;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Strings;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.*;
 import com.google.common.collect.ImmutableMultimap.Builder;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
-import com.google.common.collect.Sets;
 
 /**
  * @since 6.4
@@ -153,7 +134,7 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 
 		final Multimap<ComponentCategory, String> issueComponentIdsByComponentCategory = HashMultimap.create();
 		issues.stream().forEach(issue -> {
-			final ComponentCategory componentCategory = getComponentCategory(issue.getAffectedComponent().getTerminologyComponentId());
+			final ComponentCategory componentCategory = getComponentCategory(issue.getAffectedComponent().getComponentType());
 			issueComponentIdsByComponentCategory.put(componentCategory, issue.getAffectedComponent().getComponentId());
 		});
 		
@@ -213,11 +194,11 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 		final RevisionSearcher searcher = context.service(RevisionSearcher.class);
 		
 		final List<ValidationIssue> conceptIssues = issues.stream()
-				.filter(issue -> SnomedTerminologyComponentConstants.CONCEPT_NUMBER == issue.getAffectedComponent().getTerminologyComponentId())
+				.filter(issue -> SnomedConcept.TYPE == issue.getAffectedComponent().getComponentType())
 				.collect(Collectors.toList());
 
 		final Map<String, ValidationIssue> memberIssues = issues.stream()
-				.filter(issue ->  SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER == issue.getAffectedComponent().getTerminologyComponentId())
+				.filter(issue ->  SnomedReferenceSetMember.TYPE == issue.getAffectedComponent().getComponentType())
 				.collect(Collectors.toMap(issue -> issue.getAffectedComponent().getComponentId(), issue -> issue, (issue1, issue2) -> issue1));
 		
 		if (conceptIssues.isEmpty() && memberIssues.isEmpty()) {
@@ -304,7 +285,7 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 		final RevisionSearcher searcher = context.service(RevisionSearcher.class);
 		
 		final List<ValidationIssue> relationshipIssues = issues.stream()
-				.filter(issue -> SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER == issue.getAffectedComponent().getTerminologyComponentId())
+				.filter(issue -> SnomedRelationship.TYPE == issue.getAffectedComponent().getComponentType())
 				.collect(Collectors.toList());
 		
 		if (relationshipIssues.isEmpty()) {
@@ -396,19 +377,18 @@ public class SnomedValidationIssueDetailExtension implements ValidationIssueDeta
 		return queryBuilder.where(SnomedDocument.Expressions.ids(issueIds)).limit(SCROLL_SIZE).build();
 	}
 	
-	private ComponentCategory getComponentCategory(short terminologyComponentId) {
-		if (SnomedTerminologyComponentConstants.CONCEPT_NUMBER == terminologyComponentId) {
+	private ComponentCategory getComponentCategory(String componentType) {
+		switch (componentType) {
+		case SnomedConcept.TYPE:
 			return CONCEPT;
-		} else if (SnomedTerminologyComponentConstants.REFSET_NUMBER == terminologyComponentId) {
-				return CONCEPT;
-		} else if (SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER == terminologyComponentId) {
+		case SnomedDescription.TYPE:
 			return DESCRIPTION;
-		} else if (SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER == terminologyComponentId) {
+		case SnomedRelationship.TYPE:
 			return RELATIONSHIP;
-		} else if (SnomedTerminologyComponentConstants.REFSET_MEMBER_NUMBER == terminologyComponentId) {
+		case SnomedReferenceSetMember.TYPE:
 			return SET_MEMBER;
-		} else {
-			throw new UnsupportedOperationException("Unsupported terminology component id: " + terminologyComponentId);
+		default: 
+			throw new UnsupportedOperationException("Unsupported terminology component id: " + componentType);
 		}
 	}
 

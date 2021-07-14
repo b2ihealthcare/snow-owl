@@ -19,7 +19,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -77,9 +76,6 @@ public class SnomedCoreConfiguration {
 	
 	@NotEmpty
 	private String datetimeDatatypeRefsetIdentifier = Concepts.REFSET_DATETIME_DATATYPE;
-	
-	@Valid
-	private SnomedExportDefaultConfiguration export = new SnomedExportDefaultConfiguration();
 	
 	private boolean collectSystemChanges = false;
 	
@@ -203,17 +199,6 @@ public class SnomedCoreConfiguration {
 		this.collectSystemChanges = collectSystemChanges;
 	}
 	
-	/**
-	 * @return the RF2 export defaults sub-section of the SNOMED CT core configuration object
-	 */
-	public SnomedExportDefaultConfiguration getExport() {
-		return export;
-	}
-	
-	public void setExport(SnomedExportDefaultConfiguration export) {
-		this.export = export;
-	}
-
 	/**
 	 * The ID of the concrete domain type reference set identifier concept
 	 * 

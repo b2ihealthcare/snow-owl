@@ -27,7 +27,6 @@ import com.b2international.snowowl.core.domain.SetMember;
 import com.b2international.snowowl.core.domain.SetMembers;
 import com.b2international.snowowl.core.request.SetMemberSearchRequestEvaluator;
 import com.b2international.snowowl.core.uri.ComponentURI;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
@@ -57,13 +56,13 @@ public final class SnomedMemberSearchRequestEvaluator implements SetMemberSearch
 	private SetMember toMember(SnomedReferenceSetMember member, ResourceURI codeSystemURI) {	 		
 		final String term;		
 		final String iconId = member.getReferencedComponent().getIconId();
-		short terminologyComponentId = member.getReferencedComponent().getTerminologyComponentId();
+		String terminologyComponentId = member.getReferencedComponent().getComponentType();
 		switch (terminologyComponentId) {
-		case SnomedTerminologyComponentConstants.CONCEPT_NUMBER: 
+		case SnomedConcept.TYPE: 
 			SnomedConcept concept = (SnomedConcept) member.getReferencedComponent();
 			term = concept.getFsn().getTerm();
 			break;
-		case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER:
+		case SnomedDescription.TYPE:
 			SnomedDescription description = (SnomedDescription) member.getReferencedComponent();
 			term = description.getTerm();
 			break;

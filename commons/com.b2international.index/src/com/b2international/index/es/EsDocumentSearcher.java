@@ -53,6 +53,7 @@ import org.elasticsearch.search.sort.ScriptSortBuilder.ScriptSortType;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 
+import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.commons.exceptions.FormattedRuntimeException;
 import com.b2international.index.*;
 import com.b2international.index.aggregations.Aggregation;
@@ -369,7 +370,7 @@ public class EsDocumentSearcher implements Searcher {
 		}
 	}
 
-	private Object[] fromSearchAfterToken(final String searchAfterToken) {
+	private Object[] fromSearchAfterToken(final String searchAfterToken) throws BadRequestException {
 		if (Strings.isNullOrEmpty(searchAfterToken)) {
 			return null;
 		}
@@ -377,7 +378,7 @@ public class EsDocumentSearcher implements Searcher {
 		final byte[] decodedToken = Base64
 				.getUrlDecoder()
 				.decode(searchAfterToken);
-		
+
 		try (final DataInputStream dis = new DataInputStream(new ByteArrayInputStream(decodedToken))) {
 			JavaBinCodec codec = new JavaBinCodec();
 			List<?> obj = (List<?>) codec.unmarshal(dis);
@@ -385,6 +386,8 @@ public class EsDocumentSearcher implements Searcher {
 			return obj.toArray();
 		} catch (final IOException e) {
 			throw new FormattedRuntimeException("Couldn't decode searchAfter token.", e);
+		} catch (final IllegalArgumentException e) {
+			throw new BadRequestException("Invalid 'searchAfter' parameter value '%s'", searchAfterToken);
 		}
 	}
 

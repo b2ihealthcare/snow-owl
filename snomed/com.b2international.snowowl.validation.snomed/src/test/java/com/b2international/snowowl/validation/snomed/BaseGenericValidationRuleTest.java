@@ -33,7 +33,7 @@ import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.internal.validation.ValidationConfiguration;
 import com.b2international.snowowl.core.validation.ValidateRequestBuilder;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.core.domain.constraint.HierarchyInclusionType;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclParser;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclSerializer;
@@ -191,7 +191,7 @@ public abstract class BaseGenericValidationRuleTest extends BaseValidationTest {
 	}
 	
 	protected final SnomedRefSetMemberIndexEntry.Builder member(final String id, String referencedComponentId, String referenceSetId) {
-		return DocumentBuilders.member(id, referencedComponentId, SnomedTerminologyComponentConstants.getTerminologyComponentIdValue(referencedComponentId), referenceSetId).effectiveTime(effectiveTime);
+		return DocumentBuilders.member(id, referencedComponentId, SnomedComponent.getType(referencedComponentId), referenceSetId).effectiveTime(effectiveTime);
 	}
 	
 	protected final HierarchyDefinitionFragment hierarchyConceptSetDefinition(final String focusConceptId, HierarchyInclusionType inclusionType) {

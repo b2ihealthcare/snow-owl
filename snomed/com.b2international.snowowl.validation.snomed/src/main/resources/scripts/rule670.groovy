@@ -8,8 +8,11 @@ import com.b2international.index.revision.RevisionSearcher
 import com.b2international.snowowl.core.ComponentIdentifier
 import com.b2international.snowowl.core.date.EffectiveTimes
 import com.b2international.snowowl.core.terminology.ComponentCategory
+import com.b2international.snowowl.core.terminology.TerminologyRegistry
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept
+import com.b2international.snowowl.snomed.core.domain.SnomedDescription
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry
 import com.google.common.collect.Lists
@@ -42,17 +45,17 @@ final Aggregation<String> memberAggregation = searcher
 memberAggregation.getBuckets().entrySet().each({entry ->
 		entry.getValue().getHits().forEach({referencedComponentId ->
 			final ComponentCategory referencedComponentCategory = SnomedIdentifiers.getComponentCategory(referencedComponentId)
-			ComponentIdentifier affectedComponent = ComponentIdentifier.UNKOWN
+			ComponentIdentifier affectedComponent = ComponentIdentifier.unknown(referencedComponentId)
 			switch(referencedComponentCategory) {
 				case ComponentCategory.CONCEPT:
-					affectedComponent = ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, referencedComponentId);
+					affectedComponent = ComponentIdentifier.of(SnomedConcept.TYPE, referencedComponentId);
 					break;
 				case ComponentCategory.DESCRIPTION:
-					affectedComponent = ComponentIdentifier.of(SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER, referencedComponentId);
+					affectedComponent = ComponentIdentifier.of(SnomedDescription.TYPE, referencedComponentId);
 					break;
 					
 				case ComponentCategory.RELATIONSHIP:
-					affectedComponent = ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, referencedComponentId);
+					affectedComponent = ComponentIdentifier.of(SnomedRelationship.TYPE, referencedComponentId);
 					break;
 					
 				default:

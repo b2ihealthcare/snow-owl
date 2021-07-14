@@ -21,7 +21,7 @@ import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * @since 6.4
@@ -43,7 +43,7 @@ public abstract class FhirProperty {
 		return type;
 	}
 	
-	@ApiModelProperty(notes = "Code|String|Boolean|Coding|Integer|Datetime")
+	@Schema(description = "Code|String|Boolean|Coding|Integer|Datetime")
 	public Object getValue() {
 		return value;
 	}

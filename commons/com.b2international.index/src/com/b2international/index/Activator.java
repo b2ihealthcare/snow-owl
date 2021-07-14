@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +15,10 @@
  */
 package com.b2international.index;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.Arrays;
 import java.util.concurrent.Callable;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.lucene.codecs.Codec;
-import org.elasticsearch.client.HttpAsyncResponseConsumerFactory;
-import org.elasticsearch.client.HttpAsyncResponseConsumerFactory.HeapBufferedResponseConsumerFactory;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
@@ -38,8 +31,6 @@ import com.google.common.base.Throwables;
 
 public class Activator implements BundleActivator {
 
-	private static final int LARGE_BUFFER_LIMIT = 1024 * 1024 * 1024;
-	
 	private static ClassLoader bundleClassLoader;
 
 	public void start(BundleContext context) throws Exception {
@@ -67,57 +58,9 @@ public class Activator implements BundleActivator {
 			// Initialize Log4j2
 			LogManager.getContext();
 			
-			/* 
-			 * FIXME: Set the default response consumer factory via reflection to allow processing greater than 
-			 * 100 MB of data as its input. Reflection is a really bad (but also the only) way of doing this at
-			 * the moment!
-			 */
-			final HttpAsyncResponseConsumerFactory consumerFactory = new HeapBufferedResponseConsumerFactory(LARGE_BUFFER_LIMIT);
-			final Field defaultField = HttpAsyncResponseConsumerFactory.class.getDeclaredField("DEFAULT");
-	        defaultField.setAccessible(true);
-			
-	        final Field modifiers = getModifiersField();
-	        modifiers.setAccessible(true);
-	        modifiers.setInt(defaultField, defaultField.getModifiers() & ~Modifier.FINAL);
-	        
-	        defaultField.set(null, consumerFactory);
-
 	        // Initialize Elasticsearch's XContent extensibility mechanism 
 			return JsonXContent.contentBuilder();
 		});
-	}
-
-	private Field getModifiersField() throws IllegalAccessException, NoSuchFieldException {
-		
-		try {
-			// Pre-JDK 12: retrieve "modifiers" field on Field directly
-			return Field.class.getDeclaredField("modifiers");
-		} catch (NoSuchFieldException e) {
-			try {
-
-				// JDK 12: gain access to private getDeclaredFields0 method that returns unfiltered results
-				Method getDeclaredFields0 = Class.class.getDeclaredMethod("getDeclaredFields0", boolean.class);
-				boolean accessibleBeforeSet = getDeclaredFields0.isAccessible();
-				
-				try {
-					getDeclaredFields0.setAccessible(true);
-					Field[] fields = (Field[]) getDeclaredFields0.invoke(Field.class, false);
-					return Arrays.stream(fields)
-							.filter(f -> "modifiers".equals(f.getName()))
-							.findFirst()
-							.orElseThrow(() -> e);
-				} finally {
-					getDeclaredFields0.setAccessible(accessibleBeforeSet);
-				}
-				
-			} catch (NoSuchMethodException ex) {
-				e.addSuppressed(ex);
-				throw e;
-			} catch (InvocationTargetException ex) {
-				e.addSuppressed(ex);
-				throw e;
-			}
-		}
 	}
 
 	public void stop(BundleContext context) throws Exception {

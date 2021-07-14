@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,8 @@ package com.b2international.snowowl.snomed.datastore.request;
 
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
-import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
-import com.google.common.base.Strings;
 
 /**
  * <i>Builder</i> class to build requests responsible for searching SNOMED CT reference sets. This class should be instantiated from the corresponding
@@ -48,24 +46,10 @@ public final class SnomedRefSetSearchRequestBuilder extends SnomedSearchRequestB
 	}
 
 	public SnomedRefSetSearchRequestBuilder filterByReferencedComponentType(String referencedComponentType) {
-		if (Strings.isNullOrEmpty(referencedComponentType)) {
-			return getSelf();
-		}
-		if (TerminologyRegistry.UNSPECIFIED.equals(referencedComponentType)) {
-			return getSelf();
-		}
-		final int referencedComponentTypeAsInt = TerminologyRegistry.INSTANCE.getTerminologyComponentById(referencedComponentType).shortId();
-		return filterByReferencedComponentType(referencedComponentTypeAsInt);
-	}
-
-	public SnomedRefSetSearchRequestBuilder filterByReferencedComponentType(Integer referencedComponentType) {
-		if (referencedComponentType == null) {
-			return getSelf();
-		}
 		return addOption(SnomedRefSetSearchRequest.OptionKey.REFERENCED_COMPONENT_TYPE, referencedComponentType);
 	}
 
-	public SnomedRefSetSearchRequestBuilder filterByReferencedComponentTypes(Iterable<Integer> referencedComponentTypes) {
+	public SnomedRefSetSearchRequestBuilder filterByReferencedComponentTypes(Iterable<String> referencedComponentTypes) {
 		return addOption(SnomedRefSetSearchRequest.OptionKey.REFERENCED_COMPONENT_TYPE, referencedComponentTypes);
 	}
 
@@ -76,19 +60,8 @@ public final class SnomedRefSetSearchRequestBuilder extends SnomedSearchRequestB
 	 * @param mapTargetComponentType
 	 *            - map target component type integer
 	 */
-	public SnomedRefSetSearchRequestBuilder filterByMapTargetComponentType(Integer mapTargetComponentType) {
-		if (mapTargetComponentType == null) {
-			return getSelf();
-		}
-		return addOption(SnomedRefSetSearchRequest.OptionKey.MAP_TARGET_COMPONENT_TYPE, mapTargetComponentType);
-	}
-	
 	public SnomedRefSetSearchRequestBuilder filterByMapTargetComponentType(String mapTargetComponentType) {
-		if (Strings.isNullOrEmpty(mapTargetComponentType)) {
-			return getSelf();
-		}
-		final int referencedComponentTypeAsInt = TerminologyRegistry.INSTANCE.getTerminologyComponentById(mapTargetComponentType).shortId();
-		return filterByMapTargetComponentType(referencedComponentTypeAsInt);
+		return addOption(SnomedRefSetSearchRequest.OptionKey.MAP_TARGET_COMPONENT_TYPE, mapTargetComponentType);
 	}
 
 	/**
@@ -98,7 +71,7 @@ public final class SnomedRefSetSearchRequestBuilder extends SnomedSearchRequestB
 	 * @param mapTargetComponentTypes
 	 *            - map target component type values
 	 */
-	public SnomedRefSetSearchRequestBuilder filterByMapTargetComponentTypes(Iterable<Integer> mapTargetComponentTypes) {
+	public SnomedRefSetSearchRequestBuilder filterByMapTargetComponentTypes(Iterable<String> mapTargetComponentTypes) {
 		return addOption(SnomedRefSetSearchRequest.OptionKey.MAP_TARGET_COMPONENT_TYPE, mapTargetComponentTypes);
 	}
 

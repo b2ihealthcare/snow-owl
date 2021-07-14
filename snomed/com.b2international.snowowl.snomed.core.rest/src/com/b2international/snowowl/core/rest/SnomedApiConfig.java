@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.rest;
 
+import org.springdoc.core.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -22,8 +23,6 @@ import org.springframework.context.annotation.Configuration;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.datastore.config.SnomedCoreConfiguration;
-
-import springfox.documentation.spring.web.plugins.Docket;
 
 /**
  * @since 7.2
@@ -40,7 +39,7 @@ public class SnomedApiConfig extends BaseApiConfig {
 	}
 	
 	@Bean
-	public Docket snomedDocs() {
+	public GroupedOpenApi snomedDocs() {
 		return docs(
 			getApiBaseUrl(),
 			"snomed",

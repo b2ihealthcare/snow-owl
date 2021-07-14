@@ -23,7 +23,7 @@ import com.b2international.snowowl.core.domain.DelegatingContext;
 /**
  * @since 8.0
  */
-final class DefaultTerminologyResourceContext extends DelegatingContext implements TerminologyResourceContext {
+public final class DefaultTerminologyResourceContext extends DelegatingContext implements TerminologyResourceContext {
 
 	public DefaultTerminologyResourceContext(final ServiceProvider delegate, ResourceURI resourceUri, TerminologyResource resource) {
 		super(delegate);

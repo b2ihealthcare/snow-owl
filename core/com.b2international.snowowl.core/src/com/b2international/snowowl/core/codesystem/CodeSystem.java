@@ -107,7 +107,7 @@ public final class CodeSystem extends TerminologyResource {
 				.setUpgradeOf(getUpgradeOf())
 				.setSettings(getSettings());
 	}
-
+	
 //	/**
 //	 * Returns all code system short name dependencies and itself.
 //	 */

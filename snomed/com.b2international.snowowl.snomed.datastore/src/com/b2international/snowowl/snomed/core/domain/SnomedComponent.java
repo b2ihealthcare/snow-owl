@@ -16,15 +16,19 @@
 package com.b2international.snowowl.snomed.core.domain;
 
 import java.time.LocalDate;
+import java.util.regex.Pattern;
 
+import com.b2international.commons.VerhoeffCheck;
 import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.domain.BaseComponent;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Strings;
 
 /**
  * Holds common properties of SNOMED CT components.
@@ -32,6 +36,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  */
 public abstract class SnomedComponent extends BaseComponent {
 
+	private static final Pattern PATTERN = Pattern.compile("^\\d*$");
+	
 	private static final long serialVersionUID = 1L;
 
 	/**
@@ -158,5 +164,35 @@ public abstract class SnomedComponent extends BaseComponent {
 	 * @return
 	 */
 	public abstract Request<TransactionContext, String> toCreateRequest(String containerId);
+
+	public static String getType(String componentId) {
+		String componentType = getTypeSafe(componentId);
+		if (TerminologyRegistry.UNKNOWN_COMPONENT_TYPE.equals(componentType)) {
+			throw new IllegalArgumentException("'" + componentId + "' component type is unknown.");
+		} else {
+			return componentType;
+		}
+	}
+	
+	public static String getTypeSafe(String componentId) {
+		if (Strings.isNullOrEmpty(componentId)) {
+			return TerminologyRegistry.UNKNOWN_COMPONENT_TYPE;
+		}
+		
+		if (!PATTERN.matcher(componentId).matches() || componentId.length() < 6 || componentId.length() > 18) {
+			return TerminologyRegistry.UNKNOWN_COMPONENT_TYPE;
+		}
+	
+		if (!VerhoeffCheck.validateLastChecksumDigit(componentId)) {
+			return TerminologyRegistry.UNKNOWN_COMPONENT_TYPE;
+		}
+	
+		switch (componentId.charAt(componentId.length() - 2)) {
+			case '0': return SnomedConcept.TYPE;
+			case '1': return SnomedDescription.TYPE;
+			case '2': return SnomedRelationship.TYPE;
+			default: return TerminologyRegistry.UNKNOWN_COMPONENT_TYPE;
+		}
+	}
 	
 }

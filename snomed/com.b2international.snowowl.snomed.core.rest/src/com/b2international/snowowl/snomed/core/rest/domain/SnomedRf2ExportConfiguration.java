@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2020-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,42 +19,48 @@ import java.util.Collection;
 
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * @since 7.5
  */
 public final class SnomedRf2ExportConfiguration {
 
-	@ApiParam(value = "The RF2 type to use", allowableValues = "full,snapshot,delta", defaultValue = "snapshot")
+	@Schema(description = "The RF2 type to use", allowableValues = "full,snapshot,delta", defaultValue = "snapshot")
 	private String type = Rf2ReleaseType.SNAPSHOT.name();
 	
-	@ApiParam(value = "The namespaceId to use in the release archive name")
-	private String namespaceId = "INT";
+	@Schema(description = "The namespaceId to use in the release archive name")
+	private String namespaceId = "";
 	
-	@ApiParam(value = "Optional moduleIds to restrict the exported content")
+	@Schema(description = "Optional moduleIds to restrict the exported content")
 	private Collection<String> moduleIds;
 	
-	@ApiParam(value = "Optional refSetIds to restrict the export content")
+	@Schema(description = "Optional refSetIds to restrict the export content")
 	private Collection<String> refSetIds;
 	
-	@ApiParam(value = "Delta export start effectiveTime. By default unbounded.")
+	@Schema(description = "Delta export start effectiveTime. By default unbounded.")
 	private String startEffectiveTime;
 	
-	@ApiParam(value = "Delta export end effectiveTime. By default unbounded.")
+	@Schema(description = "Delta export end effectiveTime. By default unbounded.")
 	private String endEffectiveTime;
 	
-	@ApiParam(value = "Transient effectiveTime to apply on unpublished content")
+	@Schema(description = "Transient effectiveTime to apply on unpublished content")
 	private String transientEffectiveTime;
 	
-	@ApiParam(value = "To include unreleased changes in the export result")
+	@Schema(description = "To include unreleased changes in the export result")
 	private boolean includeUnpublished = true;
 	
-	@ApiParam(value = "To export the content of the Extension only or all dependencies as well forming an Edition Release.")
+	@Schema(description = "To export the content of the Extension only or all dependencies as well forming an Edition Release.")
 	private boolean extensionOnly = false;
 	
-	@ApiParam(value = "The RF2 RefSet file layout to use. Defaults to server configuration key 'snomed.export.refSetLayout'.", allowableValues = "combined,individual")
+	@Schema(description = "The RF2 RefSet file layout to use. Defaults to server configuration key 'snomed.export.refSetLayout'.", allowableValues = "combined,individual")
 	private String refSetLayout;
+	
+	@Schema(description = "The nrcCountryCode to use un the release archive name")
+	private String nrcCountryCode = "";
+	
+	@Schema(description = "The maintainerType to use un the release archive name")
+	private String maintainerType = "";
 	
 	/**
 	 * Returns with the RF2 release type of the current export configuration.
@@ -192,4 +198,19 @@ public final class SnomedRf2ExportConfiguration {
 		this.refSetLayout = refSetLayout;
 	}
 	
+	public String getMaintainerType() {
+		return maintainerType;
+	}
+	
+	public void setMaintainerType(String maintainerType) {
+		this.maintainerType = maintainerType;
+	}
+	
+	public String getNrcCountryCode() {
+		return nrcCountryCode;
+	}
+	
+	public void setNrcCountryCode(String nrcCountryCode) {
+		this.nrcCountryCode = nrcCountryCode;
+	}
 }

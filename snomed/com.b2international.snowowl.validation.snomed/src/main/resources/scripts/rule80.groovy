@@ -8,8 +8,8 @@ import com.b2international.index.query.Expressions.ExpressionBuilder
 import com.b2international.index.revision.RevisionSearcher
 import com.b2international.snowowl.core.ComponentIdentifier
 import com.b2international.snowowl.core.date.EffectiveTimes
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept
 import com.b2international.snowowl.snomed.datastore.index.entry.*
 import com.google.common.collect.Lists
 
@@ -67,7 +67,7 @@ searcher.search(Query.select(String.class)
 coreConceptIds.remove(Concepts.ROOT_CONCEPT) // do NOT report ROOT concept without any ISA
 coreConceptIds.each({ coreConceptId ->
 	if (!coreConceptsWithCoreParent.contains(coreConceptId)) {
-		issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, coreConceptId))
+		issues.add(ComponentIdentifier.of(SnomedConcept.TYPE, coreConceptId))
 	} 
 })
 

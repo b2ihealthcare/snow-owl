@@ -228,7 +228,7 @@ public class SnomedRefSetDSVExportTest {
 	private SnomedRefSetCreateRequestBuilder toRefSetRequest(SnomedRefSetType type) {
 		return SnomedRequests.prepareNewRefSet()
 				.setType(type)
-				.setReferencedComponentType(SnomedTerminologyComponentConstants.CONCEPT);
+				.setReferencedComponentType(SnomedConcept.TYPE);
 	}
 
 	private CommitResult createConcept(

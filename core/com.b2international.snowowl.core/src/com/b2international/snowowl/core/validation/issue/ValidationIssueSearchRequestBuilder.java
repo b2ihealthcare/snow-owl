@@ -20,8 +20,8 @@ import java.util.Map;
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.ServiceProvider;
+import com.b2international.snowowl.core.request.SearchPageableCollectionResourceRequestBuilder;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
-import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
 import com.b2international.snowowl.core.request.SystemRequestBuilder;
 import com.b2international.snowowl.core.validation.issue.ValidationIssueSearchRequest.OptionKey;
 
@@ -29,7 +29,7 @@ import com.b2international.snowowl.core.validation.issue.ValidationIssueSearchRe
  * @since 6.0
  */
 public final class ValidationIssueSearchRequestBuilder
-		extends SearchResourceRequestBuilder<ValidationIssueSearchRequestBuilder, ServiceProvider, ValidationIssues>
+		extends SearchPageableCollectionResourceRequestBuilder<ValidationIssueSearchRequestBuilder, ServiceProvider, ValidationIssues>
 		implements SystemRequestBuilder<ValidationIssues> {
 
 	ValidationIssueSearchRequestBuilder() {}

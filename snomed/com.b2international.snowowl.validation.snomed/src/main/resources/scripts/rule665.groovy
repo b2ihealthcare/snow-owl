@@ -12,8 +12,8 @@ import com.b2international.index.query.Expressions.ExpressionBuilder
 import com.b2international.index.revision.RevisionSearcher
 import com.b2international.snowowl.core.ComponentIdentifier
 import com.b2international.snowowl.core.date.EffectiveTimes
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept
+import com.b2international.snowowl.snomed.core.domain.SnomedRelationship
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests
@@ -48,7 +48,7 @@ List<ComponentIdentifier> issues =  new ArrayList<>();
 
 queryResult.each({hits -> 
 	for (String relationshipId : hits) {
-		issues.add(ComponentIdentifier.of(SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER, relationshipId))
+		issues.add(ComponentIdentifier.of(SnomedRelationship.TYPE, relationshipId))
 	}
 })
 

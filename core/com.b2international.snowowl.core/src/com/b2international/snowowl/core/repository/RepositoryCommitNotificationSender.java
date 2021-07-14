@@ -19,12 +19,10 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.b2international.index.mapping.DocumentMapping;
 import com.b2international.index.revision.Commit;
 import com.b2international.index.revision.CommitDetail;
 import com.b2international.snowowl.core.ComponentIdentifier;
 import com.b2international.snowowl.core.domain.RepositoryContext;
-import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.eventbus.IEventBus;
 
 /**
@@ -34,7 +32,6 @@ public class RepositoryCommitNotificationSender {
 
 	public void publish(RepositoryContext context, Commit commit) {
 		// send a commit notification
-		TerminologyComponents components = context.service(TerminologyComponents.class);
 		new RepositoryCommitNotification(context.info().id(),
 				commit.getId(),						
 				commit.getGroupId(),
@@ -42,51 +39,32 @@ public class RepositoryCommitNotificationSender {
 				commit.getTimestamp(),
 				commit.getAuthor(),
 				commit.getComment(),
-				getNewObjects(commit, components),
-				getChangedObjects(commit, components),
-				getRemovedObjects(commit, components),
+				getNewObjects(commit),
+				getChangedObjects(commit),
+				getRemovedObjects(commit),
 				commit.getMergeSource())
 		.publish(context.service(IEventBus.class));
 	}
 	
-	private Collection<ComponentIdentifier> getNewObjects(Commit commit, TerminologyComponents components) {
+	private Collection<ComponentIdentifier> getNewObjects(Commit commit) {
 		return commit.getDetails().stream()
 			.filter(CommitDetail::isAdd)
-			.flatMap(detail -> {
-				final short terminologyComponentId = getTerminologyComponentId(components, detail.getComponentType());
-				return detail.getComponents().stream().flatMap(Set::stream).map(id -> ComponentIdentifier.of(terminologyComponentId, id));
-			})
+			.flatMap(detail -> detail.getComponents().stream().flatMap(Set::stream).map(id -> ComponentIdentifier.of(detail.getComponentType(), id)))
 			.collect(Collectors.toSet());
 	}
 
 	/* From all commit detail object, extract both component level changes and container related add/change/remove and mark them as CHANGED components */
-	private Collection<ComponentIdentifier> getChangedObjects(Commit commit, TerminologyComponents components) {
+	private Collection<ComponentIdentifier> getChangedObjects(Commit commit) {
 		return commit.getDetails().stream()
-			.flatMap(detail -> {
-				final short terminologyComponentId = getTerminologyComponentId(components, detail.getObjectType());
-				return detail.getObjects().stream().map(id -> ComponentIdentifier.of(terminologyComponentId, id)); 
-			})
+			.flatMap(detail -> detail.getObjects().stream().map(id -> ComponentIdentifier.of(detail.getObjectType(), id)))
 			.collect(Collectors.toSet());
 	}
 	
-	private Collection<ComponentIdentifier> getRemovedObjects(Commit commit, TerminologyComponents components) {
+	private Collection<ComponentIdentifier> getRemovedObjects(Commit commit) {
 		return commit.getDetails().stream()
 			.filter(CommitDetail::isRemove)
-			.flatMap(detail -> {
-				final short terminologyComponentId = getTerminologyComponentId(components, detail.getComponentType());
-				return detail.getComponents().stream().flatMap(Set::stream).map(id -> ComponentIdentifier.of(terminologyComponentId, id));
-			})
+			.flatMap(detail -> detail.getComponents().stream().flatMap(Set::stream).map(id -> ComponentIdentifier.of(detail.getComponentType(), id)))
 			.collect(Collectors.toSet());
 	}
-	
-	private short getTerminologyComponentId(TerminologyComponents components, String componentType) {
-		try {
-			return components.getTerminologyComponentId(DocumentMapping.getClass(componentType));
-		} catch (IllegalArgumentException e) {
-			// return unspecified terminology component for each unknown components committed to the repo
-			return TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT;
-		}
-	}
-
 	
 }

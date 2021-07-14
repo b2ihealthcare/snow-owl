@@ -42,6 +42,7 @@ import com.b2international.snowowl.core.compare.ConceptMapCompareResultItem;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.domain.ConceptMapMapping;
 import com.b2international.snowowl.core.uri.ComponentURI;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.test.commons.Services;
 
 /**
@@ -142,7 +143,7 @@ public class ConceptMapCompareDsvExportTest {
 	private static ConceptMapCompareResultItem createItemUnspecifiedTarget(ConceptMapCompareChangeKind changeKind, String containerTerm, String sourceId, String sourceTerm) {
 		ConceptMapMapping mapping = ConceptMapMapping.builder()
 				.containerTerm(containerTerm)
-				.sourceComponentURI(ComponentURI.of(CodeSystem.uri("SNOMEDCT-CA"), (short) 100, sourceId))
+				.sourceComponentURI(ComponentURI.of(CodeSystem.uri("SNOMEDCT-CA"), SnomedConcept.TYPE, sourceId))
 				.sourceTerm(sourceTerm)
 				.targetComponentURI(ComponentURI.UNSPECIFIED)
 				.targetTerm("")
@@ -153,9 +154,9 @@ public class ConceptMapCompareDsvExportTest {
 	private static ConceptMapCompareResultItem createItem(ConceptMapCompareChangeKind changeKind, String containerTerm, String sourceId, String sourceTerm, String targetId, String targetTerm) {
 		ConceptMapMapping mapping = ConceptMapMapping.builder()
 				.containerTerm(containerTerm)
-				.sourceComponentURI(ComponentURI.of(CodeSystem.uri("SNOMEDCT-CA"), (short) 100, sourceId))
+				.sourceComponentURI(ComponentURI.of(CodeSystem.uri("SNOMEDCT-CA"), SnomedConcept.TYPE, sourceId))
 				.sourceTerm(sourceTerm)
-				.targetComponentURI(ComponentURI.of(CodeSystem.uri("ICD-10-CA"), (short) 300, targetId))
+				.targetComponentURI(ComponentURI.of(CodeSystem.uri("ICD-10-CA"), "concept", targetId))
 				.targetTerm(targetTerm)
 				.build();
 		return new ConceptMapCompareResultItem(changeKind, mapping);

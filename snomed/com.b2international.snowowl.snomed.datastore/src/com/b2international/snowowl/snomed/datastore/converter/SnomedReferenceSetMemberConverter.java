@@ -31,11 +31,9 @@ import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.request.BaseRevisionResourceConverter;
 import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
-import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedCoreComponent;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
@@ -48,12 +46,7 @@ import com.b2international.snowowl.snomed.datastore.request.SnomedOWLExpressionC
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Function;
 import com.google.common.base.Strings;
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
+import com.google.common.collect.*;
 
 /**
  * @since 4.5
@@ -253,31 +246,27 @@ public final class SnomedReferenceSetMemberConverter extends BaseRevisionResourc
 		}
 	}
 
-	private void setReferencedComponent(SnomedReferenceSetMember member, String referencedComponentId, short referencedComponentType) {
+	private void setReferencedComponent(SnomedReferenceSetMember member, String referencedComponentId, String referencedComponentType) {
+		// XXX: partial field loading support
+		if (referencedComponentType == null) return;
 		final SnomedCoreComponent component;
 		switch (referencedComponentType) {
 			// TODO support query type refset refcomp expansion, currently it's a concept
-			case SnomedTerminologyComponentConstants.REFSET_NUMBER:
-			case SnomedTerminologyComponentConstants.CONCEPT_NUMBER:
+			case SnomedConcept.REFSET_TYPE:
+			case SnomedConcept.TYPE:
 				component = new SnomedConcept();
 				((SnomedConcept) component).setId(referencedComponentId);
 				break;
-			case SnomedTerminologyComponentConstants.DESCRIPTION_NUMBER:
+			case SnomedDescription.TYPE:
 				component = new SnomedDescription();
 				((SnomedDescription) component).setId(referencedComponentId);
 				break;
-			case SnomedTerminologyComponentConstants.RELATIONSHIP_NUMBER:
+			case SnomedRelationship.TYPE:
 				component = new SnomedRelationship();
 				((SnomedRelationship) component).setId(referencedComponentId);
 				break;
 			default: 
-				// XXX: partial field loading support
-				if (referencedComponentType < TerminologyRegistry.UNSPECIFIED_NUMBER_SHORT || referencedComponentType > 0) {
-					throw new UnsupportedOperationException("UnsupportedReferencedComponentType: " + referencedComponentType);
-				} else {
-					component = null;
-				}
-				break;
+				throw new UnsupportedOperationException("UnsupportedReferencedComponentType: " + referencedComponentType);
 		}
 		member.setReferencedComponent(component);
 	}

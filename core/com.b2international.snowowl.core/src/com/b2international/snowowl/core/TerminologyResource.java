@@ -21,6 +21,8 @@ import java.util.Map;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchInfo;
 import com.b2international.snowowl.core.codesystem.UpgradeInfo;
+import com.b2international.snowowl.core.internal.ResourceDocument;
+import com.b2international.snowowl.core.internal.ResourceDocument.Builder;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -175,6 +177,30 @@ public abstract class TerminologyResource extends Resource {
 		} else {
 			return getResourceURI();
 		}
+	}
+	
+	@Override
+	public Builder toDocumentBuilder() {
+		return ResourceDocument.builder()
+				.resourceType(getResourceType())
+				.id(getId())
+				.url(getUrl())
+				.title(getTitle())
+				.language(getLanguage())
+				.description(getDescription())
+				.status(getStatus())
+				.copyright(getCopyright())
+				.owner(getOwner())
+				.contact(getContact())
+				.usage(getUsage())
+				.purpose(getPurpose())
+				.bundleId(getBundleId())
+				.branchPath(getBranchPath())
+				.extensionOf(getExtensionOf())
+				.oid(getOid())
+				.settings(getSettings())
+				.toolingId(getToolingId())
+				.upgradeOf(getUpgradeOf());
 	}
 	
 }

@@ -18,8 +18,8 @@ package com.b2international.snowowl.snomed.datastore.request;
 import java.util.Collection;
 
 import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.request.SearchPageableCollectionResourceRequestBuilder;
 import com.b2international.snowowl.core.request.SearchResourceRequest;
-import com.b2international.snowowl.core.request.SearchResourceRequestBuilder;
 import com.b2international.snowowl.snomed.core.domain.constraint.SnomedConstraints;
 import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintPredicateType;
 
@@ -27,7 +27,7 @@ import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConst
  * @since 4.7
  */
 public final class SnomedConstraintSearchRequestBuilder 
-		extends SearchResourceRequestBuilder<SnomedConstraintSearchRequestBuilder, BranchContext, SnomedConstraints>
+		extends SearchPageableCollectionResourceRequestBuilder<SnomedConstraintSearchRequestBuilder, BranchContext, SnomedConstraints>
 		implements SnomedContentRequestBuilder<SnomedConstraints> {
 
 	SnomedConstraintSearchRequestBuilder() {

@@ -59,6 +59,7 @@ import com.b2international.snowowl.core.validation.rule.ValidationRule;
 import com.b2international.snowowl.core.validation.rule.ValidationRule.Severity;
 import com.b2international.snowowl.core.validation.whitelist.ValidationWhiteList;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclParser;
 import com.b2international.snowowl.snomed.core.ecl.DefaultEclSerializer;
 import com.b2international.snowowl.snomed.core.ecl.EclParser;
@@ -222,7 +223,7 @@ public class SnomedValidationIssueDetailTest extends BaseRevisionIndexTest {
 		final ValidationIssue issue = new ValidationIssue(
 			IDs.base64UUID(),
 			TEST_RULE_ID,
-			ComponentURI.of(SnomedContentRule.SNOMEDCT, ComponentIdentifier.of(SnomedTerminologyComponentConstants.CONCEPT_NUMBER, componentId)),
+			ComponentURI.of(SnomedContentRule.SNOMEDCT, ComponentIdentifier.of(SnomedConcept.TYPE, componentId)),
 			false
 		);
 		
