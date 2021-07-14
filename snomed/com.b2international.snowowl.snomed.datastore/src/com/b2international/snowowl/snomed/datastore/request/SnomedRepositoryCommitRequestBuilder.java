@@ -21,6 +21,7 @@ import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.request.CommitResult;
 import com.b2international.snowowl.core.request.RevisionIndexReadRequest;
 import com.b2international.snowowl.core.request.TerminologyResourceCommitRequestBuilder;
+import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 
 /**
  * @since 4.5
@@ -49,6 +50,11 @@ public final class SnomedRepositoryCommitRequestBuilder extends TerminologyResou
 	@Override
 	protected Request<TransactionContext, ?> getBody() {
 		return new IdRequest<>(new SnomedBulkRequest<>(super.getBody()));
+	}
+	
+	@Override
+	public String getToolingId() {
+		return SnomedTerminologyComponentConstants.TOOLING_ID;
 	}
 
 }
