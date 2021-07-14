@@ -174,7 +174,7 @@ public abstract class BaseRevisionBranching {
 	 * Returns <code>true</code> if the given branch has any actual changes.
 	 * An actual change is a commit that has been made on the given branch between the given timeframe (from -> to) and it is not a fast forward merge commit from the given mergeBranch.
 	 *     
-	 * @param branch
+	 * @param branches
 	 * @param from
 	 * @param to
 	 * @param mergeBranch
