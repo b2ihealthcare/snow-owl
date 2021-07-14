@@ -221,7 +221,7 @@ public class BundleRestApiTest {
 	public void updateBundleBundleIdNotExist() {
 		final String id = "b15";
 		assertBundleCreated(prepareCreateRequestBody(id));
-		updateBundle(id, Json.object("bundleId", "not-existings-id"))
+		assertUpdateBundle(id, Json.object("bundleId", "not-existing-id"))
 			.statusCode(400);
 	}
 }

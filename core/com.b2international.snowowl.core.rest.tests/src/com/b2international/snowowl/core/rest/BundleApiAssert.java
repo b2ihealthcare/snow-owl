@@ -71,7 +71,7 @@ public class BundleApiAssert {
 				.then().assertThat();
 	}
 	
-	public static ValidatableResponse updateBundle(final String uniqueId, final Map<String, Object> requestBody) {
+	public static ValidatableResponse assertUpdateBundle(final String uniqueId, final Map<String, Object> requestBody) {
 		return givenAuthenticatedRequest(BUNDLE_API)
 			.with().contentType(ContentType.JSON)
 			.and().body(requestBody)
@@ -80,7 +80,7 @@ public class BundleApiAssert {
 	}
 	
 	public static ValidatableResponse assertUpdateBundleField(final String uniqueId, final String field, final String value) {
-		updateBundle(uniqueId, Map.of(field, value)).statusCode(204);
+		assertUpdateBundle(uniqueId, Map.of(field, value)).statusCode(204);
 		
 		return assertBundleGet(uniqueId)
 			.body(field, equalTo(value))
