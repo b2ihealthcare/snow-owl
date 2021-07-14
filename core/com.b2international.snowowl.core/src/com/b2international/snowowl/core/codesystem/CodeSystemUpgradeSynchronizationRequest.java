@@ -56,10 +56,7 @@ public final class CodeSystemUpgradeSynchronizationRequest implements Request<Re
 		
 		if (codeSystem.getUpgradeOf() == null) {
 			throw new BadRequestException("Code System '%s' is not an Upgrade Code System. It cannot be synchronized with '%s'.", codeSystemId, source);
-		} else if (codeSystem.getUpgradeOf().equals(source)) {
-			// TODO patches on version branches might require this to be allowed, if yes, simply remove this restriction
-			throw new BadRequestException("Code System '%s' has been already synchronized with source '%s'.", codeSystemId, source);
-		}
+		} 
 		
 		final String sourceBranchPath = context.service(ResourceURIPathResolver.class).resolve(context, List.of(source)).stream().findFirst().get();
 		// merge all changes from the source to the current upgrade of branch
