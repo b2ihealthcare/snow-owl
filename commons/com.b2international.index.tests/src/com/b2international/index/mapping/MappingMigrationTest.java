@@ -178,10 +178,11 @@ public class MappingMigrationTest extends BaseIndexTest {
 	
 	@Before
 	public void setup() {
+		Mappings mappings = new Mappings(Schema.class);
 		// enable class overrides for test(s) in this class
-		DocumentMappingRegistry.INSTANCE.enableRuntimeMappingOverrides = true;
+		mappings.enableRuntimeMappingOverrides = true;
 		// make sure we always start with the basic Schema
-		admin().updateMappings(new Mappings(Schema.class));
+		admin().updateMappings(mappings);
 		admin().create();
 		// index two documents with the existing schema
 		existingDoc1 = new Schema(KEY1, "Existing Field One");
@@ -261,10 +262,11 @@ public class MappingMigrationTest extends BaseIndexTest {
 	@After
 	public void teardown() {
 		// clear the custom indices
-		admin().updateMappings(new Mappings(Schema.class));
-		admin().clear(List.of(Schema.class));
+		Mappings mappings = new Mappings(Schema.class);
 		// disable class overrides after running the test(s)
-		DocumentMappingRegistry.INSTANCE.enableRuntimeMappingOverrides = false;
+		mappings.enableRuntimeMappingOverrides = false;
+		admin().updateMappings(mappings);
+		admin().clear(List.of(Schema.class));
 	}
 	
 	/*

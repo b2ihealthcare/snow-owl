@@ -132,12 +132,12 @@ public final class ConceptChangeProcessor extends ChangeSetProcessorBase {
 			final Map<ObjectId, RevisionDiff> changedRevisions = staging.getChangedRevisions();
 			// fetch all dirty concept documents by their ID
 			final Set<String> missingCurrentConceptIds = dirtyConceptIds.stream()
-					.filter(id -> !changedRevisions.containsKey(ObjectId.of(SnomedConceptDocument.class, id)))
+					.filter(id -> !changedRevisions.containsKey(ObjectId.of(SnomedConcept.TYPE, id)))
 					.collect(Collectors.toSet());
 
 			final Map<String, SnomedConceptDocument> currentConceptDocumentsById = newHashMap(Maps.uniqueIndex(searcher.get(SnomedConceptDocument.class, missingCurrentConceptIds), Revision::getId));
 			dirtyConceptIds.stream()
-				.map(id -> ObjectId.of(SnomedConceptDocument.class, id))
+				.map(id -> ObjectId.of(SnomedConcept.TYPE, id))
 				.filter(changedRevisions::containsKey)
 				.map(changedRevisions::get)
 				.map(diff -> (SnomedConceptDocument) diff.oldRevision)

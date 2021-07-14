@@ -250,7 +250,7 @@ public final class DefaultRevisionIndex implements InternalRevisionIndex, Hooks 
 				.build());
 		}
 		for (Class<? extends Revision> revisionType : typesToPurge) {
-			final String type = DocumentMapping.getType(revisionType);
+			final String type = admin.mappings().getType(revisionType);
 			admin().log().info("Purging '{}' revisions...", type);
 			writer.bulkDelete(new BulkDelete<>(revisionType, purgeQuery.build()));
 			writer.commit();

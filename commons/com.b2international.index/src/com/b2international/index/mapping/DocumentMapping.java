@@ -39,6 +39,7 @@ import com.b2international.index.util.Reflections;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
+import com.google.common.base.Strings;
 import com.google.common.collect.*;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.primitives.Primitives;
@@ -51,6 +52,7 @@ public final class DocumentMapping {
 	private static final Logger LOG = LoggerFactory.getLogger(DocumentMapping.class);
 	
 	public static final String _DOC = "_doc";
+	private static final Map<Class<?>, String> DOC_TYPE_CACHE = new MapMaker().makeMap();
 	
 	// type path delimiter to differentiate between same nested types in different contexts
 	public static final String DELIMITER = ".";
@@ -79,7 +81,7 @@ public final class DocumentMapping {
 	public DocumentMapping(Class<?> type, DocumentMapping parent, boolean nested) {
 		this.type = type;
 		this.parent = parent;
-		final String typeAsString = getType(type);
+		final String typeAsString = getDocType(type);
 		this.typeAsString = parent == null ? typeAsString : parent.typeAsString() + DELIMITER + typeAsString;
 		this.fieldMap = FluentIterable.from(Reflections.getFields(type)).filter(DocumentMapping::isValidField).uniqueIndex(Field::getName);
 
@@ -145,7 +147,7 @@ public final class DocumentMapping {
 		}
 		this.fieldAliases = new TreeMap<>(aliasFields.build());
 		
-		final Doc doc = DocumentMappingRegistry.getDocAnnotation(type);
+		final Doc doc = getDocAnnotation(type);
 		if (doc != null) {
 			this.trackedRevisionFields = ImmutableSortedSet.copyOf(doc.revisionHash());
 		} else {
@@ -356,23 +358,8 @@ public final class DocumentMapping {
 	
 	// static helpers
 	
-	public static String getType(Class<?> type) {
-		return DocumentMappingRegistry.INSTANCE.getType(type);
-	}
-	
-	/**
-	 * @return all types currently registered in doc type mapping
-	 */
-	public static Collection<Class<?>> getTypes() {
-		return DocumentMappingRegistry.INSTANCE.getTypes();
-	}
-	
-	public static Class<?> getClass(String type) {
-		return DocumentMappingRegistry.INSTANCE.getClass(type);
-	}
-	
 	public static boolean isNestedDoc(Class<?> fieldType) {
-		final Doc doc = DocumentMappingRegistry.getDocAnnotation(fieldType);
+		final Doc doc = getDocAnnotation(fieldType);
 		return doc == null ? false : doc.nested();
 	}
 
@@ -391,6 +378,38 @@ public final class DocumentMapping {
 
 	public String getIdFieldValue(Object object) {
 		return (String) Reflections.getValue(object, getField(getIdField()));
+	}
+	
+	public static Doc getDocAnnotation(Class<?> type) {
+		if (type.isAnnotationPresent(Doc.class)) {
+			return type.getAnnotation(Doc.class);
+		} else {
+			if (type.getSuperclass() != null) {
+				final Doc doc = getDocAnnotation(type.getSuperclass());
+				if (doc != null) {
+					return doc;
+				}
+			}
+			
+			for (Class<?> iface : type.getInterfaces()) {
+				final Doc doc = getDocAnnotation(iface);
+				if (doc != null) {
+					return doc;
+				}
+			}
+			return null;
+		}
+	}
+
+	public static String getDocType(Class<?> type) {
+		if (!DOC_TYPE_CACHE.containsKey(type)) {
+			final Doc annotation = DocumentMapping.getDocAnnotation(type);
+			checkArgument(annotation != null, "Doc annotation must be present on type '%s' or on its class hierarchy", type);
+			final String docType = Strings.isNullOrEmpty(annotation.type()) ? type.getSimpleName().toLowerCase() : annotation.type();
+			checkArgument(!Strings.isNullOrEmpty(docType), "Document type should not be null or empty on class %s", type.getName());
+			DOC_TYPE_CACHE.put(type, docType);
+		}
+		return DOC_TYPE_CACHE.get(type);
 	}
 
 }

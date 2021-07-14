@@ -81,10 +81,6 @@ public enum TerminologyRegistry {
 			throw new IllegalArgumentException(String.format("A terminology component is already registered with id '%s'", terminologyComponentId));	
 		}
 		terminologyComponentsById.put(terminologyComponentId, terminologyComponent);
-		if (!UNSPECIFIED.equals(terminologyId)) {
-			// XXX This will inject the necessary values in the underlying document mapping caches
-			DocumentMapping.getType(terminologyComponent.docType());
-		}
 	}
 	
 	private String getTerminologyComponentId(String terminologyId, TerminologyComponent terminologyComponent) {
@@ -92,7 +88,7 @@ public enum TerminologyRegistry {
 		if (!terminologyComponent.id().isBlank()) {
 			return String.join(".", terminologyId, terminologyComponent.id());
 		} else {
-			return String.join(".", terminologyId, DocumentMapping.getType(terminologyComponent.docType()));
+			return String.join(".", terminologyId, DocumentMapping.getDocType(terminologyComponent.docType()));
 		}
 	}
 

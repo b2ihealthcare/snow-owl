@@ -96,11 +96,6 @@ public abstract class Revision {
 		return revised;
 	}
 	
-	@JsonIgnore
-	public final ObjectId getObjectId() {
-		return ObjectId.of(getClass(), getId());
-	}
-	
 	/**
 	 * Provides high-level component identifier if this component is a subcomponent of the high-level component identifier. This method by default
 	 * returns a {@link #ROOT} object ID therefore this object is a ROOT component in a given hierarchy.
@@ -109,7 +104,12 @@ public abstract class Revision {
 	 */
 	@JsonIgnore
 	protected ObjectId getContainerId() {
-		return ObjectId.rootOf(DocumentMapping.getType(getClass()));
+		return ObjectId.rootOf(DocumentMapping.getDocType(getClass()));
+	}
+	
+	@JsonIgnore
+	public ObjectId getObjectId() {
+		return ObjectId.of(DocumentMapping.getDocType(getClass()), getId());
 	}
 	
 	@Override

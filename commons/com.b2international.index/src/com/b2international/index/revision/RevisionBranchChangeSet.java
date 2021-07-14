@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.b2international.index.mapping.DocumentMapping;
+import com.b2international.index.mapping.Mappings;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.SetMultimap;
@@ -33,6 +33,7 @@ import com.google.common.collect.SetMultimap;
 public final class RevisionBranchChangeSet {
 
 	private final DefaultRevisionIndex index;
+	private final Mappings mappings;
 	private final RevisionBranchRef ref;
 	private final SetMultimap<Class<? extends Revision>, String> newRevisionIdsByType = HashMultimap.create();
 	private final SetMultimap<Class<? extends Revision>, String> changedRevisionIdsByType = HashMultimap.create();
@@ -42,16 +43,17 @@ public final class RevisionBranchChangeSet {
 	RevisionBranchChangeSet(DefaultRevisionIndex index, RevisionBranchRef ref, List<RevisionCompareDetail> compareDetails) {
 		this.index = index;
 		this.ref = ref;
+		this.mappings = this.index.admin().mappings();
 		compareDetails.forEach(detail -> {
 			// add all objects to the tx
 			if (detail.isAdd()) {
-				Class<?> revType = DocumentMapping.getClass(detail.getComponent().type());
+				Class<?> revType = mappings.getClass(detail.getComponent().type());
 				if (Revision.class.isAssignableFrom(revType)) {
 					newRevisionIdsByType.put((Class<? extends Revision>) revType, detail.getComponent().id());
 					// XXX since there is a new detail for the component, it cannot be a changed revision, remove if it were added due to the next few statement 
 					changedRevisionIdsByType.remove((Class<? extends Revision>) revType, detail.getComponent().id());
 					if (!detail.getObject().isRoot()) {
-						Class<?> objectType = DocumentMapping.getClass(detail.getObject().type());
+						Class<?> objectType = mappings.getClass(detail.getObject().type());
 						containersRequiredForNewAndChangedRevisions.put(detail.getComponent(), detail.getObject());
 						// only register as changed container, if the container is not registered as a new revision
 						if (!newRevisionIdsByType.containsEntry((Class<? extends Revision>) objectType, detail.getObject().id())) {
@@ -61,25 +63,25 @@ public final class RevisionBranchChangeSet {
 				}
 			} else if (detail.isChange()) {
 				if (detail.isPropertyChange()) {
-					Class<?> revType = DocumentMapping.getClass(detail.getObject().type());
+					Class<?> revType = mappings.getClass(detail.getObject().type());
 					if (Revision.class.isAssignableFrom(revType)) {
 						changedRevisionIdsByType.put((Class<? extends Revision>) revType, detail.getObject().id());
 					}
 				} else {
 					// TODO this block is required if a Revision class does not define a property as tracked, can be removed in 8.0 after move to annotation based field tracking
-					Class<?> revType = DocumentMapping.getClass(detail.getComponent().type());
+					Class<?> revType = mappings.getClass(detail.getComponent().type());
 					if (Revision.class.isAssignableFrom(revType)) {
 						changedRevisionIdsByType.put((Class<? extends Revision>) revType, detail.getComponent().id());
 					}
 				}
 			} else if (detail.isRemove()) {
-				Class<?> revType = DocumentMapping.getClass(detail.getComponent().type());
+				Class<?> revType = mappings.getClass(detail.getComponent().type());
 				if (Revision.class.isAssignableFrom(revType)) {
 					removedRevisionIdsByType.put((Class<? extends Revision>) revType, detail.getComponent().id());
 					// XXX since there is a remove detail for the component, it cannot be a changed revision, remove if it were added due to the next few statement 
 					changedRevisionIdsByType.put((Class<? extends Revision>) revType, detail.getComponent().id());
 					if (!detail.getObject().isRoot()) {
-						Class<?> objectType = DocumentMapping.getClass(detail.getObject().type());						
+						Class<?> objectType = mappings.getClass(detail.getObject().type());						
 						changedRevisionIdsByType.put((Class<? extends Revision>) objectType, detail.getObject().id());
 						// only register as removed container, if the container is not registered as a removed revision
 						if (!removedRevisionIdsByType.containsEntry((Class<? extends Revision>) objectType, detail.getObject().id())) {
@@ -134,7 +136,7 @@ public final class RevisionBranchChangeSet {
 	}
 
 	public boolean isRemoved(ObjectId revisionId) {
-		return removedRevisionIdsByType.containsEntry(DocumentMapping.getClass(revisionId.type()), revisionId.id());
+		return removedRevisionIdsByType.containsEntry(mappings.getClass(revisionId.type()), revisionId.id());
 	}
 
 	public Set<String> getAddedIds() {

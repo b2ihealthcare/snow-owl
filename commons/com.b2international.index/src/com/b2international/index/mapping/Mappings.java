@@ -16,6 +16,7 @@
 package com.b2international.index.mapping;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.Collection;
@@ -25,6 +26,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.b2international.index.query.Query;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.*;
 import com.google.common.collect.Multiset.Entry;
 
@@ -33,6 +35,7 @@ import com.google.common.collect.Multiset.Entry;
  */
 public final class Mappings {
 
+	private final BiMap<Class<?>, String> docTypeCache = HashBiMap.create();
 	private final Map<Class<?>, DocumentMapping> mappingsByType = newHashMap(); 
 	
 	public Mappings(Class<?>...types) {
@@ -60,6 +63,8 @@ public final class Mappings {
 	public DocumentMapping putMapping(Class<?> type) {
 		final DocumentMapping mapping = new DocumentMapping(type);
 		mappingsByType.put(type, mapping);
+		// init cache by calculating docType
+		getType(type);
 		return mapping;
 	}
 
@@ -89,5 +94,33 @@ public final class Mappings {
 			return query.getSelection().getFrom().stream().map(this::getMapping).collect(Collectors.toList());
 		}
 	}
+	
+	/**
+	 * For testing purposes only.
+	 */
+	@VisibleForTesting
+	/*package*/ boolean enableRuntimeMappingOverrides = false; 
 
+	public String getType(Class<?> type) {
+		checkNotNull(type, "Type argument may not be null");
+		if (!docTypeCache.containsKey(type)) {
+			final String docType = DocumentMapping.getDocType(type);
+			// let other classes override
+			if (docTypeCache.containsValue(docType)) {
+				if (enableRuntimeMappingOverrides) {
+					docTypeCache.inverse().remove(docType);
+				} else {
+					Class<?> existingClassMapping = docTypeCache.inverse().get(docType);
+					throw new IllegalArgumentException(String.format("Another class '%s' already uses the same index name '%s' as this class '%s'.", existingClassMapping.getName(), docType, type.getName()));
+				}
+			}
+			docTypeCache.put(type, docType);
+		}
+		return docTypeCache.get(type);
+	}
+
+	public Class<?> getClass(String type) {
+		return checkNotNull(docTypeCache.inverse().get(type), "Missing doc class for key '%s'. Populate the doc type cache via #getType(Class<?>) method before using this method.", type);
+	}
+	
 }
