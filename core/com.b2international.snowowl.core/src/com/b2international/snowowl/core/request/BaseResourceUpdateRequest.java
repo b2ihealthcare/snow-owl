@@ -17,7 +17,9 @@ package com.b2international.snowowl.core.request;
 
 import com.b2international.commons.exceptions.AlreadyExistsException;
 import com.b2international.commons.exceptions.BadRequestException;
+import com.b2international.commons.exceptions.NotFoundException;
 import com.b2international.snowowl.core.authorization.RepositoryAccessControl;
+import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.identity.Permission;
 import com.b2international.snowowl.core.internal.ResourceDocument;
@@ -145,6 +147,8 @@ public abstract class BaseResourceUpdateRequest extends UpdateRequest<Transactio
 			
 			changed |= updateProperty(url, resource::getUrl, updated::url);
 		}
+
+		changed |= updateBundle(context, resource.getBundleId(), updated);
 		
 		changed |= updateProperty(title, resource::getTitle, updated::title);
 		changed |= updateProperty(language, resource::getLanguage, updated::language);
@@ -155,13 +159,37 @@ public abstract class BaseResourceUpdateRequest extends UpdateRequest<Transactio
 		changed |= updateProperty(contact, resource::getContact, updated::contact);
 		changed |= updateProperty(usage, resource::getUsage, updated::usage);
 		changed |= updateProperty(purpose, resource::getPurpose, updated::purpose);
-		changed |= updateProperty(bundleId, resource::getBundleId, updated::bundleId);
 
 		if (changed) {
 			context.add(updated.build());
 		}
 
 		return changed;
+	}
+
+	private boolean updateBundle(TransactionContext context, String oldBundleId, Builder updated) {
+		if (bundleId == null || bundleId.equals(oldBundleId)) {
+			return false;
+		}
+		
+		if (IComponent.ROOT_ID.equals(bundleId)) {
+			updated.bundleId(bundleId);
+			return true;
+		}
+		
+		boolean bundleExist = ResourceRequests.bundles().prepareSearch()
+				.filterById(bundleId)
+				.setLimit(0)
+				.build()
+				.execute(context)
+				.getTotal() > 0;
+				
+		if (bundleExist) {
+			updated.bundleId(bundleId);
+			return true;
+		} else {
+			throw new NotFoundException("Bundle", bundleId).toBadRequestException();
+		}
 	}
 
 	protected abstract boolean updateSpecializedProperties(TransactionContext context, ResourceDocument resource, Builder updated);

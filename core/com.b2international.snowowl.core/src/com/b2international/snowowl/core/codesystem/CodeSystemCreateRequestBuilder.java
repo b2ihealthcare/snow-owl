@@ -69,12 +69,12 @@ public final class CodeSystemCreateRequestBuilder extends BaseResourceCreateRequ
 	public CodeSystemCreateRequest createResourceRequest() {
 		final CodeSystemCreateRequest req = new CodeSystemCreateRequest();
 		
-		req.oid = oid;
-		req.branchPath = branchPath;
-		req.toolingId = toolingId;
-		req.extensionOf = extensionOf;
-		req.upgradeOf = upgradeOf;
-		req.settings = settings;
+		req.setOid(oid);
+		req.setBranchPath(branchPath);
+		req.setToolingId(toolingId);
+		req.setExtensionOf(extensionOf);
+		req.setUpgradeOf(upgradeOf);
+		req.setSettings(settings);
 		
 		return req;
 	}
