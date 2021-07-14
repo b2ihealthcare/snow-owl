@@ -28,6 +28,7 @@ import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.compare.*;
 import com.b2international.snowowl.core.domain.BranchContext;
 import com.b2international.snowowl.core.domain.ConceptMapMapping;
+import com.b2international.snowowl.core.domain.ConceptMapMappings;
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.google.common.base.Equivalence.Wrapper;
 import com.google.common.collect.*;
@@ -77,17 +78,15 @@ final class ConceptMapCompareRequest extends ResourceRequest<BranchContext, Conc
 	}
 
 	private List<ConceptMapMapping> fetchConceptMapMappings(BranchContext context, String conceptMapId) {
-		List<ConceptMapMapping> baseMappings = Lists.newArrayList();
-		new SearchResourceRequestIterator<>(
-				CodeSystemRequests.prepareSearchConceptMapMappings()
-					.filterByConceptMap(conceptMapId)
-					.filterByActive(true)
-					.setLocales(locales())
-					.setPreferredDisplay(preferredDisplay)
-					.setLimit(DEFAULT_MEMBER_SCROLL_LIMIT),
-				r -> r.build().execute(context)
-			).forEachRemaining(hits -> hits.forEach(baseMappings::add));
-		return baseMappings;
+		return CodeSystemRequests.prepareSearchConceptMapMappings()
+			.filterByConceptMap(conceptMapId)
+			.filterByActive(true)
+			.setLocales(locales())
+			.setPreferredDisplay(preferredDisplay)
+			.setLimit(DEFAULT_MEMBER_SCROLL_LIMIT)
+			.stream(context)
+			.flatMap(ConceptMapMappings::stream)
+			.collect(Collectors.toList());
 	}
 	
 	private ConceptMapCompareResult compareDifferences(List<ConceptMapMapping> baseMappings, List<ConceptMapMapping> compareMappings) {

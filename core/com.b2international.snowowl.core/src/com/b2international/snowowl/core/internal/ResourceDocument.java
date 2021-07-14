@@ -252,6 +252,9 @@ public final class ResourceDocument extends RevisionDocument {
 				.settings(from.getSettings());
 	}
 	
+	/**
+	 * @since 8.0
+	 */
 	@JsonPOJOBuilder(withPrefix = "")
 	public static final class Builder extends RevisionDocument.RevisionDocumentBuilder<Builder, RevisionDocument> {
 		
