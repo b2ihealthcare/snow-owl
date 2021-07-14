@@ -83,6 +83,11 @@ import com.google.inject.Injector;
 @Component
 public final class SnomedPlugin extends TerminologyRepositoryPlugin {
 
+	/**
+	 * Unique identifier of the bundle. ID: {@value}
+	 */
+	public static final String PLUGIN_ID = "com.b2international.snowowl.snomed.datastore"; //$NON-NLS-1$
+	
 	@Override
 	public void addConfigurations(ConfigurationRegistry registry) {
 		registry.add("snomed", SnomedCoreConfiguration.class);

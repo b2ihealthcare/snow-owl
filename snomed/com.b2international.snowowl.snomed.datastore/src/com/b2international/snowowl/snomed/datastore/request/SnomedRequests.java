@@ -44,7 +44,6 @@ import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.ecl.SnomedEclEvaluationRequestBuilder;
 import com.b2international.snowowl.snomed.core.ecl.SnomedEclLabelerRequestBuilder;
-import com.b2international.snowowl.snomed.datastore.SnomedDatastoreActivator;
 import com.b2international.snowowl.snomed.datastore.index.constraint.SnomedConstraintDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
@@ -92,14 +91,13 @@ import com.google.common.collect.Iterables;
  * SnomedConcepts concepts = SnomedRequests.prepareSearchConcept()
  *  .filterByEcl('<<404684003')
  *  .all()
- *  .build(SnomedDatastoreActivator.REPOSITORY_UUID, branch) // the repository UUID is required to identify the target Repository
+ *  .build(path) // path expression or ResourceURI 
  *  .execute(bus)
  *  .getSync(); // blocks until the request completes
  *  
  * </code></pre>
  *  
  * @since 4.5
- * @see SnomedDatastoreActivator#REPOSITORY_UUID
  * @see RepositoryRequests
  */
 public abstract class SnomedRequests {
