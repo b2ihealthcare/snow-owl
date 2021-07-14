@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,6 @@ import com.b2international.snowowl.core.domain.PageableCollectionResource;
 import com.b2international.snowowl.core.domain.RepositoryContext;
 import com.b2international.snowowl.core.request.BranchRequest;
 import com.b2international.snowowl.core.request.RevisionIndexReadRequest;
-import com.b2international.snowowl.core.request.SearchResourceRequestIterator;
 import com.b2international.snowowl.snomed.core.domain.Rf2ReleaseType;
 import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.datastore.request.SnomedSearchRequestBuilder;
@@ -143,39 +142,35 @@ public abstract class Rf2Exporter<B extends SnomedSearchRequestBuilder<B, R>, R 
 				 * An effective time filter is always set, even if not in delta mode, to prevent
 				 * exporting unpublished content twice.
 				 */
-				final B requestBuilder = createSearchRequestBuilder()
-						.filterByModules(modules) // null value will be ignored
-						.filterByEffectiveTime(effectiveTimeStart, effectiveTimeEnd)
-						.setLimit(BATCH_SIZE);
-				
-				final SearchResourceRequestIterator<B, R> iterator = new SearchResourceRequestIterator<>(requestBuilder, scrolledBuilder -> {
-					return new BranchRequest<R>(
-						branch, 
-						new RevisionIndexReadRequest<>(scrolledBuilder.build())
-					)
-					.execute(context);
-				});
-				
-				while (iterator.hasNext()) {
-					final R hits = iterator.next();
-					
-					getMappedStream(hits, context, branch)
-						.forEachOrdered(row -> {
-							String id = row.get(0);
-							String effectiveTime = row.get(1);
-							
-							if (!visitedComponentEffectiveTimes.add(String.join("_", id, effectiveTime))) {
-								return;
-							}
-							
-							try {
-								fileChannel.write(toByteBuffer(TAB_JOINER.join(row)));
-								fileChannel.write(toByteBuffer(CR_LF));
-							} catch (final IOException e) {
-								throw new SnowowlRuntimeException("Failed to write contents for file '" + exportFile.getFileName() + "'.");
-							}
-						});
-				}
+				new BranchRequest<R>(
+					branch, 
+					new RevisionIndexReadRequest<>(inner -> {
+
+						createSearchRequestBuilder()
+							.filterByModules(modules) // null value will be ignored
+							.filterByEffectiveTime(effectiveTimeStart, effectiveTimeEnd)
+							.setLimit(BATCH_SIZE)
+							.stream(inner)
+							.flatMap(hits -> getMappedStream(hits, context, branch))
+							.forEachOrdered(row -> {
+								String id = row.get(0);
+								String effectiveTime = row.get(1);
+								
+								if (!visitedComponentEffectiveTimes.add(String.join("_", id, effectiveTime))) {
+									return;
+								}
+								
+								try {
+									fileChannel.write(toByteBuffer(TAB_JOINER.join(row)));
+									fileChannel.write(toByteBuffer(CR_LF));
+								} catch (final IOException e) {
+									throw new SnowowlRuntimeException("Failed to write contents for file '" + exportFile.getFileName() + "'.");
+								}
+							});
+						
+						return null;
+					})
+				).execute(context);
 			}
 		}
 	}

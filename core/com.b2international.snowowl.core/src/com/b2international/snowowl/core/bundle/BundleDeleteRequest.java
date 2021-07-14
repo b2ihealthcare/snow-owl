@@ -17,12 +17,12 @@ package com.b2international.snowowl.core.bundle;
 
 import javax.validation.constraints.NotNull;
 
+import com.b2international.snowowl.core.Resources;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.exceptions.ComponentNotFoundException;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.request.ResourceRequests;
-import com.b2international.snowowl.core.request.SearchResourceRequestIterator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -78,16 +78,13 @@ final class BundleDeleteRequest implements Request<TransactionContext, Boolean> 
 	 * @param context 
 	 */
 	private void updateResourceBundles(TransactionContext context, final String id, final String bundleId) {
-		new SearchResourceRequestIterator<>(
-				ResourceRequests.prepareSearch()
-					.setLimit(10_000)
-					.filterByBundleId(id),
-				req -> req.build().execute(context)
-			).forEachRemaining(resourceBatch -> {
-				resourceBatch.stream().forEach(resource -> {
-					final ResourceDocument doc = context.lookup(resource.getId(), ResourceDocument.class);
-					context.add(ResourceDocument.builder(doc).bundleId(bundleId).build());
-				});
+		ResourceRequests.prepareSearch()
+			.filterByBundleId(id)
+			.setLimit(10_000)
+			.stream(context)
+			.flatMap(Resources::stream)
+			.forEach(resource -> {
+				context.add(resource.toDocumentBuilder().bundleId(bundleId).build());
 			});
 	}
 	
