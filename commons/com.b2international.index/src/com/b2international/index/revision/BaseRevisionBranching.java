@@ -17,21 +17,13 @@ package com.b2international.index.revision;
 
 import static com.google.common.collect.Lists.newArrayListWithCapacity;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
-import com.b2international.commons.exceptions.AlreadyExistsException;
-import com.b2international.commons.exceptions.ApiException;
-import com.b2international.commons.exceptions.BadRequestException;
-import com.b2international.commons.exceptions.NotFoundException;
-import com.b2international.commons.exceptions.RequestTimeoutException;
+import com.b2international.commons.exceptions.*;
 import com.b2international.commons.options.Metadata;
 import com.b2international.index.BulkUpdate;
 import com.b2international.index.Hits;
@@ -45,11 +37,7 @@ import com.google.common.base.Strings;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Sets;
+import com.google.common.collect.*;
 
 /**
  * @since 6.5
