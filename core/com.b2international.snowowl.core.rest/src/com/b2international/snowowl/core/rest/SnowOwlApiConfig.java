@@ -24,6 +24,7 @@ import java.util.function.Predicate;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.springdoc.core.SpringDocUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.*;
 import org.springframework.core.annotation.AnnotatedElementUtils;
@@ -61,6 +62,7 @@ import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.authorization.AuthorizedEventBus;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
+import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.identity.IdentityProvider;
 import com.b2international.snowowl.core.rate.ApiConfiguration;
 import com.b2international.snowowl.core.rate.HttpConfig;
@@ -92,6 +94,10 @@ import io.swagger.v3.oas.models.OpenAPI;
 @PropertySource("classpath:com/b2international/snowowl/core/rest/service_configuration.properties")
 public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 
+	static {
+		SpringDocUtils.getConfig().addResponseWrapperToIgnore(Promise.class);
+	}
+	
 	@Autowired
 	private org.springframework.context.ApplicationContext ctx;
 
