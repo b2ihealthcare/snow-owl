@@ -451,6 +451,9 @@ public final class ResourceDocument extends RevisionDocument {
 	// derived fields, getters only, mapping generation requires a field to be specified
 	private final Long createdAt;
 	
+	// mapping only field, no actual purpose or use, required to support multi-index search with doc type VersionDocument
+	private String version;
+	
 	public ResourceDocument(
 			final String id, 
 			final String iconId, 

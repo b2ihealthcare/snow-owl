@@ -66,7 +66,6 @@ final class FhirCodeSystemSearchRequest extends SearchResourceRequest<Repository
 		CodeSystem.Fields.DATE,
 		CodeSystem.Fields.IDENTIFIER,
 		CodeSystem.Fields.META,
-		CodeSystem.Fields.VERSION,
 		CodeSystem.Fields.TEXT
 	);
 	

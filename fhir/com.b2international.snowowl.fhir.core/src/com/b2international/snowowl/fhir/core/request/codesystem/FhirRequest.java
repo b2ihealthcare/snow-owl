@@ -23,6 +23,7 @@ import com.b2international.snowowl.fhir.core.model.Entry;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.dt.Code;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
+import com.b2international.snowowl.fhir.core.search.Summary;
 
 /**
  * @since 8.0
@@ -75,7 +76,7 @@ public abstract class FhirRequest<R> implements Request<ServiceProvider, R> {
 	}
 	
 	protected String configureSummary() {
-		return "true";
+		return Summary.TRUE;
 	}
 
 	protected String extractLocales(Code displayLanguage) {
