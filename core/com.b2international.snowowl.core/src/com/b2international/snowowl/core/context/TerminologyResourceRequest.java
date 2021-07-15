@@ -93,8 +93,6 @@ public final class TerminologyResourceRequest<R> extends DelegatingRequest<Servi
 		} else {
 			// resourcePaths are just ID/PATH style expressions to reference content in a terminology repository
 			final ResourceURI referenceResourceUri = ResourceURI.of("any", resourcePath);
-			// extract the 
-			
 			Resource resource = ResourceRequests.prepareGet(referenceResourceUri).buildAsync().getRequest().execute(context);
 			if (!(resource instanceof TerminologyResource)) {
 				throw new NotFoundException("Terminology Resource", referenceResourceUri.getResourceId());
