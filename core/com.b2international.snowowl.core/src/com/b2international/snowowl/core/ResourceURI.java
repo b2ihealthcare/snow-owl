@@ -130,7 +130,7 @@ public final class ResourceURI implements Serializable, Comparable<ResourceURI> 
 	
 	@JsonIgnore
 	public String withoutResourceType() {
-		return String.join(Branch.SEPARATOR, resourceId, path);
+		return isHead() ? resourceId : String.join(Branch.SEPARATOR, resourceId, path);
 	}
 	
 	public ResourceURI asLatest() {
