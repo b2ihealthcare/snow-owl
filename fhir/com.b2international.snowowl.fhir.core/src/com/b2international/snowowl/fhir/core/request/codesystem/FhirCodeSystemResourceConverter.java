@@ -56,9 +56,9 @@ public interface FhirCodeSystemResourceConverter {
 	 * 
 	 * @param context - the context to use when expanding additional information
 	 * @param resourceURI 
-	 * @param list 
+	 * @param locales 
 	 */
-	default List<Concept> expandConcepts(ServiceProvider context, ResourceURI resourceURI, List<ExtendedLocale> list) {
+	default List<Concept> expandConcepts(ServiceProvider context, ResourceURI resourceURI, List<ExtendedLocale> locales) {
 		return List.of();
 	}
 	
@@ -67,9 +67,9 @@ public interface FhirCodeSystemResourceConverter {
 	 * 
 	 * @param context - the context to use when expanding additional information
 	 * @param resourceURI 
-	 * @param list 
+	 * @param locales 
 	 */
-	default List<Filter> expandFilters(ServiceProvider context, ResourceURI resourceURI, List<ExtendedLocale> list) {
+	default List<Filter> expandFilters(ServiceProvider context, ResourceURI resourceURI, List<ExtendedLocale> locales) {
 		return List.of();
 	}
 	
@@ -80,10 +80,10 @@ public interface FhirCodeSystemResourceConverter {
 	 * @param context
 	 *            - the context to use when expanding additional information
 	 * @param resourceURI
-	 * @param list
+	 * @param locales
 	 */
 	@OverridingMethodsMustInvokeSuper
-	default List<IConceptProperty> expandProperties(ServiceProvider context, ResourceURI resourceURI, List<ExtendedLocale> list) {
+	default List<IConceptProperty> expandProperties(ServiceProvider context, ResourceURI resourceURI, List<ExtendedLocale> locales) {
 		return List.of(SupportedCodeSystemRequestProperties.values());
 	}
 	

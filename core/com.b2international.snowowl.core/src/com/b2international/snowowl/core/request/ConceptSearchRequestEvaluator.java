@@ -129,6 +129,7 @@ public interface ConceptSearchRequestEvaluator {
 		result.setIconId(iconId);
 		result.setTerm(term);
 		result.setScore(score);
+		result.setInternalConcept(concept);
 		return result;
 	}
 

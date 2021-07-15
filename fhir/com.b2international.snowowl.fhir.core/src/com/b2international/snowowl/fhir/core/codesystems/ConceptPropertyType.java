@@ -29,7 +29,8 @@ public enum ConceptPropertyType implements FhirCodeSystem {
 	STRING(PropertyType.STRING.getCodeValue(), "string"), 
 	INTEGER(PropertyType.INTEGER.getCodeValue(), "integer"),
 	BOOLEAN(PropertyType.BOOLEAN.getCodeValue(), "boolean"),
-	DATETIME(PropertyType.DATETIME.getCodeValue(), "dateTime");
+	DATETIME(PropertyType.DATETIME.getCodeValue(), "dateTime"), 
+	DECIMAL(PropertyType.DECIMAL.getCodeValue(), "decimal");
 	
 	public final static String CODE_SYSTEM_URI = "http://hl7.org/fhir/concept-property-type";
 	

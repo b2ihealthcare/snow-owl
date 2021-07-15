@@ -50,7 +50,7 @@ final class FhirValidateCodeRequest extends FhirRequest<ValidateCodeResult> {
 	private final ValidateCodeRequest request;
 	
 	FhirValidateCodeRequest(ValidateCodeRequest request) {
-		super(request.getUrl().getUriValue(), request.getVersion());
+		super(request.getUrl() != null ? request.getUrl().getUriValue() : request.getCoding().getSystemValue(), request.getVersion());
 		this.request = request;
 	}
 

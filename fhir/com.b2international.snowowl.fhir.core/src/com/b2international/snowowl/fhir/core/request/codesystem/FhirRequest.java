@@ -48,17 +48,36 @@ public abstract class FhirRequest<R> implements Request<ServiceProvider, R> {
 				.one()
 				.filterByUrl(system)
 				.filterByVersion(version)
+				.setSummary(configureSummary())
 				.buildAsync()
 				.getRequest()
 				.execute(context)
 				.first()
 				.map(Entry::getResource)
 				.map(CodeSystem.class::cast)
+				.or(() -> {
+					return FhirRequests
+						.codeSystems().prepareSearch()
+						.one()
+						.filterById(system)
+						.filterByVersion(version)
+						.setSummary(configureSummary())
+						.buildAsync()
+						.getRequest()
+						.execute(context)
+						.first()
+						.map(Entry::getResource)
+						.map(CodeSystem.class::cast);
+				})
 				.orElseThrow(() -> new NotFoundException("CodeSystem", system));
 		
 		return doExecute(context, codeSystem);
 	}
 	
+	protected String configureSummary() {
+		return "true";
+	}
+
 	protected String extractLocales(Code displayLanguage) {
 		String locales = displayLanguage != null ? displayLanguage.getCodeValue() : null;
 		if (CompareUtils.isEmpty(locales)) {
