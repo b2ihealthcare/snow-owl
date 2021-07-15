@@ -74,7 +74,7 @@ public abstract class BaseTerminologyResourceUpdateRequest extends BaseResourceU
 		boolean changed = false;
 		
 		changed |= updateOid(context, resource.getOid(), updated);
-		changed |= updateBranchPath(context, updated, resource.getBranchPath());
+		changed |= updateBranchPath(context, updated, resource.getBranchPath(), resource.getToolingId());
 		changed |= updateExtensionOf(context, updated, resource.getExtensionOf(), resource.getId());
 		changed |= updateSettings(resource, updated);
 		
@@ -196,8 +196,9 @@ public abstract class BaseTerminologyResourceUpdateRequest extends BaseResourceU
 	}
 
 	private boolean updateBranchPath(final TransactionContext context, 
-			final ResourceDocument.Builder codeSystem, 
-			final String currentBranchPath) {
+			final ResourceDocument.Builder resource, 
+			final String currentBranchPath,
+			final String toolingId) {
 		
 		// if extensionOf is set, branch path changes are already handled in updateExtensionOf
 		if (extensionOf == null && branchPath != null && !currentBranchPath.equals(branchPath)) {
@@ -205,7 +206,8 @@ public abstract class BaseTerminologyResourceUpdateRequest extends BaseResourceU
 				final Branch branch = RepositoryRequests
 						.branching()
 						.prepareGet(branchPath)
-						.build()
+						.build(toolingId)
+						.getRequest()
 						.execute(context);
 				
 				if (branch.isDeleted()) {
@@ -219,8 +221,8 @@ public abstract class BaseTerminologyResourceUpdateRequest extends BaseResourceU
 
 			// TODO: check if update branch path coincides with a version working path 
 			// and update extensionOf accordingly?
-			codeSystem.extensionOf(null);
-			codeSystem.branchPath(branchPath);
+			resource.extensionOf(null);
+			resource.branchPath(branchPath);
 			return true;
 		}
 		
