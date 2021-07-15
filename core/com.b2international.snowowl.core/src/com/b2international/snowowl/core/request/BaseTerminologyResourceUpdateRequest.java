@@ -87,6 +87,11 @@ public abstract class BaseTerminologyResourceUpdateRequest extends BaseResourceU
 			return false;
 		}
 		
+		if (oid.isBlank()) {
+			updated.oid(oid);
+			return true;
+		}
+		
 		final boolean oidExist = ResourceRequests.prepareSearch()
 				.filterByOid(oid)
 				.build()
@@ -94,7 +99,7 @@ public abstract class BaseTerminologyResourceUpdateRequest extends BaseResourceU
 				.getTotal() > 0;
 		
 		if (oidExist) {
-			new AlreadyExistsException("Resource", "oid", oid);
+			throw new AlreadyExistsException("Resource", "oid", oid);
 		}
 		
 		updated.oid(oid);
