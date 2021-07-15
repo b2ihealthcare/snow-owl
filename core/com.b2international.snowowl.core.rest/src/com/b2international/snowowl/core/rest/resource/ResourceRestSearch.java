@@ -19,19 +19,36 @@ import java.util.List;
 
 import com.b2international.snowowl.core.rest.domain.BaseResourceRestSearch;
 
+import io.swagger.v3.oas.annotations.Parameter;
+
 /**
  * @since 8.0
  */
 public class ResourceRestSearch extends BaseResourceRestSearch {
 
+	@Parameter
 	private List<String> branch;
 	
+	@Parameter
 	private List<String> resourceType;
 	
+	@Parameter
 	private List<String> toolingId;
 	
+	@Parameter
 	private List<String> status;
 
+	@Parameter
+	private List<String> oid;
+	
+	public List<String> getOid() {
+		return oid;
+	}
+	
+	public void setOid(List<String> oid) {
+		this.oid = oid;
+	}
+	
 	public List<String> getBranch() {
 		return branch;
 	}
