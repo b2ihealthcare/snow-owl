@@ -87,19 +87,16 @@ public abstract class BaseTerminologyResourceUpdateRequest extends BaseResourceU
 			return false;
 		}
 		
-		if (oid.isBlank()) {
-			updated.oid(oid);
-			return true;
-		}
-		
-		final boolean oidExist = ResourceRequests.prepareSearch()
-				.filterByOid(oid)
-				.build()
-				.execute(context)
-				.getTotal() > 0;
-		
-		if (oidExist) {
-			throw new AlreadyExistsException("Resource", "oid", oid);
+		if (!oid.isBlank()) {
+			final boolean oidExist = ResourceRequests.prepareSearch()
+					.filterByOid(oid)
+					.build()
+					.execute(context)
+					.getTotal() > 0;
+			
+			if (oidExist) {
+				throw new AlreadyExistsException("Resource", "oid", oid);
+			}
 		}
 		
 		updated.oid(oid);
