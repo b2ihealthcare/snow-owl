@@ -592,7 +592,7 @@ public abstract class SnomedRestFixtures {
 		switch (refSetType) {
 		case ASSOCIATION:
 			return Json.object(
-				SnomedRf2Headers.FIELD_TARGET_COMPONENT, Json.object("id", Concepts.ROOT_CONCEPT)
+				SnomedRf2Headers.FIELD_TARGET_COMPONENT_ID, Concepts.ROOT_CONCEPT
 			);
 		case ATTRIBUTE_VALUE:
 			return Json.object(

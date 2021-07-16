@@ -73,14 +73,14 @@ public final class SnomedReferenceSetMemberConverter extends BaseRevisionResourc
 	}
 
 	private void expandTargetComponent(List<SnomedReferenceSetMember> results) {
-		if (expand().containsKey(SnomedRf2Headers.FIELD_TARGET_COMPONENT)) {
-			final Options expandOptions = expand().get(SnomedRf2Headers.FIELD_TARGET_COMPONENT, Options.class);
+		if (expand().containsKey(SnomedReferenceSetMember.Expand.TARGET_COMPONENT)) {
+			final Options expandOptions = expand().get(SnomedReferenceSetMember.Expand.TARGET_COMPONENT, Options.class);
 			
 			final Multimap<String, SnomedReferenceSetMember> membersByTargetComponent = HashMultimap.create();
 			for (SnomedReferenceSetMember member : results) {
 				final Map<String, Object> props = member.getProperties();
-				if (props.containsKey(SnomedRf2Headers.FIELD_TARGET_COMPONENT)) {
-					membersByTargetComponent.put(((SnomedCoreComponent) props.get(SnomedRf2Headers.FIELD_TARGET_COMPONENT)).getId(), member);
+				if (props.containsKey(SnomedRf2Headers.FIELD_TARGET_COMPONENT_ID)) {
+					membersByTargetComponent.put(((String) props.get(SnomedRf2Headers.FIELD_TARGET_COMPONENT_ID)), member);
 				}
 			}
 			
@@ -99,7 +99,7 @@ public final class SnomedReferenceSetMemberConverter extends BaseRevisionResourc
 					if (targetComponent != null) {
 						for (SnomedReferenceSetMember member : membersByTargetComponent.get(targetComponentId)) {
 							final Map<String, Object> newProps = newHashMap(member.getProperties());
-							newProps.put(SnomedRf2Headers.FIELD_TARGET_COMPONENT, targetComponent);
+							newProps.put(SnomedReferenceSetMember.Expand.TARGET_COMPONENT, targetComponent);
 							((SnomedReferenceSetMember) member).setProperties(newProps);
 						}
 					}
@@ -204,9 +204,6 @@ public final class SnomedReferenceSetMemberConverter extends BaseRevisionResourc
 
 		final Map<String, Object> props = newHashMap(entry.getAdditionalFields());
 
-		// convert ID to resources where possible to override value with nested object in JSON
-		props.computeIfPresent(SnomedRf2Headers.FIELD_TARGET_COMPONENT, (key, value) -> convertToResource((String) value));
-
 		// convert stored long values to short date format
 		props.computeIfPresent(SnomedRf2Headers.FIELD_SOURCE_EFFECTIVE_TIME, (key, currentValue) -> toEffectiveTime((long) currentValue));
 		props.computeIfPresent(SnomedRf2Headers.FIELD_TARGET_EFFECTIVE_TIME, (key, currentValue) -> toEffectiveTime((long) currentValue));
@@ -237,15 +234,6 @@ public final class SnomedReferenceSetMemberConverter extends BaseRevisionResourc
 		return member;
 	}
 	
-	private SnomedCoreComponent convertToResource(String targetComponentId) {
-		switch (SnomedIdentifiers.getComponentCategory(targetComponentId)) {
-		case CONCEPT: return new SnomedConcept(targetComponentId);
-		case DESCRIPTION: return new SnomedDescription(targetComponentId);
-		case RELATIONSHIP: return new SnomedRelationship(targetComponentId);
-		default: throw new NotImplementedException("Cannot convert '%s' to component, unknown type.", targetComponentId);
-		}
-	}
-
 	private void setReferencedComponent(SnomedReferenceSetMember member, String referencedComponentId, String referencedComponentType) {
 		// XXX: partial field loading support
 		if (referencedComponentType == null) return;

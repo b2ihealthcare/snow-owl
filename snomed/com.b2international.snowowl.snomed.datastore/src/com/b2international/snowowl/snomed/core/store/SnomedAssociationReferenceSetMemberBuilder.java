@@ -33,7 +33,7 @@ public final class SnomedAssociationReferenceSetMemberBuilder extends SnomedMemb
 	@Override
 	public void init(SnomedRefSetMemberIndexEntry.Builder component, TransactionContext context) {
 		super.init(component, context);
-		component.targetComponent(targetComponentId);
+		component.targetComponentId(targetComponentId);
 	}
 
 }

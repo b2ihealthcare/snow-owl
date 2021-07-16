@@ -364,7 +364,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 	public void updateInactivationIndicatorOnActiveConceptWithAssociationTargets() throws Exception {
 		String conceptId = createNewConcept(branchPath);
 		Map<?, ?> requestBody = createRefSetMemberRequestBody(Concepts.REFSET_POSSIBLY_EQUIVALENT_TO_ASSOCIATION, conceptId)
-				.with(SnomedRf2Headers.FIELD_TARGET_COMPONENT, Concepts.ROOT_CONCEPT)
+				.with(SnomedRf2Headers.FIELD_TARGET_COMPONENT_ID, Concepts.ROOT_CONCEPT)
 				.with("commitComment", "Created new reference set member");
 
 		final String associationMemberId = lastPathSegment(createComponent(branchPath, SnomedComponentType.MEMBER, requestBody)

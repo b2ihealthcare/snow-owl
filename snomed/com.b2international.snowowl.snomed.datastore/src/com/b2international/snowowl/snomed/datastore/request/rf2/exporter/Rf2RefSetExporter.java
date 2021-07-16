@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2018-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -226,18 +226,6 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 			extraColumns.remove(0);
 		}
 		
-		// XXX: Some members use a different property name; translate them at this point
-		for (int j = 0; j < extraColumns.size(); j++) {
-			switch (extraColumns.get(j)) {
-				case SnomedRf2Headers.FIELD_TARGET_COMPONENT_ID:
-					extraColumns.set(j, SnomedRf2Headers.FIELD_TARGET_COMPONENT);
-					break;
-				default:
-					// Use RF2 column name for the property name
-					break;
-			}
-		}
-		
 		return results.stream()
 				.map(member -> {
 					final ImmutableList.Builder<String> builder = ImmutableList.<String>builder()
@@ -245,7 +233,7 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 							.add(getEffectiveTime(member))						// effectiveTime 
 							.add(getActive(member))								// active
 							.add(member.getModuleId())							// moduleId
-							.add(member.getRefsetId())					// refSetId
+							.add(member.getRefsetId())							// refSetId
 							.add(member.getReferencedComponent().getId());		// referencedComponentId
 
 					// Append extra columns using the properties map

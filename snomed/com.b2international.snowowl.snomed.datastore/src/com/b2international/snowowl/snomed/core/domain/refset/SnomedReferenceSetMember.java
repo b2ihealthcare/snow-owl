@@ -82,6 +82,7 @@ public final class SnomedReferenceSetMember extends SnomedComponent {
 	 */
 	public static final class Expand {
 		public static final String REFERENCED_COMPONENT = "referencedComponent";
+		public static final String TARGET_COMPONENT = "targetComponent";
 	}
 	
 	public static final Function<SnomedReferenceSetMember, String> GET_REFERENCED_COMPONENT_ID = (member) -> member.getReferencedComponent().getId();

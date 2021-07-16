@@ -135,7 +135,6 @@ public final class Rf2RefSetDescriptorRefSetExporter extends Rf2Exporter<SnomedR
 		case SnomedRf2Headers.FIELD_ACCEPTABILITY_ID: 
 			return Pair.of(Concepts.ATTRIBUTE_TYPE_ACCEPTABILITY, Concepts.ATTRIBUTE_TYPE_CONCEPT_TYPE_COMPONENT);
 		// association
-		case SnomedRf2Headers.FIELD_TARGET_COMPONENT:
 		case SnomedRf2Headers.FIELD_TARGET_COMPONENT_ID:
 			return Pair.of(Concepts.ATTRIBUTE_TYPE_ASSOCIATION_TARGET, Concepts.ATTRIBUTE_TYPE_COMPONENT_TYPE);
 		// query

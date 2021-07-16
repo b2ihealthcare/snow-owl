@@ -1121,9 +1121,9 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		final String ruleId = "670";
 		indexRule(ruleId);
 		
-		final SnomedRefSetMemberIndexEntry duplicateSimpleMember1 = member(Concepts.IS_A, Concepts.MODULE_ROOT).referenceSetType(SnomedRefSetType.ASSOCIATION).targetComponent(Concepts.ATTRIBUTE_TYPE_ASSOCIATION_TARGET).build();
-		final SnomedRefSetMemberIndexEntry duplicateSimpleMember2 = member(Concepts.IS_A, Concepts.MODULE_ROOT).referenceSetType(SnomedRefSetType.ASSOCIATION).targetComponent(Concepts.ATTRIBUTE_TYPE_ASSOCIATION_TARGET).build();
-		final SnomedRefSetMemberIndexEntry correctSimpleMember = member(Concepts.IS_A, Concepts.MODULE_SCT_CORE).referenceSetType(SnomedRefSetType.ASSOCIATION).targetComponent(Concepts.ATTRIBUTE_TYPE_COMPONENT_TYPE).build();
+		final SnomedRefSetMemberIndexEntry duplicateSimpleMember1 = member(Concepts.IS_A, Concepts.MODULE_ROOT).referenceSetType(SnomedRefSetType.ASSOCIATION).targetComponentId(Concepts.ATTRIBUTE_TYPE_ASSOCIATION_TARGET).build();
+		final SnomedRefSetMemberIndexEntry duplicateSimpleMember2 = member(Concepts.IS_A, Concepts.MODULE_ROOT).referenceSetType(SnomedRefSetType.ASSOCIATION).targetComponentId(Concepts.ATTRIBUTE_TYPE_ASSOCIATION_TARGET).build();
+		final SnomedRefSetMemberIndexEntry correctSimpleMember = member(Concepts.IS_A, Concepts.MODULE_SCT_CORE).referenceSetType(SnomedRefSetType.ASSOCIATION).targetComponentId(Concepts.ATTRIBUTE_TYPE_COMPONENT_TYPE).build();
 		
 		indexRevision(MAIN, duplicateSimpleMember1, duplicateSimpleMember2, correctSimpleMember);
 		

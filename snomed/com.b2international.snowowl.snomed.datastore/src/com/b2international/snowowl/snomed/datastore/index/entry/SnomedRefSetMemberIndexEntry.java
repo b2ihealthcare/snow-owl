@@ -64,7 +64,7 @@ import com.google.common.collect.Iterables;
 		SnomedDocument.Fields.EFFECTIVE_TIME, 
 		SnomedDocument.Fields.MODULE_ID, 
 		SnomedDocument.Fields.RELEASED, // XXX required for SnomedComponentRevisionConflictProcessor CHANGED vs. DELETED detection
-		SnomedRefSetMemberIndexEntry.Fields.TARGET_COMPONENT,
+		SnomedRefSetMemberIndexEntry.Fields.TARGET_COMPONENT_ID,
 		SnomedRefSetMemberIndexEntry.Fields.VALUE_ID,
 		SnomedRefSetMemberIndexEntry.Fields.STRING_VALUE,
 		SnomedRefSetMemberIndexEntry.Fields.BOOLEAN_VALUE,
@@ -123,7 +123,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		public static final String VALUE_ID = SnomedRf2Headers.FIELD_VALUE_ID;
 		
 		// Association type
-		public static final String TARGET_COMPONENT = SnomedRf2Headers.FIELD_TARGET_COMPONENT;
+		public static final String TARGET_COMPONENT_ID = SnomedRf2Headers.FIELD_TARGET_COMPONENT_ID;
 		
 		// Simple, complex extended map type
 		public static final String MAP_TARGET = SnomedRf2Headers.FIELD_MAP_TARGET;
@@ -305,8 +305,8 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			return matchAny(Fields.REFERENCED_COMPONENT_ID, referencedComponentIds);
 		}
 		
-		public static Expression targetComponents(Collection<String> targetComponentIds) {
-			return matchAny(Fields.TARGET_COMPONENT, targetComponentIds);
+		public static Expression targetComponentIds(Collection<String> targetComponentIds) {
+			return matchAny(Fields.TARGET_COMPONENT_ID, targetComponentIds);
 		}
 		
 		public static Expression acceptabilityIds(Collection<String> acceptabilityIds) {
@@ -489,7 +489,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 
 		// Member specific fields, they can be null or emptyish values
 		// ASSOCIATION reference set members
-		private String targetComponent;
+		private String targetComponentId;
 		// ATTRIBUTE VALUE
 		private String valueId;
 		// CONCRETE DOMAIN reference set members
@@ -577,7 +577,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			case Fields.MAP_TARGET_DESCRIPTION: this.mapTargetDescription = (String) value; break;
 			case Fields.QUERY: this.query = (String) value; break;
 			case Fields.SOURCE_EFFECTIVE_TIME: this.sourceEffectiveTime = (Long) value; break;
-			case Fields.TARGET_COMPONENT: this.targetComponent = (String) value; break;
+			case Fields.TARGET_COMPONENT_ID: this.targetComponentId = (String) value; break;
 			case Fields.TARGET_EFFECTIVE_TIME: this.targetEffectiveTime = (Long) value; break;
 			case Fields.VALUE_ID: this.valueId = (String) value; break;
 			case Fields.OWL_EXPRESSION: this.owlExpression = (String) value; break;
@@ -629,8 +629,8 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			return this;
 		}
 
-		public Builder targetComponent(String targetComponent) {
-			this.targetComponent = targetComponent;
+		public Builder targetComponentId(String targetComponentId) {
+			this.targetComponentId = targetComponentId;
 			return this;
 		}
 		
@@ -865,7 +865,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 					referenceSetType,
 					referencedComponentType);
 			// association members
-			doc.targetComponent = targetComponent;
+			doc.targetComponentId = targetComponentId;
 			// attribute value
 			doc.valueId = valueId;
 			// concrete domain members
@@ -966,7 +966,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	
 	// Member specific fields, they can be null or emptyish values
 	// ASSOCIATION reference set members
-	private String targetComponent;
+	private String targetComponentId;
 	// ATTRIBUTE VALUE
 	private String valueId;
 	// CONCRETE DOMAIN reference set members
@@ -1204,8 +1204,8 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		return query;
 	}
 	
-	public String getTargetComponent() {
-		return targetComponent;
+	public String getTargetComponentId() {
+		return targetComponentId;
 	}
 	
 	public String getValueId() {
@@ -1329,7 +1329,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	public Map<String, Object> getAdditionalFields() {
 		final ImmutableMap.Builder<String, Object> builder = ImmutableMap.builder();
 		// ASSOCIATION refset members
-		putIfPresent(builder, Fields.TARGET_COMPONENT, getTargetComponent());
+		putIfPresent(builder, Fields.TARGET_COMPONENT_ID, getTargetComponentId());
 		// ATTRIBUTE_VALUE refset members 
 		putIfPresent(builder, Fields.VALUE_ID, getValueId());
 		// CONCRETE DOMAIN reference set members
@@ -1399,7 +1399,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 				.add("refsetId", refsetId)
 				.add("referenceSetType", referenceSetType)
 				.add("referencedComponentType", referencedComponentType)
-				.add("targetComponent", targetComponent)
+				.add("targetComponent", targetComponentId)
 				.add("valueId", valueId)
 				.add("dataType", dataType)
 				.add("typeId", typeId)
