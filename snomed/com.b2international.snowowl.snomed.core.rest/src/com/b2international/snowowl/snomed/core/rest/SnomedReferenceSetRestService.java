@@ -36,6 +36,7 @@ import com.b2international.snowowl.core.events.bulk.BulkRequestBuilder;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.request.SearchResourceRequest.Sort;
 import com.b2international.snowowl.core.rest.AbstractRestService;
+import com.b2international.snowowl.core.rest.domain.ResourceSelectors;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSets;
@@ -177,9 +178,8 @@ public class SnomedReferenceSetRestService extends AbstractRestService {
 			@PathVariable(value="id")
 			final String referenceSetId,
 			
-			@Parameter(description = "Expansion parameters")
-			@RequestParam(value="expand", required=false)
-			final String expand,
+			@ParameterObject
+			final ResourceSelectors selectors,
 
 			@Parameter(description = "Accepted language tags, in order of preference")
 			@RequestHeader(value="Accept-Language", defaultValue="en-US;q=0.8,en-GB;q=0.6", required=false) 
@@ -187,7 +187,7 @@ public class SnomedReferenceSetRestService extends AbstractRestService {
 
 		return SnomedRequests
 				.prepareGetReferenceSet(referenceSetId)
-				.setExpand(expand)
+				.setExpand(selectors.getExpand())
 				.setLocales(acceptLanguage)
 				.build(path)
 				.execute(getBus());

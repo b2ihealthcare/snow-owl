@@ -30,6 +30,7 @@ import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.request.SearchIndexResourceRequest;
 import com.b2international.snowowl.core.request.SearchResourceRequest.Sort;
 import com.b2international.snowowl.core.rest.AbstractRestService;
+import com.b2international.snowowl.core.rest.domain.ResourceSelectors;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
 import com.b2international.snowowl.snomed.core.rest.domain.SnomedDescriptionRestInput;
@@ -192,12 +193,11 @@ public class SnomedDescriptionRestService extends AbstractRestService {
 			@PathVariable(value="descriptionId")
 			final String descriptionId,
 			
-			@Parameter(description = "Expansion parameters")
-			@RequestParam(value="expand", required=false)
-			final String expand) {
+			@ParameterObject
+			final ResourceSelectors selectors) {
 		
 		return SnomedRequests.prepareGetDescription(descriptionId)
-					.setExpand(expand)
+					.setExpand(selectors.getExpand())
 					.build(path)
 					.execute(getBus());
 	}

@@ -28,6 +28,7 @@ import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.internal.ResourceDocument;
 import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
+import com.b2international.snowowl.core.rest.domain.ResourceSelectors;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -103,11 +104,10 @@ public class BundleRestService extends AbstractRestService {
 			@PathVariable(value="bundleId", required = true) 
 			final String bundleId,
 			
-			@Parameter(description="expand") 
-			@RequestParam(value = "expand", required = false)
-			String expand) {
+			@ParameterObject
+			final ResourceSelectors params) {
 		return ResourceRequests.bundles().prepareGet(bundleId)
-				.setExpand(expand)
+				.setExpand(params.getExpand())
 				.buildAsync()
 				.execute(getBus());
 	}
