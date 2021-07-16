@@ -1399,7 +1399,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 		String codeSystemId = "SNOMEDCT-default-rf2-export-config";
 		createCodeSystem(branchPath, codeSystemId).statusCode(201);
 		
-		CodeSystem codeSystem = CodeSystemRestRequests.getCodeSystem(codeSystemId).extract().as(CodeSystem.class);
+		CodeSystem codeSystem = CodeSystemRestRequests.getCodeSystem(codeSystemId);
 		
 		final File exportArchive = doExport(codeSystemId, codeSystem.getSettings());
 		

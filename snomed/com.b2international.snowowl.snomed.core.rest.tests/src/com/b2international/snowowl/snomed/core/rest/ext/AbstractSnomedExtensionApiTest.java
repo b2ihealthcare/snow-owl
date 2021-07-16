@@ -66,16 +66,16 @@ public abstract class AbstractSnomedExtensionApiTest extends AbstractSnomedApiTe
 		CodeSystemRestRequests.createCodeSystem(extensionOf, codeSystemId)
 			.assertThat()
 			.statusCode(201);
-		return CodeSystemRestRequests.getCodeSystem(codeSystemId).extract().as(CodeSystem.class);
+		return CodeSystemRestRequests.getCodeSystem(codeSystemId);
 	}
 
 	protected final ValidatableResponse assertCodeSystemUpgrade(ResourceURI upgradeOf, ResourceURI extensionOf) {
-		return CodeSystemRestRequests.upgrade(upgradeOf, extensionOf).assertThat();
+		return CodeSystemRestRequests.assertCodeSystemUpgrade(upgradeOf, extensionOf);
 	}
 	
 	protected final CodeSystem createExtensionUpgrade(ResourceURI upgradeOf, ResourceURI extensionOf) {
 		final String upgradeCodeSystemId = RestExtensions.lastPathSegment(assertCodeSystemUpgrade(upgradeOf, extensionOf).statusCode(201).extract().header("Location"));
-		return CodeSystemRestRequests.getCodeSystem(upgradeCodeSystemId).extract().as(CodeSystem.class);
+		return CodeSystemRestRequests.getCodeSystem(upgradeCodeSystemId);
 	}
 
 }
