@@ -55,7 +55,7 @@ public abstract class DocumentBuilders {
 				.exhaustive(false)
 				.moduleId(Concepts.MODULE_SCT_CORE)
 				.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
-				.primitive(true)
+				.definitionStatusId(Concepts.PRIMITIVE)
 				.parents(PrimitiveSets.newLongSortedSet(IComponent.ROOT_IDL))
 				.ancestors(PrimitiveSets.newLongSortedSet())
 				.statedParents(PrimitiveSets.newLongSortedSet(IComponent.ROOT_IDL))

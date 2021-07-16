@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.index.taxonomy;
 
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.defining;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.definitionStatusId;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.exhaustive;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument.Expressions.active;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument.Expressions.modules;
@@ -332,7 +332,7 @@ public final class ReasonerTaxonomyBuilder {
 	public ReasonerTaxonomyBuilder addConceptFlags(final RevisionSearcher searcher) {
 		entering("Registering active concept flags (fully defined, exhaustive) using revision searcher");
 
-		addConceptFlags(searcher, defining(), definingConcepts);
+		addConceptFlags(searcher, definitionStatusId(Concepts.FULLY_DEFINED), definingConcepts);
 		addConceptFlags(searcher, exhaustive(), exhaustiveConcepts);
 
 		leaving("Registering active concept flags (fully defined, exhaustive) using revision searcher");

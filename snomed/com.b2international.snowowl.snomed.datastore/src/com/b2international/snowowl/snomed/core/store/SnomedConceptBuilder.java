@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,7 +60,7 @@ public final class SnomedConceptBuilder extends SnomedComponentBuilder<SnomedCon
 		super.init(component, context);
 		// check that the definitionStatus concept does exist before using it in this concept
 		context.lookup(definitionStatusId, SnomedConceptDocument.class);
-		component.primitive(Concepts.PRIMITIVE.equals(definitionStatusId));
+		component.definitionStatusId(definitionStatusId);
 		component.exhaustive(exhaustive);
 	}
 

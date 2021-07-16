@@ -15,11 +15,7 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -38,11 +34,7 @@ import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
-import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
+import com.b2international.snowowl.snomed.core.domain.*;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
@@ -52,17 +44,15 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDoc
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry;
 import com.google.common.base.Strings;
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.*;
 import com.google.common.collect.ImmutableSet.Builder;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 /**
  * @since 4.5
  */
 public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateRequest {
+
+	private static final long serialVersionUID = 1L;
 
 	private static final Set<String> FILTERED_REFSET_IDS = ImmutableSet.of(Concepts.REFSET_CONCEPT_INACTIVITY_INDICATOR,
 			Concepts.REFSET_ALTERNATIVE_ASSOCIATION,
@@ -177,7 +167,7 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 	protected <B extends SnomedComponentDocument.Builder<B, T>, T extends SnomedComponentDocument> void postInactivateComponent(TransactionContext context, T component, B updatedComponent) {
 		// automatically set concept to primitive when inactivating it, unless the user decided to use a different definition status ID 
 		// https://confluence.ihtsdotools.org/display/DOCEXTPG/5.4.2.3+Inactivate+Concept+in+an+Extension
-		((SnomedConceptDocument.Builder) updatedComponent).primitive(definitionStatusId == null ? true : Concepts.PRIMITIVE.equals(definitionStatusId));
+		((SnomedConceptDocument.Builder) updatedComponent).definitionStatusId(definitionStatusId == null ? Concepts.PRIMITIVE : definitionStatusId);
 	}
 	
 	@Override
@@ -267,10 +257,10 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 			newDefinitionStatusId = incomingDefinitionStatusId;
 		}
 		
-		final String existingDefinitionStatusId = original.isPrimitive() ? Concepts.PRIMITIVE : Concepts.FULLY_DEFINED;
+		final String existingDefinitionStatusId = original.getDefinitionStatusId();
 		if (!newDefinitionStatusId.equals(existingDefinitionStatusId)) {
 			context.lookup(newDefinitionStatusId, SnomedConceptDocument.class);
-			concept.primitive(Concepts.PRIMITIVE.equals(newDefinitionStatusId));
+			concept.definitionStatusId(newDefinitionStatusId);
 			return true;
 		} else {
 			return false;

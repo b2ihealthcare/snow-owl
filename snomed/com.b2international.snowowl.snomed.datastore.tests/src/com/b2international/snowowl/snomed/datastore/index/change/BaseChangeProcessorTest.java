@@ -220,7 +220,7 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 		return SnomedConceptDocument.builder()
 				.id(id)
 				.active(true)
-				.primitive(false)
+				.definitionStatusId(Concepts.FULLY_DEFINED)
 				.moduleId(module())
 				.exhaustive(false)
 				// defaults

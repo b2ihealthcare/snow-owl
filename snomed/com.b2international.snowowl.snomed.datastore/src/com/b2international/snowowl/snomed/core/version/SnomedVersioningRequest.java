@@ -155,7 +155,7 @@ public final class SnomedVersioningRequest extends VersioningRequest {
 			final SnomedDocument.Builder<?, ?> updatedComponent;
 			if (componentToVersion instanceof SnomedConceptDocument) {
 				final SnomedConceptDocument concept = (SnomedConceptDocument) componentToVersion;
-				componentIdsByReferringModule.put(concept.getModuleId(), concept.isPrimitive() ? Concepts.PRIMITIVE : Concepts.FULLY_DEFINED);
+				componentIdsByReferringModule.put(concept.getModuleId(), concept.getDefinitionStatusId());
 				updatedComponent = SnomedConceptDocument.builder(concept);
 			} else if (componentToVersion instanceof SnomedDescriptionIndexEntry) {
 				final SnomedDescriptionIndexEntry description = (SnomedDescriptionIndexEntry) componentToVersion;

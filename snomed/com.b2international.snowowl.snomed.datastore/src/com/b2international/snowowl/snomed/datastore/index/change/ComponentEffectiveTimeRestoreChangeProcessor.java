@@ -140,7 +140,7 @@ public final class ComponentEffectiveTimeRestoreChangeProcessor extends ChangeSe
 			final SnomedConceptDocument previousConcept = (SnomedConceptDocument) previousVersion;
 			
 			return canRestoreEffectiveTime(conceptToRestore, previousConcept, 
-					SnomedConceptDocument::isPrimitive);
+					SnomedConceptDocument::getDefinitionStatusId);
 		}
 		
 		if (componentToRestore instanceof SnomedDescriptionIndexEntry && previousVersion instanceof SnomedDescriptionIndexEntry) {

@@ -57,7 +57,7 @@ import com.google.common.collect.ImmutableMap;
 		SnomedDocument.Fields.EFFECTIVE_TIME, 
 		SnomedDocument.Fields.MODULE_ID,
 		SnomedDocument.Fields.RELEASED, // XXX required for SnomedComponentRevisionConflictProcessor CHANGED vs. DELETED detection 
-		SnomedConceptDocument.Fields.PRIMITIVE,
+		SnomedConceptDocument.Fields.DEFINITION_STATUS_ID,
 		SnomedConceptDocument.Fields.EXHAUSTIVE,
 		SnomedConceptDocument.Fields.MAP_TARGET_COMPONENT_TYPE
 	}
@@ -148,12 +148,12 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 			return matchAnyLong(Fields.STATED_ANCESTORS, toLongValues(statedAncestorIds));
 		}
 		
-		public static Expression primitive() {
-			return match(Fields.PRIMITIVE, true);
+		public static Expression definitionStatusId(String definitionStatusId) {
+			return exactMatch(Fields.DEFINITION_STATUS_ID, definitionStatusId);
 		}
 		
-		public static Expression defining() {
-			return match(Fields.PRIMITIVE, false);
+		public static Expression definitionStatusIds(Iterable<String> definitionStatusIds) {
+			return matchAny(Fields.DEFINITION_STATUS_ID, definitionStatusIds);
 		}
 		
 		public static Expression exhaustive() {
@@ -197,7 +197,7 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 	public static class Fields extends SnomedComponentDocument.Fields {
 		
 		public static final String REFSET_STORAGEKEY = "refSetStorageKey";
-		public static final String PRIMITIVE = "primitive";
+		public static final String DEFINITION_STATUS_ID = "definitionStatusId";
 		public static final String EXHAUSTIVE = "exhaustive";
 		public static final String ANCESTORS = "ancestors";
 		public static final String STATED_ANCESTORS = "statedAncestors";
@@ -220,7 +220,7 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 				.released(input.isReleased())
 				.effectiveTime(input.getEffectiveTime())
 				.iconId(input.getIconId())
-				.primitive(input.isPrimitive())
+				.definitionStatusId(input.getDefinitionStatusId())
 				.exhaustive(input.isExhaustive())
 				.parents(input.getParents())
 				.ancestors(input.getAncestors())
@@ -242,7 +242,7 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 				.released(input.isReleased())
 				.effectiveTime(EffectiveTimes.getEffectiveTime(input.getEffectiveTime()))
 				.iconId(input.getIconId())
-				.primitive(input.isPrimitive())
+				.definitionStatusId(input.getDefinitionStatusId())
 				.exhaustive(input.getSubclassDefinitionStatus().isExhaustive())
 				.parents(PrimitiveSets.newLongSortedSet(input.getParentIds()))
 				.ancestors(PrimitiveSets.newLongSortedSet(input.getAncestorIds()))
@@ -263,7 +263,7 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 	@JsonPOJOBuilder(withPrefix="")
 	public static class Builder extends SnomedComponentDocument.Builder<Builder, SnomedConceptDocument> {
 
-		private Boolean primitive;
+		private String definitionStatusId;
 		private Boolean exhaustive;
 		private LongSortedSet parents;
 		private LongSortedSet ancestors;
@@ -286,8 +286,8 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 			return this;
 		}
 		
-		public Builder primitive(final Boolean primitive) {
-			this.primitive = primitive;
+		public Builder definitionStatusId(final String definitionStatusId) {
+			this.definitionStatusId = definitionStatusId;
 			return getSelf();
 		}
 
@@ -401,7 +401,7 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 					released, 
 					active, 
 					effectiveTime, 
-					primitive, 
+					definitionStatusId, 
 					exhaustive,
 					refSetType, 
 					referencedComponentType,
@@ -438,7 +438,7 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 
 	}
 
-	private final Boolean primitive;
+	private final String definitionStatusId;
 	private final Boolean exhaustive;
 	private final SnomedRefSetType refSetType;
 	private final String referencedComponentType;
@@ -458,7 +458,7 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 			final Boolean released,
 			final Boolean active,
 			final Long effectiveTime,
-			final Boolean primitive,
+			final String definitionStatusId,
 			final Boolean exhaustive, 
 			final SnomedRefSetType refSetType, 
 			final String referencedComponentType,
@@ -468,7 +468,7 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 			final List<SnomedDescriptionFragment> preferredDescriptions) {
 
 		super(id, iconId, moduleId, released, active, effectiveTime, referringRefSets, referringMappingRefSets);
-		this.primitive = primitive;
+		this.definitionStatusId = definitionStatusId;
 		this.exhaustive = exhaustive;
 		this.refSetType = refSetType;
 		this.referencedComponentType = referencedComponentType;
@@ -486,10 +486,10 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 	}
 	
 	/**
-	 * @return {@code true} if the concept definition status is 900000000000074008 (primitive), {@code false} otherwise
+	 * @return the concept's definition status id
 	 */
-	public Boolean isPrimitive() {
-		return primitive;
+	public String getDefinitionStatusId() {
+		return definitionStatusId;
 	}
 
 	/**
@@ -543,7 +543,7 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 	@Override
 	protected ToStringHelper doToString() {
 		return super.doToString()
-				.add("primitive", primitive)
+				.add("definitionStatusId", definitionStatusId)
 				.add("exhaustive", exhaustive)
 				.add("refSetType", refSetType)
 				.add("referencedComponentType", referencedComponentType)
