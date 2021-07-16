@@ -44,7 +44,7 @@ import com.google.common.collect.Sets;
 /**
  * @since 7.6.0
  */
-final class SnomedQueryLabelerRequest extends ResourceRequest<BranchContext, LabeledEclExpressions> implements BranchAccessControl {
+final class SnomedEclLabelerRequest extends ResourceRequest<BranchContext, LabeledEclExpressions> implements BranchAccessControl {
 
 	private static final long serialVersionUID = 1L;
 
