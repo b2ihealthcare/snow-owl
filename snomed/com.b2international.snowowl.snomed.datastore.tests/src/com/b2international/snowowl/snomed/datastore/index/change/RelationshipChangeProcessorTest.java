@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,14 +53,14 @@ public class RelationshipChangeProcessorTest extends BaseChangeProcessorTest {
 		initRevisions(relationship);
 		
 		stageChange(relationship, SnomedRelationshipIndexEntry.builder(relationship)
-				.group(relationship.getGroup() + 1)
+				.relationshipGroup(relationship.getRelationshipGroup() + 1)
 				.build());
 		
 		process(processor);
 		
 		final SnomedRelationshipIndexEntry expected = SnomedRelationshipIndexEntry
 				.builder(relationship)
-				.group(relationship.getGroup() + 1)
+				.relationshipGroup(relationship.getRelationshipGroup() + 1)
 				.build();
 		final Revision actual = Iterables.getOnlyElement(processor.getChangedMappings().values()).getNewRevision();
 		assertDocEquals(expected, actual);

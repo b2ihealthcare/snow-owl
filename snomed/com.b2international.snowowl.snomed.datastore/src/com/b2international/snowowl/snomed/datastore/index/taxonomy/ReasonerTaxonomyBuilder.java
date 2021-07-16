@@ -22,7 +22,7 @@ import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedDoc
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRefSetMemberIndexEntry.Expressions.refSetTypes;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.characteristicTypeId;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.characteristicTypeIds;
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.group;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.relationshipGroup;
 import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedRelationshipIndexEntry.Expressions.typeId;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
@@ -441,7 +441,7 @@ public final class ReasonerTaxonomyBuilder {
 	
 		final ExpressionBuilder whereExpressionBuilder = Expressions.builder()
 				.filter(active())
-				.filter(group(1, Integer.MAX_VALUE))
+				.filter(relationshipGroup(1, Integer.MAX_VALUE))
 				.filter(characteristicTypeId(Concepts.ADDITIONAL_RELATIONSHIP));
 		
 		if (!excludedModuleIds.isEmpty()) {
@@ -459,7 +459,7 @@ public final class ReasonerTaxonomyBuilder {
 	
 		Predicate<SnomedRelationship> predicate = relationship -> relationship.isActive() 
 				&& Concepts.ADDITIONAL_RELATIONSHIP.equals(relationship.getCharacteristicTypeId())
-				&& relationship.getGroup() > 0
+				&& relationship.getRelationshipGroup() > 0
 				&& !excludedModuleIds.contains(relationship.getModuleId());
 		
 		addRelationships(sortedRelationships.filter(predicate), additionalGroupedRelationships);
@@ -519,7 +519,7 @@ public final class ReasonerTaxonomyBuilder {
 						SnomedRelationshipIndexEntry.Fields.INTEGER_VALUE,       // 6
 						SnomedRelationshipIndexEntry.Fields.DECIMAL_VALUE,       // 7
 						SnomedRelationshipIndexEntry.Fields.STRING_VALUE,        // 8
-						SnomedRelationshipIndexEntry.Fields.GROUP,               // 9
+						SnomedRelationshipIndexEntry.Fields.RELATIONSHIP_GROUP,  // 9
 						SnomedRelationshipIndexEntry.Fields.UNION_GROUP,         // 10
 						SnomedRelationshipIndexEntry.Fields.MODIFIER_ID,         // 11
 						SnomedRelationshipIndexEntry.Fields.RELEASED)            // 12
@@ -625,7 +625,7 @@ public final class ReasonerTaxonomyBuilder {
 				final Long destinationId = ifNotNull(relationship.getDestinationId(), Long::valueOf);
 				final boolean destinationNegated = relationship.isDestinationNegated();
 				final RelationshipValue value = relationship.getValueAsObject();
-				final int group = relationship.getGroup();
+				final int group = relationship.getRelationshipGroup();
 				final int unionGroup = relationship.getUnionGroup();
 				final boolean universal = Concepts.UNIVERSAL_RESTRICTION_MODIFIER.equals(relationship.getModifierId());
 
@@ -758,7 +758,7 @@ public final class ReasonerTaxonomyBuilder {
 				
 				if (!CompareUtils.isEmpty(member.getClassAxiomRelationships())) {
 					for (SnomedOWLRelationshipDocument relationship : member.getClassAxiomRelationships()) {
-						if (relationship.getGroup() >= AXIOM_GROUP_BASE) {
+						if (relationship.getRelationshipGroup() >= AXIOM_GROUP_BASE) {
 							throw new IllegalStateException("OWL member has too many groups");
 						}
 						

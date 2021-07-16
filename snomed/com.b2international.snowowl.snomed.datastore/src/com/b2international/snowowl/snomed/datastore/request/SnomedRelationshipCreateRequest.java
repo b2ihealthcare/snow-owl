@@ -37,6 +37,8 @@ import com.google.common.collect.ImmutableSet;
  */
 public final class SnomedRelationshipCreateRequest extends BaseSnomedComponentCreateRequest {
 
+	private static final long serialVersionUID = 1L;
+
 	// Not @NotEmpty, it can be populated after the request is validated
 	private String sourceId;
 
@@ -52,7 +54,7 @@ public final class SnomedRelationshipCreateRequest extends BaseSnomedComponentCr
 	private RelationshipValue value; 
 
 	@NotNull @Min(0)
-	private Integer group;
+	private Integer relationshipGroup;
 
 	@NotNull @Min(0)
 	private Integer unionGroup;
@@ -103,8 +105,8 @@ public final class SnomedRelationshipCreateRequest extends BaseSnomedComponentCr
 	/**
 	 * @return
 	 */
-	public Integer getGroup() {
-		return group;
+	public Integer getRelationshipGroup() {
+		return relationshipGroup;
 	}
 
 	/**
@@ -148,8 +150,8 @@ public final class SnomedRelationshipCreateRequest extends BaseSnomedComponentCr
 		this.value = value;
 	}
 
-	void setGroup(final Integer group) {
-		this.group = group;
+	void setRelationshipGroup(final Integer relationshipGroup) {
+		this.relationshipGroup = relationshipGroup;
 	}
 
 	void setUnionGroup(final Integer unionGroup) {
@@ -204,7 +206,7 @@ public final class SnomedRelationshipCreateRequest extends BaseSnomedComponentCr
 				.withDestinationId(getDestinationId())
 				.withDestinationNegated(isDestinationNegated())
 				.withValue(getValue())
-				.withGroup(getGroup())
+				.withRelationshipGroup(getRelationshipGroup())
 				.withUnionGroup(getUnionGroup())
 				.withCharacteristicTypeId(getCharacteristicTypeId())
 				.withModifierId(getModifierId())

@@ -88,15 +88,16 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 
 		public static final String SOURCE_ID = SnomedRf2Headers.FIELD_SOURCE_ID;
 		public static final String DESTINATION_ID = SnomedRf2Headers.FIELD_DESTINATION_ID;
+		public static final String RELATIONSHIP_GROUP = SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP;
+		public static final String TYPE_ID = SnomedRf2Headers.FIELD_TYPE_ID;
+		public static final String MODIFIER_ID = SnomedRf2Headers.FIELD_MODIFIER_ID;
+		public static final String CHARACTERISTIC_TYPE_ID = SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID;
+		
 		public static final String VALUE_TYPE = SnomedRelationshipIndexEntry.Fields.VALUE_TYPE;
 		public static final String INTEGER_VALUE = SnomedRelationshipIndexEntry.Fields.INTEGER_VALUE;
 		public static final String DECIMAL_VALUE = SnomedRelationshipIndexEntry.Fields.DECIMAL_VALUE;
 		public static final String STRING_VALUE = SnomedRelationshipIndexEntry.Fields.STRING_VALUE;
-		public static final String GROUP = "group";
-		public static final String UNION_GROUP = "unionGroup";
-		public static final String CHARACTERISTIC_TYPE_ID = SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID;
-		public static final String TYPE_ID = SnomedRf2Headers.FIELD_TYPE_ID;
-		public static final String MODIFIER_ID = SnomedRf2Headers.FIELD_MODIFIER_ID;
+		public static final String UNION_GROUP = SnomedRelationshipIndexEntry.Fields.UNION_GROUP;
 
 		public static final Set<String> ALL = ImmutableSet.of(
 			// RF2 fields
@@ -109,7 +110,7 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 			INTEGER_VALUE,
 			DECIMAL_VALUE,
 			STRING_VALUE,
-			GROUP,
+			RELATIONSHIP_GROUP,
 			UNION_GROUP,
 			TYPE_ID,
 			CHARACTERISTIC_TYPE_ID,
@@ -128,7 +129,7 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 	}
 	
 	private boolean destinationNegated;
-	private Integer group;
+	private Integer relationshipGroup;
 	private Integer unionGroup;
 	private SnomedConcept characteristicType;
 	private SnomedConcept modifier;
@@ -239,8 +240,8 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 	 * 
 	 * @return the relationship group, or 0 if this relationship can not be grouped, or is in an unnumbered, singleton group
 	 */
-	public Integer getGroup() {
-		return group;
+	public Integer getRelationshipGroup() {
+		return relationshipGroup;
 	}
 
 	/**
@@ -356,7 +357,7 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 	 * @param group
 	 */
 	public void setGroup(final Integer group) {
-		this.group = group;
+		this.relationshipGroup = group;
 	}
 
 	/**
@@ -401,7 +402,7 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 			.setCharacteristicTypeId(getCharacteristicTypeId())
 			.setDestinationId(getDestinationId())
 			.setDestinationNegated(isDestinationNegated())
-			.setGroup(getGroup())
+			.setRelationshipGroup(getRelationshipGroup())
 			.setId(getId())
 			.setModifierId(getModifierId())
 			.setModuleId(getModuleId())
@@ -419,7 +420,7 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 			.setCharacteristicTypeId(getCharacteristicTypeId())
 			.setDestinationId(getDestinationId())
 			// TODO: add setDestinationNegated(...) here?
-			.setGroup(getGroup())
+			.setRelationshipGroup(getRelationshipGroup())
 			// no setId(...) - SCTID should not be updated
 			.setModifierId(getModifierId())
 			.setModuleId(getModuleId())
@@ -443,7 +444,7 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 			.add("destinationNegated", isDestinationNegated())
 			.add("value", getValue())
 			.add("typeId", getTypeId())
-			.add("group", getGroup())
+			.add("relationshipGroup", getRelationshipGroup())
 			.add("unionGroup", getUnionGroup())
 			.add("characteristicTypeId", getCharacteristicTypeId())
 			.add("modifierId", getModifierId())

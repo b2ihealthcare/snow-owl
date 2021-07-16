@@ -209,7 +209,7 @@ public abstract class DocumentBuilders {
 				.sourceId(sourceId)
 				.typeId(typeId)
 				.value(value)
-				.group(0)
+				.relationshipGroup(0)
 				.unionGroup(0)
 				.characteristicTypeId(characteristicTypeId)
 				.modifierId(Concepts.EXISTENTIAL_RESTRICTION_MODIFIER);

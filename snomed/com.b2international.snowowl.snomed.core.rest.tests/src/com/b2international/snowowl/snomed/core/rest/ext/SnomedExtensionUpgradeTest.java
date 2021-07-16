@@ -268,7 +268,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 			"typeId", Concepts.PART_OF,
 			"destinationId", Concepts.NAMESPACE_ROOT,
 			"characteristicTypeId", Concepts.ADDITIONAL_RELATIONSHIP,
-			"group", 0,
+			"relationshipGroup", 0,
 			"commitComment", "Created new extension relationship"
 		);
 		
@@ -284,7 +284,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 				"id", extensionRelationshipId,
 				"moduleId", Concepts.MODULE_SCT_CORE,
 				"characteristicTypeId", Concepts.INFERRED_RELATIONSHIP,
-				"group", 1,
+				"relationshipGroup", 1,
 				"commitComment", "Created new donated INT relationship"
 			)
 		);
@@ -303,7 +303,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		
 		assertEquals(Concepts.MODULE_SCT_CORE, donatedRelationshipOnUpgrade.getModuleId());
 		assertEquals(Concepts.INFERRED_RELATIONSHIP, donatedRelationshipOnUpgrade.getCharacteristicTypeId());
-		assertEquals(1, donatedRelationshipOnUpgrade.getGroup().intValue());
+		assertEquals(1, donatedRelationshipOnUpgrade.getRelationshipGroup().intValue());
 	}
 
 	@Test

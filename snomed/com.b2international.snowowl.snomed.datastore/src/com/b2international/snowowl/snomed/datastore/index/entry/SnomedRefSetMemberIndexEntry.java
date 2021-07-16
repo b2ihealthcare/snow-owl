@@ -24,7 +24,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.exceptions.BadRequestException;
@@ -38,7 +38,6 @@ import com.b2international.snowowl.core.date.DateFormats;
 import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.terminology.TerminologyRegistry;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
 import com.b2international.snowowl.snomed.core.domain.*;
 import com.b2international.snowowl.snomed.core.domain.refset.DataType;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedRefSetType;
@@ -53,7 +52,6 @@ import com.google.common.base.MoreObjects.ToStringHelper;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 
 /**
@@ -441,7 +439,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 		}
 
 		public static Expression owlExpressionConcept(String...conceptIds) {
-			return owlExpressionConcept(ImmutableSet.copyOf(conceptIds));
+			return owlExpressionConcept(Set.of(conceptIds));
 		}
 		
 		public static Expression owlExpressionConcept(Iterable<String> conceptIds) {

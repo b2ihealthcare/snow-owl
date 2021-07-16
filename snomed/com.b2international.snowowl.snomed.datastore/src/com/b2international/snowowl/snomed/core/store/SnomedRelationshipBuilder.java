@@ -32,7 +32,7 @@ public final class SnomedRelationshipBuilder
 	private String destinationId;
 	private boolean destinationNegated = false;
 	private RelationshipValue value;
-	private int group = 0;
+	private int relationshipGroup = 0;
 	private int unionGroup = 0;
 	private String characteristicTypeId = Concepts.STATED_RELATIONSHIP;
 	private String modifierId = Concepts.EXISTENTIAL_RESTRICTION_MODIFIER;
@@ -95,11 +95,11 @@ public final class SnomedRelationshipBuilder
 	/**
 	 * Specifies the group of the new SNOMED CT Relationship.
 	 * 
-	 * @param group - the group number to use
+	 * @param relationshipGroup - the group number to use
 	 * @return
 	 */
-	public SnomedRelationshipBuilder withGroup(final int group) {
-		this.group = group;
+	public SnomedRelationshipBuilder withRelationshipGroup(final int relationshipGroup) {
+		this.relationshipGroup = relationshipGroup;
 		return getSelf();
 	}
 
@@ -160,7 +160,7 @@ public final class SnomedRelationshipBuilder
 		component.typeId(ensureConceptExists(typeId, context));
 		component.destinationNegated(destinationNegated);
 		component.value(value);
-		component.group(group);
+		component.relationshipGroup(relationshipGroup);
 		component.unionGroup(unionGroup);
 		component.characteristicTypeId(ensureConceptExists(characteristicTypeId, context));
 		component.modifierId(ensureConceptExists(modifierId, context));

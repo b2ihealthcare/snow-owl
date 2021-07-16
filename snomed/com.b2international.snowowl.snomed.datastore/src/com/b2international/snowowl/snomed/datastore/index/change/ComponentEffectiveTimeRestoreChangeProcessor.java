@@ -157,7 +157,7 @@ public final class ComponentEffectiveTimeRestoreChangeProcessor extends ChangeSe
 			final SnomedRelationshipIndexEntry previousRelationship = (SnomedRelationshipIndexEntry) previousVersion;
 			
 			return canRestoreEffectiveTime(relationshipToRestore, previousRelationship, 
-					SnomedRelationshipIndexEntry::getGroup,
+					SnomedRelationshipIndexEntry::getRelationshipGroup,
 					SnomedRelationshipIndexEntry::getUnionGroup,
 					SnomedRelationshipIndexEntry::getCharacteristicTypeId,
 					SnomedRelationshipIndexEntry::getModifierId);

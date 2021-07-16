@@ -136,7 +136,7 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 		return SnomedRelationshipIndexEntry.builder()
 				.id(generateRelationshipId())
 				.active(true)
-				.group(0)
+				.relationshipGroup(0)
 				.unionGroup(0)
 				.modifierId(Concepts.EXISTENTIAL_RESTRICTION_MODIFIER)
 				.moduleId(module())

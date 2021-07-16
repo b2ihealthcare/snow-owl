@@ -360,7 +360,7 @@ public final class Rf2TransactionContext extends DelegatingTransactionContext {
 					.withDestinationNegated(false)
 					.withValue(relationship.getValueAsObject())
 					.withCharacteristicTypeId(relationship.getCharacteristicTypeId())
-					.withGroup(relationship.getGroup())
+					.withRelationshipGroup(relationship.getRelationshipGroup())
 					.withUnionGroup(relationship.getUnionGroup())
 					.withModifierId(relationship.getModifierId());
 		} else {

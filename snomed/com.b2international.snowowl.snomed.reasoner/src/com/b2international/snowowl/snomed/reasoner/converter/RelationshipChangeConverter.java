@@ -279,7 +279,7 @@ public final class RelationshipChangeConverter
 							reasonerRelationship.setCharacteristicTypeId(expandedRelationship.getCharacteristicTypeId());
 							reasonerRelationship.setDestination(expandedRelationship.getDestination());
 							reasonerRelationship.setDestinationNegated(expandedRelationship.isDestinationNegated());
-							reasonerRelationship.setGroup(expandedRelationship.getGroup());
+							reasonerRelationship.setGroup(expandedRelationship.getRelationshipGroup());
 							reasonerRelationship.setModifierId(expandedRelationship.getModifierId());
 							// reasonerRelationship.setReleased(...) is already set
 							reasonerRelationship.setSource(expandedRelationship.getSource());

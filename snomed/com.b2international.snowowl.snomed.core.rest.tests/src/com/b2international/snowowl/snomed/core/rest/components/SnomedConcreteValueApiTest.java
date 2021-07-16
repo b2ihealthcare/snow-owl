@@ -227,7 +227,7 @@ public class SnomedConcreteValueApiTest extends AbstractSnomedApiTest {
 	public void updateGroup() {
 		String relationshipId = createNewConcreteValue(branchPath);
 		Json requestBody = Json.object(
-			"group", 99,
+			"relationshipGroup", 99,
 			"commitComment", "Updated concrete value group");
 
 		updateComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, requestBody)
@@ -235,14 +235,14 @@ public class SnomedConcreteValueApiTest extends AbstractSnomedApiTest {
 		
 		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId)
 			.statusCode(200)
-			.body("group", equalTo(99));
+			.body("relationshipGroup", equalTo(99));
 	}
 
 	@Test
 	public void updateGroupToInvalidValue() {
 		String relationshipId = createNewConcreteValue(branchPath);
 		Json requestBody = Json.object(
-			"group", -5,
+			"relationshipGroup", -5,
 			"commitComment", "Updated concrete value group to invalid value");
 
 		updateComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId, requestBody)
@@ -250,7 +250,7 @@ public class SnomedConcreteValueApiTest extends AbstractSnomedApiTest {
 		
 		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId)
 			.statusCode(200)
-			.body("group", equalTo(0));
+			.body("relationshipGroup", equalTo(0));
 	}
 
 	@Test

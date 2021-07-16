@@ -716,7 +716,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 		final boolean destinationNegated = relationship.isDestinationNegated();
 		final RelationshipValue value = relationship.getValueAsObject();
 		final String characteristicTypeId = relationship.getCharacteristicTypeId();
-		final int group = relationship.getGroup();
+		final int group = relationship.getRelationshipGroup();
 		final int unionGroup = relationship.getUnionGroup();
 		final String modifier = relationship.getModifierId();
 		
@@ -749,7 +749,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 				.setDestinationId(destinationId)
 				.setDestinationNegated(destinationNegated)
 				.setValue(value)
-				.setGroup(group)
+				.setRelationshipGroup(group)
 				.setUnionGroup(unionGroup)
 				.setModifierId(modifier)
 				.setModuleId(moduleId);
@@ -842,7 +842,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 		final SnomedRelationshipUpdateRequestBuilder updateRequest = SnomedRequests
 				.prepareUpdateRelationship(relationship.getOriginId())
 				.setModuleId(namespaceAndModuleAssigner.getRelationshipModuleId(relationship.getSourceId()))
-				.setGroup(relationship.getGroup());
+				.setRelationshipGroup(relationship.getGroup());
 		
 		bulkRequestBuilder.add(updateRequest);
 	}

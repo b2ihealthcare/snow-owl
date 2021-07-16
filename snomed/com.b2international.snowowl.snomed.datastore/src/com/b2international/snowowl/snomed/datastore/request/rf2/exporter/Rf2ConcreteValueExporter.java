@@ -87,7 +87,7 @@ public final class Rf2ConcreteValueExporter
                 result.getModuleId(),             // moduleId
                 result.getSourceId(),             // sourceId
                 result.getValue(),                // value
-                result.getGroup().toString(),     // relationshipGroup
+                result.getRelationshipGroup().toString(),     // relationshipGroup
                 result.getTypeId(),               // typeId
                 result.getCharacteristicTypeId(), // characteristicTypeId
                 result.getModifierId()));         // modifierId

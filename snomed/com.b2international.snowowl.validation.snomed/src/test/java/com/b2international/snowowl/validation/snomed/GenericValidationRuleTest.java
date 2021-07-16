@@ -67,7 +67,7 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 
 		// index invalid hierarchical relationship to group 1
 		final SnomedRelationshipIndexEntry relationship = relationship(Concepts.FINDING_SITE, Concepts.IS_A, Concepts.MODULE_SCT_MODEL_COMPONENT)
-				.group(1)
+				.relationshipGroup(1)
 				.build();
 		
 		indexRevision(MAIN, relationship);
@@ -85,19 +85,19 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		indexRule(ruleId);
 
 		final SnomedRelationshipIndexEntry relationship1 = relationship(Concepts.FINDING_SITE, Concepts.IS_A, Concepts.MODULE_SCT_MODEL_COMPONENT)
-				.group(1).build();
+				.relationshipGroup(1).build();
 
 		final SnomedRelationshipIndexEntry relationship2 = relationship(Concepts.FINDING_SITE, Concepts.IS_A, Concepts.MODULE_SCT_MODEL_COMPONENT)
-				.group(1).build();
+				.relationshipGroup(1).build();
 
 		final SnomedRelationshipIndexEntry relationship3 = relationship(Concepts.FINDING_SITE, Concepts.IS_A, Concepts.MODULE_SCT_MODEL_COMPONENT)
-				.group(2).build();
+				.relationshipGroup(2).build();
 		
 		final SnomedRelationshipIndexEntry relationship4 = relationship(Concepts.FINDING_SITE, Concepts.IS_A, Concepts.MODULE_SCT_MODEL_COMPONENT)
-				.group(0).build();
+				.relationshipGroup(0).build();
 		
 		final SnomedRelationshipIndexEntry relationship5 = relationship(Concepts.FINDING_SITE, Concepts.IS_A, Concepts.MODULE_SCT_MODEL_COMPONENT)
-				.group(0).build();
+				.relationshipGroup(0).build();
 		
 		indexRevision(MAIN, relationship1, relationship2, relationship3, relationship4, relationship5);
 		
@@ -163,7 +163,7 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 
 		// index invalid hierarchical relationship to group 1
 		final SnomedRelationshipIndexEntry relationship = relationship(Concepts.FINDING_SITE, Concepts.IS_A, Concepts.MODULE_SCT_MODEL_COMPONENT)
-				.group(1)
+				.relationshipGroup(1)
 				.build();
 		
 		indexRevision(MAIN, relationship);
@@ -179,7 +179,7 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 
 		// index invalid non-defining relationship to group 1
 		final SnomedRelationshipIndexEntry relationship = relationship(Concepts.MORPHOLOGY, Concepts.CAUSATIVE_AGENT, Concepts.MODULE_SCT_MODEL_COMPONENT, Concepts.ADDITIONAL_RELATIONSHIP)
-				.group(1)
+				.relationshipGroup(1)
 				.build();
 		
 		indexRevision(MAIN, relationship);
@@ -196,17 +196,17 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		
 		// index invalid non-defining relationship to group 0
 		final SnomedRelationshipIndexEntry nonDefiningRelationshipInGroup0 = relationship(Concepts.MORPHOLOGY, Concepts.CAUSATIVE_AGENT, Concepts.MODULE_SCT_MODEL_COMPONENT, Concepts.ADDITIONAL_RELATIONSHIP)
-				.group(0)
+				.relationshipGroup(0)
 				.build();
 
 		// index valid defining relationship to group 0
 		final SnomedRelationshipIndexEntry definingRelationshipInGroup0 = relationship(Concepts.MORPHOLOGY, Concepts.CAUSATIVE_AGENT, Concepts.MODULE_SCT_MODEL_COMPONENT, Concepts.STATED_RELATIONSHIP)
-				.group(0)
+				.relationshipGroup(0)
 				.build();
 		
 		// index valid non-defining relationship to group 2
 		final SnomedRelationshipIndexEntry relationshipInGroup2 = relationship(Concepts.MORPHOLOGY, Concepts.CAUSATIVE_AGENT, Concepts.MODULE_SCT_MODEL_COMPONENT, Concepts.ADDITIONAL_RELATIONSHIP)
-				.group(2)
+				.relationshipGroup(2)
 				.build();
 		
 		indexRevision(MAIN, nonDefiningRelationshipInGroup0, definingRelationshipInGroup0, relationshipInGroup2);
@@ -326,15 +326,15 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		indexRule(ruleId);
 
 		SnomedRelationshipIndexEntry goodRel1 = relationship(Concepts.MODULE_ROOT, Concepts.IS_A, Concepts.CONCEPT_INACTIVATION_VALUE).active(true)
-				.group(0).build();
+				.relationshipGroup(0).build();
 
 		SnomedRelationshipIndexEntry badRel1 = relationship(Concepts.MODULE_ROOT, Concepts.IS_A, Concepts.CONCEPT_INACTIVATION_VALUE).active(true)
-				.group(1).build();
+				.relationshipGroup(1).build();
 
 		SnomedRelationshipIndexEntry badRel2 = relationship(Concepts.MODULE_ROOT, Concepts.IS_A, Concepts.CONCEPT_INACTIVATION_VALUE).active(true)
-				.group(2).build();
+				.relationshipGroup(2).build();
 
-		SnomedRelationshipIndexEntry goodRel2 = relationship(Concepts.MODULE_ROOT, Concepts.IS_A, Concepts.CORE_NAMESPACE).active(true).group(0)
+		SnomedRelationshipIndexEntry goodRel2 = relationship(Concepts.MODULE_ROOT, Concepts.IS_A, Concepts.CORE_NAMESPACE).active(true).relationshipGroup(0)
 				.build();
 
 		indexRevision(MAIN, goodRel1, goodRel2, badRel1, badRel2);
@@ -1213,11 +1213,11 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		indexRevision(MAIN, attributeConstraint);
 		
 		final SnomedRelationshipIndexEntry relationship1 = relationship(Concepts.CONCEPT_MODEL_ATTRIBUTE, Concepts.FINDING_SITE, Concepts.CONCEPT_MODEL_ATTRIBUTE)
-				.group(1).build();
+				.relationshipGroup(1).build();
 		final SnomedRelationshipIndexEntry relationship2 = relationship(Concepts.CONCEPT_MODEL_ATTRIBUTE, Concepts.FINDING_SITE, Concepts.PHYSICAL_OBJECT)
-				.group(1).build();
+				.relationshipGroup(1).build();
 		final SnomedRelationshipIndexEntry relationship3 = relationship(Concepts.ROOT_CONCEPT, Concepts.FINDING_SITE, Concepts.PHYSICAL_OBJECT)
-				.group(2).build();
+				.relationshipGroup(2).build();
 		
 		SnomedRefSetMemberIndexEntry axiomMember1 = member(Concepts.CONCEPT_MODEL_ATTRIBUTE, Concepts.REFSET_OWL_AXIOM)
 				.classAxiomRelationships(Lists.newArrayList(SnomedOWLRelationshipDocument.create(Concepts.FINDING_SITE, Concepts.CONCEPT_MODEL_ATTRIBUTE, 0)))
@@ -1266,19 +1266,19 @@ public class GenericValidationRuleTest extends BaseGenericValidationRuleTest {
 		
 		//Relationships
 		final SnomedRelationshipIndexEntry relationship1 = relationship(Concepts.CONCEPT_MODEL_ATTRIBUTE, Concepts.IS_A, Concepts.CONCEPT_MODEL_ATTRIBUTE)
-				.group(1).build();
+				.relationshipGroup(1).build();
 		
 		final SnomedRelationshipIndexEntry relationship2 = relationship(Concepts.CONCEPT_MODEL_ATTRIBUTE, Concepts.FINDING_SITE, Concepts.PHYSICAL_OBJECT)
-				.group(1).build();
+				.relationshipGroup(1).build();
 		
 		final SnomedRelationshipIndexEntry relationship3 = relationship(Concepts.ROOT_CONCEPT, Concepts.FINDING_SITE, Concepts.PHYSICAL_OBJECT)
-				.group(2).build();
+				.relationshipGroup(2).build();
 		
 		final SnomedRelationshipIndexEntry relationship4 = relationship(Concepts.PHYSICAL_OBJECT, Concepts.FINDING_SITE, Concepts.TEXT_DEFINITION)
-				.group(0).build();
+				.relationshipGroup(0).build();
 		
 		final SnomedRelationshipIndexEntry relationship5 = relationship(Concepts.PHYSICAL_OBJECT, Concepts.HAS_ACTIVE_INGREDIENT, Concepts.PHYSICAL_OBJECT)
-				.group(3).build();
+				.relationshipGroup(3).build();
 		
 		// OWL axioms
 		SnomedRefSetMemberIndexEntry axiomMember1 = member(Concepts.CONCEPT_MODEL_ATTRIBUTE, Concepts.REFSET_OWL_AXIOM)

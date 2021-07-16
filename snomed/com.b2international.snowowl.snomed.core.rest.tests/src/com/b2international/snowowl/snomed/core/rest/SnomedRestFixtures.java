@@ -226,14 +226,14 @@ public abstract class SnomedRestFixtures {
 		return createRelationshipRequestBody(sourceId, typeId, destinationId, moduleId, characteristicTypeId, 0);
 	}
 
-	public static Json createRelationshipRequestBody(String sourceId, String typeId, String destinationId, String moduleId, String characteristicTypeId, int group) {
+	public static Json createRelationshipRequestBody(String sourceId, String typeId, String destinationId, String moduleId, String characteristicTypeId, int relationshipGroup) {
 		return Json.object(
 			"moduleId", moduleId,
 			"sourceId", sourceId,
 			"typeId", typeId,
 			"destinationId", destinationId,
 			"characteristicTypeId", characteristicTypeId,
-			"group", group
+			"relationshipGroup", relationshipGroup
 		);
 	}
 
@@ -276,7 +276,7 @@ public abstract class SnomedRestFixtures {
 			"typeId", typeId,
 			"value", value.toLiteral(),
 			"characteristicTypeId", characteristicTypeId,
-			"group", relationshipGroup
+			"relationshipGroup", relationshipGroup
 		);
 	}
 	
@@ -487,7 +487,7 @@ public abstract class SnomedRestFixtures {
 			SnomedComponentType.RELATIONSHIP, 
 			relationshipId, 
 			Json.object(
-				"group", 99,
+				"relationshipGroup", 99,
 				"commitComment", "Changed group on relationship"
 			)
 		).statusCode(204);
