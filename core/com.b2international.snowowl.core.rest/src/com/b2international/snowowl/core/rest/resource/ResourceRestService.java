@@ -16,11 +16,14 @@
 package com.b2international.snowowl.core.rest.resource;
 
 import java.util.List;
-import java.util.Set;
 
 import org.springdoc.api.annotations.ParameterObject;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.index.revision.Commit;
 import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.Resources;
@@ -32,7 +35,7 @@ import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.repository.RepositoryRequests;
 import com.b2international.snowowl.core.request.ResourceRequests;
 import com.b2international.snowowl.core.rest.AbstractRestService;
-import com.google.common.base.Strings;
+import com.b2international.snowowl.core.rest.commit.CommitInfoRestSearch;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -105,68 +108,23 @@ public class ResourceRestService extends AbstractRestService {
 	})
 	@GetMapping(value = "/commits", produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public Promise<CommitInfos> searchCommits(
-			@Parameter(description = "The author of the commit to match")
-			@RequestParam(value="author", required=false)
-			final String author,
-	
-			@Parameter(description = "The identifier(s) to match")
-			@RequestParam(value="id", required=false)
-			final Set<String> id,
-	
-			@Parameter(description = "Affected component identifier to match")
-			@RequestParam(value="affectedComponentId", required=false)
-			final String affectedComponentId,
-			
-			@Parameter(description = "Commit comment term to match")
-			@RequestParam(value="comment", required=false)
-			final String comment,
-			
-			@Parameter(description = "One or more branch paths to match")
-			@RequestParam(value="branch", required=false)
-			final List<String> branch,
-			
-			@Parameter(description = "Commit timestamp to match")
-			@RequestParam(value="timestamp", required=false)
-			final Long timestamp,
-			
-			@Parameter(description = "Minimum commit timestamp to search matches from")
-			@RequestParam(value="timestampFrom", required=false)
-			final Long timestampFrom,
-			
-			@Parameter(description = "Maximum commit timestamp to search matches to")
-			@RequestParam(value="timestampTo", required=false)
-			final Long timestampTo,
-	
-			@Parameter(description = "Expansion parameters")
-			@RequestParam(value="expand", required=false)
-			final String expand,
-			
-			@Parameter(description = "The search key to use for retrieving the next page of results")
-			@RequestParam(value="searchAfter", required=false)
-			final String searchAfter,
-			
-			@Parameter(description = "Sort keys")
-			@RequestParam(value="sort", required=false)
-			final List<String> sort,
-	
-			@Parameter(description = "The maximum number of items to return")
-			@RequestParam(value="limit", defaultValue="50", required=false) 
-			final int limit) {
+			@ParameterObject
+			final CommitInfoRestSearch params) {
 		 Request<RepositoryContext, CommitInfos> req = RepositoryRequests
 				.commitInfos()
 				.prepareSearchCommitInfo()
-				.filterByIds(id)
-				.filterByAuthor(author)
-				.filterByAffectedComponent(affectedComponentId)
-				.filterByComment(comment)
-				.filterByBranches(branch)
-				.filterByTimestamp(timestamp)
-				.filterByTimestamp(timestampFrom, timestampTo)
-				.setFields(Strings.isNullOrEmpty(expand) ? List.of(Commit.Fields.ID, Commit.Fields.AUTHOR, Commit.Fields.BRANCH, Commit.Fields.COMMENT, Commit.Fields.TIMESTAMP, Commit.Fields.GROUP_ID) : null)
-				.setExpand(expand)
-				.setSearchAfter(searchAfter)
-				.setLimit(limit)
-				.sortBy(extractSortFields(sort))
+				.filterByIds(params.getId())
+				.filterByAuthor(params.getAuthor())
+				.filterByAffectedComponent(params.getAffectedComponentId())
+				.filterByComment(params.getComment())
+				.filterByBranches(params.getBranch())
+				.filterByTimestamp(params.getTimestamp())
+				.filterByTimestamp(params.getTimestampFrom(), params.getTimestampTo())
+				.setFields(CompareUtils.isEmpty(params.getExpand()) ? List.of(Commit.Fields.ID, Commit.Fields.AUTHOR, Commit.Fields.BRANCH, Commit.Fields.COMMENT, Commit.Fields.TIMESTAMP, Commit.Fields.GROUP_ID) : null)
+				.setExpand(params.getExpand())
+				.setSearchAfter(params.getSearchAfter())
+				.setLimit(params.getLimit())
+				.sortBy(extractSortFields(params.getSort()))
 				.build();
 		 return new ResourceRepositoryRequestBuilder<CommitInfos>() {
 

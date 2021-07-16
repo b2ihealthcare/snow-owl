@@ -19,6 +19,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -26,15 +27,16 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.b2international.commons.CompareUtils;
 import com.b2international.commons.validation.ApiValidation;
 import com.b2international.snowowl.core.events.util.Promise;
 import com.b2international.snowowl.core.rest.AbstractRestService;
 import com.b2international.snowowl.core.rest.SnomedApiConfig;
+import com.b2international.snowowl.core.rest.domain.ObjectRestSearch;
 import com.b2international.snowowl.snomed.core.rest.domain.ClassificationRunRestInput;
 import com.b2international.snowowl.snomed.core.rest.domain.ClassificationRunRestUpdate;
 import com.b2international.snowowl.snomed.reasoner.domain.*;
 import com.b2international.snowowl.snomed.reasoner.request.ClassificationRequests;
-import com.google.common.base.Strings;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -206,30 +208,21 @@ public class SnomedClassificationRestService extends AbstractRestService {
 			@PathVariable(value="classificationId") 
 			final String classificationId,
 			
-			@Parameter(description ="Expansion parameters")
-			@RequestParam(value="expand", required=false)
-			final String expand,
-
-			@Parameter(description = "The search key to use for retrieving the next page of results")
-			@RequestParam(value="searchAfter", required=false)
-			final String searchAfter,
-			
-			@Parameter(description ="The maximum number of items to return")
-			@RequestParam(value="limit", defaultValue="50", required=false) 
-			final int limit) {
+			@ParameterObject
+			final ObjectRestSearch params) {
 		
 		final String expandWithRelationship;
-		if (Strings.isNullOrEmpty(expand)) {
+		if (CompareUtils.isEmpty(params.getExpand())) {
 			expandWithRelationship = "relationship()";
 		} else {
-			expandWithRelationship = String.format("relationship(expand(%s))", expand);
+			expandWithRelationship = String.format("relationship(expand(%s))", String.join(",", params.getExpand()));
 		}
 		
 		return ClassificationRequests.prepareSearchRelationshipChange()
 				.filterByClassificationId(classificationId)
 				.setExpand(expandWithRelationship)
-				.setSearchAfter(searchAfter)
-				.setLimit(limit)
+				.setSearchAfter(params.getSearchAfter())
+				.setLimit(params.getLimit())
 				.build(SnomedApiConfig.REPOSITORY_ID)
 				.execute(getBus());
 	}

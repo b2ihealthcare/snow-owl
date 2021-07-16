@@ -23,18 +23,18 @@ import io.swagger.v3.oas.annotations.Parameter;
 /**
  * @since 7.3
  */
-public abstract class ObjectRestSearch {
+public class ObjectRestSearch extends ResourceSelectors {
 
 	@Parameter(description = "The identifier(s) to match")
 	private Set<String> id;
 	
 	// scrolling/paging/expansion/sorting
-	@Parameter(description = "Expansion parameters")
-	private String expand;
 	@Parameter(description = "The search key to use for retrieving the next page of results")
 	private String searchAfter;
+	
 	@Parameter(description = "Sort keys")
 	private List<String> sort;
+	
 	@Parameter(description = "The maximum number of items to return")
 	private int limit = 50;
 
@@ -44,14 +44,6 @@ public abstract class ObjectRestSearch {
 
 	public final void setId(Set<String> id) {
 		this.id = id;
-	}
-	
-	public final String getExpand() {
-		return expand;
-	}
-
-	public final void setExpand(String expand) {
-		this.expand = expand;
 	}
 
 	public final String getSearchAfter() {
