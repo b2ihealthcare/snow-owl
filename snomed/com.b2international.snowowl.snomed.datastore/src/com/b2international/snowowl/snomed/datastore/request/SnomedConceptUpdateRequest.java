@@ -180,7 +180,7 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 		if (refSet == SnomedReferenceSet.DELETE || force) {
 			for (Hits<SnomedRefSetMemberIndexEntry> hits : context.service(RevisionSearcher.class).scroll(Query
 					.select(SnomedRefSetMemberIndexEntry.class)
-					.where(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(componentId()))
+					.where(SnomedRefSetMemberIndexEntry.Expressions.refsetId(componentId()))
 					.limit(10_000)
 					.build()))  {
 				for (SnomedRefSetMemberIndexEntry member : hits) {
@@ -234,7 +234,7 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 	
 	private FluentIterable<SnomedReferenceSetMember> getUpdateableMembers(Iterable<SnomedReferenceSetMember> members) {
 		return FluentIterable.from(members)
-				.filter(m -> !FILTERED_REFSET_IDS.contains(m.getReferenceSetId()));
+				.filter(m -> !FILTERED_REFSET_IDS.contains(m.getRefsetId()));
 	}
 
 	private boolean updateDefinitionStatus(final TransactionContext context, final SnomedConceptDocument original, final SnomedConceptDocument.Builder concept) {
@@ -242,7 +242,7 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 				.map(Collection::stream)
 				.orElseGet(Stream::empty)
 				.filter(SnomedReferenceSetMember::isActive)
-				.filter(member -> SnomedRefSetType.OWL_AXIOM == member.type() || Concepts.REFSET_OWL_AXIOM.equals(member.getReferenceSetId()))
+				.filter(member -> SnomedRefSetType.OWL_AXIOM == member.type() || Concepts.REFSET_OWL_AXIOM.equals(member.getRefsetId()))
 				.map(member -> (String) member.getProperties().get(SnomedRf2Headers.FIELD_OWL_EXPRESSION))
 				.collect(Collectors.toSet());
 		
@@ -368,7 +368,7 @@ public final class SnomedConceptUpdateRequest extends SnomedComponentUpdateReque
 		if (!CompareUtils.isEmpty(members)) {
 			members.forEach(member -> {
 				ids.add(member.getModuleId());
-				ids.add(member.getReferenceSetId());
+				ids.add(member.getRefsetId());
 				// TODO add specific props?
 			});
 		}

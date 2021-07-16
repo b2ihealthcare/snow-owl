@@ -159,7 +159,7 @@ public final class Rf2TransactionContext extends DelegatingTransactionContext {
 			final Map<String, ? extends SnomedDocument> existingComponents = lookup(componentsToLookup, type);
 			final Map<String, SnomedConceptDocument> existingRefSets;
 			if (SnomedRefSetMemberIndexEntry.class == type) {
-				existingRefSets = lookup(rf2Components.stream().map(member -> ((SnomedReferenceSetMember) member).getReferenceSetId()).collect(Collectors.toSet()), SnomedConceptDocument.class);
+				existingRefSets = lookup(rf2Components.stream().map(member -> ((SnomedReferenceSetMember) member).getRefsetId()).collect(Collectors.toSet()), SnomedConceptDocument.class);
 			} else {
 				existingRefSets = Collections.emptyMap();
 			}
@@ -187,7 +187,7 @@ public final class Rf2TransactionContext extends DelegatingTransactionContext {
 				if (rf2Component instanceof SnomedReferenceSetMember) {
 					final SnomedReferenceSetMember member = (SnomedReferenceSetMember) rf2Component;
 					// seed the refset if missing
-					final String refSetId = member.getReferenceSetId();
+					final String refSetId = member.getRefsetId();
 					SnomedConceptDocument conceptDocToUpdate = existingRefSets.get(refSetId);
 					if (conceptDocToUpdate == null || newComponents.containsKey(refSetId)) {
 						conceptDocToUpdate = (SnomedConceptDocument) newComponents.get(refSetId);
@@ -482,6 +482,6 @@ public final class Rf2TransactionContext extends DelegatingTransactionContext {
 				.withEffectiveTime(rf2Component.getEffectiveTime())
 				.withModuleId(rf2Component.getModuleId())
 				.withReferencedComponent(rf2Component.getReferencedComponent().getId())
-				.withRefSet(rf2Component.getReferenceSetId());
+				.withRefSet(rf2Component.getRefsetId());
 	}
 }

@@ -124,7 +124,7 @@ public class SnomedComponentInactivationApiTest extends AbstractSnomedApiTest {
 	private SnomedReferenceSetMember getIndicatorMember(SnomedCoreComponent component, String inactivationIndicatorRefSetId) {
 		List<SnomedReferenceSetMember> members = component.getMembers()
 			.stream()
-			.filter(member -> inactivationIndicatorRefSetId.equals(member.getReferenceSetId()))
+			.filter(member -> inactivationIndicatorRefSetId.equals(member.getRefsetId()))
 			.collect(Collectors.toList());
 		if (members.size() != 1) {
 			fail("Missing or duplicate inactivation member detected for component: " + component.getId() + ", " + members);

@@ -113,7 +113,7 @@ final class SnomedAssociationTargetUpdateRequest extends BaseComponentMemberUpda
 			
 			final SnomedReferenceSetMember existingMember = memberIterator.next();
 			// existing historical association member
-			final String associationReferenceSetId = existingMember.getReferenceSetId();
+			final String associationReferenceSetId = existingMember.getRefsetId();
 			final String existingTargetId = ((SnomedComponent) existingMember.getProperties().get(SnomedRf2Headers.FIELD_TARGET_COMPONENT)).getId();
 			
 			if (newAssociationTargetsToCreate.remove(associationReferenceSetId, existingTargetId)) {
@@ -132,7 +132,7 @@ final class SnomedAssociationTargetUpdateRequest extends BaseComponentMemberUpda
 		 */
 		for (final SnomedReferenceSetMember existingMember : existingMembers) {
 
-			final String associationReferenceSetId = existingMember.getReferenceSetId();
+			final String associationReferenceSetId = existingMember.getRefsetId();
 
 			final Builder updatedMember = SnomedRefSetMemberIndexEntry.builder(existingMember);
 			

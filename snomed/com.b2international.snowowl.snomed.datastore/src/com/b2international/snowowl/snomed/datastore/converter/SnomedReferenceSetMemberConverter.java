@@ -198,7 +198,7 @@ public final class SnomedReferenceSetMemberConverter extends BaseRevisionResourc
 		member.setActive(entry.isActive());
 		member.setModuleId(entry.getModuleId());
 		member.setIconId(entry.getIconId());
-		member.setReferenceSetId(entry.getReferenceSetId());
+		member.setReferenceSetId(entry.getRefsetId());
 		member.setType(entry.getReferenceSetType());
 		member.setScore(entry.getScore());
 
@@ -219,7 +219,7 @@ public final class SnomedReferenceSetMemberConverter extends BaseRevisionResourc
 		member.setProperties(props);
 		
 		String owlExpression = entry.getOwlExpression();
-		if (Concepts.REFSET_OWL_AXIOM.equals(entry.getReferenceSetId()) &&
+		if (Concepts.REFSET_OWL_AXIOM.equals(entry.getRefsetId()) &&
 				expand().containsKey("owlRelationships") && 
 				!Strings.isNullOrEmpty(owlExpression)) {
 			if (!CompareUtils.isEmpty(entry.getClassAxiomRelationships())) {

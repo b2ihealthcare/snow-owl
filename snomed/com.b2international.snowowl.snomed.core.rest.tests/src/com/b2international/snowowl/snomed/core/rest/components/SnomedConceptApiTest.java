@@ -469,19 +469,19 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 
 	@Test
 	public void createConceptWithMember() throws Exception {
-		String refSetId = createNewRefSet(branchPath);
+		String refsetId = createNewRefSet(branchPath);
 
 		Map<?, ?> conceptRequestBody = createConceptRequestBody(Concepts.ROOT_CONCEPT)
 				.with("members", Json.array(Json.object(
 					"moduleId", Concepts.MODULE_SCT_CORE,
-					"referenceSetId", refSetId
+					"refsetId", refsetId
 				)))
 				.with("commitComment", "Created concept with reference set member");
 
 		String conceptId = assertCreated(createComponent(branchPath, SnomedComponentType.CONCEPT, conceptRequestBody));
 
 		getComponent(branchPath, SnomedComponentType.CONCEPT, conceptId, "members()").statusCode(200)
-			.body("members.items[0].referenceSetId", equalTo(refSetId));
+			.body("members.items[0].refsetId", equalTo(refsetId));
 	}
 
 	@Test
@@ -741,7 +741,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 				"id", conceptId,
 				"members", Json.array(Json.object(
 					"moduleId", Concepts.MODULE_SCT_CORE,
-					"referenceSetId", Concepts.REFSET_OWL_AXIOM,
+					"refsetId", Concepts.REFSET_OWL_AXIOM,
 					SnomedRf2Headers.FIELD_OWL_EXPRESSION, owlSubclassOfExpression
 				)),
 				"commitComment", "Created concept with owl axiom reference set member"
@@ -772,7 +772,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 					"id", conceptId,
 					"members", Json.array(Json.object(
 						"moduleId", Concepts.MODULE_SCT_CORE,
-						"referenceSetId", Concepts.REFSET_OWL_AXIOM,
+						"refsetId", Concepts.REFSET_OWL_AXIOM,
 						SnomedRf2Headers.FIELD_OWL_EXPRESSION, owlEquivalentClassesExpression
 					)),
 					"commitComment", "Created concept with owl axiom reference set member"
@@ -798,7 +798,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		final String owlSubClassOfExpression = "SubClassOf(ObjectIntersectionOf(:73211009 ObjectSomeValuesFrom(:609096000 ObjectSomeValuesFrom(:100106001 :100102001))) :"+conceptId+")";
 		final Map<?, ?> memberRequestBody = Json.object(
 			"moduleId", Concepts.MODULE_SCT_CORE,
-			"referenceSetId", Concepts.REFSET_OWL_AXIOM,
+			"refsetId", Concepts.REFSET_OWL_AXIOM,
 			SnomedRf2Headers.FIELD_OWL_EXPRESSION, owlSubClassOfExpression
 		);
 		
@@ -1071,7 +1071,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 					"id", owlAxiomMemberId,
 					"active", true,
 					"moduleId", Concepts.MODULE_SCT_CORE,
-					"referenceSetId", Concepts.REFSET_OWL_AXIOM,
+					"refsetId", Concepts.REFSET_OWL_AXIOM,
 					SnomedRf2Headers.FIELD_OWL_EXPRESSION, owlSubclassOfExpression
 				)),
 				"commitComment", "Created concept with owl axiom reference set member"

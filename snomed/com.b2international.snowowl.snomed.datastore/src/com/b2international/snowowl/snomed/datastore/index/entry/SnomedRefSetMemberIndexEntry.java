@@ -111,7 +111,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 
 	public static class Fields extends SnomedDocument.Fields {
 		// All member types
-		public static final String REFERENCE_SET_ID = "referenceSetId"; // XXX different than the RF2 header field name
+		public static final String REFSET_ID = SnomedRf2Headers.FIELD_REFSET_ID;
 		public static final String REFERENCED_COMPONENT_ID = SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID;
 		public static final String REFSET_TYPE = "referenceSetType";
 		public static final String REFERENCED_COMPONENT_TYPE = "referencedComponentType";
@@ -205,7 +205,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 				.moduleId(source.getModuleId())
 				.referencedComponentId(source.getReferencedComponentId())
 				.referencedComponentType(source.getReferencedComponentType())
-				.referenceSetId(source.getReferenceSetId())
+				.refsetId(source.getRefsetId())
 				.referenceSetType(source.getReferenceSetType())
 				.released(source.isReleased())
 				.gciAxiomRelationships(source.getGciAxiomRelationships())
@@ -221,7 +221,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 				.released(input.isReleased())
 				.moduleId(input.getModuleId())
 				.referencedComponentId(input.getReferencedComponent().getId())
-				.referenceSetId(input.getReferenceSetId())
+				.refsetId(input.getRefsetId())
 				.referenceSetType(input.type())
 				.referencedComponentType(input.getReferencedComponent().getComponentType());
 		
@@ -265,12 +265,12 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 
 	public static final class Expressions extends SnomedDocument.Expressions {
 		
-		public static Expression referenceSetId(String referenceSetId) {
-			return exactMatch(Fields.REFERENCE_SET_ID, referenceSetId);
+		public static Expression refsetId(String referenceSetId) {
+			return exactMatch(Fields.REFSET_ID, referenceSetId);
 		}
 
-		public static Expression referenceSetId(Collection<String> referenceSetIds) {
-			return matchAny(Fields.REFERENCE_SET_ID, referenceSetIds);
+		public static Expression refsetIds(Collection<String> referenceSetIds) {
+			return matchAny(Fields.REFSET_ID, referenceSetIds);
 		}
 		
 		public static Expression referencedComponentId(String referencedComponentId) {
@@ -483,7 +483,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 
 		private String referencedComponentId;
 
-		private String referenceSetId;
+		private String refsetId;
 		private SnomedRefSetType referenceSetType;
 		private String referencedComponentType = TerminologyRegistry.UNKNOWN_COMPONENT_TYPE;
 
@@ -619,8 +619,8 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			return this;
 		}
 
-		public Builder referenceSetId(final String referenceSetId) {
-			this.referenceSetId = referenceSetId;
+		public Builder refsetId(final String refsetId) {
+			this.refsetId = refsetId;
 			return this;
 		}
 
@@ -861,7 +861,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 					active, 
 					effectiveTime, 
 					referencedComponentId, 
-					referenceSetId,
+					refsetId,
 					referenceSetType,
 					referencedComponentType);
 			// association members
@@ -960,7 +960,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	}
 
 	private final String referencedComponentId;
-	private final String referenceSetId;
+	private final String refsetId;
 	private final SnomedRefSetType referenceSetType;
 	private final String referencedComponentType;
 	
@@ -1037,7 +1037,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 			final Boolean active, 
 			final Long effectiveTimeLong, 
 			final String referencedComponentId, 
-			final String referenceSetId,
+			final String refsetId,
 			final SnomedRefSetType referenceSetType,
 			final String referencedComponentType) {
 
@@ -1048,7 +1048,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 				active, 
 				effectiveTimeLong);
 		this.referencedComponentId = referencedComponentId;
-		this.referenceSetId = referenceSetId;
+		this.refsetId = refsetId;
 		this.referenceSetType = referenceSetType;
 		if (!Strings.isNullOrEmpty(referencedComponentId)) {
 			this.referencedComponentType = referencedComponentType == TerminologyRegistry.UNKNOWN_COMPONENT_TYPE ? SnomedComponent.getType(referencedComponentId) : referencedComponentType;
@@ -1088,8 +1088,8 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	/**
 	 * @return the identifier of the member's reference set
 	 */
-	public String getReferenceSetId() {
-		return referenceSetId;
+	public String getRefsetId() {
+		return refsetId;
 	}
 
 	/**
@@ -1396,7 +1396,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 	protected ToStringHelper doToString() {
 		return super.doToString()
 				.add("referencedComponentId", referencedComponentId)
-				.add("referenceSetId", referenceSetId)
+				.add("refsetId", refsetId)
 				.add("referenceSetType", referenceSetType)
 				.add("referencedComponentType", referencedComponentType)
 				.add("targetComponent", targetComponent)

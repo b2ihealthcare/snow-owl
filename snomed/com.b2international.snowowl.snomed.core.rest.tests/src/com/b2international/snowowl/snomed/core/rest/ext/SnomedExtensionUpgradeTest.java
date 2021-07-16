@@ -876,7 +876,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		// create new inactivation indicator for one of the description, pending move
 		createMember(extension.getResourceURI(), Map.of(
 			"moduleId", moduleId,
-			"referenceSetId", Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR,
+			"refsetId", Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR,
 			"referencedComponentId", descriptionId,
 			"valueId", Concepts.PENDING_MOVE
 		));
@@ -887,7 +887,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		// add another member on INT representing a change in INT and allow extension to upgrade
 		createMember(SnomedContentRule.SNOMEDCT, Map.of(
 			"moduleId", Concepts.MODULE_SCT_CORE,
-			"referenceSetId", Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR,
+			"refsetId", Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR,
 			"referencedComponentId", descriptionId,
 			"valueId", Concepts.PENDING_MOVE
 		));
@@ -902,7 +902,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		// add another extension member to the same int concept with same meaning to the original extension branch
 		createMember(extension.getResourceURI(), Map.of(
 			"moduleId", moduleId,
-			"referenceSetId", Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR,
+			"refsetId", Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR,
 			"referencedComponentId", descriptionId,
 			"valueId", Concepts.AMBIGUOUS
 		));

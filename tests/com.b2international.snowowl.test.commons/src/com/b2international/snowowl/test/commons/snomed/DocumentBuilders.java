@@ -88,7 +88,7 @@ public abstract class DocumentBuilders {
 				.active(true)
 				.referencedComponentId(referencedComponentId)
 				.referencedComponentType(referencedComponentType)
-				.referenceSetId(referenceSetId)
+				.refsetId(referenceSetId)
 				.released(true);
 	}
 	
@@ -154,7 +154,7 @@ public abstract class DocumentBuilders {
 				.moduleId(Concepts.MODULE_SCT_CORE)
 				.referencedComponentId(sourceId)
 				.referencedComponentType(SnomedConcept.TYPE)
-				.referenceSetId(Concepts.REFSET_OWL_AXIOM)
+				.refsetId(Concepts.REFSET_OWL_AXIOM)
 				.classAxiomRelationships(classAxioms);
 	}
 
@@ -180,7 +180,7 @@ public abstract class DocumentBuilders {
 				.active(true)
 				.moduleId(Concepts.MODULE_SCT_CORE)
 				.referencedComponentId(referencedComponentId)
-				.referenceSetId(RandomSnomedIdentiferGenerator.generateConceptId())
+				.refsetId(RandomSnomedIdentiferGenerator.generateConceptId())
 				.referenceSetType(SnomedRefSetType.CONCRETE_DATA_TYPE)
 				.field(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID, characteristicTypeId)
 				.field(SnomedRf2Headers.FIELD_TYPE_ID, typeId)

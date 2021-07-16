@@ -171,7 +171,7 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 				.id(UUID.randomUUID().toString())
 				.moduleId(Concepts.MODULE_SCT_CORE)
 				.referencedComponentId(referencedComponentId)
-				.referenceSetId(refSetId)
+				.refsetId(refSetId)
 				.build();
 	}
 	
@@ -239,7 +239,7 @@ public abstract class BaseChangeProcessorTest extends BaseRevisionIndexTest {
 				.moduleId(Concepts.MODULE_SCT_CORE)
 				.referencedComponentId(referencedComponentId)
 				.referencedComponentType(SnomedConcept.TYPE)
-				.referenceSetId(Concepts.REFSET_OWL_AXIOM)
+				.refsetId(Concepts.REFSET_OWL_AXIOM)
 				.referenceSetType(SnomedRefSetType.OWL_AXIOM);
 	}
 

@@ -1416,7 +1416,7 @@ public class SnomedExportApiTest extends AbstractSnomedApiTest {
 	
 	private static String getLanguageRefsetMemberId(IBranchPath branchPath, String descriptionId, String languageRefsetId) {
 		final Collection<Map<String, Object>> members = getComponent(branchPath, SnomedComponentType.DESCRIPTION, descriptionId, "members()").extract().body().path("members.items");
-		return String.valueOf(members.stream().filter(member -> languageRefsetId.equals(member.get("referenceSetId"))).findFirst().get().get("id"));
+		return String.valueOf(members.stream().filter(member -> languageRefsetId.equals(member.get("refsetId"))).findFirst().get().get("id"));
 	}
 	
 	private static String createDescriptionLine(String id, String effectiveTime, String conceptId, String languageCode, String type, String term) {

@@ -79,7 +79,7 @@ public final class InactivationPropertiesExpander {
 			for (SnomedReferenceSetMember referringMember : referringMembers) {
 				if (SnomedRefSetType.ASSOCIATION.equals(referringMember.type())) {
 					final AssociationTarget associationTarget = new AssociationTarget();
-					associationTarget.setReferenceSetId(referringMember.getReferenceSetId());
+					associationTarget.setReferenceSetId(referringMember.getRefsetId());
 					associationTarget.setTargetComponent((SnomedCoreComponent) referringMember.getProperties().get(SnomedRf2Headers.FIELD_TARGET_COMPONENT));
 					associationTargets.add(associationTarget);
 				} else if (SnomedRefSetType.ATTRIBUTE_VALUE.equals(referringMember.type())) {

@@ -347,7 +347,7 @@ public abstract class SnomedRestFixtures {
 	public static Json createRefSetMemberRequestBody(String refSetId, String referencedComponentId) {
 		return Json.object(
 			"moduleId", Concepts.MODULE_SCT_CORE,
-			"referenceSetId", refSetId,
+			"refsetId", refSetId,
 			"referencedComponentId", referencedComponentId
 		);
 	}

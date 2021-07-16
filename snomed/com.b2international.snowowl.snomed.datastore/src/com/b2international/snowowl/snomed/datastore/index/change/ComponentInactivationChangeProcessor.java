@@ -118,7 +118,7 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 				final Multimap<String, SnomedRefSetMemberIndexEntry> existingIndicatorReferenceSetMembers = HashMultimap.create();
 				searcher.search(Query.select(SnomedRefSetMemberIndexEntry.class)
 						.where(Expressions.builder()
-								.filter(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR))
+								.filter(SnomedRefSetMemberIndexEntry.Expressions.refsetId(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR))
 								.filter(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(descriptionIds))
 								.build())
 						.limit(Integer.MAX_VALUE)
@@ -135,7 +135,7 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 					final Collection<SnomedRefSetMemberIndexEntry> transactionMembers = changedMembersByReferencedComponentId.get(descriptionId).stream()
 							.map(diff -> diff.newRevision)
 							.map(SnomedRefSetMemberIndexEntry.class::cast)
-							.filter(member -> Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR.equals(member.getReferenceSetId()))
+							.filter(member -> Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR.equals(member.getRefsetId()))
 							.collect(Collectors.toList());
 					// if there were no registered member changes to this description
 					if (transactionMembers.isEmpty()) {
@@ -155,7 +155,7 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 								.id(UUID.randomUUID().toString())
 								.active(true)
 								.released(false)
-								.referenceSetId(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR)
+								.refsetId(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR)
 								.referenceSetType(SnomedRefSetType.ATTRIBUTE_VALUE)
 								.referencedComponentId(descriptionId)
 								.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME)
@@ -218,7 +218,7 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 				.where(Expressions.builder()
 						.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
 						.should(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(inactivatedComponentIds))
-						.should(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(inactivatedComponentIds))
+						.should(SnomedRefSetMemberIndexEntry.Expressions.refsetIds(inactivatedComponentIds))
 						.setMinimumNumberShouldMatch(1)
 						.build())
 				.limit(PAGE_SIZE)
@@ -260,7 +260,7 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 			final Set<String> descriptionIds = ImmutableSet.copyOf(hits.getHits());
 			
 			final Set<String> stagedDescriptionIndicators = staging.getChangedObjects(SnomedRefSetMemberIndexEntry.class)
-				.filter(member -> Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR.equals(member.getReferenceSetId()))
+				.filter(member -> Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR.equals(member.getRefsetId()))
 				.filter(member -> descriptionIds.contains(member.getReferencedComponentId()))
 				.map(SnomedRefSetMemberIndexEntry::getId)
 				.collect(Collectors.toSet());
@@ -270,7 +270,7 @@ final class ComponentInactivationChangeProcessor extends ChangeSetProcessorBase 
 					.where(Expressions.builder()
 							.mustNot(SnomedRefSetMemberIndexEntry.Expressions.ids(stagedDescriptionIndicators))
 							.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
-							.filter(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR))
+							.filter(SnomedRefSetMemberIndexEntry.Expressions.refsetId(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR))
 							.filter(SnomedRefSetMemberIndexEntry.Expressions.valueIds(ImmutableSet.of(Concepts.CONCEPT_NON_CURRENT)))
 							.filter(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(descriptionIds))
 							.build())

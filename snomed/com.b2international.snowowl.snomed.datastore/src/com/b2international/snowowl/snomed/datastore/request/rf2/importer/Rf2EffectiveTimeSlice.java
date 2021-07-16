@@ -221,7 +221,7 @@ public final class Rf2EffectiveTimeSlice {
 								componentsToImport.add(containedComponent);
 								
 								// Register reference set as visited component
-								final String refSetId = containedComponent.getReferenceSetId();
+								final String refSetId = containedComponent.getRefsetId();
 								visitedComponents.add(ComponentURI.of(codeSystemUri, SnomedConcept.REFSET_TYPE, refSetId));
 							}
 						}

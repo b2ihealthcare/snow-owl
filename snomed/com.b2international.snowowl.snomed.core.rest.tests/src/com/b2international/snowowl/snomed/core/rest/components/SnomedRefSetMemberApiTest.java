@@ -785,7 +785,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 
 		final Json memberRequest = Json.object(
 			SnomedRf2Headers.FIELD_MODULE_ID, Concepts.MODULE_SCT_CORE,
-			"referenceSetId", queryRefSetId,
+			"refsetId", queryRefSetId,
 			SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID, simpleRefSetId,
 			SnomedRf2Headers.FIELD_QUERY, "<" + Concepts.REFSET_ROOT_CONCEPT,
 			"commitComment", "Created new query reference set member"
@@ -820,7 +820,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 
 		final Json memberRequest = Json.object(
 			SnomedRf2Headers.FIELD_MODULE_ID, Concepts.MODULE_SCT_CORE,
-			"referenceSetId", queryRefSetId,
+			"refsetId", queryRefSetId,
 			SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID, simpleRefSetId,
 			SnomedRf2Headers.FIELD_QUERY, "<" + parentId,
 			"commitComment", "Created new query reference set member"
@@ -854,7 +854,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		
 		final Json memberRequest = Json.object(
 			SnomedRf2Headers.FIELD_MODULE_ID, Concepts.MODULE_SCT_CORE,
-			"referenceSetId", simpleRefSetId,
+			"refsetId", simpleRefSetId,
 			SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID, simpleRefSetId,
 			"commitComment", "Created new simple reference set member"
 		);
@@ -888,7 +888,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		final CommitResult result1 = SnomedRequests.prepareNewMember()
 			.setId(memberId)
 			.setModuleId(Concepts.MODULE_SCT_CORE)
-			.setReferenceSetId(simpleRefSetId)
+			.setRefsetId(simpleRefSetId)
 			.setReferencedComponentId(simpleRefSetId)
 			.build(branchPath.getPath(), RestExtensions.USER, "Creating refset member")
 			.execute(getBus())
@@ -900,7 +900,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		final CommitResult result2 = SnomedRequests.prepareNewMember()
 			.setId(memberId)
 			.setModuleId(Concepts.MODULE_SCT_CORE)
-			.setReferenceSetId(simpleRefSetId)
+			.setRefsetId(simpleRefSetId)
 			.setReferencedComponentId(simpleRefSetId)
 			.build(branchPath.getPath(), RestExtensions.USER, "Creating refset member")
 			.execute(getBus())
@@ -914,7 +914,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 		final Json memberRequest = Json.object(
 			SnomedRf2Headers.FIELD_ID, specificId,
 			SnomedRf2Headers.FIELD_MODULE_ID, Concepts.MODULE_SCT_CORE,
-			"referenceSetId", simpleRefSetId,
+			"refsetId", simpleRefSetId,
 			SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID, simpleRefSetId,
 			"commitComment", "Created new simple reference set member"
 		);

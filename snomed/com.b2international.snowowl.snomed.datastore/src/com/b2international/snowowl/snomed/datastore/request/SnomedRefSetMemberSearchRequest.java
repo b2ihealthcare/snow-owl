@@ -104,7 +104,7 @@ final class SnomedRefSetMemberSearchRequest extends SnomedSearchRequest<SnomedRe
 		addEclFilter(context, queryBuilder, SnomedSearchRequest.OptionKey.MODULE, SnomedDocument.Expressions::modules);
 		addIdFilter(queryBuilder, RevisionDocument.Expressions::ids);
 		addEffectiveTimeClause(queryBuilder);
-		addEclFilter(context, queryBuilder, OptionKey.REFSET, SnomedRefSetMemberIndexEntry.Expressions::referenceSetId);
+		addEclFilter(context, queryBuilder, OptionKey.REFSET, SnomedRefSetMemberIndexEntry.Expressions::refsetIds);
 		addComponentClause(queryBuilder);
 		
 		if (containsKey(OptionKey.REFERENCED_COMPONENT_TYPE)) {

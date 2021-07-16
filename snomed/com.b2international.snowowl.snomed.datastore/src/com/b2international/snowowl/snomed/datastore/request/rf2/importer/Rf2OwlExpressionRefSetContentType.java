@@ -35,12 +35,12 @@ final class Rf2OwlExpressionRefSetContentType implements Rf2RefSetContentType {
 	@Override
 	public void resolve(SnomedReferenceSetMember component, String[] values) {
 		component.setReferenceSetId(values[4]);
-		if (Concepts.REFSET_OWL_AXIOM.equals(component.getReferenceSetId())) {
+		if (Concepts.REFSET_OWL_AXIOM.equals(component.getRefsetId())) {
 			component.setType(SnomedRefSetType.OWL_AXIOM);
-		} else if (Concepts.REFSET_OWL_ONTOLOGY.equals(component.getReferenceSetId())) {
+		} else if (Concepts.REFSET_OWL_ONTOLOGY.equals(component.getRefsetId())) {
 			component.setType(SnomedRefSetType.OWL_ONTOLOGY);
 		} else {
-			throw new UnsupportedOperationException("Unrecognized OWL Reference Set " + component.getReferenceSetId());
+			throw new UnsupportedOperationException("Unrecognized OWL Reference Set " + component.getRefsetId());
 		}
 		// XXX actual type is not relevant here
 		component.setReferencedComponent(new SnomedConcept(values[5]));

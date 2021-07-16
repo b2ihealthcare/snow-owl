@@ -50,7 +50,7 @@ if (params.isUnpublishedOnly) {
 				// active, unpublished description inactivation refset members only
 				Expressions.builder()
 					.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
-					.filter(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR))
+					.filter(SnomedRefSetMemberIndexEntry.Expressions.refsetId(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR))
 					.filter(SnomedRefSetMemberIndexEntry.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
 				.build()
 			)
@@ -100,7 +100,7 @@ if (params.isUnpublishedOnly) {
 		
 		ExpressionBuilder memberQuery = Expressions.builder()
 				.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
-				.filter(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR))
+				.filter(SnomedRefSetMemberIndexEntry.Expressions.refsetId(Concepts.REFSET_DESCRIPTION_INACTIVITY_INDICATOR))
 				.filter(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(descriptionIds))
 				
 		if (params.isUnpublishedOnly) {

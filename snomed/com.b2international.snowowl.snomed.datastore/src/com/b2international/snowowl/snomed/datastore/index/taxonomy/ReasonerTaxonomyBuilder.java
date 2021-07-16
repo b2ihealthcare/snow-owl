@@ -827,7 +827,7 @@ public final class ReasonerTaxonomyBuilder {
 		
 		final ExpressionBuilder whereExpressionBuilder = Expressions.builder()
 				.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
-				.filter(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Concepts.REFSET_MRCM_ATTRIBUTE_DOMAIN_INTERNATIONAL))
+				.filter(SnomedRefSetMemberIndexEntry.Expressions.refsetId(Concepts.REFSET_MRCM_ATTRIBUTE_DOMAIN_INTERNATIONAL))
 				.filter(SnomedRefSetMemberIndexEntry.Expressions.mrcmGrouped(false));
 		
 		if (!excludedModuleIds.isEmpty()) {
@@ -906,7 +906,7 @@ public final class ReasonerTaxonomyBuilder {
 				}
 
 				final String memberId = member.getId();
-				final long refsetId = Long.parseLong(member.getReferenceSetId());
+				final long refsetId = Long.parseLong(member.getRefsetId());
 				final String serializedValue = SnomedRefSetUtil.serializeValue(member.getDataType(), member.getValue());
 				final Integer group = member.getRelationshipGroup();
 				final long typeId = Long.parseLong(member.getTypeId());
@@ -962,7 +962,7 @@ public final class ReasonerTaxonomyBuilder {
 				final String characteristicTypeId = (String) member.getProperties().get(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID);
 
 				if (member.isActive() 
-						&& SnomedRefSetUtil.getConcreteDomainRefSetMap().containsValue(member.getReferenceSetId())
+						&& SnomedRefSetUtil.getConcreteDomainRefSetMap().containsValue(member.getRefsetId())
 						&& CD_CHARACTERISTIC_TYPE_IDS.contains(characteristicTypeId)
 						&& !excludedModuleIds.contains(member.getModuleId())) {
 
@@ -985,7 +985,7 @@ public final class ReasonerTaxonomyBuilder {
 					}
 
 					final String memberId = member.getId();
-					final long refsetId = Long.parseLong(member.getReferenceSetId());
+					final long refsetId = Long.parseLong(member.getRefsetId());
 					final String serializedValue = (String) member.getProperties().get(SnomedRf2Headers.FIELD_VALUE);
 					final Integer group = (Integer) member.getProperties().get(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP);
 					final long typeId = Long.parseLong((String) member.getProperties().get(SnomedRf2Headers.FIELD_TYPE_ID));

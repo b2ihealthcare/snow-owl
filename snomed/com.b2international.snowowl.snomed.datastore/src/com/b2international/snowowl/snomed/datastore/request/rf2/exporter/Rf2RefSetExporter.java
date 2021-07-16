@@ -210,7 +210,7 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 		return SnomedRequests.prepareSearchMember()
 				.filterByRefSet(referenceSetIds)
 				.sortBy(
-						SortField.ascending(SnomedRefSetMemberIndexEntry.Fields.REFERENCE_SET_ID), 
+						SortField.ascending(SnomedRefSetMemberIndexEntry.Fields.REFSET_ID), 
 						SortField.ascending(SnomedRefSetMemberIndexEntry.Fields.ID));
 	}
 
@@ -245,7 +245,7 @@ public class Rf2RefSetExporter extends Rf2Exporter<SnomedRefSetMemberSearchReque
 							.add(getEffectiveTime(member))						// effectiveTime 
 							.add(getActive(member))								// active
 							.add(member.getModuleId())							// moduleId
-							.add(member.getReferenceSetId())					// refSetId
+							.add(member.getRefsetId())					// refSetId
 							.add(member.getReferencedComponent().getId());		// referencedComponentId
 
 					// Append extra columns using the properties map

@@ -42,7 +42,7 @@ public final class SnomedReferenceSetMemberRestSearch extends ObjectRestSearch {
 	private String module;
 	
 	@Parameter(description = "The reference set identifier(s) to match, or a single ECL expression")
-	private List<String> referenceSet;
+	private List<String> refsetId;
 	
 	@Parameter(description = "The referenced component identifier(s) to match")
 	private List<String> referencedComponentId;
@@ -120,12 +120,12 @@ public final class SnomedReferenceSetMemberRestSearch extends ObjectRestSearch {
 		this.module = module;
 	}
 
-	public List<String> getReferenceSet() {
-		return referenceSet;
+	public List<String> getRefsetId() {
+		return refsetId;
 	}
 
-	public void setReferenceSet(List<String> referenceSet) {
-		this.referenceSet = referenceSet;
+	public void setRefsetId(List<String> refsetId) {
+		this.refsetId = refsetId;
 	}
 
 	public List<String> getReferencedComponentId() {

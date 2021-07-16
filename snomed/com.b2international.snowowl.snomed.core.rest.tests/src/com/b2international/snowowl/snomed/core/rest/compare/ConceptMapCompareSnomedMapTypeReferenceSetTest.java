@@ -195,7 +195,7 @@ public class ConceptMapCompareSnomedMapTypeReferenceSetTest extends AbstractCore
 
 	private String createSimpleMapTypeRefSetMember(ComponentURI containerURI, String sourceCode, String targetCode) {
 		return SnomedRequests.prepareNewMember()
-			.setReferenceSetId(containerURI.identifier())
+			.setRefsetId(containerURI.identifier())
 			.setReferencedComponentId(sourceCode)
 			.setActive(true)
 			.setModuleId(Concepts.MODULE_SCT_CORE)
