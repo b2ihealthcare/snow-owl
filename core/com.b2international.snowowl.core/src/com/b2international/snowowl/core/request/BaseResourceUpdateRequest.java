@@ -129,7 +129,7 @@ public abstract class BaseResourceUpdateRequest extends UpdateRequest<Transactio
 		changed |= updateSpecializedProperties(context, resource, updated);
 
 		// url checked against all resources
-		if (url != null) {
+		if (url != null && !url.equals(resource.getUrl())) {
 			if (url.isBlank()) {
 				throw new BadRequestException("Resource.url should not be empty string");
 			}
