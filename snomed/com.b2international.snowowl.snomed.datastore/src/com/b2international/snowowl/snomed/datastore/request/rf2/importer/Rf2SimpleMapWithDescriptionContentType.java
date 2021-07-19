@@ -32,7 +32,7 @@ final class Rf2SimpleMapWithDescriptionContentType implements Rf2RefSetContentTy
 	@Override
 	public void resolve(SnomedReferenceSetMember component, String[] values) {
 		component.setType(SnomedRefSetType.SIMPLE_MAP_WITH_DESCRIPTION);
-		component.setReferenceSetId(values[4]);
+		component.setRefsetId(values[4]);
 		// XXX actual type is not relevant here
 		component.setReferencedComponent(new SnomedConcept(values[5]));
 		component.setProperties(ImmutableMap.of(

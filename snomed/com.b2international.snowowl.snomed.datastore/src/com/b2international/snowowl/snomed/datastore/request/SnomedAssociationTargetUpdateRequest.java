@@ -27,7 +27,6 @@ import org.slf4j.LoggerFactory;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
-import com.b2international.snowowl.snomed.core.domain.SnomedComponent;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSetMember;
 import com.b2international.snowowl.snomed.core.store.SnomedComponents;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedComponentDocument;
@@ -113,8 +112,8 @@ final class SnomedAssociationTargetUpdateRequest extends BaseComponentMemberUpda
 			
 			final SnomedReferenceSetMember existingMember = memberIterator.next();
 			// existing historical association member
-			final String associationReferenceSetId = existingMember.getReferenceSetId();
-			final String existingTargetId = ((SnomedComponent) existingMember.getProperties().get(SnomedRf2Headers.FIELD_TARGET_COMPONENT)).getId();
+			final String associationReferenceSetId = existingMember.getRefsetId();
+			final String existingTargetId = ((String) existingMember.getProperties().get(SnomedRf2Headers.FIELD_TARGET_COMPONENT_ID));
 			
 			if (newAssociationTargetsToCreate.remove(associationReferenceSetId, existingTargetId)) {
 				// Exact match, just make sure that the member is active and remove it from the working list
@@ -132,7 +131,7 @@ final class SnomedAssociationTargetUpdateRequest extends BaseComponentMemberUpda
 		 */
 		for (final SnomedReferenceSetMember existingMember : existingMembers) {
 
-			final String associationReferenceSetId = existingMember.getReferenceSetId();
+			final String associationReferenceSetId = existingMember.getRefsetId();
 
 			final Builder updatedMember = SnomedRefSetMemberIndexEntry.builder(existingMember);
 			
@@ -147,13 +146,13 @@ final class SnomedAssociationTargetUpdateRequest extends BaseComponentMemberUpda
 					LOG.debug("Changing association member {} with type {} and target component identifier from {} to {}.", 
 							existingMember.getId(), 
 							associationReferenceSetId, 
-							((SnomedComponent) existingMember.getProperties().get(SnomedRf2Headers.FIELD_TARGET_COMPONENT)).getId(), 
+							((String) existingMember.getProperties().get(SnomedRf2Headers.FIELD_TARGET_COMPONENT_ID)), 
 							newTargetId);
 				}
 
 				// Change target component, set status to active if needed, place it in the supplied module
 				SnomedRefSetMemberIndexEntry oldRevision = updatedMember.build();
-				updatedMember.field(SnomedRf2Headers.FIELD_TARGET_COMPONENT, newTargetId);
+				updatedMember.field(SnomedRf2Headers.FIELD_TARGET_COMPONENT_ID, newTargetId);
 				ensureMemberActive(context, existingMember, updatedMember);
 				updateModule(context, existingMember, updatedMember, moduleIdFunction.apply(componentToUpdate));
 				unsetEffectiveTime(existingMember, updatedMember);

@@ -46,7 +46,7 @@ if (params.isUnpublishedOnly) {
 		.where(
 			Expressions.builder()
 				.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
-				.filter(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Concepts.REFSET_OWL_AXIOM))
+				.filter(SnomedRefSetMemberIndexEntry.Expressions.refsetId(Concepts.REFSET_OWL_AXIOM))
 				.filter(SnomedRefSetMemberIndexEntry.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
 			.build()
 		)
@@ -82,7 +82,7 @@ if (params.isUnpublishedOnly) {
 
 ExpressionBuilder invalidOWLAxiomExpression = Expressions.builder()
 		.filter(SnomedRefSetMemberIndexEntry.Expressions.active())
-		.filter(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(Concepts.REFSET_OWL_AXIOM))
+		.filter(SnomedRefSetMemberIndexEntry.Expressions.refsetId(Concepts.REFSET_OWL_AXIOM))
 		.should(SnomedRefSetMemberIndexEntry.Expressions.owlExpressionConcept(inactiveConceptIds.get()))
 		.should(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(inactiveConceptIds.get()))
 

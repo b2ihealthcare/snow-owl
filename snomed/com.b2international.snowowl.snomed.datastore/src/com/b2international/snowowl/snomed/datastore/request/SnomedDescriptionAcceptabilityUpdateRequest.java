@@ -73,7 +73,7 @@ final class SnomedDescriptionAcceptabilityUpdateRequest extends BaseComponentMem
 		for (SnomedReferenceSetMember existingMember : existingMembers) {
 			final String acceptabilityId = (String) existingMember.getProperties().get(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID);
 			final Acceptability acceptability = Acceptability.getByConceptId(acceptabilityId);
-			final String languageReferenceSetId = existingMember.getReferenceSetId();
+			final String languageReferenceSetId = existingMember.getRefsetId();
 			
 			if (null == acceptability) {
 				continue;	

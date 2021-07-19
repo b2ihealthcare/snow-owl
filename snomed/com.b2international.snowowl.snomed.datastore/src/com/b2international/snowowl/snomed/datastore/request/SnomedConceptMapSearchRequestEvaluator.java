@@ -68,7 +68,7 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 
 	private ConceptMapMappings toCollectionResource(SnomedReferenceSetMembers referenceSetMembers, ResourceURI uri, BranchContext context, Options search, SnomedDisplayTermType snomedDisplayTermType) {
 		final Set<String> refSetsToFetch = referenceSetMembers.stream()
-				.map(SnomedReferenceSetMember::getReferenceSetId)
+				.map(SnomedReferenceSetMember::getRefsetId)
 				.collect(Collectors.toSet());
 		
 		final Map<String, SnomedConcept> refSetsById = SnomedRequests.prepareSearchConcept()
@@ -87,7 +87,7 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 		List<ConceptMapMapping> mappings = referenceSetMembers.stream()
 				.filter(m -> SnomedConcept.TYPE.equals(m.getReferencedComponent().getComponentType()))
 				.map(m -> {
-					return toMapping(m, uri, targetComponentsByRefSetId.get(m.getReferenceSetId()), snomedDisplayTermType, refSetsById);
+					return toMapping(m, uri, targetComponentsByRefSetId.get(m.getRefsetId()), snomedDisplayTermType, refSetsById);
 				})
 				.collect(Collectors.toList());
 		
@@ -204,13 +204,13 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 		mappingBuilder.mapAdvice((String) properties.get(SnomedRf2Headers.FIELD_MAP_ADVICE));
 		mappingBuilder.mapRule((String) properties.get(SnomedRf2Headers.FIELD_MAP_RULE));
 		
-		final SnomedConcept referenceSet = refSetsByIds.get(member.getReferenceSetId());
+		final SnomedConcept referenceSet = refSetsByIds.get(member.getRefsetId());
 
 		return mappingBuilder
 				.uri(ComponentURI.of(codeSystemURI, SnomedReferenceSetMember.TYPE, member.getId()))
 				.containerIconId(referenceSet.getIconId())
 				.containerTerm(referenceSet.getPt().getTerm())
-				.containerSetURI(ComponentURI.of(codeSystemURI, SnomedConcept.REFSET_TYPE, member.getReferenceSetId()))
+				.containerSetURI(ComponentURI.of(codeSystemURI, SnomedConcept.REFSET_TYPE, member.getRefsetId()))
 				.sourceIconId(iconId)
 				.sourceTerm(term)
 				.sourceComponentURI(ComponentURI.of(codeSystemURI, componentType, member.getReferencedComponentId()))

@@ -387,7 +387,7 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 		switch (refSetType) {
 		case ASSOCIATION:
 			return Json.object(
-				SnomedRf2Headers.FIELD_TARGET_COMPONENT, Json.object("id", Concepts.NAMESPACE_ROOT)
+				SnomedRf2Headers.FIELD_TARGET_COMPONENT_ID, Concepts.NAMESPACE_ROOT
 			);
 		case ATTRIBUTE_VALUE:
 			return Json.object(
@@ -494,7 +494,7 @@ public class SnomedRefSetMemberParameterizedTest extends AbstractSnomedApiTest {
 		switch (refSetType) {
 		case ASSOCIATION:
 			return Json.object(
-				SnomedRf2Headers.FIELD_TARGET_COMPONENT, ""
+				SnomedRf2Headers.FIELD_TARGET_COMPONENT_ID, ""
 			);
 		case ATTRIBUTE_VALUE:
 			return Json.object(

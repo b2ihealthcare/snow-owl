@@ -283,7 +283,7 @@ public class ConceptMapSearchMappingRequestSnomedMapTypeReferenceSetTest {
 	private void createSimpleMapTypeRefSetMember(final String rfId, final String sourceCode, final String targetCode) {
 		SnomedRequests.prepareNewMember()
 			.setId(UUID.randomUUID().toString())
-			.setReferenceSetId(rfId)
+			.setRefsetId(rfId)
 			.setReferencedComponentId(sourceCode)
 			.setActive(true)
 			.setModuleId(Concepts.MODULE_SCT_CORE)

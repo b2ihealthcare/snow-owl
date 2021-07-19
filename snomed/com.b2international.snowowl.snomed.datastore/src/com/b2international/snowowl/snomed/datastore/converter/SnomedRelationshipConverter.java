@@ -56,7 +56,7 @@ public final class SnomedRelationshipConverter extends BaseRevisionResourceConve
 		result.setModuleId(input.getModuleId());
 		result.setIconId(input.getIconId());
 		result.setReleased(input.isReleased());
-		result.setGroup(input.getGroup());
+		result.setRelationshipGroup(input.getRelationshipGroup());
 		result.setUnionGroup(input.getUnionGroup());
 		result.setDestinationId(input.getDestinationId());
 		result.setValueAsObject(input.getValueAsObject());

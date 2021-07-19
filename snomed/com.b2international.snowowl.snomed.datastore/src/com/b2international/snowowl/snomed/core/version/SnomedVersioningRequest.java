@@ -155,7 +155,7 @@ public final class SnomedVersioningRequest extends VersioningRequest {
 			final SnomedDocument.Builder<?, ?> updatedComponent;
 			if (componentToVersion instanceof SnomedConceptDocument) {
 				final SnomedConceptDocument concept = (SnomedConceptDocument) componentToVersion;
-				componentIdsByReferringModule.put(concept.getModuleId(), concept.isPrimitive() ? Concepts.PRIMITIVE : Concepts.FULLY_DEFINED);
+				componentIdsByReferringModule.put(concept.getModuleId(), concept.getDefinitionStatusId());
 				updatedComponent = SnomedConceptDocument.builder(concept);
 			} else if (componentToVersion instanceof SnomedDescriptionIndexEntry) {
 				final SnomedDescriptionIndexEntry description = (SnomedDescriptionIndexEntry) componentToVersion;
@@ -176,7 +176,7 @@ public final class SnomedVersioningRequest extends VersioningRequest {
 				updatedComponent = SnomedRelationshipIndexEntry.builder(relationship);
 			} else if (componentToVersion instanceof SnomedRefSetMemberIndexEntry) {
 				final SnomedRefSetMemberIndexEntry member = (SnomedRefSetMemberIndexEntry) componentToVersion;
-				componentIdsByReferringModule.put(member.getModuleId(), member.getReferenceSetId());
+				componentIdsByReferringModule.put(member.getModuleId(), member.getRefsetId());
 				
 				registerIfConcept(componentIdsByReferringModule, member.getModuleId(), member.getReferencedComponentId());
 				
@@ -234,7 +234,7 @@ public final class SnomedVersioningRequest extends VersioningRequest {
 					updatedMember = SnomedRefSetMemberIndexEntry.builder()
 							.id(UUID.randomUUID().toString())
 							.active(true)
-							.referenceSetId(Concepts.REFSET_MODULE_DEPENDENCY_TYPE)
+							.refsetId(Concepts.REFSET_MODULE_DEPENDENCY_TYPE)
 							.referenceSetType(SnomedRefSetType.MODULE_DEPENDENCY)
 							.moduleId(source)
 							.referencedComponentId(target);

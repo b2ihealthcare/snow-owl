@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2017-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,10 +30,10 @@ final class SnomedAssociationMemberUpdateDelegate extends SnomedRefSetMemberUpda
 
 	@Override
 	boolean execute(SnomedRefSetMemberIndexEntry original, SnomedRefSetMemberIndexEntry.Builder member, TransactionContext context) {
-		String newTargetComponentId = getComponentId(SnomedRf2Headers.FIELD_TARGET_COMPONENT);
+		String newTargetComponentId = getComponentId(SnomedRf2Headers.FIELD_TARGET_COMPONENT_ID);
 
-		if (newTargetComponentId != null && !newTargetComponentId.equals(original.getTargetComponent())) {
-			member.targetComponent(newTargetComponentId);
+		if (newTargetComponentId != null && !newTargetComponentId.equals(original.getTargetComponentId())) {
+			member.targetComponentId(newTargetComponentId);
 			return true;
 		} else {
 			return false;

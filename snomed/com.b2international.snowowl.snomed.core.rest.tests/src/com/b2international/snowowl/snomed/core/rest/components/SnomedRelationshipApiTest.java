@@ -246,7 +246,7 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 	public void updateGroup() {
 		String relationshipId = createNewRelationship(branchPath);
 		Json requestBody = Json.object(
-			"group", 99,
+			"relationshipGroup", 99,
 			"commitComment", "Updated relationship group"
 		);
 
@@ -254,14 +254,14 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 			.statusCode(204);
 		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId)
 			.statusCode(200)
-			.body("group", equalTo(99));
+			.body("relationshipGroup", equalTo(99));
 	}
 
 	@Test
 	public void updateGroupToInvalidValue() {
 		String relationshipId = createNewRelationship(branchPath);
 		Json requestBody = Json.object(
-			"group", -5,
+			"relationshipGroup", -5,
 			"commitComment", "Updated relationship group to invalid value"
 		);
 
@@ -269,7 +269,7 @@ public class SnomedRelationshipApiTest extends AbstractSnomedApiTest {
 			.statusCode(400);
 		getComponent(branchPath, SnomedComponentType.RELATIONSHIP, relationshipId)
 			.statusCode(200)
-			.body("group", equalTo(0));
+			.body("relationshipGroup", equalTo(0));
 	}
 
 	@Test

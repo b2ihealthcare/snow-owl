@@ -483,7 +483,7 @@ final class SnomedEclRefinementEvaluator {
 				.filterByValueType(value.type()) 
 				.filterByValue(operator, value)
 				.setEclExpressionForm(expressionForm)
-				.setFields(ID, SOURCE_ID, TYPE_ID, GROUP, VALUE_TYPE, INTEGER_VALUE, DECIMAL_VALUE, STRING_VALUE)
+				.setFields(ID, SOURCE_ID, TYPE_ID, RELATIONSHIP_GROUP, VALUE_TYPE, INTEGER_VALUE, DECIMAL_VALUE, STRING_VALUE)
 				.build(context.path())
 				.execute(context.service(IEventBus.class))
 				.then(matchingMembers -> FluentIterable.from(matchingMembers)
@@ -491,7 +491,7 @@ final class SnomedEclRefinementEvaluator {
 								input.getSourceId(), 
 								input.getTypeId(),
 								input.getValueAsObject().toObject(),
-								input.getGroup()))
+								input.getRelationshipGroup()))
 						.toSet());
 		
 		if (Trees.STATED_FORM.equals(expressionForm)) {
@@ -559,7 +559,7 @@ final class SnomedEclRefinementEvaluator {
 								owlMember.getReferencedComponentId(), 
 								r.getTypeId(), 
 								r.getValueAsObject().toObject(), 
-								r.getGroup()))
+								r.getRelationshipGroup()))
 							.forEachOrdered(axiomProperties::add);
 					});
 			});
@@ -660,7 +660,7 @@ final class SnomedEclRefinementEvaluator {
 		final ImmutableList.Builder<String> fieldsToLoad = ImmutableList.builder();
 		fieldsToLoad.add(SnomedDocument.Fields.ID, SOURCE_ID, TYPE_ID, DESTINATION_ID);
 		if (groupedRelationshipsOnly) {
-			fieldsToLoad.add(GROUP);
+			fieldsToLoad.add(RELATIONSHIP_GROUP);
 		}
 		
 		final SnomedRelationshipSearchRequestBuilder searchRelationships = SnomedRequests.prepareSearchRelationship()
@@ -680,7 +680,7 @@ final class SnomedEclRefinementEvaluator {
 		
 		Promise<Collection<Property>> relationshipSearch = searchRelationships.build(context.path())
 			.execute(context.service(IEventBus.class))
-			.then(input -> input.stream().map(r -> new Property(r.getSourceId(), r.getTypeId(), r.getDestinationId(), r.getGroup())).collect(Collectors.toSet()));
+			.then(input -> input.stream().map(r -> new Property(r.getSourceId(), r.getTypeId(), r.getDestinationId(), r.getRelationshipGroup())).collect(Collectors.toSet()));
 		
 		if (Trees.STATED_FORM.equals(expressionForm)) {
 			final Set<Property> axiomStatements = evalAxiomStatements(context, groupedRelationshipsOnly, sourceFilter, typeFilter, destinationFilter);
@@ -716,7 +716,7 @@ final class SnomedEclRefinementEvaluator {
 			}
 			
 			if (groupedRelationshipsOnly) {
-				axiomFilter.filter(group(1, Integer.MAX_VALUE));
+				axiomFilter.filter(relationshipGroup(1, Integer.MAX_VALUE));
 			}
 			
 			ExpressionBuilder activeOwlAxiomMemberQuery = Expressions.builder()
@@ -739,10 +739,10 @@ final class SnomedEclRefinementEvaluator {
 							.filter(classAxiom -> {
 								return (typeIds == null || typeIds.contains(classAxiom.getTypeId())) 
 										&& (destinationIds == null || destinationIds.contains(classAxiom.getDestinationId()))
-										&& (!groupedRelationshipsOnly || classAxiom.getGroup() >= 1);
+										&& (!groupedRelationshipsOnly || classAxiom.getRelationshipGroup() >= 1);
 							})
 							.map(classAxiom -> {
-								return new Property(owlMember.getReferencedComponentId(), classAxiom.getTypeId(), classAxiom.getDestinationId(), classAxiom.getGroup());
+								return new Property(owlMember.getReferencedComponentId(), classAxiom.getTypeId(), classAxiom.getDestinationId(), classAxiom.getRelationshipGroup());
 							});
 				})
 				.collect(Collectors.toSet());

@@ -322,30 +322,30 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 		
 		SnomedConcept oldRoot = getComponent(branchPath, SnomedComponentType.CONCEPT, Concepts.ROOT_CONCEPT, "members()").extract().as(SnomedConcept.class);
 		assertTrue(oldRoot.getMembers().getItems().stream()
-			.noneMatch(m -> m.getReferenceSetId().equals(Concepts.REFSET_OWL_AXIOM) || m.getReferenceSetId().equals(Concepts.REFSET_OWL_ONTOLOGY)));
+			.noneMatch(m -> m.getRefsetId().equals(Concepts.REFSET_OWL_AXIOM) || m.getRefsetId().equals(Concepts.REFSET_OWL_ONTOLOGY)));
 		
 		importArchive("SnomedCT_Release_INT_20170731_new_owl_expression_members.zip");
 		SnomedConcept root = getComponent(branchPath, SnomedComponentType.CONCEPT, Concepts.ROOT_CONCEPT, "members()").extract().as(SnomedConcept.class);
 		
 		Optional<SnomedReferenceSetMember> axiomMember = root.getMembers().getItems().stream()
-			.filter(m -> m.getReferenceSetId().equals(Concepts.REFSET_OWL_AXIOM))
+			.filter(m -> m.getRefsetId().equals(Concepts.REFSET_OWL_AXIOM))
 			.findFirst();
 		
 		assertTrue(axiomMember.isPresent());
 		assertEquals("ec2cc6be-a10b-44b1-a2cc-42a3f11d406e", axiomMember.get().getId());
 		assertEquals(Concepts.MODULE_SCT_CORE, axiomMember.get().getModuleId());
-		assertEquals(Concepts.REFSET_OWL_AXIOM, axiomMember.get().getReferenceSetId());
+		assertEquals(Concepts.REFSET_OWL_AXIOM, axiomMember.get().getRefsetId());
 		assertEquals(Concepts.ROOT_CONCEPT, axiomMember.get().getReferencedComponent().getId());
 		assertEquals(OWL_EXPRESSION, axiomMember.get().getProperties().get(SnomedRf2Headers.FIELD_OWL_EXPRESSION));
 		
 		Optional<SnomedReferenceSetMember> ontologyMember = root.getMembers().getItems().stream()
-				.filter(m -> m.getReferenceSetId().equals(Concepts.REFSET_OWL_ONTOLOGY))
+				.filter(m -> m.getRefsetId().equals(Concepts.REFSET_OWL_ONTOLOGY))
 				.findFirst();
 			
 		assertTrue(ontologyMember.isPresent());
 		assertEquals("f81c24fb-c40a-4b28-9adb-85f748f71395", ontologyMember.get().getId());
 		assertEquals(Concepts.MODULE_SCT_CORE, ontologyMember.get().getModuleId());
-		assertEquals(Concepts.REFSET_OWL_ONTOLOGY, ontologyMember.get().getReferenceSetId());
+		assertEquals(Concepts.REFSET_OWL_ONTOLOGY, ontologyMember.get().getRefsetId());
 		assertEquals(Concepts.ROOT_CONCEPT, ontologyMember.get().getReferencedComponent().getId());
 		assertEquals("Ontology(<http://snomed.info/sct/900000000000207008>)", ontologyMember.get().getProperties().get(SnomedRf2Headers.FIELD_OWL_EXPRESSION));
 	}
@@ -358,10 +358,10 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 				.as(SnomedConcept.class);
 		
 		assertTrue(StreamSupport.stream(rootConcept.getMembers().spliterator(), false).noneMatch(m -> {
-			return m.getReferenceSetId().equals(Concepts.REFSET_MRCM_DOMAIN_INTERNATIONAL) ||
-			m.getReferenceSetId().equals(Concepts.REFSET_MRCM_ATTRIBUTE_DOMAIN_INTERNATIONAL) ||
-			m.getReferenceSetId().equals(Concepts.REFSET_MRCM_ATTRIBUTE_RANGE_INTERNATIONAL) ||
-			m.getReferenceSetId().equals(Concepts.REFSET_MRCM_MODULE_SCOPE);
+			return m.getRefsetId().equals(Concepts.REFSET_MRCM_DOMAIN_INTERNATIONAL) ||
+			m.getRefsetId().equals(Concepts.REFSET_MRCM_ATTRIBUTE_DOMAIN_INTERNATIONAL) ||
+			m.getRefsetId().equals(Concepts.REFSET_MRCM_ATTRIBUTE_RANGE_INTERNATIONAL) ||
+			m.getRefsetId().equals(Concepts.REFSET_MRCM_MODULE_SCOPE);
 		}));
 		
 		importArchive("SnomedCT_Release_INT_20170731_new_mrcm_members.zip");
@@ -371,7 +371,7 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 				.as(SnomedConcept.class);
 		
 		Optional<SnomedReferenceSetMember> mrcmDomainMemberCandidate = StreamSupport.stream(newRootConcept.getMembers().spliterator(), false)
-			.filter(m -> m.getReferenceSetId().equals(Concepts.REFSET_MRCM_DOMAIN_INTERNATIONAL))
+			.filter(m -> m.getRefsetId().equals(Concepts.REFSET_MRCM_DOMAIN_INTERNATIONAL))
 			.findFirst();
 		
 		assertTrue(mrcmDomainMemberCandidate.isPresent());
@@ -379,7 +379,7 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 		
 		assertEquals("28ecaa32-8f0e-4ff8-b6b1-b642e40519d8", mrcmDomainMember.getId());
 		assertEquals(Concepts.MODULE_SCT_MODEL_COMPONENT, mrcmDomainMember.getModuleId());
-		assertEquals(Concepts.REFSET_MRCM_DOMAIN_INTERNATIONAL, mrcmDomainMember.getReferenceSetId());
+		assertEquals(Concepts.REFSET_MRCM_DOMAIN_INTERNATIONAL, mrcmDomainMember.getRefsetId());
 		assertEquals(Concepts.ROOT_CONCEPT, mrcmDomainMember.getReferencedComponent().getId());
 		Map<String, Object> domainMemberProps = mrcmDomainMember.getProperties();
 		assertEquals("domainConstraint", domainMemberProps.get(SnomedRf2Headers.FIELD_MRCM_DOMAIN_CONSTRAINT));
@@ -391,7 +391,7 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 		assertEquals("guideURL", domainMemberProps.get(SnomedRf2Headers.FIELD_MRCM_EDITORIAL_GUIDE_REFERENCE));
 		
 		Optional<SnomedReferenceSetMember> mrcmAttributeDomainMemberCandidate = StreamSupport.stream(newRootConcept.getMembers().spliterator(), false)
-				.filter(m -> m.getReferenceSetId().equals(Concepts.REFSET_MRCM_ATTRIBUTE_DOMAIN_INTERNATIONAL))
+				.filter(m -> m.getRefsetId().equals(Concepts.REFSET_MRCM_ATTRIBUTE_DOMAIN_INTERNATIONAL))
 				.findFirst();
 			
 		assertTrue(mrcmAttributeDomainMemberCandidate.isPresent());
@@ -399,7 +399,7 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 		
 		assertEquals("126bf3f1-4f34-439d-ba0a-a832824d072a", mrcmAttributeDomainMember.getId());
 		assertEquals(Concepts.MODULE_SCT_MODEL_COMPONENT, mrcmAttributeDomainMember.getModuleId());
-		assertEquals(Concepts.REFSET_MRCM_ATTRIBUTE_DOMAIN_INTERNATIONAL, mrcmAttributeDomainMember.getReferenceSetId());
+		assertEquals(Concepts.REFSET_MRCM_ATTRIBUTE_DOMAIN_INTERNATIONAL, mrcmAttributeDomainMember.getRefsetId());
 		assertEquals(Concepts.ROOT_CONCEPT, mrcmAttributeDomainMember.getReferencedComponent().getId());
 		Map<String, Object> attributeDomainMemberProps = mrcmAttributeDomainMember.getProperties();
 		assertEquals(Concepts.ROOT_CONCEPT, attributeDomainMemberProps.get(SnomedRf2Headers.FIELD_MRCM_DOMAIN_ID));
@@ -410,7 +410,7 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 		assertEquals(Concepts.ROOT_CONCEPT, attributeDomainMemberProps.get(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID));
 		
 		Optional<SnomedReferenceSetMember> mrcmAttributeRangeMemberCandidate = StreamSupport.stream(newRootConcept.getMembers().spliterator(), false)
-				.filter(m -> m.getReferenceSetId().equals(Concepts.REFSET_MRCM_ATTRIBUTE_RANGE_INTERNATIONAL))
+				.filter(m -> m.getRefsetId().equals(Concepts.REFSET_MRCM_ATTRIBUTE_RANGE_INTERNATIONAL))
 				.findFirst();
 			
 		assertTrue(mrcmAttributeRangeMemberCandidate.isPresent());
@@ -418,7 +418,7 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 		
 		assertEquals("ae090cc3-2827-4e39-80c6-364435d30c17", mrcmAttributeRangeMember.getId());
 		assertEquals(Concepts.MODULE_SCT_MODEL_COMPONENT, mrcmAttributeRangeMember.getModuleId());
-		assertEquals(Concepts.REFSET_MRCM_ATTRIBUTE_RANGE_INTERNATIONAL, mrcmAttributeRangeMember.getReferenceSetId());
+		assertEquals(Concepts.REFSET_MRCM_ATTRIBUTE_RANGE_INTERNATIONAL, mrcmAttributeRangeMember.getRefsetId());
 		assertEquals(Concepts.ROOT_CONCEPT, mrcmAttributeRangeMember.getReferencedComponent().getId());
 		Map<String, Object> attributeRangeMemberProps = mrcmAttributeRangeMember.getProperties();
 		assertEquals("rangeConstraint", attributeRangeMemberProps.get(SnomedRf2Headers.FIELD_MRCM_RANGE_CONSTRAINT));
@@ -427,7 +427,7 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 		assertEquals(Concepts.ROOT_CONCEPT, attributeRangeMemberProps.get(SnomedRf2Headers.FIELD_MRCM_CONTENT_TYPE_ID));
 		
 		Optional<SnomedReferenceSetMember> mrcmModuleScopeMemberCandidate = StreamSupport.stream(newRootConcept.getMembers().spliterator(), false)
-				.filter(m -> m.getReferenceSetId().equals(Concepts.REFSET_MRCM_MODULE_SCOPE))
+				.filter(m -> m.getRefsetId().equals(Concepts.REFSET_MRCM_MODULE_SCOPE))
 				.findFirst();
 			
 		assertTrue(mrcmModuleScopeMemberCandidate.isPresent());
@@ -435,7 +435,7 @@ public class SnomedImportApiTest extends AbstractSnomedApiTest {
 		
 		assertEquals("52d29f1b-f7a3-4a0f-828c-383c6259c3f5", mrmcModuleScopeMember.getId());
 		assertEquals(Concepts.MODULE_SCT_MODEL_COMPONENT, mrmcModuleScopeMember.getModuleId());
-		assertEquals(Concepts.REFSET_MRCM_MODULE_SCOPE, mrmcModuleScopeMember.getReferenceSetId());
+		assertEquals(Concepts.REFSET_MRCM_MODULE_SCOPE, mrmcModuleScopeMember.getRefsetId());
 		assertEquals(Concepts.ROOT_CONCEPT, mrmcModuleScopeMember.getReferencedComponent().getId());
 		assertEquals(Concepts.REFSET_MRCM_DOMAIN_INTERNATIONAL, mrmcModuleScopeMember.getProperties().get(SnomedRf2Headers.FIELD_MRCM_RULE_REFSET_ID));
 	}

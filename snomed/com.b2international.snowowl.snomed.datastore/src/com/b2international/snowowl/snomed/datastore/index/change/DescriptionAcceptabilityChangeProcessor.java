@@ -59,7 +59,7 @@ public class DescriptionAcceptabilityChangeProcessor {
 		newAndDirtyMembers.forEach(member -> {
 			if (member.isActive()) {
 				final String uuid = member.getId();
-				final String refSetId = member.getReferenceSetId();
+				final String refSetId = member.getRefsetId();
 				final RefSetMemberChange change = new RefSetMemberChange(uuid, refSetId, MemberChangeKind.ADDED, member.isActive());
 				registerChange(preferredMemberChanges, acceptableMemberChanges, member.getAcceptabilityId(), member.getReferencedComponentId(), change);
 			}
@@ -81,7 +81,7 @@ public class DescriptionAcceptabilityChangeProcessor {
 		
 		for (SnomedRefSetMemberIndexEntry member : dirtyMembers) {
 			final String uuid = member.getId();
-			final String refSetId = member.getReferenceSetId();
+			final String refSetId = member.getRefsetId();
 			final RefSetMemberChange change = new RefSetMemberChange(uuid, refSetId, MemberChangeKind.REMOVED, member.isActive());
 			final SnomedRefSetMemberIndexEntry before = currentRevisionsByMemberId.get(member.getId());
 			if (before != null) {
@@ -104,7 +104,7 @@ public class DescriptionAcceptabilityChangeProcessor {
 		for (final SnomedRefSetMemberIndexEntry before : detachedLanguageMembers) {
 			if (before.isActive()) {
 				final String uuid = before.getId();
-				final String refSetId = before.getReferenceSetId();
+				final String refSetId = before.getRefsetId();
 				final String referencedComponentId = before.getReferencedComponentId();
 				final String beforeAcceptabilityId = before.getAcceptabilityId();
 				final RefSetMemberChange change = new RefSetMemberChange(uuid, refSetId, MemberChangeKind.REMOVED, before.isActive());

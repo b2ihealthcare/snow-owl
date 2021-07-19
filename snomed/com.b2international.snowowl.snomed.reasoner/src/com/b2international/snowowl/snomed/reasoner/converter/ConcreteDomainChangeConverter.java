@@ -206,7 +206,7 @@ public final class ConcreteDomainChangeConverter
 							// reasonerMember.setCharacteristicTypeId(...) is already set
 							// reasonerMember.setGroup(...) is already set
 							// reasonerMember.setReferencedComponent(...) is already set (or expanded)
-							reasonerMember.setReferenceSetId(expandedMember.getReferenceSetId());
+							reasonerMember.setReferenceSetId(expandedMember.getRefsetId());
 							// reasonerMember.setReleased(...) is already set
 							reasonerMember.setSerializedValue((String) expandedProperties.get(SnomedRf2Headers.FIELD_VALUE));
 							reasonerMember.setTypeId((String) expandedProperties.get(SnomedRf2Headers.FIELD_TYPE_ID));
@@ -221,7 +221,7 @@ public final class ConcreteDomainChangeConverter
 							reasonerMember.setCharacteristicTypeId((String) expandedProperties.get(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID));
 							reasonerMember.setGroup((Integer) expandedProperties.get(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP));
 							// reasonerMember.setReferencedComponent(...) is already set (or expanded)
-							reasonerMember.setReferenceSetId(expandedMember.getReferenceSetId());
+							reasonerMember.setReferenceSetId(expandedMember.getRefsetId());
 							// reasonerMember.setReleased(...) is already set
 							// reasonerMember.setSerializedValue(...) is already set
 							reasonerMember.setTypeId((String) expandedProperties.get(SnomedRf2Headers.FIELD_TYPE_ID)); 
@@ -236,7 +236,7 @@ public final class ConcreteDomainChangeConverter
 							reasonerMember.setCharacteristicTypeId((String) expandedProperties.get(SnomedRf2Headers.FIELD_CHARACTERISTIC_TYPE_ID));
 							reasonerMember.setGroup((Integer) expandedProperties.get(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP));
 							// reasonerMember.setReferencedComponent(...) is already set (or expanded)
-							reasonerMember.setReferenceSetId(expandedMember.getReferenceSetId());
+							reasonerMember.setReferenceSetId(expandedMember.getRefsetId());
 							// reasonerMember.setReleased(...) is already set
 							reasonerMember.setSerializedValue((String) expandedProperties.get(SnomedRf2Headers.FIELD_VALUE));
 							reasonerMember.setTypeId((String) expandedProperties.get(SnomedRf2Headers.FIELD_TYPE_ID)); 

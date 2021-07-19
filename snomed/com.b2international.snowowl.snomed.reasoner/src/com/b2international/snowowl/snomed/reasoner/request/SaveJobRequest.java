@@ -716,7 +716,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 		final boolean destinationNegated = relationship.isDestinationNegated();
 		final RelationshipValue value = relationship.getValueAsObject();
 		final String characteristicTypeId = relationship.getCharacteristicTypeId();
-		final int group = relationship.getGroup();
+		final int group = relationship.getRelationshipGroup();
 		final int unionGroup = relationship.getUnionGroup();
 		final String modifier = relationship.getModifierId();
 		
@@ -749,7 +749,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 				.setDestinationId(destinationId)
 				.setDestinationNegated(destinationNegated)
 				.setValue(value)
-				.setGroup(group)
+				.setRelationshipGroup(group)
 				.setUnionGroup(unionGroup)
 				.setModifierId(modifier)
 				.setModuleId(moduleId);
@@ -778,7 +778,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 			final SnomedReferenceSetMember member) {
 		
 		final String referencedComponentId = member.getReferencedComponent().getId();
-		final String referenceSetId = member.getReferenceSetId();
+		final String referenceSetId = member.getRefsetId();
 		final String typeId = (String) member.getProperties().get(SnomedRf2Headers.FIELD_TYPE_ID);
 		final String serializedValue = (String) member.getProperties().get(SnomedRf2Headers.FIELD_VALUE);
 		final int group = (Integer) member.getProperties().get(SnomedRf2Headers.FIELD_RELATIONSHIP_GROUP);
@@ -804,7 +804,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 				.setActive(true)
 				.setModuleId(moduleId)
 				.setReferencedComponentId(referencedComponentId)
-				.setReferenceSetId(referenceSetId)
+				.setRefsetId(referenceSetId)
 				.setProperties(ImmutableMap.of(
 						SnomedRf2Headers.FIELD_TYPE_ID, typeId,
 						SnomedRf2Headers.FIELD_VALUE, serializedValue,
@@ -842,7 +842,7 @@ final class SaveJobRequest implements Request<BranchContext, Boolean>, BranchAcc
 		final SnomedRelationshipUpdateRequestBuilder updateRequest = SnomedRequests
 				.prepareUpdateRelationship(relationship.getOriginId())
 				.setModuleId(namespaceAndModuleAssigner.getRelationshipModuleId(relationship.getSourceId()))
-				.setGroup(relationship.getGroup());
+				.setRelationshipGroup(relationship.getGroup());
 		
 		bulkRequestBuilder.add(updateRequest);
 	}

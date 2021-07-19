@@ -80,7 +80,7 @@ public class TestReferenceSetCreator {
 			.setId(UUID.randomUUID().toString())
 			.setModuleId(Concepts.MODULE_SCT_CORE)
 			.setActive(true)
-			.setReferenceSetId(refsetId)
+			.setRefsetId(refsetId)
 			.setReferencedComponentId(referencedConceptId)
 			.build(branchPath, RestExtensions.USER, "FHIR Automated Test Simple Type Refset Member")
 			.execute(Services.bus())
@@ -164,7 +164,7 @@ public class TestReferenceSetCreator {
 		memberMap.put(SnomedRf2Headers.FIELD_QUERY, "<<410607006"); //Organism (SNOMED MINI)
 		
 		String memberId = SnomedRequests.prepareNewMember()
-			.setReferenceSetId(refsetId)
+			.setRefsetId(refsetId)
 			.setModuleId(Concepts.MODULE_SCT_CORE)
 			.setActive(true)
 			.setProperties(memberMap)

@@ -668,7 +668,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 		
 		Builder builder = createValueSetBuilder(componentURI, refsetMember, codeSystemVersion);
 
-		String narrativeText = String.format("<div>This is the Value Set representation of the reference set member [%s] from the Query Type Reference Set [%s].</div>", refsetMember.getId(), refsetMember.getReferenceSetId());
+		String narrativeText = String.format("<div>This is the Value Set representation of the reference set member [%s] from the Query Type Reference Set [%s].</div>", refsetMember.getId(), refsetMember.getRefsetId());
 		
 		builder.text(Narrative.builder()
 			.status(NarrativeStatus.GENERATED)
@@ -940,7 +940,7 @@ public final class SnomedValueSetApiProvider extends SnomedFhirApiProvider imple
 		
 		Builder builder = createValueSetBuilder(componentURI, refsetMember, codeSystemVersion);
 
-		String narrativeText = String.format("<div>This is the Value Set representation of the reference set member [%s] from the Query Type Reference Set [%s].</div>", refsetMember.getId(), refsetMember.getReferenceSetId());
+		String narrativeText = String.format("<div>This is the Value Set representation of the reference set member [%s] from the Query Type Reference Set [%s].</div>", refsetMember.getId(), refsetMember.getRefsetId());
 		
 		builder.text(Narrative.builder()
 			.status(NarrativeStatus.GENERATED)

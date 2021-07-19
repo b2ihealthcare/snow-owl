@@ -34,7 +34,7 @@ public final class Rf2AttributeValueRefSetContentType implements Rf2RefSetConten
 	@Override
 	public void resolve(SnomedReferenceSetMember component, String[] values) {
 		component.setType(SnomedRefSetType.ATTRIBUTE_VALUE);
-		component.setReferenceSetId(values[4]);
+		component.setRefsetId(values[4]);
 		// XXX actual type is not relevant here
 		component.setReferencedComponent(new SnomedConcept(values[5]));
 		component.setProperties(ImmutableMap.of(SnomedRf2Headers.FIELD_VALUE_ID, values[6]));

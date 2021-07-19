@@ -31,7 +31,7 @@ public class SnomedRelationshipRestInput extends AbstractSnomedComponentRestInpu
 	private String destinationId;
 	private boolean destinationNegated = false;
 	private String value;
-	private int group = 0;
+	private int relationshipGroup = 0;
 	private int unionGroup = 0;
 	private String characteristicTypeId = Concepts.STATED_RELATIONSHIP;
 	private String modifierId = Concepts.EXISTENTIAL_RESTRICTION_MODIFIER;
@@ -56,8 +56,8 @@ public class SnomedRelationshipRestInput extends AbstractSnomedComponentRestInpu
 		return value;
 	}
 
-	public int getGroup() {
-		return group;
+	public int getRelationshipGroup() {
+		return relationshipGroup;
 	}
 
 	public int getUnionGroup() {
@@ -92,8 +92,8 @@ public class SnomedRelationshipRestInput extends AbstractSnomedComponentRestInpu
 		this.value = value;
 	}
 
-	public void setGroup(final int group) {
-		this.group = group;
+	public void setRelationshipGroup(final int relationshipGroup) {
+		this.relationshipGroup = relationshipGroup;
 	}
 
 	public void setUnionGroup(final int unionGroup) {
@@ -121,7 +121,7 @@ public class SnomedRelationshipRestInput extends AbstractSnomedComponentRestInpu
 			.setDestinationId(destinationId)
 			.setDestinationNegated(destinationNegated)
 			.setValue(RelationshipValue.fromLiteral(value))
-			.setGroup(group)
+			.setRelationshipGroup(relationshipGroup)
 			.setUnionGroup(unionGroup)
 			.setCharacteristicTypeId(characteristicTypeId)
 			.setModifierId(modifierId);
@@ -137,7 +137,7 @@ public class SnomedRelationshipRestInput extends AbstractSnomedComponentRestInpu
 			.add("destinationId", destinationId)
 			.add("destinationNegated", destinationNegated)
 			.add("value", value)
-			.add("group", group)
+			.add("relationshipGroup", relationshipGroup)
 			.add("unionGroup", unionGroup)
 			.add("characteristicTypeId", characteristicTypeId)
 			.add("modifierId", modifierId)

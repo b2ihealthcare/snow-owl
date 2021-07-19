@@ -201,7 +201,7 @@ public class SnomedRefSetDSVExportTest {
 		SnomedRequests.prepareNewMember()
 				.setModuleId(Concepts.MODULE_SCT_CORE)
 				.setActive(true)
-				.setReferenceSetId(refsetId)
+				.setRefsetId(refsetId)
 				.setReferencedComponentId(referencedComponentId)
 				.setProperties(properties)
 				.setId(UUID.randomUUID().toString())

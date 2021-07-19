@@ -15,7 +15,10 @@
  */
 package com.b2international.snowowl.snomed.datastore.request;
 
-import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.*;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.ancestors;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.parents;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.statedAncestors;
+import static com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument.Expressions.statedParents;
 import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.Collection;
@@ -35,7 +38,6 @@ import com.b2international.snowowl.core.repository.RevisionDocument;
 import com.b2international.snowowl.core.request.TermFilter;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
-import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.ecl.EclExpression;
@@ -52,6 +54,8 @@ import com.google.common.collect.ImmutableMap;
  */
 public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<SnomedConcepts, SnomedConceptDocument> {
 
+	private static final long serialVersionUID = 1L;
+	
 	private static final float MIN_DOI_VALUE = 1.05f;
 	private static final float MAX_DOI_VALUE = 10288.383f;
 	
@@ -133,26 +137,14 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 		addReleasedClause(queryBuilder);
 		addIdFilter(queryBuilder, RevisionDocument.Expressions::ids);
 		addEclFilter(context, queryBuilder, SnomedSearchRequest.OptionKey.MODULE, SnomedDocument.Expressions::modules);
+		addEclFilter(context, queryBuilder, OptionKey.DEFINITION_STATUS, SnomedConceptDocument.Expressions::definitionStatusIds);
 		addNamespaceFilter(queryBuilder);
 		addEffectiveTimeClause(queryBuilder);
 		addActiveMemberOfClause(context, queryBuilder);
 		addMemberOfClause(context, queryBuilder);
 		
-		if (containsKey(OptionKey.DEFINITION_STATUS)) {
-			if (Concepts.PRIMITIVE.equals(getString(OptionKey.DEFINITION_STATUS))) {
-				queryBuilder.filter(primitive());
-			} else if (Concepts.FULLY_DEFINED.equals(getString(OptionKey.DEFINITION_STATUS))) {
-				queryBuilder.filter(defining());
-			}
-		}
-		
-		if (containsKey(OptionKey.PARENT)) {
-			queryBuilder.filter(parents(getCollection(OptionKey.PARENT, String.class)));
-		}
-		
-		if (containsKey(OptionKey.STATED_PARENT)) {
-			queryBuilder.filter(statedParents(getCollection(OptionKey.STATED_PARENT, String.class)));
-		}
+		addFilter(queryBuilder, OptionKey.PARENT, String.class, SnomedConceptDocument.Expressions::parents);
+		addFilter(queryBuilder, OptionKey.STATED_PARENT, String.class, SnomedConceptDocument.Expressions::statedParents);
 		
 		if (containsKey(OptionKey.ANCESTOR)) {
 			final Collection<String> ancestorIds = getCollection(OptionKey.ANCESTOR, String.class);

@@ -48,7 +48,7 @@ final class Rf2RelationshipContentType implements Rf2ContentType<SnomedRelations
 	public void resolve(SnomedRelationship component, String[] values) {
 		component.setSourceId(values[4]);
 		component.setDestinationId(values[5]);
-		component.setGroup(Integer.parseInt(values[6]));
+		component.setRelationshipGroup(Integer.parseInt(values[6]));
 		component.setTypeId(values[7]);
 		component.setCharacteristicTypeId(values[8]);
 		component.setModifierId(values[9]);

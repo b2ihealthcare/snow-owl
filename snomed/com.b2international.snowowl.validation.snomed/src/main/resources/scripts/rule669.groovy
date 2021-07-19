@@ -34,7 +34,7 @@ if (params.isUnpublishedOnly) {
 	
 	searcher.scroll(Query.select(String[].class)
 		.from(SnomedRefSetMemberIndexEntry.class)
-		.fields(SnomedRefSetMemberIndexEntry.Fields.REFERENCE_SET_ID, SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID)
+		.fields(SnomedRefSetMemberIndexEntry.Fields.REFSET_ID, SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID)
 		.where(
 			Expressions.builder()
 				.filter(SnomedRefSetMemberIndexEntry.Expressions.effectiveTime(EffectiveTimes.UNSET_EFFECTIVE_TIME))
@@ -57,7 +57,7 @@ if (params.isUnpublishedOnly) {
 	
 	// attach refset and refComp filter to reduce visibility of rule to unpublished member references
 	queryBuilder
-		.filter(SnomedRefSetMemberIndexEntry.Expressions.referenceSetId(unpublishedRefSetIds))
+		.filter(SnomedRefSetMemberIndexEntry.Expressions.refsetIds(unpublishedRefSetIds))
 		.filter(SnomedRefSetMemberIndexEntry.Expressions.referencedComponentIds(unpublishedReferencedComponentIds))
 	
 } 
@@ -67,11 +67,11 @@ def String previousMemberKey
 // search ALL relevant members by the current query and sort them by refset and refComp and moduleId
 searcher.scroll(Query.select(String[].class)
 	.from(SnomedRefSetMemberIndexEntry.class)
-	.fields(SnomedRefSetMemberIndexEntry.Fields.REFERENCE_SET_ID, SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID, SnomedDocument.Fields.MODULE_ID)
+	.fields(SnomedRefSetMemberIndexEntry.Fields.REFSET_ID, SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID, SnomedDocument.Fields.MODULE_ID)
 	.where(queryBuilder.build())
 	.sortBy(
 		SortBy.builder()
-			.sortByField(SnomedRefSetMemberIndexEntry.Fields.REFERENCE_SET_ID, Order.ASC)
+			.sortByField(SnomedRefSetMemberIndexEntry.Fields.REFSET_ID, Order.ASC)
 			.sortByField(SnomedRefSetMemberIndexEntry.Fields.REFERENCED_COMPONENT_ID, Order.ASC)
 			.sortByField(SnomedDocument.Fields.MODULE_ID, Order.ASC)
 		.build()

@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2017 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.util.Map;
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
+import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 
 /**
  * @since 4.5
@@ -40,7 +41,7 @@ public final class QueryRefSetUpdateRequestBuilder extends BaseRequestBuilder<Qu
 	}
 	
 	public QueryRefSetUpdateRequestBuilder setSource(Map<String, Object> source) {
-		return setModuleId((String) source.get("moduleId")).setReferenceSetId((String) source.get("referenceSetId"));
+		return setModuleId((String) source.get(SnomedRf2Headers.FIELD_MODULE_ID)).setReferenceSetId((String) source.get(SnomedRf2Headers.FIELD_REFSET_ID));
 	}
 
 	@Override

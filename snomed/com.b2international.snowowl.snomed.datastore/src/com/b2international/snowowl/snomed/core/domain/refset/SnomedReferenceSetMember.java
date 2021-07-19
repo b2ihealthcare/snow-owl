@@ -38,7 +38,6 @@ import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Function;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableSet;
 
 /**
  * Represents a SNOMED&nbsp;CT Reference Set Member.
@@ -83,6 +82,7 @@ public final class SnomedReferenceSetMember extends SnomedComponent {
 	 */
 	public static final class Expand {
 		public static final String REFERENCED_COMPONENT = "referencedComponent";
+		public static final String TARGET_COMPONENT = "targetComponent";
 	}
 	
 	public static final Function<SnomedReferenceSetMember, String> GET_REFERENCED_COMPONENT_ID = (member) -> member.getReferencedComponent().getId();
@@ -94,9 +94,9 @@ public final class SnomedReferenceSetMember extends SnomedComponent {
 		
 		public static final String TYPE = "type";
 		public static final String REFERENCED_COMPONENT_ID = SnomedRf2Headers.FIELD_REFERENCED_COMPONENT_ID;
-		public static final String REFSET_ID = "referencedSetId";
+		public static final String REFSET_ID = SnomedRf2Headers.FIELD_REFSET_ID;
 		
-		public static final Set<String> ALL = ImmutableSet.of(
+		public static final Set<String> ALL = Set.of(
 				// RF2 fields
 				ID,
 				ACTIVE,
@@ -112,7 +112,7 @@ public final class SnomedReferenceSetMember extends SnomedComponent {
 	
 	private SnomedRefSetType type;
 	private SnomedCoreComponent referencedComponent;
-	private String referenceSetId;
+	private String refsetId;
 	private Map<String, Object> properties = newHashMap();
 	private List<SnomedOWLRelationshipDocument> equivalentOWLRelationships;
 	private List<SnomedOWLRelationshipDocument> classOWLRelationships;
@@ -152,8 +152,8 @@ public final class SnomedReferenceSetMember extends SnomedComponent {
 	 * 
 	 * @return
 	 */
-	public String getReferenceSetId() {
-		return referenceSetId;
+	public String getRefsetId() {
+		return refsetId;
 	}
 
 	/**
@@ -182,8 +182,8 @@ public final class SnomedReferenceSetMember extends SnomedComponent {
 		this.referencedComponent = referencedComponent;
 	}
 	
-	public void setReferenceSetId(String referenceSetId) {
-		this.referenceSetId = referenceSetId;
+	public void setRefsetId(String refsetId) {
+		this.refsetId = refsetId;
 	}
 	
 	public void setProperties(Map<String, Object> properties) {
@@ -232,7 +232,7 @@ public final class SnomedReferenceSetMember extends SnomedComponent {
 				.setId(getId())
 				.setActive(isActive())
 				.setReferencedComponentId(containerId)
-				.setReferenceSetId(getReferenceSetId())
+				.setRefsetId(getRefsetId())
 				.setModuleId(getModuleId())
 				.setProperties(getProperties())
 				.build();
@@ -251,8 +251,8 @@ public final class SnomedReferenceSetMember extends SnomedComponent {
 	@Override
 	public String toString() {
 		return String.format(
-				"SnomedReferenceSetMember [type=%s, referencedComponent=%s, referenceSetId=%s, properties=%s, equivalentOWLRelationships=%s, classOWLRelationships=%s, gciOWLRelationships=%s]",
-				type, referencedComponent, referenceSetId, properties, equivalentOWLRelationships, classOWLRelationships, gciOWLRelationships);
+				"SnomedReferenceSetMember [type=%s, referencedComponent=%s, refsetId=%s, properties=%s, equivalentOWLRelationships=%s, classOWLRelationships=%s, gciOWLRelationships=%s]",
+				type, referencedComponent, refsetId, properties, equivalentOWLRelationships, classOWLRelationships, gciOWLRelationships);
 	}
 	
 	

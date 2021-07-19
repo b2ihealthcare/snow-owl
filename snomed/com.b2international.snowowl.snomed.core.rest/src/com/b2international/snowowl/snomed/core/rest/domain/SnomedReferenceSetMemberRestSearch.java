@@ -42,7 +42,7 @@ public final class SnomedReferenceSetMemberRestSearch extends ObjectRestSearch {
 	private String module;
 	
 	@Parameter(description = "The reference set identifier(s) to match, or a single ECL expression")
-	private List<String> referenceSet;
+	private List<String> refsetId;
 	
 	@Parameter(description = "The referenced component identifier(s) to match")
 	private List<String> referencedComponentId;
@@ -52,7 +52,7 @@ public final class SnomedReferenceSetMemberRestSearch extends ObjectRestSearch {
 	private List<String> acceptabilityId;
 	
 	@Parameter(description = "The target component identifier(s) to match in case of association refset members")
-	private List<String> targetComponent;
+	private List<String> targetComponentId;
 	
 	@Parameter(description = "The value identifier(s) to match in case of attribute value refset members")
 	private List<String> valueId;
@@ -120,12 +120,12 @@ public final class SnomedReferenceSetMemberRestSearch extends ObjectRestSearch {
 		this.module = module;
 	}
 
-	public List<String> getReferenceSet() {
-		return referenceSet;
+	public List<String> getRefsetId() {
+		return refsetId;
 	}
 
-	public void setReferenceSet(List<String> referenceSet) {
-		this.referenceSet = referenceSet;
+	public void setRefsetId(List<String> refsetId) {
+		this.refsetId = refsetId;
 	}
 
 	public List<String> getReferencedComponentId() {
@@ -136,12 +136,12 @@ public final class SnomedReferenceSetMemberRestSearch extends ObjectRestSearch {
 		this.referencedComponentId = referencedComponentId;
 	}
 
-	public List<String> getTargetComponent() {
-		return targetComponent;
+	public List<String> getTargetComponentId() {
+		return targetComponentId;
 	}
 	
-	public void setTargetComponent(List<String> targetComponent) {
-		this.targetComponent = targetComponent;
+	public void setTargetComponentId(List<String> targetComponentId) {
+		this.targetComponentId = targetComponentId;
 	}
 	
 	public List<String> getAcceptabilityId() {
@@ -267,8 +267,8 @@ public final class SnomedReferenceSetMemberRestSearch extends ObjectRestSearch {
 	@JsonIgnore
 	public Options toPropsFilter() {
 		OptionsBuilder propFilter = Options.builder();
-		if (!CompareUtils.isEmpty(getTargetComponent())) {
-			propFilter.put(SnomedRf2Headers.FIELD_TARGET_COMPONENT_ID, getTargetComponent());
+		if (!CompareUtils.isEmpty(getTargetComponentId())) {
+			propFilter.put(SnomedRf2Headers.FIELD_TARGET_COMPONENT_ID, getTargetComponentId());
 		}
 		if (!CompareUtils.isEmpty(getAcceptabilityId())) {
 			propFilter.put(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID, getAcceptabilityId());

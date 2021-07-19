@@ -33,25 +33,13 @@ import com.b2international.snowowl.core.domain.IComponent;
 import com.b2international.snowowl.core.request.BaseRevisionResourceConverter;
 import com.b2international.snowowl.core.request.DescendantsExpander;
 import com.b2international.snowowl.snomed.common.SnomedConstants.Concepts;
-import com.b2international.snowowl.snomed.core.domain.Acceptability;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
-import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
-import com.b2international.snowowl.snomed.core.domain.SnomedDescriptions;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationship;
-import com.b2international.snowowl.snomed.core.domain.SnomedRelationships;
-import com.b2international.snowowl.snomed.core.domain.SubclassDefinitionStatus;
+import com.b2international.snowowl.snomed.core.domain.*;
 import com.b2international.snowowl.snomed.core.domain.refset.SnomedReferenceSet;
 import com.b2international.snowowl.snomed.datastore.SnomedDescriptionUtils;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDocument;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.google.common.base.Functions;
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.ListMultimap;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
-import com.google.common.collect.TreeMultimap;
+import com.google.common.collect.*;
 
 /**
  * @since 4.5
@@ -83,7 +71,7 @@ public final class SnomedConceptConverter extends BaseRevisionResourceConverter<
 	protected SnomedConcept toResource(final SnomedConceptDocument input) {
 		final SnomedConcept result = new SnomedConcept();
 		result.setActive(input.isActive());
-		result.setDefinitionStatusId(toDefinitionStatus(input.isPrimitive()));
+		result.setDefinitionStatusId(input.getDefinitionStatusId());
 		result.setEffectiveTime(toEffectiveTime(input.getEffectiveTime()));
 		result.setId(input.getId());
 		result.setModuleId(input.getModuleId());
@@ -407,11 +395,6 @@ public final class SnomedConceptConverter extends BaseRevisionResourceConverter<
 				}
 			}
 		}
-	}
-
-	private String toDefinitionStatus(final Boolean primitive) {
-		if (primitive == null) return null;
-		return primitive ? Concepts.PRIMITIVE : Concepts.FULLY_DEFINED;
 	}
 
 	private SubclassDefinitionStatus toSubclassDefinitionStatus(final Boolean exhaustive) {

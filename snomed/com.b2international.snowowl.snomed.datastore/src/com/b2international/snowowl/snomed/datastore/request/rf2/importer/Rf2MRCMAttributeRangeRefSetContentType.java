@@ -37,7 +37,7 @@ final class Rf2MRCMAttributeRangeRefSetContentType implements Rf2RefSetContentTy
 	@Override
 	public void resolve(SnomedReferenceSetMember component, String[] values) {
 		component.setType(SnomedRefSetType.MRCM_ATTRIBUTE_RANGE);
-		component.setReferenceSetId(values[4]);
+		component.setRefsetId(values[4]);
 		// XXX actual type is not relevant here
 		component.setReferencedComponent(new SnomedConcept(values[5]));
 		

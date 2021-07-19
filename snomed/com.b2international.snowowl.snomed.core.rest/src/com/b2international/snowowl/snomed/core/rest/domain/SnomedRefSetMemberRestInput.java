@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ public class SnomedRefSetMemberRestInput {
 	private Boolean active = Boolean.TRUE;
 	private String moduleId;
 	private String referencedComponentId;
-	private String referenceSetId;
+	private String refsetId;
 	private Map<String, Object> properties = newHashMap();
 
 	@JsonAnyGetter
@@ -62,9 +62,9 @@ public class SnomedRefSetMemberRestInput {
 	public void setReferencedComponentId(String referencedComponentId) {
 		this.referencedComponentId = referencedComponentId;
 	}
-	
-	public void setReferenceSetId(String referenceSetId) {
-		this.referenceSetId = referenceSetId;
+
+	public void setRefsetId(String refsetId) {
+		this.refsetId = refsetId;
 	}
 	
 	public String getId() {
@@ -83,15 +83,15 @@ public class SnomedRefSetMemberRestInput {
 		return referencedComponentId;
 	}
 	
-	public String getReferenceSetId() {
-		return referenceSetId;
+	public String getRefsetId() {
+		return refsetId;
 	}
 
 	public SnomedRefSetMemberCreateRequestBuilder toRequestBuilder() {
 		final SnomedRefSetMemberCreateRequestBuilder req = SnomedRequests.prepareNewMember();
 		req.setId(id);
 		req.setActive(isActive());
-		req.setReferenceSetId(getReferenceSetId());
+		req.setRefsetId(getRefsetId());
 		req.setReferencedComponentId(getReferencedComponentId());
 		req.setModuleId(getModuleId());
 		req.setProperties(getProperties());

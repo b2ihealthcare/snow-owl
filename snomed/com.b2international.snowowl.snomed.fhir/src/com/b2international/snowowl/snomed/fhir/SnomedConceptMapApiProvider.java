@@ -350,7 +350,7 @@ public final class SnomedConceptMapApiProvider extends SnomedFhirApiProvider imp
 		//codingBuilder.version("VERSION");
 		
 		Match.Builder builder = Match.builder()
-			.source(snomedUri.toString() + "/id/" + member.getReferenceSetId())
+			.source(snomedUri.toString() + "/id/" + member.getRefsetId())
 			.equivalence(getEquivalence(member))
 			.concept(codingBuilder.build());
 		
