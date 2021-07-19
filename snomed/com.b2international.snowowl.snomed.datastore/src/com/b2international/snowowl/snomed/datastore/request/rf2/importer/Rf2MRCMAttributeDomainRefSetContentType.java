@@ -40,7 +40,7 @@ final class Rf2MRCMAttributeDomainRefSetContentType implements Rf2RefSetContentT
 	@Override
 	public void resolve(SnomedReferenceSetMember component, String[] values) {
 		component.setType(SnomedRefSetType.MRCM_ATTRIBUTE_DOMAIN);
-		component.setReferenceSetId(values[4]);
+		component.setRefsetId(values[4]);
 		// XXX actual type is not relevant here
 		component.setReferencedComponent(new SnomedConcept(values[5]));
 		

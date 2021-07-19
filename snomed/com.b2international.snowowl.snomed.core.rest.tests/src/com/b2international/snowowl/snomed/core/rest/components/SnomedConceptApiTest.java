@@ -575,7 +575,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		SnomedReferenceSetMember newMember = new SnomedReferenceSetMember();
 		newMember.setId(UUID.randomUUID().toString());
 		newMember.setActive(true);
-		newMember.setReferenceSetId(refSetId);
+		newMember.setRefsetId(refSetId);
 		newMember.setModuleId(Concepts.MODULE_SCT_CORE);
 
 		final List<SnomedReferenceSetMember> changedMembers = ImmutableList.<SnomedReferenceSetMember>builder()
@@ -872,7 +872,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		final SnomedReferenceSetMember newMember = new SnomedReferenceSetMember();
 		newMember.setId(UUID.randomUUID().toString());
 		newMember.setActive(true);
-		newMember.setReferenceSetId(Concepts.REFSET_OWL_AXIOM);
+		newMember.setRefsetId(Concepts.REFSET_OWL_AXIOM);
 		newMember.setProperties(
 			Json.object(SnomedRf2Headers.FIELD_OWL_EXPRESSION, String.format("EquivalentClasses(:%s ObjectIntersectionOf(:%s :%s))", conceptId, Concepts.AMBIGUOUS, Concepts.NAMESPACE_ROOT))
 		);
@@ -905,7 +905,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		final SnomedReferenceSetMember newMember = new SnomedReferenceSetMember();
 		newMember.setId(UUID.randomUUID().toString());
 		newMember.setActive(true);
-		newMember.setReferenceSetId(Concepts.REFSET_OWL_AXIOM);
+		newMember.setRefsetId(Concepts.REFSET_OWL_AXIOM);
 		newMember.setProperties(
 			Json.object(SnomedRf2Headers.FIELD_OWL_EXPRESSION, String.format("EquivalentClasses(:%s ObjectIntersectionOf(:%s :%s))", conceptId, Concepts.AMBIGUOUS, Concepts.NAMESPACE_ROOT))
 		);
@@ -944,7 +944,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		final SnomedReferenceSetMember newMember = new SnomedReferenceSetMember();
 		newMember.setId(UUID.randomUUID().toString());
 		newMember.setActive(true);
-		newMember.setReferenceSetId(Concepts.REFSET_OWL_AXIOM);
+		newMember.setRefsetId(Concepts.REFSET_OWL_AXIOM);
 		newMember.setProperties(
 			Json.object(SnomedRf2Headers.FIELD_OWL_EXPRESSION, String.format("SubClassOf(:%s :%s)", conceptId, Concepts.AMBIGUOUS))
 		);

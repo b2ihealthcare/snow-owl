@@ -38,7 +38,7 @@ final class Rf2LanguageRefSetContentType implements Rf2RefSetContentType {
 	@Override
 	public void resolve(SnomedReferenceSetMember component, String[] values) {
 		component.setType(SnomedRefSetType.LANGUAGE);
-		component.setReferenceSetId(values[4]);
+		component.setRefsetId(values[4]);
 		component.setReferencedComponent(new SnomedDescription(values[5]));
 		component.setProperties(ImmutableMap.of(SnomedRf2Headers.FIELD_ACCEPTABILITY_ID, values[6]));
 	}

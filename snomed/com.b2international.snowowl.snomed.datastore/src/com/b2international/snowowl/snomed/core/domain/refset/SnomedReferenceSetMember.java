@@ -182,8 +182,8 @@ public final class SnomedReferenceSetMember extends SnomedComponent {
 		this.referencedComponent = referencedComponent;
 	}
 	
-	public void setReferenceSetId(String referenceSetId) {
-		this.refsetId = referenceSetId;
+	public void setRefsetId(String refsetId) {
+		this.refsetId = refsetId;
 	}
 	
 	public void setProperties(Map<String, Object> properties) {

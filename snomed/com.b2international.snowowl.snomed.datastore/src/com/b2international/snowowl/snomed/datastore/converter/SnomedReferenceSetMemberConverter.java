@@ -198,7 +198,7 @@ public final class SnomedReferenceSetMemberConverter extends BaseRevisionResourc
 		member.setActive(entry.isActive());
 		member.setModuleId(entry.getModuleId());
 		member.setIconId(entry.getIconId());
-		member.setReferenceSetId(entry.getRefsetId());
+		member.setRefsetId(entry.getRefsetId());
 		member.setType(entry.getReferenceSetType());
 		member.setScore(entry.getScore());
 
