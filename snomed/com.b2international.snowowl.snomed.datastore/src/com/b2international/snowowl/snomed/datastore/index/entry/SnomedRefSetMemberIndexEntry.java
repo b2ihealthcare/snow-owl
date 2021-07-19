@@ -1399,7 +1399,7 @@ public final class SnomedRefSetMemberIndexEntry extends SnomedDocument {
 				.add("refsetId", refsetId)
 				.add("referenceSetType", referenceSetType)
 				.add("referencedComponentType", referencedComponentType)
-				.add("targetComponent", targetComponentId)
+				.add("targetComponentId", targetComponentId)
 				.add("valueId", valueId)
 				.add("dataType", dataType)
 				.add("typeId", typeId)
