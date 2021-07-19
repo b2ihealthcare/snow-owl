@@ -27,6 +27,7 @@ import com.b2international.commons.CompareUtils;
 import com.b2international.index.revision.Commit;
 import com.b2international.snowowl.core.Resource;
 import com.b2international.snowowl.core.Resources;
+import com.b2international.snowowl.core.commit.CommitInfo;
 import com.b2international.snowowl.core.commit.CommitInfos;
 import com.b2international.snowowl.core.context.ResourceRepositoryRequestBuilder;
 import com.b2international.snowowl.core.domain.RepositoryContext;
@@ -74,6 +75,7 @@ public class ResourceRestService extends AbstractRestService {
 				.filterByStatus(params.getStatus())
 				.setLimit(params.getLimit())
 				.setExpand(params.getExpand())
+				.setFields(params.getField())
 				.setSearchAfter(params.getSearchAfter())
 				.sortBy(extractSortFields(params.getSort()))
 				.buildAsync()
@@ -110,7 +112,16 @@ public class ResourceRestService extends AbstractRestService {
 	public Promise<CommitInfos> searchCommits(
 			@ParameterObject
 			final CommitInfoRestSearch params) {
-		 Request<RepositoryContext, CommitInfos> req = RepositoryRequests
+		final List<String> fields;
+		if (!CompareUtils.isEmpty(params.getField())) {
+			fields = params.getField();
+		} else if (CompareUtils.isEmpty(params.getExpand())) {
+			fields = CommitInfo.DEAFULT_FIELD_SELECTION;
+		} else {
+			fields = null;
+		}
+		
+		Request<RepositoryContext, CommitInfos> req = RepositoryRequests
 				.commitInfos()
 				.prepareSearchCommitInfo()
 				.filterByIds(params.getId())
@@ -120,7 +131,7 @@ public class ResourceRestService extends AbstractRestService {
 				.filterByBranches(params.getBranch())
 				.filterByTimestamp(params.getTimestamp())
 				.filterByTimestamp(params.getTimestampFrom(), params.getTimestampTo())
-				.setFields(CompareUtils.isEmpty(params.getExpand()) ? List.of(Commit.Fields.ID, Commit.Fields.AUTHOR, Commit.Fields.BRANCH, Commit.Fields.COMMENT, Commit.Fields.TIMESTAMP, Commit.Fields.GROUP_ID) : null)
+				.setFields(fields)
 				.setExpand(params.getExpand())
 				.setSearchAfter(params.getSearchAfter())
 				.setLimit(params.getLimit())

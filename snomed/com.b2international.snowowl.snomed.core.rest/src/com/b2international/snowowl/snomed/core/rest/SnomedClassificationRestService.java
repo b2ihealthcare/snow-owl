@@ -221,6 +221,7 @@ public class SnomedClassificationRestService extends AbstractRestService {
 		return ClassificationRequests.prepareSearchRelationshipChange()
 				.filterByClassificationId(classificationId)
 				.setExpand(expandWithRelationship)
+				.setFields(params.getField())
 				.setSearchAfter(params.getSearchAfter())
 				.setLimit(params.getLimit())
 				.build(SnomedApiConfig.REPOSITORY_ID)

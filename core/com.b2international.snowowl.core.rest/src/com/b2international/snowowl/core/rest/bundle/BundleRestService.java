@@ -67,6 +67,7 @@ public class BundleRestService extends AbstractRestService {
 				.filterByTitle(params.getTitle())
 				.setLimit(params.getLimit())
 				.setExpand(params.getExpand())
+				.setFields(params.getField())
 				.setSearchAfter(params.getSearchAfter())
 				.sortBy(extractSortFields(params.getSort()))
 				.buildAsync()
@@ -105,9 +106,10 @@ public class BundleRestService extends AbstractRestService {
 			final String bundleId,
 			
 			@ParameterObject
-			final ResourceSelectors params) {
+			final ResourceSelectors selectors) {
 		return ResourceRequests.bundles().prepareGet(bundleId)
-				.setExpand(params.getExpand())
+				.setExpand(selectors.getExpand())
+				.setFields(selectors.getField())
 				.buildAsync()
 				.execute(getBus());
 	}

@@ -68,6 +68,7 @@ public class CodeSystemRestService extends AbstractRestService {
 				.filterByStatus(params.getStatus())
 				.setLimit(params.getLimit())
 				.setExpand(params.getExpand())
+				.setFields(params.getField())
 				.setSearchAfter(params.getSearchAfter())
 				.sortBy(extractSortFields(params.getSort()))
 				.buildAsync()

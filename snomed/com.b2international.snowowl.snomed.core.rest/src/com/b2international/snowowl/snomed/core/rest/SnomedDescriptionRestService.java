@@ -106,6 +106,7 @@ public class SnomedDescriptionRestService extends AbstractRestService {
 				.setLimit(params.getLimit())
 				.setSearchAfter(params.getSearchAfter())
 				.setExpand(params.getExpand())
+				.setFields(params.getField())
 				.sortBy(sorts)
 				.build(path)
 				.execute(getBus());
@@ -198,6 +199,7 @@ public class SnomedDescriptionRestService extends AbstractRestService {
 		
 		return SnomedRequests.prepareGetDescription(descriptionId)
 					.setExpand(selectors.getExpand())
+					.setFields(selectors.getField())
 					.build(path)
 					.execute(getBus());
 	}

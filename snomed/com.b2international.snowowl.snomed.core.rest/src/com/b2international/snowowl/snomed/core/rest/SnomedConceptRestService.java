@@ -117,6 +117,7 @@ public class SnomedConceptRestService extends AbstractRestService {
 					.filterBySemanticTags(params.getSemanticTag() == null ? null : ImmutableSet.copyOf(params.getSemanticTag()))
 					.withDoi(params.getDoi())
 					.setExpand(params.getExpand())
+					.setFields(params.getField())
 					.setLocales(acceptLanguage)
 					.sortBy(sorts)
 					.build(path)
@@ -187,6 +188,7 @@ public class SnomedConceptRestService extends AbstractRestService {
 		return SnomedRequests
 					.prepareGetConcept(conceptId)
 					.setExpand(selectors.getExpand())
+					.setFields(selectors.getField())
 					.setLocales(acceptLanguage)
 					.build(path)
 					.execute(getBus());
