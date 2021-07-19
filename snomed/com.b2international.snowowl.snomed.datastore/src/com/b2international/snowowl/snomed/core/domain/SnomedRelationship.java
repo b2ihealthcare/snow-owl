@@ -354,10 +354,10 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 	}
 
 	/**
-	 * @param group
+	 * @param relationshipGroup
 	 */
-	public void setGroup(final Integer group) {
-		this.relationshipGroup = group;
+	public void setRelationshipGroup(final Integer relationshipGroup) {
+		this.relationshipGroup = relationshipGroup;
 	}
 
 	/**

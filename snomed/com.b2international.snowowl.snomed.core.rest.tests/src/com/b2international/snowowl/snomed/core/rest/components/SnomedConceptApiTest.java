@@ -539,7 +539,7 @@ public class SnomedConceptApiTest extends AbstractSnomedApiTest {
 		newRelationship.setTypeId(Concepts.PART_OF);
 		newRelationship.setDestinationId(Concepts.NAMESPACE_ROOT);
 		newRelationship.setModuleId(Concepts.MODULE_SCT_CORE);
-		newRelationship.setGroup(0);
+		newRelationship.setRelationshipGroup(0);
 		newRelationship.setUnionGroup(0);
 		newRelationship.setModifierId(Concepts.EXISTENTIAL_RESTRICTION_MODIFIER);
 
