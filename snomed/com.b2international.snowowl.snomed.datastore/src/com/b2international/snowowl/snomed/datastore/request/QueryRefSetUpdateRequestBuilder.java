@@ -41,7 +41,7 @@ public final class QueryRefSetUpdateRequestBuilder extends BaseRequestBuilder<Qu
 	}
 	
 	public QueryRefSetUpdateRequestBuilder setSource(Map<String, Object> source) {
-		return setModuleId((String) source.get(SnomedRf2Headers.FIELD_REFSET_ID)).setReferenceSetId((String) source.get(SnomedRf2Headers.FIELD_REFSET_ID));
+		return setModuleId((String) source.get(SnomedRf2Headers.FIELD_MODULE_ID)).setReferenceSetId((String) source.get(SnomedRf2Headers.FIELD_REFSET_ID));
 	}
 
 	@Override
