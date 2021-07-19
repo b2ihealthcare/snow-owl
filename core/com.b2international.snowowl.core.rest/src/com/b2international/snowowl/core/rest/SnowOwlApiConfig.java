@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.rest;
 
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
+import java.util.BitSet;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
@@ -55,7 +56,6 @@ import org.springframework.web.servlet.mvc.method.RequestMappingInfo.BuilderConf
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 import com.auth0.jwt.interfaces.JWTVerifier;
-import com.b2international.commons.exceptions.NotImplementedException;
 import com.b2international.commons.options.Metadata;
 import com.b2international.commons.options.MetadataHolder;
 import com.b2international.commons.options.MetadataHolderMixin;
@@ -79,8 +79,10 @@ import com.fasterxml.jackson.databind.util.StdDateFormat;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.base.Charsets;
 import com.google.common.base.Strings;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.MapMaker;
 import com.google.inject.Provider;
 
 import io.micrometer.core.instrument.MeterRegistry;
@@ -98,7 +100,9 @@ import io.swagger.v3.oas.models.OpenAPI;
 public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 
 	private static final String INCLUDE_NULL = "includeNull";
+	private static final int INCLUDE_NULL_IDX = 0;
 	private static final String PRETTY = "pretty";
+	private static final int PRETTY_IDX = 1;
 
 	static {
 		SpringDocUtils.getConfig().addResponseWrapperToIgnore(Promise.class);
@@ -107,14 +111,22 @@ public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 	@Autowired
 	private org.springframework.context.ApplicationContext ctx;
 
-	private Map<String, ObjectMapper> objectMappers;
+	private final LoadingCache<BitSet, ObjectMapper> objectMappers = CacheBuilder.newBuilder().build(new CacheLoader<BitSet, ObjectMapper>() {
+		@Override
+		public ObjectMapper load(BitSet configuration) throws Exception {
+			ObjectMapper mapper = createObjectMapper();
+			mapper.setSerializationInclusion(configuration.get(INCLUDE_NULL_IDX) ? Include.ALWAYS : Include.NON_NULL);
+			mapper.configure(SerializationFeature.INDENT_OUTPUT, configuration.get(PRETTY_IDX));
+			return mapper;
+		}
+	});
 	
 	@Bean
 	public OpenAPI openAPI() {
 		return new OpenAPI();
 	}
 	
-	public ObjectMapper createObjectMapper() {
+	public static ObjectMapper createObjectMapper() {
 		final ObjectMapper objectMapper = new ObjectMapper();
 		objectMapper.registerModule(new JavaTimeModule());
 		objectMapper.setSerializationInclusion(Include.NON_NULL);
@@ -130,32 +142,21 @@ public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 	@Bean
 	@Scope(scopeName = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.TARGET_CLASS)
 	public ObjectMapper objectMapper(@Autowired HttpServletRequest request) {
-		if (objectMappers == null) {
-			objectMappers = new MapMaker().makeMap();
-			objectMappers.put("includeNonNullObjectMapper", createObjectMapper());
-			objectMappers.put("includeNonNullObjectMapperPretty", createObjectMapper()
-					.enable(SerializationFeature.INDENT_OUTPUT));
-			objectMappers.put("includeAllObjectMapper", createObjectMapper()
-					.setSerializationInclusion(Include.ALWAYS));
-			objectMappers.put("includeAllObjectMapperPretty", createObjectMapper()
-					.setSerializationInclusion(Include.ALWAYS)
-					.enable(SerializationFeature.INDENT_OUTPUT));
-		}
+		return objectMappers.getUnchecked(toConfig(
+			extractBooleanQueryParameterValue(request, INCLUDE_NULL),
+			extractBooleanQueryParameterValue(request, PRETTY)
+		));
+	}
 
-		boolean includeNulls = extractBooleanQueryParameterValue(request, INCLUDE_NULL);
-		boolean pretty = extractBooleanQueryParameterValue(request, PRETTY);
-		
-		if (includeNulls && pretty) {
-			return objectMappers.get("includeAllObjectMapperPretty");
-		} else if (includeNulls && !pretty) {
-			return objectMappers.get("includeAllObjectMapper");
-		} else if (!includeNulls && pretty) {
-			return objectMappers.get("includeNonNullObjectMapperPretty");
-		} else if (!includeNulls && !pretty) {
-			return objectMappers.get("includeNonNullObjectMapper");
-		} else {
-			throw new NotImplementedException("Unexpected case that should not happen");
+	private BitSet toConfig(boolean...serializationFeatureValuesInOrder) {
+		if (serializationFeatureValuesInOrder == null) {
+			return new BitSet(0);
+		} 
+		BitSet config = new BitSet(serializationFeatureValuesInOrder.length);
+		for (int i = 0; i < serializationFeatureValuesInOrder.length; i++) {
+			config.set(i, serializationFeatureValuesInOrder[i]);
 		}
+		return config;
 	}
 
 	private boolean extractBooleanQueryParameterValue(HttpServletRequest request, String queryParameterKey) {
