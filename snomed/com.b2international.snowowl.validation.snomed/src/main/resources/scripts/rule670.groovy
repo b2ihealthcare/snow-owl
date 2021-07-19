@@ -22,9 +22,9 @@ final RevisionSearcher searcher = ctx.service(RevisionSearcher.class)
 final List<ComponentIdentifier> issues = Lists.newArrayList()
 
 final String script = String.format("return %s + '_' + %s + '_' + %s",
-					"doc.referenceSetId.value",
+					"doc.refsetId.value",
 					"doc.referencedComponentId.value",
-					"doc.targetComponent.value")
+					"doc.targetComponentId.value")
 
 final ExpressionBuilder queryBuilder = Expressions.builder()
 	.filter(SnomedRefSetMemberIndexEntry.Expressions.refSetTypes(Collections.singleton(SnomedRefSetType.ASSOCIATION)))
