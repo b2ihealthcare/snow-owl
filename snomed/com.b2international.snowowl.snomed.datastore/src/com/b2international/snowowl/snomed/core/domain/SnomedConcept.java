@@ -376,7 +376,7 @@ public final class SnomedConcept extends SnomedCoreComponent {
 	}
 	
 	public void setDefinitionStatusId(String definitionStatusId) {
-		setDefinitionStatus(new SnomedConcept(definitionStatusId));
+		setDefinitionStatus(ifNotNull(definitionStatusId, SnomedConcept::new));
 	}
 
 	public void setSubclassDefinitionStatus(SubclassDefinitionStatus subclassDefinitionStatus) {

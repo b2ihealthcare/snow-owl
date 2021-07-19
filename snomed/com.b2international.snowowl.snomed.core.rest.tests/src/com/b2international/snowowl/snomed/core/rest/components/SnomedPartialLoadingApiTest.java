@@ -16,7 +16,11 @@
 package com.b2international.snowowl.snomed.core.rest.components;
 
 import static org.junit.Assert.assertTrue;
+import static org.hamcrest.CoreMatchers.*;
 
+import java.util.Map;
+
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.ApplicationContext;
@@ -28,6 +32,7 @@ import com.b2international.snowowl.core.setup.Environment;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
 import com.b2international.snowowl.snomed.common.SnomedRf2Headers;
 import com.b2international.snowowl.snomed.common.SnomedTerminologyComponentConstants;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.rest.AbstractSnomedApiTest;
 import com.b2international.snowowl.snomed.datastore.request.SnomedRequests;
 import com.b2international.snowowl.test.commons.SnomedContentRule;
@@ -60,6 +65,69 @@ public class SnomedPartialLoadingApiTest extends AbstractSnomedApiTest {
 			assertTrue(SnomedIdentifiers.isValid(hit[0]));
 			Long.valueOf(hit[1]);
 		});
+	}
+	
+	@Test
+	public void conceptSearch_UnrecognizedField() throws Exception {
+		assertSearchConcepts(SnomedContentRule.SNOMEDCT, Map.of("field", "unrecognized"), 2)
+			.assertThat()
+			.statusCode(400)
+			.body("message", is("Unrecognized concept model property '[unrecognized]'."))
+			.body("developerMessage", containsString("Supported properties are"));
+	}
+	
+	@Test
+	public void conceptSearch_IdOnly() throws Exception {
+		assertSearchConcepts(SnomedContentRule.SNOMEDCT, Map.of("field", SnomedConcept.Fields.ID), 2)
+			.assertThat()
+			.statusCode(200)
+			.body("items[0].id", notNullValue())
+			.body("items[0].effectiveTime", nullValue())
+			.body("items[0].active", nullValue())
+			.body("items[0].moduleId", nullValue())
+			.body("items[0].definitionStatusId", nullValue())
+			.body("items[0].definitionStatus", nullValue())
+			.body("items[1].id", notNullValue())
+			.body("items[1].effectiveTime", nullValue())
+			.body("items[1].active", nullValue())
+			.body("items[1].moduleId", nullValue())
+			.body("items[1].definitionStatusId", nullValue())
+			.body("items[1].definitionStatus", nullValue());
+	}
+	
+	@Test
+	public void conceptSearch_ImplicitIdInclusion() throws Exception {
+		assertSearchConcepts(SnomedContentRule.SNOMEDCT, Map.of("field", SnomedConcept.Fields.MODULE_ID), 1)
+			.assertThat()
+			.statusCode(200)
+			.body("items[0].id", notNullValue())
+			.body("items[0].effectiveTime", nullValue())
+			.body("items[0].active", nullValue())
+			.body("items[0].moduleId", notNullValue())
+			.body("items[0].definitionStatusId", nullValue())
+			.body("items[0].definitionStatus", nullValue());
+	}
+	
+	@Ignore("Not working due to requirement on low-level field that is not requested")
+	@Test
+	public void conceptSearch_IdWithPt() throws Exception {
+		assertSearchConcepts(SnomedContentRule.SNOMEDCT, Map.of("field", SnomedConcept.Fields.ID, "expand", "pt()"), 2)
+			.assertThat()
+			.statusCode(200)
+			.body("items[0].id", notNullValue())
+			.body("items[0].pt", notNullValue())
+			.body("items[0].effectiveTime", nullValue())
+			.body("items[0].active", nullValue())
+			.body("items[0].moduleId", nullValue())
+			.body("items[0].definitionStatusId", nullValue())
+			.body("items[0].definitionStatus", nullValue())
+			.body("items[1].id", notNullValue())
+			.body("items[1].pt", notNullValue())
+			.body("items[1].effectiveTime", nullValue())
+			.body("items[1].active", nullValue())
+			.body("items[1].moduleId", nullValue())
+			.body("items[1].definitionStatusId", nullValue())
+			.body("items[1].definitionStatus", nullValue());
 	}
 	
 }
