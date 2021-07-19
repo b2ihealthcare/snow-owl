@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -54,6 +55,7 @@ import org.springframework.web.servlet.mvc.method.RequestMappingInfo.BuilderConf
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 import com.auth0.jwt.interfaces.JWTVerifier;
+import com.b2international.commons.exceptions.NotImplementedException;
 import com.b2international.commons.options.Metadata;
 import com.b2international.commons.options.MetadataHolder;
 import com.b2international.commons.options.MetadataHolderMixin;
@@ -78,6 +80,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.base.Charsets;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.MapMaker;
 import com.google.inject.Provider;
 
 import io.micrometer.core.instrument.MeterRegistry;
@@ -94,6 +97,9 @@ import io.swagger.v3.oas.models.OpenAPI;
 @PropertySource("classpath:com/b2international/snowowl/core/rest/service_configuration.properties")
 public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 
+	private static final String INCLUDE_NULL = "includeNull";
+	private static final String PRETTY = "pretty";
+
 	static {
 		SpringDocUtils.getConfig().addResponseWrapperToIgnore(Promise.class);
 	}
@@ -101,13 +107,14 @@ public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 	@Autowired
 	private org.springframework.context.ApplicationContext ctx;
 
+	private Map<String, ObjectMapper> objectMappers;
+	
 	@Bean
 	public OpenAPI openAPI() {
 		return new OpenAPI();
 	}
 	
-	@Bean
-	public ObjectMapper objectMapper() {
+	public ObjectMapper createObjectMapper() {
 		final ObjectMapper objectMapper = new ObjectMapper();
 		objectMapper.registerModule(new JavaTimeModule());
 		objectMapper.setSerializationInclusion(Include.NON_NULL);
@@ -120,6 +127,53 @@ public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 		return objectMapper;
 	}
 	
+	@Bean
+	@Scope(scopeName = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.TARGET_CLASS)
+	public ObjectMapper objectMapper(@Autowired HttpServletRequest request) {
+		if (objectMappers == null) {
+			objectMappers = new MapMaker().makeMap();
+			objectMappers.put("includeNonNullObjectMapper", createObjectMapper());
+			objectMappers.put("includeNonNullObjectMapperPretty", createObjectMapper()
+					.enable(SerializationFeature.INDENT_OUTPUT));
+			objectMappers.put("includeAllObjectMapper", createObjectMapper()
+					.setSerializationInclusion(Include.ALWAYS));
+			objectMappers.put("includeAllObjectMapperPretty", createObjectMapper()
+					.setSerializationInclusion(Include.ALWAYS)
+					.enable(SerializationFeature.INDENT_OUTPUT));
+		}
+
+		boolean includeNulls = extractBooleanQueryParameterValue(request, INCLUDE_NULL);
+		boolean pretty = extractBooleanQueryParameterValue(request, PRETTY);
+		
+		if (includeNulls && pretty) {
+			return objectMappers.get("includeAllObjectMapperPretty");
+		} else if (includeNulls && !pretty) {
+			return objectMappers.get("includeAllObjectMapper");
+		} else if (!includeNulls && pretty) {
+			return objectMappers.get("includeNonNullObjectMapperPretty");
+		} else if (!includeNulls && !pretty) {
+			return objectMappers.get("includeNonNullObjectMapper");
+		} else {
+			throw new NotImplementedException("Unexpected case that should not happen");
+		}
+	}
+
+	private boolean extractBooleanQueryParameterValue(HttpServletRequest request, String queryParameterKey) {
+		String[] values = request.getParameterMap().containsKey(queryParameterKey) ? request.getParameterMap().getOrDefault(queryParameterKey, null) : null;
+		if (values == null) {
+			// query parameter not present, means disable feature
+			return false;
+		} else if (values.length == 0) {
+			// no values present, but the key is present, enable feature 
+			return true;
+		} else {
+			// XXX due to a bug in jetty-server v9.x, query parameters are duplicated in the low-level request object
+			// allowing multiple values for now with empty or valid (true in this case) values here
+			// see this bug report for details https://github.com/eclipse/jetty.project/issues/2074
+			return Stream.of(values).allMatch(value -> value.isBlank() || "true".equals(value));
+		}
+	}
+
 	@Override
 	protected void addReturnValueHandlers(List<HandlerMethodReturnValueHandler> returnValueHandlers) {
 		returnValueHandlers.add(new PromiseMethodReturnValueHandler());
@@ -204,10 +258,13 @@ public class SnowOwlApiConfig extends WebMvcConfigurationSupport {
 		converters.add(new ByteArrayHttpMessageConverter());
 		converters.add(new ResourceHttpMessageConverter());
 		converters.add(new CsvMessageConverter());
+		// XXX using null value here as Spring calls a proxied method anyway which returns an already configured instance, see mapping2JacksonHttpMessageConverter Bean method
+		converters.add(mapping2JacksonHttpMessageConverter(null));
+	}
 
-		final MappingJackson2HttpMessageConverter jacksonConverter = new MappingJackson2HttpMessageConverter();
-		jacksonConverter.setObjectMapper(objectMapper());
-		converters.add(jacksonConverter);
+	@Bean
+	public MappingJackson2HttpMessageConverter mapping2JacksonHttpMessageConverter(ObjectMapper mapper) {
+		return new MappingJackson2HttpMessageConverter(mapper);
 	}
 	
 	@Override
