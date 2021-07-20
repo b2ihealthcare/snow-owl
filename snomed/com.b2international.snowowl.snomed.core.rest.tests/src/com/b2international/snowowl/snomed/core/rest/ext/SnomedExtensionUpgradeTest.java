@@ -871,7 +871,7 @@ public class SnomedExtensionUpgradeTest extends AbstractSnomedExtensionApiTest {
 		// create new extension version with one new concept and one member on INT concept
 		String moduleId = createModule(extension);
 		
-		SnomedConcept concept = searchConcept(baseInternationalCodeSystem, Map.of("module", Concepts.MODULE_SCT_CORE, "expand", "descriptions()"), 1).stream().findFirst().get();
+		SnomedConcept concept = searchConcepts(baseInternationalCodeSystem, Map.of("module", Concepts.MODULE_SCT_CORE, "expand", "descriptions()"), 1).stream().findFirst().get();
 		String descriptionId = concept.getDescriptions().stream().findFirst().get().getId();
 		// create new inactivation indicator for one of the description, pending move
 		createMember(extension.getResourceURI(), Map.of(

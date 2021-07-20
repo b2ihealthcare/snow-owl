@@ -112,7 +112,7 @@ public class SnomedComponentEffectiveTimeRestoreTest extends AbstractSnomedExten
 		// create extension on the base SI VERSION
 		CodeSystem extension = createExtension(baseInternationalCodeSystem, branchPath.lastSegment());
 		// get the first concept from the Base SI version
-		SnomedConcept concept = searchConcept(baseInternationalCodeSystem, Map.of("module", Concepts.MODULE_SCT_CORE), 1).stream().findFirst().get();
+		SnomedConcept concept = searchConcepts(baseInternationalCodeSystem, Map.of("module", Concepts.MODULE_SCT_CORE), 1).stream().findFirst().get();
 		LocalDate lastReleasedEffectiveTime = concept.getEffectiveTime();
 		String conceptId = concept.getId();
 		// create a change on the concept, like change the definition status
@@ -136,7 +136,7 @@ public class SnomedComponentEffectiveTimeRestoreTest extends AbstractSnomedExten
 		// start the extension upgrade process
 		CodeSystem upgradeCodeSystem = createExtensionUpgrade(extension.getResourceURI(), upgradeInternationalCodeSystem);
 		// get the first concept from the Base SI version
-		SnomedConcept concept = searchConcept(upgradeInternationalCodeSystem, Map.of("module", Concepts.MODULE_SCT_CORE, "effectiveTime", "20200131"), 1).stream().findFirst().get();
+		SnomedConcept concept = searchConcepts(upgradeInternationalCodeSystem, Map.of("module", Concepts.MODULE_SCT_CORE, "effectiveTime", "20200131"), 1).stream().findFirst().get();
 		LocalDate lastReleasedEffectiveTime = concept.getEffectiveTime();
 		String conceptId = concept.getId();
 		

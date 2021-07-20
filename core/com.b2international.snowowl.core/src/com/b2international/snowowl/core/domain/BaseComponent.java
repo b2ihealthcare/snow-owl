@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2020 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 package com.b2international.snowowl.core.domain;
+
+import java.util.function.Function;
 
 /**
  * @since 4.0
@@ -49,6 +51,14 @@ public abstract class BaseComponent implements IComponent {
 
 	public final void setReleased(final Boolean released) {
 		this.released = released;
+	}
+	
+	public static <T, U> U ifNotNull(final T value, final Function<T, U> mapper) {
+		if (value != null) {
+			return mapper.apply(value);
+		} else {
+			return null;
+		}
 	}
 	
 }

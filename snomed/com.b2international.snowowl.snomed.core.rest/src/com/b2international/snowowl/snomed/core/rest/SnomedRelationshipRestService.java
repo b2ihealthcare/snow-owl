@@ -95,6 +95,7 @@ public class SnomedRelationshipRestService extends AbstractRestService {
 					.setLimit(params.getLimit())
 					.setSearchAfter(params.getSearchAfter())
 					.setExpand(params.getExpand())
+					.setFields(params.getField())
 					.setLocales(acceptLanguage)
 					.sortBy(extractSortFields(params.getSort()))
 					.build(path)

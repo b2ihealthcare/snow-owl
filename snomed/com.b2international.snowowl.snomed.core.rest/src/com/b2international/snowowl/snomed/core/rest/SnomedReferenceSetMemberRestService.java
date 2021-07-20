@@ -92,6 +92,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractRestService {
 				.filterByRefSet(params.getRefsetId())
 				.filterByReferencedComponent(params.getReferencedComponentId())
 				.setExpand(params.getExpand())
+				.setFields(params.getField())
 				.setLocales(acceptLanguage)
 				.sortBy(extractSortFields(params.getSort()));
 		
@@ -159,6 +160,7 @@ public class SnomedReferenceSetMemberRestService extends AbstractRestService {
 		return SnomedRequests
 				.prepareGetMember(memberId)
 				.setExpand(selectors.getExpand())
+				.setFields(selectors.getField())
 				.setLocales(acceptLanguage)
 				.build(path)
 				.execute(getBus());
