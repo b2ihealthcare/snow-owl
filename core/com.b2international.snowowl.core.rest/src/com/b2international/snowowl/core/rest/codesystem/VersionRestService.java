@@ -72,6 +72,7 @@ public class VersionRestService extends AbstractRestService {
 			@ParameterObject
 			VersionRestSearch config) {
 		return ResourceRequests.prepareSearchVersion()
+				.filterByResourceTypes(config.getResourceType())
 				.filterByResources(config.getResource())
 				.setLimit(config.getLimit())
 				.setExpand(config.getExpand())
