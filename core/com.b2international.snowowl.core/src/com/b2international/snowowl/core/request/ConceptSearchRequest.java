@@ -47,6 +47,7 @@ public final class ConceptSearchRequest extends SearchResourceRequest<BranchCont
 				.put(ConceptSearchRequestEvaluator.OptionKey.AFTER, searchAfter())
 				.put(ConceptSearchRequestEvaluator.OptionKey.LIMIT, limit())
 				.put(ConceptSearchRequestEvaluator.OptionKey.LOCALES, locales())
+				.put(ConceptSearchRequestEvaluator.OptionKey.FIELDS, fields())
 				.put(ConceptSearchRequestEvaluator.OptionKey.EXPAND, expand())
 				.put(SearchResourceRequest.OptionKey.SORT_BY, sortBy())
 				.build();

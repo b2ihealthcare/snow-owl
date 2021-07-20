@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
-import com.b2international.commons.CompareUtils;
 import com.b2international.index.Hits;
 import com.b2international.index.Searcher;
 import com.b2international.index.query.Expression;
@@ -55,24 +54,29 @@ public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B, D
 		
 		ImmutableSet.Builder<String> additionalFieldsToLoad = ImmutableSet.builder();
 		
-		collectAdditionalFieldsToFetch(additionalFieldsToLoad);
-		
-		// in case of Revisions always include the ID field (if not requested) to avoid low-level error
-		if (Revision.class.isAssignableFrom(getFrom()) && !CompareUtils.isEmpty(fields()) && !fields().contains(Revision.Fields.ID)) {
-			additionalFieldsToLoad.add(Revision.Fields.ID);
-		}
-		
-		final Set<String> additionalFields = additionalFieldsToLoad.build();
-		
+		// configure additional fields to load when subsetting the response
 		List<String> fields = fields();
-		if (!additionalFields.isEmpty()) {
-			fields = Lists.newArrayList(fields());
-			for (String additionalField : additionalFields) {
-				if (!fields.contains(additionalField)) {
-					fields.add(additionalField);
+		if (!fields().isEmpty()) {
+			collectAdditionalFieldsToFetch(additionalFieldsToLoad);
+			
+			// in case of Revisions always include the ID field (if not requested) to avoid low-level error
+			// after configuring the additional field inclusions
+			if (Revision.class.isAssignableFrom(getFrom()) && !fields().contains(Revision.Fields.ID)) {
+				additionalFieldsToLoad.add(Revision.Fields.ID);
+			}
+			
+			final Set<String> additionalFields = additionalFieldsToLoad.build();
+			
+			if (!additionalFields.isEmpty()) {
+				fields = Lists.newArrayList(fields());
+				for (String additionalField : additionalFields) {
+					if (!fields.contains(additionalField)) {
+						fields.add(additionalField);
+					}
 				}
 			}
 		}
+		
 		
 		final Hits<D> hits = searcher.search(Query.select(getSelect())
 				.from(getFrom())
@@ -88,7 +92,10 @@ public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B, D
 	}
 	
 	/**
-	 * Subclasses may override this method to provide additional fields to fetch from the underlying index, if those fields are necessary to complete the request.
+	 * Subclasses may override this method to provide additional fields to fetch from the underlying index, if those fields are necessary to complete
+	 * the request. This method is only being called if there is at least client requested field. If there is none it will load the entire object and
+	 * no need to configure additional fields.
+	 * 
 	 * @param additionalFieldsToLoad
 	 */
 	protected void collectAdditionalFieldsToFetch(ImmutableSet.Builder<String> additionalFieldsToLoad) {
