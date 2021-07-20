@@ -70,13 +70,14 @@ public class VersionRestService extends AbstractRestService {
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
 	public Promise<Versions> searchVersions(
 			@ParameterObject
-			VersionRestSearch config) {
+			VersionRestSearch params) {
 		return ResourceRequests.prepareSearchVersion()
-				.filterByResources(config.getResource())
-				.setLimit(config.getLimit())
-				.setExpand(config.getExpand())
-				.setSearchAfter(config.getSearchAfter())
-				.sortBy(extractSortFields(config.getSort()))
+				.filterByResources(params.getResource())
+				.setLimit(params.getLimit())
+				.setExpand(params.getExpand())
+				.setFields(params.getField())
+				.setSearchAfter(params.getSearchAfter())
+				.sortBy(extractSortFields(params.getSort()))
 				.buildAsync()
 				.execute(getBus());
 		

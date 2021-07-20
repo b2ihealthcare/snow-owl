@@ -236,7 +236,7 @@ public final class SnomedReferenceSetMemberConverter extends BaseRevisionResourc
 	
 	private void setReferencedComponent(SnomedReferenceSetMember member, String referencedComponentId, String referencedComponentType) {
 		// XXX: partial field loading support
-		if (referencedComponentType == null) return;
+		if (referencedComponentType == null || referencedComponentId == null) return;
 		final SnomedCoreComponent component;
 		switch (referencedComponentType) {
 			// TODO support query type refset refcomp expansion, currently it's a concept

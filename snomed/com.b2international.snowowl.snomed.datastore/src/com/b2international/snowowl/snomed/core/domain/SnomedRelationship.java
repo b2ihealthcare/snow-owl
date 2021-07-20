@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.core.domain;
 
 import java.util.Set;
-import java.util.function.Function;
 
 import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.Request;
@@ -118,14 +117,6 @@ public final class SnomedRelationship extends SnomedCoreComponent {
 			// additional fields
 			VALUE_TYPE,
 			RELEASED);
-	}
-	
-	private static <T, U> U ifNotNull(final T value, final Function<T, U> mapper) {
-		if (value != null) {
-			return mapper.apply(value);
-		} else {
-			return null;
-		}
 	}
 	
 	private boolean destinationNegated;

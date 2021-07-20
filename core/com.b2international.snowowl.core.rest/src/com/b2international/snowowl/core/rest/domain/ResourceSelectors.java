@@ -27,12 +27,23 @@ public class ResourceSelectors {
 	@Parameter(description = "Expansion parameters")
 	private List<String> expand;
 	
+	@Parameter(description = "Field selection")
+	private List<String> field;
+	
 	public final List<String> getExpand() {
 		return expand;
 	}
 
 	public final void setExpand(List<String> expand) {
 		this.expand = expand;
+	}
+	
+	public List<String> getField() {
+		return field;
+	}
+	
+	public void setField(List<String> field) {
+		this.field = field;
 	}
 
 }

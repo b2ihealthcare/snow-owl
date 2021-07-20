@@ -248,12 +248,12 @@ public final class SnomedDescription extends SnomedCoreComponent {
 	
 	@JsonIgnore
 	public void setConceptId(final String conceptId) {
-		setConcept(new SnomedConcept(conceptId));
+		setConcept(ifNotNull(conceptId, SnomedConcept::new));
 	}
 
 	@JsonIgnore
 	public void setTypeId(final String typeId) {
-		setType(new SnomedConcept(typeId));
+		setType(ifNotNull(typeId, SnomedConcept::new));
 	}
 	
 	public void setConcept(SnomedConcept concept) {
@@ -277,7 +277,7 @@ public final class SnomedDescription extends SnomedCoreComponent {
 	}
 
 	public void setCaseSignificanceId(final String caseSignificanceId) {
-		setCaseSignificance(new SnomedConcept(caseSignificanceId));
+		setCaseSignificance(ifNotNull(caseSignificanceId, SnomedConcept::new));
 	}
 	
 	public void setCaseSignificance(final SnomedConcept caseSignificance) {

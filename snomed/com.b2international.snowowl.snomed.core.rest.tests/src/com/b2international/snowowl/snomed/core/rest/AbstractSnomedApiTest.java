@@ -188,12 +188,16 @@ public abstract class AbstractSnomedApiTest extends AbstractApiTest {
 		);
 	}
 	
-	protected final SnomedConcepts searchConcept(ResourceURI codeSystem, Map<String, Object> filters, int limit) {
-		return SnomedComponentRestRequests.searchComponent(codeSystem.withoutResourceType(), SnomedComponentType.CONCEPT, Json.assign(filters, Json.object("limit", limit)))
+	protected final SnomedConcepts searchConcepts(ResourceURI codeSystem, Map<String, Object> filters, int limit) {
+		return assertSearchConcepts(codeSystem, filters, limit)
 				.assertThat()
 				.statusCode(200)
 				.extract()
 				.as(SnomedConcepts.class);
+	}
+
+	protected final ValidatableResponse assertSearchConcepts(ResourceURI codeSystem, Map<String, Object> filters, int limit) {
+		return SnomedComponentRestRequests.searchComponent(codeSystem.withoutResourceType(), SnomedComponentType.CONCEPT, Json.assign(filters, Json.object("limit", limit)));
 	}
 	
 	protected final String createDescription(ResourceURI codeSystemURI, Map<String, Object> body) {

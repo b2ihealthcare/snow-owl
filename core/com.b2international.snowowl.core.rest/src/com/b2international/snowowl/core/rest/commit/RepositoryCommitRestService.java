@@ -59,7 +59,17 @@ public abstract class RepositoryCommitRestService extends AbstractRestService {
 		@ApiResponse(responseCode = "200", description = "OK")
 	})
 	@GetMapping(produces = { AbstractRestService.JSON_MEDIA_TYPE })
-	public Promise<CommitInfos> search(CommitInfoRestSearch params) {
+	public Promise<CommitInfos> search(@ParameterObject CommitInfoRestSearch params) {
+		
+		final List<String> fields;
+		if (!CompareUtils.isEmpty(params.getField())) {
+			fields = params.getField();
+		} else if (CompareUtils.isEmpty(params.getExpand())) {
+			fields = CommitInfo.Fields.DEAFULT_FIELD_SELECTION;
+		} else {
+			fields = null;
+		}
+		
 		return RepositoryRequests
 					.commitInfos()
 					.prepareSearchCommitInfo()
@@ -70,7 +80,7 @@ public abstract class RepositoryCommitRestService extends AbstractRestService {
 					.filterByBranches(params.getBranch())
 					.filterByTimestamp(params.getTimestamp())
 					.filterByTimestamp(params.getTimestampFrom(), params.getTimestampTo())
-					.setFields(CompareUtils.isEmpty(params.getExpand()) ? List.of(Commit.Fields.ID, Commit.Fields.AUTHOR, Commit.Fields.BRANCH, Commit.Fields.COMMENT, Commit.Fields.TIMESTAMP, Commit.Fields.GROUP_ID) : null)
+					.setFields(fields)
 					.setExpand(params.getExpand())
 					.setSearchAfter(params.getSearchAfter())
 					.setLimit(params.getLimit())
@@ -94,10 +104,10 @@ public abstract class RepositoryCommitRestService extends AbstractRestService {
 			
 			@ParameterObject
 			final ResourceSelectors selectors) {
-		return RepositoryRequests
-					.commitInfos()
+		return RepositoryRequests.commitInfos()
 					.prepareGetCommitInfo(commitId)
 					.setExpand(selectors.getExpand())
+					.setFields(selectors.getField())
 					.build(repositoryId)
 					.execute(getBus());
 	}

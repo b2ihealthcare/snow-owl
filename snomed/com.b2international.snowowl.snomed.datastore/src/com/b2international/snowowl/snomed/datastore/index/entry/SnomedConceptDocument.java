@@ -28,6 +28,7 @@ import com.b2international.commons.collections.Collections3;
 import com.b2international.commons.exceptions.BadRequestException;
 import com.b2international.index.Doc;
 import com.b2international.index.Script;
+import com.b2international.index.mapping.Field;
 import com.b2international.index.query.Expression;
 import com.b2international.index.query.SortBy;
 import com.b2international.index.revision.Revision;
@@ -449,8 +450,9 @@ public final class SnomedConceptDocument extends SnomedComponentDocument {
 	private LongSortedSet ancestors;
 	private LongSortedSet statedParents;
 	private LongSortedSet statedAncestors;
-	private float doi;
 	private SortedSet<String> semanticTags;
+	
+	private float doi;
 
 	private SnomedConceptDocument(final String id,
 			final String iconId,

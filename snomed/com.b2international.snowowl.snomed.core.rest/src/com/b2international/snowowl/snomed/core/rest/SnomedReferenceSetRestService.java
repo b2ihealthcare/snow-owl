@@ -98,6 +98,7 @@ public class SnomedReferenceSetRestService extends AbstractRestService {
 				.filterByTypes(getRefSetTypes(params.getRefSetTypes()))
 				.setLimit(params.getLimit())
 				.setExpand(params.getExpand())
+				.setFields(params.getField())
 				.setSearchAfter(params.getSearchAfter())
 				.setLocales(acceptLanguage)
 				.sortBy(sorts)
@@ -189,6 +190,7 @@ public class SnomedReferenceSetRestService extends AbstractRestService {
 		return SnomedRequests
 				.prepareGetReferenceSet(refsetId)
 				.setExpand(selectors.getExpand())
+				.setFields(selectors.getField())
 				.setLocales(acceptLanguage)
 				.build(path)
 				.execute(getBus());
