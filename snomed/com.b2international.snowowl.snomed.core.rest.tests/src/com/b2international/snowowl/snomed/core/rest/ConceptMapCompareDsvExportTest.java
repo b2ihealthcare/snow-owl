@@ -36,9 +36,9 @@ import org.assertj.core.util.Files;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.codesystem.CodeSystem;
-import com.b2international.snowowl.core.codesystem.CodeSystemRequests;
 import com.b2international.snowowl.core.compare.ConceptMapCompareChangeKind;
 import com.b2international.snowowl.core.compare.ConceptMapCompareResultItem;
+import com.b2international.snowowl.core.conceptmap.ConceptMapRequests;
 import com.b2international.snowowl.core.date.Dates;
 import com.b2international.snowowl.core.domain.ConceptMapMapping;
 import com.b2international.snowowl.core.uri.ComponentURI;
@@ -65,7 +65,7 @@ public class ConceptMapCompareDsvExportTest {
 	
 	@Test
 	public void testExport() throws IOException {
-		final File file = CodeSystemRequests.prepareConceptMapCompareDsvExport(ITEMS, Paths.get(System.getProperty("user.home"), String.format("concept-map-compare-results-%s.txt", Dates.now())).toString())
+		final File file = ConceptMapRequests.prepareConceptMapCompareDsvExport(ITEMS, Paths.get(System.getProperty("user.home"), String.format("concept-map-compare-results-%s.txt", Dates.now())).toString())
 				.delimiter(';')
 				.changeKids(ALL)
 				.build()
@@ -77,7 +77,7 @@ public class ConceptMapCompareDsvExportTest {
 
 	@Test
 	public void testFilteredExport() throws IOException {
-		final File file = CodeSystemRequests.prepareConceptMapCompareDsvExport(ITEMS, Paths.get(System.getProperty("user.home"), String.format("concept-map-compare-results-%s.txt", Dates.now())).toString())
+		final File file = ConceptMapRequests.prepareConceptMapCompareDsvExport(ITEMS, Paths.get(System.getProperty("user.home"), String.format("concept-map-compare-results-%s.txt", Dates.now())).toString())
 				.delimiter(';')
 				.changeKids(Set.of(DIFFERENT_TARGET, MISSING))
 				.build()
@@ -93,7 +93,7 @@ public class ConceptMapCompareDsvExportTest {
 	
 	@Test
 	public void testExportEmptyList() throws IOException {
-		final File file = CodeSystemRequests.prepareConceptMapCompareDsvExport(Collections.emptyList(), Paths.get(System.getProperty("user.home"), String.format("concept-map-compare-results-%s.txt", Dates.now())).toString())
+		final File file = ConceptMapRequests.prepareConceptMapCompareDsvExport(Collections.emptyList(), Paths.get(System.getProperty("user.home"), String.format("concept-map-compare-results-%s.txt", Dates.now())).toString())
 				.delimiter(';')
 				.changeKids(ALL)
 				.build()
