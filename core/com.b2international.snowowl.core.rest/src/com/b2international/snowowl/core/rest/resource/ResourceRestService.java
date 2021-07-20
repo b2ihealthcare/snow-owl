@@ -116,7 +116,7 @@ public class ResourceRestService extends AbstractRestService {
 		if (!CompareUtils.isEmpty(params.getField())) {
 			fields = params.getField();
 		} else if (CompareUtils.isEmpty(params.getExpand())) {
-			fields = CommitInfo.DEAFULT_FIELD_SELECTION;
+			fields = CommitInfo.Fields.DEAFULT_FIELD_SELECTION;
 		} else {
 			fields = null;
 		}
