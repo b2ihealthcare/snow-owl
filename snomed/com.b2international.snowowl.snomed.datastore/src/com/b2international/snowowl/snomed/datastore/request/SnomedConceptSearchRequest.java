@@ -38,6 +38,7 @@ import com.b2international.snowowl.core.repository.RevisionDocument;
 import com.b2international.snowowl.core.request.TermFilter;
 import com.b2international.snowowl.core.terminology.ComponentCategory;
 import com.b2international.snowowl.snomed.cis.SnomedIdentifiers;
+import com.b2international.snowowl.snomed.core.domain.SnomedConcept;
 import com.b2international.snowowl.snomed.core.domain.SnomedConcepts;
 import com.b2international.snowowl.snomed.core.domain.SnomedDescription;
 import com.b2international.snowowl.snomed.core.ecl.EclExpression;
@@ -48,6 +49,7 @@ import com.b2international.snowowl.snomed.datastore.index.entry.SnomedConceptDoc
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDescriptionIndexEntry;
 import com.b2international.snowowl.snomed.datastore.index.entry.SnomedDocument;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * @since 4.5
@@ -122,6 +124,15 @@ public class SnomedConceptSearchRequest extends SnomedComponentSearchRequest<Sno
 	@Override
 	protected Enum<?> getSpecialOptionKey() {
 		return OptionKey.TERM;
+	}
+	
+	@Override
+	protected void collectAdditionalFieldsToFetch(ImmutableSet.Builder<String> additionalFieldsToLoad) {
+		// load preferred descriptions field if not requested, but either pt or fsn is expanded
+		if (!fields().contains(SnomedConceptDocument.Fields.PREFERRED_DESCRIPTIONS) 
+				&& (expand().containsKey(SnomedConcept.Expand.FULLY_SPECIFIED_NAME) || expand().containsKey(SnomedConcept.Expand.PREFERRED_TERM))) {
+			additionalFieldsToLoad.add(SnomedConceptDocument.Fields.PREFERRED_DESCRIPTIONS);
+		}
 	}
 	
 	@Override

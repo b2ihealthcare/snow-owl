@@ -15,12 +15,14 @@
  */
 package com.b2international.snowowl.snomed.core.rest.components;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertTrue;
-import static org.hamcrest.CoreMatchers.*;
 
 import java.util.Map;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.ApplicationContext;
@@ -108,7 +110,6 @@ public class SnomedPartialLoadingApiTest extends AbstractSnomedApiTest {
 			.body("items[0].definitionStatus", nullValue());
 	}
 	
-	@Ignore("Not working due to requirement on low-level field that is not requested")
 	@Test
 	public void conceptSearch_IdWithPt() throws Exception {
 		assertSearchConcepts(SnomedContentRule.SNOMEDCT, Map.of("field", SnomedConcept.Fields.ID, "expand", "pt()"), 2)

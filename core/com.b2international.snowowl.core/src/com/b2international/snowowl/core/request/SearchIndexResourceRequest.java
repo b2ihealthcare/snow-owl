@@ -16,6 +16,8 @@
 package com.b2international.snowowl.core.request;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Set;
 
 import com.b2international.commons.CompareUtils;
 import com.b2international.index.Hits;
@@ -28,7 +30,8 @@ import com.b2international.index.revision.Revision;
 import com.b2international.index.revision.RevisionSearcher;
 import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.CollectionResource;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 
 /**
  * @since 5.11
@@ -37,6 +40,8 @@ import com.google.common.collect.ImmutableList;
  * @param <D> - the document type to search for 
  */
 public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B, D> extends SearchResourceRequest<C, B> {
+
+	private static final long serialVersionUID = 1L;
 
 	/**
 	 * Special field name for sorting based on the document score (relevance).
@@ -48,17 +53,30 @@ public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B, D
 		final Searcher searcher = searcher(context);
 		final Expression where = prepareQuery(context);
 		
-		// in case of Revisions always include the ID field to avoid low-level error
+		ImmutableSet.Builder<String> additionalFieldsToLoad = ImmutableSet.builder();
+		
+		collectAdditionalFieldsToFetch(additionalFieldsToLoad);
+		
+		// in case of Revisions always include the ID field (if not requested) to avoid low-level error
 		if (Revision.class.isAssignableFrom(getFrom()) && !CompareUtils.isEmpty(fields()) && !fields().contains(Revision.Fields.ID)) {
-			setFields(ImmutableList.<String>builder()
-					.add(Revision.Fields.ID)
-					.addAll(fields())
-					.build());
+			additionalFieldsToLoad.add(Revision.Fields.ID);
+		}
+		
+		final Set<String> additionalFields = additionalFieldsToLoad.build();
+		
+		List<String> fields = fields();
+		if (!additionalFields.isEmpty()) {
+			fields = Lists.newArrayList(fields());
+			for (String additionalField : additionalFields) {
+				if (!fields.contains(additionalField)) {
+					fields.add(additionalField);
+				}
+			}
 		}
 		
 		final Hits<D> hits = searcher.search(Query.select(getSelect())
 				.from(getFrom())
-				.fields(fields())
+				.fields(fields)
 				.where(where)
 				.searchAfter(searchAfter())
 				.limit(limit())
@@ -69,6 +87,13 @@ public abstract class SearchIndexResourceRequest<C extends ServiceProvider, B, D
 		return toCollectionResource(context, hits);
 	}
 	
+	/**
+	 * Subclasses may override this method to provide additional fields to fetch from the underlying index, if those fields are necessary to complete the request.
+	 * @param additionalFieldsToLoad
+	 */
+	protected void collectAdditionalFieldsToFetch(ImmutableSet.Builder<String> additionalFieldsToLoad) {
+	}
+
 	/**
 	 * Returns the default {@link Searcher} attached to the given context that can search {@link #getDocumentType() document}s. Subclasses may override this if they would like to use a different
 	 * searcher service.
