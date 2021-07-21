@@ -23,13 +23,14 @@ import com.b2international.commons.exceptions.BadRequestException;
 /**
  * @since 8.0
  */
-public enum BaseBulkAction {
+public enum ResourceAction {
 	CREATE, 
 	UPDATE, 
-	DELETE;
+	DELETE,
+	SYNC;
 
-	public static BaseBulkAction get(String action) {
-		for (BaseBulkAction type : values()) {
+	public static ResourceAction get(String action) {
+		for (ResourceAction type : values()) {
 			if (type.name()
 					.toLowerCase()
 					.equals(action.toLowerCase())) {
@@ -38,7 +39,7 @@ public enum BaseBulkAction {
 		}
 
 		throw new BadRequestException("Invalid value set clause action type '%s'. Only {%s} are allowed", action,
-				String.join(",", List.of(BaseBulkAction.values())
+				String.join(",", List.of(ResourceAction.values())
 						.stream()
 						.map(actionType -> actionType.name())
 						.collect(Collectors.toList())));
