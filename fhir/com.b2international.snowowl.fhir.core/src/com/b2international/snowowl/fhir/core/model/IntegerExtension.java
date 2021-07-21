@@ -31,13 +31,26 @@ public class IntegerExtension extends Extension<Integer> {
 		super(url, value);
 	}
 
-	public IntegerExtension(final String urlValue, final Integer value) {
-		super(urlValue, value);
-	}
-
 	@Override
 	public ExtensionType getExtensionType() {
 		return ExtensionType.INTEGER;
+	}
+	
+	public static Builder builder() {
+		return new Builder();
+	}
+	
+	public static class Builder extends Extension.Builder<Builder, IntegerExtension, Integer> {
+		
+		@Override
+		protected Builder getSelf() {
+			return this;
+		}
+		
+		@Override
+		protected IntegerExtension doBuild() {
+			return new IntegerExtension(url, value);
+		}
 	}
 
 }
