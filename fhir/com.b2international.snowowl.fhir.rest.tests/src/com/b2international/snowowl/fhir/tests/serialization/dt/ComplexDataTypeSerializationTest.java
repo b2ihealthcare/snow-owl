@@ -269,7 +269,7 @@ public class ComplexDataTypeSerializationTest extends FhirTest {
 	public void extensionTest() throws Exception {
 		
 		@SuppressWarnings("rawtypes")
-		Extension extension = new IntegerExtension("url", 1);
+		Extension extension = IntegerExtension.builder().id("url").value(1).build();
 		
 		String expected = "{\"url\":\"url\",\"valueInteger\":1}";
 		
@@ -281,8 +281,8 @@ public class ComplexDataTypeSerializationTest extends FhirTest {
 		
 		ContactPoint cp = ContactPoint.builder()
 				.id("element_id")
-				.addExtension(new IntegerExtension("url", 1))
-				.addExtension(new IntegerExtension("url2", 2))
+				.addExtension(IntegerExtension.builder().id("url").value(1).build())
+				.addExtension(IntegerExtension.builder().id("url2").value(2).build())
 				.period(new Period(null, null))
 				.rank(1)
 				.system("system")

@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.fhir.core.model.structuredefinition;
 
-import java.util.Collection;
+import java.util.List;
 
 import javax.validation.Valid;
 import javax.validation.constraints.AssertTrue;
@@ -74,7 +74,7 @@ public class Binding extends Element {
 	}
 	
 	protected Binding(final String id, 
-			@SuppressWarnings("rawtypes") final Collection<Extension> extensions,
+			@SuppressWarnings("rawtypes") final List<Extension> extensions,
 			final Code strength, 
 			final String description,
 			final Uri valueSetUri,

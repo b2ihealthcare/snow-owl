@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.fhir.core.model.structuredefinition;
 
-import java.util.Collection;
+import java.util.List;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -70,7 +70,7 @@ public class Constraint extends Element {
 	private final Uri source;
 	
 	protected Constraint(final String id, 
-			@SuppressWarnings("rawtypes") final Collection<Extension> extensions,
+			@SuppressWarnings("rawtypes") final List<Extension> extensions,
 			final Id key, 
 			final String requirements, 
 			final Code severity, 

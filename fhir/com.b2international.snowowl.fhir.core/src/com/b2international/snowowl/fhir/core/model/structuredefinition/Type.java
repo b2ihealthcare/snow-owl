@@ -16,6 +16,7 @@
 package com.b2international.snowowl.fhir.core.model.structuredefinition;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -65,7 +66,7 @@ public class Type extends Element {
 	private final Code versioning;
 	
 	protected Type(final String id, 
-			@SuppressWarnings("rawtypes") final Collection<Extension> extensions,
+			@SuppressWarnings("rawtypes") final List<Extension> extensions,
 			final Uri code, 
 			final Uri profile, 
 			final Uri targetProfile, 

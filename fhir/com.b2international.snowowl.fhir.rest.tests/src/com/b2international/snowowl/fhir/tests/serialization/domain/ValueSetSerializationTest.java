@@ -54,7 +54,7 @@ public class ValueSetSerializationTest extends FhirTest {
 	@Test
 	public void extensionTest() throws Exception {
 		
-		Extension<Integer> integerExtension = new IntegerExtension("testUri", 1);
+		Extension<Integer> integerExtension = IntegerExtension.builder().id("testUri").value(1).build();
 				
 		String expectedJson =  "{\"url\":\"testUri\","
 					+ "\"valueInteger\":1}";

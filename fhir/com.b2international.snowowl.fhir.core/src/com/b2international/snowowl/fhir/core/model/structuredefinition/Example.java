@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.fhir.core.model.structuredefinition;
 
-import java.util.Collection;
+import java.util.List;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -46,7 +46,7 @@ public class Example extends Element {
 	private TypedProperty<?> value;
 	
 	protected Example(final String id, 
-			@SuppressWarnings("rawtypes") final Collection<Extension> extensions, 
+			@SuppressWarnings("rawtypes") final List<Extension> extensions, 
 			final String label,
 			final TypedProperty<?> value) {
 		

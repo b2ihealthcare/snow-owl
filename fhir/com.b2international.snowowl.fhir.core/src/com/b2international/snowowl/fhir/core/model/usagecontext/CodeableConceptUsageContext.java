@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.fhir.core.model.usagecontext;
 
-import java.util.Collection;
+import java.util.List;
 
 import com.b2international.snowowl.fhir.core.model.Extension;
 import com.b2international.snowowl.fhir.core.model.dt.CodeableConcept;
@@ -30,7 +30,7 @@ import com.b2international.snowowl.fhir.core.model.dt.Coding;
  */
 public class CodeableConceptUsageContext extends UsageContext<CodeableConcept> {
 
-	protected CodeableConceptUsageContext(final String id, final Collection<Extension> extensions, final Coding code, final CodeableConcept value) {
+	protected CodeableConceptUsageContext(final String id, final List<Extension> extensions, final Coding code, final CodeableConcept value) {
 		super(id, extensions, code, value);
 	}
 	

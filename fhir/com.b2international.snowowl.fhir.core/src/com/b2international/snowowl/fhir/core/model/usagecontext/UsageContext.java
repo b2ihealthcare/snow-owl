@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.fhir.core.model.usagecontext;
 
-import java.util.Collection;
+import java.util.List;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -55,7 +55,7 @@ public abstract class UsageContext<T> extends Element {
 	 * @param id
 	 * @param extensions
 	 */
-	protected UsageContext(final String id, final Collection<Extension> extensions,
+	protected UsageContext(final String id, final List<Extension> extensions,
 			final Coding code, final T value) {
 		super(id, extensions);
 		this.code = code;

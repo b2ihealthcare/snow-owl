@@ -16,6 +16,7 @@
 package com.b2international.snowowl.fhir.core.model.structuredefinition;
 
 import java.util.Collection;
+import java.util.List;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -199,7 +200,7 @@ public class ElementDefinition extends Element {
 	private final Collection<MappingElement> mappings;
 	
 	@SuppressWarnings("rawtypes")
-	protected ElementDefinition(final String id, final Collection<Extension> extensions,
+	protected ElementDefinition(final String id, final List<Extension> extensions,
 			final String path,
 			final String sliceName,
 			final String label,

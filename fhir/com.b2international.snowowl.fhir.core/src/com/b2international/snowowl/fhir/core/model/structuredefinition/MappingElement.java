@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.fhir.core.model.structuredefinition;
 
-import java.util.Collection;
+import java.util.List;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -54,7 +54,7 @@ public class MappingElement extends Element {
 	private String comment;
 
 	protected MappingElement(final String id, 
-			@SuppressWarnings("rawtypes") final Collection<Extension> extensions,
+			@SuppressWarnings("rawtypes") final List<Extension> extensions,
 			final Id identity, 
 			final Code language,
 			final String map,

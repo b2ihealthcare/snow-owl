@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.fhir.core.model.structuredefinition;
 
-import java.util.Collection;
+import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
@@ -45,7 +45,7 @@ public class Base extends Element {
 	private final String max;
 	
 	protected Base(final String id, 
-			@SuppressWarnings("rawtypes") final Collection<Extension> extensions,
+			@SuppressWarnings("rawtypes") final List<Extension> extensions,
 			final String path, 
 			final int min,
 			final String max) {

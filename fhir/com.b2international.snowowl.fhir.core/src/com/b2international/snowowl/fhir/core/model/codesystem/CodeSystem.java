@@ -22,8 +22,6 @@ import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.validator.constraints.ScriptAssert;
-
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemHierarchyMeaning;
 import com.b2international.snowowl.fhir.core.model.ContactDetail;
@@ -36,6 +34,9 @@ import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -65,12 +66,15 @@ import io.swagger.annotations.ApiModel;
 	@ScriptAssert(lang = "groovy", script = "_.caseSensitive == false", message = "Problem", alias = "_")
 })
 */
+@JsonDeserialize(builder = CodeSystem.Builder.class, using = JsonDeserializer.None.class)
 public class CodeSystem extends MetadataResource {
 
+	
+	public static final String RESOURCE_TYPE_CODE_SYSTEM = "CodeSystem";
 	// FHIR header "resourceType" : "CodeSystem",
 	@Mandatory
 	@JsonProperty
-	private String resourceType = "CodeSystem";
+	private String resourceType;
 
 	@Summary
 	@JsonProperty
@@ -137,7 +141,7 @@ public class CodeSystem extends MetadataResource {
 	CodeSystem(Id id, final Meta meta, final Uri impliciteRules, Code language, 
 			final Narrative text, Uri url, Identifier identifier, String version, String name, String title, Code status,
 			final Date date, final String publisher, final Collection<ContactDetail> contacts, final String description, final Collection<UsageContext> usageContexts, 
-			final Collection<CodeableConcept> jurisdictions, final String purpose, final String copyright,
+			final Collection<CodeableConcept> jurisdictions, final String purpose, final String copyright, final String resourceType,
 			
 			//CodeSystem only
 			final Boolean caseSensitive, final Uri valueSet, final Code hierarchyMeaning, final Boolean compositional, final Boolean versionNeeded,
@@ -147,6 +151,7 @@ public class CodeSystem extends MetadataResource {
 		super(id, meta, impliciteRules, language, text, url, identifier, version, name, title, status, date, publisher, contacts, 
 				description, usageContexts, jurisdictions, purpose, copyright);
 
+		this.resourceType = resourceType;
 		this.caseSensitive = caseSensitive;
 		this.valueSet = valueSet;
 		this.hierarchyMeaning = hierarchyMeaning;
@@ -168,7 +173,10 @@ public class CodeSystem extends MetadataResource {
 		return new Builder(codeSystemId);
 	}
 
+	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends MetadataResource.Builder<Builder, CodeSystem> {
+		
+		private String resourceType = RESOURCE_TYPE_CODE_SYSTEM;
 
 		private Boolean caseSensitive;
 		
@@ -205,6 +213,11 @@ public class CodeSystem extends MetadataResource {
 		@Override
 		protected Builder getSelf() {
 			return this;
+		}
+		
+		public Builder resourceType(String resourceType) {
+			this.resourceType = resourceType;
+			return getSelf();
 		}
 		
 		public Builder caseSensitive(Boolean caseSensitive) {
@@ -271,7 +284,7 @@ public class CodeSystem extends MetadataResource {
 		protected CodeSystem doBuild() {
 			return new CodeSystem(id, meta, implicitRules, language, text, url, identifier, version, name, title, status, date, publisher, contacts, 
 				description, usageContexts, jurisdictions, purpose, copyright,
-				caseSensitive, valueSet, hierarchyMeaning, compositional, versionNeeded,
+				resourceType, caseSensitive, valueSet, hierarchyMeaning, compositional, versionNeeded,
 				content, supplements, count, filters, properties, concepts);
 		}
 	}

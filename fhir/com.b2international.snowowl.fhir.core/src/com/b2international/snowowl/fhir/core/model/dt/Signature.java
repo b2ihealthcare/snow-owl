@@ -16,6 +16,7 @@
 package com.b2international.snowowl.fhir.core.model.dt;
 
 import java.util.Collection;
+import java.util.List;
 
 import javax.validation.Valid;
 import javax.validation.constraints.AssertTrue;
@@ -77,7 +78,7 @@ public class Signature extends Element {
 	private Byte[] blob;
 	
 	@SuppressWarnings("rawtypes")
-	Signature(String id, Collection<Extension> extensions, Collection<Coding> types, final Instant when, final Uri whoUri, final Reference whoReference, 
+	Signature(String id, List<Extension> extensions, Collection<Coding> types, final Instant when, final Uri whoUri, final Reference whoReference, 
 			final Uri onBehalfOfUri, final Reference onBehalfOfReference, final Code contentType, final Byte[] blob) {
 		
 		super(id, extensions);

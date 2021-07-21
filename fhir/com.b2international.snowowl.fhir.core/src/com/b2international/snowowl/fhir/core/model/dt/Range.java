@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.fhir.core.model.dt;
 
-import java.util.Collection;
+import java.util.List;
 
 import com.b2international.snowowl.fhir.core.model.Element;
 import com.b2international.snowowl.fhir.core.model.Extension;
@@ -43,7 +43,7 @@ public class Range extends Element {
 		this(low, high, null, null);
 	}
 	
-	public Range(final SimpleQuantity low, final SimpleQuantity high, final String id, final Collection<Extension> extensions) {
+	public Range(final SimpleQuantity low, final SimpleQuantity high, final String id, final List<Extension> extensions) {
 		super(id, extensions);
 		this.low = low;
 		this.high = high;
