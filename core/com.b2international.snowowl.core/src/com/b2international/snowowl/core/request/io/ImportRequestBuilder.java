@@ -17,21 +17,18 @@ package com.b2international.snowowl.core.request.io;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
-import com.b2international.snowowl.core.ResourceURI;
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.attachments.Attachment;
-import com.b2international.snowowl.core.domain.TransactionContext;
 import com.b2international.snowowl.core.events.AsyncRequest;
 import com.b2international.snowowl.core.events.BaseRequestBuilder;
 import com.b2international.snowowl.core.events.Request;
-import com.b2international.snowowl.core.request.CommitResult;
-import com.b2international.snowowl.core.request.TerminologyResourceCommitRequestBuilder;
 
 /**
  * @since 7.12
  * @param <T>
  */
 public abstract class ImportRequestBuilder<T extends ImportRequestBuilder<T>> 
-		extends BaseRequestBuilder<T, TransactionContext, ImportResponse> {
+		extends BaseRequestBuilder<T, ServiceProvider, ImportResponse> {
 
 	private final Attachment attachment;
 	
@@ -40,7 +37,7 @@ public abstract class ImportRequestBuilder<T extends ImportRequestBuilder<T>>
 	}
 	
 	@Override
-	protected final Request<TransactionContext, ImportResponse> doBuild() {
+	protected final Request<ServiceProvider, ImportResponse> doBuild() {
 		ImportRequest req = create();
 		init(req);
 		return req;
@@ -53,15 +50,8 @@ public abstract class ImportRequestBuilder<T extends ImportRequestBuilder<T>>
 
 	protected abstract ImportRequest create();
 	
-	public AsyncRequest<CommitResult> build(String codeSystemUri) {
-		return build(new ResourceURI(codeSystemUri));
-	}
-	
-	public AsyncRequest<CommitResult> build(ResourceURI codeSystemUri) {
-		return new TerminologyResourceCommitRequestBuilder()
-				.setBody(build())
-				.setCommitComment(String.format("Imported components from source file '%s'", attachment.getFileName()))
-				.build(codeSystemUri);
+	public final AsyncRequest<ImportResponse> buildAsync() {
+		return new AsyncRequest<>(doBuild());
 	}
 	
 }

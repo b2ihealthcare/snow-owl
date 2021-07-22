@@ -24,34 +24,23 @@ import javax.validation.constraints.NotNull;
 import org.eclipse.core.runtime.IProgressMonitor;
 
 import com.b2international.commons.exceptions.ApiException;
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.attachments.Attachment;
 import com.b2international.snowowl.core.attachments.AttachmentRegistry;
 import com.b2international.snowowl.core.attachments.InternalAttachmentRegistry;
-import com.b2international.snowowl.core.authorization.BranchAccessControl;
-import com.b2international.snowowl.core.domain.TransactionContext;
-import com.b2international.snowowl.core.identity.Permission;
-import com.b2international.snowowl.core.internal.locks.DatastoreLockContextDescriptions;
-import com.b2international.snowowl.core.request.LockRequest;
+import com.b2international.snowowl.core.events.Request;
 import com.b2international.snowowl.core.uri.ComponentURI;
 import com.google.common.collect.Sets;
 
 /**
  * @since 7.12
  */
-public abstract class ImportRequest extends LockRequest<TransactionContext, ImportResponse> implements BranchAccessControl {
+public abstract class ImportRequest implements Request<ServiceProvider, ImportResponse> {
 	
 	private static final long serialVersionUID = 1L;
 	
 	@NotNull
 	private Attachment attachment;
-	
-	public ImportRequest() {
-		super(DatastoreLockContextDescriptions.IMPORT);
-	}
-	
-	public ImportRequest(String lockContext, String parentLockContext) {
-		super(lockContext, parentLockContext);
-	}
 	
 	final void setAttachment(Attachment attachment) {
 		this.attachment = attachment;
@@ -62,7 +51,7 @@ public abstract class ImportRequest extends LockRequest<TransactionContext, Impo
 	}
 	
 	@Override
-	public final ImportResponse doExecute(TransactionContext context) {
+	public final ImportResponse execute(ServiceProvider context) {
 		
 		context.log().info("Importing components from source file '{}'.", this.attachment.getFileName());
 		
@@ -74,14 +63,14 @@ public abstract class ImportRequest extends LockRequest<TransactionContext, Impo
 			File attachment = iar.getAttachment(this.attachment.getAttachmentId());
 			
 			ImportDefectAcceptor defectsAcceptor = new ImportDefectAcceptor(this.attachment.getFileName());
-			doValidate(context, attachment, defectsAcceptor, context.service(IProgressMonitor.class));
+			doValidate(context, attachment, defectsAcceptor);
 			
 			final ImportResponse validationResponse = ImportResponse.defects(defectsAcceptor.getDefects());
 			if (!validationResponse.getErrors().isEmpty()) {
 				return validationResponse;
 			} else {
 				final Set<ComponentURI> visitedComponents = Sets.newHashSet();
-				doImport(context, attachment, visitedComponents::add, context.service(IProgressMonitor.class));
+				doImport(context, attachment, visitedComponents::add);
 				context.log().info("Finished importing components from source file '{}'.", this.attachment.getFileName());
 				return ImportResponse.success(visitedComponents, validationResponse.getDefects());
 			}
@@ -108,7 +97,7 @@ public abstract class ImportRequest extends LockRequest<TransactionContext, Impo
 	 * @param monitor - the monitor that can be used to track progress
 	 * @throws Exception
 	 */
-	protected void doValidate(TransactionContext context, File attachment, ImportDefectAcceptor defectsAcceptor, IProgressMonitor monitor) throws Exception {
+	protected void doValidate(ServiceProvider context, File attachment, ImportDefectAcceptor defectsAcceptor) throws Exception {
 	}
 
 	/**
@@ -120,11 +109,6 @@ public abstract class ImportRequest extends LockRequest<TransactionContext, Impo
 	 * @param monitor - the monitor that can be used to track progress
 	 * @throws Exception
 	 */
-	protected abstract void doImport(TransactionContext context, File attachment, Consumer<ComponentURI> visitor, IProgressMonitor monitor) throws Exception;
-	
-	@Override
-	public String getOperation() {
-		return Permission.OPERATION_IMPORT;
-	}
+	protected abstract void doImport(ServiceProvider context, File attachment, Consumer<ComponentURI> visitor) throws Exception;
 	
 }
