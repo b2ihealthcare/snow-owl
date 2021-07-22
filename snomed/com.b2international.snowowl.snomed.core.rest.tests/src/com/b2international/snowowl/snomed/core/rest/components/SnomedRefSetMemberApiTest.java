@@ -800,8 +800,7 @@ public class SnomedRefSetMemberApiTest extends AbstractSnomedApiTest {
 			"commitComment", "Executed invalid action on reference set member"
 		);
 
-		executeMemberAction(branchPath, memberId, invalidActionRequest).statusCode(400)
-		.body("message", CoreMatchers.equalTo("Invalid action type 'invalid'."));
+		executeMemberAction(branchPath, memberId, invalidActionRequest).statusCode(400);
 	}
 
 	@Test
