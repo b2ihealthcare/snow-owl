@@ -30,7 +30,7 @@ public class VersionRestSearch extends ObjectRestSearch {
 	@Parameter(description="The corresponding resource identifier(s) to match")
 	private List<String> resource;
 	
-	@Parameter(description = "The types of resources to get the versions for", in = ParameterIn.QUERY)
+	@Parameter(description = "The types of resources to get the versions for")
 	private List<String> resourceType;
 	
 	public List<String> getResource() {
