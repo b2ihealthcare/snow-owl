@@ -24,13 +24,7 @@ import javax.validation.constraints.NotNull;
 import com.b2international.snowowl.fhir.core.model.ContactDetail;
 import com.b2international.snowowl.fhir.core.model.Meta;
 import com.b2international.snowowl.fhir.core.model.MetadataResource;
-import com.b2international.snowowl.fhir.core.model.dt.Code;
-import com.b2international.snowowl.fhir.core.model.dt.CodeableConcept;
-import com.b2international.snowowl.fhir.core.model.dt.Coding;
-import com.b2international.snowowl.fhir.core.model.dt.Id;
-import com.b2international.snowowl.fhir.core.model.dt.Identifier;
-import com.b2international.snowowl.fhir.core.model.dt.Narrative;
-import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.b2international.snowowl.fhir.core.model.dt.*;
 import com.b2international.snowowl.fhir.core.model.usagecontext.UsageContext;
 import com.b2international.snowowl.fhir.core.search.FhirBeanPropertyFilter;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
@@ -52,6 +46,8 @@ import io.swagger.annotations.ApiModel;
 @ApiModel("ConceptMap")
 @JsonFilter(FhirBeanPropertyFilter.FILTER_NAME)
 public class StructureDefinition extends MetadataResource {
+
+	private static final long serialVersionUID = 1L;
 
 	// FHIR header "resourceType" : "StructureDefinition",
 	@Mandatory
@@ -126,9 +122,9 @@ public class StructureDefinition extends MetadataResource {
 	
 	@SuppressWarnings("rawtypes")
 	public StructureDefinition(Id id, Meta meta, Uri impliciteRules, Code language, Narrative text, Uri url,
-			Identifier identifier, String version, String name, String title, Code status, Date date, String publisher,
-			Collection<ContactDetail> contacts, String description, Collection<UsageContext> usageContexts,
-			Collection<CodeableConcept> jurisdictions, String purpose, String copyright, 
+			Collection<Identifier> identifiers, String version, String name, String title, Code status, 
+			Boolean experimental, Date date, String publisher, Collection<ContactDetail> contacts, String description, 
+			Collection<UsageContext> usageContexts, Collection<CodeableConcept> jurisdictions, String purpose, String copyright, 
 			
 			Collection<Coding> keywords,
 			final Id fhirVersion,
@@ -144,8 +140,8 @@ public class StructureDefinition extends MetadataResource {
 			final StructureView snapshot,
 			final StructureView differential) {
 		
-		super(id, meta, impliciteRules, language, text, url, identifier, version, name, title, status, date, publisher,
-				contacts, description, usageContexts, jurisdictions, purpose, copyright);
+		super(id, meta, impliciteRules, language, text, url, identifiers, version, name, title, status, experimental, 
+				date, publisher, contacts, description, usageContexts, jurisdictions, purpose, copyright);
 		
 		this.keywords = keywords;
 		this.fhirVersion = fhirVersion;
@@ -298,8 +294,8 @@ public class StructureDefinition extends MetadataResource {
 
 		@Override
 		protected StructureDefinition doBuild() {
-			return new StructureDefinition(id, meta, implicitRules, language, text, url, identifier, version, name, title,
-					status, date, publisher, contacts, description, usageContexts, jurisdictions, purpose, copyright,
+			return new StructureDefinition(id, meta, implicitRules, language, text, url, identifiers, version, name, title,
+					status, experimental, date, publisher, contacts, description, usageContexts, jurisdictions, purpose, copyright,
 					
 					keywords,
 					fhirVersion,

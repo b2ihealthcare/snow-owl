@@ -194,7 +194,7 @@ public abstract class CodeSystemApiProvider extends FhirApiProvider {
 		String id = codeSystemVersion.getVersionResourceURI().toString();
 		
 		final Builder builder = CodeSystem.builder(id)
-			.identifier(identifier)
+			.addIdentifier(identifier)
 			.language(codeSystem.getLanguage())
 			.title(codeSystem.getTitle())
 			.name(codeSystem.getTitle())

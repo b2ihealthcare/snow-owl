@@ -23,12 +23,7 @@ import javax.validation.Valid;
 import com.b2international.snowowl.fhir.core.model.ContactDetail;
 import com.b2international.snowowl.fhir.core.model.Meta;
 import com.b2international.snowowl.fhir.core.model.MetadataResource;
-import com.b2international.snowowl.fhir.core.model.dt.Code;
-import com.b2international.snowowl.fhir.core.model.dt.CodeableConcept;
-import com.b2international.snowowl.fhir.core.model.dt.Id;
-import com.b2international.snowowl.fhir.core.model.dt.Identifier;
-import com.b2international.snowowl.fhir.core.model.dt.Narrative;
-import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.b2international.snowowl.fhir.core.model.dt.*;
 import com.b2international.snowowl.fhir.core.model.usagecontext.UsageContext;
 import com.b2international.snowowl.fhir.core.model.valueset.expansion.Expansion;
 import com.b2international.snowowl.fhir.core.search.FhirBeanPropertyFilter;
@@ -55,6 +50,8 @@ import io.swagger.annotations.ApiModel;
 @JsonFilter(FhirBeanPropertyFilter.FILTER_NAME)
 public class ValueSet extends MetadataResource {
 	
+	private static final long serialVersionUID = 1L;
+
 	//FHIR header "resourceType" : "ValueSet",
 	@Mandatory
 	@JsonProperty
@@ -75,13 +72,14 @@ public class ValueSet extends MetadataResource {
 	@SuppressWarnings("rawtypes")
 	public ValueSet(Id id, final Meta meta, final Uri impliciteRules, Code language, Narrative text,
 			
-			final Uri url, final Identifier identifier, final String version, final String name, final String title, Code status, final Date date, String publisher, 
+			final Uri url, final Collection<Identifier> identifiers, final String version, final String name, final String title, Code status, 
+			final Boolean experimental, final Date date, String publisher, 
 			final Collection<ContactDetail> contacts, String description, final Collection<UsageContext> usageContexts,
 			final Collection<CodeableConcept> jurisdictions, final Boolean immutable, final String purpose, final String copyright,
 			final Compose compose, final Expansion expansion) {
 		
-		super(id, meta, impliciteRules, language, text, url, identifier, version, name, title, status, date, publisher, contacts,
-				description, usageContexts, jurisdictions, purpose, copyright);
+		super(id, meta, impliciteRules, language, text, url, identifiers, version, name, title, status, experimental, 
+				date, publisher, contacts, description, usageContexts, jurisdictions, purpose, copyright);
 		
 		this.immutable = immutable;
 		this.compose = compose;
@@ -134,9 +132,9 @@ public class ValueSet extends MetadataResource {
 			//	throw new FhirException("No 'compose' or 'expansion' fields are defined for the value set.", "ValueSet");
 			//}
 			
-			return new ValueSet(id, meta, implicitRules, language, text, url, identifier, version, name, 
-					title, status, date, publisher, contacts, description, usageContexts, jurisdictions, immutable, 
-					purpose, copyright, compose, expansion);
+			return new ValueSet(id, meta, implicitRules, language, text, url, identifiers, version, name, 
+					title, status, experimental, date, publisher, contacts, description, usageContexts, 
+					jurisdictions, immutable, purpose, copyright, compose, expansion);
 		}
 	}
 		

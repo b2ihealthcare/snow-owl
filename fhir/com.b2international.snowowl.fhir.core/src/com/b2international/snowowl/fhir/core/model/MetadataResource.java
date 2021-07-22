@@ -15,9 +15,7 @@
  */
 package com.b2international.snowowl.fhir.core.model;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Set;
@@ -25,22 +23,19 @@ import java.util.Set;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import com.b2international.snowowl.fhir.core.FhirConstants;
-import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
+import com.b2international.snowowl.fhir.core.FhirDates;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
-import com.b2international.snowowl.fhir.core.exceptions.FhirException;
 import com.b2international.snowowl.fhir.core.model.dt.*;
 import com.b2international.snowowl.fhir.core.model.usagecontext.UsageContext;
 import com.b2international.snowowl.fhir.core.search.Filterable;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.b2international.snowowl.fhir.core.search.Searchable;
 import com.b2international.snowowl.fhir.core.search.Summary;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 
 /**
  * FHIR resource with common meta-data properties.
@@ -52,6 +47,8 @@ import com.google.common.collect.Sets;
 //@JsonFilter(FhirBeanPropertyFilter.FILTER_NAME)
 public abstract class MetadataResource extends DomainResource {
 	
+	private static final long serialVersionUID = 1L;
+
 	/**
 	 * @since 8.0
 	 */
@@ -89,8 +86,9 @@ public abstract class MetadataResource extends DomainResource {
 	private Uri url;
 	
 	@Summary
-	@JsonProperty
-	private Identifier identifier; //OID
+	@JsonProperty("identifier")
+	@JsonInclude(value = Include.NON_EMPTY)
+	private Collection<Identifier> identifiers;
 	
 	@Summary
 	@JsonProperty
@@ -110,6 +108,10 @@ public abstract class MetadataResource extends DomainResource {
 	@NotNull
 	@JsonProperty
 	private Code status;
+	
+	@Summary
+	@JsonProperty
+	private Boolean experimental;
 	
 	//Revision date
 	@Summary
@@ -153,18 +155,19 @@ public abstract class MetadataResource extends DomainResource {
 	 */
 	@SuppressWarnings("rawtypes")
 	public MetadataResource(Id id, final Meta meta, final Uri impliciteRules, Code language, 
-			Narrative text, Uri url, Identifier identifier, String version, 
-			String name, String title, Code status, final Date date,  final String publisher, final Collection<ContactDetail> contacts, final String description, 
+			Narrative text, Uri url, Collection<Identifier> identifiers, String version, 
+			String name, String title, Code status, final Boolean experimental, final Date date,  final String publisher, final Collection<ContactDetail> contacts, final String description, 
 			final Collection<UsageContext> usageContexts, final Collection<CodeableConcept> jurisdictions, final String purpose, final String copyright) {
 		
 		super(id, meta, impliciteRules, language, text);
 		
 		this.url = url;
-		this.identifier = identifier;
+		this.identifiers = identifiers;
 		this.version = version;
 		this.name = name;
 		this.title = title;
 		this.status = status;
+		this.experimental = experimental;
 		this.date = date;
 		this.contacts = contacts;
 		this.publisher = publisher;
@@ -179,19 +182,67 @@ public abstract class MetadataResource extends DomainResource {
 		return url;
 	}
 	
+	public Collection<Identifier> getIdentifiers() {
+		return identifiers;
+	}
+	
+	public String getVersion() {
+		return version;
+	}
+	
 	public String getName() {
 		return name;
+	}
+	
+	public String getTitle() {
+		return title;
+	}
+	
+	public Code getStatus() {
+		return status;
+	}
+
+	public Boolean getExperimental() {
+		return experimental;
 	}
 	
 	public Date getDate() {
 		return date;
 	}
 	
+	public Collection<ContactDetail> getContacts() {
+		return contacts;
+	}
+	
+	public String getPublisher() {
+		return publisher;
+	}
+	
+	public String getDescription() {
+		return description;
+	}
+	
+	public Collection<UsageContext> getUsageContexts() {
+		return usageContexts;
+	}
+	
+	public Collection<CodeableConcept> getJurisdictions() {
+		return jurisdictions;
+	}
+	
+	public String getPurpose() {
+		return purpose;
+	}
+	
+	public String getCopyright() {
+		return copyright;
+	}
+	
 	public static abstract class Builder<B extends Builder<B, T>, T extends FhirResource> extends DomainResource.Builder<B, T> {
 
 		protected Uri url; //ORG_LINK or hardcoded provider value
 		
-		protected Identifier identifier; //OID
+		protected Collection<Identifier> identifiers;
 		
 		protected String version; //not necessarily available - and what to do when we have more than 1??
 		
@@ -201,18 +252,20 @@ public abstract class MetadataResource extends DomainResource {
 
 		protected Code status;
 		
+		protected Boolean experimental;
+		
 		protected Date date;
 		
 		protected String publisher;
 
-		protected Collection<ContactDetail> contacts = Sets.newHashSet();
+		protected Collection<ContactDetail> contacts;
 		
 		protected String description;
 		
 		@SuppressWarnings("rawtypes")
-		protected Collection<UsageContext> usageContexts = Lists.newArrayList(); 
+		protected Collection<UsageContext> usageContexts; 
 
-		protected Collection<CodeableConcept> jurisdictions = Sets.newHashSet();
+		protected Collection<CodeableConcept> jurisdictions;
 		
 		protected String purpose;
 		
@@ -238,8 +291,18 @@ public abstract class MetadataResource extends DomainResource {
 			return getSelf();
 		}
 		
-		public B identifier(final Identifier identifer) {
-			this.identifier = identifer;
+		@JsonProperty("identifier")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public B identifiers(final Collection<Identifier> identifers) {
+			this.identifiers = identifers;
+			return getSelf();
+		}
+		
+		public B addIdentifier(Identifier identifier) {
+			if (identifiers == null) {
+				identifiers = new ArrayList<>();
+			}
+			identifiers.add(identifier);
 			return getSelf();
 		}
 
@@ -263,6 +326,11 @@ public abstract class MetadataResource extends DomainResource {
 			return getSelf();
 		}
 		
+		public B experimental(Boolean experimental) {
+			this.experimental = experimental;
+			return getSelf();
+		}
+		
 		public B date(Date date) {
 			this.date = date;
 			return getSelf();
@@ -273,12 +341,7 @@ public abstract class MetadataResource extends DomainResource {
 				this.date = null;
 				return getSelf();
 			}
-			DateFormat df = new SimpleDateFormat(FhirConstants.DATE_TIME_FORMAT);
-			try {
-				this.date = df.parse(dateString);
-			} catch (Exception e) {
-				throw FhirException.createFhirError(dateString + " cannot be parsed, use the format " + FhirConstants.DATE_TIME_FORMAT, OperationOutcomeCode.MSG_PARAM_INVALID);
-			}
+			this.date = FhirDates.parseDate(dateString);
 			return getSelf();
 		}
 		
@@ -286,8 +349,20 @@ public abstract class MetadataResource extends DomainResource {
 			this.publisher = publisher;
 			return getSelf();
 		}
+		
+		@JsonProperty("contact")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public B contacts(Collection<ContactDetail> contacts) {
+			this.contacts = contacts;
+			return getSelf();
+		}
 
 		public B addContact(ContactDetail contact) {
+			
+			if (contacts == null) {
+				contacts = new ArrayList<>();
+			}
+			
 			contacts.add(contact);
 			return getSelf();
 		}
@@ -298,12 +373,34 @@ public abstract class MetadataResource extends DomainResource {
 		}
 		
 		@SuppressWarnings("rawtypes")
+		@JsonProperty("usageContext")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public B usageContexts(Collection<UsageContext> usageContexts) {
+			this.usageContexts = usageContexts;
+			return getSelf();
+		}
+		
+		@SuppressWarnings("rawtypes")
 		public B addUseContext(final UsageContext usageContext) {
+			if (usageContexts == null) {
+				usageContexts = new ArrayList<>();
+			}
 			usageContexts.add(usageContext);
 			return getSelf();
 		}
 		
+		@JsonProperty("jurisdiction")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public B jurisdictions(Collection<CodeableConcept> jurisdictions) {
+			this.jurisdictions = jurisdictions;
+			return getSelf();
+		}
+		
 		public B addJurisdiction(final CodeableConcept jurisdiction) {
+			
+			if (jurisdictions == null) {
+				jurisdictions = new ArrayList<>();
+			}
 			jurisdictions.add(jurisdiction);
 			return getSelf();
 		}

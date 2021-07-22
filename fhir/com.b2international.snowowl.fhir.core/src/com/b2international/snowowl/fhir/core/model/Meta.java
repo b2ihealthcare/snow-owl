@@ -12,6 +12,7 @@ import com.b2international.snowowl.fhir.core.model.dt.Instant;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.search.Searchable;
 import com.b2international.snowowl.fhir.core.search.Summary;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
@@ -41,7 +42,7 @@ public class Meta extends Element {
 	@Summary
 	private final List<Coding> tags;
 
-	protected Meta(String id, List<Extension> extensions,
+	Meta(String id, List<Extension> extensions,
 			final Id versionId, final Instant lastUpdated, final List<Uri> profiles, final List<Coding> securities, final List<Coding> tags) {
 		
 		super(id, extensions);
@@ -115,6 +116,13 @@ public class Meta extends Element {
 			profiles.add(profileUri);
 			return getSelf();
 		}
+		
+		@JsonProperty("profile")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder profiles(List<Uri> profiles) {
+			this.profiles = profiles;
+			return getSelf();
+		}
 
 		public Builder addProfile(String profile) {
 			if (profiles == null) {
@@ -124,11 +132,25 @@ public class Meta extends Element {
 			return getSelf();
 		}
 		
+		@JsonProperty("security")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder securities(List<Coding> securities) {
+			this.securities = securities;
+			return getSelf();
+		}
+		
 		public Builder addSecurity(Coding security) {
 			if (securities == null) {
 				securities = new ArrayList<>();
 			}
 			securities.add(security);
+			return getSelf();
+		}
+		
+		@JsonProperty("tag")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder tags(List<Coding> tags) {
+			this.tags = tags;
 			return getSelf();
 		}
 

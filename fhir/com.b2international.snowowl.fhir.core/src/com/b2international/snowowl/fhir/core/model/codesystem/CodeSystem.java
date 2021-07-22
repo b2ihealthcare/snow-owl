@@ -15,9 +15,7 @@
  */
 package com.b2international.snowowl.fhir.core.model.codesystem;
 
-import java.util.Collection;
-import java.util.Date;
-import java.util.Set;
+import java.util.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -26,18 +24,14 @@ import javax.validation.constraints.NotNull;
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemHierarchyMeaning;
 import com.b2international.snowowl.fhir.core.model.ContactDetail;
-import com.b2international.snowowl.fhir.core.model.FhirResource;
 import com.b2international.snowowl.fhir.core.model.Meta;
 import com.b2international.snowowl.fhir.core.model.MetadataResource;
-import com.b2international.snowowl.fhir.core.model.dt.Code;
-import com.b2international.snowowl.fhir.core.model.dt.CodeableConcept;
-import com.b2international.snowowl.fhir.core.model.dt.Id;
-import com.b2international.snowowl.fhir.core.model.dt.Identifier;
-import com.b2international.snowowl.fhir.core.model.dt.Narrative;
-import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.b2international.snowowl.fhir.core.model.Meta.Builder;
+import com.b2international.snowowl.fhir.core.model.dt.*;
 import com.b2international.snowowl.fhir.core.model.usagecontext.UsageContext;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.b2international.snowowl.fhir.core.search.Summary;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -163,7 +157,6 @@ public class CodeSystem extends MetadataResource {
 	private Integer count;
 
 	@Summary
-	@Valid
 	@JsonProperty(CodeSystem.Fields.FILTER)
 	@JsonInclude(value = Include.NON_EMPTY)
 	private Collection<Filter> filters;
@@ -187,8 +180,8 @@ public class CodeSystem extends MetadataResource {
 
 	@SuppressWarnings("rawtypes")
 	CodeSystem(Id id, final Meta meta, final Uri impliciteRules, Code language, 
-			final Narrative text, Uri url, Identifier identifier, String version, String name, String title, Code status,
-			final Date date, final String publisher, final Collection<ContactDetail> contacts, final String description, final Collection<UsageContext> usageContexts, 
+			final Narrative text, Uri url, Collection<Identifier> identifiers, String version, String name, String title, Code status,
+			final Boolean experimental, final Date date, final String publisher, final Collection<ContactDetail> contacts, final String description, final Collection<UsageContext> usageContexts, 
 			final Collection<CodeableConcept> jurisdictions, final String purpose, final String copyright,
 			
 			//CodeSystem only
@@ -197,7 +190,7 @@ public class CodeSystem extends MetadataResource {
 			final Code content, final Uri supplements, final Integer count, 
 			Collection<Filter> filters, Collection<SupportedConceptProperty> properties, Collection<Concept> concepts) {
 
-		super(id, meta, impliciteRules, language, text, url, identifier, version, name, title, status, date, publisher, contacts, 
+		super(id, meta, impliciteRules, language, text, url, identifiers, version, name, title, status, experimental, date, publisher, contacts, 
 				description, usageContexts, jurisdictions, purpose, copyright);
 
 		this.resourceType = resourceType;
@@ -213,7 +206,55 @@ public class CodeSystem extends MetadataResource {
 		this.properties = properties;
 		this.concepts = concepts;
 	}
-
+	
+	public String getResourceType() {
+		return resourceType;
+	}
+	
+	public Boolean getCaseSensitive() {
+		return caseSensitive;
+	}
+	
+	public Uri getValueSet() {
+		return valueSet;
+	}
+	
+	public Code getHierarchyMeaning() {
+		return hierarchyMeaning;
+	}
+	
+	public Boolean getCompositional() {
+		return compositional;
+	}
+	
+	public Boolean getVersionNeeded() {
+		return versionNeeded;
+	}
+	
+	public Code getContent() {
+		return content;
+	}
+	
+	public Uri getSupplements() {
+		return supplements;
+	}
+	
+	public Integer getCount() {
+		return count;
+	}
+	
+	public Collection<Filter> getFilters() {
+		return filters;
+	}
+	
+	public Collection<SupportedConceptProperty> getProperties() {
+		return properties;
+	}
+	
+	public Collection<Concept> getConcepts() {
+		return concepts;
+	}
+	
 	public static Builder builder() {
 		return new Builder();
 	}
@@ -243,9 +284,9 @@ public class CodeSystem extends MetadataResource {
 
 		private Integer count;
 
-		private Collection<Filter> filters = Sets.newHashSet();
+		private Collection<Filter> filters;
 
-		private Collection<SupportedConceptProperty> properties = Lists.newArrayList();
+		private Collection<SupportedConceptProperty> properties;
 
 		private Collection<Concept> concepts = Sets.newHashSet();
 
@@ -317,13 +358,35 @@ public class CodeSystem extends MetadataResource {
 			this.count = count;
 			return getSelf();
 		}
+		
+		@JsonProperty("filter")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder filters(Collection<Filter> filters) {
+			this.filters = filters;
+			return getSelf();
+		}
 
 		public Builder addFilter(Filter filter) {
+			if (filters == null) {
+				filters = new ArrayList<>();
+			}
 			this.filters.add(filter);
+			return getSelf();
+		}
+		
+		@JsonProperty("property")
+		@JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+		public Builder properties(Collection<SupportedConceptProperty> properties) {
+			this.properties = properties;
 			return getSelf();
 		}
 
 		public Builder addProperty(SupportedConceptProperty property) {
+			
+			if (properties == null) {
+				properties = new ArrayList<SupportedConceptProperty>();
+			}
+			
 			this.properties.add(property);
 			return getSelf();
 		}
@@ -335,8 +398,8 @@ public class CodeSystem extends MetadataResource {
 
 		@Override
 		protected CodeSystem doBuild() {
-			return new CodeSystem(id, meta, implicitRules, language, text, url, identifier, version, name, title, status, date, publisher, contacts, 
-				description, usageContexts, jurisdictions, purpose, copyright,
+			return new CodeSystem(id, meta, implicitRules, language, text, url, identifiers, version, name, title, status, 
+				experimental, date, publisher, contacts, description, usageContexts, jurisdictions, purpose, copyright,
 				resourceType, caseSensitive, valueSet, hierarchyMeaning, compositional, versionNeeded,
 				content, supplements, count, filters, properties, concepts);
 		}

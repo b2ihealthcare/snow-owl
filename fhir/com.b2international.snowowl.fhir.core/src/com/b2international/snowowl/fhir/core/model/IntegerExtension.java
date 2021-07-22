@@ -17,6 +17,9 @@ package com.b2international.snowowl.fhir.core.model;
 
 import com.b2international.snowowl.fhir.core.codesystems.ExtensionType;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
 /**
  * 
@@ -25,6 +28,7 @@ import com.b2international.snowowl.fhir.core.model.dt.Uri;
  * @see <a href="https://www.hl7.org/fhir/extensibility.html#Extension">FHIR:Foundation:Extensibility</a>
  * @since 6.3
  */
+@JsonDeserialize(using = JsonDeserializer.None.class, builder = IntegerExtension.Builder.class)
 public class IntegerExtension extends Extension<Integer> {
 	
 	public IntegerExtension(final Uri url, final Integer value) {
@@ -40,10 +44,21 @@ public class IntegerExtension extends Extension<Integer> {
 		return new Builder();
 	}
 	
+	@JsonPOJOBuilder(withPrefix = "")
 	public static class Builder extends Extension.Builder<Builder, IntegerExtension, Integer> {
 		
 		@Override
 		protected Builder getSelf() {
+			return this;
+		}
+		
+		/*
+		 * For deserialization support.
+		 * @param value
+		 * @return
+		 */
+		protected Builder valueInteger(final Integer value) {
+			this.value = value;
 			return this;
 		}
 		

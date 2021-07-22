@@ -21,6 +21,7 @@ import javax.validation.constraints.NotNull;
 import com.b2international.snowowl.fhir.core.codesystems.ExtensionType;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.serialization.ExtensionSerializer;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
@@ -31,6 +32,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
  * @since 6.3
  */
 @JsonSerialize(using=ExtensionSerializer.class)
+@JsonDeserialize(using = ExtensionDeserializer.class)
 public abstract class Extension<T> {
 	
 	//Identifies the meaning of the extension
@@ -68,12 +70,12 @@ public abstract class Extension<T> {
 		
 		protected abstract B getSelf();
 		
-		public B id(Uri url) {
+		public B url(Uri url) {
 			this.url = url;
 			return getSelf();
 		}
 		
-		public B id(String url) {
+		public B url(String url) {
 			this.url = new Uri(url);
 			return getSelf();
 		}

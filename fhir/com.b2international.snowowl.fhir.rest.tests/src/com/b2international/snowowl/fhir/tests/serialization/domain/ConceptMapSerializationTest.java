@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,20 +17,15 @@ package com.b2international.snowowl.fhir.tests.serialization.domain;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
 import com.b2international.snowowl.fhir.core.exceptions.ValidationException;
 import com.b2international.snowowl.fhir.core.model.ContactDetail;
-import com.b2international.snowowl.fhir.core.model.conceptmap.ConceptMap;
-import com.b2international.snowowl.fhir.core.model.conceptmap.ConceptMapElement;
-import com.b2international.snowowl.fhir.core.model.conceptmap.DependsOn;
-import com.b2international.snowowl.fhir.core.model.conceptmap.Group;
-import com.b2international.snowowl.fhir.core.model.conceptmap.Target;
-import com.b2international.snowowl.fhir.core.model.conceptmap.UnMapped;
+import com.b2international.snowowl.fhir.core.model.conceptmap.*;
 import com.b2international.snowowl.fhir.core.model.dt.CodeableConcept;
 import com.b2international.snowowl.fhir.core.model.dt.Coding;
 import com.b2international.snowowl.fhir.core.model.dt.ContactPoint;
@@ -277,7 +272,7 @@ public class ConceptMapSerializationTest extends FhirTest {
 	
 		ConceptMap conceptMap = ConceptMap.builder("-1")
 				.url("http://who.org")
-				.identifier(Identifier.builder()
+				.addIdentifier(Identifier.builder()
 					.build())
 				.version("20130131")
 				.name("conceptMapName")
@@ -286,7 +281,7 @@ public class ConceptMapSerializationTest extends FhirTest {
 				.date(TEST_DATE_STRING)
 				.publisher("b2i")
 				.addContact(ContactDetail.builder()
-					.addContactPoint(ContactPoint.builder()
+					.addTelecom(ContactPoint.builder()
 						.id("contactPointId")
 						.build())
 					.build())

@@ -19,35 +19,12 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
-import com.b2international.snowowl.fhir.tests.domain.BundleEntryTest;
-import com.b2international.snowowl.fhir.tests.domain.BundleTest;
-import com.b2international.snowowl.fhir.tests.domain.IssueTest;
-import com.b2international.snowowl.fhir.tests.domain.OperationOutcomeTest;
-import com.b2international.snowowl.fhir.tests.dt.CodeableConcepTest;
-import com.b2international.snowowl.fhir.tests.dt.CodingTest;
-import com.b2international.snowowl.fhir.tests.dt.ComplexDataTypeSerializationTest;
-import com.b2international.snowowl.fhir.tests.dt.PrimitiveDataTypeTest;
+import com.b2international.snowowl.fhir.tests.domain.*;
+import com.b2international.snowowl.fhir.tests.dt.*;
 import com.b2international.snowowl.fhir.tests.filter.ConceptMapFilterTest;
 import com.b2international.snowowl.fhir.tests.filter.FhirRequestParameterTest;
-import com.b2international.snowowl.fhir.tests.filter.FilterTest;
-import com.b2international.snowowl.fhir.tests.serialization.domain.CodeSystemSerializationTest;
-import com.b2international.snowowl.fhir.tests.serialization.domain.ConceptMapSerializationTest;
-import com.b2international.snowowl.fhir.tests.serialization.domain.ElementDefinitionSerializationTest;
-import com.b2international.snowowl.fhir.tests.serialization.domain.ModelSerializationTest;
-import com.b2international.snowowl.fhir.tests.serialization.domain.UsageContextSerializationTest;
-import com.b2international.snowowl.fhir.tests.serialization.domain.ValueSetSerializationTest;
-import com.b2international.snowowl.fhir.tests.serialization.parameterized.DesignationSerializationTest;
-import com.b2international.snowowl.fhir.tests.serialization.parameterized.ExpandValueSetRequestDeserializationTest;
-import com.b2international.snowowl.fhir.tests.serialization.parameterized.LookupRequestDeserializationTest;
-import com.b2international.snowowl.fhir.tests.serialization.parameterized.LookupResultSerializationTest;
-import com.b2international.snowowl.fhir.tests.serialization.parameterized.ParameterDeserializationTest;
-import com.b2international.snowowl.fhir.tests.serialization.parameterized.ParameterSerializationTest;
-import com.b2international.snowowl.fhir.tests.serialization.parameterized.PropertySerializationTest;
-import com.b2international.snowowl.fhir.tests.serialization.parameterized.SubsumptionRequestDeserializationTest;
-import com.b2international.snowowl.fhir.tests.serialization.parameterized.TranslateRequestDeserializationTest;
-import com.b2international.snowowl.fhir.tests.serialization.parameterized.TranslateResultSerializationTest;
-import com.b2international.snowowl.fhir.tests.serialization.parameterized.ValidateCodeResultTest;
-import com.b2international.snowowl.fhir.tests.serialization.parameterized.ValidateCodeSystemCodeRequestTest;
+import com.b2international.snowowl.fhir.tests.serialization.domain.*;
+import com.b2international.snowowl.fhir.tests.serialization.parameterized.*;
 
 /**
  * FHIR test suite.
@@ -70,6 +47,11 @@ import com.b2international.snowowl.fhir.tests.serialization.parameterized.Valida
 	//New format
 	CodingTest.class,
 	CodeableConcepTest.class,
+	IdentiferTest.class,
+	PeriodTest.class,
+	ReferenceTest.class,
+	ContactPointTest.class,
+	ContactDetailTest.class,
 	
 	//parameterized
 	ParameterDeserializationTest.class,
@@ -88,15 +70,17 @@ import com.b2international.snowowl.fhir.tests.serialization.parameterized.Valida
 	//Domain models
 	TypedPropertySerializationTest.class,
 	UsageContextSerializationTest.class,
-	ModelSerializationTest.class,
 	
 	//New format
 	IssueTest.class,
 	OperationOutcomeTest.class,
 	BundleEntryTest.class,
 	BundleTest.class,
+	MetaTest.class,
+	ConceptPropertyTest.class,
+	FilterTest.class,
+	CodeSystemTest.class,
 
-	CodeSystemSerializationTest.class,
 	ValueSetSerializationTest.class,
 	ConceptMapSerializationTest.class,
 	ConceptMapFilterTest.class,

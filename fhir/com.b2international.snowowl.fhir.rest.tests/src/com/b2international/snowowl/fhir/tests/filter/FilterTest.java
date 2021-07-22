@@ -16,9 +16,9 @@
 package com.b2international.snowowl.fhir.tests.filter;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 
 import java.util.List;
 import java.util.Set;
@@ -29,12 +29,7 @@ import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
-import com.b2international.snowowl.fhir.core.codesystems.CodeSystemHierarchyMeaning;
-import com.b2international.snowowl.fhir.core.codesystems.CommonConceptProperties;
-import com.b2international.snowowl.fhir.core.codesystems.IdentifierUse;
-import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
-import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
+import com.b2international.snowowl.fhir.core.codesystems.*;
 import com.b2international.snowowl.fhir.core.model.Designation;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
 import com.b2international.snowowl.fhir.core.model.codesystem.Concept;
@@ -75,7 +70,7 @@ public class FilterTest extends FhirTest {
 			.addProperty(SupportedConceptProperty.builder(CommonConceptProperties.CHILD).build())
 			.description("Code system description")
 			.hierarchyMeaning(CodeSystemHierarchyMeaning.IS_A)
-			.identifier(identifier)
+			.addIdentifier(identifier)
 			.language("en")
 			.name("Local code system")
 			.narrative(NarrativeStatus.ADDITIONAL, "<div>Some html text</div>")

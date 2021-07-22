@@ -24,7 +24,7 @@ import java.util.Date;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.date.Dates;
-import com.b2international.snowowl.fhir.core.FhirConstants;
+import com.b2international.snowowl.fhir.core.FhirDates;
 import com.b2international.snowowl.fhir.core.codesystems.IssueSeverity;
 import com.b2international.snowowl.fhir.core.codesystems.IssueType;
 import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
@@ -125,7 +125,7 @@ public class PropertySerializationTest extends FhirTest {
 	@Test
 	public void dateTimePropertyTest() throws Exception {
 
-		Date date = Dates.parse("2018-03-09T20:50:21.000+0100", FhirConstants.DATE_TIME_FORMAT);
+		Date date = Dates.parse("2018-03-09T20:50:21.000+0100", FhirDates.DATE_TIME_FORMAT);
 		
 		Property property = Property.builder()
 			.code("123")

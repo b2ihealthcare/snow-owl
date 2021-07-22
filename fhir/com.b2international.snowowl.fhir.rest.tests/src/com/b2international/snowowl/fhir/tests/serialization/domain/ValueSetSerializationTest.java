@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2018 B2i Healthcare Pte Ltd, http://b2i.sg
+ * Copyright 2011-2021 B2i Healthcare Pte Ltd, http://b2i.sg
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,15 +18,15 @@ package com.b2international.snowowl.fhir.tests.serialization.domain;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.junit.Test;
 
-import com.b2international.snowowl.fhir.core.FhirConstants;
+import com.b2international.snowowl.fhir.core.FhirDates;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
 import com.b2international.snowowl.fhir.core.model.ContactDetail;
 import com.b2international.snowowl.fhir.core.model.Designation;
@@ -36,11 +36,7 @@ import com.b2international.snowowl.fhir.core.model.dt.ContactPoint;
 import com.b2international.snowowl.fhir.core.model.dt.Identifier;
 import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.valueset.ValueSet;
-import com.b2international.snowowl.fhir.core.model.valueset.expansion.Contains;
-import com.b2international.snowowl.fhir.core.model.valueset.expansion.DateTimeParameter;
-import com.b2international.snowowl.fhir.core.model.valueset.expansion.Expansion;
-import com.b2international.snowowl.fhir.core.model.valueset.expansion.StringParameter;
-import com.b2international.snowowl.fhir.core.model.valueset.expansion.UriParameter;
+import com.b2international.snowowl.fhir.core.model.valueset.expansion.*;
 import com.b2international.snowowl.fhir.tests.FhirTest;
 
 import io.restassured.path.json.JsonPath;
@@ -54,7 +50,7 @@ public class ValueSetSerializationTest extends FhirTest {
 	@Test
 	public void extensionTest() throws Exception {
 		
-		Extension<Integer> integerExtension = IntegerExtension.builder().id("testUri").value(1).build();
+		Extension<Integer> integerExtension = IntegerExtension.builder().url("testUri").value(1).build();
 				
 		String expectedJson =  "{\"url\":\"testUri\","
 					+ "\"valueInteger\":1}";
@@ -91,7 +87,7 @@ public class ValueSetSerializationTest extends FhirTest {
 	@Test
 	public void dateTimeParameterTest() throws Exception {
 		
-		Date date = new SimpleDateFormat(FhirConstants.DATE_TIME_FORMAT).parse(TEST_DATE_STRING);
+		Date date = new SimpleDateFormat(FhirDates.DATE_TIME_FORMAT).parse(TEST_DATE_STRING);
 		
 		DateTimeParameter parameter = DateTimeParameter.builder()
 			.name("paramName")
@@ -197,7 +193,7 @@ public class ValueSetSerializationTest extends FhirTest {
 		
 		ValueSet valueSet = ValueSet.builder("-1")
 			.url("http://who.org")
-			.identifier(Identifier.builder()
+			.addIdentifier(Identifier.builder()
 					.build())
 			.version("20130131")
 			.name("refsetName")
@@ -206,7 +202,7 @@ public class ValueSetSerializationTest extends FhirTest {
 			.date(TEST_DATE_STRING)
 			.publisher("b2i")
 			.addContact(ContactDetail.builder()
-					.addContactPoint(ContactPoint.builder()
+					.addTelecom(ContactPoint.builder()
 						.id("contactPointId")
 						.build())
 					.build())

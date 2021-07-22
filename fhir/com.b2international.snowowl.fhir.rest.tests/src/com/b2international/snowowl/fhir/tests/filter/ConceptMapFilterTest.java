@@ -17,7 +17,7 @@ package com.b2international.snowowl.fhir.tests.filter;
 
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.util.List;
 
@@ -65,7 +65,7 @@ public class ConceptMapFilterTest extends FhirTest {
 		
 		conceptMap = ConceptMap.builder("repo/refsetId")
 			.description("Code system description")
-			.identifier(identifier)
+			.addIdentifier(identifier)
 			.language("en")
 			.name("Test concept map")
 			.narrative(NarrativeStatus.ADDITIONAL, "<div>Some html text</div>")

@@ -55,6 +55,8 @@ import io.swagger.annotations.ApiModel;
 @JsonFilter(FhirBeanPropertyFilter.FILTER_NAME)
 public class ConceptMap extends MetadataResource {
 
+	private static final long serialVersionUID = 1L;
+
 	// FHIR header "resourceType" : "ConceptMap",
 	@Mandatory
 	@JsonProperty
@@ -102,13 +104,13 @@ public class ConceptMap extends MetadataResource {
 
 	@SuppressWarnings("rawtypes")
 	ConceptMap(Id id, Meta meta, Uri impliciteRules, Code language, Narrative text, Uri url,
-			Identifier identifier, String version, String name, String title, Code status, Date date, String publisher,
-			Collection<ContactDetail> contacts, String description, Collection<UsageContext> usageContexts,
+			Collection<Identifier> identifiers, String version, String name, String title, Code status, Boolean experimental, 
+			Date date, String publisher, Collection<ContactDetail> contacts, String description, Collection<UsageContext> usageContexts,
 			Collection<CodeableConcept> jurisdictions, String purpose, String copyright, Uri sourceUri,
 			Uri sourceCanonical, Uri targetUri, Uri targetCanonical, Collection<Group> groups) {
 		
-		super(id, meta, impliciteRules, language, text, url, identifier, version, name, title, status, date, publisher,
-				contacts, description, usageContexts, jurisdictions, purpose, copyright);
+		super(id, meta, impliciteRules, language, text, url, identifiers, version, name, title, status, experimental, 
+				date, publisher, contacts, description, usageContexts, jurisdictions, purpose, copyright);
 		
 		this.sourceUri = sourceUri;
 		this.sourceCanonical = sourceCanonical;
@@ -203,8 +205,8 @@ public class ConceptMap extends MetadataResource {
 
 		@Override
 		protected ConceptMap doBuild() {
-			return new ConceptMap(id, meta, implicitRules, language, text, url, identifier, version, name, title,
-					status, date, publisher, contacts, description, usageContexts, jurisdictions, purpose, copyright,
+			return new ConceptMap(id, meta, implicitRules, language, text, url, identifiers, version, name, title,
+					status, experimental, date, publisher, contacts, description, usageContexts, jurisdictions, purpose, copyright,
 					sourceUri, sourceCanonical, targetUri, targetCanonical, groups);
 		}
 

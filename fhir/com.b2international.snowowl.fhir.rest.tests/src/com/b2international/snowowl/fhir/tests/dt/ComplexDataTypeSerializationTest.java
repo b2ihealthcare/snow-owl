@@ -16,8 +16,8 @@
 package com.b2international.snowowl.fhir.tests.dt;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertEquals;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -28,10 +28,8 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.b2international.snowowl.fhir.core.FhirConstants;
+import com.b2international.snowowl.fhir.core.FhirDates;
 import com.b2international.snowowl.fhir.core.codesystems.IdentifierUse;
-import com.b2international.snowowl.fhir.core.codesystems.IssueSeverity;
-import com.b2international.snowowl.fhir.core.codesystems.IssueType;
 import com.b2international.snowowl.fhir.core.codesystems.NarrativeStatus;
 import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.core.codesystems.QuantityComparator;
@@ -39,21 +37,7 @@ import com.b2international.snowowl.fhir.core.exceptions.ValidationException;
 import com.b2international.snowowl.fhir.core.model.Extension;
 import com.b2international.snowowl.fhir.core.model.IntegerExtension;
 import com.b2international.snowowl.fhir.core.model.Issue;
-import com.b2international.snowowl.fhir.core.model.Issue.Builder;
-import com.b2international.snowowl.fhir.core.model.dt.Code;
-import com.b2international.snowowl.fhir.core.model.dt.CodeableConcept;
-import com.b2international.snowowl.fhir.core.model.dt.Coding;
-import com.b2international.snowowl.fhir.core.model.dt.ContactPoint;
-import com.b2international.snowowl.fhir.core.model.dt.Identifier;
-import com.b2international.snowowl.fhir.core.model.dt.Instant;
-import com.b2international.snowowl.fhir.core.model.dt.Narrative;
-import com.b2international.snowowl.fhir.core.model.dt.Period;
-import com.b2international.snowowl.fhir.core.model.dt.Quantity;
-import com.b2international.snowowl.fhir.core.model.dt.Range;
-import com.b2international.snowowl.fhir.core.model.dt.Reference;
-import com.b2international.snowowl.fhir.core.model.dt.Signature;
-import com.b2international.snowowl.fhir.core.model.dt.SimpleQuantity;
-import com.b2international.snowowl.fhir.core.model.dt.Uri;
+import com.b2international.snowowl.fhir.core.model.dt.*;
 import com.b2international.snowowl.fhir.tests.FhirExceptionIssueMatcher;
 import com.b2international.snowowl.fhir.tests.FhirTest;
 import com.google.common.primitives.Bytes;
@@ -136,23 +120,6 @@ public class ComplexDataTypeSerializationTest extends FhirTest {
 	}
 	
 	@Test
-	public void periodTest() throws Exception {
-		
-		DateFormat df = new SimpleDateFormat(FhirConstants.DATE_TIME_FORMAT);
-		Date startDate = df.parse(TEST_DATE_STRING);
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(startDate);
-		cal.add(Calendar.DAY_OF_MONTH, 1);
-		
-		Period period = new Period(startDate, cal.getTime());
-		
-		String expected = "{\"start\":\"2018-03-23T07:49:40.000+0000\"," + 
-				"\"end\":\"2018-03-24T07:49:40.000+0000\"}";
-		
-		Assert.assertEquals(expected, objectMapper.writeValueAsString(period));
-	}
-	
-	@Test
 	public void rangeTest() throws Exception {
 		
 		SimpleQuantity low = SimpleQuantity.builder()
@@ -184,31 +151,10 @@ public class ComplexDataTypeSerializationTest extends FhirTest {
 	}
 	
 	@Test
-	public void referenceTest() throws Exception {
-		
-		Identifier identifier = Identifier.builder()
-			.system("system")
-			.build();
-		
-		Reference reference = new Reference("reference url", identifier, "displayString");
-		
-		String expected = "{\"reference\":\"reference url\"," + 
-				"\"identifier\":{\"system\":\"system\"}," + 
-				"\"display\":\"displayString\"}";
-		
-		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(reference));
-		assertThat(jsonPath.getString("reference"), equalTo("reference url"));
-		assertThat(jsonPath.getString("identifier.system"), equalTo("system"));
-		assertThat(jsonPath.getString("display"), equalTo("displayString"));
-		
-		Assert.assertEquals(expected, objectMapper.writeValueAsString(reference));
-	}
-	
-	@Test
 	public void extensionTest() throws Exception {
 		
 		@SuppressWarnings("rawtypes")
-		Extension extension = IntegerExtension.builder().id("url").value(1).build();
+		Extension extension = IntegerExtension.builder().url("url").value(1).build();
 		
 		String expected = "{\"url\":\"url\",\"valueInteger\":1}";
 		
@@ -216,87 +162,9 @@ public class ComplexDataTypeSerializationTest extends FhirTest {
 	}
 	
 	@Test
-	public void contactPointTest() throws Exception {
-		
-		ContactPoint cp = ContactPoint.builder()
-				.id("element_id")
-				.addExtension(IntegerExtension.builder().id("url").value(1).build())
-				.addExtension(IntegerExtension.builder().id("url2").value(2).build())
-				.period(new Period(null, null))
-				.rank(1)
-				.system("system")
-				.value("value")
-				.build();
-		
-		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(cp));
-		assertThat(jsonPath.getString("id"), equalTo("element_id"));
-		assertThat(jsonPath.getString("system"), equalTo("system"));
-		assertThat(jsonPath.getString("value"), equalTo("value"));
-		assertThat(jsonPath.getInt("rank"), equalTo(1));
-		assertThat(jsonPath.get("period.start"), equalTo(null));
-		assertThat(jsonPath.get("period.end"), equalTo(null));
-		assertThat(jsonPath.getString("extension[0].url"), equalTo("url"));
-		assertThat(jsonPath.getInt("extension[0].valueInteger"), equalTo(1));
-		assertThat(jsonPath.getString("extension[1].url"), equalTo("url2"));
-		assertThat(jsonPath.getInt("extension[1].valueInteger"), equalTo(2));
-	}
-	
-	@Test
-	public void identifierTest() throws Exception {
-		
-		DateFormat df = new SimpleDateFormat(FhirConstants.DATE_TIME_FORMAT);
-		Date startDate = df.parse(TEST_DATE_STRING);
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(startDate);
-		cal.add(Calendar.DAY_OF_MONTH, 1);
-		
-		Identifier refIdentifier = Identifier.builder()
-				.system("system")
-				.build();
-		
-		Period period = new Period(startDate, cal.getTime());
-		
-		Reference reference = new Reference("reference url", refIdentifier, "displayString");
-		
-		Coding coding = Coding.builder()
-			.code("codingCode")
-			.display("codingDisplay")
-			.build();
-		
-		CodeableConcept codeableConcept = CodeableConcept.builder()
-				.addCoding(coding)
-				.text("codingText")
-				.build();
-		
-		Identifier identifier = Identifier.builder()
-			.use(IdentifierUse.OFFICIAL)
-			.type(codeableConcept)
-			.period(period)
-			.system("system")
-			.value("value")
-			.assigner(reference)
-			.build();
-		
-		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(identifier));
-		assertThat(jsonPath.getString("use"), equalTo("official"));
-		assertThat(jsonPath.getString("system"), equalTo("system"));
-		assertThat(jsonPath.getString("value"), equalTo("value"));
-		
-		assertThat(jsonPath.getString("type.text"), equalTo("codingText"));
-		assertThat(jsonPath.getString("type.coding[0].code"), equalTo("codingCode"));
-		assertThat(jsonPath.getString("type.coding[0].display"), equalTo("codingDisplay"));
-
-		assertThat(jsonPath.getString("period.start"), equalTo("2018-03-23T07:49:40.000+0000"));
-		assertThat(jsonPath.getString("period.end"), equalTo("2018-03-24T07:49:40.000+0000"));
-		assertThat(jsonPath.getString("assigner.reference"), equalTo("reference url"));
-		assertThat(jsonPath.getString("assigner.display"), equalTo("displayString"));
-		assertThat(jsonPath.getString("assigner.identifier.system"), equalTo("system"));
-	}
-	
-	@Test
 	public void signatureUriTest() throws Exception {
 		
-		DateFormat df = new SimpleDateFormat(FhirConstants.DATE_TIME_FORMAT);
+		DateFormat df = new SimpleDateFormat(FhirDates.DATE_TIME_FORMAT);
 		Date date = df.parse(TEST_DATE_STRING);
 		Instant instant = Instant.builder().instant(date).build();
 		
@@ -330,7 +198,7 @@ public class ComplexDataTypeSerializationTest extends FhirTest {
 	@Test
 	public void signatureReferenceTest() throws Exception {
 		
-		DateFormat df = new SimpleDateFormat(FhirConstants.DATE_TIME_FORMAT);
+		DateFormat df = new SimpleDateFormat(FhirDates.DATE_TIME_FORMAT);
 		Date date = df.parse(TEST_DATE_STRING);
 		Instant instant = Instant.builder().instant(date).build();
 		
@@ -338,7 +206,10 @@ public class ComplexDataTypeSerializationTest extends FhirTest {
 			.addType(Coding.builder().build())
 			.contentType(new Code("contentTypeCode"))
 			.when(instant)
-			.whoReference(new Reference("reference", Identifier.builder().build(), "display"))
+			.whoReference(Reference.builder().reference("reference")
+					.identifier(Identifier.builder().build())
+					.display("display")
+					.build())
 			.onBehalfOfUri(new Uri("onBehalfUri"))
 			.blob("blob".getBytes())
 			.build();
@@ -363,7 +234,7 @@ public class ComplexDataTypeSerializationTest extends FhirTest {
 		exception.expectMessage("1 validation error");
 		exception.expect(FhirExceptionIssueMatcher.issue(expectedIssue));
 		
-		DateFormat df = new SimpleDateFormat(FhirConstants.DATE_TIME_FORMAT);
+		DateFormat df = new SimpleDateFormat(FhirDates.DATE_TIME_FORMAT);
 		Date date = df.parse(TEST_DATE_STRING);
 		Instant instant = Instant.builder().instant(date).build();
 		
@@ -372,7 +243,10 @@ public class ComplexDataTypeSerializationTest extends FhirTest {
 			.contentType(new Code("contentTypeCode"))
 			.when(instant)
 			.whoUri(new Uri("whoUri"))
-			.whoReference(new Reference("reference", Identifier.builder().build(), "display"))
+			.whoReference(Reference.builder().reference("reference")
+					.identifier(Identifier.builder().build())
+					.display("display")
+					.build())
 			.onBehalfOfUri(new Uri("onBehalfUri"))
 			.blob("blob".getBytes())
 			.build();

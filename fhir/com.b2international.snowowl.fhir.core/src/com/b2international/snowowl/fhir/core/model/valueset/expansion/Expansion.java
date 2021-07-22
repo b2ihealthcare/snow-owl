@@ -25,7 +25,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
-import com.b2international.snowowl.fhir.core.FhirConstants;
+import com.b2international.snowowl.fhir.core.FhirDates;
 import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
 import com.b2international.snowowl.fhir.core.exceptions.FhirException;
 import com.b2international.snowowl.fhir.core.model.ValidatingBuilder;
@@ -100,11 +100,11 @@ public class Expansion {
 		}
 		
 		public Builder timestamp(String dateString) {
-			DateFormat df = new SimpleDateFormat(FhirConstants.DATE_TIME_FORMAT);
+			DateFormat df = new SimpleDateFormat(FhirDates.DATE_TIME_FORMAT);
 			try {
 				this.timestamp = df.parse(dateString);
 			} catch (ParseException e) {
-				throw FhirException.createFhirError(dateString + " cannot be parsed, use the format " + FhirConstants.DATE_TIME_FORMAT, OperationOutcomeCode.MSG_PARAM_INVALID);
+				throw FhirException.createFhirError(dateString + " cannot be parsed, use the format " + FhirDates.DATE_TIME_FORMAT, OperationOutcomeCode.MSG_PARAM_INVALID);
 			}
 			return this;
 		}

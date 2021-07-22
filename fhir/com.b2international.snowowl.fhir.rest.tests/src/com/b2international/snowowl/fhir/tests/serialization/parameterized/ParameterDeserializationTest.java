@@ -28,7 +28,7 @@ import java.util.Optional;
 import org.junit.Test;
 
 import com.b2international.snowowl.core.date.Dates;
-import com.b2international.snowowl.fhir.core.FhirConstants;
+import com.b2international.snowowl.fhir.core.FhirDates;
 import com.b2international.snowowl.fhir.core.model.codesystem.LookupRequest;
 import com.b2international.snowowl.fhir.core.model.dt.*;
 import com.b2international.snowowl.fhir.core.model.dt.Parameters.Fhir;
@@ -227,7 +227,7 @@ public class ParameterDeserializationTest extends FhirTest {
 		assertEquals("1234", lookupRequest.getCode());
 		assertEquals("http://snomed.info/sct/version/20180131", lookupRequest.getSystem());
 		
-		assertEquals(Dates.parse("2018-03-09T20:50:21.000+0100", FhirConstants.DATE_TIME_FORMAT), lookupRequest.getDate());
+		assertEquals(Dates.parse("2018-03-09T20:50:21.000+0100", FhirDates.DATE_TIME_FORMAT), lookupRequest.getDate());
 		
 		assertEquals("us-en", lookupRequest.getDisplayLanguage().getCodeValue());
 		
