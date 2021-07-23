@@ -25,7 +25,12 @@ import javax.validation.constraints.NotNull;
 
 import com.b2international.snowowl.fhir.core.FhirDates;
 import com.b2international.snowowl.fhir.core.codesystems.PublicationStatus;
-import com.b2international.snowowl.fhir.core.model.dt.*;
+import com.b2international.snowowl.fhir.core.model.dt.Code;
+import com.b2international.snowowl.fhir.core.model.dt.CodeableConcept;
+import com.b2international.snowowl.fhir.core.model.dt.Id;
+import com.b2international.snowowl.fhir.core.model.dt.Identifier;
+import com.b2international.snowowl.fhir.core.model.dt.Narrative;
+import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.usagecontext.UsageContext;
 import com.b2international.snowowl.fhir.core.search.Filterable;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
@@ -176,10 +181,6 @@ public abstract class MetadataResource extends DomainResource {
 		this.jurisdictions = jurisdictions;
 		this.purpose = purpose;
 		this.copyright = copyright;
-	}
-	
-	public String getVersion() {
-		return version;
 	}
 	
 	public Uri getUrl() {

@@ -23,7 +23,7 @@ import java.util.Date;
 
 import org.junit.Test;
 
-import com.b2international.snowowl.fhir.core.FhirConstants;
+import com.b2international.snowowl.fhir.core.FhirDates;
 import com.b2international.snowowl.fhir.core.codesystems.IssueSeverity;
 import com.b2international.snowowl.fhir.core.codesystems.IssueType;
 import com.b2international.snowowl.fhir.core.codesystems.OperationOutcomeCode;
@@ -33,7 +33,11 @@ import com.b2international.snowowl.fhir.core.model.Issue;
 import com.b2international.snowowl.fhir.core.model.Issue.Builder;
 import com.b2international.snowowl.fhir.core.model.Meta;
 import com.b2international.snowowl.fhir.core.model.OperationOutcome;
-import com.b2international.snowowl.fhir.core.model.dt.*;
+import com.b2international.snowowl.fhir.core.model.dt.Coding;
+import com.b2international.snowowl.fhir.core.model.dt.ContactPoint;
+import com.b2international.snowowl.fhir.core.model.dt.Id;
+import com.b2international.snowowl.fhir.core.model.dt.Instant;
+import com.b2international.snowowl.fhir.core.model.dt.Period;
 import com.b2international.snowowl.fhir.tests.FhirExceptionIssueMatcher;
 import com.b2international.snowowl.fhir.tests.FhirTest;
 
@@ -55,7 +59,7 @@ public class ModelSerializationTest extends FhirTest {
 	public void contactDetailTest() throws Exception {
 		
 		ContactPoint cp = ContactPoint.builder()
-			.period(new Period(null, null))
+			.period(Period.builder().build())
 			.rank(1)
 			.system("system")
 			.value("value")
@@ -63,7 +67,7 @@ public class ModelSerializationTest extends FhirTest {
 		
 		ContactDetail cd = ContactDetail.builder()
 			.name("name")
-			.addContactPoint(cp)
+			.addTelecom(cp)
 			.build();
 		
 		JsonPath jsonPath = JsonPath.from(objectMapper.writeValueAsString(cd));
@@ -78,7 +82,7 @@ public class ModelSerializationTest extends FhirTest {
 	@Test
 	public void metaTest() throws Exception {
 		
-		DateFormat df = new SimpleDateFormat(FhirConstants.DATE_TIME_FORMAT);
+		DateFormat df = new SimpleDateFormat(FhirDates.DATE_TIME_FORMAT);
 		Date date = df.parse(TEST_DATE_STRING);
 		Instant instant = Instant.builder().instant(date).build();
 		
@@ -120,7 +124,7 @@ public class ModelSerializationTest extends FhirTest {
 	@Test
 	public void missingIssueTest() throws Exception {
 		Issue expectedIssue = builder.addLocation("OperationOutcome.issues")
-			.codeableConceptWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'issues' content is invalid [null]. Violation: may not be empty.")
+			.detailsWithDisplay(OperationOutcomeCode.MSG_PARAM_INVALID, "Parameter 'issues' content is invalid [null]. Violation: may not be empty.")
 			.build();
 		
 		exception.expect(ValidationException.class);

@@ -22,6 +22,7 @@ import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
@@ -29,6 +30,8 @@ import org.apache.commons.lang.text.StrSubstitutor;
 import org.hamcrest.CoreMatchers;
 
 import com.b2international.snowowl.core.util.PlatformUtil;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.util.StdDateFormat;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
@@ -109,6 +112,13 @@ public class RestExtensions {
 							public com.fasterxml.jackson.databind.ObjectMapper create(Type arg0, String arg1) {
 								com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
 								mapper.registerModule(new JavaTimeModule());
+								
+								//bbanfai: added date format
+								final StdDateFormat dateFormat = new StdDateFormat();
+								dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+								mapper.setDateFormat(dateFormat);
+								mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+								
 								return mapper;
 							}
 						})

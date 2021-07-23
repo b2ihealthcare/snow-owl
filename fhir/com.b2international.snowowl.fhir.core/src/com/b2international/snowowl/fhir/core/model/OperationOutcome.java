@@ -48,17 +48,12 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
  * @see <a href="http://hl7.org/fhir/operationoutcome.html">FHIR:OperationOutcome</a>
  * @since 6.3
  */
-<<<<<<< HEAD
-@ApiModel("Operation outcome")
 @JsonDeserialize(builder = OperationOutcome.Builder.class)
 public final class OperationOutcome extends DomainResource {
 	
 	private static final long serialVersionUID = 1L;
 
 	public static final String RESOURCE_TYPE_OPERATION_OUTCOME = "OperationOutcome";
-=======
-public final class OperationOutcome {
->>>>>>> refs/remotes/origin/8.x
 	
 	@JsonProperty
 	private String resourceType;

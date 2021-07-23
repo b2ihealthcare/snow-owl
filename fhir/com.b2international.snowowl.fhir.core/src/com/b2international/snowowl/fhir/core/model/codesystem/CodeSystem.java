@@ -15,23 +15,32 @@
  */
 package com.b2international.snowowl.fhir.core.model.codesystem;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Set;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemContentMode;
 import com.b2international.snowowl.fhir.core.codesystems.CodeSystemHierarchyMeaning;
 import com.b2international.snowowl.fhir.core.model.ContactDetail;
 import com.b2international.snowowl.fhir.core.model.Meta;
 import com.b2international.snowowl.fhir.core.model.MetadataResource;
-import com.b2international.snowowl.fhir.core.model.Meta.Builder;
-import com.b2international.snowowl.fhir.core.model.dt.*;
+import com.b2international.snowowl.fhir.core.model.dt.Code;
+import com.b2international.snowowl.fhir.core.model.dt.CodeableConcept;
+import com.b2international.snowowl.fhir.core.model.dt.Id;
+import com.b2international.snowowl.fhir.core.model.dt.Identifier;
+import com.b2international.snowowl.fhir.core.model.dt.Narrative;
+import com.b2international.snowowl.fhir.core.model.dt.Uri;
 import com.b2international.snowowl.fhir.core.model.usagecontext.UsageContext;
 import com.b2international.snowowl.fhir.core.search.Mandatory;
 import com.b2international.snowowl.fhir.core.search.Summary;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -39,10 +48,7 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-
-import io.swagger.annotations.ApiModel;
 
 /**
  * This class represents a FHIR code system. The CodeSystem resource is used to
@@ -61,7 +67,6 @@ import io.swagger.annotations.ApiModel;
  * @see <a href="https://www.hl7.org/fhir/codesystem.html">FHIR:CodeSystem</a>
  * @since 6.3
  */
-@ApiModel("CodeSystem")
 @JsonDeserialize(builder = CodeSystem.Builder.class, using = JsonDeserializer.None.class)
 public class CodeSystem extends MetadataResource {
 
@@ -177,6 +182,8 @@ public class CodeSystem extends MetadataResource {
 	@JsonProperty("concept")
 	@JsonInclude(value = Include.NON_EMPTY)
 	private Collection<Concept> concepts;
+	
+	private String toolingId;
 
 	@SuppressWarnings("rawtypes")
 	CodeSystem(Id id, final Meta meta, final Uri impliciteRules, Code language, 
@@ -242,18 +249,6 @@ public class CodeSystem extends MetadataResource {
 	
 	public Integer getCount() {
 		return count;
-	}
-	
-	public Collection<Filter> getFilters() {
-		return filters;
-	}
-	
-	public Collection<SupportedConceptProperty> getProperties() {
-		return properties;
-	}
-	
-	public Collection<Concept> getConcepts() {
-		return concepts;
 	}
 	
 	@JsonProperty(CodeSystem.Fields.CONCEPT)

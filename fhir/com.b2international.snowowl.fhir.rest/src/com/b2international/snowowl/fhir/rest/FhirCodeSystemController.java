@@ -15,20 +15,40 @@
  */
 package com.b2international.snowowl.fhir.rest;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
 import org.springdoc.api.annotations.ParameterObject;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.b2international.commons.collections.Collections3;
+import com.b2international.snowowl.core.ResourceURI;
 import com.b2international.snowowl.core.events.util.Promise;
+import com.b2international.snowowl.core.rest.AbstractRestService;
+import com.b2international.snowowl.fhir.core.codesystems.PropertyType;
 import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.codesystem.CodeSystem;
+import com.b2international.snowowl.fhir.core.model.codesystem.Concept;
+import com.b2international.snowowl.fhir.core.model.codesystem.SupportedConceptProperty;
+import com.b2international.snowowl.fhir.core.model.dt.Code;
+import com.b2international.snowowl.fhir.core.model.property.ConceptProperty;
 import com.b2international.snowowl.fhir.core.request.FhirRequests;
+import com.b2international.snowowl.lcs.core.domain.property.LocalTerminologyConceptProperty;
+import com.b2international.snowowl.lcs.core.domain.property.LocalTerminologyConceptPropertyDefinition;
+import com.b2international.snowowl.lcs.core.domain.property.LocalTerminologyConceptPropertyDefinition.PropertyValueType;
+import com.b2international.snowowl.lcs.core.request.LcsRequests;
+import com.google.common.collect.ImmutableList;
+import com.b2international.snowowl.lcs.core.domain.property.PropertyCardinality;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -59,12 +79,11 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 	}
 	
 	@PostMapping(consumes = { AbstractRestService.JSON_MEDIA_TYPE })
-	@ResponseStatus(HttpStatus.CREATED)
+	//@ResponseStatus(HttpStatus.CREATED)
 	public ResponseEntity<Void> create(@RequestBody final CodeSystem codeSystem) {
 		
-		
 		List<LocalTerminologyConceptPropertyDefinition> propertyDefinitions = codeSystem.getProperties().stream().map(p -> {
-			Builder builder = LocalTerminologyConceptPropertyDefinition.builder(UUID.randomUUID().toString())
+			LocalTerminologyConceptPropertyDefinition.Builder builder = LocalTerminologyConceptPropertyDefinition.builder(UUID.randomUUID().toString())
 					.name(p.getCodeValue())
 					.cardinality(PropertyCardinality.ZERO_TO_MANY)
 					.description(p.getDescription());
@@ -89,34 +108,47 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 			System.out.println("Def: " + localTerminologyConceptPropertyDefinition);
 		}
 		
-		/*
 		LcsRequests.prepareCreateTerminology()
-			.setTitle(codeSystem.getName())
+			.setId(codeSystem.getId().getIdValue())
 			.setDescription(codeSystem.getDescription())
 			.setLanguage(codeSystem.getLanguage().getCodeValue())
-			//.setOid(codeSystem.)
-		
-			//.setName(codeSystem.getName())
-			//.setMaintainingOrganizationLink(ORG_LINK)
-			//.setDescription(LCS_DESCRIPTION)
-			//.setComments(LCS_COMMENTS)
-			//.setOid(LCS_NAME)
+			.setCopyright(codeSystem.getCopyright())
+			.setStatus(codeSystem.getStatus().getCodeValue())
+			.setOwner(codeSystem.getPublisher())
+			//.setUrl(url)
 			.setPropertyDefinitions(propertyDefinitions)
+			.setTitle(codeSystem.getTitle())
 			.buildAsync()
-			.execute(getBus())
-			.getSync();
-			*/
-		
-		System.out.println("CS: " + codeSystem.getName());
-		
-		Collection<SupportedConceptProperty> properties = codeSystem.getProperties();
-		for (SupportedConceptProperty property : properties) {
-			System.out.println("Property: " +property.getCodeValue() );
-		}
+			.execute(getBus());
 		
 		Collection<Concept> concepts = codeSystem.getConcepts();
+		
 		for (Concept concept : concepts) {
-			System.out.println("Concept: " + concept.getDisplay());
+			
+			Collection<ConceptProperty> properties = concept.getProperties();
+			List<LocalTerminologyConceptProperty> lcsProperties = properties.stream()
+				.map(p -> {
+					LocalTerminologyConceptPropertyDefinition definition = propertyDefinitions.stream()
+							.filter(d -> d.getName().equals(p.getCodeValue()))
+							.findFirst()
+							.orElseThrow(() -> new IllegalArgumentException("Undefined property"));
+					
+					LocalTerminologyConceptProperty lcsProperty = definition.createProperty();
+					lcsProperty.setValue(p.getValue());
+					return lcsProperty;
+				
+			}).collect(Collectors.toList());
+			
+			ResourceURI uri = com.b2international.snowowl.core.codesystem.CodeSystem.uri(codeSystem.getId().getIdValue());
+			LcsRequests.localTerminologyConcepts()
+				.prepareCreate()
+				.setActive(true)
+				.setTerm(concept.getDisplay())
+				.setAlternativeTerms(ImmutableList.of(concept.getDefinition()))
+				.setProperties(lcsProperties)
+				.build(uri, "user", "Commit comment")
+				.execute(getBus());
+			
 		}
 		
 		return ResponseEntity.ok().build();

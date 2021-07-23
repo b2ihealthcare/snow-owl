@@ -23,7 +23,12 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.converter.json.MappingJacksonValue;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import com.b2international.commons.Pair;
@@ -31,6 +36,7 @@ import com.b2international.snowowl.core.uri.ComponentURI;
 import com.b2international.snowowl.fhir.core.codesystems.BundleType;
 import com.b2international.snowowl.fhir.core.model.Bundle;
 import com.b2international.snowowl.fhir.core.model.Entry;
+import com.b2international.snowowl.fhir.core.model.ResourceResponseEntry;
 import com.b2international.snowowl.fhir.core.model.conceptmap.ConceptMap;
 import com.b2international.snowowl.fhir.core.model.conceptmap.Match;
 import com.b2international.snowowl.fhir.core.model.conceptmap.TranslateRequest;
@@ -42,7 +48,6 @@ import com.b2international.snowowl.fhir.core.provider.IConceptMapApiProvider;
 import com.b2international.snowowl.fhir.core.search.FhirFilterParameter;
 import com.b2international.snowowl.fhir.core.search.FhirSearchParameter;
 
-import io.swagger.annotations.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -99,7 +104,7 @@ public class FhirConceptMapController extends AbstractFhirResourceController<Con
 			for (ConceptMap conceptMap : conceptMaps) {
 				applyResponseContentFilter(conceptMap, requestParameters.getA());
 				String resourceUrl = String.join("/", uri, conceptMap.getId().getIdValue());
-				Entry entry = new Entry(new Uri(resourceUrl), conceptMap);
+				Entry entry = ResourceResponseEntry.builder().fullUrl(resourceUrl).resource(conceptMap).build();
 				builder.addEntry(entry);
 				total++;
 			}

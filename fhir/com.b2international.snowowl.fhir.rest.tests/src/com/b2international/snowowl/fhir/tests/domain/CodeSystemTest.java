@@ -24,6 +24,8 @@ import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 
 import org.junit.Test;
@@ -227,8 +229,16 @@ public class CodeSystemTest extends FhirTest {
 			
 		URI uri = CodeSystemTest.class.getResource("../dd_codesystem.json").toURI();
 		CodeSystem codeSystem = objectMapper.readValue(Paths.get(uri).toFile(), CodeSystem.class);
+		printPrettyJson(codeSystem);
 		
 		System.out.println("Code system: " + codeSystem.getName());
+		
+		CodeSystem readCodeSystem = objectMapper.readValue(objectMapper.writeValueAsString(codeSystem), CodeSystem.class);
+		Collection<SupportedConceptProperty> properties = readCodeSystem.getProperties();
+		for (SupportedConceptProperty supportedConceptProperty : properties) {
+			//supportedConceptProperty.
+		}
+		System.out.println("Date:" + Arrays.toString(properties.toArray()));
 
 	}
 

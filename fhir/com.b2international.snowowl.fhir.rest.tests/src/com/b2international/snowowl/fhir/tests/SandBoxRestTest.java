@@ -15,9 +15,13 @@
  */
 package com.b2international.snowowl.fhir.tests;
 
+import static com.b2international.snowowl.fhir.tests.FhirRestTest.Endpoints.CODESYSTEM;
 import static com.b2international.snowowl.test.commons.rest.RestExtensions.givenAuthenticatedRequest;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.notNullValue;
 
 import java.io.File;
 import java.io.IOException;
@@ -94,6 +98,13 @@ public class SandBoxRestTest extends FhirRestTest {
 			.then()
 			.statusCode(200);
 			
+	}
+	
+	@Test
+	public void listCodeSystems() {
+		givenAuthenticatedRequest(FHIR_ROOT_CONTEXT)
+			.when().get(CODESYSTEM)
+			.prettyPrint();
 	}
 	
 	
