@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 
 import com.b2international.commons.options.Options;
 import com.b2international.snowowl.core.ResourceURI;
-import com.b2international.snowowl.core.domain.BranchContext;
+import com.b2international.snowowl.core.ServiceProvider;
 import com.b2international.snowowl.core.domain.Concept;
 import com.b2international.snowowl.core.domain.Concepts;
 import com.b2international.snowowl.core.domain.IComponent;
@@ -110,7 +110,7 @@ public interface ConceptSearchRequestEvaluator {
 		/**
 		 * Filters concepts by their ancestors (direct or indirect parents).
 		 */
-		ANCESTOR,
+		ANCESTOR, 
 	}
 
 	/**
@@ -120,15 +120,15 @@ public interface ConceptSearchRequestEvaluator {
 	 * @param uri
 	 *            - the code system uri where the search is being evaluated
 	 * @param context
-	 *            - the context prepared for the search
+	 *            - the context to perform the search on
 	 * @param search
 	 *            - the search filters and options to apply to the code system specific search
 	 * @return
 	 */
-	Concepts evaluate(ResourceURI uri, BranchContext context, Options search);
+	Concepts evaluate(ResourceURI uri, ServiceProvider context, Options search);
 
 	default Concept toConcept(ResourceURI codeSystem, IComponent concept, String iconId, String term, Float score) {
-		Concept result = new Concept(codeSystem.toString(), concept.getComponentType());
+		Concept result = new Concept(codeSystem, concept.getComponentType());
 		result.setId(concept.getId());
 		result.setReleased(concept.isReleased());
 		result.setIconId(iconId);
@@ -174,7 +174,7 @@ public interface ConceptSearchRequestEvaluator {
 	ConceptSearchRequestEvaluator NOOP = new ConceptSearchRequestEvaluator() {
 
 		@Override
-		public Concepts evaluate(ResourceURI uri, BranchContext context, Options search) {
+		public Concepts evaluate(ResourceURI uri, ServiceProvider context, Options search) {
 			return new Concepts(search.get(OptionKey.LIMIT, Integer.class), 0);
 		}
 

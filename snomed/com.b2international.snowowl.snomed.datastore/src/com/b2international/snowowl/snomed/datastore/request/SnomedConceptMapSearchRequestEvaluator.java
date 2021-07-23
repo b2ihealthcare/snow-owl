@@ -101,8 +101,9 @@ public final class SnomedConceptMapSearchRequestEvaluator implements ConceptMapM
 								final Set<String> idsToFetch = entry.getValue().stream().map(map -> map.getTargetComponentURI().identifier()).collect(Collectors.toSet());
 								return CodeSystemRequests.prepareSearchConcepts()
 										.all()
+										.filterByCodeSystemUri(entry.getKey())
 										.filterByIds(idsToFetch)
-										.build(entry.getKey())
+										.buildAsync()
 										.execute(context.service(IEventBus.class))
 										.getSync(5, TimeUnit.MINUTES)
 										.stream()

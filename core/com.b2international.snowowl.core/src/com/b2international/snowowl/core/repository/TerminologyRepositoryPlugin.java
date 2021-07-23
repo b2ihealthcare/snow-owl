@@ -118,7 +118,9 @@ public abstract class TerminologyRepositoryPlugin extends Plugin implements Term
 	 * @see ConceptSearchRequestBuilder
 	 * @see ConceptSearchRequest
 	 */
-	protected abstract ConceptSearchRequestEvaluator getConceptSearchRequestEvaluator();
+	protected ConceptSearchRequestEvaluator getConceptSearchRequestEvaluator() {
+		return ConceptSearchRequestEvaluator.NOOP;
+	}
 
 	/**
 	 * Subclasses may override to provide a customized {@link QueryOptimizer} for the underlying terminology tooling and query language.
