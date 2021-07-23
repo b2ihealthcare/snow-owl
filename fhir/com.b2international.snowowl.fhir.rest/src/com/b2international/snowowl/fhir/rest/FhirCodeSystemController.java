@@ -109,6 +109,7 @@ public class FhirCodeSystemController extends AbstractFhirResourceController<Cod
 		}
 		
 		LcsRequests.prepareCreateTerminology()
+			.setUrl(codeSystem.getUrl().getUriValue())
 			.setId(codeSystem.getId().getIdValue())
 			.setDescription(codeSystem.getDescription())
 			.setLanguage(codeSystem.getLanguage().getCodeValue())
